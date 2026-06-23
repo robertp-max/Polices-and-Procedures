@@ -16,6 +16,9 @@
 
    Use isCesSandboxDate / isCesFutureLockedDate / getCesExecutionMode
    everywhere instead of scattered date comparisons.
+
+   Design cross-ref (Agent 05): CES data/logic aligns to V6_DESIGN.html ~1308
+   (CES views, states, enforcement). See cesMasterControlAudit, viewmodels.
    ═══════════════════════════════════════════════════════════════ */
 
 export type CesExecutionMode = 'sandbox' | 'future_locked' | 'production';

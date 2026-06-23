@@ -13,6 +13,11 @@ export interface BoardCardData {
   progress: number;
   title: string;
   tone: Tone;
+  // Extended for design parity (Awaiting Action/Evidence column)
+  meta?: string;
+  awaitingType?: 'evidence' | 'action';
+  missing?: string;
+  domain?: string;
 }
 
 export interface BoardLaneData {
@@ -20,6 +25,8 @@ export interface BoardLaneData {
   count: number;
   title: string;
   tone: Tone;
+  // Optional note for special lanes like Awaiting
+  note?: string;
 }
 
 export interface BoardLaneProps {
@@ -34,6 +41,7 @@ export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
         <div className="min-w-0">
           <h2 className="truncate text-sm font-medium text-ink">{lane.title}</h2>
           <p className="text-sm text-muted">{lane.count} active cards</p>
+          {lane.note && <p className="text-[10px] text-muted">{lane.note}</p>}
         </div>
         <ToneTag tone={lane.tone}>{lane.count}</ToneTag>
       </header>
@@ -69,6 +77,9 @@ export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
                 <span className="min-w-0 truncate text-brand-teal">{card.owner}</span>
                 <span className="text-muted">{card.due}</span>
               </div>
+              {card.domain && (
+                <div className="text-[10px] text-muted truncate">{card.domain}</div>
+              )}
               <div className="flex flex-wrap gap-xs overflow-hidden">
                 {card.chips.slice(0, 2).map((chip) => (
                   <span
@@ -84,11 +95,28 @@ export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
                   </span>
                 ))}
               </div>
+              {card.meta && (
+                <p className="text-[10px] text-muted line-clamp-1">{card.meta}</p>
+              )}
+              {card.awaitingType && (
+                <span className={`inline-block mt-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${card.awaitingType === 'evidence' ? 'border border-teal-200 bg-teal-50 text-teal-700' : 'border border-orange-200 bg-orange-50 text-orange-700'}`}>
+                  {card.awaitingType === 'evidence' ? '⏳ Awaiting Evidence' : '📋 Awaiting Action'}
+                </span>
+              )}
+              {card.missing && (
+                <span className="text-[10px] text-orange-600">Missing: {card.missing}</span>
+              )}
               <ProgressMeter className="mt-auto" tone={card.tone} value={card.progress} />
             </div>
           </article>
         ))}
       </div>
+      {lane.title === 'Awaiting Action / Evidence' && (
+        <div className="mt-sm flex gap-xs">
+          <button className="flex-1 rounded border border-teal-200 bg-teal-50 px-2 py-1 text-[10px] text-teal-700 hover:bg-teal-100">⏳ Upload / View Evidence</button>
+          <button className="flex-1 rounded border border-orange-200 bg-orange-50 px-2 py-1 text-[10px] text-orange-700 hover:bg-orange-100">📋 Assign / Review</button>
+        </div>
+      )}
     </section>
   );
 }

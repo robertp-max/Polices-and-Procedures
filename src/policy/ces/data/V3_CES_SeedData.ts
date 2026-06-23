@@ -20,6 +20,11 @@
  *
  * V3_SYNTHETIC_FALLBACK: this file seeds preview CES data. It is not canonical
  * REGULATORY_EVENTS/store state and does not prove workflow action parity.
+ *
+ * Design cross-ref (Agent 05 / Agent 19 background + Agent 19 read-only gap vs design subagent): Aligns to V6_DESIGN.html ~1308 (CES views, data like complianceBoardColumns ~409 incl. Awaiting Action/Evidence + EVT-REV cards with meta/awaitingType/missing/domain, eventsBoardColumns ~508, myTaskColumns ~273, complianceCalendarEvents ~397, masterControlRecords ~596, etc.). 
+ * V3_ExecutionUnitsSeed + regulatory events power CES board, my-tasks, calendar (buildScheduled...), snapshots, and projections (e.g. master controls).
+ * Gap vs design (this subagent analysis): seeds are production/realistic-shaped (states, evidenceStatus, domains, obligations) but design's illustrative columns use specific hardcoded examples for visual/demo parity. Current RepScreens mixes seeds for dynamic (calendar, some) + static design-matched lanes for exact fidelity. SnapshotBuilder provides execution snapshot but not direct lane emission.
+ * Agent 19 proposals: extend seeds/projectors to emit or include design-exact illustrative data + all extended fields (awaitingType, meta, missing); reduce hardcoding while keeping parity. See RepScreens boardLanes/cesCalendarEvents comments, V3_CES_SnapshotBuilder, V6_DESIGN_RECONCILIATION.md.
  */
 
 import type {

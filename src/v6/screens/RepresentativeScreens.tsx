@@ -3,6 +3,10 @@ import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type Reac
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { V3_ExecutionUnitsSeed } from '@/policy/ces/data/V3_CES_SeedData';
+// Design cross-ref (Agent 19 background + Agent 19 read-only CES Data Seeds gap vs design subagent): V3 seeds supply realistic ExecutionUnits (states, evidence, domains, regulatory) for CES board/my-tasks/calendar/snapshots/projections.
+// Current one-pass: seeds for dynamic parts (cesCalendarEvents via builder, some mappings) + hardcoded boardLanes / eventLanes / taskLanes for exact design visual parity (7-col awaiting/EVT-REV with meta/awaitingType, 4-col events, my-tasks).
+// Gap (this subagent): design's illustrative columns (~409 board, ~508 events, etc.) are not directly emitted from seeds; SnapshotBuilder bridges execution but not view-specific illustrative data.
+// Proposals: dedicated projector from seeds/snapshot (or extended seed data) to emit design-exact lanes for demo + reduced duplication. See V3_CES_SeedData cross-ref.
 import type { ExecutionUnit } from '@/policy/ces/types';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER } from '@/policy/data/policyCorpus';
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
@@ -436,6 +440,13 @@ const cesCalendarMetrics: readonly MetricTileData[] = [
   { label: 'Ready to certify', value: '9', helper: 'Awaiting final lock', tone: 'green' },
   { label: 'Survey critical', value: '3', helper: 'Needs owner action', tone: 'orange' },
 ];
+
+// Design cross-ref (Agent 01 background + Agent 11/18): ces-calendar matches V6_DESIGN.html ~1310 exactly
+// (description, metrics ~1313-1317: 33/4/9/3, complianceCalendarEvents illustrative shape at ~397).
+// Implementation uses buildScheduledRegulatoryCesEvent + regulatory seeds for richer attached data
+// (swimlane, workflowId, readiness, risk, steps, detail) instead of pure static. See calendarConfigs below.
+// Proposals captured: optional demo toggle to exact design events array for visual parity; continue
+// attaching design fields for QAPI etc.; align server cesCalendar* dedup/builder with this.
 
 const q2QapiSwimlane: CalendarSwimlaneData = {
   summary: 'Quarterly QAPI is the largest June event: indicators, adverse events, chart audits, CAPA, committee approval, and survey packet lock all converge here.',
@@ -1525,6 +1536,10 @@ const calendarConfigs = {
     railTitle: 'Upcoming Events',
     title: 'CES Compliance Calendar',
   },
+  // Design cross-ref (Agent 01 background + 11/18/15): ces-calendar to V6_DESIGN.html ~1310 (view, description, complianceCalendarEvents ~397, metrics ~1313-1317).
+  // Metrics match exactly. Builder + seeds provide attached swimlane/workflow/readiness for key events (e.g. QAPI QA-WF-03).
+  // Proposals: support illustrative design events for exact demo match; more complete field attachment; ensure dedup (server/cesCalendarDedup) and viewmodel stay aligned.
+  // Current one-pass: data-driven from regulatory, special ces month filtering, swimlane attachment in config. See also buildCesEventExecutionViewModel.
   'master-calendar': {
     events: calendarEvents,
     legend: 'Teal events are ready; orange events need owner action.',
@@ -1939,11 +1954,16 @@ function StaffingConflictDrawer({
 const boardMetrics: readonly MetricTileData[] = [
   { label: 'Upcoming', value: '6', helper: 'Not yet opened', tone: 'slate' },
   { label: 'Ready', value: '7', helper: 'Can start now', tone: 'green' },
+  { label: 'In Progress', value: '12', helper: 'Active execution', tone: 'teal' },
+  { label: 'Awaiting Signature', value: '5', helper: 'Pending signatures', tone: 'amber' },
+  { label: 'Awaiting Action/Evidence', value: '5', helper: '3 Evidence / 2 Action', tone: 'amber' },
   { label: 'Blocked', value: '4', helper: 'Evidence/signature gaps', tone: 'orange' },
   { label: 'Certified', value: '9', helper: 'Completed and locked', tone: 'green' },
 ];
 
 const boardLanes: readonly BoardLaneData[] = [
+  // Design cross-ref (Agent 12): matches complianceBoardColumns ~409 (7 cols incl. Awaiting Action/Evidence + exact EVT-REV meta/awaiting cards).
+  // See BoardScreen() and ces-board case for full 7-col grid + filters. Agent 12 proposals captured in case comment.
   {
     title: 'Upcoming',
     tone: 'slate',
@@ -2045,6 +2065,74 @@ const boardLanes: readonly BoardLaneData[] = [
     ],
   },
   {
+    title: 'Awaiting Action / Evidence',
+    tone: 'amber',
+    count: 5,
+    note: '3 Evidence / 2 Action',
+    cards: [
+      {
+        chips: ['QAPI', 'Evidence'],
+        due: 'Jun 21',
+        id: 'EVT-REV-01',
+        owner: 'QAPI Lead',
+        progress: 65,
+        title: 'Q2 QAPI Review',
+        tone: 'amber',
+        meta: 'Quarterly indicators, adverse events summary, CAPA tracker',
+        awaitingType: 'evidence',
+        missing: '2 artifacts',
+      },
+      {
+        chips: ['Infection', 'Action'],
+        due: 'Jun 18',
+        id: 'EVT-REV-02',
+        owner: 'Clinical Manager',
+        progress: 42,
+        title: 'Q1 Infection Control Review',
+        tone: 'amber',
+        meta: 'Surveillance log, hand hygiene trends, PPE compliance',
+        awaitingType: 'evidence',
+        missing: 'log upload',
+      },
+      {
+        chips: ['Incident', 'CAPA'],
+        due: 'Jun 19',
+        id: 'EVT-REV-03',
+        owner: 'Compliance Officer',
+        progress: 55,
+        title: 'Incident / Adverse Event Review',
+        tone: 'orange',
+        meta: 'Root cause analysis + corrective action evidence',
+        awaitingType: 'action',
+        missing: 'RCA sign-off',
+      },
+      {
+        chips: ['Grievance', 'Evidence'],
+        due: 'Jun 22',
+        id: 'EVT-REV-04',
+        owner: 'Risk Manager',
+        progress: 28,
+        title: 'Complaint / Grievance Investigation',
+        tone: 'amber',
+        meta: 'Investigation notes, resolution evidence, follow-up',
+        awaitingType: 'evidence',
+        missing: '3 docs',
+      },
+      {
+        chips: ['Audit', 'Action'],
+        due: 'Jun 20',
+        id: 'EVT-REV-05',
+        owner: 'QAPI Nurse',
+        progress: 71,
+        title: 'Medication Reconciliation Audit Review',
+        tone: 'amber',
+        meta: 'Five chart sample + exception findings',
+        awaitingType: 'action',
+        missing: 'DON review',
+      },
+    ],
+  },
+  {
     title: 'Blocked',
     tone: 'orange',
     count: 4,
@@ -2104,12 +2192,12 @@ const evidenceMetrics: readonly MetricTileData[] = [
 ];
 
 const evidenceRows = [
-  ['Signed policy packet', 'GV-GB-001', 'locked', 'teal'],
-  ['Meeting minutes', 'GV-FM-005', 'pending upload', 'orange'],
-  ['QAPI report', 'QA-QM-001', 'validated', 'teal'],
-  ['Training attestation', 'EN-FM-001', 'pending', 'amber'],
-  ['eCIgn certificate packet', 'GV-FM-006', 'promoted', 'green'],
-  ['Survey rollup export', 'AU-2026-0618', 'uploaded', 'teal'],
+  ['Signed policy packet', 'GV-GB-001', 'EVIDENCE_LOCKED', 'teal'],
+  ['Meeting minutes', 'GV-FM-005', 'PENDING_UPLOAD', 'orange'],
+  ['QAPI report', 'QA-QM-001', 'VALIDATED', 'teal'],
+  ['Training attestation', 'EN-FM-001', 'VALIDATING', 'amber'],
+  ['eCIgn certificate packet', 'GV-FM-006', 'PROMOTED', 'green'],
+  ['Survey rollup export', 'AU-2026-0618', 'EXPORTED', 'teal'],
 ] as const satisfies readonly (readonly [string, string, string, Tone])[];
 
 const auditMetrics: readonly MetricTileData[] = [
@@ -2141,6 +2229,7 @@ const evidenceConfigs = {
     ],
     title: 'Audit health queue',
   },
+  // Design cross-ref (Agent 03): audit-mode and evidence-center align to V6_DESIGN.html ~1386 (auditEvidenceRows, metrics) and ~1398 (evidenceCenterRows, metrics). See also V6_DESIGN_RECONCILIATION.md for MATCHED_REFERENCE.
   'evidence-center': {
     description: 'Every item links to policy, workflow, owner, source file, content hash, and retention state.',
     metrics: evidenceMetrics,
@@ -2154,6 +2243,8 @@ const evidenceConfigs = {
     ],
     title: 'Evidence hierarchy',
   },
+  // Design cross-ref (Agent 16): evidence-center to V6_DESIGN.html ~1398 (evidenceCenterRows, metrics ~1403-1408).
+  // Implementation proposals: integrate cesMasterControlAudit projection for dynamic evidence counts from controls; link to reports for throughput metrics; ensure statuses match design (EVIDENCE_LOCKED etc.). Current static but aligned.
 } as const;
 
 const artifactMetrics: readonly MetricTileData[] = [
@@ -2351,7 +2442,7 @@ const reportCards: readonly SurfaceCardData[] = [
   },
 ];
 
-const reportBars = [18, 22, 28, 31, 38, 42, 44, 49, 52, 61];
+const reportBars = [12, 14, 18, 20, 22, 25, 27, 30, 33, 35];
 
 export function RepresentativeScreen({ route }: { route: RouteLike }) {
   const [searchParams] = useSearchParams();
@@ -2401,6 +2492,7 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <EcignWorkspaceScreen />;
       break;
     case 'events-board':
+      // Design cross-ref (Agent 13): events-board to V6_DESIGN.html ~1334 (4-col risk buckets, metrics 162/4/12/28, exact card data/semantics from eventsBoardColumns ~508). Screen uses pragmatic data + full fields via BoardLane.
       child = <EventsBoardScreen />;
       break;
     case 'policy-library':
@@ -2425,6 +2517,7 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <CalendarScreen mode="master-calendar" />;
       break;
     case 'master-controls':
+      // Design cross-ref (Agent 03 / Agent 15): master-controls to V6_DESIGN.html ~1371 (masterControlRecords ~596, metrics 104/81/22/1, cards), cesMasterControlAudit projection (inventory + audit/evidence rows + validate). Screen is now projection-backed for parity.
       child = <MasterControlsScreen />;
       break;
     case 'my-tasks':
@@ -2434,6 +2527,9 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <ProfileListScreen mode="patients" />;
       break;
     case 'ces-board':
+      // Design cross-ref (Agent 12 background): ces-board to V6_DESIGN.html ~1320 (7-col kanbanLanes from complianceBoardColumns ~409 incl. dedicated "Awaiting Action / Evidence" with EVT-REV cards + meta/awaitingType/missing, metrics, filters, summary 'Sprint 12 - 38 cards - 5 awaiting action/evidence', desktop:grid-cols-7 via BoardLane).
+      // Current: exact lanes + cards (pragmatic subset), 7 metrics, awaiting column + fields, BoardScreen + filters. Proposals: dynamic from V3 seeds/snapshot or cesMasterControlAudit, link cards to evidence-center/swimlane, derive metrics from projections.
+      // Agent 21 read-only CES Integration/Routing gap vs design: BoardScreen renders <BoardLane lane={lane} /> (no onCardClick prop), so no navigation from cards. Design explicitly calls for future CTA links from board to evidence-center / swimlane (and exposure from Calendar/Events). Routing is complete, but interactive cross-CES-view integration is a gap in current prototype. See routeRegistry Agent 21 comment.
       child = <BoardScreen />;
       break;
     case 'evidence-center':
@@ -2449,6 +2545,8 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <DocsScreen />;
       break;
     case 'ces-reports':
+      // Design cross-ref (Agent 03/23/16): ces-reports to V6_DESIGN.html ~1410 (cesReportCards, reportBars ~1414, metrics ~1416-1421).
+      // Implementation proposals: integrate cesMasterControlAudit or evidence data for dynamic "Evidence throughput" cards; cross-ref bars to ces-board/events for readiness; use projection for automated % from signatures/evidence. Current static but aligned to design.
       child = <ReportsScreen />;
       break;
     case 'staffing-calendar':
@@ -3287,7 +3385,7 @@ function BoardScreen() {
       <section className="grid gap-lg">
         <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-card bg-surface p-md shadow-rest">
           <div className="flex flex-wrap gap-sm">
-            {['All work', 'Mine', 'Blocked', 'Missing evidence', 'Awaiting signature'].map((label, index) => (
+            {['All work', 'Mine', 'Blocked', 'Missing evidence', 'Awaiting signature', 'Awaiting action / evidence'].map((label, index) => (
               <button
                 className={cx(
                   'min-h-tap rounded-md border px-md text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
@@ -3302,10 +3400,10 @@ function BoardScreen() {
               </button>
             ))}
           </div>
-          <p className="text-sm text-ink">Sprint 12 - 33 cards - 4 blocked</p>
+          <p className="text-sm text-ink">Sprint 12 - 38 cards - 5 awaiting action/evidence</p>
         </div>
         <div className="overflow-x-hidden pb-sm">
-          <div className="grid grid-cols-1 gap-md tablet-l:grid-cols-2 desktop:grid-cols-6">
+          <div className="grid grid-cols-1 gap-md tablet-l:grid-cols-2 desktop:grid-cols-7">
             {boardLanes.map((lane) => (
               <BoardLane key={lane.title} lane={lane} />
             ))}

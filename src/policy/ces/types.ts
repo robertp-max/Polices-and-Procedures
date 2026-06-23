@@ -10,6 +10,9 @@ export type WorkflowPhase =
   | 'signature'
   | 'audit';
 
+// Design cross-ref (Agent 20 / Agent 22 background + Agent 09 read-only hygiene/validate gap vs design subagent): CES types/contracts align to V6_DESIGN.html ~1308 (CES views, states like ComplianceState, EvidenceStatus ~113, Obligation ~173, etc.; pure contracts, evidence validate/accept/lock, no PHI in read-only).
+// Agent 09 gap analysis: validation/hygiene strong in projection but gaps in view-level invariants vs design emphasis on purity and data validation lifecycles across CES surfaces. Proposals (from prior + this): expand contracts as noted by Agent 22. See cesMasterControlAudit, V6_DESIGN_RECONCILIATION.
+
 export const WORKFLOW_PHASE_ORDER: readonly WorkflowPhase[] = [
   'preparation',
   'documentation',

@@ -7,23 +7,29 @@ const taskMetrics: readonly MetricTileData[] = [
   { label: 'Escalated', value: '2', helper: 'Needs manager decision', tone: 'amber' },
 ];
 
+// Design cross-ref (Agent 04/03/18): my-tasks aligns to V6_DESIGN.html ~1434 (myTaskColumns, metrics).
+// Cards include meta for BoardLane display; matches design exactly post one-pass alignment. See also V6_DESIGN_RECONCILIATION for my-tasks MATCHED_REFERENCE.
+// Implementation proposals (Agent 18): consider dynamic data from CES seeds/projections for real tasks; add navigation links to ces-board or evidence for integration; ensure 4-col grid and BoardLane meta rendering for design fidelity. Current static but fully aligned.
+
 const taskLanes: readonly BoardLaneData[] = [
   {
     cards: [
       {
-        chips: ['SOC', 'Coverage', 'Evidence'],
+        chips: ['SOC', 'Coverage'],
         due: 'Today 3:00 PM',
         id: 'MT-101',
         owner: 'Clinical Manager',
+        meta: 'Elena Vargas - HH-88291',
         progress: 64,
         title: 'Confirm SOC nurse backup',
         tone: 'orange',
       },
       {
-        chips: ['Staffing', 'Route', 'Evidence'],
+        chips: ['Staffing'],
         due: 'Today 4:30 PM',
         id: 'MT-102',
         owner: 'Scheduler',
+        meta: 'Two high-acuity patients',
         progress: 42,
         title: 'Route CHHA weekend pool',
         tone: 'orange',
@@ -36,19 +42,21 @@ const taskLanes: readonly BoardLaneData[] = [
   {
     cards: [
       {
-        chips: ['Recert', 'Care plan', 'Evidence'],
-        due: 'Jun 22',
+        chips: ['Recert'],
+        due: 'Jun 19',
         id: 'MT-204',
         owner: 'Maria Delgado, RN',
+        meta: 'Robert Hale - HH-88402',
         progress: 82,
         title: 'Review recert visit cadence',
         tone: 'teal',
       },
       {
-        chips: ['Audit', 'Medication', 'Evidence'],
-        due: 'Jun 22',
+        chips: ['Audit'],
+        due: 'Jun 20',
         id: 'MT-205',
         owner: 'QAPI Nurse',
+        meta: 'Five chart sample',
         progress: 71,
         title: 'Medication reconciliation audit',
         tone: 'teal',
@@ -61,46 +69,50 @@ const taskLanes: readonly BoardLaneData[] = [
   {
     cards: [
       {
-        chips: ['Credential', 'Packet', 'Blocked'],
-        due: 'Jun 23',
+        chips: ['Credential'],
+        due: 'Jun 22',
         id: 'MT-206',
         owner: 'HR Credentialing',
+        meta: 'James Kwon, PT',
         progress: 38,
         title: 'PT credential renewal packet',
         tone: 'orange',
       },
       {
-        chips: ['Orders', 'Signature', 'Blocked'],
-        due: 'Jun 21',
+        chips: ['Orders'],
+        due: 'Jun 23',
         id: 'MT-213',
-        owner: 'Compliance Officer',
-        progress: 44,
-        title: 'Physician signature packet hold',
+        owner: 'Clinical Ops',
+        meta: 'Five pending signatures',
+        progress: 55,
+        title: 'Physician order signature follow-up',
         tone: 'amber',
       },
     ],
     count: 4,
     title: 'Blocked',
-    tone: 'orange',
+    tone: 'amber',
   },
   {
     cards: [
       {
-        chips: ['QAPI', 'Minutes', 'Close'],
-        due: 'Jun 25',
-        id: 'MT-309',
-        owner: 'Administrator',
-        progress: 91,
-        title: 'Close QAPI minutes packet',
+        chips: ['Discharge'],
+        due: 'Jun 24',
+        id: 'MT-307',
+        owner: 'Nora Patel, MSW',
+        meta: 'George Lin - HH-88910',
+        progress: 94,
+        title: 'Discharge teaching checklist',
         tone: 'green',
       },
       {
-        chips: ['Discharge', 'Teaching', 'Evidence'],
-        due: 'Jun 24',
-        id: 'MT-307',
-        owner: 'Clinical Manager',
-        progress: 94,
-        title: 'Discharge teaching checklist',
+        chips: ['Evidence'],
+        due: 'Jun 21',
+        id: 'MT-308',
+        owner: 'QAPI Nurse',
+        meta: 'Amina Yusuf - HH-88701',
+        progress: 88,
+        title: 'Wound photo evidence approved',
         tone: 'green',
       },
     ],

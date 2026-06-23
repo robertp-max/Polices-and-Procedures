@@ -5,6 +5,11 @@ import { Badge, Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
 
+// Design cross-ref (Agent 13 background): events-board vs V6_DESIGN.html ~508 (eventsBoardColumns) and ~1334 view.
+// Exact 4-col titles (Critical & Overdue / At Risk / Needs Attention / On Track), card fields (id/title/owner/domain/due/meta/chips/progress/tone/awaitingType/missing),
+// grid desktop:grid-cols-4, BoardLane rendering, sorting by due. Pragmatic counts (design uses 162 illustrative for Critical); full EVT-REV + shared items match design.
+// Proposals: dynamic from seeds/snapshot, use illustrative 162+ for demo mode, enhance filters to match design interactions. See also RepresentativeScreens events-board case, BoardLane, V3_CES_SeedData.
+
 interface EvidenceSignal {
   artifacts: string;
   due: string;
@@ -24,10 +29,10 @@ interface EventFilter {
 }
 
 const eventMetrics: readonly MetricTileData[] = [
-  { label: 'Critical events', value: '4', helper: 'Overdue or same-day risk', tone: 'orange' },
-  { label: 'At risk', value: '7', helper: 'Owner or readiness gaps', tone: 'amber' },
-  { label: 'Evidence ready', value: '12', helper: 'Artifacts attached', tone: 'teal' },
-  { label: 'Lock ready', value: '6', helper: 'Signature path clear', tone: 'green' },
+  { label: 'Critical & Overdue', value: '4', helper: 'Past due or high impact', tone: 'orange' },
+  { label: 'At Risk', value: '4', helper: 'Watch items', tone: 'amber' },
+  { label: 'Needs Attention', value: '12', helper: 'Active reviews', tone: 'teal' },
+  { label: 'On Track', value: '28', helper: 'Within SLA', tone: 'green' },
 ];
 
 const eventFilters: readonly EventFilter[] = [
@@ -112,137 +117,159 @@ const eventLanes: readonly BoardLaneData[] = [
   {
     cards: [
       {
-        chips: ['Missing evidence', '4 / 7 artifacts'],
-        due: 'Jun 20',
-        id: 'EVT-2406',
-        owner: 'QAPI Lead',
-        progress: 52,
-        title: 'QAPI governing body packet needs source minutes',
-        tone: 'orange',
-      },
-      {
-        chips: ['Signature gap', 'Administrator'],
-        due: 'Jun 20',
-        id: 'EVT-2408',
-        owner: 'Administrator',
-        progress: 46,
-        title: 'Incident trend review missing final approver',
-        tone: 'orange',
-      },
-      {
-        chips: ['Owner gap', 'Policy council'],
-        due: 'Jun 21',
-        id: 'EVT-2410',
+        chips: ['Incident', 'CAPA'],
+        due: 'Jun 19',
+        id: 'EVT-REV-03',
         owner: 'Compliance Officer',
-        progress: 39,
-        title: 'Surveyor-request evidence binder escalation',
+        domain: 'Compliance / Incident Mgmt',
+        progress: 55,
+        title: 'Incident / Adverse Event Review',
         tone: 'orange',
+        meta: 'Root cause analysis + corrective action evidence',
+        awaitingType: 'action',
+        missing: 'RCA sign-off',
+      },
+      {
+        chips: ['OIG', 'SAM', 'HR-TA-003'],
+        due: 'Jun 25',
+        id: 'EVT-MO-OIG',
+        owner: 'Compliance Officer',
+        progress: 40,
+        title: 'Monthly OIG / SAM Exclusion Check',
+        tone: 'orange',
+      },
+      {
+        chips: ['Infection', 'Action'],
+        due: 'Jun 18',
+        id: 'EVT-REV-02',
+        owner: 'Clinical Manager',
+        domain: 'Clinical',
+        progress: 42,
+        title: 'Q1 Infection Control Review',
+        tone: 'amber',
+        meta: 'Surveillance log, hand hygiene trends, PPE compliance',
+        awaitingType: 'evidence',
+        missing: 'log upload',
+      },
+      {
+        chips: ['Grievance', 'Evidence'],
+        due: 'Jun 22',
+        id: 'EVT-REV-04',
+        owner: 'Risk Manager',
+        domain: 'Risk',
+        progress: 28,
+        title: 'Complaint / Grievance Investigation',
+        tone: 'amber',
+        meta: 'Investigation notes, resolution evidence, follow-up',
+        awaitingType: 'evidence',
+        missing: '3 docs',
       },
     ],
     count: 4,
-    title: 'Critical overdue',
+    title: 'Critical & Overdue',
     tone: 'orange',
   },
   {
     cards: [
       {
-        chips: ['Pending review', '5 / 6 artifacts'],
+        chips: ['Audit', 'Documentation'],
+        due: 'Jun 23',
+        id: 'EVT-DA-01',
+        owner: 'QAPI Lead',
+        domain: 'QAPI / Documentation',
+        progress: 65,
+        title: 'Documentation Alignment Audit',
+        tone: 'amber',
+        meta: 'Cross-policy documentation vs regulatory alignment',
+      },
+      {
+        chips: ['QAPI', 'Evidence'],
         due: 'Jun 21',
-        id: 'EVT-2411',
-        owner: 'Clinical Manager',
-        progress: 68,
-        title: 'High-risk patient recertification review',
+        id: 'EVT-REV-01',
+        owner: 'QAPI Lead',
+        domain: 'QAPI',
+        progress: 65,
+        title: 'Q2 QAPI Review',
         tone: 'amber',
+        meta: 'Quarterly indicators, adverse events summary, CAPA tracker',
+        awaitingType: 'evidence',
+        missing: '2 artifacts',
       },
       {
-        chips: ['Attendees', 'DON'],
+        chips: ['Visit', 'CL-VN-010'],
         due: 'Jun 22',
-        id: 'EVT-2416',
-        owner: 'Director of Nursing',
-        progress: 61,
-        title: 'Clinical record audit readout needs attendee lock',
-        tone: 'amber',
+        id: 'EVT-VIS-DOC',
+        owner: 'QAPI Nurse',
+        progress: 71,
+        title: 'Visit Documentation Audit',
+        tone: 'teal',
       },
       {
-        chips: ['Training', 'Roster delta'],
-        due: 'Jun 22',
-        id: 'EVT-2418',
-        owner: 'HR Coordinator',
-        progress: 72,
-        title: 'Annual competency roster reconciliation',
+        chips: ['Audit', 'Action'],
+        due: 'Jun 20',
+        id: 'EVT-REV-05',
+        owner: 'QAPI Nurse',
+        domain: 'QAPI',
+        progress: 71,
+        title: 'Medication Reconciliation Audit Review',
         tone: 'amber',
+        meta: 'Five chart sample + exception findings',
+        awaitingType: 'action',
+        missing: 'DON review',
       },
     ],
-    count: 7,
-    title: 'At risk',
+    count: 4,
+    title: 'At Risk',
     tone: 'amber',
   },
   {
     cards: [
       {
-        chips: ['Validated', '8 / 8 artifacts'],
-        due: 'Jun 24',
-        id: 'EVT-2420',
-        owner: 'Administrator',
-        progress: 88,
-        title: 'Emergency drill after-action review',
-        tone: 'teal',
-      },
-      {
-        chips: ['Uploaded', 'Clinical'],
-        due: 'Jun 24',
-        id: 'EVT-2424',
+        chips: ['POC', 'CL-CA-001'],
+        due: 'Jun 21',
+        id: 'EVT-POC-AUD',
         owner: 'Clinical Manager',
-        progress: 84,
-        title: 'Medication reconciliation audit packet',
+        progress: 82,
+        title: 'Plan of Care Audit',
         tone: 'teal',
       },
       {
-        chips: ['Ready', 'Policy refs'],
-        due: 'Jun 25',
-        id: 'EVT-2427',
-        owner: 'Policy Admin',
-        progress: 79,
-        title: 'Patient-rights annual attestation review',
+        chips: ['OASIS', 'CL-OA-101'],
+        due: 'Jun 19',
+        id: 'EVT-OAS-ACC',
+        owner: 'QA Analyst',
+        progress: 55,
+        title: 'OASIS Accuracy Audit',
         tone: 'teal',
       },
     ],
     count: 12,
-    title: 'Evidence ready',
+    title: 'Needs Attention',
     tone: 'teal',
   },
   {
     cards: [
       {
-        chips: ['Signed', '6 / 6 artifacts'],
-        due: 'Jun 25',
-        id: 'EVT-2434',
-        owner: 'Governing Body',
-        progress: 96,
-        title: 'Final policy packet lock',
-        tone: 'green',
-      },
-      {
-        chips: ['Certified', 'Hash chain'],
-        due: 'Jun 26',
-        id: 'EVT-2438',
-        owner: 'Compliance Officer',
-        progress: 100,
-        title: 'Personnel file completeness evidence set',
-        tone: 'green',
-      },
-      {
-        chips: ['Locked', 'Survey export'],
-        due: 'Jun 26',
-        id: 'EVT-2441',
+        chips: ['Ready', 'Evidence'],
+        due: 'May 24',
+        id: 'CEU-1241',
         owner: 'Systems',
-        progress: 94,
-        title: 'Survey packet export verification',
+        progress: 88,
+        title: 'Emergency drill after-action report',
+        tone: 'green',
+      },
+      {
+        chips: ['Certified'],
+        due: 'May 8',
+        id: 'CEU-1240',
+        owner: 'Accounting',
+        progress: 100,
+        title: 'Personnel file completeness audit - Q1 new hires',
         tone: 'green',
       },
     ],
-    count: 6,
-    title: 'Lock ready',
+    count: 28,
+    title: 'On Track',
     tone: 'green',
   },
 ];
@@ -303,9 +330,10 @@ export function EventsBoardScreen() {
               })}
             </div>
             <div className="flex flex-wrap gap-sm">
-              <ToneTag tone="orange">4 critical</ToneTag>
-              <ToneTag tone="amber">7 at risk</ToneTag>
-              <ToneTag tone="green">6 lock ready</ToneTag>
+              <ToneTag tone="orange">4 Critical &amp; Overdue</ToneTag>
+              <ToneTag tone="amber">4 At Risk</ToneTag>
+              <ToneTag tone="teal">12 Needs Attention</ToneTag>
+              <ToneTag tone="green">28 On Track</ToneTag>
             </div>
           </div>
         )}

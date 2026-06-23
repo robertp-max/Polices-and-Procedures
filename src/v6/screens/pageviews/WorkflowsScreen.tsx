@@ -201,6 +201,9 @@ const workflowCards: readonly SurfaceCardData[] = [
 const allDomains = ['Governance', 'Compliance', 'Human Resources', 'Risk Management', 'Clinical Ops'] as const;
 const allRisks = ['High', 'Medium', 'Low'] as const;
 
+// Design cross-ref (Agent 04/14): Workflows library and swimlane align to V6_DESIGN.html ~1346 (workflowRecords, metrics, cards) and ~1361 (workflowSwimlaneColumns).
+// Current data matches design records; swimlane is dynamic but covers intake/evidence/approval/lock per design. See also V6_DESIGN_RECONCILIATION for workflows MATCHED_REFERENCE.
+
 export { workflowRows, getWorkflowDetail };
 
 export default function WorkflowsScreen() {

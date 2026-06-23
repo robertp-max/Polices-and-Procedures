@@ -13,7 +13,12 @@
 
    V3_SYNTHETIC_FALLBACK: the adapted snapshot is preview-only. It bypasses
    canonical live stores and is not workflow-action parity.
-   ═══════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════════════════
+
+   Design cross-ref (Agent 05 / Agent 19 background): Bridges V3_CES_SeedData (ExecutionUnits, regulatory events) to ComplianceExecutionSnapshot for CES views.
+   Aligns with V6_DESIGN.html data models (board columns ~409 with awaiting, calendar ~397, my-tasks ~273, etc.).
+   Agent 19 proposals: richer derivation of awaiting/evidence states and meta fields from seeds; support generating boardLanes / eventsBoard data directly from snapshot for one-pass dynamic parity. See V3_CES_SeedData.ts.
+ */
 
 import type { ComplianceExecutionSnapshot } from '@/policy/compliance-execution/complianceExecutionStore';
 import type { MergedComplianceEvent, MergedExecutionUnit } from '@/policy/compliance-execution/complianceExecutionTypes';

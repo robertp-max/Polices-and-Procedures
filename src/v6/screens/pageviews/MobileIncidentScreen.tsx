@@ -3,36 +3,39 @@ import { MetricGrid, SurfaceCard, type MetricTileData, type SurfaceCardData } fr
 import { FormField, Input, Textarea, ToneBadge } from '../../primitives';
 
 const metrics = [
-  { label: 'Priority', value: 'High', helper: '24-hour sweep lock', tone: 'orange' },
-  { label: 'Incident Type', value: 'Exposure', helper: 'OSHA control check', tone: 'orange' },
-  { label: 'Evidence', value: '3', helper: 'Files expected', tone: 'teal' },
-  { label: 'Owner', value: 'HR Admin', helper: 'Coordinator review', tone: 'teal' },
+  { label: 'Open task', value: 'INC-1044', helper: 'Field incident workflow', tone: 'orange' },
+  { label: 'Evidence', value: '3/5', helper: 'Photos and notes attached', tone: 'teal' },
+  { label: 'Escalation', value: 'Active', helper: 'Supervisor notified', tone: 'orange' },
+  { label: 'Packet state', value: 'Draft', helper: 'Not survey-ready', tone: 'amber' },
 ] satisfies readonly MetricTileData[];
+
+// Design cross-ref (Agent 04/07): mobile-incident aligns to V6_DESIGN.html ~1423 (mobileIncidentCards, metrics).
+// Title, description, cards, and metrics now match design prototype exactly. See also V6_DESIGN_RECONCILIATION for mobile-incident MATCHED_REFERENCE.
 
 const incidentCards = [
   {
-    body: 'Field-reported exposure event needs source notes, witness context, and immediate safety measures before packet lock.',
+    body: 'Field user can capture event time, location, patient impact, and immediate action from mobile.',
     icon: AlertCircle,
-    progress: 40,
+    progress: 58,
     status: 'review-required',
     title: 'Incident intake',
     tone: 'orange',
   },
   {
-    body: 'Attach exposure log, witness attestation, route note, and supervisor acknowledgment before administrator review.',
+    body: 'Photos, witness notes, and supervisor attestation attach directly to the workflow instance.',
     icon: Upload,
-    progress: 58,
+    progress: 72,
     status: 'pending',
     title: 'Evidence capture',
     tone: 'teal',
   },
   {
-    body: 'Coordinator escalation opens after evidence is uploaded and the OSHA control checklist is acknowledged.',
+    body: 'Administrator and clinical manager are notified before closure or survey packet inclusion.',
     icon: ShieldCheck,
-    progress: 72,
+    progress: 66,
     status: 'ready',
-    title: 'Escalation posture',
-    tone: 'green',
+    title: 'Escalation path',
+    tone: 'teal',
   },
 ] satisfies readonly SurfaceCardData[];
 
@@ -53,6 +56,10 @@ export function MobileIncidentScreen() {
       data-route="/calendar/event/:eventId/task/:taskId"
       data-template="detail"
     >
+      <div>
+        <h1 className="text-h2 font-medium text-ink">Mobile Incident Execution - Field Intake</h1>
+        <p className="mt-xs text-sm text-muted">Mobile-first action surface for event context, task proof, signature, evidence capture, and approval.</p>
+      </div>
       <MetricGrid metrics={metrics} />
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,1fr)_340px]">

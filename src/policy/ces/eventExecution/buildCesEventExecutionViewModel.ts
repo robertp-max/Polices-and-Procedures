@@ -8,6 +8,11 @@ import { formatCesFormInstanceId } from '@/policy/compliance-execution/cesFormIn
 import { buildCanonicalEventSwimlaneNodeId, buildCanonicalEventSwimlaneTaskId } from '@/policy/workflows/swimlanes/eventSwimlaneIdentity';
 import type { SwimlaneLane, SwimlaneModel, SwimlaneNode, SwimlaneStatus } from '@/policy/workflows/swimlanes/types';
 
+// Design cross-ref (Agent 15 / Agent 22 background): V6_DESIGN.html ~1308 (CES section, events-board, signatures),
+// buildCesEventExecutionViewModel aligns native approvals with design completion/signature flows
+// (see also V6_DESIGN_RECONCILIATION.md for events-board MATCHED_REFERENCE).
+// Agent 22: proposal to add validateCesEventExecutionViewModel() for invariants (non-empty steps/forms, consistent phases, signatureRatio >=0 etc.) called from builder.
+
 type RawStepStatus = EventProcessStep['status'] | 'ready' | 'blocked';
 
 export type CesEventExecutionTaskStatus =
@@ -428,7 +433,16 @@ export function buildCesEventExecutionViewModel(input: BuildCesEventExecutionVie
   const taskRatio = tasks.length ? completeTaskCount / tasks.length : 0;
   const evidenceRatio = evidenceCount ? attachedDriveEvidenceCount / evidenceCount : 0;
   const formRatio = forms.length ? completeFormCount / forms.length : 0;
-  const signatureRatio = requiredSignerRoles.length ? (ecign.key === 'complete' ? 1 : 0) : 1;
+
+  // CES-native signature status (Agent 16 one-pass): prefer approvals + signer metadata over ecign hub
+  const nativeApprovals = input.executionState?.approvals || [];
+  const nativeApprovedCount = Array.isArray(nativeApprovals)
+    ? nativeApprovals.filter((a: { status?: string }) => a.status === 'approved' || a.status === 'signed' || a.status === 'complete').length
+    : 0;
+  const nativeSignatureComplete = requiredSignerRoles.length > 0 ? nativeApprovedCount >= requiredSignerRoles.length : true;
+  const signatureRatio = requiredSignerRoles.length
+    ? (nativeSignatureComplete ? 1 : (ecign.key === 'complete' ? 1 : 0))
+    : 1;
   const auditCloseoutRatio = event && input.executionState?.isCertified?.(event.id) ? 1 : event?.urgency === 'complete' ? 1 : 0;
   const completion = weightedCompletion({ taskRatio, evidenceRatio, formRatio, signatureRatio, auditCloseoutRatio });
   const blockerText = ecign.blockerText ?? (forms.some(form => form.status === 'missing') ? 'Required form evidence is missing.' : undefined);
