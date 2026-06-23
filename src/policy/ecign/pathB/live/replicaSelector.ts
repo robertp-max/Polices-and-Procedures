@@ -12,6 +12,7 @@ import { FakeReplicaPublisher } from '../replicas/fakeReplicaPublisher';
 import type { ReplicaPublisher } from '../replicas/replicaPublisher';
 import { assessLiveReadiness, type LiveReadinessIssue } from './liveReadiness';
 import type { SandboxConfig } from './sandboxConfig';
+import { DriveSandboxPublisher, type AsyncReplicaPublisher, type DriveClient } from './driveSandboxPublisher';
 
 export class LiveSandboxNotReadyError extends Error {
   readonly issues: readonly LiveReadinessIssue[];
@@ -52,4 +53,24 @@ export function selectReplicaPublisher(
   const readiness = assessLiveReadiness(cfg);
   if (!readiness.ready) throw new LiveSandboxNotReadyError(readiness.issues);
   throw new LiveAdapterNotImplementedError(kind);
+}
+
+export interface SelectLiveDriveDeps {
+  /** Injected Drive transport (fake in tests; real `createLiveDriveClient` in the manual proof). */
+  readonly client: DriveClient;
+}
+
+/**
+ * Live-sandbox Drive publisher (async). Requires `live-sandbox` mode + Gate-B
+ * readiness + a sandbox folder id + an injected `DriveClient`; otherwise throws
+ * `LiveSandboxNotReadyError`. The Evidence Center live adapter remains gated to a
+ * later subphase. (Drive live is async, so it is intentionally NOT returned by the
+ * synchronous `selectReplicaPublisher`, which keeps fake as the default.)
+ */
+export function selectLiveDrivePublisher(cfg: SandboxConfig, deps: SelectLiveDriveDeps): AsyncReplicaPublisher {
+  if (cfg.mode !== 'live-sandbox') throw new LiveSandboxNotReadyError(['sandbox_disabled']);
+  const readiness = assessLiveReadiness(cfg);
+  if (!readiness.ready) throw new LiveSandboxNotReadyError(readiness.issues);
+  if (cfg.sandboxDriveFolderId === undefined) throw new LiveSandboxNotReadyError(['missing_sandbox_folder']);
+  return new DriveSandboxPublisher({ client: deps.client, sandboxFolderId: cfg.sandboxDriveFolderId });
 }
