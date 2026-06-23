@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from 'react';
 // DARK MODE DEFECT FIXES (Agent): scanned swimlanes, hover cards (TaskHoverPreview), modals (ZoomCard/LevelTwo/GlobalModalShell), calendar (TimelineMonth + CesEventInteraction hover/cards).
 // Fixed: bg bleed (solid darks -> color-mix glass), low contrast (grays/titles -> isLight branches + v3 primary), title text, overflow (existing clamps + auto).
 // Preserved glassmorphism (translucent + blur). Used useIsLight + isLight props everywhere targeted. No broad changes.
@@ -310,15 +310,47 @@ export function SwimlaneExecutionMap({ model, initialTaskId }: { model: Swimlane
   const isFullyZoomed = zoomState.level === 'step' || zoomState.level === 'form' || zoomState.level === 'evidence' || zoomState.level === 'signature';
   const targetNode = activeNode ?? (lastNodeId ? nodeById.get(lastNodeId) ?? null : null);
   const targetCenter = targetNode ? nodeCenter(model, targetNode) : null;
+  const [viewportScroll, setViewportScroll] = useState({
+    scrollLeft: 0,
+    scrollTop: 0,
+    clientWidth: 1200,
+    clientHeight: 800,
+    canvasLeft: 0,
+    canvasTop: 0
+  });
+
+  useLayoutEffect(() => {
+    const canvas = canvasRef.current;
+    const viewport = canvas?.parentElement;
+    if (!viewport || !canvas) return;
+
+    const handleMeasure = () => {
+      const cr = canvas.getBoundingClientRect();
+      setViewportScroll({
+        scrollLeft: viewport.scrollLeft,
+        scrollTop: viewport.scrollTop,
+        clientWidth: viewport.clientWidth,
+        clientHeight: viewport.clientHeight,
+        canvasLeft: cr.left,
+        canvasTop: cr.top
+      });
+    };
+
+    handleMeasure();
+
+    viewport.addEventListener('scroll', handleMeasure);
+    window.addEventListener('resize', handleMeasure);
+    return () => {
+      viewport.removeEventListener('scroll', handleMeasure);
+      window.removeEventListener('resize', handleMeasure);
+    };
+  }, [targetCenter, zoomState.level, previewNodeId]);
+
   const previewScreenPos = (() => {
-    if (!previewNode || !canvasRef.current) return null;
+    if (!previewNode) return null;
     const c = nodeCenter(model, previewNode);
-    const parent = canvasRef.current.parentElement;
-    const scrollL = parent?.scrollLeft ?? 0;
-    const scrollT = parent?.scrollTop ?? 0;
-    const cr = canvasRef.current.getBoundingClientRect();
-    // node's center position in window viewport coords (accounts for scroll + canvas offset); enables true viewport flip
-    return { x: cr.left + (c.x - scrollL), y: cr.top + (c.y - scrollT) };
+    const { scrollLeft, scrollTop, canvasLeft, canvasTop } = viewportScroll;
+    return { x: canvasLeft + (c.x - scrollLeft), y: canvasTop + (c.y - scrollTop) };
   })();
   const formCount = new Set(model.nodes.flatMap(node => node.requiredForms)).size;
   const evidenceCount = new Set(model.nodes.flatMap(node => node.requiredEvidence)).size;
@@ -326,11 +358,9 @@ export function SwimlaneExecutionMap({ model, initialTaskId }: { model: Swimlane
   const { workspaceRect, captureWorkspaceRect } = useSwimlaneModalPosition(workspaceRef, isFullyZoomed);
   const canvasTransform = (() => {
     if (!targetCenter || zoomState.level === 'overview') return 'translate3d(0px, 0px, 0px) scale(1)';
-    const viewport = canvasRef.current?.parentElement;
-    const viewportW = viewport?.clientWidth ?? (typeof window === 'undefined' ? 1200 : window.innerWidth);
-    const viewportH = viewport?.clientHeight ?? (typeof window === 'undefined' ? 800 : window.innerHeight);
-    const translateX = (viewport?.scrollLeft ?? 0) + viewportW / 2 - targetCenter.x;
-    const translateY = (viewport?.scrollTop ?? 0) + viewportH / 2 - targetCenter.y;
+    const { scrollLeft, scrollTop, clientWidth, clientHeight } = viewportScroll;
+    const translateX = scrollLeft + clientWidth / 2 - targetCenter.x;
+    const translateY = scrollTop + clientHeight / 2 - targetCenter.y;
     return `translate3d(${translateX}px, ${translateY}px, 0px) scale(${isFullyZoomed ? 2.8 : 1})`;
   })();
 

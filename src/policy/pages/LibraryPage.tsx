@@ -471,7 +471,7 @@ export function LibraryPage() {
               {DOMAINS.map(d => <option key={d.code} value={d.code}>{d.code}</option>)}
             </select>
             {/* keep other ACHC selects for functionality */}
-            <select value={achcMappingFilter} onChange={e => _setAchcMappingFilter(e.target.value as any)} className="rounded bg-transparent px-2 py-1 text-xs">
+            <select value={achcMappingFilter} onChange={e => _setAchcMappingFilter(e.target.value as 'ALL' | AchcMappingType)} className="rounded bg-transparent px-2 py-1 text-xs">
               <option value="ALL">All Mappings</option>
               <option value="DIRECT">DIRECT</option>
               <option value="PARTIAL">PARTIAL</option>

@@ -29,7 +29,7 @@ export function UserGroupsPage() {
         {/* Direct MetricTile (no BorderGlow wrapper) per ref 03-admin-groups.png: uniform direct tone pastel bg #F7FEFF etc, 10px uppercase tracking-[0.18em] label, 3xl value, xs note, rounded-2xl p-4/5 shadow-soft min-h-[92px]. Preserve all live seeded values/UX. */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricTile label="Groups" value={USER_GROUPS.length} note="Seeded" tone="teal" />
-          <MetricTile label="Total Users" value={USER_GROUPS.reduce((s, g) => s + ((g as any).users ?? (g as any).userCount ?? 8), 0)} note="Assigned" tone="success" />
+          <MetricTile label="Total Users" value={USER_GROUPS.reduce((s, g) => s + (g.users ?? 8), 0)} note="Assigned" tone="success" />
           <MetricTile label="Total Perms" value={USER_GROUPS.reduce((s, g) => s + g.permissions.length, 0)} note="Across groups" tone="orange" />
           <MetricTile label="Avg Perms" value={Math.round(USER_GROUPS.reduce((s, g) => s + g.permissions.length, 0) / USER_GROUPS.length)} note="Per group" tone="muted" />
         </div>

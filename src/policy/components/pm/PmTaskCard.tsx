@@ -64,7 +64,7 @@ export function PmTaskCard({
   const dot = STATUS_COLOR[task.status];
   const chip = dueChip(task.due_date);
   const depCount = (task.depends_on ?? task.dependencies ?? []).length;
-  const ownerLabel = (task as any).assignee ?? (task as any).owner;
+  const ownerLabel = task.assignee ?? task.owner;
 
   const sourceLabel = isPersonalTask(task) ? 'Personal' : 'CES';
   const sourceColor = isPersonalTask(task)

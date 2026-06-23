@@ -927,10 +927,10 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
                 driveFileId: doc.driveFileId,
                 driveFolderId: doc.driveFolderId,
                 webViewLink: doc.webViewLink,
-                driveMimeType: (doc as any).driveMimeType,
-                driveFilename: (doc as any).driveFilename,
-                driveUploadedAt: (doc as any).driveUploadedAt,
-                driveUploadStatus: (doc as any).driveUploadStatus,
+                driveMimeType: doc.driveMimeType,
+                driveFilename: doc.driveFilename,
+                driveUploadedAt: doc.driveUploadedAt,
+                driveUploadStatus: doc.driveUploadStatus,
               });
             }
             return dup.id;
@@ -2321,7 +2321,7 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
 
         // Locked signed evidence (signed_package or signed_form_instance) proves form completion + signature
         // For production (non-demo) require real Drive metadata on signed artifacts.
-        const hasRealDriveMetadata = (item: any) => !!(item.driveFileId || item.driveUploadStatus === 'uploaded' || item.webViewLink);
+        const hasRealDriveMetadata = (item: EvidenceDoc) => !!(item.driveFileId || item.driveUploadStatus === 'uploaded' || item.webViewLink);
         const lockedSignedEvidence = usableEvidence.filter(
           item => item.status === 'EVIDENCE_LOCKED'
             && (item.artifactType === 'signed_package'

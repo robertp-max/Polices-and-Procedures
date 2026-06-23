@@ -1,4 +1,4 @@
-﻿/**
+/**
  * eCIgnWorkspace — full-screen, CI-App-branded electronic signing experience.
  *
  * Flow (strict, no skipping):
@@ -1975,7 +1975,7 @@ export function ECIgnWorkspace({
       formInstanceId: canonicalFormInstanceId,
       eventAliases: exec.eventInstanceIdsBySourceEventId[hhcEventId] ?? [],
     });
-    const priorWithDrive = priorCanonicalsForDrive.find((d: any) => d.driveFileId && (d.driveUploadStatus || 'uploaded') !== 'failed');
+    const priorWithDrive = priorCanonicalsForDrive.find((d) => d.driveFileId && (d.driveUploadStatus || 'uploaded') !== 'failed') as { id: string; driveFileId?: string; driveUploadStatus?: string; webViewLink?: string; driveFolderId?: string } | undefined;
 
     // Proactive Drive/backend config check BEFORE creating the final canonical artifact (per requirements).
     // Local state remains temporary draft until real persistence succeeds.
@@ -2117,11 +2117,11 @@ export function ECIgnWorkspace({
       signedPackageArtifactId = priorWithDrive.id;
       drivePublishResult = {
         evidenceId: priorWithDrive.id,
-        driveFileId: priorWithDrive.driveFileId,
+        driveFileId: priorWithDrive.driveFileId!,
         driveFileUrl: priorWithDrive.webViewLink || '',
         driveFolderId: priorWithDrive.driveFolderId,
         calendarAttachmentStatus: 'attached',
-      } as any;
+      } as Awaited<ReturnType<typeof EvidenceApi.publishSignedArtifact>>;
     }
 
     if (!signedPackageArtifactId) {

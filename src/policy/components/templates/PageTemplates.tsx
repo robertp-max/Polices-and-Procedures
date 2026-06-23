@@ -57,6 +57,7 @@ import type { PageRegistryEntry, ComponentId } from '@/policy/security/identity/
 
 type Tone = 'neutral' | 'success' | 'warning' | 'danger' | 'info';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface DrawerState<T = any> {
   open: boolean;
   data: T | null;
@@ -64,7 +65,8 @@ interface DrawerState<T = any> {
   eyebrow?: string;
 }
 
-function useDrawer<T>() {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function useDrawer<T = any>() {
   const [state, setState] = useState<DrawerState<T>>({ open: false, data: null });
   const open = useCallback((data: T, meta?: { title?: string; eyebrow?: string }) => {
     setState({ open: true, data, title: meta?.title, eyebrow: meta?.eyebrow });
@@ -139,7 +141,7 @@ export interface DashboardTemplateProps {
 }
 
 export function DashboardTemplate({ title = 'Dashboard', eyebrow = 'COMMAND CENTER' }: DashboardTemplateProps) {
-  const drawer = useDrawer<any>();
+  const drawer = useDrawer();
   const [activityFilter, setActivityFilter] = useState<'all' | 'alerts' | 'complete'>('all');
 
   // Hero readiness bar data (generic)
@@ -177,9 +179,9 @@ export function DashboardTemplate({ title = 'Dashboard', eyebrow = 'COMMAND CENT
     return activities.filter(a => (activityFilter === 'alerts' ? a.status === 'alert' : a.status === 'complete'));
   }, [activityFilter]);
 
-  const openKpi = (kpi: any) => drawer.open(kpi, { title: kpi.label, eyebrow: 'KPI DETAIL' });
-  const openQuick = (qa: any) => drawer.open(qa, { title: qa.label, eyebrow: 'QUICK ACTION' });
-  const openActivity = (act: any) => drawer.open(act, { title: 'Activity Detail', eyebrow: act.time.toUpperCase() });
+  const openKpi = (kpi: { label: string }) => drawer.open(kpi, { title: kpi.label, eyebrow: 'KPI DETAIL' });
+  const openQuick = (qa: { label: string }) => drawer.open(qa, { title: qa.label, eyebrow: 'QUICK ACTION' });
+  const openActivity = (act: { time: string }) => drawer.open(act, { title: 'Activity Detail', eyebrow: act.time.toUpperCase() });
 
   return (
     <div className="space-y-8">
@@ -384,7 +386,7 @@ export function CalendarTemplate(props: BoardCalendarTemplateProps) {
 }
 
 function BoardCalendarTemplate({ title = 'Board', mode = 'board' }: BoardCalendarTemplateProps) {
-  const drawer = useDrawer<any>();
+  const drawer = useDrawer();
   const [view, setView] = useState<'board' | 'calendar'>(mode);
   const [items, setItems] = useState(() => [
     { id: 't1', title: 'Wound Care Re-assessment', status: 'in_progress', owner: 'A. Okonkwo, RN', due: 'Jun 18', priority: 'high' },
@@ -405,7 +407,7 @@ function BoardCalendarTemplate({ title = 'Board', mode = 'board' }: BoardCalenda
   const filteredByCol = (colKey: string) => items.filter(i => i.status === colKey);
 
   // Mock drag (HTML5). Updates local state — delightful snap feedback
-  const handleDragStart = (e: React.DragEvent, item: any) => {
+  const handleDragStart = (e: React.DragEvent, item: { id: string }) => {
     e.dataTransfer.setData('text/plain', item.id);
   };
   const handleDrop = (e: React.DragEvent, newStatus: string) => {
@@ -417,13 +419,13 @@ function BoardCalendarTemplate({ title = 'Board', mode = 'board' }: BoardCalenda
 
   // Calendar mock — simple 7-col grid for current "week"
   const weekDays = ['Mon 16', 'Tue 17', 'Wed 18', 'Thu 19', 'Fri 20', 'Sat 21', 'Sun 22'];
-  const eventsByDay: Record<number, any[]> = {
+  const eventsByDay: Record<number, { id: string; title: string }[]> = {
     1: [{ id: 't3', title: 'Sign-off due' }],
     2: [{ id: 't1', title: 'Re-assessment' }, { id: 't6', title: 'New admission' }],
     4: [{ id: 't2', title: 'OASIS Review' }],
   };
 
-  const openItem = (item: any) => drawer.open(item, { title: item.title, eyebrow: 'TASK / EVENT' });
+  const openItem = (item: { title: string }) => drawer.open(item, { title: item.title, eyebrow: 'TASK / EVENT' });
 
   return (
     <div>
@@ -526,7 +528,7 @@ export interface EvidenceTemplateProps {
 }
 
 export function EvidenceTemplate({ title = 'Evidence Center' }: EvidenceTemplateProps) {
-  const drawer = useDrawer<any>();
+  const drawer = useDrawer();
   const [search, setSearch] = useState('');
   const [activeTypes, setActiveTypes] = useState<string[]>(['All']);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
@@ -558,7 +560,7 @@ export function EvidenceTemplate({ title = 'Evidence Center' }: EvidenceTemplate
     });
   };
 
-  const openEvidence = (ev: any) => drawer.open(ev, { title: ev.title, eyebrow: ev.id });
+  const openEvidence = (ev: { id: string; title: string }) => drawer.open(ev, { title: ev.title, eyebrow: ev.id });
 
   return (
     <div>
@@ -653,7 +655,7 @@ export interface ProfileDirectoryTemplateProps {
 }
 
 export function ProfileDirectoryTemplate({ title = 'Profiles', persona = 'clinician' }: ProfileDirectoryTemplateProps) {
-  const drawer = useDrawer<any>();
+  const drawer = useDrawer();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'review'>('all');
 
@@ -671,7 +673,7 @@ export function ProfileDirectoryTemplate({ title = 'Profiles', persona = 'clinic
     return match && statusOk;
   });
 
-  const openProfile = (p: any) => drawer.open(p, { title: p.name, eyebrow: 'PROFILE' });
+  const openProfile = (p: { name: string }) => drawer.open(p, { title: p.name, eyebrow: 'PROFILE' });
 
   return (
     <div>
@@ -679,7 +681,7 @@ export function ProfileDirectoryTemplate({ title = 'Profiles', persona = 'clinic
 
       <div className="flex flex-wrap gap-2 mb-4">
         <SearchField value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, role, area..." />
-        {['all', 'active', 'review'].map(s => <FilterChip key={s} active={statusFilter === s} onClick={() => setStatusFilter(s as any)}>{s}</FilterChip>)}
+        {['all', 'active', 'review'].map(s => <FilterChip key={s} active={statusFilter === s} onClick={() => setStatusFilter(s as 'all' | 'active' | 'review')}>{s}</FilterChip>)}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -707,7 +709,7 @@ export function ProfileDirectoryTemplate({ title = 'Profiles', persona = 'clinic
 }
 
 // Reusable clean profile detail block (no PHI)
-function ProfileDetailContent({ profile, onAction }: { profile: any; onAction?: () => void }) {
+function ProfileDetailContent({ profile, onAction }: { profile: { name: string; role: string; area: string; status: string; metric: string }; onAction?: () => void }) {
   return (
     <div className="space-y-6 py-1">
       <div className="flex items-center gap-4">
@@ -947,7 +949,7 @@ export function RegistryTableTemplate({ title = 'Registry', kind = 'pages' }: Re
             </DataGrid.HeaderRow>
           </DataGrid.Head>
           <DataGrid.Body>
-            {filtered.map((row: any) => (
+            {filtered.map((row) => (
               <DataGrid.Row key={row.pageId} onClick={() => drawer.open(row, { title: row.label, eyebrow: 'REGISTRY ENTRY' })} className="cursor-pointer hover:bg-[var(--v3-surface-subtle)]">
                 <DataGrid.Cell>{row.label}</DataGrid.Cell>
                 <DataGrid.Cell className="font-mono text-xs text-[var(--v3-text-tertiary)]">{row.pageId}</DataGrid.Cell>
@@ -981,7 +983,7 @@ export interface JourneyTemplateProps {
 }
 
 export function JourneyTemplate({ title = 'Onboarding Journey' }: JourneyTemplateProps) {
-  const drawer = useDrawer<any>();
+  const drawer = useDrawer();
   const [currentStep, setCurrentStep] = useState(2);
 
   const steps = ['Account Setup', 'Core Compliance', 'Role Training', 'Competency Sign-off', 'Go-Live'];

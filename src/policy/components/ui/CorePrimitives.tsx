@@ -686,7 +686,7 @@ export function SurfaceCard({
       className={classes}
       style={{
         padding: SURFACE_PADDING[padding],
-        ...(spotlightColor && { '--ci-spotlight-color': spotlightColor } as any),
+        ...(spotlightColor && { '--ci-spotlight-color': spotlightColor } as React.CSSProperties),
         ...style,
       }}
       onMouseMove={spotlight ? handleMouseMove : onMouseMove}
@@ -744,7 +744,7 @@ export function KpiCard({
       role="button"
       tabIndex={0}
       className={classes}
-      style={spotlightColor ? ({ '--ci-spotlight-color': spotlightColor } as any) : undefined}
+      style={spotlightColor ? ({ '--ci-spotlight-color': spotlightColor } as React.CSSProperties) : undefined}
       onMouseMove={handleMouseMove}
       onKeyDown={(e) => {
         if ((e.key === 'Enter' || e.key === ' ') && onReview) {

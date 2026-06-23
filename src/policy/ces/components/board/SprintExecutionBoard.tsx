@@ -54,7 +54,10 @@ export function SprintExecutionBoard() {
       const sourceForms = new Set(unit.sourceFormIds ?? []);
       const matched = eventTasks.find(task => task.task_id === unit.id)
         ?? eventTasks.find(task => task.task_id === unit.id.replace(/^ceu-/, ''))
-        ?? eventTasks.find((task: any) => 'step_id' in task && task.step_id && (unit.id.includes(task.step_id) || (task.step_id && unit.id.endsWith(task.step_id))))
+        ?? eventTasks.find(task => {
+          const stepId = (task as { step_id?: string }).step_id;
+          return stepId ? (unit.id.includes(stepId) || unit.id.endsWith(stepId)) : false;
+        })
         ?? eventTasks.find(task => task.form_refs?.some(formId => sourceForms.has(formId)))
         ?? eventTasks.find(task => (task.generated_form_instance_ids || []).some(f => (unit.sourceFormIds || []).includes(f)))
         ?? eventTasks.find(task => {

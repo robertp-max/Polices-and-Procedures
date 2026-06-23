@@ -736,8 +736,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   // Bridge global hotkey request
   useEffect(() => {
     const handler = () => setIsCommandOpen(true);
-    window.addEventListener('ci:open-command' as any, handler);
-    return () => window.removeEventListener('ci:open-command' as any, handler);
+    (window as EventTarget).addEventListener('ci:open-command', handler);
+    return () => (window as EventTarget).removeEventListener('ci:open-command', handler);
   }, []);
 
   // Keyboard support: Cmd/Ctrl + \ to toggle sidebar (bonus premium)

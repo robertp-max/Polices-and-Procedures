@@ -10,6 +10,7 @@ import { resolveCanonicalSignaturePath } from '@/policy/ecign/signaturePathResol
 import { getEventDisplayModel } from '@/policy/data/eventDisplayModel';
 import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
 import { getEventById } from './swimlaneRegistry';
+import type { RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 
 function unique(values: Array<string | undefined | null>): string[] {
   return Array.from(new Set(values.filter((value): value is string => Boolean(value?.trim()))));
@@ -26,7 +27,7 @@ function laneForRole(role: string, lanes: SwimlaneLane[]): SwimlaneLane {
   return lane;
 }
 
-function statusForStep(step: WorkflowStep, index: number, exec: any, liveEvent: any): SwimlaneStatus {
+function statusForStep(step: WorkflowStep, index: number, exec: ReturnType<typeof useRegulatoryExecutionStore.getState>, liveEvent: RegulatoryEvent | undefined): SwimlaneStatus {
   // For event mode use live store status if available
   if (liveEvent && exec.effectiveStepStatus) {
     const liveS = exec.effectiveStepStatus(liveEvent, `STEP-${String(step.order).padStart(2,'0')}`) || exec.effectiveStepStatus(liveEvent, String(step.order));

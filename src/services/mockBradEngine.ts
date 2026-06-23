@@ -619,7 +619,7 @@ export async function runBradQuery(query: string, options: RunBradQueryOptions =
   return buildNoMatchResponse();
 }
 
-function detectFieldStaffDistressForMock(normalized: string): { lead: string; docOffer: string; minimalCitations: any[] } | null {
+function detectFieldStaffDistressForMock(normalized: string): { lead: string; docOffer: string; minimalCitations: BradCitation[] } | null {
   if (/(groped|grabbed.*chest|touched my chest|sexually harassed|inappropriate touching|unwanted touch)/.test(normalized)) {
     return {
       lead: "I'm sorry that happened. Are you safe right now? Step away from the client and end the visit if you feel unsafe. If there is any immediate threat or you cannot leave safely, call 911. Once safe, notify your supervisor/DON/Administrator. Document only objective facts: what happened, time, location, who was present, and any witnesses. Do you feel safe right now?",

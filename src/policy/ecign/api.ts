@@ -15,7 +15,7 @@ const ENV = (import.meta as unknown as { env?: Record<string, string | boolean> 
 const REQUESTED_MODE: EcignMode = 'BACKEND_LIVE';
 const ALLOW_LIVE_FALLBACK = false; // hard disabled — no silent local fallback for signed evidence finalization
 
-let resolvedMode: EcignMode = REQUESTED_MODE;
+const resolvedMode: EcignMode = REQUESTED_MODE;
 
 function isDev(): boolean {
   return Boolean(ENV.DEV);
@@ -74,7 +74,7 @@ async function call<T>(path: string, init?: RequestInit, mfaToken?: string): Pro
   let res: Response;
   try {
     res = await fetch(`${BASE}${path}`, { ...init, headers: { ...headers, ...(init?.headers ?? {}) } });
-  } catch (error) {
+  } catch (_error) {
     throw normalizeUnavailableError(path);
   }
   const text = await res.text();

@@ -269,7 +269,7 @@ export function getCesHoverCardPosition(anchorRect: DOMRect, cardWidth = 460) {
   const viewportPadding = 12;
   const offset = 8;
   const preferredLeft = anchorRect.right + offset;
-  let left = preferredLeft + cardWidth <= (typeof window !== 'undefined' ? window.innerWidth : 1200) - viewportPadding
+  const left = preferredLeft + cardWidth <= (typeof window !== 'undefined' ? window.innerWidth : 1200) - viewportPadding
     ? preferredLeft
     : Math.max(viewportPadding, anchorRect.left - cardWidth - offset);
   const maxH = Math.max(200, (typeof window !== 'undefined' ? window.innerHeight : 800) - viewportPadding * 2);

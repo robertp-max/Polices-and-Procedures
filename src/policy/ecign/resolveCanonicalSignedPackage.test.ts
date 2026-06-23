@@ -91,7 +91,7 @@ describe('resolveCanonicalSignedPackages', () => {
   });
 
   it('canonical artifact with no Drive metadata requires pre-finalize evidenceHealth + publish (blocks until Drive config healthy)', () => {
-    const store: Record<string, any[]> = {
+    const store: Record<string, SignedPackageLike[]> = {
       [EVENT_ID]: [signedPackage({ id: 'EV-NODRIVE', driveFileId: undefined })],
     };
     const matches = resolveCanonicalSignedPackages(store, { eventId: EVENT_ID, formInstanceId: FORM_INSTANCE });
@@ -100,7 +100,7 @@ describe('resolveCanonicalSignedPackages', () => {
   });
 
   it('successful Drive upload persists metadata onto the same artifact (no duplicate created)', () => {
-    const store: Record<string, any[]> = {
+    const store: Record<string, SignedPackageLike[]> = {
       [EVENT_ID]: [{
         id: 'EV-WITHDRIVE',
         linkedFormInstanceId: FORM_INSTANCE,
@@ -119,7 +119,7 @@ describe('resolveCanonicalSignedPackages', () => {
   });
 
   it('artifact with existing driveFileId does not re-upload (idempotent)', () => {
-    const store: Record<string, any[]> = {
+    const store: Record<string, SignedPackageLike[]> = {
       [EVENT_ID]: [signedPackage({ id: 'EV-IDEMP', driveFileId: 'drive-existing' })],
     };
     const matches = resolveCanonicalSignedPackages(store, { eventId: EVENT_ID, formInstanceId: FORM_INSTANCE });
@@ -128,7 +128,7 @@ describe('resolveCanonicalSignedPackages', () => {
   });
 
   it('artifact without driveFileId is returned by resolver but pre-finalize health + finalDriveSuccess gate blocks (exact "Evidence finalization blocked" error)', () => {
-    const store: Record<string, any[]> = {
+    const store: Record<string, SignedPackageLike[]> = {
       [EVENT_ID]: [signedPackage({ id: 'EV-LOCAL', driveFileId: undefined, driveUploadStatus: undefined })],
     };
     const matches = resolveCanonicalSignedPackages(store, { eventId: EVENT_ID, formInstanceId: FORM_INSTANCE });

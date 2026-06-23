@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import {
@@ -453,9 +453,9 @@ export function QAWorkflow03SwimlanePage({ model, initialTaskId }: QAWorkflow03S
   const backRoute = isEventExecution ? '/calendar' : '/workflows/QA-WF-03';
   const backLabel = isEventExecution ? 'Back to Calendar' : 'Back to Workflow';
 
-  const liveNodes = model?.nodes ?? QA_WF_03_SWIMLANE_PROTOTYPE_DATA.nodes;
+  const liveNodes = (model?.nodes as unknown as SwimlaneNode[]) ?? QA_WF_03_SWIMLANE_PROTOTYPE_DATA.nodes;
   const nodeById = useMemo(
-    () => new Map(liveNodes.map((node: any) => [node.nodeId ?? node.id ?? node.taskId, node])),
+    () => new Map(liveNodes.map((node) => [node.nodeId ?? (node as { id?: string }).id ?? node.taskId, node])),
     [liveNodes],
   );
   const activeNode = zoomState.nodeId ? nodeById.get(zoomState.nodeId) ?? null : null;
@@ -475,13 +475,37 @@ export function QAWorkflow03SwimlanePage({ model, initialTaskId }: QAWorkflow03S
   );
   const targetTransformNode = activeNode ?? (lastNodeId ? nodeById.get(lastNodeId) ?? null : null);
   const targetCenter = targetTransformNode ? nodeCenter(targetTransformNode) : null;
+
+  const [viewportScroll, setViewportScroll] = useState({ scrollLeft: 0, scrollTop: 0, clientWidth: 1200, clientHeight: 800 });
+
+  useLayoutEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const handleMeasure = () => {
+      setViewportScroll({
+        scrollLeft: viewport.scrollLeft,
+        scrollTop: viewport.scrollTop,
+        clientWidth: viewport.clientWidth,
+        clientHeight: viewport.clientHeight,
+      });
+    };
+
+    handleMeasure();
+
+    viewport.addEventListener('scroll', handleMeasure);
+    window.addEventListener('resize', handleMeasure);
+    return () => {
+      viewport.removeEventListener('scroll', handleMeasure);
+      window.removeEventListener('resize', handleMeasure);
+    };
+  }, [targetCenter, zoomState.level]);
+
   const canvasTransform = (() => {
     if (targetCenter && zoomState.level !== 'overview') {
-      const viewport = viewportRef.current;
-      const viewportW = viewport?.clientWidth ?? (typeof window === 'undefined' ? 1200 : window.innerWidth);
-      const viewportH = viewport?.clientHeight ?? (typeof window === 'undefined' ? 800 : window.innerHeight);
-      const translateX = (viewport?.scrollLeft ?? 0) + viewportW / 2 - targetCenter.x;
-      const translateY = (viewport?.scrollTop ?? 0) + viewportH / 2 - targetCenter.y;
+      const { scrollLeft, scrollTop, clientWidth, clientHeight } = viewportScroll;
+      const translateX = scrollLeft + clientWidth / 2 - targetCenter.x;
+      const translateY = scrollTop + clientHeight / 2 - targetCenter.y;
       const scale = isFullyZoomed ? STEP_CANVAS_SCALE : 1;
       return `translate3d(${translateX}px, ${translateY}px, 0px) scale(${scale})`;
     }

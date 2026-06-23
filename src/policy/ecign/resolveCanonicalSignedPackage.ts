@@ -25,6 +25,7 @@ export interface SignedPackageLike {
   driveFileId?: string;
   driveUploadStatus?: string;
   webViewLink?: string;
+  driveFolderId?: string;
 }
 
 export interface CanonicalEvidenceQuery {

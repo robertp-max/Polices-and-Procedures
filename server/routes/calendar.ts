@@ -1,6 +1,6 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import {
-  listEvents, findByEventId, pingCalendar, resolveCalendarEvent,
+  listEvents, pingCalendar, resolveCalendarEvent,
 } from '../googleCalendar.js';
 import {
   buildEnrichedPlannerPayloadLive,

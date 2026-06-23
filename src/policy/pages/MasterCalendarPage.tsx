@@ -399,7 +399,7 @@ export function MasterCalendarPage() {
               Gantt
             </ViewToggleButton>
             {view === 'sprint' && (
-              <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.13em]" style={{ color: 'var(--v3-orange)', background: 'rgba(224,123,44,0.1)' }}>
+              <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.13em]" style={{ color: 'var(--v3-orange)', background: 'color-mix(in srgb, var(--v3-orange) 10%, transparent)' }}>
                 <CalendarRange size={13} /> Sprint
               </span>
             )}
@@ -411,7 +411,7 @@ export function MasterCalendarPage() {
               <StateLegend rollup={filteredRollup} />
               <span
                 className="text-[9px] font-mono px-1.5 py-px rounded tabular-nums"
-                style={{ background: isLightMode ? 'var(--ces-canvas)' : 'rgba(255,255,255,0.015)', color: 'var(--v3-text-tertiary)', border: 'none' }}
+                style={{ background: isLightMode ? 'var(--ces-canvas)' : 'var(--ci-overlay-faint)', color: 'var(--v3-text-tertiary)', border: 'none' }}
                 aria-label="Filtered events shown"
               >
                 {filteredMonthInstances.length} / {monthInstances.length}
@@ -454,7 +454,7 @@ export function MasterCalendarPage() {
         )}
 
         {view === 'sprint' && (
-          <div className="rounded-xl" style={{ border: 'none', background: isLightMode ? 'var(--ces-canvas)' : 'rgba(255,255,255,0.012)' }}>
+          <div className="rounded-xl" style={{ border: 'none', background: isLightMode ? 'var(--ces-canvas)' : 'var(--ci-overlay-faint)' }}>
             <SprintScopeToolbar />
           </div>
         )}
@@ -495,7 +495,7 @@ export function MasterCalendarPage() {
                     {filteredMonthInstances.slice(0, 6).map(ev => {
                       const dateStr = new Date(ev.date).toLocaleDateString('en-US', {month:'short',day:'numeric'});
                       return (
-                        <SpotlightCard key={ev.id} className="mx-2 my-1 rounded-xl group" variant="border-glow" spotlightColor="rgba(0,209,193,0.08)">
+                        <SpotlightCard key={ev.id} className="mx-2 my-1 rounded-xl group" variant="border-glow" spotlightColor="color-mix(in srgb, var(--v3-teal) 8%, transparent)">
                           <button
                             type="button"
                             onClick={() => selectInstance(ev)}
@@ -546,7 +546,7 @@ export function MasterCalendarPage() {
               onClick={() => setDetailsOpen(true)}
               disabled={!hasDetailContext}
               className="ci-touch-target rounded-md border px-3 py-1.5 text-[11px] font-montserrat font-bold uppercase tracking-[0.14em] disabled:opacity-45"
-              style={{ borderColor: 'var(--ci-overlay-active-border)', background: 'var(--ci-overlay-border)', color: isLightMode ? '#1F1C1B' : 'rgba(255,255,255,0.85)' }}
+              style={{ borderColor: 'var(--ci-overlay-active-border)', background: 'var(--ci-overlay-border)', color: isLightMode ? '#1F1C1B' : 'var(--ci-text-on-surface-strong)' }}
             >
               Open Details
             </button>
@@ -658,7 +658,7 @@ function ViewToggleButton({
       title={title}
       className="inline-flex items-center whitespace-nowrap rounded-md px-2 py-0.5 text-[9px] font-semibold tracking-[0.1em] transition-all focus:outline-none focus-visible:ring-1"
       style={{
-        background: active ? 'rgba(0, 209, 193, 0.12)' : 'transparent',
+        background: active ? 'color-mix(in srgb, var(--v3-teal) 12%, transparent)' : 'transparent',
         color: active ? 'var(--v3-teal-light)' : 'var(--v3-text-secondary)',
         border: 'none',
         height: '20px',
@@ -770,7 +770,7 @@ function MobileAgendaList({
           day: 'numeric',
         });
         return (
-          <SpotlightCard key={event.id} className="mx-1 my-0.5 rounded-2xl group" variant="border-glow" spotlightColor={isActive ? 'rgba(0,209,193,0.12)' : 'rgba(0,121,112,0.06)'}>
+          <SpotlightCard key={event.id} className="mx-1 my-0.5 rounded-2xl group" variant="border-glow" spotlightColor={isActive ? 'color-mix(in srgb, var(--v3-teal) 12%, transparent)' : 'color-mix(in srgb, var(--v3-teal) 6%, transparent)'}>
             <button
               type="button"
               onClick={() => onSelect(event)}

@@ -649,7 +649,7 @@ export function EvidenceCenterPage() {
           type="button"
           onClick={() => setCenterView('hierarchy')}
           className="rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em]"
-          style={centerView === 'hierarchy' ? { borderColor: 'var(--v3-teal)', background: 'rgba(0,209,193,0.1)', color: 'var(--v3-teal-light)' } : { borderColor: 'var(--v3-border-subtle)', color: 'var(--v3-text-secondary)' }}
+          style={centerView === 'hierarchy' ? { borderColor: 'var(--v3-teal)', background: 'color-mix(in srgb, var(--v3-teal) 10%, transparent)', color: 'var(--v3-teal-light)' } : { borderColor: 'var(--v3-border-subtle)', color: 'var(--v3-text-secondary)' }}
         >
           Hierarchy
         </button>
@@ -657,7 +657,7 @@ export function EvidenceCenterPage() {
           type="button"
           onClick={() => setCenterView('files')}
           className="rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em]"
-          style={centerView === 'files' ? { borderColor: 'var(--v3-teal)', background: 'rgba(0,209,193,0.1)', color: 'var(--v3-teal-light)' } : { borderColor: 'var(--v3-border-subtle)', color: 'var(--v3-text-secondary)' }}
+          style={centerView === 'files' ? { borderColor: 'var(--v3-teal)', background: 'color-mix(in srgb, var(--v3-teal) 10%, transparent)', color: 'var(--v3-teal-light)' } : { borderColor: 'var(--v3-border-subtle)', color: 'var(--v3-text-secondary)' }}
         >
           Flat Files
         </button>

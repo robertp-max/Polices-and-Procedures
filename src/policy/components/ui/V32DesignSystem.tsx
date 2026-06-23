@@ -125,7 +125,7 @@ export function V32MetricTile({
       >
         <button
           {...(rest as unknown as React.ButtonHTMLAttributes<HTMLButtonElement>)}
-          type={(rest as any).type ?? 'button'}
+          type={rest.type ?? 'button'}
           className={`${commonTile} ${toneCls} tone-${toneKey} text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal/70 disabled:cursor-not-allowed disabled:opacity-60`}
           aria-label={typeof label === 'string' ? label : undefined}
         >
@@ -140,7 +140,7 @@ export function V32MetricTile({
   return (
     <button
       {...(rest as unknown as React.ButtonHTMLAttributes<HTMLButtonElement>)}
-      type={(rest as any).type ?? 'button'}
+      type={rest.type ?? 'button'}
       className={`${mergedClasses} text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal/70 disabled:cursor-not-allowed disabled:opacity-60`}
       aria-label={typeof label === 'string' ? label : undefined}
     >
