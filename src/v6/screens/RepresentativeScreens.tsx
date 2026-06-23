@@ -8,6 +8,8 @@ import { buildBoardLanes, buildCalendarEvents, buildReportMetrics, buildSprintSu
 import type { ExecutionUnit } from '@/policy/ces/types';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER } from '@/policy/data/policyCorpus';
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
+import { MOCK_CLINICIANS } from '@/policy/staffing/data/mockClinicians';
+import { MOCK_PATIENTS } from '@/policy/staffing/data/mockPatients';
 import type { EventProcessStep, RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import { inferPhaseTemplate } from '@/policy/workflows/swimlanes/phaseTemplates';
 import type { SwimlaneStatus } from '@/policy/workflows/swimlanes/types';
@@ -192,23 +194,30 @@ const patientListMetrics: readonly MetricTileData[] = [
   { label: 'Plan alignment', value: '94%', helper: 'Signed and current', tone: 'green' },
 ];
 
-const clinicianRows: readonly BasicRow[] = [
-  { id: 'CLN-2041', title: 'Maria Delgado, RN', owner: '18-patient caseload', status: 'compliant' },
-  { id: 'CLN-2049', title: 'James Kwon, PT', owner: '12-patient caseload', status: 'renewal due' },
-  { id: 'CLN-2055', title: 'Aisha Rahman, OT', owner: '8-patient caseload', status: 'compliant' },
-  { id: 'CLN-2060', title: 'Priya Singh, RN', owner: '14-patient caseload', status: 'training due' },
-  { id: 'CLN-2068', title: 'Luis Mendez, LVN', owner: 'Weekend coverage pool', status: 'compliant' },
-  { id: 'CLN-2072', title: 'Nora Patel, MSW', owner: 'Discharge planning support', status: 'watch' },
-];
+// Map clinician status enum to the readable lowercase token the status badge expects.
+const clinicianStatusLabel = (status: string): string => status.replace(/_/g, ' ');
 
-const patientRows: readonly BasicRow[] = [
-  { id: 'HH-88291', title: 'Elena Vargas', owner: 'CHF, Type 2 DM', status: 'soc active' },
-  { id: 'HH-88402', title: 'Robert Hale', owner: 'Post-CVA', status: 'recert due' },
-  { id: 'HH-88701', title: 'Amina Yusuf', owner: 'Diabetic wound care', status: 'active' },
-  { id: 'HH-88910', title: 'George Lin', owner: 'Post-op hip', status: 'discharge prep' },
-  { id: 'HH-89012', title: 'Marisol Chen', owner: 'COPD exacerbation', status: 'high acuity' },
-  { id: 'HH-89104', title: 'Anthony Bell', owner: 'Medication teaching', status: 'visit gap' },
-];
+// Real clinician roster: every record in the canonical staffing seed, mapped to
+// the existing { id, title (Name), owner (Coverage), status } row shape.
+// title = full name + primary discipline (matches the prior "Name, RN" pattern);
+// owner = service areas (the "Coverage" column); status = the real clinician status.
+const clinicianRows: readonly BasicRow[] = MOCK_CLINICIANS.map((clinician) => ({
+  id: clinician.id,
+  title: `${clinician.firstName} ${clinician.lastName}, ${clinician.primaryDiscipline}`,
+  owner: clinician.serviceAreas && clinician.serviceAreas.length > 0 ? clinician.serviceAreas.join(', ') : '—',
+  status: clinicianStatusLabel(clinician.status),
+}));
+
+// Real patient roster: every record in the canonical staffing seed, mapped to
+// the existing { id, title (Name), owner (Clinical focus), status } row shape.
+// owner = diagnosis category (the "Clinical focus" column, underscores normalized);
+// status = the real patient status.
+const patientRows: readonly BasicRow[] = MOCK_PATIENTS.map((patient) => ({
+  id: patient.id,
+  title: `${patient.firstName} ${patient.lastName}`,
+  owner: patient.diagnosisCategory ? patient.diagnosisCategory.replace(/_/g, ' ') : '—',
+  status: patient.status.replace(/_/g, ' '),
+}));
 
 const profileColumns: readonly DataTableColumn<BasicRow>[] = [
   { key: 'id', label: 'ID' },

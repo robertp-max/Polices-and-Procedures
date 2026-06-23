@@ -4,6 +4,9 @@ import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type
 import { Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { DEMO_USERS } from '@/policy/security/identity/demoUsers';
+import { ROLE_ASSIGNMENTS } from '@/policy/security/identity/roleAssignments';
+import { USER_GROUPS } from '@/policy/security/identity/userGroups';
 
 interface AdminUserRow extends Record<string, string> {
   accessStatus: string;
@@ -41,80 +44,41 @@ interface OverridePermission {
 type OverrideMode = 'default' | 'grant' | 'revoke';
 
 const userMetrics: readonly MetricTileData[] = [
-  { label: 'Users', value: '96', helper: 'Active directory accounts', tone: 'teal' },
+  { label: 'Users', value: String(DEMO_USERS.length), helper: 'Seeded directory accounts', tone: 'teal' },
   { label: 'MFA', value: '94%', helper: 'Protected sign-ins', tone: 'green' },
   { label: 'Privileged', value: '11', helper: 'Dual-control accounts', tone: 'amber' },
   { label: 'Reviews', value: '4', helper: 'Access items due soon', tone: 'orange' },
 ];
 
-const userRows: readonly AdminUserRow[] = [
-  {
-    accessStatus: 'locked',
-    auditStatus: 'validated',
-    groups: 'Super Admin, Security Admin',
-    lastReview: 'Jun 18, 2026',
-    mfaStatus: 'certified',
-    name: 'Brad Administrator',
-    readinessStatus: 'ready',
-    role: 'Platform Owner',
-    userId: 'u-admin-brad',
-  },
-  {
-    accessStatus: 'active',
-    auditStatus: 'complete',
-    groups: 'Compliance Council, QAPI Review',
-    lastReview: 'Jun 17, 2026',
-    mfaStatus: 'certified',
-    name: 'Tina Patel',
-    readinessStatus: 'validated',
-    role: 'Compliance Officer',
-    userId: 'u-compliance-tp',
-  },
-  {
-    accessStatus: 'active',
-    auditStatus: 'uploaded',
-    groups: 'Clinical RN, Policy Authors',
-    lastReview: 'Jun 14, 2026',
+// Real records: every seeded directory user, with role/groups derived from the
+// real role-assignment + user-group seeds. Same row shape + columns as before.
+const groupNameById = new Map(USER_GROUPS.map((g) => [g.id, g.name]));
+const groupNamesByUserId = (() => {
+  const map = new Map<string, string[]>();
+  for (const a of ROLE_ASSIGNMENTS) {
+    const name = groupNameById.get(a.groupId) ?? a.groupId;
+    const list = map.get(a.userId) ?? [];
+    if (!list.includes(name)) list.push(name);
+    map.set(a.userId, list);
+  }
+  return map;
+})();
+
+const userRows: readonly AdminUserRow[] = DEMO_USERS.map((u) => {
+  const groups = groupNamesByUserId.get(u.id) ?? [];
+  const suspended = u.status === 'suspended';
+  return {
+    accessStatus: suspended ? 'locked' : 'active',
+    auditStatus: suspended ? 'review-required' : 'validated',
+    groups: groups.length ? groups.join(', ') : 'Unassigned',
+    lastReview: '—',
     mfaStatus: 'ready',
-    name: 'Maria Gonzalez',
-    readinessStatus: 'ready',
-    role: 'DON',
-    userId: 'u-don-01',
-  },
-  {
-    accessStatus: 'pending',
-    auditStatus: 'review-required',
-    groups: 'Onboarding Operations',
-    lastReview: 'Jun 10, 2026',
-    mfaStatus: 'pending',
-    name: 'Jon Rivera',
-    readinessStatus: 'attention',
-    role: 'Credentialing Coordinator',
-    userId: 'u-onboarding-jr',
-  },
-  {
-    accessStatus: 'active',
-    auditStatus: 'validated',
-    groups: 'Business Office, Payroll Export',
-    lastReview: 'Jun 12, 2026',
-    mfaStatus: 'certified',
-    name: 'Ops Lead',
-    readinessStatus: 'ready',
-    role: 'Primary Ops',
-    userId: 'demo-user-careindeed',
-  },
-  {
-    accessStatus: 'locked',
-    auditStatus: 'approved',
-    groups: 'Surveyor Read-only',
-    lastReview: 'Jun 19, 2026',
-    mfaStatus: 'certified',
-    name: 'External Surveyor',
-    readinessStatus: 'approved',
-    role: 'Audit Observer',
-    userId: 'u-surveyor-ro',
-  },
-];
+    name: u.name,
+    readinessStatus: suspended ? 'attention' : 'ready',
+    role: groups[0] ?? 'Unassigned',
+    userId: u.id,
+  };
+});
 
 const userColumns: readonly DataTableColumn<AdminUserRow>[] = [
   { key: 'name', label: 'Name' },
@@ -220,7 +184,7 @@ const getDefaultOverrides = (): Record<string, OverrideMode> =>
   }, {});
 
 export function AdminUsersScreen() {
-  const [selectedUserId, setSelectedUserId] = useState<string | null>('u-compliance-tp');
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [activePanel, setActivePanel] = useState<UserPanelTabId>('security');
   const [overrideModes, setOverrideModes] = useState<Record<string, OverrideMode>>(getDefaultOverrides);
 

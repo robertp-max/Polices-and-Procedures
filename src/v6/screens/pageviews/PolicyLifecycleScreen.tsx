@@ -2,6 +2,8 @@ import { BookOpen, AlertTriangle, FileText, ArrowRight } from 'lucide-react';
 import { MetricGrid, SurfaceCard, type MetricTileData, type SurfaceCardData } from '../../components';
 import { ToneBadge } from '../../primitives';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/data/policyCorpus';
+import { loadLifecycleSeed } from '@/policy/lifecycle/lifecycleSeed';
+import { STATE_ORDER, STATE_LABEL, type LifecycleState } from '@/policy/lifecycle/types';
 
 // Real per-domain policy counts, in canonical framework display order.
 const domainGroups = LIFECYCLE_DOMAIN_ORDER.map((domainCode) => ({
@@ -22,12 +24,21 @@ const metrics = [
   { label: 'Largest domain', value: String(largestDomain.count), helper: largestDomain.label, tone: 'orange' },
 ] satisfies readonly MetricTileData[];
 
-// Domain grouping board: real domains with real counts. The corpus carries no
-// per-record lifecycle status, so every published domain tile reads 'active'.
-const stages = domainGroups.map((group) => ({
-  label: group.label,
-  count: group.count,
-  status: 'active',
+// Lifecycle stage board, derived from the REAL lifecycle seed. Every policy in
+// the corpus is seeded in DRAFT (see lifecycleStore: createEnvelope -> DRAFT),
+// so per-state counts come from the real seed rather than a hardcoded 'active'.
+const lifecycleSeed = loadLifecycleSeed();
+const stateCounts = STATE_ORDER.reduce(
+  (acc, state) => ({ ...acc, [state]: 0 }),
+  {} as Record<LifecycleState, number>,
+);
+// All seeded policies start in DRAFT per the lifecycle state machine.
+stateCounts.DRAFT = lifecycleSeed.policies.length;
+
+const stages = STATE_ORDER.map((state) => ({
+  label: STATE_LABEL[state],
+  count: stateCounts[state],
+  status: state.toLowerCase(),
 }));
 
 const actionCards = [

@@ -1,25 +1,31 @@
 import { Calendar, User, ShieldCheck } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 import { MetricGrid, type MetricTileData } from '../../components';
 import { getCorpusPolicy, POLICY_CORPUS, DOMAIN_LABEL, type CorpusPolicy } from '@/policy/data/policyCorpus';
 
-// Representative real policy for the detail panel. The lifecycle detail route is
-// /policy-lifecycle/:policyId; this static reference view resolves a known real
-// corpus record (credential verification) with a deterministic fallback.
-const REPRESENTATIVE_POLICY: CorpusPolicy =
-  getCorpusPolicy('HR-TA-004') ?? POLICY_CORPUS[0];
-
-const domainLabel = DOMAIN_LABEL[REPRESENTATIVE_POLICY.domainCode] ?? REPRESENTATIVE_POLICY.domainCode;
-
-// No per-record status in the corpus; every REQUIRED-tier policy is published/active.
-const currentPhase = REPRESENTATIVE_POLICY.tier === 'REQUIRED' ? 'Active' : 'Draft';
-
-const metrics = [
-  { label: 'Current Phase', value: currentPhase, helper: 'Published corpus record', tone: 'green' },
-  { label: 'Policy ID', value: REPRESENTATIVE_POLICY.id, helper: REPRESENTATIVE_POLICY.title, tone: 'teal' },
-  { label: 'Domain', value: domainLabel, helper: 'Framework taxonomy group', tone: 'amber' },
-] satisfies readonly MetricTileData[];
+// The lifecycle detail route is /policy-lifecycle/:policyId. The screen resolves
+// the requested real corpus record from the route param, with a deterministic
+// real fallback (first corpus record) when the param is empty/unknown.
+const DEFAULT_POLICY: CorpusPolicy = POLICY_CORPUS[0];
 
 export function PolicyLifecycleDetailScreen() {
+  const params = useParams<{ policyId?: string }>();
+  const policyId = params.policyId?.trim();
+
+  const REPRESENTATIVE_POLICY: CorpusPolicy =
+    (policyId ? getCorpusPolicy(policyId) : undefined) ?? DEFAULT_POLICY;
+
+  const domainLabel = DOMAIN_LABEL[REPRESENTATIVE_POLICY.domainCode] ?? REPRESENTATIVE_POLICY.domainCode;
+
+  // No per-record status in the corpus; every REQUIRED-tier policy is published/active.
+  const currentPhase = REPRESENTATIVE_POLICY.tier === 'REQUIRED' ? 'Active' : 'Draft';
+
+  const metrics = [
+    { label: 'Current Phase', value: currentPhase, helper: 'Published corpus record', tone: 'green' },
+    { label: 'Policy ID', value: REPRESENTATIVE_POLICY.id, helper: REPRESENTATIVE_POLICY.title, tone: 'teal' },
+    { label: 'Domain', value: domainLabel, helper: 'Framework taxonomy group', tone: 'amber' },
+  ] satisfies readonly MetricTileData[];
+
   return (
     <section
       className="grid gap-xl"

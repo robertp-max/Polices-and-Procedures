@@ -6,6 +6,8 @@ import { Badge, Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
 import { buildEventLanes, FALLBACK_EVENT_LANES, getBucketFromParams } from '@/policy/ces/cesViewProjections';
+import { V3_ExecutionUnitsSeed } from '@/policy/ces/data/V3_CES_SeedData';
+import type { ExecutionUnit } from '@/policy/ces/types';
 
 // Design cross-ref (Agent 13 background): events-board vs V6_DESIGN.html ~508 (eventsBoardColumns) and ~1334 view.
 // Exact 4-col titles (Critical & Overdue / At Risk / Needs Attention / On Track), card fields (id/title/owner/domain/due/meta/chips/progress/tone/awaitingType/missing),
@@ -72,50 +74,51 @@ const eventHealthCards: readonly SurfaceCardData[] = [
   },
 ];
 
-const evidenceSignals: readonly EvidenceSignal[] = [
-  {
-    artifacts: '4 / 7 artifacts',
-    due: 'Jun 20, 2026',
-    id: 'EVT-2406',
-    owner: 'QAPI Lead',
-    progress: 52,
-    status: 'missing-evidence',
-    title: 'QAPI governing body packet',
-    tone: 'orange',
-  },
-  {
-    artifacts: '5 / 6 artifacts',
-    due: 'Jun 21, 2026',
-    id: 'EVT-2411',
-    owner: 'Clinical Manager',
-    progress: 68,
-    status: 'pending',
-    title: 'High-risk patient recertification review',
-    tone: 'amber',
-  },
-  {
-    artifacts: '8 / 8 artifacts',
-    due: 'Jun 24, 2026',
-    id: 'EVT-2420',
-    owner: 'Administrator',
-    progress: 88,
-    status: 'validated',
-    title: 'Emergency drill after-action review',
-    tone: 'teal',
-  },
-  {
-    artifacts: '6 / 6 artifacts',
-    due: 'Jun 25, 2026',
-    id: 'EVT-2434',
-    owner: 'Governing Body',
-    progress: 96,
-    status: 'signed',
-    title: 'Final policy packet lock',
-    tone: 'green',
-  },
-];
+// Derived from the real V3 execution-unit seed (src/policy/ces/data/V3_CES_SeedData.ts).
+// Each unit maps to the same EvidenceSignal row shape consumed by the Evidence tab.
+const EVIDENCE_STATE_STATUS: Record<ExecutionUnit['complianceState'], string> = {
+  upcoming: 'draft',
+  ready: 'validated',
+  in_progress: 'review',
+  awaiting_signature: 'pending',
+  blocked: 'missing-evidence',
+  completed: 'signed',
+};
+
+const EVIDENCE_STATE_TONE: Record<ExecutionUnit['complianceState'], Tone> = {
+  upcoming: 'slate',
+  ready: 'green',
+  in_progress: 'teal',
+  awaiting_signature: 'amber',
+  blocked: 'orange',
+  completed: 'green',
+};
+
+function unitToEvidenceSignal(u: ExecutionUnit): EvidenceSignal {
+  const total = u.evidenceStatus.requiredFormsTotal;
+  const complete = u.evidenceStatus.requiredFormsComplete;
+  const progress = total > 0 ? Math.round((complete / total) * 100) : 0;
+  return {
+    artifacts: `${complete} / ${total} artifacts`,
+    due: u.dueDate,
+    id: u.id,
+    owner: u.owner.name || u.owner.role || '—',
+    progress,
+    status: EVIDENCE_STATE_STATUS[u.complianceState],
+    title: u.title,
+    tone: EVIDENCE_STATE_TONE[u.complianceState],
+  };
+}
+
+const evidenceSignals: readonly EvidenceSignal[] = V3_ExecutionUnitsSeed.map(unitToEvidenceSignal);
 
 const eventLanes: readonly BoardLaneData[] = buildEventLanes() || FALLBACK_EVENT_LANES; // 1.4 wired to projection
+
+// Metric tiles derived from the real event-lane counts (same labels/tones/helpers as before).
+const eventMetricsDerived: readonly MetricTileData[] = eventMetrics.map((tile) => {
+  const lane = eventLanes.find((l) => l.title === tile.label);
+  return lane ? { ...tile, value: String(lane.count) } : tile;
+});
 // filteredLanes computation moved inside EventsBoardScreen function
 
 // old eventLanes body fully cleaned
@@ -142,7 +145,7 @@ export function EventsBoardScreen() {
 
   return (
     <div className="grid gap-lg">
-      <MetricGrid metrics={eventMetrics} />
+      <MetricGrid metrics={eventMetricsDerived} />
 
       <section className="grid gap-md">
         {/* Premium Segmented Tab Control */}

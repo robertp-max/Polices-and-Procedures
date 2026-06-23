@@ -1,50 +1,129 @@
 import { AlertCircle, ClipboardCheck, FileText, ShieldCheck, Upload } from 'lucide-react';
 import { MetricGrid, SurfaceCard, type MetricTileData, type SurfaceCardData } from '../../components';
 import { FormField, Input, Textarea, ToneBadge } from '../../primitives';
-
-const metrics = [
-  { label: 'Open task', value: 'INC-1044', helper: 'Field incident workflow', tone: 'orange' },
-  { label: 'Evidence', value: '3/5', helper: 'Photos and notes attached', tone: 'teal' },
-  { label: 'Escalation', value: 'Active', helper: 'Supervisor notified', tone: 'orange' },
-  { label: 'Packet state', value: 'Draft', helper: 'Not survey-ready', tone: 'amber' },
-] satisfies readonly MetricTileData[];
+import type { Tone } from '../../tokens';
+import {
+  REGULATORY_EVENTS,
+  relativeLabel,
+  type RegulatoryEvent,
+  type UrgencyLevel,
+} from '@/policy/data/regulatoryEvents';
 
 // Design cross-ref (Agent 04/07): mobile-incident aligns to V6_DESIGN.html ~1423 (mobileIncidentCards, metrics).
 // Title, description, cards, and metrics now match design prototype exactly. See also V6_DESIGN_RECONCILIATION for mobile-incident MATCHED_REFERENCE.
+//
+// Data source: real regulatory event seed records (REGULATORY_EVENTS). The
+// metric tiles, incident status cards, and right-panel preview rows are all
+// derived from the actual event dataset rather than hardcoded sample values.
 
-const incidentCards = [
+/** Real, actionable event records (holidays / context markers excluded). */
+const incidentEvents: RegulatoryEvent[] = REGULATORY_EVENTS.filter((event) => !event.isContext);
+
+/** Map seed urgency to a valid ToneBadge status code (no invented values). */
+function urgencyToStatus(urgency: UrgencyLevel): string {
+  switch (urgency) {
+    case 'complete':
+      return 'complete';
+    case 'blocked':
+      return 'blocked';
+    case 'missing-evidence':
+      return 'missing-evidence';
+    case 'overdue':
+    case 'critical':
+      return 'attention';
+    case 'due-soon':
+      return 'pending';
+    case 'on-track':
+      return 'active';
+    case 'scheduled':
+    default:
+      return 'upcoming';
+  }
+}
+
+/** Map seed urgency to a V6 Tone (derived from real urgency, no invention). */
+function urgencyToTone(urgency: UrgencyLevel): Tone {
+  switch (urgency) {
+    case 'complete':
+      return 'green';
+    case 'overdue':
+    case 'critical':
+      return 'red';
+    case 'blocked':
+    case 'missing-evidence':
+      return 'orange';
+    case 'due-soon':
+      return 'amber';
+    case 'on-track':
+      return 'teal';
+    case 'scheduled':
+    default:
+      return 'slate';
+  }
+}
+
+/** Evidence completion ratio for an event, as a 0-100 progress value. */
+function evidenceProgress(event: RegulatoryEvent): number {
+  const forms = event.requiredForms ?? [];
+  if (forms.length === 0) return 0;
+  const done = forms.filter((form) => form.status === 'complete').length;
+  return Math.round((done / forms.length) * 100);
+}
+
+const metrics = [
   {
-    body: 'Field user can capture event time, location, patient impact, and immediate action from mobile.',
-    icon: AlertCircle,
-    progress: 58,
-    status: 'review-required',
-    title: 'Incident intake',
+    label: 'Open task',
+    value: incidentEvents[0]?.id ?? '—',
+    helper: incidentEvents[0]?.title ?? 'Field incident workflow',
     tone: 'orange',
   },
   {
-    body: 'Photos, witness notes, and supervisor attestation attach directly to the workflow instance.',
-    icon: Upload,
-    progress: 72,
-    status: 'pending',
-    title: 'Evidence capture',
+    label: 'Evidence',
+    value: incidentEvents[0]
+      ? `${(incidentEvents[0].requiredForms ?? []).filter((f) => f.status === 'complete').length}/${(incidentEvents[0].requiredForms ?? []).length}`
+      : '—',
+    helper: 'Required forms complete',
     tone: 'teal',
   },
   {
-    body: 'Administrator and clinical manager are notified before closure or survey packet inclusion.',
-    icon: ShieldCheck,
-    progress: 66,
-    status: 'ready',
-    title: 'Escalation path',
-    tone: 'teal',
+    label: 'Escalation',
+    value: incidentEvents[0]?.complianceFlags?.auditRisk
+      ? incidentEvents[0].complianceFlags.auditRisk.charAt(0).toUpperCase() + incidentEvents[0].complianceFlags.auditRisk.slice(1)
+      : '—',
+    helper: incidentEvents[0]?.ownerRole ?? 'Supervisor notified',
+    tone: 'orange',
   },
-] satisfies readonly SurfaceCardData[];
+  {
+    label: 'Packet state',
+    value: incidentEvents[0]?.minutes?.status
+      ? incidentEvents[0].minutes.status.charAt(0).toUpperCase() + incidentEvents[0].minutes.status.slice(1)
+      : '—',
+    helper: incidentEvents[0]?.summary ? 'Workflow record state' : 'Not survey-ready',
+    tone: 'amber',
+  },
+] satisfies readonly MetricTileData[];
 
+// Same three design icons; cycled deterministically across real records.
+const cardIcons = [AlertCircle, Upload, ShieldCheck] as const;
+
+const incidentCards = incidentEvents.map((event, index) => ({
+  body: event.summary ?? event.regulatoryDriver ?? '—',
+  icon: cardIcons[index % cardIcons.length],
+  progress: evidenceProgress(event),
+  status: urgencyToStatus(event.urgency),
+  title: event.title,
+  tone: urgencyToTone(event.urgency),
+})) satisfies readonly SurfaceCardData[];
+
+const previewEvent = incidentEvents[0];
 const previewRows = [
-  ['Event', 'Exposure follow-up'],
-  ['Policy anchor', 'OSHA 29 CFR 1910.1030'],
-  ['Responsible owner', 'HR Administrator'],
-  ['Review window', 'Due today'],
-  ['Packet state', 'Evidence pending'],
+  ['Event', previewEvent?.title ?? '—'],
+  ['Policy anchor', previewEvent?.policyRefs?.length ? previewEvent.policyRefs.join(', ') : '—'],
+  ['Responsible owner', previewEvent?.ownerRole ?? '—'],
+  ['Review window', previewEvent?.date ? relativeLabel(previewEvent.date) : '—'],
+  ['Packet state', previewEvent?.minutes?.status
+    ? previewEvent.minutes.status.charAt(0).toUpperCase() + previewEvent.minutes.status.slice(1)
+    : '—'],
 ] as const;
 
 export function MobileIncidentScreen() {

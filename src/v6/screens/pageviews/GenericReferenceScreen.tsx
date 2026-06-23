@@ -3,6 +3,7 @@ import { DataTable, MetricGrid, SurfaceCard, ToneTag, toneSoftTileClasses, type 
 import { Badge, Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { POLICY_CORPUS, DOMAIN_LABEL } from '../../../policy/data/policyCorpus';
 
 interface HashStep {
   detail: string;
@@ -108,43 +109,13 @@ const linkedReferenceColumns: readonly DataTableColumn<LinkedReferenceRow>[] = [
   { key: 'status', label: 'Status', status: true },
 ];
 
-const linkedReferenceRows: readonly LinkedReferenceRow[] = [
-  {
-    itemId: 'GV-GB-001',
-    relationship: 'Primary policy',
-    status: 'ready',
-    title: 'Governing Body Authority & Responsibilities',
-    type: 'Policy',
-  },
-  {
-    itemId: 'GV-FM-005',
-    relationship: 'Meeting evidence',
-    status: 'validated',
-    title: 'Governing Body Minutes Checklist',
-    type: 'Form',
-  },
-  {
-    itemId: 'GV-FM-006',
-    relationship: 'Disclosure packet',
-    status: 'review-required',
-    title: 'Conflict of Interest Disclosure',
-    type: 'Form',
-  },
-  {
-    itemId: 'QA-QM-004',
-    relationship: 'QAPI oversight support',
-    status: 'active',
-    title: 'QAPI Indicator Review',
-    type: 'Policy',
-  },
-  {
-    itemId: 'EV-4519',
-    relationship: 'Survey packet artifact',
-    status: 'uploaded',
-    title: 'Signed Policy Packet Evidence',
-    type: 'Artifact',
-  },
-];
+const linkedReferenceRows: readonly LinkedReferenceRow[] = POLICY_CORPUS.map((policy) => ({
+  itemId: policy.id,
+  relationship: DOMAIN_LABEL[policy.domainCode] ?? '—',
+  status: policy.tier.toLowerCase(),
+  title: policy.title,
+  type: 'Policy',
+}));
 
 const reviewCards: readonly ReviewCard[] = [
   {

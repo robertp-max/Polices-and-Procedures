@@ -3,6 +3,8 @@ import { AlertTriangle, ClipboardCheck, FileCheck2, KeyRound, LockKeyhole, Shiel
 import { DataTable, SurfaceCard, type DataTableColumn, type SurfaceCardData } from '../../components';
 import { ToneBadge } from '../../primitives';
 import { cx } from '../../utils/classNames';
+import { PERMISSION_CATALOG } from '@/policy/security/identity/permissionCatalog';
+import { USER_GROUPS } from '@/policy/security/identity/userGroups';
 
 interface PermissionRow extends Record<string, string> {
   capability: string;
@@ -34,64 +36,21 @@ const permissionTabs = [
 
 type PermissionTabId = (typeof permissionTabs)[number]['id'];
 
-const permissionRows: readonly PermissionRow[] = [
-  {
-    capability: 'Create, deactivate, and reassign platform users',
-    readinessStatus: 'validated',
-    riskStatus: 'locked',
-    rolesUsing: 'Platform Owner, Security Admin',
-    scope: 'Full platform administration and audit trail',
-  },
-  {
-    capability: 'Assign roles, groups, and emergency access windows',
+// Real records: the full permission catalog, with the real groups that grant each
+// permission derived from the user-group seed. Same row shape + columns.
+const groupsUsingPermission = (permId: string): string[] =>
+  USER_GROUPS.filter((g) => g.permissions?.some((perm) => perm === permId)).map((g) => g.name);
+
+const permissionRows: readonly PermissionRow[] = PERMISSION_CATALOG.map((p) => {
+  const groups = groupsUsingPermission(p.id);
+  return {
+    capability: p.description,
     readinessStatus: 'ready',
-    riskStatus: 'review-required',
-    rolesUsing: 'Security Admin, Administrator',
-    scope: 'Admin membership and RBAC posture',
-  },
-  {
-    capability: 'Approve, publish, and supersede agency policies',
-    readinessStatus: 'approved',
-    riskStatus: 'locked',
-    rolesUsing: 'Administrator, Compliance Officer',
-    scope: 'Policy lifecycle and governance packet',
-  },
-  {
-    capability: 'Export evidence packets for survey or QAPI review',
-    readinessStatus: 'ready',
-    riskStatus: 'active',
-    rolesUsing: 'Compliance Officer, QAPI Lead',
-    scope: 'Evidence Center, Audit Mode, CES reports',
-  },
-  {
-    capability: 'Complete assigned eCIgn attestations and certificates',
-    readinessStatus: 'validated',
-    riskStatus: 'pending',
-    rolesUsing: 'Field RN, Employee, Administrator',
-    scope: 'Assigned forms and signature workspace',
-  },
-  {
-    capability: 'Edit onboarding catalog, batches, and clearance gates',
-    readinessStatus: 'awaiting',
-    riskStatus: 'review-required',
-    rolesUsing: 'Onboarding Admin, HR Credentialing',
-    scope: 'Journey admin and onboarding v2 activation',
-  },
-  {
-    capability: 'View assigned patient PHI and clinical task context',
-    readinessStatus: 'ready',
-    riskStatus: 'attention',
-    rolesUsing: 'Clinical Manager, Field RN',
-    scope: 'Assigned patient rosters and case detail',
-  },
-  {
-    capability: 'Open a dual-signature override for blocked workflow gates',
-    readinessStatus: 'review-required',
-    riskStatus: 'warning',
-    rolesUsing: 'Administrator, QAPI Lead',
-    scope: 'Onboarding overrides and workflow exception review',
-  },
-];
+    riskStatus: p.phi ? 'locked' : 'active',
+    rolesUsing: groups.length ? groups.join(', ') : 'Unassigned',
+    scope: `${p.resource} · ${p.action}`,
+  };
+});
 
 const permissionColumns: readonly DataTableColumn<PermissionRow>[] = [
   { key: 'capability', label: 'Capability' },
@@ -101,43 +60,14 @@ const permissionColumns: readonly DataTableColumn<PermissionRow>[] = [
   { key: 'readinessStatus', label: 'Readiness', status: true },
 ];
 
-const roleUsageRows: readonly RoleUsageRow[] = [
-  {
-    governedBy: 'Administrator plus Compliance Officer',
-    permissionSet: 'User administration, role assignment, policy approval',
-    readinessStatus: 'locked',
-    roleName: 'Platform Owner',
-    usage: 'Owns privileged platform controls',
-  },
-  {
-    governedBy: 'Compliance Council',
-    permissionSet: 'Audit export, policy approval, governance override',
-    readinessStatus: 'validated',
-    roleName: 'Compliance Officer',
-    usage: 'Prepares survey packets and lifecycle approvals',
-  },
-  {
-    governedBy: 'QAPI Lead reviewer',
-    permissionSet: 'Audit export, governance override',
-    readinessStatus: 'ready',
-    roleName: 'QAPI Lead',
-    usage: 'Reviews packets, corrective action evidence, and exceptions',
-  },
-  {
-    governedBy: 'Director of Nursing',
-    permissionSet: 'Assigned patient access, eCIgn signing',
-    readinessStatus: 'active',
-    roleName: 'Clinical Manager',
-    usage: 'Reviews clinical case context and signs assigned forms',
-  },
-  {
-    governedBy: 'HR Credentialing',
-    permissionSet: 'Journey administration, eCIgn signing',
-    readinessStatus: 'awaiting',
-    roleName: 'Onboarding Admin',
-    usage: 'Maintains clearance gates and catalog assignments',
-  },
-];
+// Real records: every user group as a role, with its real permission set.
+const roleUsageRows: readonly RoleUsageRow[] = USER_GROUPS.map((g) => ({
+  governedBy: 'RBAC access policy',
+  permissionSet: g.permissions?.length ? g.permissions.join(', ') : '—',
+  readinessStatus: 'ready',
+  roleName: g.name,
+  usage: g.description ?? '',
+}));
 
 const roleUsageColumns: readonly DataTableColumn<RoleUsageRow>[] = [
   { key: 'roleName', label: 'Role' },

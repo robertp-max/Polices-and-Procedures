@@ -1,18 +1,33 @@
 import { Landmark, FileText } from 'lucide-react';
 import { MetricGrid, SurfaceCard, toneBarClasses, type MetricTileData, type SurfaceCardData } from '../../components';
+import { loadLifecycleSeed } from '@/policy/lifecycle/lifecycleSeed';
+
+// ─── Real lifecycle distribution ─────────────────────────────────
+// Source: POLICY_CORPUS via loadLifecycleSeed(). Per the lifecycle
+// store seeding rule (buildSeedEnvelopes → createEnvelope), every
+// seeded policy starts in DRAFT; no policy has yet advanced to
+// REVIEW/APPROVED/PUBLISHED. Counts are derived, never invented.
+const lifecycleStageCounts: Record<'DRAFT' | 'REVIEW' | 'APPROVED' | 'PUBLISHED', number> = {
+  DRAFT: loadLifecycleSeed().policies.length,
+  REVIEW: 0,
+  APPROVED: 0,
+  PUBLISHED: 0,
+};
 
 const metrics = [
-  { label: 'Council members', value: '7', helper: 'Active voting committee', tone: 'teal' },
-  { label: 'Pending drafts', value: '4', helper: 'Policies in review stage', tone: 'orange' },
-  { label: 'Approved this cycle', value: '18', helper: 'Consent checks signed off', tone: 'green' },
+  { label: 'Council members', value: '—', helper: 'Active voting committee', tone: 'teal' },
+  { label: 'Pending drafts', value: String(lifecycleStageCounts.DRAFT), helper: 'Policies in review stage', tone: 'orange' },
+  { label: 'Approved this cycle', value: String(lifecycleStageCounts.APPROVED), helper: 'Consent checks signed off', tone: 'green' },
 ] satisfies readonly MetricTileData[];
 
 const chartData = [
-  { label: 'DRAFT', value: 14, tone: 'orange' },
-  { label: 'REVIEW', value: 8, tone: 'amber' },
-  { label: 'APPROVED', value: 252, tone: 'green' },
-  { label: 'PUBLISHED', value: 247, tone: 'teal' },
+  { label: 'DRAFT', value: lifecycleStageCounts.DRAFT, tone: 'orange' },
+  { label: 'REVIEW', value: lifecycleStageCounts.REVIEW, tone: 'amber' },
+  { label: 'APPROVED', value: lifecycleStageCounts.APPROVED, tone: 'green' },
+  { label: 'PUBLISHED', value: lifecycleStageCounts.PUBLISHED, tone: 'teal' },
 ] as const;
+
+const chartMax = Math.max(1, ...chartData.map((point) => point.value));
 
 const reviewCards = [
   {
@@ -48,7 +63,7 @@ export function GovernanceScreen() {
                       aria-label={`${point.label}: ${point.value}`}
                       className={`${toneBarClasses[point.tone]} min-h-xs rounded-t-md`}
                       role="img"
-                      style={{ height: `${(point.value / 252) * 100}%` }}
+                      style={{ height: `${(point.value / chartMax) * 100}%` }}
                     />
                     <div className="grid gap-xs text-center">
                       <span className="text-xs font-light text-ink">{point.label}</span>

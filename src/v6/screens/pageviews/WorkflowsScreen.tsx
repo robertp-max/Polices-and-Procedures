@@ -4,6 +4,55 @@ import { GitBranch, Landmark, Workflow } from 'lucide-react';
 import { DataTable, MetricGrid, SurfaceCard, VeilDrawer, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Button, ToneBadge } from '../../primitives';
 import { cx } from '../../utils/classNames';
+import { WORKFLOWS } from '@/policy/data/workflows.generated';
+import type { CadenceInterval, DomainCode, RiskBand, Workflow as WorkflowDef } from '@/policy/types/workflow';
+
+const DOMAIN_LABELS: Record<DomainCode, string> = {
+  GV: 'Governance',
+  CL: 'Clinical Ops',
+  QA: 'QAPI',
+  HR: 'Human Resources',
+  CO: 'Compliance',
+  FN: 'Finance',
+  OP: 'Operations',
+  EN: 'Enterprise',
+  IT: 'Information Technology',
+  RM: 'Risk Management',
+};
+
+const FREQUENCY_LABELS: Record<CadenceInterval, string> = {
+  daily: 'Daily',
+  weekly: 'Weekly',
+  monthly: 'Monthly',
+  quarterly: 'Quarterly',
+  semiannual: 'Semiannual',
+  annual: 'Annual',
+  biennial: 'Biennial',
+  episodic: 'Episodic',
+  per_event: 'Per Event',
+  on_demand: 'On Demand',
+};
+
+const RISK_LABELS: Record<RiskBand, string> = {
+  low: 'Low',
+  moderate: 'Medium',
+  high: 'High',
+  immediate_jeopardy: 'Immediate Jeopardy',
+};
+
+function toWorkflowRow(wf: WorkflowDef): WorkflowRow {
+  const domainLabel = DOMAIN_LABELS[wf.domain] ?? wf.domain;
+  const primaryRole = wf.roles.primary[0] ?? '';
+  return {
+    domain: domainLabel,
+    domainOwner: primaryRole ? `${domainLabel} / ${primaryRole}` : domainLabel,
+    frequency: FREQUENCY_LABELS[wf.cadence.interval] ?? wf.cadence.interval,
+    risk: RISK_LABELS[wf.metrics.declaredRisk] ?? wf.metrics.declaredRisk,
+    status: 'active',
+    title: wf.title,
+    workflowId: wf.id,
+  };
+}
 
 const getWorkflowDetail = (id: string) => {
   const details: Record<string, { purpose: string; policies: string; forms: string; evidence: string; history: { item: string; status: string; tone: 'orange' | 'teal' }[] }> = {
@@ -98,11 +147,16 @@ export interface WorkflowRow extends Record<string, string> {
   workflowId: string;
 }
 
+const allWorkflows = Object.values(WORKFLOWS);
+const eventBackedCount = allWorkflows.filter(
+  (wf) => wf.cadence.kind === 'event_based' || wf.cadence.kind === 'time_based'
+).length;
+
 const workflowMetrics: readonly MetricTileData[] = [
-  { label: 'Workflows', value: '42', helper: 'Active library entries', tone: 'teal' },
-  { label: 'Event-backed', value: '18', helper: 'Mandatory calendar links', tone: 'green' },
-  { label: 'Needs review', value: '6', helper: 'Owner or evidence gaps', tone: 'orange' },
-  { label: 'Automated', value: '71%', helper: 'Evidence and signatures', tone: 'teal' },
+  { label: 'Workflows', value: String(allWorkflows.length), helper: 'Active library entries', tone: 'teal' },
+  { label: 'Event-backed', value: String(eventBackedCount), helper: 'Mandatory calendar links', tone: 'green' },
+  { label: 'Needs review', value: '—', helper: 'Owner or evidence gaps', tone: 'orange' },
+  { label: 'Automated', value: '—', helper: 'Evidence and signatures', tone: 'teal' },
 ];
 
 const workflowColumns: readonly DataTableColumn<WorkflowRow>[] = [
@@ -114,62 +168,7 @@ const workflowColumns: readonly DataTableColumn<WorkflowRow>[] = [
   { key: 'status', label: 'Status', status: true },
 ];
 
-const workflowRows: readonly WorkflowRow[] = [
-  {
-    domain: 'Governance',
-    domainOwner: 'Governance / QAPI Lead',
-    frequency: 'Quarterly',
-    risk: 'Medium',
-    status: 'active',
-    title: 'QAPI Committee Review',
-    workflowId: 'QA-WF-03',
-  },
-  {
-    domain: 'Compliance',
-    domainOwner: 'Compliance / Administrator',
-    frequency: 'As Needed',
-    risk: 'High',
-    status: 'active',
-    title: 'Incident response and escalation',
-    workflowId: 'CO-WF-02',
-  },
-  {
-    domain: 'Governance',
-    domainOwner: 'Governance / Governing Body',
-    frequency: 'Quarterly',
-    risk: 'Medium',
-    status: 'ready',
-    title: 'Quarterly Governing Body Packet',
-    workflowId: 'GV-WF-01',
-  },
-  {
-    domain: 'Human Resources',
-    domainOwner: 'Human Resources / Credentialing',
-    frequency: 'Annual',
-    risk: 'Low',
-    status: 'review-required',
-    title: 'Competency validation and license review',
-    workflowId: 'HR-WF-05',
-  },
-  {
-    domain: 'Risk Management',
-    domainOwner: 'Risk Management / Compliance',
-    frequency: 'Annual',
-    risk: 'Medium',
-    status: 'ready',
-    title: 'Emergency drill after-action workflow',
-    workflowId: 'RM-WF-04',
-  },
-  {
-    domain: 'Clinical Ops',
-    domainOwner: 'Clinical Ops / Director of Nursing',
-    frequency: 'Ongoing',
-    risk: 'High',
-    status: 'active',
-    title: 'Clinical chart audit and care plan review',
-    workflowId: 'CL-WF-08',
-  },
-];
+const workflowRows: readonly WorkflowRow[] = Object.values(WORKFLOWS).map(toWorkflowRow);
 
 const workflowCards: readonly SurfaceCardData[] = [
   {
@@ -198,8 +197,8 @@ const workflowCards: readonly SurfaceCardData[] = [
   },
 ];
 
-const allDomains = ['Governance', 'Compliance', 'Human Resources', 'Risk Management', 'Clinical Ops'] as const;
-const allRisks = ['High', 'Medium', 'Low'] as const;
+const allDomains = Array.from(new Set(workflowRows.map((r) => r.domain)));
+const allRisks = Array.from(new Set(workflowRows.map((r) => r.risk)));
 
 // Design cross-ref (Agent 04/14): Workflows library and swimlane align to V6_DESIGN.html ~1346 (workflowRecords, metrics, cards) and ~1361 (workflowSwimlaneColumns).
 // Current data matches design records; swimlane is dynamic but covers intake/evidence/approval/lock per design. See also V6_DESIGN_RECONCILIATION for workflows MATCHED_REFERENCE.

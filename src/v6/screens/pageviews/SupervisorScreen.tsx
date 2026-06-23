@@ -4,6 +4,8 @@ import { AlertTriangle, CalendarCheck2, ChevronsUpDown, ClipboardCheck, FileChec
 import { DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
+import { SEED_EMPLOYEES } from '@/policy/journey/data/employees';
+import type { JourneyEmployee } from '@/policy/journey/types/journey';
 
 interface SupervisorLearnerRow extends Record<string, string> {
   clearanceStatus: string;
@@ -49,63 +51,28 @@ const supervisorMetrics = [
   { label: 'GAO-EXAM', value: '3', helper: 'Pending supervisor signature', tone: 'amber' },
 ] satisfies readonly MetricTileData[];
 
-const learnerRows: readonly SupervisorLearnerRow[] = [
-  {
-    clearanceStatus: 'active',
-    exceptions: '0',
-    gaoProgress: '60%',
-    learnerId: 'EMP-1001',
-    name: 'Maria Santos, RN',
-    nextReview: 'Jun 21, 2026',
-    role: 'RN',
-    roleProgress: '25%',
-    supervisedVisits: '0/2',
-  },
-  {
-    clearanceStatus: 'ready',
-    exceptions: '0',
-    gaoProgress: '100%',
-    learnerId: 'EMP-1002',
-    name: 'Dani Lopez, HHA',
-    nextReview: 'Jun 21, 2026',
-    role: 'HHA',
-    roleProgress: '80%',
-    supervisedVisits: '2/2',
-  },
-  {
-    clearanceStatus: 'attention',
-    exceptions: '1',
-    gaoProgress: '83%',
-    learnerId: 'EMP-1003',
-    name: 'Kevin Huang, LVN',
-    nextReview: 'Jun 22, 2026',
-    role: 'LVN',
-    roleProgress: '50%',
-    supervisedVisits: '1/2',
-  },
-  {
-    clearanceStatus: 'signed',
-    exceptions: '0',
-    gaoProgress: '100%',
-    learnerId: 'EMP-1004',
-    name: 'Aisha Patel, OT',
-    nextReview: 'Jun 19, 2026',
-    role: 'OT',
-    roleProgress: '100%',
-    supervisedVisits: '2/2',
-  },
-  {
-    clearanceStatus: 'review-required',
-    exceptions: '0',
-    gaoProgress: '100%',
-    learnerId: 'EMP-1005',
-    name: 'Rowan Chen, DON',
-    nextReview: 'Jun 23, 2026',
-    role: 'DON',
-    roleProgress: '75%',
-    supervisedVisits: 'N/A',
-  },
-];
+// Real learner roster sourced from the journey seed directory (SEED_EMPLOYEES).
+// Per-module progress, supervised-visit counts, exceptions, and next-review dates
+// live in the headless journey store (attempts/evidence) which is out of scope here,
+// so those columns use honest neutral placeholders. clearanceStatus is DERIVED
+// from the real Appendix F / independent-work clearance flags on each seed record.
+function deriveClearanceStatus(employee: JourneyEmployee): string {
+  if (employee.clearedForIndependentWork) return 'signed';
+  if (!employee.appendixFCleared) return 'review-required';
+  return 'active';
+}
+
+const learnerRows: readonly SupervisorLearnerRow[] = SEED_EMPLOYEES.map((employee) => ({
+  clearanceStatus: deriveClearanceStatus(employee),
+  exceptions: '—',
+  gaoProgress: '—',
+  learnerId: employee.id,
+  name: employee.name,
+  nextReview: '—',
+  role: employee.role,
+  roleProgress: '—',
+  supervisedVisits: '—',
+}));
 
 const learnerColumns: readonly DataTableColumn<SupervisorLearnerRow>[] = [
   { key: 'learnerId', label: 'Learner ID' },
@@ -206,13 +173,40 @@ const supervisorActions = [
   { icon: PenLine, label: 'Request signature' },
 ] as const;
 
-const phaseBLearners = [
-  { id: 'EMP-1001', name: 'Maria Santos, RN', track: 'RN pathway', steps: '0 of 2 visits', status: 'In progress', tone: 'orange' as Tone, startDate: 'Apr 20, 2026', clearanceStatus: 'active', exceptions: '0', visits: '0/2', gao: 60, role: 25, visitsProgress: 0, annual: 10 },
-  { id: 'EMP-1002', name: 'Dani Lopez, HHA', track: 'HHA pathway', steps: '2 of 2 visits', status: 'Cleared', tone: 'green' as Tone, startDate: 'May 12, 2026', clearanceStatus: 'signed', exceptions: '0', visits: '2/2', gao: 100, role: 80, visitsProgress: 100, annual: 90 },
-  { id: 'EMP-1003', name: 'Kevin Huang, LVN', track: 'LVN pathway', steps: '1 of 2 visits', status: 'Remediation', tone: 'orange' as Tone, startDate: 'May 18, 2026', clearanceStatus: 'attention', exceptions: '1', visits: '1/2', gao: 83, role: 50, visitsProgress: 50, annual: 40 },
-  { id: 'EMP-1004', name: 'Aisha Patel, OT', track: 'OT pathway', steps: '2 of 2 visits', status: 'Cleared', tone: 'green' as Tone, startDate: 'Jun 1, 2026', clearanceStatus: 'signed', exceptions: '0', visits: '2/2', gao: 100, role: 100, visitsProgress: 100, annual: 100 },
-  { id: 'EMP-1005', name: 'Rowan Chen, DON', track: 'DON pathway', steps: 'N/A', status: 'Review Required', tone: 'slate' as Tone, startDate: 'Jun 10, 2026', clearanceStatus: 'review-required', exceptions: '0', visits: 'N/A', gao: 100, role: 75, visitsProgress: 100, annual: 100 },
-];
+// Format a seed ISO date (e.g. '2026-04-20') to the existing display format ('Apr 20, 2026').
+function formatSeedDate(iso: string | null): string {
+  if (!iso) return '—';
+  const parsed = new Date(`${iso}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) return '—';
+  return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+}
+
+// Selection model + picker source, derived from the same real SEED_EMPLOYEES roster.
+// id/name/role/startDate come straight from the seed. track is derived from role.
+// clearanceStatus/status/tone/steps are DERIVED from the real clearance flags.
+// Numeric progress (gao/role/visitsProgress/annual) and visit counts live in the
+// headless journey store (out of scope), so they default to 0 / '—' honestly.
+const phaseBLearners = SEED_EMPLOYEES.map((employee) => {
+  const clearanceStatus = deriveClearanceStatus(employee);
+  const cleared = employee.clearedForIndependentWork;
+  const needsReview = !employee.appendixFCleared;
+  return {
+    id: employee.id,
+    name: employee.name,
+    track: `${employee.role} pathway`,
+    steps: '—',
+    status: cleared ? 'Cleared' : needsReview ? 'Review Required' : 'In progress',
+    tone: (cleared ? 'green' : needsReview ? 'slate' : 'orange') as Tone,
+    startDate: formatSeedDate(employee.startDate),
+    clearanceStatus,
+    exceptions: '—',
+    visits: '—',
+    gao: 0,
+    role: 0,
+    visitsProgress: cleared ? 100 : 0,
+    annual: 0,
+  };
+});
 
 export function SupervisorScreen() {
   const [selectedLearner, setSelectedLearner] = useState(phaseBLearners[0]);

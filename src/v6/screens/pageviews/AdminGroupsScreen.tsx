@@ -4,6 +4,50 @@ import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type
 import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { USER_GROUPS } from '@/policy/security/identity/userGroups';
+import { PERMISSION_CATALOG, PERMISSION_BY_ID } from '@/policy/security/identity/permissionCatalog';
+import { ROLE_ASSIGNMENTS } from '@/policy/security/identity/roleAssignments';
+import type { PermissionId } from '@/policy/security/identity/types';
+
+// --- Real seed derivations (USER_GROUPS + PERMISSION_CATALOG + ROLE_ASSIGNMENTS) ---
+
+// Member count per group derived from active (non-revoked) role assignments.
+const MEMBER_COUNT_BY_GROUP = ROLE_ASSIGNMENTS.reduce<Record<string, number>>((acc, assignment) => {
+  if (assignment.revokedAt) return acc;
+  acc[assignment.groupId] = (acc[assignment.groupId] ?? 0) + 1;
+  return acc;
+}, {});
+
+// Privileged permissions = admin-capable or PHI-write scopes from the real catalog.
+const PRIVILEGED_PERMISSIONS = new Set<PermissionId>([
+  'user.provision',
+  'user.suspend',
+  'policy.approve',
+  'policy.publish',
+  'ceu.override',
+  'audit.export',
+  'phi.write',
+  'system.replay',
+]);
+
+const isPrivilegedGroup = (permissions: PermissionId[]): boolean =>
+  permissions.some((permission) => PRIVILEGED_PERMISSIONS.has(permission));
+
+// Permission posture derived honestly from the group's granted scope, not invented.
+const derivePosture = (permissions: PermissionId[]): string => {
+  if (permissions.length === 0) return 'review-required';
+  if (permissions.includes('user.provision') && permissions.includes('system.replay')) return 'locked';
+  if (isPrivilegedGroup(permissions)) return 'validated';
+  return 'ready';
+};
+
+// Access scope text derived from the group's real permission descriptions.
+const formatScope = (permissions: PermissionId[]): string =>
+  permissions.length === 0
+    ? '—'
+    : permissions
+        .map((permission) => PERMISSION_BY_ID[permission]?.description ?? permission)
+        .join(' ');
 
 interface AdminGroupRow extends Record<string, string> {
   accessScope: string;
@@ -28,71 +72,25 @@ interface PermissionPreview {
   posture: string;
 }
 
+const totalMembers = Object.values(MEMBER_COUNT_BY_GROUP).reduce((sum, count) => sum + count, 0);
+const limitedGroups = USER_GROUPS.filter((group) => group.permissions.length === 0).length;
+const dualControlGroups = USER_GROUPS.filter((group) => isPrivilegedGroup(group.permissions)).length;
+
 const groupMetrics: readonly MetricTileData[] = [
-  { label: 'Groups', value: '7', helper: 'Governed RBAC cohorts', tone: 'teal' },
-  { label: 'Members', value: '92', helper: 'Assigned active users', tone: 'green' },
-  { label: 'Limited', value: '2', helper: 'Scopes under review', tone: 'orange' },
-  { label: 'Dual control', value: '5', helper: 'Privileged changes gated', tone: 'amber' },
+  { label: 'Groups', value: String(USER_GROUPS.length), helper: 'Governed RBAC cohorts', tone: 'teal' },
+  { label: 'Members', value: String(totalMembers), helper: 'Assigned active users', tone: 'green' },
+  { label: 'Limited', value: String(limitedGroups), helper: 'Scopes under review', tone: 'orange' },
+  { label: 'Dual control', value: String(dualControlGroups), helper: 'Privileged changes gated', tone: 'amber' },
 ];
 
-const groupRows: readonly AdminGroupRow[] = [
-  {
-    accessScope: 'Full platform, provisioning, audit export',
-    groupId: 'grp-super-admin',
-    groupName: 'Super Admin',
-    members: '8',
-    permissionPosture: 'locked',
-    roleLinks: 'Platform Owner, Security Admin',
-  },
-  {
-    accessScope: 'Policies, CES, evidence, governance reports',
-    groupId: 'grp-compliance',
-    groupName: 'Compliance Council',
-    members: '12',
-    permissionPosture: 'active',
-    roleLinks: 'Compliance Officer, QAPI Lead',
-  },
-  {
-    accessScope: 'Patients, clinical tasks, care-plan evidence',
-    groupId: 'grp-clinical-rn',
-    groupName: 'Clinical RN',
-    members: '34',
-    permissionPosture: 'ready',
-    roleLinks: 'Clinical Manager, Field RN',
-  },
-  {
-    accessScope: 'Journey setup, batches, clearance gates',
-    groupId: 'grp-onboarding',
-    groupName: 'Onboarding Operations',
-    members: '18',
-    permissionPosture: 'review-required',
-    roleLinks: 'Onboarding Admin, HR Credentialing',
-  },
-  {
-    accessScope: 'QAPI packets, corrective actions, report export',
-    groupId: 'grp-qapi',
-    groupName: 'QAPI Review',
-    members: '6',
-    permissionPosture: 'validated',
-    roleLinks: 'QAPI Lead, Governing Body Reviewer',
-  },
-  {
-    accessScope: 'Read-only survey packet and policy viewer',
-    groupId: 'grp-surveyor-readonly',
-    groupName: 'Surveyor Read-only',
-    members: '3',
-    permissionPosture: 'approved',
-    roleLinks: 'External Surveyor, Audit Observer',
-  },
-  {
-    accessScope: 'Payroll exports, visit logs, billing reports',
-    groupId: 'grp-business-office',
-    groupName: 'Business Office',
-    members: '11',
-    permissionPosture: 'pending',
-    roleLinks: 'Billing Ops, Hubstaff Reviewer',
-  },
-];
+const groupRows: readonly AdminGroupRow[] = USER_GROUPS.map((group) => ({
+  accessScope: formatScope(group.permissions),
+  groupId: group.id,
+  groupName: group.name,
+  members: String(MEMBER_COUNT_BY_GROUP[group.id] ?? 0),
+  permissionPosture: derivePosture(group.permissions),
+  roleLinks: '—',
+}));
 
 const groupColumns: readonly DataTableColumn<AdminGroupRow>[] = [
   { key: 'groupName', label: 'Group' },
@@ -168,13 +166,14 @@ const scopeTiles: readonly ScopeTile[] = [
   },
 ];
 
-const permissionPreview: readonly PermissionPreview[] = [
-  { groups: 'Super Admin', permission: 'User administration', posture: 'locked' },
-  { groups: 'Compliance Council, QAPI Review', permission: 'Audit packet export', posture: 'active' },
-  { groups: 'Clinical RN', permission: 'Assigned patient access', posture: 'ready' },
-  { groups: 'Onboarding Operations', permission: 'Journey administration', posture: 'review-required' },
-  { groups: 'Surveyor Read-only', permission: 'Surveyor viewer access', posture: 'approved' },
-];
+const permissionPreview: readonly PermissionPreview[] = PERMISSION_CATALOG.map((permission) => {
+  const holdingGroups = USER_GROUPS.filter((group) => group.permissions.includes(permission.id));
+  return {
+    groups: holdingGroups.length === 0 ? '—' : holdingGroups.map((group) => group.name).join(', '),
+    permission: permission.description,
+    posture: PRIVILEGED_PERMISSIONS.has(permission.id) ? 'locked' : 'ready',
+  };
+});
 
 export function AdminGroupsScreen() {
   const [activePanel, setActivePanel] = useState<GroupPanelTabId>('guardrails');

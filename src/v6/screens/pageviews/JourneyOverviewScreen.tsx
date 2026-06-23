@@ -1,8 +1,11 @@
-import { Award, BookOpenCheck, ClipboardCheck, FileSignature, LockKeyhole, Route, ShieldCheck, Stethoscope, UserCheck, type LucideIcon } from 'lucide-react';
+import { Award, BookOpenCheck, FileSignature, LockKeyhole, Route, ShieldCheck, Stethoscope, UserCheck, type LucideIcon } from 'lucide-react';
 import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneSoftTileClasses, type MetricTileData, type SurfaceCardData } from '../../components';
 import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { SEED_EMPLOYEES } from '@/policy/journey/data/employees';
+import { modulesForRole } from '@/policy/journey/data/modules';
+import type { CompetencyMethod, JourneyModule as SeedJourneyModule, JourneyPhase as SeedJourneyPhase, ModuleGroup } from '@/policy/journey/types/journey';
 
 interface JourneyPhase {
   detail: string;
@@ -94,150 +97,73 @@ const journeyPhases = [
   },
 ] satisfies readonly JourneyPhase[];
 
-const journeyModules = [
-  {
-    description: 'Agency purpose, care model, and values attestation for every new hire.',
-    group: 'GAO',
-    icon: BookOpenCheck,
-    id: 'GAO-001',
-    method: 'Read and attest',
-    phase: 'Core Journey',
-    policyRefs: ['EN-CM-001'],
-    score: 100,
-    status: 'complete',
-    title: 'Agency mission, vision, values',
-    tone: 'green',
-  },
-  {
-    description: 'Program expectations, reporting channels, and code-of-conduct review.',
-    group: 'GAO',
-    icon: ShieldCheck,
-    id: 'GAO-004',
-    method: 'Quiz',
-    phase: 'Core Journey',
-    policyRefs: ['CO-CP-001', 'CO-CP-004'],
-    score: 85,
-    status: 'complete',
-    title: 'Corporate compliance program',
-    tone: 'green',
-  },
-  {
-    description: 'PHI handling, minimum necessary access, and privacy safeguards.',
-    group: 'GAO',
-    icon: ShieldCheck,
-    id: 'GAO-007',
-    method: 'Quiz',
-    phase: 'Core Journey',
-    policyRefs: ['CO-HP-001', 'CO-HP-004'],
-    score: 92,
-    status: 'complete',
-    title: 'HIPAA privacy and PHI handling',
-    tone: 'green',
-  },
-  {
-    description: 'PPE, hand hygiene, infection prevention, and return-demo validation.',
-    group: 'GAO',
-    icon: ClipboardCheck,
-    id: 'GAO-013',
-    method: 'Return demo',
-    phase: 'Core Journey',
-    policyRefs: ['CL-SD-016'],
-    score: 100,
-    status: 'complete',
-    title: 'Infection prevention basics',
-    tone: 'green',
-  },
-  {
-    description: 'Exposure control module is in progress and still below release threshold.',
-    group: 'GAO',
-    icon: ClipboardCheck,
-    id: 'GAO-014',
-    method: 'Quiz',
-    phase: 'Core Journey',
-    policyRefs: ['RM-OS-001'],
-    score: 65,
-    status: 'active',
-    title: 'Bloodborne pathogen exposure control',
-    tone: 'orange',
-  },
-  {
-    description: 'Final core competency check remains gated until prerequisites and review close.',
-    group: 'GAO',
-    icon: LockKeyhole,
-    id: 'GAO-EXAM',
-    method: 'Competency quiz',
-    phase: 'Core Journey',
-    policyRefs: ['HR-TA-005 Appendix D'],
-    prerequisites: 'Requires GAO-001, GAO-004, GAO-007, GAO-013, and supervisor review.',
-    status: 'locked',
-    supervisorSignature: true,
-    title: 'General Orientation Competency Quiz',
+// Real seed learner shown in the phase rail (Maria Santos, RN — EMP-1001).
+const journeyLearner = SEED_EMPLOYEES.find((employee) => employee.id === 'EMP-1001') ?? SEED_EMPLOYEES[0];
+const journeySupervisor = SEED_EMPLOYEES.find((employee) => employee.id === journeyLearner.supervisorId);
+
+// Deterministic, presentation-only icon by module group (no fabricated data value).
+const GROUP_ICON: Record<ModuleGroup, LucideIcon> = {
+  ANN: Award,
+  COMP: LockKeyhole,
+  DRILL: ShieldCheck,
+  GAO: BookOpenCheck,
+  ROLE: Stethoscope,
+};
+
+// Seed phase enum -> existing display label used by the phase rail / cards.
+const PHASE_LABEL: Record<SeedJourneyPhase, string> = {
+  ANN: 'Annual',
+  CLEARED: 'Cleared',
+  DRILL: 'Drills',
+  GAO: 'Core Journey',
+  PRE_DAY_1: 'Pre-Day-1',
+  ROLE: 'Clinical Role',
+  SUPERVISED: 'Supervised',
+};
+
+// Seed competency-method enum -> human-readable method label (derived from real field).
+const METHOD_LABEL: Record<CompetencyMethod, string> = {
+  CaseStudy: 'Case study',
+  CodingExercise: 'Coding exercise',
+  MockSurvey: 'Mock survey',
+  None: 'Read and attest',
+  Observation: 'Observation',
+  PhishingSim: 'Phishing simulation',
+  Quiz: 'Quiz',
+  RecordReview: 'Record review',
+  ReturnDemo: 'Return demo',
+  Scenario: 'Scenario',
+  SkillsCheckoff: 'Skills checkoff',
+  SupervisedVisit: 'Supervised visit',
+  Tabletop: 'Tabletop',
+};
+
+// Description derived only from real seed fields (method label + regulatory refs).
+function describeModule(seed: SeedJourneyModule): string {
+  const refs = seed.cmsRefs.length > 0 ? seed.cmsRefs.join(', ') : seed.policyRefs.join(', ');
+  return refs ? `${METHOD_LABEL[seed.method]} competency aligned to ${refs}.` : `${METHOD_LABEL[seed.method]} competency.`;
+}
+
+function toJourneyModule(seed: SeedJourneyModule): JourneyModule {
+  return {
+    description: describeModule(seed),
+    group: seed.group,
+    icon: GROUP_ICON[seed.group],
+    id: seed.id,
+    method: METHOD_LABEL[seed.method],
+    phase: PHASE_LABEL[seed.phase],
+    policyRefs: seed.policyRefs,
+    // Real prerequisite ids from the seed; no per-learner status is seeded.
+    prerequisites: seed.prerequisites && seed.prerequisites.length > 0 ? `Requires ${seed.prerequisites.join(', ')}.` : undefined,
+    // No per-learner attempt/score is seeded — use the honest SCORM default + neutral tone.
+    status: 'not attempted',
+    supervisorSignature: seed.supervisorSignature,
+    title: seed.title,
     tone: 'slate',
-  },
-  {
-    description: 'EHR navigation and clinical documentation workflow validated for RN role.',
-    group: 'ROLE',
-    icon: Stethoscope,
-    id: 'RN-001',
-    method: 'Return demo',
-    phase: 'Clinical Role',
-    policyRefs: ['CL-CD-001', 'IT-UP-001'],
-    score: 100,
-    status: 'complete',
-    title: 'EHR system navigation',
-    tone: 'green',
-  },
-  {
-    description: 'Item-level OASIS practice is underway with coding feedback pending.',
-    group: 'ROLE',
-    icon: Stethoscope,
-    id: 'RN-002',
-    method: 'Coding exercise',
-    phase: 'Clinical Role',
-    policyRefs: ['CL-OA-001'],
-    status: 'active',
-    title: 'OASIS training',
-    tone: 'orange',
-  },
-  {
-    description: 'Medication reconciliation checkoff is available after OASIS review.',
-    group: 'ROLE',
-    icon: ClipboardCheck,
-    id: 'RN-008',
-    method: 'Skills checkoff',
-    phase: 'Clinical Role',
-    policyRefs: ['CL-SD-012', 'CL-SD-013'],
-    status: 'ready',
-    title: 'Medication management and reconciliation',
-    tone: 'teal',
-  },
-  {
-    description: 'Minimum two supervised patient visits are required for independent clearance.',
-    group: 'ROLE',
-    icon: UserCheck,
-    id: 'RN-SUP',
-    method: 'Supervised visit',
-    phase: 'Supervised',
-    policyRefs: ['HR-TA-005 App B'],
-    prerequisites: 'Unlocks after GAO exam, role evidence, and DON review.',
-    status: 'locked',
-    supervisorSignature: true,
-    title: 'Supervised patient visits',
-    tone: 'slate',
-  },
-  {
-    description: 'Annual code-of-conduct recurrence is queued for the first compliance cycle.',
-    group: 'ANN',
-    icon: Award,
-    id: 'ANN-001',
-    method: 'Quiz',
-    phase: 'Annual',
-    policyRefs: ['CO-CP-001'],
-    status: 'upcoming',
-    title: 'Compliance and Code of Conduct',
-    tone: 'amber',
-  },
-] satisfies readonly JourneyModule[];
+  };
+}
+
+const journeyModules = modulesForRole(journeyLearner.role).map(toJourneyModule) satisfies readonly JourneyModule[];
 
 const supervisorReadiness = [
   {
@@ -310,16 +236,16 @@ export function JourneyOverviewScreen() {
               </div>
               <div className="grid gap-xs">
                 <p className="text-tag uppercase tracking-tag text-muted">Learner</p>
-                <h2 className="text-h2 font-medium text-ink">Maria Santos, RN</h2>
-                <p className="text-sm text-secondary">Start date Apr 20, 2026</p>
+                <h2 className="text-h2 font-medium text-ink">{journeyLearner.name}</h2>
+                <p className="text-sm text-secondary">Start date {journeyLearner.startDate ?? '—'}</p>
               </div>
             </div>
 
             <div className="grid gap-sm border-t border-hairline pt-lg">
-              <LearnerFact label="Supervisor" value="Dr. Elena Navarro, RN DON" />
-              <LearnerFact label="License" value="RN-00123456" />
-              <LearnerFact label="Appendix F" value="Cleared and signed" />
-              <LearnerFact label="Independent work" value="Not cleared" />
+              <LearnerFact label="Supervisor" value={journeySupervisor?.name ?? '—'} />
+              <LearnerFact label="License" value={journeyLearner.licenseNumber ?? '—'} />
+              <LearnerFact label="Appendix F" value={journeyLearner.appendixFCleared ? 'Cleared and signed' : 'Not cleared'} />
+              <LearnerFact label="Independent work" value={journeyLearner.clearedForIndependentWork ? 'Cleared' : 'Not cleared'} />
             </div>
           </section>
 

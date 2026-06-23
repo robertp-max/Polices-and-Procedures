@@ -1,5 +1,8 @@
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { AlertTriangle, BookOpen, CheckCircle2, ClipboardCheck, ClipboardList, FileCheck2, LockKeyhole, NotebookText, PlayCircle, ShieldCheck, Signature, type LucideIcon } from 'lucide-react';
+import { moduleById } from '@/policy/journey/data/modules';
+import { getAchcLessons } from '@/policy/journey/utils/achcTrainingCalculations';
 import { DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneGlassSurfaceClasses, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, Button, Checkbox, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
@@ -44,74 +47,14 @@ const routeMarker = {
   template: 'module-player',
 } as const;
 
-const moduleRecord = {
-  assessor: 'Dr. Elena Navarro, RN DON',
-  id: 'RN-008',
-  learner: 'Maria Santos, RN',
-  method: 'SkillsCheckoff',
-  policyRefs: 'CL-SD-012, CL-SD-013, HR-TA-005 App D',
-  score: '88%',
-  status: 'review-required',
-  title: 'Medication management and reconciliation',
-} as const;
+// Default to a module that has real lesson content so the player renders populated
+// records when no :moduleId is supplied by the route.
+const DEFAULT_MODULE_ID = 'ACHC-ART-M01';
 
-const moduleMetrics: readonly MetricTileData[] = [
-  { label: 'Method', value: 'Skills', helper: 'Checklist plus short assessment', tone: 'teal' },
-  { label: 'Lesson progress', value: '72%', helper: '4 of 6 steps complete', tone: 'orange' },
-  { label: 'Evidence', value: 'Ready', helper: 'Preceptor notes staged', tone: 'green' },
-  { label: 'Score', value: moduleRecord.score, helper: 'Passing threshold 80%', tone: 'teal' },
-];
-
-const lessonSteps: readonly LessonStep[] = [
-  {
-    detail: 'Role-specific medication safety overview and reconciliation objectives acknowledged.',
-    icon: CheckCircle2,
-    label: 'Orientation brief',
-    progress: 100,
-    status: 'complete',
-    tone: 'green',
-  },
-  {
-    detail: 'Learner reviewed policy anchors and home visit documentation expectations.',
-    icon: BookOpen,
-    label: 'Policy review',
-    progress: 100,
-    status: 'validated',
-    tone: 'green',
-  },
-  {
-    detail: 'Return-demo steps recorded for med list comparison, discrepancy escalation, and patient teaching.',
-    icon: ClipboardCheck,
-    label: 'Skills practice',
-    progress: 84,
-    status: 'ready',
-    tone: 'teal',
-  },
-  {
-    detail: 'Scenario questions are answered; one rationale needs assessor review before final completion.',
-    icon: NotebookText,
-    label: 'Knowledge check',
-    progress: 64,
-    status: 'review-required',
-    tone: 'orange',
-  },
-  {
-    detail: 'Evidence package is staged for supervisor confirmation and learner acknowledgement.',
-    icon: Signature,
-    label: 'Dual attestation',
-    progress: 48,
-    status: 'awaiting',
-    tone: 'amber',
-  },
-  {
-    detail: 'Independent-work clearance stays locked until the assessor signs the module record.',
-    icon: LockKeyhole,
-    label: 'Clearance gate',
-    progress: 0,
-    status: 'locked',
-    tone: 'slate',
-  },
-];
+// Lesson-step card icons cycle through the same icon set the static template used,
+// applied positionally to the REAL lessons returned for the module.
+const LESSON_STEP_ICONS: readonly LucideIcon[] = [CheckCircle2, BookOpen, ClipboardCheck, NotebookText, Signature, LockKeyhole];
+const LESSON_STEP_TONES: readonly Tone[] = ['green', 'green', 'teal', 'orange', 'amber', 'slate'];
 
 const checkoffColumns: readonly DataTableColumn<CheckoffRow>[] = [
   { key: 'criterion', label: 'Checkoff item' },
@@ -120,32 +63,89 @@ const checkoffColumns: readonly DataTableColumn<CheckoffRow>[] = [
   { key: 'status', label: 'Status', status: true },
 ];
 
-const checkoffRows: readonly CheckoffRow[] = [
-  {
-    criterion: 'Medication profile reconciled against discharge list',
-    evidence: 'Demo note plus screenshot',
-    owner: 'Preceptor',
-    status: 'validated',
-  },
-  {
-    criterion: 'High-risk medication flagged with escalation path',
-    evidence: 'Scenario response',
-    owner: 'Learner',
-    status: 'ready',
-  },
-  {
-    criterion: 'Patient teaching documented in visit note',
-    evidence: 'Teach-back checklist',
-    owner: 'Learner',
-    status: 'complete',
-  },
-  {
-    criterion: 'Supervisor rating and signature recorded',
-    evidence: 'Dual attestation',
-    owner: 'Supervisor',
-    status: 'awaiting',
-  },
-];
+interface ModulePlayerData {
+  moduleRecord: {
+    assessor: string;
+    id: string;
+    learner: string;
+    method: string;
+    policyRefs: string;
+    score: string;
+    status: string;
+    title: string;
+  };
+  moduleMetrics: MetricTileData[];
+  lessonSteps: LessonStep[];
+  checkoffRows: CheckoffRow[];
+  resources: ResourceLink[];
+}
+
+function buildModulePlayerData(moduleId: string): ModulePlayerData {
+  const module = moduleById(moduleId);
+  const lessons = getAchcLessons(moduleId);
+
+  const moduleRecord = {
+    assessor: module?.supervisorSignature ? 'Supervisor signature required' : '—',
+    id: module?.id ?? moduleId,
+    learner: '—',
+    method: module?.method ?? '—',
+    policyRefs: module?.policyRefs.length ? module.policyRefs.join(', ') : '—',
+    score: typeof module?.passThreshold === 'number' ? `${Math.round(module.passThreshold * 100)}%` : '—',
+    status: '—',
+    title: module?.title ?? moduleId,
+  };
+
+  const passHelper =
+    typeof module?.passThreshold === 'number'
+      ? `Passing threshold ${Math.round(module.passThreshold * 100)}%`
+      : 'No scored threshold';
+
+  const moduleMetrics: MetricTileData[] = [
+    { label: 'Method', value: module?.method ?? '—', helper: module?.deliveryMethod ?? 'Competency method', tone: 'teal' },
+    { label: 'Lessons', value: String(lessons.length), helper: 'Module lesson units', tone: 'orange' },
+    { label: 'Evidence', value: module?.evidenceAppendix ?? '—', helper: 'Evidence appendix', tone: 'green' },
+    { label: 'Threshold', value: moduleRecord.score, helper: passHelper, tone: 'teal' },
+  ];
+
+  const lessonSteps: LessonStep[] = lessons.map((lesson, index) => {
+    const firstCard = lesson.cards[0];
+    return {
+      detail: firstCard?.content ?? '—',
+      icon: LESSON_STEP_ICONS[index % LESSON_STEP_ICONS.length],
+      label: lesson.title,
+      progress: 0,
+      status: firstCard?.type ?? '—',
+      tone: LESSON_STEP_TONES[index % LESSON_STEP_TONES.length],
+    };
+  });
+
+  const checkoffRows: CheckoffRow[] = lessons.map((lesson) => {
+    const requiredCards = lesson.cards.filter((card) => card.completion_required).length;
+    return {
+      criterion: lesson.title,
+      evidence: `${requiredCards} required screen${requiredCards === 1 ? '' : 's'}`,
+      owner: '—',
+      status: lesson.cards.some((card) => card.type === 'challenge') ? 'review-required' : '—',
+    };
+  });
+
+  const resources: ResourceLink[] = [
+    ...(module?.policyRefs ?? []).map((ref) => ({
+      label: ref,
+      meta: `Policy reference for ${moduleRecord.title}`,
+      status: '—',
+      tone: 'teal' as Tone,
+    })),
+    ...(module?.cmsRefs ?? []).map((ref) => ({
+      label: ref,
+      meta: `Regulatory reference for ${moduleRecord.title}`,
+      status: '—',
+      tone: 'slate' as Tone,
+    })),
+  ];
+
+  return { moduleRecord, moduleMetrics, lessonSteps, checkoffRows, resources };
+}
 
 const evidenceGates: readonly EvidenceGate[] = [
   {
@@ -171,33 +171,6 @@ const evidenceGates: readonly EvidenceGate[] = [
     status: 'ready',
     tone: 'teal',
     value: 'Ready',
-  },
-];
-
-const resources: readonly ResourceLink[] = [
-  {
-    label: 'CL-SD-012 Medication Management',
-    meta: 'Medication reconciliation policy anchor',
-    status: 'validated',
-    tone: 'teal',
-  },
-  {
-    label: 'CL-SD-013 Medication Profile Review',
-    meta: 'Clinical documentation and escalation rules',
-    status: 'ready',
-    tone: 'green',
-  },
-  {
-    label: 'HR-TA-005 Appendix D',
-    meta: 'Competency assessment evidence appendix',
-    status: 'awaiting',
-    tone: 'amber',
-  },
-  {
-    label: 'Supervisor signoff guide',
-    meta: 'Preceptor scoring and learner acknowledgement',
-    status: 'upcoming',
-    tone: 'slate',
   },
 ];
 
@@ -228,6 +201,9 @@ const attestationRows = [
 
 export function ModulePlayerScreen() {
   const [showQuizFailure, setShowQuizFailure] = useState(true);
+  const params = useParams<{ moduleId?: string }>();
+  const moduleId = params.moduleId?.trim() || DEFAULT_MODULE_ID;
+  const { moduleRecord, moduleMetrics, lessonSteps, checkoffRows, resources } = buildModulePlayerData(moduleId);
 
   return (
     <section

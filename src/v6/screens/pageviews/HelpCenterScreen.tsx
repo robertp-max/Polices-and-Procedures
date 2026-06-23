@@ -13,8 +13,8 @@ const categories = [
 ] as const;
 
 const latestUpdates = [
-  'Policy Library and Policy Detail now use the 279-policy corpus.',
-  'Forms Library and Form Workspace now use the 410-form dataset.',
+  `Policy Library and Policy Detail now use the ${POLICY_CORPUS.length}-policy corpus.`,
+  `Forms Library and Form Workspace now use the ${FORMS_DATASET.length}-form dataset.`,
   'Signed artifacts must remain the actual Care Indeed PDF, not markdown, HTML, or generic text.',
 ] as const;
 

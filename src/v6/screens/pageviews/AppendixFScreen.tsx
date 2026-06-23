@@ -4,6 +4,7 @@ import { DataTable, MetricGrid, SurfaceCard, ToneTag, toneSoftTileClasses, VeilM
 import { Badge, Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { APPENDIX_F_TEMPLATE } from '@/policy/journey/data/appendices';
 
 
 interface ProcedureSection {
@@ -121,113 +122,28 @@ const checklistColumns: readonly DataTableColumn<ChecklistRow>[] = [
   { key: 'status', label: 'Gate State', status: true },
 ] as const;
 
-const checklistRows: readonly ChecklistRow[] = [
-  {
-    item: 'Criminal background screening completed',
-    number: '01',
-    policyRef: 'HR-TA-002',
-    result: 'PASS',
-    status: 'passed',
-  },
-  {
-    item: 'OIG LEIE exclusion check documented',
-    number: '02',
-    policyRef: 'CO-CP-004',
-    result: 'PASS',
-    status: 'validated',
-  },
-  {
-    item: 'SAM.gov exclusion check documented',
-    number: '03',
-    policyRef: 'CO-CP-004',
-    result: 'PASS',
-    status: 'validated',
-  },
-  {
-    item: 'Identity and work authorization reviewed',
-    number: '04',
-    policyRef: 'HR-TA-001',
-    result: 'PASS',
-    status: 'passed',
-  },
-  {
-    item: 'Professional license primary-source verification',
-    number: '05',
-    policyRef: 'HR-TA-003',
-    result: 'PENDING',
-    status: 'pending',
-  },
-  {
-    item: 'TB screening or risk assessment on file',
-    number: '06',
-    policyRef: 'IC-IP-004',
-    result: 'PASS',
-    status: 'passed',
-  },
-  {
-    item: 'Hepatitis B offer or declination captured',
-    number: '07',
-    policyRef: 'RM-OS-001',
-    result: 'PASS',
-    status: 'uploaded',
-  },
-  {
-    item: 'CPR or BLS credential verified for role',
-    number: '08',
-    policyRef: 'HR-TA-005',
-    result: 'PASS',
-    status: 'validated',
-  },
-  {
-    item: 'Driver license and auto insurance reviewed',
-    number: '09',
-    policyRef: 'HR-TA-004',
-    result: 'N/A',
-    status: 'complete',
-  },
-  {
-    item: 'Job description signed by employee',
-    number: '10',
-    policyRef: 'HR-TA-001',
-    result: 'PASS',
-    status: 'signed',
-  },
-  {
-    item: 'Confidentiality and HIPAA attestation signed',
-    number: '11',
-    policyRef: 'CO-HP-001',
-    result: 'PASS',
-    status: 'signed',
-  },
-  {
-    item: 'Offer letter and compensation acknowledgement',
-    number: '12',
-    policyRef: 'HR-TA-001',
-    result: 'PASS',
-    status: 'signed',
-  },
-  {
-    item: 'Reference checks completed or waived by policy',
-    number: '13',
-    policyRef: 'HR-TA-002',
-    result: 'N/A',
-    status: 'complete',
-  },
-  {
-    item: 'Required immunization documentation complete',
-    number: '14',
-    policyRef: 'IC-IP-004',
-    result: 'PENDING',
-    status: 'pending',
-  },
-  {
-    item: 'HR Director final clearance signature',
-    number: '15',
-    policyRef: 'HR-TA-001 Appendix F',
-    result: 'PENDING',
-    status: 'awaiting',
-  },
-] as const;
+// Result label + gate-state derived from the real AppendixFItem.status seed field.
+const APPENDIX_F_RESULT_LABEL: Record<string, string> = {
+  PENDING: 'PENDING',
+  PASS: 'PASS',
+  FAIL: 'FAIL',
+  NA: 'N/A',
+};
+
+const APPENDIX_F_GATE_STATE: Record<string, string> = {
+  PENDING: 'pending',
+  PASS: 'passed',
+  FAIL: 'error',
+  NA: 'complete',
+};
+
+const checklistRows: readonly ChecklistRow[] = APPENDIX_F_TEMPLATE.map((item) => ({
+  item: item.label,
+  number: String(item.id).padStart(2, '0'),
+  policyRef: item.policyRef,
+  result: APPENDIX_F_RESULT_LABEL[item.status] ?? item.status,
+  status: APPENDIX_F_GATE_STATE[item.status] ?? item.status.toLowerCase(),
+}));
 
 const citationPanels = [
   {

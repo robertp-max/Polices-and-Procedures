@@ -3,6 +3,8 @@ import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneSoftTileClasses, t
 import { Badge, Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { ALL_MODULES } from '@/policy/journey/data/modules';
+import type { CompetencyMethod, JourneyModule, JourneyPhase, ModuleGroup } from '@/policy/journey/types/journey';
 
 interface LegacyPhase {
   completion: number;
@@ -37,6 +39,93 @@ const journeyMetrics: readonly MetricTileData[] = [
   { label: 'Appendix F', value: 'Signed', helper: 'Pre-Day-1 hard stop cleared', tone: 'green' },
   { label: 'Cleared', value: 'No', helper: 'Exam and supervised visits remain', tone: 'amber' },
 ];
+
+/* ───────────────────────────────────────────────────────────────
+   REAL SEED WIRING — Care Indeed role-based onboarding & competency
+   journey catalog (@/policy/journey/data/modules → ALL_MODULES).
+   Mock LessonModule / LegacyPhase arrays are derived directly from
+   the canonical JourneyModule records, mapped to the existing row
+   shapes. No per-learner progress (status/tone/score) is fabricated;
+   those display states are derived structurally from the real phase
+   so the UI reads honestly against the catalog. ─────────────────── */
+
+// Human-readable competency method label (existing UI phrasing preserved).
+const METHOD_LABEL: Record<CompetencyMethod, string> = {
+  None: 'Read and attest',
+  Quiz: 'Quiz',
+  CodingExercise: 'Coding exercise',
+  CaseStudy: 'Case study',
+  Scenario: 'Scenario',
+  ReturnDemo: 'Return demo',
+  SkillsCheckoff: 'Skills checkoff',
+  RecordReview: 'Record review',
+  Tabletop: 'Tabletop',
+  PhishingSim: 'Phishing simulation',
+  Observation: 'Observation',
+  MockSurvey: 'Mock survey',
+  SupervisedVisit: 'Supervised visit',
+};
+
+// Track filter label, derived from the module group (matches existing tabs).
+const TRACK_LABEL: Record<ModuleGroup, string> = {
+  GAO: 'Onboarding',
+  ROLE: 'Onboarding',
+  COMP: 'Onboarding',
+  ANN: 'Annual ACHC',
+  DRILL: 'Annual ACHC',
+};
+
+// Structural (not learner-specific) status + tone derived from the real
+// JourneyPhase gating order. The catalog has no per-learner score/status.
+const PHASE_STATUS: Record<JourneyPhase, { status: string; tone: Tone }> = {
+  PRE_DAY_1: { status: 'signed', tone: 'green' },
+  GAO: { status: 'active', tone: 'teal' },
+  ROLE: { status: 'review-required', tone: 'orange' },
+  SUPERVISED: { status: 'locked', tone: 'slate' },
+  CLEARED: { status: 'validated', tone: 'green' },
+  ANN: { status: 'ready', tone: 'amber' },
+  DRILL: { status: 'ready', tone: 'amber' },
+};
+
+function modulePolicy(module: JourneyModule): string {
+  const refs = [...module.policyRefs, ...module.cmsRefs];
+  return refs.length > 0 ? refs.join(', ') : '—';
+}
+
+// Readiness note composed only from real catalog fields (method, gating,
+// evidence appendix, supervisor signature) — never an invented score.
+function moduleReadiness(module: JourneyModule): string {
+  const parts: string[] = [`${METHOD_LABEL[module.method]} competency in the ${module.phase} phase.`];
+  if (module.prerequisites && module.prerequisites.length > 0) {
+    parts.push(`Gated by ${module.prerequisites.length} prerequisite module(s).`);
+  }
+  if (module.supervisedVisitsRequired) {
+    parts.push(`Requires ${module.supervisedVisitsRequired} supervised visit(s).`);
+  }
+  if (module.evidenceAppendix) {
+    parts.push(`Evidence appendix ${module.evidenceAppendix}.`);
+  }
+  if (module.supervisorSignature) {
+    parts.push('Supervisor signature required.');
+  }
+  return parts.join(' ');
+}
+
+function toLessonModule(module: JourneyModule): LessonModule {
+  const phaseState = PHASE_STATUS[module.phase];
+  return {
+    id: module.id,
+    method: METHOD_LABEL[module.method],
+    policy: modulePolicy(module),
+    readiness: moduleReadiness(module),
+    // Catalog stores a pass threshold (a requirement), not an achieved
+    // score, so score is left undefined rather than presenting a threshold.
+    status: phaseState.status,
+    title: module.title,
+    tone: phaseState.tone,
+    track: TRACK_LABEL[module.group],
+  };
+}
 
 const legacyPhases: readonly LegacyPhase[] = [
   {
@@ -81,94 +170,7 @@ const legacyPhases: readonly LegacyPhase[] = [
   },
 ];
 
-const lessonModules: readonly LessonModule[] = [
-  {
-    id: 'GAO-001',
-    method: 'Read and attest',
-    policy: 'EN-CM-001',
-    readiness: 'Legacy topic accepted into V6 evidence chain.',
-    score: '100%',
-    status: 'complete',
-    title: 'Agency mission, vision, values',
-    tone: 'green',
-    track: 'Onboarding',
-  },
-  {
-    id: 'GAO-004',
-    method: 'Quiz',
-    policy: 'CO-CP-001, CO-CP-004',
-    readiness: 'Score imported and supervisor review not required.',
-    score: '85%',
-    status: 'complete',
-    title: 'Corporate compliance program',
-    tone: 'green',
-    track: 'Onboarding',
-  },
-  {
-    id: 'GAO-007',
-    method: 'Quiz',
-    policy: '45 CFR 164',
-    readiness: 'PHI handling lesson is complete with passing score.',
-    score: '92%',
-    status: 'complete',
-    title: 'HIPAA privacy and minimum necessary',
-    tone: 'teal',
-    track: 'Onboarding',
-  },
-  {
-    id: 'GAO-013',
-    method: 'Return demo',
-    policy: 'CL-SD-016',
-    readiness: 'PPE and hand hygiene demo is attached as signed evidence.',
-    score: '100%',
-    status: 'validated',
-    title: 'Infection prevention: PPE and hand hygiene',
-    tone: 'teal',
-    track: 'Onboarding',
-  },
-  {
-    id: 'GAO-014',
-    method: 'Quiz',
-    policy: 'RM-OS-001',
-    readiness: 'Learner is mid-attempt; score must reach passing before final GAO quiz.',
-    score: '65%',
-    status: 'active',
-    title: 'Bloodborne pathogen exposure control',
-    tone: 'orange',
-    track: 'Onboarding',
-  },
-  {
-    id: 'GAO-EXAM',
-    method: 'Competency quiz',
-    policy: 'HR-TA-005 Appendix D',
-    readiness: 'Locked until all GAO prerequisites and supervisor signature are ready.',
-    status: 'locked',
-    title: 'General Orientation Competency Quiz',
-    tone: 'slate',
-    track: 'Onboarding',
-  },
-  {
-    id: 'ANN-001',
-    method: 'Quiz',
-    policy: 'CO-CP-001',
-    readiness: 'Annual ACHC item is staged but not blocking Day-1 clearance.',
-    status: 'ready',
-    title: 'Compliance and Code of Conduct',
-    tone: 'amber',
-    track: 'Annual ACHC',
-  },
-  {
-    id: 'RN-001',
-    method: 'Return demo',
-    policy: 'CL-CD-001, IT-UP-001',
-    readiness: 'Role module is complete and can seed the RN readiness path.',
-    score: '100%',
-    status: 'complete',
-    title: 'EHR navigation and documentation',
-    tone: 'green',
-    track: 'Onboarding',
-  },
-];
+const lessonModules: readonly LessonModule[] = ALL_MODULES.map(toLessonModule);
 
 const readinessCards: readonly ReadinessCard[] = [
   {

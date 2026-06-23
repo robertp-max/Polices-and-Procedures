@@ -4,6 +4,9 @@ import { DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneBarClas
 import { Button, ToneBadge, Input, Textarea } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { ALL_MODULES } from '@/policy/journey/data/modules';
+import { SEED_EMPLOYEES } from '@/policy/journey/data/employees';
+import type { JourneyModule } from '@/policy/journey/types/journey';
 
 interface SyllabusRow extends Record<string, string> {
   catalogId: string;
@@ -52,68 +55,80 @@ const journeyAdminMetrics = [
   { label: 'Review queue', value: '9', helper: 'Catalog and evidence checks', tone: 'amber' },
 ] satisfies readonly MetricTileData[];
 
-const syllabusRows: readonly SyllabusRow[] = [
-  {
-    catalogId: 'GAO-001',
-    evidence: 'Learner attestation',
-    expires: 'Annual refresh',
-    owner: 'Training Coordinator',
-    policyRef: 'HR-TA-005',
-    status: 'ready',
-    title: 'Agency mission, values, and care model',
-    trigger: 'All new hires',
-  },
-  {
-    catalogId: 'HR-APP-F',
-    evidence: 'HR Director signature',
-    expires: 'At hire',
-    owner: 'HR Credentialing',
-    policyRef: 'HR-TA-001 Appendix F',
-    status: 'locked',
-    title: 'Pre-employment hard-stop checklist',
-    trigger: 'Pre-Day-1 clearance',
-  },
-  {
-    catalogId: 'GAO-007',
-    evidence: 'Quiz certificate',
-    expires: 'Annual refresh',
-    owner: 'Compliance Officer',
-    policyRef: 'CO-HP-001',
-    status: 'active',
-    title: 'HIPAA privacy and minimum necessary',
-    trigger: 'All workforce members',
-  },
-  {
-    catalogId: 'RN-008',
-    evidence: 'Skills checkoff',
-    expires: '24 months',
-    owner: 'Director of Nursing',
-    policyRef: 'CL-SD-012',
-    status: 'review-required',
-    title: 'Medication management and reconciliation',
-    trigger: 'RN and LVN field role',
-  },
-  {
-    catalogId: 'RN-SUP',
-    evidence: 'Appendix E visit log',
-    expires: 'Before independent work',
-    owner: 'Preceptor Supervisor',
-    policyRef: 'HR-TA-005 App B',
-    status: 'awaiting',
-    title: 'Supervised patient visits',
-    trigger: 'Clinical clearance gate',
-  },
-  {
-    catalogId: 'ANN-001',
-    evidence: 'eCIgn attestation',
-    expires: 'Annual cycle',
-    owner: 'Onboarding Admin',
-    policyRef: 'CO-CP-001',
-    status: 'pending',
-    title: 'Code of conduct and compliance program',
-    trigger: 'Annual recertification',
-  },
-];
+const roleLabel = (roles: JourneyModule['roles']): string =>
+  roles === 'ALL' ? 'All roles' : roles.join(', ');
+
+const groupTrigger = (m: JourneyModule): string => {
+  switch (m.group) {
+    case 'GAO':
+      return 'All new hires';
+    case 'ROLE':
+      return m.phase === 'SUPERVISED' ? 'Clinical clearance gate' : `Role onboarding — ${roleLabel(m.roles)}`;
+    case 'ANN':
+      return 'Annual recertification';
+    case 'DRILL':
+      return 'Emergency preparedness drill';
+    case 'COMP':
+      return 'Competency re-evaluation';
+    default:
+      return roleLabel(m.roles);
+  }
+};
+
+const groupExpires = (m: JourneyModule): string => {
+  switch (m.group) {
+    case 'ANN':
+      return m.annualQuarter ? `Annual cycle (${m.annualQuarter})` : 'Annual cycle';
+    case 'COMP':
+      return 'Annual re-eval';
+    case 'GAO':
+      return 'At hire';
+    case 'ROLE':
+      return m.week ? `Week ${m.week}` : 'Days 1-30';
+    default:
+      return '—';
+  }
+};
+
+const evidenceLabel = (m: JourneyModule): string => {
+  if (m.evidenceAppendix && m.evidenceAppendix !== 'NONE') return `Appendix ${m.evidenceAppendix}`;
+  switch (m.method) {
+    case 'None':
+      return 'Attestation';
+    case 'Quiz':
+    case 'CodingExercise':
+      return 'Quiz certificate';
+    case 'SkillsCheckoff':
+    case 'ReturnDemo':
+      return 'Skills checkoff';
+    case 'SupervisedVisit':
+      return 'Visit log';
+    case 'Tabletop':
+      return 'Drill AAR';
+    case 'PhishingSim':
+      return 'Simulation result';
+    default:
+      return `${m.method} record`;
+  }
+};
+
+const moduleStatus = (m: JourneyModule): string => {
+  if (m.supervisorSignature) return 'locked';
+  if (m.phase === 'SUPERVISED') return 'awaiting';
+  if (m.method === 'None') return 'active';
+  return 'ready';
+};
+
+const syllabusRows: readonly SyllabusRow[] = ALL_MODULES.map((m) => ({
+  catalogId: m.id,
+  evidence: evidenceLabel(m),
+  expires: groupExpires(m),
+  owner: '—',
+  policyRef: m.policyRefs.length > 0 ? m.policyRefs.join(', ') : '—',
+  status: moduleStatus(m),
+  title: m.title,
+  trigger: groupTrigger(m),
+}));
 
 const syllabusColumns: readonly DataTableColumn<SyllabusRow>[] = [
   { key: 'catalogId', label: 'Catalog ID' },
@@ -166,53 +181,23 @@ const gatePanels = [
   },
 ] satisfies readonly GatePanel[];
 
-const reviewQueueRows: readonly ReviewQueueRow[] = [
-  {
-    age: '2 days',
-    cohort: 'June RN hires',
-    owner: 'Director of Nursing',
-    queueId: 'RQ-184',
-    status: 'review-required',
-    subject: 'Medication skills checkoff rubric',
-    type: 'Syllabus change',
-  },
-  {
-    age: 'Today',
-    cohort: 'All new hires',
-    owner: 'HR Credentialing',
-    queueId: 'RQ-187',
-    status: 'awaiting',
-    subject: 'Appendix F license verification evidence',
-    type: 'Evidence hold',
-  },
-  {
-    age: '1 day',
-    cohort: 'Annual refresh',
-    owner: 'Compliance Officer',
-    queueId: 'RQ-192',
-    status: 'ready',
-    subject: 'HIPAA annual certificate mapping',
-    type: 'Regulatory map',
-  },
-  {
-    age: '3 days',
-    cohort: 'Clinical clearance',
-    owner: 'Preceptor Supervisor',
-    queueId: 'RQ-204',
-    status: 'pending',
-    subject: 'Supervised visit attestation packet',
-    type: 'Dual signature',
-  },
-  {
-    age: '4 days',
-    cohort: 'HHA bridge',
-    owner: 'Onboarding Admin',
-    queueId: 'RQ-209',
-    status: 'warning',
-    subject: 'Catalog expiration rule QA',
-    type: 'Governance override',
-  },
-];
+const reviewType = (m: JourneyModule): string => {
+  if (m.method === 'SupervisedVisit') return 'Dual signature';
+  if (m.supervisorSignature) return 'Evidence hold';
+  return 'Competency review';
+};
+
+const reviewQueueRows: readonly ReviewQueueRow[] = ALL_MODULES
+  .filter((m) => m.supervisorSignature || m.method === 'SupervisedVisit')
+  .map((m) => ({
+    age: '—',
+    cohort: roleLabel(m.roles),
+    owner: '—',
+    queueId: m.id,
+    status: moduleStatus(m),
+    subject: m.title,
+    type: reviewType(m),
+  }));
 
 const reviewQueueColumns: readonly DataTableColumn<ReviewQueueRow>[] = [
   { key: 'queueId', label: 'Queue ID' },
@@ -274,10 +259,26 @@ const regulatoryRefs = [
 ] as const;
 
 const cohortPanels = [
-  { icon: Users, label: 'June RN cohort', status: 'active', value: '18 learners' },
-  { icon: CalendarClock, label: 'Next expiration sweep', status: 'pending', value: 'Jun 28, 2026' },
-  { icon: CheckCircle2, label: 'Ready for clearance', status: 'ready', value: '11 learners' },
-  { icon: FileCheck2, label: 'Evidence packets', status: 'uploaded', value: '41 attached' },
+  { icon: Users, label: 'June RN cohort', status: 'active', value: `${SEED_EMPLOYEES.length} learners` },
+  {
+    icon: CalendarClock,
+    label: 'Next expiration sweep',
+    status: 'pending',
+    value:
+      SEED_EMPLOYEES.map((e) => e.licenseExpiry).filter((d): d is string => Boolean(d)).sort()[0] ?? '—',
+  },
+  {
+    icon: CheckCircle2,
+    label: 'Ready for clearance',
+    status: 'ready',
+    value: `${SEED_EMPLOYEES.filter((e) => e.clearedForIndependentWork).length} learners`,
+  },
+  {
+    icon: FileCheck2,
+    label: 'Evidence packets',
+    status: 'uploaded',
+    value: `${SEED_EMPLOYEES.filter((e) => e.appendixFCleared).length} attached`,
+  },
 ] as const;
 
 export function JourneyAdminScreen() {

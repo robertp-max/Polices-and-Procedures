@@ -4,6 +4,7 @@ import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, type MetricTileData, t
 import { Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/data/policyCorpus';
 
 interface DomainTileData {
   achcAnchors: string;
@@ -29,178 +30,105 @@ interface MappingRowData {
   tone: Tone;
 }
 
+// ─── Real corpus-derived framework data ──────────────────────────
+// Domain tiles + mapping rows are derived from the authoritative
+// POLICY_CORPUS, ordered by LIFECYCLE_DOMAIN_ORDER. Counts (policies,
+// subdomains, totals) are computed from the corpus. Presentation-only
+// attributes that the corpus does not carry (icon, tone, narrative
+// description) remain code-keyed UI constants. Fields the corpus
+// genuinely lacks (ACHC anchor counts, survey readiness %, CMS/Title 22
+// citations, mapped forms, evidence methods) use the neutral '—'
+// placeholder or a neutral status — never invented values.
+
+// Presentation maps keyed by canonical domain code (UI styling, not data).
+const DOMAIN_ICON: Record<string, LucideIcon> = {
+  GV: Landmark,
+  CL: ClipboardCheck,
+  QA: ShieldCheck,
+  HR: FileCheck2,
+  CO: Workflow,
+  FN: BookOpen,
+  OP: Layers3,
+  IT: Network,
+  RM: ShieldCheck,
+  EN: Network,
+};
+
+const DOMAIN_TONE: Record<string, Tone> = {
+  GV: 'teal',
+  CL: 'teal',
+  QA: 'green',
+  HR: 'orange',
+  CO: 'orange',
+  FN: 'teal',
+  OP: 'teal',
+  IT: 'amber',
+  RM: 'green',
+  EN: 'teal',
+};
+
+const DOMAIN_DESCRIPTION: Record<string, string> = {
+  GV: 'Governing body authority, administrator accountability, policy council, and agency oversight.',
+  CL: 'Assessment, care planning, OASIS, medication reconciliation, and skilled visit execution.',
+  QA: 'QAPI indicators, incident trending, plan-of-correction follow-through, and audit cadence.',
+  HR: 'Hiring files, credentialing, competency validation, supervision, and personnel health checks.',
+  CO: 'Contracts, business associates, referral agreements, conflict disclosures, and vendor oversight.',
+  FN: 'Billing controls, cost reporting, service authorization, revenue integrity, and payer evidence.',
+  OP: 'Scheduling, visit coordination, on-call coverage, intake handoffs, and field documentation flow.',
+  IT: 'Systems access, privacy safeguards, audit logs, continuity, and record-retention tooling.',
+  RM: 'Emergency management, infection control, incident reporting, drill records, and corrective actions.',
+  EN: 'Taxonomy governance, lifecycle coordination, crosswalk stewardship, and reporting metrics.',
+};
+
+// Per-domain corpus aggregates (policy count + distinct subdomains).
+const domainAggregates = LIFECYCLE_DOMAIN_ORDER.map((code) => {
+  const policies = POLICY_CORPUS.filter((p) => p.domainCode === code);
+  const subdomains = new Set(policies.map((p) => p.subdomainCode));
+  return { code, policyCount: policies.length, subdomainCount: subdomains.size };
+});
+
+const totalSubdomains = domainAggregates.reduce((sum, d) => sum + d.subdomainCount, 0);
+
 const frameworkMetrics: readonly MetricTileData[] = [
-  { label: 'Domains', value: '10', helper: 'Top-level strategic pillars', tone: 'teal' },
-  { label: 'Subdomains', value: '54', helper: 'Operating taxonomy branches', tone: 'orange' },
-  { label: 'Framework policies', value: '269', helper: 'Mapped to domains and standards', tone: 'teal' },
-  { label: 'Lifecycle corpus', value: '279', helper: 'Draft and active records tracked', tone: 'green' },
+  { label: 'Domains', value: String(LIFECYCLE_DOMAIN_ORDER.length), helper: 'Top-level strategic pillars', tone: 'teal' },
+  { label: 'Subdomains', value: String(totalSubdomains), helper: 'Operating taxonomy branches', tone: 'orange' },
+  { label: 'Framework policies', value: String(POLICY_CORPUS.length), helper: 'Mapped to domains and standards', tone: 'teal' },
+  { label: 'Lifecycle corpus', value: String(POLICY_CORPUS.length), helper: 'Draft and active records tracked', tone: 'green' },
 ];
 
-const frameworkDomains: readonly DomainTileData[] = [
-  {
-    achcAnchors: '18',
-    code: 'GV',
-    description: 'Governing body authority, administrator accountability, policy council, and agency oversight.',
-    icon: Landmark,
-    policies: '31',
-    readiness: 94,
-    status: 'ready',
-    subdomains: '4',
-    title: 'Governance',
-    tone: 'teal',
-  },
-  {
-    achcAnchors: '42',
-    code: 'CL',
-    description: 'Assessment, care planning, OASIS, medication reconciliation, and skilled visit execution.',
-    icon: ClipboardCheck,
-    policies: '68',
-    readiness: 89,
-    status: 'active',
-    subdomains: '9',
-    title: 'Clinical Operations',
-    tone: 'teal',
-  },
-  {
-    achcAnchors: '26',
-    code: 'QA',
-    description: 'QAPI indicators, incident trending, plan-of-correction follow-through, and audit cadence.',
-    icon: ShieldCheck,
-    policies: '34',
-    readiness: 86,
-    status: 'validated',
-    subdomains: '6',
-    title: 'Quality & Compliance',
-    tone: 'green',
-  },
-  {
-    achcAnchors: '21',
-    code: 'HR',
-    description: 'Hiring files, credentialing, competency validation, supervision, and personnel health checks.',
-    icon: FileCheck2,
-    policies: '29',
-    readiness: 76,
-    status: 'review-required',
-    subdomains: '7',
-    title: 'Human Resources',
-    tone: 'orange',
-  },
-  {
-    achcAnchors: '17',
-    code: 'CO',
-    description: 'Contracts, business associates, referral agreements, conflict disclosures, and vendor oversight.',
-    icon: Workflow,
-    policies: '18',
-    readiness: 71,
-    status: 'review-required',
-    subdomains: '5',
-    title: 'Contracts & Oversight',
-    tone: 'orange',
-  },
-  {
-    achcAnchors: '9',
-    code: 'FN',
-    description: 'Billing controls, cost reporting, service authorization, revenue integrity, and payer evidence.',
-    icon: BookOpen,
-    policies: '15',
-    readiness: 83,
-    status: 'active',
-    subdomains: '4',
-    title: 'Finance',
-    tone: 'teal',
-  },
-  {
-    achcAnchors: '24',
-    code: 'OP',
-    description: 'Scheduling, visit coordination, on-call coverage, intake handoffs, and field documentation flow.',
-    icon: Layers3,
-    policies: '37',
-    readiness: 81,
-    status: 'active',
-    subdomains: '6',
-    title: 'Operations',
-    tone: 'teal',
-  },
-  {
-    achcAnchors: '13',
-    code: 'IT',
-    description: 'Systems access, privacy safeguards, audit logs, continuity, and record-retention tooling.',
-    icon: Network,
-    policies: '16',
-    readiness: 78,
-    status: 'pending',
-    subdomains: '4',
-    title: 'Information Systems',
-    tone: 'amber',
-  },
-  {
-    achcAnchors: '16',
-    code: 'RM',
-    description: 'Emergency management, infection control, incident reporting, drill records, and corrective actions.',
-    icon: ShieldCheck,
-    policies: '23',
-    readiness: 88,
-    status: 'ready',
-    subdomains: '5',
-    title: 'Risk Management',
-    tone: 'green',
-  },
-  {
-    achcAnchors: '11',
-    code: 'EN',
-    description: 'Taxonomy governance, lifecycle coordination, crosswalk stewardship, and reporting metrics.',
-    icon: Network,
-    policies: '18',
-    readiness: 91,
-    status: 'complete',
-    subdomains: '4',
-    title: 'Enterprise Framework',
-    tone: 'teal',
-  },
-];
+const frameworkDomains: readonly DomainTileData[] = domainAggregates.map((d) => ({
+  achcAnchors: '—',
+  code: d.code,
+  description: DOMAIN_DESCRIPTION[d.code] ?? '—',
+  icon: DOMAIN_ICON[d.code] ?? Network,
+  policies: String(d.policyCount),
+  readiness: 0,
+  status: 'active',
+  subdomains: String(d.subdomainCount),
+  title: DOMAIN_LABEL[d.code] ?? d.code,
+  tone: DOMAIN_TONE[d.code] ?? 'teal',
+}));
 
-const mappingRows: readonly MappingRowData[] = [
-  {
-    achc: 'HH1-1A.01',
-    cmsTitle22: '42 CFR 484.105 / Title 22 governing-body authority',
-    evidence: 'Policy, minutes, roster',
-    forms: 'GV-FM-005',
-    policy: 'GV-GB-001',
-    standard: 'Governing body authority and administrator accountability',
-    status: 'validated',
-    tone: 'green',
-  },
-  {
-    achc: 'HH5-2A.01',
-    cmsTitle22: '42 CFR 484.55 / 22 CCR 74695 comprehensive assessment',
-    evidence: 'Policy, OASIS, RN assessment',
-    forms: 'CL-FM-001',
-    policy: 'CL-CA-001',
-    standard: 'Comprehensive assessment and start-of-care evidence',
-    status: 'ready',
-    tone: 'teal',
-  },
-  {
-    achc: 'HH1-12A.01',
-    cmsTitle22: '42 CFR 484.105(e) contract and vendor oversight',
-    evidence: 'Policy, agreement, annual review',
-    forms: 'GV-FM-009',
-    policy: 'GV-EA-001',
-    standard: 'Contract services governance and business associate review',
-    status: 'review-required',
-    tone: 'orange',
-  },
-  {
-    achc: 'HH7-2A.03',
-    cmsTitle22: 'Title 22 personnel file and competency documentation',
-    evidence: 'Checklist, credential file, supervision log',
-    forms: 'HR-FM-014',
-    policy: 'HR-CG-021',
-    standard: 'Personnel qualification and competency file completeness',
-    status: 'pending',
-    tone: 'amber',
-  },
-];
+// One representative real policy per domain (first in corpus order).
+const mappingRows: readonly MappingRowData[] = LIFECYCLE_DOMAIN_ORDER.flatMap((code) => {
+  const policy = POLICY_CORPUS.find((p) => p.domainCode === code);
+  if (!policy) return [];
+  return [
+    {
+      // No ACHC crosswalk code in the corpus seed; the real policy ID
+      // is used as the row identifier (also the unique React key) — a
+      // real seed value rather than a fabricated ACHC standard number.
+      achc: policy.id,
+      cmsTitle22: '—',
+      evidence: '—',
+      forms: '—',
+      policy: policy.id,
+      standard: policy.title,
+      status: 'active',
+      tone: DOMAIN_TONE[code] ?? 'teal',
+    },
+  ];
+});
 
 const contextCards: readonly SurfaceCardData[] = [
   {
@@ -229,10 +157,13 @@ const contextCards: readonly SurfaceCardData[] = [
   },
 ];
 
+// ACHC / CMS / Title 22 anchor counts are not present in the policy
+// corpus seed; values use the neutral '—' placeholder rather than
+// fabricated counts. Labels, helper copy, and tone are UI presentation.
 const alignmentCards = [
-  ['ACHC anchors', '197', 'Standards directly linked to policy and form evidence', 'teal'],
-  ['CMS CoP refs', '64', 'Federal citations represented in the framework map', 'green'],
-  ['Title 22 refs', '41', 'State references with active stewardship rows', 'orange'],
+  ['ACHC anchors', '—', 'Standards directly linked to policy and form evidence', 'teal'],
+  ['CMS CoP refs', '—', 'Federal citations represented in the framework map', 'green'],
+  ['Title 22 refs', '—', 'State references with active stewardship rows', 'orange'],
 ] as const satisfies readonly (readonly [string, string, string, Tone])[];
 
 export function FrameworkScreen() {

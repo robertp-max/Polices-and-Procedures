@@ -1,5 +1,6 @@
 import { BarChart3, Clock, Milestone } from 'lucide-react';
 import { MetricGrid, DataTable, SurfaceCard, type MetricTileData, type SurfaceCardData, type DataTableColumn } from '../../components';
+import { ALL_TASKS } from '@/policy/data/hubstaffTasks';
 
 interface LogRow extends Record<string, string> {
   logId: string;
@@ -10,11 +11,16 @@ interface LogRow extends Record<string, string> {
   status: string;
 }
 
+const totalTasks = ALL_TASKS.length;
+const scheduledTasks = ALL_TASKS.filter((task) => Boolean(task.dueDate)).length;
+const unscheduledTasks = totalTasks - scheduledTasks;
+const scheduledRate = totalTasks > 0 ? Math.round((scheduledTasks / totalTasks) * 100) : 0;
+
 const metrics = [
-  { label: 'Visits tracked', value: '184', helper: 'Total tracked visits this period', tone: 'teal' },
-  { label: 'Timeliness rate', value: '91%', helper: 'Visit notes entered within 48h', tone: 'green' },
-  { label: 'Mileage logged', value: '1,420 mi', helper: 'Total travel distance logged', tone: 'teal' },
-  { label: 'Unverified logs', value: '4', helper: 'Awaiting coordinator review', tone: 'orange' },
+  { label: 'Visits tracked', value: String(totalTasks), helper: 'Total tracked visits this period', tone: 'teal' },
+  { label: 'Timeliness rate', value: `${scheduledRate}%`, helper: 'Visit notes entered within 48h', tone: 'green' },
+  { label: 'Mileage logged', value: '—', helper: 'Total travel distance logged', tone: 'teal' },
+  { label: 'Unverified logs', value: String(unscheduledTasks), helper: 'Awaiting coordinator review', tone: 'orange' },
 ] satisfies readonly MetricTileData[];
 
 const columns: readonly DataTableColumn<LogRow>[] = [
@@ -26,12 +32,14 @@ const columns: readonly DataTableColumn<LogRow>[] = [
   { key: 'status', label: 'State', status: true },
 ];
 
-const rows: readonly LogRow[] = [
-  { logId: 'LOG-3001', clinician: 'Maria Delgado, RN', timeLogged: '8h 15m', mileage: '42 mi', timeliness: 'Within 24h', status: 'validated' },
-  { logId: 'LOG-3002', clinician: 'Kevin Huang, LVN', timeLogged: '6h 30m', mileage: '28 mi', timeliness: 'Awaiting entry', status: 'pending' },
-  { logId: 'LOG-3003', clinician: 'Aisha Patel, OT', timeLogged: '7h 45m', mileage: '35 mi', timeliness: 'Within 48h', status: 'validated' },
-  { logId: 'LOG-3004', clinician: 'Sophia Martinez, HHA', timeLogged: '4h 00m', mileage: '12 mi', timeliness: 'SLA Overdue', status: 'review-required' },
-];
+const rows: readonly LogRow[] = ALL_TASKS.map((task) => ({
+  logId: task.id,
+  clinician: task.title,
+  timeLogged: '—',
+  mileage: '—',
+  timeliness: task.dueDate ? `Due ${task.dueDate}` : '—',
+  status: task.risk ?? '—',
+}));
 
 const cards = [
   {
