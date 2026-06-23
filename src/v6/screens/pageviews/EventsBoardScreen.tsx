@@ -116,178 +116,23 @@ const evidenceSignals: readonly EvidenceSignal[] = [
 ];
 
 const eventLanes: readonly BoardLaneData[] = buildEventLanes() || FALLBACK_EVENT_LANES; // 1.4 wired to projection
-const filteredLanes = eventLanes.filter(lane => {
-  if (activeFilter === 'All events') return true;
-  if (activeFilter === 'Critical') return lane.title.includes('Critical');
-  if (activeFilter === 'Missing evidence') return lane.cards.some((c: any) => c.awaitingType === 'evidence' || c.missing);
-  if (activeFilter === 'Owner gaps') return lane.cards.some((c: any) => !c.owner || c.owner.includes('?'));
-  if (activeFilter === 'Ready to lock') return lane.title.includes('On Track') || lane.title.includes('Certified');
-  return true;
-});
-  {
-    cards: [
-      {
-        chips: ['Incident', 'CAPA'],
-        due: 'Jun 19',
-        id: 'EVT-REV-03',
-        owner: 'Compliance Officer',
-        domain: 'Compliance / Incident Mgmt',
-        progress: 55,
-        title: 'Incident / Adverse Event Review',
-        tone: 'orange',
-        meta: 'Root cause analysis + corrective action evidence',
-        awaitingType: 'action',
-        missing: 'RCA sign-off',
-      },
-      {
-        chips: ['OIG', 'SAM', 'HR-TA-003'],
-        due: 'Jun 25',
-        id: 'EVT-MO-OIG',
-        owner: 'Compliance Officer',
-        progress: 40,
-        title: 'Monthly OIG / SAM Exclusion Check',
-        tone: 'orange',
-      },
-      {
-        chips: ['Infection', 'Action'],
-        due: 'Jun 18',
-        id: 'EVT-REV-02',
-        owner: 'Clinical Manager',
-        domain: 'Clinical',
-        progress: 42,
-        title: 'Q1 Infection Control Review',
-        tone: 'amber',
-        meta: 'Surveillance log, hand hygiene trends, PPE compliance',
-        awaitingType: 'evidence',
-        missing: 'log upload',
-      },
-      {
-        chips: ['Grievance', 'Evidence'],
-        due: 'Jun 22',
-        id: 'EVT-REV-04',
-        owner: 'Risk Manager',
-        domain: 'Risk',
-        progress: 28,
-        title: 'Complaint / Grievance Investigation',
-        tone: 'amber',
-        meta: 'Investigation notes, resolution evidence, follow-up',
-        awaitingType: 'evidence',
-        missing: '3 docs',
-      },
-    ],
-    count: 4,
-    title: 'Critical & Overdue',
-    tone: 'orange',
-  },
-  {
-    cards: [
-      {
-        chips: ['Audit', 'Documentation'],
-        due: 'Jun 23',
-        id: 'EVT-DA-01',
-        owner: 'QAPI Lead',
-        domain: 'QAPI / Documentation',
-        progress: 65,
-        title: 'Documentation Alignment Audit',
-        tone: 'amber',
-        meta: 'Cross-policy documentation vs regulatory alignment',
-      },
-      {
-        chips: ['QAPI', 'Evidence'],
-        due: 'Jun 21',
-        id: 'EVT-REV-01',
-        owner: 'QAPI Lead',
-        domain: 'QAPI',
-        progress: 65,
-        title: 'Q2 QAPI Review',
-        tone: 'amber',
-        meta: 'Quarterly indicators, adverse events summary, CAPA tracker',
-        awaitingType: 'evidence',
-        missing: '2 artifacts',
-      },
-      {
-        chips: ['Visit', 'CL-VN-010'],
-        due: 'Jun 22',
-        id: 'EVT-VIS-DOC',
-        owner: 'QAPI Nurse',
-        progress: 71,
-        title: 'Visit Documentation Audit',
-        tone: 'teal',
-      },
-      {
-        chips: ['Audit', 'Action'],
-        due: 'Jun 20',
-        id: 'EVT-REV-05',
-        owner: 'QAPI Nurse',
-        domain: 'QAPI',
-        progress: 71,
-        title: 'Medication Reconciliation Audit Review',
-        tone: 'amber',
-        meta: 'Five chart sample + exception findings',
-        awaitingType: 'action',
-        missing: 'DON review',
-      },
-    ],
-    count: 4,
-    title: 'At Risk',
-    tone: 'amber',
-  },
-  {
-    cards: [
-      {
-        chips: ['POC', 'CL-CA-001'],
-        due: 'Jun 21',
-        id: 'EVT-POC-AUD',
-        owner: 'Clinical Manager',
-        progress: 82,
-        title: 'Plan of Care Audit',
-        tone: 'teal',
-      },
-      {
-        chips: ['OASIS', 'CL-OA-101'],
-        due: 'Jun 19',
-        id: 'EVT-OAS-ACC',
-        owner: 'QA Analyst',
-        progress: 55,
-        title: 'OASIS Accuracy Audit',
-        tone: 'teal',
-      },
-    ],
-    count: 12,
-    title: 'Needs Attention',
-    tone: 'teal',
-  },
-  {
-    cards: [
-      {
-        chips: ['Ready', 'Evidence'],
-        due: 'May 24',
-        id: 'CEU-1241',
-        owner: 'Systems',
-        progress: 88,
-        title: 'Emergency drill after-action report',
-        tone: 'green',
-      },
-      {
-        chips: ['Certified'],
-        due: 'May 8',
-        id: 'CEU-1240',
-        owner: 'Accounting',
-        progress: 100,
-        title: 'Personnel file completeness audit - Q1 new hires',
-        tone: 'green',
-      },
-    ],
-    count: 28,
-    title: 'On Track',
-    tone: 'green',
-  },
-];
+// filteredLanes computation moved inside EventsBoardScreen function
+
+// old eventLanes body fully cleaned
 
 export function EventsBoardScreen() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'board' | 'evidence'>('board');
   const [activeFilter, setActiveFilter] = useState('All events');
+
+  const filteredLanes = eventLanes.filter(lane => {
+    if (activeFilter === 'All events') return true;
+    if (activeFilter === 'Critical') return lane.title.includes('Critical');
+    if (activeFilter === 'Missing evidence') return lane.cards.some((c: any) => c.awaitingType === 'evidence' || c.missing);
+    if (activeFilter === 'Owner gaps') return lane.cards.some((c: any) => !c.owner || c.owner.includes('?'));
+    if (activeFilter === 'Ready to lock') return lane.title.includes('On Track') || lane.title.includes('Certified');
+    return true;
+  });
 
   return (
     <div className="grid gap-lg">
