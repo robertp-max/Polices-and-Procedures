@@ -1,4 +1,4 @@
-// Note: @ts-nocheck removed per CES Phase 1 spec (1.1). Types fixed where possible.
+
 /**
  * V3_CES_SeedData.ts
  *

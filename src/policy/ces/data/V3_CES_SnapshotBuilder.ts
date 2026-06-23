@@ -1,4 +1,4 @@
-// Note: @ts-nocheck removed per CES Phase 1 spec (1.1). Types addressed.
+
 /* ═══════════════════════════════════════════════════════════════
    V3 CES Snapshot Builder
    --------------------------------------------------------------
