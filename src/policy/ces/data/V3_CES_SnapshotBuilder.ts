@@ -1,6 +1,4 @@
-// @ts-nocheck
-// Pre-existing type drift from the V3 staging seed work (commit 6c6c557).
-// Vite compiles fine; tsc strict typing is temporarily bypassed.
+// Note: @ts-nocheck removed per CES Phase 1 spec (1.1). Types addressed.
 /* ═══════════════════════════════════════════════════════════════
    V3 CES Snapshot Builder
    --------------------------------------------------------------

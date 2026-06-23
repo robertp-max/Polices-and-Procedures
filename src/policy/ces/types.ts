@@ -63,7 +63,7 @@ export const AUDIT_READINESS_LABEL: Record<AuditReadiness, string> = {
   ready:     'Ready',
 };
 
-export type ComplianceDomain = 'clinical' | 'compliance' | 'hr' | 'governance';
+export type ComplianceDomain = 'clinical' | 'compliance' | 'hr' | 'governance' | 'quality' | 'safety';
 
 export const COMPLIANCE_DOMAIN_LABEL: Record<ComplianceDomain, string> = {
   clinical:   'Clinical',
@@ -103,7 +103,9 @@ export type BlockedReasonKind =
   | 'missing_signature'
   | 'missing_form'
   | 'dependency_incomplete'
-  | 'awaiting_external_input';
+  | 'awaiting_external_input'
+  | 'missing_evidence'
+  | 'external_dependency';
 
 export interface BlockedReason {
   kind:    BlockedReasonKind;
@@ -136,6 +138,7 @@ export type EventCategory =
   | 'multi_year_governance'
   | 'triennial_governance'
   | 'recurring'
+  | 'one-time'
   | 'trigger_based'
   | 'retrospective';
 
