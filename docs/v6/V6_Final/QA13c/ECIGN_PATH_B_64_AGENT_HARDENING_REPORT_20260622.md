@@ -75,8 +75,35 @@ However, remaining doc-only alignment issues:
 
 **5. Required fixes, if any**  
 See the exact doc edits applied to address the gaps (plan only; no code changes).
-Agents 41-46: QA gates and negative tests
+Agents 41-46: QA gates and negative tests (replacement IMPROVEMENT)
 Agents 47-52: Data model field completeness (replacement PASS)
+
+**Agent 41 (replacement) — QA gates and negative tests (completed):**
+**1. Agent number and role**
+Agent 41: QA gates and negative tests (replacement) in GROK 64-AGENT ZERO-TOLERANCE DOCUMENTATION HARDENING MODE.
+
+**2. IMPROVEMENT**
+
+**3. Exact lines reviewed**
+Primary plan full targeted §11 296-321 + cross-refs; QA13c reports.
+
+**4. Findings**
+Substantial hardening: 21 gates, strong MUST/BLOCKS in most later items (Drive/Evidence parity byte-for-byte + server sha + presence insufficient + blocks 302-303, forbidden suite covering lower tier/stale/regen + "all §8" 313, survey export ONLY canonical + MUST reject/block on mismatch/missing/parity/regen/unsigned/incomplete + independently verifiable 315, server recompute enforcement 316, etc.). Header and many gates now stronger. Prior gaps from review report largely addressed.
+
+Remaining gaps (per agent):
+- Header 298 soft "all must pass" / "where applicable".
+- Missing dedicated negative gates for §7 lockedAt (after full parity) and signatureSequence (1-based strictly increasing).
+- Created FIRST pre-sign not explicit negative (sign blocked until bytes in canonical).
+- Some lower-case "must" / "Packet must".
+- Cross-refs incomplete (no direct §2/§7/§9/§10 in many bullets).
+- §9 306 summary only, not enumerating all 16+.
+- Drive parity 302 missing "presence ... insufficient" phrase.
+- Supporting PLAN_* .txt are historical/weaker (note needed).
+
+**5. Required fixes, if any**
+See the exact doc edits applied to the plan (header caps + mandatory, added lockedAt + signatureSequence bullets, strengthened unit/Drive/role/stale/forbidden/survey bullets, added cross-refs and granularity).
+
+Added note about PLAN_* historical in report.
 Agents 53-56: Implementation phasing and approval gates (replacement IMPROVEMENT)
 
 **Agent 53 (replacement) — Implementation phasing and approval gates (completed):**
