@@ -1,17 +1,44 @@
-import { LockKeyhole, Mail, Key } from 'lucide-react';
-import { Button, FormField, Input } from '../../primitives';
+import { type FormEvent, useState } from 'react';
+import { ArrowLeft, CheckCircle2, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
+import { cx } from '../../utils/classNames';
 
 export function LoginScreen() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoading(true);
+
+    window.setTimeout(() => {
+      setLoading(false);
+      setToastVisible(true);
+      window.setTimeout(() => setToastVisible(false), 3200);
+    }, 900);
+  }
+
   return (
     <main
-      className="flex min-h-screen items-center justify-center bg-canvas p-lg text-ink"
+      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-tone-teal-bg p-lg text-ink"
       data-group="Auth"
       data-hash-id="login-page"
       data-route="/login"
       data-template="login"
     >
-      <section className="grid w-full max-w-modal-sm gap-lg rounded-xl border border-card bg-surface-glass p-2xl shadow-rest">
-        <div className="flex justify-center mb-2xl">
+      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1/2 bg-surface/60" />
+
+      <a
+        className="absolute right-lg top-lg z-20 inline-flex min-h-tap items-center gap-sm rounded-lg border border-tone-teal-border bg-tone-teal-bg px-md text-sm font-medium text-ink shadow-rest transition duration-fast ease-standard hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus"
+        href="/dashboard"
+      >
+        <ArrowLeft aria-hidden="true" className="h-icon-sm w-icon-sm" />
+        Back to Dashboard
+      </a>
+
+      <section className="relative z-10 grid w-full max-w-modal-sm gap-2xl rounded-2xl border border-card bg-surface p-2xl shadow-hover">
+        <div className="flex justify-center">
           <img
             src="/ci-logo-gray.png"
             alt="Care Indeed"
@@ -19,43 +46,96 @@ export function LoginScreen() {
           />
         </div>
 
-        <div className="grid gap-xs text-center mb-md">
-          <h1 className="text-display font-medium text-ink">Sign In</h1>
-          <p className="text-sm text-secondary">Enter your email and password to access the V6 compliance platform.</p>
+        <div className="grid gap-sm text-center">
+          <h1 className="text-h1 font-medium text-brand-teal-deep">Welcome Back</h1>
+          <p className="text-body font-light text-secondary">Please enter your credentials to continue</p>
         </div>
 
-        <form className="grid gap-lg">
-          <FormField label="Work Email Address">
-            {(fieldProps) => (
-              <div className="flex h-control items-center gap-sm rounded-lg border border-card bg-surface px-md text-muted focus-within:shadow-focus">
-                <Mail aria-hidden="true" className="h-icon-sm w-icon-sm" />
-                <Input {...fieldProps} placeholder="e.g. nurse@careindeed.com" type="email" />
-              </div>
-            )}
-          </FormField>
+        <form className="grid gap-xl" onSubmit={handleSubmit}>
+          <label className="grid gap-sm">
+            <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Email Address</span>
+            <span className="flex h-control items-center gap-md rounded-xl border border-card bg-surface px-md text-brand-teal shadow-rest transition duration-fast ease-standard focus-within:shadow-focus">
+              <Mail aria-hidden="true" className="h-icon-sm w-icon-sm" />
+              <input
+                autoComplete="email"
+                className="min-w-0 flex-1 bg-transparent text-body font-light text-ink placeholder:text-disabled focus:outline-none"
+                disabled={loading}
+                placeholder="name@careindeed.com"
+                required
+                type="email"
+              />
+            </span>
+          </label>
 
-          <FormField label="Security Password">
-            {(fieldProps) => (
-              <div className="flex h-control items-center gap-sm rounded-lg border border-card bg-surface px-md text-muted focus-within:shadow-focus">
-                <Key aria-hidden="true" className="h-icon-sm w-icon-sm" />
-                <Input {...fieldProps} placeholder="••••••••" type="password" />
-              </div>
-            )}
-          </FormField>
+          <label className="grid gap-sm">
+            <span className="flex items-center justify-between gap-md">
+              <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Password</span>
+              <a className="text-xs font-medium text-muted transition duration-fast ease-standard hover:text-ink" href="#forgot-password">
+                Forgot password?
+              </a>
+            </span>
+            <span className="flex h-control items-center gap-md rounded-xl border border-card bg-surface px-md text-brand-teal shadow-rest transition duration-fast ease-standard focus-within:shadow-focus">
+              <LockKeyhole aria-hidden="true" className="h-icon-sm w-icon-sm" />
+              <input
+                autoComplete="current-password"
+                className="min-w-0 flex-1 bg-transparent text-body font-light text-ink placeholder:text-disabled focus:outline-none"
+                disabled={loading}
+                placeholder="••••••••••••"
+                required
+                type={showPassword ? 'text' : 'password'}
+              />
+              <button
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="grid h-tap w-tap place-items-center rounded-md text-brand-teal transition duration-fast ease-standard hover:bg-tone-teal-bg focus-visible:outline-none focus-visible:shadow-focus"
+                disabled={loading}
+                onClick={() => setShowPassword((value) => !value)}
+                type="button"
+              >
+                {showPassword ? <EyeOff aria-hidden="true" className="h-icon-sm w-icon-sm" /> : <Eye aria-hidden="true" className="h-icon-sm w-icon-sm" />}
+              </button>
+            </span>
+          </label>
 
-          <div className="flex items-center justify-between text-xs text-muted mb-sm">
-            <label className="flex items-center gap-xs">
-              <input type="checkbox" className="rounded" />
-              <span>Remember this device</span>
+          <div className="flex items-center justify-between gap-md text-sm text-muted">
+            <label className="flex items-center gap-sm">
+              <input
+                checked={rememberDevice}
+                className="h-icon-sm w-icon-sm accent-brand-teal"
+                disabled={loading}
+                onChange={(event) => setRememberDevice(event.target.checked)}
+                type="checkbox"
+              />
+              <span>Remember me for 1 day</span>
             </label>
-            <a href="#forgot" className="hover:text-brand-teal">Forgot password?</a>
           </div>
 
-          <Button iconLeft={<LockKeyhole aria-hidden="true" className="h-icon-sm w-icon-sm" />} type="submit">
-            Sign In with Security Token
-          </Button>
+          <button
+            className="inline-flex h-control items-center justify-center gap-sm rounded-xl border border-brand-teal bg-brand-teal px-lg text-body font-medium uppercase tracking-tag text-on-brand shadow-hover transition duration-fast ease-standard hover:bg-brand-teal-deep focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={loading}
+            type="submit"
+          >
+            <span>{loading ? 'Authenticating' : 'Sign In Securely'}</span>
+            {loading ? <LoaderCircle aria-hidden="true" className="h-icon-sm w-icon-sm animate-spin" /> : null}
+          </button>
         </form>
+
+        <p className="text-center text-xs font-light text-disabled">
+          Protected by CareIndeed Enterprise Security.
+          <br />
+          Terms of Service &bull; Privacy Policy
+        </p>
       </section>
+
+      <div
+        className={cx(
+          'fixed right-lg top-3xl z-30 flex items-center gap-sm rounded-lg border border-tone-teal-border bg-brand-teal-deep px-lg py-md text-sm font-light text-on-brand shadow-hover transition duration-base ease-standard',
+          toastVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none',
+        )}
+        role="status"
+      >
+        <CheckCircle2 aria-hidden="true" className="h-icon-sm w-icon-sm text-on-brand" />
+        Authentication preview complete. Routing is disabled in this demo.
+      </div>
     </main>
   );
 }
