@@ -15,7 +15,9 @@ export function LoginScreen() {
     window.setTimeout(() => {
       setLoading(false);
       setToastVisible(true);
-      window.setTimeout(() => setToastVisible(false), 3200);
+      window.setTimeout(() => {
+        window.location.assign('/dashboard');
+      }, 400);
     }, 900);
   }
 
@@ -51,7 +53,7 @@ export function LoginScreen() {
           <p className="text-body font-light text-secondary">Please enter your credentials to continue</p>
         </div>
 
-        <form className="grid gap-xl" onSubmit={handleSubmit}>
+        <form className="grid gap-xl" noValidate onSubmit={handleSubmit}>
           <label className="grid gap-sm">
             <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Email Address</span>
             <span className="flex h-control items-center gap-md rounded-xl border border-card bg-surface px-md text-brand-teal shadow-rest transition duration-fast ease-standard focus-within:shadow-focus">
@@ -61,7 +63,6 @@ export function LoginScreen() {
                 className="min-w-0 flex-1 bg-transparent text-body font-light text-ink placeholder:text-disabled focus:outline-none"
                 disabled={loading}
                 placeholder="name@careindeed.com"
-                required
                 type="email"
               />
             </span>
@@ -81,7 +82,6 @@ export function LoginScreen() {
                 className="min-w-0 flex-1 bg-transparent text-body font-light text-ink placeholder:text-disabled focus:outline-none"
                 disabled={loading}
                 placeholder="••••••••••••"
-                required
                 type={showPassword ? 'text' : 'password'}
               />
               <button
@@ -134,7 +134,7 @@ export function LoginScreen() {
         role="status"
       >
         <CheckCircle2 aria-hidden="true" className="h-icon-sm w-icon-sm text-on-brand" />
-        Authentication preview complete. Routing is disabled in this demo.
+        Authentication preview complete. Opening dashboard.
       </div>
     </main>
   );
