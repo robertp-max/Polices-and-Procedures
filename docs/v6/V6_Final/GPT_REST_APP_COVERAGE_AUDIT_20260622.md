@@ -12,9 +12,38 @@ Baseline: `v2/designless-baseline @ 55c5402c84880e54e1708039f642a1f7ce58800c`
 - Login Page is not missing from the audited V2 GPT worktree: `/login` is registered, routed outside the V6 shell, and renders `LoginScreen`.
 - Login Page is still not a full visual/interaction match to `docs/v6/V6_DESIGN.html`: the prototype has the "Welcome Back" card, password reveal, loading state, toast behavior, CloudFront logo fallback, and FontAwesome icons in the design source. The live V2 component is a simplified V6-native light card with lucide icons and no auth behavior.
 - The reported dark login screen was not reproduced from this audited branch. In this branch, `src/v6/screens/pageviews/LoginScreen.tsx` uses `bg-canvas`, `bg-surface-glass`, and `/ci-logo-gray.png`. If a dark login appears in preview, the likely cause is a different checkout/branch, stale preview server, or old preview target rather than this worktree.
-- Login was previously treated as auth-last and `INFERRED_FROM_V6_SYSTEM` rather than a numbered PNG-backed surface. That explains why it is less complete than the main pageview set.
+- Correction: Login Page was previously described as inferred/auth-last/no-PNG. That is not sufficient if screenshots were captured during implementation. This audit treats captured-but-unwired or prototype-defined-but-wrong-variant Login Page as a V6 implementation coverage failure unless a written exclusion is found.
+- Local screenshot evidence search found 54 official PNGs in `docs/v6/V6_Final` and 21 PNGs under `REVIEW_OUTPUTS`, but no local `login-page` screenshot file. The old `src/policy/pages/Redesign/Reference/V6_Final` path does not exist in this worktree. Even without a local login PNG, `docs/v6/V6_DESIGN.html` contains a concrete `LoginPageFull` prototype, so the live `/login` mismatch remains an implementation gap rather than an acceptable no-reference deferral.
 - Safe GPT fix next: visual-only parity pass on `LoginScreen.tsx`, preserving `/login` route behavior and avoiding auth/Cognito/server changes.
 - Other high-signal coverage gaps: overlay prototypes are not separately routed; `modal-system` and `popover-system` are registry-only IDs, while `drawer-system` can be reached only through `?v6-overlay=drawer-system` and displays a combined overlay demo. User Guide is implemented inside monolithic `RepresentativeScreens.tsx`, which also contains reserved eCIgn/CES/ACHC rendering, so any User Guide changes need extra lane caution.
+
+## Screenshot Evidence Correction
+
+The requested screenshot artifact search was run across `docs`, `src`, `scripts`, repository root, `REVIEW_OUTPUTS`, and the likely legacy paths. Evidence found:
+
+- `docs/v6/V6_Final/*.png`: 54 official pageview/overlay PNGs.
+- `REVIEW_OUTPUTS/v6-phase-12-2a-blueprints/assets/*.png`: 4 blueprint captures (`55-events-board`, `56-policy-lifecycle-detail`, `57-workflow-detail-drawer`, `58-gate-checklist-expander`).
+- `REVIEW_OUTPUTS/v6-phase-12-2a-runtime-reference/*.png`: 17 runtime/state captures.
+- `src/policy/pages/Redesign/Reference/V6_Final`: not present locally.
+- `tmp-ui-verify-screenshots`: not present locally.
+- `scripts/captureV6DesignScreenshots.mjs`: captures 17 Phase 12.2.a state scenarios; login is not in its `SCENARIOS` list.
+- `scripts/captureUiVerifyScreens.mjs`: captures 10 live routes; login is not in its `shots` list.
+
+No local file named for `login`, `login-page`, or `Login Page` was found among screenshot artifacts. However, `docs/v6/V6_DESIGN.html` registers `login-page` as a prototype view and implements `LoginPageFull`, so `/login` must still be judged against that prototype. The prior no-PNG explanation is therefore removed as an acceptance rationale.
+
+## Captured Screenshot Coverage Table
+
+| screenshot_file | screenshot_label | prototype_hash_or_route | expected_app_route | expected_component | actual_app_route | actual_component | status | reason | safe_to_fix_in_gpt_lane |
+|---|---|---|---|---|---|---|---|---|---|
+| `docs/v6/V6_Final/33-modal-system.png` | Modal System | `modal-system` | overlay primitive | `VeilModal` demos | none | combined `OverlaySystemScreen` via query-param escape only | `PROTOTYPE_ONLY_NOT_ROUTED` | Captured PNG exists, registry has overlay ID, but there is no dedicated routed/demo entry. | NEEDS_OWNER_DECISION |
+| `docs/v6/V6_Final/17-drawer-system.png` | Drawer System | `drawer-system` | overlay primitive | `VeilDrawer` demos | `?v6-overlay=drawer-system` | combined `OverlaySystemScreen` | `IMPLEMENTED_WRONG_VARIANT` | Captured PNG exists; current access is hidden and combines modal/drawer/popover examples. | NEEDS_OWNER_DECISION |
+| `docs/v6/V6_Final/47-popover-system.png` | Popover and Menu System | `popover-system` | overlay primitive | Command palette / popover demos | none | combined section in `OverlaySystemScreen` | `PROTOTYPE_ONLY_NOT_ROUTED` | Captured PNG exists, but no direct state entry or route exposes it. | NEEDS_OWNER_DECISION |
+| `REVIEW_OUTPUTS/v6-phase-12-2a-blueprints/assets/55-events-board.png` | Events Board | `events-board` | `/ces/events` | `EventsBoardScreen` | `/ces/events` | `EventsBoardScreen` | `RESERVED_CLAUDE_LANE` | Captured blueprint exists; CES/events is reserved. | NO |
+| `REVIEW_OUTPUTS/v6-phase-12-2a-blueprints/assets/56-policy-lifecycle-detail.png` | Policy Lifecycle Detail | `policy-lifecycle-detail` | `/policy-lifecycle/:policyId` | `PolicyLifecycleDetailScreen` | `/policy-lifecycle/:policyId` | `PolicyLifecycleDetailScreen` | `IMPLEMENTED_MATCHES` | Captured blueprint exists and route/component exist in GPT/System lane. | YES, if future polish is isolated |
+| `REVIEW_OUTPUTS/v6-phase-12-2a-blueprints/assets/57-workflow-detail-drawer.png` | Workflow Detail Drawer | `workflows` / drawer state | `/workflows` plus drawer state | workflow detail drawer | `/workflows` | `WorkflowsScreen` | `RESERVED_CLAUDE_LANE` | Captured blueprint is workflow/CES-adjacent. | NO |
+| `REVIEW_OUTPUTS/v6-phase-12-2a-blueprints/assets/58-gate-checklist-expander.png` | Gate Checklist Expander | onboarding v2 batch state | `/onboarding-v2/batches/:batchId` | `OnboardingV2BatchScreen` | `/onboarding-v2/batches/:batchId` | `OnboardingV2BatchScreen` | `IMPLEMENTED_MATCHES` | Captured blueprint exists and route/component exist. | YES |
+| `REVIEW_OUTPUTS/v6-phase-12-2a-runtime-reference/01-journey-supervisor-picker.png` through `17-admin-users-matrix.png` | Runtime state captures | mixed state/subview IDs | mixed | mixed | mixed | mixed | `IMPLEMENTED_MATCHES` / `RESERVED_CLAUDE_LANE` | These are state/subview captures, not missing top-level routes. CES/eCIgn/workflow captures are reserved; journey/onboarding/admin captures are GPT-safe only if edited in isolated files. | MIXED |
+| no local screenshot file found | Login Page | `login-page` / `prototype://login` | `/login` | `LoginPageFull` visual behavior adapted to `LoginScreen` | `/login` | `LoginScreen` | `IMPLEMENTED_WRONG_VARIANT` | Prototype exists in `V6_DESIGN.html`; live component is simplified and not equivalent. Treat as `IMPLEMENTATION_GAP`, `ROUTE_VARIANT_MISMATCH`, and `QA_COVERAGE_MISS` unless a written exclusion is found. | YES, visual-only |
 
 ## Login Page Finding
 
@@ -32,10 +61,10 @@ Baseline: `v2/designless-baseline @ 55c5402c84880e54e1708039f642a1f7ce58800c`
    - File: `src/v6/screens/pageviews/LoginScreen.tsx`.
 5. Why dark vs light?
    - In this audited worktree, the login component is light. It does not explain a dark screen by itself.
-   - A dark login observation likely comes from a different checkout/branch, stale browser/server preview, or an older auth implementation.
+   - The original checkout was not inspected per instruction. If `/login` is dark there, the likely causes are branch drift, a stale preview server, or an older auth/login component outside this isolated worktree. In this worktree, the concrete finding is still a wrong-variant implementation gap versus `LoginPageFull`.
 6. Was login intentionally excluded or missed?
-   - It was not excluded entirely. It was classified as `INFERRED_FROM_V6_SYSTEM`, auth-last, no PNG, and wired after the main shell surfaces.
-   - The full prototype behavior appears partially missed/deferred rather than forbidden.
+   - No written owner decision excluding login was found in the audited files.
+   - The full prototype behavior appears missed/deferred incorrectly. This audit classifies it as `IMPLEMENTATION_GAP`, `ROUTE_VARIANT_MISMATCH`, and `QA_COVERAGE_MISS`.
 7. Is implementing the V6 Login Page in GPT lane safe?
    - Yes, if visual-only and limited to `src/v6/screens/pageviews/LoginScreen.tsx`.
    - Do not touch `src/auth/**`, Cognito/server routes, package files, or runtime stores.
@@ -111,4 +140,3 @@ Validation plan:
 - CES/QAPI/workflow/evidence/audit: CES calendar/board/events/workflows/swimlane/master-controls/audit/evidence/reports/my-tasks/mobile incident and related stores/modules.
 - Server/API/store wiring: `server/**`, auth/Cognito runtime, Google Drive/Evidence integrations, package/lock files.
 - Original checkout: `C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2`.
-
