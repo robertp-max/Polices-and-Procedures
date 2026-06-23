@@ -76,8 +76,34 @@ However, remaining doc-only alignment issues:
 **5. Required fixes, if any**  
 See the exact doc edits applied to address the gaps (plan only; no code changes).
 Agents 41-46: QA gates and negative tests
-Agents 47-52: Data model field completeness
+Agents 47-52: Data model field completeness (replacement PASS)
 Agents 53-56: Implementation phasing and approval gates
+
+**Agent 47 (replacement) — Data model field completeness (completed):**
+**1. Agent number and role**  
+Agent 47: Data model field completeness (replacement) in GROK 64-AGENT ZERO-TOLERANCE DOCUMENTATION HARDENING MODE.
+
+**2. PASS**
+
+**3. Exact lines reviewed**  
+Primary plan full + targeted (§7 156-193 full table + constraints; cross-refs §2, §4, §8, §9, §11). QA13c artifacts read-only.
+
+**4. Findings**  
+- Every field in §7 table has a clear purpose (21 fields listed with descriptions).
+- Constraints (185-192) exactly match spec:
+  - signatureSequence MUST be 1-based and strictly increasing.
+  - formInstanceId MUST be immutable after first signature.
+  - artifactVersionId append-only; each advance creates new immutable node.
+  - previousArtifactVersionId forms the strict append-only chain link.
+  - sha256 MUST be verified on every read/cert/export by server-side recompute over primary canonical store bytes only.
+  - lockedAt MUST be set ONLY after bytes + hash persisted + full Drive/Evidence parity (byte-for-byte or sha256) + metadata attach.
+- Strong consistency with §2 (SOURCE OF TRUTH, replicas only, created FIRST, hash recompute required, BLOCKS for mismatch/missing/parity).
+- Accurate cross-refs in §4 (stale/formInstanceId/artifactVersionId/hash handling), §8 (1-based sequence, stale signing forbidden, certify without parity/hash forbidden), §9 (stale rows, replica divergence, preserve bytes, keyed by artifactVersionId), §11 (server-side recompute mandatory, unit tests for chain/previous, parity tests with byte-for-byte + server sha + blocks, stale rejection tests, hash mismatch failure test, etc.).
+- Prior gaps from initial review closed by previous patches.
+- No contradictions; fully aligned with zero-tolerance data model requirements.
+
+**5. Required fixes, if any**  
+None. Current §7 meets the zero-tolerance spec completely.
 Agents 57-60: Survey defensibility and audit traceability
 Agents 61-64: Final adversarial review trying to find merge blockers
 
