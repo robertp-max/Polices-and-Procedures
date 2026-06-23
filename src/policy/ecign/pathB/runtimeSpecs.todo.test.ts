@@ -6,20 +6,19 @@
  * `it.todo` so they are tracked and reported as pending — never as passing, and
  * never breaking the test command.
  *
- * Phase 2A (storage & freeze) is implemented; later phases remain unauthorized.
+ * Phase 2A (storage & freeze) and 2B (parity, lock, eager replication, lineage)
+ * are implemented; the remaining specs need infra/work not yet authorized.
  */
 import { describe, it } from 'node:test';
 
-// Phase 2A (DONE) — now covered by green tests in ./storage/storageAndFreeze.test.ts:
-//   - write-once enforcement (overwrite rejected at the canonical store layer)
-//   - exact presentation->storage byte freeze (presented bytes == persisted; sha recorded)
-//   - server-side hash recompute over canonical store bytes matches recorded sha256 on read
+// Phase 2A (DONE) — ./storage/storageAndFreeze.test.ts:
+//   - write-once enforcement; exact presentation->storage byte freeze; server-side hash recompute.
+// Phase 2B (DONE) — ./replicas/parityAndLock.test.ts:
+//   - Drive byte parity; Evidence Center parity (independent sha, not link presence);
+//   - recovery after partial external failure (idempotent, same artifactVersionId);
+//   - multi-signer byte lineage A->B->C preserves every prior signed version retrievably.
 describe('eCIgn Path B Phase 2+ — runtime specifications (TODO / expected-red)', () => {
   it.todo('PDF signature application produces a new immutable signed version without re-rendering the source');
-  it.todo('multi-signer byte lineage A->B->C preserves every prior signed version retrievably');
-  it.todo('Drive byte parity: replica bytes verified equal to canonical bytes (not link presence)');
-  it.todo('Evidence Center parity: record resolves to the real canonical artifact bytes');
-  it.todo('recovery after partial external failure (Drive/metadata) is idempotent and preserves artifactVersionId');
-  it.todo('restart/reconstruction rebuilds artifact/version state from durable records');
+  it.todo('restart/reconstruction rebuilds artifact/version state from durable (non-in-memory) records');
   it.todo('final survey packet export emits the real signed artifacts plus append-only audit');
 });
