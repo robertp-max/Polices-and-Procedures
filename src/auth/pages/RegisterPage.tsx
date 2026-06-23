@@ -216,7 +216,7 @@ export function RegisterPage() {
   // ── Phase 1: identity verification ──────────────────────────────────────────
   return (
     <AuthCard
-      eyebrow="Stakeholder Demo Registration"
+      eyebrow="Stakeholder Registration"
       title="Register"
       subtitle="Verify your identity to create an account."
     >

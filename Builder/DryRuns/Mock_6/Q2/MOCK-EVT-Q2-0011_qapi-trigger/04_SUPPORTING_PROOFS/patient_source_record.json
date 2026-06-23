@@ -1,0 +1,64 @@
+{
+  "clientId": "MOCK-PT-Q2-0009",
+  "firstName": "Dorothy",
+  "lastName": "Langford",
+  "dob": "1933-08-29",
+  "gender": "F",
+  "mrn": "MOCK-MRN-900009",
+  "ssn": "XXX-XX-0009",
+  "address": "606 Spruce Ave, Bogusdale, CA 90008",
+  "phone": "555-1009",
+  "emergencyContact": {
+    "name": "Keith Langford",
+    "relationship": "Son",
+    "phone": "555-2009"
+  },
+  "primaryPayer": {
+    "payerId": "MOCK-PAY-MC-001",
+    "payerName": "Mock Medicare A",
+    "policyNumber": "MOCK-MC-A0009"
+  },
+  "secondaryPayer": {
+    "payerId": "MOCK-PAY-MCAID-001",
+    "payerName": "Mock Medicaid",
+    "policyNumber": "MOCK-MCAID-0009"
+  },
+  "attendingPhysician": {
+    "name": "Dr. Fiona Greenleaf",
+    "npi": "MOCK-NPI-1111111111",
+    "phone": "555-3001"
+  },
+  "serviceLines": [
+    "skilled_nursing",
+    "PT",
+    "OT",
+    "ST",
+    "MSW",
+    "HHA"
+  ],
+  "admissionStatus": "active",
+  "socDate": "2026-04-01",
+  "certPeriodStart": "2026-04-01",
+  "certPeriodEnd": "2026-05-31",
+  "primaryDiagnoses": [
+    "COPD",
+    "cognitive_impairment",
+    "fall_risk"
+  ],
+  "clinicalComplexity": [
+    "COPD",
+    "cognitive_impairment",
+    "fall_risk",
+    "medication_reconciliation_risk",
+    "infection_risk"
+  ],
+  "assignedClinicians": [
+    "MOCK-CLIN-Q2-0001",
+    "MOCK-CLIN-Q2-0004",
+    "MOCK-CLIN-Q2-0006",
+    "MOCK-CLIN-Q2-0008",
+    "MOCK-CLIN-Q2-0009",
+    "MOCK-CLIN-Q2-0016"
+  ],
+  "messyFlags": []
+}

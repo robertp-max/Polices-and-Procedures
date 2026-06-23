@@ -181,7 +181,7 @@ function Ch01({ navigate, onGoToPhase1 }: { navigate: ReturnType<typeof useNavig
         </div>
         <button onClick={onGoToPhase1}
           className="shrink-0 flex items-center gap-2 bg-[#C74601] text-white px-4 py-2.5 rounded-xl text-[10px] font-bold tracking-[0.12em] uppercase font-montserrat hover:bg-[#a83a00] transition-colors whitespace-nowrap">
-          <Play size={12} /> Live Demo
+          <Play size={12} /> Launch
         </button>
       </div>
 
@@ -1233,7 +1233,7 @@ export function ExecutivePresentation({ onBack }: { onBack: () => void }) {
           <div className="p-3.5 border-t border-[#E5E4E3]">
             <button onClick={onBack}
               className="flex items-center gap-2 text-[9px] font-bold text-[#747474] hover:text-[#1F1C1B] uppercase tracking-[0.12em] font-montserrat transition-colors w-full">
-              <ArrowLeft size={10} /> Back to Live Demo
+              <ArrowLeft size={10} /> Back to Overview
             </button>
           </div>
         </div>

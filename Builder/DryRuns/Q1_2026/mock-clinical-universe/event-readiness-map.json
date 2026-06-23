@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "universeId": "q1-2026-mock-clinical-universe",
+  "noPhi": true,
+  "doNotRunEventsYet": true,
+  "events": [
+    {
+      "eventId": "q1-2026-oasis-soc-readiness",
+      "title": "Q1 OASIS SOC Readiness",
+      "supportedPatientIds": [
+        "MOCK-PT-0001",
+        "MOCK-PT-0002",
+        "MOCK-PT-0003",
+        "MOCK-PT-0005",
+        "MOCK-PT-0006",
+        "MOCK-PT-0007",
+        "MOCK-PT-0008",
+        "MOCK-PT-0009",
+        "MOCK-PT-0010",
+        "MOCK-PT-0011",
+        "MOCK-PT-0012",
+        "MOCK-PT-0013",
+        "MOCK-PT-0014",
+        "MOCK-PT-0015",
+        "MOCK-PT-0016",
+        "MOCK-PT-0017",
+        "MOCK-PT-0019",
+        "MOCK-PT-0020",
+        "MOCK-PT-0021",
+        "MOCK-PT-0022",
+        "MOCK-PT-0024",
+        "MOCK-PT-0025",
+        "MOCK-PT-0026",
+        "MOCK-PT-0027",
+        "MOCK-PT-0029",
+        "MOCK-PT-0030",
+        "MOCK-PT-0031",
+        "MOCK-PT-0032",
+        "MOCK-PT-0033",
+        "MOCK-PT-0035",
+        "MOCK-PT-0036"
+      ],
+      "requiredDocuments": [
+        "OASIS SOC",
+        "Plan of Care",
+        "Medication reconciliation note"
+      ],
+      "readyForDryRunAfter": [
+        "Document generation templates selected",
+        "No evidence upload until event run"
+      ]
+    },
+    {
+      "eventId": "q1-2026-oasis-roc-transfer-discharge",
+      "title": "Q1 ROC, Transfer, and Discharge Tracking",
+      "supportedPatientIds": [
+        "MOCK-PT-0018",
+        "MOCK-PT-0023",
+        "MOCK-PT-0028",
+        "MOCK-PT-0034"
+      ],
+      "requiredDocuments": [
+        "OASIS ROC",
+        "OASIS transfer",
+        "OASIS discharge"
+      ],
+      "readyForDryRunAfter": [
+        "Workflow-specific evidence map approved"
+      ]
+    },
+    {
+      "eventId": "q1-2026-poc-audit",
+      "title": "Q1 Plan of Care Audit",
+      "supportedPatientIds": [
+        "MOCK-PT-0007",
+        "MOCK-PT-0008",
+        "MOCK-PT-0009",
+        "MOCK-PT-0010",
+        "MOCK-PT-0011",
+        "MOCK-PT-0012",
+        "MOCK-PT-0013",
+        "MOCK-PT-0014",
+        "MOCK-PT-0015",
+        "MOCK-PT-0016",
+        "MOCK-PT-0017",
+        "MOCK-PT-0018",
+        "MOCK-PT-0019",
+        "MOCK-PT-0020",
+        "MOCK-PT-0021",
+        "MOCK-PT-0022",
+        "MOCK-PT-0023",
+        "MOCK-PT-0024",
+        "MOCK-PT-0025",
+        "MOCK-PT-0026",
+        "MOCK-PT-0027",
+        "MOCK-PT-0028",
+        "MOCK-PT-0029",
+        "MOCK-PT-0030",
+        "MOCK-PT-0031",
+        "MOCK-PT-0032",
+        "MOCK-PT-0033",
+        "MOCK-PT-0034",
+        "MOCK-PT-0035",
+        "MOCK-PT-0036"
+      ],
+      "requiredDocuments": [
+        "Plan of Care",
+        "POC audit worksheet",
+        "Physician order tracker"
+      ],
+      "readyForDryRunAfter": [
+        "Q1 audit event created"
+      ]
+    },
+    {
+      "eventId": "q1-2026-qapi-review",
+      "title": "Q1 QAPI Review and CAPA/PIP Intake",
+      "supportedPatientIds": [
+        "MOCK-PT-0019",
+        "MOCK-PT-0023",
+        "MOCK-PT-0024",
+        "MOCK-PT-0025",
+        "MOCK-PT-0026",
+        "MOCK-PT-0027",
+        "MOCK-PT-0029",
+        "MOCK-PT-0030",
+        "MOCK-PT-0031",
+        "MOCK-PT-0032",
+        "MOCK-PT-0033",
+        "MOCK-PT-0034",
+        "MOCK-PT-0035",
+        "MOCK-PT-0036"
+      ],
+      "supportedStaffIds": [
+        "MOCK-STAFF-0024",
+        "MOCK-STAFF-0027"
+      ],
+      "requiredDocuments": [
+        "QAPI trend summary",
+        "CAPA/PIP draft inputs",
+        "Committee review packet"
+      ],
+      "readyForDryRunAfter": [
+        "QAPI dry-run event selected"
+      ]
+    },
+    {
+      "eventId": "q1-2026-credentialing-training",
+      "title": "Q1 Credentialing, Onboarding, and Training Compliance",
+      "supportedStaffIds": [
+        "MOCK-STAFF-0025",
+        "MOCK-STAFF-0026",
+        "MOCK-STAFF-0028",
+        "MOCK-STAFF-0029"
+      ],
+      "requiredDocuments": [
+        "Credentialing packet",
+        "Onboarding checklist",
+        "Training compliance report"
+      ],
+      "readyForDryRunAfter": [
+        "No external notifications; dummy users only"
+      ]
+    }
+  ],
+  "globalReadiness": {
+    "canGenerateDocumentsLater": true,
+    "canRunEventsNow": false,
+    "reasonNotRunningEvents": "This pass seeds profile registries only; no evidence upload, eCign, Calendar patch, Drive folder creation, or event execution."
+  }
+}

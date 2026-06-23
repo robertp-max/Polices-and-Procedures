@@ -4,6 +4,7 @@ import { PageHeader } from '@/policy/components/ui/PageHeader';
 import { SearchField } from '@/policy/components/ui/SearchField';
 import { DataGrid } from '@/policy/components/ui/DataGrid';
 import { EmptyState } from '@/policy/components/ui/EmptyState';
+import { MetricTile, BorderGlow, ToneBadge, SpotlightCard } from '@/policy/components/ui';
 import { Heart } from 'lucide-react';
 import { DemoBanner } from '../components/DemoBanner';
 import { AcuityBadge } from '../components/AcuityBadge';
@@ -47,6 +48,12 @@ export function PatientListPage() {
 
   const accmClinicians = clinicians.filter((c) => c.orgRole === 'accm');
 
+  // Phase 3: derive display metrics only (no data/store/click changes)
+  const allPatients = usePatientStore((s) => s.patients);
+  const homeCount = allPatients.filter((p) => p.serviceSetting === 'home').length;
+  const highAcuityCount = allPatients.filter((p) => p.acuityLevel === 'a4_critical_complex' || p.acuityLevel === 'a3_high').length;
+  const assignedPatientConnections = useClinicianStore((s) => s.connections.filter((c) => c.connectionStatus === 'assigned' && c.patientId).length);
+
   const handleClearFilters = () => {
     setFilterAcuity(null);
     setFilterAccm(null);
@@ -65,16 +72,23 @@ export function PatientListPage() {
           title={
             <span className="flex items-center gap-2">
               Patient Profiles
-              <span
-                className="inline-flex items-center px-2 py-0.5 rounded-full text-sm font-normal"
-                style={{ background: 'var(--ci-surface-muted)', color: 'var(--ci-text-muted-2)', fontSize: 14 }}
-              >
-                {filtered.length}/{total}
-              </span>
+              <ToneBadge tone="teal">{filtered.length}/{total}</ToneBadge>
             </span>
           }
           description="Synthetic demonstration data only."
         />
+
+        {/* PHASE 3 ONLY: Apply MetricTile, BorderGlow, ToneBadge, Spotlight variant to profiles */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <BorderGlow borderRadius={16} glowIntensity={0.7}>
+            <MetricTile label="Active Census" value={total} note="Patients" tone="teal" />
+          </BorderGlow>
+          <MetricTile label="Home Setting" value={homeCount} note="Service at home" tone="success" />
+          <MetricTile label="High Acuity" value={highAcuityCount} note="Critical/High" tone="danger" />
+          <SpotlightCard variant="border-glow" className="rounded-2xl">
+            <MetricTile label="Assignments" value={assignedPatientConnections} note="Clinician links" tone="orange" />
+          </SpotlightCard>
+        </div>
 
         {/* Search & Filters */}
         <div className="flex flex-wrap items-center gap-3">
@@ -168,13 +182,15 @@ export function PatientListPage() {
           />
         )}
 
-        {/* Mobile: card stack */}
+        {/* Mobile: card stack (BorderGlow Phase 3) */}
         {filtered.length > 0 && isMobile && (
-          <div className="grid grid-cols-1 gap-3">
-            {filtered.map((p) => (
-              <PatientCard key={p.id} patient={p} />
-            ))}
-          </div>
+          <BorderGlow borderRadius={12} glowIntensity={0.6} className="w-full">
+            <div className="grid grid-cols-1 gap-3">
+              {filtered.map((p) => (
+                <PatientCard key={p.id} patient={p} />
+              ))}
+            </div>
+          </BorderGlow>
         )}
 
         {/* Desktop: table */}

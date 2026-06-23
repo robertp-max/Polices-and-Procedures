@@ -222,6 +222,7 @@
         "cognito-idp:AdminUpdateUserAttributes",
         "cognito-idp:AdminEnableUser",
         "cognito-idp:InitiateAuth",
+        "cognito-idp:RespondToAuthChallenge",
         "cognito-idp:GetUser",
         "cognito-idp:GlobalSignOut",
         "cognito-idp:ForgotPassword",
@@ -264,14 +265,12 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": {
-      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
-     },
-     "S3Key": "0a30d4fc5654fd729639103ca2d874d52bd93658e25778312a758d4159a79b7a.zip"
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
+     "S3Key": "1374e702396841fb5acd8156bd2ce084893d9b87668e435a925c53328fc998ee.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "http://localhost:5173",
+      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
@@ -285,6 +284,7 @@
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
       "AUTO_APPROVED_EMAILS": "",
+      "ADMIN_MANUAL_PASSWORD_EMAILS": "robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -305,7 +305,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/RegisterRequestHandler/Resource",
-    "aws:asset:path": "asset.0a30d4fc5654fd729639103ca2d874d52bd93658e25778312a758d4159a79b7a",
+    "aws:asset:path": "asset.1374e702396841fb5acd8156bd2ce084893d9b87668e435a925c53328fc998ee",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -395,6 +395,7 @@
         "cognito-idp:AdminUpdateUserAttributes",
         "cognito-idp:AdminEnableUser",
         "cognito-idp:InitiateAuth",
+        "cognito-idp:RespondToAuthChallenge",
         "cognito-idp:GetUser",
         "cognito-idp:GlobalSignOut",
         "cognito-idp:ForgotPassword",
@@ -437,14 +438,12 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": {
-      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
-     },
-     "S3Key": "8921c77392fa19f08f2a167b0b3eff363bcd00a08c734781084c1cb5322e01cd.zip"
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
+     "S3Key": "4b0bdd15f82bdb481989bf159bdca04c8a6e7b8419f11a0d7f8c2b0eba86bed6.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "http://localhost:5173",
+      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
@@ -458,6 +457,7 @@
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
       "AUTO_APPROVED_EMAILS": "",
+      "ADMIN_MANUAL_PASSWORD_EMAILS": "robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -478,7 +478,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/SetupAccountHandler/Resource",
-    "aws:asset:path": "asset.8921c77392fa19f08f2a167b0b3eff363bcd00a08c734781084c1cb5322e01cd",
+    "aws:asset:path": "asset.4b0bdd15f82bdb481989bf159bdca04c8a6e7b8419f11a0d7f8c2b0eba86bed6",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -568,6 +568,7 @@
         "cognito-idp:AdminUpdateUserAttributes",
         "cognito-idp:AdminEnableUser",
         "cognito-idp:InitiateAuth",
+        "cognito-idp:RespondToAuthChallenge",
         "cognito-idp:GetUser",
         "cognito-idp:GlobalSignOut",
         "cognito-idp:ForgotPassword",
@@ -610,14 +611,12 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": {
-      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
-     },
-     "S3Key": "7de6b6744f9b2cd79cca0b1417ee6709c9d582b333b18378c1cdbb364afb28f8.zip"
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
+     "S3Key": "03dab92a7e0ff3819dfbeba06cee209ca9ef8eaa3e75814df5ffe3afdec392fb.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "http://localhost:5173",
+      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
@@ -631,6 +630,7 @@
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
       "AUTO_APPROVED_EMAILS": "",
+      "ADMIN_MANUAL_PASSWORD_EMAILS": "robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -651,7 +651,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/ResendSetupLinkHandler/Resource",
-    "aws:asset:path": "asset.7de6b6744f9b2cd79cca0b1417ee6709c9d582b333b18378c1cdbb364afb28f8",
+    "aws:asset:path": "asset.03dab92a7e0ff3819dfbeba06cee209ca9ef8eaa3e75814df5ffe3afdec392fb",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -741,6 +741,7 @@
         "cognito-idp:AdminUpdateUserAttributes",
         "cognito-idp:AdminEnableUser",
         "cognito-idp:InitiateAuth",
+        "cognito-idp:RespondToAuthChallenge",
         "cognito-idp:GetUser",
         "cognito-idp:GlobalSignOut",
         "cognito-idp:ForgotPassword",
@@ -783,14 +784,12 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": {
-      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
-     },
-     "S3Key": "c47dc783c51c6dd091bee375c5b12b4086ce6f62d4465316ef2c449a3cb974f6.zip"
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
+     "S3Key": "b0dfd923366a7b38fb0be87a5b41a7da4b2592ee60b040b952e428b912c91423.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "http://localhost:5173",
+      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
@@ -804,6 +803,7 @@
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
       "AUTO_APPROVED_EMAILS": "",
+      "ADMIN_MANUAL_PASSWORD_EMAILS": "robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -824,7 +824,180 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/LoginHandler/Resource",
-    "aws:asset:path": "asset.c47dc783c51c6dd091bee375c5b12b4086ce6f62d4465316ef2c449a3cb974f6",
+    "aws:asset:path": "asset.b0dfd923366a7b38fb0be87a5b41a7da4b2592ee60b040b952e428b912c91423",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "RespondChallengeHandlerServiceRole2ACD1F5C": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/RespondChallengeHandler/ServiceRole/Resource"
+   }
+  },
+  "RespondChallengeHandlerServiceRoleDefaultPolicy974F3283": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DemoAuthRegistrationsTable8576514C",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DemoAuthRegistrationsTable8576514C",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "cognito-idp:AdminCreateUser",
+        "cognito-idp:AdminGetUser",
+        "cognito-idp:AdminSetUserPassword",
+        "cognito-idp:AdminUpdateUserAttributes",
+        "cognito-idp:AdminEnableUser",
+        "cognito-idp:InitiateAuth",
+        "cognito-idp:RespondToAuthChallenge",
+        "cognito-idp:GetUser",
+        "cognito-idp:GlobalSignOut",
+        "cognito-idp:ForgotPassword",
+        "cognito-idp:ConfirmForgotPassword"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "DemoAuthUserPool99CF0E47",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": [
+        "ses:SendEmail",
+        "ses:SendRawEmail"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "RespondChallengeHandlerServiceRoleDefaultPolicy974F3283",
+    "Roles": [
+     {
+      "Ref": "RespondChallengeHandlerServiceRole2ACD1F5C"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/RespondChallengeHandler/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "RespondChallengeHandlerBDBEB00A": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "arm64"
+    ],
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
+     "S3Key": "d660989060eedf9e8a9e2bc421bebc6c0a4afda9a14247daa222cfeeca2baf60.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
+      "COGNITO_USER_POOL_ID": {
+       "Ref": "DemoAuthUserPool99CF0E47"
+      },
+      "COGNITO_CLIENT_ID": {
+       "Ref": "DemoAuthUserPoolDemoAuthAppClientAF6535F8"
+      },
+      "FROM_EMAIL": "no-reply@example.com",
+      "REGISTRATION_TABLE_NAME": {
+       "Ref": "DemoAuthRegistrationsTable8576514C"
+      },
+      "SETUP_TOKEN_TTL_MINUTES": "60",
+      "AUTO_APPROVED_DOMAIN": "careindeed.com",
+      "AUTO_APPROVED_EMAILS": "",
+      "ADMIN_MANUAL_PASSWORD_EMAILS": "robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com",
+      "DEMO_AUTH_DEBUG": "true"
+     }
+    },
+    "Handler": "index.handler",
+    "MemorySize": 256,
+    "Role": {
+     "Fn::GetAtt": [
+      "RespondChallengeHandlerServiceRole2ACD1F5C",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x",
+    "Timeout": 15
+   },
+   "DependsOn": [
+    "RespondChallengeHandlerServiceRoleDefaultPolicy974F3283",
+    "RespondChallengeHandlerServiceRole2ACD1F5C"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/RespondChallengeHandler/Resource",
+    "aws:asset:path": "asset.d660989060eedf9e8a9e2bc421bebc6c0a4afda9a14247daa222cfeeca2baf60",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -914,6 +1087,7 @@
         "cognito-idp:AdminUpdateUserAttributes",
         "cognito-idp:AdminEnableUser",
         "cognito-idp:InitiateAuth",
+        "cognito-idp:RespondToAuthChallenge",
         "cognito-idp:GetUser",
         "cognito-idp:GlobalSignOut",
         "cognito-idp:ForgotPassword",
@@ -956,14 +1130,12 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": {
-      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
-     },
-     "S3Key": "5330a2023c7cc88ff448fc6827d73f91ae966d672464bbd837f550b52a2596ce.zip"
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
+     "S3Key": "6c9a5cd5305568d73fa57fa3f2ad110d32814feab5e815b2b60706d6d47349b7.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "http://localhost:5173",
+      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
@@ -977,6 +1149,7 @@
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
       "AUTO_APPROVED_EMAILS": "",
+      "ADMIN_MANUAL_PASSWORD_EMAILS": "robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -997,7 +1170,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/RefreshHandler/Resource",
-    "aws:asset:path": "asset.5330a2023c7cc88ff448fc6827d73f91ae966d672464bbd837f550b52a2596ce",
+    "aws:asset:path": "asset.6c9a5cd5305568d73fa57fa3f2ad110d32814feab5e815b2b60706d6d47349b7",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -1087,6 +1260,7 @@
         "cognito-idp:AdminUpdateUserAttributes",
         "cognito-idp:AdminEnableUser",
         "cognito-idp:InitiateAuth",
+        "cognito-idp:RespondToAuthChallenge",
         "cognito-idp:GetUser",
         "cognito-idp:GlobalSignOut",
         "cognito-idp:ForgotPassword",
@@ -1129,14 +1303,12 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": {
-      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
-     },
-     "S3Key": "7f1528b39cc46a0e4dfeb37e8f04f58e9f6992e2bcac6b23fabf8a5038ba8e6d.zip"
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
+     "S3Key": "87371b86addbc1d2b5825287c6a72db23faf11233fad679ad200ae979d87659f.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "http://localhost:5173",
+      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
@@ -1150,6 +1322,7 @@
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
       "AUTO_APPROVED_EMAILS": "",
+      "ADMIN_MANUAL_PASSWORD_EMAILS": "robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -1170,7 +1343,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/MeHandler/Resource",
-    "aws:asset:path": "asset.7f1528b39cc46a0e4dfeb37e8f04f58e9f6992e2bcac6b23fabf8a5038ba8e6d",
+    "aws:asset:path": "asset.87371b86addbc1d2b5825287c6a72db23faf11233fad679ad200ae979d87659f",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -1260,6 +1433,7 @@
         "cognito-idp:AdminUpdateUserAttributes",
         "cognito-idp:AdminEnableUser",
         "cognito-idp:InitiateAuth",
+        "cognito-idp:RespondToAuthChallenge",
         "cognito-idp:GetUser",
         "cognito-idp:GlobalSignOut",
         "cognito-idp:ForgotPassword",
@@ -1302,14 +1476,12 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": {
-      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
-     },
-     "S3Key": "0ed4ceea56e36a2914bd752c34fb688e578019f65e7f78a49e5d7be4479803e4.zip"
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
+     "S3Key": "5063448b017a5bbaa25c032651df110c8d24a89a7feaff85cc04cf496ebf3d45.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "http://localhost:5173",
+      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
@@ -1323,6 +1495,7 @@
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
       "AUTO_APPROVED_EMAILS": "",
+      "ADMIN_MANUAL_PASSWORD_EMAILS": "robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -1343,7 +1516,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/LogoutHandler/Resource",
-    "aws:asset:path": "asset.0ed4ceea56e36a2914bd752c34fb688e578019f65e7f78a49e5d7be4479803e4",
+    "aws:asset:path": "asset.5063448b017a5bbaa25c032651df110c8d24a89a7feaff85cc04cf496ebf3d45",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -1433,6 +1606,7 @@
         "cognito-idp:AdminUpdateUserAttributes",
         "cognito-idp:AdminEnableUser",
         "cognito-idp:InitiateAuth",
+        "cognito-idp:RespondToAuthChallenge",
         "cognito-idp:GetUser",
         "cognito-idp:GlobalSignOut",
         "cognito-idp:ForgotPassword",
@@ -1475,14 +1649,12 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": {
-      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
-     },
-     "S3Key": "b901811e965ec297af9e4527161671285e1dd8e03a09f0b2f425048a403b9283.zip"
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
+     "S3Key": "5ca34fa7dc591ecaa97b8d8507f096a952a17a19c8d4482ecbfdd8ae71c5f495.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "http://localhost:5173",
+      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
@@ -1496,6 +1668,7 @@
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
       "AUTO_APPROVED_EMAILS": "",
+      "ADMIN_MANUAL_PASSWORD_EMAILS": "robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -1516,7 +1689,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/ForgotPasswordHandler/Resource",
-    "aws:asset:path": "asset.b901811e965ec297af9e4527161671285e1dd8e03a09f0b2f425048a403b9283",
+    "aws:asset:path": "asset.5ca34fa7dc591ecaa97b8d8507f096a952a17a19c8d4482ecbfdd8ae71c5f495",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -1606,6 +1779,7 @@
         "cognito-idp:AdminUpdateUserAttributes",
         "cognito-idp:AdminEnableUser",
         "cognito-idp:InitiateAuth",
+        "cognito-idp:RespondToAuthChallenge",
         "cognito-idp:GetUser",
         "cognito-idp:GlobalSignOut",
         "cognito-idp:ForgotPassword",
@@ -1648,14 +1822,12 @@
      "arm64"
     ],
     "Code": {
-     "S3Bucket": {
-      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
-     },
-     "S3Key": "1ec390a3202ef60469dffdce3fd4043dcbd006b0ec26e758ae97a84b9b371e87.zip"
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
+     "S3Key": "80559506f953708d5bc603800c5d7e9123d4906fa9e325085a171d1551cc3b86.zip"
     },
     "Environment": {
      "Variables": {
-      "APP_BASE_URL": "http://localhost:5173",
+      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
       "COGNITO_USER_POOL_ID": {
        "Ref": "DemoAuthUserPool99CF0E47"
       },
@@ -1669,6 +1841,7 @@
       "SETUP_TOKEN_TTL_MINUTES": "60",
       "AUTO_APPROVED_DOMAIN": "careindeed.com",
       "AUTO_APPROVED_EMAILS": "",
+      "ADMIN_MANUAL_PASSWORD_EMAILS": "robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com",
       "DEMO_AUTH_DEBUG": "true"
      }
     },
@@ -1689,7 +1862,872 @@
    ],
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/ResetPasswordHandler/Resource",
-    "aws:asset:path": "asset.1ec390a3202ef60469dffdce3fd4043dcbd006b0ec26e758ae97a84b9b371e87",
+    "aws:asset:path": "asset.80559506f953708d5bc603800c5d7e9123d4906fa9e325085a171d1551cc3b86",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "ManualPasswordResetHandlerServiceRoleFA0C9691": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/ManualPasswordResetHandler/ServiceRole/Resource"
+   }
+  },
+  "ManualPasswordResetHandlerServiceRoleDefaultPolicy04E7F3C3": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DemoAuthRegistrationsTable8576514C",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DemoAuthRegistrationsTable8576514C",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "cognito-idp:AdminCreateUser",
+        "cognito-idp:AdminGetUser",
+        "cognito-idp:AdminSetUserPassword",
+        "cognito-idp:AdminUpdateUserAttributes",
+        "cognito-idp:AdminEnableUser",
+        "cognito-idp:InitiateAuth",
+        "cognito-idp:RespondToAuthChallenge",
+        "cognito-idp:GetUser",
+        "cognito-idp:GlobalSignOut",
+        "cognito-idp:ForgotPassword",
+        "cognito-idp:ConfirmForgotPassword"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "DemoAuthUserPool99CF0E47",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": [
+        "ses:SendEmail",
+        "ses:SendRawEmail"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "ManualPasswordResetHandlerServiceRoleDefaultPolicy04E7F3C3",
+    "Roles": [
+     {
+      "Ref": "ManualPasswordResetHandlerServiceRoleFA0C9691"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/ManualPasswordResetHandler/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "ManualPasswordResetHandler394500A7": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "arm64"
+    ],
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
+     "S3Key": "b79f8f8293ad95ecc9ea455bbb391d6e12e5a6b94230ffc3f3ecd60dbda4136c.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
+      "COGNITO_USER_POOL_ID": {
+       "Ref": "DemoAuthUserPool99CF0E47"
+      },
+      "COGNITO_CLIENT_ID": {
+       "Ref": "DemoAuthUserPoolDemoAuthAppClientAF6535F8"
+      },
+      "FROM_EMAIL": "no-reply@example.com",
+      "REGISTRATION_TABLE_NAME": {
+       "Ref": "DemoAuthRegistrationsTable8576514C"
+      },
+      "SETUP_TOKEN_TTL_MINUTES": "60",
+      "AUTO_APPROVED_DOMAIN": "careindeed.com",
+      "AUTO_APPROVED_EMAILS": "",
+      "ADMIN_MANUAL_PASSWORD_EMAILS": "robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com",
+      "DEMO_AUTH_DEBUG": "true"
+     }
+    },
+    "Handler": "index.handler",
+    "MemorySize": 256,
+    "Role": {
+     "Fn::GetAtt": [
+      "ManualPasswordResetHandlerServiceRoleFA0C9691",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x",
+    "Timeout": 15
+   },
+   "DependsOn": [
+    "ManualPasswordResetHandlerServiceRoleDefaultPolicy04E7F3C3",
+    "ManualPasswordResetHandlerServiceRoleFA0C9691"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/ManualPasswordResetHandler/Resource",
+    "aws:asset:path": "asset.b79f8f8293ad95ecc9ea455bbb391d6e12e5a6b94230ffc3f3ecd60dbda4136c",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "GrantAccessHandlerServiceRole26184DE8": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/GrantAccessHandler/ServiceRole/Resource"
+   }
+  },
+  "GrantAccessHandlerServiceRoleDefaultPolicy89759330": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DemoAuthRegistrationsTable8576514C",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DemoAuthRegistrationsTable8576514C",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "cognito-idp:AdminCreateUser",
+        "cognito-idp:AdminGetUser",
+        "cognito-idp:AdminSetUserPassword",
+        "cognito-idp:AdminUpdateUserAttributes",
+        "cognito-idp:AdminEnableUser",
+        "cognito-idp:InitiateAuth",
+        "cognito-idp:RespondToAuthChallenge",
+        "cognito-idp:GetUser",
+        "cognito-idp:GlobalSignOut",
+        "cognito-idp:ForgotPassword",
+        "cognito-idp:ConfirmForgotPassword"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "DemoAuthUserPool99CF0E47",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": [
+        "ses:SendEmail",
+        "ses:SendRawEmail"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "GrantAccessHandlerServiceRoleDefaultPolicy89759330",
+    "Roles": [
+     {
+      "Ref": "GrantAccessHandlerServiceRole26184DE8"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/GrantAccessHandler/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "GrantAccessHandlerB820F039": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "arm64"
+    ],
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
+     "S3Key": "e93d71d37a1a37c965b80c7ea7d66e36d7bc4ec22fa880acbad1124c24338746.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
+      "COGNITO_USER_POOL_ID": {
+       "Ref": "DemoAuthUserPool99CF0E47"
+      },
+      "COGNITO_CLIENT_ID": {
+       "Ref": "DemoAuthUserPoolDemoAuthAppClientAF6535F8"
+      },
+      "FROM_EMAIL": "no-reply@example.com",
+      "REGISTRATION_TABLE_NAME": {
+       "Ref": "DemoAuthRegistrationsTable8576514C"
+      },
+      "SETUP_TOKEN_TTL_MINUTES": "60",
+      "AUTO_APPROVED_DOMAIN": "careindeed.com",
+      "AUTO_APPROVED_EMAILS": "",
+      "ADMIN_MANUAL_PASSWORD_EMAILS": "robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com",
+      "DEMO_AUTH_DEBUG": "true"
+     }
+    },
+    "Handler": "index.handler",
+    "MemorySize": 256,
+    "Role": {
+     "Fn::GetAtt": [
+      "GrantAccessHandlerServiceRole26184DE8",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x",
+    "Timeout": 15
+   },
+   "DependsOn": [
+    "GrantAccessHandlerServiceRoleDefaultPolicy89759330",
+    "GrantAccessHandlerServiceRole26184DE8"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/GrantAccessHandler/Resource",
+    "aws:asset:path": "asset.e93d71d37a1a37c965b80c7ea7d66e36d7bc4ec22fa880acbad1124c24338746",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "PageAccessMeHandlerServiceRoleC1497652": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/PageAccessMeHandler/ServiceRole/Resource"
+   }
+  },
+  "PageAccessMeHandlerServiceRoleDefaultPolicy98AE30F8": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DemoAuthRegistrationsTable8576514C",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DemoAuthRegistrationsTable8576514C",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "cognito-idp:AdminCreateUser",
+        "cognito-idp:AdminGetUser",
+        "cognito-idp:AdminSetUserPassword",
+        "cognito-idp:AdminUpdateUserAttributes",
+        "cognito-idp:AdminEnableUser",
+        "cognito-idp:InitiateAuth",
+        "cognito-idp:RespondToAuthChallenge",
+        "cognito-idp:GetUser",
+        "cognito-idp:GlobalSignOut",
+        "cognito-idp:ForgotPassword",
+        "cognito-idp:ConfirmForgotPassword"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "DemoAuthUserPool99CF0E47",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": [
+        "ses:SendEmail",
+        "ses:SendRawEmail"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "PageAccessMeHandlerServiceRoleDefaultPolicy98AE30F8",
+    "Roles": [
+     {
+      "Ref": "PageAccessMeHandlerServiceRoleC1497652"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/PageAccessMeHandler/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "PageAccessMeHandler728086EE": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "arm64"
+    ],
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
+     "S3Key": "45827eaa0002a06e37ef47c935c001613d83f8b1818ac70d54eb52075f5fb0d5.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
+      "COGNITO_USER_POOL_ID": {
+       "Ref": "DemoAuthUserPool99CF0E47"
+      },
+      "COGNITO_CLIENT_ID": {
+       "Ref": "DemoAuthUserPoolDemoAuthAppClientAF6535F8"
+      },
+      "FROM_EMAIL": "no-reply@example.com",
+      "REGISTRATION_TABLE_NAME": {
+       "Ref": "DemoAuthRegistrationsTable8576514C"
+      },
+      "SETUP_TOKEN_TTL_MINUTES": "60",
+      "AUTO_APPROVED_DOMAIN": "careindeed.com",
+      "AUTO_APPROVED_EMAILS": "",
+      "ADMIN_MANUAL_PASSWORD_EMAILS": "robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com",
+      "DEMO_AUTH_DEBUG": "true"
+     }
+    },
+    "Handler": "index.handler",
+    "MemorySize": 256,
+    "Role": {
+     "Fn::GetAtt": [
+      "PageAccessMeHandlerServiceRoleC1497652",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x",
+    "Timeout": 15
+   },
+   "DependsOn": [
+    "PageAccessMeHandlerServiceRoleDefaultPolicy98AE30F8",
+    "PageAccessMeHandlerServiceRoleC1497652"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/PageAccessMeHandler/Resource",
+    "aws:asset:path": "asset.45827eaa0002a06e37ef47c935c001613d83f8b1818ac70d54eb52075f5fb0d5",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "PageAccessAdminGetHandlerServiceRole3FA76386": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/PageAccessAdminGetHandler/ServiceRole/Resource"
+   }
+  },
+  "PageAccessAdminGetHandlerServiceRoleDefaultPolicy7996C885": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DemoAuthRegistrationsTable8576514C",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DemoAuthRegistrationsTable8576514C",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "cognito-idp:AdminCreateUser",
+        "cognito-idp:AdminGetUser",
+        "cognito-idp:AdminSetUserPassword",
+        "cognito-idp:AdminUpdateUserAttributes",
+        "cognito-idp:AdminEnableUser",
+        "cognito-idp:InitiateAuth",
+        "cognito-idp:RespondToAuthChallenge",
+        "cognito-idp:GetUser",
+        "cognito-idp:GlobalSignOut",
+        "cognito-idp:ForgotPassword",
+        "cognito-idp:ConfirmForgotPassword"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "DemoAuthUserPool99CF0E47",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": [
+        "ses:SendEmail",
+        "ses:SendRawEmail"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "PageAccessAdminGetHandlerServiceRoleDefaultPolicy7996C885",
+    "Roles": [
+     {
+      "Ref": "PageAccessAdminGetHandlerServiceRole3FA76386"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/PageAccessAdminGetHandler/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "PageAccessAdminGetHandler46C36992": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "arm64"
+    ],
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
+     "S3Key": "afe28d6a2876c378e6cc67070dc103a50c9a9ed19012168be844c84c156b6a56.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
+      "COGNITO_USER_POOL_ID": {
+       "Ref": "DemoAuthUserPool99CF0E47"
+      },
+      "COGNITO_CLIENT_ID": {
+       "Ref": "DemoAuthUserPoolDemoAuthAppClientAF6535F8"
+      },
+      "FROM_EMAIL": "no-reply@example.com",
+      "REGISTRATION_TABLE_NAME": {
+       "Ref": "DemoAuthRegistrationsTable8576514C"
+      },
+      "SETUP_TOKEN_TTL_MINUTES": "60",
+      "AUTO_APPROVED_DOMAIN": "careindeed.com",
+      "AUTO_APPROVED_EMAILS": "",
+      "ADMIN_MANUAL_PASSWORD_EMAILS": "robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com",
+      "DEMO_AUTH_DEBUG": "true"
+     }
+    },
+    "Handler": "index.handler",
+    "MemorySize": 256,
+    "Role": {
+     "Fn::GetAtt": [
+      "PageAccessAdminGetHandlerServiceRole3FA76386",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x",
+    "Timeout": 15
+   },
+   "DependsOn": [
+    "PageAccessAdminGetHandlerServiceRoleDefaultPolicy7996C885",
+    "PageAccessAdminGetHandlerServiceRole3FA76386"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/PageAccessAdminGetHandler/Resource",
+    "aws:asset:path": "asset.afe28d6a2876c378e6cc67070dc103a50c9a9ed19012168be844c84c156b6a56",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "PageAccessAdminPutHandlerServiceRole44A2E488": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/PageAccessAdminPutHandler/ServiceRole/Resource"
+   }
+  },
+  "PageAccessAdminPutHandlerServiceRoleDefaultPolicy116C293C": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DemoAuthRegistrationsTable8576514C",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DemoAuthRegistrationsTable8576514C",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "cognito-idp:AdminCreateUser",
+        "cognito-idp:AdminGetUser",
+        "cognito-idp:AdminSetUserPassword",
+        "cognito-idp:AdminUpdateUserAttributes",
+        "cognito-idp:AdminEnableUser",
+        "cognito-idp:InitiateAuth",
+        "cognito-idp:RespondToAuthChallenge",
+        "cognito-idp:GetUser",
+        "cognito-idp:GlobalSignOut",
+        "cognito-idp:ForgotPassword",
+        "cognito-idp:ConfirmForgotPassword"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "DemoAuthUserPool99CF0E47",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": [
+        "ses:SendEmail",
+        "ses:SendRawEmail"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "PageAccessAdminPutHandlerServiceRoleDefaultPolicy116C293C",
+    "Roles": [
+     {
+      "Ref": "PageAccessAdminPutHandlerServiceRole44A2E488"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/PageAccessAdminPutHandler/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "PageAccessAdminPutHandlerDF4C2ADD": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "arm64"
+    ],
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
+     "S3Key": "978326d5797eb6addf797b883e6c6df3631759a665c85f26924956ee174e5277.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "APP_BASE_URL": "https://dovdry3t4njek.cloudfront.net",
+      "COGNITO_USER_POOL_ID": {
+       "Ref": "DemoAuthUserPool99CF0E47"
+      },
+      "COGNITO_CLIENT_ID": {
+       "Ref": "DemoAuthUserPoolDemoAuthAppClientAF6535F8"
+      },
+      "FROM_EMAIL": "no-reply@example.com",
+      "REGISTRATION_TABLE_NAME": {
+       "Ref": "DemoAuthRegistrationsTable8576514C"
+      },
+      "SETUP_TOKEN_TTL_MINUTES": "60",
+      "AUTO_APPROVED_DOMAIN": "careindeed.com",
+      "AUTO_APPROVED_EMAILS": "",
+      "ADMIN_MANUAL_PASSWORD_EMAILS": "robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com",
+      "DEMO_AUTH_DEBUG": "true"
+     }
+    },
+    "Handler": "index.handler",
+    "MemorySize": 256,
+    "Role": {
+     "Fn::GetAtt": [
+      "PageAccessAdminPutHandlerServiceRole44A2E488",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x",
+    "Timeout": 15
+   },
+   "DependsOn": [
+    "PageAccessAdminPutHandlerServiceRoleDefaultPolicy116C293C",
+    "PageAccessAdminPutHandlerServiceRole44A2E488"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/PageAccessAdminPutHandler/Resource",
+    "aws:asset:path": "asset.978326d5797eb6addf797b883e6c6df3631759a665c85f26924956ee174e5277",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -1706,11 +2744,12 @@
      "AllowMethods": [
       "GET",
       "POST",
+      "PUT",
       "OPTIONS"
      ],
      "AllowOrigins": [
-      "http://localhost:5173",
       "https://dovdry3t4njek.cloudfront.net",
+      "http://localhost:5173",
       "http://localhost:5176",
       "http://localhost:5177"
      ],
@@ -1774,11 +2813,7 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-east-2:",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
+       ":execute-api:us-west-1:069857851156:",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -1853,11 +2888,7 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-east-2:",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
+       ":execute-api:us-west-1:069857851156:",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -1932,11 +2963,7 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-east-2:",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
+       ":execute-api:us-west-1:069857851156:",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -2011,11 +3038,7 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-east-2:",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
+       ":execute-api:us-west-1:069857851156:",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -2050,6 +3073,81 @@
    },
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/POST--auth--login/Resource"
+   }
+  },
+  "DemoAuthHttpApiPOSTauthrespondchallengeRespondChallengeIntegration29749241": {
+   "Type": "AWS::ApiGatewayV2::Integration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "DemoAuthHttpApi8010725D"
+    },
+    "IntegrationType": "AWS_PROXY",
+    "IntegrationUri": {
+     "Fn::GetAtt": [
+      "RespondChallengeHandlerBDBEB00A",
+      "Arn"
+     ]
+    },
+    "PayloadFormatVersion": "2.0"
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/POST--auth--respond-challenge/RespondChallengeIntegration/Resource"
+   }
+  },
+  "DemoAuthHttpApiPOSTauthrespondchallengeRespondChallengeIntegrationPermission2DBAF2B0": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "RespondChallengeHandlerBDBEB00A",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-1:069857851156:",
+       {
+        "Ref": "DemoAuthHttpApi8010725D"
+       },
+       "/*/*/auth/respond-challenge"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/POST--auth--respond-challenge/RespondChallengeIntegration-Permission"
+   }
+  },
+  "DemoAuthHttpApiPOSTauthrespondchallenge19C7DEF0": {
+   "Type": "AWS::ApiGatewayV2::Route",
+   "Properties": {
+    "ApiId": {
+     "Ref": "DemoAuthHttpApi8010725D"
+    },
+    "AuthorizationType": "NONE",
+    "RouteKey": "POST /auth/respond-challenge",
+    "Target": {
+     "Fn::Join": [
+      "",
+      [
+       "integrations/",
+       {
+        "Ref": "DemoAuthHttpApiPOSTauthrespondchallengeRespondChallengeIntegration29749241"
+       }
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/POST--auth--respond-challenge/Resource"
    }
   },
   "DemoAuthHttpApiPOSTauthrefreshRefreshIntegration857DF522": {
@@ -2090,11 +3188,7 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-east-2:",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
+       ":execute-api:us-west-1:069857851156:",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -2169,11 +3263,7 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-east-2:",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
+       ":execute-api:us-west-1:069857851156:",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -2248,11 +3338,7 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-east-2:",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
+       ":execute-api:us-west-1:069857851156:",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -2327,11 +3413,7 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-east-2:",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
+       ":execute-api:us-west-1:069857851156:",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -2406,11 +3488,7 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:us-east-2:",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
+       ":execute-api:us-west-1:069857851156:",
        {
         "Ref": "DemoAuthHttpApi8010725D"
        },
@@ -2445,6 +3523,381 @@
    },
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/POST--auth--reset-password/Resource"
+   }
+  },
+  "DemoAuthHttpApiPOSTauthadminmanualpasswordresetManualPasswordResetIntegration2E4BFDBA": {
+   "Type": "AWS::ApiGatewayV2::Integration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "DemoAuthHttpApi8010725D"
+    },
+    "IntegrationType": "AWS_PROXY",
+    "IntegrationUri": {
+     "Fn::GetAtt": [
+      "ManualPasswordResetHandler394500A7",
+      "Arn"
+     ]
+    },
+    "PayloadFormatVersion": "2.0"
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/POST--auth--admin--manual-password-reset/ManualPasswordResetIntegration/Resource"
+   }
+  },
+  "DemoAuthHttpApiPOSTauthadminmanualpasswordresetManualPasswordResetIntegrationPermission4BEEA824": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ManualPasswordResetHandler394500A7",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-1:069857851156:",
+       {
+        "Ref": "DemoAuthHttpApi8010725D"
+       },
+       "/*/*/auth/admin/manual-password-reset"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/POST--auth--admin--manual-password-reset/ManualPasswordResetIntegration-Permission"
+   }
+  },
+  "DemoAuthHttpApiPOSTauthadminmanualpasswordresetBCB23277": {
+   "Type": "AWS::ApiGatewayV2::Route",
+   "Properties": {
+    "ApiId": {
+     "Ref": "DemoAuthHttpApi8010725D"
+    },
+    "AuthorizationType": "NONE",
+    "RouteKey": "POST /auth/admin/manual-password-reset",
+    "Target": {
+     "Fn::Join": [
+      "",
+      [
+       "integrations/",
+       {
+        "Ref": "DemoAuthHttpApiPOSTauthadminmanualpasswordresetManualPasswordResetIntegration2E4BFDBA"
+       }
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/POST--auth--admin--manual-password-reset/Resource"
+   }
+  },
+  "DemoAuthHttpApiPOSTauthadmingrantaccessGrantAccessIntegrationA5A53E7C": {
+   "Type": "AWS::ApiGatewayV2::Integration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "DemoAuthHttpApi8010725D"
+    },
+    "IntegrationType": "AWS_PROXY",
+    "IntegrationUri": {
+     "Fn::GetAtt": [
+      "GrantAccessHandlerB820F039",
+      "Arn"
+     ]
+    },
+    "PayloadFormatVersion": "2.0"
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/POST--auth--admin--grant-access/GrantAccessIntegration/Resource"
+   }
+  },
+  "DemoAuthHttpApiPOSTauthadmingrantaccessGrantAccessIntegrationPermission17D42554": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "GrantAccessHandlerB820F039",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-1:069857851156:",
+       {
+        "Ref": "DemoAuthHttpApi8010725D"
+       },
+       "/*/*/auth/admin/grant-access"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/POST--auth--admin--grant-access/GrantAccessIntegration-Permission"
+   }
+  },
+  "DemoAuthHttpApiPOSTauthadmingrantaccess120E5E09": {
+   "Type": "AWS::ApiGatewayV2::Route",
+   "Properties": {
+    "ApiId": {
+     "Ref": "DemoAuthHttpApi8010725D"
+    },
+    "AuthorizationType": "NONE",
+    "RouteKey": "POST /auth/admin/grant-access",
+    "Target": {
+     "Fn::Join": [
+      "",
+      [
+       "integrations/",
+       {
+        "Ref": "DemoAuthHttpApiPOSTauthadmingrantaccessGrantAccessIntegrationA5A53E7C"
+       }
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/POST--auth--admin--grant-access/Resource"
+   }
+  },
+  "DemoAuthHttpApiGETauthpageaccessmePageAccessMeIntegration669035AD": {
+   "Type": "AWS::ApiGatewayV2::Integration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "DemoAuthHttpApi8010725D"
+    },
+    "IntegrationType": "AWS_PROXY",
+    "IntegrationUri": {
+     "Fn::GetAtt": [
+      "PageAccessMeHandler728086EE",
+      "Arn"
+     ]
+    },
+    "PayloadFormatVersion": "2.0"
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/GET--auth--page-access--me/PageAccessMeIntegration/Resource"
+   }
+  },
+  "DemoAuthHttpApiGETauthpageaccessmePageAccessMeIntegrationPermission44A823F1": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "PageAccessMeHandler728086EE",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-1:069857851156:",
+       {
+        "Ref": "DemoAuthHttpApi8010725D"
+       },
+       "/*/*/auth/page-access/me"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/GET--auth--page-access--me/PageAccessMeIntegration-Permission"
+   }
+  },
+  "DemoAuthHttpApiGETauthpageaccessmeBEF1D1F4": {
+   "Type": "AWS::ApiGatewayV2::Route",
+   "Properties": {
+    "ApiId": {
+     "Ref": "DemoAuthHttpApi8010725D"
+    },
+    "AuthorizationType": "NONE",
+    "RouteKey": "GET /auth/page-access/me",
+    "Target": {
+     "Fn::Join": [
+      "",
+      [
+       "integrations/",
+       {
+        "Ref": "DemoAuthHttpApiGETauthpageaccessmePageAccessMeIntegration669035AD"
+       }
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/GET--auth--page-access--me/Resource"
+   }
+  },
+  "DemoAuthHttpApiGETauthadminpageaccessPageAccessAdminGetIntegrationD25CC7C0": {
+   "Type": "AWS::ApiGatewayV2::Integration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "DemoAuthHttpApi8010725D"
+    },
+    "IntegrationType": "AWS_PROXY",
+    "IntegrationUri": {
+     "Fn::GetAtt": [
+      "PageAccessAdminGetHandler46C36992",
+      "Arn"
+     ]
+    },
+    "PayloadFormatVersion": "2.0"
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/GET--auth--admin--page-access/PageAccessAdminGetIntegration/Resource"
+   }
+  },
+  "DemoAuthHttpApiGETauthadminpageaccessPageAccessAdminGetIntegrationPermission5CD0F7C8": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "PageAccessAdminGetHandler46C36992",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-1:069857851156:",
+       {
+        "Ref": "DemoAuthHttpApi8010725D"
+       },
+       "/*/*/auth/admin/page-access"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/GET--auth--admin--page-access/PageAccessAdminGetIntegration-Permission"
+   }
+  },
+  "DemoAuthHttpApiGETauthadminpageaccess76F14186": {
+   "Type": "AWS::ApiGatewayV2::Route",
+   "Properties": {
+    "ApiId": {
+     "Ref": "DemoAuthHttpApi8010725D"
+    },
+    "AuthorizationType": "NONE",
+    "RouteKey": "GET /auth/admin/page-access",
+    "Target": {
+     "Fn::Join": [
+      "",
+      [
+       "integrations/",
+       {
+        "Ref": "DemoAuthHttpApiGETauthadminpageaccessPageAccessAdminGetIntegrationD25CC7C0"
+       }
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/GET--auth--admin--page-access/Resource"
+   }
+  },
+  "DemoAuthHttpApiPUTauthadminpageaccessPageAccessAdminPutIntegration87EBA6B8": {
+   "Type": "AWS::ApiGatewayV2::Integration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "DemoAuthHttpApi8010725D"
+    },
+    "IntegrationType": "AWS_PROXY",
+    "IntegrationUri": {
+     "Fn::GetAtt": [
+      "PageAccessAdminPutHandlerDF4C2ADD",
+      "Arn"
+     ]
+    },
+    "PayloadFormatVersion": "2.0"
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/PUT--auth--admin--page-access/PageAccessAdminPutIntegration/Resource"
+   }
+  },
+  "DemoAuthHttpApiPUTauthadminpageaccessPageAccessAdminPutIntegrationPermission67590885": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "PageAccessAdminPutHandlerDF4C2ADD",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-1:069857851156:",
+       {
+        "Ref": "DemoAuthHttpApi8010725D"
+       },
+       "/*/*/auth/admin/page-access"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/PUT--auth--admin--page-access/PageAccessAdminPutIntegration-Permission"
+   }
+  },
+  "DemoAuthHttpApiPUTauthadminpageaccess9FD87E6C": {
+   "Type": "AWS::ApiGatewayV2::Route",
+   "Properties": {
+    "ApiId": {
+     "Ref": "DemoAuthHttpApi8010725D"
+    },
+    "AuthorizationType": "NONE",
+    "RouteKey": "PUT /auth/admin/page-access",
+    "Target": {
+     "Fn::Join": [
+      "",
+      [
+       "integrations/",
+       {
+        "Ref": "DemoAuthHttpApiPUTauthadminpageaccessPageAccessAdminPutIntegration87EBA6B8"
+       }
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DemoAuthStack/DemoAuthHttpApi/PUT--auth--admin--page-access/Resource"
    }
   },
   "SeedSuperAdminUser5F567A1C": {
@@ -2546,9 +3999,7 @@
    "Type": "AWS::Lambda::Function",
    "Properties": {
     "Code": {
-     "S3Bucket": {
-      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
-     },
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
      "S3Key": "56f7467bbde8a5efebcf57ae9e460027607099bab9f844669dcf5d800172ee5a.zip"
     },
     "Handler": "index.handler",
@@ -2658,7 +4109,7 @@
        {
         "Ref": "DemoAuthRegistrationsTable8576514C"
        },
-       "\",\"Item\":{\"pk\":{\"S\":\"EMAIL#robertp@careindeed.com\"},\"sk\":{\"S\":\"REGISTRATION\"},\"email\":{\"S\":\"robertp@careindeed.com\"},\"emailDomain\":{\"S\":\"careindeed.com\"},\"cognitoUsername\":{\"S\":\"robertp@careindeed.com\"},\"status\":{\"S\":\"active\"},\"approvedBy\":{\"S\":\"stack-seed\"},\"approvedAt\":{\"S\":\"2026-05-01T23:25:24.118Z\"},\"setupCompletedAt\":{\"S\":\"2026-05-01T23:25:24.118Z\"},\"createdAt\":{\"S\":\"2026-05-01T23:25:24.118Z\"},\"updatedAt\":{\"S\":\"2026-05-01T23:25:24.118Z\"}}},\"physicalResourceId\":{\"id\":\"seed-super-admin-registration\"}}"
+       "\",\"Item\":{\"pk\":{\"S\":\"EMAIL#robertp@careindeed.com\"},\"sk\":{\"S\":\"REGISTRATION\"},\"email\":{\"S\":\"robertp@careindeed.com\"},\"emailDomain\":{\"S\":\"careindeed.com\"},\"cognitoUsername\":{\"S\":\"robertp@careindeed.com\"},\"status\":{\"S\":\"active\"},\"approvedBy\":{\"S\":\"stack-seed\"},\"approvedAt\":{\"S\":\"2026-06-10T16:46:01.331Z\"},\"setupCompletedAt\":{\"S\":\"2026-06-10T16:46:01.331Z\"},\"createdAt\":{\"S\":\"2026-06-10T16:46:01.331Z\"},\"updatedAt\":{\"S\":\"2026-06-10T16:46:01.331Z\"}}},\"physicalResourceId\":{\"id\":\"seed-super-admin-registration\"}}"
       ]
      ]
     },
@@ -2711,7 +4162,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/12Q0W7CMAxFv4X34LGgfQBUmraXDZXtuXLTUAXSpKodKlTl36ekwBBP91xfx7YiQb69wmqBIy1Vc1paU8O0Z1QngSNVU3Nx2PmmhukHa6tFcXAZolC+dYY9TL+kh533NmV3vkFhjXb8GM2VKCx2dYOV840+EnxleQ9OsfFOGOxgKv28MOvOW6Muyc4UBa0rJNJMsEkiaA3boE6at0j6Oh6m4uDuU9NjPXSGKLm9ca3V7P/zG0SBvWmR9YiXs4Tpg7nf9Ca9T5LsnrHNx82QSqUPPNOnY90OeNv5ZHNfjKLU5MOgtMjnpznGtUIFYt9VwzUk2IxU5Nq9/9ke3CN/B+4DR5E+Fo70cpYSpITV4kjGLIfg2HQayln/AJf0CG3/AQAA"
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/12Q0W7CMAxFv4X34EHZPgAqTdvLhsr2XLlpqAJpUtUOFYry71NayhBP91xfx7aSQfa2htUCB1rK+rw0uoJwYJRngQOVob5abF1dQfjByiiRH+0IUUjXWM0Owi+pfu+cSdmdZ8iNVpYfo6kShcG2qrG0rlYngq9R3r2VrJ0VGlsIhZsWjrp3RstrshNFQZsSiRQTbJMI2sDOy7PiHZK6jYeQH+19anqs+lYTJXfQtjGK3X8+QxTY6QZZDXi9ZBA+mLttp9P7JMkeGJvxuAlSqXCeJ/q0rJoe551PduyLURSKnO+lEuP5aY62jZCe2LVlfwsJtgPlY+3e/2yP9pG/PXeeo0gfCyd6uWSvsN7AanEirZe9t6xbBcWkfyR6mWX/AQAA"
    },
    "Metadata": {
     "aws:cdk:path": "DemoAuthStack/CDKMetadata/Default"
@@ -2739,7 +4190,7 @@
    }
   },
   "Region": {
-   "Value": "us-east-2"
+   "Value": "us-west-1"
   }
  },
  "Parameters": {

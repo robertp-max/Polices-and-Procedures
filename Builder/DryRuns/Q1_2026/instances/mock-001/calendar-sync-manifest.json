@@ -1,0 +1,411 @@
+{
+  "dryRunInstanceId": "mock-001",
+  "items": [
+    {
+      "eventId": "complaint_investigation-20260101-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "incident_report-20260101-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "authorization_audit-20260107-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "care_coordination_audit-20260107-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "clinical_record_completeness_audit-20260107-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "infection_control_audit-20260107-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "license_exclusion_audit-20260107-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "medical_necessity_audit-20260107-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "medication_management_audit-20260107-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "missed_visit_audit-20260107-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "oasis_accuracy_audit-20260107-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "orders_alignment_audit-20260107-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "plan_of_care_audit-20260107-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "pre_bill_audit-20260107-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "visit_documentation_audit-20260107-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "governance_packet_review-20260108-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "post_bill_audit-20260114-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "ep_plan_review-20260115-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "ep_staff_training-20260122-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "qapi_meeting-20260205-04",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "authorization_audit-20260209-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "care_coordination_audit-20260209-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "clinical_record_completeness_audit-20260209-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "hha_aide_inservice-20260209-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "infection_control_audit-20260209-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "license_exclusion_audit-20260209-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "medical_necessity_audit-20260209-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "medication_management_audit-20260209-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "missed_visit_audit-20260209-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "oasis_accuracy_audit-20260209-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "orders_alignment_audit-20260209-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "plan_of_care_audit-20260209-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "pre_bill_audit-20260209-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "visit_documentation_audit-20260209-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "post_bill_audit-20260216-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "hha_skill_observation-20260225-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "authorization_audit-20260309-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "care_coordination_audit-20260309-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "clinical_record_completeness_audit-20260309-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "infection_control_audit-20260309-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "license_exclusion_audit-20260309-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "medical_necessity_audit-20260309-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "medication_management_audit-20260309-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "missed_visit_audit-20260309-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "oasis_accuracy_audit-20260309-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "orders_alignment_audit-20260309-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "plan_of_care_audit-20260309-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "pre_bill_audit-20260309-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "visit_documentation_audit-20260309-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "hha_aide_observation-20260311-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "internal_compliance_audit-20260316-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "post_bill_audit-20260316-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "staff_file_audit-20260316-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "ep_exercise-20260318-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "documentation_alignment_audit-20260323-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "incident_response_audit-20260323-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "infection_control_review_quarterly-20260325-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    },
+    {
+      "eventId": "hhcahps_filing-20260331-01",
+      "sync": {
+        "ok": false,
+        "reason": "no_ces_enrichment"
+      }
+    }
+  ]
+}

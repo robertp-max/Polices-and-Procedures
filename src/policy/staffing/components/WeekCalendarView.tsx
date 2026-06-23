@@ -6,6 +6,7 @@ import { AcuityBadge } from './AcuityBadge';
 import { usePatientStore } from '../stores/patientStore';
 import { useClinicianStore } from '../stores/clinicianStore';
 import type { Discipline } from '../types';
+import { SurfaceCard } from '@/policy/components/ui/SurfaceCard';
 
 // ── pure-JS date helpers ──────────────────────────────────────────────────────
 function toISODate(d: Date): string {
@@ -34,12 +35,11 @@ const DOW_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 // ── priority indicator ────────────────────────────────────────────────────────
 function PriorityDot({ priority }: { priority: NonNullable<Shift['priority']> }) {
   if (priority === 'standard') return null;
-  const color = priority === 'urgent' ? '#b91c1c' : '#b45309';
+  const color = priority === 'urgent' ? 'var(--ci-danger-fg, #b91c1c)' : 'var(--ci-warning-fg, #b45309)';
   return (
     <span
       className="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0"
       style={{ background: color }}
-      title={priority}
       aria-label={priority}
     />
   );
@@ -53,19 +53,13 @@ function WeekShiftItem({ shift }: { shift: Shift }) {
     : null;
 
   return (
-    <div
-      className="rounded p-1.5 flex flex-col gap-1 text-xs"
-      style={{
-        background: 'var(--ci-surface)',
-        border: '1px solid var(--ci-border)',
-      }}
-    >
+    <SurfaceCard padding="none" className="rounded p-1 sm:p-1.5 flex flex-col gap-1 text-[10px] sm:text-xs overflow-hidden">
       {/* time + discipline + status + priority */}
-      <div className="flex flex-wrap items-center gap-1">
+      <div className="flex flex-wrap items-center gap-1 min-w-0">
         {shift.priority && shift.priority !== 'standard' && (
           <PriorityDot priority={shift.priority} />
         )}
-        <span className="font-semibold" style={{ fontFamily: "'JetBrains Mono', monospace", color: 'var(--ci-text-primary)' }}>
+        <span className="font-semibold truncate" style={{ fontFamily: "'JetBrains Mono', monospace", color: 'var(--ci-text-primary)' }}>
           {shift.startTime}–{shift.endTime}
         </span>
         <DisciplineBadge discipline={shift.requiredDiscipline as Discipline} />
@@ -102,7 +96,7 @@ function WeekShiftItem({ shift }: { shift: Shift }) {
           <span className="italic">Open Shift</span>
         )}
       </div>
-    </div>
+    </SurfaceCard>
   );
 }
 
@@ -126,8 +120,8 @@ export function WeekCalendarView({ shifts, anchorDate }: WeekCalendarViewProps) 
   }
 
   return (
-    <div className="overflow-x-auto">
-      <div className="grid min-w-[700px]" style={{ gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '1px', background: 'var(--ci-border)' }}>
+    <div className="overflow-x-auto snap-x snap-mandatory scroll-smooth touch-pan-x w-full max-w-full overflow-x-hidden">
+      <div className="grid min-w-[560px] sm:min-w-[700px] max-w-full" style={{ gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '0px', background: 'transparent', border: 'none' }}>
         {/* column headers */}
         {days.map((day, i) => {
           const iso = toISODate(day);
@@ -135,11 +129,11 @@ export function WeekCalendarView({ shifts, anchorDate }: WeekCalendarViewProps) 
           return (
             <div
               key={iso}
-              className="px-2 py-1.5 text-xs font-semibold text-center"
+              className="px-1 sm:px-2 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-center"
               style={{
-                background: isToday ? 'rgba(79,70,229,0.1)' : 'var(--ci-surface-muted)',
-                color: isToday ? '#4338ca' : 'var(--ci-text-muted-2)',
-                borderBottom: isToday ? '2px solid #4f46e5' : '2px solid transparent',
+                background: isToday ? 'rgba(0,121,112,0.1)' : 'var(--ci-surface-muted)',
+                color: isToday ? 'var(--v3-teal,#007970)' : 'var(--ci-text-muted-2)',
+                borderBottom: 'none',
                 letterSpacing: '0.04em',
               }}
             >
@@ -156,9 +150,9 @@ export function WeekCalendarView({ shifts, anchorDate }: WeekCalendarViewProps) 
           return (
             <div
               key={iso}
-              className="flex flex-col gap-1 p-1.5 min-h-[160px]"
+              className="flex flex-col gap-1 p-1 sm:p-1.5 min-h-[140px] sm:min-h-[160px] snap-start overflow-hidden"
               style={{
-                background: isToday ? 'rgba(79,70,229,0.04)' : 'var(--ci-bg)',
+                background: isToday ? 'rgba(0,121,112,0.04)' : 'var(--ci-bg)',
               }}
             >
               {dayShifts.length === 0 ? (

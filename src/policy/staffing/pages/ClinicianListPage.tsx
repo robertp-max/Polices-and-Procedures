@@ -4,6 +4,7 @@ import { PageHeader } from '@/policy/components/ui/PageHeader';
 import { SearchField } from '@/policy/components/ui/SearchField';
 import { DataGrid } from '@/policy/components/ui/DataGrid';
 import { EmptyState } from '@/policy/components/ui/EmptyState';
+import { MetricTile, BorderGlow } from '@/policy/components/ui';
 import { Users } from 'lucide-react';
 import { DemoBanner } from '../components/DemoBanner';
 import { DisciplineBadge } from '../components/DisciplineBadge';
@@ -42,7 +43,12 @@ export function ClinicianListPage() {
   });
 
   const filtered = getFilteredClinicians();
-  const total = useClinicianStore((s) => s.clinicians.length);
+
+  // Phase 3: derive display metrics only from store (no data, store, or click changes)
+  const allClinicians = useClinicianStore((s) => s.clinicians);
+  const activeCount = allClinicians.filter((c) => c.status === 'active').length;
+  const assignedConnections = useClinicianStore((s) => s.connections.filter((c) => c.connectionStatus === 'assigned').length);
+  const uniqueDisciplines = new Set(allClinicians.map((c) => c.primaryDiscipline)).size;
 
   const handleClearFilters = () => {
     setFilterDiscipline(null);
@@ -57,22 +63,20 @@ export function ClinicianListPage() {
       <DemoBanner />
       <div className="p-4 md:p-6 lg:p-8 flex flex-col gap-4 flex-1 min-h-0">
         <PageHeader
-          eyebrow="Phase 1 · Read-only"
-          title={
-            <span className="flex items-center gap-2">
-              Clinician Profiles
-              <span
-                className="inline-flex items-center px-2 py-0.5 rounded-full text-sm font-normal"
-                style={{ background: 'var(--ci-surface-muted)', color: 'var(--ci-text-muted-2)', fontSize: 14 }}
-              >
-                {filtered.length}/{total}
-              </span>
-            </span>
-          }
+          eyebrow="CLINICIAN PROFILES"
+          title="Clinician Profiles"
           description="Synthetic demonstration data only."
         />
 
-        {/* Search & Filters */}
+        {/* Direct MetricTiles per ref 15-clinicians.png (no BorderGlow/Spotlight wrappers for flat pastel tiles, #F7FEFF tones, rounded-2xl p-4/5 min-h-92) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <MetricTile label="Active Clinicians" value={activeCount} note="of total roster" tone="teal" />
+          <MetricTile label="Active Assignments" value={assignedConnections} note="Current caseloads" tone="orange" />
+          <MetricTile label="Disciplines" value={uniqueDisciplines} note="Coverage breadth" tone="success" />
+          <MetricTile label="Visible" value={filtered.length} note="after filters" tone="muted" />
+        </div>
+
+        {/* Search & Filters — clean premium corporate per V5 ref */}
         <div className="flex flex-wrap items-center gap-3">
           <SearchField
             placeholder="Search by name…"
@@ -80,22 +84,21 @@ export function ClinicianListPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             aria-label="Search clinicians by name"
           />
-
-          <select
-            value={filterDiscipline ?? ''}
-            onChange={(e) => setFilterDiscipline((e.target.value as Discipline) || null)}
-            aria-label="Filter by discipline"
-            className="h-9 px-3 rounded-md text-sm border"
-            style={{
-              background: 'var(--ci-surface)',
-              border: '1px solid var(--ci-border-strong)',
-              color: 'var(--ci-text-primary)',
-            }}
-          >
-            <option value="">All Disciplines</option>
-            {ALL_DISCIPLINES.map((d) => (
-              <option key={d} value={d}>{d}</option>
+          <div className="flex flex-wrap gap-1.5">
+            <button onClick={() => setFilterDiscipline(null)} className={`text-xs px-3 py-1 rounded-full border transition ${!filterDiscipline ? 'bg-[var(--v3-teal)] text-white border-transparent' : 'border-[var(--v3-border-subtle)] text-[var(--v3-text-secondary)] hover:bg-white/5'}`}>All</button>
+            {ALL_DISCIPLINES.slice(0,6).map((d) => (
+              <button key={d} onClick={() => setFilterDiscipline(d)} className={`text-xs px-3 py-1 rounded-full border transition ${filterDiscipline === d ? 'bg-[var(--v3-teal)] text-white border-transparent' : 'border-[var(--v3-border-subtle)] text-[var(--v3-text-secondary)] hover:bg-white/5'}`}>{d}</button>
             ))}
+          </div>
+          <select
+            value={filterStatus ?? ''}
+            onChange={(e) => setFilterStatus((e.target.value as ClinicianStatus) || null)}
+            aria-label="Filter by status"
+            className="h-9 px-3 rounded-md text-sm border"
+            style={{ background: 'var(--ci-surface)', border: '1px solid var(--ci-border-strong)', color: 'var(--ci-text-primary)' }}
+          >
+            <option value="">All Status</option>
+            {ALL_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
 
           <select
@@ -148,13 +151,15 @@ export function ClinicianListPage() {
           />
         )}
 
-        {/* Mobile: card stack */}
+        {/* Mobile: card stack (wrapped BorderGlow for Phase 3 premium cards) */}
         {filtered.length > 0 && isMobile && (
-          <div className="grid grid-cols-1 gap-3">
-            {filtered.map((c) => (
-              <ClinicianCard key={c.id} clinician={c} />
-            ))}
-          </div>
+          <BorderGlow borderRadius={12} glowIntensity={0.6} className="w-full">
+            <div className="grid grid-cols-1 gap-3">
+              {filtered.map((c) => (
+                <ClinicianCard key={c.id} clinician={c} />
+              ))}
+            </div>
+          </BorderGlow>
         )}
 
         {/* Desktop: table */}

@@ -6,6 +6,7 @@ import type {
   ResolvedComplianceActionDefinition,
   ScenarioArtifactLink,
 } from '../lib/complianceActionMap';
+import { resolveIaReference, warnUnresolvedIaReference } from '../lib/referenceResolver';
 import { ReferenceLink } from './ReferenceLink';
 
 export interface ScenarioActionSectionsProps {
@@ -112,12 +113,12 @@ export function ScenarioActionSections({ classification, definition, isLight, on
       </Section>
 
       <Section title="Forms to Complete" icon={ClipboardCheck} mutedClass={themeClasses.muted} accentClass={accentClasses.text}>
-        <ArtifactGrid items={[...definition.relatedForms, ...definition.needsMapping.filter(item => item.type === 'form')]} themeClasses={themeClasses} accentClass={accentClasses.text} onOpenReference={onOpenReference} emptyLabel="No mapped forms for this scenario." />
+        <ArtifactGrid items={definition.relatedForms} themeClasses={themeClasses} accentClass={accentClasses.text} onOpenReference={onOpenReference} emptyLabel="No linked references available." />
       </Section>
 
       <Section title="Workflows / Next Steps" icon={Workflow} mutedClass={themeClasses.muted} accentClass={accentClasses.text}>
         <div className="flex flex-col gap-3">
-          <ArtifactGrid items={[...definition.relatedWorkflows, ...definition.needsMapping.filter(item => item.type === 'workflow')]} themeClasses={themeClasses} accentClass={accentClasses.text} onOpenReference={onOpenReference} emptyLabel="No mapped workflows for this scenario." />
+          <ArtifactGrid items={definition.relatedWorkflows} themeClasses={themeClasses} accentClass={accentClasses.text} onOpenReference={onOpenReference} emptyLabel="No linked references available." />
           {definition.recommendedTasks.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {definition.recommendedTasks.map((task) => (
@@ -220,14 +221,26 @@ function ArtifactGrid({
   onOpenReference: (id: string) => void;
   emptyLabel?: string;
 }) {
-  if (items.length === 0) {
+  const resolvedItems = items.filter((item) => {
+    if (item.status !== 'verified') return false;
+    const resolved = resolveIaReference({
+      id: item.id,
+      claimedType: item.type,
+      title: item.title,
+      source: 'ScenarioActionSections.ArtifactGrid',
+    });
+    if (resolved.resolved && resolved.resolvedType === item.type) return true;
+    warnUnresolvedIaReference(resolved);
+    return false;
+  });
+
+  if (resolvedItems.length === 0) {
     return <div className={`text-[12px] ${themeClasses.muted}`}>{emptyLabel ?? 'No items available.'}</div>;
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-      {items.map((item) => (
-        item.status === 'verified' ? (
+      {resolvedItems.map((item) => (
           <div
             key={`${item.type}:${item.id}`}
             className={`text-left rounded-xl px-3.5 py-3 transition-colors ${themeClasses.text} ${themeClasses.card}`}
@@ -243,17 +256,6 @@ function ArtifactGrid({
             </div>
             <div className="text-[12.5px] leading-snug">{item.title}</div>
           </div>
-        ) : (
-          <div
-            key={`${item.type}:${item.id}`}
-            className={`rounded-xl px-3.5 py-3 ${themeClasses.muted} ${themeClasses.emptyCard}`}
-          >
-            <div className="text-[10px] font-bold uppercase tracking-[0.22em] mb-1 font-mono">
-              {item.type} · needs_mapping
-            </div>
-            <div className="text-[12.5px] leading-snug">{item.title}</div>
-          </div>
-        )
       ))}
     </div>
   );

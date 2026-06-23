@@ -39,6 +39,31 @@ export interface PlannerEventPayload {
   location?: string;
 }
 
+export interface CesCalendarHubMeta {
+  completionPercent: number;
+  evidenceCount: number;
+  evidenceAttachedCount: number;
+  ecignStatus: string;
+  ecignDetail?: string;
+  calendarAttachmentStatus: string;
+  driveLinked: boolean;
+  statusLabel: string;
+  auditReadyPercent: number;
+  workflowId?: string;
+  policyRefs?: string;
+  driveFolderId?: string;
+  driveFolderUrl?: string;
+  swimlanePath?: string;
+  eventWorkspacePath?: string;
+  workflowPath?: string;
+  evidenceCenterPath?: string;
+  auditModePath?: string;
+  requiredForms?: string;
+  requiredSignerRoles?: string;
+  requiredEvidence?: string;
+  agenda?: string;
+}
+
 export interface PlannerEventResponse extends PlannerEventPayload {
   event_id: string;
   googleEventId: string;
@@ -47,6 +72,17 @@ export interface PlannerEventResponse extends PlannerEventPayload {
   updatedAt?: string;
   source: 'google';
   action?: 'created' | 'updated' | 'skipped' | 'deleted' | 'failed';
+  _hub?: CesCalendarHubMeta | null;
+  _completion?: {
+    percent: number;
+    formula: string;
+    breakdown: Record<string, number>;
+    evidenceCount: number;
+    evidenceAttachedCount: number;
+    ecignStatus: string;
+    calendarAttachmentStatus: string;
+    statusLabel: string;
+  } | null;
 }
 
 export interface BulkSyncResultItem {

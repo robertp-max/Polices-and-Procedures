@@ -12,11 +12,11 @@
  * Read-only for users who are not page-access managers.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { ChevronDown, ChevronRight, Eye, EyeOff, Pencil, RotateCcw, ShieldAlert } from 'lucide-react';
 import { useUserAssignmentsStore } from './userAssignmentsStore';
-import { usePageAccessStore } from './pageAccessStore';
+import { persistPageAccessToServer, usePageAccessStore } from './pageAccessStore';
 import { COMPONENT_GROUPS, getOrderedComponentGroups, getPagesForComponent, PAGE_BY_ID } from './pageRegistry';
 import { canManagePageAccess } from './pageAccess';
 import { useAuth } from '@/auth/AuthProvider';
@@ -234,12 +234,14 @@ export interface PageAccessMatrixProps {
 }
 
 export function PageAccessMatrix({ initialTargetUserId }: PageAccessMatrixProps) {
-  const { user: authUser } = useAuth();
+  const { user: authUser, getAccessToken } = useAuth();
   const { users } = useUserAssignmentsStore(useShallow(s => ({ users: s.users })));
   const resetUser = usePageAccessStore(s => s.resetUser);
+  const access = usePageAccessStore(s => s.access);
 
   const isManager = canManagePageAccess(authUser);
   const actorEmail = authUser?.email ?? 'system';
+  const skipFirstPersistRef = useRef(true);
 
   const [targetUserId, setTargetUserId] = useState<string>(() => initialTargetUserId ?? users[0]?.id ?? '');
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
@@ -256,6 +258,28 @@ export function PageAccessMatrix({ initialTargetUserId }: PageAccessMatrixProps)
   const isProtectedTarget = PROTECTED_TARGET_USER_IDS.has(targetUserId);
 
   const orderedGroups = useMemo(() => getOrderedComponentGroups(), []);
+
+  useEffect(() => {
+    if (!isManager) return;
+    if (skipFirstPersistRef.current) {
+      skipFirstPersistRef.current = false;
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const accessToken = await getAccessToken();
+          if (!accessToken) return;
+          await persistPageAccessToServer(accessToken);
+        } catch {
+          // Keep local state intact; the next edit or refresh can retry the sync.
+        }
+      })();
+    }, 350);
+
+    return () => window.clearTimeout(timer);
+  }, [access, getAccessToken, isManager]);
 
   if (!isManager) {
     return (

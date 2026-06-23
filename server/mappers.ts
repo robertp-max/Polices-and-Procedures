@@ -1,4 +1,9 @@
 import type { calendar_v3 } from 'googleapis';
+import {
+  buildCesCalendarDescription,
+  buildCesExtendedProperties,
+  resolveEnrichment,
+} from './cesCalendarEventBuilder.js';
 
 /* ═══════════════════════════════════════════════════════════════
    Mappers between the App's RegulatoryEvent-style payload and
@@ -68,6 +73,10 @@ export interface PlannerEventResponse extends PlannerEventPayload {
   version?: number;
   /** Last successful sync timestamp. */
   lastSyncedAt?: string;
+  /** CES workflow template id from extendedProperties. */
+  workflowId?: string;
+  /** Completion percent from extendedProperties when enriched. */
+  completionPercent?: number;
 }
 
 function toRfc3339(date: string, time: string | undefined, fallbackSecondsEnd = false): string {
@@ -79,27 +88,23 @@ function toRfc3339(date: string, time: string | undefined, fallbackSecondsEnd = 
 export function toGoogleEvent(
   p: PlannerEventPayload,
   defaultTz: string,
-  extras: { hash?: string; version?: number } = {},
+  extras: { hash?: string; version?: number; snapshot?: import('./cesCalendarCompletion.js').CesExecutionSnapshot } = {},
 ): calendar_v3.Schema$Event {
   const tz = p.timezone ?? defaultTz;
   const allDay = !!p.allDay || (!p.time && !p.timeEnd);
   const eventId = p.event_id || p.appEventId || '';
   const envTag: 'SANDBOX' | 'PROD' = p.env ?? 'PROD';
 
-  const description = buildDescription({ ...p, event_id: eventId, env: envTag });
+  const enrichment = resolveEnrichment(eventId, { ...p, event_id: eventId, env: envTag });
+  const description = enrichment
+    ? (p.description || buildCesCalendarDescription(enrichment, extras.snapshot))
+    : buildDescription({ ...p, event_id: eventId, env: envTag });
 
-  const base: calendar_v3.Schema$Event = {
-    summary: p.title,
-    description,
-    location: p.location,
-    colorId: mapGoogleColorId(p),
-    extendedProperties: {
-      private: pruneStrings({
-        // PRIMARY identity keys — strict-match lookup uses these.
+  const extPrivate = enrichment
+    ? buildCesExtendedProperties({ ...enrichment, env: enrichment.env ?? envTag }, extras)
+    : pruneStrings({
         event_id: eventId,
         env: envTag,
-        // Legacy alias kept so old events remain discoverable. New code
-        // must never rely on this for identity.
         appEventId: eventId,
         domain: p.domain,
         category: p.category,
@@ -115,8 +120,14 @@ export function toGoogleEvent(
         source: 'CI_ENGINE',
         hash: extras.hash,
         version: extras.version != null ? String(extras.version) : undefined,
-      }),
-    },
+      });
+
+  const base: calendar_v3.Schema$Event = {
+    summary: p.title,
+    description,
+    location: p.location,
+    colorId: mapGoogleColorId(p),
+    extendedProperties: { private: extPrivate },
   };
 
   if (allDay) {
@@ -179,6 +190,8 @@ export function fromGoogleEvent(g: calendar_v3.Schema$Event): PlannerEventRespon
     env: envTag,
     hash: ext.hash,
     version: ext.version ? Number(ext.version) : undefined,
+    workflowId: ext.workflowId,
+    completionPercent: ext.completionPercent ? Number(ext.completionPercent) : undefined,
     source: 'google',
   };
 }

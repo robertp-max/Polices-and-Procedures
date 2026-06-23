@@ -1,3 +1,5 @@
+import { getComplianceActionDefinition } from './complianceActionMap';
+
 export const DEMO_CRITICAL_TRIGGER = 'patient is having a heart attack with a loaded gun inside the house what do i do?';
 
 export interface DemoWorkflowAction {
@@ -103,48 +105,20 @@ export function createDemoCriticalEmergencyState(input: string): DemoCriticalEme
   const startedAt = nowIso();
   const actor = resolveActor();
   const eventId = `CSE-${formatDateStamp(startedAt)}-${randomToken(4)}`;
-  const workflowId = `WF-CSE-${randomToken(5)}`;
-  const policies: DemoPolicyLink[] = [
-    {
-      id: 'WS-001',
-      title: 'Workplace Safety & Personal Protection',
-      clause: 'Clinicians must prioritize personal safety before patient care in any unsafe or uncontrolled environment.',
-    },
-    {
-      id: 'ERP-002',
-      title: 'Emergency Response Protocol Policy',
-      clause: 'Life-threatening emergencies require immediate activation of emergency services before routine care escalation.',
-    },
-    {
-      id: 'IR-004',
-      title: 'Incident Reporting Policy',
-      clause: 'Critical safety events must be documented same day with complete event linkage and audit traceability.',
-    },
-  ];
-
-  const forms: DemoFormLink[] = [
-    {
-      id: 'CE-FRM-101',
-      title: 'Incident Report — Critical Event',
-      instanceId: `FRM-${eventId}-01`,
-      eventId,
-      workflowId,
-    },
-    {
-      id: 'CE-FRM-102',
-      title: 'Emergency Response Documentation',
-      instanceId: `FRM-${eventId}-02`,
-      eventId,
-      workflowId,
-    },
-    {
-      id: 'CE-FRM-103',
-      title: 'Environmental Safety Risk Assessment',
-      instanceId: `FRM-${eventId}-03`,
-      eventId,
-      workflowId,
-    },
-  ];
+  const definition = getComplianceActionDefinition('clinical_emergency');
+  const workflowId = definition.relatedWorkflows[0]?.id ?? '';
+  const policies: DemoPolicyLink[] = definition.relatedPolicies.map((policy) => ({
+    id: policy.id,
+    title: policy.title,
+    clause: 'Follow the current approved policy; safety-first emergency escalation takes priority before documentation.',
+  }));
+  const forms: DemoFormLink[] = definition.relatedForms.map((form, index) => ({
+    id: form.id,
+    title: form.title,
+    instanceId: `FRM-${eventId}-${String(index + 1).padStart(2, '0')}`,
+    eventId,
+    workflowId,
+  }));
 
   const actionLabels = [
     'Supervisor notified',
@@ -176,7 +150,7 @@ export function createDemoCriticalEmergencyState(input: string): DemoCriticalEme
     })),
     auditTrail: [
       makeAuditEntry(actor, 'Critical Safety Event override activated'),
-      makeAuditEntry(actor, 'Workflow auto-triggered and compliance orchestration started'),
+      makeAuditEntry(actor, 'Canonical clinical emergency workflow linked and compliance orchestration started'),
     ],
   };
 }

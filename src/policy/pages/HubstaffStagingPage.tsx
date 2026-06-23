@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ALL_TASKS, HUBSTAFF_PROJECTS, type HubTask, type ProjectKey } from '@/policy/data/hubstaffTasks';
+import { PageHeader, SurfaceCard } from '@/policy/components/ui';
 
 /* ─── Types ──────────────────────────────────────────────────── */
 
@@ -515,18 +516,19 @@ export function HubstaffStagingPage() {
   const byCategory = groupBy(projectTasks, t => t.category);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full p-6" style={{ background: 'transparent' }}>
+      <PageHeader
+        eyebrow="INTEGRATIONS"
+        title="Hubstaff Staging"
+        description={`${selectedCount} selected · ${toCreateCount} will create · ${skippedCount} skipped`}
+      />
 
-      {/* ── Top bar ────────────────────────────────────────── */}
-      <div className="flex-shrink-0 border-b border-white/5 px-6 py-4">
+      {/* ── Top bar controls in SurfaceCard */}
+      <SurfaceCard padding="md" className="mb-4">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-base font-semibold text-white">Hubstaff Staging</h1>
-            <p className="text-xs text-white/40 mt-0.5">
-              {authInfo && <><span className="text-emerald-400">●</span> {authInfo.user.name} · </>}
-              {selectedCount} selected · {toCreateCount} will create · {skippedCount} skipped
-              {loadingExisting && <span className="ml-2 text-white/20">checking existing…</span>}
-            </p>
+          <div className="text-xs text-[var(--v3-text-secondary)]">
+            {authInfo && <><span className="text-emerald-400">●</span> {authInfo.user.name} · </>}
+            {loadingExisting && <span className="ml-2 text-[var(--v3-text-tertiary)]">checking existing…</span>}
           </div>
           <button
             onClick={() => setPhase('review')}
@@ -536,7 +538,7 @@ export function HubstaffStagingPage() {
             Review & Push →
           </button>
         </div>
-      </div>
+      </SurfaceCard>
 
       <div className="flex flex-1 overflow-hidden">
 

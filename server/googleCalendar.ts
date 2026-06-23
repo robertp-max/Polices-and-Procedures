@@ -6,6 +6,12 @@ import {
   fromGoogleEvent, toGoogleEvent, normalizeEventId, readEventId,
   type PlannerEventPayload, type PlannerEventResponse,
 } from './mappers.js';
+import {
+  buildEnrichedPlannerPayload,
+  CES_EXT_PROP_ALLOWLIST,
+  getCesEnrichment,
+} from './cesCalendarEventBuilder.js';
+import { getRow, patchRow, reconcileFromGoogle } from './sync/eventStore.js';
 
 /* ═══════════════════════════════════════════════════════════════
    Google Calendar service. Owns ALL googleapis interactions.
@@ -118,7 +124,9 @@ export async function findByEventId(eventId: string): Promise<PlannerEventRespon
 
     return item ? fromGoogleEvent(item) : null;
   } catch (e) {
-    throw fromGoogleError(e);
+    const err = fromGoogleError(e);
+    if (err.code === 'calendar_not_found') return null;
+    throw err;
   }
 }
 
@@ -143,11 +151,157 @@ export async function getEventByGoogleId(googleEventId: string): Promise<Planner
   }
 }
 
+/**
+ * Fallback lookup when extendedProperties search misses — matches by title
+ * (case-insensitive, strips [Compliance] prefix) and start date.
+ */
+export async function findByTitleAndDate(
+  title: string,
+  date: string,
+): Promise<PlannerEventResponse | null> {
+  const c = await getClient();
+  const normTitle = normalizeTitleForMatch(title);
+  try {
+    const res = await c.events.list({
+      calendarId: env.calendarId,
+      timeMin: `${date}T00:00:00Z`,
+      timeMax: `${date}T23:59:59Z`,
+      singleEvents: true,
+      maxResults: 25,
+      showDeleted: false,
+      q: title.replace(/^\[Compliance\]\s*/i, '').slice(0, 60),
+    });
+    for (const item of res.data.items ?? []) {
+      const itemTitle = normalizeTitleForMatch(item.summary ?? '');
+      const itemDate = item.start?.date ?? (item.start?.dateTime?.slice(0, 10) ?? '');
+      if (itemTitle === normTitle && itemDate === date) {
+        return fromGoogleEvent(item);
+      }
+    }
+    return null;
+  } catch (e) {
+    const err = fromGoogleError(e);
+    if (err.code === 'calendar_not_found') return null;
+    throw err;
+  }
+}
+
+function normalizeTitleForMatch(title: string): string {
+  return title.replace(/^\[Compliance\]\s*/i, '').trim().toLowerCase();
+}
+
+export type ResolveAction = 'found' | 'resynced' | 'recreated';
+
+export interface ResolveCalendarResult {
+  event: PlannerEventResponse;
+  action: ResolveAction;
+  healed: boolean;
+  staleGoogleId?: string | null;
+  duplicateAvoided: boolean;
+}
+
+/**
+ * Resolve a CES event by app event_id with stale-mapping self-heal.
+ *
+ * 1. extendedProperties event_id / appEventId search
+ * 2. clear stale cached google_event_id when Google returns 404
+ * 3. title + date fallback
+ * 4. create enriched no-PHI event when enrichment registry has the event
+ */
+export async function resolveCalendarEvent(
+  eventId: string,
+  payloadHint?: Partial<PlannerEventPayload>,
+): Promise<ResolveCalendarResult | null> {
+  const enrichment = getCesEnrichment(eventId);
+  let staleGoogleId: string | null = null;
+  let duplicateAvoided = false;
+
+  // Primary: strict extendedProperties lookup.
+  const direct = await findByEventId(eventId);
+  if (direct?.googleEventId) {
+    await healStoreMapping(eventId, direct);
+    return { event: direct, action: 'found', healed: false, staleGoogleId: null, duplicateAvoided: true };
+  }
+
+  // Cached mapping may be stale — verify before trusting it.
+  const row = getRow(eventId);
+  if (row?.google_event_id) {
+    const cached = await getEventByGoogleId(row.google_event_id);
+    if (cached) {
+      await healStoreMapping(eventId, cached);
+      return { event: cached, action: 'found', healed: true, staleGoogleId: null, duplicateAvoided: true };
+    }
+    staleGoogleId = row.google_event_id;
+    log.warn('google.calendar.resolve.stale_mapping', { eventId, staleGoogleId });
+    patchRow(eventId, { google_event_id: null, status: 'pending' });
+  }
+
+  // Title + date fallback.
+  const title = enrichment?.title ?? payloadHint?.title;
+  const date = enrichment?.date ?? payloadHint?.date;
+  if (title && date) {
+    const fallback = await findByTitleAndDate(title, date);
+    if (fallback?.googleEventId) {
+      await healStoreMapping(eventId, fallback);
+      return {
+        event: fallback,
+        action: 'resynced',
+        healed: true,
+        staleGoogleId,
+        duplicateAvoided: true,
+      };
+    }
+  }
+
+  // Nothing live — create when we have enrichment or a usable payload hint.
+  if (!enrichment && !(payloadHint?.title && payloadHint?.date)) return null;
+
+  const payload = enrichment
+    ? buildEnrichedPlannerPayload(enrichment, payloadHint as Partial<PlannerEventPayload>)
+    : (payloadHint as PlannerEventPayload);
+
+  // Idempotency guard — re-check before insert.
+  const preInsert = await findByEventId(eventId);
+  if (preInsert?.googleEventId) {
+    duplicateAvoided = true;
+    await healStoreMapping(eventId, preInsert);
+    return { event: preInsert, action: 'found', healed: !!staleGoogleId, staleGoogleId, duplicateAvoided };
+  }
+
+  const created = await createEvent(payload);
+  await healStoreMapping(eventId, created);
+  return {
+    event: created,
+    action: 'recreated',
+    healed: !!staleGoogleId,
+    staleGoogleId,
+    duplicateAvoided,
+  };
+}
+
+async function healStoreMapping(eventId: string, event: PlannerEventResponse): Promise<void> {
+  const row = getRow(eventId);
+  if (!row || row.google_event_id !== event.googleEventId) {
+    reconcileFromGoogle({
+      event_id: eventId,
+      google_event_id: event.googleEventId,
+      title: event.title,
+      hash: row?.hash ?? '',
+      version: row?.version ?? 1,
+      last_synced_at: new Date().toISOString(),
+      env: event.env ?? row?.env ?? 'SANDBOX',
+      status: 'synced',
+      last_action: 'updated',
+      failure_count: 0,
+    });
+  }
+}
+
 /** Raw list of events that carry a CI_ENGINE tag — used by cleanup. */
 export async function listCiEvents(): Promise<calendar_v3.Schema$Event[]> {
   const c = await getClient();
   const out: calendar_v3.Schema$Event[] = [];
-  for (const key of ['source=CI_ENGINE', 'source=ci-regulatory-planner'] as const) {
+  for (const key of ['source=CI_CES', 'source=CI_ENGINE', 'source=ci-regulatory-planner'] as const) {
     let pageToken: string | undefined;
     do {
       const res = await c.events.list({
@@ -175,7 +329,7 @@ export async function listCiEvents(): Promise<calendar_v3.Schema$Event[]> {
 
 export async function createEvent(
   payload: PlannerEventPayload,
-  extras: { hash?: string; version?: number } = {},
+  extras: { hash?: string; version?: number; snapshot?: import('./cesCalendarCompletion.js').CesExecutionSnapshot } = {},
 ): Promise<PlannerEventResponse> {
   const c = await getClient();
   const eventId = normalizeEventId(payload);
@@ -207,7 +361,7 @@ export async function createEvent(
 export async function updateEvent(
   googleEventId: string,
   payload: PlannerEventPayload,
-  extras: { hash?: string; version?: number } = {},
+  extras: { hash?: string; version?: number; snapshot?: import('./cesCalendarCompletion.js').CesExecutionSnapshot } = {},
 ): Promise<PlannerEventResponse> {
   const c = await getClient();
   const eventId = normalizeEventId(payload);
@@ -398,11 +552,7 @@ export async function setEvidenceExtendedProperties(
   props: Record<string, string | undefined>,
 ): Promise<boolean> {
   const c = await getClient();
-  const ALLOWED = new Set([
-    'event_id', 'workflowId', 'evidencePackageId', 'swimlaneRoute', 'evidenceRoute',
-    'artifactRoute', 'eventStatus', 'auditReadyPct', 'lastEvidenceSyncAt',
-    'evidenceDriveFolderId', 'evidenceAttachmentCount',
-  ]);
+  const ALLOWED = CES_EXT_PROP_ALLOWLIST;
   try {
     const existing = await findByEventId(eventId);
     if (!existing?.googleEventId) return false;

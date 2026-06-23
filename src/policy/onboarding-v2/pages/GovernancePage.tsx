@@ -4,6 +4,8 @@ import { useOnboardingV2Store } from '../store/onboardingV2Store';
 import { StatusPill } from '../components/StatusPill';
 import { POL } from '../catalog/policies';
 import { PolicyVersionLink } from '../components/PolicyVersionLink';
+import { PageHeader } from '@/policy/components/ui/PageHeader';
+import { SurfaceCard } from '@/policy/components/ui/SurfaceCard';
 
 const GATES = ['FieldClearance','BillingClearance','SystemAccessClearance','VendorEngagement','GovernanceActive'] as const;
 
@@ -23,18 +25,16 @@ export function GovernancePage() {
   }
 
   return (
-    <div className="p-6 space-y-6 overflow-y-auto h-full">
-      <header>
-        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6B7280]">Onboarding v2</div>
-        <h1 className="text-[22px] font-semibold text-[#0B2545]">Governance</h1>
-        <p className="text-[12px] text-[#4B5563] mt-1 max-w-2xl">
-          Vendor agreements, policy bindings, and compliance overrides. Overrides require dual signature (Compliance Officer + Administrator) and convert a Failing gate into <em>Conditional</em>; the breach itself is preserved in the chain.
-        </p>
-      </header>
+    <div className="p-5 md:p-6 space-y-5 overflow-y-auto h-full">
+      <PageHeader
+        eyebrow="ONBOARDING V2"
+        title="Governance"
+        description="Vendor agreements, policy bindings, and compliance overrides. Overrides require dual signature (Compliance Officer + Administrator) and convert a Failing gate into Conditional; the breach itself is preserved in the chain."
+      />
 
-      <section className="grid grid-cols-12 gap-5">
+      <SurfaceCard padding="lg" className="grid grid-cols-12 gap-5">
         {/* Override request */}
-        <div className="col-span-7 border border-[#E5E7EB] rounded-[10px] bg-white p-5">
+        <div className="col-span-12 lg:col-span-7 border border-[var(--v3-border-subtle)] rounded-[10px] p-5 bg-[var(--v3-surface-elevated)]">
           <div className="flex items-center gap-2 mb-4">
             <ShieldOff size={16} className="text-[#B45309]" />
             <h2 className="text-[13px] font-semibold text-[#0B2545]">Request override</h2>
@@ -113,7 +113,7 @@ export function GovernancePage() {
             </ul>
           )}
         </div>
-      </section>
+      </SurfaceCard>
 
       {/* Vendors + policy bindings */}
       <section className="grid grid-cols-12 gap-5">

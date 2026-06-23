@@ -1,5 +1,6 @@
 import type { DemoUser as AuthDemoUser } from '@/auth/api';
 import type { User } from './types';
+import { getUserStableKey, normalizeUserEmail } from './identityNormalization';
 
 export const DEMO_USERS: User[] = [
   { id: 'demo-user-careindeed', email: 'robertp@careindeed.com', name: 'TJ Padilla', status: 'active', source: 'seed' },
@@ -42,16 +43,16 @@ export function getDemoUserById(userId: string): User | undefined {
 
 export function resolveUserIdFromAuth(authUser: AuthDemoUser | null): string {
   if (!authUser) {
-    return 'usr-auditor';
+    return 'anonymous';
   }
 
   if (authUser.id && getDemoUserById(authUser.id)) {
     return authUser.id;
   }
 
-  const email = authUser.email?.toLowerCase();
+  const email = normalizeUserEmail(authUser.email);
   if (email) {
-    const byEmail = DEMO_USERS.find(user => user.email.toLowerCase() === email);
+    const byEmail = DEMO_USERS.find(user => normalizeUserEmail(user.email) === email);
     if (byEmail) return byEmail.id;
   }
 
@@ -60,5 +61,5 @@ export function resolveUserIdFromAuth(authUser: AuthDemoUser | null): string {
     return AUTH_ROLE_TO_USER_ID[role];
   }
 
-  return 'usr-auditor';
+  return getUserStableKey(authUser) || 'anonymous';
 }

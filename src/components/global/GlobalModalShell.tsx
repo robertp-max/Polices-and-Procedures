@@ -1,8 +1,10 @@
 import { useEffect, type CSSProperties } from 'react';
+// DARK MODE: added isLight + glass translucent color-mix for modal headers/content/footer to fix bleed + contrast for titles in dark. Preserves glass. Used for all global modals/hovers.
 import { createPortal } from 'react-dom';
 import { Maximize2, X } from 'lucide-react';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
 import { useGlobalModal } from '@/contexts/ModalContext';
+import { useIsLight } from '@/policy/stores/uiStore';
 
 type OverlayStyle = CSSProperties & {
   '--global-modal-overlay-width': string;
@@ -15,6 +17,7 @@ type OverlayStyle = CSSProperties & {
 
 export function GlobalModalShell() {
   const { modal, closeModal } = useGlobalModal();
+  const isLight = useIsLight();
 
   useEffect(() => {
     if (!modal?.isOpen || modal.disableEscape) return;
@@ -66,17 +69,17 @@ export function GlobalModalShell() {
   };
 
   const overlayClassName = [
-    'fixed z-[100] flex items-center justify-center overflow-y-auto overflow-x-hidden p-3 md:p-6 bg-[#0B0F15]/70 backdrop-blur-sm transition-opacity duration-300',
+    'fixed z-[130] flex items-center justify-center overflow-y-auto overflow-x-hidden p-3 md:p-6 bg-black/60 backdrop-blur-md transition-opacity duration-300',
     modal.isOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
     modal.overlayClassName ?? '',
   ].filter(Boolean).join(' ');
 
   const panelClassName = [
     modal.variant === 'custom-surface'
-      ? 'max-h-[var(--global-modal-panel-max-height)] w-auto max-w-[var(--global-modal-panel-max-width)] shadow-2xl ring-1 ring-white/5 transition-[opacity] duration-300'
+      ? 'max-h-[var(--global-modal-panel-max-height)] w-auto max-w-[var(--global-modal-panel-max-width)] shadow-2xl ring-1 ring-white/5 transition-[opacity] duration-300 overflow-hidden isolate'
       : 'w-full max-h-[85vh] shadow-2xl ring-1 ring-white/5 transition-[opacity] duration-300',
     modal.maxWidthClassName ?? 'max-w-4xl',
-    modal.variant === 'custom-surface' ? '' : 'bg-[#0F131A]',
+    /* surface provided via SpotlightCard + explicit style below to guarantee light white / v3 dark without legacy ci- fallback */
     modal.panelClassName ?? '',
   ].filter(Boolean).join(' ');
 
@@ -89,10 +92,16 @@ export function GlobalModalShell() {
       role="dialog"
       aria-modal="true"
     >
-      <div className="shrink-0 border-b border-[#1C2433] bg-[#141A23]/90 px-8 py-6 backdrop-blur-md">
+      <div
+        className="shrink-0 border-b px-8 py-6 backdrop-blur-md"
+        style={{
+          borderColor: isLight ? 'var(--ci-border, #E5E4E3)' : 'var(--v3-border-subtle)',
+          background: isLight ? '#FFFFFF' : '#15282A',
+        }}
+      >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <div className="mb-2 text-[10px] font-mono uppercase tracking-[0.22em] text-[#007970]">
+            <div className="mb-2 text-[10px] font-mono uppercase tracking-[0.18em]" style={{ color: isLight ? 'var(--ci-link, #00797D)' : 'var(--v3-teal-light)' }}>
               {modal.eyebrow ?? (
                 <span className="inline-flex items-center gap-1">
                   <Maximize2 size={10} />
@@ -100,8 +109,8 @@ export function GlobalModalShell() {
                 </span>
               )}
             </div>
-            {modal.title ? <h2 className="text-2xl font-semibold leading-tight text-white">{modal.title}</h2> : null}
-            {modal.subtitle ? <p className="mt-2 max-w-2xl text-sm text-[#A0ABC0]">{modal.subtitle}</p> : null}
+            {modal.title ? <h2 className="text-2xl font-semibold leading-tight" style={{ color: 'var(--v3-text-primary)' }}>{modal.title}</h2> : null}
+            {modal.subtitle ? <p className="mt-2 max-w-2xl text-sm" style={{ color: isLight ? 'var(--ci-text-muted-2, #52404B)' : 'var(--ci-text-muted-2)' }}>{modal.subtitle}</p> : null}
           </div>
           <div className="flex items-center gap-2">
             {modal.headerActions}
@@ -109,7 +118,8 @@ export function GlobalModalShell() {
               <button
                 type="button"
                 onClick={requestClose}
-                className="rounded-lg p-2 text-[#5E6A7F] transition-colors hover:bg-[#1C2433] hover:text-white"
+                className="rounded-lg p-2 transition-colors"
+                style={{ color: isLight ? 'var(--ci-text-subtle, #747474)' : 'var(--ci-text-subtle)' }}
                 aria-label="Close modal"
               >
                 <X size={20} />
@@ -118,11 +128,17 @@ export function GlobalModalShell() {
           </div>
         </div>
       </div>
-      <div className={['relative z-20 flex-1 overflow-y-auto p-8 custom-scrollbar', modal.bodyClassName ?? ''].join(' ')}>
+      <div className={['relative z-20 flex-1 min-h-0 overflow-y-auto p-8 custom-scrollbar', modal.bodyClassName ?? ''].join(' ')} style={{ background: isLight ? '#FAFBF8' : '#0E1B1C' }}>
         {modal.content}
       </div>
       {modal.footer ? (
-        <div className="shrink-0 border-t border-[#1C2433] bg-[#141A23]/80 px-8 py-5 backdrop-blur-md">
+        <div
+          className="shrink-0 border-t px-8 py-5 backdrop-blur-md"
+          style={{
+            borderColor: isLight ? 'var(--ci-border, #E5E4E3)' : 'var(--v3-border-subtle)',
+            background: isLight ? '#FFFFFF' : '#15282A',
+          }}
+        >
           {modal.footer}
         </div>
       ) : null}
@@ -141,8 +157,8 @@ export function GlobalModalShell() {
     >
       {modal.variant === 'custom-surface'
         ? (
-          <div className="flex min-h-full w-full items-center justify-center">
-            <div className={panelClassName}>{content}</div>
+          <div className="flex min-h-full w-full items-center justify-center overflow-hidden isolate">
+            <div className={panelClassName}>{modal.content}</div>
           </div>
         )
         : content}

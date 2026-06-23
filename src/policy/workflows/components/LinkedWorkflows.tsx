@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { WORKFLOW_GRAPH } from '@/policy/data/workflowGraph.generated';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
+import { workflowsByEffectivePolicy } from '@/policy/workflows/utils/resolveWorkflowPolicyRefs';
 import { CI, DOMAIN_META } from '../brand';
 
 /* ══════════════════════════════════════════════════════════════════
@@ -22,7 +23,7 @@ export function LinkedWorkflows({ policyId, formId, roleMatch, title, max = 8 }:
   const navigate = useNavigate();
 
   const ids = new Set<string>();
-  if (policyId) for (const id of (WORKFLOW_GRAPH.byPolicy[policyId] ?? [])) ids.add(id);
+  if (policyId) for (const id of workflowsByEffectivePolicy(policyId)) ids.add(id);
   if (formId)   for (const id of (WORKFLOW_GRAPH.byForm[formId]     ?? [])) ids.add(id);
   if (roleMatch) for (const id of (WORKFLOW_GRAPH.byRole[roleMatch]  ?? [])) ids.add(id);
 

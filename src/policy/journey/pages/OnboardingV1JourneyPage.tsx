@@ -1673,7 +1673,7 @@ function LearnerLesson({ db, params, navigate }: { db: DemoDB; params: RoutePara
           <ChevronLeft className="mr-1 h-4 w-4" /> EXIT
         </button>
         <div className="border border-[var(--border-light)] bg-[var(--bg-light)] p-8 text-center">
-          <p className="text-[var(--text-muted)]">This topic does not have any lesson content loaded in the current demo database.</p>
+          <p className="text-[var(--text-muted)]">This topic does not have any lesson content loaded in the current environment database.</p>
         </div>
       </div>
     );
@@ -1903,7 +1903,7 @@ function LearnerTest({ db, params, navigate }: { db: DemoDB; params: RouteParams
           <ChevronLeft className="mr-1 h-4 w-4" /> EXIT
         </button>
         <div className="border border-[var(--border-light)] bg-[var(--bg-light)] p-8 text-center">
-          <p className="text-[var(--text-muted)]">This topic does not have a test loaded in the current demo database.</p>
+          <p className="text-[var(--text-muted)]">This topic does not have a test loaded in the current environment database.</p>
         </div>
       </div>
     );

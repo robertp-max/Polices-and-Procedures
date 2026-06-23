@@ -118,7 +118,7 @@ function KnowledgeModal({ article, pageName, helpCenterPath, onClose, onDisable 
               className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
               style={{ background: 'rgba(0,121,112,0.1)' }}
             >
-              <Lightbulb size={18} className="text-[#007970]" />
+              <Lightbulb size={18} className="text-[#00797D]" />
             </div>
             <div className="min-w-0">
               <p className="text-[10px] font-montserrat font-semibold text-[#C74601] uppercase tracking-widest mb-0.5">
@@ -170,7 +170,7 @@ function KnowledgeModal({ article, pageName, helpCenterPath, onClose, onDisable 
                   <li key={i} className="flex items-start gap-2 text-[#1F1C1B] leading-relaxed">
                     <span
                       className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 text-white"
-                      style={{ background: '#007970' }}
+                      style={{ background: '#00797D' }}
                     >
                       {i + 1}
                     </span>
@@ -217,7 +217,7 @@ function KnowledgeModal({ article, pageName, helpCenterPath, onClose, onDisable 
               >
                 {Object.entries(article.traceability).map(([key, val]) => (
                   <div key={key} className="flex gap-3">
-                    <span className="text-[#007970] w-28 shrink-0">{key}:</span>
+                    <span className="text-[#00797D] w-28 shrink-0">{key}:</span>
                     <span className="text-[#52404B] break-all">{val ?? 'GAP'}</span>
                   </div>
                 ))}
@@ -318,7 +318,7 @@ export function ContextualKnowledgeBulb() {
         onClick={handleEnable}
         aria-label="Enable contextual tips"
         title="Enable contextual tips"
-        className="flex items-center gap-1.5 text-[11px] font-roboto text-[#52404B] hover:text-[#007970] transition-colors px-3 py-1.5 rounded-full border border-[#E5E4E3] bg-white hover:border-[#007970]"
+        className="flex items-center gap-1.5 text-[11px] font-roboto text-[#52404B] hover:text-[#00797D] transition-colors px-3 py-1.5 rounded-full border border-[#E5E4E3] bg-white hover:border-[#00797D]"
       >
         <Bell size={13} />
         Enable contextual tips
@@ -336,13 +336,12 @@ export function ContextualKnowledgeBulb() {
         <button
           type="button"
           aria-label="View knowledge article"
-          title=""
           onClick={handleOpen}
           onMouseEnter={() => setShowTooltip(true)}
           onMouseLeave={() => setShowTooltip(false)}
           onFocus={() => setShowTooltip(true)}
           onBlur={() => setShowTooltip(false)}
-          className="relative flex items-center justify-center w-9 h-9 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#007970] focus-visible:outline-offset-2"
+          className="relative flex items-center justify-center w-9 h-9 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#00797D] focus-visible:outline-offset-2"
           style={{
             background: 'transparent',
             animation: prefersReducedMotion ? 'none' : 'ci-bulb-pulse 2.6s ease-in-out infinite',
@@ -350,7 +349,7 @@ export function ContextualKnowledgeBulb() {
         >
           <Lightbulb
             size={20}
-            className="text-[#007970]"
+            className="text-[#00797D]"
             aria-hidden="true"
           />
           {/* Glow ring */}

@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Care Indeed • Prototype v5</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Outfit:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap');
+
+    :root {
+      /* === EXACT CI-ION / V3 VEIL GLASS TOKEN MAP (from UI_TOKEN_CONTRACT_SPEC + index.css + ui-staging.css + v3Tokens) === */
+      --v3-base-bg: #05060A;
+      --v3-bg-gradient: radial-gradient(circle at 50% 0%, #121724 0%, #05060A 100%);
+      --v3-glass-card: linear-gradient(135deg, rgba(32, 41, 56, 0.88) 0%, rgba(16, 20, 28, 0.45) 60%, rgba(8, 10, 13, 0.98) 100%);
+      --v3-glass-blur: blur(32px) saturate(140%);
+      --v3-glass-shadow: 30px 10px 80px rgba(0, 0, 0, 0.9);
+      --v3-border: rgba(255, 255, 255, 0.33);
+      --v3-border-hover: rgba(255, 255, 255, 0.45);
+      --v3-border-subtle: rgba(255, 255, 255, 0.12);
+      --v3-teal: #007970;
+      --v3-teal-light: #00D1C1;
+      --v3-orange: #E07B2C;
+      --v3-orange-light: #FFA059;
+      --v3-text-primary: #FFFFFF;
+      --v3-text-secondary: #94A3B8;
+      --v3-text-tertiary: #64748B;
+      --v3-ease: cubic-bezier(0.16, 1, 0.3, 1);
+      --v3-duration: 0.7s;
+      --v3-duration-fast: 0.4s;
+      --v3-duration-sub: 0.55s;
+      --v3-card-radius: 24px;
+      --v3-veil-blur: 32px;
+      --v3-veil-saturate: 1.4;
+
+      /* CI Brand / Surface tokens (from index.css) */
+      --ci-maroon-deep: #0A0202;
+      --ci-maroon-black: #310707;
+      --ci-maroon-base: #420808;
+      --ci-maroon-glow: #5D0E0E;
+      --ci-gold: #E07B2C;
+      --ci-gold-dark: #FFA059;
+      --ci-accent-rgb: 224, 123, 44;
+      --ci-text: #E0E0E0;
+      --ci-text-muted: rgba(255,255,255,0.45);
+      --ci-border: rgba(255,255,255,0.08);
+      --ci-border-strong: rgba(255,255,255,0.14);
+      --ci-hairline: rgba(255,255,255,0.06);
+      --glass-main: linear-gradient(160deg, rgba(66,8,8,0.33) 0%, rgba(10,2,2,0.33) 100%);
+      --shadow-glass: 0 40px 120px -30px rgba(0,0,0,.85), 0 18px 48px -18px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.07);
+      --ease-standard: cubic-bezier(.22,1,.36,1);
+      --ease-drift: cubic-bezier(.45,0,.55,1);
+
+      /* Typography tokens */
+      --ci-font-size-display-hero: 42px;
+      --ci-font-size-display-section: 26px;
+      --ci-font-size-kpi-value: 36px;
+      --ci-font-size-stat-value: 18px;
+      --ci-font-size-card-title: 15px;
+      --ci-font-size-body-sm: 13px;
+      --ci-font-size-body-xs: 12px;
+      --ci-font-size-meta: 11px;
+      --ci-font-size-eyebrow: 10px;
+
+      /* Shell */
+      --ci-shell-navrail-width: 16rem;
+      --ci-shell-collapsed-width: 72px;
+
+      /* Motion */
+      --motion-premium: cubic-bezier(0.16, 1, 0.3, 1);
+
+      /* Overlays & Surfaces */
+      --ci-overlay-faint: rgba(255,255,255,0.02);
+      --ci-overlay-soft: rgba(255,255,255,0.04);
+      --ci-overlay-strong: rgba(255,255,255,0.08);
+      --ci-overlay-border: rgba(255,255,255,0.08);
+      --ci-overlay-border-strong: rgba(255,255,255,0.14);
+    }
+
+    /* DARK is DEFAULT — full-bleed premium dark glass */
+    html, body {
+      margin: 0; padding: 0; height: 100%; width: 100%;
+      background: var(--v3-base-bg);
+      color: var(--v3-text-primary);
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Light mode overrides (data-theme="light") */
+    [data-theme="light"] {
+      --v3-base-bg: #F8FAFC;
+      --v3-bg-gradient: linear-gradient(160deg, #F1F5F9 0%, #F8FAFC 100%);
+      --v3-glass-card: linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(248,250,252,0.92) 100%);
+      --v3-glass-blur: blur(18px) saturate(120%);
+      --v3-glass-shadow: 0 10px 40px -15px rgba(15,23,42,0.12), 0 4px 12px -4px rgba(15,23,42,0.08);
+      --v3-border: rgba(15,23,42,0.12);
+      --v3-border-hover: rgba(15,23,42,0.22);
+      --v3-border-subtle: rgba(15,23,42,0.06);
+      --v3-text-primary: #0F172A;
+      --v3-text-secondary: #475569;
+      --v3-text-tertiary: #64748B;
+      --ci-text: #1E2937;
+      --ci-text-muted: #64748B;
+      --ci-border: rgba(15,23,42,0.08);
+      --ci-border-strong: rgba(15,23,42,0.14);
+      --ci-hairline: rgba(15,23,42,0.06);
+      --glass-main: linear-gradient(160deg, rgba(255,255,255,0.7) 0%, rgba(248,250,252,0.65) 100%);
+      --shadow-glass: 0 10px 30px -10px rgba(15,23,42,0.1), inset 0 1px 0 rgba(255,255,255,0.8);
+      --ci-overlay-faint: rgba(15,23,42,0.02);
+      --ci-overlay-soft: rgba(15,23,42,0.05);
+      --ci-overlay-strong: rgba(15,23,42,0.1);
+    }
+
+    /* Premium typography */
+    h1, h2, .section-title { font-family: 'Outfit', system-ui, sans-serif; letter-spacing: -0.025em; }
+    .eyebrow { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; }
+
+    /* Full-bleed shell (no outer 4-sided frame) */
+    .shell-root {
+      min-height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      background: var(--v3-base-bg);
+    }
+
+    /* Sidebar collapsed = exactly 72px */
+    .sidebar-rail {
+      width: 72px;
+      transition: width 280ms var(--motion-premium);
+    }
+    .sidebar-rail.expanded {
+      width: 256px; /* standard expanded */
+    }
+
+    /* Glass surfaces — premium expensive feel */
+    .glass-surface {
+      background: var(--v3-glass-card);
+      backdrop-filter: var(--v3-glass-blur);
+      -webkit-backdrop-filter: var(--v3-glass-blur);
+      border: 1px solid var(--v3-border);
+      box-shadow: var(--v3-glass-shadow);
+      border-radius: var(--v3-card-radius);
+    }
+
+    .glass-panel {
+      background: var(--v3-glass-card);
+      backdrop-filter: var(--v3-glass-blur);
+      -webkit-backdrop-filter: var(--v3-glass-blur);
+      border: 1px solid var(--v3-border-subtle);
+      border-radius: 16px;
+      transition: all 180ms var(--motion-premium);
+    }
+
+    /* Topbar premium */
+    .topbar {
+      height: 72px;
+      background: rgba(5,6,10,0.85);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--v3-border-subtle);
+      transition: background 200ms ease;
+    }
+    [data-theme="light"] .topbar {
+      background: rgba(248,250,252,0.92);
+    }
+
+    /* Nav items */
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 9px 12px; border-radius: 10px;
+      font-size: 13px; font-weight: 600; letter-spacing: -0.01em;
+      color: var(--v3-text-secondary);
+      transition: all 140ms var(--motion-premium);
+    }
+    .nav-item:hover {
+      color: var(--v3-text-primary);
+      background: rgba(255,255,255,0.05);
+    }
+    .nav-item.active {
+      color: var(--v3-teal-light);
+      background: rgba(0, 121, 112, 0.12);
+      border: 1px solid rgba(0,209,193,0.2);
+    }
+    .sidebar-rail.collapsed .nav-item {
+      justify-content: center; padding: 10px; gap: 0;
+    }
+    .sidebar-rail.collapsed .nav-item span { display: none; }
+
+    /* Command palette / Search modal */
+    .command-modal {
+      animation: commandEnter 180ms var(--motion-premium) both;
+    }
+    @keyframes commandEnter {
+      from { opacity: 0; transform: translateY(-12px) scale(0.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .command-result {
+      transition: all 120ms var(--motion-premium);
+    }
+    .command-result:hover, .command-result.active {
+      background: rgba(255,255,255,0.06);
+      transform: translateX(2px);
+    }
+    [data-theme="light"] .command-result:hover,
+    [data-theme="light"] .command-result.active {
+      background: rgba(15,23,42,0.06);
+    }
+
+    /* Spotlight premium effect */
+    .spotlight {
+      position: relative;
+      overflow: hidden;
+    }
+    .spotlight::before {
+      content: '';
+      position: absolute; inset: -50%;
+      background: radial-gradient(circle at var(--spot-x,50%) var(--spot-y,50%), rgba(0,209,193,0.12), transparent 70%);
+      opacity: 0;
+      transition: opacity 220ms var(--motion-premium);
+      pointer-events: none;
+    }
+    .spotlight:hover::before { opacity: 1; }
+
+    /* Animations */
+    .fade-in { animation: fadeIn 380ms var(--motion-premium) both; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    .slide-up { animation: slideUp 280ms var(--motion-premium) both; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    .slide-in-right { animation: slideInRight 240ms var(--motion-premium) both; }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: translateX(0); } }
+
+    .premium-ease { transition: all 200ms var(--motion-premium); }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    /* Scrollbars premium (gold tint) */
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: rgba(224,123,44,0.25); border-radius: 999px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(224,123,44,0.42); }
+    [data-theme="light"] .custom-scroll::-webkit-scrollbar-thumb { background: rgba(15,23,42,0.2); }
+
+    /* Focus rings — beautiful */
+    .focus-ring:focus-visible {
+      outline: 2px solid var(--v3-teal-light);
+      outline-offset: 3px;
+      box-shadow: 0 0 0 4px rgba(0, 209, 193, 0.18);
+    }
+
+    /* KPI / Card polish */
+    .kpi-value { font-size: 34px; line-height: 1; font-weight: 700; letter-spacing: -0.03em; font-family: 'Outfit', system-ui; }
+    .section-header { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; color: var(--v3-text-tertiary); }
+
+    /* Tables */
+    .proto-table th {
+      font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: 0.1em;
+      color: var(--v3-text-tertiary); padding-bottom: 8px;
+    }
+    .proto-table td { padding: 11px 8px; border-top: 1px solid var(--v3-border-subtle); font-size: 13.5px; }
+
+    /* Drawer */
+    .drawer {
+      box-shadow: -28px 0 80px -20px rgba(0,0,0,0.6);
+      animation: drawerSlide 260ms var(--motion-premium) both;
+    }
+    @keyframes drawerSlide { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* Top level content frame — full bleed inside shell */
+    .content-frame {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 28px 36px;
+    }
+
+    /* Beautiful subtle prototype badge */
+    .proto-badge {
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      padding: 1px 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--v3-text-tertiary);
+    }
+    [data-theme="light"] .proto-badge {
+      background: rgba(15,23,42,0.04);
+      border-color: rgba(15,23,42,0.08);
+      color: #64748B;
+    }
+
+    .nav-icon { width: 18px; height: 18px; flex-shrink: 0; }
+
+    /* Login premium */
+    .login-glass {
+      background: var(--v3-glass-card);
+      backdrop-filter: var(--v3-glass-blur);
+      -webkit-backdrop-filter: var(--v3-glass-blur);
+      box-shadow: var(--v3-glass-shadow);
+    }
+
+    .metric-card {
+      transition: transform 160ms var(--motion-premium), box-shadow 160ms var(--motion-premium), border-color 160ms var(--motion-premium);
+    }
+    .metric-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 48px -12px rgba(0,0,0,0.6);
+      border-color: var(--v3-border-hover);
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+    // Tailwind configuration for premium tokens + dark/light
+    function configureTailwind() {
+      if (window.tailwind && window.tailwind.config) {
+        window.tailwind.config = {
+          theme: {
+            extend: {
+              fontFamily: {
+                'outfit': ['Outfit', 'system-ui', 'sans-serif'],
+                'mono': ['JetBrains Mono', 'monospace']
+              },
+              colors: {
+                'brand-teal': '#007970',
+                'brand-orange': '#E07B2C',
+                'v3-teal': '#007970',
+                'v3-orange': '#E07B2C'
+              }
+            }
+          }
+        };
+      }
+    }
+
+    // React globals
+    const { useState, useEffect, useMemo, useCallback, useRef, createElement: h } = React;
+    const { createRoot } = ReactDOM;
+
+    // ===== ICONS (inline SVGs — premium, self-contained) =====
+    const Icons = {
+      dashboard: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round', strokeLinejoin: 'round' },
+        [h('rect', { x: '3', y: '3', width: '7', height: '9', rx: '1.5' }), h('rect', { x: '14', y: '3', width: '7', height: '5', rx: '1.5' }), h('rect', { x: '14', y: '12', width: '7', height: '9', rx: '1.5' }), h('rect', { x: '3', y: '16', width: '7', height: '5', rx: '1.5' })]
+      ),
+      library: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round', strokeLinejoin: 'round' },
+        [h('path', { d: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20' }), h('path', { d: 'M4 4.5A2.5 2.5 0 0 1 6.5 2H20v15H6.5A2.5 2.5 0 0 1 4 17.5V4.5z' })]
+      ),
+      forms: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.9 },
+        [h('rect', { x: '3', y: '4', width: '18', height: '18', rx: '2' }), h('line', { x1: '7', y1: '10', x2: '17', y2: '10' }), h('line', { x1: '7', y1: '14', x2: '17', y2: '14' }), h('line', { x1: '7', y1: '18', x2: '13', y2: '18' })]
+      ),
+      framework: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.85 },
+        [h('path', { d: 'M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z' }), h('path', { d: 'M12 12l8-4.5' }), h('path', { d: 'M12 12v9' }), h('path', { d: 'M12 12L4 7.5' })]
+      ),
+      calendar: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.9 },
+        [h('rect', { x: '3', y: '4', width: '18', height: '18', rx: '2' }), h('line', { x1: '3', y1: '10', x2: '21', y2: '10' }), h('line', { x1: '8', y1: '2', x2: '8', y2: '6' }), h('line', { x1: '16', y1: '2', x2: '16', y2: '6' })]
+      ),
+      governance: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.9 },
+        [h('path', { d: 'M12 2L2 7l10 5 10-5-10-5z' }), h('path', { d: 'M2 17l10 5 10-5' }), h('path', { d: 'M2 12l10 5 10-5' })]
+      ),
+      audit: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.85 },
+        [h('path', { d: 'M9 12l2 2 4-4' }), h('circle', { cx: '12', cy: '12', r: '9' })]
+      ),
+      evidence: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.9 },
+        [h('path', { d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' }), h('polyline', { points: '14 2 14 8 20 8' })]
+      ),
+      users: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.9 },
+        [h('path', { d: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' }), h('circle', { cx: '9', cy: '7', r: '4' }), h('path', { d: 'M23 21v-2a4 4 0 0 0-3-3.87' }), h('path', { d: 'M16 3.13a4 4 0 0 1 0 7.75' })]
+      ),
+      shield: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.85 },
+        [h('path', { d: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' })]
+      ),
+      help: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+        [h('circle', { cx: '12', cy: '12', r: '10' }), h('path', { d: 'M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3' }), h('path', { d: 'M12 17h.01' })]
+      ),
+      search: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.25, strokeLinecap: 'round', strokeLinejoin: 'round' },
+        [h('circle', { cx: '11', cy: '11', r: '8' }), h('path', { d: 'm21 21-4.35-4.35' })]
+      ),
+      moon: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+        [h('path', { d: 'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z' })]
+      ),
+      sun: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+        [h('circle', { cx: '12', cy: '12', r: '5' }), h('line', { x1: '12', y1: '1', x2: '12', y2: '3' }), h('line', { x1: '12', y1: '21', x2: '12', y2: '23' }), h('line', { x1: '4.22', y1: '4.22', x2: '5.64', y2: '5.64' }), h('line', { x1: '18.36', y1: '18.36', x2: '19.78', y2: '19.78' }), h('line', { x1: '1', y1: '12', x2: '3', y2: '12' }), h('line', { x1: '21', y1: '12', x2: '23', y2: '12' }), h('line', { x1: '4.22', y1: '19.78', x2: '5.64', y2: '18.36' }), h('line', { x1: '18.36', y1: '5.64', x2: '19.78', y2: '4.22' })]
+      ),
+      menu: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2 },
+        [h('line', { x1: '3', y1: '6', x2: '21', y2: '6' }), h('line', { x1: '3', y1: '12', x2: '21', y2: '12' }), h('line', { x1: '3', y1: '18', x2: '21', y2: '18' })]
+      ),
+      close: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.5 },
+        [h('line', { x1: '18', y1: '6', x2: '6', y2: '18' }), h('line', { x1: '6', y1: '6', x2: '18', y2: '18' })]
+      ),
+      chevronRight: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.5 },
+        [h('polyline', { points: '9 18 15 12 9 6' })]
+      ),
+      arrowUp: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.5 },
+        [h('polyline', { points: '18 15 12 9 6 15' })]
+      ),
+      arrowDown: (p) => h('svg', { ...p, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.5 },
+        [h('polyline', { points: '6 9 12 15 18 9' })]
+      ),
+    };
+
+    // ===== PAGE REGISTRY (full list from canonical shell nav + more for complete prototype) =====
+    const PAGE_REGISTRY = [
+      { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', templateType: 'dashboard' },
+      { id: 'library', label: 'Policy Library', icon: 'library', templateType: 'library' },
+      { id: 'forms', label: 'Forms Library', icon: 'forms', templateType: 'forms' },
+      { id: 'framework', label: 'Framework & Taxonomy', icon: 'framework', templateType: 'framework' },
+      { id: 'governance', label: 'Governance', icon: 'governance', templateType: 'generic' },
+      { id: 'calendar', label: 'Master Calendar', icon: 'calendar', templateType: 'calendar' },
+      { id: 'audit', label: 'Audit Mode', icon: 'audit', templateType: 'generic' },
+      { id: 'evidence', label: 'Evidence Center', icon: 'evidence', templateType: 'evidence' },
+      { id: 'clinicians', label: 'Clinician Profiles', icon: 'users', templateType: 'generic' },
+      { id: 'patients', label: 'Patient Profiles', icon: 'users', templateType: 'generic' },
+      { id: 'ces-calendar', label: 'CES Calendar', icon: 'calendar', templateType: 'calendar' },
+      { id: 'my-tasks', label: 'My Tasks', icon: 'forms', templateType: 'generic' },
+      { id: 'lifecycle', label: 'Policy Lifecycle', icon: 'library', templateType: 'library' },
+      { id: 'workflows', label: 'Workflows', icon: 'framework', templateType: 'generic' },
+      { id: 'help', label: 'Help Center', icon: 'help', templateType: 'generic' },
+      { id: 'system-docs', label: 'System Documentation', icon: 'library', templateType: 'generic' },
+      { id: 'iadministrator', label: 'Brad / iAdministrator', icon: 'shield', templateType: 'generic' },
+      { id: 'onboarding', label: 'Onboarding Journey', icon: 'users', templateType: 'generic' },
+    ];
+
+    // ===== SAMPLE DATA FACTORIES (generic, useMemo style) =====
+    function createSampleData() {
+      const policies = [
+        { id: 'GV-GB-001', title: 'Governing Body — Board Operations', domain: 'Governance', updated: '2026-05-12', status: 'Active', owner: 'Board Secretary', template: 'Quarterly' },
+        { id: 'QA-PI-001', title: 'QAPI Program — Quality Assurance', domain: 'QAPI', updated: '2026-06-01', status: 'Active', owner: 'QAPI Coordinator', template: 'Monthly' },
+        { id: 'CL-OA-006', title: 'Clinical Record Audit Standards', domain: 'Clinical', updated: '2026-04-28', status: 'Active', owner: 'Director of Nursing', template: 'Monthly' },
+        { id: 'CO-CP-001', title: 'Compliance Program — Core Policies', domain: 'Compliance', updated: '2026-05-22', status: 'Active', owner: 'Compliance Officer', template: 'Annual' },
+        { id: 'RM-IC-001', title: 'Infection Prevention & Control', domain: 'Risk', updated: '2026-03-15', status: 'Active', owner: 'Risk Manager', template: 'Monthly' },
+        { id: 'HR-TR-010', title: 'OSHA Bloodborne Pathogens Training', domain: 'Operations', updated: '2026-06-03', status: 'Active', owner: 'HR Training', template: 'Annual' },
+      ];
+
+      const forms = [
+        { id: 'FRM-GV-001', title: 'Board Agenda Template', type: 'Governance', lastUsed: '2026-06-09', instances: 14 },
+        { id: 'FRM-QA-002', title: 'QAPI Metrics Report', type: 'Quality', lastUsed: '2026-06-08', instances: 27 },
+        { id: 'FRM-CL-010', title: 'Clinical Record Audit Checklist', type: 'Clinical', lastUsed: '2026-06-04', instances: 19 },
+        { id: 'FRM-CO-001', title: 'Monthly Compliance Report', type: 'Compliance', lastUsed: '2026-06-07', instances: 9 },
+      ];
+
+      const kpis = [
+        { label: 'Active Policies', value: '187', trend: '+4', tone: 'teal' },
+        { label: 'Open Evidence Items', value: '31', trend: '-8', tone: 'orange' },
+        { label: 'Forms Completed (30d)', value: '214', trend: '+22', tone: 'teal' },
+        { label: 'Audit Readiness', value: '94%', trend: '+2', tone: 'teal' },
+      ];
+
+      const events = [
+        { id: 'e1', title: 'QAPI Committee Meeting', domain: 'QAPI', due: 'Jun 18', status: 'Scheduled', owner: 'QAPI Coordinator' },
+        { id: 'e2', title: 'Monthly Clinical Record Audit', domain: 'Clinical', due: 'Jun 20', status: 'In Progress', owner: 'Director of Nursing' },
+        { id: 'e3', title: 'Governing Body Quarterly', domain: 'Governance', due: 'Jun 11', status: 'Completed', owner: 'Board Chair' },
+      ];
+
+      const recentActivity = [
+        { id: 1, action: 'Policy GV-GB-001 updated', user: 'L. Patel', time: '12m ago' },
+        { id: 2, action: 'Evidence packet submitted for RCA-472', user: 'M. Torres', time: '41m ago' },
+        { id: 3, action: 'Form FRM-QA-002 signed by 4 members', user: 'System', time: '2h ago' },
+      ];
+
+      return { policies, forms, kpis, events, recentActivity };
+    }
+
+    // ===== GENERIC PAGE TEMPLATES (switch/map based on templateType) =====
+    function renderTemplate({ templateType, currentPageId, setActiveDrawer, isDark, data }) {
+      const { policies, forms, kpis, events, recentActivity } = data;
+
+      switch (templateType) {
+        case 'dashboard':
+          return h('div', { className: 'space-y-8 fade-in' },
+            h('div', { className: 'flex items-end justify-between' },
+              h('div', null,
+                h('div', { className: 'eyebrow tracking-[0.16em] text-[10px] mb-1' }, 'OPERATIONS OVERVIEW'),
+                h('h1', { className: 'text-4xl font-semibold tracking-[-0.025em]' }, 'Agency Command Center')
+              ),
+              h('div', { className: 'text-right text-xs text-v3-text-tertiary' }, 'Last sync: just now • Prototype v5')
+            ),
+
+            // KPIs
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4' },
+              kpis.map((kpi, i) =>
+                h('div', { key: i, className: 'glass-panel p-5 metric-card border border-v3-border-subtle spotlight cursor-pointer', onClick: () => setActiveDrawer({ type: 'kpi', data: kpi }) },
+                  h('div', { className: 'flex justify-between items-start' },
+                    h('div', { className: 'text-[10px] uppercase tracking-[0.16em] text-v3-text-tertiary font-semibold' }, kpi.label),
+                    h('div', { className: `text-xs font-medium ${kpi.tone === 'teal' ? 'text-v3-teal-light' : 'text-v3-orange'}` }, kpi.trend)
+                  ),
+                  h('div', { className: 'kpi-value mt-3', style: { color: kpi.tone === 'teal' ? 'var(--v3-teal-light)' : 'var(--v3-orange)' } }, kpi.value)
+                )
+              )
+            ),
+
+            h('div', { className: 'grid grid-cols-1 xl:grid-cols-5 gap-5' },
+              // Recent Events
+              h('div', { className: 'xl:col-span-3 glass-panel p-6 border border-v3-border-subtle' },
+                h('div', { className: 'section-header mb-4' }, 'UPCOMING REGULATORY EVENTS'),
+                h('div', { className: 'space-y-3' },
+                  events.map(ev => h('div', { key: ev.id, className: 'flex items-center justify-between p-3 rounded-xl hover:bg-white/5 cursor-pointer transition', onClick: () => setActiveDrawer({ type: 'event', data: ev }) },
+                    h('div', null,
+                      h('div', { className: 'font-medium' }, ev.title),
+                      h('div', { className: 'text-xs text-v3-text-tertiary' }, `${ev.domain} • ${ev.owner}`)
+                    ),
+                    h('div', { className: `text-xs font-semibold px-3 py-1 rounded-full ${ev.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-400/10 text-amber-400'}` }, ev.status)
+                  ))
+                )
+              ),
+
+              // Activity
+              h('div', { className: 'xl:col-span-2 glass-panel p-6 border border-v3-border-subtle' },
+                h('div', { className: 'section-header mb-4' }, 'LIVE ACTIVITY'),
+                h('div', { className: 'space-y-[13px]' },
+                  recentActivity.map(act =>
+                    h('div', { key: act.id, className: 'flex gap-3 text-sm' },
+                      h('div', { className: 'w-1.5 h-1.5 mt-2 rounded-full bg-v3-teal-light flex-shrink-0' }),
+                      h('div', null,
+                        h('div', { className: 'text-v3-text-primary' }, act.action),
+                        h('div', { className: 'text-[11px] text-v3-text-tertiary' }, `${act.user} • ${act.time}`)
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          );
+
+        case 'library':
+          return h('div', { className: 'space-y-6 fade-in' },
+            h('div', null,
+              h('div', { className: 'eyebrow mb-1' }, 'KNOWLEDGE BASE'),
+              h('h1', { className: 'text-3xl font-semibold tracking-tight' }, 'Policy Library')
+            ),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4' },
+              policies.map(pol => h('div', {
+                key: pol.id,
+                className: 'glass-panel p-5 border border-v3-border-subtle spotlight cursor-pointer hover:border-v3-border-hover',
+                onClick: () => setActiveDrawer({ type: 'policy', data: pol })
+              },
+                h('div', { className: 'flex justify-between' },
+                  h('div', { className: 'text-xs px-2.5 py-px rounded bg-white/5 text-v3-text-tertiary' }, pol.domain),
+                  h('div', { className: 'text-xs text-v3-teal-light font-medium' }, pol.status)
+                ),
+                h('div', { className: 'mt-3 font-semibold tracking-tight leading-tight' }, pol.title),
+                h('div', { className: 'mt-4 flex items-center justify-between text-xs text-v3-text-tertiary' },
+                  h('div', null, pol.id),
+                  h('div', null, 'Updated ' + pol.updated)
+                )
+              ))
+            )
+          );
+
+        case 'forms':
+          return h('div', { className: 'space-y-6 fade-in' },
+            h('div', null,
+              h('h1', { className: 'text-3xl font-semibold' }, 'Forms Library'),
+              h('p', { className: 'text-v3-text-secondary mt-1' }, 'Regulatorily-mandated forms and instances')
+            ),
+            h('div', { className: 'glass-panel overflow-hidden border border-v3-border-subtle' },
+              h('table', { className: 'proto-table w-full' },
+                h('thead', null,
+                  h('tr', { className: 'border-b border-v3-border-subtle' },
+                    h('th', { className: 'text-left pl-6 py-4' }, 'FORM'),
+                    h('th', { className: 'text-left' }, 'DOMAIN'),
+                    h('th', { className: 'text-left' }, 'LAST USED'),
+                    h('th', { className: 'text-right pr-6' }, 'INSTANCES')
+                  )
+                ),
+                h('tbody', null,
+                  forms.map(f => h('tr', { key: f.id, className: 'cursor-pointer hover:bg-white/5', onClick: () => setActiveDrawer({ type: 'form', data: f }) },
+                    h('td', { className: 'pl-6 font-medium' }, f.title),
+                    h('td', { className: 'text-v3-text-secondary' }, f.type),
+                    h('td', { className: 'text-v3-text-secondary' }, f.lastUsed),
+                    h('td', { className: 'text-right pr-6 font-semibold text-v3-teal-light' }, f.instances)
+                  ))
+                )
+              )
+            )
+          );
+
+        case 'framework':
+          return h('div', { className: 'space-y-6 fade-in' },
+            h('div', null, h('h1', { className: 'text-3xl font-semibold tracking-tight' }, 'Regulatory Framework & Taxonomy')),
+            h('div', { className: 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4' },
+              ['Governance (GV)', 'Clinical (CL)', 'QAPI (QA)', 'Compliance (CO)', 'Risk & Safety (RM)', 'Operations (OP)', 'Finance (FN)', 'HR & Training (HR)'].map((d, idx) =>
+                h('div', { key: idx, className: 'glass-panel p-5 border border-v3-border-subtle cursor-pointer hover:border-v3-teal-light/60', onClick: () => setActiveDrawer({ type: 'domain', data: { name: d } }) },
+                  h('div', { className: 'font-semibold' }, d),
+                  h('div', { className: 'text-xs text-v3-text-tertiary mt-2' }, `${(idx + 3) * 7 + 4} policies • ${Math.floor(Math.random() * 5) + 2} active events`)
+                )
+              )
+            )
+          );
+
+        case 'calendar':
+          return h('div', { className: 'fade-in space-y-4' },
+            h('div', null, h('h1', { className: 'text-3xl font-semibold' }, 'Master Calendar')),
+            h('div', { className: 'glass-panel p-8 text-center border border-v3-border-subtle' },
+              h('div', { className: 'text-v3-text-secondary mb-4' }, 'June 2026 — Regulatory Events'),
+              h('div', { className: 'grid grid-cols-7 gap-1 text-sm' },
+                ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => h('div', { key: d, className: 'text-center text-v3-text-tertiary py-1' }, d)),
+                Array.from({length: 30}).map((_,i) => h('div', { key: i, className: `p-3 rounded text-xs border border-v3-border-subtle ${i === 10 || i === 17 ? 'bg-v3-teal/10 text-v3-teal-light font-semibold' : ''}` }, String(i + 1)))
+              )
+            )
+          );
+
+        case 'evidence':
+          return h('div', { className: 'fade-in' },
+            h('div', { className: 'flex justify-between items-end mb-6' },
+              h('div', null, h('h1', { className: 'text-3xl font-semibold' }, 'Evidence Center')),
+              h('button', { className: 'text-xs px-5 py-2 rounded-full bg-white/5 border border-v3-border hover:border-v3-teal-light', onClick: () => setActiveDrawer({ type: 'evidence-new' }) }, 'Capture Evidence')
+            ),
+            h('div', { className: 'glass-panel border border-v3-border-subtle p-6' },
+              h('div', { className: 'text-sm mb-3 text-v3-text-tertiary' }, 'RECENT EVIDENCE PACKETS'),
+              ...[1,2,3].map(n => h('div', { key: n, className: 'flex items-center py-3 border-t border-v3-border-subtle cursor-pointer', onClick: () => setActiveDrawer({ type: 'evidence', data: { id: 'EVD-00' + n } }) },
+                h('div', { className: 'flex-1' }, 'Packet EVD-00' + n + ' — RCA follow-up'),
+                h('div', { className: 'text-xs px-3 py-0.5 rounded bg-emerald-500/10 text-emerald-400' }, 'VERIFIED')
+              ))
+            )
+          );
+
+        default: // generic rich page
+          return h('div', { className: 'fade-in space-y-6' },
+            h('div', null,
+              h('div', { className: 'eyebrow' }, currentPageId.toUpperCase()),
+              h('h1', { className: 'text-[29px] font-semibold tracking-[-0.015em]' }, PAGE_REGISTRY.find(p => p.id === currentPageId)?.label || 'Workspace')
+            ),
+            h('div', { className: 'glass-panel p-8 border border-v3-border-subtle' },
+              h('div', { className: 'text-v3-text-secondary max-w-prose leading-relaxed' },
+                'This surface is fully wired into the prototype registry and shell. All navigation, keyboard commands, theme toggles, and drawer interactions are live. Sample content uses generic factories.'
+              ),
+              h('div', { className: 'mt-8 grid grid-cols-1 md:grid-cols-2 gap-4' },
+                h('div', { className: 'p-4 rounded-xl bg-white/3 border border-v3-border-subtle text-sm' }, '• 12 regulatory cycles tracked'),
+                h('div', { className: 'p-4 rounded-xl bg-white/3 border border-v3-border-subtle text-sm' }, '• 41 open obligations'),
+                h('div', { className: 'p-4 rounded-xl bg-white/3 border border-v3-border-subtle text-sm' }, '• 94.2% compliance posture'),
+                h('div', { className: 'p-4 rounded-xl bg-white/3 border border-v3-border-subtle text-sm' }, '• Ready for ACHC survey simulation')
+              )
+            )
+          );
+      }
+    }
+
+    // ===== MAIN APP ORCHESTRATOR =====
+    function App() {
+      const [showLogin, setShowLogin] = useState(true);
+      const [currentPageId, setCurrentPageId] = useState('dashboard');
+      const [isDark, setIsDark] = useState(true);
+      const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+      const [searchOpen, setSearchOpen] = useState(false);
+      const [commandQuery, setCommandQuery] = useState('');
+      const [activeCommandIndex, setActiveCommandIndex] = useState(0);
+      const [activeDrawer, setActiveDrawer] = useState(null);
+      const [searchFocused, setSearchFocused] = useState(false);
+
+      const data = useMemo(() => createSampleData(), []);
+
+      // Theme application
+      useEffect(() => {
+        const root = document.documentElement;
+        if (isDark) {
+          root.removeAttribute('data-theme');
+          root.classList.add('dark');
+        } else {
+          root.setAttribute('data-theme', 'light');
+          root.classList.remove('dark');
+        }
+      }, [isDark]);
+
+      // Keyboard handler — global: Cmd/Ctrl+K, Esc, arrows in search
+      useEffect(() => {
+        function handleKey(e) {
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            setSearchOpen(o => !o);
+            setCommandQuery('');
+            setActiveCommandIndex(0);
+          }
+          if (e.key === 'Escape') {
+            if (searchOpen) {
+              setSearchOpen(false);
+              setCommandQuery('');
+            } else if (activeDrawer) {
+              setActiveDrawer(null);
+            }
+          }
+          if (searchOpen) {
+            const filtered = PAGE_REGISTRY.filter(p => p.label.toLowerCase().includes(commandQuery.toLowerCase()));
+            if (e.key === 'ArrowDown') {
+              e.preventDefault();
+              setActiveCommandIndex(i => Math.min(i + 1, filtered.length - 1));
+            }
+            if (e.key === 'ArrowUp') {
+              e.preventDefault();
+              setActiveCommandIndex(i => Math.max(i - 1, 0));
+            }
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const sel = filtered[activeCommandIndex];
+              if (sel) {
+                setCurrentPageId(sel.id);
+                setSearchOpen(false);
+                setCommandQuery('');
+                // Demo: open drawer on command select for certain pages
+                if (['library', 'forms'].includes(sel.templateType)) {
+                  setActiveDrawer({ type: sel.templateType === 'library' ? 'policy' : 'form', data: data.policies[0] || data.forms[0] });
+                }
+              }
+            }
+          }
+        }
+        window.addEventListener('keydown', handleKey);
+        return () => window.removeEventListener('keydown', handleKey);
+      }, [searchOpen, commandQuery, activeCommandIndex, activeDrawer, data]);
+
+      // Page switching function (used by sidebar + command)
+      const navigateToPage = useCallback((pageId) => {
+        setCurrentPageId(pageId);
+        // Close search if open
+        setSearchOpen(false);
+        setCommandQuery('');
+        // Occasionally demo drawer on navigation for rich pages
+        const page = PAGE_REGISTRY.find(p => p.id === pageId);
+        if (page && Math.random() > 0.65 && ['library', 'forms', 'evidence'].includes(page.templateType)) {
+          setTimeout(() => {
+            const sample = page.templateType === 'library' ? data.policies[1] : (page.templateType === 'forms' ? data.forms[0] : { id: 'EVD-DEMO' });
+            setActiveDrawer({ type: page.templateType === 'library' ? 'policy' : page.templateType, data: sample });
+          }, 380);
+        }
+      }, [data]);
+
+      const currentPage = PAGE_REGISTRY.find(p => p.id === currentPageId) || PAGE_REGISTRY[0];
+      const templateType = currentPage.templateType;
+
+      // Filtered command results
+      const filteredCommands = useMemo(() => {
+        return PAGE_REGISTRY.filter(p => p.label.toLowerCase().includes(commandQuery.toLowerCase()));
+      }, [commandQuery]);
+
+      // Login handler — "Enter Prototype"
+      function enterPrototype() {
+        setShowLogin(false);
+        setCurrentPageId('dashboard');
+        setSidebarCollapsed(false);
+        setActiveDrawer(null);
+      }
+
+      function toggleTheme() {
+        setIsDark(!isDark);
+      }
+
+      function closeDrawer() { setActiveDrawer(null); }
+
+      const Logo = ({ size = 28, white = isDark }) => {
+        // Premium inline logo — white/gray switched correctly
+        const fill = white ? '#FFFFFF' : '#334155';
+        const accent = white ? '#00D1C1' : '#007970';
+        return h('div', { className: 'flex items-center gap-2.5 font-semibold tracking-[-0.5px]', style: { fontSize: size * 0.52 } },
+          h('svg', { width: size, height: size, viewBox: '0 0 32 32' },
+            h('rect', { x: '2', y: '2', width: '28', height: '28', rx: '6', fill: accent, opacity: white ? '0.95' : '0.9' }),
+            h('path', { d: 'M10 10 L22 10 L22 22 L10 22 Z', fill: 'none', stroke: fill, strokeWidth: '2.5' }),
+            h('path', { d: 'M14 14 L18 14 L18 18 L14 18 Z', fill: fill })
+          ),
+          h('span', { style: { color: fill, fontWeight: 700, letterSpacing: '-0.3px' } }, 'Care Indeed')
+        );
+      };
+
+      // LOGIN SCREEN
+      if (showLogin) {
+        return h('div', { className: 'min-h-screen flex items-center justify-center px-6 relative', style: { background: 'var(--v3-base-bg)' } },
+          h('div', { className: 'max-w-md w-full' },
+            h('div', { className: 'login-glass rounded-3xl p-10 border border-v3-border' },
+              h('div', { className: 'flex justify-center mb-7' },
+                h(Logo, { size: 42, white: isDark })
+              ),
+              h('div', { className: 'text-center mb-8' },
+                h('div', { className: 'eyebrow text-v3-text-tertiary' }, 'COMPLIANCE OPERATIONS PLATFORM'),
+                h('h1', { className: 'text-4xl font-semibold tracking-[-1.5px] mt-3' }, 'Welcome back'),
+                h('p', { className: 'mt-2 text-v3-text-secondary' }, 'Prototype v5 • Full shell + registry integration')
+              ),
+
+              // Minimal elegant login form (demo)
+              h('div', { className: 'space-y-4 mb-5' },
+                h('div', null,
+                  h('div', { className: 'text-[10px] uppercase tracking-[1px] text-v3-text-tertiary mb-1.5' }, 'EMAIL'),
+                  h('input', { className: 'w-full bg-transparent border border-v3-border px-4 py-[11px] rounded-2xl text-sm focus:outline-none focus:border-v3-teal-light', placeholder: 'operator@careindeed.demo', defaultValue: 'demo@careindeed.com' })
+                ),
+                h('div', null,
+                  h('div', { className: 'text-[10px] uppercase tracking-[1px] text-v3-text-tertiary mb-1.5' }, 'PASSWORD'),
+                  h('input', { type: 'password', className: 'w-full bg-transparent border border-v3-border px-4 py-[11px] rounded-2xl text-sm focus:outline-none focus:border-v3-teal-light', defaultValue: 'prototype' })
+                )
+              ),
+
+              h('button', {
+                onClick: enterPrototype,
+                className: 'w-full py-3.5 bg-gradient-to-r from-v3-teal to-[#00A89A] text-white font-semibold rounded-2xl text-sm tracking-[0.4px] hover:brightness-105 active:scale-[0.985] transition-all premium-ease'
+              }, 'ENTER PROTOTYPE'),
+
+              h('div', { className: 'flex justify-center mt-4' },
+                h('button', {
+                  onClick: toggleTheme,
+                  className: 'flex items-center gap-2 px-4 py-1.5 text-xs rounded-full border border-v3-border-subtle hover:bg-white/5 text-v3-text-tertiary'
+                },
+                  isDark ? h(Icons.sun, { width: 15, height: 15 }) : h(Icons.moon, { width: 15, height: 15 }),
+                  isDark ? 'Switch to Light' : 'Switch to Dark'
+                )
+              )
+            ),
+
+            h('div', { className: 'text-center mt-6 text-[10px] text-v3-text-tertiary tracking-[1.5px]' }, 'Dark mode default • Full keyboard support • All registry pages')
+          )
+        );
+      }
+
+      // ===== APP SHELL (full-bleed) =====
+      return h('div', { className: 'shell-root flex flex-col', 'data-theme': isDark ? undefined : 'light' },
+
+        // TOPBAR — full width, no outer frame
+        h('header', { className: 'topbar flex items-center justify-between px-5 flex-shrink-0 z-50' },
+          h('div', { className: 'flex items-center gap-3' },
+            h('button', {
+              onClick: () => setSidebarCollapsed(!sidebarCollapsed),
+              className: 'p-2 text-v3-text-secondary hover:text-v3-text-primary lg:hidden focus-ring rounded-xl'
+            }, h(Icons.menu, { width: 19, height: 19 })),
+
+            h(Logo, { size: 26, white: isDark })
+          ),
+
+          // Center global command trigger
+          h('div', { className: 'hidden md:block' },
+            h('button', {
+              onClick: () => { setSearchOpen(true); setCommandQuery(''); setActiveCommandIndex(0); },
+              className: 'flex items-center gap-3 px-5 py-1.5 rounded-3xl text-sm border border-v3-border bg-white/5 hover:bg-white/10 text-v3-text-secondary focus-ring'
+            },
+              h(Icons.search, { width: 15, height: 15 }),
+              h('span', { className: 'text-xs opacity-70' }, 'Search pages, policies, tasks...'),
+              h('span', { className: 'text-[10px] px-1.5 py-px rounded bg-white/10 font-mono' }, '⌘K')
+            )
+          ),
+
+          h('div', { className: 'flex items-center gap-2.5' },
+            // Theme toggle
+            h('button', {
+              onClick: toggleTheme,
+              className: 'p-2 rounded-2xl border border-v3-border-subtle text-v3-text-secondary hover:text-v3-text-primary focus-ring'
+            }, isDark ? h(Icons.sun, { width: 17, height: 17 }) : h(Icons.moon, { width: 17, height: 17 })),
+
+            h('div', { className: 'pl-2 flex items-center gap-2 text-xs' },
+              h('div', { className: 'w-8 h-8 rounded-full bg-v3-teal/70 flex items-center justify-center text-[10px] font-bold tracking-wider' }, 'OP'),
+              h('div', { className: 'hidden md:block' },
+                h('div', { className: 'font-medium text-xs' }, 'Olivia Park'),
+                h('div', { className: 'text-[10px] text-v3-text-tertiary -mt-0.5' }, 'Administrator')
+              )
+            ),
+
+            h('div', { className: 'proto-badge ml-1 hidden sm:block' }, 'PROTOTYPE V5')
+          )
+        ),
+
+        // MAIN FLEX: SIDEBAR + CONTENT (full-bleed)
+        h('div', { className: 'flex flex-1 min-h-0' },
+
+          // SIDEBAR — 72px collapsed
+          h('aside', {
+            className: `sidebar-rail flex-shrink-0 border-r border-v3-border-subtle bg-[#030406] flex flex-col py-4 overflow-hidden transition-all ${sidebarCollapsed ? 'collapsed' : 'expanded'} hidden lg:flex`
+          },
+            h('div', { className: 'px-2.5 flex flex-col flex-1 overflow-y-auto custom-scroll' },
+              PAGE_REGISTRY.slice(0, 9).map(page => {
+                const active = currentPageId === page.id;
+                return h('button', {
+                  key: page.id,
+                  onClick: () => navigateToPage(page.id),
+                  className: `nav-item w-full text-left mb-0.5 ${active ? 'active' : ''}`
+                },
+                  h(Icons[page.icon] || Icons.dashboard, { className: 'nav-icon', width: 17, height: 17 }),
+                  h('span', { className: 'truncate' }, page.label)
+                );
+              }),
+
+              h('div', { className: 'h-px bg-white/10 my-3 mx-2' }),
+
+              PAGE_REGISTRY.slice(9).map(page => {
+                const active = currentPageId === page.id;
+                return h('button', {
+                  key: page.id,
+                  onClick: () => navigateToPage(page.id),
+                  className: `nav-item w-full text-left mb-0.5 ${active ? 'active' : ''}`
+                },
+                  h(Icons[page.icon] || Icons.dashboard, { className: 'nav-icon', width: 17, height: 17 }),
+                  h('span', { className: 'truncate' }, page.label)
+                );
+              })
+            ),
+
+            h('div', { className: 'px-3 mt-auto pt-3 border-t border-v3-border-subtle text-[10px] text-v3-text-tertiary mx-1.5' },
+              'Full registry wired'
+            )
+          ),
+
+          // CONTENT AREA — full-bleed beautiful glass
+          h('main', { className: 'flex-1 min-w-0 flex flex-col bg-[var(--v3-base-bg)] relative' },
+            h('div', { className: 'content-frame custom-scroll' },
+              h('div', { className: 'max-w-[1200px] mx-auto' },
+                // Top bar inside content with page title
+                h('div', { className: 'flex items-center justify-between mb-6' },
+                  h('div', null,
+                    h('div', { className: 'eyebrow mb-px' }, currentPage.label.toUpperCase()),
+                    h('div', { className: 'text-[22px] font-semibold tracking-[-0.015em]' }, currentPage.label)
+                  ),
+                  h('div', { className: 'text-xs px-4 py-1 rounded-2xl bg-white/5 border border-v3-border-subtle' }, 'Registry page • Live interactions')
+                ),
+
+                // THE TEMPLATE RENDER (switch/map)
+                renderTemplate({
+                  templateType,
+                  currentPageId,
+                  setActiveDrawer,
+                  isDark,
+                  data
+                })
+              )
+            ),
+
+            // Subtle footer note
+            h('div', { className: 'px-7 py-3 border-t border-v3-border-subtle text-[10px] text-v3-text-tertiary flex-shrink-0 flex items-center justify-between' },
+              h('div', {}, 'Care Indeed Policies & Procedures • Prototype v5 — fully self-contained single-file'),
+              h('div', { className: 'font-mono tracking-[1px] opacity-40' }, 'ESC closes • ⌘K command')
+            )
+          )
+        ),
+
+        // COMMAND PALETTE MODAL
+        searchOpen && h('div', { className: 'fixed inset-0 z-[90] flex items-start justify-center pt-[14vh] bg-black/70 backdrop-blur', onClick: () => setSearchOpen(false) },
+          h('div', { className: 'command-modal w-full max-w-[640px] mx-4 glass-surface border border-v3-border rounded-3xl overflow-hidden shadow-2xl', onClick: e => e.stopPropagation() },
+            h('div', { className: 'flex items-center gap-3 px-5 py-4 border-b border-v3-border-subtle bg-black/20' },
+              h(Icons.search, { width: 18, height: 18, className: 'text-v3-text-tertiary' }),
+              h('input', {
+                autoFocus: true,
+                value: commandQuery,
+                onChange: (e) => { setCommandQuery(e.target.value); setActiveCommandIndex(0); },
+                placeholder: 'Jump to page... (arrows + enter)',
+                className: 'flex-1 bg-transparent outline-none text-lg placeholder:text-v3-text-tertiary'
+              }),
+              h('div', { className: 'text-[10px] font-mono text-v3-text-tertiary px-2 py-px border border-v3-border-subtle rounded' }, 'ESC')
+            ),
+            h('div', { className: 'max-h-[350px] overflow-y-auto custom-scroll py-1' },
+              filteredCommands.length === 0 && h('div', { className: 'px-5 py-8 text-center text-sm text-v3-text-tertiary' }, 'No matches. Try another term.'),
+              filteredCommands.map((page, index) =>
+                h('div', {
+                  key: page.id,
+                  onClick: () => {
+                    navigateToPage(page.id);
+                  },
+                  className: `command-result flex items-center gap-4 px-5 py-[11px] cursor-pointer mx-1 rounded-2xl ${index === activeCommandIndex ? 'active bg-white/5' : ''}`
+                },
+                  h(Icons[page.icon] || Icons.dashboard, { width: 17, height: 17, className: 'text-v3-text-secondary flex-shrink-0' }),
+                  h('div', { className: 'flex-1 font-medium tracking-tight' }, page.label),
+                  h('div', { className: 'text-xs text-v3-text-tertiary font-mono tracking-widest' }, page.id)
+                )
+              )
+            ),
+            h('div', { className: 'px-4 py-2 border-t border-v3-border-subtle bg-black/10 text-[10px] text-v3-text-tertiary flex gap-4' },
+              h('span', null, '↑↓ Navigate'), h('span', null, '↵ Select'), h('span', null, '⌘K Toggle')
+            )
+          )
+        ),
+
+        // RIGHT DRAWER (activeDrawer)
+        activeDrawer && h('div', { className: 'fixed inset-0 z-[95] flex justify-end bg-black/60', onClick: closeDrawer },
+          h('div', {
+            className: 'drawer w-full max-w-md h-full glass-surface border-l border-v3-border flex flex-col',
+            onClick: e => e.stopPropagation()
+          },
+            h('div', { className: 'flex items-center justify-between px-6 py-4 border-b border-v3-border-subtle flex-shrink-0' },
+              h('div', { className: 'font-semibold tracking-tight' }, activeDrawer.type === 'policy' ? 'Policy Detail' : activeDrawer.type.charAt(0).toUpperCase() + activeDrawer.type.slice(1)),
+              h('button', { onClick: closeDrawer, className: 'p-1 text-v3-text-tertiary hover:text-white focus-ring' }, h(Icons.close, { width: 19, height: 19 }))
+            ),
+            h('div', { className: 'p-6 flex-1 overflow-auto custom-scroll text-sm leading-relaxed' },
+              // Drawer content based on type
+              activeDrawer.type === 'policy' && h('div', null,
+                h('div', { className: 'uppercase text-xs text-v3-text-tertiary mb-1' }, activeDrawer.data.id),
+                h('h3', { className: 'text-xl font-semibold mb-4 tracking-tight' }, activeDrawer.data.title),
+                h('div', { className: 'grid grid-cols-2 gap-x-4 gap-y-3 text-sm' },
+                  h('div', { className: 'text-v3-text-tertiary' }, 'Domain'), h('div', null, activeDrawer.data.domain),
+                  h('div', { className: 'text-v3-text-tertiary' }, 'Owner'), h('div', null, activeDrawer.data.owner),
+                  h('div', { className: 'text-v3-text-tertiary' }, 'Last Updated'), h('div', null, activeDrawer.data.updated),
+                  h('div', { className: 'text-v3-text-tertiary' }, 'Cadence'), h('div', null, activeDrawer.data.template)
+                ),
+                h('div', { className: 'my-6 h-px bg-white/10' }),
+                h('div', { className: 'text-[13px] text-v3-text-secondary' }, 'This policy is fully navigable in the live application. All controls, versions, and appendices are wired to the registry.')
+              ),
+              activeDrawer.type === 'form' && h('div', null,
+                h('div', { className: 'uppercase text-xs text-v3-text-tertiary mb-1' }, activeDrawer.data.id),
+                h('h3', { className: 'text-xl font-semibold mb-4' }, activeDrawer.data.title),
+                h('div', null, 'Type: ', activeDrawer.data.type),
+                h('div', { className: 'mt-3' }, 'Instances completed: ', h('span', { className: 'font-semibold text-v3-teal-light' }, activeDrawer.data.instances))
+              ),
+              (activeDrawer.type === 'event' || activeDrawer.type === 'kpi' || activeDrawer.type === 'domain' || activeDrawer.type === 'evidence') && h('div', null,
+                h('pre', { className: 'text-xs bg-black/30 p-4 rounded-xl overflow-auto font-mono text-v3-text-secondary' }, JSON.stringify(activeDrawer.data, null, 2)),
+                h('div', { className: 'mt-5 text-xs text-v3-text-tertiary' }, 'Drawer populated from sample data factory. All interactions are live.')
+              ),
+              activeDrawer.type === 'evidence-new' && h('div', null,
+                h('div', { className: 'mb-4' }, 'New evidence capture workspace (demo)'),
+                h('div', { className: 'space-y-3' },
+                  h('div', { className: 'p-3 border border-v3-border-subtle rounded-2xl text-sm' }, 'Upload supporting artifact'),
+                  h('div', { className: 'p-3 border border-v3-border-subtle rounded-2xl text-sm' }, 'Associate with regulatory event'),
+                  h('button', { onClick: closeDrawer, className: 'mt-4 w-full py-2.5 rounded-2xl border border-v3-teal-light text-v3-teal-light text-xs tracking-widest' }, 'SUBMIT TO CES')
+                )
+              )
+            ),
+            h('div', { className: 'p-4 border-t border-v3-border-subtle text-[10px] text-v3-text-tertiary flex-shrink-0' }, 'Prototype drawer — fully interactive')
+          )
+        )
+      );
+    }
+
+    // ===== BOOTSTRAP =====
+    function bootstrap() {
+      configureTailwind();
+      const rootEl = document.getElementById('root');
+      const root = createRoot(rootEl);
+      root.render(h(App));
+
+      // Ensure dark default on load (already handled in component but set explicit)
+      document.documentElement.classList.add('dark');
+      document.documentElement.style.setProperty('--v3-base-bg', '#05060A');
+    }
+
+    // Launch
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootstrap);
+    } else {
+      bootstrap();
+    }
+  </script>
+</body>
+</html>

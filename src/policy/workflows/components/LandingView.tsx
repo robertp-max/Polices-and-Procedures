@@ -5,6 +5,7 @@ import { WORKFLOW_CARDS } from '@/policy/data/workflows.generated';
 import { WORKFLOW_GRAPH } from '@/policy/data/workflowGraph.generated';
 import type { DomainCode, WorkflowCardProjection } from '@/policy/types/workflow';
 import { WorkflowCard } from './WorkflowCard';
+import { PageHeader, SurfaceCard } from '@/policy/components/ui';
 
 /* ══════════════════════════════════════════════════════════════════
    LandingView — the primary Workflow Library landing experience.
@@ -93,29 +94,12 @@ export function LandingView({ selectedDomain, savedView }: LandingViewProps) {
     null;
 
   return (
-    <div className="h-full flex flex-col" style={{ padding: isMobile ? '14px 14px 12px 14px' : '28px 32px 20px 32px' }}>
-      {/* 1. Title row */}
-      <div className="flex items-end justify-between" style={{ marginBottom: 8 }}>
-        <div>
-          <div
-            style={{
-              fontFamily: 'Montserrat, sans-serif', fontWeight: 600,
-              fontSize: 28, letterSpacing: -0.2, color: CI.ink, lineHeight: 1.2,
-            }}
-          >
-            Workflows
-          </div>
-          <div
-            style={{
-              marginTop: 4,
-              fontFamily: 'Roboto, sans-serif', fontSize: 13,
-              color: CI.inkSoft,
-            }}
-          >
-            {WORKFLOW_GRAPH.kpis.total} operational workflows · {Object.keys(WORKFLOW_GRAPH.kpis.byDomain).length} domains
-          </div>
-        </div>
-      </div>
+    <div className="h-full flex flex-col p-6" style={{ background: 'transparent' }}>
+      <PageHeader
+        eyebrow="WORKFLOWS"
+        title="Workflow Library"
+        description={`${WORKFLOW_GRAPH.kpis.total} operational workflows · ${Object.keys(WORKFLOW_GRAPH.kpis.byDomain).length} domains`}
+      />
 
       {/* 2. Breadcrumb strip */}
       <div
@@ -138,36 +122,17 @@ export function LandingView({ selectedDomain, savedView }: LandingViewProps) {
         ) : null}
       </div>
 
-      {/* 3. KPI band */}
-      <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-3`} style={{ marginBottom: 16 }}>
+      {/* 3. KPI band - clean corporate metrics matching prototype designs */}
+      <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-3 mb-4`}>
         {kpis.map((k) => (
-          <div
-            key={k.label}
-            style={{
-              background: CI.paper,
-              border: `1px solid ${CI.line}`,
-              borderRadius: 8,
-              padding: '14px 18px',
-            }}
-          >
-            <div
-              style={{
-                fontFamily: 'Roboto, sans-serif', fontSize: 11,
-                color: CI.muted, textTransform: 'uppercase', letterSpacing: 1,
-              }}
-            >
+          <SurfaceCard key={k.label} padding="md">
+            <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--v3-text-tertiary)]" style={{ letterSpacing: '1px' }}>
               {k.label}
             </div>
-            <div
-              style={{
-                marginTop: 8,
-                fontFamily: 'Montserrat, sans-serif', fontWeight: 700,
-                fontSize: 28, color: k.accent, lineHeight: 1,
-              }}
-            >
+            <div className="mt-2 text-3xl font-semibold tracking-[-0.02em]" style={{ color: k.accent, fontFamily: 'Montserrat, sans-serif' }}>
               {k.value}
             </div>
-          </div>
+          </SurfaceCard>
         ))}
       </div>
 
@@ -177,7 +142,6 @@ export function LandingView({ selectedDomain, savedView }: LandingViewProps) {
           className="flex items-center gap-2 flex-1"
           style={{
             background: CI.paper,
-            border: `1px solid ${CI.line}`,
             borderRadius: 8,
             padding: '8px 12px',
             height: 36,
@@ -211,22 +175,23 @@ export function LandingView({ selectedDomain, savedView }: LandingViewProps) {
         </div>
       </div>
 
-      {/* 5. Card grid 3×3 */}
+      {/* 5. Card grid 3×3 — wrapped in SurfaceCard for premium hierarchy */}
       <div className={`grid ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : 'grid-cols-3'} gap-4 flex-1 min-h-0`}>
         {pageItems.map((c) => (
-          <WorkflowCard
-            key={c.id}
-            card={c}
-            compact={isMobile}
-            onOpen={() => navigate({ pathname: `/workflows/${c.id}`, search: location.search })}
-          />
+          <SurfaceCard key={c.id} padding="sm">
+            <WorkflowCard
+              card={c}
+              compact={isMobile}
+              onOpen={() => navigate({ pathname: `/workflows/${c.id}`, search: location.search })}
+            />
+          </SurfaceCard>
         ))}
         {pageItems.length === 0 ? (
           <div
             className="col-span-3 flex items-center justify-center"
             style={{
               fontFamily: 'Roboto, sans-serif', fontSize: 13, color: CI.muted,
-              border: `1px dashed ${CI.line}`, borderRadius: 8,
+              borderRadius: 8,
             }}
           >
             No workflows match the current filters.
@@ -275,12 +240,10 @@ function PagerButton({
       style={{
         fontFamily: 'Roboto, sans-serif', fontSize: 12,
         padding: '6px 12px', borderRadius: 6,
-        border: `1px solid ${CI.line}`, background: CI.paper,
+        background: CI.paper,
         color: disabled ? CI.muted : CI.ink,
         opacity: disabled ? 0.5 : 1, cursor: disabled ? 'default' : 'pointer',
       }}
-      onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.borderColor = CI.teal; }}
-      onMouseLeave={(e) => { e.currentTarget.style.borderColor = CI.line; }}
     >
       {children}
     </button>

@@ -37,6 +37,8 @@ export interface UserGroup {
   domain: DomainKind;
   permissions: PermissionId[];
   description: string;
+  /** Optional count for aggregate KPI display (falls back in UI) */
+  users?: number;
 }
 
 export interface Scope {

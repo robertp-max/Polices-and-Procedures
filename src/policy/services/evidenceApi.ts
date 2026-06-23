@@ -137,7 +137,19 @@ export const EvidenceApi = {
     domain?: string;
     eventDate?: string;
     uploadedBy?: string;
-  }): Promise<{ evidenceId: string; driveFileId: string; driveFileUrl: string; calendarAttachmentStatus: string }> {
+    artifactId?: string;
+    pdfVersion?: number;
+    sha256?: string;
+    signerSlotOrder?: number;
+    signerUserId?: string;
+    signerRole?: string;
+    signerTier?: number;
+    signerDomain?: string;
+    priorDocumentHash?: string;
+    finalDocumentHash?: string;
+    auditEventIds?: string[];
+    signerSlotsComplete?: boolean;
+  }): Promise<{ evidenceId: string; driveFileId: string; driveFileUrl: string; driveFolderId?: string; calendarAttachmentStatus: string }> {
     const contentBase64 = await fileToBase64(file);
     return request(CAL_BASE, 'POST', `/events/${encodeURIComponent(eventId)}/signed-artifact/publish`, {
       ...meta,

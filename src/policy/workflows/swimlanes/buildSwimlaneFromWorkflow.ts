@@ -7,6 +7,10 @@ import { buildCanonicalEventSwimlaneNodeId, buildCanonicalEventSwimlaneTaskId } 
 import { buildSwimlaneInstructions, inferSwimlaneTaskPurpose } from './swimlaneInstructions';
 import type { SwimlaneBuildContext, SwimlaneLane, SwimlaneModel, SwimlaneNode, SwimlaneSourceType, SwimlaneStatus } from './types';
 import { resolveCanonicalSignaturePath } from '@/policy/ecign/signaturePathResolver';
+import { getEventDisplayModel } from '@/policy/data/eventDisplayModel';
+import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
+import { getEventById } from './swimlaneRegistry';
+import type { RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 
 function unique(values: Array<string | undefined | null>): string[] {
   return Array.from(new Set(values.filter((value): value is string => Boolean(value?.trim()))));
@@ -23,7 +27,13 @@ function laneForRole(role: string, lanes: SwimlaneLane[]): SwimlaneLane {
   return lane;
 }
 
-function statusForStep(step: WorkflowStep, index: number): SwimlaneStatus {
+function statusForStep(step: WorkflowStep, index: number, exec: ReturnType<typeof useRegulatoryExecutionStore.getState>, liveEvent: RegulatoryEvent | undefined): SwimlaneStatus {
+  // For event mode use live store status if available
+  if (liveEvent && exec.effectiveStepStatus) {
+    const liveS = exec.effectiveStepStatus(liveEvent, `STEP-${String(step.order).padStart(2,'0')}`) || exec.effectiveStepStatus(liveEvent, String(step.order));
+    if (liveS === 'complete') return 'complete';
+    if (liveS === 'in-progress') return 'in_progress';
+  }
   if (index === 0) return 'ready';
   if (/sign|approve|attest/i.test(step.action)) return 'needs_signature';
   if (/review|validate|audit|score|verify/i.test(step.action)) return 'awaiting_reviewer';
@@ -38,6 +48,23 @@ function phaseForStep(step: WorkflowStep, index: number, stepCount: number, phas
   if (/review|validate|audit|score|verify|findings|decision/.test(action)) return Math.min(phaseCount, Math.max(2, Math.ceil(phaseCount / 2)));
   if (stepCount <= 1) return 1;
   return Math.min(Math.max(1, phaseCount - 2), Math.floor((index / Math.max(1, stepCount - 1)) * Math.max(1, phaseCount - 2)) + 1);
+}
+
+function phaseForQapiCommitteeStep(step: WorkflowStep, fallbackIndex: number, stepCount: number, phaseCount: number): number {
+  const action = step.action.toLowerCase();
+  if (/lock|archive|final evidence/.test(action)) return phaseCount;
+  if (/governing body|board/.test(action)) return Math.min(phaseCount, 6);
+  if (/minutes|sign|signature|attest/.test(action)) return Math.min(phaseCount, 5);
+  if (/decide|priority action|new pip|cap\b|vote/.test(action)) return Math.min(phaseCount, 4);
+  if (/adverse event|rca|pip status|infection|surveillance|complaint/.test(action)) return Math.min(phaseCount, 3);
+  if (/aggregate quality|compliance\/billing|hr audit|risk\/safety|it\/security|qapi-layer|kpi|indicator|trend|validation|policy effectiveness/.test(action)) return Math.min(phaseCount, 2);
+  if (/verify pre-input|pre-input|agenda|pre-read|packet|distribute/.test(action)) return 1;
+  return phaseForStep(step, fallbackIndex, stepCount, phaseCount);
+}
+
+function phaseForWorkflowStep(workflowId: string, step: WorkflowStep, index: number, stepCount: number, phaseCount: number): number {
+  if (workflowId === 'QA-WF-03') return phaseForQapiCommitteeStep(step, index, stepCount, phaseCount);
+  return phaseForStep(step, index, stepCount, phaseCount);
 }
 
 function formEvidence(formIds: string[]): string[] {
@@ -119,11 +146,17 @@ export function buildSwimlaneFromWorkflow(workflow: Workflow, context: SwimlaneB
   const sourceSteps = hasAuthoredSteps ? workflow.steps : fallback!.steps;
   const baseSourceType: SwimlaneSourceType = hasAuthoredSteps ? 'workflow' : fallback!.sourceType;
 
+  // Live data + design #4 display for event-backed workflows (calendar/swimlane parity)
+  const exec = useRegulatoryExecutionStore.getState();
+  const liveEvent = context.eventId ? getEventById(context.eventId) : undefined;
+  const display = liveEvent ? getEventDisplayModel(liveEvent) : null;
+  const canonicalPolicyRefs = display?.canonicalPolicyRefs?.length ? display.canonicalPolicyRefs : workflow.policyRefs;
+
   const nodes: SwimlaneNode[] = sourceSteps.map((step, index) => {
     const ownerRole = normalizeRole(step.role || workflow.roles.primary[0]);
     if (ownerRole === 'Assigned Owner') missingContext.push(`Role inference gap at step ${step.order}: ${step.action}`);
     const lane = laneForRole(ownerRole, lanes);
-    const phaseOrder = phaseForStep(step, index, sourceSteps.length, phases.length);
+    const phaseOrder = phaseForWorkflowStep(workflowId, step, index, sourceSteps.length, phases.length);
     const phase = phases[phaseOrder - 1] ?? phases[Math.min(index, phases.length - 1)];
     const sourceStepId = `workflow-step:${String(step.order).padStart(2, '0')}`;
     const eventTaskId = context.eventId
@@ -207,7 +240,7 @@ export function buildSwimlaneFromWorkflow(workflow: Workflow, context: SwimlaneB
       title: step.action,
       shortDescription: step.deadline ? `${step.action} Deadline: ${step.deadline}.` : step.action,
       ownerRole,
-      status: statusWithSignaturePath(statusForStep(step, index), signaturePath.signatureTasks.length, signaturePath.reviewerRoles.length),
+      status: statusWithSignaturePath(statusForStep(step, index, exec, liveEvent), signaturePath.signatureTasks.length, signaturePath.reviewerRoles.length),
       requiredForms: step.formIds,
       formInstances,
       requiredEvidence,
@@ -242,7 +275,7 @@ export function buildSwimlaneFromWorkflow(workflow: Workflow, context: SwimlaneB
           : `${workflowId}-node-${sourceSteps[index + 1].order}`]
         : [],
       auditPurpose: workflow.auditRequirements || workflow.outputs || 'Preserves an auditable workflow execution step.',
-      policyRefs: workflow.policyRefs,
+      policyRefs: canonicalPolicyRefs,
       regulatoryRefs: workflow.regulatoryAnchors,
       sourceType: baseSourceType,
     };
@@ -304,7 +337,7 @@ export function buildSwimlaneFromWorkflow(workflow: Workflow, context: SwimlaneB
       dependencies: last ? [last.nodeId] : [],
       nextNodeIds: [],
       auditPurpose: 'Documents the required approval or signature path without creating signer tasks in template mode.',
-      policyRefs: workflow.policyRefs,
+      policyRefs: canonicalPolicyRefs,
       regulatoryRefs: workflow.regulatoryAnchors,
       sourceType: 'generated',
     });
@@ -391,7 +424,7 @@ export function buildSwimlaneFromWorkflow(workflow: Workflow, context: SwimlaneB
       dependencies: last ? [last.nodeId] : [],
       nextNodeIds: [],
       auditPurpose: 'Creates the final survey-ready package boundary.',
-      policyRefs: workflow.policyRefs,
+      policyRefs: canonicalPolicyRefs,
       regulatoryRefs: workflow.regulatoryAnchors,
       sourceType: 'generated',
     });
@@ -420,7 +453,7 @@ export function buildSwimlaneFromWorkflow(workflow: Workflow, context: SwimlaneB
     nodes,
     edges,
     requiredForms: workflow.requiredForms,
-    policyRefs: workflow.policyRefs,
+    policyRefs: canonicalPolicyRefs,
     evidenceRequirements: unique(nodes.flatMap(node => node.requiredEvidence)),
     missingContext,
   };

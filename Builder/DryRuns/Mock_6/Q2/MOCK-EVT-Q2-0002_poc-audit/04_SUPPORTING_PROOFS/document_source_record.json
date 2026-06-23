@@ -1,0 +1,137 @@
+[
+  {
+    "documentId": "MOCK-DOC-Q2-0007",
+    "clientId": "MOCK-PT-Q2-0001",
+    "clinicianId": "MOCK-CLIN-Q2-0001",
+    "eventId": "MOCK-EVT-Q2-0002",
+    "documentType": "plan_of_care_485",
+    "serviceDiscipline": "skilled_nursing",
+    "dateCreated": "2026-04-03",
+    "serviceDate": "2026-04-02",
+    "signedDate": "2026-04-10",
+    "dueDate": "2026-04-12",
+    "status": "complete",
+    "requiredSignatureRole": "physician",
+    "signedBy": "Dr. Fiona Greenleaf",
+    "version": "1.0",
+    "sourceSystem": "mock_ehr_v3",
+    "mockFileName": "MOCK-PT-Q2-0001_poc_485.pdf",
+    "mockDrivePath": "scratch/mock-data/q2-home-health-messy-dataset/docs/MOCK-PT-Q2-0001/",
+    "keyFindings": "POC signed by physician. SN 3W2 x4 then 2W2 x4. PT 2W2 x4 then 1W2 x4. HHA 3W2 x8.",
+    "structuredFields": {
+      "physicianSigned": true,
+      "snFrequency": "3W2x4_then_2W2x4",
+      "ptFrequency": "2W2x4_then_1W2x4",
+      "hhaFrequency": "3W2x8"
+    },
+    "messyFlags": []
+  },
+  {
+    "documentId": "MOCK-DOC-Q2-0018",
+    "clientId": "MOCK-PT-Q2-0002",
+    "clinicianId": "MOCK-CLIN-Q2-0002",
+    "eventId": "MOCK-EVT-Q2-0002",
+    "documentType": "plan_of_care_485",
+    "serviceDiscipline": "skilled_nursing",
+    "dateCreated": "2026-04-08",
+    "serviceDate": "2026-04-07",
+    "signedDate": null,
+    "dueDate": "2026-04-17",
+    "status": "pending_signature",
+    "requiredSignatureRole": "physician",
+    "signedBy": null,
+    "version": "1.0",
+    "sourceSystem": "mock_ehr_v3",
+    "mockFileName": "MOCK-PT-Q2-0002_poc_485.pdf",
+    "mockDrivePath": "scratch/mock-data/q2-home-health-messy-dataset/docs/MOCK-PT-Q2-0002/",
+    "keyFindings": "POC created but MISSING PHYSICIAN SIGNATURE. SN 3W2 x4, OT 2W2 x4, ST 1W2 x4.",
+    "structuredFields": {
+      "physicianSigned": false,
+      "snFrequency": "3W2x4",
+      "otFrequency": "2W2x4",
+      "stFrequency": "1W2x4"
+    },
+    "messyFlags": [
+      "missing_physician_signature"
+    ]
+  },
+  {
+    "documentId": "MOCK-DOC-Q2-0031",
+    "clientId": "MOCK-PT-Q2-0023",
+    "clinicianId": "MOCK-CLIN-Q2-0002",
+    "eventId": null,
+    "documentType": "care_coordination_note",
+    "serviceDiscipline": "skilled_nursing",
+    "dateCreated": "2026-05-10",
+    "serviceDate": "2026-05-10",
+    "signedDate": "2026-05-10",
+    "dueDate": "2026-05-11",
+    "status": "complete",
+    "requiredSignatureRole": "RN Case Manager",
+    "signedBy": "MOCK-CLIN-Q2-0002",
+    "version": "1.0",
+    "sourceSystem": "mock_ehr_v3",
+    "mockFileName": "MOCK-PT-Q2-0023_care_coord.pdf",
+    "mockDrivePath": "scratch/mock-data/q2-home-health-messy-dataset/docs/MOCK-PT-Q2-0023/",
+    "keyFindings": "Status change from active to pending therapy re-eval. POC NOT UPDATED to reflect status change.",
+    "structuredFields": {
+      "statusChange": "therapy_re_eval_pending",
+      "pocUpdated": false
+    },
+    "messyFlags": [
+      "poc_not_updated_after_status_change"
+    ]
+  },
+  {
+    "documentId": "MOCK-DOC-Q2-0034",
+    "clientId": "MOCK-PT-Q2-0033",
+    "clinicianId": "MOCK-CLIN-Q2-0001",
+    "eventId": null,
+    "documentType": "plan_of_care_485",
+    "serviceDiscipline": "skilled_nursing",
+    "dateCreated": "2026-04-13",
+    "serviceDate": "2026-04-12",
+    "signedDate": "2026-04-20",
+    "dueDate": "2026-04-22",
+    "status": "complete",
+    "requiredSignatureRole": "physician",
+    "signedBy": "Dr. Fiona Greenleaf",
+    "version": "1.0",
+    "sourceSystem": "mock_ehr_v3",
+    "mockFileName": "MOCK-PT-Q2-0033_poc_485_v1.pdf",
+    "mockDrivePath": "scratch/mock-data/q2-home-health-messy-dataset/docs/MOCK-PT-Q2-0033/",
+    "keyFindings": "POC v1.0 signed by physician.",
+    "structuredFields": {
+      "physicianSigned": true
+    },
+    "messyFlags": []
+  },
+  {
+    "documentId": "MOCK-DOC-Q2-0035",
+    "clientId": "MOCK-PT-Q2-0033",
+    "clinicianId": "MOCK-CLIN-Q2-0001",
+    "eventId": null,
+    "documentType": "plan_of_care_485",
+    "serviceDiscipline": "skilled_nursing",
+    "dateCreated": "2026-05-10",
+    "serviceDate": "2026-05-10",
+    "signedDate": "2026-05-18",
+    "dueDate": "2026-05-20",
+    "status": "complete",
+    "requiredSignatureRole": "physician",
+    "signedBy": "Dr. Fiona Greenleaf",
+    "version": "2.0",
+    "sourceSystem": "mock_ehr_v3",
+    "mockFileName": "MOCK-PT-Q2-0033_poc_485_v2.pdf",
+    "mockDrivePath": "scratch/mock-data/q2-home-health-messy-dataset/docs/MOCK-PT-Q2-0033/",
+    "keyFindings": "POC v2.0 CONFLICTS with v1.0 - different SN frequency but v1.0 not marked superseded. DUPLICATE/CONFLICTING versions.",
+    "structuredFields": {
+      "physicianSigned": true,
+      "snFrequency": "2W2x4",
+      "conflictsWithVersion": "1.0"
+    },
+    "messyFlags": [
+      "duplicate_conflicting_document_versions"
+    ]
+  }
+]

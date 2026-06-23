@@ -8,7 +8,7 @@ import {
   Settings, RefreshCw, CheckCircle2, Play, BookOpen, List, CheckSquare, Archive,
   Bell, HelpCircle, Clock, Sparkles, Cloud, Rocket
 } from 'lucide-react';
-import ciLogoWhite from '@/assets/ci-logo-white.png';
+import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { ExecutivePresentation } from './DemoPhase2';
 import { InfrastructurePresentation } from './DemoPhase3';
 import { FrontendDeploymentPresentation } from './DemoPhase4';
@@ -1379,7 +1379,7 @@ function TabAppendices({ policy }: { policy: DemoPolicy }) {
               title={app.title}
             >
               <img
-                src={ciLogoWhite}
+                src={ciLogoGray}
                 alt="Care Indeed"
                 className={`w-auto object-contain transition-opacity ${isActive ? 'opacity-100' : 'opacity-70 group-hover:opacity-95'}`}
                 style={{ height: 26 }}

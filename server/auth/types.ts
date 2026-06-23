@@ -38,7 +38,11 @@ export interface AuthSession {
 }
 
 export interface DemoUser {
+  id?: string;
+  authSubject?: string;
+  provider?: string;
   email: string;
+  name?: string;
   firstName?: string;
   lastName?: string;
   emailVerified: boolean;

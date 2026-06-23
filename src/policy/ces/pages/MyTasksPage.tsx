@@ -7,20 +7,22 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useObligations } from '@/policy/ces/obligations';
-import { CES_TOKENS } from '@/policy/ces/theme';
+import { CES_ROLES, buildCesRoleAssignment } from '@/policy/ces/cesRoles';
 import {
   ComplianceStateBadge, AuditReadinessTag, EscalationTimer,
 } from '@/policy/ces/components/primitives';
 import type { ComplianceState } from '@/policy/ces/types';
-import { CES_ROLES, buildCesRoleAssignment } from '@/policy/ces/cesRoles';
 import type { CesRole } from '@/policy/ces/cesRoles';
+import { CES_TOKENS } from '@/policy/ces/theme';
 import { useCesReviewMode, isRobertUser } from '@/policy/ces/cesReviewMode';
 import { useAuth } from '@/auth/AuthProvider';
 import type { MergedExecutionUnit } from '@/policy/compliance-execution/complianceExecutionTypes';
 import { useDataFreshness } from '@/policy/utils/useDataFreshness';
 import { StalenessBanner } from '@/policy/components/ui/StalenessBanner';
-import { ActionButton, CiStatusBadge, EmptyState } from '@/policy/components/ui';
+import { ActionButton, CiStatusBadge, EmptyState, PageHeader, SurfaceCard } from '@/policy/components/ui';
+// Note: SurfaceCard here used for compact status (legacy children); dashboard+board CES cards standardized to exact prototype structure (ref 16-dashboard, 11-ces).
 import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
+import { useShellStore } from '@/policy/stores/uiStore';
 
 type TaskFilter = 'all' | 'open' | 'awaiting_signature' | 'blocked' | 'overdue';
 
@@ -80,6 +82,7 @@ interface DiagnosticsProps {
 }
 
 function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOpen, onToggle }: DiagnosticsProps) {
+  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   const assignedCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const u of backfilled) {
@@ -102,8 +105,8 @@ function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOp
 
   const row = (label: string, value: string | number, accent?: boolean) => (
     <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 11, padding: '2px 0' }}>
-      <span style={{ color: '#94A3B8' }}>{label}</span>
-      <span style={{ fontWeight: 700, color: accent ? '#FFC107' : '#F1F5F9', fontFamily: 'monospace' }}>{value}</span>
+      <span style={{ color: isLight ? '#5F5855' : '#94A3B8' }}>{label}</span>
+      <span style={{ fontWeight: 700, color: accent ? '#C74601' : (isLight ? '#1F1C1B' : '#F1F5F9'), fontFamily: 'monospace' }}>{value}</span>
     </div>
   );
 
@@ -117,9 +120,9 @@ function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOp
         zIndex: 9998,
         width: isOpen ? 340 : 'auto',
         borderRadius: 10,
-        border: '1px solid #1E3A5F',
-        background: '#0F172A',
-        color: '#F1F5F9',
+        border: isLight ? '1px solid #E9E5E3' : '1px solid #1E3A5F',
+        background: isLight ? '#FFFFFF' : '#0F172A',
+        color: isLight ? '#1F1C1B' : '#F1F5F9',
         fontFamily: 'system-ui, sans-serif',
         overflow: 'hidden',
       }}
@@ -133,9 +136,9 @@ function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOp
           gap: 8,
           width: '100%',
           padding: '7px 12px',
-          background: '#1E3A5F',
+          background: isLight ? '#F3F0EF' : '#1E3A5F',
           border: 'none',
-          color: '#F1F5F9',
+          color: isLight ? '#1F1C1B' : '#F1F5F9',
           cursor: 'pointer',
           fontSize: 10,
           fontWeight: 700,
@@ -146,7 +149,7 @@ function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOp
         <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#FFC107', display: 'inline-block' }} />
         CES Role Diagnostics
         {reviewRole && (
-          <span style={{ marginLeft: 4, padding: '1px 6px', borderRadius: 4, background: '#FFC107', color: '#0F172A', fontSize: 9, fontWeight: 800 }}>
+          <span style={{ marginLeft: 4, padding: '1px 6px', borderRadius: 4, background: '#FFC107', color: '#1F1C1B', fontSize: 9, fontWeight: 800 }}>
             {reviewRole}
           </span>
         )}
@@ -156,7 +159,7 @@ function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOp
       {isOpen && (
         <div style={{ padding: 12 }}>
           {/* Pipeline counts */}
-          <div style={{ fontSize: 9, color: '#64748B', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 6 }}>
+          <div style={{ fontSize: 9, color: isLight ? '#524D4B' : '#64748B', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 6 }}>
             Pipeline
           </div>
           {row('Source tasks (all obligations)', allTasks.length)}
@@ -166,7 +169,7 @@ function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOp
           {row('Selected review role', reviewRole ?? '— (real user)' )}
 
           {/* assignedRole distribution */}
-          <div style={{ fontSize: 9, color: '#64748B', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 10, marginBottom: 6 }}>
+          <div style={{ fontSize: 9, color: isLight ? '#524D4B' : '#64748B', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 10, marginBottom: 6 }}>
             By assignedRole (post-backfill)
           </div>
           {Object.entries(assignedCounts).sort((a, b) => b[1] - a[1]).map(([role, n]) =>
@@ -177,14 +180,14 @@ function RoleDiagnosticsPanel({ allTasks, backfilled, filtered, reviewRole, isOp
           )}
 
           {/* accountableRole distribution */}
-          <div style={{ fontSize: 9, color: '#64748B', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 10, marginBottom: 6 }}>
+          <div style={{ fontSize: 9, color: isLight ? '#524D4B' : '#64748B', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 10, marginBottom: 6 }}>
             By accountableRole
           </div>
           {Object.entries(accountableCounts).sort((a, b) => b[1] - a[1]).map(([role, n]) =>
             row(role, n),
           )}
 
-          <div style={{ marginTop: 10, fontSize: 9, color: '#475569', textAlign: 'center', letterSpacing: '0.1em' }}>
+          <div style={{ marginTop: 10, fontSize: 9, color: isLight ? '#524D4B' : '#475569', textAlign: 'center', letterSpacing: '0.1em' }}>
             ROBERT_REVIEW_MODE · diagnostics only
           </div>
         </div>
@@ -201,7 +204,7 @@ interface Props {
 }
 
 export function MyTasksPage({
-  currentUserId   = 'demo-user',
+  currentUserId   = 'current-user',
   currentUserName = 'You',
 }: Props = {}) {
   const navigate = useNavigate();
@@ -305,97 +308,73 @@ export function MyTasksPage({
   }), [myTasks]);
 
   return (
-    <div className="h-full flex flex-col ci-bg-ces-canvas">
-      <header
-        className="px-3 sm:px-6 py-4 flex items-center gap-4 flex-wrap ci-sticky-operational border-b ci-shell-command-group ci-premium-panel ci-command-rail mx-3 sm:mx-6 mt-2 rounded-xl ci-bg-ces-white ci-border-ces"
-      >
-        <div>
-          <div className="text-[10px] font-bold uppercase tracking-[0.16em] ci-text-ces-muted">
-            Execution
-          </div>
-          <h1 className="text-[18px] font-bold ci-text-ces-navy">
-            My Tasks
-          </h1>
-        </div>
-        <span className="text-[12px] ci-text-ces-muted">
-          {currentUserName} · {myTasks.length} total
-        </span>
-        {reviewEnabled && reviewRole && (
-          <CiStatusBadge tone="warning" className="uppercase tracking-wider">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-current mr-1.5 align-middle" aria-hidden="true" />
-            Reviewing as: {reviewRole}
-          </CiStatusBadge>
-        )}
-        {/* Robert-only: quick role summary chips */}
+    <div className="h-full flex flex-col">
+      <div className="px-6 pt-5">
+        <PageHeader
+          eyebrow="MY EXECUTION QUEUE"
+          title="My Tasks"
+          description={`Personal obligations across CES and compliance. ${currentUserName} — ${myTasks.length} assigned.`}
+          actions={
+            reviewEnabled && reviewRole ? (
+              <CiStatusBadge tone="warning">Reviewing as {reviewRole}</CiStatusBadge>
+            ) : null
+          }
+        />
+      </div>
+
+      {/* Filter pills and role switchers — clean corporate */}
+      <div className="px-6 pb-2 flex flex-wrap items-center gap-2">
+        {(Object.keys(FILTER_LABEL) as TaskFilter[]).map(k => {
+          const active = filter === k;
+          return (
+            <button
+              key={k}
+              onClick={() => setFilter(k)}
+              className="px-4 py-1 rounded-full text-xs font-semibold uppercase tracking-[0.12em] border transition"
+              style={{
+                borderColor: active ? 'var(--v3-teal)' : 'var(--v3-border-subtle)',
+                background: active ? 'rgba(0,209,193,0.12)' : 'transparent',
+                color: active ? 'var(--v3-teal-light)' : 'var(--v3-text-secondary)',
+              }}
+            >
+              {FILTER_LABEL[k]}
+            </button>
+          );
+        })}
+
+        {/* Robert role chips */}
         {isRobert && reviewEnabled && (
-          <div className="flex gap-1.5 flex-wrap">
+          <div className="flex gap-1.5 flex-wrap ml-3 pl-3 border-l border-[var(--v3-border-subtle)]">
             {CES_ROLES.map(role => {
               const count = obligations.getTasksByRole(role).length;
+              const active = reviewRole === role;
               return (
                 <button
                   key={role}
-                  type="button"
                   onClick={() => handleRoleChipClick(role)}
-                  title={`${count} tasks visible to ${role}`}
-                  aria-pressed={reviewRole === role ? 'true' : 'false'}
+                  className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] rounded border"
                   style={{
-                    fontSize: 9,
-                    fontWeight: 700,
-                    padding: '2px 7px',
-                    borderRadius: 4,
-                    background: reviewRole === role ? CES_TOKENS.navyDeep : CES_TOKENS.canvas,
-                    color:      reviewRole === role ? CES_TOKENS.orange   : CES_TOKENS.ink,
-                    border:     `1px solid ${reviewRole === role ? CES_TOKENS.navyDeep : CES_TOKENS.border}`,
-                    letterSpacing: '0.06em',
-                    cursor: 'pointer',
-                    transition: 'background-color 120ms ease, color 120ms ease, border-color 120ms ease',
+                    background: active ? 'rgba(122,222,223,0.2)' : 'transparent',
+                    borderColor: active ? 'var(--v3-teal)' : 'var(--v3-border-subtle)',
+                    color: active ? 'var(--v3-teal-light)' : 'var(--v3-text-secondary)',
                   }}
+                  title={`${count} tasks`}
                 >
-                  {role}: {count}
+                  {role} <span className="opacity-70">({count})</span>
                 </button>
               );
             })}
           </div>
         )}
-        <div className="ml-auto ci-maturity-toolbar">
-          {(Object.keys(FILTER_LABEL) as TaskFilter[]).map(k => {
-            const active = filter === k;
-            return (
-              <ActionButton
-                key={k}
-                variant={active ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setFilter(k)}
-                aria-pressed={active ? 'true' : 'false'}
-              >
-                {FILTER_LABEL[k]}
-              </ActionButton>
-            );
-          })}
-        </div>
-      </header>
+      </div>
 
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6">
-        <section className="ci-premium-hero ci-command-rail ci-maturity-section p-4 mb-4">
-          <div className="flex items-end justify-between gap-3 flex-wrap">
-            <div>
-              <div className="text-[10px] uppercase tracking-[0.18em] font-bold ci-text-ces-muted">
-                Operational Queue
-              </div>
-              <h2 className="text-[24px] font-bold mt-0.5 tracking-[-0.015em] ci-text-ces-navy">
-                Task Command View
-              </h2>
-              <p className="text-[12px] mt-1 ci-text-ces-muted">
-                Clear execution path from triage to completion with role-aware queue confidence.
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <CiStatusBadge tone="neutral">Total {taskStats.all}</CiStatusBadge>
-              <CiStatusBadge tone="info">Open {taskStats.open}</CiStatusBadge>
-              <CiStatusBadge tone="danger">Overdue {taskStats.overdue}</CiStatusBadge>
-            </div>
-          </div>
-        </section>
+      <main className="flex-1 overflow-y-auto px-6 pb-6 pt-2">
+        {/* Stats row premium */}
+        <div className="flex items-center gap-2 mb-4">
+          <SurfaceCard padding="sm" className="inline-flex"><CiStatusBadge tone="neutral">Total {taskStats.all}</CiStatusBadge></SurfaceCard>
+          <SurfaceCard padding="sm" className="inline-flex"><CiStatusBadge tone="info">Open {taskStats.open}</CiStatusBadge></SurfaceCard>
+          <SurfaceCard padding="sm" className="inline-flex"><CiStatusBadge tone="danger">Overdue {taskStats.overdue}</CiStatusBadge></SurfaceCard>
+        </div>
         {freshness.isPotentiallyStale && (
           <div className="mb-4">
             <StalenessBanner
@@ -424,14 +403,14 @@ export function MyTasksPage({
             }
           />
         ) : (
-          <ul key={filter} className="space-y-3 v3-subview-animate">
+          <ul key={filter} className="space-y-2.5">
             {taskWithRoles.map(t => {
               const assigned = (t as UnitWithRoles).assignedRole;
               return (
                 <li
                   key={t.id}
-                  className="rounded-xl p-4 flex items-start gap-4 ci-subtle-hover ci-premium-panel hover:bg-[var(--ci-surface-2)]"
-                  style={{ background: CES_TOKENS.white, border: `1px solid ${CES_TOKENS.border}` }}
+                  className="rounded-xl p-4 flex items-start gap-4 border transition hover:bg-white/3"
+                  style={{ background: 'rgba(255,255,255,0.015)', borderColor: 'var(--v3-border-subtle)' }}
                 >
                   <button
                     type="button"
@@ -445,25 +424,15 @@ export function MyTasksPage({
                     }}
                     aria-label={`Open task details for ${t.title}`}
                   >
-                    <div className="text-[10px] font-bold uppercase tracking-[0.16em] flex items-center gap-2" style={{ color: CES_TOKENS.muted }}>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.16em] flex items-center gap-2 text-[var(--v3-text-tertiary)]">
                       {t.sourceType ?? 'OBLIGATION'} · {t.domain}
                       {assigned && (
-                        <span
-                          style={{
-                            padding: '1px 5px',
-                            borderRadius: 3,
-                            background: '#EFF6FF',
-                            color: '#1D4ED8',
-                            fontSize: 9,
-                            fontWeight: 700,
-                            letterSpacing: '0.08em',
-                          }}
-                        >
+                        <span className="px-1.5 py-px rounded text-[9px] font-bold tracking-[0.06em]" style={{ background: 'rgba(0, 121, 112, 0.1)', color: 'var(--v3-teal-light)' }}>
                           {assigned}
                         </span>
                       )}
                     </div>
-                    <div className="text-[14px] font-semibold mt-0.5" style={{ color: CES_TOKENS.ink }}>
+                    <div className="text-[14px] font-semibold mt-0.5 text-[var(--v3-text-primary)]">
                       {t.title}
                     </div>
                     <div className="mt-2 flex items-center gap-2 flex-wrap">

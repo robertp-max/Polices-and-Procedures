@@ -71,6 +71,7 @@ export const FEATURE_CATALOG: FeatureDefinition[] = [
     featureId: 'workflows.view',
     label: 'Workflows Library',
     requiredPermissions: ['ceu.view'],
+    allowedGroupNames: ['Onboarding'],
     rolloutPhase: 'full',
   },
 
@@ -118,7 +119,7 @@ export const FEATURE_CATALOG: FeatureDefinition[] = [
   {
     featureId: 'frameworkTaxonomy.view',
     label: 'Taxonomy / Framework',
-    allowedGroupNames: ['Compliance', 'Director', 'Executive'],
+    allowedGroupNames: ['Compliance', 'Director', 'Executive', 'Onboarding'],
     rolloutPhase: 'full',
   },
 
@@ -135,14 +136,13 @@ export const FEATURE_CATALOG: FeatureDefinition[] = [
   {
     featureId: 'journey.view',
     label: 'Onboarding Journey / LMS',
-    allowedGroupNames: ['Onboarding', 'Director', 'Executive', 'Compliance', 'RN', 'LVN', 'CHHA'],
+    allowedGroupNames: ['Director', 'Executive', 'Compliance', 'RN', 'LVN', 'CHHA'],
     rolloutPhase: 'full',
   },
   {
     featureId: 'onboardingV2.view',
     label: 'Onboarding v2 (audit-grade activation)',
     requiredPermissions: ['user.provision'],
-    allowedGroupNames: ['Onboarding'],
     rolloutPhase: 'pilot',
   },
 
@@ -150,19 +150,19 @@ export const FEATURE_CATALOG: FeatureDefinition[] = [
   {
     featureId: 'staffing.view',
     label: 'Staffing (umbrella)',
-    allowedGroupNames: ['Director', 'Executive', 'Compliance', 'Onboarding'],
+    allowedGroupNames: ['Director', 'Executive', 'Compliance'],
     rolloutPhase: 'pilot',
   },
   {
     featureId: 'clinicians.view',
     label: 'Clinician Profiles',
-    allowedGroupNames: ['Director', 'Executive', 'Compliance', 'Onboarding'],
+    allowedGroupNames: ['Director', 'Executive', 'Compliance'],
     rolloutPhase: 'pilot',
   },
   {
     featureId: 'patients.view',
     label: 'Patient Profiles',
-    allowedGroupNames: ['Director', 'Executive', 'Compliance', 'Onboarding', 'RN', 'LVN', 'CHHA'],
+    allowedGroupNames: ['Director', 'Executive', 'Compliance', 'RN', 'LVN', 'CHHA'],
     rolloutPhase: 'pilot',
   },
   {
@@ -182,9 +182,9 @@ export const FEATURE_CATALOG: FeatureDefinition[] = [
   },
   {
     featureId: 'demo.view',
-    label: 'Demo Page',
+    label: 'Preview Page',
     rolloutPhase: 'demo',
-    allowedGroupNames: ['Compliance', 'Director', 'Executive', 'Onboarding'],
+    allowedGroupNames: ['Compliance', 'Director', 'Executive'],
   },
   {
     featureId: 'systemDocumentation.view',

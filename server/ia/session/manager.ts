@@ -150,6 +150,7 @@ export function processTurn(
 
   if (classification.lifeSafetyFlag && !state.lifeSafetyFlag) {
     state.lifeSafetyFlag = true;
+    state.safetyStatus = 'active_danger';
     addTimelineEvent(state, 'system', 'life_safety_flagged',
       'Life-threatening emergency detected. Emergency mode activated.');
   }
@@ -195,6 +196,51 @@ export function processTurn(
     urgency: state.urgency,
   });
   addTimelineEvent(state, 'user', 'user_message', userInput.slice(0, 200));
+
+  // ── Active safety case memory update (clinician threat continuity) ──
+  if (state.lifeSafetyFlag || state.safetyStatus === 'active_danger') {
+    const lower = userInput.toLowerCase();
+    // Detect user safety status answers
+    const safeConfirm = /\b(yes|yeah|yep|got out|outside|safe|im safe|i'm safe|we're safe|already out|left the home)\b/.test(lower);
+    const stillDanger = /\b(no|not yet|still here|trapped|can't leave|knife|gun|still in|he has|she has|blocking)\b/.test(lower) && !safeConfirm;
+    const docAsk = /\b(incident|report|document|form|what next|now what|start the)\b/.test(lower);
+
+    if (safeConfirm && state.safetyStatus !== 'safe') {
+      state.safetyStatus = 'safe';
+      state.locationStatus = lower.includes('out') || lower.includes('outside') || lower.includes('got out') ? 'outside_home' : 'unknown';
+      state.documentationStage = 'incident_needed';
+      addTimelineEvent(state, 'user', 'safety_confirmed', 'User reports they are safe / out of home.');
+    } else if (stillDanger) {
+      state.safetyStatus = 'active_danger';
+    }
+
+    if (docAsk && (state.safetyStatus === 'safe' || state.safetyStatus === 'resolved')) {
+      state.documentationStage = 'incident_started';
+    }
+    // If user confirms "yes" right after we asked about incident, advance
+    if (state.safetyStatus === 'safe' && /\byes\b/.test(lower) && state.documentationStage === 'incident_needed') {
+      state.documentationStage = 'incident_started';
+    }
+
+    // Track one active follow-up
+    if (!state.followUpQuestion && state.safetyStatus === 'active_danger') {
+      state.followUpQuestion = 'Are you safe and out of the home right now?';
+    }
+    if (state.followUpQuestion && !state.followUpAnswer) {
+      state.followUpAnswer = userInput.slice(0, 200);
+    }
+
+    // Track minimal people without PHI
+    if (/\b(client|patient)\b/.test(lower) && !state.peopleInvolved.includes('client/patient')) {
+      state.peopleInvolved.push('client/patient');
+    }
+    if (/\b(family|caregiver|son|daughter|husband|wife)\b/.test(lower) && !state.peopleInvolved.includes('family/caregiver')) {
+      state.peopleInvolved.push('family/caregiver');
+    }
+    if (/\b(knife|gun|weapon)\b/.test(lower) && state.threatStatus !== 'weapon_present') {
+      state.threatStatus = 'weapon_present';
+    }
+  }
 
   // Build retrieval query
   const retrievalQuery = buildRetrievalQuery(userInput, state, classification);
@@ -287,6 +333,10 @@ export function toSessionSummary(state: BradSessionState): SessionSummary {
     pendingTasks: state.pendingTasks,
     activePolicies: state.activePolicies,
     activeForms: state.activeForms,
+    safetyStatus: state.safetyStatus,
+    locationStatus: state.locationStatus,
+    threatStatus: state.threatStatus,
+    documentationStage: state.documentationStage,
     messageCount: state.messageCount,
     createdAt: state.createdAt,
     updatedAt: state.updatedAt,

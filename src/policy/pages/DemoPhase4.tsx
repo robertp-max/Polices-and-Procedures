@@ -229,7 +229,7 @@ export function FrontendDeploymentPresentation({ onBack }: FrontendDeploymentPre
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
                 <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 border border-[#C74601]/30 bg-[#C74601]/10 text-[#C74601] font-montserrat text-[9px] tracking-[0.2em] uppercase font-bold mb-4">
-                  Demo Phase 4
+                  Preview Phase 4
                 </div>
                 <h1 className="font-montserrat text-[30px] md:text-[40px] leading-tight font-light tracking-tight mb-5">
                   Two-Week Delivery Ledger and

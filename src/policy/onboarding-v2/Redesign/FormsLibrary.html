@@ -1,0 +1,322 @@
+import React, { useState } from 'react';
+import { 
+  LayoutDashboard, Calendar, Library, Network, FileEdit, 
+  CheckSquare, Send, FileBarChart, HelpCircle, Settings, 
+  ShieldCheck, Search, Bell, Download, Printer, FileText,
+  Filter, ChevronDown, Plus, ExternalLink, MoreVertical,
+  CheckCircle2, Clock, Info, BookOpen, Layers, Tag,
+  LayoutGrid, List as ListIcon
+} from 'lucide-react';
+
+// Mock data for the Form Library
+const formsData = [
+  { id: 'FORM-GV-001', title: 'Governing Body Membership Roster', domain: 'GV', category: 'Governance', tier: 'REQUIRED', format: 'Digital', lastUpdate: '2025-07-10', status: 'ACTIVE' },
+  { id: 'FORM-GV-002', title: 'Conflict of Interest Disclosure', domain: 'GV', category: 'Governance', tier: 'REQUIRED', format: 'Digital', lastUpdate: '2025-07-10', status: 'ACTIVE' },
+  { id: 'FORM-CL-001', title: 'Start of Care (SOC) Assessment', domain: 'CL', category: 'Clinical', tier: 'REQUIRED', format: 'Interactive', lastUpdate: '2026-01-15', status: 'ACTIVE' },
+  { id: 'FORM-CL-005', title: 'Wound Care Assessment Log', domain: 'CL', category: 'Clinical', tier: 'ESSENTIAL', format: 'PDF', lastUpdate: '2025-11-20', status: 'ACTIVE' },
+  { id: 'FORM-HR-003', title: 'Employee Competency Validation', domain: 'HR', category: 'HR', tier: 'REQUIRED', format: 'Digital', lastUpdate: '2025-08-05', status: 'ACTIVE' },
+  { id: 'FORM-QA-002', title: 'Adverse Event Investigation Report', domain: 'QA', category: 'Quality', tier: 'REQUIRED', format: 'Interactive', lastUpdate: '2026-03-01', status: 'ACTIVE' },
+  { id: 'FORM-OP-012', title: 'Facility Safety Inspection Checklist', domain: 'OP', category: 'Operations', tier: 'ESSENTIAL', format: 'PDF', lastUpdate: '2025-12-10', status: 'ACTIVE' },
+  { id: 'FORM-FN-004', title: 'Medicare Non-Coverage Notice (ABN)', domain: 'FN', category: 'Finance', tier: 'REQUIRED', format: 'PDF', lastUpdate: '2026-02-14', status: 'ACTIVE' },
+  { id: 'FORM-IT-001', title: 'PHI Access Request Tracking', domain: 'IT', category: 'IT', tier: 'REQUIRED', format: 'Digital', lastUpdate: '2025-09-30', status: 'ACTIVE' },
+  { id: 'FORM-RM-005', title: 'Emergency Drill Evaluation Form', domain: 'RM', category: 'Risk', tier: 'ESSENTIAL', format: 'PDF', lastUpdate: '2025-10-15', status: 'ACTIVE' },
+];
+
+export default function FormLibrary() {
+  const [activeDomain, setActiveDomain] = useState('All');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+
+  // Brand-aligned styling constants
+  const domainColors = {
+    GV: 'border-l-[#C74600]',
+    CL: 'border-l-[#007970]',
+    QA: 'border-l-[#D97706]',
+    HR: 'border-l-[#059669]',
+    DEFAULT: 'border-l-gray-300'
+  };
+
+  const filteredForms = formsData.filter(form => 
+    (activeDomain === 'All' || form.domain === activeDomain) &&
+    (form.title.toLowerCase().includes(searchTerm.toLowerCase()) || form.id.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  return (
+    <>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Roboto:wght@400;500;700&display=swap');
+          .font-montserrat { font-family: 'Montserrat', sans-serif; }
+          .font-roboto { font-family: 'Roboto', sans-serif; }
+          ::-webkit-scrollbar { display: none; }
+          body { overflow: hidden; }
+        `}
+      </style>
+
+      <div className="min-h-screen w-full bg-[#111827] flex items-center justify-center overflow-hidden p-2 lg:p-4">
+        
+        {/* 16:9 Display Container */}
+        <div className="flex w-full aspect-video max-h-[95vh] max-w-[calc(95vh*16/9)] mx-auto bg-[#E8EDF2] font-roboto text-gray-900 overflow-hidden relative z-0 shadow-2xl rounded-[12px] ring-1 ring-white/10">
+      
+          {/* Background Ambient Orbs */}
+          <div className="absolute top-[-10%] left-[-5%] w-[45vw] h-[45vw] bg-[#007970] rounded-full mix-blend-multiply filter blur-[140px] opacity-[0.12] -z-10 pointer-events-none"></div>
+          <div className="absolute bottom-[-15%] right-[-10%] w-[50vw] h-[50vw] bg-[#C74600] rounded-full mix-blend-multiply filter blur-[160px] opacity-[0.10] -z-10 pointer-events-none"></div>
+
+          {/* Main Sidebar */}
+          <aside className="w-[180px] bg-white/40 backdrop-blur-3xl flex flex-col shrink-0 z-20 border-r border-white/70 shadow-[4px_0_32px_rgba(0,0,0,0.03)]">
+            <div className="h-10 flex items-center px-3 border-b border-white/60">
+              <ShieldCheck className="w-4 h-4 text-[#C74600] mr-2" />
+              <div className="flex flex-col">
+                <span className="font-montserrat font-bold text-gray-900 text-[11px] leading-tight">Care Indeed</span>
+                <span className="font-montserrat font-bold text-[#007970] text-[7px] uppercase tracking-widest">Policy Command</span>
+              </div>
+            </div>
+            
+            <nav className="flex-1 py-2 space-y-0.5 overflow-hidden px-2">
+              <SidebarItem icon={<LayoutDashboard size={12} />} label="Dashboard" />
+              <SidebarItem icon={<Calendar size={12} />} label="Calendar" />
+              <SidebarItem icon={<Library size={12} />} label="Policy Library" />
+              <SidebarItem icon={<FileText size={12} />} label="Form Library" active />
+              <SidebarItem icon={<Network size={12} />} label="Taxonomy" />
+              <SidebarItem icon={<CheckSquare size={12} />} label="Review" badge="1" />
+            </nav>
+
+            <div className="p-2 border-t border-white/60">
+              <SidebarItem icon={<Settings size={12} />} label="Settings" />
+              <div className="mt-2 pt-2 border-t border-white/60 px-2 flex items-center">
+                <div className="w-5 h-5 rounded-full bg-[#007970] flex items-center justify-center text-[9px] text-white font-montserrat font-bold">JD</div>
+                <div className="ml-2 flex flex-col">
+                  <span className="text-[9px] text-gray-900 font-bold">John Doe</span>
+                  <span className="text-[7px] text-[#007970] font-bold">Administrator</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* Main Content Area */}
+          <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
+            
+            {/* Global Header */}
+            <header className="h-10 bg-white/40 backdrop-blur-2xl border-b border-white/70 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex items-center justify-between px-4 shrink-0">
+              <div className="relative w-64">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={12} />
+                <input 
+                  type="text" 
+                  placeholder="Search forms by title or ID..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-8 pr-2 py-1 bg-white/50 border border-white/80 rounded-[4px] text-[10px] text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#007970] transition-all"
+                />
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="text-[9px] font-montserrat font-bold text-gray-500 uppercase tracking-widest">Active Forms: {formsData.length}</div>
+                <Bell size={12} className="text-gray-400" />
+              </div>
+            </header>
+
+            {/* Application Content */}
+            <div className="flex-1 flex flex-col overflow-hidden p-4">
+              
+              {/* Title & Top Navigation Section */}
+              <div className="flex flex-col mb-4 shrink-0">
+                <div className="flex justify-between items-end mb-3">
+                  <div>
+                    <h1 className="text-xl font-montserrat font-bold text-gray-900 leading-none mb-1">Form & Template Library</h1>
+                    <p className="text-[11px] text-gray-600 font-roboto">Centralized repository for all operational and clinical documentation.</p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#C74600] text-white rounded-[6px] text-[10px] font-montserrat font-bold hover:bg-[#A83B00] transition-colors shadow-sm">
+                      <Plus size={12} />
+                      <span>New Form</span>
+                    </button>
+                    <div className="flex bg-white/50 border border-white/80 p-0.5 rounded-[4px] shadow-sm">
+                      <button 
+                        onClick={() => setViewMode('grid')}
+                        className={`p-1 rounded-[3px] transition-all ${viewMode === 'grid' ? 'bg-[#111827] text-white' : 'text-gray-500 hover:text-gray-900'}`}
+                      >
+                        <LayoutGrid size={14} />
+                      </button>
+                      <button 
+                        onClick={() => setViewMode('list')}
+                        className={`p-1 rounded-[3px] transition-all ${viewMode === 'list' ? 'bg-[#111827] text-white' : 'text-gray-500 hover:text-gray-900'}`}
+                      >
+                        <ListIcon size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Horizontal Navigation Bar (Moved from side to top) */}
+                <div className="flex items-center space-x-1 overflow-x-auto no-scrollbar py-1 bg-white/40 backdrop-blur-md border border-white/70 rounded-[8px] px-2 shadow-sm">
+                  <div className="flex items-center text-[#007970] mr-2 px-2 border-r border-gray-200">
+                    <Filter size={10} className="mr-1.5" />
+                    <span className="text-[8px] font-montserrat font-bold uppercase tracking-widest">Domains</span>
+                  </div>
+                  {['All', 'GV', 'CL', 'QA', 'HR', 'CO', 'FN', 'OP', 'IT', 'RM'].map(dom => (
+                    <button 
+                      key={dom}
+                      onClick={() => setActiveDomain(dom)}
+                      className={`px-3 py-1 rounded-[6px] text-[10px] font-montserrat font-bold transition-all whitespace-nowrap
+                        ${activeDomain === dom ? 'bg-[#007970] text-white shadow-sm' : 'text-gray-600 hover:bg-white/60'}`}
+                    >
+                      {dom === 'All' ? 'All Domains' : dom}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Main Content View (Grid vs List) */}
+              <div className="flex-1 overflow-hidden">
+                
+                {viewMode === 'grid' ? (
+                  /* GRID VIEW */
+                  <div className="h-full overflow-y-auto pr-1 custom-scrollbar">
+                    <div className="grid grid-cols-2 gap-3 pb-4">
+                      {filteredForms.map(form => (
+                        <div 
+                          key={form.id} 
+                          className={`bg-white border border-gray-200 rounded-[8px] p-3 shadow-sm hover:shadow-md transition-all flex flex-col border-l-4 ${domainColors[form.domain] || domainColors.DEFAULT}`}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex flex-col">
+                              <span className="text-[11px] font-montserrat font-bold text-gray-900 leading-tight group-hover:text-[#007970] transition-colors">{form.title}</span>
+                              <span className="text-[8px] font-montserrat font-bold text-gray-500 mt-0.5 uppercase tracking-widest">{form.id}</span>
+                            </div>
+                            <div className={`px-1.5 py-0.5 rounded-[2px] text-[7px] font-montserrat font-bold tracking-widest uppercase
+                              ${form.format === 'Interactive' || form.format === 'Digital' ? 'bg-[#007970]/10 text-[#007970]' : 'bg-blue-50 text-blue-600'}`}>
+                              {form.format}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-4 my-2">
+                            <div className="flex flex-col">
+                              <span className="text-[7px] text-gray-400 font-bold uppercase tracking-widest">TIER</span>
+                              <span className={`text-[9px] font-bold ${form.tier === 'REQUIRED' ? 'text-[#DC2626]' : 'text-[#D97706]'}`}>{form.tier}</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-[7px] text-gray-400 font-bold uppercase tracking-widest">LAST UPDATED</span>
+                              <span className="text-[9px] font-bold text-gray-700">{form.lastUpdate}</span>
+                            </div>
+                            <div className="flex flex-col ml-auto items-end">
+                              <span className="text-[7px] text-gray-400 font-bold uppercase tracking-widest">STATUS</span>
+                              <div className="flex items-center text-[#059669]">
+                                <CheckCircle2 size={8} className="mr-1" />
+                                <span className="text-[9px] font-bold">{form.status}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="mt-auto pt-3 border-t border-gray-50 flex items-center justify-between">
+                            <button className="flex items-center text-[#007970] hover:text-[#005e57] text-[9px] font-montserrat font-extrabold transition-colors">
+                              <ExternalLink size={10} className="mr-1" />
+                              VIEW / FILL
+                            </button>
+                            <div className="flex items-center space-x-2">
+                              <button className="p-1 text-gray-400 hover:text-gray-600 rounded bg-gray-50"><Printer size={12}/></button>
+                              <button className="p-1 text-gray-400 hover:text-gray-600 rounded bg-gray-50"><Download size={12}/></button>
+                              <button className="p-1 text-gray-400 hover:text-gray-600 rounded bg-gray-50"><MoreVertical size={12}/></button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  /* LIST VIEW (Working Table-style) */
+                  <div className="h-full flex flex-col bg-white/70 backdrop-blur-2xl rounded-[8px] border border-white/70 shadow-sm overflow-hidden">
+                    <div className="bg-[#007970] shrink-0 w-full">
+                      <table className="w-full text-left table-fixed">
+                        <thead>
+                          <tr>
+                            <th className="py-2 px-4 text-[9px] font-montserrat font-bold text-white uppercase tracking-wider w-[15%]">Form ID</th>
+                            <th className="py-2 px-4 text-[9px] font-montserrat font-bold text-white uppercase tracking-wider w-[35%]">Title</th>
+                            <th className="py-2 px-4 text-[9px] font-montserrat font-bold text-white uppercase tracking-wider w-[10%] text-center">Format</th>
+                            <th className="py-2 px-4 text-[9px] font-montserrat font-bold text-white uppercase tracking-wider w-[10%] text-center">Tier</th>
+                            <th className="py-2 px-4 text-[9px] font-montserrat font-bold text-white uppercase tracking-wider w-[15%] text-center">Last Update</th>
+                            <th className="py-2 px-4 text-[9px] font-montserrat font-bold text-white uppercase tracking-wider w-[15%] text-right pr-6">Actions</th>
+                          </tr>
+                        </thead>
+                      </table>
+                    </div>
+                    <div className="flex-1 overflow-y-auto">
+                      <table className="w-full text-left table-fixed">
+                        <tbody className="divide-y divide-black/5 font-roboto bg-white/50">
+                          {filteredForms.map(form => (
+                            <tr key={form.id} className="hover:bg-white/80 transition-colors group">
+                              <td className="py-2.5 px-4 align-middle w-[15%]">
+                                <span className="text-[10px] font-bold text-[#007970]">{form.id}</span>
+                              </td>
+                              <td className="py-2.5 px-4 align-middle w-[35%] truncate">
+                                <span className="text-[10px] font-bold text-gray-900 group-hover:text-[#C74600] transition-colors">{form.title}</span>
+                              </td>
+                              <td className="py-2.5 px-4 align-middle w-[10%] text-center">
+                                <span className={`inline-flex px-1.5 py-0.5 rounded-[2px] text-[7px] font-bold uppercase tracking-widest ${form.format === 'Interactive' || form.format === 'Digital' ? 'bg-[#007970]/10 text-[#007970]' : 'bg-blue-50 text-blue-600'}`}>{form.format}</span>
+                              </td>
+                              <td className="py-2.5 px-4 align-middle w-[10%] text-center">
+                                <span className={`inline-flex px-1.5 py-0.5 rounded-[2px] text-[7px] font-bold border ${form.tier === 'REQUIRED' ? 'border-red-200 text-red-600 bg-red-50' : 'border-amber-200 text-amber-600 bg-amber-50'}`}>{form.tier}</span>
+                              </td>
+                              <td className="py-2.5 px-4 align-middle w-[15%] text-center">
+                                <span className="text-[10px] text-gray-600">{form.lastUpdate}</span>
+                              </td>
+                              <td className="py-2.5 px-4 align-middle w-[15%] text-right pr-4">
+                                <div className="flex items-center justify-end space-x-2">
+                                  <button className="p-1 text-gray-400 hover:text-[#007970] transition-colors"><Printer size={12}/></button>
+                                  <button className="p-1 text-gray-400 hover:text-[#007970] transition-colors"><Download size={12}/></button>
+                                  <button className="flex items-center text-[#007970] border border-[#007970] bg-[#007970]/5 hover:bg-[#007970] hover:text-white px-2 py-0.5 rounded-[4px] text-[9px] font-montserrat font-bold transition-colors">
+                                    Fill
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Utility Bar */}
+              <div className="h-10 border-t border-white/60 bg-white/20 backdrop-blur-sm flex items-center justify-between px-4 shrink-0">
+                <div className="flex items-center text-[9px] text-gray-500 font-medium">
+                  <Info size={10} className="mr-1.5" />
+                  <span>Showing {filteredForms.length} documents matching current filters.</span>
+                </div>
+                <div className="flex space-x-3">
+                  <button className="text-[9px] font-montserrat font-bold text-[#007970] flex items-center hover:underline">
+                    <Download size={10} className="mr-1" /> EXPORT FULL CATALOG
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </main>
+          
+        </div> {/* End of 16:9 Container */}
+      </div> {/* End of Letterboxing Container */}
+    </>
+  );
+}
+
+// Subcomponent: Sidebar Item
+function SidebarItem({ icon, label, active = false, badge }) {
+  return (
+    <button 
+      className={`w-full flex items-center justify-between px-2 py-1.5 rounded-[4px] mb-0.5 transition-all font-montserrat font-bold text-[9px]
+        ${active 
+          ? 'bg-white/70 text-[#007970] shadow-[0_1px_4px_rgba(0,0,0,0.04)] border border-white/90' 
+          : 'bg-transparent text-gray-500 hover:bg-white/30 hover:text-gray-900'
+        }`}
+    >
+      <div className="flex items-center space-x-2">
+        <span className={`${active ? 'text-[#007970]' : 'text-gray-400'}`}>{icon}</span>
+        <span className="truncate block">{label}</span>
+      </div>
+      {badge && (
+        <span className={`text-[7px] font-bold px-1 py-0.5 rounded-[2px] shadow-sm ${active ? 'bg-[#C74600] text-white' : 'bg-white/60 border border-white/80 text-gray-600'}`}>
+          {badge}
+        </span>
+      )}
+    </button>
+  );
+}

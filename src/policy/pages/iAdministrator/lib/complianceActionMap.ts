@@ -14,6 +14,9 @@ export type ComplianceScenarioId =
   | 'documentation_gap'
   | 'suspected_abuse_neglect'
   | 'data_security_incident';
+  // Note: additional human-first staff distress categories (STAFF_SEXUAL_BOUNDARY_VIOLATION etc.) are handled
+  // via the early router in mockBradEngine and synthetic classification in the frontend classifyScenario lib.
+  // They bypass the full COMPLIANCE_ACTION_MAP for clean human supervisor output.
 
 export type ComplianceEscalationLevel = 'immediate' | 'urgent' | 'high' | 'routine';
 export type MappingStatus = 'verified' | 'needs_mapping';

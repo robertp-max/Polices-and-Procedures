@@ -26,8 +26,8 @@ export function SectionHeader({ eyebrow, title, actions, className }: SectionHea
           </div>
         )}
         <h3
-          className="font-montserrat"
-          style={{ fontSize: 16, lineHeight: '24px', fontWeight: 600, color: 'var(--ci-text-primary)', margin: 0 }}
+          className="font-roboto"
+          style={{ fontSize: 16, lineHeight: '24px', fontWeight: 600, color: 'var(--brand-primary, #00797D)', margin: 0 }} /* teal for section titles in light */
         >
           {title}
         </h3>

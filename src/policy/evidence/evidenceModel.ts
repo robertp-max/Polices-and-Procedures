@@ -53,7 +53,7 @@ export const EVIDENCE_AUDIT_EVENTS = [
 
 export type EvidenceAuditEvent = typeof EVIDENCE_AUDIT_EVENTS[number];
 
-export type EvidenceMode = 'DEMO_LOCAL' | 'BACKEND_LIVE';
+export type EvidenceMode = 'BACKEND_LIVE'; // DEMO_LOCAL removed from CES/eCign/evidence runtime; real Drive persistence required
 
 export interface EvidenceValidationInput {
   policyId: string;
@@ -96,8 +96,8 @@ export function validateEvidenceUploadInput(input: EvidenceValidationInput): Evi
   return { ok: true };
 }
 
-export function toEvidenceModeLabel(mode: EvidenceMode): string {
-  return mode === 'BACKEND_LIVE' ? 'BACKEND_LIVE' : 'DEMO_LOCAL';
+export function toEvidenceModeLabel(_mode: EvidenceMode): string {
+  return 'BACKEND_LIVE'; // no DEMO_LOCAL label in CES/eCign evidence path
 }
 
 export function logEvidenceDevWarning(message: string, details?: unknown): void {

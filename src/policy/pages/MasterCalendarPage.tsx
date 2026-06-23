@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  ChevronLeft, ChevronRight, CalendarDays, CalendarRange,
-  Columns3, GitBranch, CloudUpload, Filter, X,
+  ChevronLeft, ChevronRight, CalendarRange,
+  CloudUpload, Filter, X,
 } from 'lucide-react';
 import {
   REGULATORY_EVENTS, TODAY_ANCHOR, type RegulatoryEvent,
@@ -14,41 +14,29 @@ import { useToastStore } from '@/policy/components/regulatory/Toast';
 import { TimelineMonth } from '@/policy/components/regulatory/TimelineMonth';
 import { WorkflowExecutionPanel } from '@/policy/components/regulatory/WorkflowExecutionPanel';
 import {
-  STATE_COLOR, STATE_LABEL, classifyInstance,
+  STATE_LABEL, classifyInstance,
 } from '@/policy/components/regulatory/timelineState';
 import { SprintTaskPanel } from '@/policy/ces/components/details/SprintTaskPanel';
 import { regulatoryEventOverlapsSprint } from '@/policy/pm/sprintWindows';
 import { usePmViewSprintStore } from '@/policy/pm/pmViewSprintStore';
 import { SprintScopeToolbar } from '@/policy/components/pm/SprintScopeToolbar';
-import { SprintBoardView } from '@/policy/components/pm/PmViews';
+import { SprintBoardView, KanbanView, GanttView } from '@/policy/components/pm/PmViews';
 import { V3TaskDetailPanel } from '@/policy/components/pm/V3TaskDetailPanel';
 import { useSelectedTaskStore } from '@/policy/pm/selectedTaskStore';
-import { useCalendarSyncStore, type BulkSyncSummary } from '@/policy/stores/calendarSyncStore';
-import { SurfaceCard, EmptyState } from '@/policy/components/ui';
+import { useCalendarSyncStore } from '@/policy/stores/calendarSyncStore';
+import { SurfaceCard, EmptyState, PageHeader, ActionButton, SpotlightCard, ToneBadge, MetricTile } from '@/policy/components/ui';
 import { VeilDrawer } from '@/policy/components/ui/VeilDrawer';
-import { AriaLiveRegion } from '@/policy/components/ui';
+import BorderGlow from '@/policy/components/ui/BorderGlow';
+import { useIsLightMode } from '@/policy/stores/uiStore';
 import {
   CesEventPreviewModal,
   CesInteractionStyles,
   useCesInfiniteZoom,
 } from '@/policy/ces/components/calendar/CesEventInteraction';
-import { getSwimlaneRegistryEntry } from '@/policy/workflows/swimlanes/swimlaneRegistry';
+import { getSwimlaneRegistryEntry, getLiveEventDisplay } from '@/policy/workflows/swimlanes/swimlaneRegistry';
+import { dedupeCanonicalCalendarEvents } from '@/policy/ces/calendar/canonicalEventDedup';
 
 export type PmView = 'calendar' | 'sprint' | 'kanban' | 'gantt';
-
-const CES_V32_COLORS = {
-  shell: '#0B0F15',
-  surface: '#0F131A',
-  card: '#141A23',
-  border: '#1C2433',
-  borderStrong: '#243043',
-  teal: '#007970',
-  tealDeep: '#004142',
-  orange: '#C74600',
-  text: '#F8FAFC',
-  slate: '#A0ABC0',
-  muted: '#6E7C93',
-};
 
 const CES_ROLE_FALLBACK = [
   'QAPI Lead / Chair',
@@ -61,31 +49,23 @@ const CES_ROLE_FALLBACK = [
   'Governing Body',
 ];
 
+const CES_COCKPIT_FIRST_EVENT_IDS = new Set([
+  'qapi_meeting-20260609-10',
+  'infection_control_review_quarterly-20260624-02',
+]);
+
+function shouldOpenCesCockpitFirst(event: RegulatoryEvent) {
+  return CES_COCKPIT_FIRST_EVENT_IDS.has(event.id)
+    || (event.title === 'Q2 Infection Control Review' && event.date === '2026-06-24');
+}
+
 function normalizeRoleLabel(value?: string | null) {
   return (value ?? '').replace(/\s+/g, ' ').trim();
 }
 
-type CesDisplayState = 'block' | 'due' | 'track';
-
-function getCesDisplayState(
-  event: RegulatoryEvent,
-  today: Date,
-  store: ReturnType<typeof useRegulatoryExecutionStore.getState>,
-): CesDisplayState {
-  const state = classifyInstance(event, today, store);
-  if (state === 'overdue' || state === 'blocked') return 'block';
-  if (state === 'due-soon') return 'due';
-  return 'track';
-}
-
-function getCesReferenceTone(displayState: CesDisplayState) {
-  if (displayState === 'block') {
-    return { bg: '#FFE4E6', fg: '#BE123C', border: '#FDA4AF', dot: '#BE123C' };
-  }
-  if (displayState === 'due') {
-    return { bg: '#854D0E', fg: '#FFF7ED', border: '#A16207', dot: '#D97706' };
-  }
-  return { bg: '#0F766E', fg: '#ECFEFF', border: '#115E59', dot: '#0F766E' };
+function normalizeRoleForFilter(value?: string | null) {
+  // Title case (or exact casing) per #4 CES design for clean corporate filters. Use live data casing.
+  return normalizeRoleLabel(value);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -123,20 +103,20 @@ export function MasterCalendarPage() {
   const [month, setMonth] = useState(today.getMonth());
   const [activeId, setActiveId] = useState<string | null>(eventParam);
   const [bulkSyncPending, setBulkSyncPending] = useState(false);
-  const [lastBulkSync, setLastBulkSync] = useState<BulkSyncSummary | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [viewportWidth, setViewportWidth] = useState<number>(() =>
     typeof window === 'undefined' ? 1920 : window.innerWidth,
   );
-  const isMobileLayout = viewportWidth < 768;
+  const isMobileLayout = viewportWidth < 640; // agenda primary on small screens, no bleed from grids
+  const isLightMode = useIsLightMode(); // audited via useShellStore helper (isLight / isLightMode)
+  // Light fix: button text uses isLightMode to avoid text-white/85 low contrast on light surface. Targeted to calendar page controls.
 
   /* ── All workflow instances (base + autogen + triggered) ── */
   const generatedEvents = useAutogenStore(s => s.generatedEvents);
   const triggeredEvents = useAutogenStore(s => s.triggeredEvents);
-  const allInstances = useMemo(
-    () => [...REGULATORY_EVENTS, ...generatedEvents, ...triggeredEvents]
-      .filter(e => !e.isContext),
+  const { events: allInstances } = useMemo(
+    () => dedupeCanonicalCalendarEvents(REGULATORY_EVENTS, generatedEvents, triggeredEvents),
     [generatedEvents, triggeredEvents],
   );
 
@@ -153,7 +133,7 @@ export function MasterCalendarPage() {
     const liveRoles = Array.from(
       new Set(
         monthInstances
-          .map(event => normalizeRoleLabel(event.ownerRole))
+          .map(event => normalizeRoleForFilter(event.ownerRole))
           .filter(Boolean),
       ),
     ).sort((a, b) => a.localeCompare(b));
@@ -168,7 +148,7 @@ export function MasterCalendarPage() {
   const filteredMonthInstances = useMemo(() => {
     if (selectedRoles.length === 0) return monthInstances;
     return monthInstances.filter(event =>
-      selectedRoles.includes(normalizeRoleLabel(event.ownerRole)),
+      selectedRoles.includes(normalizeRoleForFilter(event.ownerRole)),
     );
   }, [monthInstances, selectedRoles]);
 
@@ -180,6 +160,9 @@ export function MasterCalendarPage() {
     }
     return filteredMonthInstances[0] ?? null;
   }, [activeId, allInstances, filteredMonthInstances]);
+
+  // Live REGULATORY + design display model (ensures calendar events use canonical non-mock content matching panels)
+  const activeDisplay = useMemo(() => (activeInstance ? getLiveEventDisplay(activeInstance.id) : null), [activeInstance]);
 
   /* ── React to URL (Dashboard → Timeline deep link) ── */
   useEffect(() => {
@@ -226,6 +209,11 @@ export function MasterCalendarPage() {
       return;
     }
 
+    if (shouldOpenCesCockpitFirst(e)) {
+      openPreview(e);
+      return;
+    }
+
     if (isMobileLayout) {
       if (zoomState.event?.id === e.id && zoomState.level === 'preview') {
         openEventSwimlane(e);
@@ -251,7 +239,8 @@ export function MasterCalendarPage() {
     clearSelection();
   };
 
-  const monthLabel = new Date(year, month, 1)
+  // Live rollup header: TODAY label always references the authoritative TODAY_ANCHOR (June 2026) for clean corporate header per #4 CES
+  const todayMonthLabel = new Date(today.getFullYear(), today.getMonth(), 1)
     .toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   const shiftMonth = (delta: number) => {
@@ -266,14 +255,13 @@ export function MasterCalendarPage() {
   };
 
   /* ── Roll-up counters by state (drives the color legend) ── */
-  const rollup = useMemo(() => countByState(monthInstances, today, store),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [monthInstances, today, store.completions, store.stepStates],
-  );
   const filteredRollup = useMemo(() => countByState(filteredMonthInstances, today, store),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [filteredMonthInstances, today, store.completions, store.stepStates],
   );
+
+  // Live rollup total (for header / upcoming) — authoritative execution state rollup
+  const liveRollupTotal = filteredRollup.overdue + filteredRollup.blocked + filteredRollup.dueSoon + filteredRollup.onTrack + filteredRollup.complete;
 
   /* ── View toggle: 4-option PM switcher ── */
   const rawView = searchParams.get('view');
@@ -302,7 +290,6 @@ export function MasterCalendarPage() {
     setBulkSyncPending(true);
     try {
       const summary = await syncAllEvents(allInstances);
-      setLastBulkSync(summary);
       if (summary.failed > 0) {
         pushToast(
           'warn',
@@ -340,6 +327,13 @@ export function MasterCalendarPage() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  // Enforce calendar (agenda primary) on <640 to match #4 responsive + staffing calendar; prevents any grid bleed from kanban/gantt/sprint columns on small screens.
+  useEffect(() => {
+    if (viewportWidth < 640 && view !== 'calendar') {
+      setView('calendar');
+    }
+  }, [viewportWidth, view]);
+
   const selectTask = (id: string | null) => {
     setActiveTaskId(id);
     if (id) setDetailsOpen(true);
@@ -352,29 +346,97 @@ export function MasterCalendarPage() {
     : Boolean(activeInstance || activeTaskId);
 
   return (
-    <div className="ci-page-container v3-calendar-surface h-full w-full min-h-0 overflow-hidden font-sans relative z-10">
+    <div className="flex flex-col h-full w-full font-sans">
       <CesInteractionStyles />
-      <div
-        className="flex h-full min-h-0 flex-col overflow-hidden rounded-[28px] border"
-        style={{
-          background: `linear-gradient(180deg, ${CES_V32_COLORS.surface} 0%, ${CES_V32_COLORS.shell} 100%)`,
-          borderColor: CES_V32_COLORS.border,
-          boxShadow: '0 24px 80px rgba(0, 0, 0, 0.34)',
-        }}
-      >
-        <TimelineHeader
-          monthLabel={monthLabel}
-          today={today}
-          onPrev={() => shiftMonth(-1)}
-          onNext={() => shiftMonth(+1)}
-          onToday={goToday}
-          onSyncAll={handleBulkSync}
-          syncAllPending={bulkSyncPending}
-          lastBulkSync={lastBulkSync}
-          rollup={view === 'calendar' ? filteredRollup : rollup}
-          view={view}
-          onViewChange={setView}
+
+      <div className="px-3 sm:px-5 pt-3 sm:pt-5 pb-2 sm:pb-3 overflow-hidden">
+        <PageHeader
+          eyebrow="COMPLIANCE EXECUTION"
+          title={view === 'sprint' ? 'Sprint Execution' : view === 'gantt' ? 'Project Gantt · CES projected tasks' : view === 'kanban' ? 'Kanban · CES tasks' : 'Master Calendar'}
+          description="Mandated regulatory events and CES execution control surface. Filter by role, switch views, drill into workflows."
+          actions={
+            <ActionButton
+              variant="secondary"
+              size="sm"
+              leftIcon={<CloudUpload size={14} className={bulkSyncPending ? 'animate-pulse' : ''} />}
+              onClick={handleBulkSync}
+              disabled={bulkSyncPending}
+            >
+              {bulkSyncPending ? 'SYNCING…' : 'SYNC ALL EVENTS'}
+            </ActionButton>
+          }
         />
+      </div>
+
+      {/* Adopt card and tile style (matching ref 30-master-calendar.png + staffing + supervisor patterns): 4 MetricTiles using primitives */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-3 sm:px-5 mt-1 mb-2">
+        <BorderGlow borderRadius={16} glowIntensity={0.65}>
+          <MetricTile label="Events" value={filteredMonthInstances.length} note="This month" tone="teal" />
+        </BorderGlow>
+        <MetricTile label="Overdue / Blocked" value={filteredRollup.overdue + filteredRollup.blocked} note="Needs attention" tone="danger" />
+        <MetricTile label="Due Soon" value={filteredRollup.dueSoon} note="Action window" tone="warning" />
+        <SpotlightCard variant="border-glow" className="rounded-2xl">
+          <MetricTile label="On Track" value={filteredRollup.onTrack + filteredRollup.complete} note="Ready / Certified" tone="success" />
+        </SpotlightCard>
+      </div>
+
+      {/* View tabs Calendar/Kanban/Gantt + assignee filter pills — premium clean, no bleed per design #4. Full width for occupy entire card. */}
+      <div className="px-0 sm:px-0 pb-2 sm:pb-3 flex flex-col gap-2 sm:gap-2.5 overflow-hidden">
+        <div className="flex flex-wrap items-center gap-2 overflow-hidden max-w-full">
+          <div
+            className="inline-flex items-center p-0.5"
+            style={{ background: 'transparent', border: 'none' }}
+            role="tablist"
+            aria-label="View mode"
+          >
+            <ViewToggleButton active={view === 'calendar'} onClick={() => setView('calendar')}>
+              Calendar
+            </ViewToggleButton>
+            <ViewToggleButton active={view === 'kanban'} onClick={() => setView('kanban')}>
+              Kanban
+            </ViewToggleButton>
+            <ViewToggleButton active={view === 'gantt'} onClick={() => setView('gantt')}>
+              Gantt
+            </ViewToggleButton>
+            {view === 'sprint' && (
+              <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.13em]" style={{ color: 'var(--v3-orange)', background: 'color-mix(in srgb, var(--v3-orange) 10%, transparent)' }}>
+                <CalendarRange size={13} /> Sprint
+              </span>
+            )}
+          </div>
+
+          {/* State legend (exact design #4 / img4 stats) + count — clean no bleed/borders/edges */}
+          {(view === 'calendar' || view === 'gantt' || view === 'kanban') && (
+            <div className="flex items-center gap-2 ces-state-legend" data-design-legend="state" style={{ border: 'none', background: 'transparent' }}>
+              <StateLegend rollup={filteredRollup} />
+              <span
+                className="text-[9px] font-mono px-1.5 py-px rounded tabular-nums"
+                style={{ background: isLightMode ? 'var(--ces-canvas)' : 'var(--ci-overlay-faint)', color: 'var(--v3-text-tertiary)', border: 'none' }}
+                aria-label="Filtered events shown"
+              >
+                {filteredMonthInstances.length} / {monthInstances.length}
+              </span>
+            </div>
+          )}
+
+          <div className="flex-1" />
+
+          {/* Header + TODAY label exactly like #4 CES: "TODAY, June 2026" prominent clean, no extra borders */}
+          {view === 'calendar' && (
+            <div className="ces-date-nav">
+              <button onClick={() => shiftMonth(-1)} aria-label="Previous month" className="px-1 py-0.5 text-[var(--v3-text-secondary)]" style={{ border: 'none', background: 'transparent' }}><ChevronLeft size={15} /></button>
+              <span
+                onClick={goToday}
+                className="px-3 py-0.5 text-[13px] font-bold tracking-[0.02em] whitespace-nowrap cursor-pointer select-none"
+                style={{ color: 'var(--v3-text-primary)', border: 'none', fontWeight: 700 }}
+                aria-label="Jump to today"
+              >
+                TODAY, {todayMonthLabel}
+              </span>
+              <button onClick={() => shiftMonth(+1)} aria-label="Next month" className="px-1 py-0.5 text-[var(--v3-text-secondary)]" style={{ border: 'none', background: 'transparent' }}><ChevronRight size={15} /></button>
+            </div>
+          )}
+        </div>
 
         {(view === 'calendar' || view === 'kanban' || view === 'gantt') && (
           <RoleFilterBar
@@ -392,15 +454,15 @@ export function MasterCalendarPage() {
         )}
 
         {view === 'sprint' && (
-          <div
-            className="shrink-0 border-b px-4 py-3"
-            style={{ borderColor: CES_V32_COLORS.border, background: 'rgba(20, 26, 35, 0.72)' }}
-          >
+          <div className="rounded-xl" style={{ border: 'none', background: isLightMode ? 'var(--ces-canvas)' : 'var(--ci-overlay-faint)' }}>
             <SprintScopeToolbar />
           </div>
         )}
+      </div>
 
-        <div className="min-h-0 flex-1 overflow-hidden bg-[#0B0F15]">
+      {/* Main content — full bleed (Agent 13 / coord Agent 5): main calendar + subviews occupy ENTIRE screen (h-full w-full, no borders, no padding). Grid/canvas fills available area per designs. */}
+      <div className="flex-1 min-h-0 w-full h-full overflow-hidden overflow-x-hidden overflow-y-hidden" style={{ background: isLightMode ? 'var(--ces-canvas)' : 'transparent', border: 'none', borderRadius: 0, padding: 0 }}>
+        <div className="h-full w-full overflow-hidden overflow-x-hidden overflow-y-hidden max-w-full" style={{ background: isLightMode ? 'var(--ces-canvas)' : 'transparent', border: 'none', borderRadius: 0, padding: 0 }}>
           {view === 'calendar' ? (
             isMobileLayout ? (
               <MobileAgendaList
@@ -411,38 +473,66 @@ export function MasterCalendarPage() {
                 store={store}
               />
             ) : (
-              <div className="h-full overflow-x-auto overflow-y-hidden custom-scrollbar">
-                <div className="min-h-full min-w-[1080px]">
-                  <TimelineMonth
-                    year={year}
-                    month={month}
-                    events={filteredMonthInstances}
-                    activeId={activeId}
-                    onSelect={selectInstance}
-                    onOpenSwimlane={openEventSwimlane}
-                    today={today}
-                  />
+              /* Desktop split: full-bleed left monthly grid + right upcoming panel (live data) matching Image #4 CES desktop mockup */
+              <div className="flex h-full w-full overflow-hidden overflow-x-hidden" data-ces-calendar data-live-regulatory={activeDisplay ? 'true' : 'false'} style={{ padding: 0, margin: 0, border: 'none', background: isLightMode ? 'var(--ces-canvas)' : 'transparent' }}>
+                <div className="flex-1 min-w-0 overflow-x-auto overflow-y-hidden custom-scrollbar overflow-hidden" style={{ border: 'none', background: 'inherit' }}>
+                  <div className="h-full w-full min-w-[720px] overflow-hidden">
+                    <TimelineMonth
+                      year={year}
+                      month={month}
+                      events={filteredMonthInstances}
+                      activeId={activeId}
+                      onSelect={selectInstance}
+                      onOpenSwimlane={openEventSwimlane}
+                      today={today}
+                    />
+                  </div>
                 </div>
+                {/* Right upcoming panel — clean corporate light, live regulatory, NO borders/edges/z bleed per Image #4 CES. Wrapped with new BorderGlow primitive for Phase 2 CES event workspace premium UI. */}
+                <BorderGlow className="hidden lg:block w-72 flex-shrink-0 rounded-2xl" glowColor="0 121 112" backgroundColor="#FFFFFF" glowIntensity={0.65} style={{ border: 'none', boxShadow: 'none' }}>
+                  <div className="flex h-full w-72 flex-col overflow-y-auto custom-scrollbar" style={{ border: 'none' }}>
+                    <div className="px-3 py-2 text-[9px] font-montserrat font-bold tracking-[0.16em] text-[var(--v3-text-tertiary)] sticky top-0 bg-inherit" style={{ zIndex: 1, border: 'none' }}>Upcoming · {liveRollupTotal}</div>
+                    {filteredMonthInstances.slice(0, 6).map(ev => {
+                      const dateStr = new Date(ev.date).toLocaleDateString('en-US', {month:'short',day:'numeric'});
+                      return (
+                        <SpotlightCard key={ev.id} className="mx-2 my-1 rounded-xl group" variant="border-glow" spotlightColor="color-mix(in srgb, var(--v3-teal) 8%, transparent)">
+                          <button
+                            type="button"
+                            onClick={() => selectInstance(ev)}
+                            className="absolute inset-0 z-20 rounded-[inherit] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal/70"
+                            aria-label={`Open ${ev.title}`}
+                          />
+                          <div className="pointer-events-none">
+                            <SurfaceCard padding="sm" className="p-2.5">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="min-w-0 flex-1">
+                                  <div className="text-[9px] font-montserrat font-bold tracking-[0.14em] text-[var(--v3-text-tertiary)]">{dateStr}</div>
+                                  <div className="text-[11px] font-semibold text-[var(--v3-text-primary)] truncate mt-0.5">{ev.title}</div>
+                                </div>
+                                <ToneBadge tone="teal" className="shrink-0 text-[8px] px-1.5 py-px">CES</ToneBadge>
+                              </div>
+                            </SurfaceCard>
+                          </div>
+                        </SpotlightCard>
+                      );
+                    })}
+                    {filteredMonthInstances.length === 0 && <div className="px-3 py-2 text-[10px] text-[var(--v3-text-tertiary)]">No events this month.</div>}
+                  </div>
+                </BorderGlow>
               </div>
             )
           ) : view === 'sprint' ? (
-            <div className="h-full p-4">
+            <div className="h-full w-full overflow-hidden" style={{ background: 'transparent', padding: 0 }}>
               <SprintBoardView onSelect={selectTask} selectedEventId={activeInstance?.id ?? null} />
             </div>
           ) : view === 'kanban' ? (
-            <CesV32KanbanView
-              events={filteredMonthInstances}
-              today={today}
-              store={store}
-              onSelect={selectInstance}
-            />
+            <div className="h-full w-full overflow-hidden overflow-x-hidden" style={{ background: 'transparent', border: 'none', borderRadius: 0, padding: 0 }} data-ces-calendar>
+              <KanbanView onSelect={selectTask} selectedEventId={activeInstance?.id ?? null} />
+            </div>
           ) : (
-            <CesV32GanttView
-              events={filteredMonthInstances}
-              today={today}
-              store={store}
-              onSelect={selectInstance}
-            />
+            <div className="h-full w-full overflow-hidden overflow-x-hidden" style={{ background: 'transparent', border: 'none', borderRadius: 0, padding: 0 }} data-ces-calendar>
+              <GanttView onSelect={selectTask} selectedEventId={activeInstance?.id ?? null} />
+            </div>
           )}
         </div>
       </div>
@@ -455,8 +545,8 @@ export function MasterCalendarPage() {
               type="button"
               onClick={() => setDetailsOpen(true)}
               disabled={!hasDetailContext}
-              className="ci-touch-target rounded-md border px-3 py-1.5 text-[11px] font-montserrat font-bold uppercase tracking-[0.14em] text-white/85 disabled:opacity-45"
-              style={{ borderColor: 'var(--ci-overlay-active-border)', background: 'var(--ci-overlay-border)' }}
+              className="ci-touch-target rounded-md border px-3 py-1.5 text-[11px] font-montserrat font-bold uppercase tracking-[0.14em] disabled:opacity-45"
+              style={{ borderColor: 'var(--ci-overlay-active-border)', background: 'var(--ci-overlay-border)', color: isLightMode ? '#1F1C1B' : 'var(--ci-text-on-surface-strong)' }}
             >
               Open Details
             </button>
@@ -532,6 +622,7 @@ export function MasterCalendarPage() {
           onOpenSwimlane={() => {
             if (zoomState.event) openEventSwimlane(zoomState.event);
           }}
+          actionLabel="Open Full Swimlane"
         />
       )}
 
@@ -548,343 +639,29 @@ function EmptyRightPanel({ label }: { label: string }) {
   );
 }
 
-function CesV32KanbanView({
-  events,
-  today,
-  store,
-  onSelect,
-}: {
-  events: RegulatoryEvent[];
-  today: Date;
-  store: ReturnType<typeof useRegulatoryExecutionStore.getState>;
-  onSelect: (event: RegulatoryEvent) => void;
-}) {
-  const columns = [
-    { id: 'todo', title: 'TO DO', states: ['due'] as CesDisplayState[] },
-    { id: 'progress', title: 'IN PROGRESS', states: ['track'] as CesDisplayState[] },
-    { id: 'review', title: 'IN REVIEW', states: [] as CesDisplayState[] },
-    { id: 'blocked', title: 'BLOCKED', states: ['block'] as CesDisplayState[] },
-  ];
-
-  const byColumn = columns.map(column => {
-    const items = events.filter(event => {
-      const displayState = getCesDisplayState(event, today, store);
-      if (column.id === 'review') return store.isCertified(event.id);
-      if (column.id === 'blocked') return displayState === 'block';
-      if (column.id === 'todo') return displayState === 'due' && !store.isCertified(event.id);
-      return displayState === 'track' && !store.isCertified(event.id);
-    });
-    return { ...column, items };
-  });
-
-  return (
-    <div className="h-full overflow-x-auto custom-scrollbar bg-[#0B0F15] px-6 py-6">
-      <div className="flex min-h-full min-w-[1040px] gap-6">
-        {byColumn.map(column => (
-          <section key={column.id} className="flex w-[320px] shrink-0 flex-col">
-            <header className="mb-4 flex items-center justify-between px-1">
-              <h3 className="text-[11px] font-montserrat font-bold uppercase tracking-[0.22em] text-white">
-                {column.title}
-              </h3>
-              <span className="text-[10px] font-mono text-[#5E6A7F]">{column.items.length}</span>
-            </header>
-            <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto custom-scrollbar">
-              {column.items.map(event => {
-                const displayState = getCesDisplayState(event, today, store);
-                const tone = getCesReferenceTone(displayState);
-                const date = new Date(`${event.date}T00:00:00`);
-                return (
-                  <button
-                    key={event.id}
-                    type="button"
-                    onClick={() => onSelect(event)}
-                    className="w-full rounded-lg border bg-[#141A23] px-4 py-4 text-left transition-colors hover:border-[#2A3441] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007970]"
-                    style={{ borderColor: '#1C2433' }}
-                  >
-                    <div className="mb-3 flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full" style={{ background: tone.dot }} />
-                      <span className="truncate text-[9px] font-montserrat font-bold uppercase tracking-[0.18em] text-[#8A94A6]">
-                        {normalizeRoleLabel(event.ownerRole) || event.domain}
-                      </span>
-                    </div>
-                    <h4 className="text-[14px] font-outfit font-semibold leading-snug text-white">
-                      {event.title}
-                    </h4>
-                    <div className="mt-4 flex items-center justify-between text-[10px] font-mono">
-                      <span className="rounded bg-[#007970]/10 px-2 py-0.5 text-[#007970]">CES</span>
-                      <span className="uppercase text-[#5E6A7F]">
-                        {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-              {column.items.length === 0 && (
-                <div className="flex h-24 items-center justify-center rounded-lg border border-dashed border-[#1C2433] text-xs text-[#5E6A7F]">
-                  No events
-                </div>
-              )}
-            </div>
-          </section>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function CesV32GanttView({
-  events,
-  today,
-  store,
-  onSelect,
-}: {
-  events: RegulatoryEvent[];
-  today: Date;
-  store: ReturnType<typeof useRegulatoryExecutionStore.getState>;
-  onSelect: (event: RegulatoryEvent) => void;
-}) {
-  const days = Array.from({ length: 31 }, (_, index) => index + 1);
-  const laneWidth = 40;
-  const leftWidth = 390;
-
-  const sortedEvents = [...events].sort((a, b) => a.date.localeCompare(b.date));
-
-  return (
-    <div className="h-full overflow-auto custom-scrollbar bg-[#0B0F15] p-6">
-      <div
-        className="flex min-h-full min-w-[1320px] overflow-hidden rounded-xl border bg-[#0F131A]"
-        style={{ borderColor: '#1C2433' }}
-      >
-        <div className="shrink-0 border-r bg-[#141A23]" style={{ width: leftWidth, borderColor: '#1C2433' }}>
-          <div className="flex h-[50px] items-center border-b bg-[#0B0F15] px-4 text-[10px] font-montserrat font-bold uppercase tracking-[0.22em] text-[#5E6A7F]" style={{ borderColor: '#1C2433' }}>
-            Event Pipeline
-          </div>
-          <div>
-            {sortedEvents.map(event => (
-              <button
-                key={event.id}
-                type="button"
-                onClick={() => onSelect(event)}
-                className="flex h-[68px] w-full flex-col justify-center border-b px-4 text-left transition-colors hover:bg-[#1C2433]/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007970]"
-                style={{ borderColor: '#1C2433' }}
-              >
-                <span className="truncate text-[13px] font-outfit font-semibold text-white">{event.title}</span>
-                <span className="mt-1 truncate text-[10px] font-roboto uppercase tracking-[0.06em] text-[#8A94A6]">
-                  Assignee: {normalizeRoleLabel(event.ownerRole) || event.owner}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="min-w-0 flex-1 overflow-x-auto custom-scrollbar">
-          <div className="h-[50px] border-b bg-[#0B0F15]" style={{ borderColor: '#1C2433', width: days.length * laneWidth }}>
-            <div className="flex h-full">
-              {days.map(day => (
-                <div
-                  key={day}
-                  className="flex shrink-0 items-center justify-center border-r text-[10px] font-mono text-[#5E6A7F]"
-                  style={{ width: laneWidth, borderColor: 'rgba(28, 36, 51, 0.72)' }}
-                >
-                  {day}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="relative" style={{ width: days.length * laneWidth }}>
-            <div className="pointer-events-none absolute inset-0 flex">
-              {days.map(day => (
-                <div
-                  key={day}
-                  className="shrink-0 border-r"
-                  style={{ width: laneWidth, borderColor: 'rgba(28, 36, 51, 0.42)' }}
-                />
-              ))}
-            </div>
-            {sortedEvents.map(event => {
-              const day = new Date(`${event.date}T00:00:00`).getDate();
-              const endDay = event.endDate ? new Date(`${event.endDate}T00:00:00`).getDate() : day;
-              const span = Math.max(1, Math.min(31, endDay) - Math.max(1, day) + 1);
-              const displayState = getCesDisplayState(event, today, store);
-              const tone = getCesReferenceTone(displayState);
-              return (
-                <div
-                  key={event.id}
-                  className="relative h-[68px] border-b"
-                  style={{ borderColor: '#1C2433' }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => onSelect(event)}
-                    className="absolute top-[21px] flex h-[26px] items-center overflow-hidden rounded-md px-2 text-left text-[9px] font-montserrat font-bold transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007970]"
-                    style={{
-                      left: (Math.max(1, day) - 1) * laneWidth + 4,
-                      width: Math.max(28, span * laneWidth - 8),
-                      background: tone.bg,
-                      color: tone.fg,
-                      border: `1px solid ${tone.border}`,
-                    }}
-                    title={event.title}
-                  >
-                    {span > 1 ? event.title : ''}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Header (month nav + state roll-up) ─────────────── */
-function TimelineHeader({
-  monthLabel, today, onPrev, onNext, onToday, onSyncAll, syncAllPending, lastBulkSync, rollup, view, onViewChange,
-}: {
-  monthLabel: string;
-  today: Date;
-  onPrev: () => void;
-  onNext: () => void;
-  onToday: () => void;
-  onSyncAll: () => void;
-  syncAllPending: boolean;
-  lastBulkSync: BulkSyncSummary | null;
-  rollup: { overdue: number; blocked: number; dueSoon: number; onTrack: number; complete: number };
-  view: PmView;
-  onViewChange: (v: PmView) => void;
-}) {
-  return (
-    <div className="shrink-0 border-b" style={{ borderColor: CES_V32_COLORS.border, background: CES_V32_COLORS.surface }}>
-      <div className="px-5 py-5">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-          <div className="min-w-0">
-            <div className="mb-2 flex items-center gap-2">
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: CES_V32_COLORS.teal }} />
-              <span
-                className="text-[10px] font-montserrat font-bold uppercase tracking-[0.28em]"
-                style={{ color: CES_V32_COLORS.teal }}
-              >
-                {view === 'sprint'
-                  ? 'CES Sprint Route'
-                  : view === 'kanban'
-                    ? 'PM Kanban'
-                    : view === 'gantt'
-                      ? 'PM Gantt'
-                      : 'Event Calendar'}
-              </span>
-            </div>
-            <h1
-              className="font-outfit font-light leading-tight"
-              style={{ fontSize: 34, letterSpacing: '-0.02em', color: CES_V32_COLORS.text }}
-            >
-              {view === 'sprint'
-                ? 'Sprint execution workspace'
-                : view === 'kanban'
-                  ? 'Project CES projected tasks'
-                  : view === 'gantt'
-                    ? 'Project CES projected tasks'
-                    : `Regulatory events · ${monthLabel}`}
-            </h1>
-            <p className="mt-2 max-w-3xl text-[12px] leading-relaxed" style={{ color: CES_V32_COLORS.slate }}>
-              A single CES control surface for mandated calendar execution, drill-in workflow review, and polished role-based scanning.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 xl:justify-end">
-            {view === 'calendar' && <StateLegend rollup={rollup} />}
-
-            <div
-              className="flex max-w-full items-center gap-1 overflow-x-auto rounded-[16px] border p-1"
-              aria-label="PM view"
-              style={{ borderColor: CES_V32_COLORS.borderStrong, background: CES_V32_COLORS.card }}
-            >
-              <ViewToggleButton active={view === 'calendar'} onClick={() => onViewChange('calendar')}>
-                <CalendarDays size={12} />
-                Calendar
-              </ViewToggleButton>
-              <ViewToggleButton active={view === 'kanban'} onClick={() => onViewChange('kanban')}>
-                <Columns3 size={12} />
-                Kanban
-              </ViewToggleButton>
-              <ViewToggleButton active={view === 'gantt'} onClick={() => onViewChange('gantt')}>
-                <GitBranch size={12} />
-                Gantt
-              </ViewToggleButton>
-              {view === 'sprint' && (
-                <span
-                  className="inline-flex items-center gap-1.5 rounded-[12px] px-3 py-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.18em]"
-                  style={{ color: '#FBBF24', background: 'rgba(251, 191, 36, 0.12)' }}
-                >
-                  <CalendarRange size={12} />
-                  Sprint Route
-                </span>
-              )}
-            </div>
-
-            <div
-              className="flex items-center rounded-[16px] border p-1"
-              style={{ borderColor: CES_V32_COLORS.borderStrong, background: CES_V32_COLORS.card }}
-            >
-              <NavBtn onClick={onPrev} ariaLabel="Previous month"><ChevronLeft size={14} /></NavBtn>
-              <button
-                onClick={onToday}
-                className="ci-touch-target inline-flex items-center gap-1.5 rounded-[12px] px-3 py-2 text-[11px] font-outfit transition-colors"
-                style={{ color: CES_V32_COLORS.text }}
-                title={`Today · ${today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`}
-              >
-                <CalendarDays size={12} style={{ color: CES_V32_COLORS.slate }} />
-                Today
-              </button>
-              <span className="px-2 text-[11px] font-montserrat font-bold uppercase tracking-[0.18em]" style={{ color: CES_V32_COLORS.slate }}>
-                {monthLabel}
-              </span>
-              <NavBtn onClick={onNext} ariaLabel="Next month"><ChevronRight size={14} /></NavBtn>
-            </div>
-
-            <button
-              type="button"
-              onClick={onSyncAll}
-              disabled={syncAllPending}
-              className="ci-touch-target inline-flex items-center gap-2 rounded-[16px] border px-4 py-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em] disabled:opacity-60 whitespace-nowrap"
-              style={{
-                borderColor: 'rgba(0, 121, 112, 0.46)',
-                background: 'linear-gradient(180deg, rgba(0, 121, 112, 0.22), rgba(0, 65, 66, 0.82))',
-                color: CES_V32_COLORS.text,
-              }}
-              title="Sync all in-scope compliance events to Google Calendar"
-            >
-              <CloudUpload size={12} className={syncAllPending ? 'animate-pulse' : ''} />
-              {syncAllPending ? 'Syncing…' : 'Sync All Events'}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <AriaLiveRegion politeness="polite" message={lastBulkSync ? `Last bulk sync: Created ${lastBulkSync.created} · Updated ${lastBulkSync.updated} · Skipped ${lastBulkSync.skipped} · Failed ${lastBulkSync.failed}` : ''} visuallyHidden />
-    </div>
-  );
-}
-
 function ViewToggleButton({
   active,
   onClick,
   children,
+  title,
 }: {
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
+  title?: string;
 }) {
+  // Premium corporate segment button — tuned for tight clean bar with date + filters
   return (
     <button
       type="button"
       onClick={onClick}
-      className="ci-touch-target inline-flex items-center gap-1.5 whitespace-nowrap rounded-[12px] px-3 py-2 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em] transition-colors focus:outline-none focus-visible:ring-2"
+      title={title}
+      className="inline-flex items-center whitespace-nowrap rounded-md px-2 py-0.5 text-[9px] font-semibold tracking-[0.1em] transition-all focus:outline-none focus-visible:ring-1"
       style={{
-        background: active ? 'rgba(0, 121, 112, 0.20)' : 'transparent',
-        color: active ? CES_V32_COLORS.text : CES_V32_COLORS.slate,
-        border: `1px solid ${active ? 'rgba(0, 121, 112, 0.44)' : 'transparent'}`,
+        background: active ? 'color-mix(in srgb, var(--v3-teal) 12%, transparent)' : 'transparent',
+        color: active ? 'var(--v3-teal-light)' : 'var(--v3-text-secondary)',
+        border: 'none',
+        height: '20px',
       }}
     >
       {children}
@@ -903,75 +680,45 @@ function RoleFilterBar({
   onToggle: (role: string) => void;
   onClear: () => void;
 }) {
+  // Premium clean assignee/role filter pills (Image #4 CES): rounded, title-case labels, teal active, orange clear, no borders/edges, clean light grid friendly
   return (
-    <div
-      className="shrink-0 border-b px-5 py-3"
-      style={{ borderColor: CES_V32_COLORS.border, background: 'rgba(20, 26, 35, 0.72)' }}
-    >
-      <div className="flex items-center gap-3 overflow-x-auto custom-scrollbar">
-        <div
-          className="flex items-center gap-2 whitespace-nowrap text-[10px] font-montserrat font-bold uppercase tracking-[0.18em]"
-          style={{ color: CES_V32_COLORS.muted }}
-        >
-          <Filter size={12} />
-          Assignee
-        </div>
-
-        {roles.map(role => {
-          const active = selectedRoles.includes(role);
-          return (
-            <button
-              key={role}
-              type="button"
-              onClick={() => onToggle(role)}
-              className="ci-touch-target whitespace-nowrap rounded-full border px-3 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em] transition-colors focus:outline-none focus-visible:ring-2"
-              style={{
-                borderColor: active ? 'rgba(0, 121, 112, 0.44)' : CES_V32_COLORS.borderStrong,
-                background: active ? 'rgba(0, 121, 112, 0.18)' : CES_V32_COLORS.card,
-                color: active ? CES_V32_COLORS.text : CES_V32_COLORS.slate,
-              }}
-            >
-              {role}
-            </button>
-          );
-        })}
-
-        {selectedRoles.length > 0 && (
-          <button
-            type="button"
-            onClick={onClear}
-            className="ci-touch-target inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-3 py-1.5 text-[10px] font-montserrat font-bold uppercase tracking-[0.16em]"
-            style={{
-              borderColor: 'rgba(199, 70, 0, 0.42)',
-              background: 'rgba(199, 70, 0, 0.10)',
-              color: '#FFB08B',
-            }}
-          >
-            <X size={11} />
-            Clear
-          </button>
-        )}
+    <div className="ces-premium-filter-bar" role="group" aria-label="Assignee / role filters">
+      <div className="ces-filter-label">
+        <Filter size={11} /> Assignee
       </div>
+
+      {roles.slice(0, 9).map(role => {
+        const active = selectedRoles.includes(role);
+        return (
+          <button
+            key={role}
+            type="button"
+            onClick={() => onToggle(role)}
+            className={`ces-filter-pill ${active ? 'active' : ''}`}
+            aria-pressed={active}
+            aria-label={role}
+            // title= removed (was causing native hover tooltip on chip); aria-label kept
+          >
+            {role}
+          </button>
+        );
+      })}
+
+      {selectedRoles.length > 0 && (
+        <button
+          type="button"
+          onClick={onClear}
+          className="ces-filter-clear"
+          aria-label="Clear all assignee filters"
+        >
+          <X size={9} /> CLEAR
+        </button>
+      )}
     </div>
   );
 }
 
-function NavBtn({
-  onClick, children, ariaLabel,
-}: { onClick: () => void; children: React.ReactNode; ariaLabel: string }) {
-  return (
-    <button
-      onClick={onClick}
-      aria-label={ariaLabel}
-      className="ci-touch-target flex h-9 w-9 items-center justify-center rounded-[12px] transition-colors focus:outline-none focus-visible:ring-2"
-      style={{ color: CES_V32_COLORS.slate }}
-    >
-      {children}
-    </button>
-  );
-}
-
-/* ─── State legend (roll-up colors only) ────────────── */
+/* ─── State legend using live rollup (countByState) — exact match to design #4 / img4 stats, clean no borders/edges ────────────── */
 function StateLegend({
   rollup,
 }: {
@@ -981,26 +728,11 @@ function StateLegend({
   const amber = rollup.dueSoon;
   const teal = rollup.onTrack + rollup.complete;
   return (
-    <div className="flex items-center gap-2">
-      <LegendPill color={STATE_COLOR.overdue} label="Block" value={red} />
-      <LegendPill color={STATE_COLOR['due-soon']} label="Due" value={amber} />
-      <LegendPill color={STATE_COLOR['on-track']} label="Track" value={teal} />
+    <div className="ces-state-legend flex gap-2 text-[10px] font-bold tracking-wider">
+      <ToneBadge tone="danger" className="px-2 py-0.5 text-[10px]">{red} BLOCK</ToneBadge>
+      <ToneBadge tone="warning" className="px-2 py-0.5 text-[10px]">{amber} DUE</ToneBadge>
+      <ToneBadge tone="teal" className="px-2 py-0.5 text-[10px]">{teal} TRACK</ToneBadge>
     </div>
-  );
-}
-
-function LegendPill({ color, label, value }: { color: string; label: string; value: number }) {
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1"
-      style={{ borderColor: `${color}40`, background: `${color}10`, color }}
-    >
-      <span style={{ width: 5, height: 5, borderRadius: '50%', background: color }} />
-      <span className="text-[9.5px] font-montserrat font-bold uppercase tracking-[0.16em]">
-        {label}
-      </span>
-      <span className="text-[10px] font-outfit leading-none">{value}</span>
-    </span>
   );
 }
 
@@ -1027,7 +759,7 @@ function MobileAgendaList({
   }
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+    <BorderGlow className="flex-1 min-h-0 overflow-y-auto custom-scrollbar w-full max-w-full overflow-x-hidden overflow-hidden rounded-2xl" glowColor="0 121 112" glowIntensity={0.4}>
       {sorted.map(event => {
         const isActive = event.id === activeId;
         const state = classifyInstance(event, today, store);
@@ -1038,36 +770,33 @@ function MobileAgendaList({
           day: 'numeric',
         });
         return (
-          <button
-            key={event.id}
-            type="button"
-            onClick={() => onSelect(event)}
-            className="flex w-full items-start justify-between gap-3 border-b px-4 py-3 text-left transition-colors focus:outline-none focus-visible:ring-2"
-            style={{
-              borderColor: CES_V32_COLORS.border,
-              background: isActive ? 'rgba(0, 121, 112, 0.10)' : 'transparent',
-            }}
-          >
-            <div className="min-w-0">
-              <p className="text-[11px] font-montserrat font-bold uppercase tracking-[0.14em]" style={{ color: CES_V32_COLORS.muted }}>{dateLabel}</p>
-              <p className="mt-1 text-[14px] font-outfit text-white">{event.title}</p>
-              <p className="mt-1 text-[11px] font-roboto" style={{ color: CES_V32_COLORS.slate }}>
-                {event.ownerRole} · {event.time ? `${event.time}${event.timeEnd ? ` - ${event.timeEnd}` : ''}` : 'All day'} · {event.cadence}
-              </p>
+          <SpotlightCard key={event.id} className="mx-1 my-0.5 rounded-2xl group" variant="border-glow" spotlightColor={isActive ? 'color-mix(in srgb, var(--v3-teal) 12%, transparent)' : 'color-mix(in srgb, var(--v3-teal) 6%, transparent)'}>
+            <button
+              type="button"
+              onClick={() => onSelect(event)}
+              className="absolute inset-0 z-20 rounded-[inherit] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal/70"
+              aria-label={`Open ${event.title}`}
+            />
+            <div className="pointer-events-none">
+              <SurfaceCard padding="sm" className="p-2.5 sm:p-3">
+                <div className="flex w-full items-start justify-between gap-2 sm:gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] sm:text-[11px] font-montserrat font-bold uppercase tracking-[0.14em] text-[var(--v3-text-tertiary)] truncate">{dateLabel}</p>
+                    <p className="mt-0.5 sm:mt-1 text-[13px] sm:text-[14px] font-semibold text-[var(--v3-text-primary)] truncate">{event.title}</p>
+                    <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] truncate" style={{ color: 'var(--v3-text-secondary)' }}>
+                      {event.ownerRole} · {event.time ? `${event.time}${event.timeEnd ? ` - ${event.timeEnd}` : ''}` : 'All day'} · {event.cadence}
+                    </p>
+                  </div>
+                  <ToneBadge tone={certified ? 'teal' : (state === 'overdue' || state === 'blocked' ? 'orange' : state === 'due-soon' ? 'warning' : 'teal')}>
+                    {certified ? 'Certified' : STATE_LABEL[state]}
+                  </ToneBadge>
+                </div>
+              </SurfaceCard>
             </div>
-            <span
-              className="mt-1 inline-flex shrink-0 rounded-full px-2 py-1 text-[9px] font-montserrat font-bold uppercase tracking-[0.14em]"
-              style={{
-                background: `${certified ? '#A78BFA' : STATE_COLOR[state]}18`,
-                color: certified ? '#C4B5FD' : STATE_COLOR[state],
-              }}
-            >
-              {certified ? 'Certified' : STATE_LABEL[state]}
-            </span>
-          </button>
+          </SpotlightCard>
         );
       })}
-    </div>
+    </BorderGlow>
   );
 }
 

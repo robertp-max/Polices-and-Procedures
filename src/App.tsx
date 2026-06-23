@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, type PropsWithChildren, type ReactElement } from 'react'
+import { lazy, Suspense, useEffect, useLayoutEffect, type PropsWithChildren, type ReactElement } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { CommandCenterLayout } from '@/policy/components/CommandCenterLayout'
 import { initializeApp } from '@/policy/utils/appInitializer'
@@ -7,6 +7,7 @@ import { useAuth } from '@/auth/AuthProvider'
 import { FeatureRouteGuard } from '@/policy/security/features/FeatureRouteGuard'
 import { RoleGate } from '@/policy/auth/RoleGate'
 import { GlobalModalShell } from '@/components/global/GlobalModalShell'
+import { GlobalDotBackground } from '@/components/background/GlobalDotBackground'
 
 // ── Lazy-loaded page routes (code-split per route) ──────────────
 const DashboardPage     = lazy(() => import('@/policy/pages/DashboardPage').then(m => ({ default: m.DashboardPage })))
@@ -74,7 +75,7 @@ const OnboardingV2Audit       = lazy(() => import('@/policy/onboarding-v2/pages/
 const OnboardingV2Governance  = lazy(() => import('@/policy/onboarding-v2/pages/GovernancePage').then(m => ({ default: m.GovernancePage })))
 
 // ── Help Center (eCIgn knowledge base) ───────────────────────────
-const HelpCenterPage     = lazy(() => import('@/policy/help/HelpCenterPrototypePage').then(m => ({ default: m.HelpCenterPage })))
+const HelpCenterPage     = lazy(() => import('@/policy/help/HelpCenterPage').then(m => ({ default: m.HelpCenterPage })))
 const SystemDocumentationPage = lazy(() => import('@/policy/pages/SystemDocumentationPage').then(m => ({ default: m.SystemDocumentationPage })))
 
 // ── Clinician Profile & Patient Profile (Phase 1) ──────────────
@@ -126,7 +127,7 @@ const STAGING_M01_ENABLED = import.meta.env.VITE_STAGING_M01 === 'true';
 
 function AppLoader() {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-[var(--v3-base-bg)] text-[var(--v3-text-secondary)]">
+    <div className="relative z-10 flex min-h-screen w-full items-center justify-center text-[var(--v3-text-secondary)]">
       <div className="h-6 w-6 rounded-full border-2 border-white/10 border-t-[var(--v3-teal-light)] animate-spin" />
     </div>
   )
@@ -148,27 +149,40 @@ function AppShell({ children }: PropsWithChildren) {
   const { loading } = useAuth()
 
   return (
-    <div className="min-h-screen bg-[var(--v3-base-bg)] text-[var(--v3-text-primary)]">
-      <div className="min-h-screen">
+    <div className="relative h-screen min-h-screen w-full overflow-hidden bg-transparent text-[var(--v3-text-primary)]" style={{ border: 'none' }}>
+      <GlobalDotBackground />
+      <div className="relative z-10 h-full min-h-screen w-full">
         {loading ? <AppLoader /> : children}
       </div>
     </div>
   )
 }
 
-function PublicAuthRoute({ children }: { children: ReactElement }) {
+function PublicAuthRoute({ children, redirectIfAuthenticated = true }: { children: ReactElement; redirectIfAuthenticated?: boolean }) {
   const { isAuthenticated, loading } = useAuth()
 
+  // AUTH THEME PROTECTION — auth pages must ALWAYS render on the dark
+  // blue/green shell, regardless of the app-shell Day/Normal preference.
+  // CommandCenterLayout writes data-theme on <html>; that value can linger
+  // when navigating from a signed-in (possibly light) shell to /login or
+  // /forgot-password. Force the dark shell theme here (pre-paint via
+  // useLayoutEffect) so auth never turns white.
+  useLayoutEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.dataset.theme = 'v3-veil'
+    }
+  })
+
   if (loading) return <AppLoader />
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />
+  if (redirectIfAuthenticated && isAuthenticated) return <Navigate to="/dashboard" replace />
   return children
 }
 
 function EntryRoute() {
-  const { isAuthenticated, loading } = useAuth()
+  const { loading } = useAuth()
 
   if (loading) return <AppLoader />
-  return <Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />
+  return <Navigate to="/login" replace />
 }
 
 function AppRoutes() {
@@ -191,7 +205,7 @@ function AppRoutes() {
 
         {/* Public auth routes */}
         <Route path="/" element={<EntryRoute />} />
-        <Route path="/login" element={<PublicAuthRoute><LoginPage /></PublicAuthRoute>} />
+        <Route path="/login" element={<PublicAuthRoute redirectIfAuthenticated={false}><LoginPage /></PublicAuthRoute>} />
         <Route path="/register" element={<PublicAuthRoute><RegisterPage /></PublicAuthRoute>} />
         <Route path="/check-email" element={<PublicAuthRoute><CheckEmailPage /></PublicAuthRoute>} />
         <Route path="/setup-account" element={<PublicAuthRoute><SetupAccountPage /></PublicAuthRoute>} />

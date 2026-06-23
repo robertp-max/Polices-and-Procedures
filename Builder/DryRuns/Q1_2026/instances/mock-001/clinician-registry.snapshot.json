@@ -1,0 +1,2776 @@
+{
+  "schemaVersion": 1,
+  "universeId": "q1-2026-mock-clinical-universe",
+  "noPhi": true,
+  "emailDomainRule": ".example.test only",
+  "sourceJanuarySeed": "Builder/DryRuns/January2026/mock-clinical-universe",
+  "q1ExpansionSource": "Builder/DryRuns/Q1_2026/mock-clinical-universe-expansion",
+  "marker": "MOCK TEST REGISTRY - NO PHI - Q1 2026 CLINICAL UNIVERSE",
+  "clinicians": [
+    {
+      "staffId": "MOCK-STF-0001",
+      "name": "Amara Okonkwo",
+      "role": "RN",
+      "discipline": "SN",
+      "employmentType": "W2",
+      "status": "Active",
+      "email": "amara.okonkwo@example.test",
+      "licenseCertificationMockNumber": "MOCK-RN-CA-0001",
+      "credentialExpirationDate": "2026-10-31",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "OASIS SOC/ROC/recert",
+        "POC development",
+        "Medication reconciliation",
+        "Wound assessment",
+        "High-risk medication education"
+      ],
+      "allowedTaskTypes": [
+        "OASIS assessment",
+        "SN visit",
+        "POC draft",
+        "Medication reconciliation",
+        "Wound assessment",
+        "Chart audit sample review"
+      ],
+      "prohibitedTaskTypes": [
+        "QAPI final approval",
+        "Governing Body approval",
+        "IT/security approval"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0001",
+        "MOCK-PT-0003",
+        "MOCK-PT-0005"
+      ],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu"
+        ],
+        "maxVisitsPerWeek": 18
+      },
+      "exceptionFlags": [],
+      "canSignOasis": true,
+      "canSignPoc": true,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": true,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0001.svg",
+        "alt": "Synthetic mock profile image for Amara Okonkwo",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Amara Okonkwo is a January synthetic RN profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "OASIS SOC/ROC/recert",
+          "POC development",
+          "Medication reconciliation"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "OASIS SOC/ROC/recert",
+          "POC development"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Available per January seed constraints",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu"
+        ],
+        "maxVisitsPerWeek": 18
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0002",
+      "name": "Takeshi Nakamura",
+      "role": "RN",
+      "discipline": "SN",
+      "employmentType": "Contractor",
+      "status": "Active",
+      "email": "takeshi.nakamura@example.test",
+      "licenseCertificationMockNumber": "MOCK-RN-CA-0002",
+      "credentialExpirationDate": "2026-09-30",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "OASIS SOC/ROC/recert",
+        "Cardiopulmonary assessment",
+        "Interpreter-supported documentation",
+        "High-risk medication education"
+      ],
+      "allowedTaskTypes": [
+        "OASIS assessment",
+        "SN visit",
+        "POC draft",
+        "Medication reconciliation",
+        "Complex chart audit support"
+      ],
+      "prohibitedTaskTypes": [
+        "QAPI final approval",
+        "Governing Body approval",
+        "HR credentialing approval"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0002",
+        "MOCK-PT-0004",
+        "MOCK-PT-0006"
+      ],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Mon",
+          "Wed",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 14
+      },
+      "exceptionFlags": [],
+      "canSignOasis": true,
+      "canSignPoc": true,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": true,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0002.svg",
+        "alt": "Synthetic mock profile image for Takeshi Nakamura",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Takeshi Nakamura is a January synthetic RN profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "OASIS SOC/ROC/recert",
+          "Cardiopulmonary assessment",
+          "Interpreter-supported documentation"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "OASIS SOC/ROC/recert",
+          "Cardiopulmonary assessment"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Available per January seed constraints",
+        "availableDays": [
+          "Mon",
+          "Wed",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 14
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0003",
+      "name": "Valentina Ramirez-Cruz",
+      "role": "LVN",
+      "discipline": "LVN",
+      "employmentType": "W2",
+      "status": "Active",
+      "email": "valentina.ramirez-cruz@example.test",
+      "licenseCertificationMockNumber": "MOCK-LVN-CA-0003",
+      "credentialExpirationDate": "2026-08-31",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "Skilled visit under RN plan",
+        "Medication teaching reinforcement",
+        "Wound dressing reinforcement"
+      ],
+      "allowedTaskTypes": [
+        "LVN visit",
+        "Medication teaching reinforcement",
+        "Wound care per signed order",
+        "Vital signs"
+      ],
+      "prohibitedTaskTypes": [
+        "Independent OASIS completion",
+        "Independent POC signature",
+        "QAPI minutes signature",
+        "Event closeout approval"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0001",
+        "MOCK-PT-0002",
+        "MOCK-PT-0003",
+        "MOCK-PT-0004",
+        "MOCK-PT-0005",
+        "MOCK-PT-0006"
+      ],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 20
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": true,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0003.svg",
+        "alt": "Synthetic mock profile image for Valentina Ramirez-Cruz",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Valentina Ramirez-Cruz is a January synthetic LVN profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "Skilled visit under RN plan",
+          "Medication teaching reinforcement",
+          "Wound dressing reinforcement"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Skilled visit under RN plan",
+          "Medication teaching reinforcement"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Available per January seed constraints",
+        "availableDays": [
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 20
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0004",
+      "name": "Priya Patel",
+      "role": "LVN",
+      "discipline": "LVN",
+      "employmentType": "W2",
+      "status": "Pending",
+      "email": "priya.patel@example.test",
+      "licenseCertificationMockNumber": "MOCK-LVN-CA-0004",
+      "credentialExpirationDate": "2026-11-30",
+      "onboardingTrainingStatus": "Pending background/skills validation",
+      "competencies": [
+        "LVN skills checklist pending"
+      ],
+      "allowedTaskTypes": [
+        "Training observation only"
+      ],
+      "prohibitedTaskTypes": [
+        "Independent patient care",
+        "OASIS completion",
+        "POC signature",
+        "Medication administration",
+        "Wound care",
+        "Event approval"
+      ],
+      "assignedPatients": [],
+      "januaryAvailability": {
+        "status": "Pending - not schedulable",
+        "availableDays": [],
+        "maxVisitsPerWeek": 0
+      },
+      "exceptionFlags": [
+        "pending_user",
+        "not_valid_performer",
+        "not_valid_signer"
+      ],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": false,
+      "canBeAssignedVisits": false,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0004.svg",
+        "alt": "Synthetic mock profile image for Priya Patel",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Priya Patel is a January synthetic LVN profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "LVN skills checklist pending"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "LVN skills checklist pending"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": [
+          "pending_user",
+          "not_valid_performer",
+          "not_valid_signer"
+        ]
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Pending - not schedulable",
+        "q1Status": "Not valid independent performer",
+        "availableDays": [],
+        "maxVisitsPerWeek": 0
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0005",
+      "name": "Erik Johansson",
+      "role": "PT",
+      "discipline": "PT",
+      "employmentType": "Contractor",
+      "status": "Active",
+      "email": "erik.johansson@example.test",
+      "licenseCertificationMockNumber": "MOCK-PT-CA-0005",
+      "credentialExpirationDate": "2026-12-31",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "PT evaluation",
+        "Therapy reassessment",
+        "Visit-frequency justification",
+        "Fall prevention"
+      ],
+      "allowedTaskTypes": [
+        "PT evaluation",
+        "PT visit",
+        "Therapy recert support",
+        "Fall-risk intervention"
+      ],
+      "prohibitedTaskTypes": [
+        "OASIS RN signature",
+        "SN POC signature",
+        "QAPI final approval",
+        "Physician order signature"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0003",
+        "MOCK-PT-0004",
+        "MOCK-PT-0006"
+      ],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Thu"
+        ],
+        "maxVisitsPerWeek": 12
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": true,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0005.svg",
+        "alt": "Synthetic mock profile image for Erik Johansson",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Erik Johansson is a January synthetic PT profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "PT evaluation",
+          "Therapy reassessment",
+          "Visit-frequency justification"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "PT evaluation",
+          "Therapy reassessment"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Available per January seed constraints",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Thu"
+        ],
+        "maxVisitsPerWeek": 12
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0006",
+      "name": "Fatima Adekoya",
+      "role": "OT",
+      "discipline": "OT",
+      "employmentType": "W2",
+      "status": "Active",
+      "email": "fatima.adekoya@example.test",
+      "licenseCertificationMockNumber": "MOCK-OT-CA-0006",
+      "credentialExpirationDate": "2026-07-31",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "OT evaluation",
+        "ADL/IADL adaptation",
+        "Home safety",
+        "Caregiver education"
+      ],
+      "allowedTaskTypes": [
+        "OT evaluation",
+        "OT visit",
+        "ADL training",
+        "Home/facility safety education"
+      ],
+      "prohibitedTaskTypes": [
+        "OASIS RN signature",
+        "SN POC signature",
+        "QAPI final approval",
+        "Physician order signature"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0003",
+        "MOCK-PT-0004",
+        "MOCK-PT-0005",
+        "MOCK-PT-0006"
+      ],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Mon",
+          "Wed",
+          "Thu"
+        ],
+        "maxVisitsPerWeek": 13
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": true,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0006.svg",
+        "alt": "Synthetic mock profile image for Fatima Adekoya",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Fatima Adekoya is a January synthetic OT profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "OT evaluation",
+          "ADL/IADL adaptation",
+          "Home safety"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "OT evaluation",
+          "ADL/IADL adaptation"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Available per January seed constraints",
+        "availableDays": [
+          "Mon",
+          "Wed",
+          "Thu"
+        ],
+        "maxVisitsPerWeek": 13
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0007",
+      "name": "Marcus Vasquez",
+      "role": "HHA",
+      "discipline": "HHA",
+      "employmentType": "W2",
+      "status": "Active",
+      "email": "marcus.vasquez@example.test",
+      "licenseCertificationMockNumber": "MOCK-HHA-CA-0007",
+      "credentialExpirationDate": "2026-06-30",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "Personal care",
+        "Home safety observation",
+        "ACCM care coordination support"
+      ],
+      "allowedTaskTypes": [
+        "HHA visit",
+        "ADL support",
+        "Observation reporting",
+        "ACCM support"
+      ],
+      "prohibitedTaskTypes": [
+        "OASIS completion",
+        "POC signature",
+        "Medication reconciliation",
+        "Wound assessment",
+        "QAPI approval"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0001",
+        "MOCK-PT-0002",
+        "MOCK-PT-0005"
+      ],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 24
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": true,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0007.svg",
+        "alt": "Synthetic mock profile image for Marcus Vasquez",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Marcus Vasquez is a January synthetic HHA profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "Personal care",
+          "Home safety observation",
+          "ACCM care coordination support"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Personal care",
+          "Home safety observation"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Available per January seed constraints",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 24
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0008",
+      "name": "Lena Quiñones",
+      "role": "HHA",
+      "discipline": "HHA",
+      "employmentType": "W2",
+      "status": "On Leave",
+      "email": "lena.quinones@example.test",
+      "licenseCertificationMockNumber": "MOCK-HHA-CA-0008",
+      "credentialExpirationDate": "2026-05-31",
+      "onboardingTrainingStatus": "Complete; leave status active",
+      "competencies": [
+        "Personal care"
+      ],
+      "allowedTaskTypes": [
+        "None while on leave"
+      ],
+      "prohibitedTaskTypes": [
+        "Assigned visits",
+        "OASIS completion",
+        "POC signature",
+        "QAPI approval"
+      ],
+      "assignedPatients": [],
+      "januaryAvailability": {
+        "status": "On leave - not schedulable",
+        "availableDays": [],
+        "maxVisitsPerWeek": 0
+      },
+      "exceptionFlags": [
+        "on_leave",
+        "not_valid_performer",
+        "not_valid_signer"
+      ],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": false,
+      "canBeAssignedVisits": false,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0008.svg",
+        "alt": "Synthetic mock profile image for Lena Quiñones",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Lena Quiñones is a January synthetic HHA profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "Personal care"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Personal care"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": [
+          "on_leave",
+          "not_valid_performer",
+          "not_valid_signer"
+        ]
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "On leave - not schedulable",
+        "q1Status": "Not valid independent performer",
+        "availableDays": [],
+        "maxVisitsPerWeek": 0
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0009",
+      "name": "Yemi Mwangi",
+      "role": "CNA",
+      "discipline": "CNA",
+      "employmentType": "W2",
+      "status": "Active",
+      "email": "yemi.mwangi@example.test",
+      "licenseCertificationMockNumber": "MOCK-CNA-CA-0009",
+      "credentialExpirationDate": "2026-04-30",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "Facility care coordination support",
+        "ADL support",
+        "ACCM care coordination support"
+      ],
+      "allowedTaskTypes": [
+        "CNA visit",
+        "ADL support",
+        "Facility coordination observation",
+        "ACCM support"
+      ],
+      "prohibitedTaskTypes": [
+        "OASIS completion",
+        "POC signature",
+        "Medication reconciliation",
+        "QAPI approval"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0003",
+        "MOCK-PT-0004",
+        "MOCK-PT-0006"
+      ],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 22
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": true,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0009.svg",
+        "alt": "Synthetic mock profile image for Yemi Mwangi",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Yemi Mwangi is a January synthetic CNA profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "Facility care coordination support",
+          "ADL support",
+          "ACCM care coordination support"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Facility care coordination support",
+          "ADL support"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Available per January seed constraints",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 22
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0010",
+      "name": "Pierre Lemoine",
+      "role": "Caregiver",
+      "discipline": "Caregiver",
+      "employmentType": "Contractor",
+      "status": "Inactive",
+      "email": "pierre.lemoine@example.test",
+      "licenseCertificationMockNumber": "MOCK-CG-0010",
+      "credentialExpirationDate": "2026-02-28",
+      "onboardingTrainingStatus": "Inactive record only",
+      "competencies": [
+        "Historical caregiver record"
+      ],
+      "allowedTaskTypes": [
+        "None while inactive"
+      ],
+      "prohibitedTaskTypes": [
+        "Assigned visits",
+        "Clinical tasks",
+        "OASIS completion",
+        "POC signature",
+        "QAPI approval"
+      ],
+      "assignedPatients": [],
+      "januaryAvailability": {
+        "status": "Inactive - not schedulable",
+        "availableDays": [],
+        "maxVisitsPerWeek": 0
+      },
+      "exceptionFlags": [
+        "inactive",
+        "not_valid_performer",
+        "not_valid_signer"
+      ],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": false,
+      "canBeAssignedVisits": false,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0010.svg",
+        "alt": "Synthetic mock profile image for Pierre Lemoine",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Pierre Lemoine is a January synthetic Caregiver profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "Historical caregiver record"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Historical caregiver record"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": [
+          "inactive",
+          "not_valid_performer",
+          "not_valid_signer"
+        ]
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Inactive - not schedulable",
+        "q1Status": "Not valid independent performer",
+        "availableDays": [],
+        "maxVisitsPerWeek": 0
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0011",
+      "name": "Helena Brooks",
+      "role": "Administrator",
+      "discipline": "Operations",
+      "employmentType": "W2",
+      "status": "Active",
+      "email": "helena.brooks@example.test",
+      "licenseCertificationMockNumber": "MOCK-ADMIN-0011",
+      "credentialExpirationDate": "2026-12-31",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "Operations approval",
+        "Event closeout",
+        "Governing Body packet review"
+      ],
+      "allowedTaskTypes": [
+        "Administrator approval",
+        "Event closeout approval",
+        "GB summary review"
+      ],
+      "prohibitedTaskTypes": [
+        "OASIS clinical signature",
+        "Direct patient care visit"
+      ],
+      "assignedPatients": [],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": true,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": false,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0011.svg",
+        "alt": "Synthetic mock profile image for Helena Brooks",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Helena Brooks is a January synthetic Administrator profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "Operations approval",
+          "Event closeout",
+          "Governing Body packet review"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Operations approval",
+          "Event closeout"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Not valid independent performer",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0012",
+      "name": "Nadia Mercer",
+      "role": "DON / Clinical Manager",
+      "discipline": "Clinical Leadership",
+      "employmentType": "W2",
+      "status": "Active",
+      "email": "nadia.mercer@example.test",
+      "licenseCertificationMockNumber": "MOCK-RN-CL-0012",
+      "credentialExpirationDate": "2026-11-30",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "Clinical supervision",
+        "OASIS QA review",
+        "POC approval",
+        "QAPI clinical review"
+      ],
+      "allowedTaskTypes": [
+        "Clinical manager review",
+        "OASIS QA review",
+        "POC supervisory signature",
+        "QAPI clinical approval"
+      ],
+      "prohibitedTaskTypes": [
+        "Governing Body final authority",
+        "IT/security approval"
+      ],
+      "assignedPatients": [],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      },
+      "exceptionFlags": [],
+      "canSignOasis": true,
+      "canSignPoc": true,
+      "canSignQapiMinutes": true,
+      "canApproveEventCloseout": true,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": false,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0012.svg",
+        "alt": "Synthetic mock profile image for Nadia Mercer",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Nadia Mercer is a January synthetic DON / Clinical Manager profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "Clinical supervision",
+          "OASIS QA review",
+          "POC approval"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Clinical supervision",
+          "OASIS QA review"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Not valid independent performer",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0013",
+      "name": "Caleb Stone",
+      "role": "QAPI Chair",
+      "discipline": "QAPI",
+      "employmentType": "W2",
+      "status": "Active",
+      "email": "caleb.stone@example.test",
+      "licenseCertificationMockNumber": "MOCK-QAPI-0013",
+      "credentialExpirationDate": "2026-12-31",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "QAPI meeting minutes",
+        "PIP approval",
+        "CAPA review",
+        "Event closeout"
+      ],
+      "allowedTaskTypes": [
+        "QAPI minutes signature",
+        "QAPI event closeout",
+        "PIP/CAPA approval"
+      ],
+      "prohibitedTaskTypes": [
+        "OASIS clinical signature",
+        "Direct patient care visit",
+        "Physician order signature"
+      ],
+      "assignedPatients": [],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Tue",
+          "Wed",
+          "Thu"
+        ],
+        "maxVisitsPerWeek": 0
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": true,
+      "canApproveEventCloseout": true,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": false,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0013.svg",
+        "alt": "Synthetic mock profile image for Caleb Stone",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Caleb Stone is a January synthetic QAPI Chair profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "QAPI meeting minutes",
+          "PIP approval",
+          "CAPA review"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "QAPI meeting minutes",
+          "PIP approval"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Not valid independent performer",
+        "availableDays": [
+          "Tue",
+          "Wed",
+          "Thu"
+        ],
+        "maxVisitsPerWeek": 0
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0014",
+      "name": "Imani Reed",
+      "role": "Compliance Officer",
+      "discipline": "Compliance",
+      "employmentType": "W2",
+      "status": "Active",
+      "email": "imani.reed@example.test",
+      "licenseCertificationMockNumber": "MOCK-COMP-0014",
+      "credentialExpirationDate": "2026-12-31",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "Compliance audit",
+        "CAPA validation",
+        "Policy attestation review"
+      ],
+      "allowedTaskTypes": [
+        "Compliance audit",
+        "CAPA validation",
+        "Survey packet review"
+      ],
+      "prohibitedTaskTypes": [
+        "OASIS clinical signature",
+        "Physician order signature",
+        "Direct patient care"
+      ],
+      "assignedPatients": [],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Mon",
+          "Wed",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": true,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": false,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0014.svg",
+        "alt": "Synthetic mock profile image for Imani Reed",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Imani Reed is a January synthetic Compliance Officer profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "Compliance audit",
+          "CAPA validation",
+          "Policy attestation review"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Compliance audit",
+          "CAPA validation"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Not valid independent performer",
+        "availableDays": [
+          "Mon",
+          "Wed",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0015",
+      "name": "Owen Park",
+      "role": "Policy Admin",
+      "discipline": "Policy",
+      "employmentType": "W2",
+      "status": "Active",
+      "email": "owen.park@example.test",
+      "licenseCertificationMockNumber": "MOCK-POL-0015",
+      "credentialExpirationDate": "2026-12-31",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "Policy package management",
+        "Attestation tracking",
+        "Policy evidence filing"
+      ],
+      "allowedTaskTypes": [
+        "Policy attestation tracking",
+        "Policy evidence package",
+        "Policy admin review"
+      ],
+      "prohibitedTaskTypes": [
+        "OASIS clinical signature",
+        "Direct patient care",
+        "QAPI clinical approval"
+      ],
+      "assignedPatients": [],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": false,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0015.svg",
+        "alt": "Synthetic mock profile image for Owen Park",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Owen Park is a January synthetic Policy Admin profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "Policy package management",
+          "Attestation tracking",
+          "Policy evidence filing"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Policy package management",
+          "Attestation tracking"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Not valid independent performer",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0016",
+      "name": "Marta Silva",
+      "role": "Governing Body Chair",
+      "discipline": "Governance",
+      "employmentType": "W2",
+      "status": "Active",
+      "email": "marta.silva@example.test",
+      "licenseCertificationMockNumber": "MOCK-GB-0016",
+      "credentialExpirationDate": "2026-12-31",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "Governing Body approval",
+        "QAPI summary review",
+        "Final authority attestation"
+      ],
+      "allowedTaskTypes": [
+        "Governing Body approval",
+        "GB minutes signature",
+        "Final governance closeout"
+      ],
+      "prohibitedTaskTypes": [
+        "OASIS clinical signature",
+        "Direct patient care",
+        "Routine SN POC signature"
+      ],
+      "assignedPatients": [],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Thu"
+        ],
+        "maxVisitsPerWeek": 0
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": true,
+      "canApproveEventCloseout": true,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": false,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0016.svg",
+        "alt": "Synthetic mock profile image for Marta Silva",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Marta Silva is a January synthetic Governing Body Chair profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "Governing Body approval",
+          "QAPI summary review",
+          "Final authority attestation"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Governing Body approval",
+          "QAPI summary review"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Not valid independent performer",
+        "availableDays": [
+          "Thu"
+        ],
+        "maxVisitsPerWeek": 0
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0017",
+      "name": "Maya Hart, MD",
+      "role": "Physician / Ordering Provider",
+      "discipline": "Physician",
+      "employmentType": "Contractor",
+      "status": "Active",
+      "email": "maya.hart.md@example.test",
+      "licenseCertificationMockNumber": "MOCK-MD-0017",
+      "credentialExpirationDate": "2026-12-31",
+      "onboardingTrainingStatus": "Provider agreement active",
+      "competencies": [
+        "POC order signature",
+        "Wound order clarification",
+        "Medication order review"
+      ],
+      "allowedTaskTypes": [
+        "Physician POC signature",
+        "Order clarification",
+        "Medication/wound order signature"
+      ],
+      "prohibitedTaskTypes": [
+        "Agency OASIS completion",
+        "QAPI agency closeout",
+        "Direct agency staff visit"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0001",
+        "MOCK-PT-0002",
+        "MOCK-PT-0005"
+      ],
+      "januaryAvailability": {
+        "status": "Available for orders",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": true,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": false,
+      "canBeAssignedVisits": false,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0017.svg",
+        "alt": "Synthetic mock profile image for Maya Hart, MD",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Maya Hart, MD is a January synthetic Physician / Ordering Provider profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "POC order signature",
+          "Wound order clarification",
+          "Medication order review"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "POC order signature",
+          "Wound order clarification"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available for orders",
+        "q1Status": "Not valid independent performer",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0018",
+      "name": "Noah Singh, MD",
+      "role": "Physician / Ordering Provider",
+      "discipline": "Physician",
+      "employmentType": "Contractor",
+      "status": "Active",
+      "email": "noah.singh.md@example.test",
+      "licenseCertificationMockNumber": "MOCK-MD-0018",
+      "credentialExpirationDate": "2026-12-31",
+      "onboardingTrainingStatus": "Provider agreement active",
+      "competencies": [
+        "POC order signature",
+        "Therapy order clarification",
+        "Complex care order review"
+      ],
+      "allowedTaskTypes": [
+        "Physician POC signature",
+        "Therapy order clarification",
+        "Wound/order correction"
+      ],
+      "prohibitedTaskTypes": [
+        "Agency OASIS completion",
+        "QAPI agency closeout",
+        "Direct agency staff visit"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0003",
+        "MOCK-PT-0004",
+        "MOCK-PT-0006"
+      ],
+      "januaryAvailability": {
+        "status": "Available for orders",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": true,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": false,
+      "canBeAssignedVisits": false,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0018.svg",
+        "alt": "Synthetic mock profile image for Noah Singh, MD",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Noah Singh, MD is a January synthetic Physician / Ordering Provider profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "POC order signature",
+          "Therapy order clarification",
+          "Complex care order review"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "POC order signature",
+          "Therapy order clarification"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available for orders",
+        "q1Status": "Not valid independent performer",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0019",
+      "name": "Rhea Chen",
+      "role": "Medical Records / OASIS Coordinator",
+      "discipline": "Medical Records",
+      "employmentType": "W2",
+      "status": "Active",
+      "email": "rhea.chen@example.test",
+      "licenseCertificationMockNumber": "MOCK-MR-0019",
+      "credentialExpirationDate": "2026-12-31",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "OASIS submission readiness",
+        "Chart audit queue",
+        "Document indexing"
+      ],
+      "allowedTaskTypes": [
+        "OASIS submission QA",
+        "Medical record audit",
+        "Document indexing"
+      ],
+      "prohibitedTaskTypes": [
+        "Clinical OASIS signature",
+        "Direct patient care",
+        "Physician order signature"
+      ],
+      "assignedPatients": [],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": false,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0019.svg",
+        "alt": "Synthetic mock profile image for Rhea Chen",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Rhea Chen is a January synthetic Medical Records / OASIS Coordinator profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "OASIS submission readiness",
+          "Chart audit queue",
+          "Document indexing"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "OASIS submission readiness",
+          "Chart audit queue"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Not valid independent performer",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0020",
+      "name": "Jules Carter",
+      "role": "HR / Credentialing Reviewer",
+      "discipline": "HR",
+      "employmentType": "W2",
+      "status": "Active",
+      "email": "jules.carter@example.test",
+      "licenseCertificationMockNumber": "MOCK-HR-0020",
+      "credentialExpirationDate": "2026-12-31",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "Credential file audit",
+        "Training assignment verification",
+        "Staff eligibility validation"
+      ],
+      "allowedTaskTypes": [
+        "Credential review",
+        "Training compliance review",
+        "Staff eligibility validation"
+      ],
+      "prohibitedTaskTypes": [
+        "OASIS clinical signature",
+        "POC signature",
+        "Direct patient care"
+      ],
+      "assignedPatients": [],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Mon",
+          "Wed",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": false,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0020.svg",
+        "alt": "Synthetic mock profile image for Jules Carter",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Jules Carter is a January synthetic HR / Credentialing Reviewer profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "Credential file audit",
+          "Training assignment verification",
+          "Staff eligibility validation"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Credential file audit",
+          "Training assignment verification"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Not valid independent performer",
+        "availableDays": [
+          "Mon",
+          "Wed",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0021",
+      "name": "Samira Holt",
+      "role": "Risk Manager",
+      "discipline": "Risk",
+      "employmentType": "W2",
+      "status": "Active",
+      "email": "samira.holt@example.test",
+      "licenseCertificationMockNumber": "MOCK-RISK-0021",
+      "credentialExpirationDate": "2026-12-31",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "Incident review",
+        "Risk trend analysis",
+        "CAPA follow-up"
+      ],
+      "allowedTaskTypes": [
+        "Incident review",
+        "Fall-risk trend review",
+        "CAPA owner review"
+      ],
+      "prohibitedTaskTypes": [
+        "OASIS clinical signature",
+        "POC signature",
+        "Direct patient care"
+      ],
+      "assignedPatients": [],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Tue",
+          "Thu"
+        ],
+        "maxVisitsPerWeek": 0
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": true,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": false,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0021.svg",
+        "alt": "Synthetic mock profile image for Samira Holt",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Samira Holt is a January synthetic Risk Manager profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "Incident review",
+          "Risk trend analysis",
+          "CAPA follow-up"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Incident review",
+          "Risk trend analysis"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Not valid independent performer",
+        "availableDays": [
+          "Tue",
+          "Thu"
+        ],
+        "maxVisitsPerWeek": 0
+      }
+    },
+    {
+      "staffId": "MOCK-STF-0022",
+      "name": "Devon Ibarra",
+      "role": "IT/Security Owner",
+      "discipline": "IT",
+      "employmentType": "W2",
+      "status": "Active",
+      "email": "devon.ibarra@example.test",
+      "licenseCertificationMockNumber": "MOCK-IT-0022",
+      "credentialExpirationDate": "2026-12-31",
+      "onboardingTrainingStatus": "Complete",
+      "competencies": [
+        "Access review",
+        "Security incident evidence",
+        "System audit trail export"
+      ],
+      "allowedTaskTypes": [
+        "Access review",
+        "Security evidence export",
+        "System audit support"
+      ],
+      "prohibitedTaskTypes": [
+        "OASIS clinical signature",
+        "POC signature",
+        "Direct patient care",
+        "QAPI clinical closeout"
+      ],
+      "assignedPatients": [],
+      "januaryAvailability": {
+        "status": "Available",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": false,
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STF-0022.svg",
+        "alt": "Synthetic mock profile image for Devon Ibarra",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional profile badge"
+      },
+      "bio": {
+        "short": "Devon Ibarra is a January synthetic IT/Security Owner profile retained for the combined Q1 mock universe.",
+        "strengths": [
+          "Access review",
+          "Security incident evidence",
+          "System audit trail export"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Access review",
+          "Security incident evidence"
+        ],
+        "supervisionNotes": "Imported from January mock seed into combined Q1 registry without modifying the January source file.",
+        "riskFlags": []
+      },
+      "hireDate": "2026-01-01",
+      "januaryQ1Availability": {
+        "januaryStatus": "Available",
+        "q1Status": "Not valid independent performer",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 0
+      }
+    },
+    {
+      "staffId": "MOCK-STAFF-0023",
+      "name": "Rowan Ellis",
+      "marker": "MOCK TEST REGISTRY - NO PHI - Q1 2026 CLINICAL UNIVERSE",
+      "role": "RN",
+      "discipline": "SN",
+      "employmentType": "W2",
+      "status": "Active",
+      "hireDate": "2026-02-03",
+      "email": "rowan.ellis@example.test",
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STAFF-0023.svg",
+        "alt": "Synthetic mock profile image for Rowan Ellis",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional clinician badge"
+      },
+      "bio": {
+        "short": "Rowan Ellis is a synthetic RN profile for Q1 2026 dry-run validation.",
+        "strengths": [
+          "OASIS accuracy",
+          "Care planning",
+          "Schedule adherence",
+          "Patient education"
+        ],
+        "languages": [
+          "English",
+          "Spanish mock language support"
+        ],
+        "specialties": [
+          "Home health nursing",
+          "Medication reconciliation",
+          "OASIS documentation"
+        ],
+        "supervisionNotes": "Clean benchmark clinician for Q1 simulation.",
+        "riskFlags": []
+      },
+      "licenseCertificationMockNumber": "RN-MOCK-Q1-0023",
+      "credentialExpirationDate": "2026-11-30",
+      "orientationStatus": "Complete",
+      "onboardingStatus": "Complete",
+      "trainingStatus": "Complete",
+      "competencyStatus": "Complete",
+      "competencies": [
+        "OASIS SOC/ROC/recert",
+        "POC development",
+        "Medication reconciliation",
+        "High-risk teaching"
+      ],
+      "allowedTaskTypes": [
+        "OASIS assessment",
+        "SN visit",
+        "POC draft",
+        "Medication reconciliation",
+        "Chart audit sample review"
+      ],
+      "prohibitedTaskTypes": [
+        "Governing Body approval",
+        "QAPI final approval"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0007",
+        "MOCK-PT-0016",
+        "MOCK-PT-0023"
+      ],
+      "januaryQ1Availability": {
+        "januaryStatus": "Not in January seed; Q1 expansion staff",
+        "q1Status": "Available with scenario-specific limits",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed"
+        ],
+        "maxVisitsPerWeek": 16
+      },
+      "exceptionFlags": [
+        "clean-control"
+      ],
+      "canSignOasis": true,
+      "canSignPoc": true,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": true,
+      "expectedWorkflowsTriggered": [
+        "audit readiness packet",
+        "staffing exception"
+      ],
+      "scenario": "perfect clinician",
+      "offenses": []
+    },
+    {
+      "staffId": "MOCK-STAFF-0024",
+      "name": "Marisol Vega",
+      "marker": "MOCK TEST REGISTRY - NO PHI - Q1 2026 CLINICAL UNIVERSE",
+      "role": "RN",
+      "discipline": "SN",
+      "employmentType": "W2",
+      "status": "Active",
+      "hireDate": "2026-02-05",
+      "email": "marisol.vega@example.test",
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STAFF-0024.svg",
+        "alt": "Synthetic mock profile image for Marisol Vega",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional clinician badge"
+      },
+      "bio": {
+        "short": "Marisol Vega is a synthetic RN profile for Q1 2026 dry-run validation.",
+        "strengths": [
+          "Mock patient rapport",
+          "Routine workflow participation",
+          "Scenario-specific validation support"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Home health nursing",
+          "Medication reconciliation",
+          "OASIS documentation"
+        ],
+        "supervisionNotes": "Brad may prepare a coaching or disciplinary draft later; HR, DON, and Administrator review/signature remain required.",
+        "riskFlags": [
+          "Late documentation",
+          "Wrong visit schedule",
+          "Missing supervisory visit",
+          "OASIS/POC mismatch",
+          "Medication reconciliation discrepancy"
+        ]
+      },
+      "licenseCertificationMockNumber": "RN-MOCK-Q1-0024",
+      "credentialExpirationDate": "2026-12-02",
+      "orientationStatus": "Complete",
+      "onboardingStatus": "Complete",
+      "trainingStatus": "Complete",
+      "competencyStatus": "Complete",
+      "competencies": [
+        "OASIS SOC/ROC/recert",
+        "POC development",
+        "Medication reconciliation",
+        "High-risk teaching"
+      ],
+      "allowedTaskTypes": [
+        "OASIS assessment",
+        "SN visit",
+        "POC draft",
+        "Medication reconciliation",
+        "Chart audit sample review"
+      ],
+      "prohibitedTaskTypes": [
+        "Governing Body approval",
+        "QAPI final approval"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0019",
+        "MOCK-PT-0024",
+        "MOCK-PT-0031"
+      ],
+      "januaryQ1Availability": {
+        "januaryStatus": "Not in January seed; Q1 expansion staff",
+        "q1Status": "Available with scenario-specific limits",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu"
+        ],
+        "maxVisitsPerWeek": 16
+      },
+      "exceptionFlags": [
+        "late_documentation",
+        "med_rec_discrepancy",
+        "missing_supervisory_visit",
+        "oasis_poc_mismatch",
+        "repeat-offense",
+        "wrong_visit_schedule"
+      ],
+      "canSignOasis": true,
+      "canSignPoc": true,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": true,
+      "expectedWorkflowsTriggered": [
+        "Plan of Care update",
+        "audit readiness packet",
+        "clinical record audit",
+        "disciplinary action draft",
+        "medication reconciliation",
+        "scheduling exception",
+        "staffing exception",
+        "supervisory visit"
+      ],
+      "scenario": "repeat offender with multiple documentation and escalation failures",
+      "offenses": [
+        "late_documentation",
+        "wrong_visit_schedule",
+        "missing_supervisory_visit",
+        "oasis_poc_mismatch",
+        "med_rec_discrepancy"
+      ]
+    },
+    {
+      "staffId": "MOCK-STAFF-0025",
+      "name": "Kofi Mensah",
+      "marker": "MOCK TEST REGISTRY - NO PHI - Q1 2026 CLINICAL UNIVERSE",
+      "role": "RN",
+      "discipline": "SN",
+      "employmentType": "W2",
+      "status": "Active",
+      "hireDate": "2026-02-12",
+      "email": "kofi.mensah@example.test",
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STAFF-0025.svg",
+        "alt": "Synthetic mock profile image for Kofi Mensah",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional clinician badge"
+      },
+      "bio": {
+        "short": "Kofi Mensah is a synthetic RN profile for Q1 2026 dry-run validation.",
+        "strengths": [
+          "Mock patient rapport",
+          "Routine workflow participation",
+          "Scenario-specific validation support"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Home health nursing",
+          "Medication reconciliation",
+          "OASIS documentation"
+        ],
+        "supervisionNotes": "Use only within the explicit mock scenario constraints.",
+        "riskFlags": []
+      },
+      "licenseCertificationMockNumber": "RN-MOCK-Q1-0025",
+      "credentialExpirationDate": "2026-12-09",
+      "orientationStatus": "Incomplete - preceptor required",
+      "onboardingStatus": "Incomplete",
+      "trainingStatus": "Complete",
+      "competencyStatus": "Partial - high-risk tasks blocked",
+      "competencies": [
+        "OASIS SOC/ROC/recert",
+        "POC development",
+        "Medication reconciliation",
+        "High-risk teaching"
+      ],
+      "allowedTaskTypes": [
+        "Precepted SN visit",
+        "Shadow OASIS workflow"
+      ],
+      "prohibitedTaskTypes": [
+        "Governing Body approval",
+        "QAPI final approval",
+        "Independent high-risk visit",
+        "Unsupervised OASIS"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0008",
+        "MOCK-PT-0011"
+      ],
+      "januaryQ1Availability": {
+        "januaryStatus": "Not in January seed; Q1 expansion staff",
+        "q1Status": "Available with scenario-specific limits",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 16
+      },
+      "exceptionFlags": [
+        "onboarding-incomplete"
+      ],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": false,
+      "canBeAssignedVisits": false,
+      "expectedWorkflowsTriggered": [
+        "audit readiness packet",
+        "onboarding/competency",
+        "staffing exception"
+      ],
+      "scenario": "newly hired clinician with incomplete onboarding",
+      "offenses": []
+    },
+    {
+      "staffId": "MOCK-STAFF-0026",
+      "name": "Bianca Rossi",
+      "marker": "MOCK TEST REGISTRY - NO PHI - Q1 2026 CLINICAL UNIVERSE",
+      "role": "LVN",
+      "discipline": "SN",
+      "employmentType": "W2",
+      "status": "Active",
+      "hireDate": "2026-02-15",
+      "email": "bianca.rossi@example.test",
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STAFF-0026.svg",
+        "alt": "Synthetic mock profile image for Bianca Rossi",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional clinician badge"
+      },
+      "bio": {
+        "short": "Bianca Rossi is a synthetic LVN profile for Q1 2026 dry-run validation.",
+        "strengths": [
+          "Mock patient rapport",
+          "Routine workflow participation",
+          "Scenario-specific validation support"
+        ],
+        "languages": [
+          "English",
+          "Spanish mock language support"
+        ],
+        "specialties": [
+          "Routine visit support",
+          "Medication teaching reinforcement"
+        ],
+        "supervisionNotes": "Use only within the explicit mock scenario constraints.",
+        "riskFlags": []
+      },
+      "licenseCertificationMockNumber": "LVN-MOCK-Q1-0026",
+      "credentialExpirationDate": "2026-03-20",
+      "orientationStatus": "Complete",
+      "onboardingStatus": "Complete",
+      "trainingStatus": "Complete",
+      "competencyStatus": "Complete",
+      "competencies": [
+        "Routine LVN visits",
+        "Medication teaching reinforcement",
+        "Vital-sign monitoring"
+      ],
+      "allowedTaskTypes": [
+        "LVN visit",
+        "Medication teaching reinforcement",
+        "Vital-sign monitoring"
+      ],
+      "prohibitedTaskTypes": [
+        "Governing Body approval",
+        "QAPI final approval",
+        "Independent OASIS signature",
+        "Independent POC signature"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0009",
+        "MOCK-PT-0025"
+      ],
+      "januaryQ1Availability": {
+        "januaryStatus": "Not in January seed; Q1 expansion staff",
+        "q1Status": "Available with scenario-specific limits",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed"
+        ],
+        "maxVisitsPerWeek": 18
+      },
+      "exceptionFlags": [
+        "credential-expiring-q1"
+      ],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": false,
+      "canBeAssignedVisits": false,
+      "expectedWorkflowsTriggered": [
+        "HR credentialing",
+        "audit readiness packet",
+        "staffing exception"
+      ],
+      "scenario": "credential expiration during Q1",
+      "offenses": []
+    },
+    {
+      "staffId": "MOCK-STAFF-0027",
+      "name": "Andre Coleman",
+      "marker": "MOCK TEST REGISTRY - NO PHI - Q1 2026 CLINICAL UNIVERSE",
+      "role": "LVN",
+      "discipline": "SN",
+      "employmentType": "W2",
+      "status": "Active",
+      "hireDate": "2026-02-18",
+      "email": "andre.coleman@example.test",
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STAFF-0027.svg",
+        "alt": "Synthetic mock profile image for Andre Coleman",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional clinician badge"
+      },
+      "bio": {
+        "short": "Andre Coleman is a synthetic LVN profile for Q1 2026 dry-run validation.",
+        "strengths": [
+          "Mock patient rapport",
+          "Routine workflow participation",
+          "Scenario-specific validation support"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Routine visit support",
+          "Medication teaching reinforcement"
+        ],
+        "supervisionNotes": "Use as CAPA follow-up example showing corrected behavior after coaching.",
+        "riskFlags": [
+          "Late documentation"
+        ]
+      },
+      "licenseCertificationMockNumber": "LVN-MOCK-Q1-0027",
+      "credentialExpirationDate": "2026-12-15",
+      "orientationStatus": "Complete",
+      "onboardingStatus": "Complete",
+      "trainingStatus": "Complete",
+      "competencyStatus": "Complete",
+      "competencies": [
+        "Routine LVN visits",
+        "Medication teaching reinforcement",
+        "Vital-sign monitoring"
+      ],
+      "allowedTaskTypes": [
+        "LVN visit",
+        "Medication teaching reinforcement",
+        "Vital-sign monitoring"
+      ],
+      "prohibitedTaskTypes": [
+        "Governing Body approval",
+        "QAPI final approval",
+        "Independent OASIS signature",
+        "Independent POC signature"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0010",
+        "MOCK-PT-0018"
+      ],
+      "januaryQ1Availability": {
+        "januaryStatus": "Not in January seed; Q1 expansion staff",
+        "q1Status": "Available with scenario-specific limits",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu"
+        ],
+        "maxVisitsPerWeek": 18
+      },
+      "exceptionFlags": [
+        "clean-remediation-after-coaching",
+        "late_documentation"
+      ],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": true,
+      "expectedWorkflowsTriggered": [
+        "CAPA/PIP follow-up",
+        "audit readiness packet",
+        "clinical record audit",
+        "staffing exception"
+      ],
+      "scenario": "clean remediation after coaching",
+      "offenses": [
+        "late_documentation"
+      ]
+    },
+    {
+      "staffId": "MOCK-STAFF-0028",
+      "name": "Sasha Novak",
+      "marker": "MOCK TEST REGISTRY - NO PHI - Q1 2026 CLINICAL UNIVERSE",
+      "role": "PT",
+      "discipline": "PT",
+      "employmentType": "Contractor",
+      "status": "Active",
+      "hireDate": "2026-02-20",
+      "email": "sasha.novak@example.test",
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STAFF-0028.svg",
+        "alt": "Synthetic mock profile image for Sasha Novak",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional clinician badge"
+      },
+      "bio": {
+        "short": "Sasha Novak is a synthetic PT profile for Q1 2026 dry-run validation.",
+        "strengths": [
+          "Mock patient rapport",
+          "Routine workflow participation",
+          "Scenario-specific validation support"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Mobility training",
+          "Home safety"
+        ],
+        "supervisionNotes": "Use only within the explicit mock scenario constraints.",
+        "riskFlags": []
+      },
+      "licenseCertificationMockNumber": "PT-MOCK-Q1-0028",
+      "credentialExpirationDate": "2026-12-17",
+      "orientationStatus": "Complete",
+      "onboardingStatus": "Complete",
+      "trainingStatus": "Complete",
+      "competencyStatus": "Complete",
+      "competencies": [
+        "Discipline visit documentation",
+        "Caregiver education",
+        "Home safety observations"
+      ],
+      "allowedTaskTypes": [
+        "PT visit",
+        "Mobility assessment",
+        "Home exercise teaching"
+      ],
+      "prohibitedTaskTypes": [
+        "Governing Body approval",
+        "QAPI final approval",
+        "Independent OASIS signature",
+        "Independent POC signature"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0021",
+        "MOCK-PT-0027"
+      ],
+      "januaryQ1Availability": {
+        "januaryStatus": "Not in January seed; Q1 expansion staff",
+        "q1Status": "Available with scenario-specific limits",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 18
+      },
+      "exceptionFlags": [
+        "contractor-packet-missing"
+      ],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": true,
+      "expectedWorkflowsTriggered": [
+        "audit readiness packet",
+        "contractor review",
+        "staffing exception"
+      ],
+      "scenario": "contractor with missing documentation packet",
+      "offenses": []
+    },
+    {
+      "staffId": "MOCK-STAFF-0029",
+      "name": "Talia Brooks",
+      "marker": "MOCK TEST REGISTRY - NO PHI - Q1 2026 CLINICAL UNIVERSE",
+      "role": "OT",
+      "discipline": "OT",
+      "employmentType": "W2",
+      "status": "Active",
+      "hireDate": "2026-03-01",
+      "email": "talia.brooks@example.test",
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STAFF-0029.svg",
+        "alt": "Synthetic mock profile image for Talia Brooks",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional clinician badge"
+      },
+      "bio": {
+        "short": "Talia Brooks is a synthetic OT profile for Q1 2026 dry-run validation.",
+        "strengths": [
+          "Mock patient rapport",
+          "Routine workflow participation",
+          "Scenario-specific validation support"
+        ],
+        "languages": [
+          "English",
+          "Spanish mock language support"
+        ],
+        "specialties": [
+          "ADL retraining",
+          "Caregiver education"
+        ],
+        "supervisionNotes": "Use only within the explicit mock scenario constraints.",
+        "riskFlags": []
+      },
+      "licenseCertificationMockNumber": "OT-MOCK-Q1-0029",
+      "credentialExpirationDate": "2026-12-26",
+      "orientationStatus": "Complete",
+      "onboardingStatus": "Complete",
+      "trainingStatus": "Overdue annual infection-control module",
+      "competencyStatus": "Complete",
+      "competencies": [
+        "Discipline visit documentation",
+        "Caregiver education",
+        "Home safety observations"
+      ],
+      "allowedTaskTypes": [
+        "OT visit",
+        "ADL retraining",
+        "Caregiver education"
+      ],
+      "prohibitedTaskTypes": [
+        "Governing Body approval",
+        "QAPI final approval",
+        "Independent OASIS signature",
+        "Independent POC signature"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0024",
+        "MOCK-PT-0030"
+      ],
+      "januaryQ1Availability": {
+        "januaryStatus": "Not in January seed; Q1 expansion staff",
+        "q1Status": "Available with scenario-specific limits",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed"
+        ],
+        "maxVisitsPerWeek": 18
+      },
+      "exceptionFlags": [
+        "training-overdue"
+      ],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": true,
+      "expectedWorkflowsTriggered": [
+        "audit readiness packet",
+        "staffing exception",
+        "training compliance"
+      ],
+      "scenario": "training overdue",
+      "offenses": []
+    },
+    {
+      "staffId": "MOCK-STAFF-0030",
+      "name": "Mika Shah",
+      "marker": "MOCK TEST REGISTRY - NO PHI - Q1 2026 CLINICAL UNIVERSE",
+      "role": "MSW",
+      "discipline": "MSW",
+      "employmentType": "W2",
+      "status": "Active",
+      "hireDate": "2026-03-05",
+      "email": "mika.shah@example.test",
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STAFF-0030.svg",
+        "alt": "Synthetic mock profile image for Mika Shah",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional clinician badge"
+      },
+      "bio": {
+        "short": "Mika Shah is a synthetic MSW profile for Q1 2026 dry-run validation.",
+        "strengths": [
+          "Mock patient rapport",
+          "Routine workflow participation",
+          "Scenario-specific validation support"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Discipline-specific home health support"
+        ],
+        "supervisionNotes": "Use only within the explicit mock scenario constraints.",
+        "riskFlags": [
+          "Not valid for seeded care task",
+          "Service provided outside clinician scope"
+        ]
+      },
+      "licenseCertificationMockNumber": "MSW-MOCK-Q1-0030",
+      "credentialExpirationDate": "2026-12-30",
+      "orientationStatus": "Complete",
+      "onboardingStatus": "Complete",
+      "trainingStatus": "Complete",
+      "competencyStatus": "Competent only within own discipline; out-of-scope assignment flagged",
+      "competencies": [
+        "Discipline visit documentation",
+        "Caregiver education",
+        "Home safety observations"
+      ],
+      "allowedTaskTypes": [
+        "MSW evaluation",
+        "SDOH coordination",
+        "Community resource referral"
+      ],
+      "prohibitedTaskTypes": [
+        "Governing Body approval",
+        "QAPI final approval",
+        "Independent OASIS signature",
+        "Independent POC signature",
+        "Wound care visit",
+        "SN medication reconciliation"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0022",
+        "MOCK-PT-0033"
+      ],
+      "januaryQ1Availability": {
+        "januaryStatus": "Not in January seed; Q1 expansion staff",
+        "q1Status": "Available with scenario-specific limits",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu"
+        ],
+        "maxVisitsPerWeek": 18
+      },
+      "exceptionFlags": [
+        "not-valid-for-seeded-care-task",
+        "outside-scope-assignment",
+        "outside_scope_service"
+      ],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": false,
+      "canBeAssignedVisits": false,
+      "expectedWorkflowsTriggered": [
+        "audit readiness packet",
+        "staffing exception"
+      ],
+      "scenario": "scheduled outside scope",
+      "offenses": [
+        "outside_scope_service"
+      ]
+    },
+    {
+      "staffId": "MOCK-STAFF-0031",
+      "name": "Rosa Kim",
+      "marker": "MOCK TEST REGISTRY - NO PHI - Q1 2026 CLINICAL UNIVERSE",
+      "role": "HHA",
+      "discipline": "HHA",
+      "employmentType": "W2",
+      "status": "Active",
+      "hireDate": "2026-03-10",
+      "email": "rosa.kim@example.test",
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STAFF-0031.svg",
+        "alt": "Synthetic mock profile image for Rosa Kim",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional clinician badge"
+      },
+      "bio": {
+        "short": "Rosa Kim is a synthetic HHA profile for Q1 2026 dry-run validation.",
+        "strengths": [
+          "Mock patient rapport",
+          "Routine workflow participation",
+          "Scenario-specific validation support"
+        ],
+        "languages": [
+          "English"
+        ],
+        "specialties": [
+          "Discipline-specific home health support"
+        ],
+        "supervisionNotes": "Use only within the explicit mock scenario constraints.",
+        "riskFlags": []
+      },
+      "licenseCertificationMockNumber": "HHA-MOCK-Q1-0031",
+      "credentialExpirationDate": "2027-01-04",
+      "orientationStatus": "Complete",
+      "onboardingStatus": "Complete",
+      "trainingStatus": "Complete",
+      "competencyStatus": "Complete",
+      "competencies": [
+        "Discipline visit documentation",
+        "Caregiver education",
+        "Home safety observations"
+      ],
+      "allowedTaskTypes": [
+        "HHA visit",
+        "Personal care support"
+      ],
+      "prohibitedTaskTypes": [
+        "Governing Body approval",
+        "QAPI final approval",
+        "Independent OASIS signature",
+        "Independent POC signature"
+      ],
+      "assignedPatients": [
+        "MOCK-PT-0010",
+        "MOCK-PT-0012",
+        "MOCK-PT-0017"
+      ],
+      "januaryQ1Availability": {
+        "januaryStatus": "Not in January seed; Q1 expansion staff",
+        "q1Status": "Available with scenario-specific limits",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri"
+        ],
+        "maxVisitsPerWeek": 18
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": true,
+      "expectedWorkflowsTriggered": [
+        "audit readiness packet",
+        "staffing exception"
+      ],
+      "scenario": "HHA support with supervisory-visit dependency",
+      "offenses": []
+    },
+    {
+      "staffId": "MOCK-STAFF-0032",
+      "name": "Evan Brooks",
+      "marker": "MOCK TEST REGISTRY - NO PHI - Q1 2026 CLINICAL UNIVERSE",
+      "role": "Medical Records / Credentialing Support",
+      "discipline": "Administration",
+      "employmentType": "W2",
+      "status": "Active",
+      "hireDate": "2026-03-18",
+      "email": "evan.brooks@example.test",
+      "profileImage": {
+        "type": "synthetic_profile_badge",
+        "src": "assets/profile-images/clinicians/MOCK-STAFF-0032.svg",
+        "alt": "Synthetic mock profile image for Evan Brooks",
+        "noPhi": true,
+        "generatedFor": "q1-2026-mock-universe",
+        "photoStyle": "synthetic professional administrative badge"
+      },
+      "bio": {
+        "short": "Evan Brooks is a synthetic Medical Records / Credentialing Support profile for Q1 2026 dry-run validation.",
+        "strengths": [
+          "Mock patient rapport",
+          "Routine workflow participation",
+          "Scenario-specific validation support"
+        ],
+        "languages": [
+          "English",
+          "Spanish mock language support"
+        ],
+        "specialties": [
+          "Credentialing packet review",
+          "Medical records tracking"
+        ],
+        "supervisionNotes": "Use only within the explicit mock scenario constraints.",
+        "riskFlags": []
+      },
+      "licenseCertificationMockNumber": "MRCS-MOCK-Q1-0032",
+      "credentialExpirationDate": "2027-01-12",
+      "orientationStatus": "Complete",
+      "onboardingStatus": "Complete",
+      "trainingStatus": "Complete",
+      "competencyStatus": "Complete",
+      "competencies": [
+        "Credentialing review",
+        "Medical records tracking",
+        "Physician signature tracking"
+      ],
+      "allowedTaskTypes": [
+        "Credentialing packet review",
+        "Physician signature tracking",
+        "Medical records follow-up"
+      ],
+      "prohibitedTaskTypes": [
+        "Governing Body approval",
+        "QAPI final approval",
+        "Independent OASIS signature",
+        "Independent POC signature"
+      ],
+      "assignedPatients": [],
+      "januaryQ1Availability": {
+        "januaryStatus": "Not in January seed; Q1 expansion staff",
+        "q1Status": "Available with scenario-specific limits",
+        "availableDays": [
+          "Mon",
+          "Tue",
+          "Wed"
+        ],
+        "maxVisitsPerWeek": 0
+      },
+      "exceptionFlags": [],
+      "canSignOasis": false,
+      "canSignPoc": false,
+      "canSignQapiMinutes": false,
+      "canApproveEventCloseout": false,
+      "canBeCountedInStaffing": true,
+      "canBeAssignedVisits": false,
+      "expectedWorkflowsTriggered": [
+        "audit readiness packet",
+        "staffing exception"
+      ],
+      "scenario": "admin medical-records credentialing support role",
+      "offenses": []
+    }
+  ]
+}

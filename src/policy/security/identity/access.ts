@@ -22,16 +22,13 @@ export interface AdminAccessResult {
  * Decoupling rationale:
  *   - `user.provision` was previously treated as the implicit signal
  *     for "Admin app access". That meant any group holding
- *     `user.provision` (e.g. Onboarding, which legitimately needs to
- *     provision new hires through scoped flows) automatically saw the
+ *     `user.provision` automatically saw the
  *     full Admin section, security pages, and internal tooling.
  *   - We now gate the Admin UI by group membership in `Super Admin`
  *     or `Admin`, plus the legacy `super_admin` / `sys_admin`
  *     auth-role fallback for the demo bypass user.
  *   - Holding `user.provision` no longer grants Admin UI by itself.
- *     Trainers / Onboarding can still call provisioning APIs through
- *     the workflows they own, but they no longer see the Admin
- *     section in the sidebar or reach `/admin/*` routes.
+ *     scoped workflows no longer imply Admin-section visibility.
  */
 export function evaluateAdminAccess(authUser: AuthDemoUser | null): AdminAccessResult {
   const role = authUser?.role?.toLowerCase() ?? '';

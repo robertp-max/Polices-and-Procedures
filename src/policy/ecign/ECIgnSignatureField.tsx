@@ -19,7 +19,7 @@ import type { ECIgnPermissionRole, ECIgnSignatureIntentMethod, SignerRole } from
    active/current. It never creates a form instance or a signer task.
    ═══════════════════════════════════════════════════════════════════ */
 
-const CI_TEAL = '#007970';
+const CI_TEAL = '#00797D';
 const CI_INK = '#1F1C1B';
 const CI_MUTED = '#747470';
 const CI_LINE = '#E5E4E3';
@@ -209,7 +209,7 @@ export function ECIgnSignatureField(props: ECIgnSignatureFieldProps) {
       <button
         type="button"
         onClick={handleSign}
-        className="group flex w-full items-center gap-3 rounded-lg border border-dashed px-3 py-3 text-left transition-colors hover:border-[#007970]"
+        className="group flex w-full items-center gap-3 rounded-lg border border-dashed px-3 py-3 text-left transition-colors hover:border-[#00797D]"
         style={{ borderColor: CI_LINE }}
       >
         <span className="flex h-8 w-8 items-center justify-center rounded-full" style={{ background: '#E5FEFF', color: CI_TEAL }}>

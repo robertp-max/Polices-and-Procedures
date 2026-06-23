@@ -4,7 +4,7 @@
   DESIGN AUTHORITY — Lead 16 C14 amendment (2026-05-16):
   ----------------------------------------------------------------
   CES retains NAVY as its approved sub-brand identity color.
-  Care Indeed teal (#007970) remains available as a highlight /
+  Care Indeed teal (#00797D) remains available as a highlight /
   accent where appropriate but does NOT replace navy on CES
   surfaces. The CES vertical's visual identity is intentionally
   distinct from the broader Care Indeed brand.
@@ -59,8 +59,8 @@ const CES_NAVY_LIGHT       = '#00D1C1';
 const CES_NAVY_DEEP_LIGHT  = '#00D1C1';
 const CES_NAVY_SOFT_LIGHT  = 'rgba(0, 209, 193, 0.12)';
 
-// Orange family — accent / awaiting-signature signal.
-const CES_ORANGE_LIGHT      = '#FFA059';
+// Orange family — accent / awaiting-signature signal. (design #4)
+const CES_ORANGE_LIGHT      = '#E07B2C';
 const CES_ORANGE_SOFT_LIGHT = 'rgba(224, 123, 44, 0.12)';
 
 // Neutrals — text, surface, border.
@@ -86,8 +86,8 @@ const CES_RED_SOFT_LIGHT    = 'rgba(224, 123, 44, 0.12)';
 const CES_NAVY_DARK         = '#7ADEDF';
 const CES_NAVY_DEEP_DARK    = '#C4F4F5';
 const CES_NAVY_SOFT_DARK    = 'rgba(122,222,223,0.14)';
-const CES_ORANGE_DARK       = '#FFC107';
-const CES_ORANGE_SOFT_DARK  = 'rgba(255,193,7,0.16)';
+const CES_ORANGE_DARK       = '#E07B2C';
+const CES_ORANGE_SOFT_DARK  = 'rgba(224,123,44,0.16)';
 const CES_INK_DARK          = '#F1F5F4';
 const CES_MUTED_DARK        = '#B7C7C5';
 const CES_BORDER_DARK       = 'rgba(122,222,223,0.24)';

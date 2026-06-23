@@ -1,7 +1,13 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import {
-  listEvents, findByEventId, pingCalendar,
+  listEvents, pingCalendar, resolveCalendarEvent,
 } from '../googleCalendar.js';
+import {
+  buildEnrichedPlannerPayloadLive,
+  getCesEnrichment,
+  parseCesHubMeta,
+} from '../cesCalendarEventBuilder.js';
+import { dedupePlannerEvents } from '../cesCalendarDedup.js';
 import { ApiError } from '../errors.js';
 import { log } from '../logger.js';
 import type { PlannerEventPayload } from '../mappers.js';
@@ -21,6 +27,7 @@ import {
   type GoogleCalendarDriveEvidenceRef,
 } from '../googleEvidence.js';
 import { getCesMetadataStore, type CesEvidenceRef } from '../cesMetadataStore.js';
+import { store as ecignStore } from '../ecign/store.js';
 
 /* ═══════════════════════════════════════════════════════════════
    Calendar API routes — thin HTTP layer around the sync engine.
@@ -36,7 +43,8 @@ calendarRouter.get('/events', asyncHandler(async (req, res) => {
   validateISODate(start, 'start');
   validateISODate(end, 'end');
   const items = await listEvents({ start, end, q });
-  res.json({ items });
+  const deduped = dedupePlannerEvents(items);
+  res.json({ items: deduped.items, suppressed: deduped.suppressed });
 }));
 
 /**
@@ -47,9 +55,79 @@ calendarRouter.get('/events', asyncHandler(async (req, res) => {
  */
 calendarRouter.get('/events/by-app/:eventId', asyncHandler(async (req, res) => {
   const eventId = String(req.params.eventId);
-  const ev = await findByEventId(eventId);
-  if (!ev) throw new ApiError('event_not_found', 'No Google event maps to this event_id.', 404);
-  res.json(ev);
+  const enrichment = getCesEnrichment(eventId);
+  let resolved;
+  let snapshot;
+  let payloadHint;
+  if (enrichment) {
+    const live = await buildEnrichedPlannerPayloadLive(enrichment);
+    payloadHint = live.payload;
+    snapshot = live.snapshot;
+  }
+  try {
+    resolved = await resolveCalendarEvent(eventId, payloadHint);
+  } catch (e) {
+    const err = e instanceof ApiError ? e : new ApiError('internal_error', (e as Error).message, 500);
+    if (err.code === 'calendar_not_found') {
+      throw new ApiError(
+        'calendar_not_found',
+        'Configured Google Calendar is unreachable. Verify GOOGLE_CALENDAR_ID and service-account sharing.',
+        404,
+        { eventId },
+      );
+    }
+    throw err;
+  }
+  if (!resolved) throw new ApiError('event_not_found', 'No Google event maps to this event_id.', 404);
+
+  if (enrichment && payloadHint) {
+    await syncEvent(payloadHint, {
+      trigger: 'api:GET /events/by-app/:eventId',
+      actor: resolveActor(req),
+      env: enrichment.env ?? 'SANDBOX',
+    });
+    const refreshed = await resolveCalendarEvent(eventId, payloadHint);
+    if (refreshed) resolved = refreshed;
+  }
+
+  const hub = enrichment
+    ? parseCesHubMeta(enrichment, {
+        ...(snapshot ? {
+          completionPercent: String(snapshot.completionPercent),
+          evidenceCount: String(snapshot.evidenceCount),
+          evidenceAttachedCount: String(snapshot.evidenceAttachedCount),
+          ecignStatus: snapshot.ecignStatus,
+          calendarAttachmentStatus: snapshot.calendarAttachmentStatus,
+          eventStatus: snapshot.statusLabel,
+          auditReadyPct: String(snapshot.auditReadyPercent),
+          workflowId: enrichment.workflowId,
+          policyRefs: (enrichment.policyRefs ?? []).map(p => p.id).join(','),
+          driveFolderId: enrichment.driveFolderId,
+          driveFolderUrl: enrichment.driveFolderUrl,
+        } : {}),
+      })
+    : undefined;
+
+  res.json({
+    ...resolved.event,
+    _hub: hub ?? null,
+    _completion: snapshot ? {
+      percent: snapshot.completionPercent,
+      formula: 'tasks35+evidence25+forms15+ecign15+audit10',
+      breakdown: snapshot.breakdown,
+      evidenceCount: snapshot.evidenceCount,
+      evidenceAttachedCount: snapshot.evidenceAttachedCount,
+      ecignStatus: snapshot.ecignStatus,
+      calendarAttachmentStatus: snapshot.calendarAttachmentStatus,
+      statusLabel: snapshot.statusLabel,
+    } : null,
+    _resolve: {
+      action: resolved.action,
+      healed: resolved.healed,
+      staleGoogleId: resolved.staleGoogleId ?? null,
+      duplicateAvoided: resolved.duplicateAvoided,
+    },
+  });
 }));
 
 /** POST /api/calendar/events — create/upsert (deterministic via eventSync). */
@@ -330,6 +408,11 @@ calendarRouter.post('/events/:eventId/signed-artifact/publish', asyncHandler(asy
   if (!env.calendarEvidenceEnabled) {
     throw new ApiError('validation_error', 'Google Calendar/Drive evidence is disabled.', 400);
   }
+  // Dynamic capability check: backend must report Drive healthy before accepting a finalized signed package.
+  const driveHealth = await pingDrive();
+  if (!driveHealth.reachable) {
+    throw new ApiError('validation_error', 'Evidence finalization blocked: Google Drive evidence persistence is not configured.', 400);
+  }
   const eventId = String(req.params.eventId);
   const b = (req.body ?? {}) as Record<string, unknown>;
 
@@ -340,12 +423,33 @@ calendarRouter.post('/events/:eventId/signed-artifact/publish', asyncHandler(asy
   if (!taskId) throw new ApiError('validation_error', '`taskId` is required.', 400);
   const contentBase64 = strOrEmpty(b.contentBase64);
   if (!contentBase64) throw new ApiError('validation_error', '`contentBase64` (artifact content) is required.', 400);
+  const formInstanceId = strOrUndef(b.formInstanceId);
 
   const artifactType = strOrEmpty(b.artifactType);
   const category: EvidenceCategory =
     artifactType === 'ecign_certificate' ? 'ecign_certificate'
     : artifactType === 'final_package' ? 'final_package'
     : 'signed_artifact';
+  if (category === 'final_package') {
+    if (!formInstanceId) {
+      throw new ApiError('validation_error', 'final package publication requires `formInstanceId`.', 400);
+    }
+    const instance = await ecignStore.getInstance(formInstanceId);
+    if (!instance) {
+      throw new ApiError('validation_error', 'final package publication requires an existing eCIgn form instance.', 400);
+    }
+    const signatures = await ecignStore.listSignatures(formInstanceId);
+    const signedFields = new Set(signatures.map(signature => signature.field_id));
+    const missingFinalSignerFields = instance.required_signers
+      .filter(signer => signer.required !== false && signer.required_for_final_package !== false)
+      .map(signer => signer.field_id)
+      .filter(fieldId => !signedFields.has(fieldId));
+    if (missingFinalSignerFields.length > 0 || instance.state !== 'signed_locked') {
+      throw new ApiError('validation_error', 'final package publication requires a locked eCIgn instance with all required signer slots complete.', 400);
+    }
+  } else if (b.signerSlotsComplete !== true) {
+    throw new ApiError('validation_error', 'signed-artifact/publish requires all required signer slots to be complete.', 400);
+  }
 
   const title = strOrEmpty(b.title) || strOrEmpty(b.fileName) || 'signed-artifact';
   const result = await uploadEventEvidence({
@@ -353,7 +457,7 @@ calendarRouter.post('/events/:eventId/signed-artifact/publish', asyncHandler(asy
     workflowId: strOrUndef(b.workflowId),
     taskId,
     formId: strOrUndef(b.formId),
-    formInstanceId: strOrUndef(b.formInstanceId),
+    formInstanceId,
     category,
     title,
     fileName: strOrEmpty(b.fileName) || `${title}`,
@@ -365,7 +469,27 @@ calendarRouter.post('/events/:eventId/signed-artifact/publish', asyncHandler(asy
     attachToCalendar: b.attachToCalendar !== false,
   });
 
-  await persistEvidenceRef(result.evidenceId, result.ref);
+  const now = new Date().toISOString();
+  const extraMetadata = {
+    artifactId: strOrUndef(b.artifactId),
+    pdfVersion: numOrUndef(b.pdfVersion),
+    status: 'final_locked',
+    hash: strOrUndef(b.sha256),
+    signerSlotOrder: numOrUndef(b.signerSlotOrder),
+    signerUserId: strOrUndef(b.signerUserId),
+    signerRole: strOrUndef(b.signerRole),
+    signerTier: numOrUndef(b.signerTier),
+    signerDomain: strOrUndef(b.signerDomain),
+    signedAt: now,
+    priorDocumentHash: strOrUndef(b.priorDocumentHash),
+    finalDocumentHash: strOrUndef(b.finalDocumentHash),
+    auditEventIds: Array.isArray(b.auditEventIds) ? b.auditEventIds.filter((value): value is string => typeof value === 'string') : undefined,
+    createdBy: strOrUndef(b.uploadedBy) ?? resolveActor(req),
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  await persistEvidenceRef(result.evidenceId, result.ref, extraMetadata);
 
   res.status(201).json({
     evidenceId: result.evidenceId,
@@ -377,6 +501,7 @@ calendarRouter.post('/events/:eventId/signed-artifact/publish', asyncHandler(asy
     calendarEventId: result.ref.calendarEventId,
     calendarAttachmentStatus: result.ref.attachmentStatus,
     storageProvider: result.ref.storageProvider,
+    ...extraMetadata,
   });
 }));
 
@@ -386,7 +511,11 @@ calendarRouter.post('/events/:eventId/signed-artifact/publish', asyncHandler(asy
  * Map a Drive/Calendar evidence ref to the canonical CES pointer shape and
  * persist it to the CES metadata backend. NON-PHI metadata only — never bytes.
  */
-async function persistEvidenceRef(evidenceId: string, ref: GoogleCalendarDriveEvidenceRef): Promise<void> {
+async function persistEvidenceRef(
+  evidenceId: string,
+  ref: GoogleCalendarDriveEvidenceRef,
+  extra: Partial<CesEvidenceRef> = {},
+): Promise<void> {
   const cesRef: CesEvidenceRef = {
     storageProvider: 'google_drive_calendar',
     evidenceId,
@@ -407,6 +536,7 @@ async function persistEvidenceRef(evidenceId: string, ref: GoogleCalendarDriveEv
     uploadedBy: ref.uploadedBy,
     attachmentStatus: ref.attachmentStatus,
     contentStatus: ref.contentStatus,
+    ...extra,
   };
   try {
     await getCesMetadataStore().upsertEvidence(cesRef);
@@ -470,6 +600,11 @@ function strOrEmpty(v: unknown): string {
 function strOrUndef(v: unknown): string | undefined {
   const s = strOrEmpty(v);
   return s ? s : undefined;
+}
+
+function numOrUndef(v: unknown): number | undefined {
+  const n = typeof v === 'number' ? v : typeof v === 'string' && v.trim() ? Number(v) : NaN;
+  return Number.isFinite(n) ? n : undefined;
 }
 
 function clampInt(raw: string | undefined, min: number, max: number, dflt: number): number {

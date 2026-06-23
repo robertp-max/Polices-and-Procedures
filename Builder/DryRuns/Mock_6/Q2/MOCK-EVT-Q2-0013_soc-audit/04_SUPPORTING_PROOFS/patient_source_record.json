@@ -1,0 +1,61 @@
+{
+  "clientId": "MOCK-PT-Q2-0025",
+  "firstName": "Ethel",
+  "lastName": "Blackwood",
+  "dob": "1934-12-15",
+  "gender": "F",
+  "mrn": "MOCK-MRN-900025",
+  "ssn": "XXX-XX-0025",
+  "address": "2222 Holly Dr, Fakehaven, CA 90024",
+  "phone": "555-1025",
+  "emergencyContact": {
+    "name": "Denise Blackwood",
+    "relationship": "Granddaughter",
+    "phone": "555-2025"
+  },
+  "primaryPayer": {
+    "payerId": "MOCK-PAY-MC-001",
+    "payerName": "Mock Medicare A",
+    "policyNumber": "MOCK-MC-A0025"
+  },
+  "secondaryPayer": {
+    "payerId": "MOCK-PAY-MCAID-001",
+    "payerName": "Mock Medicaid",
+    "policyNumber": "MOCK-MCAID-0025"
+  },
+  "attendingPhysician": {
+    "name": "Dr. Anne Hollister",
+    "npi": "MOCK-NPI-3333333333",
+    "phone": "555-3003"
+  },
+  "serviceLines": [
+    "skilled_nursing",
+    "PT",
+    "OT",
+    "HHA"
+  ],
+  "admissionStatus": "active",
+  "socDate": "2026-04-08",
+  "certPeriodStart": "2026-04-08",
+  "certPeriodEnd": "2026-06-07",
+  "primaryDiagnoses": [
+    "post_surgical",
+    "CHF"
+  ],
+  "clinicalComplexity": [
+    "post_surgical",
+    "CHF",
+    "fall_risk",
+    "catheter_care",
+    "anticoagulant_therapy"
+  ],
+  "assignedClinicians": [
+    "MOCK-CLIN-Q2-0001",
+    "MOCK-CLIN-Q2-0004",
+    "MOCK-CLIN-Q2-0015",
+    "MOCK-CLIN-Q2-0010"
+  ],
+  "messyFlags": [
+    "oasis_inconsistency"
+  ]
+}

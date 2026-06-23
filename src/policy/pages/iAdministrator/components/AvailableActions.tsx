@@ -4,6 +4,7 @@ import {
   Sparkles, Printer, Download, CalendarCheck, CheckCircle2, ArrowUpRight,
 } from 'lucide-react';
 import type { ActionType, AvailableAction } from '../lib/responseTypes';
+import { sanitizeAvailableActions } from '../lib/referenceSanitizer';
 
 /* ═══════════════════════════════════════════════════════════════
    AvailableActions — compact button strip that triggers either:
@@ -22,10 +23,11 @@ export interface AvailableActionsProps {
 }
 
 export function AvailableActions({ actions, isLight, onAction, runningActionId }: AvailableActionsProps) {
-  if (actions.length === 0) return null;
+  const resolvedActions = sanitizeAvailableActions(actions, 'AvailableActions');
+  if (resolvedActions.length === 0) return null;
 
-  const primary = actions.filter(a => a.priority === 'primary');
-  const secondary = actions.filter(a => a.priority === 'secondary');
+  const primary = resolvedActions.filter(a => a.priority === 'primary');
+  const secondary = resolvedActions.filter(a => a.priority === 'secondary');
 
   const border = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.09)';
   const surface = isLight ? '#FFFFFF' : 'rgba(255,255,255,0.025)';
@@ -49,7 +51,7 @@ export function AvailableActions({ actions, isLight, onAction, runningActionId }
           className="text-[10px] font-semibold uppercase tracking-[0.2em]"
           style={{ color: muted, fontFamily: "'JetBrains Mono', monospace" }}
         >
-          · {actions.length}
+          · {resolvedActions.length}
         </span>
       </div>
 

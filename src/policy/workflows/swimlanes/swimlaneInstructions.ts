@@ -10,7 +10,7 @@ function splitInstructionText(text?: string) {
   if (!text?.trim()) return [];
   return text
     .split(/\r?\n+/)
-    .map(line => line.replace(/^\s*\d+[\).\s-]+/, '').trim())
+    .map(line => line.replace(/^\s*\d+[).\s-]+/, '').trim())
     .filter(Boolean);
 }
 

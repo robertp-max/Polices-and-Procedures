@@ -1,0 +1,3196 @@
+[
+  {
+    "clientId": "MOCK-PT-Q2-0001",
+    "firstName": "Edna",
+    "lastName": "Brickwell",
+    "dob": "1942-07-14",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900001",
+    "ssn": "XXX-XX-0001",
+    "address": "123 Mockingbird Lane, Faketown, CA 90000",
+    "phone": "555-1001",
+    "emergencyContact": {
+      "name": "Robert Brickwell",
+      "relationship": "Son",
+      "phone": "555-2001"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0001"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-SUPP-001",
+      "payerName": "Mock Medigap Plan F",
+      "policyNumber": "MOCK-SUP-F0001"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-02",
+    "certPeriodStart": "2026-04-02",
+    "certPeriodEnd": "2026-06-01",
+    "primaryDiagnoses": [
+      "CHF",
+      "diabetes"
+    ],
+    "clinicalComplexity": [
+      "CHF",
+      "diabetes",
+      "medication_reconciliation_risk",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0010"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0002",
+    "firstName": "Harold",
+    "lastName": "Copperton",
+    "dob": "1938-11-22",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900002",
+    "ssn": "XXX-XX-0002",
+    "address": "456 Elm Blvd, Testville, CA 90001",
+    "phone": "555-1002",
+    "emergencyContact": {
+      "name": "Martha Copperton",
+      "relationship": "Wife",
+      "phone": "555-2002"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0002"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "OT",
+      "ST"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-07",
+    "certPeriodStart": "2026-04-07",
+    "certPeriodEnd": "2026-06-06",
+    "primaryDiagnoses": [
+      "COPD",
+      "cognitive_impairment"
+    ],
+    "clinicalComplexity": [
+      "COPD",
+      "cognitive_impairment",
+      "fall_risk",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0006",
+      "MOCK-CLIN-Q2-0008"
+    ],
+    "messyFlags": [
+      "assigned_clinician_has_expired_cpr"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0003",
+    "firstName": "Violet",
+    "lastName": "Marshwood",
+    "dob": "1950-03-08",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900003",
+    "ssn": "XXX-XX-0003",
+    "address": "789 Oak Terrace, Synthburg, CA 90002",
+    "phone": "555-1003",
+    "emergencyContact": {
+      "name": "James Marshwood",
+      "relationship": "Husband",
+      "phone": "555-2003"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0003"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-MCAID-001",
+      "payerName": "Mock Medicaid",
+      "policyNumber": "MOCK-MCAID-0003"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "MSW"
+    ],
+    "admissionStatus": "recert_due",
+    "socDate": "2026-02-01",
+    "certPeriodStart": "2026-04-02",
+    "certPeriodEnd": "2026-06-01",
+    "primaryDiagnoses": [
+      "wound_care",
+      "diabetes"
+    ],
+    "clinicalComplexity": [
+      "wound_care",
+      "diabetes",
+      "infection_risk",
+      "anticoagulant_therapy"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0013",
+      "MOCK-CLIN-Q2-0009"
+    ],
+    "messyFlags": [
+      "recert_assessment_overdue"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0004",
+    "firstName": "Theodore",
+    "lastName": "Granville",
+    "dob": "1945-09-30",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900004",
+    "ssn": "XXX-XX-0004",
+    "address": "101 Pine Crest, Mockdale, CA 90003",
+    "phone": "555-1004",
+    "emergencyContact": {
+      "name": "Linda Granville",
+      "relationship": "Daughter",
+      "phone": "555-2004"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MA-001",
+      "payerName": "Mock Medicare Advantage",
+      "policyNumber": "MOCK-MA-0004"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "OT",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-15",
+    "certPeriodStart": "2026-04-15",
+    "certPeriodEnd": "2026-06-14",
+    "primaryDiagnoses": [
+      "post_surgical",
+      "fall_risk"
+    ],
+    "clinicalComplexity": [
+      "post_surgical",
+      "fall_risk",
+      "medication_reconciliation_risk",
+      "catheter_care"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0006",
+      "MOCK-CLIN-Q2-0016"
+    ],
+    "messyFlags": [
+      "late_documentation_pattern"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0005",
+    "firstName": "Margaret",
+    "lastName": "Foxbury",
+    "dob": "1936-01-17",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900005",
+    "ssn": "XXX-XX-0005",
+    "address": "202 Birch Way, Testopolis, CA 90004",
+    "phone": "555-1005",
+    "emergencyContact": {
+      "name": "Carol Foxbury",
+      "relationship": "Daughter",
+      "phone": "555-2005"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0005"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing"
+    ],
+    "admissionStatus": "discharged",
+    "socDate": "2026-02-10",
+    "certPeriodStart": "2026-04-11",
+    "certPeriodEnd": "2026-06-10",
+    "dischargeDate": "2026-05-12",
+    "primaryDiagnoses": [
+      "CHF"
+    ],
+    "clinicalComplexity": [
+      "CHF",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001"
+    ],
+    "messyFlags": [
+      "discharge_summary_incomplete"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0006",
+    "firstName": "George",
+    "lastName": "Stillwater",
+    "dob": "1940-06-05",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900006",
+    "ssn": "XXX-XX-0006",
+    "address": "303 Cedar Rd, Fabricity, CA 90005",
+    "phone": "555-1006",
+    "emergencyContact": {
+      "name": "Thomas Stillwater",
+      "relationship": "Son",
+      "phone": "555-2006"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0006"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "HHA"
+    ],
+    "admissionStatus": "hospitalization_hold",
+    "socDate": "2026-03-20",
+    "certPeriodStart": "2026-03-20",
+    "certPeriodEnd": "2026-05-19",
+    "hospitalizationDate": "2026-05-05",
+    "primaryDiagnoses": [
+      "COPD",
+      "CHF"
+    ],
+    "clinicalComplexity": [
+      "COPD",
+      "CHF",
+      "fall_risk",
+      "infection_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0010"
+    ],
+    "messyFlags": [
+      "hospitalization_transfer_doc_incomplete"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0007",
+    "firstName": "Ruth",
+    "lastName": "Pembridge",
+    "dob": "1948-12-20",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900007",
+    "ssn": "XXX-XX-0007",
+    "address": "404 Maple Dr, Fakeston, CA 90006",
+    "phone": "555-1007",
+    "emergencyContact": {
+      "name": "Diane Pembridge",
+      "relationship": "Daughter",
+      "phone": "555-2007"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0007"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-SUPP-002",
+      "payerName": "Mock Medigap Plan G",
+      "policyNumber": "MOCK-SUP-G0007"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "OT",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-20",
+    "certPeriodStart": "2026-04-20",
+    "certPeriodEnd": "2026-06-19",
+    "primaryDiagnoses": [
+      "post_surgical",
+      "wound_care"
+    ],
+    "clinicalComplexity": [
+      "post_surgical",
+      "wound_care",
+      "infection_risk",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0015",
+      "MOCK-CLIN-Q2-0011"
+    ],
+    "messyFlags": [
+      "hha_has_no_supervisor"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0008",
+    "firstName": "Franklin",
+    "lastName": "Denmoor",
+    "dob": "1955-04-11",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900008",
+    "ssn": "XXX-XX-0008",
+    "address": "505 Willow Ct, Simtown, CA 90007",
+    "phone": "555-1008",
+    "emergencyContact": {
+      "name": "Nancy Denmoor",
+      "relationship": "Wife",
+      "phone": "555-2008"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MA-002",
+      "payerName": "Mock HMO Advantage",
+      "policyNumber": "MOCK-HMO-0008"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT"
+    ],
+    "admissionStatus": "pending_soc",
+    "socDate": "2026-06-15",
+    "certPeriodStart": "2026-06-15",
+    "certPeriodEnd": "2026-08-14",
+    "primaryDiagnoses": [
+      "post_surgical"
+    ],
+    "clinicalComplexity": [
+      "post_surgical",
+      "fall_risk",
+      "anticoagulant_therapy"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0013"
+    ],
+    "messyFlags": [
+      "pending_soc_with_expired_cpr_clinician"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0009",
+    "firstName": "Dorothy",
+    "lastName": "Langford",
+    "dob": "1933-08-29",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900009",
+    "ssn": "XXX-XX-0009",
+    "address": "606 Spruce Ave, Bogusdale, CA 90008",
+    "phone": "555-1009",
+    "emergencyContact": {
+      "name": "Keith Langford",
+      "relationship": "Son",
+      "phone": "555-2009"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0009"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-MCAID-001",
+      "payerName": "Mock Medicaid",
+      "policyNumber": "MOCK-MCAID-0009"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "OT",
+      "ST",
+      "MSW",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-01",
+    "certPeriodStart": "2026-04-01",
+    "certPeriodEnd": "2026-05-31",
+    "primaryDiagnoses": [
+      "COPD",
+      "cognitive_impairment",
+      "fall_risk"
+    ],
+    "clinicalComplexity": [
+      "COPD",
+      "cognitive_impairment",
+      "fall_risk",
+      "medication_reconciliation_risk",
+      "infection_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0006",
+      "MOCK-CLIN-Q2-0008",
+      "MOCK-CLIN-Q2-0009",
+      "MOCK-CLIN-Q2-0016"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0010",
+    "firstName": "Walter",
+    "lastName": "Kinsley",
+    "dob": "1947-02-14",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900010",
+    "ssn": "XXX-XX-0010",
+    "address": "707 Ash Blvd, Pseudoton, CA 90009",
+    "phone": "555-1010",
+    "emergencyContact": {
+      "name": "Barbara Kinsley",
+      "relationship": "Wife",
+      "phone": "555-2010"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0010"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-05-01",
+    "certPeriodStart": "2026-05-01",
+    "certPeriodEnd": "2026-06-30",
+    "primaryDiagnoses": [
+      "diabetes",
+      "wound_care"
+    ],
+    "clinicalComplexity": [
+      "diabetes",
+      "wound_care",
+      "infection_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0010"
+    ],
+    "messyFlags": [
+      "wound_documentation_gap"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0011",
+    "firstName": "Pearl",
+    "lastName": "Waverly",
+    "dob": "1939-10-03",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900011",
+    "ssn": "XXX-XX-0011",
+    "address": "808 Poplar St, Falseburg, CA 90010",
+    "phone": "555-1011",
+    "emergencyContact": {
+      "name": "Steven Waverly",
+      "relationship": "Grandson",
+      "phone": "555-2011"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0011"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT"
+    ],
+    "admissionStatus": "transferred",
+    "socDate": "2026-03-15",
+    "certPeriodStart": "2026-03-15",
+    "certPeriodEnd": "2026-05-14",
+    "transferDate": "2026-05-20",
+    "primaryDiagnoses": [
+      "CHF",
+      "fall_risk"
+    ],
+    "clinicalComplexity": [
+      "CHF",
+      "fall_risk",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0013"
+    ],
+    "messyFlags": [
+      "transfer_note_missing"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0012",
+    "firstName": "Arthur",
+    "lastName": "Birchdale",
+    "dob": "1944-05-19",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900012",
+    "ssn": "XXX-XX-0012",
+    "address": "909 Redwood Ln, Mockshire, CA 90011",
+    "phone": "555-1012",
+    "emergencyContact": {
+      "name": "Phyllis Birchdale",
+      "relationship": "Wife",
+      "phone": "555-2012"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0012"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-SUPP-001",
+      "payerName": "Mock Medigap Plan F",
+      "policyNumber": "MOCK-SUP-F0012"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "OT"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-10",
+    "certPeriodStart": "2026-04-10",
+    "certPeriodEnd": "2026-06-09",
+    "primaryDiagnoses": [
+      "post_surgical",
+      "diabetes"
+    ],
+    "clinicalComplexity": [
+      "post_surgical",
+      "diabetes",
+      "anticoagulant_therapy",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0006"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0013",
+    "firstName": "Irene",
+    "lastName": "Castellan",
+    "dob": "1951-07-22",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900013",
+    "ssn": "XXX-XX-0013",
+    "address": "1010 Sequoia Pl, Shampton, CA 90012",
+    "phone": "555-1013",
+    "emergencyContact": {
+      "name": "Michael Castellan",
+      "relationship": "Son",
+      "phone": "555-2013"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MA-001",
+      "payerName": "Mock Medicare Advantage",
+      "policyNumber": "MOCK-MA-0013"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "OT",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-05-05",
+    "certPeriodStart": "2026-05-05",
+    "certPeriodEnd": "2026-07-04",
+    "primaryDiagnoses": [
+      "COPD",
+      "diabetes"
+    ],
+    "clinicalComplexity": [
+      "COPD",
+      "diabetes",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0015",
+      "MOCK-CLIN-Q2-0016"
+    ],
+    "messyFlags": [
+      "missing_medication_reconciliation"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0014",
+    "firstName": "Norman",
+    "lastName": "Ridgeway",
+    "dob": "1941-12-08",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900014",
+    "ssn": "XXX-XX-0014",
+    "address": "1111 Hemlock Ct, Testford, CA 90013",
+    "phone": "555-1014",
+    "emergencyContact": {
+      "name": "Janet Ridgeway",
+      "relationship": "Wife",
+      "phone": "555-2014"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0014"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-22",
+    "certPeriodStart": "2026-04-22",
+    "certPeriodEnd": "2026-06-21",
+    "primaryDiagnoses": [
+      "CHF",
+      "COPD"
+    ],
+    "clinicalComplexity": [
+      "CHF",
+      "COPD",
+      "fall_risk",
+      "medication_reconciliation_risk",
+      "catheter_care"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0010"
+    ],
+    "messyFlags": [
+      "overloaded_clinicians_assigned"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0015",
+    "firstName": "Beatrice",
+    "lastName": "Cloverdale",
+    "dob": "1946-03-25",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900015",
+    "ssn": "XXX-XX-0015",
+    "address": "1212 Cypress Ave, Bogusfield, CA 90014",
+    "phone": "555-1015",
+    "emergencyContact": {
+      "name": "Laura Cloverdale",
+      "relationship": "Daughter",
+      "phone": "555-2015"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0015"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-MCAID-001",
+      "payerName": "Mock Medicaid",
+      "policyNumber": "MOCK-MCAID-0015"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "MSW"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-05-10",
+    "certPeriodStart": "2026-05-10",
+    "certPeriodEnd": "2026-07-09",
+    "primaryDiagnoses": [
+      "cognitive_impairment"
+    ],
+    "clinicalComplexity": [
+      "cognitive_impairment",
+      "fall_risk",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0009"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0016",
+    "firstName": "Cecil",
+    "lastName": "Morningstar",
+    "dob": "1937-09-14",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900016",
+    "ssn": "XXX-XX-0016",
+    "address": "1313 Juniper Rd, Fakewood, CA 90015",
+    "phone": "555-1016",
+    "emergencyContact": {
+      "name": "Gregory Morningstar",
+      "relationship": "Son",
+      "phone": "555-2016"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0016"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "OT",
+      "HHA"
+    ],
+    "admissionStatus": "recert_due",
+    "socDate": "2026-02-05",
+    "certPeriodStart": "2026-04-06",
+    "certPeriodEnd": "2026-06-05",
+    "primaryDiagnoses": [
+      "wound_care",
+      "CHF"
+    ],
+    "clinicalComplexity": [
+      "wound_care",
+      "CHF",
+      "infection_risk",
+      "anticoagulant_therapy",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0013",
+      "MOCK-CLIN-Q2-0015",
+      "MOCK-CLIN-Q2-0011"
+    ],
+    "messyFlags": [
+      "recert_assessment_overdue",
+      "hha_supervision_overdue"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0017",
+    "firstName": "Agnes",
+    "lastName": "Whitford",
+    "dob": "1943-11-07",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900017",
+    "ssn": "XXX-XX-0017",
+    "address": "1414 Dogwood Ln, Mockton, CA 90016",
+    "phone": "555-1017",
+    "emergencyContact": {
+      "name": "Patricia Whitford",
+      "relationship": "Daughter",
+      "phone": "555-2017"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0017"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-06-01",
+    "certPeriodStart": "2026-06-01",
+    "certPeriodEnd": "2026-07-31",
+    "primaryDiagnoses": [
+      "diabetes"
+    ],
+    "clinicalComplexity": [
+      "diabetes",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0014"
+    ],
+    "messyFlags": [
+      "clinician_license_pending_renewal"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0018",
+    "firstName": "Clarence",
+    "lastName": "Oakmere",
+    "dob": "1952-08-16",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900018",
+    "ssn": "XXX-XX-0018",
+    "address": "1515 Walnut Pl, Simulon, CA 90017",
+    "phone": "555-1018",
+    "emergencyContact": {
+      "name": "Brenda Oakmere",
+      "relationship": "Wife",
+      "phone": "555-2018"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MA-002",
+      "payerName": "Mock HMO Advantage",
+      "policyNumber": "MOCK-HMO-0018"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "ST"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-28",
+    "certPeriodStart": "2026-04-28",
+    "certPeriodEnd": "2026-06-27",
+    "primaryDiagnoses": [
+      "post_surgical",
+      "cognitive_impairment"
+    ],
+    "clinicalComplexity": [
+      "post_surgical",
+      "cognitive_impairment",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0008"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0019",
+    "firstName": "Mabel",
+    "lastName": "Hightower",
+    "dob": "1935-04-02",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900019",
+    "ssn": "XXX-XX-0019",
+    "address": "1616 Chestnut Dr, Fictiton, CA 90018",
+    "phone": "555-1019",
+    "emergencyContact": {
+      "name": "Raymond Hightower",
+      "relationship": "Son",
+      "phone": "555-2019"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0019"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-05-15",
+    "certPeriodStart": "2026-05-15",
+    "certPeriodEnd": "2026-07-14",
+    "primaryDiagnoses": [
+      "CHF",
+      "diabetes"
+    ],
+    "clinicalComplexity": [
+      "CHF",
+      "diabetes",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0010"
+    ],
+    "messyFlags": [
+      "missed_visit_no_followup"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0020",
+    "firstName": "Eugene",
+    "lastName": "Bramblewood",
+    "dob": "1949-01-30",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900020",
+    "ssn": "XXX-XX-0020",
+    "address": "1717 Hawthorn Blvd, Shampton, CA 90019",
+    "phone": "555-1020",
+    "emergencyContact": {
+      "name": "Donna Bramblewood",
+      "relationship": "Wife",
+      "phone": "555-2020"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0020"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-SUPP-002",
+      "payerName": "Mock Medigap Plan G",
+      "policyNumber": "MOCK-SUP-G0020"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "OT",
+      "MSW"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-05",
+    "certPeriodStart": "2026-04-05",
+    "certPeriodEnd": "2026-06-04",
+    "primaryDiagnoses": [
+      "wound_care",
+      "COPD"
+    ],
+    "clinicalComplexity": [
+      "wound_care",
+      "COPD",
+      "infection_risk",
+      "fall_risk",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0013",
+      "MOCK-CLIN-Q2-0006",
+      "MOCK-CLIN-Q2-0009"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0021",
+    "firstName": "Florence",
+    "lastName": "Kettleworth",
+    "dob": "1940-06-18",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900021",
+    "ssn": "XXX-XX-0021",
+    "address": "1818 Magnolia Way, Testberg, CA 90020",
+    "phone": "555-1021",
+    "emergencyContact": {
+      "name": "Philip Kettleworth",
+      "relationship": "Husband",
+      "phone": "555-2021"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0021"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT"
+    ],
+    "admissionStatus": "discharged",
+    "socDate": "2026-03-01",
+    "certPeriodStart": "2026-04-30",
+    "certPeriodEnd": "2026-06-29",
+    "dischargeDate": "2026-06-10",
+    "primaryDiagnoses": [
+      "post_surgical"
+    ],
+    "clinicalComplexity": [
+      "post_surgical",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0004"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0022",
+    "firstName": "Ralph",
+    "lastName": "Ironside",
+    "dob": "1953-02-09",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900022",
+    "ssn": "XXX-XX-0022",
+    "address": "1919 Sycamore Rd, Fabricville, CA 90021",
+    "phone": "555-1022",
+    "emergencyContact": {
+      "name": "Helen Ironside",
+      "relationship": "Wife",
+      "phone": "555-2022"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MA-001",
+      "payerName": "Mock Medicare Advantage",
+      "policyNumber": "MOCK-MA-0022"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-05-20",
+    "certPeriodStart": "2026-05-20",
+    "certPeriodEnd": "2026-07-19",
+    "primaryDiagnoses": [
+      "diabetes",
+      "wound_care"
+    ],
+    "clinicalComplexity": [
+      "diabetes",
+      "wound_care",
+      "infection_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0013",
+      "MOCK-CLIN-Q2-0016"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0023",
+    "firstName": "Lillian",
+    "lastName": "Sterngate",
+    "dob": "1938-10-27",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900023",
+    "ssn": "XXX-XX-0023",
+    "address": "2020 Laurel Ct, Mockville, CA 90022",
+    "phone": "555-1023",
+    "emergencyContact": {
+      "name": "Andrew Sterngate",
+      "relationship": "Son",
+      "phone": "555-2023"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0023"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "OT",
+      "ST",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-14",
+    "certPeriodStart": "2026-04-14",
+    "certPeriodEnd": "2026-06-13",
+    "primaryDiagnoses": [
+      "cognitive_impairment",
+      "COPD"
+    ],
+    "clinicalComplexity": [
+      "cognitive_impairment",
+      "COPD",
+      "fall_risk",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0007",
+      "MOCK-CLIN-Q2-0008",
+      "MOCK-CLIN-Q2-0010"
+    ],
+    "messyFlags": [
+      "poc_not_updated_after_status_change"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0024",
+    "firstName": "Stanley",
+    "lastName": "Farnsworth",
+    "dob": "1946-07-03",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900024",
+    "ssn": "XXX-XX-0024",
+    "address": "2121 Alder Ln, Pseudodale, CA 90023",
+    "phone": "555-1024",
+    "emergencyContact": {
+      "name": "Marion Farnsworth",
+      "relationship": "Wife",
+      "phone": "555-2024"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0024"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-SUPP-001",
+      "payerName": "Mock Medigap Plan F",
+      "policyNumber": "MOCK-SUP-F0024"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-06-05",
+    "certPeriodStart": "2026-06-05",
+    "certPeriodEnd": "2026-08-04",
+    "primaryDiagnoses": [
+      "CHF"
+    ],
+    "clinicalComplexity": [
+      "CHF",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0003"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0025",
+    "firstName": "Ethel",
+    "lastName": "Blackwood",
+    "dob": "1934-12-15",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900025",
+    "ssn": "XXX-XX-0025",
+    "address": "2222 Holly Dr, Fakehaven, CA 90024",
+    "phone": "555-1025",
+    "emergencyContact": {
+      "name": "Denise Blackwood",
+      "relationship": "Granddaughter",
+      "phone": "555-2025"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0025"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-MCAID-001",
+      "payerName": "Mock Medicaid",
+      "policyNumber": "MOCK-MCAID-0025"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "OT",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-08",
+    "certPeriodStart": "2026-04-08",
+    "certPeriodEnd": "2026-06-07",
+    "primaryDiagnoses": [
+      "post_surgical",
+      "CHF"
+    ],
+    "clinicalComplexity": [
+      "post_surgical",
+      "CHF",
+      "fall_risk",
+      "catheter_care",
+      "anticoagulant_therapy"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0015",
+      "MOCK-CLIN-Q2-0010"
+    ],
+    "messyFlags": [
+      "oasis_inconsistency"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0026",
+    "firstName": "Herbert",
+    "lastName": "Millcroft",
+    "dob": "1948-05-21",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900026",
+    "ssn": "XXX-XX-0026",
+    "address": "2323 Beech Blvd, Mocksworth, CA 90025",
+    "phone": "555-1026",
+    "emergencyContact": {
+      "name": "Virginia Millcroft",
+      "relationship": "Wife",
+      "phone": "555-2026"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0026"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-05-25",
+    "certPeriodStart": "2026-05-25",
+    "certPeriodEnd": "2026-07-24",
+    "primaryDiagnoses": [
+      "COPD"
+    ],
+    "clinicalComplexity": [
+      "COPD",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0004"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0027",
+    "firstName": "Gladys",
+    "lastName": "Thornberry",
+    "dob": "1942-03-11",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900027",
+    "ssn": "XXX-XX-0027",
+    "address": "2424 Aspen Ave, Fauxtown, CA 90026",
+    "phone": "555-1027",
+    "emergencyContact": {
+      "name": "Richard Thornberry",
+      "relationship": "Husband",
+      "phone": "555-2027"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MA-002",
+      "payerName": "Mock HMO Advantage",
+      "policyNumber": "MOCK-HMO-0027"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "MSW",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-18",
+    "certPeriodStart": "2026-04-18",
+    "certPeriodEnd": "2026-06-17",
+    "primaryDiagnoses": [
+      "cognitive_impairment",
+      "diabetes"
+    ],
+    "clinicalComplexity": [
+      "cognitive_impairment",
+      "diabetes",
+      "fall_risk",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0009",
+      "MOCK-CLIN-Q2-0016"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0028",
+    "firstName": "Bernard",
+    "lastName": "Ashfield",
+    "dob": "1939-08-04",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900028",
+    "ssn": "XXX-XX-0028",
+    "address": "2525 Linden Rd, Testburton, CA 90027",
+    "phone": "555-1028",
+    "emergencyContact": {
+      "name": "Catherine Ashfield",
+      "relationship": "Wife",
+      "phone": "555-2028"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0028"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "OT"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-05-08",
+    "certPeriodStart": "2026-05-08",
+    "certPeriodEnd": "2026-07-07",
+    "primaryDiagnoses": [
+      "post_surgical",
+      "wound_care"
+    ],
+    "clinicalComplexity": [
+      "post_surgical",
+      "wound_care",
+      "infection_risk",
+      "anticoagulant_therapy"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0013",
+      "MOCK-CLIN-Q2-0006"
+    ],
+    "messyFlags": [
+      "infection_surveillance_gap"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0029",
+    "firstName": "Virginia",
+    "lastName": "Peartree",
+    "dob": "1944-01-19",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900029",
+    "ssn": "XXX-XX-0029",
+    "address": "2626 Cottonwood St, Pseudoville, CA 90028",
+    "phone": "555-1029",
+    "emergencyContact": {
+      "name": "Sandra Peartree",
+      "relationship": "Daughter",
+      "phone": "555-2029"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0029"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-SUPP-002",
+      "payerName": "Mock Medigap Plan G",
+      "policyNumber": "MOCK-SUP-G0029"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-06-10",
+    "certPeriodStart": "2026-06-10",
+    "certPeriodEnd": "2026-08-09",
+    "primaryDiagnoses": [
+      "diabetes"
+    ],
+    "clinicalComplexity": [
+      "diabetes",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0003"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0030",
+    "firstName": "Howard",
+    "lastName": "Greenbriar",
+    "dob": "1950-11-30",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900030",
+    "ssn": "XXX-XX-0030",
+    "address": "2727 Mulberry Pl, Fabricdale, CA 90029",
+    "phone": "555-1030",
+    "emergencyContact": {
+      "name": "Janet Greenbriar",
+      "relationship": "Wife",
+      "phone": "555-2030"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0030"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-25",
+    "certPeriodStart": "2026-04-25",
+    "certPeriodEnd": "2026-06-24",
+    "primaryDiagnoses": [
+      "CHF",
+      "COPD"
+    ],
+    "clinicalComplexity": [
+      "CHF",
+      "COPD",
+      "fall_risk",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0016"
+    ],
+    "messyFlags": [
+      "late_documentation_pattern"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0031",
+    "firstName": "Mildred",
+    "lastName": "Dunston",
+    "dob": "1936-06-22",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900031",
+    "ssn": "XXX-XX-0031",
+    "address": "2828 Tamarack Dr, Bogusville, CA 90030",
+    "phone": "555-1031",
+    "emergencyContact": {
+      "name": "William Dunston",
+      "relationship": "Son",
+      "phone": "555-2031"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0031"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "OT"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-05-12",
+    "certPeriodStart": "2026-05-12",
+    "certPeriodEnd": "2026-07-11",
+    "primaryDiagnoses": [
+      "post_surgical"
+    ],
+    "clinicalComplexity": [
+      "post_surgical",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0006"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0032",
+    "firstName": "Leonard",
+    "lastName": "Pinehurst",
+    "dob": "1947-04-15",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900032",
+    "ssn": "XXX-XX-0032",
+    "address": "2929 Ivy Ct, Simsbury, CA 90031",
+    "phone": "555-1032",
+    "emergencyContact": {
+      "name": "Gloria Pinehurst",
+      "relationship": "Wife",
+      "phone": "555-2032"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MA-001",
+      "payerName": "Mock Medicare Advantage",
+      "policyNumber": "MOCK-MA-0032"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "MSW"
+    ],
+    "admissionStatus": "pending_soc",
+    "socDate": "2026-06-20",
+    "certPeriodStart": "2026-06-20",
+    "certPeriodEnd": "2026-08-19",
+    "primaryDiagnoses": [
+      "CHF",
+      "cognitive_impairment"
+    ],
+    "clinicalComplexity": [
+      "CHF",
+      "cognitive_impairment",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0013",
+      "MOCK-CLIN-Q2-0009"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0033",
+    "firstName": "Rosemary",
+    "lastName": "Kenton",
+    "dob": "1941-09-08",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900033",
+    "ssn": "XXX-XX-0033",
+    "address": "3030 Basswood Ln, Mockington, CA 90032",
+    "phone": "555-1033",
+    "emergencyContact": {
+      "name": "David Kenton",
+      "relationship": "Son",
+      "phone": "555-2033"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0033"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-12",
+    "certPeriodStart": "2026-04-12",
+    "certPeriodEnd": "2026-06-11",
+    "primaryDiagnoses": [
+      "COPD",
+      "wound_care"
+    ],
+    "clinicalComplexity": [
+      "COPD",
+      "wound_care",
+      "infection_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0010"
+    ],
+    "messyFlags": [
+      "duplicate_conflicting_document_versions"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0034",
+    "firstName": "Chester",
+    "lastName": "Willowfield",
+    "dob": "1943-02-28",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900034",
+    "ssn": "XXX-XX-0034",
+    "address": "3131 Sumac Rd, Testdale, CA 90033",
+    "phone": "555-1034",
+    "emergencyContact": {
+      "name": "Joan Willowfield",
+      "relationship": "Wife",
+      "phone": "555-2034"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0034"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-SUPP-001",
+      "payerName": "Mock Medigap Plan F",
+      "policyNumber": "MOCK-SUP-F0034"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "OT",
+      "ST"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-05-02",
+    "certPeriodStart": "2026-05-02",
+    "certPeriodEnd": "2026-07-01",
+    "primaryDiagnoses": [
+      "cognitive_impairment"
+    ],
+    "clinicalComplexity": [
+      "cognitive_impairment",
+      "fall_risk",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0015",
+      "MOCK-CLIN-Q2-0008"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0035",
+    "firstName": "Hazel",
+    "lastName": "Ridgemont",
+    "dob": "1937-11-14",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900035",
+    "ssn": "XXX-XX-0035",
+    "address": "3232 Fir Blvd, Fakeland, CA 90034",
+    "phone": "555-1035",
+    "emergencyContact": {
+      "name": "Roger Ridgemont",
+      "relationship": "Husband",
+      "phone": "555-2035"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0035"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "OT",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-30",
+    "certPeriodStart": "2026-04-30",
+    "certPeriodEnd": "2026-06-29",
+    "primaryDiagnoses": [
+      "post_surgical",
+      "diabetes"
+    ],
+    "clinicalComplexity": [
+      "post_surgical",
+      "diabetes",
+      "fall_risk",
+      "wound_care"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0013",
+      "MOCK-CLIN-Q2-0006",
+      "MOCK-CLIN-Q2-0016"
+    ],
+    "messyFlags": [
+      "wrong_clinician_assigned"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0036",
+    "firstName": "Donald",
+    "lastName": "Fernbrook",
+    "dob": "1954-07-07",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900036",
+    "ssn": "XXX-XX-0036",
+    "address": "3333 Locust Way, Mockford, CA 90035",
+    "phone": "555-1036",
+    "emergencyContact": {
+      "name": "Patricia Fernbrook",
+      "relationship": "Wife",
+      "phone": "555-2036"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0036"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-06-02",
+    "certPeriodStart": "2026-06-02",
+    "certPeriodEnd": "2026-08-01",
+    "primaryDiagnoses": [
+      "COPD"
+    ],
+    "clinicalComplexity": [
+      "COPD"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0003"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0037",
+    "firstName": "Gertrude",
+    "lastName": "Sundale",
+    "dob": "1935-05-20",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900037",
+    "ssn": "XXX-XX-0037",
+    "address": "3434 Hickory Pl, Synthfield, CA 90036",
+    "phone": "555-1037",
+    "emergencyContact": {
+      "name": "Timothy Sundale",
+      "relationship": "Son",
+      "phone": "555-2037"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0037"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-MCAID-001",
+      "payerName": "Mock Medicaid",
+      "policyNumber": "MOCK-MCAID-0037"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "MSW",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-03",
+    "certPeriodStart": "2026-04-03",
+    "certPeriodEnd": "2026-06-02",
+    "primaryDiagnoses": [
+      "CHF",
+      "diabetes",
+      "cognitive_impairment"
+    ],
+    "clinicalComplexity": [
+      "CHF",
+      "diabetes",
+      "cognitive_impairment",
+      "fall_risk",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0009",
+      "MOCK-CLIN-Q2-0010"
+    ],
+    "messyFlags": [
+      "missing_physician_order"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0038",
+    "firstName": "Morris",
+    "lastName": "Bankside",
+    "dob": "1949-10-09",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900038",
+    "ssn": "XXX-XX-0038",
+    "address": "3535 Olive Rd, Testheights, CA 90037",
+    "phone": "555-1038",
+    "emergencyContact": {
+      "name": "Susan Bankside",
+      "relationship": "Wife",
+      "phone": "555-2038"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MA-001",
+      "payerName": "Mock Medicare Advantage",
+      "policyNumber": "MOCK-MA-0038"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT"
+    ],
+    "admissionStatus": "discharged",
+    "socDate": "2026-03-10",
+    "certPeriodStart": "2026-03-10",
+    "certPeriodEnd": "2026-05-09",
+    "dischargeDate": "2026-04-28",
+    "primaryDiagnoses": [
+      "post_surgical"
+    ],
+    "clinicalComplexity": [
+      "post_surgical"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0013"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0039",
+    "firstName": "Estelle",
+    "lastName": "Crowfield",
+    "dob": "1940-01-25",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900039",
+    "ssn": "XXX-XX-0039",
+    "address": "3636 Palm Ave, Falseton, CA 90038",
+    "phone": "555-1039",
+    "emergencyContact": {
+      "name": "George Crowfield",
+      "relationship": "Husband",
+      "phone": "555-2039"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0039"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "OT",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-05-18",
+    "certPeriodStart": "2026-05-18",
+    "certPeriodEnd": "2026-07-17",
+    "primaryDiagnoses": [
+      "diabetes",
+      "wound_care"
+    ],
+    "clinicalComplexity": [
+      "diabetes",
+      "wound_care",
+      "infection_risk",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0007",
+      "MOCK-CLIN-Q2-0016"
+    ],
+    "messyFlags": [
+      "fall_risk_escalation_missing"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0040",
+    "firstName": "Vernon",
+    "lastName": "Hargrove",
+    "dob": "1945-08-12",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900040",
+    "ssn": "XXX-XX-0040",
+    "address": "3737 Pecan Ct, Mockbridge, CA 90039",
+    "phone": "555-1040",
+    "emergencyContact": {
+      "name": "Linda Hargrove",
+      "relationship": "Daughter",
+      "phone": "555-2040"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0040"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "OT",
+      "ST"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-16",
+    "certPeriodStart": "2026-04-16",
+    "certPeriodEnd": "2026-06-15",
+    "primaryDiagnoses": [
+      "COPD",
+      "cognitive_impairment"
+    ],
+    "clinicalComplexity": [
+      "COPD",
+      "cognitive_impairment",
+      "fall_risk",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0015",
+      "MOCK-CLIN-Q2-0008"
+    ],
+    "messyFlags": [
+      "wrong_client_attached_to_document"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0041",
+    "firstName": "Lucille",
+    "lastName": "Ashton",
+    "dob": "1938-03-17",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900041",
+    "ssn": "XXX-XX-0041",
+    "address": "3838 Catalpa Ln, Shamsdale, CA 90040",
+    "phone": "555-1041",
+    "emergencyContact": {
+      "name": "Brian Ashton",
+      "relationship": "Son",
+      "phone": "555-2041"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0041"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-SUPP-001",
+      "payerName": "Mock Medigap Plan F",
+      "policyNumber": "MOCK-SUP-F0041"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-05-22",
+    "certPeriodStart": "2026-05-22",
+    "certPeriodEnd": "2026-07-21",
+    "primaryDiagnoses": [
+      "CHF"
+    ],
+    "clinicalComplexity": [
+      "CHF",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0003",
+      "MOCK-CLIN-Q2-0011"
+    ],
+    "messyFlags": [
+      "hha_supervision_overdue"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0042",
+    "firstName": "Wayne",
+    "lastName": "Collingsworth",
+    "dob": "1952-12-01",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900042",
+    "ssn": "XXX-XX-0042",
+    "address": "3939 Boxwood Dr, Pseudobury, CA 90041",
+    "phone": "555-1042",
+    "emergencyContact": {
+      "name": "Karen Collingsworth",
+      "relationship": "Wife",
+      "phone": "555-2042"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0042"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-06-08",
+    "certPeriodStart": "2026-06-08",
+    "certPeriodEnd": "2026-08-07",
+    "primaryDiagnoses": [
+      "post_surgical"
+    ],
+    "clinicalComplexity": [
+      "post_surgical",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0013"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0043",
+    "firstName": "Opal",
+    "lastName": "Merriweather",
+    "dob": "1934-09-06",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900043",
+    "ssn": "XXX-XX-0043",
+    "address": "4040 Wisteria Blvd, Falsingham, CA 90042",
+    "phone": "555-1043",
+    "emergencyContact": {
+      "name": "Charles Merriweather",
+      "relationship": "Husband",
+      "phone": "555-2043"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0043"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-MCAID-001",
+      "payerName": "Mock Medicaid",
+      "policyNumber": "MOCK-MCAID-0043"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "OT",
+      "MSW",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-06",
+    "certPeriodStart": "2026-04-06",
+    "certPeriodEnd": "2026-06-05",
+    "primaryDiagnoses": [
+      "CHF",
+      "COPD",
+      "wound_care"
+    ],
+    "clinicalComplexity": [
+      "CHF",
+      "COPD",
+      "wound_care",
+      "infection_risk",
+      "fall_risk",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0006",
+      "MOCK-CLIN-Q2-0009",
+      "MOCK-CLIN-Q2-0010"
+    ],
+    "messyFlags": [
+      "evidence_present_not_audit_ready"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0044",
+    "firstName": "Clifford",
+    "lastName": "Northgate",
+    "dob": "1947-06-14",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900044",
+    "ssn": "XXX-XX-0044",
+    "address": "4141 Spruce St, Fabricton, CA 90043",
+    "phone": "555-1044",
+    "emergencyContact": {
+      "name": "Evelyn Northgate",
+      "relationship": "Wife",
+      "phone": "555-2044"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0044"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-05-28",
+    "certPeriodStart": "2026-05-28",
+    "certPeriodEnd": "2026-07-27",
+    "primaryDiagnoses": [
+      "diabetes"
+    ],
+    "clinicalComplexity": [
+      "diabetes"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0013"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0045",
+    "firstName": "Blanche",
+    "lastName": "Winterbourne",
+    "dob": "1939-04-28",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900045",
+    "ssn": "XXX-XX-0045",
+    "address": "4242 Acacia Way, Testwold, CA 90044",
+    "phone": "555-1045",
+    "emergencyContact": {
+      "name": "Nancy Winterbourne",
+      "relationship": "Daughter",
+      "phone": "555-2045"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MA-002",
+      "payerName": "Mock HMO Advantage",
+      "policyNumber": "MOCK-HMO-0045"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "OT",
+      "HHA"
+    ],
+    "admissionStatus": "hospitalization_hold",
+    "socDate": "2026-04-20",
+    "certPeriodStart": "2026-04-20",
+    "certPeriodEnd": "2026-06-19",
+    "hospitalizationDate": "2026-06-01",
+    "primaryDiagnoses": [
+      "CHF",
+      "diabetes"
+    ],
+    "clinicalComplexity": [
+      "CHF",
+      "diabetes",
+      "fall_risk",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0007",
+      "MOCK-CLIN-Q2-0016"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0046",
+    "firstName": "Alvin",
+    "lastName": "Greystone",
+    "dob": "1944-10-31",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900046",
+    "ssn": "XXX-XX-0046",
+    "address": "4343 Birch Ct, Shamsfield, CA 90045",
+    "phone": "555-1046",
+    "emergencyContact": {
+      "name": "Dorothy Greystone",
+      "relationship": "Wife",
+      "phone": "555-2046"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0046"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-SUPP-002",
+      "payerName": "Mock Medigap Plan G",
+      "policyNumber": "MOCK-SUP-G0046"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "OT"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-05-05",
+    "certPeriodStart": "2026-05-05",
+    "certPeriodEnd": "2026-07-04",
+    "primaryDiagnoses": [
+      "post_surgical",
+      "COPD"
+    ],
+    "clinicalComplexity": [
+      "post_surgical",
+      "COPD",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0015"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0047",
+    "firstName": "Nora",
+    "lastName": "Fairhaven",
+    "dob": "1936-07-09",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900047",
+    "ssn": "XXX-XX-0047",
+    "address": "4444 Elmwood Dr, Bogussworth, CA 90046",
+    "phone": "555-1047",
+    "emergencyContact": {
+      "name": "Frank Fairhaven",
+      "relationship": "Husband",
+      "phone": "555-2047"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0047"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "ST",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-09",
+    "certPeriodStart": "2026-04-09",
+    "certPeriodEnd": "2026-06-08",
+    "primaryDiagnoses": [
+      "cognitive_impairment",
+      "CHF"
+    ],
+    "clinicalComplexity": [
+      "cognitive_impairment",
+      "CHF",
+      "fall_risk",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0008",
+      "MOCK-CLIN-Q2-0010"
+    ],
+    "messyFlags": [
+      "medication_discrepancy"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0048",
+    "firstName": "Russell",
+    "lastName": "Blackthorn",
+    "dob": "1951-02-22",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900048",
+    "ssn": "XXX-XX-0048",
+    "address": "4545 Willow Ln, Pseudoton, CA 90047",
+    "phone": "555-1048",
+    "emergencyContact": {
+      "name": "Martha Blackthorn",
+      "relationship": "Wife",
+      "phone": "555-2048"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0048"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-06-12",
+    "certPeriodStart": "2026-06-12",
+    "certPeriodEnd": "2026-08-11",
+    "primaryDiagnoses": [
+      "COPD"
+    ],
+    "clinicalComplexity": [
+      "COPD"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0003"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0049",
+    "firstName": "Doris",
+    "lastName": "Stonewall",
+    "dob": "1933-12-03",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900049",
+    "ssn": "XXX-XX-0049",
+    "address": "4646 Redwood Ct, Mockberg, CA 90048",
+    "phone": "555-1049",
+    "emergencyContact": {
+      "name": "Kenneth Stonewall",
+      "relationship": "Son",
+      "phone": "555-2049"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0049"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-MCAID-001",
+      "payerName": "Mock Medicaid",
+      "policyNumber": "MOCK-MCAID-0049"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "OT",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-22",
+    "certPeriodStart": "2026-04-22",
+    "certPeriodEnd": "2026-06-21",
+    "primaryDiagnoses": [
+      "CHF",
+      "wound_care",
+      "diabetes"
+    ],
+    "clinicalComplexity": [
+      "CHF",
+      "wound_care",
+      "diabetes",
+      "infection_risk",
+      "fall_risk",
+      "anticoagulant_therapy"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0013",
+      "MOCK-CLIN-Q2-0006",
+      "MOCK-CLIN-Q2-0016"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0050",
+    "firstName": "Harvey",
+    "lastName": "Millbridge",
+    "dob": "1946-05-16",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900050",
+    "ssn": "XXX-XX-0050",
+    "address": "4747 Sycamore Ave, Simdale, CA 90049",
+    "phone": "555-1050",
+    "emergencyContact": {
+      "name": "Joyce Millbridge",
+      "relationship": "Wife",
+      "phone": "555-2050"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0050"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "MSW"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-05-15",
+    "certPeriodStart": "2026-05-15",
+    "certPeriodEnd": "2026-07-14",
+    "primaryDiagnoses": [
+      "COPD",
+      "cognitive_impairment"
+    ],
+    "clinicalComplexity": [
+      "COPD",
+      "cognitive_impairment",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0009"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0051",
+    "firstName": "Thelma",
+    "lastName": "Brightwater",
+    "dob": "1941-08-25",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900051",
+    "ssn": "XXX-XX-0051",
+    "address": "4848 Oak Ct, Fakeside, CA 90050",
+    "phone": "555-1051",
+    "emergencyContact": {
+      "name": "Jeffrey Brightwater",
+      "relationship": "Son",
+      "phone": "555-2051"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MA-001",
+      "payerName": "Mock Medicare Advantage",
+      "policyNumber": "MOCK-MA-0051"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "OT"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-06-01",
+    "certPeriodStart": "2026-06-01",
+    "certPeriodEnd": "2026-07-31",
+    "primaryDiagnoses": [
+      "post_surgical"
+    ],
+    "clinicalComplexity": [
+      "post_surgical",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0015"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0052",
+    "firstName": "Roger",
+    "lastName": "Coventry",
+    "dob": "1948-11-13",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900052",
+    "ssn": "XXX-XX-0052",
+    "address": "4949 Pine Rd, Mockmont, CA 90051",
+    "phone": "555-1052",
+    "emergencyContact": {
+      "name": "Sharon Coventry",
+      "relationship": "Wife",
+      "phone": "555-2052"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0052"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-29",
+    "certPeriodStart": "2026-04-29",
+    "certPeriodEnd": "2026-06-28",
+    "primaryDiagnoses": [
+      "diabetes",
+      "CHF"
+    ],
+    "clinicalComplexity": [
+      "diabetes",
+      "CHF",
+      "medication_reconciliation_risk",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0013",
+      "MOCK-CLIN-Q2-0016"
+    ],
+    "messyFlags": [
+      "inconsistent_dates"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0053",
+    "firstName": "Constance",
+    "lastName": "Lakewood",
+    "dob": "1937-03-31",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900053",
+    "ssn": "XXX-XX-0053",
+    "address": "5050 Cedar Pl, Testwick, CA 90052",
+    "phone": "555-1053",
+    "emergencyContact": {
+      "name": "Donald Lakewood",
+      "relationship": "Husband",
+      "phone": "555-2053"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0053"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-SUPP-001",
+      "payerName": "Mock Medigap Plan F",
+      "policyNumber": "MOCK-SUP-F0053"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "OT",
+      "ST"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-05-06",
+    "certPeriodStart": "2026-05-06",
+    "certPeriodEnd": "2026-07-05",
+    "primaryDiagnoses": [
+      "COPD",
+      "cognitive_impairment",
+      "wound_care"
+    ],
+    "clinicalComplexity": [
+      "COPD",
+      "cognitive_impairment",
+      "wound_care",
+      "infection_risk",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0006",
+      "MOCK-CLIN-Q2-0008"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0054",
+    "firstName": "Gordon",
+    "lastName": "Westmoor",
+    "dob": "1953-06-20",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900054",
+    "ssn": "XXX-XX-0054",
+    "address": "5151 Maple Blvd, Fabricshire, CA 90053",
+    "phone": "555-1054",
+    "emergencyContact": {
+      "name": "Alice Westmoor",
+      "relationship": "Wife",
+      "phone": "555-2054"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MA-002",
+      "payerName": "Mock HMO Advantage",
+      "policyNumber": "MOCK-HMO-0054"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing"
+    ],
+    "admissionStatus": "pending_soc",
+    "socDate": "2026-06-25",
+    "certPeriodStart": "2026-06-25",
+    "certPeriodEnd": "2026-08-24",
+    "primaryDiagnoses": [
+      "diabetes"
+    ],
+    "clinicalComplexity": [
+      "diabetes"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0020"
+    ],
+    "messyFlags": [
+      "qapi_coordinator_assigned_to_direct_care"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0055",
+    "firstName": "Alma",
+    "lastName": "Heatherfield",
+    "dob": "1940-02-07",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900055",
+    "ssn": "XXX-XX-0055",
+    "address": "5252 Dogwood Ave, Shamston, CA 90054",
+    "phone": "555-1055",
+    "emergencyContact": {
+      "name": "Peter Heatherfield",
+      "relationship": "Son",
+      "phone": "555-2055"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0055"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-14",
+    "certPeriodStart": "2026-04-14",
+    "certPeriodEnd": "2026-06-13",
+    "primaryDiagnoses": [
+      "CHF",
+      "post_surgical"
+    ],
+    "clinicalComplexity": [
+      "CHF",
+      "post_surgical",
+      "fall_risk",
+      "anticoagulant_therapy"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0013",
+      "MOCK-CLIN-Q2-0010"
+    ],
+    "messyFlags": [
+      "missing_signature"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0056",
+    "firstName": "Milton",
+    "lastName": "Ravenswood",
+    "dob": "1945-09-18",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900056",
+    "ssn": "XXX-XX-0056",
+    "address": "5353 Walnut Way, Mockdale, CA 90055",
+    "phone": "555-1056",
+    "emergencyContact": {
+      "name": "Betty Ravenswood",
+      "relationship": "Wife",
+      "phone": "555-2056"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0056"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "OT",
+      "MSW"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-05-20",
+    "certPeriodStart": "2026-05-20",
+    "certPeriodEnd": "2026-07-19",
+    "primaryDiagnoses": [
+      "cognitive_impairment",
+      "diabetes"
+    ],
+    "clinicalComplexity": [
+      "cognitive_impairment",
+      "diabetes",
+      "fall_risk",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0006",
+      "MOCK-CLIN-Q2-0009"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0057",
+    "firstName": "Evelyn",
+    "lastName": "Clearwater",
+    "dob": "1936-10-12",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900057",
+    "ssn": "XXX-XX-0057",
+    "address": "5454 Juniper Ct, Bogusdale, CA 90056",
+    "phone": "555-1057",
+    "emergencyContact": {
+      "name": "Mark Clearwater",
+      "relationship": "Son",
+      "phone": "555-2057"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0057"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-SUPP-002",
+      "payerName": "Mock Medigap Plan G",
+      "policyNumber": "MOCK-SUP-G0057"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "OT",
+      "HHA"
+    ],
+    "admissionStatus": "transferred",
+    "socDate": "2026-03-25",
+    "certPeriodStart": "2026-03-25",
+    "certPeriodEnd": "2026-05-24",
+    "transferDate": "2026-05-15",
+    "primaryDiagnoses": [
+      "wound_care",
+      "COPD"
+    ],
+    "clinicalComplexity": [
+      "wound_care",
+      "COPD",
+      "infection_risk",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0015",
+      "MOCK-CLIN-Q2-0010"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0058",
+    "firstName": "Lawrence",
+    "lastName": "Foxglove",
+    "dob": "1950-04-05",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900058",
+    "ssn": "XXX-XX-0058",
+    "address": "5555 Magnolia Ln, Testshire, CA 90057",
+    "phone": "555-1058",
+    "emergencyContact": {
+      "name": "Ruth Foxglove",
+      "relationship": "Wife",
+      "phone": "555-2058"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0058"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Anne Hollister",
+      "npi": "MOCK-NPI-3333333333",
+      "phone": "555-3003"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-06-05",
+    "certPeriodStart": "2026-06-05",
+    "certPeriodEnd": "2026-08-04",
+    "primaryDiagnoses": [
+      "post_surgical"
+    ],
+    "clinicalComplexity": [
+      "post_surgical",
+      "fall_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0004"
+    ],
+    "messyFlags": []
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0059",
+    "firstName": "Bernice",
+    "lastName": "Castlewood",
+    "dob": "1938-07-27",
+    "gender": "F",
+    "mrn": "MOCK-MRN-900059",
+    "ssn": "XXX-XX-0059",
+    "address": "5656 Hawthorn Rd, Falseberg, CA 90058",
+    "phone": "555-1059",
+    "emergencyContact": {
+      "name": "Thomas Castlewood",
+      "relationship": "Husband",
+      "phone": "555-2059"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0059"
+    },
+    "secondaryPayer": null,
+    "attendingPhysician": {
+      "name": "Dr. Reginald Thornberry",
+      "npi": "MOCK-NPI-2222222222",
+      "phone": "555-3002"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "OT",
+      "MSW",
+      "HHA"
+    ],
+    "admissionStatus": "active",
+    "socDate": "2026-04-17",
+    "certPeriodStart": "2026-04-17",
+    "certPeriodEnd": "2026-06-16",
+    "primaryDiagnoses": [
+      "CHF",
+      "wound_care",
+      "cognitive_impairment"
+    ],
+    "clinicalComplexity": [
+      "CHF",
+      "wound_care",
+      "cognitive_impairment",
+      "infection_risk",
+      "fall_risk",
+      "catheter_care"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0013",
+      "MOCK-CLIN-Q2-0006",
+      "MOCK-CLIN-Q2-0009",
+      "MOCK-CLIN-Q2-0011"
+    ],
+    "messyFlags": [
+      "missing_consent_form"
+    ]
+  },
+  {
+    "clientId": "MOCK-PT-Q2-0060",
+    "firstName": "Wilbur",
+    "lastName": "Dawnfield",
+    "dob": "1943-12-09",
+    "gender": "M",
+    "mrn": "MOCK-MRN-900060",
+    "ssn": "XXX-XX-0060",
+    "address": "5757 Chestnut Blvd, Pseudofield, CA 90059",
+    "phone": "555-1060",
+    "emergencyContact": {
+      "name": "Shirley Dawnfield",
+      "relationship": "Wife",
+      "phone": "555-2060"
+    },
+    "primaryPayer": {
+      "payerId": "MOCK-PAY-MC-001",
+      "payerName": "Mock Medicare A",
+      "policyNumber": "MOCK-MC-A0060"
+    },
+    "secondaryPayer": {
+      "payerId": "MOCK-PAY-SUPP-001",
+      "payerName": "Mock Medigap Plan F",
+      "policyNumber": "MOCK-SUP-F0060"
+    },
+    "attendingPhysician": {
+      "name": "Dr. Fiona Greenleaf",
+      "npi": "MOCK-NPI-1111111111",
+      "phone": "555-3001"
+    },
+    "serviceLines": [
+      "skilled_nursing",
+      "PT",
+      "HHA"
+    ],
+    "admissionStatus": "discharged",
+    "socDate": "2026-03-05",
+    "certPeriodStart": "2026-05-04",
+    "certPeriodEnd": "2026-07-03",
+    "dischargeDate": "2026-06-15",
+    "primaryDiagnoses": [
+      "COPD",
+      "diabetes"
+    ],
+    "clinicalComplexity": [
+      "COPD",
+      "diabetes",
+      "medication_reconciliation_risk"
+    ],
+    "assignedClinicians": [
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0004",
+      "MOCK-CLIN-Q2-0016"
+    ],
+    "messyFlags": []
+  }
+]

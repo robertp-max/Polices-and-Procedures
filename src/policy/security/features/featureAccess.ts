@@ -21,6 +21,12 @@ import { FEATURE_BY_ID, FEATURE_CATALOG } from './catalog';
 import type { FeatureDecision, FeatureDefinition, FeatureId, RolloutPhase } from './types';
 
 const INTERNAL_GROUPS: UserGroup['name'][] = ['Super Admin', 'Admin', 'System'];
+const LIMITED_ACCESS_GROUPS: UserGroup['name'][] = ['Onboarding', 'Pending User'];
+const ONBOARDING_VISIBLE_FEATURES = new Set<FeatureId>([
+  'frameworkTaxonomy.view',
+  'workflows.view',
+  'journey.view',
+]);
 
 /** Default scope used when a feature gate doesn't supply one. */
 function defaultScope(): ResourceRef['scope'] {
@@ -52,6 +58,11 @@ export function isAdminUser(authUser: AuthDemoUser | null): boolean {
 /** True if the user is internal (treated identically to admin for rollout phase gating). */
 export function isInternalUser(authUser: AuthDemoUser | null): boolean {
   return isAdminUser(authUser);
+}
+
+export function isOnboardingRestrictedUser(authUser: AuthDemoUser | null): boolean {
+  if (!authUser || isAdminUser(authUser)) return false;
+  return getUserGroupNames(authUser).some(name => LIMITED_ACCESS_GROUPS.includes(name));
 }
 
 /**
@@ -116,6 +127,7 @@ export function canViewFeature(
   }
 
   const userIsAdmin = isAdminUser(authUser);
+  const userGroups = userIsAdmin ? [] : getUserGroupNames(authUser);
 
   if (feature.internalOnly && !userIsAdmin) {
     return {
@@ -131,6 +143,25 @@ export function canViewFeature(
       allow: true,
       reasonCode: 'allow.admin',
       reason: 'Super Admin / Admin sees all enabled features.',
+      feature,
+    };
+  }
+
+  const isLimitedAccessUser = userGroups.some(name => LIMITED_ACCESS_GROUPS.includes(name));
+  if (isLimitedAccessUser && !ONBOARDING_VISIBLE_FEATURES.has(featureId)) {
+    return {
+      allow: false,
+      reasonCode: 'deny.onboarding_scope',
+      reason: 'Onboarding users are limited to Taxonomy and Workflows.',
+      feature,
+    };
+  }
+
+  if (isLimitedAccessUser) {
+    return {
+      allow: true,
+      reasonCode: 'allow.group_match',
+      reason: 'Limited-access user can view Taxonomy and Workflows only.',
       feature,
     };
   }
@@ -158,7 +189,6 @@ export function canViewFeature(
   }
 
   if (hasGroups) {
-    const userGroups = getUserGroupNames(authUser);
     if (userGroups.some(g => feature.allowedGroupNames!.includes(g))) {
       return {
         allow: true,

@@ -1,6 +1,12 @@
 import { useEffect, useMemo } from 'react';
 import type { DemoUser as AuthUser } from '@/auth/api';
 import { useAuth } from '@/auth/AuthProvider';
+import {
+  authorityDomainsForRole,
+  normalizeProductionTier,
+  type AuthorityDomain,
+  type ProductionSignerTier,
+} from './signerAuthority';
 
 const AUTH_STORAGE_KEY = 'ci_demo_auth_v1';
 const ECIGN_SIGNER_STORAGE_KEY = 'ci_ecign_signer_v1';
@@ -13,7 +19,8 @@ export interface EcignSignerIdentity {
   email: string;
   initials: string;
   role: string;
-  tier: number;
+  tier: ProductionSignerTier;
+  authorityDomains: AuthorityDomain[];
 }
 
 const FALLBACK_SIGNER: EcignSignerIdentity = {
@@ -24,7 +31,8 @@ const FALLBACK_SIGNER: EcignSignerIdentity = {
   email: 'demo@example.com',
   initials: 'DU',
   role: 'Demo User',
-  tier: 2,
+  tier: 1,
+  authorityDomains: ['operations'],
 };
 
 function splitName(name?: string): { firstName: string; lastName: string } {
@@ -63,7 +71,21 @@ function getStoredEcignSigner(): EcignSignerIdentity | null {
   try {
     const raw = window.localStorage.getItem(ECIGN_SIGNER_STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as EcignSignerIdentity;
+    const parsed = JSON.parse(raw) as Partial<EcignSignerIdentity>;
+    if (!parsed.id || !parsed.role) return null;
+    return {
+      id: parsed.id,
+      firstName: parsed.firstName ?? FALLBACK_SIGNER.firstName,
+      lastName: parsed.lastName ?? FALLBACK_SIGNER.lastName,
+      name: parsed.name ?? FALLBACK_SIGNER.name,
+      email: parsed.email ?? FALLBACK_SIGNER.email,
+      initials: parsed.initials ?? FALLBACK_SIGNER.initials,
+      role: parsed.role,
+      tier: normalizeProductionTier(parsed.tier, parsed.role),
+      authorityDomains: parsed.authorityDomains?.length
+        ? parsed.authorityDomains
+        : authorityDomainsForRole(parsed.role),
+    };
   } catch {
     return null;
   }
@@ -90,7 +112,8 @@ export function resolveEcignSignerIdentity(user?: AuthUser | null): EcignSignerI
     email,
     initials: deriveInitials(firstName, lastName, name),
     role: String(source.role ?? '').trim() || FALLBACK_SIGNER.role,
-    tier: 2,
+    tier: normalizeProductionTier(undefined, source.role),
+    authorityDomains: authorityDomainsForRole(source.role),
   };
 }
 
@@ -107,6 +130,7 @@ export function buildEcignAuthHeaders(extra?: Record<string, string>): HeadersIn
     'X-User-Role': signer.role,
     'X-User-Email': signer.email,
     'X-User-Tier': String(signer.tier),
+    'X-User-Authority-Domains': signer.authorityDomains.join(','),
     ...(extra ?? {}),
   };
 }

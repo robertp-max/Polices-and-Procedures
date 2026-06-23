@@ -21,6 +21,14 @@ import { defineConfig, devices } from '@playwright/test';
  *   - .github/PULL_REQUEST_TEMPLATE.md (Visual Regression + V3 Pre-Rollout sections)
  *   - src/policy/components/ui/ShellContentFrame.tsx (data-shell-content-frame contract)
  */
+/*
+ * Base URL is overridable via PLAYWRIGHT_BASE_URL so the suite can run against
+ * a free port locally (e.g. when 5173 is taken by another project) while
+ * defaulting to the canonical 5173 in CI.
+ */
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173';
+const DEV_PORT = new URL(BASE_URL).port || '5173';
+
 export default defineConfig({
   testDir: './Builder/_system/uat',
   outputDir: './Builder/_system/uat-results',
@@ -35,7 +43,7 @@ export default defineConfig({
     ['json', { outputFile: 'Builder/_system/reports/ces-q2-2026-uat-playwright-results.json' }],
   ],
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: BASE_URL,
     headless: true,
     viewport: { width: 1440, height: 900 },
     screenshot: 'on',
@@ -65,5 +73,24 @@ export default defineConfig({
       testMatch: /.*v3-visual.*\.spec\.(ts|tsx|mjs)/,
     },
   ],
-  /* Dev server is already running — do NOT launch it here. */
+  /*
+   * Web server lifecycle.
+   * Locally: a dev server is typically already running on 5173, so reuse it.
+   * CI (process.env.CI truthy): no server exists, so Playwright boots the Vite
+   * dev server itself with the demo auth bypass + local-demo evidence mode that
+   * the suite assumes. Without this, every navigating spec fails with
+   * net::ERR_CONNECTION_REFUSED at http://localhost:5173.
+   */
+  webServer: {
+    command: `npm run dev:web -- --port ${DEV_PORT} --strictPort`,
+    url: BASE_URL,
+    reuseExistingServer: !process.env.CI,
+    timeout: 180_000,
+    stdout: 'pipe',
+    stderr: 'pipe',
+    env: {
+      VITE_LOCAL_DEMO_AUTH_BYPASS: 'true',
+      VITE_EVIDENCE_STORAGE_MODE: 'local-demo',
+    },
+  },
 });

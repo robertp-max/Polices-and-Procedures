@@ -6,6 +6,12 @@ import {
   reloadApprovedUsers,
   validateAllowlistCsv,
 } from '../auth/approvedUsers.js';
+import { getPageAccessPersistence } from '../auth/pageAccessPersistence.js';
+import {
+  getAppIdentityPersistence,
+  syncActiveRegistrationsIntoIdentityRegistry,
+  upsertAuthenticatedIdentity,
+} from '../auth/appIdentityPersistence.js';
 
 export const authRouter: Router = Router();
 
@@ -119,6 +125,13 @@ authRouter.post('/login', asyncHandler(async (req, res) => {
   const email    = String(req.body?.email    || '');
   const password = String(req.body?.password || '');
   const result   = await service.login(email, password);
+  if (!('challenge' in result)) {
+    try {
+      await upsertAuthenticatedIdentity(result.user);
+    } catch {
+      // The explicit identity-sync endpoint can retry; do not block login.
+    }
+  }
   res.json(result);
 }));
 
@@ -128,6 +141,11 @@ authRouter.post('/respond-challenge', asyncHandler(async (req, res) => {
   const session      = String(req.body?.session     || '');
   const newPassword  = String(req.body?.newPassword || '');
   const result       = await service.respondToNewPasswordChallenge(email, session, newPassword);
+  try {
+    await upsertAuthenticatedIdentity(result.user);
+  } catch {
+    // The explicit identity-sync endpoint can retry; do not block challenge completion.
+  }
   res.json(result);
 }));
 
@@ -157,6 +175,96 @@ authRouter.post('/admin/manual-password-reset', asyncHandler(async (req, res) =>
   res.json(result);
 }));
 
+authRouter.post('/admin/grant-access', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  const email = String(req.body?.email || '');
+  const newPassword = String(req.body?.newPassword || '');
+  const result = await service.adminGrantUserAccess(accessToken, email, newPassword);
+  res.json(result);
+}));
+
+authRouter.get('/page-access/me', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  if (!accessToken) {
+    throw new ApiError('auth_error', 'Not authenticated.', 401);
+  }
+
+  const actor = await service.getCurrentUser(accessToken);
+  const actorEmail = String(actor.email || '').trim().toLowerCase();
+  const access = await getPageAccessPersistence().getAll();
+  res.json({
+    actorEmail,
+    record: actorEmail ? (access[actorEmail] ?? null) : null,
+  });
+}));
+
+authRouter.get('/admin/page-access', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  await service.assertAdminAccessToken(accessToken);
+  const access = await getPageAccessPersistence().getAll();
+  res.json({ access });
+}));
+
+authRouter.put('/admin/page-access', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  await service.assertAdminAccessToken(accessToken);
+  const access = (req.body?.access && typeof req.body.access === 'object')
+    ? req.body.access as Record<string, unknown>
+    : {};
+  const saved = await getPageAccessPersistence().putAll(access);
+  res.json({ access: saved });
+}));
+
+authRouter.post('/identity-sync/me', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  if (!accessToken) {
+    throw new ApiError('auth_error', 'Not authenticated.', 401);
+  }
+
+  const user = await service.getCurrentUser(accessToken);
+  const registry = await upsertAuthenticatedIdentity(user);
+  res.json(registry);
+}));
+
+authRouter.get('/admin/identity-registry', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  await service.assertAdminAccessToken(accessToken);
+  const registry = await getAppIdentityPersistence().getAll();
+  res.json(registry);
+}));
+
+authRouter.put('/admin/identity-registry', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  await service.assertAdminAccessToken(accessToken);
+  const users = Array.isArray(req.body?.users) ? req.body.users : [];
+  const assignments = Array.isArray(req.body?.assignments) ? req.body.assignments : [];
+  const saved = await getAppIdentityPersistence().putAll({ users, assignments });
+  res.json(saved);
+}));
+
+authRouter.post('/admin/identity-registry/sync-authenticated-users', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  await service.assertAdminAccessToken(accessToken);
+  const registry = await syncActiveRegistrationsIntoIdentityRegistry();
+  res.json(registry);
+}));
+
 authRouter.post('/refresh', asyncHandler(async (req, res) => {
   const service      = buildDemoAuthServiceFromEnv(process.env);
   const refreshToken = String(req.body?.refreshToken || '');
@@ -180,6 +288,11 @@ authRouter.get('/me', asyncHandler(async (req, res) => {
     throw new ApiError('auth_error', 'Not authenticated.', 401);
   }
   const user = await service.getCurrentUser(accessToken);
+  try {
+    await upsertAuthenticatedIdentity(user);
+  } catch {
+    // Best-effort: /identity-sync/me can retry and local registry remains available.
+  }
   res.json({ user });
 }));
 

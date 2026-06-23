@@ -1,0 +1,86 @@
+{
+  "agent": "UI Screenshot Agent 06 - Onboarding / Journey Category",
+  "timestamp": "2026-06-16T19:01:45.954Z",
+  "baseUrl": "http://localhost:5173",
+  "mode": "dark",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "count": 12,
+  "files": [
+    {
+      "slug": "journey-overview",
+      "label": "Journey Overview",
+      "url": "/journey",
+      "file": "journey-overview__dark.png"
+    },
+    {
+      "slug": "journey-v1",
+      "label": "Journey V1",
+      "url": "/journey/v1-journey",
+      "file": "journey-v1__dark.png"
+    },
+    {
+      "slug": "journey-appendix-f",
+      "label": "Journey Appendix F",
+      "url": "/journey/appendix-f",
+      "file": "journey-appendix-f__dark.png"
+    },
+    {
+      "slug": "journey-supervisor",
+      "label": "Journey Supervisor",
+      "url": "/journey/supervisor",
+      "file": "journey-supervisor__dark.png"
+    },
+    {
+      "slug": "journey-admin",
+      "label": "Journey Admin",
+      "url": "/journey/admin",
+      "file": "journey-admin__dark.png"
+    },
+    {
+      "slug": "journey-guide",
+      "label": "Journey Guide",
+      "url": "/journey/guide",
+      "file": "journey-guide__dark.png"
+    },
+    {
+      "slug": "onboarding-v2-dashboard",
+      "label": "Onboarding v2 Dashboard",
+      "url": "/onboarding-v2/dashboard",
+      "file": "onboarding-v2-dashboard__dark.png"
+    },
+    {
+      "slug": "onboarding-v2-activate",
+      "label": "Onboarding v2 Activate",
+      "url": "/onboarding-v2/activate",
+      "file": "onboarding-v2-activate__dark.png"
+    },
+    {
+      "slug": "onboarding-v2-batches",
+      "label": "Onboarding v2 Batches",
+      "url": "/onboarding-v2/batches",
+      "file": "onboarding-v2-batches__dark.png"
+    },
+    {
+      "slug": "onboarding-v2-audit",
+      "label": "Onboarding v2 Audit Readiness",
+      "url": "/onboarding-v2/audit",
+      "file": "onboarding-v2-audit__dark.png"
+    },
+    {
+      "slug": "onboarding-v2-governance",
+      "label": "Onboarding v2 Governance",
+      "url": "/onboarding-v2/governance",
+      "file": "onboarding-v2-governance__dark.png"
+    },
+    {
+      "slug": "onboarding-v2-batch-detail",
+      "label": "Onboarding v2 Batch Detail (BATCH-00000005)",
+      "url": "/onboarding-v2/batches/BATCH-00000005",
+      "file": "onboarding-v2-batch-detail__dark.png",
+      "resolvedBatchId": "BATCH-00000005"
+    }
+  ]
+}

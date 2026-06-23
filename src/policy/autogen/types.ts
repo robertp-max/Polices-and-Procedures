@@ -85,6 +85,13 @@ export interface EventTemplate {
   dependencies?: EventDependencies;
 
   decorate?: (instance: RegulatoryEvent, date: Date) => RegulatoryEvent;
+
+  /* Reporting scope (propagated to instances) */
+  scopeType?: import('@/policy/data/regulatoryEvents').EventScopeType;
+  preferredScheduleRule?: string;
+  rescheduleRule?: string;
+  lateRule?: string;
+  scopeLabel?: string;
 }
 
 export interface GenerationRequest {

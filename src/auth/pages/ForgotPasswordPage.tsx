@@ -29,7 +29,7 @@ export function ForgotPasswordPage() {
 
   return (
     <AuthCard
-      eyebrow="Care Indeed Compliance Demo"
+      eyebrow="Care Indeed Compliance"
       title="Reset Password"
       subtitle="Enter your email and we'll send a reset code to your inbox."
     >

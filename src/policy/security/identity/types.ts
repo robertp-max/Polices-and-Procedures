@@ -48,7 +48,11 @@ export interface User {
   name: string;
   status: 'active' | 'pending' | 'suspended';
   /** How the user was provisioned — 'manual' for CRUD-created users */
-  source?: 'manual-provisioned' | 'seed';
+  source?: 'manual-provisioned' | 'seed' | 'authenticated';
+  authSubject?: string;
+  provider?: string;
+  createdAt?: string;
+  lastLoginAt?: string;
 }
 
 export interface UserGroup {
@@ -56,18 +60,44 @@ export interface UserGroup {
   name:
     | 'Super Admin'
     | 'Admin'
+    | 'All Users'
+    | 'Clinicians'
     | 'RN'
     | 'LVN'
+    | 'PT'
+    | 'OT'
+    | 'SLP'
+    | 'MSW'
+    | 'HHA'
     | 'CHHA'
+    | 'Office Staff'
+    | 'Administration'
+    | 'Scheduling'
+    | 'Intake'
+    | 'HR'
     | 'Compliance'
+    | 'QAPI'
     | 'Auditor'
     | 'Onboarding'
     | 'Billing'
+    | 'IT'
+    | 'Operations'
+    | 'Supervisors and Leadership'
+    | 'DON'
+    | 'Assistant DON'
+    | 'Administrator'
+    | 'Clinical Manager'
+    | 'Compliance Officer'
+    | 'Governing Body'
+    | 'User Access Admin'
     | 'Director'
     | 'Executive'
-    | 'System';
+    | 'System'
+    | 'Pending User';
   description: string;
   permissions: PermissionId[];
+  /** Optional count for aggregate KPI display (falls back in UI) */
+  users?: number;
 }
 
 export interface RoleAssignment {

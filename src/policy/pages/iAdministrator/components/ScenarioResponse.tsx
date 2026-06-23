@@ -9,6 +9,7 @@ import {
   Workflow as WorkflowIcon,
 } from 'lucide-react';
 import type { ScenarioMapping } from '../lib/responseTypes';
+import { resolveIaReference, warnUnresolvedIaReference } from '../lib/referenceResolver';
 
 /* ═══════════════════════════════════════════════════════════════
    ScenarioResponse
@@ -40,12 +41,38 @@ const SEVERITY_PALETTE: Record<
 };
 
 export function ScenarioResponse({ scenario, isFallback, isLight }: ScenarioResponseProps) {
+  const isLifeSafety = !!scenario.lifeSafetyFlag;
   const palette = SEVERITY_PALETTE[scenario.severity];
   const border = isLight ? '#E5E4E3' : 'rgba(255,255,255,0.09)';
   const surface = isLight ? '#FFFFFF' : 'rgba(255,255,255,0.03)';
   const text = isLight ? '#1F1C1B' : '#E6E6E6';
   const muted = isLight ? '#6B6B6B' : 'rgba(255,255,255,0.55)';
   const bannerBg = isLight ? palette.bgLight : palette.bg;
+  // For life safety: force critical visual treatment even if playbook severity differs
+  const effectiveAccent = isLifeSafety ? '#DC2626' : palette.accent;
+  const effectiveLabel = isLifeSafety ? 'EMERGENCY / LIFE SAFETY' : palette.label;
+  const resolvedWorkflows = scenario.requiredWorkflows.filter((workflow) => {
+    const resolved = resolveIaReference({
+      id: workflow.id,
+      claimedType: 'workflow',
+      title: workflow.label,
+      source: 'ScenarioResponse.requiredWorkflows',
+    });
+    if (resolved.resolved && resolved.resolvedType === 'workflow') return true;
+    warnUnresolvedIaReference(resolved);
+    return false;
+  });
+  const resolvedPolicies = scenario.relatedPolicies.filter((policy) => {
+    const resolved = resolveIaReference({
+      id: policy.id,
+      claimedType: 'policy',
+      title: policy.name,
+      source: 'ScenarioResponse.relatedPolicies',
+    });
+    if (resolved.resolved && resolved.resolvedType === 'policy') return true;
+    warnUnresolvedIaReference(resolved);
+    return false;
+  });
 
   return (
     <section
@@ -68,7 +95,7 @@ export function ScenarioResponse({ scenario, isFallback, isLight }: ScenarioResp
       >
         <div
           className="flex items-center justify-center rounded-lg shrink-0"
-          style={{ width: 36, height: 36, background: `${palette.accent}22`, color: palette.accent }}
+          style={{ width: 36, height: 36, background: `${effectiveAccent}22`, color: effectiveAccent }}
         >
           <palette.Icon size={18} strokeWidth={2} />
         </div>
@@ -76,10 +103,15 @@ export function ScenarioResponse({ scenario, isFallback, isLight }: ScenarioResp
         <div className="flex-1 min-w-0">
           <div
             className="text-[10px] font-bold uppercase tracking-[0.28em] mb-1"
-            style={{ color: palette.accent, fontFamily: "'JetBrains Mono', monospace" }}
+            style={{ color: effectiveAccent, fontFamily: "'JetBrains Mono', monospace" }}
           >
-            Scenario · {palette.label} · {scenario.label}
+            {isLifeSafety ? '🚨 ACTIVE SAFETY CASE — ' : 'Scenario · '}{effectiveLabel} · {scenario.label}
           </div>
+          {isLifeSafety && (
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1" style={{ color: '#DC2626' }}>
+              ACTIVE SAFETY CASE — Follow the instructions above first. Documentation only after safety confirmed.
+            </div>
+          )}
           <div className="text-[14px] font-semibold leading-snug" style={{ color: text }}>
             {scenario.headline || scenario.summary}
           </div>
@@ -146,7 +178,7 @@ export function ScenarioResponse({ scenario, isFallback, isLight }: ScenarioResp
         )}
 
         {/* Required workflows */}
-        {scenario.requiredWorkflows.length > 0 && (
+        {resolvedWorkflows.length > 0 && (
           <ColumnSection
             title="Required Workflows"
             accent={palette.accent}
@@ -154,7 +186,7 @@ export function ScenarioResponse({ scenario, isFallback, isLight }: ScenarioResp
             separator="right"
           >
             <ul className="space-y-2">
-              {scenario.requiredWorkflows.map((wf, i) => (
+              {resolvedWorkflows.map((wf, i) => (
                 <li key={i}>
                   <div className="flex items-start gap-2">
                     <WorkflowIcon
@@ -269,13 +301,13 @@ export function ScenarioResponse({ scenario, isFallback, isLight }: ScenarioResp
         </ColumnSection>
       </div>
 
-      {/* Related Policies / Controls + Missing Information row */}
-      {(scenario.relatedPolicies.length > 0 || scenario.missingInformation.length > 0) && (
+      {/* Related Policies / Controls + Missing Information row — collapsed for life safety until user is safe */}
+      {(resolvedPolicies.length > 0 || scenario.missingInformation.length > 0) && (
         <div
           className="grid grid-cols-1 md:grid-cols-2"
           style={{ borderTop: `1px solid ${border}` }}
         >
-          {scenario.relatedPolicies.length > 0 && (
+          {resolvedPolicies.length > 0 && (
             <ColumnSection
               title="Related Policies / Controls"
               accent={palette.accent}
@@ -283,7 +315,7 @@ export function ScenarioResponse({ scenario, isFallback, isLight }: ScenarioResp
               separator="right"
             >
               <ul className="space-y-2">
-                {scenario.relatedPolicies.map(p => (
+                {resolvedPolicies.map(p => (
                   <li key={p.id} className="flex items-start gap-2">
                     <BookMarked
                       size={12}

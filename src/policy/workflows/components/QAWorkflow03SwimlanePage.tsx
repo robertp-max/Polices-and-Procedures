@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import {
@@ -18,6 +18,9 @@ import {
 } from 'lucide-react';
 import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
 import type { SwimlaneModel as RuntimeSwimlaneModel } from '@/policy/workflows/swimlanes/types';
+import { useSwimlaneViewportPan } from '@/policy/workflows/swimlanes/useSwimlaneViewportPan';
+import { SwimlaneWorkspaceOverlay } from '@/policy/workflows/swimlanes/SwimlaneWorkspaceOverlay';
+import { useShellStore } from '@/policy/stores/uiStore';
 
 type ZoomLevel = 'overview' | 'centering' | 'step' | 'form' | 'evidence' | 'signature';
 type NodeStatus = 'complete' | 'ready' | 'in_progress' | 'blocked' | 'pending';
@@ -66,7 +69,7 @@ interface ZoomState {
 
 const TEAL = '#007970';
 const TEAL_SOFT = '#004142';
-const ORANGE = '#C74600';
+const ORANGE = '#E07B2C'; // match design #4 v3 orange
 const STEP_CANVAS_SCALE = 2.8;
 
 const PHASES: SwimlanePhase[] = [
@@ -432,19 +435,6 @@ function computeOrthogonalPath(fromNode: SwimlaneNode, toNode: SwimlaneNode) {
   return `M ${startX} ${from.cy} L ${midX} ${from.cy} L ${midX} ${to.cy} L ${endX} ${to.cy}`;
 }
 
-function centeredPan() {
-  if (typeof window === 'undefined') return { x: -600, y: -300 };
-
-  return {
-    x: -Math.max(0, canvasWidth() - window.innerWidth) * 0.5,
-    y: -Math.max(0, canvasHeight() - window.innerHeight) * 0.5,
-  };
-}
-
-function overviewTransform(pan: { x: number; y: number }) {
-  return `translate3d(${pan.x}px, ${pan.y}px, 0px) scale(1)`;
-}
-
 interface QAWorkflow03SwimlanePageProps {
   model?: RuntimeSwimlaneModel;
   initialTaskId?: string;
@@ -452,13 +442,9 @@ interface QAWorkflow03SwimlanePageProps {
 
 export function QAWorkflow03SwimlanePage({ model, initialTaskId }: QAWorkflow03SwimlanePageProps = {}) {
   const [zoomState, setZoomState] = useState<ZoomState>(initialZoomState);
-  const [mousePan, setMousePan] = useState({ x: -600, y: -300 });
   const [lastNodeId, setLastNodeId] = useState<string | null>(null);
+  const viewportRef = useRef<HTMLElement | null>(null);
   const canvasRef = useRef<HTMLDivElement | null>(null);
-  const zoomLevelRef = useRef<ZoomLevel>('overview');
-  const mousePanRef = useRef({ x: -600, y: -300 });
-  const panFrameRef = useRef<number | null>(null);
-  const pendingPanRef = useRef<{ x: number; y: number } | null>(null);
   const isEventExecution = model?.mode === 'event_execution';
   const headerBadge = isEventExecution ? 'Event Execution' : 'Workflow Template';
   const headerContextCopy = isEventExecution ? 'Event-owned Quarterly QAPI execution surface' : 'Workflow-owned visual execution surface';
@@ -467,9 +453,10 @@ export function QAWorkflow03SwimlanePage({ model, initialTaskId }: QAWorkflow03S
   const backRoute = isEventExecution ? '/calendar' : '/workflows/QA-WF-03';
   const backLabel = isEventExecution ? 'Back to Calendar' : 'Back to Workflow';
 
+  const liveNodes = (model?.nodes as unknown as SwimlaneNode[]) ?? QA_WF_03_SWIMLANE_PROTOTYPE_DATA.nodes;
   const nodeById = useMemo(
-    () => new Map(QA_WF_03_SWIMLANE_PROTOTYPE_DATA.nodes.map((node) => [node.nodeId, node])),
-    [],
+    () => new Map(liveNodes.map((node) => [node.nodeId ?? (node as { id?: string }).id ?? node.taskId, node])),
+    [liveNodes],
   );
   const activeNode = zoomState.nodeId ? nodeById.get(zoomState.nodeId) ?? null : null;
   const isFullyZoomed = zoomState.level === 'step' || zoomState.level === 'form' || zoomState.level === 'evidence' || zoomState.level === 'signature';
@@ -488,30 +475,68 @@ export function QAWorkflow03SwimlanePage({ model, initialTaskId }: QAWorkflow03S
   );
   const targetTransformNode = activeNode ?? (lastNodeId ? nodeById.get(lastNodeId) ?? null : null);
   const targetCenter = targetTransformNode ? nodeCenter(targetTransformNode) : null;
+
+  const [viewportScroll, setViewportScroll] = useState({ scrollLeft: 0, scrollTop: 0, clientWidth: 1200, clientHeight: 800 });
+
+  useLayoutEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const handleMeasure = () => {
+      setViewportScroll({
+        scrollLeft: viewport.scrollLeft,
+        scrollTop: viewport.scrollTop,
+        clientWidth: viewport.clientWidth,
+        clientHeight: viewport.clientHeight,
+      });
+    };
+
+    handleMeasure();
+
+    viewport.addEventListener('scroll', handleMeasure);
+    window.addEventListener('resize', handleMeasure);
+    return () => {
+      viewport.removeEventListener('scroll', handleMeasure);
+      window.removeEventListener('resize', handleMeasure);
+    };
+  }, [targetCenter, zoomState.level]);
+
   const canvasTransform = (() => {
     if (targetCenter && zoomState.level !== 'overview') {
-      const viewportW = typeof window === 'undefined' ? 1200 : window.innerWidth;
-      const viewportH = typeof window === 'undefined' ? 800 : window.innerHeight;
-      const translateX = viewportW / 2 - targetCenter.x;
-      const translateY = viewportH / 2 - targetCenter.y;
+      const { scrollLeft, scrollTop, clientWidth, clientHeight } = viewportScroll;
+      const translateX = scrollLeft + clientWidth / 2 - targetCenter.x;
+      const translateY = scrollTop + clientHeight / 2 - targetCenter.y;
       const scale = isFullyZoomed ? STEP_CANVAS_SCALE : 1;
       return `translate3d(${translateX}px, ${translateY}px, 0px) scale(${scale})`;
     }
 
-    return overviewTransform(mousePan);
+    return 'translate3d(0px, 0px, 0px) scale(1)';
   })();
   const canvasTransformOrigin = targetCenter && zoomState.level !== 'overview'
     ? `${targetCenter.x}px ${targetCenter.y}px`
     : '0 0';
 
-  const reset = () => {
-    const nextPan = centeredPan();
-    mousePanRef.current = nextPan;
+  const centerViewport = useCallback(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    viewport.scrollLeft = Math.max(0, (canvasWidth() - viewport.clientWidth) / 2);
+    viewport.scrollTop = Math.max(0, (canvasHeight() - viewport.clientHeight) / 2);
+  }, []);
+  const reset = useCallback(() => {
     setZoomState(initialZoomState);
-    setMousePan(nextPan);
     setLastNodeId(null);
-    canvasRef.current?.style.setProperty('--canvas-transform', overviewTransform(nextPan));
-  };
+    window.requestAnimationFrame(centerViewport);
+  }, [centerViewport]);
+  const {
+    isGrabDragging,
+    handleViewportClick,
+    handleViewportPointerDown,
+    handleViewportPointerMove,
+    handleViewportPointerUp,
+  } = useSwimlaneViewportPan({
+    disabled: isFullyZoomed,
+    onBackgroundClick: reset,
+  });
   const openNode = (nodeId: string, event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     setLastNodeId(nodeId);
@@ -542,69 +567,14 @@ export function QAWorkflow03SwimlanePage({ model, initialTaskId }: QAWorkflow03S
   }, []);
 
   useEffect(() => {
-    zoomLevelRef.current = zoomState.level;
-  }, [zoomState.level]);
-
-  useEffect(() => {
-    const nextPan = centeredPan();
-    mousePanRef.current = nextPan;
-    setMousePan(nextPan);
-    canvasRef.current?.style.setProperty('--canvas-transform', overviewTransform(nextPan));
-  }, []);
-
-  useEffect(() => {
-    const handlePan = (event: globalThis.MouseEvent) => {
-      if (zoomLevelRef.current !== 'overview') return;
-
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      const maxPanX = Math.max(0, canvasWidth() - w);
-      const maxPanY = Math.max(0, canvasHeight() - h);
-      const pctX = Math.min(1, Math.max(0, event.clientX / w));
-      const pctY = Math.min(1, Math.max(0, event.clientY / h));
-
-      const edgeThresholdX = 0.2;
-      const edgeThresholdY = 0.2;
-      let finalPctX = 0.5;
-      let finalPctY = 0.5;
-
-      if (pctX < edgeThresholdX) {
-        finalPctX = (pctX / edgeThresholdX) * 0.5;
-      } else if (pctX > 1 - edgeThresholdX) {
-        finalPctX = 0.5 + ((pctX - (1 - edgeThresholdX)) / edgeThresholdX) * 0.5;
-      }
-
-      if (pctY < edgeThresholdY) {
-        finalPctY = (pctY / edgeThresholdY) * 0.5;
-      } else if (pctY > 1 - edgeThresholdY) {
-        finalPctY = 0.5 + ((pctY - (1 - edgeThresholdY)) / edgeThresholdY) * 0.5;
-      }
-
-      const nextPan = {
-        x: -pctX * maxPanX,
-        y: -pctY * maxPanY,
-      };
-
-      nextPan.x = -finalPctX * maxPanX;
-      nextPan.y = -finalPctY * maxPanY;
-      mousePanRef.current = nextPan;
-      pendingPanRef.current = nextPan;
-
-      if (panFrameRef.current !== null) return;
-      panFrameRef.current = window.requestAnimationFrame(() => {
-        panFrameRef.current = null;
-        const pendingPan = pendingPanRef.current;
-        if (!pendingPan || zoomLevelRef.current !== 'overview') return;
-        canvasRef.current?.style.setProperty('--canvas-transform', overviewTransform(pendingPan));
-      });
-    };
-
-    window.addEventListener('mousemove', handlePan);
+    const frame = window.requestAnimationFrame(centerViewport);
+    const handleResize = () => centerViewport();
+    window.addEventListener('resize', handleResize);
     return () => {
-      window.removeEventListener('mousemove', handlePan);
-      if (panFrameRef.current !== null) window.cancelAnimationFrame(panFrameRef.current);
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [centerViewport]);
 
   useEffect(() => {
     if (zoomState.level !== 'centering') return undefined;
@@ -633,7 +603,7 @@ export function QAWorkflow03SwimlanePage({ model, initialTaskId }: QAWorkflow03S
 
   const content = (
     <div
-      className="qa-wf03-swimlane fixed inset-0 flex h-screen w-screen flex-col overflow-hidden bg-[#0b0f15] text-[#e2e8f0]"
+      className="qa-wf03-swimlane fixed inset-0 flex h-screen w-screen flex-col overflow-hidden bg-ci-bg text-ci-text-primary" data-workflow-execution
       style={{ zIndex: 2147483647 }}
     >
       <style>{SWIMLANE_CSS}</style>
@@ -641,16 +611,16 @@ export function QAWorkflow03SwimlanePage({ model, initialTaskId }: QAWorkflow03S
         <div className="flex items-center justify-between gap-5">
           <div className="min-w-0">
             <div className="mb-2 flex items-center gap-3">
-              <span className="rounded-full border border-[#007970]/35 bg-[#004142]/20 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#92f4ed]">
+              <span className="rounded-full border border-[var(--v3-teal,#007970)]/35 bg-[var(--v3-teal,#007970)]/12 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--v3-teal-light,#00D1C1)]">
                 {headerBadge}
               </span>
-              <span className="text-[12px] font-semibold text-[#a0abc0]">{headerContextCopy}</span>
+              <span className="text-[12px] font-semibold text-ci-text-muted">{headerContextCopy}</span>
             </div>
-            <h1 className="truncate text-[25px] font-semibold tracking-[-0.01em] text-white">
+            <h1 className="truncate text-[25px] font-semibold tracking-[-0.01em] text-ci-text-primary">
               {headerTitle}
             </h1>
             {headerSubtitle ? (
-              <p className="mt-2 text-[12px] font-semibold text-[#8a94a6]">{headerSubtitle}</p>
+              <p className="mt-2 text-[12px] font-semibold text-ci-text-subtle">{headerSubtitle}</p>
             ) : null}
           </div>
           <div className="flex shrink-0 items-center gap-5">
@@ -659,7 +629,7 @@ export function QAWorkflow03SwimlanePage({ model, initialTaskId }: QAWorkflow03S
             <HeaderMetric value={String(signerCount)} label="signer/reviewer paths" />
             <Link
               to={backRoute}
-              className="inline-flex items-center gap-2 rounded-full border border-white/14 px-4 py-2 text-[12px] font-bold text-white/82 transition-colors hover:border-[#007970]/70 hover:text-white"
+              className="inline-flex items-center gap-2 rounded-full border border-white/14 px-4 py-2 text-[12px] font-bold text-[var(--v3-text-primary,#fff)]/82 transition-colors hover:border-[var(--v3-teal,#007970)]/70 hover:text-[var(--v3-text-primary,#fff)]"
             >
               <ArrowLeft size={14} />
               {backLabel}
@@ -667,7 +637,7 @@ export function QAWorkflow03SwimlanePage({ model, initialTaskId }: QAWorkflow03S
             <button
               type="button"
               onClick={reset}
-              className="inline-flex items-center gap-2 rounded-full border border-[#C74600]/38 px-4 py-2 text-[12px] font-bold text-[#ffb18d] transition-colors hover:border-[#C74600] hover:text-white"
+              className="inline-flex items-center gap-2 rounded-full border border-[var(--v3-orange,#E07B2C)]/38 px-4 py-2 text-[12px] font-bold text-[var(--v3-orange-light,#FFA059)] transition-colors hover:border-[var(--v3-orange,#E07B2C)] hover:text-[var(--v3-text-primary,#fff)]"
             >
               Reset View
             </button>
@@ -676,8 +646,13 @@ export function QAWorkflow03SwimlanePage({ model, initialTaskId }: QAWorkflow03S
       </header>
 
       <main
-        className="qa-swimlane-main relative min-h-0 flex-1 select-none overflow-hidden custom-scrollbar"
-        onClick={reset}
+        ref={viewportRef}
+        className={`qa-swimlane-main relative min-h-0 flex-1 select-none overflow-auto custom-scrollbar ${isFullyZoomed ? '' : isGrabDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+        onClick={handleViewportClick}
+        onPointerDown={handleViewportPointerDown}
+        onPointerMove={handleViewportPointerMove}
+        onPointerUp={handleViewportPointerUp}
+        onPointerCancel={handleViewportPointerUp}
       >
         <div
           ref={canvasRef}
@@ -687,7 +662,7 @@ export function QAWorkflow03SwimlanePage({ model, initialTaskId }: QAWorkflow03S
             height: canvasHeight(),
             '--canvas-transform': canvasTransform,
             '--canvas-origin': canvasTransformOrigin,
-            transitionDuration: zoomState.level === 'overview' ? '200ms' : '400ms',
+            transitionDuration: zoomState.level === 'overview' ? '0ms' : '400ms',
             opacity: isFullyZoomed ? 0.2 : 1,
             filter: isFullyZoomed ? 'blur(5px)' : 'blur(0px)',
           } as CSSProperties}
@@ -764,7 +739,7 @@ function SwimlaneEdges({ nodeById }: { nodeById: Map<string, SwimlaneNode> }) {
     >
       <defs>
         <marker id="qa-wf03-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-          <polygon points="0 0, 6 3, 0 6" fill="#4a5568" />
+          <polygon points="0 0, 6 3, 0 6" fill="#64748B" />
         </marker>
         <marker id="qa-wf03-arrow-teal" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
           <polygon points="0 0, 6 3, 0 6" fill={TEAL} />
@@ -781,7 +756,7 @@ function SwimlaneEdges({ nodeById }: { nodeById: Map<string, SwimlaneNode> }) {
         const path = computeOrthogonalPath(fromNode, toNode);
         const completed = fromNode.status === 'complete' && toNode.status === 'complete';
         const finalEdge = toNode.nodeId === 'n9';
-        const stroke = finalEdge ? ORANGE : completed ? TEAL : '#4a5568';
+        const stroke = finalEdge ? ORANGE : completed ? TEAL : '#64748B';
         const marker = finalEdge ? 'url(#qa-wf03-arrow-orange)' : completed ? 'url(#qa-wf03-arrow-teal)' : 'url(#qa-wf03-arrow)';
 
         return (
@@ -849,15 +824,15 @@ function SwimlaneNodes({
             }}
           >
             <span className="mb-2 flex items-start justify-between gap-3">
-              <span className="min-w-0 text-[10px] font-mono font-bold uppercase tracking-[0.08em] text-[#8a94a6]">
+              <span className="min-w-0 text-[10px] font-mono font-bold uppercase tracking-[0.08em] text-ci-text-subtle">
                 {node.taskId}
               </span>
               <NodeStatusBadge node={node} />
             </span>
-            <span className="line-clamp-2 text-[14px] font-semibold leading-snug text-white">
+            <span className="line-clamp-2 text-[14px] font-semibold leading-snug text-ci-text-primary">
               {node.title}
             </span>
-            <span className="mt-auto truncate text-[11px] font-semibold text-[#a0abc0]">{node.ownerRole}</span>
+            <span className="mt-auto truncate text-[11px] font-semibold text-ci-text-muted">{node.ownerRole}</span>
           </button>
         );
       })}
@@ -868,13 +843,13 @@ function SwimlaneNodes({
 function NodeStatusBadge({ node }: { node: SwimlaneNode }) {
   if (node.status === 'complete') {
     return (
-      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#8be6df]/52 bg-[#007970]/20 text-[#8be6df]">
+      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[var(--v3-teal-light,#00D1C1)]/52 bg-[var(--v3-teal,#007970)]/20 text-[var(--v3-teal-light,#00D1C1)]">
         <CheckCircle2 size={13} />
       </span>
     );
   }
   return (
-    <span className="rounded-full border border-white/20 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-white/72">
+    <span className="rounded-full border border-white/20 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-ci-text-primary/72">
       {node.status === 'ready' ? 'Ready' : node.status === 'blocked' ? 'Blocked' : 'Req'}
     </span>
   );
@@ -882,7 +857,7 @@ function NodeStatusBadge({ node }: { node: SwimlaneNode }) {
 
 function ModalStatusIndicator({ status }: { status: NodeStatus }) {
   return (
-    <div className="inline-flex min-w-[160px] items-center gap-2 rounded border border-[#007970]/30 bg-[#004142]/22 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-[#007970]">
+    <div className="inline-flex min-w-[160px] items-center gap-2 rounded border border-[var(--v3-teal,#007970)]/30 bg-[var(--v3-teal,#007970)]/12 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--v3-teal,#007970)]">
       <CheckCircle2 size={12} />
       {statusCopy(status)}
     </div>
@@ -892,8 +867,8 @@ function ModalStatusIndicator({ status }: { status: NodeStatus }) {
 function HeaderMetric({ value, label }: { value: string; label: string }) {
   return (
     <div className="flex items-baseline gap-2 whitespace-nowrap">
-      <span className="text-[22px] font-semibold text-[#8be6df]">{value}</span>
-      <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/54">{label}</span>
+      <span className="text-[22px] font-semibold text-[var(--v3-teal-light,#00D1C1)]">{value}</span>
+      <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-ci-text-primary/54">{label}</span>
     </div>
   );
 }
@@ -911,21 +886,21 @@ function ZoomOverlay({
   onBack: () => void;
   onOpenLevelTwo: (level: Exclude<ZoomLevel, 'overview' | 'centering' | 'step'>, actionId?: string | null) => void;
 }) {
+  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
   const stepLevel = zoomState.level === 'step';
 
   return (
-    <div
-      id="modal-backdrop"
-      className="zoom-backdrop fixed inset-0 z-[90] flex items-center justify-center p-6 animate-fadeIn"
-      onClick={(event) => {
-        if ((event.target as HTMLElement).id === 'modal-backdrop') onBack();
-      }}
+    <SwimlaneWorkspaceOverlay
+      id="qa-swimlane-modal-backdrop"
+      workspaceRect={null}
+      onBackdropClick={onBack}
     >
       {stepLevel ? (
         <ZoomCard
           node={node}
           onClose={onClose}
           onOpenLevelTwo={onOpenLevelTwo}
+          isLight={isLight}
         />
       ) : (
         <LevelTwoCard
@@ -935,7 +910,7 @@ function ZoomOverlay({
           onClose={onClose}
         />
       )}
-    </div>
+    </SwimlaneWorkspaceOverlay>
   );
 }
 
@@ -943,42 +918,44 @@ function ZoomCard({
   node,
   onClose,
   onOpenLevelTwo,
+  isLight: _isLight = false,
 }: {
   node: SwimlaneNode;
   onClose: () => void;
   onOpenLevelTwo: (level: Exclude<ZoomLevel, 'overview' | 'centering' | 'step'>, actionId?: string | null) => void;
+  isLight?: boolean;
 }) {
   const phase = PHASES.find((item) => item.id === node.phaseId)?.title ?? node.phaseId;
   const formsText = node.requiredForms.length ? node.requiredForms.join(', ') : 'No forms required';
   const evidenceText = node.requiredEvidence.length ? node.requiredEvidence.join(', ') : 'No evidence required';
 
   return (
-    <SpotlightCard className="zoom-card-shell w-full max-w-4xl max-h-[85vh] shadow-2xl animate-zoomIn ring-1 ring-white/5">
-      <header className="border-b border-[#1c2433] bg-[#141a23]/90 px-8 py-6 backdrop-blur-md">
+    <SpotlightCard className="zoom-card-shell swimlane-zoom-modal w-full max-w-4xl shadow-2xl animate-zoomIn ring-1 ring-white/5 overflow-hidden isolate">
+      <header className="shrink-0 border-b border-ci-border bg-ci-surface/90 px-8 py-6 backdrop-blur-md">
         <div className="flex justify-between gap-4">
           <div className="min-w-0">
             <div className="mb-2 flex items-center gap-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex items-center gap-1 rounded bg-[#1c2433] px-2 py-1 text-xs font-medium text-[#5e6a7f] transition-colors hover:bg-[#2a3441] hover:text-white"
+                className="inline-flex items-center gap-1 rounded bg-[var(--v3-surface-2,#141A23)] px-2 py-1 text-xs font-medium text-ci-text-subtle transition-colors hover:bg-[var(--v3-surface-muted,#11242A)] hover:text-ci-text-primary"
               >
                 <ArrowLeft size={12} />
                 Back to Swimlane
               </button>
-              <span className="text-xs text-[#5e6a7f]">/</span>
-              <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.14em] text-[#007970]">
+              <span className="text-xs text-ci-text-subtle">/</span>
+              <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ci-link">
                 <Maximize2 size={10} />
                 Zoom Level 1: Step Focus
               </span>
             </div>
-            <h2 className="mt-2 text-2xl font-semibold leading-tight text-white">{node.title}</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#a0abc0]">{node.shortDescription}</p>
+            <h2 className="mt-2 text-2xl font-semibold leading-tight text-ci-text-primary">{node.title}</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-ci-text-muted">{node.shortDescription}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-lg p-2 text-[#5e6a7f] transition-colors hover:bg-[#1c2433] hover:text-white"
+            className="h-10 rounded-lg p-2 text-ci-text-subtle transition-colors hover:bg-[var(--v3-surface-2,#141A23)] hover:text-ci-text-primary"
             aria-label="Close"
           >
             <X size={20} />
@@ -986,35 +963,35 @@ function ZoomCard({
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto bg-[#0b0f15] p-8 custom-scrollbar">
-        <div className="flex gap-8">
-          <div className="flex-1 space-y-6">
+      <div className="swimlane-modal-scroll flex-1 bg-ci-bg p-8">
+        <div className="swimlane-modal-content-grid">
+          <div className="swimlane-modal-primary space-y-6">
             <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-xl border border-[#1c2433] bg-[#141a23] p-4 shadow-lg shadow-black/20">
-                <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-[#5e6a7f]">Task Context</div>
-                <div className="font-mono text-sm font-semibold text-white">{node.taskId}</div>
+              <div className="rounded-xl border border-ci-border bg-ci-surface p-4 shadow-lg shadow-black/20">
+                <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-ci-text-subtle">Task Context</div>
+                <div className="font-mono text-sm font-semibold text-ci-text-primary">{node.taskId}</div>
               </div>
-              <div className="rounded-xl border border-[#1c2433] bg-[#141a23] p-4 shadow-lg shadow-black/20">
-                <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-[#5e6a7f]">Status</div>
+              <div className="rounded-xl border border-ci-border bg-ci-surface p-4 shadow-lg shadow-black/20">
+                <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-ci-text-subtle">Status</div>
                 <ModalStatusIndicator status={node.status} />
               </div>
             </div>
 
-            <div className="rounded-xl border border-[#1c2433] bg-[#141a23] p-5 shadow-lg shadow-black/20">
-              <div className="mb-3 text-[10px] uppercase tracking-[0.14em] text-[#5e6a7f]">Workflow Accountability</div>
+            <div className="rounded-xl border border-ci-border bg-ci-surface p-5 shadow-lg shadow-black/20">
+              <div className="mb-3 text-[10px] uppercase tracking-[0.14em] text-ci-text-subtle">Workflow Accountability</div>
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#2a3441] bg-[#1c2433] text-sm font-bold text-[#a0abc0]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-ci-border bg-[var(--v3-surface-2,#141A23)] text-sm font-bold text-ci-text-muted">
                   {node.ownerRole.substring(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-white">{node.ownerRole}</div>
-                  <div className="text-xs text-[#5e6a7f]">Phase: {phase}</div>
+                  <div className="text-sm font-medium text-ci-text-primary">{node.ownerRole}</div>
+                  <div className="text-xs text-ci-text-subtle">Phase: {phase}</div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-xl border border-[#007970]/20 bg-[#004142]/10 p-5">
-              <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[#007970]">
+            <div className="rounded-xl border border-[var(--v3-teal,#007970)]/20 bg-[var(--v3-teal,#007970)]/08 p-5">
+              <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-ci-link">
                 <Info size={14} />
                 Compliance Audit Purpose
               </div>
@@ -1022,19 +999,19 @@ function ZoomCard({
             </div>
           </div>
 
-          <div className="w-[340px] shrink-0 space-y-4">
-            <h3 className="mb-4 flex items-center gap-2 border-b border-[#1c2433] pb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#5e6a7f]">
-              <FileKey size={14} className="text-[#007970]" />
+          <div className="swimlane-modal-aside space-y-4">
+            <h3 className="mb-4 flex items-center gap-2 border-b border-ci-border pb-2 text-xs font-bold uppercase tracking-[0.16em] text-ci-text-subtle">
+              <FileKey size={14} className="text-ci-link" />
               Execution Workspaces
             </h3>
 
-            <div className="rounded-xl border border-[#1c2433] bg-[#141a23] p-4 shadow-lg shadow-black/20">
+            <div className="rounded-xl border border-ci-border bg-ci-surface p-4 shadow-lg shadow-black/20">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
-                  <div className="mb-1 text-xs font-medium text-white">Required Forms</div>
-                  <div className="text-[10px] leading-5 text-[#8a94a6]">{formsText}</div>
+                  <div className="mb-1 text-xs font-medium text-ci-text-primary">Required Forms</div>
+                  <div className="text-[10px] leading-5 text-ci-text-subtle">{formsText}</div>
                 </div>
-                <FileText size={16} className={node.requiredForms.length ? 'text-[#007970]' : 'text-[#5e6a7f]'} />
+                <FileText size={16} className={node.requiredForms.length ? 'text-ci-link' : 'text-ci-text-subtle'} />
               </div>
               {node.requiredForms.length ? (
                 <div className="mb-3 flex flex-wrap gap-2">
@@ -1042,7 +1019,7 @@ function ZoomCard({
                     <Link
                       key={formId}
                       to={`/forms/${encodeURIComponent(formId)}`}
-                      className="rounded-md border border-[#007970]/30 bg-[#004142]/16 px-2 py-1 font-mono text-[10px] font-bold text-[#8be6df] transition-colors hover:border-[#007970]"
+                      className="rounded-md border border-[var(--v3-teal,#007970)]/30 bg-[var(--v3-teal,#007970)]/12 px-2 py-1 font-mono text-[10px] font-bold text-[var(--v3-teal-light,#00D1C1)] transition-colors hover:border-[var(--v3-teal,#007970)]"
                     >
                       {formId}
                     </Link>
@@ -1053,63 +1030,63 @@ function ZoomCard({
                 type="button"
                 onClick={() => onOpenLevelTwo('form', node.requiredForms[0] ?? null)}
                 disabled={node.requiredForms.length === 0}
-                className="relative z-10 flex w-full items-center justify-center gap-2 rounded bg-[#007970] py-2 text-xs font-medium text-white transition-colors hover:bg-[#009085] disabled:bg-[#1c2433] disabled:text-[#5e6a7f]"
+                className="relative z-10 flex w-full items-center justify-center gap-2 rounded bg-[var(--v3-teal,#007970)] py-2 text-xs font-medium text-[var(--v3-text-primary,#fff)] transition-colors hover:bg-[var(--v3-teal-light,#00D1C1)] disabled:bg-[var(--v3-surface-2,#141A23)] disabled:text-ci-text-subtle"
               >
                 <Maximize2 size={12} />
                 Zoom to Form Workspace
               </button>
             </div>
 
-            <div className="rounded-xl border border-[#1c2433] bg-[#141a23] p-4 shadow-lg shadow-black/20">
+            <div className="rounded-xl border border-ci-border bg-ci-surface p-4 shadow-lg shadow-black/20">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
-                  <div className="mb-1 text-xs font-medium text-white">Supporting Evidence</div>
-                  <div className="line-clamp-1 text-[10px] leading-5 text-[#8a94a6]">{evidenceText}</div>
+                  <div className="mb-1 text-xs font-medium text-ci-text-primary">Supporting Evidence</div>
+                  <div className="line-clamp-1 text-[10px] leading-5 text-ci-text-subtle">{evidenceText}</div>
                 </div>
-                <FileBox size={16} className={node.requiredEvidence.length ? 'text-[#007970]' : 'text-[#5e6a7f]'} />
+                <FileBox size={16} className={node.requiredEvidence.length ? 'text-ci-link' : 'text-ci-text-subtle'} />
               </div>
               <button
                 type="button"
                 onClick={() => onOpenLevelTwo('evidence', 'evidence')}
                 disabled={node.requiredEvidence.length === 0}
-                className="relative z-10 flex w-full items-center justify-center gap-2 rounded border border-[#2a3441] bg-[#1c2433] py-2 text-xs font-medium text-white transition-colors hover:bg-[#2a3441] disabled:bg-transparent disabled:text-[#5e6a7f]"
+                className="relative z-10 flex w-full items-center justify-center gap-2 rounded border border-ci-border bg-[var(--v3-surface-2,#141A23)] py-2 text-xs font-medium text-ci-text-primary transition-colors hover:bg-[var(--v3-surface-muted,#11242A)] disabled:bg-transparent disabled:text-ci-text-subtle"
               >
                 <UploadCloud size={12} />
                 Open Evidence Workspace
               </button>
             </div>
 
-            <div className="rounded-xl border border-[#1c2433] bg-[#141a23] p-4 shadow-lg shadow-black/20">
+            <div className="rounded-xl border border-ci-border bg-ci-surface p-4 shadow-lg shadow-black/20">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
-                  <div className="mb-1 text-xs font-medium text-white">eCIgn Ceremony</div>
-                  <div className="text-[10px] leading-5 text-[#8a94a6]">{node.signerRole ? `Requires: ${node.signerRole}` : 'No signatures required'}</div>
+                  <div className="mb-1 text-xs font-medium text-ci-text-primary">eCIgn Ceremony</div>
+                  <div className="text-[10px] leading-5 text-ci-text-subtle">{node.signerRole ? `Requires: ${node.signerRole}` : 'No signatures required'}</div>
                 </div>
-                <FileSignature size={16} className={node.signerRole ? 'text-[#007970]' : 'text-[#5e6a7f]'} />
+                <FileSignature size={16} className={node.signerRole ? 'text-ci-link' : 'text-ci-text-subtle'} />
               </div>
               <button
                 type="button"
                 onClick={() => onOpenLevelTwo('signature', 'sign')}
                 disabled={!node.signerRole}
-                className="relative z-10 flex w-full items-center justify-center gap-2 rounded bg-[#007970] py-2 text-xs font-medium text-white transition-colors hover:bg-[#009085] disabled:bg-[#1c2433] disabled:text-[#5e6a7f]"
+                className="relative z-10 flex w-full items-center justify-center gap-2 rounded bg-[var(--v3-teal,#007970)] py-2 text-xs font-medium text-[var(--v3-text-primary,#fff)] transition-colors hover:bg-[var(--v3-teal-light,#00D1C1)] disabled:bg-[var(--v3-surface-2,#141A23)] disabled:text-ci-text-subtle"
               >
                 <FileSignature size={12} />
                 Enter Signature Ceremony
               </button>
             </div>
 
-            <div className="rounded-xl border border-[#1c2433] bg-[#141a23] p-4 shadow-lg shadow-black/20">
+            <div className="rounded-xl border border-ci-border bg-ci-surface p-4 shadow-lg shadow-black/20">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
-                  <div className="mb-1 text-xs font-medium text-white">Artifact Package</div>
-                  <div className="text-[10px] leading-5 text-[#8a94a6]">Preview locked package state</div>
+                  <div className="mb-1 text-xs font-medium text-ci-text-primary">Artifact Package</div>
+                  <div className="text-[10px] leading-5 text-ci-text-subtle">Preview locked package state</div>
                 </div>
-                <LockKeyhole size={16} className="text-[#007970]" />
+                <LockKeyhole size={16} className="text-ci-link" />
               </div>
               <button
                 type="button"
                 onClick={() => onOpenLevelTwo('evidence', 'artifact')}
-                className="relative z-10 flex w-full items-center justify-center gap-2 rounded border border-[#2a3441] bg-[#1c2433] py-2 text-xs font-medium text-white transition-colors hover:bg-[#2a3441]"
+                className="relative z-10 flex w-full items-center justify-center gap-2 rounded border border-ci-border bg-[var(--v3-surface-2,#141A23)] py-2 text-xs font-medium text-ci-text-primary transition-colors hover:bg-[var(--v3-surface-muted,#11242A)]"
               >
                 <Maximize2 size={12} />
                 Open Artifact Workspace
@@ -1134,35 +1111,35 @@ function LevelTwoCard({
   onClose: () => void;
 }) {
   return (
-    <SpotlightCard className="level-two-workspace h-full w-full max-w-[1200px] max-h-[90vh] overflow-hidden animate-zoomInDeeper">
-      <header className="flex items-center justify-between gap-4 border-b border-[#1c2433] bg-[#141a23]/86 px-7 py-5">
+    <SpotlightCard className="level-two-workspace swimlane-level-two-modal w-full max-w-[1200px] overflow-hidden animate-zoomInDeeper isolate">
+      <header className="flex shrink-0 items-center justify-between gap-4 border-b border-ci-border bg-ci-surface/86 px-7 py-5">
         <div className="min-w-0">
-          <div className="mb-2 flex items-center gap-2 text-[12px] text-[#8a94a6]">
-            <button type="button" onClick={onClose} className="hover:text-white">QA-WF-03 Swimlane</button>
+          <div className="mb-2 flex items-center gap-2 text-[12px] text-ci-text-subtle">
+            <button type="button" onClick={onClose} className="hover:text-ci-text-primary">QA-WF-03 Swimlane</button>
             <ChevronRight size={13} />
-            <button type="button" onClick={onBack} className="truncate hover:text-white">{node.title}</button>
+            <button type="button" onClick={onBack} className="truncate hover:text-ci-text-primary">{node.title}</button>
           </div>
-          <h2 className="text-[25px] font-semibold text-white">{levelTwoTitle(zoomState)}</h2>
+          <h2 className="text-[25px] font-semibold text-ci-text-primary">{levelTwoTitle(zoomState)}</h2>
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onBack}
-            className="rounded-full border border-[#2a3441] px-4 py-2 text-[12px] font-semibold text-[#cbd5e1] transition-colors hover:border-[#007970]/70 hover:text-white"
+            className="rounded-full border border-ci-border px-4 py-2 text-[12px] font-semibold text-ci-text-muted transition-colors hover:border-[var(--v3-teal,#007970)]/70 hover:text-ci-text-primary"
           >
             Back
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-[#2a3441] p-2 text-[#8a94a6] transition-colors hover:border-[#C74600]/70 hover:text-white"
+            className="rounded-full border border-ci-border p-2 text-ci-text-subtle transition-colors hover:border-[var(--v3-orange,#E07B2C)]/70 hover:text-ci-text-primary"
             aria-label="Close"
           >
             <X size={18} />
           </button>
         </div>
       </header>
-      <div className="h-[calc(100%-86px)] overflow-auto custom-scrollbar p-8">
+      <div className="swimlane-modal-scroll flex-1 bg-ci-bg p-8">
         {zoomState.level === 'form' ? (
           <FormWorkspace node={node} formId={zoomState.actionId} />
         ) : zoomState.level === 'signature' ? (
@@ -1201,26 +1178,26 @@ function FormWorkspace({ node, formId }: { node: SwimlaneNode; formId: string | 
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div className="rounded-[28px] border border-[#007970]/32 bg-[#004142]/18 p-7 shadow-[0_0_48px_rgba(0,121,112,0.16)]">
-        <div className="mb-4 inline-flex rounded-2xl border border-[#007970]/35 bg-[#007970]/12 p-4 text-[#8be6df]">
+      <div className="rounded-[28px] border border-ci-border/60 bg-ci-overlay-soft p-7">
+        <div className="mb-4 inline-flex rounded-2xl border border-ci-link/35 bg-ci-link/12 p-4 text-ci-link">
           <FileText size={28} />
         </div>
-        <h3 className="text-[34px] font-semibold tracking-[-0.02em] text-white">{formId}</h3>
-        <p className="mt-2 text-[18px] text-[#d7fffb]">{FORM_LABELS[formId] ?? form?.name ?? 'Forms Library template'}</p>
-        <p className="mt-5 text-[14px] leading-7 text-[#a0abc0]">
+        <h3 className="text-[34px] font-semibold tracking-[-0.02em] text-ci-text-primary">{formId}</h3>
+        <p className="mt-2 text-[18px] text-[var(--v3-teal-light,#00D1C1)]">{FORM_LABELS[formId] ?? form?.name ?? 'Forms Library template'}</p>
+        <p className="mt-5 text-[14px] leading-7 text-ci-text-muted">
           Opens the Forms Library template only. This swimlane does not create a form instance.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             to={`/forms/${encodeURIComponent(formId)}`}
-            className="inline-flex items-center gap-2 rounded-full bg-[#007970] px-5 py-3 text-[14px] font-bold text-white transition-colors hover:bg-[#00877d]"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--v3-teal,#007970)] px-5 py-3 text-[14px] font-bold text-[var(--v3-text-primary,#fff)] transition-colors hover:bg-[var(--v3-teal-light,#00D1C1)]"
           >
             Open Forms Library Template
             <ExternalLink size={16} />
           </Link>
           <button
             type="button"
-            className="rounded-full border border-[#2a3441] px-5 py-3 text-[14px] font-semibold text-[#cbd5e1]"
+            className="rounded-full border border-ci-border px-5 py-3 text-[14px] font-semibold text-ci-text-muted"
           >
             Source Step: {node.taskId}
           </button>
@@ -1228,8 +1205,8 @@ function FormWorkspace({ node, formId }: { node: SwimlaneNode; formId: string | 
       </div>
 
       {!form ? (
-        <details className="rounded-[18px] border border-[#2a3441] bg-[#111923] px-5 py-4 text-[13px] text-[#a0abc0]">
-          <summary className="cursor-pointer font-semibold text-[#cbd5e1]">Integration notes</summary>
+        <details className="rounded-[18px] border border-ci-border bg-ci-surface px-5 py-4 text-[13px] text-ci-text-muted">
+          <summary className="cursor-pointer font-semibold text-ci-text-muted">Integration notes</summary>
           <p className="mt-3">This form ID did not resolve in the current Forms Library dataset.</p>
         </details>
       ) : null}
@@ -1287,15 +1264,15 @@ function PlaceholderWorkspace({
 }) {
   return (
     <div className="mx-auto flex min-h-[520px] max-w-xl flex-col items-center justify-center text-center">
-      <div className="mb-5 rounded-[26px] border border-[#007970]/32 bg-[#004142]/18 p-6 text-[#8be6df]">
+      <div className="mb-5 rounded-[26px] border border-ci-link/32 bg-ci-overlay-soft p-6 text-ci-link">
         {icon}
       </div>
-      <h3 className="text-[30px] font-semibold text-white">{title}</h3>
-      <p className="mt-3 text-[15px] leading-7 text-[#a0abc0]">{body}</p>
+      <h3 className="text-[30px] font-semibold text-ci-text-primary">{title}</h3>
+      <p className="mt-3 text-[15px] leading-7 text-ci-text-muted">{body}</p>
       {details.length > 0 ? (
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           {details.map((detail) => (
-            <span key={detail} className="rounded-full border border-[#2a3441] bg-[#141a23] px-3 py-1.5 text-[12px] text-[#cbd5e1]">
+            <span key={detail} className="rounded-full border border-ci-border bg-ci-surface px-3 py-1.5 text-[12px] text-ci-text-muted">
               {detail}
             </span>
           ))}
@@ -1325,19 +1302,20 @@ const SWIMLANE_CSS = `
   --qa-teal: ${TEAL};
   --qa-teal-soft: ${TEAL_SOFT};
   --qa-orange: ${ORANGE};
-  z-index: 2147483647;
-  background: #0b0f15;
-  color: #e2e8f0;
+  /* Contained z to not interfere with 120+ swimlane workspace popups */
+  z-index: 10;
+  background: var(--ci-surface);
+  color: var(--v3-text-primary);
 }
 
 .qa-wf03-swimlane .qa-swimlane-page-header {
-  background: rgba(11, 15, 21, 0.98);
-  border-bottom-color: #1c2433;
+  background: var(--ci-surface);
+  border-bottom-color: var(--ci-border);
 }
 
 .qa-wf03-swimlane .qa-swimlane-main,
 .qa-wf03-swimlane .qa-swimlane-canvas {
-  background: #0b0f15;
+  background: var(--ci-surface);
 }
 
 .qa-wf03-swimlane .qa-swimlane-canvas {
@@ -1349,17 +1327,17 @@ const SWIMLANE_CSS = `
 
 .qa-wf03-swimlane .qa-swimlane-phase-column {
   background: rgba(15, 19, 26, 0.24);
-  border-right-color: #26313d;
+  border-right-color: var(--v3-border-subtle, #26313d);
 }
 
 .qa-wf03-swimlane .qa-swimlane-phase-header {
-  background: rgba(11, 15, 21, 0.98);
+  background: var(--ci-surface);
   border-bottom-color: #26313d;
 }
 
 .qa-wf03-swimlane .qa-swimlane-phase-title,
 .qa-wf03-swimlane .qa-swimlane-role-title {
-  color: #a0abc0;
+  color: var(--v3-text-secondary, #94A3B8);
 }
 
 .qa-wf03-swimlane .qa-swimlane-role-row {
@@ -1367,33 +1345,31 @@ const SWIMLANE_CSS = `
 }
 
 .qa-wf03-swimlane .qa-swimlane-role-label {
-  background: rgba(11, 15, 21, 0.98);
-  border-right-color: #26313d;
+  background: var(--ci-surface);
+  border-right-color: var(--ci-border);
 }
 
 .qa-wf03-swimlane .qa-swimlane-corner {
-  background: #0b0f15;
-  border-color: #26313d;
+  background: var(--ci-surface);
+  border-color: var(--ci-border);
 }
 
 .qa-wf03-swimlane .qa-swimlane-corner-title {
-  color: #5e6a7f;
+  color: var(--v3-text-tertiary, #64748B);
 }
 
-.qa-wf03-swimlane .zoom-backdrop {
-  background: rgba(11, 15, 21, 0.72);
-}
+/* zoom-backdrop replaced by SwimlaneWorkspaceOverlay for clean no-bleed shared implementation matching swimlane detail */
 
 .qa-wf03-swimlane .border {
-  border-color: #1c2433;
+  border-color: var(--v3-border-subtle, #26313d);
 }
 
 .qa-wf03-swimlane .border-b {
-  border-bottom-color: #1c2433;
+  border-bottom-color: var(--v3-border-subtle, #26313d);
 }
 
 .qa-wf03-swimlane .border-r {
-  border-right-color: #26313d;
+  border-right-color: var(--v3-border-subtle, #26313d);
 }
 
 .qa-wf03-swimlane .custom-scrollbar::-webkit-scrollbar {
@@ -1406,8 +1382,134 @@ const SWIMLANE_CSS = `
 }
 
 .qa-wf03-swimlane .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #1c2433;
+  background: var(--ci-surface-muted);
   border-radius: 999px;
+}
+
+.qa-wf03-swimlane .swimlane-zoom-modal,
+.qa-wf03-swimlane .swimlane-level-two-modal {
+  /* clean no-bleed popup for QAPI (image #2): match swimlane detail design, strict clip. High contained z 125+, isolation, token only, no bleed over nav/main. */
+  position: relative;
+  z-index: 125;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden !important;
+  overflow-clip-margin: 0 !important;
+  isolation: isolate;
+  contain: layout paint size;
+}
+
+.qa-wf03-swimlane .swimlane-zoom-modal {
+  width: min(896px, calc(100vw - 48px)) !important;
+  max-width: min(896px, calc(100vw - 48px)) !important;
+  height: min(85vh, calc(100vh - 48px)) !important;
+  max-height: min(85vh, calc(100vh - 48px)) !important;
+  border-radius: 16px !important;
+  background: var(--ci-surface) !important;
+}
+
+.qa-wf03-swimlane .swimlane-level-two-modal {
+  width: min(1200px, calc(100vw - 48px)) !important;
+  max-width: min(1200px, calc(100vw - 48px)) !important;
+  height: min(90vh, calc(100vh - 48px)) !important;
+  max-height: min(90vh, calc(100vh - 48px)) !important;
+  border-radius: 16px !important;
+  background: var(--ci-surface) !important;
+}
+
+/* bare selectors for portaled shared overlay (QAPI popup now uses SwimlaneWorkspaceOverlay) */
+.swimlane-zoom-modal {
+  width: min(896px, calc(100vw - 48px)) !important;
+  max-width: min(896px, calc(100vw - 48px)) !important;
+  height: min(85vh, calc(100vh - 48px)) !important;
+  max-height: min(85vh, calc(100vh - 48px)) !important;
+  border-radius: 16px !important;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+  overflow-clip-margin: 0 !important;
+  background: var(--ci-surface) !important;
+  position: relative;
+  z-index: 125;
+  isolation: isolate;
+  contain: layout paint size;
+}
+.swimlane-level-two-modal {
+  width: min(1200px, calc(100vw - 48px)) !important;
+  max-width: min(1200px, calc(100vw - 48px)) !important;
+  height: min(90vh, calc(100vh - 48px)) !important;
+  max-height: min(90vh, calc(100vh - 48px)) !important;
+  border-radius: 16px !important;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+  overflow-clip-margin: 0 !important;
+  background: var(--ci-surface) !important;
+  position: relative;
+  z-index: 125;
+  isolation: isolate;
+  contain: layout paint size;
+}
+
+.qa-wf03-swimlane :is(.swimlane-zoom-modal, .swimlane-level-two-modal) > .relative {
+  min-height: 0;
+}
+
+.swimlane-modal-scroll {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.swimlane-modal-scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.swimlane-modal-content-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.swimlane-modal-primary {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.swimlane-modal-aside {
+  flex: 0 0 340px;
+  width: 340px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 980px) {
+  .qa-wf03-swimlane .swimlane-zoom-modal,
+  .qa-wf03-swimlane .swimlane-level-two-modal {
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+    height: calc(100vh - 24px);
+    max-height: calc(100vh - 24px);
+  }
+
+  .swimlane-modal-content-grid {
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .swimlane-modal-aside {
+    flex-basis: auto;
+    width: 100%;
+  }
 }
 
 .swimlane-card {
@@ -1484,10 +1586,11 @@ const SWIMLANE_CSS = `
 .card-spotlight {
   position: relative;
   border-radius: 28px;
-  border: 1px solid #1c2433;
-  background: #0f131a;
+  border: 1px solid var(--ci-border);
+  background: var(--ci-surface);
   box-shadow: 0 36px 100px rgba(0,0,0,0.46);
   overflow: hidden;
+  overflow-clip-margin: 0;
   --mouse-x: 50%;
   --mouse-y: 50%;
   --spotlight-color: rgba(0, 121, 112, 0.12);

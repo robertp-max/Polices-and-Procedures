@@ -1,6 +1,5 @@
 import { Navigate, Route, Routes, useParams, useSearchParams } from 'react-router-dom';
 import { LandingView } from './components/LandingView';
-import { QAWorkflow03SwimlanePage } from './components/QAWorkflow03SwimlanePage';
 import { WorkflowDetailView } from './components/WorkflowDetailView';
 import { SwimlaneRoutePage } from './swimlanes/SwimlaneRoutePage';
 import { getWorkflowFilterState } from './workflowNav';
@@ -30,7 +29,6 @@ export function WorkflowLibraryApp() {
             index
             element={<LandingView selectedDomain={selectedDomain} savedView={savedView} />}
           />
-          <Route path="QA-WF-03-swimlane" element={<QAWorkflow03SwimlanePage />} />
           <Route path="QA-WF-03/swimlane" element={<QAWorkflow03SwimlaneRedirect />} />
           <Route path=":workflowId/swimlane" element={<SwimlaneRoutePage />} />
           <Route path=":workflowId" element={<WorkflowDetailOrSwimlane />} />

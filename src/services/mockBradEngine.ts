@@ -413,7 +413,7 @@ function buildAppDataSearchResponse(context: BradAppContext): BradResponse {
 
   return {
     answer: [
-      'Direct Answer: App data matches were found in live tasks, events, and workflows.',
+      'Direct Answer: Operational data and tasks are available for this query.',
       '',
       ...workflows.map(item => `- Workflow ${item.id}: ${item.title}`),
       ...events.map(item => `- Event ${item.id}: ${item.title}`),
@@ -455,6 +455,35 @@ function buildScenarioAppDataContext(context: BradAppContext): string[] {
 
 function buildScenarioPrimaryResponse(classification: ScenarioClassification, context: BradAppContext): BradResponse {
   const definition = getComplianceActionDefinition(classification.scenarioId);
+  const id = definition.id as string;
+
+  // Human-first overrides for staff distress / field safety — short supervisor voice, no auto document dump
+  if (['staff_sexual_boundary_violation', 'staff_accusation_or_misconduct_allegation', 'staff_safety_assault', 'hostile_home_or_escalating_conflict', 'active_life_threat', 'incident_documentation_followup'].includes(id)) {
+    if (id === 'staff_sexual_boundary_violation' || id === 'staff_safety_assault') {
+      return {
+        answer: "I'm sorry that happened. Are you safe right now? Step away from the client and end the visit if you feel unsafe. If there is any immediate threat or you cannot leave safely, call 911. Once safe, notify your supervisor/DON/Administrator. Document only objective facts: what happened, time, location, who was present, and any witnesses. Do you feel safe right now?",
+        citations: [],
+      };
+    }
+    if (id === 'staff_accusation_or_misconduct_allegation') {
+      return {
+        answer: "That is serious. Are you safe continuing the visit right now? Do not argue with the client or try to resolve the accusation alone. Step away if the situation is escalating. Notify your supervisor/DON/Administrator as soon as possible and document only objective facts: what was said, time, location, who was present, and any witnesses. Do you feel safe continuing the visit?",
+        citations: [],
+      };
+    }
+    if (id === 'active_life_threat') {
+      return {
+        answer: "EMERGENCY  Call 911 immediately. Get out of the house now if you can do so safely. If you cannot leave, lock yourself in a room, create distance, stay quiet, and remain on the line with 911. Do not continue the visit. After you are safe, notify your supervisor/DON/Administrator and complete the incident report. Are you safe and out of the home right now?",
+        citations: [],
+      };
+    }
+    // hostile / documentation followup
+    return {
+      answer: "That sounds stressful. Are you safe right now or do you need to leave the situation? Create distance if needed and notify your supervisor. Once clear, we can document objectively. Do you feel safe at this moment?",
+      citations: [],
+    };
+  }
+
   const fallMode = definition.id === 'fall_event';
 
   const requiredActions = fallMode
@@ -534,8 +563,24 @@ function routeByClass(queryClass: QueryClass, context: BradAppContext): BradResp
 export type RunBradQueryOptions = BuildBradContextOptions;
 
 export async function runBradQuery(query: string, options: RunBradQueryOptions = {}): Promise<BradResponse> {
-  const context = await buildBradAppContext(query, options);
   const normalized = normalize(query);
+
+  // === HUMAN-FIRST FIELD INCIDENT ROUTER (before ANY context build, app-data or corpus search) ===
+  // Critical: detect staff distress / safety cases first so we never build heavy app context or hit "App data matches" for them.
+  // Any field-clinician distress, boundary violation, allegation, assault, unsafe home, hostile interaction
+  // must produce calm human supervisor response first. No policy IDs, no workflows, no forms, no "App data matches".
+  // Only surface documents if user explicitly asks.
+  const distress = detectFieldStaffDistressForMock(normalized);
+  if (distress) {
+    const explicitDoc = isExplicitDocumentationRequest(normalized);
+    return {
+      answer: distress.lead + (explicitDoc ? ' ' + distress.docOffer : ''),
+      citations: explicitDoc ? distress.minimalCitations : [],
+    };
+  }
+
+  const context = await buildBradAppContext(query, options);
+
   const scenario = classifyScenario(query);
 
   if (scenario) {
@@ -547,19 +592,108 @@ export async function runBradQuery(query: string, options: RunBradQueryOptions =
   }
 
   const queryClass = classifyQuery(normalized);
+  const decision = determineBradAnswerMode(normalized);
 
-  // Stage 2: app data first (tasks/events/workflows + operational views).
+  if (!decision.shouldSurfaceDocuments) {
+    // Answer-first: give direct human guidance, ask if docs wanted. No app data dump.
+    const base = /qapi/.test(normalized) 
+      ? "Start with the monthly QAPI review: confirm the agenda, review prior action items, check quality indicators, identify trends or gaps, assign follow-up owners, and document decisions/minutes. After the meeting, route the minutes for approval/signature and save the evidence."
+      : "For your question, start with the practical step that matches the situation. Check the immediate facts, notify the right person if needed, and document what happened. Do you want me to pull the related form or workflow?";
+    return {
+      answer: base,
+      citations: [],
+    };
+  }
+
+  // Only surface documents if explicit request (decision true)
   const appDataRouted = (queryClass === 'task' || queryClass === 'event' || queryClass === 'workflow' || queryClass === 'audit' || queryClass === 'dashboard')
     ? routeByClass(queryClass, context)
     : buildAppDataSearchResponse(context);
   if (appDataRouted.citations && appDataRouted.citations.length > 0) return appDataRouted;
 
-  // Stage 3: policy/compliance routing.
   const policyComplianceRouted = (queryClass === 'policy' || queryClass === 'form' || queryClass === 'help' || queryClass === 'mixed')
     ? routeByClass(queryClass, context)
     : buildSearchResponse(context);
   if (policyComplianceRouted.citations && policyComplianceRouted.citations.length > 0) return policyComplianceRouted;
 
-  // Stage 4: fallback is last and only when no scenario/data/policy matched.
   return buildNoMatchResponse();
+}
+
+function detectFieldStaffDistressForMock(normalized: string): { lead: string; docOffer: string; minimalCitations: BradCitation[] } | null {
+  if (/(groped|grabbed.*chest|touched my chest|sexually harassed|inappropriate touching|unwanted touch)/.test(normalized)) {
+    return {
+      lead: "I'm sorry that happened. Are you safe right now? Step away from the client and end the visit if you feel unsafe. If there is any immediate threat or you cannot leave safely, call 911. Once safe, notify your supervisor/DON/Administrator. Document only objective facts: what happened, time, location, who was present, and any witnesses. Do you feel safe right now?",
+      docOffer: "I can help you document this when you're ready. Do you want help starting the incident note?",
+      minimalCitations: [{ policyId: 'RM-ER-002', title: 'Incident Reporting & Investigation', section: 'Appendix A - Incident Report Form', excerpt: 'Use the approved incident reporting process for allegations and boundary events involving staff.' }],
+    };
+  }
+  if (/(accus.*(theft|steal|stole)|says I stole|theft accusation|accusing me of|client accused)/.test(normalized)) {
+    return {
+      lead: "That is serious. Are you safe continuing the visit right now? Do not argue with the client or try to resolve the accusation alone. Step away if the situation is escalating. Notify your supervisor/DON/Administrator as soon as possible and document only objective facts: what was said, time, location, who was present, and any witnesses. Do you feel safe continuing the visit?",
+      docOffer: "I can help you document this when you're ready. Do you want help starting the incident note?",
+      minimalCitations: [{ policyId: 'RM-ER-002', title: 'Incident Reporting & Investigation', section: 'Appendix A - Incident Report Form', excerpt: 'Use the approved incident reporting process for allegations and boundary events involving staff.' }],
+    };
+  }
+  if (/(chasing.*(knife|gun|weapon)|has a (knife|gun)|trapped.*(knife|client)|i am trapped|cannot leave.*(knife|client)|client is chasing me)/.test(normalized)) {
+    return {
+      lead: "EMERGENCY — Call 911 immediately. Get out of the house now if you can do so safely. If you cannot leave, lock yourself in a room, create distance, stay quiet, and remain on the line with 911. Do not continue the visit. After you are safe, notify your supervisor/DON/Administrator and complete the incident report. Are you safe and out of the home right now?",
+      docOffer: "Once you confirm you are safe I can guide you to the workforce safety incident report.",
+      minimalCitations: [{ policyId: 'RM-ER-002', title: 'Incident Reporting & Investigation', section: 'Appendix A - Incident Report Form', excerpt: 'Workforce safety incident reporting is handled through the approved incident process.' }],
+    };
+  }
+  if (/(i do not feel safe|not safe in the home|family.*blocking the door|patient is violent|hostile|escalating)/.test(normalized)) {
+    return {
+      lead: "That sounds stressful and potentially unsafe. Are you safe to stay in the home or do you need to leave now? Create distance, end the visit if the situation feels hostile or escalating, and contact your supervisor right away. Once clear, document the facts objectively. Do you need to step away right now?",
+      docOffer: "When safe, I can help open the right incident or home safety reassessment documentation.",
+      minimalCitations: [],
+    };
+  }
+  // Discovered deceased / fatality / unresponsive
+  if (/(client|clients|patient|patients) (is|are|was|were) dead|found (client|patient)(s)? dead|arrived and (client|clients|patient|patients) (is|are|was|were) dead|unresponsive|not breathing|no pulse|deceased|death in home|found on floor not breathing|possible death|died during visit/.test(normalized)) {
+    return {
+      lead: "EMERGENCY — Call 911 immediately. Do not touch or move the clients unless 911 instructs you to. Step back and make sure the scene is safe. If there may be danger in the home, leave immediately and call 911 from a safe place. Notify your supervisor/DON/Administrator right away after calling 911. Stay available for emergency responders and document only objective facts after you are safe. Are you safe right now, and have you called 911?",
+      docOffer: "I can help you document this after you are safe.",
+      minimalCitations: [],
+    };
+  }
+  return null;
+}
+
+function isExplicitDocumentationRequest(normalized: string): boolean {
+  return /(which form|what form|open the|start the|incident note|document this|create the report|what document|help me document|start report|workforce safety|show me the (policy|workflow|form)|pull the (policy|form|workflow)|give me the (policy|references)|what policy covers)/.test(normalized);
+}
+
+function determineBradAnswerMode(normalized: string): { 
+  answerMode: string; 
+  scenarioFamily: string; 
+  shouldSurfaceDocuments: boolean; 
+  shouldOpenRightPanel: boolean;
+  riskLevel: string;
+} {
+  // 1. Safety / distress first (existing)
+  if (/(groped|sexually harassed|inappropriate touching|grabbed me|touched my chest|accus.*(theft|steal|stole)|says I stole|theft accusation|client is chasing|chasing me.*(knife|gun)|has a (knife|gun)|trapped.*(knife|client)|i am trapped|i do not feel safe|not safe in the home|family.*blocking|patient is violent|hostile|escalating)/.test(normalized)) {
+    return { answerMode: 'staff_safety_human_first', scenarioFamily: 'staff_safety', shouldSurfaceDocuments: false, shouldOpenRightPanel: false, riskLevel: 'high' };
+  }
+  if (/(client|clients|patient|patients) (is|are|was|were) dead|found (client|patient)(s)? dead|arrived and (client|clients|patient|patients) (is|are|was|were) dead|unresponsive|not breathing|no pulse|deceased|death in home|found on floor not breathing|possible death|died during visit/.test(normalized)) {
+    return { answerMode: 'emergency_human_first', scenarioFamily: 'discovered_death_or_unresponsive', shouldSurfaceDocuments: false, shouldOpenRightPanel: false, riskLevel: 'critical' };
+  }
+
+  // 2. Explicit document request
+  if (isExplicitDocumentationRequest(normalized)) {
+    const isForm = /form|qapi.*form|incident report/.test(normalized);
+    const isWorkflow = /workflow|qapi.*workflow/.test(normalized);
+    const isPolicy = /policy|covers this/.test(normalized);
+    if (isForm) return { answerMode: 'form_lookup_requested', scenarioFamily: 'document_request', shouldSurfaceDocuments: true, shouldOpenRightPanel: true, riskLevel: 'low' };
+    if (isWorkflow) return { answerMode: 'workflow_lookup_requested', scenarioFamily: 'document_request', shouldSurfaceDocuments: true, shouldOpenRightPanel: true, riskLevel: 'low' };
+    if (isPolicy) return { answerMode: 'policy_lookup_requested', scenarioFamily: 'document_request', shouldSurfaceDocuments: true, shouldOpenRightPanel: true, riskLevel: 'low' };
+    return { answerMode: 'document_lookup_requested', scenarioFamily: 'document_request', shouldSurfaceDocuments: true, shouldOpenRightPanel: true, riskLevel: 'low' };
+  }
+
+  // 3. Operational / routine questions -> direct answer first
+  if (/(how do I handle|what should I do|how do I do|monthly qapi|qapi this month|what next|whats next|can you explain|how should I respond|help)/.test(normalized) && !isExplicitDocumentationRequest(normalized)) {
+    return { answerMode: 'operational_guidance', scenarioFamily: 'routine_operations', shouldSurfaceDocuments: false, shouldOpenRightPanel: false, riskLevel: 'low' };
+  }
+
+  // Default: direct answer only
+  return { answerMode: 'direct_answer_only', scenarioFamily: 'unknown', shouldSurfaceDocuments: false, shouldOpenRightPanel: false, riskLevel: 'low' };
 }

@@ -1,0 +1,29 @@
+[
+  {
+    "documentId": "MOCK-DOC-Q2-0032",
+    "clientId": "MOCK-PT-Q2-0025",
+    "clinicianId": "MOCK-CLIN-Q2-0001",
+    "eventId": null,
+    "documentType": "soc_oasis",
+    "serviceDiscipline": "skilled_nursing",
+    "dateCreated": "2026-04-08",
+    "serviceDate": "2026-04-08",
+    "signedDate": "2026-04-08",
+    "dueDate": "2026-04-13",
+    "status": "complete",
+    "requiredSignatureRole": "RN Case Manager",
+    "signedBy": "MOCK-CLIN-Q2-0001",
+    "version": "1.0",
+    "sourceSystem": "mock_ehr_v3",
+    "mockFileName": "MOCK-PT-Q2-0025_soc_oasis.pdf",
+    "mockDrivePath": "scratch/mock-data/q2-home-health-messy-dataset/docs/MOCK-PT-Q2-0025/",
+    "keyFindings": "SOC OASIS complete BUT functional scoring INCONSISTENT with comprehensive assessment. OASIS shows mod assist but assessment says min assist.",
+    "structuredFields": {
+      "oasisFunctionalScore": "moderate_assist",
+      "assessmentFunctionalScore": "minimal_assist"
+    },
+    "messyFlags": [
+      "oasis_inconsistency"
+    ]
+  }
+]

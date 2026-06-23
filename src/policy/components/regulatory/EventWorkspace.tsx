@@ -29,6 +29,7 @@ import { LockBadge } from './LockBadge';
 import { useEnforcementReport } from '@/policy/enforcement/useEnforcement';
 import { EventSyncBadge, EventSyncControl, MandateBadge } from './EventSyncControl';
 import { getDistinctDisplayText, toReadableStepText } from './displayText';
+import { getEventDisplayModel } from '@/policy/data/eventDisplayModel';
 
 /* ═══════════════════════════════════════════════════════════════
    EventWorkspace — rich event detail surface (EXTENDED).
@@ -157,6 +158,7 @@ export function EventWorkspace({ event, layout = 'row', onNavigateToEvent }: Eve
 /* ─── Event summary panel (extended) ────────────────── */
 function EventSummary({ event }: { event: RegulatoryEvent }) {
   const dom = DOMAIN_PALETTE[event.domain];
+  const { canonicalPolicyRefs } = getEventDisplayModel(event);
   const store = useRegulatoryExecutionStore();
   const effectiveUrgency = store.effectiveUrgency(event);
   const completion = store.completions[event.id];
@@ -180,8 +182,8 @@ function EventSummary({ event }: { event: RegulatoryEvent }) {
     { label: 'Owner',     value: <>{event.owner}<span className="text-white/40"> · {event.ownerRole}</span></>, icon: <User size={11} /> },
     { label: 'Policy',    value: (
         <div className="flex flex-wrap gap-1">
-          {event.policyRefs.length > 0
-            ? event.policyRefs.map(p => <PolicyRef key={p} id={p} />)
+          {canonicalPolicyRefs.length > 0
+            ? canonicalPolicyRefs.map(p => <PolicyRef key={p} id={p} />)
             : <span className="text-white/35">—</span>}
         </div>
       )},
@@ -713,6 +715,7 @@ function FormsRequired({ event }: { event: RegulatoryEvent }) {
 /* ─── Help side card ──────────────────────────────── */
 function HelpCard({ event }: { event: RegulatoryEvent }) {
   const h = event.helpArticle!;
+  const { canonicalPolicyRefs } = getEventDisplayModel(event);
   // Use the rich structured article if we ship one, otherwise fall back to event.helpArticle meta.
   const rich = h?.id ? HELP_ARTICLES[h.id] : undefined;
   return (
@@ -730,9 +733,9 @@ function HelpCard({ event }: { event: RegulatoryEvent }) {
       <div>
         <p className="font-montserrat font-bold text-white text-[12.5px] mb-1">{rich?.title || h.title}</p>
         {rich?.subtitle && <p className="text-[10px] font-roboto text-white/55 mb-1.5">{rich.subtitle}</p>}
-        {event.policyRefs[0] && (
+        {canonicalPolicyRefs[0] && (
           <p className="text-[10px] font-roboto text-white/55 mb-2 flex items-center gap-1">
-            Policy <PolicyRef id={event.policyRefs[0]} />
+            Policy <PolicyRef id={canonicalPolicyRefs[0]} />
           </p>
         )}
         <p className="text-[10.5px] font-roboto text-white/60 leading-snug mb-2.5">

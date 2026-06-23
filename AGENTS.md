@@ -1,0 +1,40 @@
+# AGENTS.md — rules for AI coding agents in this repo
+
+Read this before doing anything. It applies to **all** agents (Cursor, Grok,
+Claude Code, Copilot, etc.).
+
+## 🚫 #1 rule: never emit compiled `.js` into `src/`
+
+This is a **Vite + TypeScript** app with `"noEmit": true`. Vite resolves `.js`
+**before** `.tsx`, so a stray compiled `*.js` next to a source file gets loaded
+**instead of** it and **silently hides your changes**. This has already burned an
+entire multi-agent run: a UI redesign that "did nothing" because **608 stale
+`.js` files shadowed the `.tsx`**.
+
+- ❌ Do NOT run `tsc <file>`, `tsc src/...`, bare `tsc` on files, or `tsc --noEmit false`.
+  Passing files to `tsc` makes it ignore tsconfig and emit `.js` next to every source.
+- ✅ Type-check with: `npm run build`, `npx tsc -b`, or `npx tsc -p tsconfig.app.json --noEmit`.
+- ✅ Verify the UI with: `npm run dev` or `npx vite build`.
+
+**Invariant:** zero `*.js` under `src/` that have a `.ts`/`.tsx` sibling.
+`predev`/`prebuild` auto-wipe them (`scripts/cleanEmittedJs.mjs`) and `src/**/*.js`
+is gitignored — but don't create them in the first place.
+
+## Build / verify commands
+
+- Install: `npm install`
+- Dev (web + api): `npm run dev`
+- Build: `npm run build`  (`tsc -b && vite build`)
+- Lint: `npm run lint`
+
+## Don't commit litter
+
+Do not commit build dumps or run artifacts: `build-*.log`, `build_*.txt`,
+`npm-run-dev-*.{log,err,pid}`, scratch `.txt`. Several patterns are gitignored;
+keep it that way.
+
+## When a change "doesn't show up"
+
+First suspect stale `.js` shadows in `src/` (run `npm run dev`, which auto-cleans),
+then a stale browser cache (hard refresh), then confirm you're viewing the dev
+server and not an old `vite preview` of `dist/`.

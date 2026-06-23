@@ -3,49 +3,52 @@
    Pure SVG charts (no external chart lib).
    ═══════════════════════════════════════════════════════════════ */
 
-import { CES_TOKENS } from '../../theme';
 import { useComplianceExecution } from '@/policy/compliance-execution';
 import type { SprintTrendPoint } from '../../types';
-import { CesCard } from '../primitives';
+import { PageHeader, SurfaceCard } from '@/policy/components/ui';
 
 export function ExecutiveReports() {
+  // Uses SurfaceCard (container mode) for charts; main CES cards (ExecutionUnit) use exact prototype structure.
   const snap = useComplianceExecution();
   const SPRINT_TRENDS = snap.sprintTrends;
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-[22px] font-bold" style={{ color: CES_TOKENS.navy }}>
-          Executive Reports
-        </h1>
-        <p className="text-[13px] mt-1" style={{ color: CES_TOKENS.muted }}>
-          Sprint-over-sprint compliance trends. Each chart isolates a regulatory KPI.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="CES REPORTS"
+        title="Executive Reports"
+        description="Sprint-over-sprint compliance trends and regulatory KPIs. All figures from live execution snapshots."
+      />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <CesCard title="Compliance Completion Rate (%)">
-          <BarChart data={SPRINT_TRENDS} pick={p => p.completionRatePct} unit="%" target={85} color={CES_TOKENS.navy} />
-        </CesCard>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <SurfaceCard padding="md">
+          <div className="mb-2 text-[11px] uppercase tracking-[0.18em] font-semibold text-[var(--v3-text-tertiary)]">Compliance Completion Rate (%)</div>
+          <BarChart data={SPRINT_TRENDS} pick={p => p.completionRatePct} unit="%" target={85} color="var(--v3-teal)" />
+        </SurfaceCard>
 
-        <CesCard title="On-Time Completion (%)">
-          <BarChart data={SPRINT_TRENDS} pick={p => p.onTimeRatePct} unit="%" target={80} color={CES_TOKENS.navy} />
-        </CesCard>
+        <SurfaceCard padding="md">
+          <div className="mb-2 text-[11px] uppercase tracking-[0.18em] font-semibold text-[var(--v3-text-tertiary)]">On-Time Completion (%)</div>
+          <BarChart data={SPRINT_TRENDS} pick={p => p.onTimeRatePct} unit="%" target={80} color="var(--v3-teal)" />
+        </SurfaceCard>
 
-        <CesCard title="Audit Readiness Score (0–100)">
-          <LineChart data={SPRINT_TRENDS} pick={p => p.auditReadinessScore} target={85} color={CES_TOKENS.green} />
-        </CesCard>
+        <SurfaceCard padding="md">
+          <div className="mb-2 text-[11px] uppercase tracking-[0.18em] font-semibold text-[var(--v3-text-tertiary)]">Audit Readiness Score (0–100)</div>
+          <LineChart data={SPRINT_TRENDS} pick={p => p.auditReadinessScore} target={85} color="#7AE2A8" />
+        </SurfaceCard>
 
-        <CesCard title="Signature SLA Compliance (%)">
-          <LineChart data={SPRINT_TRENDS} pick={p => p.signatureSlaPct} target={90} color={CES_TOKENS.orange} />
-        </CesCard>
+        <SurfaceCard padding="md">
+          <div className="mb-2 text-[11px] uppercase tracking-[0.18em] font-semibold text-[var(--v3-text-tertiary)]">Signature SLA Compliance (%)</div>
+          <LineChart data={SPRINT_TRENDS} pick={p => p.signatureSlaPct} target={90} color="#FFA059" />
+        </SurfaceCard>
 
-        <CesCard title="Blocked Resolution Time (hours)">
-          <BarChart data={SPRINT_TRENDS} pick={p => p.blockedResolutionHours} unit="h" inverted color={CES_TOKENS.red} />
-        </CesCard>
+        <SurfaceCard padding="md">
+          <div className="mb-2 text-[11px] uppercase tracking-[0.18em] font-semibold text-[var(--v3-text-tertiary)]">Blocked Resolution Time (hours)</div>
+          <BarChart data={SPRINT_TRENDS} pick={p => p.blockedResolutionHours} unit="h" inverted color="#FF8A8A" />
+        </SurfaceCard>
 
-        <CesCard title="Carry-Over Units Across Sprints">
-          <BarChart data={SPRINT_TRENDS} pick={p => p.carryOverCount} unit="" inverted color={CES_TOKENS.amber} />
-        </CesCard>
+        <SurfaceCard padding="md">
+          <div className="mb-2 text-[11px] uppercase tracking-[0.18em] font-semibold text-[var(--v3-text-tertiary)]">Carry-Over Units Across Sprints</div>
+          <BarChart data={SPRINT_TRENDS} pick={p => p.carryOverCount} unit="" inverted color="#F4C95D" />
+        </SurfaceCard>
       </div>
     </div>
   );
@@ -75,10 +78,7 @@ function BarChart({
     <div>
       <div className="flex items-baseline gap-3 mb-3">
         <span className="text-[28px] font-bold" style={{ color }}>{last}{unit}</span>
-        <span
-          className="text-[11px] font-semibold"
-          style={{ color: good ? CES_TOKENS.green : CES_TOKENS.red }}
-        >
+        <span className="text-[11px] font-semibold" style={{ color: good ? '#7AE2A8' : 'var(--v3-orange)' }}>
           {delta >= 0 ? '+' : ''}{delta.toFixed(0)}{unit} vs prior
         </span>
       </div>
@@ -88,7 +88,7 @@ function BarChart({
             x1="0" x2="320"
             y1={140 - (target / max) * 130}
             y2={140 - (target / max) * 130}
-            stroke={CES_TOKENS.green} strokeDasharray="4 4" strokeWidth="1"
+            stroke="#7AE2A8" strokeDasharray="4 4" strokeWidth="1"
           />
         )}
         {data.map((p, i) => {
@@ -100,10 +100,10 @@ function BarChart({
           return (
             <g key={p.sprintNumber}>
               <rect x={x} y={y} width={w} height={h} fill={color} rx="2" />
-              <text x={x + w/2} y={138} textAnchor="middle" fontSize="9" fill={CES_TOKENS.muted}>
+              <text x={x + w/2} y={138} textAnchor="middle" fontSize="9" fill="var(--v3-text-tertiary)">
                 S{p.sprintNumber}
               </text>
-              <text x={x + w/2} y={y - 3} textAnchor="middle" fontSize="9" fontWeight="600" fill={CES_TOKENS.ink}>
+              <text x={x + w/2} y={y - 3} textAnchor="middle" fontSize="9" fontWeight="600" fill="var(--v3-text-primary)">
                 {v}
               </text>
             </g>
@@ -111,7 +111,7 @@ function BarChart({
         })}
       </svg>
       {target !== undefined && (
-        <div className="text-[10px] mt-2 font-semibold" style={{ color: CES_TOKENS.green }}>
+        <div className="text-[10px] mt-2 font-semibold" style={{ color: '#7AE2A8' }}>
           ── Target: {target}{unit}
         </div>
       )}
@@ -145,10 +145,7 @@ function LineChart({
     <div>
       <div className="flex items-baseline gap-3 mb-3">
         <span className="text-[28px] font-bold" style={{ color }}>{last}</span>
-        <span
-          className="text-[11px] font-semibold"
-          style={{ color: delta >= 0 ? CES_TOKENS.green : CES_TOKENS.red }}
-        >
+        <span className="text-[11px] font-semibold" style={{ color: delta >= 0 ? '#7AE2A8' : 'var(--v3-orange)' }}>
           {delta >= 0 ? '+' : ''}{delta.toFixed(0)} vs prior
         </span>
       </div>
@@ -156,14 +153,14 @@ function LineChart({
         {target !== undefined && (
           <line
             x1="0" x2="320" y1={norm(target)} y2={norm(target)}
-            stroke={CES_TOKENS.green} strokeDasharray="4 4" strokeWidth="1"
+            stroke="#7AE2A8" strokeDasharray="4 4" strokeWidth="1"
           />
         )}
         <path d={path} fill="none" stroke={color} strokeWidth="2.5" />
         {data.map((p, i) => (
           <g key={p.sprintNumber}>
             <circle cx={i * stepX} cy={norm(pick(p))} r="3.5" fill={color} />
-            <text x={i * stepX} y={148} textAnchor="middle" fontSize="9" fill={CES_TOKENS.muted}>
+            <text x={i * stepX} y={148} textAnchor="middle" fontSize="9" fill="var(--v3-text-tertiary)">
               S{p.sprintNumber}
             </text>
           </g>

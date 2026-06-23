@@ -13,17 +13,7 @@
       }
      ]
     },
-    "BucketName": {
-     "Fn::Join": [
-      "",
-      [
-       "ci-policy-fe-logs-staging-",
-       {
-        "Ref": "AWS::AccountId"
-       }
-      ]
-     ]
-    },
+    "BucketName": "ci-policy-fe-logs-staging-069857851156",
     "LifecycleConfiguration": {
      "Rules": [
       {
@@ -120,17 +110,7 @@
       }
      ]
     },
-    "BucketName": {
-     "Fn::Join": [
-      "",
-      [
-       "ci-policy-frontend-staging-",
-       {
-        "Ref": "AWS::AccountId"
-       }
-      ]
-     ]
-    },
+    "BucketName": "ci-policy-frontend-staging-069857851156",
     "LifecycleConfiguration": {
      "Rules": [
       {
@@ -297,7 +277,7 @@
      "Name": "ci-policy-frontend-staging-security",
      "SecurityHeadersConfig": {
       "ContentSecurityPolicy": {
-       "ContentSecurityPolicy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.execute-api.us-west-2.amazonaws.com https://*.amazoncognito.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+       "ContentSecurityPolicy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.execute-api.us-west-1.amazonaws.com https://*.execute-api.us-west-2.amazonaws.com https://*.amazoncognito.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
        "Override": true
       },
       "ContentTypeOptions": {
@@ -474,18 +454,7 @@
        },
        "Effect": "Allow",
        "Principal": {
-        "Federated": {
-         "Fn::Join": [
-          "",
-          [
-           "arn:aws:iam::",
-           {
-            "Ref": "AWS::AccountId"
-           },
-           ":oidc-provider/token.actions.githubusercontent.com"
-          ]
-         ]
-        }
+        "Federated": "arn:aws:iam::069857851156:oidc-provider/token.actions.githubusercontent.com"
        }
       }
      ],
@@ -540,18 +509,7 @@
       {
        "Action": "cloudformation:DescribeStacks",
        "Effect": "Allow",
-       "Resource": {
-        "Fn::Join": [
-         "",
-         [
-          "arn:aws:cloudformation:us-east-2:",
-          {
-           "Ref": "AWS::AccountId"
-          },
-          ":stack/CiPolicyFrontend-staging/*"
-         ]
-        ]
-       },
+       "Resource": "arn:aws:cloudformation:us-west-1:069857851156:stack/CiPolicyFrontend-staging/*",
        "Sid": "CfnReadOutputs"
       },
       {
@@ -564,11 +522,7 @@
         "Fn::Join": [
          "",
          [
-          "arn:aws:cloudfront::",
-          {
-           "Ref": "AWS::AccountId"
-          },
-          ":distribution/",
+          "arn:aws:cloudfront::069857851156:distribution/",
           {
            "Ref": "Distribution830FAC52"
           }
@@ -594,7 +548,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/3VPS27CQAw9C/uJSxN6gJYuuqMKB0CDY1qTYYzGHlA1yt2rEKSwaFfP7+Mnu4b6ZQXLhb9qhV1fBd5D2ZrH3vmr7oo2UN4y9mRufYj3aYJPCYw/szzxwWGQ3B2SRIOybTaJvzi+IpLqWqIlCePKX3JLepao9EG+o6Rz/z+Gx2+aQ4/0ndUS77OxxNF75INjf4LSSqBb94hzy/2JYTxGcsJbZpPtnG1wUTqCoz5d6hU8N7BcHJW5SjkanwjaCX8BHjOXzFIBAAA="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/3VPS24CMQw9C/uMi0J7gJYuuqMaDoCCx7RmQoxiB1RFc/dqGKRh0a6e38dPtgf/8gzLRbhqg13fRN5D3VrA3oWr7qquoL4V7Mnc+pDu0wSfEhl/Znnig8MopTtkSQZ1u9pk/uL0ikiqa0mWJY4rf8kt6VmS0geFjrLO/f8YAb9pDj3Sd1bLvC/GkkbvkQ+OwwlqK5Fu3SPOLfcnhvEYKRlvmU2xc7HBJekIjvp08R68h+XiqMxNLsn4RNBO+AutvQbEUgEAAA=="
    },
    "Metadata": {
     "aws:cdk:path": "CiPolicyFrontend-staging/CDKMetadata/Default"
@@ -612,7 +566,7 @@
     "WriterProps": {
      "region": "us-east-1",
      "exports": {
-      "/cdk/exports/CiPolicyFrontendAlarms-staging/CiPolicyFrontendstaginguseast2RefDistribution830FAC52E4F721B1": {
+      "/cdk/exports/CiPolicyFrontendAlarms-staging/CiPolicyFrontendstaginguswest1RefDistribution830FAC5287B4C79B": {
        "Ref": "Distribution830FAC52"
       }
      }
@@ -661,11 +615,7 @@
              {
               "Ref": "AWS::Partition"
              },
-             ":ssm:us-east-1:",
-             {
-              "Ref": "AWS::AccountId"
-             },
-             ":parameter/cdk/exports/*"
+             ":ssm:us-east-1:069857851156:parameter/cdk/exports/*"
             ]
            ]
           }
@@ -690,9 +640,7 @@
    "Type": "AWS::Lambda::Function",
    "Properties": {
     "Code": {
-     "S3Bucket": {
-      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2"
-     },
+     "S3Bucket": "cdk-hnb659fds-assets-069857851156-us-west-1",
      "S3Key": "31140ce5921f80123008765a60e2192cf1e46ada6affd18ba12754bca501e093.zip"
     },
     "Timeout": 900,
@@ -769,7 +717,11 @@
   },
   "Region": {
    "Description": "AWS region for data-bearing resources (CA/West)",
-   "Value": "us-east-2"
+   "Value": "us-west-1"
+  },
+  "ApiBehaviorEnabled": {
+   "Description": "No /api/* behavior — pass -c apiOrigin=<execute-api host> on staging to enable",
+   "Value": "false"
   }
  },
  "Parameters": {

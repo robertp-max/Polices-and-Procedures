@@ -88,11 +88,11 @@ export function ShellMobileDrawer({
             return (
               <div key={item.id} className="mt-2 first:mt-0">
                 <div
-                  className="flex items-center gap-3 px-4 py-2 text-[11px] uppercase tracking-[0.16em]"
+                  className="flex items-center gap-3 px-4 py-2 text-[10px] font-roboto font-light uppercase tracking-[0.2em]"
                   style={{ color: 'var(--ci-text-subtle)' }}
                 >
                   <item.icon size={16} aria-hidden="true" />
-                  <span>{item.label}</span>
+                  <span>{item.label.toUpperCase()}</span>
                 </div>
                 {visibleSubItems!.map((sub, idx) => {
                   const subActive = currentPath === sub.to || currentPath.startsWith(sub.to + '/');

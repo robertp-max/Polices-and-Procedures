@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "universeId": "jan-2026-mock-clinical-universe",
+  "noPhi": true,
+  "defects": [
+    {
+      "defectId": "DEF-JAN2026-0001",
+      "patientId": "MOCK-PT-0001",
+      "patientName": "Soren Eriksson",
+      "mrn": "MOCK-MRN-0001",
+      "intentionalIssue": false,
+      "issueType": "control-clean",
+      "severity": "none",
+      "sourceDocumentWhereDefectAppears": "None - clean routine control patient",
+      "expectedDetectingEvent": "January routine chart audit control sample",
+      "expectedCapaOrFollowUp": "No CAPA expected; validates false-positive control behavior",
+      "blocksEventCompletion": false,
+      "notes": "Use as routine comparison case for OASIS/POC/evidence generators."
+    },
+    {
+      "defectId": "DEF-JAN2026-0002",
+      "patientId": "MOCK-PT-0002",
+      "patientName": "Minh Nguyen",
+      "mrn": "MOCK-MRN-0002",
+      "intentionalIssue": true,
+      "issueType": "minor documentation gap",
+      "severity": "minor",
+      "sourceDocumentWhereDefectAppears": "Initial SN education note / translated medication-teaching attestation",
+      "expectedDetectingEvent": "January OASIS/clinical documentation audit",
+      "expectedCapaOrFollowUp": "Add translated education attestation addendum and update COPD teaching checklist",
+      "blocksEventCompletion": false,
+      "notes": "Should produce a follow-up task but not block January event completion if addendum is attached."
+    },
+    {
+      "defectId": "DEF-JAN2026-0003",
+      "patientId": "MOCK-PT-0003",
+      "patientName": "Adaeze Chowdhury",
+      "mrn": "MOCK-MRN-0003",
+      "intentionalIssue": true,
+      "issueType": "fall-risk / care coordination issue",
+      "severity": "moderate",
+      "sourceDocumentWhereDefectAppears": "Plan of Care fall-prevention section and facility coordination note",
+      "expectedDetectingEvent": "January fall-risk audit and QAPI trend review",
+      "expectedCapaOrFollowUp": "Correct POC to mirror facility fall precautions; assign risk follow-up to Risk Manager",
+      "blocksEventCompletion": false,
+      "notes": "Event can close only after correction evidence or CAPA tracking entry is generated."
+    },
+    {
+      "defectId": "DEF-JAN2026-0004",
+      "patientId": "MOCK-PT-0004",
+      "patientName": "Tobias Johansson",
+      "mrn": "MOCK-MRN-0004",
+      "intentionalIssue": true,
+      "issueType": "therapy recert / visit-frequency review",
+      "severity": "moderate",
+      "sourceDocumentWhereDefectAppears": "PT reassessment narrative and POC visit-frequency grid",
+      "expectedDetectingEvent": "January therapy recertification audit",
+      "expectedCapaOrFollowUp": "Physician order clarification for PT 2w4 versus carried-forward 1w4 frequency",
+      "blocksEventCompletion": false,
+      "notes": "Should trigger order clarification and QAPI visit-frequency review, not evidence upload failure."
+    },
+    {
+      "defectId": "DEF-JAN2026-0005",
+      "patientId": "MOCK-PT-0005",
+      "patientName": "Blessing Adeyemi",
+      "mrn": "MOCK-MRN-0005",
+      "intentionalIssue": true,
+      "issueType": "medication reconciliation + wound order inconsistency",
+      "severity": "high",
+      "sourceDocumentWhereDefectAppears": "Medication teaching checklist, wound care order, POC frequency grid",
+      "expectedDetectingEvent": "January medication reconciliation audit, wound-care audit, QAPI CAPA review",
+      "expectedCapaOrFollowUp": "Add anticoagulant teaching documentation; obtain wound-frequency clarification; open CAPA if not corrected before event close",
+      "blocksEventCompletion": true,
+      "notes": "Blocks affected audit/CAPA completion until corrected or formally tracked."
+    },
+    {
+      "defectId": "DEF-JAN2026-0006",
+      "patientId": "MOCK-PT-0006",
+      "patientName": "Fumiko Nakamura",
+      "mrn": "MOCK-MRN-0006",
+      "intentionalIssue": true,
+      "issueType": "complex OASIS/POC mismatch and high-priority audit sample",
+      "severity": "critical",
+      "sourceDocumentWhereDefectAppears": "OASIS wound item support, POC wound intervention, anticoagulant coordination note",
+      "expectedDetectingEvent": "January high-priority clinical record audit and QAPI CAPA event",
+      "expectedCapaOrFollowUp": "Correct POC wound language to match Stage 2 pressure injury; document INR/anticoagulant coordination; include in QAPI high-risk sample",
+      "blocksEventCompletion": true,
+      "notes": "Should block final closeout unless CAPA evidence exists and leadership approval is recorded."
+    }
+  ],
+  "eventDetectionMap": {
+    "january-oasis-poc-audit": ["DEF-JAN2026-0002", "DEF-JAN2026-0003", "DEF-JAN2026-0004", "DEF-JAN2026-0005", "DEF-JAN2026-0006"],
+    "january-medication-reconciliation-audit": ["DEF-JAN2026-0005", "DEF-JAN2026-0006"],
+    "january-wound-care-audit": ["DEF-JAN2026-0005", "DEF-JAN2026-0006"],
+    "january-fall-risk-review": ["DEF-JAN2026-0003", "DEF-JAN2026-0004", "DEF-JAN2026-0006"],
+    "january-qapi-committee": ["DEF-JAN2026-0003", "DEF-JAN2026-0004", "DEF-JAN2026-0005", "DEF-JAN2026-0006"],
+    "january-capa-tracker": ["DEF-JAN2026-0005", "DEF-JAN2026-0006"]
+  }
+}

@@ -8,6 +8,7 @@ import { UnitDrawer } from '../components/UnitDrawer';
 import { AuditTimeline } from '../components/AuditTimeline';
 import { PHASE_ORDER, PHASE_LABEL, type Phase, type OnboardingExecutionUnit } from '../types';
 import { batchRoleIds, batchEffective } from './batchHelpers';
+import { PageHeader } from '@/policy/components/ui/PageHeader';
 
 export function BatchViewPage() {
   const { batchId = '' } = useParams<{ batchId: string }>();
@@ -45,24 +46,18 @@ export function BatchViewPage() {
   return (
     <div className="grid grid-cols-12 h-full">
       {/* Main */}
-      <div className="col-span-9 overflow-y-auto p-6 space-y-5">
-        <header>
-          <Link to="/onboarding-v2/batches" className="inline-flex items-center gap-1 text-[11px] text-[#13355E] hover:underline">
+      <div className="col-span-9 overflow-y-auto p-5 md:p-6 space-y-5">
+        <div>
+          <Link to="/onboarding-v2/batches" className="inline-flex items-center gap-1 text-[11px] text-[var(--brand-primary,#00797D)] hover:underline">
             <ArrowLeft size={12} /> Back to batches
           </Link>
-          <div className="mt-2 flex items-start justify-between gap-4">
-            <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6B7280] tabular-nums">{batch.id}</div>
-              <h1 className="text-[22px] font-semibold text-[#0B2545]">{subjectName}</h1>
-              <div className="text-[12px] text-[#4B5563] mt-1">
-                Trigger <span className="font-mono">{batch.triggerType}</span> ·
-                Roles <strong>{batchRoleIds(batch).join(', ') || '—'}</strong> ·
-                Effective {batchEffective(batch) ? new Date(batchEffective(batch) as string).toLocaleDateString() : '—'}
-              </div>
-            </div>
-            <StatusPill status={batch.status} size="md" />
-          </div>
-        </header>
+        </div>
+        <PageHeader
+          eyebrow={batch.id}
+          title={subjectName}
+          description={`Trigger ${batch.triggerType} · Roles ${batchRoleIds(batch).join(', ') || '—'} · Effective ${batchEffective(batch) ? new Date(batchEffective(batch) as string).toLocaleDateString() : '—'}`}
+          actions={<StatusPill status={batch.status} size="md" />}
+        />
 
         {/* Gate strip */}
         <section>

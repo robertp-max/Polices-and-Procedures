@@ -17,7 +17,7 @@ export function HelpContextLink({ slug, label, variant = 'inline' }: Props) {
     return (
       <Link
         to={`/help/${slug}`}
-        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EEF1FA] text-[#122555] text-[11px] font-medium border border-[#DDE3F2] hover:bg-[#DDE3F2]"
+        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--ci-info-bg)] text-[var(--v3-text-primary)] text-[11px] font-medium border border-[var(--v3-border-subtle)] hover:bg-[var(--ci-surface-muted)] hover:text-[var(--v3-teal-light)]"
       >
         <HelpCircle size={12} />
         {text}
@@ -27,7 +27,7 @@ export function HelpContextLink({ slug, label, variant = 'inline' }: Props) {
   return (
     <Link
       to={`/help/${slug}`}
-      className="inline-flex items-center gap-1 text-[12px] text-[#1A3778] hover:text-[#F04B22] hover:underline"
+      className="inline-flex items-center gap-1 text-[12px] text-[var(--v3-text-secondary)] hover:text-[var(--v3-teal-light)] hover:underline"
     >
       <HelpCircle size={12} />
       {text}

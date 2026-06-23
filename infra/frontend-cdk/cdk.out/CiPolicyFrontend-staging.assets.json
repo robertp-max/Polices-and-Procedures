@@ -8,26 +8,26 @@
         "packaging": "zip"
       },
       "destinations": {
-        "current_account-us-east-2-4f3e2d48": {
-          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2",
+        "069857851156-us-west-1-f62360e7": {
+          "bucketName": "cdk-hnb659fds-assets-069857851156-us-west-1",
           "objectKey": "31140ce5921f80123008765a60e2192cf1e46ada6affd18ba12754bca501e093.zip",
-          "region": "us-east-2",
-          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-us-east-2"
+          "region": "us-west-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::069857851156:role/cdk-hnb659fds-file-publishing-role-069857851156-us-west-1"
         }
       }
     },
-    "a50b312d4adc18ef5ba903d03c35a16266ad93293bac3f6456244653797be1cc": {
+    "7893664ac3282a15575c9e0d2a65ae2436d6ba303a5da9a756f9c1c6ba6cd4a6": {
       "displayName": "CiPolicyFrontend-staging Template",
       "source": {
         "path": "CiPolicyFrontend-staging.template.json",
         "packaging": "file"
       },
       "destinations": {
-        "current_account-us-east-2-3e25f935": {
-          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2",
-          "objectKey": "a50b312d4adc18ef5ba903d03c35a16266ad93293bac3f6456244653797be1cc.json",
-          "region": "us-east-2",
-          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-us-east-2"
+        "069857851156-us-west-1-683297b2": {
+          "bucketName": "cdk-hnb659fds-assets-069857851156-us-west-1",
+          "objectKey": "7893664ac3282a15575c9e0d2a65ae2436d6ba303a5da9a756f9c1c6ba6cd4a6.json",
+          "region": "us-west-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::069857851156:role/cdk-hnb659fds-file-publishing-role-069857851156-us-west-1"
         }
       }
     }

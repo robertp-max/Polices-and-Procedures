@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
 import { AuthApi, type AuthSession, type DemoUser, type LoginChallengeResponse } from './api';
 import { isDemoAuthBypassEnabled } from './bypass';
+import { hydrateIdentityRegistry, upsertAuthenticatedAppUser } from '@/policy/security/identity/userAssignmentsStore';
 
 interface StoredAuth {
   session: AuthSession;
@@ -13,6 +14,7 @@ interface AuthContextValue {
   loading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
+  completeNewPassword: (email: string, session: string, newPassword: string) => Promise<void>;
   logout: () => Promise<void>;
   getAccessToken: () => Promise<string | null>;
 }
@@ -46,6 +48,8 @@ function redirectToLogin(): void {
 const LOCAL_DEMO_AUTH_BYPASS = isDemoAuthBypassEnabled();
 const LOCAL_DEMO_USER: DemoUser = {
   id: 'demo-user-careindeed',
+  authSubject: 'demo-user-careindeed',
+  provider: 'local-demo',
   email: 'robertp@careindeed.com',
   name: 'TJ Padilla',
   role: 'super_admin',
@@ -103,6 +107,19 @@ function toStored(session: AuthSession): StoredAuth {
   };
 }
 
+async function syncAuthenticatedRegistry(accessToken: string | null): Promise<void> {
+  if (!accessToken || LOCAL_DEMO_AUTH_BYPASS) return;
+  try {
+    const registry = await AuthApi.syncCurrentIdentity(accessToken);
+    hydrateIdentityRegistry({
+      users: registry.users,
+      assignments: registry.assignments,
+    });
+  } catch {
+    // Local upsert keeps the session usable if the registry API is unavailable.
+  }
+}
+
 export function AuthProvider({ children }: PropsWithChildren) {
   const [stored, setStored] = useState<StoredAuth | null>(() => (LOCAL_DEMO_AUTH_BYPASS ? null : loadStoredAuth()));
   const [user, setUser] = useState<DemoUser | null>(() => {
@@ -133,9 +150,14 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const writeAuth = useCallback((next: StoredAuth, nextUser?: DemoUser | null) => {
     const resolvedUser = typeof nextUser !== 'undefined' ? nextUser : (next.user ?? user ?? null);
     const persisted = { ...next, user: resolvedUser };
+    upsertAuthenticatedAppUser(resolvedUser);
     setStored(persisted);
     setUser(resolvedUser);
     saveStoredAuth(persisted);
+  }, [user]);
+
+  useEffect(() => {
+    upsertAuthenticatedAppUser(user);
   }, [user]);
 
   const refreshIfNeeded = useCallback(async (force = false): Promise<StoredAuth | null> => {
@@ -159,7 +181,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       clearAuth();
       return null;
     }
-  }, [clearAuth, stored, writeAuth]);
+  }, [clearAuth, stored, user, writeAuth]);
 
   const bootstrap = useCallback(async () => {
     if (LOCAL_DEMO_AUTH_BYPASS) {
@@ -177,6 +199,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       }
       const me = await AuthApi.getCurrentUser(next.session.accessToken);
       writeAuth(next, me.user);
+      await syncAuthenticatedRegistry(next.session.accessToken);
     } catch {
       clearAuth();
     } finally {
@@ -256,6 +279,20 @@ export function AuthProvider({ children }: PropsWithChildren) {
       throw err;
     }
     writeAuth({ ...toStored(result.session), user: result.user }, result.user);
+    await syncAuthenticatedRegistry(result.session.accessToken);
+  }, [writeAuth]);
+
+  const completeNewPassword = useCallback(async (email: string, session: string, newPassword: string) => {
+    if (LOCAL_DEMO_AUTH_BYPASS) {
+      setBypassLoggedOut(false);
+      setUser(LOCAL_DEMO_USER);
+      setLoading(false);
+      return;
+    }
+
+    const result = await AuthApi.respondChallenge(email, session, newPassword);
+    writeAuth({ ...toStored(result.session), user: result.user }, result.user);
+    await syncAuthenticatedRegistry(result.session.accessToken);
   }, [writeAuth]);
 
   const logout = useCallback(async () => {
@@ -293,9 +330,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
     loading,
     isAuthenticated: !!user,
     login,
+    completeNewPassword,
     logout,
     getAccessToken,
-  }), [getAccessToken, loading, login, logout, user]);
+  }), [completeNewPassword, getAccessToken, loading, login, logout, user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
@@ -303,7 +341,20 @@ export function AuthProvider({ children }: PropsWithChildren) {
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) {
-    throw new Error('useAuth must be used within AuthProvider');
+    // Defensive: do not crash the shell if rendered outside provider (e.g. standalone demos, HMR, or mis-wrapped routes).
+    // Return a safe unauthenticated default. Real usage is always under the provider in the main tree.
+    if (import.meta.env.DEV) {
+      console.warn('[useAuth] called outside AuthProvider — returning demo default. Ensure AuthProvider wraps the tree.');
+    }
+    return {
+      user: null,
+      loading: false,
+      isAuthenticated: false,
+      login: async () => {},
+      completeNewPassword: async () => {},
+      logout: async () => {},
+      getAccessToken: async () => null,
+    };
   }
   return ctx;
 }

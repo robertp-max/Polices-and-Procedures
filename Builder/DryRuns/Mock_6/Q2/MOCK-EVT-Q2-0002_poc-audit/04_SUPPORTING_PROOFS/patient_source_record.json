@@ -1,0 +1,56 @@
+{
+  "clientId": "MOCK-PT-Q2-0001",
+  "firstName": "Edna",
+  "lastName": "Brickwell",
+  "dob": "1942-07-14",
+  "gender": "F",
+  "mrn": "MOCK-MRN-900001",
+  "ssn": "XXX-XX-0001",
+  "address": "123 Mockingbird Lane, Faketown, CA 90000",
+  "phone": "555-1001",
+  "emergencyContact": {
+    "name": "Robert Brickwell",
+    "relationship": "Son",
+    "phone": "555-2001"
+  },
+  "primaryPayer": {
+    "payerId": "MOCK-PAY-MC-001",
+    "payerName": "Mock Medicare A",
+    "policyNumber": "MOCK-MC-A0001"
+  },
+  "secondaryPayer": {
+    "payerId": "MOCK-PAY-SUPP-001",
+    "payerName": "Mock Medigap Plan F",
+    "policyNumber": "MOCK-SUP-F0001"
+  },
+  "attendingPhysician": {
+    "name": "Dr. Fiona Greenleaf",
+    "npi": "MOCK-NPI-1111111111",
+    "phone": "555-3001"
+  },
+  "serviceLines": [
+    "skilled_nursing",
+    "PT",
+    "HHA"
+  ],
+  "admissionStatus": "active",
+  "socDate": "2026-04-02",
+  "certPeriodStart": "2026-04-02",
+  "certPeriodEnd": "2026-06-01",
+  "primaryDiagnoses": [
+    "CHF",
+    "diabetes"
+  ],
+  "clinicalComplexity": [
+    "CHF",
+    "diabetes",
+    "medication_reconciliation_risk",
+    "fall_risk"
+  ],
+  "assignedClinicians": [
+    "MOCK-CLIN-Q2-0001",
+    "MOCK-CLIN-Q2-0004",
+    "MOCK-CLIN-Q2-0010"
+  ],
+  "messyFlags": []
+}

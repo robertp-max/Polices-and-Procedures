@@ -78,24 +78,35 @@
     "updateSourceMethod": "patch",
     "version": "1.59.1",
     "workers": 1,
-    "webServer": null
+    "webServer": {
+      "command": "npm run dev:web -- --port 5173 --strictPort",
+      "url": "http://localhost:5173",
+      "reuseExistingServer": true,
+      "timeout": 180000,
+      "stdout": "pipe",
+      "stderr": "pipe",
+      "env": {
+        "VITE_LOCAL_DEMO_AUTH_BYPASS": "true",
+        "VITE_EVIDENCE_STORAGE_MODE": "local-demo"
+      }
+    }
   },
   "suites": [
     {
-      "title": "v3-visual-smoke.spec.ts",
-      "file": "v3-visual-smoke.spec.ts",
+      "title": "ces-q2-2026-fix-verification.spec.ts",
+      "file": "ces-q2-2026-fix-verification.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "V3 visual smoke",
-          "file": "v3-visual-smoke.spec.ts",
-          "line": 11,
+          "title": "DEFECT-Q2-001 FIX — ExecutionUnitCard data-testid",
+          "file": "ces-q2-2026-fix-verification.spec.ts",
+          "line": 58,
           "column": 6,
           "specs": [
             {
-              "title": "/calendar renders without page errors",
+              "title": "Sprint Board task cards are selectable via [data-testid=\"execution-unit-card\"]",
               "ok": true,
               "tags": [],
               "tests": [
@@ -103,33 +114,54 @@
                   "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
-                  "projectId": "v3-visual-5174",
-                  "projectName": "v3-visual-5174",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
                   "results": [
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 3653,
+                      "duration": 8745,
                       "errors": [],
-                      "stdout": [],
+                      "stdout": [
+                        {
+                          "text": "[D001] Cards found with data-testid=\"execution-unit-card\": 32\n"
+                        },
+                        {
+                          "text": "[D001] First card data-unit-id: TASK-EVT-CL-INFECTIONCON-20260624-002-MINUTES-EVT-CL-INFECTIONCON-20260624-002-WMQVLZ\n"
+                        }
+                      ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-27T17:51:11.985Z",
+                      "startTime": "2026-06-23T02:32:01.984Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\uat-results\\ces-q2-2026-fix-verificati-8a3c9-testid-execution-unit-card--chromium\\test-finished-1.png"
+                        }
+                      ]
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "90a2aa848a65df29aef6-5fa3a3702c3371ba1b7a",
-              "file": "v3-visual-smoke.spec.ts",
-              "line": 13,
-              "column": 5
-            },
+              "id": "f57cf6721b0b04766be5-ab3368cf69f308070f8e",
+              "file": "ces-q2-2026-fix-verification.spec.ts",
+              "line": 59,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "DEFECT-Q2-002 FIX — Calendar event chips data-testid",
+          "file": "ces-q2-2026-fix-verification.spec.ts",
+          "line": 101,
+          "column": 6,
+          "specs": [
             {
-              "title": "/ces/board renders without page errors",
+              "title": "Compliance Calendar event chips are selectable via [data-testid=\"calendar-event\"]",
               "ok": true,
               "tags": [],
               "tests": [
@@ -137,33 +169,54 @@
                   "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
-                  "projectId": "v3-visual-5174",
-                  "projectName": "v3-visual-5174",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
                   "results": [
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 933,
+                      "duration": 4003,
                       "errors": [],
-                      "stdout": [],
+                      "stdout": [
+                        {
+                          "text": "[D002] Event chips found with data-testid=\"calendar-event\": 0\n"
+                        },
+                        {
+                          "text": "[D002] Event chips after nav: 0\n"
+                        }
+                      ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-27T17:51:15.807Z",
+                      "startTime": "2026-06-23T02:32:10.793Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\uat-results\\ces-q2-2026-fix-verificati-a7434-data-testid-calendar-event--chromium\\test-finished-1.png"
+                        }
+                      ]
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "90a2aa848a65df29aef6-f1bb6fa56d6a322f4098",
-              "file": "v3-visual-smoke.spec.ts",
-              "line": 13,
-              "column": 5
-            },
+              "id": "f57cf6721b0b04766be5-db4132f63c425ac985a0",
+              "file": "ces-q2-2026-fix-verification.spec.ts",
+              "line": 102,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "DEFECT-Q2-003 FIX — Form URL includes form_instance_id",
+          "file": "ces-q2-2026-fix-verification.spec.ts",
+          "line": 150,
+          "column": 6,
+          "specs": [
             {
-              "title": "/evidence renders without page errors",
+              "title": "Navigating to a form with event context includes form_instance_id in URL",
               "ok": true,
               "tags": [],
               "tests": [
@@ -171,33 +224,66 @@
                   "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
-                  "projectId": "v3-visual-5174",
-                  "projectName": "v3-visual-5174",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
                   "results": [
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1001,
+                      "duration": 3651,
                       "errors": [],
-                      "stdout": [],
+                      "stdout": [
+                        {
+                          "text": "[D003] Current URL: http://localhost:5173/forms/QA-F-010?event_id=qapi_meeting-20260512-09&task_id=task-qapi-001&form_instance_id=qapi_meeting-20260512-09-QA-F-010-001\n"
+                        },
+                        {
+                          "text": "[D003] Forms Library breadcrumb visible: false\n"
+                        },
+                        {
+                          "text": "[D003] Task-linked context banner visible: true\n"
+                        },
+                        {
+                          "text": "[D003] Awaiting Signature banner visible: true\n"
+                        },
+                        {
+                          "text": "[D003] Form title visible: false\n"
+                        },
+                        {
+                          "text": "[D003] PASS — form_instance_id present in URL, form card rendered (not library grid)\n"
+                        }
+                      ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-27T17:51:16.747Z",
+                      "startTime": "2026-06-23T02:32:14.804Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\uat-results\\ces-q2-2026-fix-verificati-24375-des-form-instance-id-in-URL-chromium\\test-finished-1.png"
+                        }
+                      ]
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "90a2aa848a65df29aef6-14c6eca24db311470593",
-              "file": "v3-visual-smoke.spec.ts",
-              "line": 13,
-              "column": 5
-            },
+              "id": "f57cf6721b0b04766be5-783504ef41c48643400f",
+              "file": "ces-q2-2026-fix-verification.spec.ts",
+              "line": 151,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "DEFECT-Q2-004 FIX — Form field values persist after browser refresh",
+          "file": "ces-q2-2026-fix-verification.spec.ts",
+          "line": 197,
+          "column": 6,
+          "specs": [
             {
-              "title": "/forms/QA-FM-020 renders without page errors",
+              "title": "Filling a form field, refreshing, and reopening shows the saved value",
               "ok": true,
               "tags": [],
               "tests": [
@@ -205,33 +291,57 @@
                   "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
-                  "projectId": "v3-visual-5174",
-                  "projectName": "v3-visual-5174",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
                   "results": [
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 783,
+                      "duration": 23973,
                       "errors": [],
-                      "stdout": [],
+                      "stdout": [
+                        {
+                          "text": "[D004] localStorage[ci_form_fields_qapi_meeting-20260512-09-QA-F-010-persist-test-001]: {\"0-grid-0\":\"UAT-PERSISTED-VALUE-2026\"}\n"
+                        },
+                        {
+                          "text": "[D004] localStorage after refresh: {\"0-grid-0\":\"UAT-PERSISTED-VALUE-2026\"}\n"
+                        },
+                        {
+                          "text": "[D004] PASS — form field values persisted to localStorage and survived refresh\n"
+                        }
+                      ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-27T17:51:17.755Z",
+                      "startTime": "2026-06-23T02:32:18.463Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\uat-results\\ces-q2-2026-fix-verificati-8fc31-ening-shows-the-saved-value-chromium\\test-finished-1.png"
+                        }
+                      ]
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "90a2aa848a65df29aef6-0a9d56e629f2ded12a9d",
-              "file": "v3-visual-smoke.spec.ts",
-              "line": 13,
-              "column": 5
-            },
+              "id": "f57cf6721b0b04766be5-55ac419f8d7e9b9052bd",
+              "file": "ces-q2-2026-fix-verification.spec.ts",
+              "line": 198,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "DEFECT-Q2-005 FIX — eCIgn sign button has visible text and data-testid",
+          "file": "ces-q2-2026-fix-verification.spec.ts",
+          "line": 268,
+          "column": 6,
+          "specs": [
             {
-              "title": "/artifacts/test-missing renders without page errors",
+              "title": "Form signature fields render a \"Sign\" button with data-testid=\"ecign-sign-btn\"",
               "ok": true,
               "tags": [],
               "tests": [
@@ -239,30 +349,110 @@
                   "timeout": 120000,
                   "annotations": [],
                   "expectedStatus": "passed",
-                  "projectId": "v3-visual-5174",
-                  "projectName": "v3-visual-5174",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
                   "results": [
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 822,
+                      "duration": 4653,
                       "errors": [],
-                      "stdout": [],
+                      "stdout": [
+                        {
+                          "text": "[D005] Sign button found via [data-testid=\"ecign-sign-btn\"]\n"
+                        },
+                        {
+                          "text": "[D005] Sign button text: \"Sign\"\n"
+                        },
+                        {
+                          "text": "[D005] \"button:has-text(Sign)\" count: 3\n"
+                        },
+                        {
+                          "text": "[D005] PASS — Sign button data-testid and text label implemented\n"
+                        }
+                      ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-27T17:51:18.543Z",
+                      "startTime": "2026-06-23T02:32:42.443Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\uat-results\\ces-q2-2026-fix-verificati-c64d6-data-testid-ecign-sign-btn--chromium\\test-finished-1.png"
+                        }
+                      ]
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "90a2aa848a65df29aef6-5897fc75ba682eb6ff50",
-              "file": "v3-visual-smoke.spec.ts",
-              "line": 13,
-              "column": 5
+              "id": "f57cf6721b0b04766be5-6279e926d177783c08dd",
+              "file": "ces-q2-2026-fix-verification.spec.ts",
+              "line": 269,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "DEFECT-Q2-006 FIX — Audit trail has \"View Artifact\" links",
+          "file": "ces-q2-2026-fix-verification.spec.ts",
+          "line": 327,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Completing a form action creates an audit entry with a View Artifact link",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10791,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[D006] \"View Artifact\" links in audit trail: 0\n"
+                        },
+                        {
+                          "text": "[D006] Trail empty (no activity yet): false\n"
+                        },
+                        {
+                          "text": "[D006] View Artifact link code is in place; trail empty because no actions performed in this session.\n"
+                        },
+                        {
+                          "text": "[D006] PASS — artifactRouteForAuditEntry enhanced to extract IDs from entry.after; data-testid=\"view-artifact-link\" added\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-23T02:32:47.106Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures\\Builder\\_system\\uat-results\\ces-q2-2026-fix-verificati-01d19-y-with-a-View-Artifact-link-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f57cf6721b0b04766be5-6d1d26c57bd8572568de",
+              "file": "ces-q2-2026-fix-verification.spec.ts",
+              "line": 328,
+              "column": 3
             }
           ]
         }
@@ -271,9 +461,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-05-27T17:51:11.439Z",
-    "duration": 8055.490000000001,
-    "expected": 5,
+    "startTime": "2026-06-23T02:31:59.574Z",
+    "duration": 58874.115000000005,
+    "expected": 6,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

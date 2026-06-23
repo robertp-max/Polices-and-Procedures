@@ -205,13 +205,17 @@ test.describe('DEFECT-Q2-004 FIX — Form field values persist after browser ref
 
     const url = `/forms/${formId}?event_id=${eventId}&task_id=task-qapi-001&form_instance_id=${instanceId}`;
     await page.goto(url, { waitUntil: 'domcontentloaded' });
+    const bradClose = page.locator('button[aria-label="Close"], button:has-text("Skip For Now")').first();
+    if (await bradClose.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await bradClose.click().catch(() => {});
+    }
     await page.waitForTimeout(2000);
 
     await shot(page, 'D004-01-form-before-fill');
 
     // Find any text input in the form and fill it
     const textInput = page
-      .locator('input[type="text"], input:not([type]), textarea')
+      .locator('.ci-form-viewer-paper input[type="text"], .ci-form-viewer-paper input:not([type]), .ci-form-viewer-paper textarea')
       .filter({ hasNot: page.locator('[type="hidden"]') })
       .first();
 

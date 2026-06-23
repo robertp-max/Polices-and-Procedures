@@ -61,20 +61,23 @@ export function ModulePlayerPage() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="shrink-0 px-6 md:px-10 pt-6 pb-4 flex items-start justify-between gap-4 border-b border-white/5">
-        <button onClick={() => nav('/journey')} className="glass-interactive flex items-center gap-2 border border-white/10 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-widest text-white/70 hover:text-white">
-          <ArrowLeft size={14} /> Back
-        </button>
-        <div className="flex-1 min-w-0">
-          <div className="text-[10px] font-montserrat font-bold tracking-[0.25em] text-[#FFC107]">{module.id}</div>
-          <h1 className="text-xl md:text-2xl font-montserrat font-bold text-white leading-tight">{module.title}</h1>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-white/55">
-            {module.policyRefs.length > 0 && <span className="flex items-center gap-1"><FileText size={11} /> {module.policyRefs.join(' · ')}</span>}
-            {module.cmsRefs.length > 0 && <span className="flex items-center gap-1"><Shield size={11} /> {module.cmsRefs.join(' · ')}</span>}
-            {module.durationMinutes && <span className="flex items-center gap-1"><Timer size={11} /> {module.durationMinutes} min</span>}
+      {/* Premium clean header using ui components */}
+      <div className="shrink-0 border-b border-[var(--v3-border-subtle)] bg-[color-mix(in_srgb,var(--v3-glass-card)_50%,transparent)] px-6 md:px-8 pt-5 pb-4">
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <button onClick={() => nav('/journey')} className="flex items-center gap-2 rounded-full border border-[var(--v3-border-subtle)] px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[var(--v3-text-secondary)] hover:text-white">
+            <ArrowLeft size={14} /> Back to Journey
+          </button>
+          {attempt && <StatusChip kind={attempt.status === 'completed' ? 'passed' : attempt.status === 'failed' ? 'failed' : 'in-progress'} />}
+        </div>
+        <div>
+          <div className="font-montserrat text-[10px] tracking-[0.25em] text-[#E07B2C]">{module.id}</div>
+          <h1 className="mt-1 text-2xl font-semibold leading-tight text-white">{module.title}</h1>
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-white/60">
+            {module.policyRefs.length > 0 && <span className="flex items-center gap-1"><FileText size={13} /> {module.policyRefs.join(' · ')}</span>}
+            {module.cmsRefs.length > 0 && <span className="flex items-center gap-1"><Shield size={13} /> {module.cmsRefs.join(' · ')}</span>}
+            {module.durationMinutes && <span className="flex items-center gap-1"><Timer size={13} /> {module.durationMinutes} min</span>}
           </div>
         </div>
-        {attempt && <StatusChip kind={attempt.status === 'completed' ? 'passed' : attempt.status === 'failed' ? 'failed' : 'in-progress'} />}
       </div>
 
       <div className="flex-1 min-h-0">

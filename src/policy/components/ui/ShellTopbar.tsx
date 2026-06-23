@@ -24,10 +24,13 @@ export const ShellTopbar: React.FC<ShellTopbarProps> = ({
       role="banner"
       aria-label="Application topbar"
       data-shell-topbar
-      className="flex h-[72px] w-full flex-shrink-0 items-center justify-between border-b border-border bg-surface/85 px-4 backdrop-blur-xl md:px-6"
+      data-bleed="full"
+      data-border="none"
+      className="flex h-[72px] w-full flex-shrink-0 items-center justify-between bg-surface/85 backdrop-blur-xl"
+      style={{ border: 'none', padding: '0', boxShadow: 'none' }}
     >
       {/* Left: Mobile menu + Logo */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 pl-4 md:pl-6">
         {showMobileMenu && onMenuClick && (
           <button
             onClick={onMenuClick}
@@ -41,7 +44,7 @@ export const ShellTopbar: React.FC<ShellTopbarProps> = ({
           </button>
         )}
 
-        <div className="flex items-center gap-2 font-montserrat text-[15px] font-semibold tracking-tight text-[var(--v3-text-primary)]">
+        <div className="flex items-center gap-2 font-roboto text-[15px] font-medium tracking-tight text-[var(--v3-text-primary)]">
           {logo || 'Care Indeed'}
         </div>
       </div>
@@ -55,7 +58,7 @@ export const ShellTopbar: React.FC<ShellTopbarProps> = ({
       </div>
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 pr-4 md:pr-6">
         {children}
       </div>
     </div>

@@ -73,3 +73,42 @@ export type {
   V32PageHeaderProps,
   V32SectionHeaderProps,
 } from './V32DesignSystem';
+
+// =============================================================================
+// CANONICAL CORE PRIMITIVES (single-file high-fidelity foundation library)
+// All future templates should prefer composition from these. Self-contained
+// token contract + reduced-motion safe + dual light/dark support.
+// =============================================================================
+export type {
+  SurfaceCardProps as CoreSurfaceCardProps,
+  KpiCardProps,
+  StatusBadgeProps,
+  StatusTone,
+  DataTableProps,
+  DataTableColumn,
+  FilterTrayProps,
+  DrawerProps,
+  ModalProps,
+  PageHeaderProps as CorePageHeaderProps,
+  PageGridProps,
+  PageViewCardProps,
+} from './CorePrimitives';
+
+// =============================================================================
+// PHASE 0 ONLY — UI Barrel / Exports (Composer 2.5 Agent 14)
+// Scope: ONLY this barrel file. Re-export new BorderGlow + surface enhanced Spotlight/Metric/Surface/ToneBadge variants.
+// References (read):
+// - Plan: AGENT15_MIGRATION_PHASES_RISKS_DEPS_PLAN.md (Phase 0: Component Library First; lists BorderGlow, SpotlightCard, MetricTile, SurfaceCard, ToneBadge)
+// - Ownership map (barrel + primitives lead): UI_PRIMITIVE_OWNERSHIP_MAP.md (src/policy/components/ui primitives canonical via barrel)
+// - Agent 1 map: Agent_01_Glassmorphism_Layering_4Phase_Plan.md + Analysis.md (layering, Spotlight + BorderGlow integration per plan §)
+// - Prior composers 9-13: created/enhanced (see SpotlightCard.tsx comment: "Direct import of BorderGlow (Primitives Lead / Spotlight + BorderGlow)"; variant='border-glow', MetricTile tone, Surface/Tone semantics; no overlap with token/Agent01/Agent04 shell work)
+// Plan Phase 0 primitives: barrel index.ts single export surface. No other files/logic edited.
+// =============================================================================
+export { default as BorderGlow } from './BorderGlow';
+export type { BorderGlowProps } from './BorderGlow';
+
+// Enhanced variants (Spotlight 'border-glow', Metric, ToneBadge aliases for clean canonical use; SurfaceCard already at top-level)
+export { V32MetricTile as MetricTile } from './V32DesignSystem';
+export type { V32MetricTileProps as MetricTileProps } from './V32DesignSystem';
+export { StatusPill as ToneBadge } from './V32DesignSystem';
+export type { StatusPillProps as ToneBadgeProps } from './V32DesignSystem';

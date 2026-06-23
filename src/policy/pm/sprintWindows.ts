@@ -17,6 +17,8 @@
  * PM views must use THIS function; CES projector unchanged.
  */
 
+import { toCaliforniaISODate } from '@/policy/utils/californiaTime';
+
 const DAY_MS = 86400000;
 const SPRINT_LEN_DAYS = 14;
 const SPRINT_COUNT = 26;
@@ -100,9 +102,9 @@ export function sprintForDate(isoDate: string): SprintWindow {
   return windows[windows.length - 1];
 }
 
-/** Convenience: sprint covering "today" in UTC. */
+/** Convenience: sprint covering "today" in California business time. */
 export function currentSprint(now: Date = new Date()): SprintWindow {
-  return sprintForDate(isoDateUTC(now));
+  return sprintForDate(toCaliforniaISODate(now));
 }
 
 /** Convenience: next/prev sprint relative to a sprint id (handles year wrap). */

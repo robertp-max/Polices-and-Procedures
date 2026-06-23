@@ -17,7 +17,7 @@ export function DemoBanner() {
         style={{ background: '#6b7280' }}
         aria-hidden="true"
       />
-      DEMO — {DEMO_DISCLAIMER}
+      {DEMO_DISCLAIMER}
     </div>
   );
 }

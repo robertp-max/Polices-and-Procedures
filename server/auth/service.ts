@@ -11,6 +11,7 @@ import {
   GetUserCommand,
   GlobalSignOutCommand,
   InitiateAuthCommand,
+  RespondToAuthChallengeCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
@@ -36,6 +37,7 @@ interface DemoAuthConfig {
   setupTokenTtlMinutes: number;
   autoApprovedDomain: string;
   autoApprovedEmails: string[];
+  protectedAuthEmails: string[];
   adminManualPasswordEmails: string[];
 }
 
@@ -47,6 +49,10 @@ interface RegisterResult {
     emailDelivery?: { ok: boolean; errCode?: string; errMessage?: string };
   };
 }
+
+type LoginResult =
+  | { session: AuthSession; user: DemoUser }
+  | { challenge: 'NEW_PASSWORD_REQUIRED'; challengeName: 'NEW_PASSWORD_REQUIRED'; session: string; email: string };
 
 const DEFAULT_REGISTER_MESSAGE = 'If your email is eligible, we sent a setup link. Please check your inbox.';
 
@@ -108,6 +114,20 @@ export class DemoAuthService {
     if (!password || password.length < 8) {
       throw new ApiError('validation_error', 'Password must be at least 8 characters.', 400);
     }
+  }
+
+  private isProtectedAuthEmail(emailRaw: string): boolean {
+    return this.cfg.protectedAuthEmails.includes(this.normalizeEmail(emailRaw));
+  }
+
+  private assertNotProtectedAuthEmail(actorEmail: string, targetEmail: string, action: string): void {
+    if (!this.isProtectedAuthEmail(targetEmail)) return;
+    log.warn('auth.protected_account.blocked', { actorEmail, targetEmail, action });
+    throw new ApiError(
+      'protected_account',
+      'This account is protected and cannot be changed from the admin password tools.',
+      403,
+    );
   }
 
   private async getRegistration(email: string): Promise<RegistrationRecord | null> {
@@ -396,7 +416,7 @@ export class DemoAuthService {
     return { success: true };
   }
 
-  async login(emailRaw: string, password: string): Promise<{ session: AuthSession; user: DemoUser }> {
+  async login(emailRaw: string, password: string): Promise<LoginResult> {
     const email = this.normalizeEmail(emailRaw);
     if (!email || !password) {
       throw new ApiError('validation_error', 'Email and password are required.', 400);
@@ -417,6 +437,15 @@ export class DemoAuthService {
         },
       }));
 
+      if (response.ChallengeName === 'NEW_PASSWORD_REQUIRED' && response.Session) {
+        return {
+          challenge: 'NEW_PASSWORD_REQUIRED',
+          challengeName: 'NEW_PASSWORD_REQUIRED',
+          session: response.Session,
+          email,
+        };
+      }
+
       const auth = response.AuthenticationResult;
       if (!auth?.AccessToken || !auth.IdToken || !auth.RefreshToken || !auth.ExpiresIn || !auth.TokenType) {
         throw new ApiError('auth_error', 'Login failed. Please try again.', 401);
@@ -436,6 +465,66 @@ export class DemoAuthService {
     } catch (err) {
       log.warn('auth.login.failed', { email, err: (err as Error).message });
       throw new ApiError('auth_error', 'Invalid email or password.', 401);
+    }
+  }
+
+  async respondToNewPasswordChallenge(
+    emailRaw: string,
+    sessionRaw: string,
+    newPasswordRaw: string,
+  ): Promise<{ session: AuthSession; user: DemoUser }> {
+    const email = this.normalizeEmail(emailRaw);
+    const session = String(sessionRaw || '');
+    const newPassword = String(newPasswordRaw || '');
+
+    if (!email || !email.includes('@')) {
+      throw new ApiError('validation_error', 'Email is required.', 400);
+    }
+    if (!session) {
+      throw new ApiError('validation_error', 'Challenge session is required.', 400);
+    }
+    this.validatePassword(newPassword);
+
+    const registration = await this.getRegistration(email);
+    if (!registration || registration.status !== 'active') {
+      throw new ApiError('auth_error', 'Account is not active.', 403);
+    }
+
+    try {
+      const response = await this.cognito.send(new RespondToAuthChallengeCommand({
+        ClientId: this.cfg.clientId,
+        ChallengeName: 'NEW_PASSWORD_REQUIRED',
+        Session: session,
+        ChallengeResponses: {
+          USERNAME: email,
+          NEW_PASSWORD: newPassword,
+        },
+      }));
+
+      if (response.ChallengeName) {
+        throw new ApiError('auth_error', 'Password challenge requires an unsupported follow-up challenge.', 401);
+      }
+
+      const auth = response.AuthenticationResult;
+      if (!auth?.AccessToken || !auth.IdToken || !auth.RefreshToken || !auth.ExpiresIn || !auth.TokenType) {
+        throw new ApiError('auth_error', 'Unable to complete password challenge.', 401);
+      }
+
+      const user = await this.getCurrentUser(auth.AccessToken);
+      return {
+        session: {
+          accessToken: auth.AccessToken,
+          idToken: auth.IdToken,
+          refreshToken: auth.RefreshToken,
+          expiresIn: auth.ExpiresIn,
+          tokenType: auth.TokenType,
+        },
+        user,
+      };
+    } catch (err) {
+      const errCode = String((err as { name?: string; code?: string })?.name || (err as { code?: string })?.code || 'unknown');
+      log.warn('auth.respond_challenge.failed', { email, errCode });
+      throw new ApiError('auth_error', 'Unable to complete password challenge.', 401);
     }
   }
 
@@ -475,12 +564,36 @@ export class DemoAuthService {
   async getCurrentUser(accessToken: string): Promise<DemoUser> {
     const me = await this.cognito.send(new GetUserCommand({ AccessToken: accessToken }));
     const attrs = Object.fromEntries((me.UserAttributes ?? []).map(a => [a.Name ?? '', a.Value ?? '']));
+    const firstName = attrs.given_name;
+    const lastName = attrs.family_name;
+    const name = attrs.name || [firstName, lastName].filter(Boolean).join(' ').trim() || undefined;
+    const authSubject = attrs.sub || me.Username;
     return {
+      id: authSubject,
+      authSubject,
+      provider: 'cognito',
       email: attrs.email ?? '',
-      firstName: attrs.given_name,
-      lastName: attrs.family_name,
+      name,
+      firstName,
+      lastName,
       emailVerified: attrs.email_verified === 'true',
     };
+  }
+
+  async assertAdminAccessToken(actorAccessToken: string): Promise<string> {
+    const accessToken = String(actorAccessToken || '').trim();
+    if (!accessToken) {
+      throw new ApiError('auth_error', 'Not authenticated.', 401);
+    }
+
+    const actor = await this.getCurrentUser(accessToken);
+    const actorEmail = this.normalizeEmail(actor.email);
+    if (!this.cfg.adminManualPasswordEmails.includes(actorEmail)) {
+      log.warn('auth.admin_access.forbidden', { actorEmail });
+      throw new ApiError('forbidden', 'You do not have permission to manage user access.', 403);
+    }
+
+    return actorEmail;
   }
 
   async forgotPassword(emailRaw: string): Promise<{ message: string }> {
@@ -530,26 +643,13 @@ export class DemoAuthService {
     targetEmailRaw: string,
     newPasswordRaw: string,
   ): Promise<{ message: string }> {
-    const accessToken = String(actorAccessToken || '').trim();
-    if (!accessToken) {
-      throw new ApiError('auth_error', 'Not authenticated.', 401);
-    }
-
-    const actor = await this.getCurrentUser(accessToken);
-    const actorEmail = this.normalizeEmail(actor.email);
+    const actorEmail = await this.assertAdminAccessToken(actorAccessToken);
     const targetEmail = this.normalizeEmail(targetEmailRaw);
-
-    if (!this.cfg.adminManualPasswordEmails.includes(actorEmail)) {
-      log.warn('auth.admin_set_password.forbidden', {
-        actorEmail,
-        targetEmail,
-      });
-      throw new ApiError('forbidden', 'You do not have permission to manually change user passwords.', 403);
-    }
 
     if (!targetEmail || !targetEmail.includes('@')) {
       throw new ApiError('validation_error', 'Please enter a valid user email address.', 400);
     }
+    this.assertNotProtectedAuthEmail(actorEmail, targetEmail, 'admin_set_password');
 
     const newPassword = String(newPasswordRaw || '');
     this.validatePassword(newPassword);
@@ -600,6 +700,68 @@ export class DemoAuthService {
     });
 
     return { message: 'Password updated successfully.' };
+  }
+
+  async adminGrantUserAccess(
+    actorAccessToken: string,
+    targetEmailRaw: string,
+    newPasswordRaw: string,
+  ): Promise<{ message: string }> {
+    const actorEmail = await this.assertAdminAccessToken(actorAccessToken);
+    const targetEmail = this.normalizeEmail(targetEmailRaw);
+    if (!targetEmail || !targetEmail.includes('@')) {
+      throw new ApiError('validation_error', 'Please enter a valid user email address.', 400);
+    }
+    this.assertNotProtectedAuthEmail(actorEmail, targetEmail, 'admin_grant_access');
+
+    const newPassword = String(newPasswordRaw || '');
+    this.validatePassword(newPassword);
+
+    await this.ensureCognitoUser(targetEmail);
+    await this.cognito.send(new AdminSetUserPasswordCommand({
+      UserPoolId: this.cfg.userPoolId,
+      Username: targetEmail,
+      Password: newPassword,
+      Permanent: true,
+    }));
+    await this.cognito.send(new AdminUpdateUserAttributesCommand({
+      UserPoolId: this.cfg.userPoolId,
+      Username: targetEmail,
+      UserAttributes: [
+        { Name: 'email', Value: targetEmail },
+        { Name: 'email_verified', Value: 'true' },
+      ],
+    }));
+    await this.cognito.send(new AdminEnableUserCommand({
+      UserPoolId: this.cfg.userPoolId,
+      Username: targetEmail,
+    }));
+
+    const now = this.nowIso();
+    const existing = await this.getRegistration(targetEmail);
+    const record: RegistrationRecord = {
+      ...(existing?.pk ? existing : this.registrationKey(targetEmail)),
+      email: targetEmail,
+      emailDomain: this.emailDomain(targetEmail),
+      cognitoUsername: targetEmail,
+      status: 'active',
+      setupCompletedAt: existing?.setupCompletedAt ?? now,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      approvedAt: existing?.approvedAt ?? now,
+      approvedBy: actorEmail,
+    };
+    delete (record as Partial<RegistrationRecord>).setupTokenHash;
+    delete (record as Partial<RegistrationRecord>).setupTokenExpiresAt;
+
+    await this.writeRegistration(record);
+
+    log.info('auth.admin_grant_access.success', {
+      actorEmail,
+      targetEmail,
+    });
+
+    return { message: 'Access granted successfully.' };
   }
 
   async verifyRegistration(emailRaw: string, sfOrgIdRaw: string): Promise<{
@@ -752,6 +914,19 @@ export function buildDemoAuthServiceFromEnv(envLike: NodeJS.ProcessEnv): DemoAut
     .split(',')
     .map(email => email.trim().toLowerCase())
     .filter(Boolean);
+  const defaultProtectedAuthEmails = [
+    'robertp@careindeed.com',
+    'tjpadilla@careindeed.com',
+    'tj@careindeed.com',
+    'maritesa@careindeed.com',
+    'marites@careindeed.com',
+    'deeb@careindeed.com',
+    'dee@careindeed.com',
+  ].join(',');
+  const protectedAuthEmails = String(envLike.PROTECTED_AUTH_EMAILS || defaultProtectedAuthEmails)
+    .split(',')
+    .map(email => email.trim().toLowerCase())
+    .filter(Boolean);
   const adminManualPasswordEmails = String(
     envLike.ADMIN_MANUAL_PASSWORD_EMAILS || 'robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com',
   )
@@ -773,6 +948,7 @@ export function buildDemoAuthServiceFromEnv(envLike: NodeJS.ProcessEnv): DemoAut
     setupTokenTtlMinutes,
     autoApprovedDomain,
     autoApprovedEmails,
+    protectedAuthEmails,
     adminManualPasswordEmails,
   });
 }

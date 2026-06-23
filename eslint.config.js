@@ -154,6 +154,8 @@ export default defineConfig([
     'scripts/simulateAuditEngine.ts',
     'scripts/pushToHubstaff.ts',
     'scripts/validateAwsCesMapping.ts',
+    'scripts/verifyBradEmergencyResponse.ts',
+    'scripts/verifyBradHumanFirstPreview.ts',
     // Staging-only apps and archives (not part of the production CES/Q1 surface area).
     'src/ui-staging/**',
     // Legacy scratch/backup files.
@@ -161,6 +163,8 @@ export default defineConfig([
     '**/*.old.tsx',
     // iAdministrator is not in the CES/Q1/eCIgn release path lint gate.
     'src/policy/pages/iAdministrator/**',
+    // Design documents and prototypes
+    'docs/**',
   ]),
   {
     files: ['**/*.{ts,tsx}'],

@@ -1,5 +1,7 @@
 export interface DemoUser {
   id?: string;
+  authSubject?: string;
+  provider?: string;
   email: string;
   name?: string;
   role?: string;
@@ -46,6 +48,7 @@ interface LoginResponse {
 
 export interface LoginChallengeResponse {
   challenge: 'NEW_PASSWORD_REQUIRED';
+  challengeName?: 'NEW_PASSWORD_REQUIRED';
   session: string;
   email: string;
 }
@@ -57,6 +60,43 @@ interface RefreshResponse {
 interface MeResponse {
   user: DemoUser;
 }
+
+type PageAccessApiMap = Record<string, unknown>;
+
+export interface IdentityRegistryApiUser {
+  id: string;
+  email: string;
+  name: string;
+  status: 'active' | 'pending' | 'suspended';
+  source?: 'manual-provisioned' | 'seed' | 'authenticated';
+  authSubject?: string;
+  provider?: string;
+  createdAt?: string;
+  lastLoginAt?: string;
+}
+
+interface IdentityRegistryApiScope {
+  organizationId: string;
+  branchId?: string;
+  programId?: string;
+  patientId?: string;
+}
+
+export interface IdentityRegistryApiAssignment {
+  id: string;
+  userId: string;
+  groupId: string;
+  scope: IdentityRegistryApiScope;
+  effectiveFrom: string;
+  effectiveTo?: string;
+  revokedAt?: string;
+}
+
+export type IdentityRegistryApiMap = {
+  users: IdentityRegistryApiUser[];
+  assignments: IdentityRegistryApiAssignment[];
+  syncedCount?: number;
+};
 
 interface ApiErrorPayload {
   error?: {
@@ -203,6 +243,65 @@ export const AuthApi = {
       method: 'POST',
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       body: JSON.stringify({ email, newPassword }),
+    });
+  },
+
+  adminGrantAccess(accessToken: string, email: string, newPassword: string): Promise<{ message: string }> {
+    return call('/admin/grant-access', {
+      method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      body: JSON.stringify({ email, newPassword }),
+    });
+  },
+
+  getMyPageAccess(accessToken: string): Promise<{ actorEmail: string; record: unknown | null }> {
+    return call('/page-access/me', {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  getAllPageAccess(accessToken: string): Promise<{ access: PageAccessApiMap }> {
+    return call('/admin/page-access', {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  saveAllPageAccess(accessToken: string, access: PageAccessApiMap): Promise<{ access: PageAccessApiMap }> {
+    return call('/admin/page-access', {
+      method: 'PUT',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      body: JSON.stringify({ access }),
+    });
+  },
+
+  syncCurrentIdentity(accessToken: string): Promise<IdentityRegistryApiMap> {
+    return call('/identity-sync/me', {
+      method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  getIdentityRegistry(accessToken: string): Promise<IdentityRegistryApiMap> {
+    return call('/admin/identity-registry', {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  saveIdentityRegistry(accessToken: string, registry: IdentityRegistryApiMap): Promise<IdentityRegistryApiMap> {
+    return call('/admin/identity-registry', {
+      method: 'PUT',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      body: JSON.stringify(registry),
+    });
+  },
+
+  syncAuthenticatedUsers(accessToken: string): Promise<IdentityRegistryApiMap> {
+    return call('/admin/identity-registry/sync-authenticated-users', {
+      method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
     });
   },
 };

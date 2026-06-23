@@ -1,4 +1,4 @@
-﻿/**
+/**
  * eCIgnWorkspace — full-screen, CI-App-branded electronic signing experience.
  *
  * Flow (strict, no skipping):
@@ -16,7 +16,7 @@ import { useState, useCallback, useRef, useEffect, Fragment, useMemo } from 'rea
 import {
   PenLine, CheckCircle2, Shield, X, Send, Printer, Download,
   ArrowLeft, Lock, RefreshCw, ChevronRight,
-  FileSignature, ScanFace, Sparkles, IdCard,
+  FileSignature, ScanFace, Sparkles, IdCard, AlertTriangle,
 } from 'lucide-react';
 import eCIgnLogo from '@/assets/eCIgn.png';
 import {
@@ -53,8 +53,22 @@ import {
   recommendSnapshotEncoding,
 } from '@/policy/ecign/captureSignedFormSnapshot';
 import { useEcignSignerIdentity } from '@/policy/ecign/signerIdentity';
-// Single app logo - using the one file specified by user
-import ciLogoWhite from '@/assets/ci-logo-white.png';
+import { rolesMatchForLock } from '@/policy/ecign/roleKey';
+import { resolveCanonicalSignedPackages } from '@/policy/ecign/resolveCanonicalSignedPackage';
+import {
+  canGenerateFinalPackage,
+  deriveCanonicalSignerRequirements,
+  requiredSignerPayloads,
+  resolveNextRequiredSigner,
+  validateSignerEligibility,
+  normalizeSignerProfile,
+  type AuthorityDomain,
+  type CanonicalSignerRequirement,
+  type SignatureCompletion,
+} from '@/policy/ecign/signerAuthority';
+import { EvidenceApi } from '@/policy/services/evidenceApi';
+import { CalendarApi } from '@/policy/services/calendarApi';
+import ciLogoGray from '@/assets/ci-logo-gray.png';
 import { HelpContextLink } from '@/policy/help/HelpContextLink';
 import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
 import {
@@ -75,6 +89,7 @@ const PAPER      = '#FAFBF8';
 const BORDER     = '#E5E4E3';
 const BORDER_SOFT = '#F0F2F5';
 const CANVAS_BG  = '#FCFDFF';
+const EMPTY_SIGNER_TASKS: SignerTask[] = [];
 
 function decodeHtmlDataUrl(dataUrl: string): string | undefined {
   if (!dataUrl.startsWith('data:text/html')) return undefined;
@@ -109,11 +124,6 @@ function escHtml(s: string): string {
 function isCanonicalCesFormInstanceId(value: string, eventId: string, formId: string): boolean {
   if (!value || value.startsWith('fi_')) return false;
   return value.startsWith(`${eventId}-${formId}-`);
-}
-
-/** External API mirror ids — never treat as canonical CES artifact targets. */
-function isInternalMirrorEvidenceId(value: string | undefined): boolean {
-  return Boolean(value && (/^ECIGN-INTERNAL-MIRROR-/i.test(value) || /^STUB-ESIGN-/i.test(value)));
 }
 
 /* ═══ Certificate HTML builder ══════════════════════════════════════ */
@@ -667,7 +677,7 @@ ${args.styleAssets}
   <div class="ecign-print-root">
     <!-- Care Indeed brand header pinned to every printed page -->
     <div class="ci-brand-header" aria-hidden="true">
-      <img class="ci-brand-header-logo" src="${args.ciLogoSrc}" alt="Care Indeed — The Heart of Home Health"/>
+      <img class="ci-brand-header-logo" src="${args.ciLogoSrc}" alt="Care Indeed"/>
       <div class="ci-brand-header-meta">
         <span class="lib">Care Indeed Home Health Care, Inc.</span>
         <span class="org">Enterprise Forms Library · Signed Document Package</span>
@@ -878,7 +888,7 @@ export function ECIgnWorkspace({
   // ── Care Indeed brand logo as base64 data URL ────────────────────
   // Required on EVERY page of the final PDF artifact for brand
   // defensibility. The user has demanded this be present 100+ times.
-  const ciLogoDataUrlRef = useRef<string>(ciLogoWhite);
+  const ciLogoDataUrlRef = useRef<string>(ciLogoGray);
   useEffect(() => {
     let cancelled = false;
     const inline = (src: string, target: { current: string }) => {
@@ -900,7 +910,7 @@ export function ECIgnWorkspace({
       img.src = src;
     };
     inline(eCIgnLogo, eCIgnLogoDataUrlRef);
-    inline(ciLogoWhite, ciLogoDataUrlRef);
+    inline(ciLogoGray, ciLogoDataUrlRef);
     return () => { cancelled = true; };
   }, []);
 
@@ -915,6 +925,34 @@ export function ECIgnWorkspace({
     () => resolvePolicyMetaList(linkedPolicyIds),
     [linkedPolicyIds],
   );
+  const canonicalSignerRequirements = useMemo<CanonicalSignerRequirement[]>(() => {
+    return deriveCanonicalSignerRequirements({
+      formId,
+      workflowId: hhcWorkflowId,
+      eventId: hhcEventId,
+      taskId: parentTaskId,
+      slots: signerSlots,
+    });
+  }, [formId, hhcEventId, hhcWorkflowId, parentTaskId, signerSlots]);
+  const currentSignerRequirement = canonicalSignerRequirements[signerIndex - 1];
+  const ecignSignatureFieldId = currentSignerRequirement?.slotFieldId ?? fieldId;
+  const requiredSignerPayloadList = useMemo(
+    () => requiredSignerPayloads(canonicalSignerRequirements),
+    [canonicalSignerRequirements],
+  );
+  const canonicalFormInstanceId = useMemo(() => {
+    if (!hhcEventId) return formInstanceId;
+    if (isCanonicalCesFormInstanceId(formInstanceId, hhcEventId, formId)) return formInstanceId;
+    const resolved = useRegulatoryExecutionStore.getState().getOrCreateFormInstance({
+      eventId: hhcEventId,
+      formId,
+      taskId: parentTaskId || undefined,
+      requirementId: parentTaskId ? `${parentTaskId}::FORM_COMPLETION::${formId}` : undefined,
+      policyIds: linkedPolicyIds.length > 0 ? linkedPolicyIds : (policies.length > 0 ? policies : ['UNASSIGNED-POLICY']),
+      workflowId: hhcWorkflowId || undefined,
+    });
+    return resolved?.id || formInstanceId;
+  }, [formId, formInstanceId, hhcEventId, hhcWorkflowId, linkedPolicyIds, parentTaskId, policies]);
   /* ── Backend instance is the single source of truth ─────────────── */
   const isMultiSigner = (signerSlots?.length ?? 0) > 1;
   const {
@@ -925,15 +963,19 @@ export function ECIgnWorkspace({
   } = useEcignInstance({
     formId,
     formVersion,
-    fieldId,
+    fieldId: ecignSignatureFieldId,
     eventId: hhcEventId,
     workflowInstanceId: hhcWorkflowId,
-    ...(isMultiSigner ? {
-      formInstanceId: formInstanceId,
+    ...(hhcEventId ? {
+      formInstanceId: canonicalFormInstanceId,
       sharedInstance: true,
-      signerSlots: signerSlots?.map(s => ({ field_id: s.field_id, role: s.role, tier: s.tier })),
-      signerIndex,
+      parentTaskId,
       totalSigners,
+    } : {}),
+    ...(isMultiSigner ? {
+      signerSlots: signerSlots?.map(s => ({ field_id: s.field_id, role: s.role, tier: s.tier })),
+      signerRequirements: requiredSignerPayloadList,
+      signerIndex,
     } : {}),
   });
   const emittedAuditActionsRef = useRef<Set<string>>(new Set());
@@ -948,23 +990,30 @@ export function ECIgnWorkspace({
    * human-readable reason so the operator sees an inline banner. Cleared when
    * the user re-attempts finalize. */
   const [lockGateError, setLockGateError] = useState<{ code: 'role_mismatch' | 'missing_required'; message: string } | null>(null);
-  const canonicalFormInstanceId = useMemo(() => {
-    if (!hhcEventId) return formInstanceId;
-    if (isCanonicalCesFormInstanceId(formInstanceId, hhcEventId, formId)) return formInstanceId;
-    const resolved = useRegulatoryExecutionStore.getState().getOrCreateFormInstance({
+  const [driveUploadError, setDriveUploadError] = useState<string | null>(null);
+
+  /* ── Canonical CES evidence resolution (reactive) ─────────────────────
+   * Resolves the finalized signed-package artifact from the persisted CES
+   * execution store by canonical ids (event_id + its instance aliases →
+   * form_instance_id). This is the SAME artifact surfaced by the Artifact
+   * Viewer, Evidence Center, Audit Mode, and the task/event completion gates,
+   * so the finalize confirmation panel reports real canonical evidence rather
+   * than the isolated non-CES HHC mirror path (LAMBDA_DISABLED). It re-derives whenever
+   * the store changes, so it survives browser refresh / reopen. */
+  const evidenceByEvent = useRegulatoryExecutionStore(s => s.evidence);
+  const eventAliasMap = useRegulatoryExecutionStore(s => s.eventInstanceIdsBySourceEventId);
+  const canonicalEvidenceMatches = useMemo(() => {
+    if (!hhcEventId) return [];
+    return resolveCanonicalSignedPackages(evidenceByEvent, {
       eventId: hhcEventId,
-      formId,
-      taskId: parentTaskId || undefined,
-      requirementId: parentTaskId ? `${parentTaskId}::FORM_COMPLETION::${formId}` : undefined,
-      policyIds: linkedPolicyIds.length > 0 ? linkedPolicyIds : (policies.length > 0 ? policies : ['UNASSIGNED-POLICY']),
-      workflowId: hhcWorkflowId || undefined,
+      formInstanceId: canonicalFormInstanceId,
+      eventAliases: eventAliasMap[hhcEventId] ?? [],
     });
-    return resolved?.id || formInstanceId;
-  }, [formId, formInstanceId, hhcEventId, hhcWorkflowId, linkedPolicyIds, parentTaskId, policies]);
+  }, [evidenceByEvent, eventAliasMap, hhcEventId, canonicalFormInstanceId]);
+  const canonicalEvidence = canonicalEvidenceMatches[0];
 
   /* Map backend state → UI step. UI never drives state itself. */
   const backendState: BackendState = (instance?.state ?? 'created') as BackendState;
-  const activeIdx = Math.max(0, UI_STEPS.findIndex(s => s.backend === backendState));
 
   const appendExecutionAudit = useCallback((action: string, reason?: string, after?: Record<string, unknown>) => {
     if (!hhcEventId || !parentTaskId) return;
@@ -1142,6 +1191,25 @@ export function ECIgnWorkspace({
   const [consentChecked, setConsentChecked] = useState(false);
   const [identityAttested, setIdentityAttested] = useState(false);
   const [localTask,      setLocalTask]      = useState<SecondSigTask | null>(initialSecondSigTask);
+  const selectedSignerTasksForCurrentInstance = useRegulatoryExecutionStore(
+    state => state.signerTasksByFormInstanceId[canonicalFormInstanceId],
+  );
+  const signerTasksForCurrentInstance = selectedSignerTasksForCurrentInstance ?? EMPTY_SIGNER_TASKS;
+  const pendingCurrentSignerTask = useMemo(() => {
+    return signerTasksForCurrentInstance.find(task =>
+      task.signerIndex === signerIndex
+      && task.assignedTo === signer.id
+      && (task.status === 'pending' || task.status === 'opened')
+    );
+  }, [signer.id, signerIndex, signerTasksForCurrentInstance]);
+  const downstreamSignerAwaitingSignature = Boolean(
+    backendState === 'attested'
+    && signerIndex > 1
+    && pendingCurrentSignerTask
+    && localRecord?.fieldId !== ecignSignatureFieldId,
+  );
+  const displayBackendState: BackendState = downstreamSignerAwaitingSignature ? 'reviewed' : backendState;
+  const activeIdx = Math.max(0, UI_STEPS.findIndex(s => s.backend === displayBackendState));
   const certAt = useState(() => new Date().toISOString())[0];
   const hasSignerIdentity = useMemo(
     () => Boolean(signer.name?.trim() && signer.email?.trim() && signer.role?.trim()),
@@ -1167,7 +1235,7 @@ export function ECIgnWorkspace({
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || backendState !== 'reviewed') return;
+    if (!canvas || displayBackendState !== 'reviewed') return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.strokeStyle = NAVY;
@@ -1195,7 +1263,7 @@ export function ECIgnWorkspace({
       canvas.removeEventListener('pointerup',    onUp);
       canvas.removeEventListener('pointerleave', onUp);
     };
-  }, [backendState]);
+  }, [displayBackendState]);
 
   const handleClearCanvas = () => {
     const canvas = canvasRef.current;
@@ -1209,7 +1277,7 @@ export function ECIgnWorkspace({
     if (empty) return;
     const dataUrl = canvasRef.current?.toDataURL('image/png') ?? '';
     const rec: SignatureRecord = {
-      fieldId,
+      fieldId:          ecignSignatureFieldId,
       signerName:       signer.name,
       signerRole:       signer.role,
       signerEmail:      signer.email,
@@ -1231,7 +1299,7 @@ export function ECIgnWorkspace({
       },
     });
     onConfirm(rec);
-  }, [applyServerSignature, empty, fieldId, geoInfo, onConfirm, signer.email, signer.name, signer.role]);
+  }, [applyServerSignature, ecignSignatureFieldId, empty, geoInfo, onConfirm, signer.email, signer.name, signer.role]);
 
   /* ── Next signer routing (LOCKED screen action) ─────────────────── */
   const handleSelectApprover = useCallback(async (user: DemoUser) => {
@@ -1252,7 +1320,13 @@ export function ECIgnWorkspace({
         parentTaskId,
       },
     };
-    try { await ecignApi.requestSecondSignature(instance.instance_id, user.id); }
+    try {
+      await ecignApi.requestSecondSignature(instance.instance_id, user.id, undefined, {
+        role: user.role,
+        tier: user.tier,
+        authorityDomains: user.authorityDomains,
+      });
+    }
     catch { /* surface via local state only */ }
 
     // Persist as a SignerTask in the execution store for multi-signer tracking
@@ -1283,6 +1357,176 @@ export function ECIgnWorkspace({
     onRequestSecond(task);
     setShowSecondSig(false);
   }, [canonicalFormInstanceId, formId, formSource, hhcEventId, instance, linkedPolicyIds, onRequestSecond, parentTaskId, signer.id, signerIndex, signerSlots, totalSigners]);
+
+  useEffect(() => {
+    if (!hhcEventId || !parentTaskId || canonicalSignerRequirements.length <= 1) return;
+    if (backendState !== 'attested' && backendState !== 'signed_locked') return;
+    const currentRequirement = currentSignerRequirement;
+    if (!currentRequirement) return;
+
+    const exec = useRegulatoryExecutionStore.getState();
+    const existingTasks = exec.signerTasksByFormInstanceId?.[canonicalFormInstanceId] ?? [];
+    const existingForCurrent = existingTasks.find(task => task.signerIndex === signerIndex);
+    const currentSlotWasSigned = signerIndex === 1 || localRecord?.fieldId === currentRequirement.slotFieldId;
+    if (!currentSlotWasSigned && existingForCurrent?.status !== 'signed') return;
+    if (existingForCurrent && existingForCurrent.assignedTo === signer.id && existingForCurrent.status !== 'signed') {
+      exec.updateSignerTaskStatus(canonicalFormInstanceId, existingForCurrent.taskId, 'signed');
+    }
+
+    const taskCompletions: SignatureCompletion[] = existingTasks
+      .filter(task => task.status === 'signed')
+      .map(task => {
+        const requirement = canonicalSignerRequirements[task.signerIndex - 1];
+        return {
+          slotOrder: task.signerIndex,
+          fieldId: task.slotFieldId,
+          signerUserId: task.assignedTo,
+          signerRole: task.assignedToRole ?? requirement?.allowedRoles[0] ?? 'Assigned Owner',
+          signerTier: task.minTier ?? requirement?.minTier ?? 1,
+          signerDomains: task.requiredDomain ? [task.requiredDomain] : requirement ? [requirement.requiredDomain] : ['operations'],
+          signedAt: new Date().toISOString(),
+          documentHash: instance?.document_hash ? String(instance.document_hash) : undefined,
+        };
+      });
+
+    const currentCompletion: SignatureCompletion = {
+      slotOrder: currentRequirement.slotOrder,
+      fieldId: currentRequirement.slotFieldId,
+      signerUserId: signer.id,
+      signerRole: signer.role,
+      signerTier: signer.tier,
+      signerDomains: signer.authorityDomains,
+      signedAt: instance?.attestation_confirmed_at ? String(instance.attestation_confirmed_at) : new Date().toISOString(),
+      documentHash: instance?.document_hash ? String(instance.document_hash) : undefined,
+    };
+    const completions = [...taskCompletions, currentCompletion]
+      .filter((completion, index, all) =>
+        all.findIndex(other => other.slotOrder === completion.slotOrder) === index,
+      );
+    const nextRequirement = resolveNextRequiredSigner(canonicalSignerRequirements, completions);
+    if (!nextRequirement) return;
+    if (nextRequirement.slotOrder <= currentRequirement.slotOrder) return;
+
+    const alreadyCreated = existingTasks.some(task =>
+      task.signerIndex === nextRequirement.slotOrder
+      || task.slotFieldId === nextRequirement.slotFieldId,
+    );
+    if (alreadyCreated) return;
+
+    const previousSignatures = completions.filter(completion => completion.slotOrder < nextRequirement.slotOrder);
+    const eligible = DEMO_STAFF
+      .map(user => ({
+        user,
+        profile: normalizeSignerProfile({
+          userId: user.id,
+          name: user.name,
+          role: user.role,
+          tier: user.tier,
+          authorityDomains: user.authorityDomains,
+        }),
+      }))
+      .map(candidate => ({
+        ...candidate,
+        result: validateSignerEligibility(candidate.profile, nextRequirement, {
+          previousSignatures,
+          preparerUserId: completions.find(completion => completion.slotOrder === 1)?.signerUserId,
+          currentActorUserId: signer.id,
+        }),
+      }))
+      .filter(candidate => candidate.result.eligible);
+
+    const assigned = eligible[0]?.user;
+    if (!assigned) {
+      exec.appendTaskAuditEvent(hhcEventId, 'formInstance', canonicalFormInstanceId, 'SIGNER_TASK_BLOCKED_NO_ELIGIBLE_SIGNER', {
+        reason: `No eligible signer for ${nextRequirement.slotPurpose}.`,
+        after: {
+          slotOrder: nextRequirement.slotOrder,
+          requiredDomain: nextRequirement.requiredDomain,
+          allowedRoles: nextRequirement.allowedRoles,
+          minTier: nextRequirement.minTier,
+        },
+      });
+      return;
+    }
+
+    const createdAt = new Date().toISOString();
+    const task: SignerTask = {
+      taskId: `SIGN-${canonicalFormInstanceId}-${String(nextRequirement.slotOrder).padStart(2, '0')}`,
+      type: 'signature_request',
+      formInstanceId: canonicalFormInstanceId,
+      formId,
+      eventId: hhcEventId,
+      assignedTo: assigned.id,
+      assignedToName: assigned.name,
+      assignedToRole: assigned.role,
+      assignedBy: signer.id,
+      status: 'pending',
+      createdAt,
+      slotFieldId: nextRequirement.slotFieldId,
+      sequenceGroup: nextRequirement.slotOrder,
+      signerIndex: nextRequirement.slotOrder,
+      totalSigners,
+      linkedPolicyIds: [...linkedPolicyIds],
+      parentTaskId,
+      requiredDomain: nextRequirement.requiredDomain,
+      slotPurpose: nextRequirement.slotPurpose,
+      minTier: nextRequirement.minTier,
+      sourcePolicyContext: {
+        source: formSource,
+        parentTaskId,
+      },
+    };
+    exec.createSignerTask(task);
+    exec.appendTaskAuditEvent(hhcEventId, 'formInstance', canonicalFormInstanceId, 'SIGNER_TASK_AUTO_CREATED', {
+      after: {
+        taskId: task.taskId,
+        signerIndex: task.signerIndex,
+        assignedTo: task.assignedTo,
+        requiredDomain: task.requiredDomain,
+        slotPurpose: task.slotPurpose,
+        minTier: task.minTier,
+      },
+    });
+
+    if (nextRequirement.slotOrder === 2) {
+      const secondTask: SecondSigTask = {
+        taskId: task.taskId,
+        type: 'signature_request',
+        formInstanceId: canonicalFormInstanceId,
+        assignedTo: assigned.id,
+        assignedBy: signer.id,
+        status: 'pending',
+        createdAt,
+        linkedPolicyIds: [...linkedPolicyIds],
+        sourcePolicyContext: {
+          source: formSource,
+          parentTaskId,
+        },
+      };
+      setLocalTask(secondTask);
+      onRequestSecond(secondTask);
+    }
+  }, [
+    backendState,
+    canonicalFormInstanceId,
+    canonicalSignerRequirements,
+    currentSignerRequirement,
+    formId,
+    formSource,
+    hhcEventId,
+    instance?.attestation_confirmed_at,
+    instance?.document_hash,
+    linkedPolicyIds,
+    onRequestSecond,
+    parentTaskId,
+    signer.authorityDomains,
+    signer.id,
+    signer.role,
+    signer.tier,
+    signerIndex,
+    localRecord?.fieldId,
+    totalSigners,
+  ]);
 
   const buildPacketHtml = useCallback((record: SignatureRecord) => {
     // Inline all <style> blocks from the document head. We intentionally
@@ -1532,6 +1776,45 @@ export function ECIgnWorkspace({
     const actorLabel = signer.name || 'Current User';
     const finalizedAt = instance?.locked_at_utc || new Date().toISOString();
     const auditRefs = ['SIGNATURE_FINALIZED', 'CERTIFICATE_CREATED', 'SIGNED_PACKAGE_CREATED', 'ARTIFACT_REGISTERED', 'ARTIFACT_LOCKED'];
+    const sourceEvent = REGULATORY_EVENTS.find(event =>
+      event.id === hhcEventId || (exec.eventInstanceIdsBySourceEventId[event.id] ?? []).includes(hhcEventId),
+    );
+    const signerTasksForPackage = exec.signerTasksByFormInstanceId?.[canonicalFormInstanceId] ?? [];
+    const completedForPackage: SignatureCompletion[] = [
+      ...signerTasksForPackage
+        .filter(task => task.status === 'signed')
+        .map(task => {
+          const requirement = canonicalSignerRequirements[task.signerIndex - 1];
+          const signerDomains: AuthorityDomain[] = task.requiredDomain
+            ? [task.requiredDomain]
+            : requirement ? [requirement.requiredDomain] : ['operations'];
+          return {
+            slotOrder: task.signerIndex,
+            fieldId: task.slotFieldId,
+            signerUserId: task.assignedTo,
+            signerRole: task.assignedToRole ?? requirement?.allowedRoles[0] ?? 'Assigned Owner',
+            signerTier: task.minTier ?? requirement?.minTier ?? 1,
+            signerDomains,
+            signedAt: task.createdAt,
+            documentHash: task.finalDocumentHash,
+          };
+        }),
+      ...(currentSignerRequirement ? [{
+        slotOrder: currentSignerRequirement.slotOrder,
+        fieldId: currentSignerRequirement.slotFieldId,
+        signerUserId: signer.id,
+        signerRole: signer.role,
+        signerTier: signer.tier,
+        signerDomains: signer.authorityDomains,
+        signedAt: finalizedAt,
+        documentHash: instance?.document_hash ? String(instance.document_hash) : undefined,
+      } satisfies SignatureCompletion] : []),
+    ].filter((completion, index, all) =>
+      all.findIndex(other => other.slotOrder === completion.slotOrder) === index,
+    );
+    const finalPackageReady = canonicalSignerRequirements.length <= 1
+      || canGenerateFinalPackage(canonicalSignerRequirements, completedForPackage);
+    const pdfVersion = Math.max(1, signerIndex);
     const commonArtifactMeta = {
       taskId: parentTaskId || undefined,
       policyIds: [artifactPolicyId],
@@ -1550,6 +1833,13 @@ export function ECIgnWorkspace({
       documentHash: instance?.document_hash || null,
       manifestHash: instance?.manifest_hash || null,
       signatureHash: (instance?.manifest_hash || instance?.document_hash || null),
+      artifactId: `${canonicalFormInstanceId}:signed-package`,
+      pdfVersion,
+      completedSignerSlotOrder: signerIndex,
+      signerUserId: signer.id,
+      signerTier: signer.tier,
+      signerDomain: signer.authorityDomains[0],
+      finalDocumentHash: instance?.document_hash ? String(instance.document_hash) : undefined,
       auditEventRefs: auditRefs,
     };
 
@@ -1571,10 +1861,14 @@ export function ECIgnWorkspace({
     if (getPmFlag('signer_role_recheck_before_lock')) {
       const currentActorRole = (useEnforcementStore.getState().actor.role ?? '').trim();
       const signerRoleAtSignStart = (signer.role ?? '').trim();
+      // Compare CANONICAL role KEYS, not display labels. The signer role is an
+      // auth role key (e.g. "super_admin") while the enforcement actor carries
+      // a display label (e.g. "Administrator"); these are equivalent and must
+      // NOT trip the re-check. A genuinely different authority still blocks.
       if (
         currentActorRole
         && signerRoleAtSignStart
-        && currentActorRole.toLowerCase() !== signerRoleAtSignStart.toLowerCase()
+        && !rolesMatchForLock(signerRoleAtSignStart, currentActorRole)
       ) {
         roleMismatch = { signerRole: signerRoleAtSignStart, currentRole: currentActorRole };
       }
@@ -1668,12 +1962,44 @@ export function ECIgnWorkspace({
 
     setLockGateError(null);
 
+    if (ecignMode.resolved !== 'BACKEND_LIVE') {
+      setLockGateError({ code: 'missing_required', message: 'Evidence finalization blocked: Google Drive evidence persistence is not configured.' });
+      return;
+    }
+
     const isSubsequentSigner = (signerIndex > 1 && totalSigners > 1) || hasExistingSignedPackage;
 
-    // For subsequent signers, supersede existing evidence; for first signer, upload fresh.
-    let signedPackageArtifactId: string;
-    let signedFormInstanceArtifactId: string | undefined;
+    // Use resolve to detect prior for idempotency/retry.
+    const priorCanonicalsForDrive = resolveCanonicalSignedPackages(exec.evidence, {
+      eventId: hhcEventId,
+      formInstanceId: canonicalFormInstanceId,
+      eventAliases: exec.eventInstanceIdsBySourceEventId[hhcEventId] ?? [],
+    });
+    const priorWithDrive = priorCanonicalsForDrive.find((d) => d.driveFileId && (d.driveUploadStatus || 'uploaded') !== 'failed') as { id: string; driveFileId?: string; driveUploadStatus?: string; webViewLink?: string; driveFolderId?: string } | undefined;
 
+    // Proactive Drive/backend config check BEFORE creating the final canonical artifact (per requirements).
+    // Local state remains temporary draft until real persistence succeeds.
+    if (finalPackageReady && !priorWithDrive) {
+      try {
+        const health = await CalendarApi.evidenceHealth();
+        if (!health || !health.ok || !health.enabled) {
+          const diag = [
+            !health ? 'backend unreachable' : null,
+            health && !health.enabled ? 'Drive integration disabled' : null,
+            health && !health.rootFolderId && !health.sharedDriveId ? 'Drive folder ID missing' : null,
+            'service account / credentials unavailable (server-side)',
+          ].filter(Boolean).join('; ') || 'Drive/backend not configured';
+          setLockGateError({ code: 'missing_required', message: `Evidence finalization blocked: Google Drive evidence persistence is not configured. (${diag})` });
+          return;
+        }
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        setLockGateError({ code: 'missing_required', message: `Evidence finalization blocked: Google Drive evidence persistence is not configured. (backend unreachable; ${msg})` });
+        return;
+      }
+    }
+
+    // For subsequent: clean priors (existing behavior, limited to non-drive case handled by store dup)
     if (isSubsequentSigner) {
       const aliases = [hhcEventId, ...(exec.eventInstanceIdsBySourceEventId[hhcEventId] ?? [])];
       const allDocs = aliases.flatMap(alias => exec.evidence[alias] ?? []);
@@ -1683,49 +2009,134 @@ export function ECIgnWorkspace({
         && d.status !== 'SUPERSEDED',
       );
       for (const prior of priorArtifacts) {
-        exec.removeEvidence(hhcEventId, prior.id);
+        // Only remove local priors that lack drive (idempotent drive case keeps prior)
+        if (!prior.driveFileId) exec.removeEvidence(hhcEventId, prior.id);
       }
+    }
 
-      const versionedMeta = {
-        ...commonArtifactMeta,
-        artifactVersion: `${formVersion}-s${signerIndex}`,
-        note: `signer_index=${signerIndex};total_signers=${totalSigners};canonical_form_instance_id=${canonicalFormInstanceId};ecign_session_id=${instance?.instance_id ?? ''}`,
-      };
+    const versionedMeta = isSubsequentSigner ? {
+      ...commonArtifactMeta,
+      artifactVersion: `${formVersion}-s${signerIndex}`,
+      note: `signer_index=${signerIndex};total_signers=${totalSigners};canonical_form_instance_id=${canonicalFormInstanceId};ecign_session_id=${instance?.instance_id ?? ''}`,
+    } : commonArtifactMeta;
 
-      signedPackageArtifactId = exec.uploadEvidence(hhcEventId, {
-        ...versionedMeta,
-        name: `${formId}-${canonicalFormInstanceId}-signed-package-v${signerIndex}.html`,
-        kind: 'signed_package',
-        sizeLabel: `${Math.round(signedSnapshot.approxBytes / 1024)} KB`,
-        artifactType: 'signed_package',
-        snapshotSha256,
-        localDataUrl: packetPdfDataUrl,
-      }, actorLabel);
+    // Create the canonical CES signed_package (the EVIDENCE_LOCKED entry) ONLY after real Drive success
+    // or when reusing a prior that already has valid driveFileId. Local prep is draft only.
+    let signedPackageArtifactId: string | undefined;
+    let signedFormInstanceArtifactId: string | undefined;
 
-      const signerTasks = exec.signerTasksByFormInstanceId?.[canonicalFormInstanceId] ?? [];
-      const myTask = signerTasks.find(t => t.signerIndex === signerIndex && t.status !== 'signed');
-      if (myTask) {
-        exec.updateSignerTaskStatus(canonicalFormInstanceId, myTask.taskId, 'signed');
+    let drivePublishResult: Awaited<ReturnType<typeof EvidenceApi.publishSignedArtifact>> | null = null;
+
+    const shouldAttemptDrive = finalPackageReady && !priorWithDrive;
+
+    if (shouldAttemptDrive) {
+      const finalFileName = `${formId}-${canonicalFormInstanceId}-final-signed-package-v${pdfVersion}.html`;
+      try {
+        const finalFile = new File([packetHtml], finalFileName, { type: 'text/html;charset=utf-8' });
+        drivePublishResult = await EvidenceApi.publishSignedArtifact(hhcEventId, finalFile, {
+          taskId: parentTaskId || 'SIGNED-PACKAGE',
+          workflowId: artifactWorkflowId || undefined,
+          formId,
+          formInstanceId: canonicalFormInstanceId,
+          artifactType: 'final_package',
+          title: finalFileName,
+          domain: sourceEvent?.domain,
+          eventDate: sourceEvent?.date,
+          uploadedBy: actorLabel,
+          artifactId: `${canonicalFormInstanceId}:signed-package`,
+          pdfVersion,
+          sha256: snapshotSha256,
+          signerSlotOrder: signerIndex,
+          signerUserId: signer.id,
+          signerRole: signer.role,
+          signerTier: signer.tier,
+          signerDomain: signer.authorityDomains[0],
+          priorDocumentHash: undefined,
+          finalDocumentHash: instance?.document_hash ? String(instance.document_hash) : undefined,
+          auditEventIds: auditRefs,
+          signerSlotsComplete: finalPackageReady,
+        });
+        if (drivePublishResult?.driveFileId) {
+          setDriveUploadError(null);
+          const driveMeta = {
+            driveFileId: drivePublishResult.driveFileId,
+            driveFolderId: drivePublishResult.driveFolderId,
+            webViewLink: drivePublishResult.driveFileUrl,
+            driveMimeType: 'text/html',
+            driveFilename: finalFileName,
+            driveUploadedAt: new Date().toISOString(),
+            driveUploadStatus: 'uploaded' as const,
+          };
+          if (isSubsequentSigner) {
+            signedPackageArtifactId = exec.uploadEvidence(hhcEventId, {
+              ...versionedMeta,
+              name: `${formId}-${canonicalFormInstanceId}-signed-package-v${signerIndex}.html`,
+              kind: 'signed_package',
+              sizeLabel: `${Math.round(signedSnapshot.approxBytes / 1024)} KB`,
+              artifactType: 'signed_package',
+              snapshotSha256,
+              localDataUrl: packetPdfDataUrl,
+              ...driveMeta,
+            }, actorLabel);
+            const signerTasks = exec.signerTasksByFormInstanceId?.[canonicalFormInstanceId] ?? [];
+            const myTask = signerTasks.find(t => t.signerIndex === signerIndex && t.status !== 'signed');
+            if (myTask) {
+              exec.updateSignerTaskStatus(canonicalFormInstanceId, myTask.taskId, 'signed');
+            }
+          } else {
+            signedPackageArtifactId = exec.uploadEvidence(hhcEventId, {
+              ...versionedMeta,
+              name: `${formId}-${canonicalFormInstanceId}-signed-package.html`,
+              kind: 'signed_package',
+              sizeLabel: `${Math.round(signedSnapshot.approxBytes / 1024)} KB`,
+              artifactType: 'signed_package',
+              note: `artifact_type=signed_package;canonical_form_instance_id=${canonicalFormInstanceId};ecign_session_id=${instance?.instance_id ?? ''}`,
+              snapshotSha256,
+              localDataUrl: packetPdfDataUrl,
+              ...driveMeta,
+            }, actorLabel);
+            signedFormInstanceArtifactId = undefined;
+          }
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        setDriveUploadError(message);
+        exec.appendTaskAuditEvent(hhcEventId, 'formInstance', canonicalFormInstanceId, 'DRIVE_FINAL_PACKAGE_PUBLISH_FAILED', {
+          reason: message,
+          after: { mode: ecignMode.resolved, requestedMode: ecignMode.requested },
+        });
+        if (ecignMode.requested === 'BACKEND_LIVE') {
+          setLockGateError({
+            code: 'missing_required',
+            message: 'Evidence finalization blocked: Google Drive evidence persistence is not configured.',
+          });
+          return;
+        }
       }
-    } else {
-      signedPackageArtifactId = exec.uploadEvidence(hhcEventId, {
-        ...commonArtifactMeta,
-        name: `${formId}-${canonicalFormInstanceId}-signed-package.html`,
-        kind: 'signed_package',
-        sizeLabel: `${Math.round(signedSnapshot.approxBytes / 1024)} KB`,
-        artifactType: 'signed_package',
-        note: `artifact_type=signed_package;canonical_form_instance_id=${canonicalFormInstanceId};ecign_session_id=${instance?.instance_id ?? ''}`,
-        snapshotSha256,
-        localDataUrl: packetPdfDataUrl,
-      }, actorLabel);
-
-      signedFormInstanceArtifactId = undefined;
+    } else if (priorWithDrive) {
+      signedPackageArtifactId = priorWithDrive.id;
+      drivePublishResult = {
+        evidenceId: priorWithDrive.id,
+        driveFileId: priorWithDrive.driveFileId!,
+        driveFileUrl: priorWithDrive.webViewLink || '',
+        driveFolderId: priorWithDrive.driveFolderId,
+        calendarAttachmentStatus: 'attached',
+      } as Awaited<ReturnType<typeof EvidenceApi.publishSignedArtifact>>;
     }
 
     if (!signedPackageArtifactId) {
       return;
     }
+
+    const finalDriveSuccess = !! (drivePublishResult?.driveFileId || (priorWithDrive && priorWithDrive.driveFileId));
+    if (finalPackageReady && !finalDriveSuccess) {
+      // safety (should not reach)
+      setLockGateError({ code: 'missing_required', message: 'Evidence finalization blocked: Google Drive evidence persistence is not configured.' });
+      return;
+    }
+
     const stashKey = 'ces_ev_data_' + signedPackageArtifactId;
+    // Stash local render bytes for viewer fidelity after successful Drive-backed finalize (bytes not in Drive response).
     if (!localStorage.getItem(stashKey)) {
       try { localStorage.setItem(stashKey, packetPdfDataUrl); } catch { /* quota */ }
     }
@@ -1741,7 +2152,7 @@ export function ECIgnWorkspace({
           certificate_artifact_id: instance.certificate_artifact_id ? String(instance.certificate_artifact_id) : undefined,
         });
       } catch {
-        // Evidence is the durable artifact source; this best-effort sync keeps demo-local session metadata aligned.
+        // Evidence is the durable artifact source; best-effort metadata sync with ecign session.
       }
     }
 
@@ -1749,16 +2160,13 @@ export function ECIgnWorkspace({
       after: { artifactType: 'signed_package', canonicalFormInstanceId, ecignSessionId: instance?.instance_id },
     });
     exec.appendTaskAuditEvent(hhcEventId, 'evidence', signedPackageArtifactId, 'ARTIFACT_LOCKED', {
-      after: { artifactType: 'signed_package', canonicalFormInstanceId, lockedAt: finalizedAt },
+      after: { artifactType: 'signed_package', canonicalFormInstanceId, lockedAt: finalizedAt, finalPackageReady, driveFileId: drivePublishResult?.driveFileId },
     });
 
-    const sourceEvent = REGULATORY_EVENTS.find(event =>
-      event.id === hhcEventId || (exec.eventInstanceIdsBySourceEventId[event.id] ?? []).includes(hhcEventId),
-    );
     const eventAliases = sourceEvent
       ? [sourceEvent.id, ...(exec.eventInstanceIdsBySourceEventId[sourceEvent.id] ?? [])]
       : [hhcEventId, ...(exec.eventInstanceIdsBySourceEventId[hhcEventId] ?? [])];
-    if (sourceEvent?.approvals?.length) {
+    if (finalPackageReady && sourceEvent?.approvals?.length) {
       for (const approval of sourceEvent.approvals.filter(item => item.required)) {
         const alreadyRequested = exec.approvals.some(item =>
           eventAliases.includes(item.eventId) &&
@@ -1793,18 +2201,22 @@ export function ECIgnWorkspace({
       canonicalFormInstanceId,
       signedPackageArtifactId,
       signedFormInstanceArtifactId: signedFormInstanceArtifactId ?? null,
+      driveFileId: drivePublishResult?.driveFileId ?? null,
     });
     appendExecutionAudit('ARTIFACT_LOCKED', 'Finalized artifacts locked for audit/compliance review.', {
       canonicalFormInstanceId,
       signedPackageArtifactId,
       signedFormInstanceArtifactId,
+      finalPackageReady,
     });
 
     if (linkedInstance) {
       exec.setFormInstanceStatus(linkedInstance.eventId, linkedInstance.id, 'SIGNED');
-      exec.setFormInstanceStatus(linkedInstance.eventId, linkedInstance.id, 'LOCKED');
+      if (finalPackageReady) {
+        exec.setFormInstanceStatus(linkedInstance.eventId, linkedInstance.id, 'LOCKED');
+      }
     }
-    if (parentTaskId) {
+    if (finalPackageReady && parentTaskId) {
       exec.attemptCompleteTask(hhcEventId, parentTaskId);
     }
     } finally {
@@ -1815,8 +2227,12 @@ export function ECIgnWorkspace({
     appendExecutionAudit,
     backendState,
     buildPacketHtml,
+    canonicalSignerRequirements,
     effectiveRecord,
     canonicalFormInstanceId,
+    currentSignerRequirement,
+    ecignMode.requested,
+    ecignMode.resolved,
     formId,
     formTitle,
     hhcEventId,
@@ -1831,8 +2247,11 @@ export function ECIgnWorkspace({
     parentTaskId,
     policies,
     signer.email,
+    signer.authorityDomains,
+    signer.id,
     signer.name,
     signer.role,
+    signer.tier,
     signerIndex,
     totalSigners,
   ]);
@@ -2017,18 +2436,16 @@ export function ECIgnWorkspace({
               className="px-3 py-2 rounded-lg font-roboto text-[11px]"
               style={{ background: '#EFF6FF', color: '#1E3A8A', border: '1px solid #BFDBFE' }}
             >
-              eCIgn mode: <strong>{ecignMode.resolved}</strong>
-              {ecignMode.requested !== ecignMode.resolved && (
-                <span> (requested {ecignMode.requested}, fallback enabled)</span>
-              )}
+              eCIgn using real backend/Drive mode for evidence finalization (no local-only fallback).
             </div>
           </div>
         )}
 
         {/* ════ State-driven screen switch ════
-            UI NEVER assumes state — it always reflects backend state. */}
+            Downstream assigned signers may see the signature step while the
+            shared instance remains attested from the previous signer. */}
         {instance && (() => {
-          switch (backendState) {
+          switch (displayBackendState) {
 
             /* ── CONSENT ─────────────────────────────────────────── */
             case 'created':
@@ -2367,14 +2784,26 @@ export function ECIgnWorkspace({
               return (
                 <div className="max-w-4xl mx-auto p-6 md:p-12 flex flex-col items-center">
                   <div className="text-center mb-8">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-4" style={{ background: '#ECFDF5', border: '1px solid #A7F3D0' }}>
-                      <CheckCircle2 size={14} style={{ color: '#10B981' }} />
-                      <span className="font-montserrat font-bold text-[10px] uppercase tracking-[0.16em]" style={{ color: '#065F46' }}>
-                        Document Signed &amp; Sealed
-                      </span>
-                    </div>
+                    {(() => {
+                      const hasCanonical = Boolean(canonicalEvidence);
+                      const driveBacked = Boolean(canonicalEvidence?.driveFileId || canonicalEvidence?.webViewLink);
+                      const evidenceFinalized = hasCanonical && driveBacked;
+                      return evidenceFinalized ? (
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-4" style={{ background: '#ECFDF5', border: '1px solid #A7F3D0' }}>
+                          <CheckCircle2 size={14} style={{ color: '#10B981' }} />
+                          <span className="font-montserrat font-bold text-[10px] uppercase tracking-[0.16em]" style={{ color: '#065F46' }}>
+                            Document Signed &amp; Sealed
+                          </span>
+                        </div>
+                      ) : null;
+                    })()}
                     <h2 className="font-montserrat font-bold text-[26px] md:text-[30px] leading-tight" style={{ color: NAVY_DEEP }}>
-                      Finalize
+                      {(() => {
+                        const hasCanonical = Boolean(canonicalEvidence);
+                        const driveBacked = Boolean(canonicalEvidence?.driveFileId || canonicalEvidence?.webViewLink);
+                        const evidenceFinalized = hasCanonical && driveBacked;
+                        return evidenceFinalized ? 'Finalize' : 'Evidence Finalization Blocked';
+                      })()}
                     </h2>
                     {totalSigners > 1 && (
                       <p className="font-montserrat font-semibold text-[11px] mt-2 mb-1" style={{ color: NAVY }}>
@@ -2383,80 +2812,97 @@ export function ECIgnWorkspace({
                       </p>
                     )}
                     <p className="font-roboto text-[13px] mt-2" style={{ color: MUTED }}>
-                      Your attestation is complete and locked on the server. Choose how to handle the finalized document.
+                      Your attestation is complete and locked on the server. Finalization requires successful persistence to the configured Google Drive evidence path.
                     </p>
                     {instance?.document_hash && (
                       <p className="font-mono text-[10.5px] mt-3" style={{ color: MUTED }}>
                         doc_hash {String(instance.document_hash).slice(0, 16)}… · manifest {String(instance.manifest_hash ?? '').slice(0, 16)}…
                       </p>
                     )}
-                    {hhcEvidenceResult && (
-                      <div className="mt-5 text-left rounded-2xl p-4 md:p-5" style={{ background: '#ECFDF5', border: '1px solid #A7F3D0' }}>
+                    {(canonicalEvidence || backendState === 'signed_locked') && (() => {
+                      const hasCanonical = Boolean(canonicalEvidence);
+                      const driveBacked = Boolean(canonicalEvidence?.driveFileId || canonicalEvidence?.webViewLink);
+                      const evidenceFinalized = hasCanonical && driveBacked;
+                      const matchCount = canonicalEvidenceMatches.length;
+                      const panelBg = evidenceFinalized ? '#ECFDF5' : '#FFFBEB';
+                      const panelBorder = evidenceFinalized ? '#A7F3D0' : '#FCD34D';
+                      const ink = evidenceFinalized ? '#065F46' : '#92400E';
+                      return (
+                      <div className="mt-5 text-left rounded-2xl p-4 md:p-5" style={{ background: panelBg, border: `1px solid ${panelBorder}` }}>
                         <div className="flex items-start gap-2">
-                          <CheckCircle2 size={15} style={{ color: '#059669', marginTop: 2, flexShrink: 0 }} />
+                          {evidenceFinalized
+                            ? <CheckCircle2 size={15} style={{ color: '#059669', marginTop: 2, flexShrink: 0 }} />
+                            : <AlertTriangle size={15} style={{ color: '#B45309', marginTop: 2, flexShrink: 0 }} />}
                           <div className="min-w-0">
-                            <div className="font-montserrat font-bold text-[10px] uppercase tracking-[0.14em]" style={{ color: '#065F46' }}>
-                              Saved Evidence Confirmation
+                            <div className="font-montserrat font-bold text-[10px] uppercase tracking-[0.14em]" style={{ color: ink }}>
+                              {evidenceFinalized ? 'Canonical CES Evidence' : 'Evidence Finalization Blocked'}
                             </div>
-                            <div className="font-roboto text-[12px] mt-1" style={{ color: '#065F46' }}>
-                              Evidence saved and refreshed from backend ({hhcEvidenceResult.refreshed_count} match{hhcEvidenceResult.refreshed_count === 1 ? '' : 'es'}).
+                            <div className="font-roboto text-[12px] mt-1" style={{ color: ink }}>
+                              {evidenceFinalized
+                                ? `Resolved as canonical CES evidence (${matchCount} match${matchCount === 1 ? '' : 'es'}).`
+                                : 'Evidence finalization blocked: Google Drive evidence persistence is not configured.'}
                             </div>
-                          </div>
-                        </div>
-
-                        <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 font-mono text-[10.5px]" style={{ color: '#065F46' }}>
-                          {isInternalMirrorEvidenceId(hhcEvidenceResult.evidence_id) ? (
-                            <div className="md:col-span-2">
-                              <span className="font-montserrat">External mirror:</span>{' '}
-                              session-only (not a CES artifact). Use “Open signed package / form instance” for canonical evidence IDs.
-                            </div>
-                          ) : (
-                            <div><span className="font-montserrat">Evidence ID:</span> {hhcEvidenceResult.evidence_id}</div>
-                          )}
-                          <div>
-                            <span className="font-montserrat">Event ID:</span> {hhcEvidenceResult.event_id}
-                            {hhcEvidenceResult.event_id.startsWith('EVT-FORM-FI') && (
-                              <span className="ml-2 px-1.5 py-0.5 rounded text-[9px]" style={{ background: '#D1FAE5', border: '1px solid #6EE7B7' }}>
-                                Form-generated event
-                              </span>
+                            {hasCanonical && (
+                              <div className="font-roboto text-[11px] mt-1" style={{ color: ink }}>
+                                {driveBacked
+                                  ? 'Stored in the configured Google Drive CES evidence folder.'
+                                  : 'Configure Google Drive evidence persistence (backend reachable, Drive folder/credentials valid) and retry finalization.'}
+                              </div>
+                            )}
+                            {driveUploadError && !driveBacked && (
+                              <div className="font-roboto text-[10px] mt-1 break-all" style={{ color: '#92400E' }}>
+                                {driveUploadError}
+                              </div>
                             )}
                           </div>
-                          <div><span className="font-montserrat">Form ID:</span> {hhcEvidenceResult.form_id}</div>
-                          <div><span className="font-montserrat">Policy ID:</span> {hhcEvidenceResult.policy_id}</div>
-                          <div><span className="font-montserrat">Workflow ID:</span> {hhcEvidenceResult.workflow_id}</div>
-                          <div><span className="font-montserrat">Status:</span> {hhcEvidenceResult.status} / {hhcEvidenceResult.signature_status}</div>
-                          {!isInternalMirrorEvidenceId(hhcEvidenceResult.evidence_id) && (
-                            <div className="md:col-span-2 break-all"><span className="font-montserrat">S3 key:</span> {hhcEvidenceResult.s3_key}</div>
-                          )}
                         </div>
 
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const fallbackArtifactId = !isInternalMirrorEvidenceId(hhcEvidenceResult.evidence_id)
-                                ? hhcEvidenceResult.evidence_id
-                                : undefined;
-                              const artifactId = createdArtifactsRef.current.packageId || fallbackArtifactId;
-                              if (!artifactId) return;
-                              const artifactUrl = buildArtifactRoute(artifactId, {
-                                eventId: hhcEventId || hhcEvidenceResult.event_id,
-                                taskId: parentTaskId,
-                                formId,
-                                formInstanceId: canonicalFormInstanceId,
-                                evidenceId: artifactId,
-                                type: createdArtifactsRef.current.packageId ? 'signed_package' : 'evidence',
-                              });
-                              window.open(artifactUrl, '_blank', 'noopener');
-                            }}
-                            className="px-3 py-1.5 rounded-lg border text-[11px] font-montserrat font-semibold"
-                            style={{ borderColor: '#6EE7B7', color: '#065F46', background: 'white' }}
-                          >
-                            Open Artifact Viewer
-                          </button>
-                        </div>
+                        {canonicalEvidence && driveBacked && (
+                          <>
+                            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 font-mono text-[10.5px]" style={{ color: ink }}>
+                              <div className="md:col-span-2 break-all"><span className="font-montserrat">Artifact ID:</span> {canonicalEvidence.id}</div>
+                              <div><span className="font-montserrat">Event ID:</span> {canonicalEvidence.eventId}</div>
+                              <div className="break-all"><span className="font-montserrat">Task ID:</span> {canonicalEvidence.taskId || parentTaskId || '—'}</div>
+                              <div><span className="font-montserrat">Form ID:</span> {formId}</div>
+                              <div className="break-all"><span className="font-montserrat">Form instance:</span> {canonicalFormInstanceId}</div>
+                              <div><span className="font-montserrat">Policy ID:</span> {canonicalEvidence.policyId}</div>
+                              <div><span className="font-montserrat">Workflow ID:</span> {canonicalEvidence.workflowId || '—'}</div>
+                              <div className="break-all"><span className="font-montserrat">Certificate ID:</span> {certId}</div>
+                              <div><span className="font-montserrat">Status:</span> {canonicalEvidence.status} / {canonicalEvidence.signatureHash ? 'SIGNED' : 'SIGNED'}</div>
+                              <div className="break-all"><span className="font-montserrat">Signer:</span> {canonicalEvidence.signerName || signer.name}{(canonicalEvidence.signerRole || signer.role) ? ` (${canonicalEvidence.signerRole || signer.role})` : ''}</div>
+                              {canonicalEvidence.documentHash && (
+                                <div className="md:col-span-2 break-all"><span className="font-montserrat">doc hash:</span> {String(canonicalEvidence.documentHash).slice(0, 32)}…</div>
+                              )}
+                              {driveBacked && (
+                                <div className="md:col-span-2 break-all"><span className="font-montserrat">Drive file:</span> {canonicalEvidence.driveFileId ?? '—'}{canonicalEvidence.webViewLink ? ` · ${canonicalEvidence.webViewLink}` : ''}</div>
+                              )}
+                            </div>
+
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const artifactUrl = buildArtifactRoute(canonicalEvidence.id, {
+                                    eventId: canonicalEvidence.eventId || hhcEventId,
+                                    taskId: parentTaskId,
+                                    formId,
+                                    formInstanceId: canonicalFormInstanceId,
+                                    evidenceId: canonicalEvidence.id,
+                                    type: 'signed_package',
+                                  });
+                                  window.open(artifactUrl, '_blank', 'noopener');
+                                }}
+                                className="px-3 py-1.5 rounded-lg border text-[11px] font-montserrat font-semibold"
+                                style={{ borderColor: '#6EE7B7', color: '#065F46', background: 'white' }}
+                              >
+                                Open Artifact Viewer
+                              </button>
+                            </div>
+                          </>
+                        )}
                       </div>
-                    )}
+                      );
+                    })()}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full">
@@ -2632,14 +3078,14 @@ function SecondSignerPicker({
             Send for second signature
           </h3>
           <p className="font-roboto text-[13px]" style={{ color: MUTED }}>
-            Signed as <strong style={{ color: INK }}>{signer.name}</strong> · {signer.role}. Only one-tier-above approvers are selectable.
+            Signed as <strong style={{ color: INK }}>{signer.name}</strong> · {signer.role}. Only eligible higher-tier approvers are selectable.
           </p>
         </div>
       </div>
 
       <ul className="space-y-2">
         {DEMO_STAFF.map(user => {
-          const ok   = user.tier === signer.tier - 1;
+          const ok   = user.id !== signer.id && user.tier > signer.tier;
           const self = user.id === signer.id;
           return (
             <li key={user.id}>

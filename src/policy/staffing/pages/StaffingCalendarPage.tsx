@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { CalendarDays } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PageHeader } from '@/policy/components/ui/PageHeader';
 import { EmptyState } from '@/policy/components/ui/EmptyState';
+import { MetricTile, BorderGlow, ToneBadge, SpotlightCard } from '@/policy/components/ui';
 import { DemoBanner } from '../components/DemoBanner';
 import { ShiftCard } from '../components/ShiftCard';
 import { CalendarFilters } from '../components/CalendarFilters';
@@ -9,6 +10,7 @@ import { CalendarViewToggle } from '../components/CalendarViewToggle';
 import { WeekCalendarView } from '../components/WeekCalendarView';
 import { MonthCalendarView } from '../components/MonthCalendarView';
 import { useShiftStore } from '../stores/shiftStore';
+import { useIsLight } from '@/policy/stores/uiStore';
 import type { CalendarFilterState, CalendarView } from '../types-calendar';
 
 // ── date anchor helpers (pure JS, no external deps) ──────────────────────────
@@ -86,15 +88,40 @@ function formatDateHeading(isoDate: string): string {
 
 // ── page component ────────────────────────────────────────────────────────────
 export function StaffingCalendarPage() {
-  // Default view is Month per design spec
-  const [view, setView] = useState<CalendarView>('month');
+  // Mobile-first: default to list (agenda) per design reference (RESPONSIVE_BEHAVIOR_MATRIX + CALENDAR_VISUAL_PATTERNS).
+  // Desktop defaults to month.
+  const [_viewportWidth, setViewportWidth] = useState<number>(() =>
+    typeof window === 'undefined' ? 1024 : window.innerWidth
+  );
+
+  const [view, setView] = useState<CalendarView>(() => (typeof window !== 'undefined' && window.innerWidth < 640 ? 'list' : 'month'));
   const [anchor, setAnchor] = useState<Date>(initialAnchor());
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [filters, setFilters] = useState<CalendarFilterState>(DEFAULT_FILTERS);
+  const isLight = useIsLight();
+  // Light mode: use isLight for hover states on nav buttons (avoid white/5 bleed/low hit area in light); calendar pages/hovers use isLight for glass clean.
+
+  // Keep view in sync on resize for mobile preference. Enforce agenda (list) primary on small screens to match designs, prevent grid bleed.
+  useEffect(() => {
+    const onResize = () => {
+      const w = window.innerWidth;
+      setViewportWidth(w);
+      if (w < 640 && view !== 'list') {
+        setView('list');
+      }
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [view]);
 
   const { filterShifts, shifts } = useShiftStore();
   const filtered = filterShifts(filters);
   const total = shifts.length;
+
+  // Phase 3 staffing: MetricTile stats (derived display only)
+  const filledCount = shifts.filter((s) => s.status === 'filled').length;
+  const openCount = shifts.filter((s) => s.status === 'open').length;
+  const cancelledCount = shifts.filter((s) => s.status === 'cancelled').length;
 
   // Navigation handlers
   function handlePrev() {
@@ -130,25 +157,32 @@ export function StaffingCalendarPage() {
   return (
     <div className="flex flex-col h-full">
       <DemoBanner />
-      <div className="p-4 md:p-6 lg:p-8 flex flex-col gap-4 flex-1 min-h-0">
+      <div className="v3-calendar-surface flex flex-col flex-1 min-h-0 w-full max-w-full overflow-x-hidden" style={{ padding: 0 }}> {/* full bleed per designs (Agent 13): main calendar occupies entire screen area, no padding/borders; agenda primary no bleed on small */}
         <PageHeader
           eyebrow="Step 2 · Read-only"
           title={
             <span className="flex items-center gap-2">
               Calendar
-              <span
-                className="inline-flex items-center px-2 py-0.5 rounded-full text-sm font-normal"
-                style={{ background: 'var(--ci-surface-muted)', color: 'var(--ci-text-muted-2)', fontSize: 14 }}
-              >
-                {filtered.length}/{total}
-              </span>
+              <ToneBadge tone="teal">{filtered.length}/{total}</ToneBadge>
             </span>
           }
           description="iStaffing operational view: open shifts, filled shifts, pending coverage, cancelled"
         />
 
+        {/* PHASE 3: MetricTiles + BorderGlow + ToneBadge + Spotlight variant on staffing calendar (no data changes) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <BorderGlow borderRadius={16} glowIntensity={0.65}>
+            <MetricTile label="Total Shifts" value={total} note="In period" tone="teal" />
+          </BorderGlow>
+          <MetricTile label="Filled" value={filledCount} note="Assigned" tone="success" />
+          <MetricTile label="Open" value={openCount} note="Needs coverage" tone="warning" />
+          <SpotlightCard variant="border-glow" className="rounded-2xl">
+            <MetricTile label="Cancelled" value={cancelledCount} note="This window" tone="danger" />
+          </SpotlightCard>
+        </div>
+
         {/* Filters + view toggle row */}
-        <div className="flex flex-wrap items-center gap-3 justify-between">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 justify-between">
           <CalendarFilters value={filters} onChange={setFilters} />
           <CalendarViewToggle value={view} onChange={setView} />
         </div>
@@ -165,51 +199,35 @@ export function StaffingCalendarPage() {
           </button>
         )}
 
-        {/* Navigation row — Week and Month views only */}
+        {/* Navigation row — Week and Month views only — matches design #4 (TODAY, June 2026, clean) */}
         {(view === 'week' || view === 'month') && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-0.5 rounded-md border px-0.5 py-0.5 text-xs" style={{ borderColor: 'var(--v3-border-subtle)', background: 'transparent' }}>
             <button
               type="button"
               onClick={handlePrev}
-              className="h-8 px-3 rounded-md text-sm border transition-colors"
-              style={{
-                background: 'var(--ci-surface)',
-                border: '1px solid var(--ci-border-strong)',
-                color: 'var(--ci-text-primary)',
-              }}
+              aria-label="Previous"
+              className={`px-1 py-0.5 rounded ${isLight ? 'hover:bg-slate-100' : 'hover:bg-white/5'}`}
+              style={{ color: 'var(--v3-text-secondary)' }}
             >
-              ← Previous
+              <ChevronLeft size={15} />
             </button>
             <button
               type="button"
               onClick={handleToday}
-              className="h-8 px-3 rounded-md text-sm border transition-colors"
-              style={{
-                background: 'var(--ci-surface)',
-                border: '1px solid var(--ci-border-strong)',
-                color: 'var(--ci-text-primary)',
-              }}
+              className={`px-2.5 py-0.5 text-[10px] font-semibold tracking-[0.06em] uppercase rounded ${isLight ? 'hover:bg-slate-100' : 'hover:bg-white/5'} whitespace-nowrap`}
+              style={{ color: 'var(--v3-text-primary)' }}
             >
-              Today
+              TODAY, {periodLabel}
             </button>
             <button
               type="button"
               onClick={handleNext}
-              className="h-8 px-3 rounded-md text-sm border transition-colors"
-              style={{
-                background: 'var(--ci-surface)',
-                border: '1px solid var(--ci-border-strong)',
-                color: 'var(--ci-text-primary)',
-              }}
+              aria-label="Next"
+              className={`px-1 py-0.5 rounded ${isLight ? 'hover:bg-slate-100' : 'hover:bg-white/5'}`}
+              style={{ color: 'var(--v3-text-secondary)' }}
             >
-              Next →
+              <ChevronRight size={15} />
             </button>
-            <span
-              className="text-sm font-semibold ml-2"
-              style={{ color: 'var(--ci-text-primary)' }}
-            >
-              {periodLabel}
-            </span>
           </div>
         )}
 
@@ -238,26 +256,28 @@ export function StaffingCalendarPage() {
         {filtered.length > 0 && (
           <>
             {view === 'list' && (
-              <div className="flex flex-col gap-6 overflow-y-auto">
+              <div className="flex flex-col gap-4 sm:gap-6 overflow-y-auto w-full max-w-full overflow-x-hidden">
                 {sortedDates.map((date) => (
                   <section key={date}>
                     <h2
-                      className="text-sm font-semibold mb-3 pb-1"
+                      className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3 pb-1"
                       style={{
                         color: 'var(--ci-text-muted-2)',
-                        borderBottom: '1px solid var(--ci-border)',
+                        borderBottom: 'none',
                         letterSpacing: '0.05em',
                         textTransform: 'uppercase',
-                        fontSize: '0.75rem',
+                        fontSize: '0.65rem',
                       }}
                     >
                       {formatDateHeading(date)}
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                    <BorderGlow borderRadius={10} glowIntensity={0.5} className="w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3">
                       {byDate[date].map((shift) => (
                         <ShiftCard key={shift.id} shift={shift} />
                       ))}
                     </div>
+                    </BorderGlow>
                   </section>
                 ))}
               </div>
@@ -280,24 +300,26 @@ export function StaffingCalendarPage() {
 
                 {/* Selected-day detail panel */}
                 {selectedDay !== null && selectedDayShifts.length > 0 && (
-                  <div>
+                  <div className="mt-1">
                     <h2
-                      className="text-sm font-semibold mb-3 pb-1"
+                      className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3 pb-1"
                       style={{
                         color: 'var(--ci-text-muted-2)',
-                        borderBottom: '1px solid var(--ci-border)',
+                        borderBottom: 'none',
                         letterSpacing: '0.05em',
                         textTransform: 'uppercase',
-                        fontSize: '0.75rem',
+                        fontSize: '0.65rem',
                       }}
                     >
                       {formatDateHeading(selectedDay)}
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                    <BorderGlow borderRadius={10} glowIntensity={0.5} className="w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3">
                       {selectedDayShifts.map((shift) => (
                         <ShiftCard key={shift.id} shift={shift} />
                       ))}
                     </div>
+                    </BorderGlow>
                   </div>
                 )}
 

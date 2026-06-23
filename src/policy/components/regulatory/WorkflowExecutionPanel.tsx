@@ -675,6 +675,10 @@ function EventTasksTab({
   const taskRefs = useRef<Record<string, HTMLLIElement | null>>({});
   const requirementRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const activeTasks = dataflow.tasks.filter(task => !task.isDeleted);
+  const eventDisplayPolicyIds = useMemo(
+    () => getEventDisplayModel(event).canonicalPolicyRefs,
+    [event],
+  );
   const [requirementAudit, setRequirementAudit] = useState<{ task: EventExecutionDataflow['tasks'][number]; requirement: CesExecutionRequirement } | null>(null);
   const deletedTasks = dataflow.tasks.filter(task => task.isDeleted);
   const taskAuditRefs = useMemo(() => dataflow.auditTrail.slice(0, 20).map(item => item.auditId), [dataflow.auditTrail]);
@@ -1005,7 +1009,7 @@ function EventTasksTab({
                       rel="noopener noreferrer"
                       className="rounded border px-1.5 py-0.5 text-amber-200"
                     >
-                      View Artifact (demo-local warning)
+                      View Artifact
                     </a>
                   )}
                 </span>
@@ -1039,7 +1043,7 @@ function EventTasksTab({
                   {fid}
                 </button>
               ))}
-              {task.policyIds.map(pid => <button key={pid} type="button" onClick={() => window.open(`/policies/${encodeURIComponent(pid)}`, '_blank')} className="rounded border px-1.5 py-0.5">{pid}</button>)}
+              {policyIdsForTaskDisplay(task, eventDisplayPolicyIds).map(pid => <button key={pid} type="button" onClick={() => window.open(`/policies/${encodeURIComponent(pid)}`, '_blank')} className="rounded border px-1.5 py-0.5">{pid}</button>)}
             </div>
             {expandedTaskIds[task.id] && (
               <div className="mt-3 rounded border border-white/10 bg-black/10 p-2">
@@ -1180,6 +1184,15 @@ function toPmTask(task: EventExecutionDataflow['tasks'][number], event: Regulato
     assignee: task.ownerUserId,
     owner: task.ownerRole,
   };
+}
+
+function policyIdsForTaskDisplay(
+  task: EventExecutionDataflow['tasks'][number],
+  eventCanonicalPolicyRefs: readonly string[],
+): string[] {
+  const allowed = new Set(eventCanonicalPolicyRefs);
+  const taskDisplayPolicyIds = task.policyIds.filter(policyId => allowed.has(policyId));
+  return taskDisplayPolicyIds.length > 0 ? taskDisplayPolicyIds : [...eventCanonicalPolicyRefs];
 }
 
 function ensureAllRequirementTypes(
@@ -2037,7 +2050,7 @@ function InlineTaskActionPanel({
 
               {requirement.type === 'SIGNATURE_REQUIRED' && (
                 <div className="rounded border border-white/10 bg-black/25 p-3 text-[11px] text-slate-200">
-                  <p className="mb-2 font-semibold text-white/90">Required signers (demo)</p>
+                  <p className="mb-2 font-semibold text-white/90">Required signers</p>
                   {signatureApprovalRows.length === 0 ? (
                     <p className="text-white/55">No signature requests are registered for this task yet. Use the action button to request signatures; assigned approvers will appear here with status.</p>
                   ) : (
@@ -2080,7 +2093,7 @@ function InlineTaskActionPanel({
                     </>
                   )}
                   <p className="mt-2 text-white/45">
-                    Reassignment / escalation: use Approvals for this event or create a new signature request from this drawer after updating assignees in your org workflow (demo).
+                    Reassignment / escalation: use Approvals for this event or create a new signature request from this drawer after updating assignees in your org workflow.
                   </p>
                 </div>
               )}
@@ -2146,7 +2159,7 @@ function InlineTaskActionPanel({
                   </ul>
                   <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-white/45">Signatures / signed artifacts</div>
                   <ul className="space-y-1">
-                    {signingArtifactRows.length === 0 ? <li className="text-white/45">None yet (complete signing to generate signed HTML/PDF-class artifacts in demo-local).</li> : signingArtifactRows.map(doc => (
+                    {signingArtifactRows.length === 0 ? <li className="text-white/45">None yet (complete signing to generate signed HTML/PDF-class artifacts).</li> : signingArtifactRows.map(doc => (
                       <li key={doc.id} className="flex flex-wrap items-center gap-2 text-[10px] text-white/80">
                         <span>{doc.artifactType || doc.kind}</span>
                         <span className="truncate">{doc.name}</span>
@@ -2169,12 +2182,12 @@ function InlineTaskActionPanel({
                   </ul>
                   {requirement.type === 'CERTIFICATION_REQUIRED' && (
                     <p className="mt-3 border-t border-white/10 pt-2 text-white/55">
-                      Attestation (summary): By certifying, you confirm the listed package items match the regulatory workflow for this task in the demo environment. This is not represented as CMS-grade attestation while evidence bytes are demo-local only.
+                      Attestation (summary): By certifying, you confirm the listed package items match the regulatory workflow for this task. This is not represented as CMS-grade attestation while evidence bytes require backend persistence.
                     </p>
                   )}
                   {requirement.type === 'LOCK_REQUIRED' && (
                     <p className="mt-3 border-t border-white/10 pt-2 text-amber-100/80">
-                      Lock makes the current evidence set immutable in the CES demo store. Review each linked artifact above before confirming lock.
+                      Lock makes the current evidence set immutable in the CES store. Review each linked artifact above before confirming lock.
                     </p>
                   )}
                 </div>

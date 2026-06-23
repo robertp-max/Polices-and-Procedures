@@ -19,6 +19,17 @@ export class DemoAuthStack extends Stack {
 
     const autoApprovedDomain = this.node.tryGetContext('autoApprovedDomain') || process.env.AUTO_APPROVED_DOMAIN || 'careindeed.com';
     const autoApprovedEmails = this.node.tryGetContext('autoApprovedEmails') || process.env.AUTO_APPROVED_EMAILS || '';
+    const defaultProtectedAuthEmails = [
+      'robertp@careindeed.com',
+      'tjpadilla@careindeed.com',
+      'tj@careindeed.com',
+      'maritesa@careindeed.com',
+      'marites@careindeed.com',
+      'deeb@careindeed.com',
+      'dee@careindeed.com',
+    ].join(',');
+    const protectedAuthEmails = this.node.tryGetContext('protectedAuthEmails') || process.env.PROTECTED_AUTH_EMAILS || defaultProtectedAuthEmails;
+    const adminManualPasswordEmails = this.node.tryGetContext('adminManualPasswordEmails') || process.env.ADMIN_MANUAL_PASSWORD_EMAILS || 'robertp@careindeed.com,maritesa@careindeed.com,marites@careindeed.com';
     const appBaseUrl = this.node.tryGetContext('appBaseUrl') || process.env.APP_BASE_URL || 'http://localhost:5173';
     const allowedOriginsRaw = this.node.tryGetContext('allowedOrigins') || process.env.ALLOWED_ORIGINS;
     const allowedOrigins = Array.from(new Set((typeof allowedOriginsRaw === 'string' && allowedOriginsRaw.trim().length > 0
@@ -84,6 +95,8 @@ export class DemoAuthStack extends Stack {
       SETUP_TOKEN_TTL_MINUTES: '60',
       AUTO_APPROVED_DOMAIN: autoApprovedDomain,
       AUTO_APPROVED_EMAILS: autoApprovedEmails,
+      PROTECTED_AUTH_EMAILS: protectedAuthEmails,
+      ADMIN_MANUAL_PASSWORD_EMAILS: adminManualPasswordEmails,
       DEMO_AUTH_DEBUG: demoAuthDebug,
     };
 
@@ -91,13 +104,43 @@ export class DemoAuthStack extends Stack {
     const setupFn = this.createHandler('SetupAccountHandler', 'setupAccount.ts', lambdaEnv);
     const resendFn = this.createHandler('ResendSetupLinkHandler', 'resendSetupLink.ts', lambdaEnv);
     const loginFn = this.createHandler('LoginHandler', 'login.ts', lambdaEnv);
+    const respondChallengeFn = this.createHandler('RespondChallengeHandler', 'respondChallenge.ts', lambdaEnv);
     const refreshFn = this.createHandler('RefreshHandler', 'refresh.ts', lambdaEnv);
     const meFn = this.createHandler('MeHandler', 'me.ts', lambdaEnv);
     const logoutFn = this.createHandler('LogoutHandler', 'logout.ts', lambdaEnv);
     const forgotPasswordFn = this.createHandler('ForgotPasswordHandler', 'forgotPassword.ts', lambdaEnv);
     const resetPasswordFn = this.createHandler('ResetPasswordHandler', 'resetPassword.ts', lambdaEnv);
+    const manualPasswordResetFn = this.createHandler('ManualPasswordResetHandler', 'manualPasswordReset.ts', lambdaEnv);
+    const grantAccessFn = this.createHandler('GrantAccessHandler', 'grantAccess.ts', lambdaEnv);
+    const pageAccessMeFn = this.createHandler('PageAccessMeHandler', 'pageAccessMe.ts', lambdaEnv);
+    const pageAccessAdminGetFn = this.createHandler('PageAccessAdminGetHandler', 'pageAccessAdminGet.ts', lambdaEnv);
+    const pageAccessAdminPutFn = this.createHandler('PageAccessAdminPutHandler', 'pageAccessAdminPut.ts', lambdaEnv);
+    const identitySyncMeFn = this.createHandler('IdentitySyncMeHandler', 'identitySyncMe.ts', lambdaEnv);
+    const identityRegistryAdminGetFn = this.createHandler('IdentityRegistryAdminGetHandler', 'identityRegistryAdminGet.ts', lambdaEnv);
+    const identityRegistryAdminPutFn = this.createHandler('IdentityRegistryAdminPutHandler', 'identityRegistryAdminPut.ts', lambdaEnv);
+    const identityRegistrySyncAuthenticatedUsersFn = this.createHandler('IdentityRegistrySyncAuthenticatedUsersHandler', 'identityRegistrySyncAuthenticatedUsers.ts', lambdaEnv);
 
-    const handlers = [registerFn, setupFn, resendFn, loginFn, refreshFn, meFn, logoutFn, forgotPasswordFn, resetPasswordFn];
+    const handlers = [
+      registerFn,
+      setupFn,
+      resendFn,
+      loginFn,
+      respondChallengeFn,
+      refreshFn,
+      meFn,
+      logoutFn,
+      forgotPasswordFn,
+      resetPasswordFn,
+      manualPasswordResetFn,
+      grantAccessFn,
+      pageAccessMeFn,
+      pageAccessAdminGetFn,
+      pageAccessAdminPutFn,
+      identitySyncMeFn,
+      identityRegistryAdminGetFn,
+      identityRegistryAdminPutFn,
+      identityRegistrySyncAuthenticatedUsersFn,
+    ];
 
     for (const fn of handlers) {
       registrationTable.grantReadWriteData(fn);
@@ -109,6 +152,7 @@ export class DemoAuthStack extends Stack {
           'cognito-idp:AdminUpdateUserAttributes',
           'cognito-idp:AdminEnableUser',
           'cognito-idp:InitiateAuth',
+          'cognito-idp:RespondToAuthChallenge',
           'cognito-idp:GetUser',
           'cognito-idp:GlobalSignOut',
           'cognito-idp:ForgotPassword',
@@ -130,6 +174,7 @@ export class DemoAuthStack extends Stack {
         allowMethods: [
           apigwv2.CorsHttpMethod.GET,
           apigwv2.CorsHttpMethod.POST,
+          apigwv2.CorsHttpMethod.PUT,
           apigwv2.CorsHttpMethod.OPTIONS,
         ],
         allowHeaders: ['content-type', 'authorization'],
@@ -158,6 +203,11 @@ export class DemoAuthStack extends Stack {
       integration: new integrations.HttpLambdaIntegration('LoginIntegration', loginFn),
     });
     httpApi.addRoutes({
+      path: '/auth/respond-challenge',
+      methods: [apigwv2.HttpMethod.POST],
+      integration: new integrations.HttpLambdaIntegration('RespondChallengeIntegration', respondChallengeFn),
+    });
+    httpApi.addRoutes({
       path: '/auth/refresh',
       methods: [apigwv2.HttpMethod.POST],
       integration: new integrations.HttpLambdaIntegration('RefreshIntegration', refreshFn),
@@ -181,6 +231,51 @@ export class DemoAuthStack extends Stack {
       path: '/auth/reset-password',
       methods: [apigwv2.HttpMethod.POST],
       integration: new integrations.HttpLambdaIntegration('ResetPasswordIntegration', resetPasswordFn),
+    });
+    httpApi.addRoutes({
+      path: '/auth/admin/manual-password-reset',
+      methods: [apigwv2.HttpMethod.POST],
+      integration: new integrations.HttpLambdaIntegration('ManualPasswordResetIntegration', manualPasswordResetFn),
+    });
+    httpApi.addRoutes({
+      path: '/auth/admin/grant-access',
+      methods: [apigwv2.HttpMethod.POST],
+      integration: new integrations.HttpLambdaIntegration('GrantAccessIntegration', grantAccessFn),
+    });
+    httpApi.addRoutes({
+      path: '/auth/page-access/me',
+      methods: [apigwv2.HttpMethod.GET],
+      integration: new integrations.HttpLambdaIntegration('PageAccessMeIntegration', pageAccessMeFn),
+    });
+    httpApi.addRoutes({
+      path: '/auth/admin/page-access',
+      methods: [apigwv2.HttpMethod.GET],
+      integration: new integrations.HttpLambdaIntegration('PageAccessAdminGetIntegration', pageAccessAdminGetFn),
+    });
+    httpApi.addRoutes({
+      path: '/auth/admin/page-access',
+      methods: [apigwv2.HttpMethod.PUT],
+      integration: new integrations.HttpLambdaIntegration('PageAccessAdminPutIntegration', pageAccessAdminPutFn),
+    });
+    httpApi.addRoutes({
+      path: '/auth/identity-sync/me',
+      methods: [apigwv2.HttpMethod.POST],
+      integration: new integrations.HttpLambdaIntegration('IdentitySyncMeIntegration', identitySyncMeFn),
+    });
+    httpApi.addRoutes({
+      path: '/auth/admin/identity-registry',
+      methods: [apigwv2.HttpMethod.GET],
+      integration: new integrations.HttpLambdaIntegration('IdentityRegistryAdminGetIntegration', identityRegistryAdminGetFn),
+    });
+    httpApi.addRoutes({
+      path: '/auth/admin/identity-registry',
+      methods: [apigwv2.HttpMethod.PUT],
+      integration: new integrations.HttpLambdaIntegration('IdentityRegistryAdminPutIntegration', identityRegistryAdminPutFn),
+    });
+    httpApi.addRoutes({
+      path: '/auth/admin/identity-registry/sync-authenticated-users',
+      methods: [apigwv2.HttpMethod.POST],
+      integration: new integrations.HttpLambdaIntegration('IdentityRegistrySyncAuthenticatedUsersIntegration', identityRegistrySyncAuthenticatedUsersFn),
     });
 
     const seedUserCall = new cr.AwsCustomResource(this, 'SeedSuperAdminUser', {

@@ -74,6 +74,46 @@ function instanceFromTemplate(template: EventTemplate, date: Date): RegulatoryEv
       : base.title,
   };
 
+  // Set reporting scope for QAPI alignment (least invasive)
+  const dec = decorated as RegulatoryEvent & {
+    scopeType?: string;
+    reportingPeriodStart?: string;
+    reportingPeriodEnd?: string;
+    executionWindowStart?: string;
+    executionWindowEnd?: string;
+    scheduledDate?: string;
+    preferredScheduleRule?: string;
+    scopeLabel?: string;
+  };
+
+  if (template.id === 'TPL-QA-MONTHLY-QAPI') {
+    const d = new Date(iso);
+    const prevMonth = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+    const prevEnd = new Date(d.getFullYear(), d.getMonth(), 0);
+    dec.scopeType = 'previous_calendar_month';
+    dec.reportingPeriodStart = toISO(prevMonth);
+    dec.reportingPeriodEnd = toISO(prevEnd);
+    dec.executionWindowStart = iso;
+    dec.executionWindowEnd = iso;
+    dec.scheduledDate = iso;
+    dec.preferredScheduleRule = template.preferredScheduleRule || 'first Friday of the month at 10:00 AM';
+    dec.scopeLabel = `Previous calendar month (${toISO(prevMonth)} to ${toISO(prevEnd)})`;
+  } else if (template.id === 'TPL-GV-QUARTERLY-GB') {
+    const d = new Date(iso);
+    const q = Math.floor((d.getMonth()) / 3);
+    const prevQStartMonth = (q * 3) - 3;
+    const prevStart = new Date(d.getFullYear() - (prevQStartMonth < 0 ? 1 : 0), (prevQStartMonth + 12) % 12, 1);
+    const prevEnd = new Date(prevStart.getFullYear(), prevStart.getMonth() + 3, 0);
+    dec.scopeType = 'previous_calendar_quarter';
+    dec.reportingPeriodStart = toISO(prevStart);
+    dec.reportingPeriodEnd = toISO(prevEnd);
+    dec.executionWindowStart = iso;
+    dec.executionWindowEnd = iso;
+    dec.scheduledDate = iso;
+    dec.preferredScheduleRule = template.preferredScheduleRule || 'second Friday of Q anchor months at 10:00 AM';
+    dec.scopeLabel = `Previous calendar quarter (${toISO(prevStart)} to ${toISO(prevEnd)})`;
+  }
+
   // Stash template id for downstream dependency resolution.
   (decorated as RegulatoryEvent & { _templateId?: string })._templateId = template.id;
 

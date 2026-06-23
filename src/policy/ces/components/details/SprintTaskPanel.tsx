@@ -26,6 +26,7 @@ import type { MergedExecutionUnit } from '@/policy/compliance-execution/complian
 import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
 import { buildEventInstanceIndex } from '@/policy/compliance-execution/eventInstanceId';
 import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
+import { useShellStore } from '@/policy/stores/uiStore';
 
 export interface SprintTaskPanelProps {
   /** Selected sprint task (mandated event) — same selection model as
@@ -457,17 +458,23 @@ function FormMaximizedModal({
   onMinimize: () => void;
   onClose: () => void;
 }) {
+  const isLight = useShellStore(s => s.theme === 'care-indeed-light');
+  const backdropBg = isLight ? 'rgba(248,250,248,0.92)' : '#0b0f15';
+  const panelBg = isLight ? '#FFFFFF' : '#0f131a';
+  const panelShadow = isLight ? '0 18px 48px rgba(31,28,27,0.10)' : '0 32px 90px rgba(0,0,0,0.65)';
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label="Form workspace"
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 backdrop-blur-sm v3-backdrop"
+      className="fixed inset-0 z-[120] flex items-center justify-center backdrop-blur-md v3-backdrop"
+      style={{ background: backdropBg }}
       onClick={onMinimize}
       onKeyDown={(e) => { if (e.key === 'Escape') onMinimize(); }}
     >
       <div
-        className="relative w-[80vw] max-w-[1200px] h-[88vh] rounded-xl border border-[var(--v3-border-subtle)] overflow-hidden flex flex-col v3-modal-panel"
+        className="relative w-[80vw] max-w-[1200px] h-[88vh] rounded-2xl border border-[var(--v3-border-subtle)] overflow-hidden flex flex-col v3-modal-panel"
+        style={{ background: panelBg, boxShadow: panelShadow }}
         onClick={(e) => e.stopPropagation()}
       >
         <header className="px-5 py-3 flex items-center justify-between gap-3 border-b border-[var(--v3-border-subtle)] bg-transparent">

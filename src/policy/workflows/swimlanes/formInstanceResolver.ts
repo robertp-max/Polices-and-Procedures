@@ -2,6 +2,8 @@ import { FORM_TITLES } from '@/policy/data/formTitles.generated';
 import { formatCesFormInstanceId } from '@/policy/compliance-execution/cesFormInstanceId';
 import type { SwimlaneFormInstance, SwimlaneMode, SwimlaneSupportingDocumentationTask, SwimlaneStatus } from './types';
 import { buildSwimlaneSupportTaskId } from './eventSwimlaneIdentity';
+import { useRegulatoryExecutionStore } from '@/policy/stores/regulatoryExecutionStore';
+import { getEventById } from './swimlaneRegistry';
 
 type SequenceMap = Map<string, number>;
 type CanonicalFormInstanceMap = Map<string, string>;
@@ -115,12 +117,30 @@ export function resolveSwimlaneFormInstances({
 
   for (const formId of formIds) {
     const formInstanceId = stableFormInstanceId(mode, eventId, taskId, formId, sequenceByEventForm, canonicalFormInstanceIds);
+    let initialStatus: SwimlaneStatus = formInstanceId ? 'pending' : mode === 'event_execution' ? 'blocked' : 'pending';
+    let isMissing = mode === 'event_execution' && !formInstanceId;
+    // Use actual live data from store when event known (fixes status mismatch between calendar & swimlane)
+    if (eventId && mode === 'event_execution') {
+      try {
+        const exec = useRegulatoryExecutionStore.getState();
+        const ev = getEventById(eventId);
+        if (ev && exec.effectiveFormStatus) {
+          const live = exec.effectiveFormStatus(ev, formId);
+          if (live) {
+            initialStatus = live === 'complete' ? 'complete' : live === 'in-progress' ? 'in_progress' : live === 'missing' ? 'blocked' : 'needs_evidence';
+            isMissing = live === 'missing';
+          }
+        }
+      } catch {
+        // Ignore if store state retrieval fails
+      }
+    }
     formInstancesById.set(formId, {
       formId,
       formTitle: formTitle(formId),
       formInstanceId,
-      status: formInstanceId ? 'pending' : mode === 'event_execution' ? 'blocked' : 'pending',
-      missing: mode === 'event_execution' && !formInstanceId,
+      status: initialStatus,
+      missing: isMissing,
       requiredAdditionalDocumentation: false,
       supportingDocumentation: [],
     });

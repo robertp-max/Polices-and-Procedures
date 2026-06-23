@@ -22,6 +22,7 @@ import { useAutogenStore } from '@/policy/stores/autogenStore';
 import {
   useRegulatoryExecutionStore,
 } from '@/policy/stores/regulatoryExecutionStore';
+import { toCaliforniaISODate } from '@/policy/utils/californiaTime';
 import {
   classifyAuditState, buildCompletionChecklist,
   type AuditState,
@@ -262,7 +263,7 @@ export function answerReadinessQuery(
   }
 
   if (wantsSchedule) {
-    const rows = listScheduledInstances({ today, rangeStart: today.toISOString().slice(0, 10) }).slice(0, 30);
+    const rows = listScheduledInstances({ today, rangeStart: toCaliforniaISODate(today) }).slice(0, 30);
     return {
       kind: 'schedule',
       entries: rows,

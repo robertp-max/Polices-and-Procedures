@@ -472,6 +472,15 @@ export function buildCompletionChecklist(
   const evidenceList = eventAliases
     .flatMap(eventId => store.evidence[eventId] || [])
     .filter((item, idx, arr) => arr.findIndex(candidate => candidate.id === item.id) === idx);
+
+  // For CES eCign signed_package artifacts, require real Drive metadata to count as complete evidence (no local-only success).
+  const hasRealDriveMetadata = (item: { driveFileId?: string; driveUploadStatus?: string; webViewLink?: string }) => !!(item.driveFileId || item.driveUploadStatus === 'uploaded' || item.webViewLink);
+  const realEvidenceForCompletion = evidenceList.filter(item => {
+    const at = item.artifactType || item.kind;
+    const isSignedCanonical = at === 'signed_package' || at === 'signed_form_instance' || at === 'signed_certificate';
+    if (isSignedCanonical) return hasRealDriveMetadata(item);
+    return true;
+  });
   const approvalsForEvent = store.approvals.filter(a => eventAliases.includes(a.eventId));
   const requiredApprovalRules = (event.approvals ?? []).filter(r => r.required);
   const approvedRequired = requiredApprovalRules.filter(r =>
@@ -517,10 +526,10 @@ export function buildCompletionChecklist(
     {
       id: 'evidence',
       label: 'Evidence artifacts present',
-      passed: evidenceList.length > 0 || (event.requiredForms.length === 0 && !event.minutes),
-      detail: evidenceList.length === 0
-        ? 'No evidence uploaded'
-        : `${evidenceList.length} artifact${evidenceList.length === 1 ? '' : 's'}`,
+      passed: realEvidenceForCompletion.length > 0 || (event.requiredForms.length === 0 && !event.minutes),
+      detail: realEvidenceForCompletion.length === 0
+        ? (evidenceList.length > 0 ? 'Signed evidence requires Google Drive persistence' : 'No evidence uploaded')
+        : `${realEvidenceForCompletion.length} artifact${realEvidenceForCompletion.length === 1 ? '' : 's'}`,
     },
     {
       id: 'sla',

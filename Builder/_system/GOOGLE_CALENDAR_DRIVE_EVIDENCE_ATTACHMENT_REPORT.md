@@ -54,7 +54,7 @@ A complete **backend-mediated** Google Calendar integration already exists. The 
 
 **Drive reuses the same service-account key** — no second auth path, no OAuth, no `VITE_GOOGLE_CLIENT_ID`. The validator statically asserts `keyFile: env.credentialsPath` is reused and that no `OAuth2`/`getToken`/`VITE_GOOGLE_CLIENT_ID` appears in the Drive client.
 
-> **Action required for live use:** the service account must be added to Shared Drive `0AFWjpId3CYL3Uk9PVA` as **Content manager** (or equivalent) so it can create folders and upload files.
+> **Action required for live use:** the service account must be added to Shared Drive `0AMhwVb2RmU-fUk9PVA` as **Content manager** (or equivalent) so it can create folders and upload files.
 
 ## 5. Drive API integration added
 
@@ -72,15 +72,15 @@ A complete **backend-mediated** Google Calendar integration already exists. The 
 ```env
 GOOGLE_EVIDENCE_STORAGE_PROVIDER=google_calendar_drive
 GOOGLE_CALENDAR_EVIDENCE_ENABLED=true
-GOOGLE_DRIVE_EVIDENCE_SHARED_DRIVE_ID=0AFWjpId3CYL3Uk9PVA
-GOOGLE_DRIVE_EVIDENCE_ROOT_FOLDER_ID=0AFWjpId3CYL3Uk9PVA
+GOOGLE_DRIVE_EVIDENCE_SHARED_DRIVE_ID=0AMhwVb2RmU-fUk9PVA
+GOOGLE_DRIVE_EVIDENCE_ROOT_FOLDER_ID=0AMhwVb2RmU-fUk9PVA
 ```
 
 Exposed on `env` as `evidenceStorageProvider`, `calendarEvidenceEnabled`, `driveEvidenceSharedDriveId`, `driveEvidenceRootFolderId`. Existing local-auth keys (`VITE_AUTH_API_BASE_URL`, `VITE_LOCAL_DEMO_AUTH_BYPASS`) and `GOOGLE_CALENDAR_ID` / `GOOGLE_APPLICATION_CREDENTIALS` are preserved unchanged.
 
 ## 7. Shared Drive / root ID used
 
-`0AFWjpId3CYL3Uk9PVA` for both the Shared Drive ID and the evidence root folder ID (per brief). `driveEvidenceRootFolderId` falls back to the Shared Drive ID when unset.
+`0AMhwVb2RmU-fUk9PVA` for both the Shared Drive ID and the evidence root folder ID (per current CES evidence configuration). `driveEvidenceRootFolderId` falls back to the Shared Drive ID when unset.
 
 ## 8. Event-driven folder creation behavior
 
