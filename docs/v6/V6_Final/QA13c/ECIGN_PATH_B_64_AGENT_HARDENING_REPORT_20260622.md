@@ -50,7 +50,7 @@ Agents 01-04: Git/diff/file-scope verification
 Agents 05-08: Encoding/mojibake/spacing/Markdown formatting
 Agents 09-16: Signed-artifact immutability and hash rule
 Agents 17-22: Drive/Evidence Center parity and source-of-truth logic (multiple replacements PASS)
-Agents 23-28: Multi-signer state machine and role/tier validation
+Agents 23-28: Multi-signer state machine and role/tier validation (replacement PASS)
 Agents 29-34: Failure handling and idempotency (latest replacement PASS)
 Agents 35-40: Security/compliance/PHI/logging/authorization
 Agents 41-46: QA gates and negative tests
@@ -58,6 +58,28 @@ Agents 47-52: Data model field completeness
 Agents 53-56: Implementation phasing and approval gates
 Agents 57-60: Survey defensibility and audit traceability
 Agents 61-64: Final adversarial review trying to find merge blockers
+
+**Agent 23 (replacement) — Multi-signer state machine and role/tier validation (completed):**
+**1. Agent number and role**  
+Agent 23: Multi-signer state machine and role/tier validation (replacement) in GROK 64-AGENT ZERO-TOLERANCE DOCUMENTATION HARDENING MODE.
+
+**2. PASS**
+
+**3. Exact lines reviewed**  
+Primary plan full + targeted (§8 196-250 full; cross §2/§4/§7/§9/§10/§11). QA13c artifacts read-only.
+
+**4. Findings**  
+- States correct (incl. final_validated_by_tier_5, failure states).
+- Allowed happy path: explicit numbered 1-7 with gates (bytes per §2, role/tier validation via SIGNER_HIERARCHY_RULES + permissionSatisfies, new artifactVersionId + previous link, Tier 5 before locked after parity).
+- Skippable ONLY per resolved SIGNER_HIERARCHY_RULE (incl. governingBodyRequired); never past required; SignatureSequence 1-based strictly increasing.
+- Failure/recovery: idempotent same artifactVersionId, resume last valid prior only, never fabricate higher, preserve prior tiers + full audit with no gaps.
+- Forbidden: exhaustive list covering every required case (mutate/replace/regen bytes FORBIDDEN, lower tier on higher, skipping required, locked terminal, backward, advance before signed, stale artifactVersionId, certify w/o parity/hash/audit, incomplete audit/chain break, duplicate, role mismatch, post-sig regen, overwriting, etc.).
+- Role/tier integration: snapshot at prepared_for_signature, MUST use SIGNER_HIERARCHY_RULES + ECIgnPermissionRole + permissionSatisfies server-side before any immutable append or bytes persist.
+- Cross-refs strong to §2 (bytes first), §7 (sequence/immutability/append-only chain), §11 (negative tests for all forbidden/stale/lower-tier/regen/parity failures).
+- Prior gaps (incomplete forbidden, weak skippable, missing snapshot/ref, recovery language) fully addressed by patches. No critical under-specification remains. §8 + supporting sections prevent all bad transitions.
+
+**5. Required fixes, if any**  
+None. Current hardened §8 meets zero-tolerance spec completely.
 
 ## 6. 64-Agent Findings Summary
 
