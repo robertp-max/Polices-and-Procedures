@@ -3354,6 +3354,7 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
 }
 
 function BoardScreen() {
+  const navigate = useNavigate();
   return (
     <ScreenStack metrics={boardMetrics}>
       <section className="grid gap-lg">
@@ -3379,7 +3380,11 @@ function BoardScreen() {
         <div className="overflow-x-hidden pb-sm">
           <div className="grid grid-cols-1 gap-md tablet-l:grid-cols-2 desktop:grid-cols-7">
             {boardLanes.map((lane) => (
-              <BoardLane key={lane.title} lane={lane} />
+              <BoardLane key={lane.title} lane={lane} onCardClick={(card) => {
+                if (card.awaitingType === 'evidence') navigate('/evidence');
+                else if (card.awaitingType === 'action' || card.id.includes('EVT')) navigate('/workflows');
+                else navigate('/evidence');
+              }} />
             ))}
           </div>
         </div>
