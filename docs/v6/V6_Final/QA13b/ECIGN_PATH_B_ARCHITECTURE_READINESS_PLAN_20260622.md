@@ -326,7 +326,7 @@ Concrete checklist. ALL GATES MUST PASS (mandatory, zero-tolerance, blocking wit
 - **Phase 5 -- recovery and retention** -- idempotent failure recovery + configurable retention policy.
 - **Phase 6 -- full QA/UAT** -- all §11 gates + survey packet export; sign-off before any baseline merge.
 
-Each phase is independently reviewable; no phase may regress the signed-artifact rule.
+Each phase is independently reviewable; no phase is permitted to regress the signed-artifact rule.
 
 ---
 

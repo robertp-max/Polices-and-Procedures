@@ -1,4 +1,14 @@
-﻿   1: # eCIgn Path B â€” Architecture & Readiness Plan
+﻿# ============================================================
+# HISTORICAL PRE-64-AGENT ZERO-TOLERANCE HARDENING SNAPSHOT ONLY
+# ============================================================
+# This file contains pre-hardening text, mojibake, and outdated
+# versions of §2, §11, etc. It is retained purely for diff/comparison.
+# DO NOT USE AS CURRENT AUTHORITATIVE SOURCE.
+# All review and implementation must use the final hardened:
+#   docs/v6/V6_Final/QA13b/ECIGN_PATH_B_ARCHITECTURE_READINESS_PLAN_20260622.md
+# ============================================================
+
+   1: # eCIgn Path B — Architecture & Readiness Plan (historical snapshot)
    2: 
    3: Documentation-only architecture/readiness plan for **eCIgn Path B**, built around the
    4: signed-PDF artifact evidence rule. **No code was written or modified to produce this plan.**
