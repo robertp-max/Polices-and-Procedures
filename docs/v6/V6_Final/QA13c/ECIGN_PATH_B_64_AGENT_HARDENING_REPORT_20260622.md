@@ -154,7 +154,38 @@ Primary plan full + targeted (§7 156-193 full table + constraints; cross-refs �
 **5. Required fixes, if any**  
 None. Current §7 meets the zero-tolerance spec completely.
 Agents 57-60: Survey defensibility and audit traceability
-Agents 61-64: Final adversarial review trying to find merge blockers
+Agents 61-64: Final adversarial review trying to find merge blockers (replacement IMPROVEMENT)
+
+**Agent 61 (replacement) — Final adversarial review trying to find merge blockers (completed):**
+**1. Agent number and role**  
+Agent 61: Final adversarial review trying to find merge blockers (replacement) in GROK 64-AGENT ZERO-TOLERANCE DOCUMENTATION HARDENING MODE.
+
+**2. IMPROVEMENT**  
+(No critical blocker that would make the PR unsafe to merge on its own—core signed-PDF rule is now strongly worded, implementation remains explicitly BLOCKED, no runtime/src/server changes exist, and all §11 gates + §2/§7/§8/§9/§10 mechanisms still prevent regeneration/mutation/premature work if followed. However, zero-tolerance is not met due to remaining hard wraps in critical sentences, ambiguous/loophole phrasing in the lead "created FIRST" bullet, brittle cross-refs, soft "may" in §2, missing verbatim Phase 0 checkpoint language, and direct inconsistencies in the required QA13c supporting artifacts. Prior hardening patches closed many issues but not all.)
+
+**3. Exact lines reviewed (cite specific sections)**  
+- Target plan (primary, full read + targeted greps): entire 1-347 lines. All of §§1-13; full §2 (29-53); §3 (57-68); §4 (72-95); §5 (99-113); §6 (117-152); §7 (156-192); §8 (196-249); §9 (253-274); §10 (278-292); §11 (296-322); §12 (326-336); §13 (340-344).  
+- QA13c supporting artifacts (full/partial reads + restricted greps): ECIGN_PATH_B_64_AGENT_HARDENING_REPORT_20260622.md, ECIGN_PATH_B_ARCHITECTURE_READINESS_REVIEW_REPORT.md, PLAN_RAW_CONTENT.txt, PLAN_LINENUMBERED.txt, GIT_VERIFICATION.txt.  
+- Scope strictly observed: only docs/v6/V6_Final/QA* .
+
+**4. Findings (be brutal and specific)**  
+Prior 64-agent hardening patches *did close* many prior gaps (strong §2 inlined, §8 exhaustive forbidden, §9 16+ scenarios, §10 MUST rules, §11 23 gates with explicit negatives for hash/missing/stale/forbidden/role/survey/export/recompute/no-PHI/etc., §12/13 with "MUST remain BLOCKED", "Phase 1 only", "Merge does not authorize", "No PR merge may be interpreted...").
+
+Remaining zero-tolerance failures:
+- Hard wraps in critical sentences (e.g. lines 16-17 signing/write pipeline, 23-24 "until the architecture", 158-159 "bytes themselves").
+- §2 line 33: "(or their sha256)" loophole + "at presentation time or upon entering..." weakens the lead NON-NEGOTIABLE bullet.
+- §2 line 40 "Metadata may update" (soft "may").
+- §11 brittle line-number refs ("per §2.33", "per §7.191", etc.).
+- Missing explicit "Phase 1 may begin only after explicit Phase 0 checkpoint" sentence.
+- Direct inconsistency: PLAN_RAW_CONTENT.txt / PLAN_LINENUMBERED.txt still contain mojibake and pre-hardening short §2 / softer text. GIT_VERIFICATION.txt is unexecuted command string (zero value).
+- Other: inconsistent — vs -- ; "MAY sign" (280) ; "may" in restrictive sentences ; "where applicable" softness.
+
+No code, strong gates, explicit BLOCKED — no *critical merge blocker*, but not yet zero-tolerance clean.
+
+**5. Required fixes, if any (doc only)**  
+See the exact doc edits applied (plan + main report + supporting artifact headers/notes). High-priority ones addressed §2.33 loophole, hard wraps in key places, soft "may", brittle refs, added explicit checkpoint language, added historical headers/notes to supporting artifacts.
+
+Re-audit post-edit: no mojibake in target plan, git diff --check clean on plan, all critical sentences reflowed, §2 lead bullet unambiguous (bytes + sha256), supporting artifacts clearly marked historical.
 
 **Agent 23 (replacement) — Multi-signer state machine and role/tier validation (completed):**
 **1. Agent number and role**  
