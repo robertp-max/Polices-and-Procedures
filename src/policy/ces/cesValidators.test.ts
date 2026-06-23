@@ -1,0 +1,1 @@
+﻿import assert from "node:assert/strict"; import { describe, it } from "node:test"; import { validateBoardLanes } from "./cesValidators"; describe("CES validators", () => { it("board", () => { assert.equal(validateBoardLanes([{}]).ok, true); assert.equal(validateBoardLanes([]).ok, false); }); });
