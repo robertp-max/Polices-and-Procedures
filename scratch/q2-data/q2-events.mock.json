@@ -1,0 +1,968 @@
+[
+  {
+    "eventId": "MOCK-EVT-Q2-0001",
+    "eventType": "soc_audit",
+    "eventDate": "2026-04-30",
+    "clientIds": [
+      "MOCK-PT-Q2-0001",
+      "MOCK-PT-Q2-0002",
+      "MOCK-PT-Q2-0004",
+      "MOCK-PT-Q2-0008"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0012"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0002",
+      "MOCK-DOC-Q2-0003",
+      "MOCK-DOC-Q2-0017",
+      "MOCK-DOC-Q2-0022",
+      "MOCK-DOC-Q2-0051"
+    ],
+    "assignedReviewerRole": "QAPI Coordinator",
+    "requiredEvidence": [
+      "SOC OASIS",
+      "F2F encounter",
+      "comprehensive assessment",
+      "physician orders",
+      "consent forms"
+    ],
+    "expectedOutcome": "multiple_findings",
+    "severity": "moderate",
+    "messyFlags": [
+      "late_documentation",
+      "expired_cpr_clinician",
+      "pending_soc_credential_concern"
+    ],
+    "expectedFindings": [
+      "PT-0002: SOC OASIS signed 2 days late by Mulholland",
+      "PT-0002: Mulholland has expired CPR (11/2025)",
+      "PT-0004: SOC OASIS signed 2 days late by Linquist (lateness pattern)",
+      "PT-0008: Pending SOC assigned to clinician with expired CPR",
+      "PT-0001: Clean SOC"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0002",
+    "eventType": "poc_audit",
+    "eventDate": "2026-05-15",
+    "clientIds": [
+      "MOCK-PT-Q2-0001",
+      "MOCK-PT-Q2-0002",
+      "MOCK-PT-Q2-0023",
+      "MOCK-PT-Q2-0033"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0012"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0007",
+      "MOCK-DOC-Q2-0018",
+      "MOCK-DOC-Q2-0031",
+      "MOCK-DOC-Q2-0034",
+      "MOCK-DOC-Q2-0035"
+    ],
+    "assignedReviewerRole": "Clinical Manager",
+    "requiredEvidence": [
+      "plan of care / 485",
+      "physician signature",
+      "care coordination notes"
+    ],
+    "expectedOutcome": "multiple_findings",
+    "severity": "high",
+    "messyFlags": [
+      "missing_physician_signature",
+      "poc_not_updated",
+      "duplicate_conflicting_versions"
+    ],
+    "expectedFindings": [
+      "PT-0002: POC MISSING PHYSICIAN SIGNATURE",
+      "PT-0023: POC not updated after status change to therapy re-eval pending",
+      "PT-0033: Duplicate/conflicting POC versions (v1.0 and v2.0 both active, different SN frequencies)",
+      "PT-0001: Clean POC"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0003",
+    "eventType": "medication_reconciliation_audit",
+    "eventDate": "2026-05-20",
+    "clientIds": [
+      "MOCK-PT-Q2-0001",
+      "MOCK-PT-Q2-0013",
+      "MOCK-PT-Q2-0047"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0012"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0006",
+      "MOCK-DOC-Q2-0028",
+      "MOCK-DOC-Q2-0041"
+    ],
+    "assignedReviewerRole": "RN Case Manager",
+    "requiredEvidence": [
+      "medication profile",
+      "medication reconciliation",
+      "physician notification if discrepancy"
+    ],
+    "expectedOutcome": "multiple_findings",
+    "severity": "high",
+    "messyFlags": [
+      "missing_medication_reconciliation",
+      "medication_discrepancy"
+    ],
+    "expectedFindings": [
+      "PT-0013: NO medication reconciliation document found despite 15 meds on profile",
+      "PT-0047: Medication discrepancy — OTC supplement interacting with Warfarin, physician NOT notified",
+      "PT-0001: Clean med recon"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0004",
+    "eventType": "aide_supervision_audit",
+    "eventDate": "2026-06-01",
+    "clientIds": [
+      "MOCK-PT-Q2-0007",
+      "MOCK-PT-Q2-0016",
+      "MOCK-PT-Q2-0041"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0011",
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0003"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0025",
+      "MOCK-DOC-Q2-0026",
+      "MOCK-DOC-Q2-0029",
+      "MOCK-DOC-Q2-0049"
+    ],
+    "assignedReviewerRole": "DON",
+    "requiredEvidence": [
+      "aide supervisory visit",
+      "HHA care plan",
+      "HHA visit notes"
+    ],
+    "expectedOutcome": "multiple_findings",
+    "severity": "high",
+    "messyFlags": [
+      "hha_supervision_overdue",
+      "hha_no_supervisor",
+      "aide_supervision_late"
+    ],
+    "expectedFindings": [
+      "PT-0007: HHA Pembroke has NO assigned supervisor in system",
+      "PT-0007: Aide supervisory visit completed 4 days late",
+      "PT-0016: HHA supervision overdue by 30+ days",
+      "PT-0041: HHA supervisory visit 5 days late, Pembroke still no supervisor"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0005",
+    "eventType": "missed_visit_review",
+    "eventDate": "2026-05-25",
+    "clientIds": [
+      "MOCK-PT-Q2-0019"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0001"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0030"
+    ],
+    "assignedReviewerRole": "Clinical Manager",
+    "requiredEvidence": [
+      "missed visit note",
+      "follow-up rescheduled visit documentation"
+    ],
+    "expectedOutcome": "finding",
+    "severity": "moderate",
+    "messyFlags": [
+      "missed_visit_no_followup"
+    ],
+    "expectedFindings": [
+      "PT-0019: Missed visit 5/20 — note created late, NO follow-up rescheduled visit documented"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0006",
+    "eventType": "infection_control_review",
+    "eventDate": "2026-06-05",
+    "clientIds": [
+      "MOCK-PT-Q2-0010",
+      "MOCK-PT-Q2-0028"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0012",
+      "MOCK-CLIN-Q2-0002"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0027",
+      "MOCK-DOC-Q2-0033"
+    ],
+    "assignedReviewerRole": "QAPI Coordinator",
+    "requiredEvidence": [
+      "wound assessment",
+      "infection surveillance note",
+      "follow-up documentation"
+    ],
+    "expectedOutcome": "multiple_findings",
+    "severity": "high",
+    "messyFlags": [
+      "wound_documentation_gap",
+      "infection_surveillance_gap"
+    ],
+    "expectedFindings": [
+      "PT-0010: Initial wound assessment done 5/1 but NO follow-up wound assessment for 3+ weeks",
+      "PT-0028: Infection surveillance done at SOC but NO follow-up despite active wound for 3+ weeks"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0007",
+    "eventType": "fall_risk_review",
+    "eventDate": "2026-06-10",
+    "clientIds": [
+      "MOCK-PT-Q2-0039"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0001"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0038"
+    ],
+    "assignedReviewerRole": "Clinical Manager",
+    "requiredEvidence": [
+      "fall risk assessment",
+      "fall risk escalation documentation",
+      "POC update"
+    ],
+    "expectedOutcome": "finding",
+    "severity": "severe",
+    "messyFlags": [
+      "fall_risk_escalation_missing"
+    ],
+    "expectedFindings": [
+      "PT-0039: Fall risk assessed as HIGH but NO escalation documented, NO care plan update. Active wound + fall risk = patient safety concern"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0008",
+    "eventType": "hospitalization_transfer_review",
+    "eventDate": "2026-06-05",
+    "clientIds": [
+      "MOCK-PT-Q2-0006",
+      "MOCK-PT-Q2-0011",
+      "MOCK-PT-Q2-0045"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0001"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0024",
+      "MOCK-DOC-Q2-0046",
+      "MOCK-DOC-Q2-0050"
+    ],
+    "assignedReviewerRole": "DON",
+    "requiredEvidence": [
+      "hospitalization/transfer note",
+      "transfer OASIS",
+      "medication list",
+      "receiving facility info"
+    ],
+    "expectedOutcome": "multiple_findings",
+    "severity": "moderate",
+    "messyFlags": [
+      "hospitalization_transfer_incomplete",
+      "transfer_note_incomplete"
+    ],
+    "expectedFindings": [
+      "PT-0006: Hospitalization note INCOMPLETE — missing receiving facility, transfer meds not documented",
+      "PT-0011: Transfer note INCOMPLETE — missing destination and receiving agency info",
+      "PT-0045: Clean hospitalization transfer documentation"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0009",
+    "eventType": "recertification_review",
+    "eventDate": "2026-06-10",
+    "clientIds": [
+      "MOCK-PT-Q2-0003",
+      "MOCK-PT-Q2-0016"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0012"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0020",
+      "MOCK-DOC-Q2-0052"
+    ],
+    "assignedReviewerRole": "Clinical Manager",
+    "requiredEvidence": [
+      "recertification assessment",
+      "recert OASIS",
+      "updated POC",
+      "physician signature"
+    ],
+    "expectedOutcome": "multiple_findings",
+    "severity": "severe",
+    "messyFlags": [
+      "recert_overdue",
+      "missing_signature"
+    ],
+    "expectedFindings": [
+      "PT-0003: Recert assessment 4 days OVERDUE past cert period end, signature missing",
+      "PT-0016: Recert 3 days OVERDUE, signature missing, complex wound/CHF patient"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0010",
+    "eventType": "discharge_audit",
+    "eventDate": "2026-06-15",
+    "clientIds": [
+      "MOCK-PT-Q2-0005",
+      "MOCK-PT-Q2-0021",
+      "MOCK-PT-Q2-0038"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0012"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0023",
+      "MOCK-DOC-Q2-0055"
+    ],
+    "assignedReviewerRole": "QAPI Coordinator",
+    "requiredEvidence": [
+      "discharge summary",
+      "discharge OASIS",
+      "follow-up plan",
+      "patient education"
+    ],
+    "expectedOutcome": "finding",
+    "severity": "moderate",
+    "messyFlags": [
+      "discharge_summary_incomplete"
+    ],
+    "expectedFindings": [
+      "PT-0005: Discharge summary INCOMPLETE — missing outcome summary, follow-up plan, and discharge OASIS",
+      "PT-0021: Clean discharge documentation",
+      "PT-0038: Clean discharge documentation"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0011",
+    "eventType": "qapi_trigger",
+    "eventDate": "2026-06-15",
+    "clientIds": [
+      "MOCK-PT-Q2-0009",
+      "MOCK-PT-Q2-0043",
+      "MOCK-PT-Q2-0037"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0020",
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0012"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0053",
+      "MOCK-DOC-Q2-0040",
+      "MOCK-DOC-Q2-0037"
+    ],
+    "assignedReviewerRole": "QAPI Coordinator",
+    "requiredEvidence": [
+      "QAPI trigger note",
+      "supporting documentation",
+      "corrective action plan if needed"
+    ],
+    "expectedOutcome": "multiple_findings",
+    "severity": "moderate",
+    "messyFlags": [
+      "evidence_not_audit_ready",
+      "missing_physician_order"
+    ],
+    "expectedFindings": [
+      "PT-0009: QAPI monitoring — complex multi-discipline client, clean documentation",
+      "PT-0043: Evidence present but NOT audit-ready — supporting documents scanned but not indexed",
+      "PT-0037: MISSING PHYSICIAN ORDER — services ongoing 60+ days without signed orders"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0012",
+    "eventType": "clinician_credential_compliance",
+    "eventDate": "2026-06-01",
+    "clientIds": [
+      "MOCK-PT-Q2-0017",
+      "MOCK-PT-Q2-0054"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0005",
+      "MOCK-CLIN-Q2-0014",
+      "MOCK-CLIN-Q2-0015",
+      "MOCK-CLIN-Q2-0020"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0047",
+      "MOCK-DOC-Q2-0043"
+    ],
+    "assignedReviewerRole": "Assistant DON",
+    "requiredEvidence": [
+      "clinician credential file",
+      "license verification",
+      "CPR card",
+      "annual competency"
+    ],
+    "expectedOutcome": "multiple_findings",
+    "severity": "severe",
+    "messyFlags": [
+      "expired_cpr",
+      "missing_annual_competency",
+      "license_pending_renewal",
+      "role_mismatch"
+    ],
+    "expectedFindings": [
+      "CLIN-0002: Expired CPR (11/2025) — actively providing care to multiple clients",
+      "CLIN-0005: Annual competency expired (08/2025) — 10 months overdue",
+      "CLIN-0014: LVN license pending renewal since 04/2026 — actively providing visits (PT-0017)",
+      "CLIN-0015: Expired CPR (12/2025)",
+      "CLIN-0020: QAPI Coordinator assigned to direct care visits (PT-0054) — role mismatch"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0013",
+    "eventType": "soc_audit",
+    "eventDate": "2026-05-30",
+    "clientIds": [
+      "MOCK-PT-Q2-0025"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0001"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0032"
+    ],
+    "assignedReviewerRole": "Clinical Manager",
+    "requiredEvidence": [
+      "SOC OASIS",
+      "comprehensive assessment"
+    ],
+    "expectedOutcome": "finding",
+    "severity": "moderate",
+    "messyFlags": [
+      "oasis_inconsistency"
+    ],
+    "expectedFindings": [
+      "PT-0025: OASIS functional scoring inconsistent with comprehensive assessment (mod assist vs min assist)"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0014",
+    "eventType": "poc_audit",
+    "eventDate": "2026-06-10",
+    "clientIds": [
+      "MOCK-PT-Q2-0037"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0001"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0037"
+    ],
+    "assignedReviewerRole": "DON",
+    "requiredEvidence": [
+      "physician orders",
+      "plan of care"
+    ],
+    "expectedOutcome": "finding",
+    "severity": "severe",
+    "messyFlags": [
+      "missing_physician_order"
+    ],
+    "expectedFindings": [
+      "PT-0037: MISSING PHYSICIAN ORDER SIGNATURE — orders sent 4/3/2026, never returned signed. Services ongoing 60+ days without signed orders. BLOCKING issue."
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0015",
+    "eventType": "soc_audit",
+    "eventDate": "2026-05-15",
+    "clientIds": [
+      "MOCK-PT-Q2-0052"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0002"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0042"
+    ],
+    "assignedReviewerRole": "Clinical Manager",
+    "requiredEvidence": [
+      "SOC OASIS",
+      "comprehensive assessment"
+    ],
+    "expectedOutcome": "finding",
+    "severity": "moderate",
+    "messyFlags": [
+      "inconsistent_dates"
+    ],
+    "expectedFindings": [
+      "PT-0052: SOC OASIS M0090 date (4/29) inconsistent with comprehensive assessment date (4/27)"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0016",
+    "eventType": "soc_audit",
+    "eventDate": "2026-06-20",
+    "clientIds": [
+      "MOCK-PT-Q2-0054"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0020"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0043"
+    ],
+    "assignedReviewerRole": "DON",
+    "requiredEvidence": [
+      "SOC OASIS",
+      "clinician credentials"
+    ],
+    "expectedOutcome": "finding",
+    "severity": "severe",
+    "messyFlags": [
+      "role_mismatch"
+    ],
+    "expectedFindings": [
+      "PT-0054: SOC performed by QAPI Coordinator (Stoneleigh) — role mismatch. QAPI should not perform SOC assessments."
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0017",
+    "eventType": "clinician_credential_compliance",
+    "eventDate": "2026-05-15",
+    "clientIds": [
+      "MOCK-PT-Q2-0014",
+      "MOCK-PT-Q2-0006"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0002",
+      "MOCK-CLIN-Q2-0010"
+    ],
+    "documentIds": [],
+    "assignedReviewerRole": "Assistant DON",
+    "requiredEvidence": [
+      "caseload report",
+      "clinician assignment records"
+    ],
+    "expectedOutcome": "finding",
+    "severity": "moderate",
+    "messyFlags": [
+      "overloaded_caseload"
+    ],
+    "expectedFindings": [
+      "CLIN-0002: Caseload 28/25 — overloaded by 3 patients",
+      "CLIN-0010: Caseload 22/20 — overloaded by 2 patients"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0018",
+    "eventType": "missed_visit_review",
+    "eventDate": "2026-06-10",
+    "clientIds": [
+      "MOCK-PT-Q2-0055"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0012"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0044"
+    ],
+    "assignedReviewerRole": "Clinical Manager",
+    "requiredEvidence": [
+      "visit notes",
+      "clinician documentation timeline"
+    ],
+    "expectedOutcome": "finding",
+    "severity": "moderate",
+    "messyFlags": [
+      "missing_signature",
+      "documentation_lateness_pattern"
+    ],
+    "expectedFindings": [
+      "PT-0055: Visit note UNSIGNED for 60+ days. Linquist documentation lateness pattern — 3rd incident this quarter."
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0019",
+    "eventType": "soc_audit",
+    "eventDate": "2026-05-20",
+    "clientIds": [
+      "MOCK-PT-Q2-0012",
+      "MOCK-PT-Q2-0018",
+      "MOCK-PT-Q2-0024"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0003"
+    ],
+    "documentIds": [],
+    "assignedReviewerRole": "QAPI Coordinator",
+    "requiredEvidence": [
+      "SOC OASIS",
+      "comprehensive assessment",
+      "consents"
+    ],
+    "expectedOutcome": "clean",
+    "severity": "none",
+    "messyFlags": [],
+    "expectedFindings": [
+      "PT-0012: Clean SOC",
+      "PT-0018: Clean SOC",
+      "PT-0024: Clean SOC"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0020",
+    "eventType": "poc_audit",
+    "eventDate": "2026-06-05",
+    "clientIds": [
+      "MOCK-PT-Q2-0009",
+      "MOCK-PT-Q2-0015",
+      "MOCK-PT-Q2-0022"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0001",
+      "MOCK-CLIN-Q2-0012"
+    ],
+    "documentIds": [],
+    "assignedReviewerRole": "Clinical Manager",
+    "requiredEvidence": [
+      "plan of care",
+      "physician orders"
+    ],
+    "expectedOutcome": "clean",
+    "severity": "none",
+    "messyFlags": [],
+    "expectedFindings": [
+      "PT-0009: Clean POC",
+      "PT-0015: Clean POC",
+      "PT-0022: Clean POC"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0021",
+    "eventType": "medication_reconciliation_audit",
+    "eventDate": "2026-06-10",
+    "clientIds": [
+      "MOCK-PT-Q2-0027",
+      "MOCK-PT-Q2-0031"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0001"
+    ],
+    "documentIds": [],
+    "assignedReviewerRole": "RN Case Manager",
+    "requiredEvidence": [
+      "medication profile",
+      "medication reconciliation"
+    ],
+    "expectedOutcome": "clean",
+    "severity": "none",
+    "messyFlags": [],
+    "expectedFindings": [
+      "PT-0027: Clean med recon",
+      "PT-0031: Clean med recon"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0022",
+    "eventType": "infection_control_review",
+    "eventDate": "2026-06-15",
+    "clientIds": [
+      "MOCK-PT-Q2-0049",
+      "MOCK-PT-Q2-0053"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0001"
+    ],
+    "documentIds": [],
+    "assignedReviewerRole": "QAPI Coordinator",
+    "requiredEvidence": [
+      "wound assessment",
+      "infection surveillance"
+    ],
+    "expectedOutcome": "clean",
+    "severity": "none",
+    "messyFlags": [],
+    "expectedFindings": [
+      "PT-0049: Clean wound/infection documentation",
+      "PT-0053: Clean wound/infection documentation"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0023",
+    "eventType": "discharge_audit",
+    "eventDate": "2026-06-20",
+    "clientIds": [
+      "MOCK-PT-Q2-0060"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0012"
+    ],
+    "documentIds": [],
+    "assignedReviewerRole": "QAPI Coordinator",
+    "requiredEvidence": [
+      "discharge summary",
+      "discharge OASIS"
+    ],
+    "expectedOutcome": "clean",
+    "severity": "none",
+    "messyFlags": [],
+    "expectedFindings": [
+      "PT-0060: Clean discharge documentation"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0024",
+    "eventType": "fall_risk_review",
+    "eventDate": "2026-05-30",
+    "clientIds": [
+      "MOCK-PT-Q2-0001",
+      "MOCK-PT-Q2-0009"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0001"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0013"
+    ],
+    "assignedReviewerRole": "Clinical Manager",
+    "requiredEvidence": [
+      "fall risk assessment",
+      "interventions"
+    ],
+    "expectedOutcome": "clean",
+    "severity": "none",
+    "messyFlags": [],
+    "expectedFindings": [
+      "PT-0001: Fall risk high but properly assessed and escalated with interventions documented",
+      "PT-0009: Fall risk managed across disciplines"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0025",
+    "eventType": "clinician_credential_compliance",
+    "eventDate": "2026-05-01",
+    "clientIds": [],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0011"
+    ],
+    "documentIds": [],
+    "assignedReviewerRole": "Assistant DON",
+    "requiredEvidence": [
+      "clinician file",
+      "skills checklist",
+      "supervisor assignment"
+    ],
+    "expectedOutcome": "finding",
+    "severity": "moderate",
+    "messyFlags": [
+      "missing_supervision",
+      "skills_checklist_incomplete"
+    ],
+    "expectedFindings": [
+      "CLIN-0011: HHA Pembroke has NO supervisor assigned and incomplete skills checklist"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0026",
+    "eventType": "soc_audit",
+    "eventDate": "2026-06-15",
+    "clientIds": [
+      "MOCK-PT-Q2-0040"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0002"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0039"
+    ],
+    "assignedReviewerRole": "QAPI Coordinator",
+    "requiredEvidence": [
+      "comprehensive assessment",
+      "SOC OASIS"
+    ],
+    "expectedOutcome": "finding",
+    "severity": "severe",
+    "messyFlags": [
+      "wrong_client_attached_to_document"
+    ],
+    "expectedFindings": [
+      "PT-0040: Comprehensive assessment document header shows WRONG CLIENT ID (PT-0041 instead of PT-0040). Patient safety concern."
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0027",
+    "eventType": "poc_audit",
+    "eventDate": "2026-05-25",
+    "clientIds": [
+      "MOCK-PT-Q2-0035"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0020"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0036"
+    ],
+    "assignedReviewerRole": "DON",
+    "requiredEvidence": [
+      "visit notes",
+      "clinician credentials"
+    ],
+    "expectedOutcome": "finding",
+    "severity": "high",
+    "messyFlags": [
+      "wrong_clinician_assigned",
+      "role_mismatch"
+    ],
+    "expectedFindings": [
+      "PT-0035: QAPI Coordinator (Stoneleigh) performing direct care SN visits — wrong clinician role for direct care"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0028",
+    "eventType": "aide_supervision_audit",
+    "eventDate": "2026-06-15",
+    "clientIds": [
+      "MOCK-PT-Q2-0001",
+      "MOCK-PT-Q2-0022"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0010",
+      "MOCK-CLIN-Q2-0016"
+    ],
+    "documentIds": [],
+    "assignedReviewerRole": "DON",
+    "requiredEvidence": [
+      "aide supervisory visit",
+      "HHA care plan"
+    ],
+    "expectedOutcome": "clean",
+    "severity": "none",
+    "messyFlags": [],
+    "expectedFindings": [
+      "PT-0001: HHA supervision up to date",
+      "PT-0022: HHA supervision up to date"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0029",
+    "eventType": "qapi_trigger",
+    "eventDate": "2026-06-20",
+    "clientIds": [
+      "MOCK-PT-Q2-0059"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0002"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0045"
+    ],
+    "assignedReviewerRole": "QAPI Coordinator",
+    "requiredEvidence": [
+      "consent forms",
+      "patient rights documentation"
+    ],
+    "expectedOutcome": "finding",
+    "severity": "moderate",
+    "messyFlags": [
+      "missing_consent_form"
+    ],
+    "expectedFindings": [
+      "PT-0059: QAPI trigger — ABN not signed, patient rights not acknowledged. Services started without complete consents."
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0030",
+    "eventType": "clinician_credential_compliance",
+    "eventDate": "2026-06-15",
+    "clientIds": [
+      "MOCK-PT-Q2-0004",
+      "MOCK-PT-Q2-0030"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0012"
+    ],
+    "documentIds": [
+      "MOCK-DOC-Q2-0022",
+      "MOCK-DOC-Q2-0048"
+    ],
+    "assignedReviewerRole": "Clinical Manager",
+    "requiredEvidence": [
+      "documentation timeline",
+      "visit notes"
+    ],
+    "expectedOutcome": "finding",
+    "severity": "moderate",
+    "messyFlags": [
+      "documentation_lateness_pattern"
+    ],
+    "expectedFindings": [
+      "CLIN-0012: Documentation lateness pattern — SOC OASIS signed 2 days late (PT-0004), visit note created 5 days late and signed 7 days late (PT-0030). Pattern across multiple clients."
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0031",
+    "eventType": "hospitalization_transfer_review",
+    "eventDate": "2026-06-10",
+    "clientIds": [
+      "MOCK-PT-Q2-0057"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0002"
+    ],
+    "documentIds": [],
+    "assignedReviewerRole": "DON",
+    "requiredEvidence": [
+      "transfer OASIS",
+      "transfer documentation"
+    ],
+    "expectedOutcome": "clean",
+    "severity": "none",
+    "messyFlags": [],
+    "expectedFindings": [
+      "PT-0057: Clean transfer documentation"
+    ]
+  },
+  {
+    "eventId": "MOCK-EVT-Q2-0032",
+    "eventType": "recertification_review",
+    "eventDate": "2026-06-20",
+    "clientIds": [
+      "MOCK-PT-Q2-0001"
+    ],
+    "clinicianIds": [
+      "MOCK-CLIN-Q2-0001"
+    ],
+    "documentIds": [],
+    "assignedReviewerRole": "Clinical Manager",
+    "requiredEvidence": [
+      "recert OASIS",
+      "updated POC"
+    ],
+    "expectedOutcome": "clean",
+    "severity": "none",
+    "messyFlags": [],
+    "expectedFindings": [
+      "PT-0001: Recertification approaching — documentation on track"
+    ]
+  }
+]

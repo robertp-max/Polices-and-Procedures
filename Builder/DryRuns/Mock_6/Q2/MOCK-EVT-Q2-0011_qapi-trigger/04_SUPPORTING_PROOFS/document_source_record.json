@@ -1,0 +1,83 @@
+[
+  {
+    "documentId": "MOCK-DOC-Q2-0037",
+    "clientId": "MOCK-PT-Q2-0037",
+    "clinicianId": "MOCK-CLIN-Q2-0001",
+    "eventId": null,
+    "documentType": "physician_orders",
+    "serviceDiscipline": "skilled_nursing",
+    "dateCreated": "2026-04-03",
+    "serviceDate": "2026-04-03",
+    "signedDate": null,
+    "dueDate": "2026-04-10",
+    "status": "pending_signature",
+    "requiredSignatureRole": "physician",
+    "signedBy": null,
+    "version": "1.0",
+    "sourceSystem": "mock_ehr_v3",
+    "mockFileName": "MOCK-PT-Q2-0037_phys_orders.pdf",
+    "mockDrivePath": "scratch/mock-data/q2-home-health-messy-dataset/docs/MOCK-PT-Q2-0037/",
+    "keyFindings": "MISSING PHYSICIAN ORDER SIGNATURE. Orders sent to physician but never returned signed. Services ongoing without signed orders.",
+    "structuredFields": {
+      "physicianSigned": false,
+      "ordersSentDate": "2026-04-03",
+      "daysUnsigned": 60
+    },
+    "messyFlags": [
+      "missing_physician_order"
+    ]
+  },
+  {
+    "documentId": "MOCK-DOC-Q2-0040",
+    "clientId": "MOCK-PT-Q2-0043",
+    "clinicianId": "MOCK-CLIN-Q2-0012",
+    "eventId": null,
+    "documentType": "plan_of_care_485",
+    "serviceDiscipline": "skilled_nursing",
+    "dateCreated": "2026-04-07",
+    "serviceDate": "2026-04-06",
+    "signedDate": "2026-04-15",
+    "dueDate": "2026-04-16",
+    "status": "complete",
+    "requiredSignatureRole": "physician",
+    "signedBy": "Dr. Anne Hollister",
+    "version": "1.0",
+    "sourceSystem": "mock_ehr_v3",
+    "mockFileName": "MOCK-PT-Q2-0043_poc_485.pdf",
+    "mockDrivePath": "scratch/mock-data/q2-home-health-messy-dataset/docs/MOCK-PT-Q2-0043/",
+    "keyFindings": "POC complete and signed. However, supporting evidence (wound measurements, infection screening results) are scanned but NOT indexed/organized for audit. EVIDENCE PRESENT BUT NOT AUDIT-READY.",
+    "structuredFields": {
+      "physicianSigned": true,
+      "auditReady": false,
+      "evidenceOrganized": false
+    },
+    "messyFlags": [
+      "evidence_present_not_audit_ready"
+    ]
+  },
+  {
+    "documentId": "MOCK-DOC-Q2-0053",
+    "clientId": "MOCK-PT-Q2-0009",
+    "clinicianId": "MOCK-CLIN-Q2-0001",
+    "eventId": null,
+    "documentType": "qapi_trigger_note",
+    "serviceDiscipline": "skilled_nursing",
+    "dateCreated": "2026-05-28",
+    "serviceDate": "2026-05-28",
+    "signedDate": "2026-05-28",
+    "dueDate": "2026-05-30",
+    "status": "complete",
+    "requiredSignatureRole": "QAPI Coordinator",
+    "signedBy": "MOCK-CLIN-Q2-0020",
+    "version": "1.0",
+    "sourceSystem": "mock_ehr_v3",
+    "mockFileName": "MOCK-PT-Q2-0009_qapi_trigger.pdf",
+    "mockDrivePath": "scratch/mock-data/q2-home-health-messy-dataset/docs/MOCK-PT-Q2-0009/",
+    "keyFindings": "QAPI trigger: complex multi-disciplinary client approaching recert with 6 service lines. Clean documentation, well-coordinated.",
+    "structuredFields": {
+      "triggerReason": "multi_disciplinary_complexity",
+      "qapiFinding": "monitoring_only"
+    },
+    "messyFlags": []
+  }
+]

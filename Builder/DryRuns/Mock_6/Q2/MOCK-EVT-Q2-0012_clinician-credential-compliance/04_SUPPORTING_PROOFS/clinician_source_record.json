@@ -1,0 +1,28 @@
+{
+  "clinicianId": "MOCK-CLIN-Q2-0002",
+  "firstName": "Derek",
+  "lastName": "Mulholland",
+  "role": "RN Case Manager",
+  "credentials": "RN, BSN",
+  "licenseNumber": "MOCK-RN-77290",
+  "licenseState": "CA",
+  "licenseStatus": "active",
+  "licenseExpiration": "2027-01-30",
+  "cprExpiration": "2025-11-15",
+  "tbScreeningDate": "2025-09-22",
+  "annualCompetencyDate": "2025-12-10",
+  "skillsChecklistComplete": true,
+  "backgroundClearance": "2025-06-15",
+  "onboardingComplete": true,
+  "assignedTerritory": "East Metro",
+  "currentCaseload": 28,
+  "maxCaseload": 25,
+  "supervisor": "MOCK-CLIN-Q2-0017",
+  "email": "d.mulholland@mockhomehealth.test",
+  "phone": "555-0102",
+  "hireDate": "2021-03-15",
+  "issueFlags": [
+    "expired_cpr",
+    "overloaded_caseload"
+  ]
+}

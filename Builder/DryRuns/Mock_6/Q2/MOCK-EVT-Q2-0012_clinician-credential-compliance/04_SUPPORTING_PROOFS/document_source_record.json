@@ -1,0 +1,57 @@
+[
+  {
+    "documentId": "MOCK-DOC-Q2-0043",
+    "clientId": "MOCK-PT-Q2-0054",
+    "clinicianId": "MOCK-CLIN-Q2-0020",
+    "eventId": "MOCK-EVT-Q2-0012",
+    "documentType": "soc_oasis",
+    "serviceDiscipline": "skilled_nursing",
+    "dateCreated": "2026-06-25",
+    "serviceDate": "2026-06-25",
+    "signedDate": "2026-06-25",
+    "dueDate": "2026-06-30",
+    "status": "complete",
+    "requiredSignatureRole": "RN Case Manager",
+    "signedBy": "MOCK-CLIN-Q2-0020",
+    "version": "1.0",
+    "sourceSystem": "mock_ehr_v3",
+    "mockFileName": "MOCK-PT-Q2-0054_soc_oasis.pdf",
+    "mockDrivePath": "scratch/mock-data/q2-home-health-messy-dataset/docs/MOCK-PT-Q2-0054/",
+    "keyFindings": "SOC performed by QAPI Coordinator (Stoneleigh) — ROLE MISMATCH. QAPI coordinator should not be primary SOC clinician.",
+    "structuredFields": {
+      "clinicianRole": "QAPI_Coordinator",
+      "expectedRole": "RN_Case_Manager"
+    },
+    "messyFlags": [
+      "role_mismatch",
+      "qapi_coordinator_performing_direct_care"
+    ]
+  },
+  {
+    "documentId": "MOCK-DOC-Q2-0047",
+    "clientId": "MOCK-PT-Q2-0017",
+    "clinicianId": "MOCK-CLIN-Q2-0014",
+    "eventId": "MOCK-EVT-Q2-0012",
+    "documentType": "skilled_nursing_visit_note",
+    "serviceDiscipline": "skilled_nursing",
+    "dateCreated": "2026-06-03",
+    "serviceDate": "2026-06-03",
+    "signedDate": "2026-06-03",
+    "dueDate": "2026-06-04",
+    "status": "complete",
+    "requiredSignatureRole": "LVN",
+    "signedBy": "MOCK-CLIN-Q2-0014",
+    "version": "1.0",
+    "sourceSystem": "mock_ehr_v3",
+    "mockFileName": "MOCK-PT-Q2-0017_sn_visit_06032026.pdf",
+    "mockDrivePath": "scratch/mock-data/q2-home-health-messy-dataset/docs/MOCK-PT-Q2-0017/",
+    "keyFindings": "Visit performed by Phelps whose LVN license is PENDING RENEWAL (expired 4/30/2026). Clinician credential compliance concern.",
+    "structuredFields": {
+      "clinicianLicenseStatus": "pending_renewal",
+      "licenseExpDate": "2026-04-30"
+    },
+    "messyFlags": [
+      "expired_clinician_credential"
+    ]
+  }
+]

@@ -1,0 +1,47 @@
+{
+  "clientId": "MOCK-PT-Q2-0017",
+  "firstName": "Agnes",
+  "lastName": "Whitford",
+  "dob": "1943-11-07",
+  "gender": "F",
+  "mrn": "MOCK-MRN-900017",
+  "ssn": "XXX-XX-0017",
+  "address": "1414 Dogwood Ln, Mockton, CA 90016",
+  "phone": "555-1017",
+  "emergencyContact": {
+    "name": "Patricia Whitford",
+    "relationship": "Daughter",
+    "phone": "555-2017"
+  },
+  "primaryPayer": {
+    "payerId": "MOCK-PAY-MC-001",
+    "payerName": "Mock Medicare A",
+    "policyNumber": "MOCK-MC-A0017"
+  },
+  "secondaryPayer": null,
+  "attendingPhysician": {
+    "name": "Dr. Reginald Thornberry",
+    "npi": "MOCK-NPI-2222222222",
+    "phone": "555-3002"
+  },
+  "serviceLines": [
+    "skilled_nursing"
+  ],
+  "admissionStatus": "active",
+  "socDate": "2026-06-01",
+  "certPeriodStart": "2026-06-01",
+  "certPeriodEnd": "2026-07-31",
+  "primaryDiagnoses": [
+    "diabetes"
+  ],
+  "clinicalComplexity": [
+    "diabetes",
+    "medication_reconciliation_risk"
+  ],
+  "assignedClinicians": [
+    "MOCK-CLIN-Q2-0014"
+  ],
+  "messyFlags": [
+    "clinician_license_pending_renewal"
+  ]
+}

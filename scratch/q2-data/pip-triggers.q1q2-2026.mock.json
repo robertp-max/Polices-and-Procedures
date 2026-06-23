@@ -1,0 +1,350 @@
+[
+  {
+    "triggerId": "MOCK-PIP-HA-0001",
+    "clinicianId": "MOCK-CLIN-HA-0001",
+    "clinicianName": "Veronica Stormfield",
+    "role": "RN Case Manager",
+    "triggerType": "PIP_initiation",
+    "triggerDate": "2026-06-15",
+    "category": "performance_improvement_plan",
+    "findings": [
+      "Caseload 32/25 (128% capacity) — chronic overload since Q1",
+      "Documentation lateness affecting 19/32 patients (59%) — average 4.2 days late",
+      "Assigned to 8 patients with adverse events (hospitalizations, falls, infections)",
+      "Above-average hospitalization rate: 6/32 patients hospitalized (19% vs agency avg 8%)",
+      "Failed to identify/escalate LVN Ashcroft expired license for 5 months",
+      "Failed to ensure aide supervision for HHA Crestwood (zero supervision Q1-Q2)",
+      "Prior written warning December 2025 for same issues"
+    ],
+    "affectedClients": [
+      "MOCK-PT-HA-0001",
+      "MOCK-PT-HA-0004",
+      "MOCK-PT-HA-0011",
+      "MOCK-PT-HA-0016",
+      "MOCK-PT-HA-0021",
+      "MOCK-PT-HA-0026",
+      "MOCK-PT-HA-0032",
+      "MOCK-PT-HA-0039",
+      "MOCK-PT-HA-0046",
+      "MOCK-PT-HA-0052",
+      "MOCK-PT-HA-0060",
+      "MOCK-PT-HA-0066",
+      "MOCK-PT-HA-0073",
+      "MOCK-PT-HA-0080",
+      "MOCK-PT-HA-0086"
+    ],
+    "requiredActions": [
+      "Immediate caseload reduction to max 25",
+      "Documentation audit weekly x 90 days",
+      "Mandatory supervision training within 30 days",
+      "Weekly 1:1 with DON x 90 days",
+      "Re-education on credential monitoring responsibilities",
+      "Written corrective action plan within 5 business days"
+    ],
+    "pipDuration": "90_days",
+    "consequenceIfFailed": "termination",
+    "supervisorAccountability": "DON Ironwell failed to address caseload and supervision issues — DON also on PIP"
+  },
+  {
+    "triggerId": "MOCK-PIP-HA-0002",
+    "clinicianId": "MOCK-CLIN-HA-0002",
+    "clinicianName": "Marcus Blackwell",
+    "role": "RN Case Manager",
+    "triggerType": "TERMINATION_recommendation",
+    "triggerDate": "2026-06-15",
+    "category": "termination_for_cause",
+    "findings": [
+      "FAILED prior PIP (June 2025) — no improvement demonstrated",
+      "CPR expired June 2025 — 12 months expired while providing patient care",
+      "Annual competency expired November 2024 — 19 months expired",
+      "TB screening overdue by 14 months",
+      "Caseload 29/25 worsened since PIP",
+      "Medication reconciliation failures on 8/29 patients",
+      "Patient complaints: 3 in Q1-Q2",
+      "OASIS functional scoring inflated on 6+ patients (upcoding concern)",
+      "Assigned to 12 patients with adverse events",
+      "4 patients hospitalized (14%)",
+      "Documentation lateness pattern continued — 65% of charts late"
+    ],
+    "affectedClients": [
+      "MOCK-PT-HA-0002",
+      "MOCK-PT-HA-0008",
+      "MOCK-PT-HA-0013",
+      "MOCK-PT-HA-0017",
+      "MOCK-PT-HA-0024",
+      "MOCK-PT-HA-0028",
+      "MOCK-PT-HA-0034",
+      "MOCK-PT-HA-0042",
+      "MOCK-PT-HA-0048",
+      "MOCK-PT-HA-0054",
+      "MOCK-PT-HA-0061",
+      "MOCK-PT-HA-0068",
+      "MOCK-PT-HA-0075",
+      "MOCK-PT-HA-0081",
+      "MOCK-PT-HA-0088"
+    ],
+    "requiredActions": [
+      "IMMEDIATE removal from all patient care assignments",
+      "Termination processing within 5 business days",
+      "Patient reassignment plan — 29 patients need new RN CM",
+      "Chart audit of all 29 assigned patients",
+      "OASIS correction review for all patients",
+      "Incident reports filed for all credential lapses",
+      "Report to Board of Nursing if applicable"
+    ],
+    "transitionPlan": "Patients to be redistributed to Ravencroft (MOCK-CLIN-HA-0003) and Hawthorne (MOCK-CLIN-HA-0021) with temporary PRN coverage"
+  },
+  {
+    "triggerId": "MOCK-PIP-HA-0003",
+    "clinicianId": "MOCK-CLIN-HA-0004",
+    "clinicianName": "Terrence Grimshaw",
+    "role": "RN Case Manager",
+    "triggerType": "PIP_escalation",
+    "triggerDate": "2026-06-15",
+    "category": "pip_failure_trending",
+    "findings": [
+      "Active PIP since September 2025 — NOT meeting benchmarks",
+      "OASIS accuracy failures continued: 15/31 patients have OASIS errors",
+      "CPR expired September 2025 — 9 months expired",
+      "Annual competency expired July 2025 — 11 months expired",
+      "Caseload 31/25 (124% capacity) worsened during PIP",
+      "Hospitalization rate: 8/31 patients (26% vs agency avg 8%)",
+      "Failed to provide adequate supervision to LVN Thornwall and HHA Goldcrest",
+      "LVN Thornwall had 3 medication errors under his supervision",
+      "HHA Goldcrest performing unauthorized tasks under his watch",
+      "Assigned to patients with worst outcome indicators"
+    ],
+    "affectedClients": [
+      "MOCK-PT-HA-0003",
+      "MOCK-PT-HA-0010",
+      "MOCK-PT-HA-0014",
+      "MOCK-PT-HA-0020",
+      "MOCK-PT-HA-0023",
+      "MOCK-PT-HA-0031",
+      "MOCK-PT-HA-0037",
+      "MOCK-PT-HA-0040",
+      "MOCK-PT-HA-0045",
+      "MOCK-PT-HA-0051",
+      "MOCK-PT-HA-0058",
+      "MOCK-PT-HA-0065",
+      "MOCK-PT-HA-0070",
+      "MOCK-PT-HA-0076",
+      "MOCK-PT-HA-0083",
+      "MOCK-PT-HA-0085",
+      "MOCK-PT-HA-0090"
+    ],
+    "requiredActions": [
+      "PIP extension with final 30-day probationary period",
+      "If no improvement in 30 days: termination recommendation",
+      "Immediate CPR recertification required within 7 days or removal from patient care",
+      "Annual competency completion within 14 days",
+      "Caseload reduction to 20 maximum within 5 business days",
+      "OASIS remediation training mandatory — 8 hours within 14 days",
+      "Daily documentation audit x 30 days",
+      "Supervision training re-education within 7 days"
+    ],
+    "pipDuration": "30_day_final_extension",
+    "consequenceIfFailed": "termination"
+  },
+  {
+    "triggerId": "MOCK-PIP-HA-0004",
+    "clinicianId": "MOCK-CLIN-HA-0005",
+    "clinicianName": "Lorraine Ashcroft",
+    "role": "LVN",
+    "triggerType": "IMMEDIATE_SUSPENSION",
+    "triggerDate": "2026-06-15",
+    "category": "immediate_action_patient_safety",
+    "findings": [
+      "LVN LICENSE EXPIRED January 31, 2026",
+      "Continued providing direct patient care for 5 MONTHS on expired license",
+      "Performed approximately 90+ patient visits on expired license",
+      "CPR also expired December 2025",
+      "Supervisor (Stormfield) failed to detect expired license",
+      "REGULATORY REPORTING MAY BE REQUIRED",
+      "All visits performed on expired license may be non-billable",
+      "Patient safety concern: care provided by unlicensed individual"
+    ],
+    "affectedClients": [
+      "MOCK-PT-HA-0005"
+    ],
+    "requiredActions": [
+      "IMMEDIATE suspension from all patient care — effective today",
+      "Notify all affected patients/families",
+      "File incident report",
+      "Determine regulatory reporting requirements (Board of Nursing, CMS)",
+      "Audit all visits performed since 02/01/2026 for billing impact",
+      "Legal counsel consultation recommended",
+      "License renewal verification required before any return to patient care",
+      "Supervisor (Stormfield) held accountable — documented in her PIP"
+    ]
+  },
+  {
+    "triggerId": "MOCK-PIP-HA-0005",
+    "clinicianId": "MOCK-CLIN-HA-0010",
+    "clinicianName": "Winston Darkholme",
+    "role": "PTA",
+    "triggerType": "TERMINATION_recommendation",
+    "triggerDate": "2026-06-15",
+    "category": "termination_for_cause_fraud",
+    "findings": [
+      "FALSIFIED VISIT TIMES on 7+ occasions — fraud indicator",
+      "Performed PT initial evaluations (PT-only function) on 4 patients — scope violation",
+      "Annual competency expired May 2025 — 13 months expired",
+      "Skills checklist incomplete",
+      "3 patient complaints regarding professionalism",
+      "Supervisor (Coldstream) failed to identify scope violations"
+    ],
+    "affectedClients": [
+      "MOCK-PT-HA-0008"
+    ],
+    "requiredActions": [
+      "IMMEDIATE termination for cause — falsification of records",
+      "All affected visit records flagged for billing review",
+      "PT evaluations performed by PTA must be re-done by licensed PT",
+      "Report to state licensing board",
+      "Legal counsel notification",
+      "Fraud & abuse compliance review",
+      "Supervisor (Coldstream) accountability documented"
+    ]
+  },
+  {
+    "triggerId": "MOCK-PIP-HA-0006",
+    "clinicianId": "MOCK-CLIN-HA-0016",
+    "clinicianName": "Orlando Crestwood",
+    "role": "HHA",
+    "triggerType": "TERMINATION_recommendation",
+    "triggerDate": "2026-06-15",
+    "category": "termination_for_cause_multiple",
+    "findings": [
+      "NO supervisor assigned for 6+ months — agency failure AND employee failure to report",
+      "ZERO aide supervisory visits documented in entire Q1-Q2 (6 months)",
+      "Caseload 25/20 — severe overload (125%)",
+      "CPR expired March 2026",
+      "Annual competency expired June 2025 — 12 months expired",
+      "Skills checklist incomplete",
+      "Background check renewal overdue",
+      "2 patient boundary complaints — documented verbal warnings not effective",
+      "Assigned to 10+ patients including highest-acuity cases",
+      "Performing care without ANY supervision for 6 months"
+    ],
+    "affectedClients": [
+      "MOCK-PT-HA-0001",
+      "MOCK-PT-HA-0003",
+      "MOCK-PT-HA-0005",
+      "MOCK-PT-HA-0006",
+      "MOCK-PT-HA-0016",
+      "MOCK-PT-HA-0023",
+      "MOCK-PT-HA-0026",
+      "MOCK-PT-HA-0039",
+      "MOCK-PT-HA-0045",
+      "MOCK-PT-HA-0052",
+      "MOCK-PT-HA-0056",
+      "MOCK-PT-HA-0060",
+      "MOCK-PT-HA-0065",
+      "MOCK-PT-HA-0070",
+      "MOCK-PT-HA-0073",
+      "MOCK-PT-HA-0080"
+    ],
+    "requiredActions": [
+      "IMMEDIATE termination",
+      "Patient reassignment — 25 patients need new HHA",
+      "Retroactive aide supervisory visits for all affected patients",
+      "Background check initiated immediately",
+      "File incident reports for all supervision gaps",
+      "DON accountability for supervision system failure"
+    ]
+  },
+  {
+    "triggerId": "MOCK-PIP-HA-0007",
+    "clinicianId": "MOCK-CLIN-HA-0022",
+    "clinicianName": "Maurice Frostburn",
+    "role": "PT",
+    "triggerType": "TERMINATION_recommendation",
+    "triggerDate": "2026-06-15",
+    "category": "termination_for_cause_billing_fraud_concern",
+    "findings": [
+      "Completed PIP March 2025 with UNSATISFACTORY result",
+      "CPR expired August 2025 — 10 months expired",
+      "Annual competency expired March 2025 — 15 months expired",
+      "TB screening overdue",
+      "Therapy utilization statistical outlier — HIGH (billing fraud indicator)",
+      "Functional scoring inaccuracies on 12+ patients suggesting UPCODING",
+      "Billing/documentation mismatches on 12+ visits",
+      "Supervisor (Thorngate) failed to identify utilization and billing patterns"
+    ],
+    "affectedClients": [
+      "MOCK-PT-HA-0006"
+    ],
+    "requiredActions": [
+      "IMMEDIATE termination",
+      "Compliance/billing department referral for fraud investigation",
+      "All functional scores must be re-validated by independent PT",
+      "CMS self-disclosure consideration if fraud confirmed",
+      "Legal counsel notification",
+      "All affected claims reviewed for potential overpayment",
+      "Clinical Manager (Thorngate) PIP for oversight failure"
+    ]
+  },
+  {
+    "triggerId": "MOCK-PIP-HA-0008",
+    "clinicianId": "MOCK-CLIN-HA-0025",
+    "clinicianName": "Margaret Ironwell",
+    "role": "DON",
+    "triggerType": "PIP_initiation",
+    "triggerDate": "2026-06-15",
+    "category": "leadership_performance_improvement_plan",
+    "findings": [
+      "SYSTEMIC OVERSIGHT FAILURE as Director of Nursing:",
+      "Failed to detect LVN practicing on expired license for 5 months",
+      "Failed to address chronic caseload overloads: 5 clinicians over max for 3+ months",
+      "Failed to ensure HHA aide supervision compliance: Crestwood had ZERO supervision Q1-Q2",
+      "Failed to monitor credential expiration tracking system",
+      "Failed to address multiple clinician performance issues in timely manner",
+      "Condition-level deficiency patterns traceable to DON oversight gaps",
+      "QAPI program deficiencies not corrected",
+      "Agency at risk for survey deficiencies and CMS sanctions"
+    ],
+    "requiredActions": [
+      "Written corrective action plan within 5 business days",
+      "Implement credential tracking automation within 30 days",
+      "Monthly credential audit reports to Administrator",
+      "Weekly caseload review meetings",
+      "Aide supervision compliance tracking system within 14 days",
+      "QAPI program remediation plan within 30 days",
+      "90-day probationary PIP with monthly benchmarks"
+    ],
+    "pipDuration": "90_days",
+    "consequenceIfFailed": "demotion_or_termination"
+  },
+  {
+    "triggerId": "MOCK-PIP-HA-0009",
+    "clinicianId": "MOCK-CLIN-HA-0028",
+    "clinicianName": "Rosa Moonfield",
+    "role": "QAPI Coordinator",
+    "triggerType": "PIP_initiation",
+    "triggerDate": "2026-06-15",
+    "category": "qapi_program_failure",
+    "findings": [
+      "QAPI program found DEFICIENT on internal review:",
+      "Failed to identify systemic documentation lateness patterns across agency",
+      "Failed to identify credential monitoring failures",
+      "Failed to identify patient safety event patterns (falls, infections, hospitalizations)",
+      "Incident reporting system has 10+ UNREPORTED events in Q1-Q2",
+      "QAPI committee meeting minutes missing for Feb, Mar, Apr 2026",
+      "Performance Improvement Projects (PIPs) not data-driven",
+      "No root cause analysis completed for any adverse events",
+      "Agency QAPI program does not meet CMS Conditions of Participation requirements"
+    ],
+    "requiredActions": [
+      "Immediate QAPI program remediation plan",
+      "Complete retrospective incident reports for all identified events within 14 days",
+      "Restart QAPI committee with documented monthly meetings",
+      "Complete root cause analysis for top 5 adverse event categories within 30 days",
+      "Implement data-driven PIP for hospitalization reduction within 30 days",
+      "Weekly reporting to DON on QAPI compliance metrics",
+      "90-day probationary PIP"
+    ],
+    "pipDuration": "90_days",
+    "consequenceIfFailed": "termination"
+  }
+]
