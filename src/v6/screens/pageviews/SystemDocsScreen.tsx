@@ -1,5 +1,7 @@
 import { Search, Info } from 'lucide-react';
 import { DataTable, type DataTableColumn } from '../../components';
+import { POLICY_CORPUS } from '@/policy/data/policyCorpus';
+import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
 
 
 interface DocSectionRow extends Record<string, string> {
@@ -19,11 +21,19 @@ const columns: readonly DataTableColumn<DocSectionRow>[] = [
 ];
 
 const rows: readonly DocSectionRow[] = [
-  { sectionId: 'SEC-001', title: 'CES Integration Architecture', scope: 'Compliance Systems', lastUpdated: '2026-06-01', status: 'validated' },
-  { sectionId: 'SEC-002', title: 'Cognito Authentication Bootstrap', scope: 'IT Security', lastUpdated: '2026-06-05', status: 'validated' },
-  { sectionId: 'SEC-003', title: 'Dynamic Swimlane Routing Flow', scope: 'Clinical Ops', lastUpdated: '2026-06-12', status: 'active' },
-  { sectionId: 'SEC-004', title: 'Dual-Signature Override Policy', scope: 'Administration', lastUpdated: '2026-06-18', status: 'review-required' },
+  { sectionId: 'SEC-001', title: `Policy Library and Detail (${POLICY_CORPUS.length} real policies)`, scope: 'Taxonomy', lastUpdated: '2026-06-22', status: 'validated' },
+  { sectionId: 'SEC-002', title: `Forms Library and Workspace (${FORMS_DATASET.length} real forms)`, scope: 'Taxonomy', lastUpdated: '2026-06-22', status: 'validated' },
+  { sectionId: 'SEC-003', title: 'eCIgn Path A source-grounded signing reference', scope: 'Signing', lastUpdated: '2026-06-22', status: 'validated' },
+  { sectionId: 'SEC-004', title: 'eCIgn Path B controlled implementation notes', scope: 'Signing', lastUpdated: '2026-06-22', status: 'planned' },
+  { sectionId: 'SEC-005', title: 'Signed-PDF artifact rule', scope: 'Signing', lastUpdated: '2026-06-22', status: 'active' },
 ];
+
+const documentationNotes = [
+  'Policy and form counts are derived from the current V2 datasets.',
+  'Policy Detail exposes real corpus sections rather than placeholder summaries.',
+  'Form Workspace reads real form sections, fields, and signer context.',
+  'Path B signing behavior is not generally authorized from this documentation surface.',
+] as const;
 
 export function SystemDocsScreen() {
   return (
@@ -40,7 +50,7 @@ export function SystemDocsScreen() {
             <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
               <div>
                 <h3 className="text-h3 font-medium text-ink">Documentation Chapters</h3>
-                <p className="mt-xs text-sm text-muted">Chapters mapping to the V6 platform and compliance engines.</p>
+                <p className="mt-xs text-sm text-muted">Chapters mapped to the current V2 baseline and honest implementation status.</p>
               </div>
             </div>
             <DataTable columns={columns} label="Chapters table" rows={rows} />
@@ -63,9 +73,11 @@ export function SystemDocsScreen() {
               <Info aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
               Documentation Guide
             </h3>
-            <p className="text-sm text-secondary">
-              Use the chapter links under the V6 shell to review operational guidance, evidence paths, and support notes.
-            </p>
+            <ul className="text-sm text-secondary grid gap-sm list-disc pl-md">
+              {documentationNotes.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
           </section>
         </aside>
       </section>

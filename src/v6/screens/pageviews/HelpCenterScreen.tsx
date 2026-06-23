@@ -1,12 +1,21 @@
 import { Search, HelpCircle, FileText } from 'lucide-react';
 ;
 import { Badge } from '../../primitives';
+import { POLICY_CORPUS } from '@/policy/data/policyCorpus';
+import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
+import { HELP_ARTICLES } from '@/policy/data/helpArticles';
 
 const categories = [
-  { label: 'Overview & Commands', count: '12 articles', desc: 'Primary commands, dashboard widgets, and user settings.' },
-  { label: 'CES Kanban & Sprints', count: '8 articles', desc: 'Sprint schedules, task moves, and blocker mitigations.' },
-  { label: 'Regulatory Taxonomy', count: '15 articles', desc: 'ACHC alignments, CMS crosswalks, and policy draft lifecycle.' },
-  { label: 'Onboarding GAO Tracks', count: '9 articles', desc: 'Pre-Day-1 checklists, modules play, and supervisor clearances.' },
+  { label: 'Policy Library', count: `${POLICY_CORPUS.length} policies`, desc: 'Canonical V2 corpus with real policy sections, metadata, and detail pages.' },
+  { label: 'Forms Library', count: `${FORMS_DATASET.length} forms`, desc: 'Real form records with read/fill workspace data and signer context.' },
+  { label: 'Operator Articles', count: `${Object.keys(HELP_ARTICLES).length} articles`, desc: 'Help articles available from current V2 event and calendar contexts.' },
+  { label: 'Signing Guidance', count: 'Reference only', desc: 'Use source-grounded eCIgn Path A; Path B remains controlled by the eCIgn lane.' },
+] as const;
+
+const latestUpdates = [
+  'Policy Library and Policy Detail now use the 279-policy corpus.',
+  'Forms Library and Form Workspace now use the 410-form dataset.',
+  'Signed artifacts must remain the actual Care Indeed PDF, not markdown, HTML, or generic text.',
 ] as const;
 
 export function HelpCenterScreen() {
@@ -53,19 +62,19 @@ export function HelpCenterScreen() {
               Direct Support
             </h3>
             <p className="text-sm text-secondary">
-              Cannot find the right guideline? Submit a request to the platform administration group or compliance officer.
+              Cannot find the right guideline? Submit a request to the platform administration group. Do not authorize new signing or evidence behavior from help copy alone.
             </p>
           </section>
 
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md flex items-center gap-sm">
               <FileText aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
-              Latest Article Updates
+              Baseline Notes
             </h3>
             <ul className="text-sm text-secondary grid gap-sm list-disc pl-md">
-              <li>MFA Recovery instructions</li>
-              <li>Dual signature overrides</li>
-              <li>OASIS return demo checks</li>
+              {latestUpdates.map((update) => (
+                <li key={update}>{update}</li>
+              ))}
             </ul>
           </section>
         </aside>
