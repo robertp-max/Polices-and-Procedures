@@ -3600,7 +3600,7 @@ function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
               </div>
             ))}
           </div>
-          <Button className="mt-lg w-full" variant="secondary">
+          <Button className="mt-lg w-full" variant="secondary" onClick={() => navigate('/ces/reports')}>
             Generate packet
           </Button>
         </aside>
