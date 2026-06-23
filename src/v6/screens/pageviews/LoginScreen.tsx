@@ -39,18 +39,18 @@ export function LoginScreen() {
         Back to Dashboard
       </a>
 
-      <section className="relative z-10 grid w-full max-w-modal-sm gap-xl rounded-2xl border border-card bg-surface px-2xl py-xl shadow-hover">
+      <section className="relative z-10 grid w-full max-w-[380px] gap-lg rounded-2xl border border-card bg-surface p-xl shadow-hover">
         <div className="flex justify-center">
           <img
             src="/ci-logo-gray.png"
             alt="Care Indeed"
-            className="h-10 w-auto object-contain"
+            className="h-8 w-auto object-contain"
           />
         </div>
 
-        <div className="grid gap-sm text-center">
-          <h1 className="text-h1 font-medium text-brand-teal-deep">Welcome Back</h1>
-          <p className="text-body font-light text-secondary">Please enter your credentials to continue</p>
+        <div className="grid gap-xs text-center">
+          <h1 className="text-h2 font-medium text-brand-teal-deep">Welcome Back</h1>
+          <p className="text-sm font-light text-secondary">Please enter your credentials to continue</p>
         </div>
 
         <form className="grid gap-lg" noValidate onSubmit={handleSubmit}>
