@@ -39,7 +39,7 @@ export function LoginScreen() {
         Back to Dashboard
       </a>
 
-      <section className="relative z-10 grid w-full max-w-modal-sm gap-2xl rounded-2xl border border-card bg-surface p-2xl shadow-hover">
+      <section className="relative z-10 grid w-full max-w-modal-sm gap-xl rounded-2xl border border-card bg-surface px-2xl py-xl shadow-hover">
         <div className="flex justify-center">
           <img
             src="/ci-logo-gray.png"
@@ -53,7 +53,7 @@ export function LoginScreen() {
           <p className="text-body font-light text-secondary">Please enter your credentials to continue</p>
         </div>
 
-        <form className="grid gap-xl" noValidate onSubmit={handleSubmit}>
+        <form className="grid gap-lg" noValidate onSubmit={handleSubmit}>
           <label className="grid gap-sm">
             <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Email Address</span>
             <span className="flex h-control items-center gap-md rounded-xl border border-card bg-surface px-md text-brand-teal shadow-rest transition duration-fast ease-standard focus-within:shadow-focus">
