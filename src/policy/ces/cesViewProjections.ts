@@ -444,15 +444,15 @@ export function buildReportMetrics(input?: { units?: readonly ExecutionUnit[] })
 }
 
 /** Convenience: all-in-one master projection bag (for future consumers). */
-export function buildCesAllProjections(snapshot?: CesSnapshot) {
-  const s = snapshot || null;
+export function buildCesAllProjections(_snapshot?: any) {
+  const unitsForAll = V3_ExecutionUnitsSeed;
   return {
-    boardLanes: buildBoardLanes({ units: s.executionUnits as any }),
-    eventLanes: buildEventLanes({ units: s.executionUnits as any }),
-    taskLanes: buildTaskLanes({ units: s.executionUnits as any }),
-    calendarEvents: buildCalendarEvents({ snapshot: s }),
-    evidenceRows: buildEvidenceRows({ snapshot: s }),
-    auditRows: buildAuditRows({ snapshot: s }),
-    reportMetrics: buildReportMetrics({ snapshot: s }),
+    boardLanes: buildBoardLanes({ units: unitsForAll }),
+    eventLanes: buildEventLanes({ units: unitsForAll }),
+    taskLanes: buildTaskLanes({ units: unitsForAll }),
+    calendarEvents: buildCalendarEvents(),
+    evidenceRows: buildEvidenceRows(),
+    auditRows: buildAuditRows(),
+    reportMetrics: buildReportMetrics(),
   };
 }
