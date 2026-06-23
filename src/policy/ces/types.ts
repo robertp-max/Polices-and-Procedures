@@ -70,6 +70,8 @@ export const COMPLIANCE_DOMAIN_LABEL: Record<ComplianceDomain, string> = {
   compliance: 'Compliance',
   hr:         'HR',
   governance: 'Governance',
+  quality:    'Quality',
+  safety:     'Safety',
 };
 
 export type DomainRiskLevel = 'green' | 'yellow' | 'red';

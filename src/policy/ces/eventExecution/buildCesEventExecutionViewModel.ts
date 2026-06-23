@@ -113,9 +113,11 @@ export interface CesEventExecutionViewModel {
 }
 
 export interface CesEventExecutionStoreSnapshot {
-  effectiveStepStatus?: (event: RegulatoryEvent, stepId: string) => string | undefined;
-  effectiveFormStatus?: (event: RegulatoryEvent, formId: string) => string | undefined;
+  effectiveStepStatus?: (event: any, stepId: string) => string | undefined;
+  effectiveFormStatus?: (event: any, formId: string) => string | undefined;
   isCertified?: (eventId: string) => boolean;
+  /** CES native approvals for signature status (added for type hygiene). */
+  approvals?: Array<{ status?: string }>;
 }
 
 export interface BuildCesEventExecutionViewModelInput {
