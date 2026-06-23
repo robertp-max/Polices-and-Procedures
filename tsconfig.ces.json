@@ -3,18 +3,8 @@
   "compilerOptions": {
     "noEmit": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.ces.tsbuildinfo",
-    "types": ["node"],
+    "types": ["vite/client", "node"],
     "skipLibCheck": true
   },
-  "include": [
-    "src/policy/ces/types.ts",
-    "src/policy/ces/cesMasterControlAudit.ts",
-    "src/policy/ces/cesMasterControlAudit.test.ts",
-    "src/policy/ces/cesViewProjections.ts",
-    "src/policy/ces/cesViewProjections.test.ts",
-    "src/policy/ces/data/V3_CES_SeedData.ts",
-    "src/policy/ces/data/V3_CES_SnapshotBuilder.ts",
-    "src/policy/ces/data/V3_AppSeedPrimitives.ts",
-    "src/policy/ces/eventExecution/buildCesEventExecutionViewModel.ts"
-  ]
+  "include": ["src/policy/ces/**/*.ts", "src/policy/ces/**/*.tsx"]
 }

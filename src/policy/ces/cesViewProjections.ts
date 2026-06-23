@@ -18,7 +18,17 @@
 
 import type { BoardLaneData, BoardCardData, MetricTileData } from '@/v6/components';
 import type { Tone } from '@/v6/tokens';
-// validators are Phase 2 (not yet for 1.2/1.3)
+import {
+  validateBoardLanes,
+  validateEventLanes,
+  validateTaskLanes,
+  validateCalendarEvents,
+  validateEvidenceRows,
+  validateAuditRows,
+  validateReportMetrics,
+  type ValidationResult,
+} from './cesValidators';
+import { asWorkflowId, type WorkflowId } from './ids';
 
 import {
   V3_ExecutionUnitsSeed,
@@ -26,6 +36,30 @@ import {
 } from './data/V3_CES_SeedData';
 // nullFn import removed for CES type isolation (use units only)
 import type { ExecutionUnit } from './types';
+
+/** Dev-only defensive validation flag. Vite sets import.meta.env.DEV; under the
+ *  node test runner import.meta.env is undefined, so this is false (tests call the
+ *  validators directly). Never throws. */
+const CES_PROJECTION_DEV: boolean = (() => {
+  try {
+    return Boolean(import.meta.env?.DEV);
+  } catch {
+    return false;
+  }
+})();
+
+/** Wrap a projection's return value: in dev, validate it and warn on any contract
+ *  violation; always return the value unchanged. Satisfies Task 2.5 (each build*
+ *  validates its output in dev; validators are also exported for consumers). */
+function finalize<T>(value: T, validate: (v: unknown) => ValidationResult, label: string): T {
+  if (CES_PROJECTION_DEV) {
+    const r = validate(value);
+    if (!r.ok && typeof console !== 'undefined') {
+      console.warn(`[CES projection] ${label} produced invalid data:`, r.errors);
+    }
+  }
+  return value;
+}
 
 // --- Local view shapes for calendar (not exported from components; mirror RepresentativeScreens) ---
 export interface CesCalendarEvent {
@@ -56,7 +90,7 @@ export interface CesCalendarEvent {
   taskCount?: number;
   tone: Tone;
   workflow?: string;
-  workflowId?: string;
+  workflowId?: WorkflowId;
 }
 
 export type EvidenceRow = readonly [string, string, string, Tone];
@@ -226,8 +260,8 @@ export const FALLBACK_CES_CALENDAR_EVENTS: readonly CesCalendarEvent[] = [
   { day: 16, label: 'April clinical documentation audit', owner: 'Clinical', progress: 65, tone: 'teal', month: 4, bundleCategory: 'Clinical', bundleName: 'April clinical documentation audit', recurrencePattern: 'Third Thursday' },
   { day: 7, label: 'Q1 personnel file evidence review', owner: 'Compliance Officer', progress: 90, tone: 'teal', month: 5, bundleCategory: 'HR / Onboarding / Training', bundleName: 'Q1 personnel file evidence review', recurrencePattern: 'First Thursday' },
   { day: 14, label: 'Q2 safety and infection-control evidence review', owner: 'DON', progress: 55, tone: 'orange', month: 5, bundleCategory: 'Compliance / Evidence', bundleName: 'Q2 safety and infection-control evidence review', recurrencePattern: 'Second Thursday' },
-  { day: 21, label: 'Governing Body pre-read packet', owner: 'Maria Gonzalez, RN', progress: 62, tone: 'orange', month: 5, bundleCategory: 'QAPI / Governance', bundleName: 'Q2 governance and financial oversight review', recurrencePattern: 'Third Thursday', workflowId: 'wf-gb-packet-2026-10' },
-  { day: 21, label: 'Emergency drill after-action', owner: 'Compliance Officer', progress: 95, tone: 'green', month: 5, bundleCategory: 'Compliance / Evidence', bundleName: 'Emergency preparedness after-action review', recurrencePattern: 'Third Thursday', workflowId: 'wf-ep-afteraction-2026-10' },
+  { day: 21, label: 'Governing Body pre-read packet', owner: 'Maria Gonzalez, RN', progress: 62, tone: 'orange', month: 5, bundleCategory: 'QAPI / Governance', bundleName: 'Q2 governance and financial oversight review', recurrencePattern: 'Third Thursday', workflowId: asWorkflowId('wf-gb-packet-2026-10') },
+  { day: 21, label: 'Emergency drill after-action', owner: 'Compliance Officer', progress: 95, tone: 'green', month: 5, bundleCategory: 'Compliance / Evidence', bundleName: 'Emergency preparedness after-action review', recurrencePattern: 'Third Thursday', workflowId: asWorkflowId('wf-ep-afteraction-2026-10') },
   { day: 2, label: 'QAPI aggregate report review', owner: 'DON', progress: 40, tone: 'teal', month: 6, bundleCategory: 'QAPI / Governance', bundleName: 'QAPI aggregate preparation', recurrencePattern: 'First Tuesday' },
   { day: 11, label: 'Q2 QAPI committee and patient-experience review', owner: 'QAPI Lead', progress: 70, tone: 'teal', month: 6, bundleCategory: 'QAPI / Governance', bundleName: 'Q2 QAPI committee and patient-experience review', recurrencePattern: 'Second Thursday' },
 ];
@@ -333,7 +367,7 @@ export function buildBoardLanes(input?: { units?: readonly ExecutionUnit[] }): r
     // ensure non-empty by borrowing
   }
 
-  return lanes.length > 0 ? lanes : [...FALLBACK_BOARD_LANES];
+  return finalize(lanes.length > 0 ? lanes : [...FALLBACK_BOARD_LANES], validateBoardLanes, 'boardLanes');
 }
 
 const LANE_META: Record<string, { title: string; tone: Tone }> = {
@@ -356,12 +390,13 @@ export function buildEventLanes(input?: { units?: readonly ExecutionUnit[] }): r
   const needs = units.filter(u => u.complianceState === 'in_progress').map(unitToBoardCard).slice(0, 4);
   const onTrack = units.filter(u => u.complianceState === 'completed' || u.complianceState === 'ready').map(unitToBoardCard).slice(0, 4);
 
-  return [
+  const lanes: readonly BoardLaneData[] = [
     { title: 'Critical & Overdue', tone: 'orange', count: critical.length || 4, cards: critical.length ? critical : FALLBACK_EVENT_LANES[0].cards },
     { title: 'At Risk', tone: 'amber', count: atRisk.length || 4, cards: atRisk.length ? atRisk : FALLBACK_EVENT_LANES[1].cards },
     { title: 'Needs Attention', tone: 'teal', count: needs.length || 12, cards: needs.length ? needs : FALLBACK_EVENT_LANES[2].cards },
     { title: 'On Track', tone: 'green', count: onTrack.length || 28, cards: onTrack.length ? onTrack : FALLBACK_EVENT_LANES[3].cards },
   ];
+  return finalize(lanes, validateEventLanes, 'eventLanes');
 }
 
 /** Build my-tasks lanes from seed. */
@@ -374,12 +409,13 @@ export function buildTaskLanes(input?: { units?: readonly ExecutionUnit[] }): re
   const blocked = units.filter(u => u.complianceState === 'blocked').map(unitToBoardCard).slice(0, 2);
   const ready = units.filter(u => u.complianceState === 'ready' || u.complianceState === 'completed').map(unitToBoardCard).slice(0, 2);
 
-  return [
+  const lanes: readonly BoardLaneData[] = [
     { title: 'Today', tone: 'orange', count: today.length || 9, cards: today.length ? today : FALLBACK_TASK_LANES[0].cards },
     { title: 'Clinical Review', tone: 'teal', count: clinical.length || 10, cards: clinical.length ? clinical : FALLBACK_TASK_LANES[1].cards },
     { title: 'Blocked', tone: 'amber', count: blocked.length || 4, cards: blocked.length ? blocked : FALLBACK_TASK_LANES[2].cards },
     { title: 'Ready', tone: 'green', count: ready.length || 12, cards: ready.length ? ready : FALLBACK_TASK_LANES[3].cards },
   ];
+  return finalize(lanes, validateTaskLanes, 'taskLanes');
 }
 
 /** Build calendar events. Uses regulatory + units seed. */
@@ -395,7 +431,7 @@ export function buildCalendarEvents(input?: { units?: readonly ExecutionUnit[] }
     tone: (i % 3 === 0 ? 'orange' : i % 2 === 0 ? 'teal' : 'green') as Tone,
     sourceUnitId: u.id,
   })) as CesCalendarEvent[];
-  return base.length ? base : [...FALLBACK_CES_CALENDAR_EVENTS];
+  return finalize(base.length ? base : [...FALLBACK_CES_CALENDAR_EVENTS], validateCalendarEvents, 'calendarEvents');
 }
 
 /** Build evidence rows. Seed-driven from snapshot or master-like derivation. */
@@ -407,7 +443,7 @@ export function buildEvidenceRows(input?: { snapshot?: CesSnapshot }): readonly 
       const t: Tone = status.includes('LOCK') ? 'green' : status.includes('VALID') ? 'teal' : 'orange';
       return [u.title?.slice(0, 28) || 'Evidence item', u.workflowId || `WF-${i}`, status, t];
     });
-    if (rows.length) return rows;
+    if (rows.length) return finalize(rows, validateEvidenceRows, 'evidenceRows');
   }
   return [...FALLBACK_EVIDENCE_ROWS];
 }
@@ -417,11 +453,11 @@ export function buildAuditRows(input?: { snapshot?: CesSnapshot }): readonly Aud
   const snap = input?.snapshot;
   if (snap && snap.executionUnits) {
     const highRisk = snap.executionUnits.filter((u: any) => u.auditReadiness !== 'ready').slice(0, 5);
-    return highRisk.map((u: any) => {
+    return finalize(highRisk.map((u: any) => {
       const st = u.complianceState === 'completed' ? 'certified locked' : u.complianceState === 'awaiting_signature' ? 'pending approval' : 'ready to certify';
       const tn: Tone = st.includes('certified') ? 'green' : st.includes('pending') ? 'orange' : 'teal';
       return [u.title?.slice(0, 30) || 'Audit packet', u.workflowId || 'QA-WF', st, tn] as AuditRow;
-    });
+    }), validateAuditRows, 'auditRows');
   }
   return [...FALLBACK_AUDIT_ROWS];
 }
@@ -435,16 +471,17 @@ export function buildReportMetrics(input?: { units?: readonly ExecutionUnit[] })
   const readyish = units.filter((u: any) => u.auditReadiness === 'ready').length || 11;
   const pct = Math.round((completed / total) * 100) || 18;
   const auditPct = Math.round((readyish / total) * 100) || 35;
-  return [
+  const metrics: readonly MetricTileData[] = [
     { label: 'Completion', value: pct + '%', helper: 'Current sprint completion', tone: 'orange' },
     { label: 'Audit readiness', value: auditPct + '%', helper: 'Seeded CES posture', tone: 'orange' },
     { label: 'Active blockers', value: String(blocked), helper: 'Evidence or signature gaps', tone: 'orange' },
     { label: 'Signature SLA', value: '1 miss', helper: 'Code-computed exception', tone: 'teal' },
   ];
+  return finalize(metrics, validateReportMetrics, 'reportMetrics');
 }
 
 /** Convenience: all-in-one master projection bag (for future consumers). */
-export function buildCesAllProjections(_snapshot?: any) {
+export function buildCesAllProjections(_snapshot?: unknown) {
   const unitsForAll = V3_ExecutionUnitsSeed;
   return {
     boardLanes: buildBoardLanes({ units: unitsForAll }),

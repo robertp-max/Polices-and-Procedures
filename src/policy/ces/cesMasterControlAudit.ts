@@ -19,11 +19,12 @@
 
 import type { MasterControlItem } from '@/policy/types/masterControlInventory';
 import { loadMasterControlInventorySeed } from '@/policy/data/masterControlInventory';
+import { asControlId, type ControlId } from './ids';
 // best-effort snapshot type (may vary); not required for basic inventory load
 type AnyExecutionSnapshot = { executionUnits?: unknown[] } | null | undefined;
 
 export interface ControlInventoryRow {
-  controlId: string;
+  controlId: ControlId;
   controlName: string;
   riskTier: 'High' | 'Material' | 'Low';
   sourceStatus: string;
@@ -91,7 +92,7 @@ export async function buildCesControlAuditView(_options?: {
         }
 
         return {
-          controlId: controlIdStr,
+          controlId: asControlId(controlIdStr),
           controlName: c.controlName,
           riskTier,
           sourceStatus: (c.status ?? 'UNKNOWN').toUpperCase(),
@@ -175,11 +176,11 @@ export function validateCesControlAuditView(view: CesControlAuditView): void {
 
 /** Lightweight sync fallback for visual parity when async load not yet resolved. */
 export const FALLBACK_CONTROL_INVENTORY_ROWS: readonly ControlInventoryRow[] = [
-  { controlId: 'MC-AH-001', controlName: 'After-hours on-call coverage', riskTier: 'High', sourceStatus: 'UNKNOWN', evidence: 'missing-evidence', readiness: 'review-required' },
-  { controlId: 'MC-OA-014', controlName: 'OASIS QA and transmission control', riskTier: 'High', sourceStatus: 'UNKNOWN', evidence: 'uploaded', readiness: 'ready' },
-  { controlId: 'MC-PO-022', controlName: 'Physician orders signature control', riskTier: 'High', sourceStatus: 'UNKNOWN', evidence: 'pending', readiness: 'awaiting' },
-  { controlId: 'MC-IP-040', controlName: 'Infection prevention surveillance', riskTier: 'High', sourceStatus: 'UNKNOWN', evidence: 'validated', readiness: 'certified' },
-  { controlId: 'MC-EP-057', controlName: 'Emergency preparedness annual review', riskTier: 'Material', sourceStatus: 'UNKNOWN', evidence: 'uploaded', readiness: 'ready' },
-  { controlId: 'MC-OS-063', controlName: 'OSHA logs and workplace violence control', riskTier: 'Material', sourceStatus: 'UNKNOWN', evidence: 'review-required', readiness: 'attention' },
-  { controlId: 'MC-AD-104', controlName: 'Administrative posting and notice inventory', riskTier: 'Low', sourceStatus: 'UNKNOWN', evidence: 'complete', readiness: 'ready' },
+  { controlId: asControlId('MC-AH-001'), controlName: 'After-hours on-call coverage', riskTier: 'High', sourceStatus: 'UNKNOWN', evidence: 'missing-evidence', readiness: 'review-required' },
+  { controlId: asControlId('MC-OA-014'), controlName: 'OASIS QA and transmission control', riskTier: 'High', sourceStatus: 'UNKNOWN', evidence: 'uploaded', readiness: 'ready' },
+  { controlId: asControlId('MC-PO-022'), controlName: 'Physician orders signature control', riskTier: 'High', sourceStatus: 'UNKNOWN', evidence: 'pending', readiness: 'awaiting' },
+  { controlId: asControlId('MC-IP-040'), controlName: 'Infection prevention surveillance', riskTier: 'High', sourceStatus: 'UNKNOWN', evidence: 'validated', readiness: 'certified' },
+  { controlId: asControlId('MC-EP-057'), controlName: 'Emergency preparedness annual review', riskTier: 'Material', sourceStatus: 'UNKNOWN', evidence: 'uploaded', readiness: 'ready' },
+  { controlId: asControlId('MC-OS-063'), controlName: 'OSHA logs and workplace violence control', riskTier: 'Material', sourceStatus: 'UNKNOWN', evidence: 'review-required', readiness: 'attention' },
+  { controlId: asControlId('MC-AD-104'), controlName: 'Administrative posting and notice inventory', riskTier: 'Low', sourceStatus: 'UNKNOWN', evidence: 'complete', readiness: 'ready' },
 ];
