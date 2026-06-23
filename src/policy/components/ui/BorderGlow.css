@@ -1,0 +1,222 @@
+.border-glow-card {
+  --edge-proximity: 0;
+  --cursor-angle: 45deg;
+  --edge-sensitivity: 22;
+  --color-sensitivity: calc(var(--edge-sensitivity) + 20);
+  --border-radius: 16px;
+  --glow-padding: 40px;
+  --cone-spread: 25;
+
+  position: relative;
+  border-radius: var(--border-radius);
+  isolation: isolate;
+  transform: translate3d(0, 0, 0.01px);
+  display: grid;
+  border: 1px solid rgba(233, 229, 227, 0.8) !important;
+  border-color: rgba(233, 229, 227, 0.8) !important;
+  background: var(--card-bg, transparent); /* restrained default (transparent lets inner direct-tone MetricTile #F7FEFF pastels + white SurfaceCard show); pass bg only for special */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: visible;
+  box-shadow:
+    /* Use neutral soft per index --shadow-soft / ref 16 + CES for base surface treatment; teal tints only on hover pseudo glows */
+    var(--shadow-soft, 0 10px 32px -18px rgba(0, 65, 66, 0.12), 0 4px 12px -6px rgba(0, 65, 66, 0.06)),
+    inset 0 1px 0 #fff,
+    inset 0 -1px 0 rgba(233, 229, 227, 0.35) !important;
+}
+
+.border-glow-card::before,
+.border-glow-card::after,
+.border-glow-card > .edge-light {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transition: opacity 0.25s ease-out;
+  z-index: -1;
+}
+
+.border-glow-card:not(:hover):not(.sweep-active)::before,
+.border-glow-card:not(:hover):not(.sweep-active)::after,
+.border-glow-card:not(:hover):not(.sweep-active) > .edge-light,
+.border-glow-card:not(:hover):not(.sweep-active) > .glow-stack {
+  opacity: 0;
+  transition: opacity 0.75s ease-in-out;
+}
+
+.border-glow-card::before {
+  padding: 1.5px;
+  background:
+    conic-gradient(
+      from var(--cursor-angle) at center,
+      /* Polished exact interactive edge-proximity conic glow to match ref images (fresh-current vs V6 16-dashboard + ces pair):
+         brighter cyan/teal arcs on border rim, stronger as cursor nears edges. vs simple radial. Higher intensity for critical board, banner, premium tiles. */
+      rgb(122 245 237 / 92%) 0%,
+      rgb(0 121 125 / 82%) calc(var(--cone-spread) * 1%),
+      rgb(0 121 125 / 0%) calc((var(--cone-spread) + 10) * 1%),
+      rgb(0 121 125 / 0%) calc((100 - var(--cone-spread) - 10) * 1%),
+      rgb(0 121 125 / 82%) calc((100 - var(--cone-spread)) * 1%),
+      rgb(122 245 237 / 92%) 100%
+    );
+
+  opacity: calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.border-glow-card::after {
+  display: none;
+  opacity: 0 !important;
+}
+
+.border-glow-card > .edge-light {
+  inset: calc(var(--glow-padding) * -1);
+  pointer-events: none;
+  z-index: 1;
+
+  mask-image:
+    conic-gradient(
+      from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%
+    );
+
+  opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
+  mix-blend-mode: normal;
+}
+
+.border-glow-card > .edge-light::before {
+  content: "";
+  position: absolute;
+  inset: var(--glow-padding);
+  border-radius: inherit;
+  box-shadow:
+    /* Polished stronger edge glow stack (exact match to ref interactive conic/rim vs radial):
+       elevated alphas + tighter inner for premium cards (critical board + banner + tiles) */
+    inset 0 0 0 1px var(--glow-color, hsl(181deg 72% 58% / 95%)),
+    inset 0 0 1px 0 var(--glow-color-60, hsl(181deg 72% 58% / 72%)),
+    inset 0 0 3px 0 var(--glow-color-50, hsl(181deg 72% 58% / 62%)),
+    inset 0 0 6px 0 var(--glow-color-40, hsl(181deg 72% 58% / 52%)),
+    inset 0 0 14px 0 var(--glow-color-30, hsl(181deg 72% 58% / 42%)),
+    inset 0 0 22px 2px var(--glow-color-20, hsl(181deg 72% 58% / 28%)),
+    inset 0 0 48px 2px var(--glow-color-10, hsl(181deg 72% 58% / 16%)),
+    0 0 1px 0 var(--glow-color-60, hsl(181deg 72% 58% / 68%)),
+    0 0 3px 0 var(--glow-color-50, hsl(181deg 72% 58% / 55%)),
+    0 0 6px 0 var(--glow-color-40, hsl(181deg 72% 58% / 45%)),
+    0 0 14px 0 var(--glow-color-30, hsl(181deg 72% 58% / 35%)),
+    0 0 22px 2px var(--glow-color-20, hsl(181deg 72% 58% / 22%)),
+    0 0 48px 2px var(--glow-color-10, hsl(181deg 72% 58% / 12%));
+}
+
+/* 7-stack radial gradients (full fidelity for interactive glow per prototype):
+   multi-positioned soft radials using passed colors; revealed by edge-proximity + angle sweep (conic partner).
+   RAF-driven via parent pointer + animated. Subtle screen blend for luminous interior without overpowering content. */
+.border-glow-card > .glow-stack {
+  position: absolute;
+  inset: 6px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    var(--gradient-one),
+    var(--gradient-two),
+    var(--gradient-three),
+    var(--gradient-four),
+    var(--gradient-five),
+    var(--gradient-six),
+    var(--gradient-seven);
+  background-blend-mode: screen;
+  mix-blend-mode: screen;
+  opacity: var(--stack-opacity, 0);
+  transition: opacity 0.25s ease-out;
+}
+
+.border-glow-inner {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-width: 0;
+  overflow: visible;
+  z-index: 2;
+}
+
+/* BorderGlow variant for overlays/drawers (full port from prototype): restrained glass ONLY on overlays per spec (V6 16-dashboard, 11-ces, 02/03 mds). Use #F7FEFF + soft border, no heavy blur/black. */
+.border-glow-overlay {
+  --glow-padding: 48px;
+  --border-radius: 16px;
+  border: 1px solid rgba(233, 229, 227, 0.8) !important;
+  background: #F7FEFF;
+  box-shadow:
+    0 10px 30px -20px rgb(0 121 125 / 10%),
+    0 4px 12px -8px rgb(0 121 125 / 5%);
+}
+.border-glow-overlay .border-glow-inner {
+  background: transparent;
+  backdrop-filter: none;
+}
+
+/* Light mode defaults + #F7FEFF bg per task. Full edge-proximity/angle/conic/RAF/7-stack exactly as prototype */
+html[data-theme="care-indeed-light"] .border-glow-overlay,
+.light-shell .border-glow-overlay {
+  border: 1px solid rgba(233, 229, 227, 0.8) !important;
+  background: #F7FEFF;
+  box-shadow:
+    /* Consistent pale intensity */
+    0 18px 44px -34px rgb(0 121 125 / 14%),
+    0 10px 28px -26px rgb(0 121 125 / 8%),
+    inset 0 1px 0 #fff,
+    inset 0 -1px 0 rgba(233, 229, 227, 0.35);
+}
+html[data-theme="care-indeed-light"] .border-glow-card,
+.light-shell .border-glow-card {
+  /* No forced --card-bg; transparent allows direct tone pastels on MetricTile + white on SurfaceCard per spec #F7FEFF base + white cards. Use variant=overlay or explicit bg prop for glow shells. */
+  background: var(--card-bg, transparent);
+  border: 1px solid rgba(233, 229, 227, 0.8) !important;
+  border-color: rgba(233, 229, 227, 0.8) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    /* Pale + full intensity base for ref match on dashboard/ces */
+    0 18px 44px -34px rgb(0 121 125 / 14%),
+    0 10px 28px -26px rgb(0 121 125 / 8%),
+    inset 0 1px 0 #fff,
+    inset 0 -1px 0 rgba(233, 229, 227, 0.35);
+}
+
+html[data-theme="care-indeed-light"] .border-glow-card::before,
+.light-shell .border-glow-card::before {
+  background:
+    conic-gradient(
+      from var(--cursor-angle) at center,
+      /* Polished to exact ref (V6_Final/16-dashboard + ces): brighter cyan/teal edge arcs driven purely by proximity/angle for interactive premium elements */
+      rgb(122 245 237 / 92%) 0%,
+      rgb(0 121 125 / 82%) calc(var(--cone-spread) * 1%),
+      rgb(0 121 125 / 0%) calc((var(--cone-spread) + 10) * 1%),
+      rgb(0 121 125 / 0%) calc((100 - var(--cone-spread) - 10) * 1%),
+      rgb(0 121 125 / 82%) calc((100 - var(--cone-spread)) * 1%),
+      rgb(122 245 237 / 92%) 100%
+    );
+}
+
+html[data-theme="care-indeed-light"] .border-glow-card > .edge-light::before,
+.light-shell .border-glow-card > .edge-light::before {
+  box-shadow:
+    /* Polished higher-intensity edge stack (exact interactive edge-proximity match): critical board + banner + premium tiles now pop with conic rim glow per ref */
+    inset 0 0 0 1px var(--glow-color, hsl(181deg 72% 58% / 95%)),
+    inset 0 0 1px 0 var(--glow-color-60, hsl(181deg 72% 58% / 72%)),
+    inset 0 0 3px 0 var(--glow-color-50, hsl(181deg 72% 58% / 62%)),
+    inset 0 0 6px 0 var(--glow-color-40, hsl(181deg 72% 58% / 52%)),
+    inset 0 0 14px 0 var(--glow-color-30, hsl(181deg 72% 58% / 42%)),
+    inset 0 0 22px 2px var(--glow-color-20, hsl(181deg 72% 58% / 28%)),
+    inset 0 0 48px 2px var(--glow-color-10, hsl(181deg 72% 58% / 16%)),
+    0 0 1px 0 var(--glow-color-60, hsl(181deg 72% 58% / 68%)),
+    0 0 3px 0 var(--glow-color-50, hsl(181deg 72% 58% / 55%)),
+    0 0 6px 0 var(--glow-color-40, hsl(181deg 72% 58% / 45%)),
+    0 0 14px 0 var(--glow-color-30, hsl(181deg 72% 58% / 35%)),
+    0 0 22px 2px var(--glow-color-20, hsl(181deg 72% 58% / 22%)),
+    0 0 48px 2px var(--glow-color-10, hsl(181deg 72% 58% / 12%));
+}
