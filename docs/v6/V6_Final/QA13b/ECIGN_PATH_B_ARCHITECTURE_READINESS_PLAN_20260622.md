@@ -324,7 +324,7 @@ Concrete checklist (all must pass before Path B is considered done; all are nega
 ## 12. Implementation phasing recommendation
 
 - **Phase 0 -- architecture approval only** (this document). No code.
-- **Phase 1 -- data contract and tests** -- define artifact/version/metadata contract + failing tests (TDD); no runtime wiring.
+- **Phase 1 -- data contract and tests** -- define artifact/version/metadata contract + failing tests (TDD); NO runtime wiring, NO UI changes, NO server handlers. Phase 1 MUST NOT allow any runtime wiring.
 - **Phase 2 -- artifact versioning** -- immutable write-once store + append-only A->B->C chain + hash verification.
 - **Phase 3 -- signer sequencing** -- role/tier-validated multi-signer state machine over the artifact chain.
 - **Phase 4 -- Drive/Evidence parity** -- publish canonical artifact to Drive + Evidence Center linkage; parity tests green.
@@ -339,10 +339,6 @@ Each phase is independently reviewable; no phase may regress the signed-artifact
 
 **Implementation MUST remain BLOCKED pending explicit approval of this architecture.**
 
-Path B is MED-HIGH, evidence-of-record work. Begin only after: (a) this plan is approved, (b) Phase 1
-data contract + tests are agreed, and (c) the signed-PDF artifact rule (§2) is accepted as the
-non-negotiable gate. Until then, the baseline keeps Path A (source-grounded static model) and no
-live signing/write path is introduced. Recommended next step: review/approve this plan, then
-authorize **Phase 1 only** (data contract + tests, no runtime wiring). Merge of this document does not authorize any Path B implementation work or runtime wiring. It authorizes review/approval of Phase 1 (data contract + failing tests) only. No PR merge may be interpreted as authorization to begin Phase 2+.
+Path B is MED-HIGH, evidence-of-record work. Begin only after: (a) this plan is approved, (b) Phase 1 data contract + tests are agreed, and (c) the signed-PDF artifact rule (§2) is accepted as the non-negotiable gate. Until then, the baseline keeps Path A (source-grounded static model) and no live signing/write path is introduced. Recommended next step: review/approve this plan, then authorize **Phase 1 only** (data contract + tests, no runtime wiring). Merge of this document does not authorize any Path B implementation work or runtime wiring. It authorizes review/approval of Phase 1 (data contract + failing tests) only. No PR merge may be interpreted as authorization to begin Phase 2+.
 
 

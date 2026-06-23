@@ -77,7 +77,29 @@ However, remaining doc-only alignment issues:
 See the exact doc edits applied to address the gaps (plan only; no code changes).
 Agents 41-46: QA gates and negative tests
 Agents 47-52: Data model field completeness (replacement PASS)
-Agents 53-56: Implementation phasing and approval gates
+Agents 53-56: Implementation phasing and approval gates (replacement IMPROVEMENT)
+
+**Agent 53 (replacement) — Implementation phasing and approval gates (completed):**
+**1. Agent number and role**
+Agent 53: Implementation phasing and approval gates (replacement) in GROK 64-AGENT ZERO-TOLERANCE DOCUMENTATION HARDENING MODE.
+
+**2. IMPROVEMENT**
+
+**3. Exact lines reviewed**
+Primary plan targeted §12 324-334, §13 338-346 + context; QA13c reports and PLAN_* snapshots.
+
+**4. Findings**
+Core language strong: Phase 0 "architecture approval only. No code.", Phase 1 "data contract and tests; no runtime wiring.", "Each phase independently reviewable; no phase may regress the signed-artifact rule.", "Implementation MUST remain BLOCKED", "Begin only after ... plan approved + Phase 1 data contract + tests agreed + signed-PDF rule (§2) ... non-negotiable gate", "**Phase 1 only**", "Merge ... does not authorize any Path B implementation work or runtime wiring. ... No PR merge may be interpreted as authorization to begin Phase 2+".
+
+Issues:
+- Hard wraps in §13 final rec (mid-phrase breaks at "Phase 1\ndata", "the\nnon-negotiable", "and no\nlive", "then\nauthorize").
+- Phase 1 bullet only "no runtime wiring." (lacks explicit "NO UI changes, NO server handlers" matching §5 and prior recs).
+- Minor snapshot divergence in PLAN_* dumps.
+
+**5. Required fixes, if any**
+See the exact doc edits applied (reflow §13, strengthen Phase 1 bullet).
+
+(Full prior core BLOCKED/Phase 1 only language was already present.)
 
 **Agent 47 (replacement) — Data model field completeness (completed):**
 **1. Agent number and role**  
