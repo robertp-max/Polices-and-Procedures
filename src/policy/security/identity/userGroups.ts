@@ -217,7 +217,7 @@ export const USER_GROUPS: UserGroup[] = [
     id: 'grp-onboarding',
     name: 'Onboarding',
     description: 'Restricted onboarding/UAT role with Taxonomy and Workflows visibility only.',
-    permissions: [],
+    permissions: ['user.provision'],
   },
   {
     id: 'grp-billing',

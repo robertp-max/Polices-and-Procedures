@@ -25,6 +25,7 @@ const LIMITED_ACCESS_GROUPS: UserGroup['name'][] = ['Onboarding', 'Pending User'
 const ONBOARDING_VISIBLE_FEATURES = new Set<FeatureId>([
   'frameworkTaxonomy.view',
   'workflows.view',
+  'journey.view',
 ]);
 
 /** Default scope used when a feature gate doesn't supply one. */
