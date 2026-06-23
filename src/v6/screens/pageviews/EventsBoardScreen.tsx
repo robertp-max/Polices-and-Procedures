@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, FileCheck2, Filter, LockKeyhole, ShieldCheck, Users } from 'lucide-react';
 import { BoardLane, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneGlassSurfaceClasses, type BoardLaneData, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, Button, ToneBadge } from '../../primitives';
@@ -115,6 +116,14 @@ const evidenceSignals: readonly EvidenceSignal[] = [
 ];
 
 const eventLanes: readonly BoardLaneData[] = buildEventLanes() || FALLBACK_EVENT_LANES; // 1.4 wired to projection
+const filteredLanes = eventLanes.filter(lane => {
+  if (activeFilter === 'All events') return true;
+  if (activeFilter === 'Critical') return lane.title.includes('Critical');
+  if (activeFilter === 'Missing evidence') return lane.cards.some((c: any) => c.awaitingType === 'evidence' || c.missing);
+  if (activeFilter === 'Owner gaps') return lane.cards.some((c: any) => !c.owner || c.owner.includes('?'));
+  if (activeFilter === 'Ready to lock') return lane.title.includes('On Track') || lane.title.includes('Certified');
+  return true;
+});
   {
     cards: [
       {
@@ -276,7 +285,9 @@ const eventLanes: readonly BoardLaneData[] = buildEventLanes() || FALLBACK_EVENT
 ];
 
 export function EventsBoardScreen() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'board' | 'evidence'>('board');
+  const [activeFilter, setActiveFilter] = useState('All events');
 
   return (
     <div className="grid gap-lg">
@@ -316,14 +327,15 @@ export function EventsBoardScreen() {
             <div aria-label="Event status filters" className="flex flex-wrap gap-sm">
               {eventFilters.map((filter) => {
                 const Icon = filter.icon;
-
+                const isSelected = filter.label === activeFilter;
                 return (
                   <Button
                     iconLeft={<Icon aria-hidden="true" className="h-icon-sm w-icon-sm" />}
                     key={filter.label}
-                    selected={filter.selected}
+                    selected={isSelected}
                     size="sm"
-                    variant={filter.selected ? 'primary' : 'secondary'}
+                    variant={isSelected ? 'primary' : 'secondary'}
+                    onClick={() => setActiveFilter(filter.label)}
                   >
                     {filter.label}
                   </Button>
@@ -344,9 +356,9 @@ export function EventsBoardScreen() {
         <section className="grid gap-lg large:grid-cols-[minmax(0,1fr)_minmax(270px,320px)]">
           <div aria-label="Events board lanes" className="min-w-0 overflow-x-auto overflow-y-hidden pb-sm" role="region" tabIndex={0}>
             <div className="grid min-w-[920px] gap-sm tablet-l:grid-cols-2 desktop:min-w-0 desktop:grid-cols-4">
-              {eventLanes.map((lane) => (
+              {filteredLanes.map((lane) => (
                 <div className="min-w-0" key={lane.title}>
-                  <BoardLane lane={lane} />
+                  <BoardLane lane={lane} onCardClick={() => navigate('/evidence')} />
                 </div>
               ))}
             </div>

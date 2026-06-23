@@ -1,4 +1,5 @@
 import { BoardLane, MetricGrid, type BoardLaneData, type MetricTileData } from '../../components';
+import { useNavigate } from 'react-router-dom';
 import { buildTaskLanes, FALLBACK_TASK_LANES } from '@/policy/ces/cesViewProjections';
 
 const taskMetrics: readonly MetricTileData[] = [
@@ -124,13 +125,14 @@ const taskLanes: readonly BoardLaneData[] = buildTaskLanes() || FALLBACK_TASK_LA
 ];
 
 export function MyTasksScreen() {
+  const navigate = useNavigate();
   return (
     <div className="grid gap-lg">
       <MetricGrid metrics={taskMetrics} />
 
       <section className="grid gap-sm tablet-l:grid-cols-2 desktop:grid-cols-4" aria-label="My task board">
         {taskLanes.map((lane) => (
-          <BoardLane key={lane.title} lane={lane} />
+          <BoardLane key={lane.title} lane={lane} onCardClick={() => navigate('/evidence')} />
         ))}
       </section>
     </div>
