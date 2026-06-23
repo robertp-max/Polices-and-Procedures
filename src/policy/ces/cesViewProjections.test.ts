@@ -19,6 +19,7 @@ import {
   buildEvidenceRows,
   buildAuditRows,
   buildReportMetrics,
+  buildSprintSummary,
   getControlFromParams,
   getBucketFromParams,
   FALLBACK_BOARD_LANES,
@@ -146,5 +147,15 @@ describe('CES one-pass View Projections (board / events / tasks / calendar / evi
     assert.equal(getBucketFromParams(p), 'Critical');
     assert.equal(getBucketFromParams(new URLSearchParams('other=1')), null);
     assert.equal(getBucketFromParams(undefined), null);
+  });
+
+  it('buildSprintSummary returns non-negative counts; empty seed -> design-parity fallback', () => {
+    const s = buildSprintSummary();
+    for (const v of Object.values(s)) {
+      assert.ok(typeof v === 'number' && v >= 0, 'all summary counts are non-negative numbers');
+    }
+    assert.ok(s.total >= s.blocked && s.total >= s.completed && s.total >= s.readyToCertify);
+    const fb = buildSprintSummary({ units: [] });
+    assert.equal(fb.total, 33);
   });
 });

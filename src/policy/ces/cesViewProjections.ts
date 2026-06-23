@@ -480,6 +480,49 @@ export function buildReportMetrics(input?: { units?: readonly ExecutionUnit[] })
   return finalize(metrics, validateReportMetrics, 'reportMetrics');
 }
 
+// ============================================================
+// Sprint summary roll-up (backs board / calendar / my-tasks metric tiles)
+// ============================================================
+
+export interface CesSprintSummary {
+  total: number;
+  upcoming: number;
+  ready: number;
+  inProgress: number;
+  awaitingSignature: number;
+  blocked: number;
+  completed: number;
+  readyToCertify: number;
+  surveyCritical: number;
+  overdue: number;
+}
+
+export const FALLBACK_SPRINT_SUMMARY: CesSprintSummary = {
+  total: 33, upcoming: 6, ready: 7, inProgress: 12, awaitingSignature: 5,
+  blocked: 4, completed: 9, readyToCertify: 9, surveyCritical: 3, overdue: 2,
+};
+
+/** Pure roll-up of sprint execution-unit counts backing the board / calendar /
+ *  my-tasks summary metric tiles. Seed-driven; falls back to design-parity counts
+ *  when the seed is empty. */
+export function buildSprintSummary(input?: { units?: readonly ExecutionUnit[] }): CesSprintSummary {
+  const units = input?.units ?? V3_ExecutionUnitsSeed;
+  if (!units || units.length === 0) return { ...FALLBACK_SPRINT_SUMMARY };
+  const countState = (s: string): number => units.filter((u) => u.complianceState === s).length;
+  return {
+    total: units.length,
+    upcoming: countState('upcoming'),
+    ready: countState('ready'),
+    inProgress: countState('in_progress'),
+    awaitingSignature: countState('awaiting_signature'),
+    blocked: countState('blocked'),
+    completed: countState('completed'),
+    readyToCertify: units.filter((u) => u.auditReadiness === 'ready').length,
+    surveyCritical: units.filter((u) => u.auditReadiness === 'not_ready').length,
+    overdue: units.filter((u) => typeof u.escalationTimer === 'number' && u.escalationTimer < 0).length,
+  };
+}
+
 /** Convenience: all-in-one master projection bag (for future consumers). */
 export function buildCesAllProjections(_snapshot?: unknown) {
   const unitsForAll = V3_ExecutionUnitsSeed;

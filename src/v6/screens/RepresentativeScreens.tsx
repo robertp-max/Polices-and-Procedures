@@ -2,7 +2,7 @@ import { AlertTriangle, BarChart3, Bot, BookOpen, CalendarClock, CalendarRange, 
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { buildBoardLanes, buildCalendarEvents, buildReportMetrics, getControlFromParams } from '@/policy/ces/cesViewProjections';
+import { buildBoardLanes, buildCalendarEvents, buildReportMetrics, buildSprintSummary, getControlFromParams } from '@/policy/ces/cesViewProjections';
 // Design cross-ref (Agent 19 background + Agent 19 read-only CES Data Seeds gap vs design subagent + Agent 09 read-only hygiene/validate gap): V3 seeds supply realistic ExecutionUnits for CES board/my-tasks/calendar/snapshots/projections.
 // Current: use build* or FALLBACK for exact design visual parity. See projections for seed-driven future and validators.
 import type { ExecutionUnit } from '@/policy/ces/types';
@@ -432,11 +432,12 @@ const staffingCalendarEvents = [
   { day: 28, label: 'Weekend pool', owner: 'Scheduler', progress: 74, tone: 'blue' },
 ] as const satisfies readonly CalendarEventData[];
 
+const cesSprintSummary = buildSprintSummary();
 const cesCalendarMetrics: readonly MetricTileData[] = [
-  { label: 'Sprint cards', value: '33', helper: 'Sprint 12 execution units', tone: 'teal' },
-  { label: 'Blocked', value: '4', helper: 'Signature or evidence gaps', tone: 'orange' },
-  { label: 'Ready to certify', value: '9', helper: 'Awaiting final lock', tone: 'green' },
-  { label: 'Survey critical', value: '3', helper: 'Needs owner action', tone: 'orange' },
+  { label: 'Sprint cards', value: String(cesSprintSummary.total), helper: 'Sprint 12 execution units', tone: 'teal' },
+  { label: 'Blocked', value: String(cesSprintSummary.blocked), helper: 'Signature or evidence gaps', tone: 'orange' },
+  { label: 'Ready to certify', value: String(cesSprintSummary.readyToCertify), helper: 'Awaiting final lock', tone: 'green' },
+  { label: 'Survey critical', value: String(cesSprintSummary.surveyCritical), helper: 'Needs owner action', tone: 'orange' },
 ];
 
 // Design cross-ref (Agent 01 background + Agent 11/18): ces-calendar matches V6_DESIGN.html ~1310 exactly
@@ -1385,18 +1386,23 @@ function StaffingConflictDrawer({
   );
 }
 
-const boardMetrics: readonly MetricTileData[] = [
-  { label: 'Upcoming', value: '6', helper: 'Not yet opened', tone: 'slate' },
-  { label: 'Ready', value: '7', helper: 'Can start now', tone: 'green' },
-  { label: 'In Progress', value: '12', helper: 'Active execution', tone: 'teal' },
-  { label: 'Awaiting Signature', value: '5', helper: 'Pending signatures', tone: 'amber' },
-  { label: 'Awaiting Action/Evidence', value: '5', helper: '3 Evidence / 2 Action', tone: 'amber' },
-  { label: 'Blocked', value: '4', helper: 'Evidence/signature gaps', tone: 'orange' },
-  { label: 'Certified', value: '9', helper: 'Completed and locked', tone: 'green' },
-];
-
 const boardLanes: readonly BoardLaneData[] = buildBoardLanes(); // seed-driven via projections (FALLBACK inside for parity) 1.4
 // old literal body removed; data now in cesViewProjections.ts FALLBACK_BOARD_LANES
+
+// boardMetrics derived from the real projection lane counts (Stage B, 2.x) —
+// tile values reflect buildBoardLanes() output rather than hardcoded numbers.
+const boardLaneCount = (title: string): string =>
+  String(boardLanes.find((lane) => lane.title === title)?.count ?? 0);
+
+const boardMetrics: readonly MetricTileData[] = [
+  { label: 'Upcoming', value: boardLaneCount('Upcoming'), helper: 'Not yet opened', tone: 'slate' },
+  { label: 'Ready', value: boardLaneCount('Ready'), helper: 'Can start now', tone: 'green' },
+  { label: 'In Progress', value: boardLaneCount('In Progress'), helper: 'Active execution', tone: 'teal' },
+  { label: 'Awaiting Signature', value: boardLaneCount('Awaiting Signature'), helper: 'Pending signatures', tone: 'amber' },
+  { label: 'Awaiting Action/Evidence', value: boardLaneCount('Awaiting Action / Evidence'), helper: 'Evidence or action pending', tone: 'amber' },
+  { label: 'Blocked', value: boardLaneCount('Blocked'), helper: 'Evidence/signature gaps', tone: 'orange' },
+  { label: 'Certified', value: boardLaneCount('Completed'), helper: 'Completed and locked', tone: 'green' },
+];
 
 const evidenceMetrics: readonly MetricTileData[] = [
   { label: 'Artifacts', value: '445', helper: 'Indexed and searchable', tone: 'teal' },

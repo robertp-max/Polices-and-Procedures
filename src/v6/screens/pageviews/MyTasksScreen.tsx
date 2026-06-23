@@ -1,12 +1,13 @@
 import { BoardLane, MetricGrid, type BoardLaneData, type MetricTileData } from '../../components';
 import { useNavigate } from 'react-router-dom';
-import { buildTaskLanes, FALLBACK_TASK_LANES } from '@/policy/ces/cesViewProjections';
+import { buildSprintSummary, buildTaskLanes, FALLBACK_TASK_LANES } from '@/policy/ces/cesViewProjections';
 
+const sprint = buildSprintSummary();
 const taskMetrics: readonly MetricTileData[] = [
-  { label: 'Assigned', value: '31', helper: '9 due this week', tone: 'teal' },
-  { label: 'Blocked', value: '4', helper: 'Evidence or signature missing', tone: 'orange' },
-  { label: 'Ready to close', value: '12', helper: 'All requirements complete', tone: 'green' },
-  { label: 'Escalated', value: '2', helper: 'Needs manager decision', tone: 'amber' },
+  { label: 'Assigned', value: String(sprint.total), helper: `${sprint.overdue} overdue`, tone: 'teal' },
+  { label: 'Blocked', value: String(sprint.blocked), helper: 'Evidence or signature missing', tone: 'orange' },
+  { label: 'Ready to close', value: String(sprint.completed), helper: 'All requirements complete', tone: 'green' },
+  { label: 'Escalated', value: String(sprint.overdue), helper: 'Needs manager decision', tone: 'amber' },
 ];
 
 // Design cross-ref (Agent 04/03/18): my-tasks aligns to V6_DESIGN.html ~1434 (myTaskColumns, metrics).

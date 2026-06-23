@@ -12,13 +12,13 @@ export function LoginScreen() {
     event.preventDefault();
     setLoading(true);
 
+    // Real authentication is not wired yet — Cognito bootstrap is a pending
+    // carve-out (V6 plan step 17). Do NOT fake a successful sign-in by
+    // redirecting to /dashboard; surface an honest "not connected" notice.
     window.setTimeout(() => {
       setLoading(false);
       setToastVisible(true);
-      window.setTimeout(() => {
-        window.location.assign('/dashboard');
-      }, 400);
-    }, 900);
+    }, 600);
   }
 
   return (
@@ -54,7 +54,7 @@ export function LoginScreen() {
           <p className="text-sm font-light text-secondary">Please enter your credentials to continue</p>
         </div>
 
-        <form className="space-y-5" noValidate onSubmit={handleSubmit}>
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <label className="grid gap-sm">
             <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Email Address</span>
             <span className="flex h-control items-center gap-md rounded-xl border border-card bg-surface px-md text-brand-teal shadow-rest transition duration-fast ease-standard focus-within:shadow-focus">
@@ -64,6 +64,7 @@ export function LoginScreen() {
                 className="min-w-0 flex-1 bg-transparent text-body font-light text-ink placeholder:text-disabled focus:outline-none"
                 disabled={loading}
                 placeholder="name@careindeed.com"
+                required
                 type="email"
               />
             </span>
@@ -83,6 +84,7 @@ export function LoginScreen() {
                 className="min-w-0 flex-1 bg-transparent text-body font-light text-ink placeholder:text-disabled focus:outline-none"
                 disabled={loading}
                 placeholder="••••••••••••"
+                required
                 type={showPassword ? 'text' : 'password'}
               />
               <button
@@ -138,7 +140,7 @@ export function LoginScreen() {
         role="status"
       >
         <CheckCircle2 aria-hidden="true" className="h-icon-sm w-icon-sm text-on-brand" />
-        Authentication preview complete. Opening dashboard.
+        Sign-in is not connected yet — Cognito authentication is pending.
       </div>
     </main>
   );
