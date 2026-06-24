@@ -9,20 +9,22 @@ export function Sidebar() {
 
   const findActive = (items: readonly any[], path: string): { parent?: any; child?: any } | null => {
     for (const item of items) {
-      const matchesParent = item.hashIds.some((h: string) => {
-        const route = V6_ROUTES.find(r => r.hashId === h);
-        if (!route) return false;
-        return matchPath({ path: route.path, end: !route.path.endsWith('/*') }, path);
-      });
+      // match by explicit to, hashIds (all routes, supports shared hashIds), matchPaths, or prefix
+      const baseHashMatch = item.hashIds && item.hashIds.some((h: string) =>
+        V6_ROUTES.some(r => r.hashId === h && matchPath({ path: r.path, end: !r.path.endsWith('/*') }, path))
+      );
+      const baseMatchPath = item.matchPaths && item.matchPaths.some((mp: string) => matchPath({ path: mp, end: false }, path));
+      const baseExactOrPrefix = path === item.to || path.startsWith(item.to + '/');
+      const matchesParent = baseHashMatch || baseMatchPath || baseExactOrPrefix;
       if (matchesParent) {
         if (item.children) {
           for (const child of item.children) {
-            const matchesChild = child.hashIds.some((h: string) => {
-              const route = V6_ROUTES.find(r => r.hashId === h);
-              if (!route) return false;
-              return matchPath({ path: route.path, end: !route.path.endsWith('/*') }, path);
-            });
-            if (matchesChild) return { parent: item, child };
+            const childHash = child.hashIds && child.hashIds.some((h: string) =>
+              V6_ROUTES.some(r => r.hashId === h && matchPath({ path: r.path, end: !r.path.endsWith('/*') }, path))
+            );
+            const childMatchPath = child.matchPaths && child.matchPaths.some((mp: string) => matchPath({ path: mp, end: false }, path));
+            const childPrefix = path === child.to || path.startsWith(child.to + '/');
+            if (childHash || childMatchPath || childPrefix) return { parent: item, child };
           }
         }
         return { parent: item };

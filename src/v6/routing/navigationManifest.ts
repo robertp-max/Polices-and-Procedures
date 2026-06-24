@@ -5,6 +5,7 @@ export interface NavItem {
   hashIds: string[];
   children?: NavItem[];
   icon?: React.ComponentType<any>;
+  matchPaths?: string[];
 }
 
 export const SIDEBAR_NAV: NavItem[] = [
@@ -18,11 +19,12 @@ export const SIDEBAR_NAV: NavItem[] = [
     label: 'Compliance Execution (CES)',
     to: '/ces/calendar',
     hashIds: ['ces-calendar', 'ces-board', 'events-board', 'workflows', 'master-controls', 'ces-reports', 'my-tasks'],
+    matchPaths: ['/ces/calendar', '/ces/board', '/ces/events', '/events/:eventId/swimlane', '/workflows', '/workflows/:workflowId', '/workflows/:workflowId/swimlane', '/compliance/master-controls', '/evidence', '/audit', '/my-tasks', '/ces/reports', '/calendar/event/:eventId/task/:taskId'],
     children: [
       { id: 'ces-calendar', label: 'Calendar', to: '/ces/calendar', hashIds: ['ces-calendar'] },
       { id: 'ces-board', label: 'Sprint Board', to: '/ces/board', hashIds: ['ces-board'] },
-      { id: 'events-board', label: 'Events Board', to: '/ces/events', hashIds: ['events-board'] },
-      { id: 'workflows', label: 'Workflows', to: '/workflows', hashIds: ['workflows'] },
+      { id: 'events-board', label: 'Events Board', to: '/ces/events', hashIds: ['events-board'], matchPaths: ['/ces/events', '/events/:eventId/swimlane'] },
+      { id: 'workflows', label: 'Workflows', to: '/workflows', hashIds: ['workflows'], matchPaths: ['/workflows', '/workflows/:workflowId', '/workflows/:workflowId/swimlane'] },
       { id: 'master-controls', label: 'Master Controls', to: '/compliance/master-controls', hashIds: ['master-controls'] },
       { id: 'audit-mode', label: 'Audit Mode', to: '/audit', hashIds: ['audit-mode'] },
       { id: 'evidence-center', label: 'Evidence Center', to: '/evidence', hashIds: ['evidence-center'] },
@@ -37,8 +39,8 @@ export const SIDEBAR_NAV: NavItem[] = [
     hashIds: ['taxonomy', 'framework', 'achc-survey', 'achc-crosswalk'],
     children: [
       { id: 'framework', label: 'Framework', to: '/framework', hashIds: ['framework'] },
-      { id: 'policy-library', label: 'Policies', to: '/library', hashIds: ['policy-library'] },
-      { id: 'forms-library', label: 'Forms', to: '/forms', hashIds: ['forms-library'] },
+      { id: 'policy-library', label: 'Policies', to: '/library', hashIds: ['policy-library'], matchPaths: ['/library', '/library/:policyId', '/library/:policyId/print', '/print/:policyId'] },
+      { id: 'forms-library', label: 'Forms', to: '/forms', hashIds: ['forms-library'], matchPaths: ['/forms', '/forms/:formId', '/forms/:formId/print', '/forms/:formId/esign'] },
       { id: 'achc-survey', label: 'ACHC Survey', to: '/framework/achc-survey', hashIds: ['achc-survey'] },
       { id: 'achc-crosswalk', label: 'ACHC Crosswalk', to: '/framework/achc-survey/crosswalk', hashIds: ['achc-crosswalk'] },
     ],
@@ -65,12 +67,12 @@ export const SIDEBAR_NAV: NavItem[] = [
     children: [
       { id: 'onboarding-v2-dashboard', label: 'Dashboard', to: '/onboarding-v2/dashboard', hashIds: ['onboarding-v2-dashboard'] },
       { id: 'onboarding-v2-activate', label: 'Activate', to: '/onboarding-v2/activate', hashIds: ['onboarding-v2-activate'] },
-      { id: 'onboarding-v2-batches', label: 'Batches', to: '/onboarding-v2/batches', hashIds: ['onboarding-v2-batches'] },
+      { id: 'onboarding-v2-batches', label: 'Batches', to: '/onboarding-v2/batches', hashIds: ['onboarding-v2-batches'], matchPaths: ['/onboarding-v2/batches', '/onboarding-v2/batches/:batchId'] },
       { id: 'onboarding-v2-audit', label: 'Audit', to: '/onboarding-v2/audit', hashIds: ['onboarding-v2-audit'] },
       { id: 'onboarding-v2-governance', label: 'Governance', to: '/onboarding-v2/governance', hashIds: ['onboarding-v2-governance'] },
     ],
   },
-  { id: 'policy-lifecycle', label: 'Policy Lifecycle', to: '/policy-lifecycle', hashIds: ['policy-lifecycle'] },
+  { id: 'policy-lifecycle', label: 'Policy Lifecycle', to: '/policy-lifecycle', hashIds: ['policy-lifecycle'], matchPaths: ['/policy-lifecycle', '/policy-lifecycle/:policyId'] },
   { id: 'evidence', label: 'Evidence', to: '/evidence', hashIds: ['evidence-center'] },
   { id: 'hubstaff', label: 'Hubstaff', to: '/hubstaff', hashIds: ['hubstaff'] },
   {
@@ -78,8 +80,9 @@ export const SIDEBAR_NAV: NavItem[] = [
     label: 'System Documentation',
     to: '/system-documentation',
     hashIds: ['system-docs'],
+    matchPaths: ['/system-documentation', '/system-documentation/:sectionId'],
     children: [
-      { id: 'system-docs', label: 'Documentation', to: '/system-documentation', hashIds: ['system-docs'] },
+      { id: 'system-docs', label: 'Documentation', to: '/system-documentation', hashIds: ['system-docs'], matchPaths: ['/system-documentation', '/system-documentation/:sectionId'] },
     ],
   },
   { id: 'help-center', label: 'Help Center', to: '/help', hashIds: ['help-center'] },

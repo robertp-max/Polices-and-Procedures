@@ -23,17 +23,15 @@ export function CESSubnav() {
 
   const isActivePath = (itemPath: string) => {
     if (currentPath === itemPath) return true;
-    if (itemPath === '/workflows' && (currentPath.startsWith('/workflows/') || currentPath === '/workflows')) return true;
-    if (itemPath === '/ces/board' && (currentPath === '/ces/board' || currentPath.startsWith('/ces/board/'))) return true;
+    if (itemPath === '/ces/calendar' && currentPath.startsWith('/ces/calendar')) return true;
+    if (itemPath === '/ces/board' && currentPath === '/ces/board') return true;
+    if (itemPath === '/ces/events' && (currentPath === '/ces/events' || currentPath.startsWith('/events/'))) return true;
+    if (itemPath === '/workflows' && (currentPath === '/workflows' || currentPath.startsWith('/workflows/'))) return true;
+    if (itemPath === '/compliance/master-controls' && currentPath.startsWith('/compliance/master-controls')) return true;
     if (itemPath === '/evidence' && currentPath.startsWith('/evidence')) return true;
     if (itemPath === '/audit' && currentPath.startsWith('/audit')) return true;
-    if (itemPath === '/ces/events' && currentPath.startsWith('/ces/events')) return true;
-    if (itemPath === '/compliance/master-controls' && currentPath.startsWith('/compliance/master-controls')) return true;
     if (itemPath === '/my-tasks' && currentPath.startsWith('/my-tasks')) return true;
     if (itemPath === '/ces/reports' && currentPath.startsWith('/ces/reports')) return true;
-    if (itemPath === '/ces/calendar' && currentPath.startsWith('/ces/calendar')) return true;
-    // swimlane and detail under workflows/events
-    if ((itemPath === '/workflows' || itemPath === '/ces/events') && (currentPath.includes('/swimlane') || currentPath.includes('/:') || currentPath.match(/\/(workflows|events)\/[^/]+/))) return true;
     return false;
   };
 

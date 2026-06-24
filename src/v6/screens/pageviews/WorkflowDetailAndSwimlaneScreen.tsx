@@ -210,7 +210,7 @@ export function WorkflowSwimlaneScreen() {
         <MetricGrid metrics={metrics} />
 
         <div className="flex flex-wrap gap-sm pt-md border-t border-hairline">
-          <div className="text-tag uppercase tracking-tag text-muted mr-sm self-center">Other workflows (sample):</div>
+          <div className="text-tag uppercase tracking-tag text-muted mr-sm self-center">Other workflows:</div>
           {otherWorkflows.map((w) => (
             <button
               key={w.workflowId}
@@ -268,12 +268,12 @@ export function WorkflowSwimlaneScreen() {
               ))}
             </div>
             <div className="rounded-md border border-card bg-surface p-md flex flex-col gap-sm">
-              <h4 className="text-sm font-medium text-ink">Step requirements</h4>
+              <h4 className="text-sm font-medium text-ink">Reference source details</h4>
               <div className="grid gap-xs text-xs font-light text-secondary">
-                <div className="rounded-md bg-tone-slate-bg p-md">Checklist items tracked in lane cards</div>
-                <div className="rounded-md bg-tone-slate-bg p-md">Evidence packet attachment required before review gate</div>
-                <div className="rounded-md bg-tone-orange-bg border border-tone-orange-border text-tone-orange-text p-md">
-                  {meta?.risk === 'High' ? 'High-risk sign-off sequence enforced' : 'Standard eCIgn sequence for domain'}
+                <div className="rounded-md bg-tone-slate-bg p-md">Authored step from generated workflow definition</div>
+                <div className="rounded-md bg-tone-slate-bg p-md">Linked forms and policies shown for reference</div>
+                <div className="rounded-md bg-tone-slate-bg p-md">
+                  No completion or execution action is performed here
                 </div>
               </div>
             </div>
