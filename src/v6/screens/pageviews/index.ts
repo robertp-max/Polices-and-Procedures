@@ -33,4 +33,5 @@ export { GovernanceScreen } from './GovernanceScreen';
 export { SurveyorViewerScreen } from './SurveyorViewerScreen';
 export { LoginScreen } from './LoginScreen';
 export { MobileIncidentScreen } from './MobileIncidentScreen';
+export { NotFoundScreen } from './NotFoundScreen';
 

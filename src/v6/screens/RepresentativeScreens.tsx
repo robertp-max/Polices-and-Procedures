@@ -21,8 +21,8 @@ import { Button, ToneBadge } from '../primitives';
 import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
-import { BoardLane, ChatThread, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type ChatMessageData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
-import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, JourneyV1Screen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen } from './pageviews';
+import { BoardLane, CESSubnav, ChatThread, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type ChatMessageData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
+import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, JourneyV1Screen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen } from './pageviews';
 import { achcSurveyRows } from '@/policy/data/achcSurveyProjection.generated';
 import { achcPrintCrosswalk } from '@/policy/data/achcPrintCrosswalk.generated';
 
@@ -1681,13 +1681,7 @@ const guideEntries = [
   ['Contextual User-Guide Links', 'Dashboard, Calendar, Forms, Signing, Audit, Evidence, and Master Controls.'],
 ] as const;
 
-// Top-level seeds for shared reference; ReportsScreen recomputes live via builders for real V3 data (no placeholders).
-const reportCards: readonly SurfaceCardData[] = buildReportCards().map((c, idx) => ({
-  ...c,
-  icon: idx === 0 ? BarChart3 : idx === 1 ? AlertTriangle : FolderOpen,
-})) as readonly SurfaceCardData[];
-
-const reportBars: readonly number[] = buildReportTrendBars();
+// ReportsScreen recomputes live via builders for real V3 data (no placeholders).
 
 export function RepresentativeScreen({ route }: { route: RouteLike }) {
   const [searchParams] = useSearchParams();
@@ -1868,19 +1862,29 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <MobileIncidentScreen />;
       break;
     default:
-      return null;
+      child = <NotFoundScreen />;
+      break;
   }
 
   if (route.group === 'Auth') {
     return child;
   }
 
-  // Ensure non-empty content wrapper so shell (sidebar+topbar) always frames V2/representative views
-  // including swimlanes and when modals are open inside. Blank would appear as white screen.
-  const wrapped = child ?? (
-    <div className="p-xl text-sm text-muted">Representative view content unavailable for this route.</div>
-  );
-  return <div className="grid">{wrapped}</div>;
+  const wrapped = child;
+
+  // Static CES subnav for ALL pages in the CES group. Rendered once here so it's consistent and always present
+  // when navigating within the group (no per-screen duplication, no disappearing).
+  const cesHashIds = ['ces-calendar', 'ces-board', 'events-board', 'master-controls', 'my-tasks', 'ces-reports', 'workflows', 'workflow-detail', 'workflow-swimlane', 'evidence-center', 'audit-mode'];
+  const isCESGroup = route.group === 'CES' || cesHashIds.includes(route.hashId || '');
+  const mainContent = <div className="grid">{wrapped}</div>;
+  const content = isCESGroup ? (
+    <>
+      <CESSubnav />
+      {mainContent}
+    </>
+  ) : mainContent;
+
+  return content;
 }
 
 export function isRepresentativeRoute(route: RouteLike): boolean {
@@ -3182,29 +3186,12 @@ function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
         label: String(label),
         value: String(value),
         helper: isAudit ? 'From audit rows' : 'From evidence rows',
-        tone: (isAudit ? 'orange' : 'teal') as const,
+        tone: (isAudit ? 'orange' : 'teal') as any,
       }))
     : (config.metrics || []);
 
   return (
     <ScreenStack metrics={screenMetrics}>
-      {/* Top subnav for CES (V1 subitems at top of Evidence/Audit workspace in V2 using V2 pattern) */}
-      <div className="mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="CES subnav">
-        <span className="mr-sm text-tag uppercase tracking-tag text-muted">CES:</span>
-        {[
-          { label: 'CES Calendar', path: '/ces/calendar' },
-          { label: 'Kanban Board', path: '/ces/board' },
-          { label: 'Events Board', path: '/ces/events' },
-          { label: 'Workflows Library', path: '/workflows' },
-          { label: 'Master Controls', path: '/compliance/master-controls' },
-          { label: 'Evidence Center', path: '/evidence' },
-          { label: 'Audit Mode', path: '/audit' },
-          { label: 'My Tasks', path: '/my-tasks' },
-          { label: 'CES Reports', path: '/ces/reports' },
-        ].map((item) => (
-          <Link key={item.path} to={item.path} className="rounded px-sm py-xs text-brand-teal hover:bg-surface-hover hover:text-brand-teal-deep border-b-2 border-transparent hover:border-brand-teal">{item.label}</Link>
-        ))}
-      </div>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
         <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <h2 className="text-h2 font-medium text-ink">{config.title}</h2>
@@ -3628,29 +3615,6 @@ function ReportsScreen() {
   const trendBars = buildReportTrendBars();
   return (
     <ScreenStack metrics={metrics}>
-      {/* Top subnav for CES group — consistent navigation for My Tasks / CES Reports / siblings */}
-      <div className="-mt-xl mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="CES subnav">
-        <span className="mr-sm text-tag uppercase tracking-tag text-muted">CES:</span>
-        {[
-          { label: 'CES Calendar', path: '/ces/calendar' },
-          { label: 'Kanban Board', path: '/ces/board' },
-          { label: 'Events Board', path: '/ces/events' },
-          { label: 'Workflows Library', path: '/workflows' },
-          { label: 'Master Controls', path: '/compliance/master-controls' },
-          { label: 'Evidence Center', path: '/evidence' },
-          { label: 'Audit Mode', path: '/audit' },
-          { label: 'My Tasks', path: '/my-tasks' },
-          { label: 'CES Reports', path: '/ces/reports' },
-        ].map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className="rounded px-sm py-xs text-brand-teal hover:bg-surface-hover hover:text-brand-teal-deep border-b-2 border-transparent hover:border-brand-teal"
-          >
-            {item.label}
-          </Link>
-        ))}
-      </div>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
         <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <div className="flex items-center justify-between">

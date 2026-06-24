@@ -222,6 +222,8 @@ export function SupervisorScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All');
 
+  const navigate = useNavigate();
+
   const handleBackToJourney = () => navigate('/journey');
 
   const selectedProfileBars: readonly ProfileBar[] = [

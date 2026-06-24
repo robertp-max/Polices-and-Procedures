@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GitBranch, Landmark, Workflow } from 'lucide-react';
 import { DataTable, MetricGrid, SurfaceCard, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
-import { Button } from '../../primitives';
 import { cx } from '../../utils/classNames';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import {
@@ -61,32 +60,7 @@ export interface WorkflowRow extends Record<string, string> {
   workflowId: string;
 }
 
-// The RIGHT workflow library from V6_DESIGN.html (the 6 records for the prototype view).
-// Matches design exactly for this surface.
-const designWorkflowRecords = [
-  ['QA-WF-03', 'QAPI Committee Review', 'Governance / QAPI', 'Active'],
-  ['CO-WF-02', 'Incident response and escalation', 'Compliance', 'Active'],
-  ['GV-WF-01', 'Quarterly Governing Body Packet', 'Governance', 'Ready'],
-  ['HR-WF-05', 'Competency validation and license review', 'Human Resources', 'Review'],
-  ['RM-WF-04', 'Emergency drill after-action workflow', 'Risk Management', 'Ready'],
-  ['CL-WF-08', 'Clinical chart audit and care plan review', 'Clinical Ops', 'Active'],
-] as const;
-
-function toDesignWorkflowRow(rec: readonly [string, string, string, string]): WorkflowRow {
-  const [workflowId, title, domain, status] = rec;
-  return {
-    domain,
-    domainOwner: domain,
-    frequency: 'Quarterly',
-    risk: domain.includes('QAPI') || domain.includes('Compliance') ? 'High' : 'Medium',
-    status: status.toLowerCase().replace(' ', '-'),
-    title,
-    workflowId,
-  };
-}
-
-// Real generated for other, but library uses design for prototype match.
-function toWorkflowRow(wf: any): WorkflowRow {
+export const workflowRows: readonly WorkflowRow[] = Object.values(WORKFLOWS).map((wf: any) => {
   const cad = wf.cadence || {};
   const freqRaw = cad.interval || '—';
   const frequency = typeof freqRaw === 'string' ? (freqRaw.charAt(0).toUpperCase() + freqRaw.slice(1)) : '—';
@@ -102,15 +76,12 @@ function toWorkflowRow(wf: any): WorkflowRow {
     title: wf.title || wf.id,
     workflowId: wf.id,
   };
-}
-
-export const workflowRows: readonly WorkflowRow[] = designWorkflowRecords.map(toDesignWorkflowRow);
+});
 
 const workflowMetrics: readonly MetricTileData[] = [
-  { label: 'Workflows', value: String(designWorkflowRecords.length), helper: 'Design prototype records', tone: 'teal' },
-  { label: 'Event-backed', value: '4', helper: 'Calendar linked (CES)', tone: 'green' },
-  { label: 'Needs review', value: '1', helper: 'Per design', tone: 'orange' },
-  { label: 'Ready', value: '2', helper: 'Per design', tone: 'teal' },
+  { label: 'Workflows', value: String(workflowRows.length), helper: 'All generated records', tone: 'teal' },
+  { label: 'High risk', value: String(workflowRows.filter((r: WorkflowRow) => r.risk === 'High').length), helper: 'From metrics', tone: 'orange' },
+  { label: 'Domains', value: String(Array.from(new Set(workflowRows.map((r: WorkflowRow) => r.domain))).length), helper: 'Coverage', tone: 'teal' },
 ];
 
 const workflowColumns: readonly DataTableColumn<WorkflowRow>[] = [
@@ -179,7 +150,6 @@ export default function WorkflowsScreen() {
 
   return (
     <section className="grid gap-xl" data-hash-id="workflows" data-route="/workflows" data-template="matrix">
-      {cesSubnav}
       <MetricGrid metrics={workflowMetrics} />
 
       {/* Real generated workflow library preview (from WORKFLOWS). Click opens reference detail. */}
@@ -282,42 +252,6 @@ export default function WorkflowsScreen() {
           ))}
         </aside>
       </section>
-
-      {/* Real inline swimlane (using setSelectedEvent + buildLanesForWorkflow from design/generated data like q2QapiSwimlane pattern). CES event clicks now open here with real cards, preserving workflows list + nav bar context (no whole shell replace via navigate). */}
-      {selectedEvent && (
-        <section className="grid gap-xl rounded-lg border border-hairline bg-surface p-xl shadow-rest" data-swimlane-inline>
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-h3 font-medium">{selectedEvent.workflowId} — {selectedEvent.title}</h3>
-              <p className="text-sm text-muted">Inline swimlane view — real cards from design/generated (no placeholder)</p>
-            </div>
-            <Button variant="secondary" onClick={closeSwimlaneInline}>Back to workflows list</Button>
-          </div>
-          <MetricGrid metrics={[
-            { label: 'Domain', value: selectedEvent.domain, helper: '', tone: 'teal' as const },
-            { label: 'Risk', value: selectedEvent.risk, helper: '', tone: 'orange' as const },
-            { label: 'Frequency', value: selectedEvent.frequency, helper: '', tone: 'teal' as const },
-          ]} />
-          <div className="grid gap-lg desktop:grid-cols-4">
-            {(() => {
-              const meta = { id: selectedEvent.workflowId, title: selectedEvent.title, domain: selectedEvent.domain, risk: selectedEvent.risk, frequency: selectedEvent.frequency, owner: selectedEvent.domainOwner };
-              const detail = getWorkflowDetail(selectedEvent.workflowId);
-              const lanes = buildLanesForWorkflow(meta as any, detail);
-              return lanes.map((lane: BoardLaneData) => <BoardLane key={lane.title} lane={lane} onCardClick={openLaneCard} />);
-            })()}
-          </div>
-          {selectedLaneCard && (
-            <div className="mt-sm rounded-md border border-hairline bg-tone-slate-bg p-md text-sm">
-              <div className="flex justify-between">
-                <div><span className="font-medium text-brand-teal">{selectedLaneCard.id || selectedLaneCard.title}</span> — {selectedLaneCard.title}</div>
-                <Button variant="secondary" onClick={() => setSelectedLaneCard(null)} size="sm">Close detail</Button>
-              </div>
-              <div className="mt-xs text-muted">Owner: {selectedLaneCard.owner} | Due: {selectedLaneCard.due} | Progress: {selectedLaneCard.progress}%</div>
-              <div className="text-xs mt-1 text-muted">Real execution card from generated workflow design data.</div>
-            </div>
-          )}
-        </section>
-      )}
     </section>
   );
 }

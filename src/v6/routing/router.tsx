@@ -1,9 +1,8 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { V6Shell } from '../shell/V6Shell';
 import { RouteErrorBoundary } from './RouteErrorBoundary';
-import { V6RoutePlaceholder } from './V6RoutePlaceholder';
 import { routeToChildPath, V6_ROUTES } from './routeRegistry';
-import { isRepresentativeRoute, RepresentativeScreen } from '../screens';
+import { NotFoundScreen, RepresentativeScreen } from '../screens';
 
 const shellRoutes = V6_ROUTES.filter((route) => route.group !== 'Auth');
 const loginRoute = V6_ROUTES.find((route) => route.hashId === 'login-page');
@@ -21,12 +20,12 @@ export const v6Router = createBrowserRouter([
       { index: true, element: <Navigate replace to="/dashboard" /> },
       ...shellRoutes.map((route) => ({
         path: routeToChildPath(route.path),
-        element: isRepresentativeRoute(route) ? <RepresentativeScreen route={route} /> : <V6RoutePlaceholder route={route} />,
+        element: <RepresentativeScreen route={route} />,
         errorElement: <RouteErrorBoundary />,
       })),
       {
         path: '*',
-        element: <V6RoutePlaceholder />,
+        element: <NotFoundScreen />,
       },
     ],
   },
