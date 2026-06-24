@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { cx } from '../../utils/classNames';
 import { AlertTriangle, CalendarCheck2, ChevronsUpDown, ClipboardCheck, FileCheck2, ListChecks, MessageSquareText, PenLine, Search, ShieldCheck, Stethoscope, UserCheck, Users } from 'lucide-react';
 import { DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
@@ -221,6 +222,8 @@ export function SupervisorScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All');
 
+  const handleBackToJourney = () => navigate('/journey');
+
   const selectedProfileBars: readonly ProfileBar[] = [
     { label: 'GAO complete', tone: 'teal' as Tone, value: selectedLearner.gao },
     { label: 'Role modules', tone: 'orange' as Tone, value: selectedLearner.role },
@@ -276,6 +279,10 @@ export function SupervisorScreen() {
       data-template="journey"
     >
       <MetricGrid metrics={supervisorMetrics} />
+
+      <div className="flex justify-end -mt-sm">
+        <Button size="sm" variant="tertiary" onClick={handleBackToJourney}>Back to Journey Overview</Button>
+      </div>
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(360px,2fr)]">
         <section className="grid content-start gap-lg" aria-labelledby="supervisor-roster-title">

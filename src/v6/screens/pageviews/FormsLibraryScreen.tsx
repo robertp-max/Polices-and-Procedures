@@ -1,5 +1,5 @@
 import { Archive, ClipboardCheck, ClipboardList, FileCheck2, Link2, PenLine, ShieldCheck, Users } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
 import { DataTable, MetricGrid, SurfaceCard, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, ToneBadge } from '../../primitives';
@@ -184,6 +184,27 @@ export function FormsLibraryScreen() {
   };
   return (
     <section className="grid gap-xl" data-hash-id="forms-library" data-route="/forms">
+      {/* Top subnav for Taxonomy group (V1 parity + discoverability of sibling routes) using V2 patterns. */}
+      <div className="mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="Taxonomy subnav">
+        <span className="mr-sm text-tag uppercase tracking-tag text-muted">Taxonomy:</span>
+        {[
+          { label: 'Taxonomy', path: '/taxonomy' },
+          { label: 'Framework', path: '/framework' },
+          { label: 'Policy Library', path: '/library' },
+          { label: 'Forms Library', path: '/forms' },
+          { label: 'Workflows Library', path: '/workflows' },
+          { label: 'ACHC Survey', path: '/framework/achc-survey' },
+          { label: 'ACHC Crosswalk', path: '/framework/achc-survey/crosswalk' },
+        ].map((item) => (
+          <Link
+            key={item.path}
+            to={item.path}
+            className="rounded px-sm py-xs text-brand-teal hover:bg-surface-hover hover:text-brand-teal-deep border-b-2 border-transparent hover:border-brand-teal"
+          >
+            {item.label}
+          </Link>
+        ))}
+      </div>
       <MetricGrid metrics={formsMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-5" aria-label="Forms library matrix and evidence readiness">

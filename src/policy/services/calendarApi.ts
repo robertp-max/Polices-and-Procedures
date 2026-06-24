@@ -125,7 +125,7 @@ export type GoogleEvidenceCategory =
   | 'final_package';
 
 export interface GoogleCalendarDriveEvidenceRef {
-  storageProvider: 'google_calendar_drive';
+  storageProvider: 'google_drive_calendar';
   eventId: string;
   workflowId?: string;
   taskId: string;
@@ -175,7 +175,7 @@ export interface UploadEvidenceResponse {
   driveFileUrl: string;
   calendarAttachmentStatus: CalendarAttachmentStatus;
   contentStatus: EvidenceContentStatus;
-  storageProvider: 'google_calendar_drive';
+  storageProvider: 'google_drive_calendar';
 }
 
 export interface EvidenceHealthResponse {

@@ -1218,7 +1218,7 @@ const REGULATORY_EVENTS_RAW: RegulatoryEvent[] = [
     owner: 'M. Chen',
     ownerRole: 'QAPI Coordinator',
     location: 'Main Office / Conference Room A',
-    workflowId: 'TPL-QA-MONTHLY-QAPI',
+    workflowId: 'QA-WF-03',
     category: 'committee',
     scopeType: 'previous_calendar_month',
     reportingPeriodStart: '2026-05-01',

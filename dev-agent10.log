@@ -1,0 +1,53 @@
+
+> ci-policy-app@0.0.0 dev
+> concurrently -k -n web,api -c cyan,magenta "npm:dev:web" "npm:dev:api"
+
+[web] 
+[web] > ci-policy-app@0.0.0 predev:web
+[web] > node scripts/cleanEmittedJs.mjs && node scripts/syncMasterControlInventory.mjs
+[web] 
+[api] 
+[api] > ci-policy-app@0.0.0 dev:api
+[api] > tsx watch server/index.ts
+[api] 
+[web] [sync-master-control-inventory] Source: public\data\MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+[web] [sync-master-control-inventory] Copied to public\Builder\Documentations\MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+[web] [sync-master-control-inventory] Copied to public\Documentations\MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+[web] [sync-master-control-inventory] Copied to public\MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+[web] 
+[web] > ci-policy-app@0.0.0 dev:web
+[web] > vite
+[web] 
+[web] Port 5173 is in use, trying another one...
+[web] Port 5174 is in use, trying another one...
+[web] Port 5175 is in use, trying another one...
+[web] Port 5176 is in use, trying another one...
+[web] 
+[web]   VITE v8.0.2  ready in 200 ms
+[web] 
+[web]   Γ₧£  Local:   http://localhost:5177/
+[web]   Γ₧£  Network: use --host to expose
+[api] {"t":"2026-06-24T03:29:29.613Z","level":"info","msg":"ia.index.loaded","builtAt":"2026-04-23T18:40:27.171Z","docs":373,"chunks":9557,"embeddingsReady":true}
+[api] node:events:486
+[api]       throw er; // Unhandled 'error' event
+[api]       ^
+[api] 
+[api] Error: listen EADDRINUSE: address already in use :::8787
+[api]     at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+[api]     at listenInCluster (node:net:1997:12)
+[api]     at Server.listen (node:net:2102:7)
+[api]     at app.listen (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\node_modules\express\lib\application.js:635:24)
+[api]     at <anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\server\index.ts:123:20)
+[api] Emitted 'error' event on Server instance at:
+[api]     at emitErrorNT (node:net:1976:8)
+[api]     at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+[api]   code: 'EADDRINUSE',
+[api]   errno: -4091,
+[api]   syscall: 'listen',
+[api]   address: '::',
+[api]   port: 8787
+[api] }
+[api] 
+[api] Node.js v24.13.0
+[web] 8:31:12 PM [vite] (client) hmr update /src/index.css, /src/v6/screens/RepresentativeScreens.tsx, /src/v6/screens/pageviews/WorkflowsScreen.tsx, /src/v6/screens/pageviews/MobileIncidentScreen.tsx, /src/v6/screens/pageviews/SystemDocsScreen.tsx, /src/v6/screens/pageviews/HelpCenterScreen.tsx, /src/v6/screens/pageviews/FormsLibraryScreen.tsx
+[web] 8:31:12 PM [vite] (client) hmr update /src/index.css, /src/v6/screens/pageviews/OnboardingV2BatchesScreen.tsx

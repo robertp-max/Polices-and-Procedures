@@ -1,11 +1,13 @@
 import { CheckCircle2, FileText, Info, Link2, ListChecks } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ToneBadge } from '../../primitives';
 import { ToneTag } from '../../components';
 import { cx } from '../../utils/classNames';
 import { getPolicyContent } from '@/policy/data/policyContentMap';
 import { getCorpusPolicy, DOMAIN_LABEL, type CorpusPolicy } from '@/policy/data/policyCorpus';
 import type { PolicyContent, PolicyContentSection } from '@/policy/types';
+import { openPolicyPrintRoute } from '@/policy/utils/openPolicyPrintRoute';
 
 const routeMarker = {
   group: 'Taxonomy',
@@ -250,6 +252,14 @@ function SourceUnavailable({
 export function PolicyDetailScreen() {
   const params = useParams<{ policyId?: string }>();
   const policyId = params.policyId?.trim() || DEFAULT_POLICY_ID;
+  const [searchParams] = useSearchParams();
+  // Reference / print view only — never pulls CES execution state, stores, or V3 seeds.
+  // Matches V1 detail semantics: corpus metadata + rendered content sections + regulatory refs from source.
+  const isPrintRoute = typeof window !== 'undefined' && (
+    window.location.pathname.endsWith('/print') ||
+    window.location.pathname.startsWith('/print/') ||
+    searchParams.get('print') === '1'
+  );
 
   const corpus: CorpusPolicy | undefined = getCorpusPolicy(policyId);
   const content: PolicyContent | null = getPolicyContent(policyId);
@@ -266,6 +276,17 @@ export function PolicyDetailScreen() {
   ];
 
   const sections = content ? [...content.sections].sort((a, b) => a.order - b.order) : [];
+
+  // Auto-trigger native browser print for dedicated print routes (V1 /print/:id and /library/:id/print)
+  // Matches form print pattern; allows openPolicyPrintRoute new-tab + Save as PDF.
+  useEffect(() => {
+    if (isPrintRoute && typeof window !== 'undefined') {
+      const t = window.setTimeout(() => {
+        try { window.focus(); window.print(); } catch { /* noop */ }
+      }, 650);
+      return () => window.clearTimeout(t);
+    }
+  }, [isPrintRoute]);
 
   return (
     <section
@@ -315,7 +336,10 @@ export function PolicyDetailScreen() {
           <div className="grid gap-lg rounded-lg border border-card bg-tone-slate-bg/80 p-xl">
             <div className="flex flex-wrap items-start justify-between gap-lg border-b border-hairline pb-lg">
               <div className="grid gap-sm">
-                <ToneTag tone="teal">Policy ID: {headerId}</ToneTag>
+                <div className="flex flex-wrap items-center gap-sm">
+                  <ToneTag tone="teal">Policy ID: {headerId}</ToneTag>
+                  {isPrintRoute && <ToneTag tone="teal">Print view</ToneTag>}
+                </div>
                 <h2 className="text-[28px] font-medium leading-tight text-ink" id="policy-detail-title">
                   {cleanInline(headerTitle)}
                 </h2>
@@ -325,7 +349,18 @@ export function PolicyDetailScreen() {
                   </p>
                 )}
               </div>
-              <ToneBadge size="sm" status="info" />
+              <div className="flex flex-wrap items-center gap-sm">
+                <ToneBadge size="sm" status="info" />
+                {!isPrintRoute && (
+                  <button
+                    type="button"
+                    onClick={() => openPolicyPrintRoute(`/print/${encodeURIComponent(policyId)}`)}
+                    className="text-xs px-3 py-1 rounded border border-hairline hover:bg-surface"
+                  >
+                    Print / Download
+                  </button>
+                )}
+              </div>
             </div>
 
             <dl className="grid gap-lg tablet:grid-cols-2 desktop:grid-cols-4">

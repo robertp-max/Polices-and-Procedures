@@ -1760,7 +1760,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
       { userId: 'u-admin-01', name: 'Robert Chen', initials: 'RC', role: 'Administrator', status: 'pending', hoursToEscalation: 18 },
       { userId: 'u-don-01', name: 'Maria Gonzalez, RN', initials: 'MG', role: 'DON', status: 'signed', signedAt: '2026-06-05T14:30:00Z' },
     ]),
-    dueDate: '2026-06-06',
+    dueDate: '2026-06-02',  // Tuesday (Tue/Thu schedule)
     escalationTimer: 18,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 3,
@@ -1797,7 +1797,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
     requiredSigners: makeSigners([
       { userId: 'u-admin-01', name: 'Robert Chen', initials: 'RC', role: 'Administrator', status: 'pending', hoursToEscalation: 72 },
     ]),
-    dueDate: '2026-06-12',
+    dueDate: '2026-06-16',  // Tuesday (Tue/Thu schedule)
     escalationTimer: 72,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 8,
@@ -1871,7 +1871,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
     requiredSigners: makeSigners([
       { userId: 'u-don-01', name: 'Maria Gonzalez, RN', initials: 'MG', role: 'DON', status: 'pending', hoursToEscalation: 36 },
     ]),
-    dueDate: '2026-06-10',
+    dueDate: '2026-06-09',  // Tuesday (Tue/Thu schedule)
     escalationTimer: 36,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 4,
@@ -1982,7 +1982,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
     requiredSigners: makeSigners([
       { userId: 'u-admin-01', name: 'Robert Chen', initials: 'RC', role: 'Administrator', status: 'pending', hoursToEscalation: 96 },
     ]),
-    dueDate: '2026-06-15',
+    dueDate: '2026-06-23',  // Tuesday (Tue/Thu schedule)
     escalationTimer: 96,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 7,

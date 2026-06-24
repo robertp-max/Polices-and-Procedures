@@ -55,7 +55,7 @@ export const V6_ROUTES = [
   // Integration proposals (Agent 21): Link ces-board CTAs to evidence-center (per design future notes); ensure reports pull from controls/evidence projections; consistent navigation in CES group.
   // Agent 21 read-only gap vs design analysis: Routes + CES nav group + descriptions are present and match design. However, actual interactive cross-view wiring (BoardLane onCardClick / CTAs in BoardScreen for ces-board → /evidence or /workflow-swimlane) is not implemented in the prototype (BoardScreen renders BoardLane without onCardClick; design notes "Future: link CTAs..."). Calendar has some event→swimlane nav, but full CES-internal integration (board↔evidence↔reports↔calendar) remains partial for one-pass. See RepresentativeScreens BoardScreen and ces-board case.
   { path: '/ces/events', hashId: 'events-board', template: 'board', group: 'CES', title: 'Events Board', description: 'Risk-bucketed Events board matching live 4-col layout (Critical & Overdue 162, At Risk 4). Uses identical item data, owner/domain/due, progress, chips, meta. Sorted by due. New card design applied.' },
-  { path: '/workflows', hashId: 'workflows', template: 'matrix', group: 'Taxonomy', title: 'Workflows', description: 'Workflow library linking domains, policies, evidence, forms, and history.' },
+  { path: '/workflows', hashId: 'workflows', template: 'matrix', group: 'CES', title: 'Workflows', description: 'Workflow library linking domains, policies, evidence, forms, and history.' },
   { path: '/workflows/:workflowId/swimlane', hashId: 'workflow-swimlane', template: 'board', group: 'CES', title: 'Workflow Swimlane', description: 'Workflow swimlane for intake, evidence, review, signature, and lock steps (reference or event execution context).' },
   { path: '/events/:eventId/swimlane', hashId: 'workflow-swimlane', template: 'board', group: 'CES', title: 'Workflow Swimlane', description: 'Event workflow swimlane for the selected event occurrence and workflow.' },
   { path: '/compliance/master-controls', hashId: 'master-controls', template: 'matrix', group: 'CES', title: 'Master Controls', description: 'Regulatory control matrix mapped to risk, evidence, and readiness.' },
@@ -64,7 +64,13 @@ export const V6_ROUTES = [
   { path: '/ces/reports', hashId: 'ces-reports', template: 'reports', group: 'CES', title: 'CES Reports', description: 'Compliance Execution reports for posture, packets, approvals, and throughput.' },
   { path: '/calendar/event/:eventId/task/:taskId', hashId: 'mobile-incident', template: 'detail', group: 'CES', title: 'Mobile Incident', description: 'Mobile task execution surface for evidence capture and field completion.' },
   { path: '/my-tasks', hashId: 'my-tasks', template: 'board', group: 'CES', title: 'My Tasks', description: 'Personal task board for assigned compliance and operations work.' },
+  { path: '/pm/my-tasks', hashId: 'pm-my-tasks', template: 'board', group: 'CES', title: 'PM My Tasks', description: 'PM personal task board (V1 parity).' },
+  { path: '/pm/sprint-plan', hashId: 'pm-sprint-plan', template: 'board', group: 'CES', title: 'PM Sprint Plan', description: 'Capacity-aware sprint planner, allocator, rollover (V1 parity).' },
+  { path: '/pm/sprint-review', hashId: 'pm-sprint-review', template: 'reports', group: 'CES', title: 'PM Sprint Review', description: 'Sprint retrospective, per-assignee delivery, carry-over (V1 parity).' },
+  { path: '/pm/approvals', hashId: 'pm-approvals', template: 'board', group: 'CES', title: 'PM Approvals', description: 'Approvals queue for tasks in_review (V1 parity).' },
+  { path: '/pm/dashboard', hashId: 'pm-dashboard', template: 'reports', group: 'CES', title: 'PM Dashboard', description: 'PM sprint burndown, throughput, status mix (V1 parity).' },
   { path: '/framework', hashId: 'framework', template: 'framework', group: 'Taxonomy', title: 'Framework', description: 'Regulatory framework map for domains, policies, forms, workflows, and authorities.' },
+  { path: '/taxonomy', hashId: 'taxonomy', template: 'framework', group: 'Taxonomy', title: 'Taxonomy', description: 'Regulatory framework taxonomy (V1 alias to Framework for domains, policies, forms, workflows, and authorities).' },
   { path: '/framework/achc-survey', hashId: 'achc-survey', template: 'achc-survey', group: 'Taxonomy', title: 'ACHC Survey', description: 'ACHC survey alignment surface for policy support and open evidence gaps.' },
   { path: '/framework/achc-survey/crosswalk', hashId: 'achc-crosswalk', template: 'achc-crosswalk', group: 'Taxonomy', title: 'ACHC Crosswalk', description: 'ACHC, CMS, Title 22, policy, form, and evidence crosswalk.' },
   { path: '/library', hashId: 'policy-library', template: 'matrix', group: 'Taxonomy', title: 'Policy Library', description: 'Policy library matrix for active agency policies and survey-ready context.' },
@@ -73,6 +79,9 @@ export const V6_ROUTES = [
   // (which resolves real policyId via getCorpusPolicy + getPolicyContent from seeds) renders
   // the record. Enables openPolicyPrintRoute + browser print / PDF without view changes.
   { path: '/library/:policyId/print', hashId: 'policy-detail', template: 'detail', group: 'Taxonomy', title: 'Policy Print', description: 'Protected policy print view (resolves real policyId from seeds).' },
+  // Legacy V1 /print/:policyId support for direct /print/:id (and openPolicyPrintRoute compatibility).
+  // Renders the same PolicyDetailScreen (real corpus + content data). Auto-print on load in print context.
+  { path: '/print/:policyId', hashId: 'policy-detail', template: 'detail', group: 'Taxonomy', title: 'Policy Print (V1 legacy)', description: 'Functional V1 /print/:id equivalent using real policy data; triggers native print.' },
   { path: '/forms', hashId: 'forms-library', template: 'matrix', group: 'Taxonomy', title: 'Forms Library', description: 'Forms library for agency templates, attestation forms, and digital candidates.' },
   { path: '/forms/:formId', hashId: 'form-viewer', template: 'form-viewer', group: 'Taxonomy', title: 'Form Workspace', description: 'Read and fill form workspace with sections, fields, and signer context.' },
   // Protected form print route — reuses form-viewer hashId so existing FormWorkspaceScreen
@@ -97,7 +106,7 @@ export const V6_ROUTES = [
   { path: '/onboarding-v2/governance', hashId: 'onboarding-v2-governance', template: 'reports', group: 'Onboarding v2', title: 'Onboarding Overrides', description: 'Onboarding override governance panel for requests, approvers, and audit warnings.' },
   { path: '/policy-lifecycle', hashId: 'policy-lifecycle', template: 'lifecycle', group: 'System', title: 'Policy Lifecycle', description: 'Policy lifecycle workspace for draft, review, approval, publication, and archive states.' },
   { path: '/hubstaff', hashId: 'hubstaff', template: 'reports', group: 'System', title: 'Hubstaff', description: 'Hubstaff reporting surface for time-tracking and documentation timelines.' },
-  { path: '/system-documentation/:sectionId', hashId: 'system-docs', template: 'docs', group: 'System', title: 'System Documentation', description: 'System documentation for architecture, workflow engines, and operating references.' },
+  { path: '/system-documentation/:sectionId?', hashId: 'system-docs', template: 'docs', group: 'System', title: 'System Documentation', description: 'System documentation for architecture, workflow engines, and operating references.' },
   { path: '/help/*', hashId: 'help-center', template: 'docs', group: 'System', title: 'Help Center', description: 'Help center for operator guides and compliance articles.' },
   { path: '/governance', hashId: 'governance', template: 'reports', group: 'System', title: 'Governance', description: 'Governance center for committee decisions, council packets, and policy posture.' },
   { path: '/admin/user-groups', hashId: 'admin-groups', template: 'matrix', group: 'Admin', title: 'User Groups', description: 'User group membership and scope management matrix.' },
@@ -153,7 +162,10 @@ export function routeToChildPath(path: string): string {
 export function routeToPreviewPath(path: string): string {
   if (path.endsWith('/*')) return path.replace('/*', '/index');
 
-  return path.replace(/:([A-Za-z0-9_]+)/g, (_, key: string) => previewValues[key] ?? `${key}-sample`);
+  let result = path.replace(/:([A-Za-z0-9_]+)\??/g, (_, key: string) => previewValues[key] ?? `${key}-sample`);
+  // Clean trailing ? or /? from optional params that had no value substituted
+  result = result.replace(/\?$/, '').replace(/\/\?$/, '');
+  return result;
 }
 
 export function routesByGroup() {

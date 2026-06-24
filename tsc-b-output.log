@@ -1,0 +1,20 @@
+src/v6/screens/pageviews/OnboardingV2AuditScreen.tsx(41,24): error TS2339: Property 'contentHash' does not exist on type 'SignatureRecord'.
+src/v6/screens/pageviews/OnboardingV2AuditScreen.tsx(41,101): error TS2339: Property 'contentHash' does not exist on type 'OnboardingExecutionUnit'.
+src/v6/screens/pageviews/OnboardingV2BatchScreen.tsx(33,31): error TS2304: Cannot find name 'snap'.
+src/v6/screens/pageviews/OnboardingV2BatchScreen.tsx(43,41): error TS2304: Cannot find name 'batchUnits'.
+src/v6/screens/pageviews/OnboardingV2BatchScreen.tsx(43,68): error TS2304: Cannot find name 'snap'.
+src/v6/screens/pageviews/OnboardingV2BatchScreen.tsx(44,25): error TS2345: Argument of type '(sid: string) => { subjectId: string; name: any; role: any; gate1: string; gate2: string; gate3: string; gate4: string; gate5: string; }' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => { subjectId: string; name: any; role: any; gate1: string; gate2: string; gate3: string; gate4: string; gate5: string; }'.
+  Types of parameters 'sid' and 'value' are incompatible.
+    Type 'unknown' is not assignable to type 'string'.
+src/v6/screens/pageviews/OnboardingV2BatchScreen.tsx(46,22): error TS2304: Cannot find name 'batchUnits'.
+src/v6/screens/pageviews/OnboardingV2BatchScreen.tsx(46,52): error TS2304: Cannot find name 'snap'.
+src/v6/screens/pageviews/OnboardingV2BatchScreen.tsx(64,24): error TS1355: A 'const' assertions can only be applied to references to enum members, or string, number, boolean, array, or object literals.
+src/v6/screens/pageviews/OnboardingV2BatchScreen.tsx(64,25): error TS2304: Cannot find name 'snap'.
+src/v6/screens/pageviews/OnboardingV2BatchScreen.tsx(64,39): error TS2304: Cannot find name 'snap'.
+src/v6/screens/pageviews/OnboardingV2BatchScreen.tsx(64,59): error TS2304: Cannot find name 'snap'.
+src/v6/screens/pageviews/OnboardingV2BatchScreen.tsx(134,17): error TS2304: Cannot find name 'snap'.
+src/v6/screens/pageviews/OnboardingV2BatchScreen.tsx(135,18): error TS2304: Cannot find name 'snap'.
+src/v6/screens/pageviews/OnboardingV2BatchScreen.tsx(321,38): error TS7006: Parameter 'event' implicitly has an 'any' type.
+src/v6/screens/pageviews/OnboardingV2DashboardScreen.tsx(46,9): error TS6133: 'done' is declared but its value is never read.
+src/v6/screens/pageviews/OnboardingV2DashboardScreen.tsx(47,9): error TS6133: 'tot' is declared but its value is never read.
+src/v6/screens/RepresentativeScreens.tsx(3442,49): error TS2322: Type '"validated"' is not assignable to type '"teal" | "orange" | "green" | "amber" | "slate" | "blue" | "violet" | "red" | undefined'.

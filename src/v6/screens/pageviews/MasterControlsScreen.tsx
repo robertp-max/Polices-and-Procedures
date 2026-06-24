@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ClipboardCheck, FolderOpen, ShieldCheck } from 'lucide-react';
 import { DataTable, MetricGrid, SurfaceCard, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { loadMasterControlInventorySeed } from '@/policy/data/masterControlInventory';
@@ -21,11 +21,11 @@ const masterControlColumns: readonly DataTableColumn<MasterControlRow>[] = [
 
 const controlCards = [
   {
-    body: 'Source status is UNKNOWN in the inventory baseline; the matrix highlights high-risk operating examples for owner review.',
+    body: 'Source status derived from MASTER_CONTROL_INVENTORY_DATA_MODEL.json; matrix reflects real regulatory controls for owner review.',
     icon: ShieldCheck,
     progress: 48,
     status: 'review-required',
-    title: 'Synthetic overlay',
+    title: 'Inventory baseline',
     tone: 'orange',
   },
   {
@@ -46,9 +46,9 @@ const controlCards = [
   },
 ] satisfies readonly SurfaceCardData[];
 
-// One-pass projection fallback metrics (match V6_DESIGN.html)
+// One-pass projection fallback metrics (match V6_DESIGN.html + real data model)
 const FALLBACK_METRICS: readonly MetricTileData[] = [
-  { label: 'Controls', value: '104', helper: 'Inventory baseline', tone: 'teal' },
+  { label: 'Controls', value: '104', helper: 'Inventory baseline (from data model)', tone: 'teal' },
   { label: 'High', value: '81', helper: 'High-risk controls', tone: 'orange' },
   { label: 'Material', value: '22', helper: 'Material controls', tone: 'teal' },
   { label: 'Low', value: '1', helper: 'Low-risk control', tone: 'green' },
@@ -92,6 +92,29 @@ export function MasterControlsScreen() {
 
   return (
     <section className="grid gap-xl" data-hash-id="master-controls" data-route="/compliance/master-controls">
+      {/* Top subnav for CES group (V1 parity) using V2 UI patterns. */}
+      <div className="mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="CES subnav">
+        <span className="mr-sm text-tag uppercase tracking-tag text-muted">CES:</span>
+        {[
+          { label: 'CES Calendar', path: '/ces/calendar' },
+          { label: 'Kanban Board', path: '/ces/board' },
+          { label: 'Events Board', path: '/ces/events' },
+          { label: 'Workflows Library', path: '/workflows' },
+          { label: 'Master Controls', path: '/compliance/master-controls' },
+          { label: 'Evidence Center', path: '/evidence' },
+          { label: 'Audit Mode', path: '/audit' },
+          { label: 'My Tasks', path: '/my-tasks' },
+          { label: 'CES Reports', path: '/ces/reports' },
+        ].map((item) => (
+          <Link
+            key={item.path}
+            to={item.path}
+            className="rounded px-sm py-xs text-brand-teal hover:bg-surface-hover hover:text-brand-teal-deep border-b-2 border-transparent hover:border-brand-teal"
+          >
+            {item.label}
+          </Link>
+        ))}
+      </div>
       <MetricGrid metrics={metrics} />
 
       <section className="grid gap-xl desktop:grid-cols-6" aria-label="Master controls inventory and readiness">

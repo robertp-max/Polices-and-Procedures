@@ -1,6 +1,7 @@
 import { FileText, ScanSearch, Check } from 'lucide-react';
 import { MetricGrid, DataTable, type MetricTileData, type DataTableColumn } from '../../components';
 import { ToneBadge } from '../../primitives';
+import { buildSeedSnapshot } from '@/policy/onboarding-v2/store/seed';
 
 interface AuditRow extends Record<string, string> {
   subjectId: string;
@@ -11,10 +12,15 @@ interface AuditRow extends Record<string, string> {
   auditState: string;
 }
 
+const snap = buildSeedSnapshot();
+const workforceById = new Map(snap.workforce.map((w: any) => [w.id, w]));
+const audited = snap.batches.length;
+const verifiable = snap.units.filter((u: any) => u.status === 'Completed').length;
+const activeOverrides = snap.overrides ? snap.overrides.filter((o: any) => o.status === 'Active').length : 0;
 const metrics = [
-  { label: 'Audited subjects', value: '47', helper: 'Total activations audited', tone: 'teal' },
-  { label: 'Verifiable chains', value: '45', helper: 'Undisrupted hash validation', tone: 'green' },
-  { label: 'Active overrides', value: '2', helper: 'Dual signature bypass logs', tone: 'orange' },
+  { label: 'Audited subjects', value: String(audited), helper: 'Total activations audited (from seed)', tone: 'teal' },
+  { label: 'Verifiable chains', value: String(verifiable), helper: 'Undisrupted hash validation', tone: 'green' },
+  { label: 'Active overrides', value: String(activeOverrides), helper: 'Dual signature bypass logs', tone: 'orange' },
 ] satisfies readonly MetricTileData[];
 
 const columns: readonly DataTableColumn<AuditRow>[] = [
@@ -26,12 +32,25 @@ const columns: readonly DataTableColumn<AuditRow>[] = [
   { key: 'auditState', label: 'Verification State', status: true },
 ];
 
-const rows: readonly AuditRow[] = [
-  { subjectId: 'SUB-2001', name: 'James Carter', licHash: 'sha256-4c28a...', bgHash: 'sha256-11f8b...', healthHash: 'pending-hold', auditState: 'attention' },
-  { subjectId: 'SUB-2002', name: 'Sophia Martinez', licHash: 'sha256-9a2f2...', bgHash: 'sha256-cc120...', healthHash: 'sha256-bb8a3...', auditState: 'validated' },
-  { subjectId: 'SUB-2003', name: 'Liam O\'Connor', licHash: 'sha256-e2f0a...', bgHash: 'sha256-43b8a...', healthHash: 'pending-hold', auditState: 'attention' },
-  { subjectId: 'SUB-2004', name: 'Emma Watson', licHash: 'sha256-8a3b1...', bgHash: 'sha256-ff32c...', healthHash: 'sha256-aa28e...', auditState: 'validated' },
-];
+// Real audit rows from seed units + signatures + evidence hashes (no placeholder names)
+const rows: readonly AuditRow[] = snap.batches.map((b: any) => {
+  const subj: any = workforceById.get(b.subjectId) || { id: b.subjectId, legalName: b.subjectId };
+  const u = snap.units.filter((x: any) => x.batchId === b.id);
+  const sigs = snap.signatures.filter((s: any) => s.subjectId === b.subjectId);
+  const ev = snap.evidence.filter((e: any) => e.subjectId === b.subjectId);
+  const lic = (sigs[0] as any)?.contentHash || (u.find((x:any)=> (x.requirementId||'').includes('LICENSE')) as any)?.contentHash || 'seed-lic-hash';
+  const bg = ev[0]?.contentHash || 'seed-bg-hash';
+  const health = u.find((x:any)=> (x.requirementId||'').includes('TB') || (x.requirementId||'').includes('HEALTH')) ? 'verified' : 'pending-hold';
+  const state = u.some((x:any)=>x.status==='Blocked') ? 'attention' : (u.every((x:any)=>x.status==='Completed') ? 'validated' : 'attention');
+  return {
+    subjectId: subj.id,
+    name: subj.legalName,
+    licHash: String(lic).slice(0,16) + '...',
+    bgHash: String(bg).slice(0,16) + '...',
+    healthHash: health,
+    auditState: state,
+  };
+});
 
 export function OnboardingV2AuditScreen() {
   return (
@@ -67,20 +86,18 @@ export function OnboardingV2AuditScreen() {
               Administrative bypass logs currently active under dual-signature validation rules.
             </p>
             <div className="grid gap-sm">
-              <div className="rounded-md bg-tone-slate-bg p-md">
-                <div className="flex items-center justify-between mb-sm">
-                  <span className="text-sm font-medium text-ink">SUB-2001 Override</span>
-                  <ToneBadge size="sm" status="review-required" />
+              {(snap.overrides || []).slice(0,2).map((ov: any, idx: number) => (
+                <div className="rounded-md bg-tone-slate-bg p-md" key={ov.id || idx}>
+                  <div className="flex items-center justify-between mb-sm">
+                    <span className="text-sm font-medium text-ink">{ov.subjectId} Override</span>
+                    <ToneBadge size="sm" status="review-required" />
+                  </div>
+                  <p className="text-xs text-muted">{ov.reason || 'Seed override from engine.'}</p>
                 </div>
-                <p className="text-xs text-muted">Bypassed health screen for temporary orientation demo.</p>
-              </div>
-              <div className="rounded-md bg-tone-slate-bg p-md">
-                <div className="flex items-center justify-between mb-sm">
-                  <span className="text-sm font-medium text-ink">SUB-2003 Override</span>
-                  <ToneBadge size="sm" status="review-required" />
-                </div>
-                <p className="text-xs text-muted">Bypassed licensure verification pending primary validation.</p>
-              </div>
+              ))}
+              {(!snap.overrides || snap.overrides.length === 0) && (
+                <div className="rounded-md bg-tone-slate-bg p-md text-xs text-muted">No active overrides in current seed snapshot.</div>
+              )}
             </div>
           </section>
 

@@ -2,6 +2,7 @@ import { ShieldAlert, BookOpen, AlertTriangle, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { MetricGrid, DataTable, VeilModal, type MetricTileData, type DataTableColumn } from '../../components';
 import { Button } from '../../primitives';
+import { buildSeedSnapshot } from '@/policy/onboarding-v2/store/seed';
 
 interface OverrideRow extends Record<string, string> {
   overrideId: string;
@@ -12,10 +13,14 @@ interface OverrideRow extends Record<string, string> {
   status: string;
 }
 
+const snap = buildSeedSnapshot();
+const ovCount = (snap.overrides || []).length;
+const activeO = (snap.overrides || []).filter((o: any) => o.status === 'Active').length;
+const expiredish = Math.max(0, ovCount - activeO);
 const metrics = [
-  { label: 'Active Overrides', value: '5', helper: 'Active dual-signature overrides', tone: 'orange' },
-  { label: 'Pending Sign-off', value: '2', helper: 'Awaiting secondary supervisor', tone: 'amber' },
-  { label: 'Expired Overrides', value: '18', helper: 'Completed or deactivated overrides', tone: 'teal' },
+  { label: 'Active Overrides', value: String(activeO || 0), helper: 'Active dual-signature overrides (from seed)', tone: 'orange' },
+  { label: 'Pending Sign-off', value: String(Math.max(0, ovCount - activeO)), helper: 'Awaiting secondary supervisor', tone: 'amber' },
+  { label: 'Expired Overrides', value: String(expiredish), helper: 'Completed or deactivated overrides', tone: 'teal' },
 ] satisfies readonly MetricTileData[];
 
 const columns: readonly DataTableColumn<OverrideRow>[] = [
@@ -27,10 +32,15 @@ const columns: readonly DataTableColumn<OverrideRow>[] = [
   { key: 'status', label: 'State', status: true },
 ];
 
-const initialRows: readonly OverrideRow[] = [
-  { overrideId: 'OVR-101', subject: 'James Carter', gate: 'Gate 3: Health', reason: 'TB Screening delay', approvers: 'DON / HR Director', status: 'review-required' },
-  { overrideId: 'OVR-102', subject: 'Liam O\'Connor', gate: 'Gate 2: Credentials', reason: 'License verification delay', approvers: 'DON / Compliance Officer', status: 'awaiting' },
-  { overrideId: 'OVR-103', subject: 'Emma Watson', gate: 'Gate 4: Training', reason: 'Orientation module transfer', approvers: 'HR Coordinator / DON', status: 'complete' },
+const initialRows: readonly OverrideRow[] = (snap.overrides || []).length ? snap.overrides.map((o: any) => ({
+  overrideId: o.id,
+  subject: o.subjectId,
+  gate: o.gateOrRuleId || 'Gate',
+  reason: o.reason || 'Seed override',
+  approvers: (o.signerIds || []).join(' / ') || 'DON / Compliance',
+  status: (o.status || 'active').toLowerCase() === 'active' ? 'review-required' : 'complete',
+})) : [
+  { overrideId: 'OVR-seed', subject: 'seed-subject', gate: 'Governance', reason: 'Seed demo (no overrides in current snap)', approvers: 'system', status: 'complete' },
 ];
 
 export function OnboardingV2GovernanceScreen() {

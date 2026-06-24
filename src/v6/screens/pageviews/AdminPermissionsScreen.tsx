@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AlertTriangle, ClipboardCheck, FileCheck2, KeyRound, LockKeyhole, ShieldCheck, UserCog } from 'lucide-react';
-import { DataTable, SurfaceCard, type DataTableColumn, type SurfaceCardData } from '../../components';
+import { DataTable, MetricGrid, SurfaceCard, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { PageHeader } from '../../shell';
 import { ToneBadge } from '../../primitives';
 import { cx } from '../../utils/classNames';
 
@@ -196,6 +197,13 @@ const auditTrailItems = [
   ['Surveyor exposure', 'Read-only policy scope', 'ready'],
 ] as const;
 
+const permissionMetrics: readonly MetricTileData[] = [
+  { label: 'Permissions', value: '8', helper: 'Defined capabilities', tone: 'teal' },
+  { label: 'High risk', value: '3', helper: 'Dual control gated', tone: 'orange' },
+  { label: 'Roles mapped', value: '5', helper: 'Active assignments', tone: 'green' },
+  { label: 'Reviews', value: '2', helper: 'Open attestations', tone: 'amber' },
+];
+
 export function AdminPermissionsScreen() {
   const [activeTab, setActiveTab] = useState<PermissionTabId>('matrix');
 
@@ -207,6 +215,12 @@ export function AdminPermissionsScreen() {
       data-route="/admin/permissions"
       data-template="matrix"
     >
+      <PageHeader
+        badge="Admin"
+        title="Permissions"
+        description="Permission matrix for capabilities, roles, risk, readiness, and governance evidence."
+      />
+      <MetricGrid metrics={permissionMetrics} />
       <section className="grid gap-xl rounded-lg border border-card bg-surface/90 p-xl shadow-rest backdrop-blur-xl">
         <nav aria-label="Permission detail tabs" className="flex gap-xs overflow-x-auto rounded-lg border border-card bg-surface p-xs shadow-rest">
           {permissionTabs.map((tab) => (

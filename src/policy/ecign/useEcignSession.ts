@@ -17,6 +17,7 @@ export interface CommitArgs {
   templateSnapshot?:   string;   // optional inline HTML / hash basis
   workflowInstanceId?: string;
   eventId?:            string;
+  formInstanceId?:     string;   // Preserve across create for audit/evidence (V1 parity)
 }
 
 export interface CommitResult {
@@ -89,6 +90,7 @@ export function useEcignSession() {
           blocks_self_approval: false,
           required_for_final_package: true,
         }],
+        form_instance_id:     args.formInstanceId,
         workflow_instance_id: args.workflowInstanceId,
         event_id:             args.eventId,
       }, mfaToken);

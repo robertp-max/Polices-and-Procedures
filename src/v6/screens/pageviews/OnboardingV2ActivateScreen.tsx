@@ -1,13 +1,16 @@
 import { UserPlus, AlertCircle } from 'lucide-react';
 import { FormField, Input, Select, ToneBadge } from '../../primitives';
+import { buildSeedSnapshot } from '@/policy/onboarding-v2/store/seed';
 
+const snap = buildSeedSnapshot();
 const triggerOptions = [
   { value: 'offer', label: 'Offer Letter Signed' },
   { value: 'transfer', label: 'Inter-agency Transfer' },
   { value: 'rehire', label: 'Rehire Activation' },
+  { value: 'vendor', label: 'Vendor Onboard' },
 ];
 
-const roleOptions = [
+const roleOptions = (snap.roles || []).slice(0,8).map((r: any) => ({ value: r.id, label: r.name })) || [
   { value: 'rn', label: 'Registered Nurse (RN)' },
   { value: 'lvn', label: 'Licensed Vocational Nurse (LVN)' },
   { value: 'hha', label: 'Home Health Aide (HHA)' },

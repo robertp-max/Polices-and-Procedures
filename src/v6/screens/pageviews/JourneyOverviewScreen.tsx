@@ -1,4 +1,5 @@
 import { Award, BookOpenCheck, ClipboardCheck, FileSignature, LockKeyhole, Route, ShieldCheck, Stethoscope, UserCheck, type LucideIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneSoftTileClasses, type MetricTileData, type SurfaceCardData } from '../../components';
 import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
@@ -288,6 +289,12 @@ const guidanceCards = [
 ] satisfies readonly SurfaceCardData[];
 
 export function JourneyOverviewScreen() {
+  const navigate = useNavigate();
+
+  const handleOpenModule = (moduleId: string) => {
+    navigate(`/journey/module/${encodeURIComponent(moduleId)}`);
+  };
+
   return (
     <section
       className="grid gap-xl"
@@ -363,7 +370,12 @@ export function JourneyOverviewScreen() {
 
           <div className="grid gap-md tablet-l:grid-cols-2" role="list">
             {journeyModules.map((module, index) => (
-              <JourneyModuleCard index={index + 1} key={module.id} module={module} />
+              <JourneyModuleCard
+                index={index + 1}
+                key={module.id}
+                module={module}
+                onClick={() => handleOpenModule(module.id)}
+              />
             ))}
           </div>
 
@@ -458,13 +470,19 @@ function LearnerFact({ label, value }: { label: string; value: string }) {
   );
 }
 
-function JourneyModuleCard({ index, module }: { index: number; module: JourneyModule }) {
+function JourneyModuleCard({ index, module, onClick }: { index: number; module: JourneyModule; onClick?: () => void }) {
   const Icon = module.icon;
 
   return (
     <article
-      className="grid min-h-[240px] content-between gap-md rounded-lg border border-card bg-surface p-lg shadow-rest transition duration-fast ease-standard hover:shadow-hover"
+      className={cx(
+        'grid min-h-[240px] content-between gap-md rounded-lg border border-card bg-surface p-lg shadow-rest transition duration-fast ease-standard hover:shadow-hover',
+        onClick && 'cursor-pointer focus-visible:outline-none focus-visible:shadow-focus',
+      )}
       role="listitem"
+      onClick={onClick}
+      onKeyDown={(e) => { if (onClick && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onClick(); } }}
+      tabIndex={onClick ? 0 : undefined}
     >
       <div className="grid gap-md">
         <div className="flex items-start justify-between gap-md">

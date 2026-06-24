@@ -65,44 +65,44 @@ interface SidebarSection {
 }
 
 export const SIDEBAR_SECTIONS = [
-  { label: 'Dashboard', hashIds: ['dashboard'] },
-  { label: 'Clinician Profiles', hashIds: ['clinicians', 'clinician-detail'] },
-  { label: 'Patient Profiles', hashIds: ['patients', 'patient-detail'] },
-  { label: 'Calendar', hashIds: ['master-calendar', 'staffing-calendar'] },
-  { label: 'Brad', hashIds: ['brad'] },
+  { label: 'Dashboard / Command Center', hashIds: ['dashboard'] },
   {
-    label: 'Compliance Execution (CES)',
+    label: 'Policy Library',
+    hashIds: [
+      'policy-library',
+      'policy-detail',
+      'policy-lifecycle',
+      'policy-lifecycle-detail',
+      'taxonomy',
+      'framework',
+      'achc-survey',
+      'achc-crosswalk',
+      'generic-reference',
+    ],
+  },
+  {
+    label: 'Forms',
+    hashIds: ['forms-library', 'form-viewer', 'ecign-workspace', 'artifact-viewer'],
+  },
+  {
+    label: 'CES / Compliance Execution',
     hashIds: [
       'ces-calendar',
       'ces-board',
       'events-board',
+      'workflows',
       'workflow-swimlane',
       'master-controls',
-      'audit-mode',
-      'evidence-center',
       'ces-reports',
       'mobile-incident',
       'my-tasks',
     ],
   },
+  { label: 'Calendar', hashIds: ['master-calendar', 'staffing-calendar'] },
+  { label: 'Evidence Center', hashIds: ['evidence-center'] },
+  { label: 'Audit Mode', hashIds: ['audit-mode'] },
   {
-    label: 'Taxonomy',
-    hashIds: [
-      'framework',
-      'achc-survey',
-      'achc-crosswalk',
-      'policy-library',
-      'policy-detail',
-      'forms-library',
-      'form-viewer',
-      'ecign-workspace',
-      'artifact-viewer',
-      'generic-reference',
-      'workflows',
-    ],
-  },
-  {
-    label: 'Onboarding',
+    label: 'Journey / Training',
     hashIds: [
       'journey-overview',
       'journey-v1',
@@ -111,11 +111,6 @@ export const SIDEBAR_SECTIONS = [
       'supervisor',
       'journey-admin',
       'user-guide',
-    ],
-  },
-  {
-    label: 'Onboarding v2',
-    hashIds: [
       'onboarding-v2-dashboard',
       'onboarding-v2-activate',
       'onboarding-v2-batches',
@@ -125,10 +120,15 @@ export const SIDEBAR_SECTIONS = [
     ],
   },
   {
-    label: 'System',
-    hashIds: ['policy-lifecycle', 'policy-lifecycle-detail', 'hubstaff', 'system-docs', 'help-center', 'governance'],
+    label: 'Staffing / Clinical',
+    hashIds: ['clinicians', 'clinician-detail', 'patients', 'patient-detail'],
   },
-  { label: 'Admin', hashIds: ['admin-groups', 'admin-roles', 'admin-permissions', 'admin-users', 'surveyor-viewer'] },
+  { label: 'iAdministrator', hashIds: ['brad'] },
+  {
+    label: 'User Management / Identity Admin',
+    hashIds: ['admin-groups', 'admin-roles', 'admin-permissions', 'admin-users', 'surveyor-viewer'],
+  },
+  { label: 'System / Settings', hashIds: ['system-docs', 'help-center', 'governance', 'hubstaff'] },
 ] as const satisfies readonly SidebarSection[];
 
 const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
@@ -150,17 +150,17 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
     icon: Users,
     title: 'User Groups',
   },
-  'admin-permissions': {
-    description: 'Permission catalog showing scope, linked roles, risk posture, and governance readiness.',
-    eyebrow: 'Admin',
-    icon: LockKeyhole,
-    title: 'Permissions',
-  },
   'admin-roles': {
     description: 'Role matrix for privilege scope, user-group links, permission bundles, and review posture.',
     eyebrow: 'Admin',
     icon: Shield,
     title: 'Roles',
+  },
+  'admin-permissions': {
+    description: 'Permission catalog showing scope, linked roles, risk posture, and governance readiness.',
+    eyebrow: 'Admin',
+    icon: LockKeyhole,
+    title: 'Permissions',
   },
   'admin-users': {
     description: 'Administrative user matrix with role assignments, MFA/access state, audit signals, and security review cards.',
@@ -183,11 +183,11 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
   brad: {
     description:
       'Decision-support workspace for primary operations triage, staffing risk, coverage decisions, and generated work products.',
-    eyebrow: 'Brad',
+    eyebrow: 'iAdministrator',
     icon: Bot,
-    navGroup: 'Brad',
-    navLabel: 'Brad',
-    title: 'Brad',
+    navGroup: 'iAdministrator',
+    navLabel: 'iAdministrator',
+    title: 'iAdministrator',
   },
   'ces-board': {
     description: 'Operational Kanban board for sprint execution, blockers, evidence, signatures, and owner handoffs.',
@@ -262,15 +262,22 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
     icon: Library,
     title: 'Framework',
   },
+  taxonomy: {
+    description: 'Regulatory framework taxonomy (V1 parity alias) for domains, policies, forms, workflows, and authorities.',
+    eyebrow: 'Taxonomy',
+    icon: Library,
+    navLabel: 'Taxonomy (legacy)',
+    title: 'Taxonomy',
+  },
   'generic-reference': {
     description: 'Reference viewer with source metadata, evidence hash state, linked requirements, and review posture.',
     eyebrow: 'Taxonomy',
     icon: FileSearch,
     title: 'Reference Viewer',
   },
-  governance: { eyebrow: 'System', icon: Landmark },
-  'help-center': { eyebrow: 'System', icon: HelpCircle },
-  hubstaff: { eyebrow: 'System', icon: BarChart3 },
+  governance: { eyebrow: 'System Documentation', icon: Landmark },
+  'help-center': { eyebrow: 'System Documentation', icon: HelpCircle },
+  hubstaff: { eyebrow: 'Hubstaff', icon: BarChart3 },
   'journey-admin': { eyebrow: 'Onboarding', icon: BarChart3 },
   'journey-overview': { eyebrow: 'Onboarding', icon: ListChecks },
   'journey-v1': { eyebrow: 'Onboarding', icon: ListChecks },
@@ -324,8 +331,8 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
     eyebrow: 'Taxonomy',
     icon: BookOpen,
   },
-  'policy-lifecycle': { eyebrow: 'System', icon: History },
-  'policy-lifecycle-detail': { eyebrow: 'System', icon: History },
+  'policy-lifecycle': { eyebrow: 'Policy Lifecycle', icon: History },
+  'policy-lifecycle-detail': { eyebrow: 'Policy Lifecycle', icon: History },
   'staffing-calendar': {
     description: 'Staffing calendar for clinician availability, visit conflicts, shift coverage, and acuity pressure.',
     eyebrow: 'Calendar',
@@ -334,7 +341,7 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
   },
   supervisor: { eyebrow: 'Onboarding', icon: UserCheck },
   'surveyor-viewer': { eyebrow: 'Admin', icon: FileSearch },
-  'system-docs': { eyebrow: 'System', icon: BookMarked },
+  'system-docs': { eyebrow: 'System Documentation', icon: BookMarked },
   'user-guide': {
     description:
       'Step-by-step procedures, policy citations and survey-ready expectations. Persona-specific guides. Contextual links to full Help Center articles.',

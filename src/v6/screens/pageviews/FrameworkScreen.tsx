@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { ArrowRight, BookOpen, ClipboardCheck, FileCheck2, Landmark, Layers3, Network, ShieldCheck, Workflow, type LucideIcon } from 'lucide-react';
 import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, type MetricTileData, type SurfaceCardData } from '../../components';
@@ -185,6 +186,7 @@ const alignmentCards: readonly (readonly [string, string, string, Tone])[] = [
 
 export function FrameworkScreen() {
   const [activeTab, setActiveTab] = useState<'taxonomy' | 'mapping'>('taxonomy');
+  const [viewMode, setViewMode] = useState<'grid' | 'tree' | 'heat'>('grid');
   
 
   return (
@@ -232,13 +234,13 @@ export function FrameworkScreen() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-sm" aria-label="Framework view modes">
-                <Button selected size="sm" variant="secondary">
+                <Button selected={viewMode === 'grid'} size="sm" variant={viewMode === 'grid' ? 'secondary' : 'tertiary'} onClick={() => setViewMode('grid')}>
                   Grid
                 </Button>
-                <Button size="sm" variant="tertiary">
+                <Button selected={viewMode === 'tree'} size="sm" variant={viewMode === 'tree' ? 'secondary' : 'tertiary'} onClick={() => setViewMode('tree')}>
                   Tree
                 </Button>
-                <Button size="sm" variant="tertiary">
+                <Button selected={viewMode === 'heat'} size="sm" variant={viewMode === 'heat' ? 'secondary' : 'tertiary'} onClick={() => setViewMode('heat')}>
                   Heat
                 </Button>
               </div>
@@ -291,14 +293,13 @@ export function FrameworkScreen() {
                 and evidence methods.
               </p>
             </div>
-            <Button
-              className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange"
-              iconRight={<ArrowRight aria-hidden="true" className="h-icon-sm w-icon-sm" />}
-              size="sm"
-              onClick={() => { location.hash = '#/framework/achc-survey/crosswalk'; }}
+            <Link
+              className="inline-flex items-center gap-sm rounded-md border border-brand-orange bg-brand-orange px-md py-xs text-sm text-on-brand hover:bg-brand-orange focus-visible:outline-none focus-visible:shadow-focus"
+              to="/framework/achc-survey/crosswalk"
             >
               Open crosswalk
-            </Button>
+              <ArrowRight aria-hidden="true" className="h-icon-sm w-icon-sm" />
+            </Link>
           </div>
 
           <div className="hidden overflow-x-auto laptop:block">
@@ -401,14 +402,13 @@ function DomainTile({ domain }: { domain: DomainTileData }) {
           <DomainStat label="ACHC" value={domain.achcAnchors} />
         </div>
         <ProgressMeter label="Survey readiness" tone={domain.tone} value={domain.readiness} />
-        <button
+        <Link
           className="inline-flex min-h-tap items-center justify-between gap-md rounded-md border border-card px-md text-left text-sm text-brand-teal transition duration-fast ease-standard hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus"
-          type="button"
-          onClick={() => { location.hash = '#/framework/achc-survey'; }}
+          to="/framework/achc-survey"
         >
           Inspect architecture
           <ArrowRight aria-hidden="true" className="h-icon-sm w-icon-sm" />
-        </button>
+        </Link>
       </div>
     </article>
   );

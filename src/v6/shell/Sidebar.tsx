@@ -18,8 +18,8 @@ export function Sidebar() {
   }, [activeHashId]);
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-sidebar shrink-0 overflow-hidden border-r border-hairline bg-white/70 text-ink shadow-sidebar backdrop-blur-xl laptop:block">
-      <div className="relative z-10 grid gap-lg px-lg pb-lg pt-2xl">
+    <aside className="sticky top-0 z-command h-screen w-sidebar shrink-0 overflow-hidden border-r border-hairline bg-white/70 text-ink shadow-sidebar backdrop-blur-xl flex flex-col">
+      <div className="relative z-10 shrink-0 grid gap-lg px-lg pb-lg pt-2xl">
         <div className="flex items-start gap-md">
           <div className="flex items-center gap-sm px-sm" aria-label="Care Indeed">
             <img
@@ -33,7 +33,7 @@ export function Sidebar() {
 
       <nav
         aria-label="V6 routes"
-        className="h-[calc(100vh-128px)] overflow-y-auto px-lg pb-2xl pt-md"
+        className="flex-1 overflow-y-auto px-lg pb-2xl pt-md"
         style={{
           maskImage: 'linear-gradient(to bottom, transparent 0, black 34px, black calc(100% - 32px), transparent 100%)',
           WebkitMaskImage: 'linear-gradient(to bottom, transparent 0, black 34px, black calc(100% - 32px), transparent 100%)',

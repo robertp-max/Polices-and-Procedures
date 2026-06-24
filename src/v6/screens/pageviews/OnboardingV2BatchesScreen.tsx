@@ -13,10 +13,14 @@ interface BatchRow extends Record<string, string> {
   created: string;
 }
 
+const snap = buildSeedSnapshot();
+const totalB = snap.batches.length;
+const activeB = snap.batches.filter((b: any) => !String(b.status||'').toLowerCase().includes('complete')).length;
+const doneB = totalB - activeB;
 const metrics = [
-  { label: 'Total Batches', value: '12', helper: 'Created since transition', tone: 'teal' },
-  { label: 'Active Batches', value: '4', helper: 'Currently processing', tone: 'orange' },
-  { label: 'Completed Batches', value: '8', helper: 'All subjects activated', tone: 'green' },
+  { label: 'Total Batches', value: String(totalB), helper: 'Created since transition (from seed)', tone: 'teal' },
+  { label: 'Active Batches', value: String(activeB), helper: 'Currently processing', tone: 'orange' },
+  { label: 'Completed Batches', value: String(doneB), helper: 'All subjects activated', tone: 'green' },
 ] satisfies readonly MetricTileData[];
 
 const columns: readonly DataTableColumn<BatchRow>[] = [
@@ -30,7 +34,6 @@ const columns: readonly DataTableColumn<BatchRow>[] = [
 
 // Real onboarding batch records from seed/store snapshot (buildSeedSnapshot).
 // This wires the preserved logic per V6 plan (transitive from v6 screen import; no tsconfig.app change).
-const snap = buildSeedSnapshot();
 function mapBatchToRow(b: OnboardingExecutionBatch): BatchRow {
   const triggerType = (b.triggerType as string) || (b.triggerPayload && (b.triggerPayload as any).type) || '—';
   const units = snap.units.filter((u: any) => u.batchId === b.id);

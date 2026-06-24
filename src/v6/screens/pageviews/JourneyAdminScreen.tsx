@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, ArrowDown, ArrowUp, BarChart3, CalendarClock, CheckCircle2, FileCheck2, GripVertical, LockKeyhole, Plus, ShieldCheck, Trash2, Users } from 'lucide-react';
 import { DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneBarClasses, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Button, ToneBadge, Input, Textarea } from '../../primitives';
@@ -281,6 +282,7 @@ const cohortPanels = [
 ] as const;
 
 export function JourneyAdminScreen() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'overview' | 'syllabus' | 'review' | 'governance' | 'builder'>('overview');
   const [courseTitle, setCourseTitle] = useState('RN General Orientation and supervised clearance');
   const [roleTrack, setRoleTrack] = useState('Registered Nurse - new hire');
@@ -301,6 +303,8 @@ export function JourneyAdminScreen() {
     { order: 3, code: 'RN-SUP', title: 'Supervised patient visits', requirement: 'Required', refs: ['HR-TA-005', 'HRTA005_E'] },
     { order: 4, code: 'ANN-001', title: 'Annual refresh bundle', requirement: 'Optional', refs: ['HR-TD-003', 'EN-FM-014'] },
   ]);
+
+  const handleBackToJourney = () => navigate('/journey');
 
   const moveUp = (index: number) => {
     if (index === 0) return;
@@ -379,6 +383,10 @@ export function JourneyAdminScreen() {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="flex justify-end -mt-sm mb-sm">
+        <Button size="sm" variant="tertiary" onClick={handleBackToJourney}>Back to Journey Overview</Button>
       </div>
 
       {activeTab === 'builder' ? (

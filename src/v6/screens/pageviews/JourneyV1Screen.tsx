@@ -1,4 +1,5 @@
 import { BookOpenCheck, CheckCircle2, ClipboardCheck, FileCheck2, LockKeyhole, Map, PlayCircle, Route, ShieldCheck, UserCheck, type LucideIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneSoftTileClasses, toneGlassSurfaceClasses, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
@@ -215,6 +216,12 @@ const readinessCards: readonly ReadinessCard[] = [
 const selectedModule = lessonModules[4];
 
 export function JourneyV1Screen() {
+  const navigate = useNavigate();
+
+  const handleOpenModule = (moduleId: string) => {
+    navigate(`/journey/module/${encodeURIComponent(moduleId)}`);
+  };
+
   return (
     <section className="grid gap-xl" data-hash-id="journey-v1" data-route="/journey/v1-journey" data-template="journey">
 
@@ -273,7 +280,12 @@ export function JourneyV1Screen() {
 
             <div className="grid gap-md tablet-l:grid-cols-2 desktop:grid-cols-3">
               {lessonModules.map((module) => (
-                <LessonCard key={module.id} module={module} selected={module.id === selectedModule.id} />
+                <LessonCard
+                  key={module.id}
+                  module={module}
+                  selected={module.id === selectedModule.id}
+                  onClick={() => handleOpenModule(module.id)}
+                />
               ))}
             </div>
           </section>
@@ -309,7 +321,11 @@ export function JourneyV1Screen() {
               <div className="grid content-start gap-md rounded-lg border border-card bg-tone-slate-bg p-lg">
                 <ProgressMeter label="Lesson score" tone={selectedModule.tone} value={65} />
                 <ProgressMeter label="GAO phase" tone="teal" value={60} />
-                <Button iconLeft={<PlayCircle aria-hidden="true" className="h-icon-sm w-icon-sm" />} variant="secondary">
+                <Button
+                  iconLeft={<PlayCircle aria-hidden="true" className="h-icon-sm w-icon-sm" />}
+                  variant="secondary"
+                  onClick={() => handleOpenModule(selectedModule.id)}
+                >
                   Open module player
                 </Button>
               </div>
@@ -356,13 +372,18 @@ function PhaseCard({ phase }: { phase: LegacyPhase }) {
   );
 }
 
-function LessonCard({ module, selected }: { module: LessonModule; selected?: boolean }) {
+function LessonCard({ module, selected, onClick }: { module: LessonModule; selected?: boolean; onClick?: () => void }) {
   return (
     <article
       className={cx(
         'grid min-h-[200px] content-between gap-md rounded-lg border p-lg transition duration-fast ease-standard',
         selected ? 'border-brand-teal bg-tone-teal-bg shadow-hover' : 'border-card bg-tone-slate-bg shadow-rest hover:bg-surface-hover',
+        onClick && 'cursor-pointer focus-visible:outline-none focus-visible:shadow-focus',
       )}
+      onClick={onClick}
+      onKeyDown={(e) => { if (onClick && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onClick(); } }}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
     >
       <div className="grid gap-md">
         <div className="flex flex-wrap items-start justify-between gap-md">

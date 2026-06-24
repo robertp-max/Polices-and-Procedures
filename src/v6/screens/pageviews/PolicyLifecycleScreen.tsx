@@ -1,4 +1,5 @@
 import { BookOpen, AlertTriangle, FileText, ArrowRight, User, Calendar } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { MetricGrid, SurfaceCard, type MetricTileData, type SurfaceCardData } from '../../components';
 import { ToneBadge } from '../../primitives';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/data/policyCorpus';
@@ -97,6 +98,26 @@ export function PolicyLifecycleScreen() {
       data-route="/policy-lifecycle"
       data-template="lifecycle"
     >
+      {/* Top subnav for Taxonomy group (V1 parity) using V2 UI patterns. Policies workspace. */}
+      <div className="mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="Taxonomy subnav">
+        <span className="mr-sm text-tag uppercase tracking-tag text-muted">Taxonomy:</span>
+        {[
+          { label: 'Framework', path: '/framework' },
+          { label: 'Policy Library', path: '/library' },
+          { label: 'Forms Library', path: '/forms' },
+          { label: 'Workflows Library', path: '/workflows' },
+          { label: 'ACHC Survey', path: '/framework/achc-survey' },
+          { label: 'ACHC Crosswalk', path: '/framework/achc-survey/crosswalk' },
+        ].map((item) => (
+          <Link
+            key={item.path}
+            to={item.path}
+            className="rounded px-sm py-xs text-brand-teal hover:bg-surface-hover hover:text-brand-teal-deep border-b-2 border-transparent hover:border-brand-teal"
+          >
+            {item.label}
+          </Link>
+        ))}
+      </div>
       <MetricGrid metrics={metrics} />
 
       <section className="grid gap-xl desktop:grid-cols-12">

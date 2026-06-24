@@ -71,39 +71,6 @@ function evidenceProgress(event: RegulatoryEvent): number {
   return Math.round((done / forms.length) * 100);
 }
 
-const metrics = [
-  {
-    label: 'Open task',
-    value: incidentEvents[0]?.id ?? '—',
-    helper: incidentEvents[0]?.title ?? 'Field incident workflow',
-    tone: 'orange',
-  },
-  {
-    label: 'Evidence',
-    value: incidentEvents[0]
-      ? `${(incidentEvents[0].requiredForms ?? []).filter((f) => f.status === 'complete').length}/${(incidentEvents[0].requiredForms ?? []).length}`
-      : '—',
-    helper: 'Required forms complete',
-    tone: 'teal',
-  },
-  {
-    label: 'Escalation',
-    value: incidentEvents[0]?.complianceFlags?.auditRisk
-      ? incidentEvents[0].complianceFlags.auditRisk.charAt(0).toUpperCase() + incidentEvents[0].complianceFlags.auditRisk.slice(1)
-      : '—',
-    helper: incidentEvents[0]?.ownerRole ?? 'Supervisor notified',
-    tone: 'orange',
-  },
-  {
-    label: 'Packet state',
-    value: incidentEvents[0]?.minutes?.status
-      ? incidentEvents[0].minutes.status.charAt(0).toUpperCase() + incidentEvents[0].minutes.status.slice(1)
-      : '—',
-    helper: incidentEvents[0]?.summary ? 'Workflow record state' : 'Not survey-ready',
-    tone: 'amber',
-  },
-] satisfies readonly MetricTileData[];
-
 // Same three design icons; cycled deterministically across real records.
 const cardIcons = [AlertCircle, Upload, ShieldCheck] as const;
 
@@ -116,21 +83,64 @@ const incidentCards = incidentEvents.map((event, index) => ({
   tone: urgencyToTone(event.urgency),
 })) satisfies readonly SurfaceCardData[];
 
-const previewEvent = incidentEvents[0];
-const previewRows = [
-  ['Event', previewEvent?.title ?? '—'],
-  ['Policy anchor', previewEvent?.policyRefs?.length ? previewEvent.policyRefs.join(', ') : '—'],
-  ['Responsible owner', previewEvent?.ownerRole ?? '—'],
-  ['Review window', previewEvent?.date ? relativeLabel(previewEvent.date) : '—'],
-  ['Packet state', previewEvent?.minutes?.status
-    ? previewEvent.minutes.status.charAt(0).toUpperCase() + previewEvent.minutes.status.slice(1)
-    : '—'],
-] as const;
+/** Select real event by route param (supports full id or partial match from calendar links). */
+function selectIncidentEvent(events: typeof incidentEvents, eventId: string) {
+  if (!eventId || eventId === 'EVT-001') return events[0] ?? null;
+  const exact = events.find((ev) => ev.id === eventId);
+  if (exact) return exact;
+  const partial = events.find((ev) => ev.id.includes(eventId) || eventId.includes(ev.id) || ev.id.split(/[-_]/)[0] === eventId);
+  return partial ?? events[0] ?? null;
+}
 
 export function MobileIncidentScreen() {
   const params = useParams<{ eventId?: string; taskId?: string }>();
   const eventId = params.eventId?.trim() || 'EVT-001';
   const taskId = params.taskId?.trim() || 'T-100';
+  const selectedEvent = selectIncidentEvent(incidentEvents, eventId);
+
+  const metrics = [
+    {
+      label: 'Open task',
+      value: selectedEvent?.id ?? '—',
+      helper: selectedEvent?.title ?? 'Field incident workflow',
+      tone: 'orange' as const,
+    },
+    {
+      label: 'Evidence',
+      value: selectedEvent
+        ? `${(selectedEvent.requiredForms ?? []).filter((f) => f.status === 'complete').length}/${(selectedEvent.requiredForms ?? []).length}`
+        : '—',
+      helper: 'Required forms complete',
+      tone: 'teal' as const,
+    },
+    {
+      label: 'Escalation',
+      value: selectedEvent?.complianceFlags?.auditRisk
+        ? selectedEvent.complianceFlags.auditRisk.charAt(0).toUpperCase() + selectedEvent.complianceFlags.auditRisk.slice(1)
+        : '—',
+      helper: selectedEvent?.ownerRole ?? 'Supervisor notified',
+      tone: 'orange' as const,
+    },
+    {
+      label: 'Packet state',
+      value: selectedEvent?.minutes?.status
+        ? selectedEvent.minutes.status.charAt(0).toUpperCase() + selectedEvent.minutes.status.slice(1)
+        : '—',
+      helper: selectedEvent?.summary ? 'Workflow record state' : 'Not survey-ready',
+      tone: 'amber' as const,
+    },
+  ] satisfies readonly MetricTileData[];
+
+  const previewRows = [
+    ['Event', selectedEvent?.title ?? '—'],
+    ['Policy anchor', selectedEvent?.policyRefs?.length ? selectedEvent.policyRefs.join(', ') : '—'],
+    ['Responsible owner', selectedEvent?.ownerRole ?? '—'],
+    ['Review window', selectedEvent?.date ? relativeLabel(selectedEvent.date) : '—'],
+    ['Packet state', selectedEvent?.minutes?.status
+      ? selectedEvent.minutes.status.charAt(0).toUpperCase() + selectedEvent.minutes.status.slice(1)
+      : '—'],
+  ] as const;
+
   return (
     <section
       className="grid gap-xl"

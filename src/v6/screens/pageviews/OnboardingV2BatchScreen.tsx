@@ -29,18 +29,48 @@ const columns: readonly DataTableColumn<RosterRow>[] = [
   { key: 'gate5', label: 'Supervised', status: true },
 ];
 
-const rows: readonly RosterRow[] = [
-  { subjectId: 'SUB-2001', name: 'James Carter', role: 'RN Case Manager', gate1: 'validated', gate2: 'pending', gate3: 'locked', gate4: 'complete', gate5: 'locked' },
-  { subjectId: 'SUB-2002', name: 'Sophia Martinez', gate1: 'validated', gate2: 'validated', gate3: 'passed', gate4: 'complete', gate5: 'signed', role: 'Home Health Aide' },
-  { subjectId: 'SUB-2003', name: 'Liam O\'Connor', gate1: 'validated', gate2: 'pending', gate3: 'locked', gate4: 'complete', gate5: 'locked', role: 'Physical Therapist' },
-];
+const snap = buildSeedSnapshot();
+const batchUnits = snap.units;
 
-const timelineEvents = [
-  { label: 'Batch initialized', value: '2026-06-01 08:00 UTC', detail: 'System generated trigger event' },
-  { label: 'Subject record created', value: '2026-06-01 08:05 UTC', detail: 'Initial hash-chain anchor set' },
-  { label: 'Background sweep complete', value: '2026-06-02 14:30 UTC', detail: 'Identity & criminal checks validated' },
-  { label: 'Override request logged', value: '2026-06-19 11:22 UTC', detail: 'Licensure verification request' },
-] as const;
+// Real roster derived from batch units + workforce (no placeholders)
+const workforceById = new Map(snap.workforce.map((w: any) => [w.id, w]));
+function statusToUi(s: string): string {
+  const l = (s || '').toLowerCase();
+  if (l.includes('complete') || l === 'completed') return 'complete';
+  if (l.includes('block')) return 'blocked';
+  if (l.includes('await') || l.includes('pending')) return 'pending';
+  if (l.includes('progress')) return 'review-required';
+  return l || 'active';
+}
+const rows: readonly RosterRow[] = (() => {
+  const subjectIds = Array.from(new Set(batchUnits.map((u: any) => snap.batches.find((b:any)=>b.id===u.batchId)?.subjectId).filter((x): x is string => Boolean(x))));
+  return subjectIds.map((sid: string) => {
+    const subj: any = workforceById.get(sid) || { id: sid, legalName: sid, primaryRoleId: '—' };
+    const uForSubj = batchUnits.filter((u: any) => snap.batches.find((b:any)=>b.id===u.batchId)?.subjectId === sid);
+    const getGate = (needle: string) => {
+      const hit = uForSubj.find((u: any) => (u.requirementId || '').toLowerCase().includes(needle));
+      return hit ? statusToUi(hit.status) : 'locked';
+    };
+    return {
+      subjectId: sid,
+      name: subj.legalName || sid,
+      role: subj.primaryRoleId || '—',
+      gate1: getGate('bg') || getGate('background'),
+      gate2: getGate('license') || getGate('credential'),
+      gate3: getGate('tb') || getGate('health'),
+      gate4: getGate('hipaa') || getGate('training'),
+      gate5: getGate('supervis') || 'locked',
+    };
+  });
+})();
+
+const timelineEvents = (snap.audit && snap.audit.length ? snap.audit.slice(0,4).map((a: any) => ({
+  label: a.eventType || 'Event',
+  value: String(a.at || '').slice(0,16).replace('T',' '),
+  detail: JSON.stringify(a.payload || {}).slice(0,60),
+})) : [
+  { label: 'Batch initialized', value: '2026-04-27 08:00 UTC', detail: 'System generated trigger event (seed)' },
+]);
 
 interface ChecklistItem {
   id: string;
@@ -99,47 +129,35 @@ interface SubjectEvidence {
   signatures: { role: string; name: string; date: string; token: string }[];
 }
 
-const subjectEvidenceData: Record<string, SubjectEvidence> = {
-  'SUB-2001': {
-    fileName: 'rn_credentials_evidence_pack.pdf',
-    uploadTime: '2026-06-19 14:32 UTC',
-    shaHash: 'd3f2a1b9e0c84147afbf4c8996fb92427ae41e4649b934ca495991b7852b855a',
-    status: 'pending',
-    signatures: [
-      { role: 'Learner', name: 'James Carter', date: '2026-06-19 11:22 UTC', token: 'eCIgn-Audit-4c8996f' },
-      { role: 'Preceptor', name: 'Dr. Elena Navarro, RN', date: '2026-06-19 14:30 UTC', token: 'eCIgn-Audit-22b881a' },
-      { role: 'Director', name: 'Awaiting HR Director', date: 'Pending', token: 'Awaiting Signoff' }
-    ]
-  },
-  'SUB-2002': {
-    fileName: 'hha_onboarding_verified_completed.pdf',
-    uploadTime: '2026-06-18 10:15 UTC',
-    shaHash: '9a8b7c6d5e4f3210afbf4c8996fb92427ae41e4649b934ca495991b7852b855b',
-    status: 'validated',
-    signatures: [
-      { role: 'Learner', name: 'Sophia Martinez', date: '2026-06-18 09:12 UTC', token: 'eCIgn-Audit-11a22b3' },
-      { role: 'Preceptor', name: 'Dr. Elena Navarro, RN', date: '2026-06-18 10:00 UTC', token: 'eCIgn-Audit-77c88d9' },
-      { role: 'Director', name: 'Marcus Vance, HR Dir', date: '2026-06-18 10:15 UTC', token: 'eCIgn-Audit-55f66e2' }
-    ]
-  },
-  'SUB-2003': {
-    fileName: 'pt_license_reconciliation_draft.pdf',
-    uploadTime: '2026-06-20 16:45 UTC',
-    shaHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855c',
-    status: 'pending',
-    signatures: [
-      { role: 'Learner', name: 'Liam O\'Connor', date: '2026-06-20 15:00 UTC', token: 'eCIgn-Audit-99d88b4' },
-      { role: 'Preceptor', name: 'Dr. Elena Navarro, RN', date: 'Pending', token: 'Awaiting Signoff' },
-      { role: 'Director', name: 'Awaiting HR Director', date: 'Pending', token: 'Awaiting Signoff' }
-    ]
-  }
-};
+// Real evidence/signatures derived from seed for current batch's subjects
+const subjectEvidenceData: Record<string, SubjectEvidence> = (() => {
+  const map: Record<string, SubjectEvidence> = {};
+  const sids = rows.map(r => r.subjectId);
+  sids.forEach((sid: string) => {
+    const evs = snap.evidence.filter((e: any) => e.subjectId === sid);
+    const sigs = snap.signatures.filter((s: any) => s.subjectId === sid);
+    const firstEv = evs[0];
+    map[sid] = {
+      fileName: firstEv ? firstEv.filename || 'seed-evidence.pdf' : 'seed-evidence.pdf',
+      uploadTime: (firstEv && firstEv.createdAt || '').slice(0,16).replace('T',' ') || 'seed time',
+      shaHash: (firstEv && firstEv.contentHash) || 'seed-hash-from-engine',
+      status: firstEv ? String(firstEv.status||'pending').toLowerCase() : 'pending',
+      signatures: sigs.map((s: any) => ({
+        role: s.signerRole || 'Signer',
+        name: s.signerName || sid,
+        date: (s.timestamp || s.status === 'Signed' ? 'signed' : 'Pending'),
+        token: s.envelopeId || 'seed-eCIgn',
+      })),
+    };
+  });
+  return map;
+})();
 
 export function OnboardingV2BatchScreen() {
   const { batchId: routeBatchId } = useParams<{ batchId?: string }>();
   const [activeTab, setActiveTab] = useState<'overview' | 'roster'>('overview');
   const [selectedGate, setSelectedGate] = useState<string | null>('Credentials');
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>('SUB-2001');
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(rows[0]?.subjectId || null);
   const [activeSubTab, setActiveSubTab] = useState<'evidence' | 'signature'>('evidence');
   const [hashVerified, setHashVerified] = useState<Record<string, boolean>>({});
 
@@ -148,9 +166,10 @@ export function OnboardingV2BatchScreen() {
   const resolvedBatchId = routeBatchId || (snap.batches[0]?.id ?? 'BATCH-00000001');
   const realBatch: OnboardingExecutionBatch | undefined = snap.batches.find((b) => b.id === resolvedBatchId) || snap.batches[0];
   const batchUnits = snap.units.filter((u: any) => u.batchId === resolvedBatchId);
+  const batchRows = rows.filter((r) => batchUnits.some((u: any) => snap.batches.find((b: any) => b.id === u.batchId)?.subjectId === r.subjectId));
 
   const checklistData = selectedGate ? gateChecklists[selectedGate] : null;
-  const selectedSubject = rows.find(r => r.subjectId === selectedSubjectId);
+  const selectedSubject = batchRows.find((r) => r.subjectId === selectedSubjectId);
   const evidenceDetails = selectedSubjectId ? subjectEvidenceData[selectedSubjectId] : null;
 
   const handleVerifyHash = (subjectId: string) => {
@@ -328,7 +347,7 @@ export function OnboardingV2BatchScreen() {
               <DataTable 
                 columns={columns} 
                 label="Batch subjects table" 
-                rows={rows} 
+                rows={batchRows} 
                 onRowClick={handleRowClick}
               />
             </section>
@@ -434,7 +453,7 @@ export function OnboardingV2BatchScreen() {
                     <div className="rounded-md bg-tone-slate-bg p-md border border-hairline mb-sm flex justify-between items-center">
                       <span className="text-xs font-medium text-secondary">eCIgn Audit Token:</span>
                       <span className="text-xs font-mono font-medium text-brand-teal-deep bg-surface px-sm py-xs rounded border border-hairline">
-                        eCIgn-Audit-4c8996f
+                        {evidenceDetails?.signatures?.[0]?.token || 'seed-eCIgn'}
                       </span>
                     </div>
                     <div className="grid gap-lg relative pl-md border-l border-hairline">

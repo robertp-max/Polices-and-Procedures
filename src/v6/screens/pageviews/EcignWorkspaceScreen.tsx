@@ -15,6 +15,7 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { MetricGrid, ToneTag, toneGlassSurfaceClasses, toneSurfaceClasses, type MetricTileData } from '../../components';
 import { Badge } from '../../primitives';
 import { type Tone } from '../../tokens';
@@ -23,6 +24,7 @@ import { SIGNER_HIERARCHY_RULES } from '@/policy/ecign/signerHierarchy';
 import { ECIGN_PERMISSION_ROLES } from '@/policy/ecign/permissionRoles';
 import { ECIGN_AGREEMENT_VERSION, getCurrentConsentTextHash } from '@/policy/ecign/ecignAgreement';
 import type { ECIgnPermissionRole, SignatureRequirementStatus } from '@/policy/ecign/types';
+import { resolveCanonicalFormId } from '@/policy/data/formIdAliases';
 
 /* ─────────────────────────────────────────────────────────────────────────
    eCIgn Workspace — Stage-B Path A (static, source-grounded).
@@ -170,9 +172,23 @@ const ecignMetrics: readonly MetricTileData[] = [
 ];
 
 export function EcignWorkspaceScreen() {
+  const { formId } = useParams();
+  const [searchParams] = useSearchParams();
+  const rawFormInstanceId = searchParams.get('form_instance_id') || undefined;
+  const canonFormId = formId ? resolveCanonicalFormId(formId) ?? formId : undefined;
+  const formInstanceId = rawFormInstanceId; // preserve exactly as provided (real records)
   return (
     <section className="grid gap-xl" data-hash-id="ecign-workspace" data-route="/forms/:formId/esign" data-template="ecign">
       <MetricGrid metrics={ecignMetrics} />
+
+      {(canonFormId || formInstanceId) && (
+        <div className="rounded-lg border border-card bg-surface p-md text-sm">
+          <span className="font-medium">Context: </span>
+          {canonFormId && <span>Form {canonFormId} </span>}
+          {formInstanceId && <span className="text-brand-teal">· formInstanceId: {formInstanceId}</span>}
+          <span className="text-muted"> (real record; no fabrication)</span>
+        </div>
+      )}
 
       <section className={cx('rounded-lg p-xl', toneGlassSurfaceClasses.teal)} aria-label="eCIgn data source notice">
         <div className="flex flex-wrap items-start gap-md">
@@ -188,6 +204,7 @@ export function EcignWorkspaceScreen() {
               enrollment agreement. Live signature instances — signer identities, signature status, form-instance IDs,
               timestamps, locked package hashes, evidence IDs, and the audit trail — are served by the eCIgn store and
               require a later API-backed reconnection. No signer, signature, package, or audit data is fabricated here.
+              {formInstanceId ? ` Current context preserves formInstanceId=${formInstanceId}.` : ''}
             </p>
           </div>
         </div>

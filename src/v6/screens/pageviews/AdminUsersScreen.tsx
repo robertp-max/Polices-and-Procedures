@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { BadgeCheck, ClipboardCheck, KeyRound, LockKeyhole, ShieldCheck, Smartphone, UserCog } from 'lucide-react';
 import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Button, ToneBadge } from '../../primitives';
+import { PageHeader } from '../../shell';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
 
@@ -222,19 +223,28 @@ const getDefaultOverrides = (): Record<string, OverrideMode> =>
 export function AdminUsersScreen() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>('u-compliance-tp');
   const [activePanel, setActivePanel] = useState<UserPanelTabId>('security');
-  const [overrideModes, setOverrideModes] = useState<Record<string, OverrideMode>>(getDefaultOverrides);
+  const [userOverrides, setUserOverrides] = useState<Record<string, Record<string, OverrideMode>>>({});
+  const [lastSaved, setLastSaved] = useState<string | null>(null);
 
   const selectedUser = userRows.find(r => r.userId === selectedUserId);
+  const overrideModes = selectedUserId ? (userOverrides[selectedUserId] ?? getDefaultOverrides()) : getDefaultOverrides();
 
   const handleRowClick = (row: AdminUserRow) => {
     setSelectedUserId(row.userId === selectedUserId ? null : row.userId);
   };
 
   const handleOverrideChange = (permissionId: string, value: OverrideMode) => {
-    setOverrideModes((current) => ({
-      ...current,
-      [permissionId]: value,
-    }));
+    if (!selectedUserId) return;
+    setUserOverrides((current) => {
+      const forUser = current[selectedUserId] ?? getDefaultOverrides();
+      return {
+        ...current,
+        [selectedUserId]: {
+          ...forUser,
+          [permissionId]: value,
+        },
+      };
+    });
   };
 
   return (
@@ -245,6 +255,11 @@ export function AdminUsersScreen() {
       data-route="/admin/users"
       data-template="matrix"
     >
+      <PageHeader
+        badge="Admin"
+        title="Users"
+        description="User directory and administration surface with role and override controls."
+      />
       <MetricGrid metrics={userMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
@@ -266,6 +281,9 @@ export function AdminUsersScreen() {
                   </div>
                   <p className="text-sm text-secondary">
                     {selectedUser.name} / {selectedUser.role}
+                    {lastSaved === selectedUserId && (
+                      <span className="ml-sm text-xs text-tone-green-text">Draft saved</span>
+                    )}
                   </p>
                   <p className="max-w-content text-xs text-muted">
                     Review access exceptions with clear inherited, grant, and revoke states before admin attestation.
@@ -324,14 +342,30 @@ export function AdminUsersScreen() {
                 </div>
               </div>
               <div className="mt-md flex flex-wrap justify-end gap-md">
-                <Button size="sm" variant="secondary" onClick={() => setOverrideModes(getDefaultOverrides())}>
+                <Button size="sm" variant="secondary" onClick={() => {
+                  if (selectedUserId) {
+                    setUserOverrides((current) => {
+                      const { [selectedUserId]: _removed, ...rest } = current;
+                      return rest;
+                    });
+                  }
+                }}>
                   Restore Defaults
                 </Button>
                 <Button
                   className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange/95 font-light"
                   size="sm"
                   onClick={() => {
-                    setSelectedUserId(null);
+                    if (selectedUserId) {
+                      const uid = selectedUserId;
+                      setLastSaved(uid);
+                      setTimeout(() => {
+                        setLastSaved(null);
+                        setSelectedUserId(null);
+                      }, 1200);
+                    } else {
+                      setSelectedUserId(null);
+                    }
                   }}
                 >
                   Save Override Draft

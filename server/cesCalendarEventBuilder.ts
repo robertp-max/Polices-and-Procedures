@@ -81,7 +81,7 @@ const CES_EVENT_ENRICHMENTS: Record<string, CesCalendarEnrichment> = {
     category: 'committee',
     cadence: 'Monthly',
     location: 'Main Office / Conference Room A',
-    workflowId: 'TPL-QA-MONTHLY-QAPI',
+    workflowId: 'QA-WF-03',
     workflowTitle: 'Monthly QAPI Committee',
     policyRefs: [{ id: 'QA-PG-001', title: 'QAPI Program Governance' }],
     requiredForms: [

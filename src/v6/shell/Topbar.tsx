@@ -64,7 +64,7 @@ export function Topbar({ className, isPersonalOpsOpen, onPersonalOpsToggle }: To
           variant="tertiary"
         />
         <IconButton
-          aria-label="Open Brad"
+          aria-label="Open iAdministrator"
           className={cx(dockButtonClass, !isExpanded && 'pointer-events-none opacity-0')}
           icon={<Bot aria-hidden="true" className="h-icon-md w-icon-md" />}
           onClick={() => selectAction(() => navigate('/iadministrator'))}

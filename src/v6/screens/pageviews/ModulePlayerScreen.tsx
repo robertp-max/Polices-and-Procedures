@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AlertTriangle, BookOpen, CheckCircle2, ClipboardCheck, ClipboardList, FileCheck2, LockKeyhole, NotebookText, PlayCircle, ShieldCheck, Signature, type LucideIcon } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneGlassSurfaceClasses, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, Button, Checkbox, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
@@ -44,9 +45,8 @@ const routeMarker = {
   template: 'module-player',
 } as const;
 
-const moduleRecord = {
+const baseModuleRecord = {
   assessor: 'Dr. Elena Navarro, RN DON',
-  id: 'RN-008',
   learner: 'Maria Santos, RN',
   method: 'SkillsCheckoff',
   policyRefs: 'CL-SD-012, CL-SD-013, HR-TA-005 App D',
@@ -59,7 +59,7 @@ const moduleMetrics: readonly MetricTileData[] = [
   { label: 'Method', value: 'Skills', helper: 'Checklist plus short assessment', tone: 'teal' },
   { label: 'Lesson progress', value: '72%', helper: '4 of 6 steps complete', tone: 'orange' },
   { label: 'Evidence', value: 'Ready', helper: 'Preceptor notes staged', tone: 'green' },
-  { label: 'Score', value: moduleRecord.score, helper: 'Passing threshold 80%', tone: 'teal' },
+  { label: 'Score', value: '88%', helper: 'Passing threshold 80%', tone: 'teal' },
 ];
 
 const lessonSteps: readonly LessonStep[] = [
@@ -227,7 +227,19 @@ const attestationRows = [
 ] as const;
 
 export function ModulePlayerScreen() {
+  const navigate = useNavigate();
+  const params = useParams<{ moduleId?: string }>();
+  const moduleId = params.moduleId?.trim() || 'RN-008';
+  const moduleRecord = { ...baseModuleRecord, id: moduleId } as const;
   const [showQuizFailure, setShowQuizFailure] = useState(true);
+
+  const handleBackToJourney = () => {
+    navigate('/journey/v1-journey');
+  };
+
+  const handleBackToOverview = () => {
+    navigate('/journey');
+  };
 
   return (
     <section
@@ -244,7 +256,10 @@ export function ModulePlayerScreen() {
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="player-stage-title">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
               <div>
-                <ToneTag tone="teal">Current lesson</ToneTag>
+                <div className="flex items-center gap-sm">
+                  <ToneTag tone="teal">Current lesson</ToneTag>
+                  <ToneTag tone="slate">{moduleId}</ToneTag>
+                </div>
                 <h2 className="mt-md text-h2 font-medium text-ink" id="player-stage-title">
                   Medication reconciliation scenario
                 </h2>
@@ -252,7 +267,11 @@ export function ModulePlayerScreen() {
                   Active module player with lesson content, learner progress, and retry support.
                 </p>
               </div>
-              <Badge variant="count">Step 4 of 6</Badge>
+              <div className="flex flex-wrap items-center gap-sm">
+                <Badge variant="count">Step 4 of 6</Badge>
+                <Button size="sm" variant="tertiary" onClick={handleBackToJourney}>Back to Journey v1</Button>
+                <Button size="sm" variant="tertiary" onClick={handleBackToOverview}>Overview</Button>
+              </div>
             </div>
 
             <div className="grid gap-lg tablet-l:grid-cols-[minmax(0,1fr)_minmax(240px,320px)]">

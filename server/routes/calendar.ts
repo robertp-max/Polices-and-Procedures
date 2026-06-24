@@ -23,6 +23,7 @@ import {
   uploadEventEvidence,
   buildEvidenceFolderSegments,
   evidenceFolderUrl,
+  validateEvidenceRef,
   type EvidenceCategory,
   type GoogleCalendarDriveEvidenceRef,
 } from '../googleEvidence.js';

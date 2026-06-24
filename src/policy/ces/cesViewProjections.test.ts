@@ -191,4 +191,17 @@ describe('CES one-pass View Projections (board / events / tasks / calendar / evi
     const fb = buildSprintSummary({ units: [] });
     assert.equal(fb.total, 33);
   });
+
+  it('buildReportCards + buildReportTrendBars use real V3 seed or FALLBACK; produce correct shapes', () => {
+    const cards = buildReportCards();
+    assert.ok(cards.length === 3);
+    assert.ok(cards.some(c => c.title.includes('Sprint readiness') && c.body.includes('blockers')));
+    assert.ok(cards.some(c => c.title.includes('Survey exposure')));
+    assert.ok(cards.some(c => c.title.includes('Evidence throughput')));
+    const bars = buildReportTrendBars();
+    assert.equal(bars.length, 10);
+    assert.ok(bars.every(b => typeof b === 'number' && b > 0));
+    const cardsEmpty = buildReportCards({ units: [] });
+    assert.equal(cardsEmpty.length, FALLBACK_REPORT_CARDS.length);
+  });
 });

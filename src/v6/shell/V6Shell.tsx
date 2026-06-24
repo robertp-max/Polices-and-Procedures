@@ -41,11 +41,13 @@ export function V6Shell() {
   return (
     <div className="flex h-screen overflow-hidden bg-canvas font-light text-ink">
       <Sidebar />
-      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
+      <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col">
         <div className="flex h-full min-h-0 min-w-0 flex-1 flex-row">
           <main
             className={cx(
-              'v6-main-scrollmask min-h-0 flex-1 overflow-auto py-3xl pl-3xl pr-[calc(var(--space-3xl)*3)]',
+              // Reduced right padding so wide content (e.g. 4-col swimlanes, boards) uses full width next to Sidebar.
+              // Topbar (fixed dock at top-right) overlays content top area; z-50 ensures nav bar always visible above content.
+              'v6-main-scrollmask min-h-0 flex-1 overflow-auto py-3xl pl-3xl pr-3xl',
               hasScrolledMain && 'v6-main-scrollmask--scrolled',
             )}
             id="main-content"
@@ -61,7 +63,7 @@ export function V6Shell() {
         </div>
       </div>
       <Topbar
-        className={isPersonalOpsOpen ? 'fixed right-[404px] top-3xl z-50' : 'fixed right-3xl top-3xl z-50'}
+        className={isPersonalOpsOpen ? 'fixed right-[404px] top-3xl z-command' : 'fixed right-3xl top-3xl z-command'}
         isPersonalOpsOpen={isPersonalOpsOpen}
         onPersonalOpsToggle={togglePersonalOps}
       />

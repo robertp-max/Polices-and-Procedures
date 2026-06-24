@@ -54,7 +54,7 @@ export const env = {
    * Extends the Calendar integration. Reuses the SAME service-account
    * key (credentialsPath above) — no second Google auth path. Drive
    * stores files; Calendar attaches/indexes them. */
-  evidenceStorageProvider: process.env.GOOGLE_EVIDENCE_STORAGE_PROVIDER ?? 'google_calendar_drive',
+  evidenceStorageProvider: process.env.GOOGLE_EVIDENCE_STORAGE_PROVIDER ?? 'google_drive_calendar',
   calendarEvidenceEnabled: (process.env.GOOGLE_CALENDAR_EVIDENCE_ENABLED ?? 'true').toLowerCase() === 'true',
   driveEvidenceSharedDriveId: process.env.GOOGLE_DRIVE_EVIDENCE_SHARED_DRIVE_ID ?? '0AMhwVb2RmU-fUk9PVA',
   driveEvidenceRootFolderId:

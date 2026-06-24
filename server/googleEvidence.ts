@@ -42,7 +42,7 @@ export const EVIDENCE_SUBFOLDERS: Record<EvidenceCategory, string> = {
 };
 
 export interface GoogleCalendarDriveEvidenceRef {
-  storageProvider: 'google_calendar_drive';
+  storageProvider: 'google_drive_calendar';
   eventId: string;
   workflowId?: string;
   taskId: string;
@@ -60,6 +60,11 @@ export interface GoogleCalendarDriveEvidenceRef {
   uploadedBy?: string;
   attachmentStatus: CalendarAttachmentStatus;
   contentStatus: 'available' | 'metadata_only' | 'missing';
+  // CES routing extras (populated at upload time for downstream evidence center / folder validation; non-PHI)
+  drivePath?: string;
+  driveEventFolderId?: string;
+  driveEventFolderPath?: string;
+  driveEventFolderUrl?: string;
 }
 
 /* ─── Pure helpers ─────────────────────────────────────────────── */
@@ -238,7 +243,7 @@ export function extendedPropertiesHavePhi(props: Record<string, string>): boolea
  */
 export function validateEvidenceRef(ref: Partial<GoogleCalendarDriveEvidenceRef>): string[] {
   const problems: string[] = [];
-  if (ref.storageProvider !== 'google_calendar_drive') problems.push('storageProvider must be "google_calendar_drive".');
+  if (ref.storageProvider !== 'google_drive_calendar') problems.push('storageProvider must be "google_drive_calendar".');
   if (!ref.eventId) problems.push('missing eventId.');
   if (!ref.calendarEventId) problems.push('missing calendarEventId.');
   if (!ref.driveFileId) problems.push('missing driveFileId.');
@@ -377,7 +382,7 @@ export async function uploadEventEvidence(input: UploadEvidenceInput): Promise<U
   }
 
   const ref: GoogleCalendarDriveEvidenceRef = {
-    storageProvider: 'google_calendar_drive',
+    storageProvider: 'google_drive_calendar',
     eventId: input.eventId,
     workflowId: input.workflowId,
     taskId: input.taskId,
@@ -401,6 +406,12 @@ export async function uploadEventEvidence(input: UploadEvidenceInput): Promise<U
     driveEventFolderPath: segments.slice(0, 5).join('/'), // up to event
     driveEventFolderUrl: evidenceFolderUrl ? evidenceFolderUrl(folderId) : undefined,
   };
+
+  // Enforce Drive metadata honesty on every upload path. No faked "attached" or missing file refs allowed.
+  const validationProblems = validateEvidenceRef(ref);
+  if (validationProblems.length > 0) {
+    throw new ApiError('validation_error', `Dishonest evidence metadata: ${validationProblems.join('; ')}`, 400);
+  }
 
   const evidenceId = buildEvidenceId({
     eventId: input.eventId,

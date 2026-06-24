@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AlertTriangle, Archive, CheckCircle2, ClipboardCheck, FileSignature, Link2, LockKeyhole, ShieldCheck, Upload, UserCheck, PenLine, type LucideIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { DataTable, MetricGrid, SurfaceCard, ToneTag, toneSoftTileClasses, VeilModal, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
@@ -328,10 +329,13 @@ const signatureFacts = [
 ] as const;
 
 export function AppendixFScreen() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'checklist' | 'procedures' | 'evidence'>('checklist');
   const [isSignatureOpen, setIsSignatureOpen] = useState(false);
   const [signatureStrokes, setSignatureStrokes] = useState<boolean>(false);
   const [attested, setAttested] = useState<boolean>(false);
+
+  const handleBackToJourney = () => navigate('/journey');
 
   return (
     <section
@@ -343,6 +347,10 @@ export function AppendixFScreen() {
       data-template={routeMarker.template}
     >
       <MetricGrid metrics={appendixMetrics} />
+
+      <div className="flex justify-end">
+        <Button size="sm" variant="tertiary" onClick={handleBackToJourney}>Back to Journey Overview</Button>
+      </div>
 
       {/* Premium Segmented Tab Control */}
       <div className="flex justify-start">

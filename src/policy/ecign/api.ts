@@ -190,14 +190,8 @@ export const ecignApi = {
       method: 'POST',
     }, mfaToken),
 
-  registerArtifacts: (id: string, body: {
-    signed_package_artifact_id?: string;
-    certificate_artifact_id?: string;
-  }) =>
-    call<Record<string, unknown>>(`/ecign/instances/${id}/artifacts`, {
-      method: 'PATCH',
-      body: JSON.stringify(body),
-    }),
+  // registerArtifacts removed: no backend route (signed artifacts now land via /calendar signed-artifact/publish + CES Drive metadata).
+  // If reintroduced, must add matching PATCH handler + persist to ecign instance row.
 
   requestSecondSignature: (id: string, assigned_to: string, due_date?: string, assignedUser?: {
     role: string;
