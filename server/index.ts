@@ -1,5 +1,8 @@
 import express, { type ErrorRequestHandler } from 'express';
 import cors from 'cors';
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { env } from './env.js';
 import { log } from './logger.js';
 import { ApiError } from './errors.js';
@@ -104,6 +107,21 @@ app.use('/api/brad', createBradRouter());
 app.use('/api', (req, _res, next) => {
   next(new ApiError('event_not_found', `Unknown route: ${req.method} ${req.path}`, 404));
 });
+
+// ── Static SPA (combined image) ───────────────────────────────────────────
+// When a built ./dist is present (Cloud Run combined image), serve the SPA and
+// fall back to index.html for client-side routes. Non-/api requests only — the
+// /api 404 above already handles unknown API paths. No-op in dev (Vite serves).
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const distDir = path.resolve(__dirname, '..', 'dist');
+if (fs.existsSync(path.join(distDir, 'index.html'))) {
+  app.use(express.static(distDir, { index: false, maxAge: '1h' }));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(distDir, 'index.html'));
+  });
+  log.info('static.spa.enabled', { distDir });
+}
 
 // Centralized error handler.
 const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {

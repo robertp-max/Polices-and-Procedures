@@ -478,3 +478,27 @@ th {
 *:not(input):not(textarea):not([contenteditable]):not([contenteditable="true"]) {
   caret-color: transparent !important;
 }
+
+/* ── Brad workspace: animated rainbow-glow composer + dotted canvas ───────── */
+@property --brad-bg-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes brad-spin-gradient {
+  to { --brad-bg-angle: 360deg; }
+}
+.brad-rainbow-glow {
+  background: conic-gradient(
+    from var(--brad-bg-angle),
+    #ff595e, #ffca3a, #06A6AB, #1982c4, #6a4c93, #ff595e
+  );
+  animation: brad-spin-gradient 3.5s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .brad-rainbow-glow { animation: none; }
+}
+.brad-grid-pattern {
+  background-image: radial-gradient(#D9D6D5 1px, transparent 1px);
+  background-size: 24px 24px;
+}
