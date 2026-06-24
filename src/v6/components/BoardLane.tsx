@@ -13,6 +13,12 @@ export interface BoardCardData {
   progress: number;
   title: string;
   tone: Tone;
+  // CES real-record rich fields (added for seed-driven projections)
+  meta?: string;
+  domain?: string;
+  awaitingType?: 'evidence' | 'action';
+  note?: string;
+  missing?: string;
 }
 
 export interface BoardLaneData {
@@ -20,6 +26,8 @@ export interface BoardLaneData {
   count: number;
   title: string;
   tone: Tone;
+  // CES real-record rich fields
+  note?: string;
 }
 
 export interface BoardLaneProps {
