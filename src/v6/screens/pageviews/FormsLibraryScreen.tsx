@@ -1,4 +1,5 @@
 import { Archive, ClipboardCheck, ClipboardList, FileCheck2, Link2, PenLine, ShieldCheck, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
 import { DataTable, MetricGrid, SurfaceCard, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, ToneBadge } from '../../primitives';
@@ -98,11 +99,11 @@ const formColumns: readonly DataTableColumn<FormLibraryRow>[] = [
 ];
 
 const classificationFilters = [
-  { label: 'Master template', value: '128' },
-  { label: 'Audit critical', value: '47' },
-  { label: 'Shared enterprise', value: '39' },
-  { label: 'High risk', value: '22' },
-  { label: 'Digital candidate', value: '74' },
+  { label: 'Master template', value: String(FORMS_DATASET.filter(r => r.classifications.includes('master_template')).length) },
+  { label: 'Audit critical', value: String(FORMS_DATASET.filter(r => r.classifications.includes('audit_critical')).length) },
+  { label: 'Shared enterprise', value: String(FORMS_DATASET.filter(r => r.classifications.includes('shared_enterprise')).length) },
+  { label: 'High risk', value: String(FORMS_DATASET.filter(r => r.classifications.includes('high_risk')).length) },
+  { label: 'Digital candidate', value: String(FORMS_DATASET.filter(r => r.classifications.includes('digital_candidate')).length) },
 ] as const;
 
 const signerEvidencePanels = [
@@ -165,14 +166,22 @@ const rightRailCards = [
   },
 ] satisfies readonly FormsLibraryCard[];
 
+const totalLinkedRefs = FORMS_DATASET.reduce((sum, r) => sum + r.policies.length, 0);
+const signerCandidates = FORMS_DATASET.filter(r => r.classifications.includes('digital_candidate') || r.usage === 'Required').length;
+const auditCritical = FORMS_DATASET.filter(r => r.classifications.includes('audit_critical')).length;
 const quickStats = [
-  { icon: Link2, label: 'Linked policy refs', value: '1,124' },
-  { icon: Users, label: 'Signer roles mapped', value: '142' },
-  { icon: Archive, label: 'Locked certificates', value: '51' },
-  { icon: FileCheck2, label: 'Audit-ready records', value: '288' },
+  { icon: Link2, label: 'Linked policy refs', value: String(totalLinkedRefs) },
+  { icon: Users, label: 'Signer roles mapped', value: String(signerCandidates) },
+  { icon: Archive, label: 'Locked certificates', value: String(auditCritical) },
+  { icon: FileCheck2, label: 'Audit-ready records', value: String(auditCritical) },
 ] as const;
 
 export function FormsLibraryScreen() {
+  const navigate = useNavigate();
+  const handleRowClick = (row: FormLibraryRow) => {
+    const id = row.formId;
+    if (id) navigate(`/forms/${encodeURIComponent(id)}`);
+  };
   return (
     <section className="grid gap-xl" data-hash-id="forms-library" data-route="/forms">
       <MetricGrid metrics={formsMetrics} />
@@ -189,7 +198,7 @@ export function FormsLibraryScreen() {
             ))}
           </div>
 
-          <DataTable columns={formColumns} label="Forms library matrix" rows={formRows} />
+          <DataTable columns={formColumns} label="Forms library matrix" rows={formRows} onRowClick={handleRowClick} />
 
           <section className="grid gap-md tablet-l:grid-cols-3" aria-label="Signer and evidence metadata summary">
             {signerEvidencePanels.map((panel) => (

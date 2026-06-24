@@ -1,4 +1,4 @@
-import { FORM_TITLES } from '@/policy/data/formTitles.generated';
+import { resolveCanonicalFormId, resolveFormTitle } from '@/policy/data/formIdAliases';
 import { formatCesFormInstanceId } from '@/policy/compliance-execution/cesFormInstanceId';
 import type { SwimlaneFormInstance, SwimlaneMode, SwimlaneSupportingDocumentationTask, SwimlaneStatus } from './types';
 import { buildSwimlaneSupportTaskId } from './eventSwimlaneIdentity';
@@ -9,7 +9,7 @@ type SequenceMap = Map<string, number>;
 type CanonicalFormInstanceMap = Map<string, string>;
 
 function formTitle(formId: string) {
-  return FORM_TITLES[formId] ?? 'Unresolved Forms Library ID';
+  return resolveFormTitle(formId);
 }
 
 function slugify(value: string) {

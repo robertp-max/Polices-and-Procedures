@@ -148,9 +148,9 @@ export interface OnboardingEngineSnapshot {
    Officer act as approvers/signature owners by gate.
    ═══════════════════════════════════════════════════════════════ */
 
-const HR_DIRECTOR: Owner = { userId: 'u-hr-director',  name: 'HR Director',         initials: 'HR', role: 'HR Director' };
-const COMPLIANCE:  Owner = { userId: 'u-compliance',   name: 'Compliance Officer',  initials: 'CO', role: 'Compliance Officer' };
-const DON_OWNER:   Owner = { userId: 'u-don',          name: 'Director of Nursing', initials: 'DN', role: 'Director of Nursing' };
+const HR_DIRECTOR: Owner = { userId: 'u-hr-director',  name: 'Destiny Brown',         initials: 'DB', role: 'Admin Designee' };
+const COMPLIANCE:  Owner = { userId: 'u-compliance',   name: 'Angela Martinez',  initials: 'AM', role: 'Administrator' };
+const DON_OWNER:   Owner = { userId: 'u-don',          name: 'Maria Gonzalez, RN', initials: 'MG', role: 'DON' };
 
 function employeeOwner(emp: JourneyEmployee): Owner {
   const initials = emp.name.split(/\s+/).map(s => s[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'EE';
