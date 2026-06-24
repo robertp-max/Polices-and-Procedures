@@ -262,7 +262,7 @@ export function JourneyOverviewScreen() {
           </div>
 
           <div className="grid gap-md tablet-l:grid-cols-2" role="list">
-            {journeyModules.map((module, index) => (
+            {journeyModules.slice(0, 41).map((module, index) => (
               <JourneyModuleCard
                 index={index + 1}
                 key={module.id}
@@ -270,6 +270,23 @@ export function JourneyOverviewScreen() {
                 onClick={() => handleOpenModule(module.id)}
               />
             ))}
+          </div>
+
+          <div className="mt-lg">
+            <div className="flex items-center gap-md mb-md">
+              <h3 className="text-h3 font-medium text-ink">Annual ACHC Training</h3>
+              <ToneTag tone="amber">12 modules</ToneTag>
+            </div>
+            <div className="grid gap-md tablet-l:grid-cols-2" role="list">
+              {journeyModules.slice(41).map((module, index) => (
+                <JourneyModuleCard
+                  index={42 + index}
+                  key={module.id}
+                  module={module}
+                  onClick={() => handleOpenModule(module.id)}
+                />
+              ))}
+            </div>
           </div>
 
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="supervisor-readiness-title">
