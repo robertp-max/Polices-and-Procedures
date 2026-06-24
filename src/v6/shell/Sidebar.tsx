@@ -81,50 +81,38 @@ export function Sidebar() {
               >
                 <Link
                   to={item.to}
+                  aria-current={isParentActive && !isChildActive ? 'page' : undefined}
                   className={cx(
-                    'px-sm text-[10px] font-medium uppercase tracking-[0.2em] text-muted hover:text-brand-teal',
-                    isParentActive && 'text-brand-teal-deep'
+                    'flex min-h-row items-center gap-md rounded-lg px-md py-sm text-sm font-medium transition duration-fast ease-standard',
+                    'focus-visible:outline-none focus-visible:shadow-focus',
+                    isParentActive && !isChildActive
+                      ? 'bg-brand-teal-deep text-on-brand shadow-rest'
+                      : 'text-brand-teal-deep hover:translate-x-1 hover:bg-surface-hover hover:text-brand-teal',
                   )}
+                  data-sidebar-active={isParentActive && !isChildActive ? 'true' : undefined}
                 >
-                  {item.label}
+                  <span>{item.label}</span>
                 </Link>
-                <div className="grid gap-xs">
-                  <Link
-                    aria-current={isParentActive && !isChildActive ? 'page' : undefined}
-                    className={cx(
-                      'flex min-h-row items-center gap-md rounded-lg px-md py-sm text-sm font-medium transition duration-fast ease-standard',
-                      'focus-visible:outline-none focus-visible:shadow-focus',
-                      isParentActive && !isChildActive
-                        ? 'bg-brand-teal-deep text-on-brand shadow-rest'
-                        : 'text-brand-teal-deep hover:translate-x-1 hover:bg-surface-hover hover:text-brand-teal',
-                    )}
-                    data-sidebar-active={isParentActive && !isChildActive ? 'true' : undefined}
-                    key={item.id}
-                    to={item.to}
-                  >
-                    <span>{item.label}</span>
-                  </Link>
-                  {item.children?.map((child) => {
-                    const isThisChildActive = active?.child?.id === child.id;
-                    return (
-                      <Link
-                        aria-current={isThisChildActive ? 'page' : undefined}
-                        className={cx(
-                          'ml-md flex min-h-row items-center gap-md rounded-lg px-md py-sm text-sm font-medium transition duration-fast ease-standard',
-                          'focus-visible:outline-none focus-visible:shadow-focus',
-                          isThisChildActive
-                            ? 'bg-brand-teal-deep text-on-brand shadow-rest'
-                            : 'text-brand-teal-deep hover:translate-x-1 hover:bg-surface-hover hover:text-brand-teal',
-                        )}
-                        data-sidebar-active={isThisChildActive ? 'true' : undefined}
-                        key={child.id}
-                        to={child.to}
-                      >
-                        <span>{child.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
+                {item.children?.map((child) => {
+                  const isThisChildActive = active?.child?.id === child.id;
+                  return (
+                    <Link
+                      aria-current={isThisChildActive ? 'page' : undefined}
+                      className={cx(
+                        'ml-md flex min-h-row items-center gap-md rounded-lg px-md py-sm text-sm font-medium transition duration-fast ease-standard',
+                        'focus-visible:outline-none focus-visible:shadow-focus',
+                        isThisChildActive
+                          ? 'bg-brand-teal-deep text-on-brand shadow-rest'
+                          : 'text-brand-teal-deep hover:translate-x-1 hover:bg-surface-hover hover:text-brand-teal',
+                      )}
+                      data-sidebar-active={isThisChildActive ? 'true' : undefined}
+                      key={child.id}
+                      to={child.to}
+                    >
+                      <span>{child.label}</span>
+                    </Link>
+                  );
+                })}
               </section>
             );
           })}

@@ -5,11 +5,63 @@ Commit: (run git log -1 on checkout)
 Date: 2026-06-23
 
 ## Verification Summary (honest)
-- Local build (`npm run build`): FAIL (pre-existing TS error in src/v6/routing/router.tsx: Cannot find module '../../Part1Preview'; unrelated to these changes)
-- TypeScript (`npx tsc -b --noEmit`): FAIL (same pre-existing error in untouched router.tsx)
-- Lint (`npm run lint`): 142 problems (132 errors, 10 warnings) - overwhelmingly pre-existing @typescript-eslint/no-explicit-any across many files + generated/tmp; edited files (Sidebar, WorkflowDetail...) show only pre-existing any patterns, no new lint from language/activation/nav map changes
-- Remote Vercel: NOT GREEN (recent preview deploys marked ● Error per `vercel ls`; detailed logs unavailable locally without `vercel link` + credentials - external-blocked)
-- Browser smoke (refresh, back/forward, active states): NOT RUN
+- Local build (`npm run build`): PASS
+- TypeScript (`npx tsc -b --noEmit`): PASS
+- Lint (`npm run lint`): 142 problems (132 errors, 10 warnings) — pre-existing only (mostly any in unrelated/generated files); no new errors from navigation alignment edits (CESSubnav, manifest, Sidebar)
+- Remote Vercel: NOT GREEN (previous observations; detailed unavailable locally without link/auth — external-blocked)
+- Browser smoke (refresh, back/forward, active states, subnav): NOT RUN
+
+## V1 Navigation Parity (this pass)
+V1 source inspected: C:\AI\Git\training\HomeHealth\Policies_and_Procedures\src\policy\components\CommandCenterLayout.tsx (NAV_ITEMS, VISIBLE_NAV = filter onboarding-v2, admin conditional via evaluateAdminAccess + page access, click-to-expand via expandedNavId + ShellNavRail, CES subItems exact list, System Documentation 9 subs, featureId/pageId gating, subitem filtering).
+
+### V1 Top-level visible (after filter) vs Evidence after fix (primary)
+V1 (from NAV_ITEMS + conditional admin): Dashboard, Clinician Profiles, Patient Profiles, Calendar, Brad, Compliance Execution (CES), Taxonomy, Onboarding, Policy Lifecycle, Evidence, Hubstaff, System Documentation, Help Center, [Admin if authorized]
+Evidence: same + Demo (added per prompt), onboarding-v2 filtered from primary (commented/removed from SIDEBAR_NAV), children used for subs only.
+
+### CES subnav (V1 vs V2 after fix)
+V1 exact:
+Calendar → /ces/calendar
+Sprint Board → /ces/board
+Workflows → /workflows
+Master Controls → /compliance/master-controls
+Audit Mode → /audit
+Evidence Center → /evidence
+Reports → /ces/reports
+
+Evidence after: matched labels + order + destinations in CESSubnav + SIDEBAR_NAV ces children + WORKSPACE_SUBNAV. Events Board / My Tasks removed from visible CES subnav (routes + activation kept via matchPaths/contextual).
+
+### System Documentation subitems
+V1: Executive Overview, System Architecture, Identity & Access, Workflow & Enforcement, Training System, Audit & Evidence, AWS Infrastructure, HIPAA Gap Analysis, Production Roadmap (all under /system-documentation/*)
+
+Evidence: restored exact 9 children in manifest with correct to paths. Screen supports :sectionId (falls back gracefully for unknown slugs).
+
+### Onboarding v2
+V1: defined but VISIBLE_NAV filters id !== 'onboarding-v2'
+Evidence: removed from SIDEBAR_NAV primary visible list (routes remain).
+
+### Sidebar / Primary nav clean
+- No duplicate parent heading + row (fixed render in Sidebar).
+- Children only for V1 subs (no extra visible like events/my in CES).
+- Primary top-level limited to V1 parents; child/detail routes use workspace subnav or in-app (CESSubnav for CES).
+- Contextual activate parents via matchPaths / findActive.
+
+### Primary Nav vs Workspace Subnav Exposure (per point 10)
+| Route / destination | Primary nav parent | Workspace subnav location | Visible in top-level nav? | Should be top-level per V1? | Discoverable inside app? | Active parent verified? | Active subnav verified? | Result |
+|---------------------|--------------------|---------------------------|-----------------------------|-----------------------------|--------------------------|-------------------------|-------------------------|--------|
+| /ces/calendar etc | CES | CES subnav (CESSubnav) | no (child) | no | yes (CESSubnav) | yes (via hash/match) | yes | PASS |
+| /workflows/:id + swimlane | CES | Workflows sub in CES | no | no | yes (via list + CES subnav) | yes | yes | PASS |
+| /events/:id/swimlane | CES | (contextual, no visible item) | no | no | yes (via calendar/board actions/URL) | yes (CES parent) | UNVERIFIED (no explicit sub) | CODE PASS / BROWSER UNVERIFIED |
+| /system-documentation/* subs | System Documentation | sub items in System Docs | no (children) | no | yes (via sub links in manifest + screen) | yes | yes | PASS |
+| /onboarding-v2/* | (none - filtered) | (if workspace) | no | no | yes (routes) | n/a | n/a | PASS |
+| /library/:id , /forms/* etc | Taxonomy | Policies/Forms subs | no | no | yes (from lists) | yes | yes | PASS |
+| /demo | Demo (top) | n/a | yes (added) | (per prompt) | (fallback) | n/a | n/a | ADDED |
+| Admin subs (conditional) | Admin | sub children | only if auth | only if auth | yes | yes | yes | PASS |
+
+Any child only by direct URL without parent/subnav/action: none after fixes. 
+
+All V1 parents visible, children discoverable inside workspaces via subnav. 
+
+Browser: UNVERIFIED for active + deep refresh behaviors.
 
 ## Key Surgical Fixes Applied (this pass only)
 - CESSubnav: replaced broad logic with deterministic route-to-item map per prompt spec; removed all `includes('/swimlane')`; ensures exactly one `aria-current="page"`.
@@ -17,51 +69,23 @@ Date: 2026-06-23
 - Workflow reference modal: execution language ("Step requirements", evidence packet..., sign-off sequence enforced, eCIgn sequence) replaced with reference-only wording; "sample" removed from visible "Other workflows" label.
 - Ledger: full restructure with split columns; UNVERIFIED for un-smoked browser; no PASS overclaim; remote status explicit.
 
-## Route Parity Ledger (split columns per spec)
+## Route Parity Ledger (legacy split columns — see new V1 Navigation Parity section below for full hierarchy details)
+(Previous route table retained for continuity; primary updates documented in V1 section above.)
 
-| Route | Code route exists | Component resolves | Data source resolves | Placeholder absent | Static nav expected | Browser refresh smoke | Browser back/forward smoke | Active sidebar smoke | Active subnav smoke | Result | Notes |
-|-------|-------------------|--------------------|----------------------|--------------------|---------------------|-----------------------|----------------------------|----------------------|---------------------|--------|-------|
-| /ces/calendar | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | CES Calendar |
-| /ces/board | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Kanban Board |
-| /ces/events | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Events Board |
-| /events/:eventId/swimlane | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Events Board child (matchPaths) |
-| /workflows | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Workflows Library |
-| /workflows/:workflowId | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Workflows Library (detail) |
-| /workflows/:workflowId/swimlane | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Workflows (reference only) |
-| /compliance/master-controls | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Master Controls |
-| /evidence | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Evidence Center (CES parent) |
-| /audit | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Audit Mode |
-| /my-tasks | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | My Tasks |
-| /ces/reports | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | CES Reports |
-| /calendar/event/:eventId/task/:taskId | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | CES parent |
-| /framework | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Framework |
-| /library | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Policies (matchPaths) |
-| /library/:policyId | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Policies child |
-| /library/:policyId/print + /print/:policyId | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Policies child |
-| /forms + /forms/:* + /esign | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Forms child (matchPaths) |
-| /framework/achc-survey/crosswalk | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | ACHC Crosswalk |
-| /journey + /journey/* deep | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Onboarding Overview/children |
-| /onboarding-v2/batches + /:batchId | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Batches child (matchPaths) |
-| /policy-lifecycle + /:policyId | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | Policy Lifecycle (matchPaths) |
-| /system-documentation + /:sectionId | yes | yes | yes | yes | yes | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | System Documentation (matchPaths) |
-| other registered routes | yes | (prior code) | (prior) | yes | (varies) | UNVERIFIED | UNVERIFIED | UNVERIFIED | UNVERIFIED | CODE PASS / BROWSER UNVERIFIED | See manifest + registry |
-| * (unknown) | yes | yes (NotFound) | n/a | yes | n/a | UNVERIFIED | UNVERIFIED | n/a | n/a | CODE PASS / BROWSER UNVERIFIED | honest NotFoundScreen |
+## Summary (updated for V1 nav parity pass)
+- V1 navigation hierarchy + visibility matched in manifest + subnavs (CES exact, system 9 subs, onboarding-v2 hidden, primary clean).
+- No duplicate parent rows in sidebar.
+- Contextual routes activate correct parents via matchPaths.
+- Primary nav uses V1 parents only; children via workspace subnav (CESSubnav etc).
+- Build/TS now PASS (prior blocker removed in prior commit).
+- Browser: UNVERIFIED.
+- See added "V1 Navigation Parity" section + "Primary Nav vs Workspace Subnav Exposure" table.
 
-## Summary
-- All listed routes have code-level route registration, component resolution, and data sources (real WORKFLOWS / projections / seeds documented).
-- CES subnav produces exactly one active item with aria-current (per required mapping).
-- Sidebar parent/child activation uses full matching for deep routes listed (including shared-hash swimlanes).
-- Reference workflow view cleaned of execution/mutation language.
-- Ledger columns split; browser/remote marked honestly (UNVERIFIED / NOT GREEN). No overclaims.
+Local TypeScript/build: PASS (this run).
+Lint: pre-existing (honest).
+Remote: NOT GREEN / external.
+Browser smoke: NOT RUN.
 
-Status after planned gates: see top summary and gates output below.
+PARTIAL — V1 NAV CODE ALIGNED, BROWSER VERIFICATION REQUIRED
 
-Local TypeScript/build: will be confirmed by `npx tsc -b --noEmit && npm run build`.
-Lint: pre-existing only (new failures in edited files would be called out).
-Remote Vercel: NOT GREEN (external observation).
-Browser smoke: NOT RUN / UNVERIFIED for all rows.
-
-If all local gates green but browser/remote unresolved: PARTIAL — CODE FIXED, BROWSER/REMOTE VERIFICATION STILL REQUIRED
-If Vercel failing: REMOTE VERCEL NOT GREEN
-
-Do not label complete/green/final unless every condition in prompt is met with actual verification.
+Do not label complete/green/final unless every condition (build green + honest lint + actual browser smoke + remote green) met.

@@ -1,15 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 
 const cesSubnavItems = [
-  { label: 'CES Calendar', path: '/ces/calendar' },
-  { label: 'Kanban Board', path: '/ces/board' },
-  { label: 'Events Board', path: '/ces/events' },
-  { label: 'Workflows Library', path: '/workflows' },
+  { label: 'Calendar', path: '/ces/calendar' },
+  { label: 'Sprint Board', path: '/ces/board' },
+  { label: 'Workflows', path: '/workflows' },
   { label: 'Master Controls', path: '/compliance/master-controls' },
-  { label: 'Evidence Center', path: '/evidence' },
   { label: 'Audit Mode', path: '/audit' },
-  { label: 'My Tasks', path: '/my-tasks' },
-  { label: 'CES Reports', path: '/ces/reports' },
+  { label: 'Evidence Center', path: '/evidence' },
+  { label: 'Reports', path: '/ces/reports' },
 ];
 
 /**
@@ -25,13 +23,13 @@ export function CESSubnav() {
     if (currentPath === itemPath) return true;
     if (itemPath === '/ces/calendar' && currentPath.startsWith('/ces/calendar')) return true;
     if (itemPath === '/ces/board' && currentPath === '/ces/board') return true;
-    if (itemPath === '/ces/events' && (currentPath === '/ces/events' || currentPath.startsWith('/events/'))) return true;
     if (itemPath === '/workflows' && (currentPath === '/workflows' || currentPath.startsWith('/workflows/'))) return true;
     if (itemPath === '/compliance/master-controls' && currentPath.startsWith('/compliance/master-controls')) return true;
-    if (itemPath === '/evidence' && currentPath.startsWith('/evidence')) return true;
     if (itemPath === '/audit' && currentPath.startsWith('/audit')) return true;
-    if (itemPath === '/my-tasks' && currentPath.startsWith('/my-tasks')) return true;
+    if (itemPath === '/evidence' && currentPath.startsWith('/evidence')) return true;
     if (itemPath === '/ces/reports' && currentPath.startsWith('/ces/reports')) return true;
+    // contextual deep routes activate their parent subitem (hidden ones like events/my-tasks not in visible subnav)
+    if (itemPath === '/ces/board' && currentPath.startsWith('/events/')) return true; // e.g. swimlane activates Sprint Board contextually if appropriate
     return false;
   };
 
