@@ -1,0 +1,14 @@
+import { chromium } from 'playwright';
+import fs from 'fs';
+import path from 'path';
+const base = 'http://localhost:5173';
+const outDir = path.join(process.cwd(), 'tmp-screenshots');
+fs.mkdirSync(outDir, { recursive: true });
+const browser = await chromium.launch({ headless: true });
+const page = await browser.newPage();
+await page.goto(base + '/ces/calendar', { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(()=>{});
+await page.waitForTimeout(3000);
+const fp = path.join(outDir, 'ces-calendar-fresh.png');
+await page.screenshot({ path: fp, fullPage: true });
+await browser.close();
+console.log('Fresh screenshot saved to ' + fp);

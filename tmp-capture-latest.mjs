@@ -1,0 +1,18 @@
+import { chromium } from 'playwright';
+import fs from 'fs';
+import path from 'path';
+const base = 'http://localhost:5173';
+const outDir = path.join(process.cwd(), 'tmp-screenshots');
+fs.mkdirSync(outDir, { recursive: true });
+const browser = await chromium.launch({ headless: true });
+const page = await browser.newPage();
+console.log('Capturing ces-calendar-latest');
+await page.goto(base + '/ces/calendar', { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(()=>{});
+await page.waitForTimeout(2500);
+await page.screenshot({ path: path.join(outDir, 'ces-calendar-latest.png'), fullPage: true });
+console.log('Capturing ces-events-latest');
+await page.goto(base + '/ces/events', { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(()=>{});
+await page.waitForTimeout(2500);
+await page.screenshot({ path: path.join(outDir, 'ces-events-latest.png'), fullPage: true });
+await browser.close();
+console.log('Done capturing latest.');
