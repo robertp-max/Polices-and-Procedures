@@ -47,7 +47,7 @@ export const workspaceSubnavItems: Record<string, NavItem[]> = {
   ],
   onboarding: [
     { id: 'journey-overview', label: 'Overview', to: '/journey', hashIds: ['journey-overview'] },
-    { id: 'journey-v1', label: 'Journey v1', to: '/journey/v1-journey', hashIds: ['journey-v1'] },
+    { id: 'journey-v1', label: 'Journey v1', to: '/journey/v1-journey', hashIds: ['journey-v1'], matchPaths: ['/journey/v1-journey', '/journey/module/:moduleId'] },
     { id: 'appendix-f', label: 'Appendix F', to: '/journey/appendix-f', hashIds: ['appendix-f'] },
     { id: 'supervisor', label: 'Supervisor View', to: '/journey/supervisor', hashIds: ['supervisor'] },
     { id: 'journey-admin', label: 'Admin', to: '/journey/admin', hashIds: ['journey-admin'] },
