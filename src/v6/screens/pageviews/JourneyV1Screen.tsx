@@ -308,7 +308,7 @@ export function JourneyV1Screen() {
 
             <div className="flex gap-md overflow-x-auto pb-4 snap-x snap-mandatory">
               {filteredModules.map((module) => (
-                <div key={module.id} className="flex-shrink-0 snap-start w-[280px]">
+                <div key={module.id} className="flex-shrink-0 snap-start min-w-[320px]">
                   <LessonCard
                     module={module}
                     selected={module.id === selectedModule.id}
