@@ -19,8 +19,9 @@ dist
 **/*.private.json
 server/credentials
 
-# Not needed by the frontend build
-server
+# NOTE: server/ IS uploaded — the combined Cloud Run image (Dockerfile.server)
+# builds the SPA AND runs the Express API from server/. Only secrets under
+# server/credentials are excluded (above).
 infra
 migrations
 

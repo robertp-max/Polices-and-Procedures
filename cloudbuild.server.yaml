@@ -1,0 +1,10 @@
+# Cloud Build config for the COMBINED Cloud Run image (Express API + Vite SPA).
+# Builds with Dockerfile.server and pushes the SHA-tagged image to Artifact Registry.
+# Submit: gcloud builds submit --config cloudbuild.server.yaml --substitutions=_IMAGE=<repo>/<name>:<sha>
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-f', 'Dockerfile.server', '-t', '${_IMAGE}', '.']
+images:
+  - '${_IMAGE}'
+options:
+  machineType: 'E2_HIGHCPU_8'
