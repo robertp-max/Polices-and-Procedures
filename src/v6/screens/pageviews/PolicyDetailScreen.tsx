@@ -262,7 +262,7 @@ export function PolicyDetailScreen() {
     ['Policy ID', headerId],
     ['Domain', domainLabel ?? '—'],
     ['Tier', corpus?.tier ?? '—'],
-    ['Owner / Steward', corpus?.ownerSteward ?? '—'],
+    ['Steward (corpus metadata)', corpus?.ownerSteward ?? '—'],
   ];
 
   const sections = content ? [...content.sections].sort((a, b) => a.order - b.order) : [];

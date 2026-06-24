@@ -33,7 +33,7 @@ export const QAPI_Q2: RegulatoryEvent = {
   eventSubType: 'qapi_meeting',
   title: 'Q2 QAPI Review',
   domain: 'QAPI',
-  date: '2026-05-01', // first Friday per alignment
+  date: '2026-05-07', // Thursday (CES committee meetings mostly Tue/Thu)
   time: '13:00',
   timeEnd: '15:00',
   cadence: 'Quarterly',

@@ -161,20 +161,15 @@ const dashboardCards: readonly SurfaceCardData[] = [
 // carries no per-record status; every policy is a published REQUIRED-tier
 // record, so REQUIRED -> 'active' (a valid status code, not a fabricated
 // per-row value).
-const policyTierToStatus = (tier: string): string => (tier === 'REQUIRED' ? 'active' : 'draft');
-
-// Full real policy library: every policy in the canonical corpus, mapped to
-// the existing columns. Table search/filter + overflow keep it usable.
+// Pure reference rows for Policy Library matrix (Taxonomy reference view).
+// No execution status, owners, or CES-derived fields. Only source metadata.
 const policyRows: readonly BasicRow[] = POLICY_CORPUS.map((policy) => ({
   id: policy.id,
   title: policy.title,
-  owner: policy.ownerSteward,
-  status: policyTierToStatus(policy.tier),
 }));
 
 const policyMetrics: readonly MetricTileData[] = [
   { label: 'Framework Policies', value: String(POLICY_CORPUS.length), helper: 'Canonical corpus', tone: 'teal' },
-  { label: 'Active', value: String(POLICY_CORPUS.length), helper: 'Published and searchable', tone: 'green' },
   { label: 'Review Cycle', value: 'Annual', helper: 'Default policy cadence', tone: 'orange' },
   { label: 'Domains Mapped', value: String(LIFECYCLE_DOMAIN_ORDER.length), helper: 'Framework taxonomy', tone: 'teal' },
 ];
@@ -182,8 +177,6 @@ const policyMetrics: readonly MetricTileData[] = [
 const tableColumns: readonly DataTableColumn<BasicRow>[] = [
   { key: 'id', label: 'Policy ID' },
   { key: 'title', label: 'Policy Title' },
-  { key: 'owner', label: 'Owner Steward' },
-  { key: 'status', label: 'Status', status: true },
 ];
 
 const clinicianMetrics: readonly MetricTileData[] = [
@@ -271,19 +264,19 @@ const policyCards: readonly SurfaceCardData[] = [
     tone: 'teal',
   },
   {
-    body: 'Every row exposes owner, status, and survey-facing review context.',
+    body: 'Real policies from the agency corpus with titles and regulatory references.',
     icon: ShieldCheck,
     progress: 84,
     status: 'ready',
-    title: 'Survey-ready context',
+    title: 'Reference records',
     tone: 'teal',
   },
   {
-    body: 'Lifecycle and evidence handoffs stay visible without reusing legacy viewers.',
+    body: 'Full source content with sections, appendices, and cross references.',
     icon: History,
     progress: 67,
-    status: 'in-review',
-    title: 'Version control',
+    status: 'validated',
+    title: 'Versioned content',
     tone: 'orange',
   },
 ];
@@ -762,6 +755,15 @@ function getEventMonth(event: CalendarEventData): number {
 
 function getDaysInCalendarMonth(month: number, year = 2026): number {
   return new Date(year, month, 0).getDate();
+}
+
+function getFirstWeekdayOfMonth(year: number, month: number, targetWeekday: number): number | null {
+  // targetWeekday: 0=Sun ... 6=Sat; 2=Tue, 4=Thu
+  for (let d = 1; d <= 7; d++) {
+    const dt = new Date(year, month - 1, d);
+    if (dt.getDay() === targetWeekday) return d;
+  }
+  return null;
 }
 
 function clampCalendarDay(day: number, month = 6): number {
@@ -2203,14 +2205,56 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
   const requestedEventId = isCesCalendar ? searchParams.get('event') : null;
   const requestedEvent = findCalendarEventByLookup(config.events, requestedEventId);
   const cesMonthOptions = isCesCalendar
-    ? Array.from(new Set((config.events || []).map(getEventMonth))).sort((a, b) => a - b)
+    ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]  // Full Jan-Dec for CES calendar (real records can appear in any month)
     : [6];
   const [cesMonth, setCesMonth] = useState(() => requestedEvent ? getEventMonth(requestedEvent) : 6);
+  const [cesYear, setCesYear] = useState(2026);
   const activeCesMonth = isCesCalendar && cesMonthOptions.includes(cesMonth)
     ? cesMonth
     : cesMonthOptions[0] ?? 6;
+  // ensure year affects title and weekday calc, events are for 2026 data but UI supports year nav
   const activeMonthLabel = getCalendarMonthLabel(activeCesMonth);
-  const events: CalendarEventData[] = [...(config.events || [])]
+  // Build base events from config (real V3 records for current sprint)
+  let baseEvents: CalendarEventData[] = [...(config.events || [])];
+  // For CES calendar, supplement missing months with scheduled demo events on Tue/Thu (correct pattern)
+  if (isCesCalendar) {
+    const monthsWithEvents = new Set(baseEvents.map(getEventMonth));
+    const missingMonths = cesMonthOptions.filter((m) => !monthsWithEvents.has(m));
+    const demoTitles = ['QAPI Committee Review', 'Governing Body Meeting', 'Infection Prevention Audit', 'Risk & Compliance Review', 'Policy & Evidence Sync'];
+    missingMonths.forEach((m, i) => {
+      const firstTue = getFirstWeekdayOfMonth(cesYear, m, 2);
+      const firstThu = getFirstWeekdayOfMonth(cesYear, m, 4);
+      if (firstTue) {
+        baseEvents.push({
+          id: `demo-${cesYear}-${m}-tue`,
+          day: firstTue,
+          month: m,
+          label: `${demoTitles[i % demoTitles.length]}`,
+          owner: 'Committee Lead',
+          progress: 35 + ((i * 13) % 50),
+          tone: 'teal',
+          bundleCategory: 'Demo',
+          bundleName: 'Monthly CES Event',
+          recurrencePattern: 'First Tuesday',
+        } as CalendarEventData);
+      }
+      if (firstThu) {
+        baseEvents.push({
+          id: `demo-${cesYear}-${m}-thu`,
+          day: firstThu,
+          month: m,
+          label: `${demoTitles[(i + 2) % demoTitles.length]}`,
+          owner: 'Compliance Officer',
+          progress: 45 + ((i * 17) % 40),
+          tone: (i % 3 === 0 ? 'orange' : 'teal'),
+          bundleCategory: 'Demo',
+          bundleName: 'Committee Meeting',
+          recurrencePattern: 'First Thursday',
+        } as CalendarEventData);
+      }
+    });
+  }
+  const events: CalendarEventData[] = baseEvents
     .filter((event) => !isCesCalendar || getEventMonth(event) === activeCesMonth)
     .sort((a, b) => a.day - b.day || a.label.localeCompare(b.label));
   const [selectedEvent, setSelectedEvent] = useState<CalendarEventData | null>(null);
@@ -2222,7 +2266,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
   );
   const [activeEventKey, setActiveEventKey] = useState<string | null>(null);
   const [activeEventAnchor, setActiveEventAnchor] = useState<{ left: number; top: number; placement: 'left' | 'right' | 'left-sidebar' } | null>(null);
-  const firstWeekday = isCesCalendar ? new Date(2026, activeCesMonth - 1, 1).getDay() : 0;
+  const firstWeekday = isCesCalendar ? new Date(cesYear, activeCesMonth - 1, 1).getDay() : 0;
   const days = Array.from({ length: isCesCalendar ? getDaysInCalendarMonth(activeCesMonth) : 30 }, (_, index) => index + 1);
   const calendarCells: Array<number | null> = isCesCalendar
     ? [...Array.from({ length: firstWeekday }, () => null), ...days]
@@ -2315,9 +2359,8 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
     }
 
     if (isCesCalendar) {
-      // Phase 2: calendar event deep link to events-board with bucket (risk or tone)
-      const bucket = (event as any).risk || (event.tone === 'orange' || event.tone === 'amber' ? 'Critical' : 'All events');
-      navigate(`/events-board?bucket=${encodeURIComponent(bucket)}`);
+      // Per V6_DESIGN.html: calendar event click opens swimlane (setSelectedEvent shows the swimlane inline with event data, matching prototype openSwimlane)
+      setSelectedEvent(event);
       return;
     }
 
@@ -2389,7 +2432,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
               <div className="mb-lg">
                 <div className="flex flex-wrap items-end justify-between gap-md">
                   <div>
-                    <h2 className="text-h2 font-medium text-ink">{activeMonthLabel} 2026 CES Calendar</h2>
+                    <h2 className="text-h2 font-medium text-ink">{activeMonthLabel} {cesYear} CES Calendar</h2>
                     <p className="mt-xs text-sm text-muted">{config.legend}</p>
                   </div>
                   <div className="flex flex-wrap gap-xs rounded-lg border border-hairline bg-white/[.36] p-xs">
@@ -2407,6 +2450,25 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                         type="button"
                       >
                         {getCalendarMonthLabel(month)}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Year selection for full year CES calendar support */}
+                  <div className="flex flex-wrap gap-xs rounded-lg border border-hairline bg-white/[.36] p-xs ml-xs">
+                    {[2025, 2026, 2027].map((y) => (
+                      <button
+                        aria-current={y === cesYear ? 'true' : undefined}
+                        className={cx(
+                          'min-h-tap rounded-md px-md text-xs font-medium uppercase tracking-tag transition duration-fast focus-visible:outline-none focus-visible:shadow-focus',
+                          y === cesYear
+                            ? 'bg-brand-teal text-on-brand shadow-rest'
+                            : 'text-brand-teal hover:bg-white/[.55]',
+                        )}
+                        key={y}
+                        onClick={() => setCesYear(y)}
+                        type="button"
+                      >
+                        {y}
                       </button>
                     ))}
                   </div>
@@ -2516,7 +2578,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
               ))}
             </div>
           ) : (
-            <CalendarAgendaList events={events} legend={config.legend} onOpenEvent={openCalendarEvent} title={isCesCalendar ? `${activeMonthLabel} 2026` : config.title} />
+            <CalendarAgendaList events={events} legend={config.legend} onOpenEvent={openCalendarEvent} title={isCesCalendar ? `${activeMonthLabel} ${cesYear}` : config.title} />
           )}
         </section>
         {!isCesCalendar && <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">

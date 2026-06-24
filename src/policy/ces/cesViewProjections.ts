@@ -39,9 +39,9 @@ import type { ExecutionUnit } from './types';
 
 // Minimal static projection of key regulatory from V3 seed (ensures reg events appear on calendar without pulling snapshot module into CES view build graph)
 const V3_REGULATORY_EVENTS: any[] = [
-  { id: 'evt-gb-q2-2026', title: 'Q2 Governing Body Meeting', date: '2026-05-22', urgency: 'due-soon', owner: 'Patricia Hale', mandateType: 'policy-driven', summary: '' },
-  { id: 'evt-qapi-q2-2026', title: 'QAPI Committee — Q2 Data Review', date: '2026-05-20', urgency: 'critical', owner: 'Maria Gonzalez, RN', mandateType: 'federal-required', summary: '' },
-  { id: 'evt-ipc-tb-2026', title: 'Infection Prevention — TB Screening Compliance', date: '2026-05-17', urgency: 'overdue', owner: 'James Torres', mandateType: 'federal-required', summary: '' },
+  { id: 'evt-gb-q2-2026', title: 'Q2 Governing Body Meeting', date: '2026-05-21', urgency: 'due-soon', owner: 'Patricia Hale', mandateType: 'policy-driven', summary: '' }, // Thursday
+  { id: 'evt-qapi-q2-2026', title: 'QAPI Committee — Q2 Data Review', date: '2026-05-19', urgency: 'critical', owner: 'Maria Gonzalez, RN', mandateType: 'federal-required', summary: '' }, // Tuesday
+  { id: 'evt-ipc-tb-2026', title: 'Infection Prevention — TB Screening Compliance', date: '2026-05-14', urgency: 'overdue', owner: 'James Torres', mandateType: 'federal-required', summary: '' }, // Thursday
 ];
 
 /** Dev-only defensive validation flag. Vite sets import.meta.env.DEV; under the

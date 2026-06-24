@@ -435,7 +435,7 @@ const REGULATORY_EVENTS_RAW: RegulatoryEvent[] = [
     eventSubType: 'qapi_meeting',
     title: 'QAPI Committee Meeting',
     domain: 'QAPI',
-    date: '2026-05-01',  // first Friday per alignment
+    date: '2026-05-19',  // Tuesday (CES committee meetings mostly Tue/Thu)
     time: '10:00',
     timeEnd: '12:00',
     cadence: 'Monthly',
@@ -969,7 +969,7 @@ const REGULATORY_EVENTS_RAW: RegulatoryEvent[] = [
     eventSubType: 'governing_body_prep',
     title: 'Governing Body Mtg (Prep - Owner Brief)',
     domain: 'Governance',
-    date: '2026-05-11',
+    date: '2026-05-12',  // Tuesday (CES committee meetings mostly Tue/Thu)
     time: '14:00',
     timeEnd: '15:00',
     cadence: 'Ad-hoc',
@@ -989,7 +989,7 @@ const REGULATORY_EVENTS_RAW: RegulatoryEvent[] = [
     eventSubType: 'compliance_report_weekly',
     title: 'Compliance Report (Weekly Snapshot)',
     domain: 'Compliance',
-    date: '2026-05-11',
+    date: '2026-05-12',  // Tuesday (CES committee meetings mostly Tue/Thu)
     allDay: true,
     cadence: 'Weekly',
     urgency: 'on-track',
@@ -1006,7 +1006,7 @@ const REGULATORY_EVENTS_RAW: RegulatoryEvent[] = [
     eventSubType: 'security_incidents_review',
     title: 'Security Incidents Review',
     domain: 'IT/Security',
-    date: '2026-05-20',
+    date: '2026-05-19',  // Tuesday (CES committee meetings mostly Tue/Thu)
     time: '13:00',
     timeEnd: '14:00',
     cadence: 'Monthly',
@@ -1170,7 +1170,7 @@ const REGULATORY_EVENTS_RAW: RegulatoryEvent[] = [
     eventSubType: 'qapi_dashboard_refresh',
     title: 'QAPI Data Dashboard Refresh',
     domain: 'QAPI',
-    date: '2026-05-22',
+    date: '2026-05-21',  // Thursday (CES committee meetings mostly Tue/Thu)
     allDay: true,
     cadence: 'Monthly',
     urgency: 'on-track',
@@ -1209,7 +1209,7 @@ const REGULATORY_EVENTS_RAW: RegulatoryEvent[] = [
     eventSubType: 'qapi_meeting',
     title: 'QAPI Committee Meeting',
     domain: 'QAPI',
-    date: '2026-06-05',  // first Friday
+    date: '2026-06-04',  // Thursday (CES committee meetings mostly Tue/Thu)
     time: '10:00',
     timeEnd: '12:00',
     cadence: 'Monthly',
@@ -1239,7 +1239,7 @@ const REGULATORY_EVENTS_RAW: RegulatoryEvent[] = [
     eventSubType: 'risk_management_committee',
     title: 'Risk Management Committee',
     domain: 'Risk',
-    date: '2026-06-17',
+    date: '2026-06-18',  // Thursday (CES committee meetings mostly Tue/Thu)
     time: '13:00',
     timeEnd: '15:00',
     cadence: 'Quarterly',

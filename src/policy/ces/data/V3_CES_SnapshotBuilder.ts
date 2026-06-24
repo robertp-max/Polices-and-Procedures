@@ -35,7 +35,7 @@ export const V3_REGULATORY_EVENTS: RegulatoryEvent[] = [
     id: 'evt-gb-q2-2026',
     title: 'Q2 Governing Body Meeting',
     domain: 'Governance',
-    date: '2026-05-22',
+    date: '2026-05-21', // Thursday (Tue/Thu committee pattern)
     cadence: 'Quarterly',
     urgency: 'due-soon',
     policyRefs: ['GV-GB-001'],
@@ -59,7 +59,7 @@ export const V3_REGULATORY_EVENTS: RegulatoryEvent[] = [
     id: 'evt-qapi-q2-2026',
     title: 'QAPI Committee — Q2 Data Review',
     domain: 'QAPI',
-    date: '2026-05-20',
+    date: '2026-05-19', // Tuesday (Tue/Thu committee pattern)
     cadence: 'Quarterly',
     urgency: 'critical',
     policyRefs: ['QA-PG-001', 'QA-PI-001'],
@@ -90,7 +90,7 @@ export const V3_REGULATORY_EVENTS: RegulatoryEvent[] = [
     id: 'evt-ipc-tb-2026',
     title: 'Infection Prevention — TB Screening Compliance',
     domain: 'Clinical',
-    date: '2026-05-17',
+    date: '2026-05-14', // Thursday (Tue/Thu committee pattern)
     cadence: 'Annual',
     urgency: 'overdue',
     policyRefs: ['CL-SD-016', 'CL-SD-017'],
