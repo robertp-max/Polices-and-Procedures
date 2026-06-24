@@ -1,6 +1,6 @@
 import type { RegulatoryEvent, EventProcessStep } from '@/policy/data/regulatoryEvents';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
-import { FORM_TITLES } from '@/policy/data/formTitles.generated';
+import { resolveFormTitle } from '@/policy/data/formIdAliases';
 import { inferPhaseTemplate } from './phaseTemplates';
 import { normalizeRole, roleKey } from './roleNormalizer';
 import { buildSwimlaneFromWorkflow } from './buildSwimlaneFromWorkflow';
@@ -158,7 +158,7 @@ export function buildSwimlaneFromEvent(event: RegulatoryEvent, context: Swimlane
 
     const requiredEvidence = unique([
       step.expectedOutput,
-      ...stepForms.map(formId => FORM_TITLES[formId] ? `${formId} ${FORM_TITLES[formId]}` : `Unresolved form ${formId}`),
+      ...stepForms.map(formId => `${formId} ${resolveFormTitle(formId)}`),
     ]);
     const taskId = buildCanonicalEventSwimlaneTaskId({
       eventId,
@@ -223,7 +223,7 @@ export function buildSwimlaneFromEvent(event: RegulatoryEvent, context: Swimlane
       title: step.label,
       description: step.description || step.onCompleteText,
       explicitInstructions: step.instructions,
-      formInstructions: stepForms.map(formId => `Complete ${formId} ${FORM_TITLES[formId] ?? 'required form'} for this event task.`),
+      formInstructions: stepForms.map(formId => `Complete ${formId} ${resolveFormTitle(formId)} for this event task.`),
       evidenceDescriptions: supportingDocumentationTasks.map(task => task.title),
       auditPurpose: event.regulatoryDriver ?? event.complianceFlags?.surveyorNote,
       regulatoryDriver: event.regulatoryDriver,
@@ -347,7 +347,7 @@ export function buildSwimlaneFromEvent(event: RegulatoryEvent, context: Swimlane
     route: 'orthogonal' as const,
   })));
 
-  const unresolvedForms = unique(nodes.flatMap(node => node.requiredForms)).filter(formId => !FORM_TITLES[formId]);
+  const unresolvedForms = unique(nodes.flatMap(node => node.requiredForms)).filter(formId => !resolveFormTitle(formId) || resolveFormTitle(formId) === formId);
   if (unresolvedForms.length) missingContext.push(`Unresolved form IDs: ${unresolvedForms.join(', ')}`);
 
   return {

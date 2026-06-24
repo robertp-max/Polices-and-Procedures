@@ -1,5 +1,8 @@
 import { Layers, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { MetricGrid, DataTable, SurfaceCard, type MetricTileData, type SurfaceCardData, type DataTableColumn } from '../../components';
+import { buildSeedSnapshot } from '@/policy/onboarding-v2/store/seed';
+import type { OnboardingExecutionBatch } from '@/policy/onboarding-v2';
 
 interface BatchRow extends Record<string, string> {
   batchId: string;
@@ -25,12 +28,29 @@ const columns: readonly DataTableColumn<BatchRow>[] = [
   { key: 'status', label: 'Batch State', status: true },
 ];
 
-const rows: readonly BatchRow[] = [
-  { batchId: 'BAT-001', trigger: 'June 2026 Cohort', count: '8', complete: '6/8', created: '2026-06-01', status: 'active' },
-  { batchId: 'BAT-002', trigger: 'Therapy Core Roster', count: '5', complete: '5/5', created: '2026-06-05', status: 'complete' },
-  { batchId: 'BAT-003', trigger: 'Rehire Reconciliation', count: '3', complete: '1/3', created: '2026-06-12', status: 'active' },
-  { batchId: 'BAT-004', trigger: 'HHA Group 2', count: '10', complete: '0/10', created: '2026-06-18', status: 'pending' },
-];
+// Real onboarding batch records from seed/store snapshot (buildSeedSnapshot).
+// This wires the preserved logic per V6 plan (transitive from v6 screen import; no tsconfig.app change).
+const snap = buildSeedSnapshot();
+function mapBatchToRow(b: OnboardingExecutionBatch): BatchRow {
+  const triggerType = (b.triggerType as string) || (b.triggerPayload && (b.triggerPayload as any).type) || '—';
+  const units = snap.units.filter((u: any) => u.batchId === b.id);
+  const completedCount = units.filter((u: any) => u.status === 'Completed').length;
+  const total = units.length || 1;
+  const statusRaw = (b.status || 'InProgress').toLowerCase();
+  const uiStatus = statusRaw === 'inprogress' ? 'active' :
+                   statusRaw === 'awaitingsignature' || statusRaw === 'awaitingevidence' ? 'review-required' :
+                   statusRaw === 'completed' ? 'complete' :
+                   statusRaw === 'blocked' ? 'blocked' : statusRaw;
+  return {
+    batchId: b.id,
+    trigger: triggerType,
+    count: String(total),
+    complete: `${completedCount}/${total}`,
+    created: (b.createdAt || '').slice(0, 10),
+    status: uiStatus,
+  };
+}
+const rows: readonly BatchRow[] = snap.batches.map(mapBatchToRow);
 
 const statsCards = [
   {
@@ -52,6 +72,11 @@ const statsCards = [
 ] satisfies readonly SurfaceCardData[];
 
 export function OnboardingV2BatchesScreen() {
+  const navigate = useNavigate();
+  const handleRowClick = (row: BatchRow) => {
+    const id = row.batchId;
+    if (id) navigate(`/onboarding-v2/batches/${encodeURIComponent(id)}`);
+  };
   return (
     <section
       className="grid gap-lg"
@@ -71,7 +96,7 @@ export function OnboardingV2BatchesScreen() {
                 <p className="mt-xs text-sm text-muted">All active and historical batches.</p>
               </div>
             </div>
-            <DataTable columns={columns} label="Batches table" rows={rows} />
+            <DataTable columns={columns} label="Batches table" rows={rows} onRowClick={handleRowClick} />
           </section>
         </div>
 

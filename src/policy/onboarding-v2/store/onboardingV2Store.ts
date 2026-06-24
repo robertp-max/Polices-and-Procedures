@@ -58,7 +58,7 @@ export const useOnboardingV2Store = create<OnboardingV2Store>()((set, get) => ({
 
   setUnitStatus: (unitId, next, payload) => {
     const snap = clone(get().snap);
-    changeUnitStatus(snap, unitId, next, { id: 'USR-CO', name: 'Compliance Officer' }, payload ?? {});
+    changeUnitStatus(snap, unitId, next, { id: 'USR-CO', name: 'Angela Martinez' }, payload ?? {});
     set({ snap });
   },
 

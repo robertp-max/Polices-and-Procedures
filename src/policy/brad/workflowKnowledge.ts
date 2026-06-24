@@ -18,7 +18,7 @@
 
 import { WORKFLOWS, WORKFLOW_LIST } from '@/policy/data/workflows.generated';
 import { WORKFLOW_GRAPH } from '@/policy/data/workflowGraph.generated';
-import { formTitle } from '@/policy/data/formTitles.generated';
+import { resolveFormTitle as formTitle } from '@/policy/data/formIdAliases';
 import type { Workflow, WorkflowStep } from '@/policy/types/workflow';
 
 /* ── Section keys match the authored 13 sections ─────────────────── */

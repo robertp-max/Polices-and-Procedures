@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
-import { frameworkPolicies } from '@/policy/data/frameworkSeed.generated';
+import { getCorpusPolicy } from '@/policy/data/policyCorpus';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import { useRegulatoryExecutionStore, type ApprovalRequest, type EvidenceDoc } from '@/policy/stores/regulatoryExecutionStore';
 import type { MergedExecutionUnit } from './complianceExecutionTypes';
@@ -14,10 +14,13 @@ import { isEvidenceUsable } from '@/policy/evidence/evidenceModel';
 import { buildCesTaskRequirements } from '@/policy/evidence/cesEvidenceHierarchy';
 import type { Task as PmTask } from '@/policy/pm/types';
 import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
+import { resolveCanonicalFormId } from '@/policy/data/formIdAliases';
+import { resolveDisplayName } from '@/policy/ces/data/V3_CES_SeedData';
 
 
 const EVENT_INSTANCE_INDEX = buildEventInstanceIndex(REGULATORY_EVENTS);
 const FORM_TEMPLATE_IDS = new Set(FORMS_DATASET.map(form => form.id));
+const getCanon = (id: string) => resolveCanonicalFormId(id) ?? id;
 
 export interface EventExecutionDataflow {
   event: RegulatoryEvent;
@@ -120,7 +123,7 @@ export function buildEventExecutionDataflow(
   });
 
   const policies = event.policyRefs.map(policyId => {
-    const policy = frameworkPolicies.find(p => p.id === policyId);
+    const policy = getCorpusPolicy(policyId);
     return { id: policyId, title: policy?.title ?? policyId };
   });
 
@@ -146,13 +149,13 @@ export function buildEventExecutionDataflow(
       : task.formIds.every(formId => {
           const req = event.requiredForms.find(form => (form.formId ?? form.id) === formId || form.id === formId);
           if (!req) return false;
-          const templateId = req.formId ?? req.id;
+          const templateId = getCanon(req.formId ?? req.id);
           if (!FORM_TEMPLATE_IDS.has(templateId)) return false;
           const hasCompletedInstance = [
             ...(store.generatedFormInstancesByEventId[eventId] ?? []),
             ...(eventId === event.id ? [] : (store.generatedFormInstancesByEventId[event.id] ?? [])),
           ].some(inst =>
-            (inst.formId === formId || inst.formId === (req.formId ?? req.id))
+            (inst.formId === formId || inst.formId === (req.formId ?? req.id) || getCanon(inst.formId) === templateId)
             && (inst.status === 'COMPLETED' || inst.status === 'LOCKED' || inst.status === 'SIGNED'),
           );
           return hasCompletedInstance || store.effectiveFormStatus(event, req.id) === 'complete';
@@ -218,23 +221,29 @@ export function buildEventExecutionDataflow(
       auditReadiness: task.status === 'completed' ? 'ready' : 'not_ready',
       owner: {
         userId: task.ownerUserId ?? `owner:${event.owner.replace(/\s+/g, '_').toLowerCase()}`,
-        name: task.ownerUserId ?? event.owner,
-        initials: event.owner.split(/\s+/).slice(0, 2).map(v => v[0] ?? '').join('').toUpperCase() || 'EV',
+        name: resolveDisplayName(task.ownerUserId ?? event.owner),
+        initials: resolveDisplayName(task.ownerUserId ?? event.owner).split(/\s+/).slice(0, 2).map(v => v[0] ?? '').join('').toUpperCase() || 'MG',
         role: task.ownerRole ?? event.ownerRole,
       },
       approver: {
         userId: `role:${(task.ownerRole ?? event.ownerRole).replace(/\s+/g, '_').toLowerCase()}`,
-        name: task.ownerRole ?? event.ownerRole,
-        initials: (task.ownerRole ?? event.ownerRole).slice(0, 2).toUpperCase(),
+        name: resolveDisplayName(task.ownerRole ?? event.ownerRole),
+        initials: resolveDisplayName(task.ownerRole ?? event.ownerRole).split(/\s+/).slice(0, 2).map(v => v[0] ?? '').join('').toUpperCase().slice(0, 2) || 'RC',
         role: task.ownerRole ?? event.ownerRole,
       },
       signatureOwner: {
         userId: `role:${(task.ownerRole ?? event.ownerRole).replace(/\s+/g, '_').toLowerCase()}`,
-        name: task.ownerRole ?? event.ownerRole,
-        initials: (task.ownerRole ?? event.ownerRole).slice(0, 2).toUpperCase(),
+        name: resolveDisplayName(task.ownerRole ?? event.ownerRole),
+        initials: resolveDisplayName(task.ownerRole ?? event.ownerRole).split(/\s+/).slice(0, 2).map(v => v[0] ?? '').join('').toUpperCase().slice(0, 2) || 'RC',
         role: task.ownerRole ?? event.ownerRole,
       },
-      requiredSigners: [],
+      requiredSigners: (task.status === 'awaiting_signature' ? [{
+        userId: 'u-gb-01',
+        name: resolveDisplayName('Governing Body'),
+        initials: 'PH',
+        role: 'Governing Body',
+        status: 'pending' as const,
+      }] : []),
       dueDate: task.dueDate ?? event.date,
       evidenceStatus: {
         requiredFormsTotal: task.formIds.length,

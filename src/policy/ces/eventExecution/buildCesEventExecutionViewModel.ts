@@ -1,6 +1,6 @@
 import { TEMPLATE_REGISTRY } from '@/policy/autogen/templateRegistry';
 import type { EventTemplate } from '@/policy/autogen/types';
-import { FORM_TITLES } from '@/policy/data/formTitles.generated';
+import { resolveFormTitle } from '@/policy/data/formIdAliases';
 import type { EventEvidenceItem, EventProcessStep, RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import type { CesCalendarHubMeta } from '@/policy/services/calendarApi';
@@ -223,7 +223,7 @@ function eventForms(event?: RegulatoryEvent | null, template?: EventTemplate, wo
   const workflow = workflowId ? WORKFLOWS[workflowId] : undefined;
   return (workflow?.requiredForms ?? []).map(formId => ({
     id: formId,
-    label: FORM_TITLES[formId] ?? formId,
+    label: resolveFormTitle(formId),
     formId,
     status: 'pending',
   }));
@@ -287,7 +287,7 @@ function formVm(form: EventEvidenceItem, event?: RegulatoryEvent | null, executi
         : form.status;
   return {
     id: form.id,
-    title: form.label || FORM_TITLES[formId] || formId,
+    title: form.label || resolveFormTitle(formId) || formId,
     formId,
     status,
     dueDate: event ? toIsoDate(event.date, form.dueOffsetDays ?? 0) : undefined,
@@ -392,7 +392,7 @@ export function buildCesEventExecutionViewModel(input: BuildCesEventExecutionVie
     const status = taskStatus(step, index, event, input.executionState);
     const taskForms = unique(step.requiredFormIds ?? []).map(formId => formById.get(formId) ?? {
       id: formId,
-      title: FORM_TITLES[formId] ?? formId,
+      title: resolveFormTitle(formId) ?? formId,
       formId,
       status: 'pending' as const,
     });

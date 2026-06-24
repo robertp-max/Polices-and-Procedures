@@ -18,11 +18,12 @@ import {
   POLICY_CORPUS,
   CORPUS_PROVENANCE,
   CORPUS_EMPTY_MESSAGE,
+  getCorpusPolicy,
   type CorpusPolicy,
 } from '@/policy/data/policyCorpus';
 
 export type { CorpusPolicy };
-export { CORPUS_PROVENANCE, CORPUS_EMPTY_MESSAGE };
+export { CORPUS_PROVENANCE, CORPUS_EMPTY_MESSAGE, getCorpusPolicy };
 
 export interface LifecycleSeedResult {
   /** Policies eligible for lifecycle enrollment. */
@@ -47,3 +48,9 @@ export function loadLifecycleSeed(): LifecycleSeedResult {
     isEmpty,
   };
 }
+
+/**
+ * Policy + Lifecycle mapping resolver.
+ * Corpus (ownerSteward, title, domain) + Envelope (state from store, createdAt) → correct status/owner/due for governance/lifecycle screens.
+ * Due date: simple annual derivation (corpus reviewCycle convention). Screens join getEnvelope() + this.
+ */

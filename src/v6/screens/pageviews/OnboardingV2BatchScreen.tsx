@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Shield, Key, Heart, Award, FileSearch, ShieldCheck, Download, Check, AlertTriangle, FileText, CheckCircle2 } from 'lucide-react';
 import { DataTable, ProgressMeter, SurfaceCard, type DataTableColumn } from '../../components';
 import { ToneBadge, Button } from '../../primitives';
 import { cx } from '../../utils/classNames';
+import { buildSeedSnapshot } from '@/policy/onboarding-v2/store/seed';
+import type { OnboardingExecutionBatch } from '@/policy/onboarding-v2';
 
 interface RosterRow extends Record<string, string> {
   subjectId: string;
@@ -133,11 +136,18 @@ const subjectEvidenceData: Record<string, SubjectEvidence> = {
 };
 
 export function OnboardingV2BatchScreen() {
+  const { batchId: routeBatchId } = useParams<{ batchId?: string }>();
   const [activeTab, setActiveTab] = useState<'overview' | 'roster'>('overview');
   const [selectedGate, setSelectedGate] = useState<string | null>('Credentials');
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>('SUB-2001');
   const [activeSubTab, setActiveSubTab] = useState<'evidence' | 'signature'>('evidence');
   const [hashVerified, setHashVerified] = useState<Record<string, boolean>>({});
+
+  // Real batch record resolution from seed (wired via import; renders the seeded batch id from onboarding-v2 store seed).
+  const snap = buildSeedSnapshot();
+  const resolvedBatchId = routeBatchId || (snap.batches[0]?.id ?? 'BATCH-00000001');
+  const realBatch: OnboardingExecutionBatch | undefined = snap.batches.find((b) => b.id === resolvedBatchId) || snap.batches[0];
+  const batchUnits = snap.units.filter((u: any) => u.batchId === resolvedBatchId);
 
   const checklistData = selectedGate ? gateChecklists[selectedGate] : null;
   const selectedSubject = rows.find(r => r.subjectId === selectedSubjectId);
@@ -181,6 +191,11 @@ export function OnboardingV2BatchScreen() {
               {tab.label}
             </button>
           ))}
+        </div>
+        {/* Real seed record indicator: shows resolved batch from onboarding-v2 seed */}
+        <div className="text-xs text-muted font-mono">
+          Seed batch: <span className="font-medium text-ink">{resolvedBatchId}</span> ({batchUnits.length} units)
+          {realBatch ? ` • ${realBatch.status}` : ''}
         </div>
       </div>
 

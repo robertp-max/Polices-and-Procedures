@@ -1,9 +1,18 @@
 import { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertTriangle, FileCheck2, Filter, LockKeyhole, ShieldCheck, Users } from 'lucide-react';
 import { BoardLane, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneGlassSurfaceClasses, type BoardLaneData, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { buildEventLanes, FALLBACK_EVENT_LANES, getBucketFromParams } from '@/policy/ces/cesViewProjections';
+import { V3_ExecutionUnitsSeed } from '@/policy/ces/data/V3_CES_SeedData';
+import type { ExecutionUnit } from '@/policy/ces/types';
+
+// Design cross-ref (Agent 13 background): events-board vs V6_DESIGN.html ~508 (eventsBoardColumns) and ~1334 view.
+// Exact 4-col titles (Critical & Overdue / At Risk / Needs Attention / On Track), card fields (id/title/owner/domain/due/meta/chips/progress/tone/awaitingType/missing),
+// grid desktop:grid-cols-4, BoardLane rendering, sorting by due. Pragmatic counts (design uses 162 illustrative for Critical); full EVT-REV + shared items match design.
+// Proposals: dynamic from seeds/snapshot, use illustrative 162+ for demo mode, enhance filters to match design interactions. See also RepresentativeScreens events-board case, BoardLane, V3_CES_SeedData.
 
 interface EvidenceSignal {
   artifacts: string;
@@ -23,11 +32,12 @@ interface EventFilter {
   tone: Tone;
 }
 
+// Values overridden at runtime by eventMetricsDerived using real lane.count from buildEventLanes (seed .length)
 const eventMetrics: readonly MetricTileData[] = [
-  { label: 'Critical events', value: '4', helper: 'Overdue or same-day risk', tone: 'orange' },
-  { label: 'At risk', value: '7', helper: 'Owner or readiness gaps', tone: 'amber' },
-  { label: 'Evidence ready', value: '12', helper: 'Artifacts attached', tone: 'teal' },
-  { label: 'Lock ready', value: '6', helper: 'Signature path clear', tone: 'green' },
+  { label: 'Critical & Overdue', value: '0', helper: 'Past due or high impact', tone: 'orange' },
+  { label: 'At Risk', value: '0', helper: 'Watch items', tone: 'amber' },
+  { label: 'Needs Attention', value: '0', helper: 'Active reviews', tone: 'teal' },
+  { label: 'On Track', value: '0', helper: 'Within SLA', tone: 'green' },
 ];
 
 const eventFilters: readonly EventFilter[] = [
@@ -65,194 +75,78 @@ const eventHealthCards: readonly SurfaceCardData[] = [
   },
 ];
 
-const evidenceSignals: readonly EvidenceSignal[] = [
-  {
-    artifacts: '4 / 7 artifacts',
-    due: 'Jun 20, 2026',
-    id: 'EVT-2406',
-    owner: 'QAPI Lead',
-    progress: 52,
-    status: 'missing-evidence',
-    title: 'QAPI governing body packet',
-    tone: 'orange',
-  },
-  {
-    artifacts: '5 / 6 artifacts',
-    due: 'Jun 21, 2026',
-    id: 'EVT-2411',
-    owner: 'Clinical Manager',
-    progress: 68,
-    status: 'pending',
-    title: 'High-risk patient recertification review',
-    tone: 'amber',
-  },
-  {
-    artifacts: '8 / 8 artifacts',
-    due: 'Jun 24, 2026',
-    id: 'EVT-2420',
-    owner: 'Administrator',
-    progress: 88,
-    status: 'validated',
-    title: 'Emergency drill after-action review',
-    tone: 'teal',
-  },
-  {
-    artifacts: '6 / 6 artifacts',
-    due: 'Jun 25, 2026',
-    id: 'EVT-2434',
-    owner: 'Governing Body',
-    progress: 96,
-    status: 'signed',
-    title: 'Final policy packet lock',
-    tone: 'green',
-  },
-];
+// Derived from the real V3 execution-unit seed (src/policy/ces/data/V3_CES_SeedData.ts).
+// Each unit maps to the same EvidenceSignal row shape consumed by the Evidence tab.
+const EVIDENCE_STATE_STATUS: Record<ExecutionUnit['complianceState'], string> = {
+  upcoming: 'draft',
+  ready: 'validated',
+  in_progress: 'review',
+  awaiting_signature: 'pending',
+  blocked: 'missing-evidence',
+  completed: 'signed',
+};
 
-const eventLanes: readonly BoardLaneData[] = [
-  {
-    cards: [
-      {
-        chips: ['Missing evidence', '4 / 7 artifacts'],
-        due: 'Jun 20',
-        id: 'EVT-2406',
-        owner: 'QAPI Lead',
-        progress: 52,
-        title: 'QAPI governing body packet needs source minutes',
-        tone: 'orange',
-      },
-      {
-        chips: ['Signature gap', 'Administrator'],
-        due: 'Jun 20',
-        id: 'EVT-2408',
-        owner: 'Administrator',
-        progress: 46,
-        title: 'Incident trend review missing final approver',
-        tone: 'orange',
-      },
-      {
-        chips: ['Owner gap', 'Policy council'],
-        due: 'Jun 21',
-        id: 'EVT-2410',
-        owner: 'Compliance Officer',
-        progress: 39,
-        title: 'Surveyor-request evidence binder escalation',
-        tone: 'orange',
-      },
-    ],
-    count: 4,
-    title: 'Critical overdue',
-    tone: 'orange',
-  },
-  {
-    cards: [
-      {
-        chips: ['Pending review', '5 / 6 artifacts'],
-        due: 'Jun 21',
-        id: 'EVT-2411',
-        owner: 'Clinical Manager',
-        progress: 68,
-        title: 'High-risk patient recertification review',
-        tone: 'amber',
-      },
-      {
-        chips: ['Attendees', 'DON'],
-        due: 'Jun 22',
-        id: 'EVT-2416',
-        owner: 'Director of Nursing',
-        progress: 61,
-        title: 'Clinical record audit readout needs attendee lock',
-        tone: 'amber',
-      },
-      {
-        chips: ['Training', 'Roster delta'],
-        due: 'Jun 22',
-        id: 'EVT-2418',
-        owner: 'HR Coordinator',
-        progress: 72,
-        title: 'Annual competency roster reconciliation',
-        tone: 'amber',
-      },
-    ],
-    count: 7,
-    title: 'At risk',
-    tone: 'amber',
-  },
-  {
-    cards: [
-      {
-        chips: ['Validated', '8 / 8 artifacts'],
-        due: 'Jun 24',
-        id: 'EVT-2420',
-        owner: 'Administrator',
-        progress: 88,
-        title: 'Emergency drill after-action review',
-        tone: 'teal',
-      },
-      {
-        chips: ['Uploaded', 'Clinical'],
-        due: 'Jun 24',
-        id: 'EVT-2424',
-        owner: 'Clinical Manager',
-        progress: 84,
-        title: 'Medication reconciliation audit packet',
-        tone: 'teal',
-      },
-      {
-        chips: ['Ready', 'Policy refs'],
-        due: 'Jun 25',
-        id: 'EVT-2427',
-        owner: 'Policy Admin',
-        progress: 79,
-        title: 'Patient-rights annual attestation review',
-        tone: 'teal',
-      },
-    ],
-    count: 12,
-    title: 'Evidence ready',
-    tone: 'teal',
-  },
-  {
-    cards: [
-      {
-        chips: ['Signed', '6 / 6 artifacts'],
-        due: 'Jun 25',
-        id: 'EVT-2434',
-        owner: 'Governing Body',
-        progress: 96,
-        title: 'Final policy packet lock',
-        tone: 'green',
-      },
-      {
-        chips: ['Certified', 'Hash chain'],
-        due: 'Jun 26',
-        id: 'EVT-2438',
-        owner: 'Compliance Officer',
-        progress: 100,
-        title: 'Personnel file completeness evidence set',
-        tone: 'green',
-      },
-      {
-        chips: ['Locked', 'Survey export'],
-        due: 'Jun 26',
-        id: 'EVT-2441',
-        owner: 'Systems',
-        progress: 94,
-        title: 'Survey packet export verification',
-        tone: 'green',
-      },
-    ],
-    count: 6,
-    title: 'Lock ready',
-    tone: 'green',
-  },
-];
+const EVIDENCE_STATE_TONE: Record<ExecutionUnit['complianceState'], Tone> = {
+  upcoming: 'slate',
+  ready: 'green',
+  in_progress: 'teal',
+  awaiting_signature: 'amber',
+  blocked: 'orange',
+  completed: 'green',
+};
+
+function unitToEvidenceSignal(u: ExecutionUnit): EvidenceSignal {
+  const total = u.evidenceStatus.requiredFormsTotal;
+  const complete = u.evidenceStatus.requiredFormsComplete;
+  const progress = total > 0 ? Math.round((complete / total) * 100) : 0;
+  return {
+    artifacts: `${complete} / ${total} artifacts`,
+    due: u.dueDate,
+    id: u.id,
+    owner: u.owner.name || u.owner.role || '—',
+    progress,
+    status: EVIDENCE_STATE_STATUS[u.complianceState],
+    title: u.title,
+    tone: EVIDENCE_STATE_TONE[u.complianceState],
+  };
+}
+
+const evidenceSignals: readonly EvidenceSignal[] = V3_ExecutionUnitsSeed.map(unitToEvidenceSignal);
+
+const eventLanes: readonly BoardLaneData[] = buildEventLanes() || FALLBACK_EVENT_LANES; // 1.4 wired to projection
+
+// Metric tiles derived from the real event-lane counts (same labels/tones/helpers as before).
+const eventMetricsDerived: readonly MetricTileData[] = eventMetrics.map((tile) => {
+  const lane = eventLanes.find((l) => l.title === tile.label);
+  return lane ? { ...tile, value: String(lane.count) } : tile;
+});
+// filteredLanes computation moved inside EventsBoardScreen function
+
+// old eventLanes body fully cleaned
 
 export function EventsBoardScreen() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<'board' | 'evidence'>('board');
+  const [activeFilter, setActiveFilter] = useState(() => {
+    const b = getBucketFromParams(searchParams);
+    // visible pre-filter if bucket param matches a known filter label
+    const known = ['All events', 'Critical', 'Missing evidence', 'Owner gaps', 'Ready to lock'];
+    return b && known.includes(b) ? b : 'All events';
+  });
+
+  const filteredLanes = eventLanes.filter(lane => {
+    if (activeFilter === 'All events') return true;
+    if (activeFilter === 'Critical') return lane.title.includes('Critical');
+    if (activeFilter === 'Missing evidence') return lane.cards.some((c: any) => c.awaitingType === 'evidence' || c.missing);
+    if (activeFilter === 'Owner gaps') return lane.cards.some((c: any) => !c.owner || c.owner.includes('?'));
+    if (activeFilter === 'Ready to lock') return lane.title.includes('On Track') || lane.title.includes('Certified');
+    return true;
+  });
 
   return (
     <div className="grid gap-lg">
-      <MetricGrid metrics={eventMetrics} />
+      <MetricGrid metrics={eventMetricsDerived} />
 
       <section className="grid gap-md">
         {/* Premium Segmented Tab Control */}
@@ -288,14 +182,15 @@ export function EventsBoardScreen() {
             <div aria-label="Event status filters" className="flex flex-wrap gap-sm">
               {eventFilters.map((filter) => {
                 const Icon = filter.icon;
-
+                const isSelected = filter.label === activeFilter;
                 return (
                   <Button
                     iconLeft={<Icon aria-hidden="true" className="h-icon-sm w-icon-sm" />}
                     key={filter.label}
-                    selected={filter.selected}
+                    selected={isSelected}
                     size="sm"
-                    variant={filter.selected ? 'primary' : 'secondary'}
+                    variant={isSelected ? 'primary' : 'secondary'}
+                    onClick={() => setActiveFilter(filter.label)}
                   >
                     {filter.label}
                   </Button>
@@ -303,9 +198,10 @@ export function EventsBoardScreen() {
               })}
             </div>
             <div className="flex flex-wrap gap-sm">
-              <ToneTag tone="orange">4 critical</ToneTag>
-              <ToneTag tone="amber">7 at risk</ToneTag>
-              <ToneTag tone="green">6 lock ready</ToneTag>
+              <ToneTag tone="orange">{eventMetricsDerived.find(m => m.label.includes('Critical'))?.value ?? '0'} Critical &amp; Overdue</ToneTag>
+              <ToneTag tone="amber">{eventMetricsDerived.find(m => m.label.includes('At Risk'))?.value ?? '0'} At Risk</ToneTag>
+              <ToneTag tone="teal">{eventMetricsDerived.find(m => m.label.includes('Needs'))?.value ?? '0'} Needs Attention</ToneTag>
+              <ToneTag tone="green">{eventMetricsDerived.find(m => m.label.includes('On Track'))?.value ?? '0'} On Track</ToneTag>
             </div>
           </div>
         )}
@@ -315,9 +211,9 @@ export function EventsBoardScreen() {
         <section className="grid gap-lg large:grid-cols-[minmax(0,1fr)_minmax(270px,320px)]">
           <div aria-label="Events board lanes" className="min-w-0 overflow-x-auto overflow-y-hidden pb-sm" role="region" tabIndex={0}>
             <div className="grid min-w-[920px] gap-sm tablet-l:grid-cols-2 desktop:min-w-0 desktop:grid-cols-4">
-              {eventLanes.map((lane) => (
+              {filteredLanes.map((lane) => (
                 <div className="min-w-0" key={lane.title}>
-                  <BoardLane lane={lane} />
+                  <BoardLane lane={lane} onCardClick={(card) => navigate(`/evidence?control=${encodeURIComponent(card?.id || '')}`)} />
                 </div>
               ))}
             </div>
@@ -338,7 +234,7 @@ export function EventsBoardScreen() {
                 Event-level evidence chips, owner state, and progress mirror the active board cards.
               </p>
             </div>
-            <Badge variant="count">30 expected artifacts</Badge>
+            <Badge variant="count">{V3_ExecutionUnitsSeed.reduce((s, u) => s + ((u.evidenceStatus?.requiredFormsTotal) || 0), 0)} expected artifacts</Badge>
           </div>
           <div className="grid gap-md">
             {evidenceSignals.map((signal) => (
