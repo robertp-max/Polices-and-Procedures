@@ -251,9 +251,12 @@ export function JourneyOverviewScreen() {
         <section className="grid content-start gap-lg desktop:col-span-6" aria-labelledby="journey-modules-title">
           <div className="flex flex-wrap items-end justify-between gap-md">
             <div className="grid gap-xs">
-              <h2 className="text-h2 font-medium text-ink" id="journey-modules-title">
-                Module cards and steps
-              </h2>
+              <div className="flex items-center gap-md">
+                <h2 className="text-h2 font-medium text-ink" id="journey-modules-title">
+                  Module cards and steps
+                </h2>
+                <ToneTag tone="teal">Maria Santos, RN</ToneTag>
+              </div>
               <p className="max-w-content text-sm text-muted">
                 Journey modules track GAO, role, supervised-visit (41 from catalog) + 12 ACHC annual training modules for active learners.
               </p>

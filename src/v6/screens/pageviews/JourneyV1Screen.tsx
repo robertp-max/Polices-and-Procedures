@@ -268,6 +268,10 @@ export function JourneyV1Screen() {
         </aside>
 
         <main className="grid content-start gap-lg" aria-label="Journey v1 lesson modules">
+          <div className="mb-lg flex items-center gap-md">
+            <h1 className="text-h1 font-medium text-ink">My Learning</h1>
+            <ToneTag tone="teal">Maria Santos, RN</ToneTag>
+          </div>
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
               <div className="grid gap-xs">
