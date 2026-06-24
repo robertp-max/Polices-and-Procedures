@@ -26,6 +26,53 @@ export interface HelpArticle {
 
 export const HELP_ARTICLES: Record<string, HelpArticle> = {
 
+  /* ═════════════════════════════════ BRAD ═══════════════════════════════ */
+  'BRAD-HOW-BRAD-WORKS': {
+    id: 'BRAD-HOW-BRAD-WORKS',
+    title: 'How Brad Works',
+    subtitle: 'What Brad does, how internal work stays controlled, and how public research stays separate',
+    overview:
+      'Brad is Care Indeed\'s compliance execution assistant. It works from internal policies, workflows, events, forms, and evidence to generate reports, prepare event packets, draft QAPI minutes, review policies, and identify gaps — while keeping protected actions governed by Care Indeed rules.',
+    purpose:
+      'Explain how Brad operates so teams can use it confidently: internal operational grounding, separated and untrusted public research, full traceability of generated objects, human review for protected actions, the current synthetic-PHI MVP state, and the production readiness target.',
+    whenRequired:
+      'Reference any time you use Brad — especially before relying on a Brad-generated draft, or before requesting external public-source context.',
+    responsible:
+      'All Brad users. Super Admins additionally govern approvals, the Builder Beta, and cloud changes.',
+    steps: [
+      { label: 'Internal work stays controlled',
+        detail: 'Brad works from Care Indeed policies, workflows, events, forms, evidence, and approved internal records. It never turns protected internal content into public-research prompts.' },
+      { label: 'Public research stays separate',
+        detail: 'External public-source context (e.g. CMS, ACHC, federal/state guidance, public vendor docs) is reviewed separately, labelled untrusted external, and shown apart from Brad\'s internal analysis. It cannot directly change records, finalize documents, approve actions, or bypass Care Indeed controls.' },
+      { label: 'Every action stays traceable',
+        detail: 'Brad-generated reports, packets, minutes, and recommendations are append-only objects tied to their source event, workflow, policy, form, evidence, requesting user, runtime, and review state, sealed with an immutable audit hash.' },
+      { label: 'Human review stays in charge',
+        detail: 'Brad can analyze, draft, and recommend. Protected actions (signing, finalizing, cloud changes, core mutations) remain subject to authorized Super Admin review and human signature before becoming final.' },
+      { label: 'Synthetic PHI MVP',
+        detail: 'In the current MVP, synthetic / test data only — real PHI is blocked. The runtime badge reflects the server-verified state; Brad never claims PHI is enabled unless the readiness gate actually passes.' },
+      { label: 'Production readiness target',
+        detail: 'The production target is Google Vertex AI after a BAA, eligible services, security controls, and a readiness gate pass. Brad is not represented as presently HIPAA compliant.' },
+    ],
+    formsRequired: [],
+    outputs: [
+      'A clear mental model of Brad\'s internal grounding vs. separated public research.',
+      'Confidence that Brad-generated objects are traceable and require human review before any protected action.',
+    ],
+    commonMistakes: [
+      'Treating external public-source context as authoritative — it is untrusted until validated internally.',
+      'Assuming a Brad draft (report, 485, packet, minutes, PIP) is final — drafts always require human review and signature.',
+      'Expecting real-PHI processing in the MVP — real PHI is blocked.',
+    ],
+    auditTips: [
+      'Every Brad-generated object carries provenance + an immutable audit hash; cite the object id in reviews.',
+      'Public research used in a decision must show citations and retrieval dates; uncited research is marked UNVERIFIED and must not drive compliance action.',
+    ],
+    relatedPolicies: [],
+    relatedEventIds: [],
+    estimatedMinutes: 4,
+    updatedAt: '2026-06-24',
+  },
+
   /* ═════════════════════════════════ QAPI ═══════════════════════════════ */
   'KB-QAPI-001': {
     id: 'KB-QAPI-001',

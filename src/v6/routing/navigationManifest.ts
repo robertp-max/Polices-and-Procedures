@@ -9,11 +9,12 @@ export interface NavItem {
 }
 
 export const primaryNavItems: NavItem[] = [
+  // Brad is the default authenticated landing page and the FIRST primary nav item.
+  { id: 'brad', label: 'Brad', to: '/iadministrator', hashIds: ['brad'] },
   { id: 'dashboard', label: 'Dashboard', to: '/dashboard', hashIds: ['dashboard'] },
   { id: 'clinicians', label: 'Clinician Profiles', to: '/clinicians', hashIds: ['clinicians'] },
   { id: 'patients', label: 'Patient Profiles', to: '/patients', hashIds: ['patients'] },
   { id: 'calendar', label: 'Calendar', to: '/staffing-calendar', hashIds: ['master-calendar', 'staffing-calendar'] },
-  { id: 'brad', label: 'Brad', to: '/iadministrator', hashIds: ['brad'] },
   { id: 'ces', label: 'Compliance Execution (CES)', to: '/ces/calendar', hashIds: ['ces-calendar', 'ces-board', 'workflows', 'master-controls', 'audit-mode', 'evidence-center', 'ces-reports'] },
   { id: 'taxonomy', label: 'Taxonomy', to: '/framework', hashIds: ['taxonomy', 'framework', 'achc-survey', 'achc-crosswalk'] },
   { id: 'onboarding', label: 'Onboarding', to: '/journey', hashIds: ['journey-overview', 'journey-v1', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'] },

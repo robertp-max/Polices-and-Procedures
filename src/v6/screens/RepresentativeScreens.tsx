@@ -11,6 +11,7 @@ import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDatase
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import { getWorkflowDetail } from './pageviews/WorkflowsScreen';
 import BradWorkspace from './brad/BradWorkspace';
+import BuilderWorkspace from './brad/BuilderWorkspace';
 import { resolveCanonicalFormId } from '@/policy/data/formIdAliases';
 // V2 seed staffing data (not live production records; used for prototype staffing profile surfaces).
 import { MOCK_CLINICIANS } from '@/policy/staffing/data/mockClinicians';
@@ -1697,6 +1698,9 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       break;
     case 'brad':
       child = <BradScreen />;
+      break;
+    case 'brad-builder':
+      child = <BuilderScreen />;
       break;
     case 'user-guide':
       child = <DocsScreen />;
@@ -3450,6 +3454,14 @@ function BradScreen() {
   return (
     <ScreenStack metrics={[]}>
       <BradWorkspace />
+    </ScreenStack>
+  );
+}
+
+function BuilderScreen() {
+  return (
+    <ScreenStack metrics={[]}>
+      <BuilderWorkspace />
     </ScreenStack>
   );
 }

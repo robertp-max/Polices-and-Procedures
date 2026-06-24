@@ -9,6 +9,11 @@ import { superAdminAudit } from '../ia/brad/superadminAudit.js';
 import { planCloudChangeSet } from '../ia/brad/cloudChangeSets.js';
 import { getDemoSnapshot, listDemoEventIds } from '../ia/brad/demoSnapshot.js';
 import type { BradObjectType, CloudChangeOp, SuperAdminPermission } from '../ia/brad/types.js';
+import {
+  builderGenerateOtp, builderCreatePermission, builderCreateRole, builderMassAddDryRun,
+  builderMassAddCommit, builderCreateReportTemplate, builderListReportTemplates,
+  builderCreateComponentSpec, builderListPending,
+} from '../ia/brad/builder.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    /api/brad/* — Brad assistant + Super Admin guarded-action surface.
@@ -38,6 +43,26 @@ function superAdminOf(req: Request) {
     authenticated: !!req.session?.authenticated,
     actorType: (a?.type ?? 'system') as 'user' | 'service' | 'system',
   });
+}
+
+/** Require an active Super Admin; 403 fail-closed otherwise. */
+function requireSuperAdmin(req: Request) {
+  const sa = superAdminOf(req);
+  if (!sa.isSuperAdmin) throw new ApiError('permission_denied', 'Super Admin required.', 403);
+  return sa;
+}
+
+/** Translate Builder domain errors to HTTP errors (validation/confirmation → 400). */
+function builderCall<T>(fn: () => T): T {
+  try {
+    return fn();
+  } catch (e) {
+    const err = e as Error;
+    if (err.name === 'BuilderValidationError' || err.name === 'ConfirmationRequiredError') {
+      throw new ApiError('validation_error', err.message, 400);
+    }
+    throw err;
+  }
 }
 
 export function createBradRouter(): Router {
@@ -160,6 +185,68 @@ export function createBradRouter(): Router {
     const sa = superAdminOf(req);
     if (!sa.isSuperAdmin) throw new ApiError('permission_denied', 'Super Admin required.', 403);
     res.json({ audit: superAdminAudit.list() });
+  }));
+
+  // Current actor's profile (server-resolved first name; never client-supplied).
+  router.get('/profile', asyncH(async (req, res) => {
+    const a = req.actor;
+    const authenticated = !!req.session?.authenticated && a?.type === 'user' && !!a.user_id;
+    const sa = superAdminOf(req);
+    const displayName = sa.isSuperAdmin ? sa.displayName : undefined;
+    const firstName = displayName ? displayName.split(/\s+/)[0] : undefined;
+    res.json({ authenticated, userId: authenticated ? a?.user_id : undefined, firstName, displayName });
+  }));
+
+  // ── Builder Beta (Super Admin only; server-side enforced on EVERY route) ───
+  router.post('/builder/otp', asyncH(async (req, res) => {
+    const sa = requireSuperAdmin(req);
+    res.json(builderCall(() => builderGenerateOtp(req.body ?? {}, sa.userId!)));
+  }));
+
+  router.post('/builder/permission', asyncH(async (req, res) => {
+    const sa = requireSuperAdmin(req);
+    res.json(builderCall(() => builderCreatePermission(req.body ?? {}, sa.userId!)));
+  }));
+
+  router.post('/builder/role', asyncH(async (req, res) => {
+    const sa = requireSuperAdmin(req);
+    res.json(builderCall(() => builderCreateRole({ ...(req.body ?? {}), currentUserId: sa.userId }, sa.userId!)));
+  }));
+
+  router.post('/builder/users/dry-run', asyncH(async (req, res) => {
+    requireSuperAdmin(req);
+    const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
+    res.json({ summary: builderMassAddDryRun(rows) });
+  }));
+
+  router.post('/builder/users', asyncH(async (req, res) => {
+    const sa = requireSuperAdmin(req);
+    const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
+    res.json(builderCall(() => builderMassAddCommit(rows, req.body?.confirm, sa.userId!)));
+  }));
+
+  router.post('/builder/report-template', asyncH(async (req, res) => {
+    const sa = requireSuperAdmin(req);
+    res.json(builderCall(() => builderCreateReportTemplate(req.body ?? {}, sa.userId!)));
+  }));
+
+  router.get('/builder/report-templates', asyncH(async (req, res) => {
+    requireSuperAdmin(req);
+    res.json({ templates: builderListReportTemplates() });
+  }));
+
+  router.post('/builder/component-spec', asyncH(async (req, res) => {
+    const sa = requireSuperAdmin(req);
+    res.json(builderCall(() => builderCreateComponentSpec(req.body ?? {}, sa.userId!)));
+  }));
+
+  router.get('/builder/pending', asyncH(async (req, res) => {
+    requireSuperAdmin(req);
+    res.json({
+      objects: builderListPending(),
+      approvals: approvalRegistry.listPending(),
+      audit: superAdminAudit.list(),
+    });
   }));
 
   return router;

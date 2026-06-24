@@ -114,6 +114,26 @@ export interface ApprovalRequest {
   createdAt: string;
 }
 
+export interface BradProfile {
+  authenticated: boolean;
+  userId?: string;
+  firstName?: string;
+  displayName?: string;
+}
+
+export interface CloudPlan {
+  ops: unknown[];
+  allowlistValid: boolean;
+  disallowedReasons: string[];
+  dryRunSummary: string[];
+  riskLevel: 'low' | 'medium' | 'high';
+}
+
+export interface MassAddSummary {
+  total: number; valid: number; duplicates: number; invalid: number; risky: number;
+  rows: Array<{ index: number; firstName?: string; lastName?: string; email?: string; role?: string; issues: string[]; risky: boolean; duplicate: boolean; invalid: boolean }>;
+}
+
 export const bradApi = {
   runtime: () => bradFetch<RuntimeInfo>('/runtime'),
   me: () => bradFetch<SuperAdminMe>('/superadmin/me'),
@@ -134,4 +154,34 @@ export const bradApi = {
   decide: (approvalId: string, decision: 'approved' | 'denied', reason?: string) =>
     bradFetch<{ decision: { decision: string; reason?: string }; allowedWrite: boolean }>(
       `/approvals/${approvalId}/decide`, { method: 'POST', body: JSON.stringify({ decision, reason }) }),
+  profile: () => bradFetch<BradProfile>('/profile'),
+  audit: () => bradFetch<{ audit: unknown[] }>('/audit'),
+
+  /* ─── Builder Beta (Super Admin only; server re-verifies on every call) ──── */
+  builder: {
+    otp: (body: { targetUserId: string; purpose: string; ttlMinutes?: number; deliveryMethod?: string; confirm: boolean }) =>
+      bradFetch<{ otpId: string; otp: string; expiresAt: string; targetUserId: string; purpose: string; notice: string }>(
+        '/builder/otp', { method: 'POST', body: JSON.stringify(body) }),
+    createPermission: (body: Record<string, unknown>) =>
+      bradFetch<{ object: GeneratedObject }>('/builder/permission', { method: 'POST', body: JSON.stringify(body) }),
+    createRole: (body: Record<string, unknown>) =>
+      bradFetch<{ object: GeneratedObject; permissionDiff: { added: string[]; removed: string[] } }>(
+        '/builder/role', { method: 'POST', body: JSON.stringify(body) }),
+    massAddDryRun: (rows: unknown[]) =>
+      bradFetch<{ summary: MassAddSummary }>('/builder/users/dry-run', { method: 'POST', body: JSON.stringify({ rows }) }),
+    massAddCommit: (rows: unknown[], confirm: boolean) =>
+      bradFetch<{ object: GeneratedObject; summary: MassAddSummary; blocker: string }>(
+        '/builder/users', { method: 'POST', body: JSON.stringify({ rows, confirm }) }),
+    createReportTemplate: (body: Record<string, unknown>) =>
+      bradFetch<{ object: GeneratedObject; version: number }>('/builder/report-template', { method: 'POST', body: JSON.stringify(body) }),
+    listReportTemplates: () => bradFetch<{ templates: GeneratedObject[] }>('/builder/report-templates'),
+    createComponentSpec: (body: Record<string, unknown>) =>
+      bradFetch<{ object: GeneratedObject }>('/builder/component-spec', { method: 'POST', body: JSON.stringify(body) }),
+    cloudDryRun: (ops: unknown[]) =>
+      bradFetch<{ plan: CloudPlan }>('/cloud-change-set/dry-run', { method: 'POST', body: JSON.stringify({ ops }) }),
+    proposeCloud: (ops: unknown[]) =>
+      bradFetch<{ object: GeneratedObject; plan: CloudPlan; approvalId: string | null }>(
+        '/cloud-change-set', { method: 'POST', body: JSON.stringify({ ops }) }),
+    pending: () => bradFetch<{ objects: GeneratedObject[]; approvals: ApprovalRequest[]; audit: unknown[] }>('/builder/pending'),
+  },
 };

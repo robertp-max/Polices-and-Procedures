@@ -1,8 +1,12 @@
 import { type FormEvent, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
 import { cx } from '../../utils/classNames';
+import { safeReturnTo } from '../../utils/safeRedirect';
 
 export function LoginScreen() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberDevice, setRememberDevice] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -15,8 +19,11 @@ export function LoginScreen() {
     window.setTimeout(() => {
       setLoading(false);
       setToastVisible(true);
+      // Honor a safe intended deep link (?returnTo=/legacy ?from=); otherwise
+      // default authenticated landing is Brad. SPA navigation preserves routing.
+      const dest = safeReturnTo(searchParams.get('returnTo') ?? searchParams.get('from'));
       window.setTimeout(() => {
-        window.location.assign('/dashboard');
+        navigate(dest, { replace: true });
       }, 400);
     }, 900);
   }
@@ -141,7 +148,7 @@ export function LoginScreen() {
         role="status"
       >
         <CheckCircle2 aria-hidden="true" className="h-icon-sm w-icon-sm text-on-brand" />
-        Authentication successful. Routing to dashboard...
+        Authentication successful. Redirecting&hellip;
       </div>
     </main>
   );

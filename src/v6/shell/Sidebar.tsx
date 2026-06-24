@@ -54,7 +54,7 @@ export function Sidebar() {
         <div className="grid gap-xl">
           {/* PRIMARY OPERATIONS */}
           <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted px-sm">PRIMARY OPERATIONS</div>
-          {['dashboard', 'clinicians', 'patients', 'calendar', 'brad'].map(id => {
+          {['brad', 'dashboard', 'clinicians', 'patients', 'calendar'].map(id => {
             const item = primaryNavItems.find(i => i.id === id)!;
             const isActive = active?.parent?.id === item.id;
             return (

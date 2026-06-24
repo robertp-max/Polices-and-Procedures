@@ -27,7 +27,14 @@ export type BradObjectType =
   | 'BradGeneratedCloudChangeSet'
   | 'BradGeneratedAuditNote'
   | 'BradGeneratedTaskRecommendation'
-  | 'BradGeneratedChangeSet';
+  | 'BradGeneratedChangeSet'
+  // ── Builder Beta (Super Admin only) generated objects ────────────────────
+  | 'BradGeneratedPermissionDraft'
+  | 'BradGeneratedRoleDraft'
+  | 'BradGeneratedUserImportDraft'
+  | 'BradGeneratedReportTemplate'
+  | 'BradGeneratedComponentSpec'
+  | 'BradGeneratedOtpRecord';
 
 /** Lifecycle of a Brad-created object. Append-only objects are `committed` at
     creation; protected/cloud-changing objects start `pending-approval`. */
