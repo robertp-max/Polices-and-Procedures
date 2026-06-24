@@ -58,7 +58,7 @@ function toWorkflowRow(wf: WorkflowDef): WorkflowRow {
   };
 }
 
-const getWorkflowDetail = (id: string) => {
+export const getWorkflowDetail = (id: string) => {
   const wf = WORKFLOWS[id];
   if (wf) {
     const res = resolveWorkflowPolicyRefs(wf);
@@ -121,7 +121,7 @@ const workflowColumns: readonly DataTableColumn<WorkflowRow>[] = [
   { key: 'status', label: 'Status', status: true },
 ];
 
-const workflowRows: readonly WorkflowRow[] = Object.values(WORKFLOWS).map(toWorkflowRow);
+export const workflowRows: readonly WorkflowRow[] = Object.values(WORKFLOWS).map(toWorkflowRow);
 
 const workflowCards: readonly SurfaceCardData[] = [
   {
@@ -155,8 +155,6 @@ const allRisks = Array.from(new Set(workflowRows.map((r) => r.risk)));
 
 // Design cross-ref (Agent 04/14): Workflows library and swimlane align to V6_DESIGN.html ~1346 (workflowRecords, metrics, cards) and ~1361 (workflowSwimlaneColumns).
 // Current data matches design records; swimlane is dynamic but covers intake/evidence/approval/lock per design. See also V6_DESIGN_RECONCILIATION for workflows MATCHED_REFERENCE.
-
-export { workflowRows, getWorkflowDetail };
 
 export default function WorkflowsScreen() {
   const navigate = useNavigate();

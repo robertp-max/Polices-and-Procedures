@@ -2,12 +2,14 @@ import { AlertTriangle, BarChart3, Bot, BookOpen, CalendarClock, CalendarRange, 
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { buildBoardLanes, buildCalendarEvents, buildReportMetrics, buildSprintSummary, buildEvidenceRows, buildAuditRows, getControlFromParams } from '@/policy/ces/cesViewProjections';
+import { buildBoardLanes, buildCalendarEvents, buildReportMetrics, buildSprintSummary, buildEvidenceRows, getControlFromParams } from '@/policy/ces/cesViewProjections';
 // Design cross-ref (Agent 19 background + Agent 19 read-only CES Data Seeds gap vs design subagent + Agent 09 read-only hygiene/validate gap): V3 seeds supply realistic ExecutionUnits for CES board/my-tasks/calendar/snapshots/projections.
 // Current: use build* or FALLBACK for exact design visual parity. See projections for seed-driven future and validators.
 import type { ExecutionUnit } from '@/policy/ces/types';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER } from '@/policy/data/policyCorpus';
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
+import { WORKFLOWS } from '@/policy/data/workflows.generated';
+import { getWorkflowDetail } from './pageviews/WorkflowsScreen';
 import { resolveCanonicalFormId } from '@/policy/data/formIdAliases';
 import { MOCK_CLINICIANS } from '@/policy/staffing/data/mockClinicians';
 import { MOCK_PATIENTS } from '@/policy/staffing/data/mockPatients';
@@ -972,22 +974,10 @@ const q2QapiCalendarEvent: CalendarEventData = withQapiQuarterlyFlow({
   workflowId: 'QA-WF-03',
 });
 
-const cesCalendarEvents = buildCalendarEvents() as readonly CalendarEventData[]; // 1.4 wired to projection (readonly from builder)
-  // body of old literal removed; now from projection FALLBACK
+// CES calendar events computed inside CalendarScreen (lazy; no top-level side-effect for reference routes)
 
-const calendarConfigs = {
-  'ces-calendar': {
-    events: cesCalendarEvents,
-    legend: 'Teal events are ready; orange events need owner action.',
-    metrics: cesCalendarMetrics,
-    railTone: 'orange',
-    railTitle: 'Upcoming Events',
-    title: 'CES Compliance Calendar',
-  },
-  // Design cross-ref (Agent 01 background + 11/18/15): ces-calendar to V6_DESIGN.html ~1310 (view, description, complianceCalendarEvents ~397, metrics ~1313-1317).
-  // Metrics match exactly. Builder + seeds provide attached swimlane/workflow/readiness for key events (e.g. QAPI QA-WF-03).
-  // Proposals: support illustrative design events for exact demo match; more complete field attachment; ensure dedup (server/cesCalendarDedup) and viewmodel stay aligned.
-  // Current one-pass: data-driven from regulatory, special ces month filtering, swimlane attachment in config. See also buildCesEventExecutionViewModel.
+const calendarConfigsBase = {
+  // CES config populated at runtime inside CalendarScreen to avoid top-level CES build side effects for reference routes
   'master-calendar': {
     events: calendarEvents,
     legend: 'Teal events are ready; orange events need owner action.',
@@ -1005,6 +995,22 @@ const calendarConfigs = {
     title: 'June 2026',
   },
 } as const;
+
+function getCalendarConfig(mode: 'ces-calendar' | 'master-calendar' | 'staffing-calendar') {
+  if (mode === 'ces-calendar') {
+    // Lazy: only build when actually rendering CES calendar
+    const events = buildCalendarEvents() as readonly CalendarEventData[];
+    return {
+      events,
+      legend: 'Teal events are ready; orange events need owner action.',
+      metrics: cesCalendarMetrics,
+      railTone: 'orange' as const,
+      railTitle: 'Upcoming Events',
+      title: 'CES Compliance Calendar',
+    };
+  }
+  return calendarConfigsBase[mode];
+}
 
 function getCalendarEventKey(event: CalendarEventData): string {
   return event.id ?? `calendar-event-${event.day}-${event.label}`;
@@ -1046,7 +1052,7 @@ function toWorkflowSwimlanePath(event: CalendarEventData): string {
 function getWorkflowEvent(eventId: string | undefined, workflowId?: string | null): CalendarEventData {
   const normalizedEventId = normalizeCalendarLookupKey(eventId);
   const normalizedWorkflowId = normalizeCalendarLookupKey(workflowId);
-  const foundByEvent = findCalendarEventByLookup(cesCalendarEvents, normalizedEventId);
+  const foundByEvent = findCalendarEventByLookup(buildCalendarEvents() as any, normalizedEventId);
 
   if (foundByEvent) return withQapiQuarterlyFlow(foundByEvent);
 
@@ -1054,7 +1060,7 @@ function getWorkflowEvent(eventId: string | undefined, workflowId?: string | nul
     return q2QapiCalendarEvent;
   }
 
-  const found = findCalendarEventByLookup(cesCalendarEvents, normalizedWorkflowId);
+  const found = findCalendarEventByLookup(buildCalendarEvents() as any, normalizedWorkflowId);
 
   if (found) return withQapiQuarterlyFlow(found);
 
@@ -1399,74 +1405,25 @@ function StaffingConflictDrawer({
   );
 }
 
-const boardLanes: readonly BoardLaneData[] = buildBoardLanes(); // seed-driven via projections (FALLBACK inside for parity) 1.4
-// old literal body removed; data now in cesViewProjections.ts FALLBACK_BOARD_LANES
-
-// boardMetrics derived from the real projection lane counts (Stage B, 2.x) —
-// tile values reflect buildBoardLanes() output rather than hardcoded numbers.
-const boardLaneCount = (title: string): string =>
-  String(boardLanes.find((lane) => lane.title === title)?.count ?? 0);
-
-const boardMetrics: readonly MetricTileData[] = [
-  { label: 'Upcoming', value: boardLaneCount('Upcoming'), helper: 'Not yet opened', tone: 'slate' },
-  { label: 'Ready', value: boardLaneCount('Ready'), helper: 'Can start now', tone: 'green' },
-  { label: 'In Progress', value: boardLaneCount('In Progress'), helper: 'Active execution', tone: 'teal' },
-  { label: 'Awaiting Signature', value: boardLaneCount('Awaiting Signature'), helper: 'Pending signatures', tone: 'amber' },
-  { label: 'Awaiting Action/Evidence', value: boardLaneCount('Awaiting Action / Evidence'), helper: 'Evidence or action pending', tone: 'amber' },
-  { label: 'Blocked', value: boardLaneCount('Blocked'), helper: 'Evidence/signature gaps', tone: 'orange' },
-  { label: 'Certified', value: boardLaneCount('Completed'), helper: 'Completed and locked', tone: 'green' },
-];
-
-// Real evidence/audit records now resolved from cesViewProjections + V3 seeds (ExecutionUnits evidenceStatus / auditReadiness / workflow refs)
-// Counts derived via .filter/.length for honesty (no deceptive constants)
-const evidenceRows = buildEvidenceRows();
-const auditRows = buildAuditRows();
-const evLocked = evidenceRows.filter((r) => /LOCK|VALID|PROMOT/i.test(r[2])).length;
-const evNeeds = evidenceRows.filter((r) => /PEND|UPLOAD/i.test(r[2])).length;
-const evidenceMetrics: readonly MetricTileData[] = [
-  { label: 'Artifacts', value: String(evidenceRows.length), helper: 'Indexed and searchable', tone: 'teal' },
-  { label: 'Locked', value: String(evLocked), helper: 'Hash and certificate saved', tone: 'green' },
-  { label: 'Needs upload', value: String(evNeeds), helper: 'Owner action required', tone: 'orange' },
-  { label: 'Retention', value: '7 yrs', helper: 'Default compliance window', tone: 'teal' },
-];
-
-const audReady = auditRows.filter((r) => /ready|certif/i.test(r[2])).length;
-const audMiss = auditRows.filter((r) => /miss/i.test(r[2])).length;
-const audPend = auditRows.filter((r) => /pend/i.test(r[2])).length;
-const audCert = auditRows.filter((r) => /certif/i.test(r[2])).length;
-const auditMetrics: readonly MetricTileData[] = [
-  { label: 'Audit ready', value: String(audReady), helper: 'Instances in view', tone: 'teal' },
-  { label: 'Missing evidence', value: String(audMiss), helper: 'Requires upload', tone: 'orange' },
-  { label: 'Pending approval', value: String(audPend), helper: 'Awaiting approver', tone: 'amber' },
-  { label: 'Certified locked', value: String(audCert), helper: 'Final audit state', tone: 'green' },
-];
+// boardLanes + metrics computed inside BoardScreen (lazy)
+// evidence/audit + metrics computed inside EvidenceScreen (lazy)
 
 const evidenceConfigs = {
   'audit-mode': {
     description: 'Survey-facing readiness queue with missing evidence, pending approvals, and certified locked packets.',
-    metrics: auditMetrics,
-    rows: auditRows,
-    tileTone: 'orange',
-    tiles: [
-      [String(audReady), 'Ready'],
-      [String(audMiss), 'Missing'],
-      [String(audPend), 'Pending'],
-      [String(audCert), 'Locked'],
-    ],
+    metrics: [] as any,
+    rows: [] as any,
+    tileTone: 'orange' as const,
+    tiles: [['0', 'Ready'], ['0', 'Missing'], ['0', 'Pending'], ['0', 'Locked']] as const,
     title: 'Audit health queue',
   },
   // Design cross-ref (Agent 03): audit-mode and evidence-center align to V6_DESIGN.html ~1386 (auditEvidenceRows, metrics) and ~1398 (evidenceCenterRows, metrics). See also V6_DESIGN_RECONCILIATION.md for MATCHED_REFERENCE.
   'evidence-center': {
     description: 'Every item links to policy, workflow, owner, source file, content hash, and retention state.',
-    metrics: evidenceMetrics,
-    rows: evidenceRows,
-    tileTone: 'teal',
-    tiles: [
-      [String(POLICY_CORPUS.length), 'Policies'],
-      [String(FORMS_DATASET.length), 'Forms'],
-      [String(evidenceRows.length), 'Evidence'],
-      [String(evLocked), 'Approvals'],
-    ],
+    metrics: [] as any,
+    rows: [] as any,
+    tileTone: 'teal' as const,
+    tiles: [['0','Policies'],['0','Forms'],['0','Evidence'],['0','Approvals']] as const,
     title: 'Evidence hierarchy',
   },
   // Design cross-ref (Agent 16): evidence-center to V6_DESIGN.html ~1398 (evidenceCenterRows, metrics ~1403-1408).
@@ -2238,8 +2195,8 @@ function PatientDetailScreen() {
   );
 }
 
-function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
-  const config = calendarConfigs[mode];
+function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | 'staffing-calendar' }) {
+  const config = getCalendarConfig(mode);
   const isCesCalendar = mode === 'ces-calendar';
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -2651,8 +2608,20 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
 
 function BoardScreen() {
   const navigate = useNavigate();
+  // Local lazy projection (CES only)
+  const boardLanesLocal = buildBoardLanes();
+  const boardLaneCountLocal = (title: string) => boardLanesLocal.find((l) => l.title === title)?.count ?? 0;
+  const boardMetricsLocal: readonly MetricTileData[] = [
+    { label: 'Upcoming', value: String(boardLaneCountLocal('Upcoming')), helper: 'Not yet opened', tone: 'slate' },
+    { label: 'Ready', value: String(boardLaneCountLocal('Ready')), helper: 'Can start now', tone: 'green' },
+    { label: 'In Progress', value: String(boardLaneCountLocal('In Progress')), helper: 'Active execution', tone: 'teal' },
+    { label: 'Awaiting Signature', value: String(boardLaneCountLocal('Awaiting Signature')), helper: 'Pending signatures', tone: 'amber' },
+    { label: 'Awaiting Action/Evidence', value: String(boardLaneCountLocal('Awaiting Action / Evidence')), helper: 'Evidence or action pending', tone: 'amber' },
+    { label: 'Blocked', value: String(boardLaneCountLocal('Blocked')), helper: 'Evidence/signature gaps', tone: 'orange' },
+    { label: 'Certified', value: String(boardLaneCountLocal('Completed')), helper: 'Completed and locked', tone: 'green' },
+  ];
   const [activeFilter, setActiveFilter] = useState('All work');
-  const filteredLanes = boardLanes.filter(l => {
+  const filteredLanes = boardLanesLocal.filter(l => {
     if (activeFilter === 'All work') return true;
     if (activeFilter === 'Mine') return l.cards.some(c => c.owner.includes('Manager') || c.owner.includes('Lead'));
     if (activeFilter === 'Blocked') return l.title.includes('Blocked') || l.title.includes('Awaiting');
@@ -2662,7 +2631,7 @@ function BoardScreen() {
     return true;
   });
   return (
-    <ScreenStack metrics={boardMetrics}>
+    <ScreenStack metrics={boardMetricsLocal}>
       <section className="grid gap-lg">
         <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-card bg-surface p-md shadow-rest">
           <div className="flex flex-wrap gap-sm">
@@ -2682,7 +2651,7 @@ function BoardScreen() {
               </button>
             ))}
           </div>
-          <p className="text-sm text-ink">Sprint 12 - {boardLanes.reduce((s, l) => s + (l.count || l.cards.length), 0)} cards - {boardLaneCount('Awaiting Action / Evidence')} awaiting action/evidence</p>
+          <p className="text-sm text-ink">Sprint 12 - {boardLanesLocal.reduce((s, l) => s + (l.count || l.cards.length), 0)} cards - {boardLaneCountLocal('Awaiting Action / Evidence')} awaiting action/evidence</p>
         </div>
         <div className="overflow-x-hidden pb-sm">
           <div className="grid grid-cols-1 gap-md tablet-l:grid-cols-2 desktop:grid-cols-7">
@@ -2724,11 +2693,62 @@ function buildWorkflowSwimlane(event: CalendarEventData): readonly BoardLaneData
   }));
 }
 
+function buildReferenceLanesForWorkflow(workflowId: string | null | undefined, _detail: any): readonly BoardLaneData[] {
+  const wf = workflowId ? WORKFLOWS[workflowId] : undefined;
+  const baseDue = 'Jun 22';
+  const steps = wf?.steps?.length ? wf.steps.slice(0, 3) : [];
+  const cards = steps.length > 0 ? steps.map((s: any, i: number) => ({
+    id: `STEP-${String(s.order || i+1).padStart(2, '0')}`,
+    title: s.action || 'Step',
+    owner: s.role || 'Owner',
+    due: s.deadline || baseDue,
+    meta: (s.formIds && s.formIds[0]) || '',
+    tone: 'teal' as const,
+    chips: s.formIds?.length ? ['Form'] : ['Step'],
+    progress: Math.max(40, 90 - i * 15),
+  })) : [
+    { id: 'REF-01', title: 'Reference step (library)', owner: 'Owner', due: baseDue, meta: '', tone: 'teal' as const, chips: ['Step'], progress: 60 },
+  ];
+  return [{
+    title: 'Reference Steps',
+    count: cards.length,
+    tone: 'teal' as const,
+    cards,
+  }];
+}
+
 function WorkflowSwimlaneScreen() {
   const { eventId, workflowId: routeWorkflowId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const workflowId = searchParams.get('workflowId') ?? routeWorkflowId;
+  const hasEventContext = Boolean(eventId || (routeWorkflowId && getWorkflowEvent(eventId ?? routeWorkflowId, workflowId)));
+  const [selectedCard, setSelectedCard] = useState<BoardCardData | null>(null);
+
+  // Reference-only path for library navigation (no CES execution state, no V3 seeds, no store)
+  if (!hasEventContext && workflowId) {
+    const _detail = getWorkflowDetail ? getWorkflowDetail(workflowId) : null; // from WorkflowsScreen via import hoisted (ref only)
+    const refLanes = buildReferenceLanesForWorkflow(workflowId, _detail);
+    const refMetrics: readonly MetricTileData[] = [
+      { label: 'Steps', value: String(refLanes[0]?.cards.length ?? 2), helper: 'Reference view (library)', tone: 'teal' },
+      { label: 'Source', value: 'WORKFLOWS', helper: 'Generated reference data', tone: 'green' },
+    ];
+    return (
+      <div className="grid gap-lg">
+        <section className="grid gap-lg rounded-lg border border-hairline bg-surface-glass p-lg shadow-rest">
+          <div className="text-sm text-muted">Reference swimlane — educational view from workflow library (no execution state)</div>
+          <MetricGrid metrics={refMetrics} />
+        </section>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">
+          {refLanes.map((lane, i) => (
+            <BoardLane key={i} lane={lane} onCardClick={(c) => setSelectedCard(c)} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // CES execution path
   const event = getWorkflowEvent(eventId ?? routeWorkflowId, workflowId);
   const eventMonthLabel = getCalendarMonthLabel(getEventMonth(event));
   const lanes = buildWorkflowSwimlane(event);
@@ -2738,8 +2758,6 @@ function WorkflowSwimlaneScreen() {
     { label: 'Risk', value: event.risk ?? 'Current', helper: 'Calendar-derived signal', tone: event.tone },
     { label: 'Due', value: `${eventMonthLabel} ${event.day}`, helper: 'Event target date', tone: 'teal' },
   ];
-
-  const [selectedCard, setSelectedCard] = useState<BoardCardData | null>(null);
 
   return (
     <div className="grid gap-lg">
@@ -2779,7 +2797,7 @@ function WorkflowSwimlaneScreen() {
         </section>
 
         <div className="flex gap-sm overflow-x-auto rounded-lg border border-hairline bg-white/[.30] p-sm backdrop-blur-sm">
-          {cesCalendarEvents.map((calendarEvent) => (
+          {(buildCalendarEvents() as readonly CalendarEventData[]).map((calendarEvent) => (
             <button
               className={cx(
                 'min-h-tap shrink-0 rounded-sm border px-md text-xs font-medium uppercase tracking-tag transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
@@ -2874,14 +2892,18 @@ function WorkflowSwimlaneScreen() {
 }
 
 function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
-  const config = evidenceConfigs[mode];
+  // Lazy for CES only
+  const evRows = (buildEvidenceRows ? buildEvidenceRows() : []) as any[];
+  const evMetrics = [] as any;
+  const cfg = { ...evidenceConfigs[mode], rows: evRows, metrics: evMetrics };
+  const config = cfg;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const control = getControlFromParams(searchParams);
 
   // Phase 2: visible filter from query param (control or ref)
   const displayRows = control
-    ? config.rows.filter(([, ref]) => ref === control || ref.includes(control) || control.includes(ref))
+    ? config.rows.filter(([, ref]: any) => ref === control || ref.includes(control) || control.includes(ref))
     : config.rows;
 
   return (

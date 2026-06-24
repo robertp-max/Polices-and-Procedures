@@ -76,7 +76,6 @@ export const SIDEBAR_SECTIONS = [
       'ces-calendar',
       'ces-board',
       'events-board',
-      'workflows',
       'workflow-swimlane',
       'master-controls',
       'audit-mode',
@@ -99,6 +98,7 @@ export const SIDEBAR_SECTIONS = [
       'ecign-workspace',
       'artifact-viewer',
       'generic-reference',
+      'workflows',
     ],
   },
   {
