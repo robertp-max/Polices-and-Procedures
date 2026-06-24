@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 const cesSubnavItems = [
   { label: 'Calendar', path: '/ces/calendar' },
   { label: 'Sprint Board', path: '/ces/board' },
+  { label: 'Events Board', path: '/ces/events' },
   { label: 'Workflows', path: '/workflows' },
   { label: 'Master Controls', path: '/compliance/master-controls' },
   { label: 'Audit Mode', path: '/audit' },
@@ -30,8 +31,8 @@ export function CESSubnav() {
     return best;
   }, null as string | null);
 
-  // Contextual: /events/* swimlanes activate Sprint Board (not shown as direct CES child per spec)
-  const effectiveActive = currentPath.startsWith('/events/') ? '/ces/board' : activeTo;
+  // Contextual: /events/* swimlanes activate Events Board
+  const effectiveActive = currentPath.startsWith('/events/') ? '/ces/events' : activeTo;
 
   return (
     <div className="mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="CES subnav">
