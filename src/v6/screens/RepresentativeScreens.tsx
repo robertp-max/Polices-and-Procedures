@@ -1878,19 +1878,22 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
 
 // Generic workspace subnav (top of workspace content, V1 style)
 function WorkspaceSubnav({ items, currentPath, prefix }: { items: any[]; currentPath: string; prefix: string }) {
-  const isActivePath = (itemPath: string) => {
-    const p = (currentPath || '').split(/[?#]/)[0];
-    if (p === itemPath) return true;
-    if (p.startsWith(itemPath + '/')) {
-      return itemPath !== '/journey';  // Overview root only exact match, not children
+  const p = (currentPath || '').split(/[?#]/)[0];
+  // Find the most specific (longest matching to) active item to ensure exactly one active tab
+  const activeTo = items.reduce((best, item) => {
+    const to = item.to;
+    if (p === to || p.startsWith(to + '/')) {
+      if (!best || to.length > best.length) {
+        return to;
+      }
     }
-    return false;
-  };
+    return best;
+  }, null as string | null);
   return (
     <div className="mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="workspace subnav">
       <span className="mr-sm text-tag uppercase tracking-tag text-muted">{prefix}</span>
       {items.map((item) => {
-        const isActive = isActivePath(item.to);
+        const isActive = activeTo === item.to;
         return (
           <Link
             key={item.to}
