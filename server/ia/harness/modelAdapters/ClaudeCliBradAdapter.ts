@@ -1,5 +1,15 @@
-import { spawn } from 'node:child_process';
+import { spawn, type StdioOptions } from 'node:child_process';
 import type { BradModelAdapter, ModelChatArgs, ModelChatResult, BradConfig } from '../types.js';
+
+/* Resolve the `claude` executable. On Windows the global npm bin is a `.cmd`
+   shim, which `spawn()` cannot resolve without a shell — so we run through the
+   shell there. An explicit path can be forced via BRAD_CLAUDE_BIN. The prompt is
+   always passed on STDIN (never as a shell arg), so no shell-injection surface. */
+const CLAUDE_BIN = process.env.BRAD_CLAUDE_BIN || 'claude';
+const USE_SHELL = process.platform === 'win32';
+function spawnClaude(args: string[], stdio: StdioOptions) {
+  return spawn(CLAUDE_BIN, args, { stdio, shell: USE_SHELL });
+}
 
 /* Claude CLI Brad adapter (MVP, non-PHI).
    Runs the local `claude` CLI (`--model <id> --print`) server-side as Brad's
@@ -21,7 +31,7 @@ export class ClaudeCliBradAdapter implements BradModelAdapter {
     }
     return new Promise((resolve) => {
       try {
-        const p = spawn('claude', ['--version'], { stdio: ['ignore', 'pipe', 'ignore'] });
+        const p = spawnClaude(['--version'], ['ignore', 'pipe', 'ignore']);
         const t = setTimeout(() => { p.kill(); resolve({ available: false, reason: 'claude CLI --version timed out' }); }, 8000);
         p.on('error', () => { clearTimeout(t); resolve({ available: false, reason: 'claude CLI not found on PATH' }); });
         p.on('close', (code) => { clearTimeout(t); resolve(code === 0 ? { available: true } : { available: false, reason: `claude --version exit ${code}` }); });
@@ -37,7 +47,7 @@ export class ClaudeCliBradAdapter implements BradModelAdapter {
 
     const prompt = `${args.system}\n\n${args.user}`;
     const content = await new Promise<string>((resolve, reject) => {
-      const p = spawn('claude', ['--model', this.cfg.modelId, '--print'], { stdio: ['pipe', 'pipe', 'pipe'] });
+      const p = spawnClaude(['--model', this.cfg.modelId, '--print'], ['pipe', 'pipe', 'pipe']);
       let out = '', err = '';
       const t = setTimeout(() => { p.kill(); reject(new Error('claude CLI timed out')); }, 120_000);
       p.stdout.on('data', (d) => { out += d.toString(); });

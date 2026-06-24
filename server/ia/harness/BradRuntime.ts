@@ -101,12 +101,22 @@ export class BradRuntime {
     };
   }
 
-  /** Answer from approved internal sources. PHI prompts are blocked unless PHI mode is verified-ready. */
+  /** MVP override: when the environment is declared synthetic-data-only
+      (BRAD_SYNTHETIC_DATA_ONLY=true), there is no real PHI to protect, so the
+      PHI prompt-block is disabled. This is intended for the local laptop MVP
+      (Claude CLI) where ALL data is fake; production PHI still flows only through
+      the verified vertex-phi gate. Default (unset) keeps the gate ON. */
+  private get syntheticDataOnly(): boolean {
+    return process.env.BRAD_SYNTHETIC_DATA_ONLY === 'true';
+  }
+
+  /** Answer from approved internal sources. PHI prompts are blocked unless PHI
+      mode is verified-ready OR the environment is declared synthetic-data-only. */
   async answer(userText: string, actorId = 'system', role = 'user'): Promise<BradAnswer> {
     const phiPermitted = this.isPhiPermitted();
     const phiPresent = !scanForPhiEgress(userText).allowed;
 
-    if (phiPresent && !phiPermitted) {
+    if (phiPresent && !phiPermitted && !this.syntheticDataOnly) {
       agentAuditLog.logBrad({
         requestId: crypto.randomUUID(), actorId, role, action: 'phi-prompt-blocked',
         modelId: this.cfg.brad.modelId, promptVersion: this.cfg.brad.promptVersion,
