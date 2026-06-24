@@ -1,7 +1,7 @@
 import { AlertTriangle, BarChart3, Bot, BookOpen, CalendarClock, CalendarRange, Camera, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, FileCheck2, FileText, FolderOpen, History, PanelRightOpen, Route, ShieldCheck, Sparkles, Stethoscope, Upload, Users, type LucideIcon } from 'lucide-react';
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, matchPath, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { buildBoardLanes, buildCalendarEvents, buildReportMetrics, buildSprintSummary, buildReportCards, buildReportTrendBars, buildEvidenceRows, buildAuditRows, getControlFromParams, getTasksForEvent } from '@/policy/ces/cesViewProjections';
 // Design cross-ref (Agent 19 background + Agent 19 read-only CES Data Seeds gap vs design subagent + Agent 09 read-only hygiene/validate gap): V3 seeds supply realistic ExecutionUnits for CES board/my-tasks/calendar/snapshots/projections.
 // Current: use build* or FALLBACK for exact design visual parity. See projections for seed-driven future and validators.
@@ -1882,7 +1882,13 @@ function WorkspaceSubnav({ items, currentPath, prefix }: { items: any[]; current
   // Find the most specific (longest matching to) active item to ensure exactly one active tab
   const activeTo = items.reduce((best, item) => {
     const to = item.to;
-    if (p === to || p.startsWith(to + '/')) {
+    let matches = false;
+    if (item.matchPaths) {
+      matches = item.matchPaths.some((mp: string) => matchPath({ path: mp, end: false }, p));
+    } else {
+      matches = p === to || p.startsWith(to + '/');
+    }
+    if (matches) {
       if (!best || to.length > best.length) {
         return to;
       }
