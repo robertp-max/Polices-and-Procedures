@@ -1,0 +1,51 @@
+# Build-context exclusions for the combined Cloud Run image.
+# IMPORTANT: .env.production is intentionally NOT excluded — it carries only
+# public VITE_* config (VITE_AUTH_API_BASE_URL=/api/auth) needed at build time.
+
+.git
+.gitignore
+node_modules
+**/node_modules
+dist
+.cache
+
+# Secrets / local-only env (never ship)
+.env
+.env.local
+.env.*.local
+**/*service-account*.json
+**/*credentials*.json
+**/*.private.json
+server/credentials
+
+# Not needed for build or runtime of this service
+infra
+migrations
+.vscode
+.cursor
+.agents
+.github
+
+# Heavy / irrelevant local content
+Bin-(thrash)
+Project_Intelligence
+REVIEW_OUTPUTS
+**/screenshots
+**/uat-results
+**/uat-html-report
+**/downloads
+*.docx
+*.xlsx
+*.pptx
+*.mov
+*.mp4
+*.mp3
+
+# Scratch / logs
+*.log
+*.pid
+*.err
+npm-run-*
+tmp_*
+tmp-*
+temp-*
