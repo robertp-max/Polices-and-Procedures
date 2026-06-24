@@ -2200,7 +2200,6 @@ function PatientDetailScreen() {
 function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | 'staffing-calendar' }) {
   const config = getCalendarConfig(mode);
   const isCesCalendar = mode === 'ces-calendar';
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const requestedEventId = isCesCalendar ? searchParams.get('event') : null;
   const requestedEvent = findCalendarEventByLookup(config.events, requestedEventId);
