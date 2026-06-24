@@ -296,7 +296,7 @@ export function JourneyOverviewScreen() {
 
           <div className="flex gap-md overflow-x-auto pb-4 snap-x snap-mandatory">
             {(activeTab === 'core' ? journeyModules.slice(0, coreJourneyCount) : journeyModules.slice(coreJourneyCount)).map((module, index) => (
-              <div key={module.id} className="flex-shrink-0 snap-start w-[280px]">
+              <div key={module.id} className="flex-shrink-0 snap-start min-w-[320px]">
                 <JourneyModuleCard
                   index={(activeTab === 'core' ? 0 : coreJourneyCount) + index + 1}
                   module={module}
