@@ -3,20 +3,44 @@ import { Link, matchPath, useLocation } from 'react-router-dom';
 import { cx } from '../utils/classNames';
 import { SIDEBAR_NAV } from '../routing/navigationManifest';
 import { V6_ROUTES } from '../routing/routeRegistry';
-import { SIDEBAR_SECTIONS } from '../routing/routePresentation';
-
-const shellRoutes = V6_ROUTES.filter((route) => route.group !== 'Auth');
 
 export function Sidebar() {
   const { pathname } = useLocation();
-  const currentRoute = shellRoutes.find((route) => Boolean(matchPath({ path: route.path, end: !route.path.endsWith('/*') }, pathname)));
-  const activeSection = SIDEBAR_SECTIONS.find((section) => currentRoute ? section.hashIds.some((hashId) => hashId === currentRoute.hashId) : false);
-  const activeHashId = currentRoute?.hashId;
+
+  const findActive = (items: readonly any[], path: string): { parent?: any; child?: any } | null => {
+    for (const item of items) {
+      const matchesParent = item.hashIds.some((h: string) => {
+        const route = V6_ROUTES.find(r => r.hashId === h);
+        if (!route) return false;
+        return matchPath({ path: route.path, end: !route.path.endsWith('/*') }, path);
+      });
+      if (matchesParent) {
+        if (item.children) {
+          for (const child of item.children) {
+            const matchesChild = child.hashIds.some((h: string) => {
+              const route = V6_ROUTES.find(r => r.hashId === h);
+              if (!route) return false;
+              return matchPath({ path: route.path, end: !route.path.endsWith('/*') }, path);
+            });
+            if (matchesChild) return { parent: item, child };
+          }
+        }
+        return { parent: item };
+      }
+      if (item.children) {
+        const res = findActive(item.children, path);
+        if (res) return { parent: item, ...res };
+      }
+    }
+    return null;
+  };
+
+  const active = findActive(SIDEBAR_NAV, pathname);
 
   useEffect(() => {
     const activeLink = document.querySelector<HTMLElement>('[data-sidebar-active="true"]');
     activeLink?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [activeHashId]);
+  }, [pathname]);
 
   return (
     <aside className="sticky top-0 z-command h-screen w-sidebar shrink-0 overflow-hidden border-r border-hairline bg-white/70 text-ink shadow-sidebar backdrop-blur-xl flex flex-col">
@@ -42,12 +66,13 @@ export function Sidebar() {
       >
         <div className="grid gap-xl">
           {SIDEBAR_NAV.map((item) => {
-            const isCurrent = currentRoute?.hashId === item.hashIds[0] || item.children?.some(c => currentRoute?.hashId === c.hashIds[0]);
+            const isParentActive = active?.parent?.id === item.id;
+            const isChildActive = active?.child?.id && item.children?.some(c => c.id === active.child.id);
             return (
               <section
                 className={cx(
                   'grid scroll-mt-md gap-sm transition duration-base ease-standard',
-                  isCurrent && 'rounded-lg p-sm',
+                  isParentActive && 'rounded-lg p-sm',
                 )}
                 data-sidebar-section={item.label}
                 key={item.id}
@@ -56,40 +81,40 @@ export function Sidebar() {
                   to={item.to}
                   className={cx(
                     'px-sm text-[10px] font-medium uppercase tracking-[0.2em] text-muted hover:text-brand-teal',
-                    isCurrent && 'text-brand-teal-deep'
+                    isParentActive && 'text-brand-teal-deep'
                   )}
                 >
                   {item.label}
                 </Link>
                 <div className="grid gap-xs">
                   <Link
-                    aria-current={isCurrent ? 'page' : undefined}
+                    aria-current={isParentActive && !isChildActive ? 'page' : undefined}
                     className={cx(
                       'flex min-h-row items-center gap-md rounded-lg px-md py-sm text-sm font-medium transition duration-fast ease-standard',
                       'focus-visible:outline-none focus-visible:shadow-focus',
-                      isCurrent
+                      isParentActive && !isChildActive
                         ? 'bg-brand-teal-deep text-on-brand shadow-rest'
                         : 'text-brand-teal-deep hover:translate-x-1 hover:bg-surface-hover hover:text-brand-teal',
                     )}
-                    data-sidebar-active={isCurrent ? 'true' : undefined}
+                    data-sidebar-active={isParentActive && !isChildActive ? 'true' : undefined}
                     key={item.id}
                     to={item.to}
                   >
                     <span>{item.label}</span>
                   </Link>
                   {item.children?.map((child) => {
-                    const isChildCurrent = currentRoute?.hashId === child.hashIds[0];
+                    const isThisChildActive = active?.child?.id === child.id;
                     return (
                       <Link
-                        aria-current={isChildCurrent ? 'page' : undefined}
+                        aria-current={isThisChildActive ? 'page' : undefined}
                         className={cx(
                           'ml-md flex min-h-row items-center gap-md rounded-lg px-md py-sm text-sm font-medium transition duration-fast ease-standard',
                           'focus-visible:outline-none focus-visible:shadow-focus',
-                          isChildCurrent
+                          isThisChildActive
                             ? 'bg-brand-teal-deep text-on-brand shadow-rest'
                             : 'text-brand-teal-deep hover:translate-x-1 hover:bg-surface-hover hover:text-brand-teal',
                         )}
-                        data-sidebar-active={isChildCurrent ? 'true' : undefined}
+                        data-sidebar-active={isThisChildActive ? 'true' : undefined}
                         key={child.id}
                         to={child.to}
                       >

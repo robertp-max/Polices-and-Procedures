@@ -11,6 +11,7 @@ import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDatase
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import { getWorkflowDetail } from './pageviews/WorkflowsScreen';
 import { resolveCanonicalFormId } from '@/policy/data/formIdAliases';
+// V2 seed staffing data (not live production records; used for prototype staffing profile surfaces).
 import { MOCK_CLINICIANS } from '@/policy/staffing/data/mockClinicians';
 import { MOCK_PATIENTS } from '@/policy/staffing/data/mockPatients';
 import { resolveDisplayName } from '@/policy/ces/data/V3_CES_SeedData';
@@ -22,7 +23,7 @@ import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
 import { BoardLane, CESSubnav, ChatThread, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type ChatMessageData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
-import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, JourneyV1Screen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen } from './pageviews';
+import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, JourneyV1Screen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen } from './pageviews';
 import { achcSurveyRows } from '@/policy/data/achcSurveyProjection.generated';
 import { achcPrintCrosswalk } from '@/policy/data/achcPrintCrosswalk.generated';
 
@@ -1795,6 +1796,9 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
     case 'workflows':
       child = <WorkflowsScreen />;
       break;
+    case 'workflow-detail':
+      child = <WorkflowDetailScreen />;
+      break;
     case 'workflow-swimlane':
       child = <WorkflowSwimlaneScreen />;
       break;
@@ -1916,6 +1920,7 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
     'my-tasks',
     'staffing-calendar',
     'workflows',
+    'workflow-detail',
     'workflow-swimlane',
     'ces-board',
     'evidence-center',

@@ -36,18 +36,8 @@ export const getWorkflowDetail = (id: string) => {
       ],
     };
   }
-  return {
-    purpose: 'Reference workflow definition from generated library.',
-    policies: '—',
-    forms: '—',
-    evidence: '—',
-    roles: '—',
-    triggers: '—',
-    linkedWorkflows: '—',
-    history: [
-      { item: 'Reference data', status: 'Ready', tone: 'teal' as const },
-    ],
-  };
+  // Honest diagnostic for unresolved ID - no fabricated data
+  return null;
 };
 
 export interface WorkflowRow extends Record<string, string> {
@@ -144,8 +134,8 @@ export default function WorkflowsScreen() {
   }
 
   function openRealDetail(row: WorkflowRow) {
-    // Click behavior: open real detail swimlane using generated WORKFLOWS (list + detail + reference swimlane with steps, policy refs, forms, roles, cadence). Educational, independent from CES execution. Preserves main nav bar via route back-link.
-    navigate(`/workflows/${encodeURIComponent(row.workflowId)}/swimlane`);
+    // Click to real detail page first. Detail links to reference swimlane.
+    navigate(`/workflows/${encodeURIComponent(row.workflowId)}`);
   }
 
   return (

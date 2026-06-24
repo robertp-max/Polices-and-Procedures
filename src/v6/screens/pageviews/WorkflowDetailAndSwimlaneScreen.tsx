@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import {
   BoardLane,
@@ -67,25 +67,25 @@ export function buildLanesForWorkflow(meta: WorkflowMeta | null, detail: ReturnT
       tone: 'teal',
       cards: [{
         id: 'REF-00',
-        title: detail.purpose.slice(0, 60) || 'Reference workflow',
+        title: ((detail as any)?.purpose || 'Reference workflow').slice(0, 60),
         owner: meta?.owner || '—',
         due: cadenceDue,
-        meta: (detail.policies || '').slice(0, 40),
+        meta: ((detail as any)?.policies || '').slice(0, 40),
         tone: 'teal' as const,
         chips: ['Ref'],
-        progress: 50,
+        progress: 0, // reference only
       }],
     }];
   }
 
-  // Distribute real steps from generated record across 4 reference lanes. Include real roles, forms, deadlines, policy refs via detail.
+  // Reference-only grouping of authored steps. No execution semantics, no progress, no mutation.
   const n = steps.length;
   const phaseLen = Math.max(1, Math.ceil(n / 4));
   const phaseDefs = [
-    { title: 'Intake', tone: 'teal' as const },
-    { title: 'Evidence Build', tone: 'orange' as const },
-    { title: 'Approval', tone: 'amber' as const },
-    { title: 'Locked', tone: 'green' as const },
+    { title: 'Authored Steps (Part 1)', tone: 'teal' as const },
+    { title: 'Authored Steps (Part 2)', tone: 'teal' as const },
+    { title: 'Authored Steps (Part 3)', tone: 'teal' as const },
+    { title: 'Authored Steps (Part 4)', tone: 'teal' as const },
   ];
   return phaseDefs.map((ph, p) => {
     const slice = steps.slice(p * phaseLen, (p + 1) * phaseLen);
@@ -94,19 +94,19 @@ export function buildLanesForWorkflow(meta: WorkflowMeta | null, detail: ReturnT
       title: s.action || 'Step',
       owner: s.role || meta?.owner || '—',
       due: s.deadline || cadenceDue,
-      meta: [ ...(s.formIds || []), ...(detail.policies ? [detail.policies.split(',')[0]] : []) ].filter(Boolean).join(' ').slice(0, 48),
+      meta: [ ...(s.formIds || []), ...((detail as any)?.policies ? [(detail as any).policies.split(',')[0]] : []) ].filter(Boolean).join(' ').slice(0, 48),
       tone: ph.tone,
       chips: (s.formIds && s.formIds.length) ? ['Form'] : ['Step'],
-      progress: Math.max(35, 92 - (i * 6) - (p * 8)),
+      progress: 0, // reference only, no progress
     })) : [{
       id: `${ph.title.slice(0,3).toUpperCase()}-0`,
       title: `${ph.title} (from roles/forms)`,
       owner: meta?.owner || '—',
       due: cadenceDue,
-      meta: detail.forms ? detail.forms.slice(0, 30) : '',
+      meta: (detail as any)?.forms ? (detail as any).forms.slice(0, 30) : '',
       tone: ph.tone,
       chips: ['Ref'],
-      progress: 60,
+      progress: 0, // reference only
     }];
     return {
       title: ph.title,
@@ -250,23 +250,15 @@ export function WorkflowSwimlaneScreen() {
               <Button onClick={() => setSelectedCard(null)} variant="secondary">
                 Close
               </Button>
-              <Button
-                onClick={() => {
-                  setSelectedCard(null);
-                }}
-                className="border-tone-orange-border bg-tone-orange-bg text-tone-orange-text hover:bg-tone-orange-bg/85"
-              >
-                Mark step complete
-              </Button>
             </div>
           }
         >
           <div className="grid gap-md md:grid-cols-2">
             <div className="grid gap-xs">
               {[
-                ['Policy linkage', meta ? getWorkflowDetail(meta.id).policies : '—'],
-                ['Forms required', meta ? getWorkflowDetail(meta.id).forms : '—'],
-                ['Evidence state', meta ? getWorkflowDetail(meta.id).evidence : '—'],
+                ['Policy linkage', meta ? ((getWorkflowDetail(meta.id) as any)?.policies || '—') : '—'],
+                ['Forms required', meta ? ((getWorkflowDetail(meta.id) as any)?.forms || '—') : '—'],
+                ['Evidence state', meta ? ((getWorkflowDetail(meta.id) as any)?.evidence || '—') : '—'],
                 ['Owner', selectedCard.owner],
               ].map(([label, val]) => (
                 <div key={label} className="flex items-center justify-between rounded-md bg-tone-slate-bg p-md text-xs">
@@ -295,23 +287,39 @@ export function WorkflowSwimlaneScreen() {
 export function WorkflowDetailScreen({ workflowId }: { workflowId?: string }) {
   // Lightweight detail view (used if needed for future or drawer parity). Falls back to swimlane identity.
   const meta = getWorkflowMeta(workflowId);
-  const detail = getWorkflowDetail(workflowId || '');
-  if (!meta) {
-    return <div className="text-sm text-muted p-lg">Workflow detail not available.</div>;
+  const detail = getWorkflowDetail(workflowId || '') || {
+    purpose: `Unresolved workflow ID: ${workflowId}. This ID does not exist in the generated WORKFLOWS collection. Return to the library to select a valid record.`,
+    policies: '—',
+    forms: '—',
+    evidence: '—',
+    roles: '—',
+    triggers: '—',
+    linkedWorkflows: '—',
+    history: [],
+  };
+  if (!meta && !WORKFLOWS[workflowId || '']) {
+    return (
+      <div className="p-xl text-sm text-muted">
+        <h3 className="text-h3 font-medium text-ink">Workflow not found</h3>
+        <p className="mt-sm">Unresolved workflow ID: <code>{workflowId}</code>.</p>
+        <p>This ID does not exist in the canonical generated WORKFLOWS. No fabricated data is shown.</p>
+        <Link to="/workflows" className="mt-md inline-block text-brand-teal hover:underline">Return to Workflows Library</Link>
+      </div>
+    );
   }
   return (
     <div className="grid gap-md">
       <div className="text-tag uppercase tracking-tag text-muted">Workflow Detail</div>
-      <h3 className="text-h2 font-medium text-brand-teal-deep">{meta.title}</h3>
+      <h3 className="text-h2 font-medium text-brand-teal-deep">{meta?.title}</h3>
       <div className="grid grid-cols-2 gap-sm text-sm">
-        <div>ID: <span className="font-medium text-brand-teal">{meta.id}</span></div>
-        <div>Domain: {meta.domain}</div>
-        <div>Risk: {meta.risk}</div>
-        <div>Frequency: {meta.frequency}</div>
-        <div>Owner: {meta.owner}</div>
-        <div>Policies: {detail.policies}</div>
+        <div>ID: <span className="font-medium text-brand-teal">{meta?.id}</span></div>
+        <div>Domain: {meta?.domain}</div>
+        <div>Risk: {meta?.risk}</div>
+        <div>Frequency: {meta?.frequency}</div>
+        <div>Owner: {meta?.owner}</div>
+        <div>Policies: {(detail as any)?.policies || '—'}</div>
       </div>
-      <p className="text-sm text-secondary">{detail.purpose}</p>
+      <p className="text-sm text-secondary">{(detail as any)?.purpose || ''}</p>
     </div>
   );
 }
