@@ -1,0 +1,54 @@
+# Controls what `gcloud builds submit` uploads as the Cloud Build context.
+# (Cloud Build then applies .dockerignore when building the image.)
+# Keep everything the Vite SPA build needs (src, public, scripts, configs,
+# package*.json, Dockerfile, deploy/) and exclude heavy/secret/irrelevant content.
+
+# Dependencies & build outputs (rebuilt inside the image)
+.git
+.gitignore
+node_modules
+**/node_modules
+dist
+.cache
+
+# Secrets / local env (NEVER upload)
+.env
+.env.*
+**/*service-account*.json
+**/*credentials*.json
+**/*.private.json
+server/credentials
+
+# Not needed by the frontend build
+server
+infra
+migrations
+
+# Heavy or irrelevant local content
+Bin-(thrash)
+Project_Intelligence
+REVIEW_OUTPUTS
+**/screenshots
+**/uat-results
+**/uat-html-report
+**/downloads
+*.docx
+*.xlsx
+*.pptx
+*.mov
+*.mp4
+*.mp3
+
+# Scratch, logs, manifests
+*.log
+*.pid
+*.err
+npm-run-*
+tmp_*
+tmp-*
+temp-*
+build*.log
+tsc-*.log
+dev-*.log
+*_MANIFEST.txt
+DELETE_LIST.txt
