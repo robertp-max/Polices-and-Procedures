@@ -4,7 +4,6 @@ import { RouteErrorBoundary } from './RouteErrorBoundary';
 import { routeToChildPath, V6_ROUTES } from './routeRegistry';
 import { RepresentativeScreen } from '../screens';
 import { NotFoundScreen } from '../screens/pageviews';
-import Part1Preview from '../../Part1Preview';
 
 const shellRoutes = V6_ROUTES.filter((route) => route.group !== 'Auth');
 const loginRoute = V6_ROUTES.find((route) => route.hashId === 'login-page');
@@ -14,11 +13,6 @@ if (!loginRoute) {
 }
 
 export const v6Router = createBrowserRouter([
-  {
-    path: '/part1-preview',
-    element: <Part1Preview />,
-    errorElement: <RouteErrorBoundary />,
-  },
   {
     path: '/',
     element: <V6Shell />,
