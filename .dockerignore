@@ -19,8 +19,9 @@ dist
 **/*.private.json
 server/credentials
 
-# Server / infra / migrations — not part of the frontend build
-server
+# server/ IS included — the combined image (Dockerfile.server) runs the Express
+# API from it. The web-tier Dockerfile ignores it anyway (its runtime copies
+# only dist). Secrets under server/credentials stay excluded (above).
 infra
 migrations
 
