@@ -1899,8 +1899,8 @@ function WorkspaceSubnav({ items, currentPath, prefix }: { items: any[]; current
             key={item.to}
             to={item.to}
             aria-current={isActive ? 'page' : undefined}
-            className={`rounded px-sm py-xs text-brand-teal hover:bg-surface-hover hover:text-brand-teal-deep border-b-2 ${
-              isActive ? 'border-brand-teal text-brand-teal-deep font-medium' : 'border-transparent hover:border-brand-teal'
+            className={`rounded px-sm py-xs text-brand-teal hover:bg-surface-hover hover:text-brand-teal-deep ${
+              isActive ? 'border-b-2 border-brand-teal text-brand-teal-deep font-medium' : 'border-transparent hover:border-brand-teal'
             }`}
           >
             {item.label}
