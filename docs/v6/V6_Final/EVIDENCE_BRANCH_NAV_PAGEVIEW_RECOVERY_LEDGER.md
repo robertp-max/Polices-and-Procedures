@@ -86,6 +86,41 @@ Lint: pre-existing (honest).
 Remote: NOT GREEN / external.
 Browser smoke: NOT RUN.
 
-PARTIAL — V1 NAV CODE ALIGNED, BROWSER VERIFICATION REQUIRED
+## Primary Nav vs Workspace Subnav Exposure (V1 UI Parity)
 
-Do not label complete/green/final unless every condition (build green + honest lint + actual browser smoke + remote green) met.
+| Destination | Primary nav parent | Main sidebar visible? | Workspace subnav visible? | Should be main sidebar per V1? | Should be workspace subnav per V1? | Contextual route only? | Browser verified? | Result |
+|-------------|--------------------|-----------------------|---------------------------|--------------------------------|------------------------------------|------------------------|-------------------|--------|
+| /dashboard, /clinicians etc | PRIMARY OPERATIONS parents | yes | no | yes | no | no | UNVERIFIED | PASS (code) |
+| /ces/calendar etc | COMPLIANCE EXECUTION > CES | yes (CES parent) | yes (inside CES workspace) | no (only parent) | yes | no | UNVERIFIED | PASS (code) |
+| /framework, /library etc | COMPLIANCE EXECUTION > Taxonomy | yes (parent) | yes (inside Taxonomy) | no | yes | no | UNVERIFIED | PASS (code) |
+| /journey etc | COMPLIANCE EXECUTION > Onboarding | yes | yes (inside) | no | yes | no | UNVERIFIED | PASS (code) |
+| /system-documentation/* | ADMINISTRATION > System Documentation | yes (parent) | yes (9 items inside) | no | yes | no | UNVERIFIED | PASS (code) |
+| /admin/* | ADMINISTRATION > Admin (conditional) | yes if auth | yes (4 items inside) | only if auth | yes | no | UNVERIFIED | PASS (code) |
+| /workflows/:workflowId , /events/:eventId/swimlane etc | CES or corresponding | no | yes (via parent subnav) | no | yes | yes | UNVERIFIED | PASS (code) |
+| /library/:policyId , /forms/:formId/* | Taxonomy | no | yes | no | yes | yes | UNVERIFIED | PASS (code) |
+
+Any child route shown in left sidebar when it should be workspace subnav: FAIL if present. Current: no children in main sidebar.
+
+## Final Status
+Build/TS: PASS
+Lint: pre-existing (143 problems, no new from nav changes)
+Browser smoke: NOT RUN
+Remote Vercel: NOT GREEN (external)
+
+PARTIAL — PRIMARY NAV CLEANED, WORKSPACE SUBNAV BROWSER VERIFICATION REQUIRED
+
+Exact primary sidebar list: Dashboard, Clinician Profiles, Patient Profiles, Calendar, Brad, Compliance Execution (CES), Taxonomy, Onboarding, Policy Lifecycle, Evidence, Hubstaff, System Documentation, Help Center, Demo, Admin (if authorized)
+
+Exact CES workspace subnav: Calendar, Sprint Board, Workflows, Master Controls, Audit Mode, Evidence Center, Reports
+
+Exact Taxonomy: Framework, Policies, Forms, ACHC Survey, ACHC Crosswalk
+
+Exact Onboarding: Overview, Journey v1, Appendix F, Supervisor View, Admin, User Guide
+
+Exact System Documentation: Executive Overview, System Architecture, Identity & Access, Workflow & Enforcement, Training System, Audit & Evidence, AWS Infrastructure, HIPAA Gap Analysis, Production Roadmap
+
+Admin: conditional on auth, subnav User Groups, Roles, Permissions, Users
+
+No Part1Preview junk.
+
+V1 source inspected: CommandCenterLayout.tsx for NAV_ITEMS, groups, subnav behavior.

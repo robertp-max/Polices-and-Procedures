@@ -1,7 +1,7 @@
 import { AlertTriangle, BarChart3, Bot, BookOpen, CalendarClock, CalendarRange, Camera, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, FileCheck2, FileText, FolderOpen, History, PanelRightOpen, Route, ShieldCheck, Sparkles, Stethoscope, Upload, Users, type LucideIcon } from 'lucide-react';
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { buildBoardLanes, buildCalendarEvents, buildReportMetrics, buildSprintSummary, buildReportCards, buildReportTrendBars, buildEvidenceRows, buildAuditRows, getControlFromParams, getTasksForEvent } from '@/policy/ces/cesViewProjections';
 // Design cross-ref (Agent 19 background + Agent 19 read-only CES Data Seeds gap vs design subagent + Agent 09 read-only hygiene/validate gap): V3 seeds supply realistic ExecutionUnits for CES board/my-tasks/calendar/snapshots/projections.
 // Current: use build* or FALLBACK for exact design visual parity. See projections for seed-driven future and validators.
@@ -23,6 +23,7 @@ import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
 import { BoardLane, CESSubnav, ChatThread, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type ChatMessageData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
+import { workspaceSubnavItems } from '../routing/navigationManifest';
 import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, JourneyV1Screen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen } from './pageviews';
 import { achcSurveyRows } from '@/policy/data/achcSurveyProjection.generated';
 import { achcPrintCrosswalk } from '@/policy/data/achcPrintCrosswalk.generated';
@@ -1686,6 +1687,7 @@ const guideEntries = [
 
 export function RepresentativeScreen({ route }: { route: RouteLike }) {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const overlay = searchParams.get('v6-overlay');
 
   if (overlay === 'drawer-system') return <OverlaySystemScreen />;
@@ -1876,19 +1878,68 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
 
   const wrapped = child;
 
-  // Static CES subnav for ALL pages in the CES group. Rendered once here so it's consistent and always present
-  // when navigating within the group (no per-screen duplication, no disappearing).
+  const mainContent = <div className="grid">{wrapped}</div>;
+
+  // Workspace subnav rendered inside the content area for V1 parity (not in main sidebar)
+  // Primary parents only in sidebar; children here.
   const cesHashIds = ['ces-calendar', 'ces-board', 'events-board', 'master-controls', 'my-tasks', 'ces-reports', 'workflows', 'workflow-detail', 'workflow-swimlane', 'evidence-center', 'audit-mode'];
   const isCESGroup = route.group === 'CES' || cesHashIds.includes(route.hashId || '');
-  const mainContent = <div className="grid">{wrapped}</div>;
-  const content = isCESGroup ? (
+
+  const isTaxonomyGroup = ['framework', 'taxonomy', 'policy-library', 'policy-detail', 'forms-library', 'form-viewer', 'achc-survey', 'achc-crosswalk'].includes(route.hashId || '') || route.group === 'Taxonomy';
+  const isOnboardingGroup = ['journey-overview', 'journey-v1', 'module-player', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'].includes(route.hashId || '') || route.group === 'Onboarding';
+  const isSystemGroup = ['system-docs', 'policy-lifecycle', 'policy-lifecycle-detail', 'hubstaff', 'help-center', 'governance'].includes(route.hashId || '') || route.group === 'System';
+  const isAdminGroup = ['admin-groups', 'admin-roles', 'admin-permissions', 'admin-users', 'surveyor-viewer'].includes(route.hashId || '') || route.group === 'Admin';
+
+  let workspaceSubnav = null;
+  if (isCESGroup) {
+    workspaceSubnav = <CESSubnav />;
+  } else if (isTaxonomyGroup && workspaceSubnavItems.taxonomy) {
+    workspaceSubnav = <WorkspaceSubnav items={workspaceSubnavItems.taxonomy} currentPath={location?.pathname || ''} prefix="Taxonomy:" />;
+  } else if (isOnboardingGroup && workspaceSubnavItems.onboarding) {
+    workspaceSubnav = <WorkspaceSubnav items={workspaceSubnavItems.onboarding} currentPath={location?.pathname || ''} prefix="Onboarding:" />;
+  } else if (isSystemGroup && workspaceSubnavItems['system-docs']) {
+    workspaceSubnav = <WorkspaceSubnav items={workspaceSubnavItems['system-docs']} currentPath={location?.pathname || ''} prefix="System Docs:" />;
+  } else if (isAdminGroup && workspaceSubnavItems.admin) {
+    workspaceSubnav = <WorkspaceSubnav items={workspaceSubnavItems.admin} currentPath={location?.pathname || ''} prefix="Admin:" />;
+  }
+
+  const content = workspaceSubnav ? (
     <>
-      <CESSubnav />
+      {workspaceSubnav}
       {mainContent}
     </>
   ) : mainContent;
 
   return content;
+}
+
+// Generic workspace subnav (top of workspace content, V1 style)
+function WorkspaceSubnav({ items, currentPath, prefix }: { items: any[]; currentPath: string; prefix: string }) {
+  const isActivePath = (itemPath: string) => {
+    if (currentPath === itemPath) return true;
+    if (currentPath.startsWith(itemPath + '/')) return true;
+    return false;
+  };
+  return (
+    <div className="mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="workspace subnav">
+      <span className="mr-sm text-tag uppercase tracking-tag text-muted">{prefix}</span>
+      {items.map((item) => {
+        const isActive = isActivePath(item.to);
+        return (
+          <Link
+            key={item.to}
+            to={item.to}
+            aria-current={isActive ? 'page' : undefined}
+            className={`rounded px-sm py-xs text-brand-teal hover:bg-surface-hover hover:text-brand-teal-deep border-b-2 ${
+              isActive ? 'border-brand-teal text-brand-teal-deep font-medium' : 'border-transparent hover:border-brand-teal'
+            }`}
+          >
+            {item.label}
+          </Link>
+        );
+      })}
+    </div>
+  );
 }
 
 export function isRepresentativeRoute(route: RouteLike): boolean {
