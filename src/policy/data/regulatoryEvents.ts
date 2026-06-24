@@ -296,6 +296,8 @@ export interface RegulatoryEvent {
   rescheduleRule?: string;
   lateRule?: string;
   scopeLabel?: string;
+  /** Tue/Thu scheduling-rule note or exception rationale (set by enforceTuesdayThursday). */
+  scheduleNote?: string;
 }
 
 /* â”€â”€â”€ Domain visual palette (maroon-safe â€” NO blue) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -418,6 +420,8 @@ export function enforceBusinessDay(event: RegulatoryEvent): RegulatoryEvent {
 import { MANDATED_EVENTS_EXPANDED } from './mandatedEventsExpanded';
 import { applyWorkflowAlignment } from './eventWorkflowAlignment';
 import { applyEventAlignmentPolicy } from './eventAlignmentPolicy';
+import { enforceTuesdayThursday } from './tuesdayThursdayPolicy';
+import { deriveScope } from './scopeDerivationPolicy';
 
 /* â”€â”€â”€ Event dataset â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /**
@@ -2364,6 +2368,8 @@ const REGULATORY_EVENTS_RAW: RegulatoryEvent[] = [
 export const REGULATORY_EVENTS: RegulatoryEvent[] =
   REGULATORY_EVENTS_RAW
     .map((event) => enforceBusinessDay(event))
+    .map((event) => enforceTuesdayThursday(event))
+    .map((event) => deriveScope(event))
     .map((event) => applyEventAlignmentPolicy(event))
     .map((event) => applyWorkflowAlignment(event));
 
