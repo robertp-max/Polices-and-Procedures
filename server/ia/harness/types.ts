@@ -9,11 +9,13 @@
    These types are imported by every harness module so boundaries stay aligned.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-export type BradRuntimeMode = 'mock' | 'vertex-nonphi' | 'vertex-phi';
+export type BradRuntimeMode = 'mock' | 'cli-nonphi' | 'vertex-nonphi' | 'vertex-phi';
 export type NolanRuntimeMode = 'disabled' | 'mock' | 'vertex-public-web';
+export type BradProvider = 'mock' | 'claude' | 'vertex';
 
 export type RuntimeBadge =
   | 'MVP Harness — Mock Data'
+  | 'Claude CLI — PHI Disabled'
   | 'Vertex Connected — PHI Disabled'
   | 'Vertex Connected — PHI Enabled'
   | 'Configuration Error — Fail Closed';
@@ -22,7 +24,8 @@ export type RuntimeBadge =
 
 export interface BradConfig {
   runtimeMode: BradRuntimeMode;
-  modelId: string;            // BRAD_MODEL_ID, e.g. gemini-3.5-flash
+  provider: BradProvider;     // BRAD_PROVIDER — 'claude' (CLI, MVP) | 'vertex' | 'mock'
+  modelId: string;            // BRAD_MODEL_ID, e.g. 'sonnet' (claude) or 'gemini-3.5-flash' (vertex)
   vertexProjectId: string;
   vertexLocation: string;
   phiEnabled: boolean;        // BRAD_PHI_ENABLED — advisory only; gate decides

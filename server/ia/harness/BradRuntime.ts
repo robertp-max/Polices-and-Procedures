@@ -3,8 +3,9 @@ import type {
   HarnessConfig, BradModelAdapter, BradRuntimeMode, RuntimeBadge,
   BradPhiReadinessResult, RelayOutcome,
 } from './types.js';
-import { readHarnessConfig } from './config.js';
+import { readHarnessConfig, BRAD_SYSTEM_PROMPT } from './config.js';
 import { MockBradAdapter } from './modelAdapters/MockBradAdapter.js';
+import { ClaudeCliBradAdapter } from './modelAdapters/ClaudeCliBradAdapter.js';
 import { VertexBradAdapter } from './modelAdapters/VertexBradAdapter.js';
 import { evaluateBradPhiReadiness } from './BradPhiReadinessGate.js';
 import { scanForPhiEgress } from './PhiEgressGuard.js';
@@ -46,14 +47,23 @@ export class BradRuntime {
 
   constructor(cfg?: HarnessConfig) {
     this.cfg = cfg ?? readHarnessConfig();
-    this.adapter = this.cfg.brad.runtimeMode === 'mock'
+    const mode = this.cfg.brad.runtimeMode;
+    this.adapter = mode === 'mock'
       ? new MockBradAdapter(this.cfg.brad.modelId)
-      : new VertexBradAdapter(this.cfg.brad);
+      : mode === 'cli-nonphi'
+        ? new ClaudeCliBradAdapter(this.cfg.brad)
+        : new VertexBradAdapter(this.cfg.brad);
     this.relay = new BradNolanRelay(this.cfg); // relay owns Nolan (capability-gated bridge)
   }
 
   readiness(): BradPhiReadinessResult {
     return evaluateBradPhiReadiness(this.cfg);
+  }
+
+  /** PHI is permitted ONLY in verified vertex-phi mode (sync; no model/network call).
+      cli-nonphi/mock/vertex-nonphi are always PHI-disabled. */
+  isPhiPermitted(): boolean {
+    return this.cfg.brad.runtimeMode === 'vertex-phi' && this.readiness().ready;
   }
 
   async describe(): Promise<BradRuntimeDescription> {
@@ -69,9 +79,12 @@ export class BradRuntime {
       effectiveMode = 'mock';
       badge = 'MVP Harness — Mock Data';
     } else if (!avail.available) {
-      // Configured for Vertex but the adapter/model is unavailable → fail closed.
+      // Configured for a live provider but adapter/model/CLI unavailable → fail closed.
       effectiveMode = 'mock';
       badge = 'Configuration Error — Fail Closed';
+    } else if (configuredMode === 'cli-nonphi') {
+      effectiveMode = 'cli-nonphi';
+      badge = 'Claude CLI — PHI Disabled';
     } else if (configuredMode === 'vertex-phi' && readiness.ready) {
       effectiveMode = 'vertex-phi';
       badge = 'Vertex Connected — PHI Enabled';
@@ -90,10 +103,10 @@ export class BradRuntime {
 
   /** Answer from approved internal sources. PHI prompts are blocked unless PHI mode is verified-ready. */
   async answer(userText: string, actorId = 'system', role = 'user'): Promise<BradAnswer> {
-    const desc = await this.describe();
+    const phiPermitted = this.isPhiPermitted();
     const phiPresent = !scanForPhiEgress(userText).allowed;
 
-    if (phiPresent && !desc.phiPermitted) {
+    if (phiPresent && !phiPermitted) {
       agentAuditLog.logBrad({
         requestId: crypto.randomUUID(), actorId, role, action: 'phi-prompt-blocked',
         modelId: this.cfg.brad.modelId, promptVersion: this.cfg.brad.promptVersion,
@@ -102,11 +115,11 @@ export class BradRuntime {
       return { text: 'This request contains PHI and cannot be processed in the current mode (PHI mode is not verified-ready). It was not sent to any model.', synthetic: true, blocked: true, reason: 'phi-not-permitted' };
     }
 
-    const res = await this.adapter.chat({ system: 'BRAD', user: userText, requestId: crypto.randomUUID() });
+    const res = await this.adapter.chat({ system: BRAD_SYSTEM_PROMPT, user: userText, requestId: crypto.randomUUID() });
     agentAuditLog.logBrad({
       requestId: crypto.randomUUID(), actorId, role, action: 'answer',
       modelId: res.modelId, promptVersion: this.cfg.brad.promptVersion,
-      phiMode: desc.phiPermitted, result: 'ok', toolCalls: [],
+      phiMode: phiPermitted, result: 'ok', toolCalls: [],
     });
     return { text: res.content, synthetic: res.synthetic, blocked: false };
   }

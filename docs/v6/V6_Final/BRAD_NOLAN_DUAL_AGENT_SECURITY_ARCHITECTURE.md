@@ -13,10 +13,11 @@
 ## Model configuration
 - `BRAD_MODEL_ID = gemini-3.5-flash`, `NOLAN_MODEL_ID = gemini-3.5-flash` (server-side config only; no key in frontend JS).
 - MVP runs **mock** adapters (output flagged `synthetic`, never presented as live Gemini). The Vertex adapters **validate availability and fail closed** — `gemini-3.5-flash` is not verified-available in any configured project/region, so Vertex modes do not activate and never silently downgrade.
+- **`cli-nonphi` mode (interim MVP until the Vertex agent is provisioned):** `BRAD_RUNTIME_MODE=cli-nonphi`, `BRAD_PROVIDER=claude`, `BRAD_MODEL_ID=sonnet`, `BRAD_PHI_ENABLED=false`. Brad's inference runs through the local `claude` CLI (`--model sonnet --print`) via `ClaudeCliBradAdapter`. This path reaches the Anthropic API (no BAA), so it is **PHI-disabled and fail-closed**: `BradRuntime.isPhiPermitted()` returns `true` only for verified `vertex-phi`, so any PHI prompt is blocked **before** the model is called; the adapter is `canReachInternet:false` (model call only — no web/search/browser tools), and fails closed if `BRAD_PROVIDER!=='claude'` or the CLI is absent. Badge: **"Claude CLI — PHI Disabled"**. PHI mode still requires the in-perimeter `vertex-phi` adapter behind the readiness gate.
 - System prompts are versioned + hashed (`BRAD_PROMPT_VERSION`, `NOLAN_PROMPT_VERSION`); model ID, prompt version, request ID, and mode are logged per invocation.
 
 ## Components (`server/ia/harness/`)
-`types.ts` (contract) · `config.ts` (server env + `assertSeparateIdentities`) · `PhiEgressGuard.ts` · `BradPhiReadinessGate.ts` · `WebContentSafetyGuard.ts` · `PublicResearchPolicy.ts` · `AgentAuditLogger.ts` · `BradRuntime.ts` · `NolanRuntime.ts` · `BradNolanRelay.ts` · `modelAdapters/{MockBrad,VertexBrad,MockNolan,VertexNolan}Adapter.ts`. UI: `src/policy/pages/iAdministrator/{AgentRuntimeBadge,NolanResearchCitationCard}.tsx`. Tests: `scripts/verifyBradNolanIsolation.ts`.
+`types.ts` (contract) · `config.ts` (server env + `assertSeparateIdentities`) · `PhiEgressGuard.ts` · `BradPhiReadinessGate.ts` · `WebContentSafetyGuard.ts` · `PublicResearchPolicy.ts` · `AgentAuditLogger.ts` · `BradRuntime.ts` · `NolanRuntime.ts` · `BradNolanRelay.ts` · `modelAdapters/{MockBrad,ClaudeCliBrad,VertexBrad,MockNolan,VertexNolan}Adapter.ts`. UI: `src/policy/pages/iAdministrator/{AgentRuntimeBadge,NolanResearchCitationCard}.tsx`. Tests: `scripts/verifyBradNolanIsolation.ts`.
 
 ---
 

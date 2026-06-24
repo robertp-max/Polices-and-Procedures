@@ -8,6 +8,7 @@
 
 export type AgentRuntimeBadgeValue =
   | 'MVP Harness — Mock Data'
+  | 'Claude CLI — PHI Disabled'
   | 'Vertex Connected — PHI Disabled'
   | 'Vertex Connected — PHI Enabled'
   | 'Configuration Error — Fail Closed';
@@ -19,6 +20,7 @@ export interface AgentRuntimeBadgeProps {
 
 const STYLES: Record<AgentRuntimeBadgeValue, { dot: string; cls: string }> = {
   'MVP Harness — Mock Data': { dot: '#64748b', cls: 'border-slate-300 bg-slate-50 text-slate-700' },
+  'Claude CLI — PHI Disabled': { dot: '#7c3aed', cls: 'border-violet-300 bg-violet-50 text-violet-800' },
   'Vertex Connected — PHI Disabled': { dot: '#2f8f7a', cls: 'border-teal-300 bg-teal-50 text-teal-800' },
   'Vertex Connected — PHI Enabled': { dot: '#b45309', cls: 'border-amber-300 bg-amber-50 text-amber-900' },
   'Configuration Error — Fail Closed': { dot: '#b91c1c', cls: 'border-rose-300 bg-rose-50 text-rose-800' },

@@ -26,6 +26,7 @@ async function test(name: string, fn: () => unknown | Promise<unknown>): Promise
 
 const mockCfg = readHarnessConfig({ BRAD_RUNTIME_MODE: 'mock', NOLAN_RUNTIME_MODE: 'mock', BRAD_SERVICE_ACCOUNT: 'brad@p1', NOLAN_SERVICE_ACCOUNT: 'nolan@p2', BRAD_VERTEX_PROJECT_ID: 'brad-proj', NOLAN_VERTEX_PROJECT_ID: 'nolan-proj' } as NodeJS.ProcessEnv);
 const phiCfg = readHarnessConfig({ BRAD_RUNTIME_MODE: 'vertex-phi', BRAD_VERTEX_PROJECT_ID: 'brad-proj', BRAD_VERTEX_LOCATION: 'us-central1', NOLAN_RUNTIME_MODE: 'mock' } as NodeJS.ProcessEnv);
+const cliCfg = readHarnessConfig({ BRAD_RUNTIME_MODE: 'cli-nonphi', BRAD_PROVIDER: 'claude', BRAD_MODEL_ID: 'sonnet', NOLAN_RUNTIME_MODE: 'mock', BRAD_SERVICE_ACCOUNT: 'brad@p1', NOLAN_SERVICE_ACCOUNT: 'nolan@p2', BRAD_VERTEX_PROJECT_ID: 'brad-proj', NOLAN_VERTEX_PROJECT_ID: 'nolan-proj' } as NodeJS.ProcessEnv);
 
 const PHI_QUERIES: Record<string, string> = {
   name: 'Research whether Maria Gonzalez with a CHF diagnosis admitted last week belongs in the Q2 hospitalization review.',
@@ -50,9 +51,11 @@ async function main() {
     assert(d.effectiveMode === 'mock', 'mode');
   });
   // 2
-  await test('2. Brad non-PHI mode blocks PHI prompt', async () => {
-    const ans = await new BradRuntime(mockCfg).answer(PHI_QUERIES.name);
-    assert(ans.blocked === true && ans.reason === 'phi-not-permitted', 'PHI not blocked');
+  await test('2. Brad non-PHI modes (mock + cli-nonphi) block PHI prompt', async () => {
+    const a1 = await new BradRuntime(mockCfg).answer(PHI_QUERIES.name);
+    assert(a1.blocked === true && a1.reason === 'phi-not-permitted', 'mock PHI not blocked');
+    const a2 = await new BradRuntime(cliCfg).answer(PHI_QUERIES.dob); // cli-nonphi: PHI blocked before any model call
+    assert(a2.blocked === true && a2.reason === 'phi-not-permitted', 'cli-nonphi PHI not blocked');
   });
   // 3
   await test('3. PHI mode cannot activate without readiness gate', async () => {
@@ -61,8 +64,9 @@ async function main() {
     assert(d.phiPermitted === false, 'phiPermitted true without gate');
   });
   // 4
-  await test('4. Brad has no web-search/internet capability', async () => {
-    assert(new BradRuntime(mockCfg).canReachInternet === false, 'Brad canReachInternet');
+  await test('4. Brad has no web-search/internet capability (mock + cli)', async () => {
+    assert(new BradRuntime(mockCfg).canReachInternet === false, 'mock Brad canReachInternet');
+    assert(new BradRuntime(cliCfg).canReachInternet === false, 'cli Brad canReachInternet');
   });
   // 5
   await test('5. Brad cannot fetch arbitrary URLs (no fetch/http tool)', () => {
