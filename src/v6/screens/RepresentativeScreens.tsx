@@ -1882,13 +1882,14 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
 
   // Workspace subnav rendered inside the content area for V1 parity (not in main sidebar)
   // Primary parents only in sidebar; children here.
+  const pathname = location?.pathname || '';
   const cesHashIds = ['ces-calendar', 'ces-board', 'events-board', 'master-controls', 'my-tasks', 'ces-reports', 'workflows', 'workflow-detail', 'workflow-swimlane', 'evidence-center', 'audit-mode'];
-  const isCESGroup = route.group === 'CES' || cesHashIds.includes(route.hashId || '');
+  const isCESGroup = route.group === 'CES' || cesHashIds.includes(route.hashId || '') || pathname.startsWith('/ces/') || pathname.startsWith('/workflows') || pathname.startsWith('/events/') || pathname === '/audit' || pathname === '/evidence' || pathname.startsWith('/compliance/');
 
-  const isTaxonomyGroup = ['framework', 'taxonomy', 'policy-library', 'policy-detail', 'forms-library', 'form-viewer', 'achc-survey', 'achc-crosswalk'].includes(route.hashId || '') || route.group === 'Taxonomy';
-  const isOnboardingGroup = ['journey-overview', 'journey-v1', 'module-player', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'].includes(route.hashId || '') || route.group === 'Onboarding';
-  const isSystemGroup = ['system-docs', 'policy-lifecycle', 'policy-lifecycle-detail', 'hubstaff', 'help-center', 'governance'].includes(route.hashId || '') || route.group === 'System';
-  const isAdminGroup = ['admin-groups', 'admin-roles', 'admin-permissions', 'admin-users', 'surveyor-viewer'].includes(route.hashId || '') || route.group === 'Admin';
+  const isTaxonomyGroup = pathname.startsWith('/framework') || pathname.startsWith('/library') || pathname.startsWith('/forms') || pathname.startsWith('/taxonomy') || pathname.startsWith('/achc') || ['framework', 'taxonomy', 'policy-library', 'policy-detail', 'forms-library', 'form-viewer', 'achc-survey', 'achc-crosswalk'].includes(route.hashId || '') || route.group === 'Taxonomy';
+  const isOnboardingGroup = pathname.startsWith('/journey') || pathname.startsWith('/onboarding-v2') || ['journey-overview', 'journey-v1', 'module-player', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'].includes(route.hashId || '') || route.group === 'Onboarding';
+  const isSystemGroup = pathname.startsWith('/system-documentation') || pathname.startsWith('/policy-lifecycle') || pathname === '/hubstaff' || pathname.startsWith('/help') || ['system-docs', 'policy-lifecycle', 'policy-lifecycle-detail', 'hubstaff', 'help-center', 'governance'].includes(route.hashId || '') || route.group === 'System';
+  const isAdminGroup = pathname.startsWith('/admin/') || ['admin-groups', 'admin-roles', 'admin-permissions', 'admin-users', 'surveyor-viewer'].includes(route.hashId || '') || route.group === 'Admin';
 
   let workspaceSubnav = null;
   if (isCESGroup) {
