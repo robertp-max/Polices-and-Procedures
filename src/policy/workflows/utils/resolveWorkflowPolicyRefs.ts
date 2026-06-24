@@ -1,5 +1,6 @@
 import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
 import { getCorpusPolicy, POLICY_CORPUS } from '@/policy/data/policyCorpus';
+import { resolveCanonicalFormId } from '@/policy/data/formIdAliases';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import type { Workflow, WorkflowStep } from '@/policy/types/workflow';
 
@@ -76,7 +77,13 @@ const FORMS_BY_ID = new Map(FORMS_DATASET.map(form => [form.id, form]));
 const FORM_IDS = new Set(FORMS_DATASET.map(form => form.id));
 
 function normalizeRef(value: string | undefined | null): string {
-  return String(value ?? '').trim().toUpperCase();
+  const s = String(value ?? '').trim().toUpperCase();
+  return resolveCanonicalFormId(s) ?? s;
+}
+
+function getFormRecord(id: string) {
+  const canon = resolveCanonicalFormId(id) ?? id;
+  return FORMS_BY_ID.get(canon) ?? FORMS_BY_ID.get(id);
 }
 
 function isPolicyLikeId(policyId: string): boolean {
@@ -86,7 +93,7 @@ function isPolicyLikeId(policyId: string): boolean {
 function displayValidationFailure(policyId: string): HiddenLegacyPolicyRef['reasonHidden'] | null {
   if (!isPolicyLikeId(policyId)) return 'not_policy_id';
   if (!POLICY_IDS.has(policyId)) return 'not_found_in_canonical_policy_corpus';
-  if (FORM_IDS.has(policyId)) return 'policy_id_matches_form_id';
+  if (FORM_IDS.has(policyId) || !!getFormRecord(policyId)) return 'policy_id_matches_form_id';
   return null;
 }
 
@@ -279,7 +286,7 @@ function resolveWorkflowPolicySource(
   }
 
   for (const formId of forms.formIds) {
-    const form = FORMS_BY_ID.get(formId);
+    const form = getFormRecord(formId);
     if (!form) continue;
 
     for (const rawPolicyId of form.policies) {

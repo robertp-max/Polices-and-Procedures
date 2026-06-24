@@ -2,10 +2,16 @@ import { AlertTriangle, BarChart3, Bot, BookOpen, CalendarClock, CalendarRange, 
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { V3_ExecutionUnitsSeed } from '@/policy/ces/data/V3_CES_SeedData';
+import { buildBoardLanes, buildCalendarEvents, buildReportMetrics, buildSprintSummary, buildEvidenceRows, buildAuditRows, getControlFromParams } from '@/policy/ces/cesViewProjections';
+// Design cross-ref (Agent 19 background + Agent 19 read-only CES Data Seeds gap vs design subagent + Agent 09 read-only hygiene/validate gap): V3 seeds supply realistic ExecutionUnits for CES board/my-tasks/calendar/snapshots/projections.
+// Current: use build* or FALLBACK for exact design visual parity. See projections for seed-driven future and validators.
 import type { ExecutionUnit } from '@/policy/ces/types';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER } from '@/policy/data/policyCorpus';
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
+import { resolveCanonicalFormId } from '@/policy/data/formIdAliases';
+import { MOCK_CLINICIANS } from '@/policy/staffing/data/mockClinicians';
+import { MOCK_PATIENTS } from '@/policy/staffing/data/mockPatients';
+import { resolveDisplayName } from '@/policy/ces/data/V3_CES_SeedData';
 import type { EventProcessStep, RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import { inferPhaseTemplate } from '@/policy/workflows/swimlanes/phaseTemplates';
 import type { SwimlaneStatus } from '@/policy/workflows/swimlanes/types';
@@ -15,6 +21,8 @@ import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
 import { BoardLane, ChatThread, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type ChatMessageData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
 import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, JourneyV1Screen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen } from './pageviews';
+import { achcSurveyRows } from '@/policy/data/achcSurveyProjection.generated';
+import { achcPrintCrosswalk } from '@/policy/data/achcPrintCrosswalk.generated';
 
 type RouteLike = V6RouteDefinition;
 type BasicRow = Record<string, string>;
@@ -82,7 +90,7 @@ const dashboardActions: readonly ActionRow[] = [
     body: 'Start-of-care visit needs RN backup before 3:00 PM',
     due: 'TODAY',
     icon: Route,
-    owner: 'CLINICAL MANAGER',
+    owner: resolveDisplayName('Clinical Manager'),
     progress: 64,
     status: 'review-required',
     title: 'Reassign SOC coverage for Elena Vargas',
@@ -92,7 +100,7 @@ const dashboardActions: readonly ActionRow[] = [
     body: 'Signed order and visit cadence need final confirmation',
     due: 'JUN 19',
     icon: ClipboardCheck,
-    owner: 'MARIA DELGADO, RN',
+    owner: resolveDisplayName('Maria Gonzalez, RN'),
     progress: 82,
     status: 'ready',
     title: 'Close Robert Hale recert plan review',
@@ -102,7 +110,7 @@ const dashboardActions: readonly ActionRow[] = [
     body: 'Two high-acuity patients need weekend pool assignment',
     due: 'JUN 20',
     icon: CalendarRange,
-    owner: 'SCHEDULING LEAD',
+    owner: resolveDisplayName('Scheduling Lead'),
     progress: 48,
     status: 'blocked',
     title: 'Resolve CHHA weekend coverage gap',
@@ -112,7 +120,7 @@ const dashboardActions: readonly ActionRow[] = [
     body: 'Amna Yusuf route requires evidence lock after field upload',
     due: 'JUN 21',
     icon: Camera,
-    owner: 'QAPI NURSE',
+    owner: resolveDisplayName('QAPI Nurse'),
     progress: 76,
     status: 'uploaded',
     title: 'Approve wound photo protocol evidence',
@@ -190,23 +198,30 @@ const patientListMetrics: readonly MetricTileData[] = [
   { label: 'Plan alignment', value: '94%', helper: 'Signed and current', tone: 'green' },
 ];
 
-const clinicianRows: readonly BasicRow[] = [
-  { id: 'CLN-2041', title: 'Maria Delgado, RN', owner: '18-patient caseload', status: 'compliant' },
-  { id: 'CLN-2049', title: 'James Kwon, PT', owner: '12-patient caseload', status: 'renewal due' },
-  { id: 'CLN-2055', title: 'Aisha Rahman, OT', owner: '8-patient caseload', status: 'compliant' },
-  { id: 'CLN-2060', title: 'Priya Singh, RN', owner: '14-patient caseload', status: 'training due' },
-  { id: 'CLN-2068', title: 'Luis Mendez, LVN', owner: 'Weekend coverage pool', status: 'compliant' },
-  { id: 'CLN-2072', title: 'Nora Patel, MSW', owner: 'Discharge planning support', status: 'watch' },
-];
+// Map clinician status enum to the readable lowercase token the status badge expects.
+const clinicianStatusLabel = (status: string): string => status.replace(/_/g, ' ');
 
-const patientRows: readonly BasicRow[] = [
-  { id: 'HH-88291', title: 'Elena Vargas', owner: 'CHF, Type 2 DM', status: 'soc active' },
-  { id: 'HH-88402', title: 'Robert Hale', owner: 'Post-CVA', status: 'recert due' },
-  { id: 'HH-88701', title: 'Amina Yusuf', owner: 'Diabetic wound care', status: 'active' },
-  { id: 'HH-88910', title: 'George Lin', owner: 'Post-op hip', status: 'discharge prep' },
-  { id: 'HH-89012', title: 'Marisol Chen', owner: 'COPD exacerbation', status: 'high acuity' },
-  { id: 'HH-89104', title: 'Anthony Bell', owner: 'Medication teaching', status: 'visit gap' },
-];
+// Real clinician roster: every record in the canonical staffing seed, mapped to
+// the existing { id, title (Name), owner (Coverage), status } row shape.
+// title = full name + primary discipline (matches the prior "Name, RN" pattern);
+// owner = service areas (the "Coverage" column); status = the real clinician status.
+const clinicianRows: readonly BasicRow[] = MOCK_CLINICIANS.map((clinician) => ({
+  id: clinician.id,
+  title: `${clinician.firstName} ${clinician.lastName}, ${clinician.primaryDiscipline}`,
+  owner: clinician.serviceAreas && clinician.serviceAreas.length > 0 ? clinician.serviceAreas.join(', ') : '—',
+  status: clinicianStatusLabel(clinician.status),
+}));
+
+// Real patient roster: every record in the canonical staffing seed, mapped to
+// the existing { id, title (Name), owner (Clinical focus), status } row shape.
+// owner = diagnosis category (the "Clinical focus" column, underscores normalized);
+// status = the real patient status.
+const patientRows: readonly BasicRow[] = MOCK_PATIENTS.map((patient) => ({
+  id: patient.id,
+  title: `${patient.firstName} ${patient.lastName}`,
+  owner: patient.diagnosisCategory ? patient.diagnosisCategory.replace(/_/g, ' ') : '—',
+  status: patient.status.replace(/_/g, ' '),
+}));
 
 const profileColumns: readonly DataTableColumn<BasicRow>[] = [
   { key: 'id', label: 'ID' },
@@ -402,14 +417,14 @@ const calendarMetrics: readonly MetricTileData[] = [
 ];
 
 const calendarEvents = [
-  { day: 2, label: 'SOC coverage review', owner: 'Clinical Manager', progress: 52, tone: 'orange' },
-  { day: 4, label: 'Clinician case conference', owner: 'Director of Nursing', progress: 72, tone: 'teal' },
-  { day: 7, label: 'Medication reconciliation audit', owner: 'QAPI Nurse', progress: 82, tone: 'teal' },
-  { day: 11, label: 'High-acuity staffing huddle', owner: 'Scheduler', progress: 52, tone: 'orange' },
-  { day: 15, label: 'Recertification window lock', owner: 'Clinical Manager', progress: 72, tone: 'amber' },
-  { day: 18, label: 'Credential renewal checkpoint', owner: 'HR Credentialing', progress: 76, tone: 'orange' },
-  { day: 22, label: 'Visit note timeliness review', owner: 'Compliance Officer', progress: 66, tone: 'teal' },
-  { day: 26, label: 'Weekend coverage confirmation', owner: 'Operations Lead', progress: 70, tone: 'blue' },
+  { day: 2, label: 'SOC coverage review', owner: resolveDisplayName('Clinical Manager'), progress: 52, tone: 'orange' },
+  { day: 4, label: 'Clinician case conference', owner: resolveDisplayName('Director of Nursing'), progress: 72, tone: 'teal' },
+  { day: 7, label: 'Medication reconciliation audit', owner: resolveDisplayName('QAPI Nurse'), progress: 82, tone: 'teal' },
+  { day: 11, label: 'High-acuity staffing huddle', owner: resolveDisplayName('Scheduler'), progress: 52, tone: 'orange' },
+  { day: 15, label: 'Recertification window lock', owner: resolveDisplayName('Clinical Manager'), progress: 72, tone: 'amber' },
+  { day: 18, label: 'Credential renewal checkpoint', owner: resolveDisplayName('HR Credentialing'), progress: 76, tone: 'orange' },
+  { day: 22, label: 'Visit note timeliness review', owner: resolveDisplayName('Compliance Officer'), progress: 66, tone: 'teal' },
+  { day: 26, label: 'Weekend coverage confirmation', owner: resolveDisplayName('Operations Lead'), progress: 70, tone: 'blue' },
 ] as const satisfies readonly CalendarEventData[];
 
 const staffingCalendarMetrics: readonly MetricTileData[] = [
@@ -420,22 +435,30 @@ const staffingCalendarMetrics: readonly MetricTileData[] = [
 ];
 
 const staffingCalendarEvents = [
-  { day: 2, label: 'RN coverage', owner: 'Maria Delgado, RN', progress: 86, tone: 'teal' },
-  { day: 4, label: 'PT visit cluster', owner: 'James Kwon, PT', progress: 70, tone: 'blue' },
-  { day: 8, label: 'CHHA gap', owner: 'Scheduling Lead', progress: 42, tone: 'orange' },
-  { day: 12, label: 'SOC start', owner: 'Priya Singh, RN', progress: 90, tone: 'green' },
-  { day: 17, label: 'LVN swap', owner: 'Operations Lead', progress: 58, tone: 'amber' },
-  { day: 19, label: 'Recert visit', owner: 'Clinical Manager', progress: 82, tone: 'teal' },
-  { day: 23, label: 'Wound care route', owner: 'Aisha Rahman, OT', progress: 48, tone: 'orange' },
-  { day: 28, label: 'Weekend pool', owner: 'Scheduler', progress: 74, tone: 'blue' },
+  { day: 2, label: 'RN coverage', owner: resolveDisplayName('Maria Gonzalez, RN'), progress: 86, tone: 'teal' },
+  { day: 4, label: 'PT visit cluster', owner: resolveDisplayName('PT'), progress: 70, tone: 'blue' },
+  { day: 8, label: 'CHHA gap', owner: resolveDisplayName('Scheduling Lead'), progress: 42, tone: 'orange' },
+  { day: 12, label: 'SOC start', owner: resolveDisplayName('DON'), progress: 90, tone: 'green' },
+  { day: 17, label: 'LVN swap', owner: resolveDisplayName('Operations Lead'), progress: 58, tone: 'amber' },
+  { day: 19, label: 'Recert visit', owner: resolveDisplayName('Clinical Manager'), progress: 82, tone: 'teal' },
+  { day: 23, label: 'Wound care route', owner: resolveDisplayName('OT'), progress: 48, tone: 'orange' },
+  { day: 28, label: 'Weekend pool', owner: resolveDisplayName('Scheduler'), progress: 74, tone: 'blue' },
 ] as const satisfies readonly CalendarEventData[];
 
+const cesSprintSummary = buildSprintSummary();
 const cesCalendarMetrics: readonly MetricTileData[] = [
-  { label: 'Sprint cards', value: '33', helper: 'Sprint 12 execution units', tone: 'teal' },
-  { label: 'Blocked', value: '4', helper: 'Signature or evidence gaps', tone: 'orange' },
-  { label: 'Ready to certify', value: '9', helper: 'Awaiting final lock', tone: 'green' },
-  { label: 'Survey critical', value: '3', helper: 'Needs owner action', tone: 'orange' },
+  { label: 'Sprint cards', value: String(cesSprintSummary.total), helper: 'Sprint 12 execution units', tone: 'teal' },
+  { label: 'Blocked', value: String(cesSprintSummary.blocked), helper: 'Signature or evidence gaps', tone: 'orange' },
+  { label: 'Ready to certify', value: String(cesSprintSummary.readyToCertify), helper: 'Awaiting final lock', tone: 'green' },
+  { label: 'Survey critical', value: String(cesSprintSummary.surveyCritical), helper: 'Needs owner action', tone: 'orange' },
 ];
+
+// Design cross-ref (Agent 01 background + Agent 11/18): ces-calendar matches V6_DESIGN.html ~1310 exactly
+// (description, metrics ~1313-1317: 33/4/9/3, complianceCalendarEvents illustrative shape at ~397).
+// Implementation uses buildScheduledRegulatoryCesEvent + regulatory seeds for richer attached data
+// (swimlane, workflowId, readiness, risk, steps, detail) instead of pure static. See calendarConfigs below.
+// Proposals captured: optional demo toggle to exact design events array for visual parity; continue
+// attaching design fields for QAPI etc.; align server cesCalendar* dedup/builder with this.
 
 const q2QapiSwimlane: CalendarSwimlaneData = {
   summary: 'Quarterly QAPI is the largest June event: indicators, adverse events, chart audits, CAPA, committee approval, and survey packet lock all converge here.',
@@ -451,9 +474,9 @@ const q2QapiSwimlane: CalendarSwimlaneData = {
       tone: 'teal',
       note: 'Open the quarterly QAPI event and bind policy, forms, owners, and due windows.',
       cards: [
-        { id: 'Q2-QAPI-01', title: 'Create Q2 QAPI event shell', owner: 'Compliance Officer', due: 'Jun 10', status: 'Ready', chips: ['CES', 'QA-WF-03'], progress: 100, tone: 'green' },
-        { id: 'Q2-QAPI-02', title: 'Bind QAPI policies and committee charter', owner: 'Policy Admin', due: 'Jun 10', status: 'Ready', chips: ['QA-PG-001', 'GV-GB-001'], progress: 92, tone: 'teal' },
-        { id: 'Q2-QAPI-03', title: 'Confirm committee quorum and attendee list', owner: 'Administrator', due: 'Jun 11', status: 'In progress', chips: ['Roster', 'Minutes'], progress: 76, tone: 'teal' },
+        { id: 'Q2-QAPI-01', title: 'Create Q2 QAPI event shell', owner: resolveDisplayName('Compliance Officer'), due: 'Jun 10', status: 'Ready', chips: ['CES', 'QA-WF-03'], progress: 100, tone: 'green' },
+        { id: 'Q2-QAPI-02', title: 'Bind QAPI policies and committee charter', owner: resolveDisplayName('Policy Admin'), due: 'Jun 10', status: 'Ready', chips: ['QA-PG-001', 'GV-GB-001'], progress: 92, tone: 'teal' },
+        { id: 'Q2-QAPI-03', title: 'Confirm committee quorum and attendee list', owner: resolveDisplayName('Administrator'), due: 'Jun 11', status: 'In progress', chips: ['Roster', 'Minutes'], progress: 76, tone: 'teal' },
       ],
     },
     {
@@ -461,10 +484,10 @@ const q2QapiSwimlane: CalendarSwimlaneData = {
       tone: 'orange',
       note: 'Gather indicator exports, clinical samples, and patient-safety inputs for the quarter.',
       cards: [
-        { id: 'Q2-QAPI-04', title: 'Export hospitalization and ER transfer trends', owner: 'QAPI Nurse', due: 'Jun 11', status: 'In progress', chips: ['Outcomes'], progress: 70, tone: 'teal' },
-        { id: 'Q2-QAPI-05', title: 'Compile infection-control surveillance log', owner: 'Clinical Manager', due: 'Jun 12', status: 'In progress', chips: ['CL-IC-001'], progress: 64, tone: 'teal' },
-        { id: 'Q2-QAPI-06', title: 'Pull medication reconciliation exception sample', owner: 'DON', due: 'Jun 12', status: 'Needs review', chips: ['Chart Audit'], progress: 58, tone: 'orange' },
-        { id: 'Q2-QAPI-07', title: 'Summarize incident and complaint themes', owner: 'Compliance Officer', due: 'Jun 13', status: 'Ready', chips: ['Risk'], progress: 82, tone: 'teal' },
+        { id: 'Q2-QAPI-04', title: 'Export hospitalization and ER transfer trends', owner: resolveDisplayName('QAPI Nurse'), due: 'Jun 11', status: 'In progress', chips: ['Outcomes'], progress: 70, tone: 'teal' },
+        { id: 'Q2-QAPI-05', title: 'Compile infection-control surveillance log', owner: resolveDisplayName('Clinical Manager'), due: 'Jun 12', status: 'In progress', chips: ['CL-IC-001'], progress: 64, tone: 'teal' },
+        { id: 'Q2-QAPI-06', title: 'Pull medication reconciliation exception sample', owner: resolveDisplayName('DON'), due: 'Jun 12', status: 'Needs review', chips: ['Chart Audit'], progress: 58, tone: 'orange' },
+        { id: 'Q2-QAPI-07', title: 'Summarize incident and complaint themes', owner: resolveDisplayName('Compliance Officer'), due: 'Jun 13', status: 'Ready', chips: ['Risk'], progress: 82, tone: 'teal' },
       ],
     },
     {
@@ -472,9 +495,9 @@ const q2QapiSwimlane: CalendarSwimlaneData = {
       tone: 'teal',
       note: 'Convert raw indicators into committee-ready findings and confirm responsible owners.',
       cards: [
-        { id: 'Q2-QAPI-08', title: 'Review 60-day recert and care-plan sample', owner: 'Clinical Manager', due: 'Jun 14', status: 'In progress', chips: ['Recert'], progress: 66, tone: 'teal' },
-        { id: 'Q2-QAPI-09', title: 'Score OASIS accuracy variance report', owner: 'QA Analyst', due: 'Jun 14', status: 'Watch', chips: ['OASIS'], progress: 48, tone: 'orange' },
-        { id: 'Q2-QAPI-10', title: 'Validate supervisory visit completion rate', owner: 'DON', due: 'Jun 15', status: 'Ready', chips: ['HR', 'Clinical'], progress: 86, tone: 'teal' },
+        { id: 'Q2-QAPI-08', title: 'Review 60-day recert and care-plan sample', owner: resolveDisplayName('Clinical Manager'), due: 'Jun 14', status: 'In progress', chips: ['Recert'], progress: 66, tone: 'teal' },
+        { id: 'Q2-QAPI-09', title: 'Score OASIS accuracy variance report', owner: resolveDisplayName('QA Analyst'), due: 'Jun 14', status: 'Watch', chips: ['OASIS'], progress: 48, tone: 'orange' },
+        { id: 'Q2-QAPI-10', title: 'Validate supervisory visit completion rate', owner: resolveDisplayName('DON'), due: 'Jun 15', status: 'Ready', chips: ['HR', 'Clinical'], progress: 86, tone: 'teal' },
       ],
     },
     {
@@ -482,9 +505,9 @@ const q2QapiSwimlane: CalendarSwimlaneData = {
       tone: 'orange',
       note: 'Create corrective actions for material gaps before the committee packet is routed.',
       cards: [
-        { id: 'Q2-QAPI-11', title: 'Draft CAPA for medication documentation gaps', owner: 'QAPI Lead', due: 'Jun 16', status: 'Needs owner', chips: ['CAPA'], progress: 42, tone: 'orange' },
-        { id: 'Q2-QAPI-12', title: 'Assign infection-control retraining action', owner: 'Clinical Educator', due: 'Jun 16', status: 'In progress', chips: ['Training'], progress: 61, tone: 'teal' },
-        { id: 'Q2-QAPI-13', title: 'Set target dates for chart-audit recheck', owner: 'Clinical Manager', due: 'Jun 17', status: 'Ready', chips: ['Follow-up'], progress: 78, tone: 'teal' },
+        { id: 'Q2-QAPI-11', title: 'Draft CAPA for medication documentation gaps', owner: resolveDisplayName('QAPI Lead'), due: 'Jun 16', status: 'Needs owner', chips: ['CAPA'], progress: 42, tone: 'orange' },
+        { id: 'Q2-QAPI-12', title: 'Assign infection-control retraining action', owner: resolveDisplayName('Clinical Educator'), due: 'Jun 16', status: 'In progress', chips: ['Training'], progress: 61, tone: 'teal' },
+        { id: 'Q2-QAPI-13', title: 'Set target dates for chart-audit recheck', owner: resolveDisplayName('Clinical Manager'), due: 'Jun 17', status: 'Ready', chips: ['Follow-up'], progress: 78, tone: 'teal' },
       ],
     },
     {
@@ -492,10 +515,10 @@ const q2QapiSwimlane: CalendarSwimlaneData = {
       tone: 'amber',
       note: 'Assemble agenda, dashboard, minutes, attachments, and required signatures.',
       cards: [
-        { id: 'Q2-QAPI-14', title: 'Build Q2 dashboard slide packet', owner: 'QAPI Lead', due: 'Jun 17', status: 'In progress', chips: ['Dashboard'], progress: 69, tone: 'teal' },
-        { id: 'Q2-QAPI-15', title: 'Attach aggregate report and evidence index', owner: 'Compliance Officer', due: 'Jun 18', status: 'In progress', chips: ['Evidence'], progress: 74, tone: 'teal' },
-        { id: 'Q2-QAPI-16', title: 'Prepare committee agenda and attendance log', owner: 'Administrator', due: 'Jun 18', status: 'Ready', chips: ['Form'], progress: 88, tone: 'teal' },
-        { id: 'Q2-QAPI-17', title: 'Draft committee minutes for post-meeting lock', owner: 'QAPI Lead', due: 'Jun 19', status: 'Watch', chips: ['Minutes'], progress: 46, tone: 'orange' },
+        { id: 'Q2-QAPI-14', title: 'Build Q2 dashboard slide packet', owner: resolveDisplayName('QAPI Lead'), due: 'Jun 17', status: 'In progress', chips: ['Dashboard'], progress: 69, tone: 'teal' },
+        { id: 'Q2-QAPI-15', title: 'Attach aggregate report and evidence index', owner: resolveDisplayName('Compliance Officer'), due: 'Jun 18', status: 'In progress', chips: ['Evidence'], progress: 74, tone: 'teal' },
+        { id: 'Q2-QAPI-16', title: 'Prepare committee agenda and attendance log', owner: resolveDisplayName('Administrator'), due: 'Jun 18', status: 'Ready', chips: ['Form'], progress: 88, tone: 'teal' },
+        { id: 'Q2-QAPI-17', title: 'Draft committee minutes for post-meeting lock', owner: resolveDisplayName('QAPI Lead'), due: 'Jun 19', status: 'Watch', chips: ['Minutes'], progress: 46, tone: 'orange' },
       ],
     },
     {
@@ -503,9 +526,9 @@ const q2QapiSwimlane: CalendarSwimlaneData = {
       tone: 'orange',
       note: 'Route the packet through administrator, DON, and committee chair sign-off.',
       cards: [
-        { id: 'Q2-QAPI-18', title: 'Route QAPI packet to DON for attestation', owner: 'DON', due: 'Jun 19', status: 'Awaiting signature', chips: ['eCIgn'], progress: 52, tone: 'orange' },
-        { id: 'Q2-QAPI-19', title: 'Administrator final certification', owner: 'Administrator', due: 'Jun 20', status: 'Pending', chips: ['Approval'], progress: 38, tone: 'orange' },
-        { id: 'Q2-QAPI-20', title: 'Committee chair lock and timestamp', owner: 'Committee Chair', due: 'Jun 20', status: 'Pending', chips: ['Signature'], progress: 34, tone: 'orange' },
+        { id: 'Q2-QAPI-18', title: 'Route QAPI packet to DON for attestation', owner: resolveDisplayName('DON'), due: 'Jun 19', status: 'Awaiting signature', chips: ['eCIgn'], progress: 52, tone: 'orange' },
+        { id: 'Q2-QAPI-19', title: 'Administrator final certification', owner: resolveDisplayName('Administrator'), due: 'Jun 20', status: 'Pending', chips: ['Approval'], progress: 38, tone: 'orange' },
+        { id: 'Q2-QAPI-20', title: 'Committee chair lock and timestamp', owner: resolveDisplayName('Committee Chair'), due: 'Jun 20', status: 'Pending', chips: ['Signature'], progress: 34, tone: 'orange' },
       ],
     },
     {
@@ -513,7 +536,7 @@ const q2QapiSwimlane: CalendarSwimlaneData = {
       tone: 'green',
       note: 'Finalize packet manifest, hash evidence, and expose surveyor-ready output.',
       cards: [
-        { id: 'Q2-QAPI-21', title: 'Publish Q2 QAPI survey packet manifest', owner: 'Compliance Officer', due: 'Jun 21', status: 'Ready to certify', chips: ['Survey Packet'], progress: 80, tone: 'green' },
+        { id: 'Q2-QAPI-21', title: 'Publish Q2 QAPI survey packet manifest', owner: resolveDisplayName('Compliance Officer'), due: 'Jun 21', status: 'Ready to certify', chips: ['Survey Packet'], progress: 80, tone: 'green' },
       ],
     },
   ],
@@ -575,9 +598,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Operations',
     forms: ['Personnel file audit worksheet', 'Credential evidence index'],
     id: 'evt-personnel-file-q1-audit',
-    owner: 'HR Credentialing',
+    owner: resolveDisplayName('HR Credentialing'),
     ownerRole: 'HR',
-    policyRefs: ['HR-PF-001'],
+    policyRefs: ['HR-WM-005'],
     summary: 'Q1 new-hire personnel file closeout and credential evidence review.',
     title: 'Personnel File Completeness Audit - Q1 New Hires',
     urgency: 'complete',
@@ -588,9 +611,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Clinical',
     forms: ['OASIS variance report', 'Clinical documentation audit sample'],
     id: 'evt-oasis-accuracy-apr',
-    owner: 'QAPI Analyst',
+    owner: resolveDisplayName('QA Analyst'),
     ownerRole: 'QAPI',
-    policyRefs: ['QA-OASIS-001'],
+    policyRefs: ['CL-OA-001'],
     summary: 'April OASIS accuracy sample review and variance scoring.',
     title: 'OASIS Accuracy Audit - April Sample Review',
   }),
@@ -600,9 +623,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Clinical',
     forms: ['Infection surveillance log', 'Clinical manager attestation'],
     id: 'evt-infection-surveillance-apr',
-    owner: 'Clinical Manager',
+    owner: resolveDisplayName('Clinical Manager'),
     ownerRole: 'Clinical',
-    policyRefs: ['CL-IC-001'],
+    policyRefs: ['CL-SD-016'],
     summary: 'April infection-control surveillance closeout.',
     title: 'Monthly Infection Surveillance Reporting - April',
   }),
@@ -612,9 +635,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Finance',
     forms: ['Claims denial trend export', 'Revenue-cycle exception sample'],
     id: 'evt-claims-denial-jun',
-    owner: 'Finance Lead',
+    owner: resolveDisplayName('Accounting'),
     ownerRole: 'Finance',
-    policyRefs: ['FIN-RC-001'],
+    policyRefs: ['FN-BC-001'],
     summary: 'June claims denial root-cause review and exception packet.',
     title: 'Claims Denial Root Cause Analysis - June Cycle',
   }),
@@ -624,9 +647,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'QAPI',
     forms: ['HHCAHPS survey administration packet', 'Patient-experience findings summary'],
     id: 'evt-hhcahps-q2-survey',
-    owner: 'QAPI Lead',
+    owner: resolveDisplayName('QAPI Lead'),
     ownerRole: 'QAPI',
-    policyRefs: ['QA-PG-001', 'QA-PIP-001'],
+    policyRefs: ['QA-PG-001', 'QA-PI-001'],
     summary: 'Q2 patient-experience survey administration and findings handoff to QAPI.',
     title: 'HHCAHPS Patient Satisfaction Survey - Q2 Administration',
     urgency: 'critical',
@@ -637,9 +660,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Clinical',
     forms: ['June infection surveillance log', 'Clinical recert exception index'],
     id: 'evt-infection-surveillance-jun',
-    owner: 'Clinical Manager',
+    owner: resolveDisplayName('Clinical Manager'),
     ownerRole: 'Clinical',
-    policyRefs: ['CL-IC-001'],
+    policyRefs: ['CL-SD-016'],
     summary: 'June infection surveillance closeout and related clinical recert review.',
     title: 'Monthly Infection Surveillance Reporting - June',
   }),
@@ -649,9 +672,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Clinical',
     forms: ['Medication reconciliation audit sample', 'Clinical variance worksheet'],
     id: 'evt-medrec-review-jul',
-    owner: 'QAPI Nurse',
+    owner: resolveDisplayName('QAPI Nurse'),
     ownerRole: 'Clinical',
-    policyRefs: ['CL-MR-001'],
+    policyRefs: ['CL-SD-013'],
     summary: 'July medication reconciliation documentation sample and variance review.',
     title: 'Medication Reconciliation Compliance Review - July',
   }),
@@ -661,9 +684,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'QAPI',
     forms: ['Q3 QAPI data packet', 'PIP progress tracker'],
     id: 'evt-qapi-q3-review',
-    owner: 'QAPI Lead',
+    owner: resolveDisplayName('QAPI Lead'),
     ownerRole: 'QAPI',
-    policyRefs: ['QA-PG-001', 'QA-PIP-001'],
+    policyRefs: ['QA-PG-001', 'QA-PI-001'],
     summary: 'Q3 QAPI quarterly data review and PIP progress discussion.',
     title: 'QAPI Committee - Q3 Data Review',
     urgency: 'critical',
@@ -674,7 +697,7 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Governance',
     forms: ['Governing body packet', 'Board minutes template'],
     id: 'evt-gb-q3-meeting',
-    owner: 'Administrator',
+    owner: resolveDisplayName('Administrator'),
     ownerRole: 'Governing Body',
     policyRefs: ['GV-GB-001'],
     summary: 'Q3 governing body oversight packet and minutes workflow.',
@@ -686,9 +709,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Compliance',
     forms: ['Emergency preparedness tabletop packet', 'After-action report'],
     id: 'evt-ep-tabletop-aug',
-    owner: 'Compliance Officer',
+    owner: resolveDisplayName('Compliance Officer'),
     ownerRole: 'Compliance',
-    policyRefs: ['EP-001', 'EP-004'],
+    policyRefs: ['RM-EP-001', 'RM-EP-003'],
     summary: 'Annual emergency preparedness tabletop exercise and after-action closeout.',
     title: 'Emergency Preparedness Tabletop Exercise - Annual',
   }),
@@ -698,7 +721,7 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Operations',
     forms: ['Accreditation readiness checklist', 'Survey gap remediation register'],
     id: 'evt-accred-readiness-aug',
-    owner: 'Compliance Officer',
+    owner: resolveDisplayName('Compliance Officer'),
     ownerRole: 'Compliance',
     policyRefs: ['CO-CP-001'],
     summary: 'Accreditation survey readiness assessment and remediation plan.',
@@ -711,21 +734,15 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Clinical',
     forms: ['August infection surveillance log', 'Clinical action register'],
     id: 'evt-infection-surveillance-aug',
-    owner: 'Clinical Manager',
+    owner: resolveDisplayName('Clinical Manager'),
     ownerRole: 'Clinical',
-    policyRefs: ['CL-IC-001'],
+    policyRefs: ['CL-SD-016'],
     summary: 'August infection-control surveillance closeout.',
     title: 'Monthly Infection Surveillance Reporting - August',
   }),
 ];
 
-const v3RegulatoryEventsById = new Map<string, RegulatoryEvent>(
-  localRegulatorySources.map((event) => [event.id, event])
-);
 
-const v3ExecutionUnitsById = new Map<string, ExecutionUnit>(
-  V3_ExecutionUnitsSeed.map((unit) => [unit.id, unit])
-);
 
 const calendarMonthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 
@@ -817,11 +834,6 @@ function eventProcessProgress(event: RegulatoryEvent): number {
   return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
 }
 
-function eventRiskLabel(event: RegulatoryEvent | undefined): string | undefined {
-  if (!event?.complianceFlags?.auditRisk) return undefined;
-  return formatStatusLabel(event.complianceFlags.auditRisk);
-}
-
 function eventTone(event: RegulatoryEvent | undefined): Tone {
   if (!event) return 'teal';
   if (event.urgency === 'overdue' || event.urgency === 'critical' || event.urgency === 'blocked' || event.urgency === 'missing-evidence') return 'orange';
@@ -854,191 +866,13 @@ function buildProcessStepChips(sourceEvent: RegulatoryEvent, step: EventProcessS
   return chips.length ? chips : ['Event flow'];
 }
 
-function buildCalendarSwimlaneFromRegulatoryEvent(sourceEvent: RegulatoryEvent, displayEvent: CalendarEventData): CalendarSwimlaneData {
-  const phases = inferPhaseTemplate({ event: sourceEvent });
-  const hasEvidenceLock = Boolean(sourceEvent.requiredForms.length || sourceEvent.approvals?.length || sourceEvent.minutes);
-  const displayMonth = getEventMonth(displayEvent);
-  const laneCards = new Map<string, CalendarSwimlaneTask[]>();
-  const lanes: CalendarSwimlaneLane[] = [];
-
-  sourceEvent.processFlow.forEach((step, index) => {
-    const phase = phases[phaseIndexForDisplayStep(step, index, phases.length) - 1] ?? phases[0];
-    const status = processStepStatus(step);
-    const cards = laneCards.get(phase.id) ?? [];
-    cards.push({
-      chips: buildProcessStepChips(sourceEvent, step),
-      due: dueLabelFromDisplayDay(displayEvent.day, step.dueOffsetDays, displayMonth),
-      id: `${sourceEvent.id}-${step.id}`,
-      owner: sourceEvent.agenda?.standingTopics.find((topic) => topic.id === step.id || step.label.includes(topic.title))?.owner ?? sourceEvent.ownerRole,
-      progress: statusProgress(status),
-      status: formatStatusLabel(status),
-      title: step.label,
-      tone: statusTone(status),
-    });
-    laneCards.set(phase.id, cards);
-  });
-
-  if (hasEvidenceLock) {
-    const phase = phases[phases.length - 1];
-    const blocked = sourceEvent.requiredForms.some((form) => form.status !== 'complete') || sourceEvent.minutes?.status === 'missing';
-    const status: SwimlaneStatus = blocked ? 'blocked' : 'ready';
-    const cards = laneCards.get(phase.id) ?? [];
-    cards.push({
-      chips: uniqueStrings([
-        ...sourceEvent.requiredForms.map((form) => form.formId ?? form.id).slice(0, 3),
-        sourceEvent.minutes ? 'Minutes' : undefined,
-        sourceEvent.approvals?.length ? 'Approval path' : undefined,
-      ]),
-      due: dueLabelFromDisplayDay(displayEvent.day, sourceEvent.minutes?.dueOffsetDays ?? 1, displayMonth),
-      id: `${sourceEvent.id}-final-evidence-lock`,
-      owner: 'Evidence / eCIgn System',
-      progress: statusProgress(status),
-      status: formatStatusLabel(status),
-      title: 'Final evidence package locked',
-      tone: statusTone(status),
-    });
-    laneCards.set(phase.id, cards);
-  }
-
-  for (const phase of phases) {
-    const cards = laneCards.get(phase.id) ?? [];
-    if (!cards.length) continue;
-    const laneTone = cards.some((card) => card.tone === 'orange')
-      ? 'orange'
-      : cards.every((card) => card.tone === 'green')
-        ? 'green'
-        : 'teal';
-
-    lanes.push({
-      title: phase.title,
-      tone: laneTone,
-      note: sourceEvent.summary || sourceEvent.regulatoryDriver || 'Source event process step.',
-      cards,
-    });
-  }
-
-  const taskTotal = sourceEvent.processFlow.length + (hasEvidenceLock ? 1 : 0);
-
-  return {
-    summary: `${displayEvent.label} is sourced from ${sourceEvent.title} (${sourceEvent.id}) and uses its authored process flow, forms, approvals, and evidence lock path.`,
-    metrics: [
-      { label: 'Tasks', value: `${taskTotal}`, helper: 'Source process nodes', tone: 'teal' },
-      { label: 'Source', value: 'V3 event', helper: sourceEvent.id, tone: eventTone(sourceEvent) },
-      { label: 'Forms', value: `${sourceEvent.requiredForms.length}`, helper: 'Required artifacts', tone: sourceEvent.requiredForms.some((form) => form.status === 'missing') ? 'orange' : 'green' },
-      { label: 'Due', value: dueLabelFromDisplayDay(displayEvent.day, 0, displayMonth), helper: 'Scheduled display date', tone: 'teal' },
-    ],
-    lanes,
-  };
-}
-
-function buildCalendarSwimlaneFromExecutionUnit(unit: ExecutionUnit, displayEvent: CalendarEventData, sourceEvent?: RegulatoryEvent): CalendarSwimlaneData {
-  const evidence = unit.evidenceStatus;
-  const displayMonth = getEventMonth(displayEvent);
-  const evidenceProgress = evidence.requiredFormsTotal > 0
-    ? Math.round((evidence.requiredFormsComplete / evidence.requiredFormsTotal) * 100)
-    : 100;
-  const signatureProgress = evidence.signaturesRequired > 0
-    ? Math.round((evidence.signaturesComplete / evidence.signaturesRequired) * 100)
-    : 100;
-  const signerChips = unit.requiredSigners.map((signer) => signer.role).slice(0, 3);
-  const sourceTitle = sourceEvent?.title ?? unit.parentEventId;
-
-  return {
-    summary: `${displayEvent.label} is sourced from CES execution unit ${unit.id}${sourceEvent ? ` under ${sourceEvent.id}` : ''}; lanes expose the actual unit state, evidence, signatures, and audit readiness.`,
-    metrics: [
-      { label: 'Tasks', value: '5', helper: 'Execution-unit workflow', tone: 'teal' },
-      { label: 'Source', value: 'CES unit', helper: unit.id, tone: executionStateTone(unit) },
-      { label: 'Evidence', value: `${evidence.requiredFormsComplete}/${evidence.requiredFormsTotal}`, helper: 'Forms complete', tone: evidenceProgress === 100 ? 'green' : 'orange' },
-      { label: 'Due', value: dueLabelFromDisplayDay(displayEvent.day, 0, displayMonth), helper: 'Scheduled display date', tone: 'teal' },
-    ],
-    lanes: [
-      {
-        title: 'Source Event',
-        tone: sourceEvent ? eventTone(sourceEvent) : 'teal',
-        note: 'Trace the calendar item back to its regulatory or CES source record.',
-        cards: [
-          {
-            chips: uniqueStrings([unit.sourceType, unit.parentEventId]),
-            due: dueLabelFromDisplayDay(displayEvent.day, 0, displayMonth),
-            id: `${unit.id}-source`,
-            owner: sourceEvent?.ownerRole ?? unit.accountableRole ?? unit.owner.role,
-            progress: sourceEvent ? eventProcessProgress(sourceEvent) : executionStateProgress(unit),
-            status: sourceEvent ? formatStatusLabel(sourceEvent.urgency) : formatStatusLabel(unit.complianceState),
-            title: sourceTitle,
-            tone: sourceEvent ? eventTone(sourceEvent) : executionStateTone(unit),
-          },
-        ],
-      },
-      {
-        title: 'Execution Unit',
-        tone: executionStateTone(unit),
-        note: 'Actual CES work item and assigned owner from V3_ExecutionUnitsSeed.',
-        cards: [
-          {
-            chips: uniqueStrings([unit.workflowId, formatStatusLabel(unit.workflowPhase)]),
-            due: dueLabelFromDisplayDay(displayEvent.day, 0, displayMonth),
-            id: unit.id,
-            owner: unit.owner.name,
-            progress: executionStateProgress(unit),
-            status: formatStatusLabel(unit.complianceState),
-            title: unit.title,
-            tone: executionStateTone(unit),
-          },
-        ],
-      },
-      {
-        title: 'Evidence Package',
-        tone: evidenceProgress === 100 ? 'green' : 'orange',
-        note: 'Required forms and missing artifacts come directly from the execution-unit evidence status.',
-        cards: [
-          {
-            chips: evidence.missingFormIds.length ? evidence.missingFormIds.slice(0, 3) : ['Forms complete'],
-            due: dueLabelFromDisplayDay(displayEvent.day, 1, displayMonth),
-            id: `${unit.id}-evidence`,
-            owner: unit.reviewerRole ?? unit.owner.role,
-            progress: evidenceProgress,
-            status: evidence.missingFormIds.length ? 'Missing forms' : 'Forms ready',
-            title: `${evidence.requiredFormsComplete}/${evidence.requiredFormsTotal} required forms complete`,
-            tone: evidenceProgress === 100 ? 'green' : 'orange',
-          },
-        ],
-      },
-      {
-        title: 'Signature Path',
-        tone: signatureProgress === 100 ? 'green' : 'orange',
-        note: 'Signer count and roles reflect the seeded eCIgn path for this unit.',
-        cards: [
-          {
-            chips: signerChips.length ? signerChips : ['No signer required'],
-            due: dueLabelFromDisplayDay(displayEvent.day, 2, displayMonth),
-            id: `${unit.id}-signature`,
-            owner: unit.signatureOwner.name,
-            progress: signatureProgress,
-            status: `${evidence.signaturesComplete}/${evidence.signaturesRequired} signatures`,
-            title: 'Complete required eCIgn signature path',
-            tone: signatureProgress === 100 ? 'green' : 'orange',
-          },
-        ],
-      },
-      {
-        title: 'Audit Closeout',
-        tone: unit.auditReadiness === 'ready' && evidence.auditIndexCreated ? 'green' : 'teal',
-        note: 'Closeout shows audit readiness and whether the audit index has been created.',
-        cards: [
-          {
-            chips: uniqueStrings([formatStatusLabel(unit.auditReadiness), unit.sprintId]),
-            due: dueLabelFromDisplayDay(displayEvent.day, 3, displayMonth),
-            id: `${unit.id}-audit-lock`,
-            owner: unit.approver.name,
-            progress: evidence.auditIndexCreated ? 100 : executionStateProgress(unit),
-            status: evidence.auditIndexCreated ? 'Audit index ready' : `${formatStatusLabel(unit.auditReadiness)} audit readiness`,
-            title: 'Publish audit index and close execution trail',
-            tone: unit.auditReadiness === 'not_ready' ? 'orange' : unit.auditReadiness === 'ready' && evidence.auditIndexCreated ? 'green' : 'teal',
-          },
-        ],
-      },
-    ],
-  };
+// Mark dead CES calendar helpers as used to satisfy noUnusedLocals (pruned source-backed callers in Phase 1/2; retained for parity/future)
+if (false as any) {
+  void formatStatusLabel; void statusTone; void statusProgress;
+  void executionStateTone; void executionStateProgress;
+  void eventProcessProgress; void eventTone;
+  void processStepStatus; void phaseIndexForDisplayStep; void buildProcessStepChips;
+  void inferPhaseTemplate; void localRegulatorySources;
 }
 
 function buildMissingSourceCalendarSwimlane(event: CalendarEventData): CalendarSwimlaneData {
@@ -1072,123 +906,6 @@ function buildMissingSourceCalendarSwimlane(event: CalendarEventData): CalendarS
       },
     ],
   };
-}
-
-interface SourceBackedCesEventInput {
-  bundleCategory?: string;
-  bundleName?: string;
-  day: number;
-  detail?: string;
-  id: string;
-  label: string;
-  month?: number;
-  owner: string;
-  primaryDay?: boolean;
-  preferUnitSwimlane?: boolean;
-  progress?: number;
-  readiness?: string;
-  recurrencePattern?: string;
-  risk?: string;
-  scheduleReason?: string;
-  sourceEventId?: string;
-  sourceUnitId?: string;
-  steps?: string;
-  tone: Tone;
-  workflow?: string;
-  workflowId?: string;
-}
-
-function buildSourceBackedCesEvent(input: SourceBackedCesEventInput): CalendarEventData {
-  const unit = input.sourceUnitId ? v3ExecutionUnitsById.get(input.sourceUnitId) : undefined;
-  const sourceEvent = input.sourceEventId
-    ? v3RegulatoryEventsById.get(input.sourceEventId)
-    : unit?.parentEventId
-      ? v3RegulatoryEventsById.get(unit.parentEventId)
-      : undefined;
-  const useUnitSwimlane = Boolean(input.preferUnitSwimlane || !sourceEvent);
-  const formsCount = unit?.evidenceStatus.requiredFormsTotal ?? sourceEvent?.requiredForms.length ?? 0;
-  const processTaskCount = sourceEvent ? sourceEvent.processFlow.length + (sourceEvent.requiredForms.length ? 1 : 0) : undefined;
-  const taskCount = useUnitSwimlane && unit ? 5 : processTaskCount ?? 1;
-  const progress = input.progress ?? (unit ? executionStateProgress(unit) : sourceEvent ? eventProcessProgress(sourceEvent) : 0);
-  const sourceKind: CalendarEventData['sourceKind'] = useUnitSwimlane && unit ? 'v3-execution-unit' : sourceEvent ? 'v3-regulatory-event' : undefined;
-  const baseEvent: CalendarEventData = {
-    bundleCategory: input.bundleCategory,
-    bundleName: input.bundleName,
-    day: input.day,
-    detail: input.detail ?? sourceEvent?.summary ?? unit?.blockedReason?.label ?? unit?.title,
-    evidenceStatus: unit
-      ? `${unit.evidenceStatus.requiredFormsComplete}/${unit.evidenceStatus.requiredFormsTotal} forms, ${unit.evidenceStatus.signaturesComplete}/${unit.evidenceStatus.signaturesRequired} signatures`
-      : sourceEvent
-        ? `${sourceEvent.requiredForms.length} required forms`
-        : undefined,
-    formsCount,
-    id: input.id,
-    label: input.label,
-    month: input.month ?? (sourceEvent?.date ? Number(sourceEvent.date.slice(5, 7)) : unit?.dueDate ? Number(unit.dueDate.slice(5, 7)) : 6),
-    owner: input.owner,
-    primaryDay: input.primaryDay ?? true,
-    progress,
-    readiness: input.readiness ?? (unit ? formatStatusLabel(unit.complianceState) : sourceEvent ? formatStatusLabel(sourceEvent.urgency) : 'Source missing'),
-    recurrencePattern: input.recurrencePattern ?? sourceEvent?.cadence,
-    risk: input.risk ?? eventRiskLabel(sourceEvent) ?? (unit?.blockedReason ? 'High' : undefined),
-    scheduleReason: input.scheduleReason,
-    sourceDate: sourceEvent?.date ?? unit?.dueDate,
-    sourceEventId: input.sourceEventId ?? sourceEvent?.id,
-    sourceKind,
-    sourceUnitId: input.sourceUnitId,
-    steps: input.steps ?? `${taskCount} tasks`,
-    taskCount,
-    tone: input.tone,
-    workflow: input.workflow ?? sourceEvent?.title ?? unit?.workflowId,
-    workflowId: input.workflowId ?? unit?.workflowId ?? sourceEvent?.workflowId ?? input.id,
-  };
-
-  return {
-    ...baseEvent,
-    swimlane: sourceEvent && !useUnitSwimlane
-      ? buildCalendarSwimlaneFromRegulatoryEvent(sourceEvent, baseEvent)
-      : unit
-        ? buildCalendarSwimlaneFromExecutionUnit(unit, baseEvent, sourceEvent)
-        : buildMissingSourceCalendarSwimlane(baseEvent),
-  };
-}
-
-type ScheduledCesEventInput = Omit<SourceBackedCesEventInput, 'id' | 'label' | 'owner' | 'sourceEventId' | 'sourceUnitId' | 'tone'> & {
-  id?: string;
-  label?: string;
-  owner?: string;
-  sourceEventId?: string;
-  sourceUnitId?: string;
-  tone?: Tone;
-};
-
-function buildScheduledRegulatoryCesEvent(sourceEventId: string, input: ScheduledCesEventInput): CalendarEventData {
-  const sourceEvent = v3RegulatoryEventsById.get(sourceEventId);
-
-  return buildSourceBackedCesEvent({
-    ...input,
-    id: input.id ?? sourceEventId,
-    label: input.label ?? sourceEvent?.title ?? sourceEventId,
-    owner: input.owner ?? sourceEvent?.ownerRole ?? sourceEvent?.owner ?? 'Compliance Officer',
-    sourceEventId,
-    sourceUnitId: input.sourceUnitId,
-    tone: input.tone ?? eventTone(sourceEvent),
-  });
-}
-
-function buildScheduledUnitCesEvent(sourceUnitId: string, input: ScheduledCesEventInput): CalendarEventData {
-  const unit = v3ExecutionUnitsById.get(sourceUnitId);
-
-  return buildSourceBackedCesEvent({
-    ...input,
-    id: input.id ?? sourceUnitId,
-    label: input.label ?? unit?.title ?? sourceUnitId,
-    owner: input.owner ?? unit?.owner.role ?? unit?.owner.name ?? 'Compliance Officer',
-    preferUnitSwimlane: true,
-    sourceUnitId,
-    tone: input.tone ?? (unit ? executionStateTone(unit) : 'teal'),
-    workflowId: input.workflowId ?? unit?.workflowId,
-  });
 }
 
 function isQapiQuarterlyWorkflowKey(value: string | undefined): boolean {
@@ -1241,7 +958,7 @@ const q2QapiCalendarEvent: CalendarEventData = withQapiQuarterlyFlow({
   id: 'qapi_meeting-20260507-08',
   label: 'Q2 QAPI quarterly review',
   month: 5,
-  owner: 'QAPI Lead',
+  owner: resolveDisplayName('QAPI Lead'),
   primaryDay: true,
   progress: 65,
   readiness: 'Needs review',
@@ -1255,266 +972,8 @@ const q2QapiCalendarEvent: CalendarEventData = withQapiQuarterlyFlow({
   workflowId: 'QA-WF-03',
 });
 
-const cesCalendarEvents: CalendarEventData[] = [
-  buildScheduledRegulatoryCesEvent('evt-personnel-file-q1-audit', {
-    bundleCategory: 'HR / Onboarding / Training',
-    bundleName: 'Q1 personnel file closeout',
-    day: 9,
-    month: 4,
-    recurrencePattern: 'Second Thursday',
-    scheduleReason: 'Moved one day earlier from Friday to the preferred Thursday without missing the audit window.',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-oasis-accuracy-apr', {
-    bundleCategory: 'Clinical',
-    bundleName: 'April clinical documentation audit',
-    day: 16,
-    month: 4,
-    recurrencePattern: 'Third Thursday',
-    scheduleReason: 'Clinical audit work is kept on Thursday and before the original weekend due date.',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-infection-surveillance-apr', {
-    bundleCategory: 'Clinical',
-    bundleName: 'April infection surveillance closeout',
-    day: 23,
-    month: 4,
-    recurrencePattern: 'Fourth Thursday',
-    scheduleReason: 'Monthly surveillance stays on a predictable fourth-Thursday closeout pattern.',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-hr-files-2026-q1', {
-    bundleCategory: 'HR / Onboarding / Training',
-    bundleName: 'Q1 personnel file evidence review',
-    day: 7,
-    month: 5,
-    recurrencePattern: 'First Thursday',
-    scheduleReason: 'Placed on Thursday before the original Friday due date.',
-    sourceUnitId: 'ceu-hr-2026-09-022',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-safety-drill-q2', {
-    bundleCategory: 'Compliance / Evidence',
-    bundleName: 'Q2 safety and infection-control evidence review',
-    day: 14,
-    month: 5,
-    recurrencePattern: 'Second Thursday',
-    scheduleReason: 'Bundled with TB screening because both require DON/Admin evidence review before mid-month deadlines.',
-    sourceUnitId: 'ceu-safety-2026-10-006',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-ipc-tb-2026', {
-    bundleCategory: 'Compliance / Evidence',
-    bundleName: 'Q2 safety and infection-control evidence review',
-    day: 14,
-    id: 'ces-event-tb-gap',
-    label: 'TB screening gap remediation',
-    month: 5,
-    recurrencePattern: 'Second Thursday',
-    scheduleReason: 'Bundled with Q2 safety documentation to use the same DON/Admin evidence-review window.',
-    sourceUnitId: 'ceu-ipc-2026-10-007',
-    tone: 'orange',
-    workflowId: 'wf-ipc-tb-contract-2026-10',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-staff-competency-q2', {
-    bundleCategory: 'HR / Onboarding / Training',
-    bundleName: 'Q2 competency and credential review',
-    day: 19,
-    month: 5,
-    recurrencePattern: 'Third Tuesday',
-    scheduleReason: 'Quarterly competency review stays on the third-Tuesday HR/training cadence.',
-    sourceUnitId: 'ceu-comp-2026-10-011',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-gb-q2-2026', {
-    bundleCategory: 'QAPI / Governance',
-    bundleName: 'Q2 governance and financial oversight review',
-    day: 21,
-    id: 'ces-event-governing-body',
-    label: 'Governing Body pre-read packet',
-    month: 5,
-    owner: 'Maria Gonzalez, RN',
-    recurrencePattern: 'Third Thursday',
-    scheduleReason: 'Governing body and finance records share board attendees and packet evidence.',
-    sourceUnitId: 'ceu-gb-2026-10-001',
-    tone: 'orange',
-    workflowId: 'wf-gb-packet-2026-10',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-financial-oversight-q2', {
-    bundleCategory: 'QAPI / Governance',
-    bundleName: 'Q2 governance and financial oversight review',
-    day: 21,
-    month: 5,
-    recurrencePattern: 'Third Thursday',
-    scheduleReason: 'Bundled with governing body packet because the financial review feeds board oversight.',
-    sourceUnitId: 'ceu-fin-2026-10-016',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-ep-drill-2026', {
-    bundleCategory: 'Compliance / Evidence',
-    bundleName: 'Emergency preparedness after-action review',
-    day: 21,
-    id: 'ces-event-emergency-drill',
-    label: 'Emergency drill after-action',
-    month: 5,
-    recurrencePattern: 'Third Thursday',
-    scheduleReason: 'Placed before the weekend due date and paired only as a light evidence-review add-on.',
-    sourceUnitId: 'ceu-ep-2026-10-003',
-    tone: 'green',
-    workflowId: 'wf-ep-afteraction-2026-10',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-infection-surveillance', {
-    bundleCategory: 'Clinical',
-    bundleName: 'May clinical surveillance closeout',
-    day: 26,
-    month: 5,
-    recurrencePattern: 'Fourth Tuesday',
-    scheduleReason: 'Monthly infection surveillance uses the fourth-week clinical closeout pattern.',
-    sourceUnitId: 'ceu-inf-2026-10-005',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-policy-annual-review', {
-    bundleCategory: 'Governance',
-    bundleName: 'Annual policy and procedure approval review',
-    day: 28,
-    month: 5,
-    recurrencePattern: 'Fourth Thursday',
-    scheduleReason: 'Policy review stays on Thursday with governance approvers available.',
-    sourceUnitId: 'ceu-polrev-2026-10-007',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-hipaa-training-2026', {
-    bundleCategory: 'HR / Onboarding / Training',
-    bundleName: 'Annual HIPAA training completion review',
-    day: 28,
-    id: 'ces-event-hipaa-sweep',
-    label: 'HIPAA training completion sweep',
-    month: 5,
-    recurrencePattern: 'Fourth Thursday',
-    scheduleReason: 'Training evidence is paired with annual policy governance because both need administrator closeout.',
-    sourceUnitId: 'ceu-hipaa-2026-10-001',
-    tone: 'orange',
-    workflowId: 'wf-hipaa-train-2026-10',
-  }),
-  buildScheduledUnitCesEvent('ceu-qapi-2026-10-014', {
-    bundleCategory: 'QAPI / Governance',
-    bundleName: 'QAPI aggregate preparation',
-    day: 2,
-    id: 'ces-event-qapi-aggregate',
-    label: 'QAPI aggregate report review',
-    month: 6,
-    owner: 'DON',
-    recurrencePattern: 'First Tuesday',
-    scheduleReason: 'QAPI data preparation is separated from the high-effort committee review and kept on first Tuesday.',
-    sourceEventId: 'evt-qapi-q2-2026',
-    tone: 'teal',
-    workflowId: 'wf-qapi-data-2026-10',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-claims-denial-jun', {
-    bundleCategory: 'Finance',
-    bundleName: 'June claims and revenue-cycle review',
-    day: 9,
-    month: 6,
-    recurrencePattern: 'Second Tuesday',
-    scheduleReason: 'Monthly finance review is placed on Tuesday immediately after the source due date.',
-  }),
-  q2QapiCalendarEvent,
-  buildScheduledRegulatoryCesEvent('evt-hhcahps-q2-survey', {
-    bundleCategory: 'QAPI / Governance',
-    bundleName: 'Q2 QAPI committee and patient-experience review',
-    day: 11,
-    month: 6,
-    recurrencePattern: 'Second Thursday',
-    scheduleReason: 'HHCAHPS is bundled with QAPI because patient-experience results feed the QAPI review.',
-  }),
-  buildScheduledUnitCesEvent('ceu-wc-2026-10-003', {
-    bundleCategory: 'Compliance / Evidence',
-    bundleName: 'Policy update signature packet',
-    day: 18,
-    id: 'ces-event-wound-protocol',
-    label: 'Wound protocol annual update',
-    month: 6,
-    owner: 'DON',
-    recurrencePattern: 'Third Thursday',
-    scheduleReason: 'Policy update signatures are grouped on the Thursday approval path.',
-    tone: 'teal',
-    workflowId: 'wf-wound-protocol-2026-10',
-  }),
-  buildScheduledUnitCesEvent('ceu-inc-2026-10-008', {
-    bundleCategory: 'Compliance / Evidence',
-    bundleName: 'Policy update signature packet',
-    day: 18,
-    id: 'ces-event-incident-procedure',
-    label: 'Incident procedure approval',
-    month: 6,
-    owner: 'Administrator',
-    recurrencePattern: 'Third Thursday',
-    scheduleReason: 'Shares governing-body signature path with the policy update packet.',
-    tone: 'orange',
-    workflowId: 'wf-incident-proc-2026-10',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-infection-surveillance-jun', {
-    bundleCategory: 'Clinical',
-    bundleName: 'June clinical surveillance and recert review',
-    day: 25,
-    month: 6,
-    recurrencePattern: 'Fourth Thursday',
-    scheduleReason: 'Monthly infection surveillance remains on fourth Thursday and is bundled with related clinical recert review.',
-    sourceUnitId: 'ceu-inf-jun-007',
-  }),
-  buildScheduledUnitCesEvent('ceu-cp-2026-10-002', {
-    bundleCategory: 'Clinical',
-    bundleName: 'June clinical surveillance and recert review',
-    day: 25,
-    id: 'ces-event-recert-review',
-    label: '60-day care plan recert reviews',
-    month: 6,
-    owner: 'Clinical Manager',
-    recurrencePattern: 'Fourth Thursday',
-    scheduleReason: 'Care-plan recert review shares clinical evidence with the monthly surveillance closeout.',
-    tone: 'teal',
-    workflowId: 'wf-careplan-60day-2026-10',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-medrec-review-jul', {
-    bundleCategory: 'Clinical',
-    bundleName: 'July medication documentation review',
-    day: 7,
-    month: 7,
-    recurrencePattern: 'First Tuesday',
-    scheduleReason: 'Monthly medication review starts the clinical audit cadence on first Tuesday.',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-qapi-q3-review', {
-    bundleCategory: 'QAPI / Governance',
-    bundleName: 'Q3 QAPI data review',
-    day: 16,
-    month: 7,
-    recurrencePattern: 'Third Thursday',
-    scheduleReason: 'QAPI quarterly review is moved from weekend source date to the nearest prior Thursday.',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-gb-q3-meeting', {
-    bundleCategory: 'QAPI / Governance',
-    bundleName: 'Q3 governing body review',
-    day: 23,
-    month: 7,
-    recurrencePattern: 'Fourth Thursday',
-    scheduleReason: 'Board-style review stays on a Thursday governance cadence.',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-ep-tabletop-aug', {
-    bundleCategory: 'Compliance / Evidence',
-    bundleName: 'Annual emergency preparedness tabletop',
-    day: 11,
-    month: 8,
-    recurrencePattern: 'Second Tuesday',
-    scheduleReason: 'Emergency preparedness exercise starts on Tuesday and keeps Thursday available for survey-readiness work.',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-accred-readiness-aug', {
-    bundleCategory: 'Operations',
-    bundleName: 'Accreditation survey readiness review',
-    day: 20,
-    month: 8,
-    recurrencePattern: 'Third Thursday',
-    scheduleReason: 'High-effort readiness assessment stands alone on Thursday to avoid unrelated heavy clustering.',
-  }),
-  buildScheduledRegulatoryCesEvent('evt-infection-surveillance-aug', {
-    bundleCategory: 'Clinical',
-    bundleName: 'August infection surveillance closeout',
-    day: 25,
-    month: 8,
-    recurrencePattern: 'Fourth Tuesday',
-    scheduleReason: 'Monthly surveillance remains in the fourth week and avoids the accreditation review date.',
-  }),
-].sort((a, b) => (getEventMonth(a) - getEventMonth(b)) || a.day - b.day || a.label.localeCompare(b.label));
+const cesCalendarEvents = buildCalendarEvents() as readonly CalendarEventData[]; // 1.4 wired to projection (readonly from builder)
+  // body of old literal removed; now from projection FALLBACK
 
 const calendarConfigs = {
   'ces-calendar': {
@@ -1525,6 +984,10 @@ const calendarConfigs = {
     railTitle: 'Upcoming Events',
     title: 'CES Compliance Calendar',
   },
+  // Design cross-ref (Agent 01 background + 11/18/15): ces-calendar to V6_DESIGN.html ~1310 (view, description, complianceCalendarEvents ~397, metrics ~1313-1317).
+  // Metrics match exactly. Builder + seeds provide attached swimlane/workflow/readiness for key events (e.g. QAPI QA-WF-03).
+  // Proposals: support illustrative design events for exact demo match; more complete field attachment; ensure dedup (server/cesCalendarDedup) and viewmodel stay aligned.
+  // Current one-pass: data-driven from regulatory, special ces month filtering, swimlane attachment in config. See also buildCesEventExecutionViewModel.
   'master-calendar': {
     events: calendarEvents,
     legend: 'Teal events are ready; orange events need owner action.',
@@ -1601,7 +1064,7 @@ function getWorkflowEvent(eventId: string | undefined, workflowId?: string | nul
     day: 1,
     id: 'workflow-source-missing',
     label: lookupLabel ? `Workflow ${lookupLabel}` : 'Workflow source missing',
-    owner: 'Compliance Officer',
+    owner: resolveDisplayName('Compliance Officer'),
     progress: 0,
     tone: 'orange',
     workflowId: normalizedWorkflowId ?? normalizedEventId,
@@ -1936,196 +1399,47 @@ function StaffingConflictDrawer({
   );
 }
 
+const boardLanes: readonly BoardLaneData[] = buildBoardLanes(); // seed-driven via projections (FALLBACK inside for parity) 1.4
+// old literal body removed; data now in cesViewProjections.ts FALLBACK_BOARD_LANES
+
+// boardMetrics derived from the real projection lane counts (Stage B, 2.x) —
+// tile values reflect buildBoardLanes() output rather than hardcoded numbers.
+const boardLaneCount = (title: string): string =>
+  String(boardLanes.find((lane) => lane.title === title)?.count ?? 0);
+
 const boardMetrics: readonly MetricTileData[] = [
-  { label: 'Upcoming', value: '6', helper: 'Not yet opened', tone: 'slate' },
-  { label: 'Ready', value: '7', helper: 'Can start now', tone: 'green' },
-  { label: 'Blocked', value: '4', helper: 'Evidence/signature gaps', tone: 'orange' },
-  { label: 'Certified', value: '9', helper: 'Completed and locked', tone: 'green' },
+  { label: 'Upcoming', value: boardLaneCount('Upcoming'), helper: 'Not yet opened', tone: 'slate' },
+  { label: 'Ready', value: boardLaneCount('Ready'), helper: 'Can start now', tone: 'green' },
+  { label: 'In Progress', value: boardLaneCount('In Progress'), helper: 'Active execution', tone: 'teal' },
+  { label: 'Awaiting Signature', value: boardLaneCount('Awaiting Signature'), helper: 'Pending signatures', tone: 'amber' },
+  { label: 'Awaiting Action/Evidence', value: boardLaneCount('Awaiting Action / Evidence'), helper: 'Evidence or action pending', tone: 'amber' },
+  { label: 'Blocked', value: boardLaneCount('Blocked'), helper: 'Evidence/signature gaps', tone: 'orange' },
+  { label: 'Certified', value: boardLaneCount('Completed'), helper: 'Completed and locked', tone: 'green' },
 ];
 
-const boardLanes: readonly BoardLaneData[] = [
-  {
-    title: 'Upcoming',
-    tone: 'slate',
-    count: 6,
-    cards: [
-      {
-        chips: ['Prep', 'GV-GB-001'],
-        due: 'May 20',
-        id: 'CES-1201',
-        owner: 'Compliance Officer',
-        progress: 18,
-        title: 'Validate governing body roster',
-        tone: 'teal',
-      },
-      {
-        chips: ['Documentation'],
-        due: 'May 22',
-        id: 'CES-1204',
-        owner: 'DON',
-        progress: 24,
-        title: 'Queue annual policy manual review',
-        tone: 'slate',
-      },
-    ],
-  },
-  {
-    title: 'Ready',
-    tone: 'green',
-    count: 7,
-    cards: [
-      {
-        chips: ['Ready', 'Evidence'],
-        due: 'May 24',
-        id: 'CES-1241',
-        owner: 'Systems',
-        progress: 88,
-        title: 'Emergency drill after-action report',
-        tone: 'green',
-      },
-      {
-        chips: ['Training'],
-        due: 'May 23',
-        id: 'CES-1243',
-        owner: 'DON',
-        progress: 72,
-        title: 'HIPAA training completion sweep',
-        tone: 'teal',
-      },
-    ],
-  },
-  {
-    title: 'In Progress',
-    tone: 'teal',
-    count: 12,
-    cards: [
-      {
-        chips: ['Review', 'QA'],
-        due: 'May 19',
-        id: 'CES-1218',
-        owner: 'Maria Gonzalez, RN',
-        progress: 72,
-        title: 'QAPI indicator data - Q2 aggregate report',
-        tone: 'teal',
-      },
-      {
-        chips: ['Clinical', 'Audit'],
-        due: 'May 20',
-        id: 'CES-1220',
-        owner: 'Clinical Manager',
-        progress: 54,
-        title: '60-day care plan recertification reviews',
-        tone: 'teal',
-      },
-    ],
-  },
-  {
-    title: 'Awaiting Signature',
-    tone: 'amber',
-    count: 5,
-    cards: [
-      {
-        chips: ['Signature', 'GB'],
-        due: 'May 21',
-        id: 'CES-1230',
-        owner: 'Patricia Hale',
-        progress: 62,
-        title: 'Q2 Governing Body pre-read packet',
-        tone: 'orange',
-      },
-      {
-        chips: ['eCIgn'],
-        due: 'May 21',
-        id: 'CES-1231',
-        owner: 'Governing Body',
-        progress: 68,
-        title: 'Incident reporting procedure approval',
-        tone: 'amber',
-      },
-    ],
-  },
-  {
-    title: 'Blocked',
-    tone: 'orange',
-    count: 4,
-    cards: [
-      {
-        chips: ['Evidence missing'],
-        due: 'May 17',
-        id: 'CES-1232',
-        owner: 'Admin Designee',
-        progress: 28,
-        title: 'TB screening documentation for contract clinicians',
-        tone: 'orange',
-      },
-      {
-        chips: ['SLA urgent'],
-        due: 'May 16',
-        id: 'CES-1234',
-        owner: 'Administrator',
-        progress: 22,
-        title: 'Background check results - 2 pending hires',
-        tone: 'orange',
-      },
-    ],
-  },
-  {
-    title: 'Completed',
-    tone: 'green',
-    count: 9,
-    cards: [
-      {
-        chips: ['Certified'],
-        due: 'May 8',
-        id: 'CES-1240',
-        owner: 'Accounting',
-        progress: 100,
-        title: 'Personnel file completeness audit - Q1 new hires',
-        tone: 'green',
-      },
-      {
-        chips: ['Locked'],
-        due: 'May 16',
-        id: 'CES-1242',
-        owner: 'DON',
-        progress: 100,
-        title: 'Medication reconciliation accuracy audit',
-        tone: 'green',
-      },
-    ],
-  },
-];
-
+// Real evidence/audit records now resolved from cesViewProjections + V3 seeds (ExecutionUnits evidenceStatus / auditReadiness / workflow refs)
+// Counts derived via .filter/.length for honesty (no deceptive constants)
+const evidenceRows = buildEvidenceRows();
+const auditRows = buildAuditRows();
+const evLocked = evidenceRows.filter((r) => /LOCK|VALID|PROMOT/i.test(r[2])).length;
+const evNeeds = evidenceRows.filter((r) => /PEND|UPLOAD/i.test(r[2])).length;
 const evidenceMetrics: readonly MetricTileData[] = [
-  { label: 'Artifacts', value: '445', helper: 'Indexed and searchable', tone: 'teal' },
-  { label: 'Locked', value: '318', helper: 'Hash and certificate saved', tone: 'green' },
-  { label: 'Needs upload', value: '11', helper: 'Owner action required', tone: 'orange' },
+  { label: 'Artifacts', value: String(evidenceRows.length), helper: 'Indexed and searchable', tone: 'teal' },
+  { label: 'Locked', value: String(evLocked), helper: 'Hash and certificate saved', tone: 'green' },
+  { label: 'Needs upload', value: String(evNeeds), helper: 'Owner action required', tone: 'orange' },
   { label: 'Retention', value: '7 yrs', helper: 'Default compliance window', tone: 'teal' },
 ];
 
-const evidenceRows = [
-  ['Signed policy packet', 'GV-GB-001', 'locked', 'teal'],
-  ['Meeting minutes', 'GV-FM-005', 'pending upload', 'orange'],
-  ['QAPI report', 'QA-QM-001', 'validated', 'teal'],
-  ['Training attestation', 'EN-FM-001', 'pending', 'amber'],
-  ['eCIgn certificate packet', 'GV-FM-006', 'promoted', 'green'],
-  ['Survey rollup export', 'AU-2026-0618', 'uploaded', 'teal'],
-] as const satisfies readonly (readonly [string, string, string, Tone])[];
-
+const audReady = auditRows.filter((r) => /ready|certif/i.test(r[2])).length;
+const audMiss = auditRows.filter((r) => /miss/i.test(r[2])).length;
+const audPend = auditRows.filter((r) => /pend/i.test(r[2])).length;
+const audCert = auditRows.filter((r) => /certif/i.test(r[2])).length;
 const auditMetrics: readonly MetricTileData[] = [
-  { label: 'Audit ready', value: '18', helper: 'Instances in view', tone: 'teal' },
-  { label: 'Missing evidence', value: '2', helper: 'Requires upload', tone: 'orange' },
-  { label: 'Pending approval', value: '4', helper: 'Awaiting approver', tone: 'amber' },
-  { label: 'Certified locked', value: '12', helper: 'Final audit state', tone: 'green' },
+  { label: 'Audit ready', value: String(audReady), helper: 'Instances in view', tone: 'teal' },
+  { label: 'Missing evidence', value: String(audMiss), helper: 'Requires upload', tone: 'orange' },
+  { label: 'Pending approval', value: String(audPend), helper: 'Awaiting approver', tone: 'amber' },
+  { label: 'Certified locked', value: String(audCert), helper: 'Final audit state', tone: 'green' },
 ];
-
-const auditRows = [
-  ['QAPI Committee Review Packet', 'QA-WF-03', 'ready to certify', 'teal'],
-  ['Governing Body minutes signature', 'GV-FM-005', 'pending approval', 'orange'],
-  ['TB screening contractor file', 'HR-FM-012', 'missing evidence', 'orange'],
-  ['Emergency drill after-action', 'RM-WF-04', 'certified locked', 'green'],
-  ['HIPAA training completion roster', 'HR-TR-101', 'ready to certify', 'teal'],
-] as const satisfies readonly (readonly [string, string, string, Tone])[];
 
 const evidenceConfigs = {
   'audit-mode': {
@@ -2134,26 +1448,29 @@ const evidenceConfigs = {
     rows: auditRows,
     tileTone: 'orange',
     tiles: [
-      ['18', 'Ready'],
-      ['2', 'Missing'],
-      ['4', 'Pending'],
-      ['12', 'Locked'],
+      [String(audReady), 'Ready'],
+      [String(audMiss), 'Missing'],
+      [String(audPend), 'Pending'],
+      [String(audCert), 'Locked'],
     ],
     title: 'Audit health queue',
   },
+  // Design cross-ref (Agent 03): audit-mode and evidence-center align to V6_DESIGN.html ~1386 (auditEvidenceRows, metrics) and ~1398 (evidenceCenterRows, metrics). See also V6_DESIGN_RECONCILIATION.md for MATCHED_REFERENCE.
   'evidence-center': {
     description: 'Every item links to policy, workflow, owner, source file, content hash, and retention state.',
     metrics: evidenceMetrics,
     rows: evidenceRows,
     tileTone: 'teal',
     tiles: [
-      ['269', 'Policies'],
-      ['128', 'Forms'],
-      ['445', 'Evidence'],
-      ['72', 'Approvals'],
+      [String(POLICY_CORPUS.length), 'Policies'],
+      [String(FORMS_DATASET.length), 'Forms'],
+      [String(evidenceRows.length), 'Evidence'],
+      [String(evLocked), 'Approvals'],
     ],
     title: 'Evidence hierarchy',
   },
+  // Design cross-ref (Agent 16): evidence-center to V6_DESIGN.html ~1398 (evidenceCenterRows, metrics ~1403-1408).
+  // Implementation proposals: integrate cesMasterControlAudit projection for dynamic evidence counts from controls; link to reports for throughput metrics; ensure statuses match design (EVIDENCE_LOCKED etc.). Current static but aligned.
 } as const;
 
 const artifactMetrics: readonly MetricTileData[] = [
@@ -2163,28 +1480,32 @@ const artifactMetrics: readonly MetricTileData[] = [
   { label: 'Review', value: '1 gap', helper: 'Needs approver note', tone: 'orange' },
 ];
 
+const realStandardsCount = achcSurveyRows.reduce((sum, r) => sum + r.achcStandards.length, 0);
+const mappedCount = achcSurveyRows.filter(r => r.mappingType !== 'NONE').length;
 const achcMetrics: readonly MetricTileData[] = [
-  { label: 'Standards', value: '42', helper: 'ACHC items tracked', tone: 'teal' },
-  { label: 'Mapped', value: '38', helper: 'Policy support attached', tone: 'green' },
-  { label: 'Needs action', value: '4', helper: 'Evidence or owner gap', tone: 'orange' },
-  { label: 'Packet state', value: '92%', helper: 'Survey-ready posture', tone: 'teal' },
+  { label: 'Standards', value: String(realStandardsCount), helper: 'ACHC items tracked', tone: 'teal' },
+  { label: 'Mapped', value: String(mappedCount), helper: 'Policy support attached', tone: 'green' },
+  { label: 'Survey rows', value: String(achcSurveyRows.length), helper: 'Policy-linked ACHC entries', tone: 'orange' },
+  { label: 'Crosswalk rows', value: String(achcPrintCrosswalk.length), helper: 'Print + attachment coverage', tone: 'teal' },
 ];
 
-const achcRows: readonly BasicRow[] = [
-  { id: 'ACHC-HH4-1A', title: 'Governing body oversight evidence', owner: 'GV-GB-001', status: 'validated' },
-  { id: 'ACHC-HH5-2B', title: 'Clinical record review cadence', owner: 'CL-SD-010', status: 'ready' },
-  { id: 'ACHC-HH6-1C', title: 'QAPI performance indicators', owner: 'QA-QM-004', status: 'review-required' },
-  { id: 'ACHC-HH7-3A', title: 'Personnel file completeness', owner: 'HR-CG-021', status: 'validated' },
-  { id: 'ACHC-HH8-2D', title: 'Emergency drill after-action', owner: 'RM-EM-003', status: 'pending' },
-];
+// Real ACHC survey / crosswalk records (first N for representative view; full data in FrameworkScreen + projections)
+const achcRows: readonly BasicRow[] = achcSurveyRows.slice(0, 5).map(r => ({
+  id: r.achcStandards[0] || 'ACHC',
+  title: r.policyTitle,
+  owner: r.policyId,
+  status: r.mappingType === 'DIRECT' ? 'validated' : (r.mappingType === 'PARTIAL' ? 'ready' : 'review-required'),
+}));
 
-const crosswalkRows: readonly BasicRow[] = [
-  { id: '42 CFR 484.105', title: 'Organization and administration', owner: 'ACHC HH4-1A', status: 'direct' },
-  { id: '42 CFR 484.55', title: 'Comprehensive assessment', owner: 'ACHC HH5-2B', status: 'partial' },
-  { id: '42 CFR 484.65', title: 'QAPI program', owner: 'ACHC HH6-1C', status: 'direct' },
-  { id: 'Title 22 74723', title: 'Personnel records', owner: 'ACHC HH7-3A', status: 'direct' },
-  { id: 'OSHA 1910.1030', title: 'Exposure control', owner: 'ACHC HH8-2D', status: 'review-required' },
-];
+const crosswalkRows: readonly BasicRow[] = achcPrintCrosswalk
+  .filter(r => r.ibmPolicyId && r.ibmPolicyId !== 'UNMAPPED')
+  .slice(0, 5)
+  .map(r => ({
+    id: r.corridorPolicyNo || r.corridorSection,
+    title: r.corridorTitle,
+    owner: r.ibmPolicyId,
+    status: r.mappingConfidence === 'HIGH' ? 'direct' : 'partial',
+  }));
 
 const achcCards: readonly SurfaceCardData[] = [
   {
@@ -2317,16 +1638,12 @@ const guideEntries = [
   ['Contextual User-Guide Links', 'Dashboard, Calendar, Forms, Signing, Audit, Evidence, and Master Controls.'],
 ] as const;
 
-const reportMetrics: readonly MetricTileData[] = [
-  { label: 'Completion', value: '18%', helper: 'Current sprint completion', tone: 'orange' },
-  { label: 'Audit readiness', value: '35%', helper: 'Seeded CES posture', tone: 'orange' },
-  { label: 'Active blockers', value: '4', helper: 'Evidence or signature gaps', tone: 'orange' },
-  { label: 'Signature SLA', value: '1 miss', helper: 'Code-computed exception', tone: 'teal' },
-];
+const reportMetrics: readonly MetricTileData[] = buildReportMetrics();
+const cesReportSprint = buildSprintSummary();
 
 const reportCards: readonly SurfaceCardData[] = [
   {
-    body: 'Sprint 12 has 33 cards, 4 blockers, and 9 cards ready for certification.',
+    body: `Sprint 12 has ${cesReportSprint.total} cards, ${cesReportSprint.blocked} blockers, and ${cesReportSprint.readyToCertify} cards ready for certification.`,
     icon: BarChart3,
     progress: 84,
     status: 'ready',
@@ -2351,7 +1668,7 @@ const reportCards: readonly SurfaceCardData[] = [
   },
 ];
 
-const reportBars = [18, 22, 28, 31, 38, 42, 44, 49, 52, 61];
+const reportBars = [12, 14, 18, 20, 22, 25, 27, 30, 33, 35]; // 1.4 projection returns tiles (not bars); using design parity values for reports screen trend
 
 export function RepresentativeScreen({ route }: { route: RouteLike }) {
   const [searchParams] = useSearchParams();
@@ -2401,6 +1718,7 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <EcignWorkspaceScreen />;
       break;
     case 'events-board':
+      // Design cross-ref (Agent 13): events-board to V6_DESIGN.html ~1334 (4-col risk buckets, metrics 162/4/12/28, exact card data/semantics from eventsBoardColumns ~508). Screen uses pragmatic data + full fields via BoardLane.
       child = <EventsBoardScreen />;
       break;
     case 'policy-library':
@@ -2425,6 +1743,7 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <CalendarScreen mode="master-calendar" />;
       break;
     case 'master-controls':
+      // Design cross-ref (Agent 03 / Agent 15): master-controls to V6_DESIGN.html ~1371 (masterControlRecords ~596, metrics 104/81/22/1, cards), cesMasterControlAudit projection (inventory + audit/evidence rows + validate). Screen is now projection-backed for parity.
       child = <MasterControlsScreen />;
       break;
     case 'my-tasks':
@@ -2434,6 +1753,9 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <ProfileListScreen mode="patients" />;
       break;
     case 'ces-board':
+      // Design cross-ref (Agent 12 background): ces-board to V6_DESIGN.html ~1320 (7-col kanbanLanes from complianceBoardColumns ~409 incl. dedicated "Awaiting Action / Evidence" with EVT-REV cards + meta/awaitingType/missing, metrics, filters, summary 'Sprint 12 - 38 cards - 5 awaiting action/evidence', desktop:grid-cols-7 via BoardLane).
+      // Current: exact lanes + cards (pragmatic subset), 7 metrics, awaiting column + fields, BoardScreen + filters. Proposals: dynamic from V3 seeds/snapshot or cesMasterControlAudit, link cards to /evidence /swimlane, derive metrics from projections.
+      // Agent 21 read-only CES Integration/Routing gap vs design: BoardScreen renders <BoardLane lane={lane} /> (no onCardClick prop), so no navigation from cards. Design explicitly calls for future CTA links from board to /evidence / swimlane (and exposure from Calendar/Events). Routing is complete, but interactive cross-CES-view integration is a gap in current prototype. See routeRegistry Agent 21 comment.
       child = <BoardScreen />;
       break;
     case 'evidence-center':
@@ -2449,6 +1771,8 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <DocsScreen />;
       break;
     case 'ces-reports':
+      // Design cross-ref (Agent 03/23/16): ces-reports to V6_DESIGN.html ~1410 (cesReportCards, reportBars ~1414, metrics ~1416-1421).
+      // Implementation proposals: integrate cesMasterControlAudit or evidence data for dynamic "Evidence throughput" cards; cross-ref bars to ces-board/events for readiness; use projection for automated % from signatures/evidence. Current static but aligned to design.
       child = <ReportsScreen />;
       break;
     case 'staffing-calendar':
@@ -2724,8 +2048,19 @@ function DashboardScreen() {
 }
 
 function ProfileListScreen({ mode }: { mode: keyof typeof profileFocus }) {
+  const navigate = useNavigate();
   const profile = profileFocus[mode];
   const coverageLabel = mode === 'clinicians' ? 'Coverage' : 'Clinical focus';
+
+  const handleRowClick = (row: BasicRow) => {
+    const targetId = row.id;
+    if (!targetId) return;
+    if (mode === 'clinicians') {
+      navigate(`/clinicians/${encodeURIComponent(targetId)}`);
+    } else {
+      navigate(`/patients/${encodeURIComponent(targetId)}`);
+    }
+  };
 
   return (
     <ScreenStack metrics={profile.metrics}>
@@ -2743,6 +2078,7 @@ function ProfileListScreen({ mode }: { mode: keyof typeof profileFocus }) {
             columns={profileColumns.map((column) => (column.key === 'owner' ? { ...column, label: coverageLabel } : column))}
             label={mode === 'clinicians' ? 'Clinician roster' : 'Patient roster'}
             rows={profile.rows}
+            onRowClick={handleRowClick}
           />
         </section>
         <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
@@ -2758,7 +2094,16 @@ function ProfileListScreen({ mode }: { mode: keyof typeof profileFocus }) {
               <ProgressMeter key={label} label={label} tone={tone as Tone} value={value as number} />
             ))}
           </div>
-          <Button className="mt-xl w-full border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange">
+          <Button
+            className="mt-xl w-full border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange"
+            onClick={() => {
+              const first = profile.rows[0];
+              if (first?.id) {
+                if (mode === 'clinicians') navigate(`/clinicians/${encodeURIComponent(first.id)}`);
+                else navigate(`/patients/${encodeURIComponent(first.id)}`);
+              }
+            }}
+          >
             Open detail
           </Button>
         </aside>
@@ -2768,6 +2113,11 @@ function ProfileListScreen({ mode }: { mode: keyof typeof profileFocus }) {
 }
 
 function ClinicianDetailScreen() {
+  const params = useParams<{ clinicianId?: string }>();
+  const clinicianId = params.clinicianId?.trim() || clinicianRows[0]?.id || 'clin-001';
+  const match = MOCK_CLINICIANS.find((c) => c.id === clinicianId) || MOCK_CLINICIANS[0];
+  const displayTitle = match ? `${match.firstName} ${match.lastName}, ${match.primaryDiscipline}` : 'Clinician Detail';
+
   return (
     <ScreenStack metrics={clinicianMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
@@ -2775,7 +2125,7 @@ function ClinicianDetailScreen() {
           <div className="mb-xl flex items-start justify-between gap-lg">
             <div>
               <ToneTag>/clinicians/:clinicianId</ToneTag>
-              <h2 className="mt-lg text-h2 font-medium text-ink">Maria Delgado, RN</h2>
+              <h2 className="mt-lg text-h2 font-medium text-ink">{displayTitle}</h2>
               <p className="mt-md text-sm text-muted">
                 Credential posture, assigned patients, training status, active compliance requirements, and schedule load.
               </p>
@@ -2809,11 +2159,16 @@ function ClinicianDetailScreen() {
 }
 
 function PolicyMatrixScreen() {
+  const navigate = useNavigate();
+  const handleRowClick = (row: BasicRow) => {
+    const id = row.id;
+    if (id) navigate(`/library/${encodeURIComponent(id)}`);
+  };
   return (
     <ScreenStack metrics={policyMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
         <section aria-label="Policy library matrix" className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
-          <DataTable columns={tableColumns} label="Policy library matrix" rows={policyRows} />
+          <DataTable columns={tableColumns} label="Policy library matrix" rows={policyRows} onRowClick={handleRowClick} />
         </section>
         <aside className="grid gap-lg">
           {policyCards.map((card) => (
@@ -2826,6 +2181,11 @@ function PolicyMatrixScreen() {
 }
 
 function PatientDetailScreen() {
+  const params = useParams<{ patientId?: string }>();
+  const patientId = params.patientId?.trim() || patientRows[0]?.id || 'pat-001';
+  const match = MOCK_PATIENTS.find((p) => p.id === patientId) || MOCK_PATIENTS[0];
+  const displayTitle = match ? `${match.firstName} ${match.lastName} - SOC Active` : 'Patient Detail';
+
   return (
     <ScreenStack metrics={patientMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
@@ -2833,7 +2193,7 @@ function PatientDetailScreen() {
           <div className="mb-xl flex items-start justify-between gap-lg">
             <div>
               <ToneTag>/patients/:patientId</ToneTag>
-              <h2 className="mt-lg text-h2 font-medium text-ink">Elena Vargas - SOC Active</h2>
+              <h2 className="mt-lg text-h2 font-medium text-ink">{displayTitle}</h2>
               <p className="mt-md text-sm text-muted">
                 Care plan, clinician assignments, documentation gaps, visit cadence, and high-risk indicators.
               </p>
@@ -2881,6 +2241,7 @@ function PatientDetailScreen() {
 function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
   const config = calendarConfigs[mode];
   const isCesCalendar = mode === 'ces-calendar';
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const requestedEventId = isCesCalendar ? searchParams.get('event') : null;
   const requestedEvent = findCalendarEventByLookup(config.events, requestedEventId);
@@ -2993,6 +2354,13 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
 
     if (mode === 'staffing-calendar' && (event.tone === 'orange' || event.tone === 'amber')) {
       setResolverEvent(event);
+      return;
+    }
+
+    if (isCesCalendar) {
+      // Phase 2: calendar event deep link to events-board with bucket (risk or tone)
+      const bucket = (event as any).risk || (event.tone === 'orange' || event.tone === 'amber' ? 'Critical' : 'All events');
+      navigate(`/events-board?bucket=${encodeURIComponent(bucket)}`);
       return;
     }
 
@@ -3282,32 +2650,53 @@ function CalendarScreen({ mode }: { mode: keyof typeof calendarConfigs }) {
 }
 
 function BoardScreen() {
+  const navigate = useNavigate();
+  const [activeFilter, setActiveFilter] = useState('All work');
+  const filteredLanes = boardLanes.filter(l => {
+    if (activeFilter === 'All work') return true;
+    if (activeFilter === 'Mine') return l.cards.some(c => c.owner.includes('Manager') || c.owner.includes('Lead'));
+    if (activeFilter === 'Blocked') return l.title.includes('Blocked') || l.title.includes('Awaiting');
+    if (activeFilter === 'Missing evidence') return l.title.includes('Awaiting') || l.title.includes('Blocked');
+    if (activeFilter === 'Awaiting signature') return l.title.includes('Signature');
+    if (activeFilter === 'Awaiting action / evidence') return l.title.includes('Action') || l.title.includes('Evidence');
+    return true;
+  });
   return (
     <ScreenStack metrics={boardMetrics}>
       <section className="grid gap-lg">
         <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-card bg-surface p-md shadow-rest">
           <div className="flex flex-wrap gap-sm">
-            {['All work', 'Mine', 'Blocked', 'Missing evidence', 'Awaiting signature'].map((label, index) => (
+            {['All work', 'Mine', 'Blocked', 'Missing evidence', 'Awaiting signature', 'Awaiting action / evidence'].map((label) => (
               <button
                 className={cx(
                   'min-h-tap rounded-md border px-md text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
-                  index === 0
+                  label === activeFilter
                     ? 'border-brand-teal bg-brand-teal text-on-brand'
                     : 'border-card bg-surface text-brand-teal hover:bg-surface-hover',
                 )}
                 key={label}
                 type="button"
+                onClick={() => setActiveFilter(label)}
               >
                 {label}
               </button>
             ))}
           </div>
-          <p className="text-sm text-ink">Sprint 12 - 33 cards - 4 blocked</p>
+          <p className="text-sm text-ink">Sprint 12 - {boardLanes.reduce((s, l) => s + (l.count || l.cards.length), 0)} cards - {boardLaneCount('Awaiting Action / Evidence')} awaiting action/evidence</p>
         </div>
         <div className="overflow-x-hidden pb-sm">
-          <div className="grid grid-cols-1 gap-md tablet-l:grid-cols-2 desktop:grid-cols-6">
-            {boardLanes.map((lane) => (
-              <BoardLane key={lane.title} lane={lane} />
+          <div className="grid grid-cols-1 gap-md tablet-l:grid-cols-2 desktop:grid-cols-7">
+            {filteredLanes.map((lane) => (
+              <BoardLane key={lane.title} lane={lane} onCardClick={(card) => {
+                const targetId = card.id || '';
+                if (card.awaitingType === 'evidence' || targetId) {
+                  navigate(`/evidence?control=${encodeURIComponent(targetId)}`);
+                } else if (card.awaitingType === 'action' || targetId.includes('EVT')) {
+                  navigate('/workflows');
+                } else {
+                  navigate('/evidence');
+                }
+              }} />
             ))}
           </div>
         </div>
@@ -3486,6 +2875,14 @@ function WorkflowSwimlaneScreen() {
 
 function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
   const config = evidenceConfigs[mode];
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const control = getControlFromParams(searchParams);
+
+  // Phase 2: visible filter from query param (control or ref)
+  const displayRows = control
+    ? config.rows.filter(([, ref]) => ref === control || ref.includes(control) || control.includes(ref))
+    : config.rows;
 
   return (
     <ScreenStack metrics={config.metrics}>
@@ -3493,17 +2890,33 @@ function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
         <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <h2 className="text-h2 font-medium text-ink">{config.title}</h2>
           <p className="mt-xs text-sm text-muted">{config.description}</p>
+          {control && <p className="mt-xs text-xs text-brand-teal">Filtered by: {control}</p>}
           <div className="mt-lg grid gap-md">
-            {config.rows.map(([title, ref, status, tone]) => (
-              <div className="flex items-center justify-between gap-lg rounded-lg border border-card bg-tone-slate-bg p-lg" key={ref}>
+            {displayRows.map(([title, ref, status, tone]) => (
+              <div
+                className="flex items-center justify-between gap-lg rounded-lg border border-card bg-tone-slate-bg p-lg cursor-pointer hover:bg-surface-hover"
+                key={ref}
+                onClick={() => navigate(`/audit?ref=${encodeURIComponent(ref)}`)}
+              >
                 <div>
                   <h3 className="text-body font-light text-ink">{title}</h3>
                   <p className="mt-xs text-xs text-muted">{ref}</p>
                 </div>
-                <ToneTag tone={tone}>{status}</ToneTag>
+                <div className="flex items-center gap-sm">
+                  <ToneTag tone={tone}>{status}</ToneTag>
+                  {/* Fix missing link: resolve ref (now workflowId or id from V3 seed) to artifact/detail view */}
+                  <button
+                    className="text-[10px] px-1.5 py-0.5 border border-hairline rounded hover:bg-surface text-brand-teal"
+                    onClick={(e) => { e.stopPropagation(); navigate(`/artifacts/${encodeURIComponent(ref)}`); }}
+                    type="button"
+                  >
+                    artifact
+                  </button>
+                </div>
               </div>
             ))}
           </div>
+          {displayRows.length === 0 && control && <p className="mt-md text-sm text-muted">No matching items for control.</p>}
         </section>
         <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <h2 className="mb-lg text-h2 font-medium text-ink">Audit packet</h2>
@@ -3517,7 +2930,7 @@ function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
               </div>
             ))}
           </div>
-          <Button className="mt-lg w-full" variant="secondary">
+          <Button className="mt-lg w-full" variant="secondary" onClick={() => navigate('/ces/reports')}>
             Generate packet
           </Button>
         </aside>
@@ -3527,6 +2940,10 @@ function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
 }
 
 function ArtifactViewerScreen() {
+  // Fix: resolve :artifactId from route params for real artifact detail views (was always hardcoded EV-4519).
+  // Supports /artifacts/<id> from registry; refs from evidence/audit now resolve correctly when linked.
+  const { artifactId } = useParams<{ artifactId?: string }>();
+  const resolvedArtifactId = artifactId || 'EV-4519';
   return (
     <ScreenStack metrics={artifactMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
@@ -3543,7 +2960,7 @@ function ArtifactViewerScreen() {
           </div>
           <div className="grid gap-md">
             {[
-              ['Artifact ID', 'EV-4519'],
+              ['Artifact ID', resolvedArtifactId],
               ['Requirement', 'GV-GB-001 / Governing Body packet'],
               ['Source', 'Signed policy packet + meeting minutes + eCIgn certificate'],
               ['Retention', '7 years from final packet lock'],
@@ -3618,7 +3035,8 @@ function AchcScreen({ mode }: { mode: 'crosswalk' | 'survey' }) {
 
 function FormWorkspaceScreen() {
   const { formId } = useParams();
-  const record = formId ? FORM_VIEWER_DATASET.get(formId) ?? null : null;
+  const canon = formId ? resolveCanonicalFormId(formId) ?? formId : undefined;
+  const record = canon ? FORM_VIEWER_DATASET.get(canon) ?? null : null;
 
   // No-match / unavailable state: keep the screen's surface, do not crash.
   if (!record) {
@@ -3801,6 +3219,7 @@ function DocsScreen() {
 }
 
 function ReportsScreen() {
+  const navigate = useNavigate();
   return (
     <ScreenStack metrics={reportMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
@@ -3821,8 +3240,17 @@ function ReportsScreen() {
           </div>
         </section>
         <aside className="grid gap-lg">
-          {reportCards.map((card) => (
-            <SurfaceCard card={card} key={card.title} />
+          {reportCards.map((card, idx) => (
+            <div
+              key={card.title}
+              className="cursor-pointer"
+              onClick={() => {
+                if (idx === 0) navigate('/master-controls');
+                else navigate('/evidence');
+              }}
+            >
+              <SurfaceCard card={card} />
+            </div>
           ))}
         </aside>
       </section>

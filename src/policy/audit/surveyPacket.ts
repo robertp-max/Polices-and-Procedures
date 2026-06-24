@@ -394,6 +394,24 @@ function auditActionLabel(action: string): string {
     case 'escalation.raised':    return 'Escalation Raised';
     case 'escalation.resolved':  return 'Escalation Resolved';
     case 'mutation.blocked':     return 'Certification Blocked';
+    // exec / form / task / evidence actions (from regulatoryExecutionStore taskAudit)
+    case 'task.create': return 'Task Created';
+    case 'task.update': return 'Task Updated';
+    case 'task.generate_from_form': return 'Task Generated from Form';
+    case 'task.generate_from_workflow_step': return 'Task Generated from Step';
+    case 'FORM_INSTANCE_CREATED': return 'Form Instance Created';
+    case 'FORM_INSTANCE_STATUS': return 'Form Instance Status Changed';
+    case 'FORM_INSTANCE_SUPERSEDED': return 'Form Instance Superseded';
+    case 'EVIDENCE_UPLOADED': return 'Evidence Uploaded';
+    case 'DRIVE_METADATA_ATTACHED': return 'Drive Metadata Attached';
+    case 'EVIDENCE_SUPERSEDED': return 'Evidence Superseded';
+    case 'VALIDATION_FAILED': return 'Validation Failed';
+    case 'ACCESS_DENIED': return 'Access Denied';
+    case 'FILE_REJECTED': return 'File Rejected';
+    case 'event_instance.create_manual': return 'Event Instance Created';
+    case 'event_instance.update': return 'Event Instance Updated';
+    case 'event_instance.certify': return 'Event Certified';
+    case 'event_instance.cancel': return 'Event Instance Canceled';
     default: return action;
   }
 }

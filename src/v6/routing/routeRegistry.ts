@@ -48,9 +48,13 @@ export const V6_ROUTES = [
   { path: '/calendar', hashId: 'master-calendar', template: 'calendar', group: 'Overview', title: 'Master Calendar', description: 'Agency operations calendar for SOC starts, audits, staffing, and checkpoints.' },
   { path: '/staffing-calendar', hashId: 'staffing-calendar', template: 'calendar', group: 'Overview', title: 'Staffing Calendar', description: 'Staffing calendar for visit conflicts, clinician availability, and coverage.' },
   { path: '/iadministrator', hashId: 'brad', template: 'chat', group: 'Overview', title: 'iAdministrator', description: 'Brad decision-support workspace for policy and operations questions.' },
-  { path: '/ces/calendar', hashId: 'ces-calendar', template: 'calendar', group: 'CES', title: 'CES Calendar', description: 'Compliance Execution calendar for event milestones and packet readiness.' },
-  { path: '/ces/board', hashId: 'ces-board', template: 'board', group: 'CES', title: 'CES Board', description: 'Compliance Execution kanban board for workflow stages.' },
-  { path: '/ces/events', hashId: 'events-board', template: 'board', group: 'CES', title: 'Events Board', description: 'Clinical event board for critical, at-risk, evidence-ready, and lock-ready work.' },
+  { path: '/ces/calendar', hashId: 'ces-calendar', template: 'calendar', group: 'CES', title: 'CES Calendar', description: 'Sprint compliance calendar for mandatory events, evidence windows, signature cutoffs, and survey packet milestones.' },
+  { path: '/ces/board', hashId: 'ces-board', template: 'board', group: 'CES', title: 'CES Board', description: 'Operational Kanban board for sprint execution, blockers, evidence, signatures, and owner handoffs. Includes dedicated "Awaiting Action / Evidence" column for review events (QAPI, Infection Control, Incident/Adverse, Grievance, Audit).' },
+  // Design cross-ref (Agent 15): All CES routes align to V6_DESIGN.html ~1308 (CES views),
+  // V6_DESIGN_RECONCILIATION.md (most MATCHED_REFERENCE; see also events-board, evidence-center).
+  // Integration proposals (Agent 21): Link ces-board CTAs to evidence-center (per design future notes); ensure reports pull from controls/evidence projections; consistent navigation in CES group.
+  // Agent 21 read-only gap vs design analysis: Routes + CES nav group + descriptions are present and match design. However, actual interactive cross-view wiring (BoardLane onCardClick / CTAs in BoardScreen for ces-board → /evidence or /workflow-swimlane) is not implemented in the prototype (BoardScreen renders BoardLane without onCardClick; design notes "Future: link CTAs..."). Calendar has some event→swimlane nav, but full CES-internal integration (board↔evidence↔reports↔calendar) remains partial for one-pass. See RepresentativeScreens BoardScreen and ces-board case.
+  { path: '/ces/events', hashId: 'events-board', template: 'board', group: 'CES', title: 'Events Board', description: 'Risk-bucketed Events board matching live 4-col layout (Critical & Overdue 162, At Risk 4). Uses identical item data, owner/domain/due, progress, chips, meta. Sorted by due. New card design applied.' },
   { path: '/workflows', hashId: 'workflows', template: 'matrix', group: 'CES', title: 'Workflows', description: 'Workflow library linking domains, policies, evidence, forms, and history.' },
   { path: '/workflows/:workflowId/swimlane', hashId: 'workflow-swimlane', template: 'board', group: 'CES', title: 'Workflow Swimlane', description: 'Workflow swimlane for intake, evidence, review, signature, and lock steps.' },
   { path: '/events/:eventId/swimlane', hashId: 'workflow-swimlane', template: 'board', group: 'CES', title: 'Workflow Swimlane', description: 'Event workflow swimlane for the selected event occurrence and workflow.' },
@@ -65,8 +69,16 @@ export const V6_ROUTES = [
   { path: '/framework/achc-survey/crosswalk', hashId: 'achc-crosswalk', template: 'achc-crosswalk', group: 'Taxonomy', title: 'ACHC Crosswalk', description: 'ACHC, CMS, Title 22, policy, form, and evidence crosswalk.' },
   { path: '/library', hashId: 'policy-library', template: 'matrix', group: 'Taxonomy', title: 'Policy Library', description: 'Policy library matrix for active agency policies and survey-ready context.' },
   { path: '/library/:policyId', hashId: 'policy-detail', template: 'detail', group: 'Taxonomy', title: 'Policy Detail', description: 'Policy detail with version metadata, required codes, section tabs, and appendices.' },
+  // Protected policy print route — reuses policy-detail hashId so existing PolicyDetailScreen
+  // (which resolves real policyId via getCorpusPolicy + getPolicyContent from seeds) renders
+  // the record. Enables openPolicyPrintRoute + browser print / PDF without view changes.
+  { path: '/library/:policyId/print', hashId: 'policy-detail', template: 'detail', group: 'Taxonomy', title: 'Policy Print', description: 'Protected policy print view (resolves real policyId from seeds).' },
   { path: '/forms', hashId: 'forms-library', template: 'matrix', group: 'Taxonomy', title: 'Forms Library', description: 'Forms library for agency templates, attestation forms, and digital candidates.' },
   { path: '/forms/:formId', hashId: 'form-viewer', template: 'form-viewer', group: 'Taxonomy', title: 'Form Workspace', description: 'Read and fill form workspace with sections, fields, and signer context.' },
+  // Protected form print route — reuses form-viewer hashId so existing FormWorkspaceScreen
+  // (which resolves real formId via FORM_VIEWER_DATASET map from FORMS_DATASET seeds)
+  // renders the record for print. Enables printForm util + /forms/:id/print without redesign.
+  { path: '/forms/:formId/print', hashId: 'form-viewer', template: 'form-viewer', group: 'Taxonomy', title: 'Form Print', description: 'Protected form print/download view (resolves real formId from seeds).' },
   { path: '/forms/:formId/esign', hashId: 'ecign-workspace', template: 'ecign', group: 'Taxonomy', title: 'eCIgn Signing Workspace', description: 'Signer sequence, document preview, and certificate state for eCIgn signing.' },
   { path: '/artifacts/:artifactId', hashId: 'artifact-viewer', template: 'reference-viewer', group: 'Taxonomy', title: 'Artifact Viewer', description: 'Artifact viewer with preview toolbar and compliance metadata.' },
   { path: '/viewer/:referenceId', hashId: 'generic-reference', template: 'reference-viewer', group: 'Taxonomy', title: 'Reference Viewer', description: 'Reference viewer for citations, source details, and compliance mandates.' },

@@ -111,7 +111,7 @@ export function buildSeedSnapshot(): OnboardingSnapshot {
   const mariaUnits = snap.units.filter(u => snap.batches.find(b => b.id === u.batchId)?.subjectId === 'WM-001');
   function setStatus(reqId: string, next: typeof mariaUnits[number]['status']) {
     const u = mariaUnits.find(x => x.requirementId === reqId);
-    if (u) changeUnitStatus(snap, u.id, next, { id: 'USR-CO', name: 'Compliance Officer' }, {}, iso(-1));
+    if (u) changeUnitStatus(snap, u.id, next, { id: 'USR-CO', name: 'Angela Martinez' }, {}, iso(-1));
   }
   setStatus('REQ-CL-LICENSE-PSV', 'InProgress');
   setStatus('REQ-UNIV-HIPAA',     'AwaitingSignature');
@@ -123,7 +123,7 @@ export function buildSeedSnapshot(): OnboardingSnapshot {
   // Daniel (WM-002, HHA): Blocked on competency, missing 12-subject artifact.
   const danielUnits = snap.units.filter(u => snap.batches.find(b => b.id === u.batchId)?.subjectId === 'WM-002');
   const compUnit = danielUnits.find(u => u.requirementId === 'REQ-HHA-COMP-12');
-  if (compUnit) changeUnitStatus(snap, compUnit.id, 'Blocked', { id: 'USR-CO', name: 'Compliance Officer' },
+  if (compUnit) changeUnitStatus(snap, compUnit.id, 'Blocked', { id: 'USR-CO', name: 'Angela Martinez' },
     { reason: 'Awaiting RN observer assignment' }, iso(-1));
 
   // Demonstrative signature record for Maria HIPAA (Requested)

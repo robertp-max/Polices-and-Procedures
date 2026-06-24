@@ -276,19 +276,26 @@ export function useWorkflowInstance(
       .flatMap(alias => taskAuditByEventId[alias] ?? [])
       .map(row => ({
         id: `exec-${row.auditId}`,
-        ts: row.timestamp,
-        actor: row.actorId ?? 'system',
+        // honest timestamp from store entry (fixes missing/broken ts)
+        ts: row.timestamp || new Date().toISOString(),
+        // actor resolution: prefer id (from exec) or role; enforcement trails carry display names
+        actor: row.actorId ?? row.actorRole ?? 'system',
         actorRole: row.actorRole,
         action: row.action as AuditEntry['action'],
-        eventId: event.id,
-        targetKind: row.entityType,
-        targetId: row.entityId,
+        // tie to the actual record (alias/instance) for correct event/form/evidence/workflow refs
+        eventId: row.eventId || event.id,
+        targetKind: row.targetKind ?? row.entityType,
+        targetId: row.targetId ?? row.entityId,
         before: row.before,
         after: row.after,
         reason: row.reason,
       }));
     const auditTrail = [...enforcementTrail, ...executionTrail]
-      .sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime());
+      .sort((a, b) => {
+        const ta = Date.parse(a.ts) || 0;
+        const tb = Date.parse(b.ts) || 0;
+        return ta - tb;
+      });
     return buildWorkflowInstance({
       event,
       today,

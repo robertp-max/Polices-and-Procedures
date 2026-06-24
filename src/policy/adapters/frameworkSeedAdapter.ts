@@ -7,6 +7,7 @@ import {
   typedSeedUrgentTasks,
 } from '@/policy/data/frameworkSeed.generated';
 import type { Domain, Policy, PolicyVersion, Subdomain, UrgentTask, CalendarTask } from '@/policy/types';
+import { resolveAchcCrosswalkTarget } from '@/policy/data/achcStandardTargetResolver';
 
 function normalizeAccessTier(value: string): string {
   return value.replace(/—/g, '-');
@@ -19,6 +20,7 @@ export interface FrameworkSeedBundle {
   policyVersions: PolicyVersion[];
   calendarTasks: CalendarTask[];
   urgentTasks: UrgentTask[];
+  resolveCrosswalk: typeof resolveAchcCrosswalkTarget;
 }
 
 export function loadFrameworkSeed(): FrameworkSeedBundle {
@@ -44,5 +46,6 @@ export function loadFrameworkSeed(): FrameworkSeedBundle {
     })),
     calendarTasks: typedSeedCalendarTasks,
     urgentTasks: typedSeedUrgentTasks,
+    resolveCrosswalk: resolveAchcCrosswalkTarget,
   };
 }

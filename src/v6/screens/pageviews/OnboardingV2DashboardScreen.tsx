@@ -1,6 +1,7 @@
 import { ShieldCheck, UserCheck, Users, AlertTriangle, FolderSync } from 'lucide-react';
 import { MetricGrid, DataTable, SurfaceCard, type MetricTileData, type SurfaceCardData, type DataTableColumn } from '../../components';
 import { Badge } from '../../primitives';
+import { buildSeedSnapshot } from '@/policy/onboarding-v2/store/seed';
 
 interface QueueRow extends Record<string, string> {
   id: string;
@@ -11,11 +12,15 @@ interface QueueRow extends Record<string, string> {
   date: string;
 }
 
+const snap = buildSeedSnapshot();
+const realBatchCount = snap.batches.length;
+const blockedCount = snap.units.filter((u: any) => u.status === 'Blocked').length;
+const awaitingSigCount = snap.signatures.filter((s: any) => s.status === 'Sent' || s.status === 'Requested').length;
 const metrics = [
-  { label: 'Total activations', value: '47', helper: 'Active and queued subjects', tone: 'teal' },
+  { label: 'Total activations', value: String(realBatchCount), helper: 'Active and queued subjects (from seed)', tone: 'teal' },
   { label: 'Clearance rate', value: '78%', helper: 'Overall gate passage rate', tone: 'green' },
-  { label: 'Awaiting signature', value: '6', helper: 'Dual override or DON locks', tone: 'amber' },
-  { label: 'Blocked activations', value: '2', helper: 'Requires immediate intervention', tone: 'orange' },
+  { label: 'Awaiting signature', value: String(awaitingSigCount), helper: 'Dual override or DON locks (from seed)', tone: 'amber' },
+  { label: 'Blocked activations', value: String(blockedCount), helper: 'Requires immediate intervention (from seed)', tone: 'orange' },
   { label: 'SLA violations', value: '0', helper: 'Within standard processing time', tone: 'teal' },
 ] satisfies readonly MetricTileData[];
 
