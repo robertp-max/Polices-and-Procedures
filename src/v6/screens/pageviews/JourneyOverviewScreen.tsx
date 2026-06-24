@@ -1,5 +1,6 @@
 import { BookOpenCheck, FileSignature, LockKeyhole, Route, ShieldCheck, UserCheck, type LucideIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneSoftTileClasses, type MetricTileData, type SurfaceCardData } from '../../components';
 import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
@@ -132,6 +133,8 @@ const journeyModules = [
 ] as any[];
 
 // data-driven: 41 onboarding journeys (GAO/ANN slice, ACHC excluded) + all 12 ACHC annual from canonical (ALL_MODULES) for parity
+const coreJourneyCount = coreJourneys.length; // exactly 41 (sliced for overview parity)
+const achcJourneyCount = achcFromModules.length; // exactly 12 ACHC items
 
 const supervisorReadiness = [
   {
@@ -183,6 +186,7 @@ const guidanceCards = [
 
 export function JourneyOverviewScreen() {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'core' | 'achc'>('core');
 
   const handleOpenModule = (moduleId: string) => {
     navigate(`/journey/module/${encodeURIComponent(moduleId)}`);
@@ -196,6 +200,17 @@ export function JourneyOverviewScreen() {
       data-route="/journey"
       data-template="journey"
     >
+      {/* My Learning header at top per spec: shows "Maria Santos, RN" prominently for the 41+12 overview */}
+      <div className="mb-lg">
+        <div className="flex flex-wrap items-center gap-md">
+          <h1 className="text-h1 font-medium text-ink">My Learning</h1>
+          <ToneTag tone="teal">Maria Santos, RN</ToneTag>
+        </div>
+        <p className="mt-xs text-sm text-muted">
+          {coreJourneyCount} journeys + {achcJourneyCount} ACHC annual training
+        </p>
+      </div>
+
       <MetricGrid metrics={journeyMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-12">
@@ -264,32 +279,31 @@ export function JourneyOverviewScreen() {
             <ToneTag tone="orange">GAO-EXAM locked</ToneTag>
           </div>
 
-          <div className="grid gap-md tablet-l:grid-cols-2" role="list">
-            {journeyModules.slice(0, 41).map((module, index) => (
-              <JourneyModuleCard
-                index={index + 1}
-                key={module.id}
-                module={module}
-                onClick={() => handleOpenModule(module.id)}
-              />
-            ))}
+          <div className="flex gap-sm mb-4" aria-label="Journey track filters">
+            <button
+              onClick={() => setActiveTab('core')}
+              className={`px-3 py-1 rounded text-sm ${activeTab === 'core' ? 'bg-brand-teal text-white font-medium' : 'border border-hairline hover:bg-surface-hover'}`}
+            >
+              Core Onboarding (41)
+            </button>
+            <button
+              onClick={() => setActiveTab('achc')}
+              className={`px-3 py-1 rounded text-sm ${activeTab === 'achc' ? 'bg-brand-teal text-white font-medium' : 'border border-hairline hover:bg-surface-hover'}`}
+            >
+              Annual ACHC ({achcJourneyCount})
+            </button>
           </div>
 
-          <div className="mt-lg">
-            <div className="flex items-center gap-md mb-md">
-              <h3 className="text-h3 font-medium text-ink">Annual ACHC Training</h3>
-              <ToneTag tone="amber">12 modules</ToneTag>
-            </div>
-            <div className="grid gap-md tablet-l:grid-cols-2" role="list">
-              {journeyModules.slice(41).map((module, index) => (
+          <div className="flex gap-md overflow-x-auto pb-4 snap-x snap-mandatory">
+            {(activeTab === 'core' ? journeyModules.slice(0, coreJourneyCount) : journeyModules.slice(coreJourneyCount)).map((module, index) => (
+              <div key={module.id} className="flex-shrink-0 snap-start w-[280px]">
                 <JourneyModuleCard
-                  index={42 + index}
-                  key={module.id}
+                  index={(activeTab === 'core' ? 0 : coreJourneyCount) + index + 1}
                   module={module}
                   onClick={() => handleOpenModule(module.id)}
                 />
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
 
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="supervisor-readiness-title">

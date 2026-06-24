@@ -1,6 +1,8 @@
 import { BookOpenCheck, CheckCircle2, ClipboardCheck, FileCheck2, LockKeyhole, Map, PlayCircle, Route, ShieldCheck, UserCheck, type LucideIcon } from 'lucide-react';
 import { achcAnnualTests } from '@/policy/journey/data/achcAnnualTests.data';
+import { ACHC_ART } from '@/policy/journey/data/modules';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneSoftTileClasses, toneGlassSurfaceClasses, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
@@ -162,17 +164,21 @@ const lessonModules: readonly LessonModule[] = [
     track: 'Onboarding',
   },
   // All 12 ACHC Annual training
-  ...achcAnnualTests.map((test, idx) => ({
-    id: test.topic_id,
-    method: 'Quiz',
-    policy: 'ACHC annual requirement',
-    readiness: idx < 3 ? 'Annual ACHC item staged.' : 'Part of 12 ACHC annual training set.',
-    score: '—',
-    status: idx === 0 ? 'active' : 'ready',
-    title: test.topic_id.replace('ACHC-ART-', 'ACHC Annual: '),
-    tone: idx === 0 ? 'orange' : 'amber',
-    track: 'Annual ACHC',
-  })),
+  ...achcAnnualTests.map((test, idx) => {
+    const mod = ACHC_ART.find((m) => m.id === test.topic_id);
+    const fullTitle = mod ? mod.title : test.topic_id.replace('ACHC-ART-', '');
+    return {
+      id: test.topic_id,
+      method: 'Quiz',
+      policy: 'ACHC annual requirement',
+      readiness: idx < 3 ? 'Annual ACHC item staged.' : 'Part of 12 ACHC annual training set.',
+      score: '—',
+      status: idx === 0 ? 'active' : 'ready',
+      title: `ACHC Annual: ${fullTitle}`,
+      tone: idx === 0 ? 'orange' : 'amber',
+      track: 'Annual ACHC',
+    };
+  }),
 ] as readonly LessonModule[];
 
 const readinessCards: readonly ReadinessCard[] = [
@@ -221,6 +227,11 @@ const selectedModule = lessonModules[4];
 
 export function JourneyV1Screen() {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'onboarding' | 'achc'>('onboarding');
+
+  const filteredModules = lessonModules.filter((m) =>
+    activeTab === 'onboarding' ? m.track !== 'Annual ACHC' : m.track === 'Annual ACHC'
+  );
 
   const handleOpenModule = (moduleId: string) => {
     navigate(`/journey/module/${encodeURIComponent(moduleId)}`);
@@ -268,9 +279,8 @@ export function JourneyV1Screen() {
         </aside>
 
         <main className="grid content-start gap-lg" aria-label="Journey v1 lesson modules">
-          <div className="mb-lg flex items-center gap-md">
-            <h1 className="text-h1 font-medium text-ink">My Learning</h1>
-            <ToneTag tone="teal">Maria Santos, RN</ToneTag>
+          <div className="mb-lg">
+            <h1 className="text-h1 font-medium text-ink">My Learning - Maria Santos, RN</h1>
           </div>
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
@@ -280,20 +290,31 @@ export function JourneyV1Screen() {
                   Lesson cards keep familiar module IDs while surfacing method, policy, status, and readiness.
                 </p>
               </div>
-              <div className="flex flex-wrap gap-sm" aria-label="Journey v1 track filters">
-                <ToneTag tone="teal">Onboarding</ToneTag>
-                <ToneTag tone="amber">Annual ACHC</ToneTag>
+              <div className="flex gap-sm" aria-label="Journey v1 track filters">
+                <button
+                  onClick={() => setActiveTab('onboarding')}
+                  className={`px-3 py-1 rounded text-sm ${activeTab === 'onboarding' ? 'bg-brand-teal text-white font-medium' : 'border border-hairline hover:bg-surface-hover'}`}
+                >
+                  Onboarding
+                </button>
+                <button
+                  onClick={() => setActiveTab('achc')}
+                  className={`px-3 py-1 rounded text-sm ${activeTab === 'achc' ? 'bg-brand-teal text-white font-medium' : 'border border-hairline hover:bg-surface-hover'}`}
+                >
+                  Annual ACHC
+                </button>
               </div>
             </div>
 
-            <div className="grid gap-md tablet-l:grid-cols-2 desktop:grid-cols-3">
-              {lessonModules.map((module) => (
-                <LessonCard
-                  key={module.id}
-                  module={module}
-                  selected={module.id === selectedModule.id}
-                  onClick={() => handleOpenModule(module.id)}
-                />
+            <div className="flex gap-md overflow-x-auto pb-4 snap-x snap-mandatory">
+              {filteredModules.map((module) => (
+                <div key={module.id} className="flex-shrink-0 snap-start w-[280px]">
+                  <LessonCard
+                    module={module}
+                    selected={module.id === selectedModule.id}
+                    onClick={() => handleOpenModule(module.id)}
+                  />
+                </div>
               ))}
             </div>
           </section>
