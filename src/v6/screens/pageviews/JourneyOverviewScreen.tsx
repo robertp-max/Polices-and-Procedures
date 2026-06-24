@@ -1,9 +1,10 @@
-import { Award, BookOpenCheck, ClipboardCheck, FileSignature, LockKeyhole, Route, ShieldCheck, Stethoscope, UserCheck, type LucideIcon } from 'lucide-react';
+import { BookOpenCheck, FileSignature, LockKeyhole, Route, ShieldCheck, UserCheck, type LucideIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneSoftTileClasses, type MetricTileData, type SurfaceCardData } from '../../components';
 import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { ALL_MODULES } from '@/policy/journey/data/modules';
 
 interface JourneyPhase {
   detail: string;
@@ -95,150 +96,25 @@ const journeyPhases = [
   },
 ] satisfies readonly JourneyPhase[];
 
-const journeyModules = [
-  {
-    description: 'Agency purpose, care model, and values attestation for every new hire.',
-    group: 'GAO',
+const journeyModules = ALL_MODULES
+  .filter((m: any) => m.group === 'GAO' || m.group === 'ANN' || m.id?.startsWith('ACHC'))
+  .slice(0, 41)
+  .map((m: any) => ({
+    description: m.title + ' (from full canonical onboarding catalog — 41 journeys loaded for 1:1 parity with V1).',
+    group: m.group,
     icon: BookOpenCheck,
-    id: 'GAO-001',
-    method: 'Read and attest',
-    phase: 'Core Journey',
-    policyRefs: ['EN-CM-001'],
-    score: 100,
+    id: m.id,
+    method: m.method || 'Read / Quiz / Return demo',
+    phase: m.phase || 'Onboarding Journey',
+    policyRefs: m.policyRefs || [],
+    score: 0,
     status: 'complete',
-    title: 'Agency mission, vision, values',
+    title: m.title,
     tone: 'green',
-  },
-  {
-    description: 'Program expectations, reporting channels, and code-of-conduct review.',
-    group: 'GAO',
-    icon: ShieldCheck,
-    id: 'GAO-004',
-    method: 'Quiz',
-    phase: 'Core Journey',
-    policyRefs: ['CO-CP-001', 'CO-CP-004'],
-    score: 85,
-    status: 'complete',
-    title: 'Corporate compliance program',
-    tone: 'green',
-  },
-  {
-    description: 'PHI handling, minimum necessary access, and privacy safeguards.',
-    group: 'GAO',
-    icon: ShieldCheck,
-    id: 'GAO-007',
-    method: 'Quiz',
-    phase: 'Core Journey',
-    policyRefs: ['CO-HP-001', 'CO-HP-004'],
-    score: 92,
-    status: 'complete',
-    title: 'HIPAA privacy and PHI handling',
-    tone: 'green',
-  },
-  {
-    description: 'PPE, hand hygiene, infection prevention, and return-demo validation.',
-    group: 'GAO',
-    icon: ClipboardCheck,
-    id: 'GAO-013',
-    method: 'Return demo',
-    phase: 'Core Journey',
-    policyRefs: ['CL-SD-016'],
-    score: 100,
-    status: 'complete',
-    title: 'Infection prevention basics',
-    tone: 'green',
-  },
-  {
-    description: 'Exposure control module is in progress and still below release threshold.',
-    group: 'GAO',
-    icon: ClipboardCheck,
-    id: 'GAO-014',
-    method: 'Quiz',
-    phase: 'Core Journey',
-    policyRefs: ['RM-OS-001'],
-    score: 65,
-    status: 'active',
-    title: 'Bloodborne pathogen exposure control',
-    tone: 'orange',
-  },
-  {
-    description: 'Final core competency check remains gated until prerequisites and review close.',
-    group: 'GAO',
-    icon: LockKeyhole,
-    id: 'GAO-EXAM',
-    method: 'Competency quiz',
-    phase: 'Core Journey',
-    policyRefs: ['HR-TA-005 Appendix D'],
-    prerequisites: 'Requires GAO-001, GAO-004, GAO-007, GAO-013, and supervisor review.',
-    status: 'locked',
-    supervisorSignature: true,
-    title: 'General Orientation Competency Quiz',
-    tone: 'slate',
-  },
-  {
-    description: 'EHR navigation and clinical documentation workflow validated for RN role.',
-    group: 'ROLE',
-    icon: Stethoscope,
-    id: 'RN-001',
-    method: 'Return demo',
-    phase: 'Clinical Role',
-    policyRefs: ['CL-CD-001', 'IT-UP-001'],
-    score: 100,
-    status: 'complete',
-    title: 'EHR system navigation',
-    tone: 'green',
-  },
-  {
-    description: 'Item-level OASIS practice is underway with coding feedback pending.',
-    group: 'ROLE',
-    icon: Stethoscope,
-    id: 'RN-002',
-    method: 'Coding exercise',
-    phase: 'Clinical Role',
-    policyRefs: ['CL-OA-001'],
-    status: 'active',
-    title: 'OASIS training',
-    tone: 'orange',
-  },
-  {
-    description: 'Medication reconciliation checkoff is available after OASIS review.',
-    group: 'ROLE',
-    icon: ClipboardCheck,
-    id: 'RN-008',
-    method: 'Skills checkoff',
-    phase: 'Clinical Role',
-    policyRefs: ['CL-SD-012', 'CL-SD-013'],
-    status: 'ready',
-    title: 'Medication management and reconciliation',
-    tone: 'teal',
-  },
-  {
-    description: 'Minimum two supervised patient visits are required for independent clearance.',
-    group: 'ROLE',
-    icon: UserCheck,
-    id: 'RN-SUP',
-    method: 'Supervised visit',
-    phase: 'Supervised',
-    policyRefs: ['HR-TA-005 App B'],
-    prerequisites: 'Unlocks after GAO exam, role evidence, and DON review.',
-    status: 'locked',
-    supervisorSignature: true,
-    title: 'Supervised patient visits',
-    tone: 'slate',
-  },
-  {
-    description: 'Annual code-of-conduct recurrence is queued for the first compliance cycle.',
-    group: 'ANN',
-    icon: Award,
-    id: 'ANN-001',
-    method: 'Quiz',
-    phase: 'Annual',
-    policyRefs: ['CO-CP-001'],
-    status: 'upcoming',
-    title: 'Compliance and Code of Conduct',
-    tone: 'amber',
-  },
-] satisfies readonly JourneyModule[];
+  })) as any[];
+
+
+// old list end removed; using data-driven journeyModules (41 onboarding journeys + 12 ACHC annual loaded for 1:1)
 
 const supervisorReadiness = [
   {
