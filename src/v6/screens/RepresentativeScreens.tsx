@@ -18,6 +18,8 @@ import { resolveDisplayName } from '@/policy/ces/data/V3_CES_SeedData';
 import type { EventProcessStep, RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import { inferPhaseTemplate } from '@/policy/workflows/swimlanes/phaseTemplates';
 import type { SwimlaneStatus } from '@/policy/workflows/swimlanes/types';
+import { buildWorkflowSwimlaneCardsForEvent } from '@/policy/workflows/swimlanes/buildSwimlaneFromWorkflow';
+import { getEventById } from '@/policy/workflows/swimlanes/swimlaneRegistry';
 import { Button, ToneBadge } from '../primitives';
 import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
@@ -27,6 +29,8 @@ import { workspaceSubnavItems } from '../routing/navigationManifest';
 import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, JourneyV1Screen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen } from './pageviews';
 import { achcSurveyRows } from '@/policy/data/achcSurveyProjection.generated';
 import { achcPrintCrosswalk } from '@/policy/data/achcPrintCrosswalk.generated';
+import { LearnerProvider } from '@/policy/journey/lib/learnerState';
+import { UiStateProvider } from '@/policy/journey/lib/uiState';
 
 type RouteLike = V6RouteDefinition;
 type BasicRow = Record<string, string>;
@@ -875,29 +879,29 @@ if (false as any) {
 
 function buildMissingSourceCalendarSwimlane(event: CalendarEventData): CalendarSwimlaneData {
   const displayMonth = getEventMonth(event);
-
+  const wf = event.workflowId ? ' ' + event.workflowId : '';
   return {
-    summary: `${event.label} does not have a mapped CES source event or execution unit. Generic swimlane generation is disabled for CES calendar events.`,
+    summary: `Workflow source missing — cannot render authored swimlane for ${event.label || event.id}${wf}`,
     metrics: [
-      { label: 'Tasks', value: '1', helper: 'Source mapping required', tone: 'orange' },
-      { label: 'Source', value: 'Missing', helper: event.workflowId ?? event.id ?? 'No workflow id', tone: 'orange' },
-      { label: 'Fallback', value: 'Off', helper: 'No generic lanes', tone: 'green' },
+      { label: 'Tasks', value: '0', helper: 'No authored steps resolved', tone: 'orange' },
+      { label: 'Workflow', value: event.workflowId ?? 'missing', helper: 'Not resolved in WORKFLOWS', tone: 'orange' },
+      { label: 'Source', value: 'Missing', helper: 'Use only for unresolved', tone: 'slate' },
       { label: 'Due', value: dueLabelFromDisplayDay(event.day, 0, displayMonth), helper: 'Calendar display date', tone: 'teal' },
     ],
     lanes: [
       {
-        title: 'Source Mapping Required',
+        title: 'Workflow source missing',
         tone: 'orange',
-        note: 'Map this calendar item to a V3 regulatory event, V3 execution unit, or explicit V1 design swimlane before showing execution work.',
+        note: 'Workflow source missing — cannot render authored swimlane',
         cards: [
           {
-            chips: ['No generic fallback'],
+            chips: ['diagnostic'],
             due: dueLabelFromDisplayDay(event.day, 0, displayMonth),
             id: `${getCalendarEventKey(event)}-source-missing`,
             owner: event.owner,
             progress: 0,
             status: 'Source missing',
-            title: `Map ${event.label} to an authoritative workflow source`,
+            title: 'Workflow source missing — cannot render authored swimlane',
             tone: 'orange',
           },
         ],
@@ -1772,7 +1776,14 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
     case 'journey-v1':
       child = <JourneyV1Screen />;
       break;
+    case 'journey-orientation':
     case 'module-player':
+    case 'lesson-player':
+    case 'module-assessment-splash':
+    case 'module-assessment-quiz':
+    case 'final-assessment-splash':
+    case 'final-assessment-quiz':
+    case 'final-result':
       child = <ModulePlayerScreen />;
       break;
     case 'appendix-f':
@@ -1849,7 +1860,7 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
   const isCESGroup = route.group === 'CES' || cesHashIds.includes(route.hashId || '') || pathname.startsWith('/ces/') || pathname.startsWith('/workflows') || pathname.startsWith('/events/') || pathname === '/audit' || pathname === '/evidence' || pathname.startsWith('/compliance/');
 
   const isTaxonomyGroup = pathname.startsWith('/framework') || pathname.startsWith('/library') || pathname.startsWith('/forms') || pathname.startsWith('/taxonomy') || pathname.startsWith('/achc') || ['framework', 'taxonomy', 'policy-library', 'policy-detail', 'forms-library', 'form-viewer', 'achc-survey', 'achc-crosswalk'].includes(route.hashId || '') || route.group === 'Taxonomy';
-  const isOnboardingGroup = pathname.startsWith('/journey') || pathname.startsWith('/onboarding-v2') || ['journey-overview', 'journey-v1', 'module-player', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'].includes(route.hashId || '') || route.group === 'Onboarding';
+  const isOnboardingGroup = pathname.startsWith('/journey') || pathname.startsWith('/onboarding-v2') || ['journey-overview', 'journey-v1', 'journey-orientation', 'module-player', 'lesson-player', 'module-assessment-splash', 'module-assessment-quiz', 'final-assessment-splash', 'final-assessment-quiz', 'final-result', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'].includes(route.hashId || '') || route.group === 'Onboarding';
   const isSystemGroup = pathname.startsWith('/system-documentation') || pathname.startsWith('/policy-lifecycle') || pathname === '/hubstaff' || pathname.startsWith('/help') || ['system-docs', 'policy-lifecycle', 'policy-lifecycle-detail', 'hubstaff', 'help-center', 'governance'].includes(route.hashId || '') || route.group === 'System';
   const isAdminGroup = pathname.startsWith('/admin/') || ['admin-groups', 'admin-roles', 'admin-permissions', 'admin-users', 'surveyor-viewer'].includes(route.hashId || '') || route.group === 'Admin';
 
@@ -1866,12 +1877,22 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
     workspaceSubnav = <WorkspaceSubnav items={workspaceSubnavItems.admin} currentPath={location?.pathname || ''} prefix="Admin:" />;
   }
 
-  const content = workspaceSubnav ? (
+  let content = workspaceSubnav ? (
     <>
       {workspaceSubnav}
       {mainContent}
     </>
   ) : mainContent;
+
+  if (isOnboardingGroup) {
+    content = (
+      <LearnerProvider>
+        <UiStateProvider>
+          {content}
+        </UiStateProvider>
+      </LearnerProvider>
+    );
+  }
 
   return content;
 }
@@ -2387,10 +2408,38 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
     // Note: map runs on full pool; month filter below + per-event selection preserve source day.
     baseEvents = baseEvents.map((e) => {
       if (e.swimlane) return e;
-      const isQapi = isQapiQuarterlyEvent(e) || (e.label || '').toLowerCase().includes('qapi');
-      if (isQapi && q2QapiSwimlane) {
-        return { ...e, swimlane: q2QapiSwimlane } as CalendarEventData;
+
+      // Resolve real workflow first: prefer direct wfId, else sourceEventId -> REGULATORY -> aligned wfId
+      let resolvedWorkflow: any = null;
+      let resolvedWfId: string | undefined = (e as any).workflowId;
+      if (resolvedWfId && WORKFLOWS[resolvedWfId]) {
+        resolvedWorkflow = WORKFLOWS[resolvedWfId];
       }
+      if (!resolvedWorkflow) {
+        const srcEvtId = (e as any).sourceEventId || (e as any).id;
+        if (srcEvtId) {
+          try {
+            const reg = getEventById(srcEvtId);
+            const cand = reg?.workflowId || (e as any).workflowId;
+            if (cand && WORKFLOWS[cand]) {
+              resolvedWfId = cand;
+              resolvedWorkflow = WORKFLOWS[cand];
+            }
+          } catch {}
+        }
+      }
+
+      if (resolvedWorkflow) {
+        // Use the shared real workflow -> cards adapter. No generic two-step for backed workflows.
+        const built = buildWorkflowSwimlaneCardsForEvent(e as any, resolvedWorkflow);
+        // If adapter produced only the honest missing diagnostic, fall through to units (should not for real wf)
+        const isHonestMissing = built.lanes.some((l: any) => /source missing|Workflow source missing/i.test(l.title || ''));
+        if (!isHonestMissing && built.lanes.length > 0 && built.lanes.some((l: any) => (l.cards || []).length > 0)) {
+          return { ...e, swimlane: built as any, workflowId: resolvedWfId } as CalendarEventData;
+        }
+      }
+
+      // Only for events without resolvable workflowId+steps: try units projection, else honest missing
       const srcId = (e as any).sourceEventId || (e as any).id || (e as any).workflowId;
       let laneData: any[] = [];
       try {
@@ -2417,22 +2466,8 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
         }
       } catch {}
       if (laneData.length === 0) {
-        // Fallback uses only real fields from the projection event (no new invented labels)
-        laneData = [{
-          title: 'Execution',
-          tone: e.tone || 'teal',
-          note: 'Projection-derived from CES seed',
-          cards: [{
-            id: (e.id || 'EVT').toString().slice(0, 20),
-            title: e.label,
-            owner: e.owner || 'Compliance Officer',
-            due: `${getCalendarMonthLabel(getEventMonth(e))} ${e.day}`,
-            progress: typeof e.progress === 'number' ? e.progress : 55,
-            tone: e.tone || 'teal',
-            chips: [(e as any).bundleCategory || 'CES'].filter(Boolean),
-            status: 'In progress',
-          }],
-        }];
+        // Honest fallback only — do not pretend this is a real workflow swimlane
+        return { ...e, swimlane: buildMissingSourceCalendarSwimlane(e) } as CalendarEventData;
       }
       const totalCards = laneData.reduce((sum: number, l: any) => sum + (l.cards ? l.cards.length : 0), 0);
       return {
@@ -2440,7 +2475,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
         swimlane: {
           lanes: laneData,
           metrics: [
-            { label: 'Tasks', value: String(totalCards), helper: 'Real V3 units', tone: 'teal' as const },
+            { label: 'Tasks', value: String(totalCards), helper: 'Real V3 units (no workflow)', tone: 'teal' as const },
             { label: 'Owner', value: e.owner || 'Team', helper: 'Accountable', tone: 'orange' as const },
             { label: 'Due', value: `${getCalendarMonthLabel(getEventMonth(e))} ${e.day}`, helper: 'Target', tone: 'teal' as const },
           ],
@@ -2960,8 +2995,25 @@ function BoardScreen() {
 }
 
 function buildWorkflowSwimlane(event: CalendarEventData): readonly BoardLaneData[] {
+  // If event already has real workflow-derived swimlane from adapter, use it directly
+  if (event.swimlane && !/source missing|Workflow source missing/i.test((event.swimlane as any).summary || '')) {
+    const sl: any = event.swimlane;
+    return (sl.lanes || []).map((lane: any) => ({
+      cards: (lane.cards || []).map((card: any) => ({
+        chips: card.chips,
+        due: card.due,
+        id: card.id,
+        owner: card.owner,
+        progress: card.progress,
+        title: card.title,
+        tone: card.tone,
+      })),
+      count: (lane.cards || []).length,
+      title: lane.title,
+      tone: lane.tone,
+    }));
+  }
   const swimlane = event.swimlane ?? buildMissingSourceCalendarSwimlane(event);
-
   return swimlane.lanes.map((lane) => ({
     cards: lane.cards.map((card) => ({
       chips: card.chips,
@@ -3036,8 +3088,23 @@ function WorkflowSwimlaneScreen() {
   // CES execution path
   const event = getWorkflowEvent(eventId ?? routeWorkflowId, workflowId);
   const eventMonthLabel = getCalendarMonthLabel(getEventMonth(event));
-  const lanes = buildWorkflowSwimlane(event);
-  const metrics: readonly MetricTileData[] = event.swimlane?.metrics ?? [
+
+  // Prefer real workflow cards via shared adapter for event-clicked workflows
+  let lanes = buildWorkflowSwimlane(event);
+  const directWf = (event as any).workflowId && WORKFLOWS[(event as any).workflowId] ? WORKFLOWS[(event as any).workflowId] : null;
+  if (directWf) {
+    const viaAdapter: any = buildWorkflowSwimlaneCardsForEvent(event as any, directWf);
+    if (viaAdapter && viaAdapter.lanes && viaAdapter.lanes.length && !/source missing/i.test(viaAdapter.summary || '')) {
+      lanes = viaAdapter.lanes.map((lane: any) => ({
+        cards: (lane.cards || []).map((card: any) => ({ chips: card.chips, due: card.due, id: card.id, owner: card.owner, progress: card.progress ?? 50, title: card.title, tone: card.tone })),
+        count: (lane.cards || []).length,
+        title: lane.title,
+        tone: lane.tone,
+      })) as any;
+    }
+  }
+
+  const metrics: readonly MetricTileData[] = (event as any).swimlane?.metrics ?? [
     { label: 'Tasks', value: `${event.taskCount ?? 7}`, helper: 'Generated from event context', tone: 'teal' },
     { label: 'Owner', value: event.owner, helper: 'Primary accountable party', tone: 'orange' },
     { label: 'Risk', value: event.risk ?? 'Current', helper: 'Calendar-derived signal', tone: event.tone },

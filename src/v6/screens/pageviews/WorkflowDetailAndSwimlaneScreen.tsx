@@ -78,40 +78,26 @@ export function buildLanesForWorkflow(meta: WorkflowMeta | null, detail: ReturnT
     }];
   }
 
-  // Reference-only grouping of authored steps. No execution semantics, no progress, no mutation.
+  // Use authored steps order and simple deterministic grouping (preserve real step data)
   const n = steps.length;
-  const phaseLen = Math.max(1, Math.ceil(n / 4));
-  const phaseDefs = [
-    { title: 'Authored Steps (Part 1)', tone: 'teal' as const },
-    { title: 'Authored Steps (Part 2)', tone: 'teal' as const },
-    { title: 'Authored Steps (Part 3)', tone: 'teal' as const },
-    { title: 'Authored Steps (Part 4)', tone: 'teal' as const },
-  ];
-  return phaseDefs.map((ph, p) => {
-    const slice = steps.slice(p * phaseLen, (p + 1) * phaseLen);
-    const cards = slice.length > 0 ? slice.map((s: any, i: number) => ({
-      id: `STEP-${String(s.order || (p*phaseLen + i + 1)).padStart(2, '0')}`,
+  const phaseLen = Math.max(1, Math.ceil(n / Math.min(6, Math.max(2, Math.floor(n / 3)))));
+  const groups: any[][] = [];
+  for (let i = 0; i < n; i += phaseLen) groups.push(steps.slice(i, i + phaseLen));
+  return groups.map((slice, p) => {
+    const cards = slice.map((s: any, i: number) => ({
+      id: `STEP-${String(s.order || (p * phaseLen + i + 1)).padStart(2, '0')}`,
       title: s.action || 'Step',
       owner: s.role || meta?.owner || '—',
       due: s.deadline || cadenceDue,
       meta: [ ...(s.formIds || []), ...((detail as any)?.policies ? [(detail as any).policies.split(',')[0]] : []) ].filter(Boolean).join(' ').slice(0, 48),
-      tone: ph.tone,
+      tone: 'teal' as const,
       chips: (s.formIds && s.formIds.length) ? ['Form'] : ['Step'],
       progress: 0, // reference only, no progress
-    })) : [{
-      id: `${ph.title.slice(0,3).toUpperCase()}-0`,
-      title: `${ph.title} (from roles/forms)`,
-      owner: meta?.owner || '—',
-      due: cadenceDue,
-      meta: (detail as any)?.forms ? (detail as any).forms.slice(0, 30) : '',
-      tone: ph.tone,
-      chips: ['Ref'],
-      progress: 0, // reference only
-    }];
+    }));
     return {
-      title: ph.title,
+      title: `Authored Steps ${p + 1}`,
       count: cards.length,
-      tone: ph.tone,
+      tone: 'teal' as const,
       cards,
     };
   });

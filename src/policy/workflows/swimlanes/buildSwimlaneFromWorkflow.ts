@@ -458,3 +458,6 @@ export function buildSwimlaneFromWorkflow(workflow: Workflow, context: SwimlaneB
     missingContext,
   };
 }
+
+// Re-export the pure card adapter (implementation lives in dedicated pure module to avoid side-effect chains for verification + script isolation).
+export { buildWorkflowSwimlaneCardsForEvent } from './buildWorkflowSwimlaneCardsForCes';
