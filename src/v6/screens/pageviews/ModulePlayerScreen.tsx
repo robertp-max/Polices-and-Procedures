@@ -5,6 +5,7 @@ import { DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneGlassSu
 import { Badge, Button, Checkbox, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { JourneyLearningShell } from './JourneyLearningShell';
 
 interface LessonStep {
   detail: string;
@@ -242,6 +243,10 @@ export function ModulePlayerScreen() {
   };
 
   return (
+    <JourneyLearningShell
+      title="Module Player"
+      subtitle="Focused lesson workspace for remediation, evidence capture, assessor review, and return-to-journey navigation."
+    >
     <section
       aria-labelledby="module-player-title"
       className="grid gap-xl"
@@ -483,6 +488,7 @@ export function ModulePlayerScreen() {
         </aside>
       </section>
     </section>
+    </JourneyLearningShell>
   );
 }
 
