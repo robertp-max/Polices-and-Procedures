@@ -34,6 +34,7 @@ export interface ControlInventoryRow {
   domain?: string;
   evidenceRequired?: string;
   regulatoryBasis?: string;
+  sourcePolicyIds?: readonly string[];
 }
 
 export interface AuditQueueRow {
@@ -102,19 +103,24 @@ export async function buildCesControlAuditView(_options?: {
           domain: c.domain,
           evidenceRequired: c.evidenceRequired,
           regulatoryBasis: c.regulatoryBasis,
+          sourcePolicyIds: c.sourcePolicyIds,
         };
       })
     : [...FALLBACK_CONTROL_INVENTORY_ROWS];
 
   // Audit/evidence rows – prototype derivation from high-risk controls for demo linkage
   const highRisk = inventoryRows.filter(r => r.riskTier === 'High');
-  const auditQueueRows: AuditQueueRow[] = highRisk.slice(0, 5).map((r, i) => ({
-    title: r.controlName,
-    ref: r.controlId,
-    status: i % 2 === 0 ? 'ready to certify' : 'missing evidence',
-    tone: i % 2 === 0 ? 'teal' : 'orange',
-    controlId: r.controlId,
-  }));
+  const auditQueueRows: AuditQueueRow[] = highRisk.slice(0, 5).map((r, i) => {
+    const st = r.readiness === 'certified' ? 'certified locked' : r.readiness === 'ready' ? 'ready to certify' : (i % 3 === 2 ? 'pending approval' : (r.evidence.includes('missing') ? 'missing evidence' : 'ready to certify'));
+    const tn = st.includes('certif') || st.includes('ready') ? 'teal' : 'orange';
+    return {
+      title: r.controlName,
+      ref: r.controlId,
+      status: st,
+      tone: tn,
+      controlId: r.controlId,
+    };
+  });
 
   const evidenceRows: AuditQueueRow[] = inventoryRows
     .filter(r => r.evidence === 'validated' || r.readiness === 'certified')
@@ -130,18 +136,27 @@ export async function buildCesControlAuditView(_options?: {
   const high = inventoryRows.filter(r => r.riskTier === 'High').length;
   const material = inventoryRows.filter(r => r.riskTier === 'Material').length;
   const low = inventoryRows.filter(r => r.riskTier === 'Low').length;
+  const useDesignFallbackNumbers = controls.length === 0;
+
+  // Derive pending honestly from the constructed queue rows (status now varies in mapping)
+  const pendingCount = auditQueueRows.filter(r => r.status.includes('pending') || r.status.includes('approval')).length;
 
   const view: CesControlAuditView = {
     inventoryRows,
     auditQueueRows,
     evidenceRows,
     metrics: {
-      controls: { total: controls.length || 104, high: high || 81, material: material || 22, low: low || 1 },
+      controls: {
+        total: controls.length || 104,
+        high: useDesignFallbackNumbers ? 81 : (high || 81),
+        material: useDesignFallbackNumbers ? 22 : (material || 22),
+        low: useDesignFallbackNumbers ? 1 : (low || 1),
+      },
       audit: {
-        ready: auditQueueRows.filter(r => r.status.includes('ready')).length || 18,
-        missing: auditQueueRows.filter(r => r.status.includes('missing')).length || 2,
-        pending: 4,
-        certified: evidenceRows.length || 12,
+        ready: auditQueueRows.filter(r => r.status.includes('ready')).length || (useDesignFallbackNumbers ? 18 : 0),
+        missing: auditQueueRows.filter(r => r.status.includes('missing')).length || (useDesignFallbackNumbers ? 2 : 0),
+        pending: pendingCount || (useDesignFallbackNumbers ? 4 : 0),
+        certified: evidenceRows.length || (useDesignFallbackNumbers ? 12 : 0),
       },
     },
   };
@@ -176,11 +191,11 @@ export function validateCesControlAuditView(view: CesControlAuditView): void {
 
 /** Lightweight sync fallback for visual parity when async load not yet resolved. */
 export const FALLBACK_CONTROL_INVENTORY_ROWS: readonly ControlInventoryRow[] = [
-  { controlId: asControlId('MC-AH-001'), controlName: 'After-hours on-call coverage', riskTier: 'High', sourceStatus: 'UNKNOWN', evidence: 'missing-evidence', readiness: 'review-required' },
-  { controlId: asControlId('MC-OA-014'), controlName: 'OASIS QA and transmission control', riskTier: 'High', sourceStatus: 'UNKNOWN', evidence: 'uploaded', readiness: 'ready' },
-  { controlId: asControlId('MC-PO-022'), controlName: 'Physician orders signature control', riskTier: 'High', sourceStatus: 'UNKNOWN', evidence: 'pending', readiness: 'awaiting' },
-  { controlId: asControlId('MC-IP-040'), controlName: 'Infection prevention surveillance', riskTier: 'High', sourceStatus: 'UNKNOWN', evidence: 'validated', readiness: 'certified' },
-  { controlId: asControlId('MC-EP-057'), controlName: 'Emergency preparedness annual review', riskTier: 'Material', sourceStatus: 'UNKNOWN', evidence: 'uploaded', readiness: 'ready' },
-  { controlId: asControlId('MC-OS-063'), controlName: 'OSHA logs and workplace violence control', riskTier: 'Material', sourceStatus: 'UNKNOWN', evidence: 'review-required', readiness: 'attention' },
-  { controlId: asControlId('MC-AD-104'), controlName: 'Administrative posting and notice inventory', riskTier: 'Low', sourceStatus: 'UNKNOWN', evidence: 'complete', readiness: 'ready' },
+  { controlId: asControlId('MC-AH-001'), controlName: 'After-hours on-call coverage', riskTier: 'High', sourceStatus: 'UNKNOWN', evidence: 'missing-evidence', readiness: 'review-required', category: 'Clinical Operations', domain: 'OP', sourcePolicyIds: ['OP-AH-001'] },
+  { controlId: asControlId('MC-OA-014'), controlName: 'OASIS QA and transmission control', riskTier: 'High', sourceStatus: 'UNKNOWN', evidence: 'uploaded', readiness: 'ready', category: 'Clinical Operations', domain: 'CL', sourcePolicyIds: ['CL-OA-101'] },
+  { controlId: asControlId('MC-PO-022'), controlName: 'Physician orders signature control', riskTier: 'High', sourceStatus: 'UNKNOWN', evidence: 'pending', readiness: 'awaiting', category: 'Clinical Operations', domain: 'CL', sourcePolicyIds: ['CL-CP-001'] },
+  { controlId: asControlId('MC-IP-040'), controlName: 'Infection prevention surveillance', riskTier: 'High', sourceStatus: 'UNKNOWN', evidence: 'validated', readiness: 'certified', category: 'Safety & Risk Management', domain: 'RM', sourcePolicyIds: ['CL-IC-001'] },
+  { controlId: asControlId('MC-EP-057'), controlName: 'Emergency preparedness annual review', riskTier: 'Material', sourceStatus: 'UNKNOWN', evidence: 'uploaded', readiness: 'ready', category: 'Safety & Risk Management', domain: 'RM', sourcePolicyIds: ['RM-EP-001'] },
+  { controlId: asControlId('MC-OS-063'), controlName: 'OSHA logs and workplace violence control', riskTier: 'Material', sourceStatus: 'UNKNOWN', evidence: 'review-required', readiness: 'attention', category: 'Safety & Risk Management', domain: 'RM', sourcePolicyIds: ['HR-TR-002'] },
+  { controlId: asControlId('MC-AD-104'), controlName: 'Administrative posting and notice inventory', riskTier: 'Low', sourceStatus: 'UNKNOWN', evidence: 'complete', readiness: 'ready', category: 'Enterprise Policy & Records', domain: 'EN', sourcePolicyIds: ['EN-WF-08'] },
 ];

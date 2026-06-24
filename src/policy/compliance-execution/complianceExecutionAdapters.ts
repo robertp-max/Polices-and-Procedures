@@ -14,6 +14,7 @@ import type {
   EventCategory, WorkflowPhase, EvidenceStatus, RequiredSigner,
   Owner,
 } from '@/policy/ces/types';
+import { resolveDisplayName } from '@/policy/ces/data/V3_CES_SeedData';
 import type { MergedComplianceEvent, MergedExecutionUnit } from './complianceExecutionTypes';
 
 /* ─── Domain mapping ─────────────────────────────────────── */
@@ -94,10 +95,11 @@ function initialsOf(name: string): string {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('') || '—';
 }
 export function regulatoryOwner(ev: RegulatoryEvent): Owner {
+  const displayName = resolveDisplayName(ev.owner);
   return {
-    userId:   `owner:${ev.owner.replace(/\s+/g, '_').toLowerCase()}`,
-    name:     ev.owner,
-    initials: initialsOf(ev.owner),
+    userId:   `owner:${(ev.owner || 'don').replace(/\s+/g, '_').toLowerCase()}`,
+    name:     displayName,
+    initials: initialsOf(displayName),
     role:     ev.ownerRole,
   };
 }
@@ -147,10 +149,11 @@ export function projectSigners(ev: RegulatoryEvent, snap: ExecutionStoreSnapshot
     const role = (r as unknown as { approverRole?: string; role?: string }).approverRole
               ?? (r as unknown as { role?: string }).role
               ?? 'Approver';
+    const display = resolveDisplayName(role);
     return {
       userId:   `role:${role.replace(/\s+/g, '_').toLowerCase()}`,
-      name:     role,
-      initials: initialsOf(role),
+      name:     display,
+      initials: initialsOf(display),
       role,
       status:   signed ? 'signed' : 'pending',
     };

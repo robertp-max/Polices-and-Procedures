@@ -1,4 +1,5 @@
 import { AlertCircle, ClipboardCheck, FileText, ShieldCheck, Upload } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 import { MetricGrid, SurfaceCard, type MetricTileData, type SurfaceCardData } from '../../components';
 import { FormField, Input, Textarea, ToneBadge } from '../../primitives';
 import type { Tone } from '../../tokens';
@@ -127,6 +128,9 @@ const previewRows = [
 ] as const;
 
 export function MobileIncidentScreen() {
+  const params = useParams<{ eventId?: string; taskId?: string }>();
+  const eventId = params.eventId?.trim() || 'EVT-001';
+  const taskId = params.taskId?.trim() || 'T-100';
   return (
     <section
       className="grid gap-xl"
@@ -137,7 +141,7 @@ export function MobileIncidentScreen() {
     >
       <div>
         <h1 className="text-h2 font-medium text-ink">Mobile Incident Execution - Field Intake</h1>
-        <p className="mt-xs text-sm text-muted">Mobile-first action surface for event context, task proof, signature, evidence capture, and approval.</p>
+        <p className="mt-xs text-sm text-muted">Mobile-first action surface for event context, task proof, signature, evidence capture, and approval. (event: {eventId}, task: {taskId})</p>
       </div>
       <MetricGrid metrics={metrics} />
 

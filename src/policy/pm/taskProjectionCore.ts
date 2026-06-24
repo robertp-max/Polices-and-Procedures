@@ -15,6 +15,7 @@ import {
 } from './ecignStatusMap';
 import { FORMS_DATASET } from '../data/formsLibraryDataset';
 import { FORMS_CATALOG } from '../data/formsCatalog';
+import { resolveCanonicalFormId } from '../data/formIdAliases';
 import type { PmOverlay } from './pmOverlayStore.types';
 import { inferSprintIdFromDate } from './sprintId';
 import type {
@@ -80,7 +81,8 @@ const TEMPLATE_FORMS = new Set<string>([
 
 function resolveTemplateFormId(form: ProjectorEventForm): string | undefined {
   const candidate = form.formId ?? form.id;
-  return TEMPLATE_FORMS.has(candidate) ? candidate : undefined;
+  const canon = resolveCanonicalFormId(candidate) ?? candidate;
+  return TEMPLATE_FORMS.has(canon) ? canon : (TEMPLATE_FORMS.has(candidate) ? candidate : undefined);
 }
 
 function riskFromEvent(event: ProjectorEvent): 'low' | 'medium' | 'high' | 'critical' {
@@ -267,7 +269,8 @@ export function projectTasks(input: ProjectorInput): Task[] {
       const nominalStart = toIsoDate(shiftToBusinessDay(addDays(parseIsoDate(stepDue) ?? eventDue, -1), -1));
 
       const linkedFormInstanceIds = linkedForms.map(form => {
-        const fid = resolveTemplateFormId(form) ?? (form.formId ?? form.id);
+        const raw = form.formId ?? form.id;
+        const fid = resolveTemplateFormId(form) ?? resolveCanonicalFormId(raw) ?? raw;
         return nextFormInstanceId(fid);
       });
 
@@ -306,7 +309,8 @@ export function projectTasks(input: ProjectorInput): Task[] {
 
       for (let formIdx = 0; formIdx < linkedForms.length; formIdx += 1) {
         const form = linkedForms[formIdx];
-        const resolvedFormId = resolveTemplateFormId(form) ?? (form.formId ?? form.id);
+        const raw = form.formId ?? form.id;
+        const resolvedFormId = resolveTemplateFormId(form) ?? resolveCanonicalFormId(raw) ?? raw;
         const instanceId = linkedFormInstanceIds[formIdx] ?? nextFormInstanceId(resolvedFormId);
         const completionTaskId = makeCesTaskId(event.id, ordinal++);
         const reviewTaskId = makeCesTaskId(event.id, ordinal++);
@@ -449,7 +453,8 @@ export function projectTasks(input: ProjectorInput): Task[] {
       const dependsOn = previousTaskId ? [previousTaskId] : [];
       const startDate = toIsoDate(shiftToBusinessDay(addDays(eventDue, -1), -1));
       const templateFormId = resolveTemplateFormId(form);
-      const resolvedFormId = templateFormId ?? (form.formId ?? form.id);
+      const rawF = form.formId ?? form.id;
+      const resolvedFormId = templateFormId ?? resolveCanonicalFormId(rawF) ?? rawF;
       const instanceId = nextFormInstanceId(resolvedFormId);
 
       const base: EcignSubmissionTask = {

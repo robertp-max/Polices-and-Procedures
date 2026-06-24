@@ -5,6 +5,10 @@ import { DataTable, MetricGrid, SurfaceCard, VeilDrawer, type DataTableColumn, t
 import { Button, ToneBadge } from '../../primitives';
 import { cx } from '../../utils/classNames';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
+import {
+  resolveWorkflowPolicyRefs,
+} from '@/policy/workflows/utils/resolveWorkflowPolicyRefs';
+import { resolveFormTitle } from '@/policy/data/formIdAliases';
 import type { CadenceInterval, DomainCode, RiskBand, Workflow as WorkflowDef } from '@/policy/types/workflow';
 
 const DOMAIN_LABELS: Record<DomainCode, string> = {
@@ -55,84 +59,33 @@ function toWorkflowRow(wf: WorkflowDef): WorkflowRow {
 }
 
 const getWorkflowDetail = (id: string) => {
-  const details: Record<string, { purpose: string; policies: string; forms: string; evidence: string; history: { item: string; status: string; tone: 'orange' | 'teal' }[] }> = {
-    'QA-WF-03': {
-      purpose: 'Coordinates agenda, attendance, minutes, action tracker, evidence packet, eCIgn routing, and final survey lock for QAPI quarterly board reviews.',
-      policies: 'QA-PG-001, GV-GB-001',
-      forms: 'GV-FM-005, EN-FM-008',
-      evidence: 'Minutes draft, dashboard export, eCIgn certificate',
+  const wf = WORKFLOWS[id];
+  if (wf) {
+    const res = resolveWorkflowPolicyRefs(wf);
+    const policyStr = res.effectivePolicyRefs.length > 0
+      ? res.effectivePolicyRefs.map(r => r.title).join(', ')
+      : (wf.policyRefs || []).join(', ');
+    const formStr = (wf.requiredForms || []).map(fid => `${fid} ${resolveFormTitle(fid)}`).join(', ') || (wf.requiredFormsRaw || '—');
+    const evidenceStr = wf.outputs || wf.auditRequirements || 'Evidence and signed artifacts per workflow.';
+    return {
+      purpose: wf.processOverview || 'Coordinates active CES processes, linking policies, forms, and evidence history.',
+      policies: policyStr || '—',
+      forms: formStr,
+      evidence: evidenceStr,
       history: [
-        { item: 'Agenda packet locked', status: 'Ready', tone: 'teal' },
-        { item: 'Minutes draft awaiting eCIgn signing', status: 'Awaiting', tone: 'orange' },
-        { item: 'Hash manifest verified', status: 'Ready', tone: 'teal' },
-        { item: 'Survey packet export queued', status: 'Ready', tone: 'teal' },
+        { item: 'Workflow steps loaded', status: 'Ready', tone: 'teal' as const },
+        { item: `${wf.steps.length} steps; ${wf.requiredForms.length} forms`, status: 'Ready', tone: 'teal' as const },
       ],
-    },
-    'CO-WF-02': {
-      purpose: 'Standardizes corporate response to safety, operational, or legal incidents, routing intake to executive review.',
-      policies: 'CO-IP-002, RM-FL-005',
-      forms: 'CO-FM-012, CO-FM-014',
-      evidence: 'Intake statement, audit trail, executive sign-off',
-      history: [
-        { item: 'Intake form submitted', status: 'Ready', tone: 'teal' },
-        { item: 'Supervisor review complete', status: 'Ready', tone: 'teal' },
-        { item: 'Regulatory notice drafted', status: 'Awaiting', tone: 'orange' },
-      ],
-    },
-    'GV-WF-01': {
-      purpose: 'Compiles and signs off the quarterly governing body packets including annual disclosures and conflict reports.',
-      policies: 'GV-GB-001, GV-CD-002',
-      forms: 'GV-FM-002, GV-FM-009',
-      evidence: 'Signed attestation packet, disclosures index, meeting minutes',
-      history: [
-        { item: 'Disclosure checklist complete', status: 'Ready', tone: 'teal' },
-        { item: 'Conflict audit run', status: 'Ready', tone: 'teal' },
-        { item: 'Governing board sign-off complete', status: 'Ready', tone: 'teal' },
-      ],
-    },
-    'HR-WF-05': {
-      purpose: 'Controls new hire license validation, OIG/SAM exclusion verification, and pre-day-1 checklist clearance.',
-      policies: 'HR-TA-001, HR-TA-005',
-      forms: 'HR-FM-001, HR-FM-003',
-      evidence: 'Background check clearance, primary source verification, offer letter',
-      history: [
-        { item: 'OIG verification run', status: 'Ready', tone: 'teal' },
-        { item: 'SAM verification run', status: 'Ready', tone: 'teal' },
-        { item: 'License active check pending', status: 'Awaiting', tone: 'orange' },
-      ],
-    },
-    'RM-WF-04': {
-      purpose: 'Manages emergency drills and simulated response after-action review logs to comply with annual survey mandates.',
-      policies: 'RM-ED-004, CO-EP-009',
-      forms: 'RM-FM-022, RM-FM-025',
-      evidence: 'After-action notes, participant roster, signature audit',
-      history: [
-        { item: 'Drill simulation completed', status: 'Ready', tone: 'teal' },
-        { item: 'Participants log locked', status: 'Ready', tone: 'teal' },
-        { item: 'Director attestation complete', status: 'Ready', tone: 'teal' },
-      ],
-    },
-    'CL-WF-08': {
-      purpose: 'Orchestrates clinical chart review, medication reconciliation audit, and plan of care verification by supervising clinicians.',
-      policies: 'CL-SD-012, CL-SD-013',
-      forms: 'CL-FM-055, CL-FM-058',
-      evidence: 'Reconciliation log, competency rubric, supervisor sign-off',
-      history: [
-        { item: 'Medication checks run', status: 'Ready', tone: 'teal' },
-        { item: 'Preceptor checklist validated', status: 'Ready', tone: 'teal' },
-        { item: 'Director sign-off complete', status: 'Ready', tone: 'teal' },
-      ],
-    },
-  };
-
-  return details[id] || {
+    };
+  }
+  return {
     purpose: 'Coordinates active CES processes, linking policies, forms, and evidence history.',
-    policies: 'QA-PG-001',
-    forms: 'GV-FM-005',
+    policies: '—',
+    forms: '—',
     evidence: 'Audit notes, signature hashes',
     history: [
-      { item: 'Pre-check completed', status: 'Ready', tone: 'teal' },
-      { item: 'eCIgn pending', status: 'Awaiting', tone: 'orange' },
+      { item: 'Pre-check completed', status: 'Ready', tone: 'teal' as const },
+      { item: 'eCIgn pending', status: 'Awaiting', tone: 'orange' as const },
     ],
   };
 };
@@ -208,7 +161,7 @@ export { workflowRows, getWorkflowDetail };
 export default function WorkflowsScreen() {
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedWorkflow, setSelectedWorkflow] = useState<WorkflowRow | null>(null);
+  const [selectedWorkflow, _setSelectedWorkflow] = useState<WorkflowRow | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDomains, setActiveDomains] = useState<readonly string[]>([...allDomains]);
   const [activeRisks, setActiveRisks] = useState<readonly string[]>([...allRisks]);
@@ -306,8 +259,7 @@ export default function WorkflowsScreen() {
             label="Workflows library matrix"
             rows={filteredRows}
             onRowClick={(row) => {
-              setSelectedWorkflow(row);
-              setDrawerOpen(true);
+              navigate(`/workflows/${row.workflowId}/swimlane`);
             }}
           />
           {filteredRows.length === 0 && (

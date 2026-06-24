@@ -15,7 +15,7 @@
          – Forms Library  → no default; user must select
    ═══════════════════════════════════════════════════════════════ */
 
-import { frameworkPolicies, frameworkPolicyVersions } from '@/policy/data/frameworkSeedData';
+import { POLICY_CORPUS, getCorpusPolicy } from '@/policy/data/policyCorpus';
 import { emit } from '@/policy/security/auditLog';
 import { DEMO_SESSION } from '@/policy/components/FormSignatureContext';
 
@@ -49,25 +49,20 @@ interface IndexedPolicy {
 }
 
 const INDEX: IndexedPolicy[] = (() => {
-  const versionByPolicy = new Map<string, { version: string; effectiveDate: string }>();
-  for (const v of frameworkPolicyVersions) {
-    versionByPolicy.set(v.policyId, {
-      version:       v.version,
-      effectiveDate: v.effectiveDate,
-    });
-  }
-  return frameworkPolicies.map(p => {
-    const v = versionByPolicy.get(p.id);
+  // Version metadata not carried in canonical POLICY_CORPUS (honest projection);
+  // use defaults for real corpus records to ensure titles/owners render.
+  return POLICY_CORPUS.map(p => {
+    const corpusP = p;
     const meta: PolicyLinkMeta = {
-      id:            p.id,
-      title:         p.title,
-      version:       v?.version ?? p.currentVersion,
-      domainCode:    p.domainCode,
-      effectiveDate: v?.effectiveDate ?? '',
+      id:            corpusP.id,
+      title:         corpusP.title,
+      version:       '1.0',
+      domainCode:    corpusP.domainCode,
+      effectiveDate: '',
     };
     const haystack = [
       p.id, p.title, p.domainCode, p.subdomainCode,
-      p.description ?? '',
+      '',
     ].join(' ').toLowerCase();
     return { meta, searchHaystack: haystack };
   });

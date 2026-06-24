@@ -23,6 +23,7 @@
 
 import { WORKFLOWS } from './workflows.generated';
 import { getFormMeta } from './formsCatalog';
+import { resolveCanonicalFormId, resolveFormTitle } from './formIdAliases';
 import type { EventEvidenceItem, EventProcessStep } from './regulatoryEvents';
 
 const STORY_POINTS = new Set([1, 2, 3, 5, 8]);
@@ -116,11 +117,13 @@ export function buildWorkflowAlignedExecution(
   for (const f of wf.requiredForms) formIdSet.add(f);
 
   const requiredForms: EventEvidenceItem[] = Array.from(formIdSet).map((fid) => {
-    const meta = getFormMeta(fid);
+    const canon = resolveCanonicalFormId(fid) ?? fid;
+    const meta = getFormMeta(canon) || getFormMeta(fid);
+    const label = meta?.title ?? resolveFormTitle(canon) ?? resolveFormTitle(fid) ?? fid;
     return {
       id:     `f-${fid}`,
-      label:  meta?.title ?? fid,
-      formId: fid,
+      label,
+      formId: canon,
       status: 'pending',
     };
   });

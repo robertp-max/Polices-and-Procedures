@@ -25,7 +25,7 @@ export function MyTasksScreen() {
 
       <section className="grid gap-sm tablet-l:grid-cols-2 desktop:grid-cols-4" aria-label="My task board">
         {taskLanes.map((lane) => (
-          <BoardLane key={lane.title} lane={lane} onCardClick={(card) => navigate(`/evidence-center?control=${encodeURIComponent(card?.id || '')}`)} />
+          <BoardLane key={lane.title} lane={lane} onCardClick={(card) => navigate(`/evidence?control=${encodeURIComponent(card?.id || '')}`)} />
         ))}
       </section>
     </div>

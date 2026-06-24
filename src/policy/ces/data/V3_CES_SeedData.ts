@@ -292,15 +292,74 @@ function makeOwner(key: keyof typeof V3_Personas): Owner {
 }
 
 function makeSigners(partial: Partial<RequiredSigner>[]): RequiredSigner[] {
-  return partial.map((s, i) => ({
-    userId: s.userId ?? `signer-${i}`,
-    name: s.name ?? 'Unknown Signer',
-    initials: s.initials ?? '??',
-    role: s.role ?? 'DON',
-    status: s.status ?? 'pending',
-    signedAt: s.signedAt,
-    hoursToEscalation: s.hoursToEscalation,
-  }));
+  return partial.map((s, i) => {
+    const role = s.role ?? 'DON';
+    const resolvedName = resolveDisplayName(s.name) || (V3_Personas['u-don-01']?.name ?? 'Maria Gonzalez, RN');
+    return {
+      userId: s.userId ?? `signer-${i}`,
+      name: s.name ?? resolvedName,
+      initials: s.initials ?? (resolvedName.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'MG'),
+      role,
+      status: s.status ?? 'pending',
+      signedAt: s.signedAt,
+      hoursToEscalation: s.hoursToEscalation,
+    };
+  });
+}
+
+/**
+ * Resolves a raw owner/role string (from events, regulatory, fallbacks) to a
+ * canonical full display name from CES staff seed (V3_Personas).
+ * Ensures everywhere displayed we use real seeded names instead of
+ * placeholders, short forms (M. Chen), or generic titles (QAPI Lead).
+ * Falls back to DON persona for unresolved (per cesRoles default).
+ */
+export function resolveDisplayName(raw?: string | null): string {
+  if (!raw) return V3_Personas['u-don-01']?.name ?? 'Maria Gonzalez, RN';
+  const s = String(raw).trim();
+  if (!s || s === '—' || /^owner:/i.test(s)) return V3_Personas['u-don-01']?.name ?? 'Maria Gonzalez, RN';
+
+  // direct name match (case-insensitive, allow short prefix)
+  for (const p of Object.values(V3_Personas)) {
+    if (!p.name) continue;
+    const lower = p.name.toLowerCase();
+    if (lower === s.toLowerCase() || lower.startsWith(s.toLowerCase() + ',') || s.toLowerCase().startsWith(lower.split(',')[0])) {
+      return p.name;
+    }
+  }
+
+  const norm = s.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim();
+
+  // role -> persona name map (covers CES + common legacy from regulatory/swimlanes)
+  const roleToPersonaKey: Record<string, keyof typeof V3_Personas> = {
+    'don': 'u-don-01', 'director of nursing': 'u-don-01', 'maria': 'u-don-01', 'gonzalez': 'u-don-01',
+    'administrator': 'u-admin-01', 'admin': 'u-admin-01', 'robert': 'u-admin-01', 'chen': 'u-admin-01',
+    'governing body': 'u-gb-01', 'board': 'u-gb-01', 'patricia': 'u-gb-01', 'hale': 'u-gb-01',
+    'accounting': 'u-acc-01', 'david': 'u-acc-01', 'kim': 'u-acc-01',
+    'systems': 'u-sys-01', 'elena': 'u-sys-01', 'vargas': 'u-sys-01',
+    'admin designee': 'u-admdes-01', 'james': 'u-admdes-01', 'torres': 'u-admdes-01',
+    'qapi lead': 'u-qm-01', 'qapi nurse': 'u-qm-01', 'qa analyst': 'u-qm-01', 'nicole': 'u-qm-01', 'foster': 'u-qm-01',
+    'clinical manager': 'u-ipc-01', 'linda': 'u-ipc-01', 'patel': 'u-ipc-01', 'infection': 'u-ipc-01',
+    'compliance officer': 'u-comp-01', 'angela': 'u-comp-01', 'martinez': 'u-comp-01',
+    'risk manager': 'u-comp-01',
+    'hr credentialing': 'u-hr-01', 'hr': 'u-hr-01', 'destiny': 'u-hr-01', 'brown': 'u-hr-01',
+    'scheduler': 'u-admdes-01', 'operations lead': 'u-sys-01', 'clinical ops': 'u-don-01',
+    'policy admin': 'u-admin-01', 'clinical educator': 'u-ipc-01', 'committee chair': 'u-gb-01',
+    'm. chen': 'u-admin-01', 'd. alvarez': 'u-admin-01', 'r. patel': 'u-acc-01', 't. nguyen': 'u-sys-01',
+    's. ahmed': 'u-don-01', 'l. washington': 'u-comp-01', 'j. okafor': 'u-comp-01',
+  };
+
+  for (const [k, key] of Object.entries(roleToPersonaKey)) {
+    if (norm.includes(k)) {
+      const p = V3_Personas[key];
+      if (p) return p.name;
+    }
+  }
+
+  // looks like plausible full name already (has comma or >=2 words)
+  if (s.includes(',') || s.split(/\s+/).filter(Boolean).length >= 2) return s;
+
+  return V3_Personas['u-don-01']?.name ?? 'Maria Gonzalez, RN';
 }
 
 function makeEvidenceStatus(overrides: Partial<EvidenceStatus>): EvidenceStatus {

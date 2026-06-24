@@ -1,46 +1,57 @@
-import { Landmark, FileText } from 'lucide-react';
+import { Landmark, FileText, User, Calendar } from 'lucide-react';
 import { MetricGrid, SurfaceCard, toneBarClasses, type MetricTileData, type SurfaceCardData } from '../../components';
-import { loadLifecycleSeed } from '@/policy/lifecycle/lifecycleSeed';
-
-// ─── Real lifecycle distribution ─────────────────────────────────
-// Source: POLICY_CORPUS via loadLifecycleSeed(). Per the lifecycle
-// store seeding rule (buildSeedEnvelopes → createEnvelope), every
-// seeded policy starts in DRAFT; no policy has yet advanced to
-// REVIEW/APPROVED/PUBLISHED. Counts are derived, never invented.
-const lifecycleStageCounts: Record<'DRAFT' | 'REVIEW' | 'APPROVED' | 'PUBLISHED', number> = {
-  DRAFT: loadLifecycleSeed().policies.length,
-  REVIEW: 0,
-  APPROVED: 0,
-  PUBLISHED: 0,
-};
-
-const metrics = [
-  { label: 'Council members', value: '—', helper: 'Active voting committee', tone: 'teal' },
-  { label: 'Pending drafts', value: String(lifecycleStageCounts.DRAFT), helper: 'Policies in review stage', tone: 'orange' },
-  { label: 'Approved this cycle', value: String(lifecycleStageCounts.APPROVED), helper: 'Consent checks signed off', tone: 'green' },
-] satisfies readonly MetricTileData[];
-
-const chartData = [
-  { label: 'DRAFT', value: lifecycleStageCounts.DRAFT, tone: 'orange' },
-  { label: 'REVIEW', value: lifecycleStageCounts.REVIEW, tone: 'amber' },
-  { label: 'APPROVED', value: lifecycleStageCounts.APPROVED, tone: 'green' },
-  { label: 'PUBLISHED', value: lifecycleStageCounts.PUBLISHED, tone: 'teal' },
-] as const;
-
-const chartMax = Math.max(1, ...chartData.map((point) => point.value));
-
-const reviewCards = [
-  {
-    body: 'Policy ADM-HR-004 is currently in the review stage and is scheduled for the next committee vote on Jun 25.',
-    icon: FileText,
-    progress: 70,
-    status: 'review-required',
-    title: 'ADM-HR-004 Vote Scheduled',
-    tone: 'orange',
-  },
-] satisfies readonly SurfaceCardData[];
+import { /* loadLifecycleSeed */ } from '@/policy/lifecycle/lifecycleSeed';
+import { usePolicyLifecycleStore } from '@/policy/lifecycle';
+import { POLICY_CORPUS, getCorpusPolicy } from '@/policy/data/policyCorpus';
 
 export function GovernanceScreen() {
+  // LIVE from store (reacts to any apply() transitions elsewhere)
+  const countsByState = usePolicyLifecycleStore((s) => s.countsByState());
+  const getEnvelope = usePolicyLifecycleStore((s) => s.getEnvelope);
+
+  // Canonical 5-state counts (real data)
+  const dCount = countsByState.DRAFT ?? 0;
+  const rCount = countsByState.REVIEW ?? 0;
+  const aCount = countsByState.APPROVED ?? 0;
+  const pCount = countsByState.PUBLISHED ?? 0;
+
+  // Real sample policy + its envelope (mapping fix)
+  const sampleId = POLICY_CORPUS[0]?.id ?? 'GV-GB-001';
+  const sampleCorpus = getCorpusPolicy(sampleId);
+  const sampleEnv = getEnvelope(sampleId);
+
+  const metrics = [
+    { label: 'Council members', value: '—', helper: 'Active voting committee', tone: 'teal' },
+    { label: 'Pending drafts', value: String(dCount), helper: 'Policies in DRAFT state (from envelopes)', tone: 'orange' },
+    { label: 'Approved this cycle', value: String(aCount), helper: 'Consent checks signed off', tone: 'green' },
+  ] satisfies readonly MetricTileData[];
+
+  const chartData = [
+    { label: 'DRAFT', value: dCount, tone: 'orange' },
+    { label: 'REVIEW', value: rCount, tone: 'amber' },
+    { label: 'APPROVED', value: aCount, tone: 'green' },
+    { label: 'PUBLISHED', value: pCount, tone: 'teal' },
+  ] as const;
+
+  const chartMax = Math.max(1, ...chartData.map((point) => point.value));
+
+  // Real record example (from corpus + envelope). Show owner + derived due date.
+  const owner = sampleCorpus?.ownerSteward ?? '—';
+  const created = sampleEnv?.createdAt ? new Date(sampleEnv.createdAt) : new Date();
+  const nextDue = new Date(created); nextDue.setFullYear(nextDue.getFullYear() + 1);
+  const dueLabel = nextDue.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  const reviewCards = [
+    {
+      body: `${sampleCorpus?.id ?? 'GV-GB-001'} (${sampleCorpus?.title ?? 'Governing Body'}) is in ${sampleEnv?.state ?? 'DRAFT'} state. Owner: ${owner}. Next review due ~${dueLabel}.`,
+      icon: FileText,
+      progress: sampleEnv?.state === 'DRAFT' ? 10 : 70,
+      status: (sampleEnv?.state === 'REVIEW' ? 'review-required' : 'pending') as any,
+      title: `${sampleCorpus?.id ?? 'GV-GB-001'} — ${sampleEnv?.state ?? 'DRAFT'} (real corpus + lifecycle)`,
+      tone: 'orange',
+    },
+  ] satisfies readonly SurfaceCardData[];
+
   return (
     <section
       className="grid gap-xl"
@@ -82,11 +93,16 @@ export function GovernanceScreen() {
               <Landmark aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
               Committee Review
             </h3>
-            <p className="text-sm text-muted">Active drafts requiring voting action.</p>
+            <p className="text-sm text-muted">Active drafts requiring voting action. (real records)</p>
           </div>
           {reviewCards.map((card) => (
             <SurfaceCard card={card} key={card.title} />
           ))}
+          {/* Owner + due date mapping confirmation */}
+          <div className="text-xs text-muted mt-xs rounded bg-tone-slate-bg p-md">
+            <div className="flex items-center gap-xs"><User className="h-icon-xs w-icon-xs" /> Owner: {owner}</div>
+            <div className="flex items-center gap-xs mt-1"><Calendar className="h-icon-xs w-icon-xs" /> Derived next review: {dueLabel} (from envelope.createdAt + 1y)</div>
+          </div>
         </aside>
       </section>
     </section>

@@ -78,17 +78,21 @@ export function resolveCesRole(raw: string | undefined | null): CesRole {
   const normalized = raw.trim().toLowerCase();
 
   if (normalized === 'don assistant')                                            return 'DON Assistant';
-  if (normalized.includes('governing') || normalized.includes('board'))          return 'Governing Body';
+  if (normalized.includes('governing') || normalized.includes('board') || normalized.includes('chair')) return 'Governing Body';
   if (normalized.includes('administrator') && !normalized.includes('designee'))  return 'Administrator';
   if (normalized.includes('admin designee') || normalized.includes('designee'))  return 'Admin Designee';
   if (normalized.includes('don') || normalized.includes('director of nursing') ||
-      normalized.includes('clinical') || normalized.includes('nurse'))           return 'DON';
+      normalized.includes('clinical') || normalized.includes('nurse') || normalized.includes('rn')) return 'DON';
   if (normalized.includes('account') || normalized.includes('billing') ||
       normalized.includes('finance') || normalized.includes('payroll') ||
-      normalized.includes('revenue'))                                            return 'Accounting';
+      normalized.includes('revenue') || normalized.includes('cfo'))               return 'Accounting';
   if (normalized.includes('system') || normalized.includes('it') ||
       normalized.includes('tech') || normalized.includes('ecign') ||
-      normalized.includes('support') || normalized.includes('config'))           return 'Systems';
+      normalized.includes('support') || normalized.includes('config') ||
+      normalized.includes('security'))                                           return 'Systems';
+  if (normalized.includes('qapi') || normalized.includes('quality') || normalized.includes('analyst')) return 'Administrator';
+  if (normalized.includes('compliance') || normalized.includes('risk'))          return 'Administrator';
+  if (normalized.includes('hr') || normalized.includes('human'))                 return 'Administrator';
 
   return 'DON'; // Default for all ambiguous
 }

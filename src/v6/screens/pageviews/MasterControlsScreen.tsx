@@ -9,10 +9,13 @@ type MasterControlRow = Record<string, string>;
 const masterControlColumns: readonly DataTableColumn<MasterControlRow>[] = [
   { key: 'controlId', label: 'Control ID' },
   { key: 'controlName', label: 'Control name' },
+  { key: 'category', label: 'Category' },
+  { key: 'domain', label: 'Domain' },
   { key: 'riskTier', label: 'Risk tier' },
   { key: 'sourceStatus', label: 'Source status' },
   { key: 'evidence', label: 'Evidence', status: true },
   { key: 'readiness', label: 'Readiness', status: true },
+  { key: 'linkedPolicies', label: 'Linked Policies' },
 ];
 
 const controlCards = [
@@ -62,10 +65,13 @@ export function MasterControlsScreen() {
       const mapped: readonly MasterControlRow[] = view.inventoryRows.map(r => ({
         controlId: r.controlId,
         controlName: r.controlName,
+        category: r.category ?? '',
+        domain: r.domain ?? '',
         riskTier: r.riskTier,
         sourceStatus: r.sourceStatus,
         evidence: r.evidence,
         readiness: r.readiness,
+        linkedPolicies: Array.isArray((r as any).sourcePolicyIds) ? (r as any).sourcePolicyIds.join(', ') : '',
       }));
       setRows(mapped);
       setMetrics([
@@ -92,7 +98,7 @@ export function MasterControlsScreen() {
             rows={rows}
             onRowClick={(row) => {
               const id = (row as any).controlId || (row as any).id || '';
-              navigate(`/evidence-center?control=${encodeURIComponent(id)}`);
+              navigate(`/evidence?control=${encodeURIComponent(id)}`);
             }}
           />
         </div>

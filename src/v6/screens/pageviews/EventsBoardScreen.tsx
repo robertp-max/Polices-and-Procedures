@@ -32,11 +32,12 @@ interface EventFilter {
   tone: Tone;
 }
 
+// Values overridden at runtime by eventMetricsDerived using real lane.count from buildEventLanes (seed .length)
 const eventMetrics: readonly MetricTileData[] = [
-  { label: 'Critical & Overdue', value: '4', helper: 'Past due or high impact', tone: 'orange' },
-  { label: 'At Risk', value: '4', helper: 'Watch items', tone: 'amber' },
-  { label: 'Needs Attention', value: '12', helper: 'Active reviews', tone: 'teal' },
-  { label: 'On Track', value: '28', helper: 'Within SLA', tone: 'green' },
+  { label: 'Critical & Overdue', value: '0', helper: 'Past due or high impact', tone: 'orange' },
+  { label: 'At Risk', value: '0', helper: 'Watch items', tone: 'amber' },
+  { label: 'Needs Attention', value: '0', helper: 'Active reviews', tone: 'teal' },
+  { label: 'On Track', value: '0', helper: 'Within SLA', tone: 'green' },
 ];
 
 const eventFilters: readonly EventFilter[] = [
@@ -197,10 +198,10 @@ export function EventsBoardScreen() {
               })}
             </div>
             <div className="flex flex-wrap gap-sm">
-              <ToneTag tone="orange">4 Critical &amp; Overdue</ToneTag>
-              <ToneTag tone="amber">4 At Risk</ToneTag>
-              <ToneTag tone="teal">12 Needs Attention</ToneTag>
-              <ToneTag tone="green">28 On Track</ToneTag>
+              <ToneTag tone="orange">{eventMetricsDerived.find(m => m.label.includes('Critical'))?.value ?? '0'} Critical &amp; Overdue</ToneTag>
+              <ToneTag tone="amber">{eventMetricsDerived.find(m => m.label.includes('At Risk'))?.value ?? '0'} At Risk</ToneTag>
+              <ToneTag tone="teal">{eventMetricsDerived.find(m => m.label.includes('Needs'))?.value ?? '0'} Needs Attention</ToneTag>
+              <ToneTag tone="green">{eventMetricsDerived.find(m => m.label.includes('On Track'))?.value ?? '0'} On Track</ToneTag>
             </div>
           </div>
         )}
@@ -212,7 +213,7 @@ export function EventsBoardScreen() {
             <div className="grid min-w-[920px] gap-sm tablet-l:grid-cols-2 desktop:min-w-0 desktop:grid-cols-4">
               {filteredLanes.map((lane) => (
                 <div className="min-w-0" key={lane.title}>
-                  <BoardLane lane={lane} onCardClick={(card) => navigate(`/evidence-center?control=${encodeURIComponent(card?.id || '')}`)} />
+                  <BoardLane lane={lane} onCardClick={(card) => navigate(`/evidence?control=${encodeURIComponent(card?.id || '')}`)} />
                 </div>
               ))}
             </div>
@@ -233,7 +234,7 @@ export function EventsBoardScreen() {
                 Event-level evidence chips, owner state, and progress mirror the active board cards.
               </p>
             </div>
-            <Badge variant="count">30 expected artifacts</Badge>
+            <Badge variant="count">{V3_ExecutionUnitsSeed.reduce((s, u) => s + ((u.evidenceStatus?.requiredFormsTotal) || 0), 0)} expected artifacts</Badge>
           </div>
           <div className="grid gap-md">
             {evidenceSignals.map((signal) => (

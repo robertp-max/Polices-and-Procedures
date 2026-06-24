@@ -36,6 +36,7 @@ import {
   validateEvidenceUploadInput,
 } from '@/policy/evidence/evidenceModel';
 import { FORMS_DATASET } from '@/policy/data/formsLibraryDataset';
+import { resolveCanonicalFormId } from '@/policy/data/formIdAliases';
 import {
   isCesFutureLockedDate,
   isCesSandboxDate,
@@ -469,6 +470,7 @@ const SOURCE_EVENT_BY_INSTANCE_ID = Object.fromEntries(
 const SOURCE_EVENT_BY_ID = Object.fromEntries(REGULATORY_EVENTS.map(event => [event.id, event]));
 const resolveCanonicalEventId = (eventId: string) => SOURCE_EVENT_BY_INSTANCE_ID[eventId] ?? eventId;
 const FORM_TEMPLATE_IDS = new Set(FORMS_DATASET.map(form => form.id));
+const getFormCanon = (id: string | undefined) => (id ? resolveCanonicalFormId(id) ?? id : id);
 const EVENT_INSTANCE_ID_BY_SOURCE = EVENT_INSTANCE_INDEX.bySourceEventId;
 const getEventAliases = (eventId: string): string[] => {
   const canonical = resolveCanonicalEventId(eventId);
@@ -2847,7 +2849,7 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           }
         });
         event.requiredForms.forEach(f => {
-          const templateId = f.formId ?? f.id;
+          const templateId = getFormCanon(f.formId ?? f.id);
           if (!FORM_TEMPLATE_IDS.has(templateId)) {
             blockers.push({
               kind: 'form',

@@ -4,11 +4,14 @@ import type { Domain, Policy, Subdomain } from '@/policy/types';
 
 const seed = loadFrameworkSeed();
 
+type CrosswalkResolution = ReturnType<ReturnType<typeof loadFrameworkSeed>['resolveCrosswalk']>;
+
 interface FrameworkState {
   domains: Domain[];
   subdomains: Subdomain[];
   policies: Policy[];
   getPolicyById: (policyId: string) => Policy | undefined;
+  resolveCrosswalk: (policyId: string) => CrosswalkResolution;
 }
 
 export const useFrameworkStore = create<FrameworkState>(() => ({
@@ -16,4 +19,5 @@ export const useFrameworkStore = create<FrameworkState>(() => ({
   subdomains: seed.subdomains,
   policies: seed.policies,
   getPolicyById: policyId => seed.policies.find(policy => policy.id === policyId),
+  resolveCrosswalk: (policyId: string) => seed.resolveCrosswalk(policyId),
 }));

@@ -12,7 +12,7 @@
  */
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { POLICY_CORPUS } from '@/policy/data/policyCorpus';
+import { POLICY_CORPUS, getCorpusPolicy } from '@/policy/data/policyCorpus';
 import { loadLifecycleSeed } from '@/policy/lifecycle/lifecycleSeed';
 
 const POLICY_ID_RE = /^[A-Z]{2,3}-[A-Z0-9]{2,4}-\d{3}$/;
@@ -35,5 +35,17 @@ describe('policy corpus seed integrity', () => {
     const seed = loadLifecycleSeed();
     assert.equal(seed.isEmpty, false);
     assert.equal(seed.policies.length, POLICY_CORPUS.length, 'lifecycle seed mirrors the corpus');
+  });
+
+  it('getCorpusPolicy resolves real records and titles/owners for sample ids (supports reference resolution)', () => {
+    const samples = ['GV-GB-001', 'CL-CP-001', 'QA-PG-001', 'EN-WF-101'];
+    for (const id of samples) {
+      const p = getCorpusPolicy(id);
+      assert.ok(p, `getCorpusPolicy(${id}) should return record`);
+      assert.equal(p.id, id);
+      assert.ok(p.title && p.title.length > 0);
+      assert.ok(p.ownerSteward && p.ownerSteward.length > 0);
+    }
+    assert.equal(getCorpusPolicy('NOT-A-REAL-ID'), undefined);
   });
 });

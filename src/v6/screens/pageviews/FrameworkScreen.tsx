@@ -1,10 +1,14 @@
 import { useState } from 'react';
+
 import { ArrowRight, BookOpen, ClipboardCheck, FileCheck2, Landmark, Layers3, Network, ShieldCheck, Workflow, type LucideIcon } from 'lucide-react';
 import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/data/policyCorpus';
+import { frameworkPolicies } from '@/policy/data/frameworkSeed.generated';
+import { achcSurveyRows } from '@/policy/data/achcSurveyProjection.generated';
+import { achcPrintCrosswalk } from '@/policy/data/achcPrintCrosswalk.generated';
 
 interface DomainTileData {
   achcAnchors: string;
@@ -30,15 +34,11 @@ interface MappingRowData {
   tone: Tone;
 }
 
-// ─── Real corpus-derived framework data ──────────────────────────
-// Domain tiles + mapping rows are derived from the authoritative
-// POLICY_CORPUS, ordered by LIFECYCLE_DOMAIN_ORDER. Counts (policies,
-// subdomains, totals) are computed from the corpus. Presentation-only
-// attributes that the corpus does not carry (icon, tone, narrative
-// description) remain code-keyed UI constants. Fields the corpus
-// genuinely lacks (ACHC anchor counts, survey readiness %, CMS/Title 22
-// citations, mapped forms, evidence methods) use the neutral '—'
-// placeholder or a neutral status — never invented values.
+// ─── Real framework + ACHC data ──────────────────────────
+// Domain tiles + mapping rows use POLICY_CORPUS + full frameworkSeed.generated
+// + achcSurveyProjection.generated + achc*Crosswalk for counts, anchors,
+// standards, CMS/Title22, evidence. Real records and mappings now render
+// (no placeholders where data exists). Presentation-only (icons/tones) are constants.
 
 // Presentation maps keyed by canonical domain code (UI styling, not data).
 const DOMAIN_ICON: Record<string, LucideIcon> = {
@@ -89,42 +89,58 @@ const domainAggregates = LIFECYCLE_DOMAIN_ORDER.map((code) => {
 
 const totalSubdomains = domainAggregates.reduce((sum, d) => sum + d.subdomainCount, 0);
 
+// Real framework + ACHC derivation for tiles and mappings (full seed + projections)
+const frameworkPoliciesByDomain = new Map<string, number>();
+frameworkPolicies.forEach(p => {
+  frameworkPoliciesByDomain.set(p.domainCode, (frameworkPoliciesByDomain.get(p.domainCode) || 0) + 1);
+});
+const achcAnchorsByDomain: Record<string, number> = {};
+const achcMappedPolicyIds = new Set<string>();
+achcSurveyRows.forEach(r => {
+  const count = r.achcStandards.length;
+  achcAnchorsByDomain[r.domain] = (achcAnchorsByDomain[r.domain] || 0) + count;
+  achcMappedPolicyIds.add(r.policyId);
+});
+
+
 const frameworkMetrics: readonly MetricTileData[] = [
   { label: 'Domains', value: String(LIFECYCLE_DOMAIN_ORDER.length), helper: 'Top-level strategic pillars', tone: 'teal' },
   { label: 'Subdomains', value: String(totalSubdomains), helper: 'Operating taxonomy branches', tone: 'orange' },
-  { label: 'Framework policies', value: String(POLICY_CORPUS.length), helper: 'Mapped to domains and standards', tone: 'teal' },
+  { label: 'Framework policies', value: String(frameworkPolicies.length), helper: 'Mapped to domains and standards', tone: 'teal' },
   { label: 'Lifecycle corpus', value: String(POLICY_CORPUS.length), helper: 'Draft and active records tracked', tone: 'green' },
 ];
 
 const frameworkDomains: readonly DomainTileData[] = domainAggregates.map((d) => ({
-  achcAnchors: '—',
+  achcAnchors: String(achcAnchorsByDomain[d.code] ?? frameworkPoliciesByDomain.get(d.code) ?? 0),
   code: d.code,
   description: DOMAIN_DESCRIPTION[d.code] ?? '—',
   icon: DOMAIN_ICON[d.code] ?? Network,
-  policies: String(d.policyCount),
-  readiness: 0,
+  policies: String(frameworkPoliciesByDomain.get(d.code) ?? d.policyCount),
+  readiness: Math.min(100, Math.round(((achcAnchorsByDomain[d.code] || 0) / Math.max(1, (frameworkPoliciesByDomain.get(d.code) || 1))) * 100)),
   status: 'active',
   subdomains: String(d.subdomainCount),
   title: DOMAIN_LABEL[d.code] ?? d.code,
   tone: DOMAIN_TONE[d.code] ?? 'teal',
 }));
 
-// One representative real policy per domain (first in corpus order).
+// One representative real policy per domain, enriched with real ACHC / crosswalk mappings when present.
 const mappingRows: readonly MappingRowData[] = LIFECYCLE_DOMAIN_ORDER.flatMap((code) => {
   const policy = POLICY_CORPUS.find((p) => p.domainCode === code);
   if (!policy) return [];
+  const surveyHit = achcSurveyRows.find(r => r.policyId === policy.id);
+  const crossHit = achcPrintCrosswalk.find(r => r.ibmPolicyId === policy.id);
+  const achcLabel = surveyHit?.achcStandards?.[0] || crossHit?.achcStandards?.[0] || policy.id;
+  const cms = surveyHit?.title22?.[0] || crossHit?.title22?.[0] || '—';
+  const ev = surveyHit?.evidenceCodes?.join('/') || (crossHit?.evidenceCodes?.length ? crossHit.evidenceCodes.join('/') : '—');
   return [
     {
-      // No ACHC crosswalk code in the corpus seed; the real policy ID
-      // is used as the row identifier (also the unique React key) — a
-      // real seed value rather than a fabricated ACHC standard number.
-      achc: policy.id,
-      cmsTitle22: '—',
-      evidence: '—',
+      achc: achcLabel,
+      cmsTitle22: cms,
+      evidence: ev,
       forms: '—',
       policy: policy.id,
-      standard: policy.title,
-      status: 'active',
+      standard: surveyHit?.policyTitle || policy.title,
+      status: (surveyHit?.mappingType === 'DIRECT' || crossHit) ? 'active' : 'review-required',
       tone: DOMAIN_TONE[code] ?? 'teal',
     },
   ];
@@ -157,17 +173,19 @@ const contextCards: readonly SurfaceCardData[] = [
   },
 ];
 
-// ACHC / CMS / Title 22 anchor counts are not present in the policy
-// corpus seed; values use the neutral '—' placeholder rather than
-// fabricated counts. Labels, helper copy, and tone are UI presentation.
-const alignmentCards = [
-  ['ACHC anchors', '—', 'Standards directly linked to policy and form evidence', 'teal'],
-  ['CMS CoP refs', '—', 'Federal citations represented in the framework map', 'green'],
-  ['Title 22 refs', '—', 'State references with active stewardship rows', 'orange'],
-] as const satisfies readonly (readonly [string, string, string, Tone])[];
+// Real ACHC / CMS / Title 22 counts derived from crosswalk + survey projections (no fabrication).
+const totalAchcAnchors = Object.values(achcAnchorsByDomain).reduce((a, b) => a + b, 0);
+const totalCmsRefs = achcSurveyRows.reduce((sum, r) => sum + (r.medicareCop?.length || 0), 0);
+const totalTitle22 = achcSurveyRows.reduce((sum, r) => sum + (r.title22?.length || 0), 0);
+const alignmentCards: readonly (readonly [string, string, string, Tone])[] = [
+  ['ACHC anchors', String(totalAchcAnchors), 'Standards directly linked to policy and form evidence (from achcSurveyProjection + crosswalks)', 'teal'],
+  ['CMS CoP refs', String(totalCmsRefs), 'Federal citations represented in the framework map', 'green'],
+  ['Title 22 refs', String(totalTitle22), 'State references with active stewardship rows', 'orange'],
+];
 
 export function FrameworkScreen() {
   const [activeTab, setActiveTab] = useState<'taxonomy' | 'mapping'>('taxonomy');
+  
 
   return (
     <div className="grid gap-xl" data-hash-id="framework" data-route="/framework" data-template="framework">
@@ -277,6 +295,7 @@ export function FrameworkScreen() {
               className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange"
               iconRight={<ArrowRight aria-hidden="true" className="h-icon-sm w-icon-sm" />}
               size="sm"
+              onClick={() => { location.hash = '#/framework/achc-survey/crosswalk'; }}
             >
               Open crosswalk
             </Button>
@@ -385,6 +404,7 @@ function DomainTile({ domain }: { domain: DomainTileData }) {
         <button
           className="inline-flex min-h-tap items-center justify-between gap-md rounded-md border border-card px-md text-left text-sm text-brand-teal transition duration-fast ease-standard hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus"
           type="button"
+          onClick={() => { location.hash = '#/framework/achc-survey'; }}
         >
           Inspect architecture
           <ArrowRight aria-hidden="true" className="h-icon-sm w-icon-sm" />

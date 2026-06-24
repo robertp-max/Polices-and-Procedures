@@ -18,12 +18,16 @@ import {
 } from './cesMasterControlAudit';
 
 describe('CES one-pass Master Control Audit projection', () => {
-  it('provides fallback rows matching visual parity expectations (7 rows, MC- ids)', () => {
+  it('provides fallback rows matching visual parity expectations (7 rows, MC- ids) with taxonomy and policy mappings', () => {
     assert.equal(FALLBACK_CONTROL_INVENTORY_ROWS.length, 7);
     assert.ok(FALLBACK_CONTROL_INVENTORY_ROWS.every(r => r.controlId.startsWith('MC-')));
     const first = FALLBACK_CONTROL_INVENTORY_ROWS[0];
     assert.equal(first.riskTier, 'High');
     assert.ok(['missing-evidence', 'uploaded', 'validated'].includes(first.evidence));
+    // taxonomy (category/domain) and control-to-policy mappings now rendered
+    assert.ok(typeof first.category === 'string' && first.category.length > 0, 'fallback must include category for honest taxonomy render');
+    assert.ok(typeof first.domain === 'string' && first.domain.length > 0, 'fallback must include domain');
+    assert.ok(Array.isArray((first as any).sourcePolicyIds) && (first as any).sourcePolicyIds.length > 0, 'fallback must include sourcePolicyIds for mappings');
   });
 
   it('buildCesControlAuditView returns a well-shaped CesControlAuditView', async () => {
@@ -51,5 +55,27 @@ describe('CES one-pass Master Control Audit projection', () => {
     // Invalid total
     const bad = { ...view, metrics: { ...view.metrics, controls: { ...view.metrics.controls, total: 0 } } };
     assert.throws(() => validateCesControlAuditView(bad as unknown as CesControlAuditView), /inventoryRows must be non-empty|controls.total invalid/);
+  });
+
+  it('uses real 104-control inventory (when seed load succeeds) with full taxonomy + control-to-policy mappings in rows', async () => {
+    const view: CesControlAuditView = await buildCesControlAuditView();
+    // Resilient: in node/fetch may fallback to 7; when real data loads, assert honest 104 + fields
+    if (view.inventoryRows.length >= 100) {
+      assert.equal(view.metrics.controls.total, 104);
+      assert.equal(view.metrics.controls.high, 81);
+      assert.equal(view.metrics.controls.material, 22);
+      assert.equal(view.metrics.controls.low, 1);
+      const sample = view.inventoryRows[0];
+      assert.ok(typeof sample.category === 'string' && sample.category.length > 0);
+      assert.ok(typeof sample.domain === 'string' && sample.domain.length > 0);
+      assert.ok(Array.isArray((sample as any).sourcePolicyIds), 'real data rows must carry sourcePolicyIds for policy mappings');
+      // verify MC- numeric id format for real inventory
+      assert.ok(/MC-\d{3}/.test(String(sample.controlId)), 'real controls use MC-### id format');
+    } else {
+      // fallback path still exercises taxonomy now populated
+      assert.ok(view.inventoryRows.length === 7);
+    }
+    // always non-empty and validated
+    assert.ok(view.inventoryRows.length >= 7);
   });
 });

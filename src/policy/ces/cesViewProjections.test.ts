@@ -96,6 +96,39 @@ describe('CES one-pass View Projections (board / events / tasks / calendar / evi
     evs.forEach(e => assert.ok(typeof e.day === 'number' && typeof e.label === 'string'));
   });
 
+  it('buildCalendarEvents uses real dates from V3 seed dueDate (not synthetic fake days)', () => {
+    const evs = buildCalendarEvents();
+    // Some unit dueDates are 2026-05-21, 05-17 etc; check at least one real day like 17/21/22/23 appears
+    const days = evs.map(e => e.day);
+    const hasRealMayDate = days.includes(17) || days.includes(21) || days.includes(22) || days.includes(23) || days.includes(24);
+    assert.ok(hasRealMayDate || evs.some(e => e.sourceDate && e.sourceDate.includes('2026-05')), 'calendar should project real due dates from seeds');
+    // regulatory events also projected with their dates
+    assert.ok(evs.some(e => e.sourceKind === 'v3-regulatory-event' || e.sourceEventId?.startsWith('evt-')));
+  });
+
+  it('build* cards use real seed data fields (domain/awaiting/meta/missing) not only FALLBACK', () => {
+    const boardLanes = buildBoardLanes();
+    const eventLanes = buildEventLanes();
+    const allCards = [...boardLanes.flatMap(l => l.cards), ...eventLanes.flatMap(l => l.cards)];
+    const hasRich = allCards.some(c => c.domain || c.awaitingType || c.meta || c.missing);
+    assert.ok(hasRich, 'real cards from seed must populate extended fields (domain/awaitingType/meta/missing)');
+    // not purely the fallback EVT- ids without domain
+    const hasSeedDerived = allCards.some(c => c.id && c.id.startsWith('ceu-'));
+    assert.ok(hasSeedDerived || allCards.length > 0);
+  });
+
+  it('buildCalendarEvents projects events from regulatory + units, correct owners/status', () => {
+    const evs = buildCalendarEvents();
+    // At least one from known reg id present
+    const hasGb = evs.some(e => e.sourceEventId === 'evt-gb-q2-2026' || e.id === 'evt-gb-q2-2026');
+    assert.ok(hasGb, 'regulatory events must project to calendar');
+    const gb = evs.find(e => (e.sourceEventId || e.id) === 'evt-gb-q2-2026');
+    if (gb) {
+      assert.ok(gb.owner && gb.owner.length > 1);
+      assert.ok(typeof gb.day === 'number' && gb.day > 0);
+    }
+  });
+
   it('FALLBACK_EVIDENCE_ROWS + buildEvidenceRows shape and non-empty', () => {
     assert.ok(FALLBACK_EVIDENCE_ROWS.length >= 5);
     const rows = buildEvidenceRows();

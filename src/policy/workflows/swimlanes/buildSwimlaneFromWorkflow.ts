@@ -1,4 +1,4 @@
-import { FORM_TITLES } from '@/policy/data/formTitles.generated';
+import { resolveFormTitle } from '@/policy/data/formIdAliases';
 import type { Workflow, WorkflowStep } from '@/policy/types/workflow';
 import { inferPhaseTemplate } from './phaseTemplates';
 import { normalizeRole, roleKey } from './roleNormalizer';
@@ -68,7 +68,7 @@ function phaseForWorkflowStep(workflowId: string, step: WorkflowStep, index: num
 }
 
 function formEvidence(formIds: string[]): string[] {
-  return formIds.map(formId => FORM_TITLES[formId] ? `${formId} ${FORM_TITLES[formId]}` : `Unresolved form ${formId}`);
+  return formIds.map(formId => `${formId} ${resolveFormTitle(formId)}`);
 }
 
 function buildArtifactBlockedReasons(input: Pick<SwimlaneNode, 'formInstances' | 'supportingDocumentationTasks' | 'signatureTasks' | 'requiredEvidence' | 'finalApproverRoles' | 'governingBodyRequired'>) {
@@ -222,7 +222,7 @@ export function buildSwimlaneFromWorkflow(workflow: Workflow, context: SwimlaneB
     const instructions = buildSwimlaneInstructions({
       title: step.action,
       description: step.deadline ? `${step.action} Deadline: ${step.deadline}.` : step.action,
-      formInstructions: step.formIds.map(formId => `Complete ${formId} ${FORM_TITLES[formId] ?? 'required form'} for this workflow step.`),
+      formInstructions: step.formIds.map(formId => `Complete ${formId} ${resolveFormTitle(formId)} for this workflow step.`),
       evidenceDescriptions: supportingDocumentationTasks.map(task => task.title),
       auditPurpose: workflow.auditRequirements || workflow.outputs,
       regulatoryDriver: workflow.processOverview,
@@ -389,7 +389,7 @@ export function buildSwimlaneFromWorkflow(workflow: Workflow, context: SwimlaneB
       requiredForms: [],
       formInstances: [],
       requiredEvidence: unique([
-        ...workflow.requiredForms.map(formId => FORM_TITLES[formId] ? `${formId} ${FORM_TITLES[formId]}` : `Unresolved form ${formId}`),
+        ...workflow.requiredForms.map(formId => `${formId} ${resolveFormTitle(formId)}`),
         workflow.outputs,
         workflow.auditRequirements,
       ]),
@@ -414,7 +414,7 @@ export function buildSwimlaneFromWorkflow(workflow: Workflow, context: SwimlaneB
         supportingDocumentationTasks: nodes.flatMap(node => node.supportingDocumentationTasks ?? []),
         signatureTasks: nodes.flatMap(node => node.signatureTasks ?? []),
         requiredEvidence: unique([
-          ...workflow.requiredForms.map(formId => FORM_TITLES[formId] ? `${formId} ${FORM_TITLES[formId]}` : `Unresolved form ${formId}`),
+          ...workflow.requiredForms.map(formId => `${formId} ${resolveFormTitle(formId)}`),
           workflow.outputs,
           workflow.auditRequirements,
         ]),
@@ -437,7 +437,7 @@ export function buildSwimlaneFromWorkflow(workflow: Workflow, context: SwimlaneB
     route: 'orthogonal' as const,
   })));
 
-  const unresolvedForms = unique(nodes.flatMap(node => node.requiredForms)).filter(formId => !FORM_TITLES[formId]);
+  const unresolvedForms = unique(nodes.flatMap(node => node.requiredForms)).filter(formId => !resolveFormTitle(formId) || resolveFormTitle(formId) === formId);
   if (unresolvedForms.length) missingContext.push(`Unresolved form IDs: ${unresolvedForms.join(', ')}`);
 
   return {

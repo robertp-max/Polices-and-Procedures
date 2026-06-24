@@ -13,6 +13,7 @@ import { Button } from '../../primitives';
 import { ToneTag } from '../../components';
 import { cx } from '../../utils/classNames';
 import { workflowRows, getWorkflowDetail } from './WorkflowsScreen';
+import { WORKFLOWS } from '@/policy/data/workflows.generated';
 
 interface WorkflowMeta {
   id: string;
@@ -42,6 +43,21 @@ function buildLanesForWorkflow(meta: WorkflowMeta | null, detail: ReturnType<typ
   const baseDue = 'Jun 22';
   const intakeTitle = meta?.domain === 'Governance' ? 'Prepare packet & agenda' : meta?.domain === 'Compliance' ? 'Incident intake & scope' : 'Trigger workflow & bind policies';
   const lockTitle = 'Route eCIgn & final lock';
+
+  const wf = meta?.id ? WORKFLOWS[meta.id] : undefined;
+  // Load correct steps for ID via generated record (fixed rendering for every workflow)
+  const stepCards = wf && wf.steps && wf.steps.length > 0
+    ? wf.steps.slice(0, 2).map((s, i) => ({
+        id: `STEP-${String(s.order).padStart(2, '0')}`,
+        title: s.action,
+        owner: s.role || meta?.owner || 'Owner',
+        due: s.deadline || baseDue,
+        meta: (s.formIds && s.formIds[0]) || '',
+        tone: 'teal' as const,
+        chips: s.formIds && s.formIds.length ? ['Form'] : ['Step'],
+        progress: Math.max(50, 90 - i * 10),
+      }))
+    : [];
 
   // Special case for QAPI (QA-WF-03) to match design swimlane example exactly (Agent 14 proposal)
   if (meta?.id === 'QA-WF-03') {
@@ -87,9 +103,9 @@ function buildLanesForWorkflow(meta: WorkflowMeta | null, detail: ReturnType<typ
   return [
     {
       title: 'Intake',
-      count: 2,
+      count: stepCards.length || 2,
       tone: 'teal',
-      cards: [
+      cards: stepCards.length > 0 ? stepCards : [
         {
           id: 'INT-01',
           title: intakeTitle,

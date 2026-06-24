@@ -2,14 +2,16 @@ import { AlertTriangle, BarChart3, Bot, BookOpen, CalendarClock, CalendarRange, 
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { buildBoardLanes, buildCalendarEvents, buildReportMetrics, buildSprintSummary, getControlFromParams } from '@/policy/ces/cesViewProjections';
+import { buildBoardLanes, buildCalendarEvents, buildReportMetrics, buildSprintSummary, buildEvidenceRows, buildAuditRows, getControlFromParams } from '@/policy/ces/cesViewProjections';
 // Design cross-ref (Agent 19 background + Agent 19 read-only CES Data Seeds gap vs design subagent + Agent 09 read-only hygiene/validate gap): V3 seeds supply realistic ExecutionUnits for CES board/my-tasks/calendar/snapshots/projections.
 // Current: use build* or FALLBACK for exact design visual parity. See projections for seed-driven future and validators.
 import type { ExecutionUnit } from '@/policy/ces/types';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER } from '@/policy/data/policyCorpus';
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
+import { resolveCanonicalFormId } from '@/policy/data/formIdAliases';
 import { MOCK_CLINICIANS } from '@/policy/staffing/data/mockClinicians';
 import { MOCK_PATIENTS } from '@/policy/staffing/data/mockPatients';
+import { resolveDisplayName } from '@/policy/ces/data/V3_CES_SeedData';
 import type { EventProcessStep, RegulatoryEvent } from '@/policy/data/regulatoryEvents';
 import { inferPhaseTemplate } from '@/policy/workflows/swimlanes/phaseTemplates';
 import type { SwimlaneStatus } from '@/policy/workflows/swimlanes/types';
@@ -19,6 +21,8 @@ import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
 import { BoardLane, ChatThread, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type ChatMessageData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
 import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, JourneyV1Screen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen } from './pageviews';
+import { achcSurveyRows } from '@/policy/data/achcSurveyProjection.generated';
+import { achcPrintCrosswalk } from '@/policy/data/achcPrintCrosswalk.generated';
 
 type RouteLike = V6RouteDefinition;
 type BasicRow = Record<string, string>;
@@ -86,7 +90,7 @@ const dashboardActions: readonly ActionRow[] = [
     body: 'Start-of-care visit needs RN backup before 3:00 PM',
     due: 'TODAY',
     icon: Route,
-    owner: 'CLINICAL MANAGER',
+    owner: resolveDisplayName('Clinical Manager'),
     progress: 64,
     status: 'review-required',
     title: 'Reassign SOC coverage for Elena Vargas',
@@ -96,7 +100,7 @@ const dashboardActions: readonly ActionRow[] = [
     body: 'Signed order and visit cadence need final confirmation',
     due: 'JUN 19',
     icon: ClipboardCheck,
-    owner: 'MARIA DELGADO, RN',
+    owner: resolveDisplayName('Maria Gonzalez, RN'),
     progress: 82,
     status: 'ready',
     title: 'Close Robert Hale recert plan review',
@@ -106,7 +110,7 @@ const dashboardActions: readonly ActionRow[] = [
     body: 'Two high-acuity patients need weekend pool assignment',
     due: 'JUN 20',
     icon: CalendarRange,
-    owner: 'SCHEDULING LEAD',
+    owner: resolveDisplayName('Scheduling Lead'),
     progress: 48,
     status: 'blocked',
     title: 'Resolve CHHA weekend coverage gap',
@@ -116,7 +120,7 @@ const dashboardActions: readonly ActionRow[] = [
     body: 'Amna Yusuf route requires evidence lock after field upload',
     due: 'JUN 21',
     icon: Camera,
-    owner: 'QAPI NURSE',
+    owner: resolveDisplayName('QAPI Nurse'),
     progress: 76,
     status: 'uploaded',
     title: 'Approve wound photo protocol evidence',
@@ -413,14 +417,14 @@ const calendarMetrics: readonly MetricTileData[] = [
 ];
 
 const calendarEvents = [
-  { day: 2, label: 'SOC coverage review', owner: 'Clinical Manager', progress: 52, tone: 'orange' },
-  { day: 4, label: 'Clinician case conference', owner: 'Director of Nursing', progress: 72, tone: 'teal' },
-  { day: 7, label: 'Medication reconciliation audit', owner: 'QAPI Nurse', progress: 82, tone: 'teal' },
-  { day: 11, label: 'High-acuity staffing huddle', owner: 'Scheduler', progress: 52, tone: 'orange' },
-  { day: 15, label: 'Recertification window lock', owner: 'Clinical Manager', progress: 72, tone: 'amber' },
-  { day: 18, label: 'Credential renewal checkpoint', owner: 'HR Credentialing', progress: 76, tone: 'orange' },
-  { day: 22, label: 'Visit note timeliness review', owner: 'Compliance Officer', progress: 66, tone: 'teal' },
-  { day: 26, label: 'Weekend coverage confirmation', owner: 'Operations Lead', progress: 70, tone: 'blue' },
+  { day: 2, label: 'SOC coverage review', owner: resolveDisplayName('Clinical Manager'), progress: 52, tone: 'orange' },
+  { day: 4, label: 'Clinician case conference', owner: resolveDisplayName('Director of Nursing'), progress: 72, tone: 'teal' },
+  { day: 7, label: 'Medication reconciliation audit', owner: resolveDisplayName('QAPI Nurse'), progress: 82, tone: 'teal' },
+  { day: 11, label: 'High-acuity staffing huddle', owner: resolveDisplayName('Scheduler'), progress: 52, tone: 'orange' },
+  { day: 15, label: 'Recertification window lock', owner: resolveDisplayName('Clinical Manager'), progress: 72, tone: 'amber' },
+  { day: 18, label: 'Credential renewal checkpoint', owner: resolveDisplayName('HR Credentialing'), progress: 76, tone: 'orange' },
+  { day: 22, label: 'Visit note timeliness review', owner: resolveDisplayName('Compliance Officer'), progress: 66, tone: 'teal' },
+  { day: 26, label: 'Weekend coverage confirmation', owner: resolveDisplayName('Operations Lead'), progress: 70, tone: 'blue' },
 ] as const satisfies readonly CalendarEventData[];
 
 const staffingCalendarMetrics: readonly MetricTileData[] = [
@@ -431,14 +435,14 @@ const staffingCalendarMetrics: readonly MetricTileData[] = [
 ];
 
 const staffingCalendarEvents = [
-  { day: 2, label: 'RN coverage', owner: 'Maria Delgado, RN', progress: 86, tone: 'teal' },
-  { day: 4, label: 'PT visit cluster', owner: 'James Kwon, PT', progress: 70, tone: 'blue' },
-  { day: 8, label: 'CHHA gap', owner: 'Scheduling Lead', progress: 42, tone: 'orange' },
-  { day: 12, label: 'SOC start', owner: 'Priya Singh, RN', progress: 90, tone: 'green' },
-  { day: 17, label: 'LVN swap', owner: 'Operations Lead', progress: 58, tone: 'amber' },
-  { day: 19, label: 'Recert visit', owner: 'Clinical Manager', progress: 82, tone: 'teal' },
-  { day: 23, label: 'Wound care route', owner: 'Aisha Rahman, OT', progress: 48, tone: 'orange' },
-  { day: 28, label: 'Weekend pool', owner: 'Scheduler', progress: 74, tone: 'blue' },
+  { day: 2, label: 'RN coverage', owner: resolveDisplayName('Maria Gonzalez, RN'), progress: 86, tone: 'teal' },
+  { day: 4, label: 'PT visit cluster', owner: resolveDisplayName('PT'), progress: 70, tone: 'blue' },
+  { day: 8, label: 'CHHA gap', owner: resolveDisplayName('Scheduling Lead'), progress: 42, tone: 'orange' },
+  { day: 12, label: 'SOC start', owner: resolveDisplayName('DON'), progress: 90, tone: 'green' },
+  { day: 17, label: 'LVN swap', owner: resolveDisplayName('Operations Lead'), progress: 58, tone: 'amber' },
+  { day: 19, label: 'Recert visit', owner: resolveDisplayName('Clinical Manager'), progress: 82, tone: 'teal' },
+  { day: 23, label: 'Wound care route', owner: resolveDisplayName('OT'), progress: 48, tone: 'orange' },
+  { day: 28, label: 'Weekend pool', owner: resolveDisplayName('Scheduler'), progress: 74, tone: 'blue' },
 ] as const satisfies readonly CalendarEventData[];
 
 const cesSprintSummary = buildSprintSummary();
@@ -470,9 +474,9 @@ const q2QapiSwimlane: CalendarSwimlaneData = {
       tone: 'teal',
       note: 'Open the quarterly QAPI event and bind policy, forms, owners, and due windows.',
       cards: [
-        { id: 'Q2-QAPI-01', title: 'Create Q2 QAPI event shell', owner: 'Compliance Officer', due: 'Jun 10', status: 'Ready', chips: ['CES', 'QA-WF-03'], progress: 100, tone: 'green' },
-        { id: 'Q2-QAPI-02', title: 'Bind QAPI policies and committee charter', owner: 'Policy Admin', due: 'Jun 10', status: 'Ready', chips: ['QA-PG-001', 'GV-GB-001'], progress: 92, tone: 'teal' },
-        { id: 'Q2-QAPI-03', title: 'Confirm committee quorum and attendee list', owner: 'Administrator', due: 'Jun 11', status: 'In progress', chips: ['Roster', 'Minutes'], progress: 76, tone: 'teal' },
+        { id: 'Q2-QAPI-01', title: 'Create Q2 QAPI event shell', owner: resolveDisplayName('Compliance Officer'), due: 'Jun 10', status: 'Ready', chips: ['CES', 'QA-WF-03'], progress: 100, tone: 'green' },
+        { id: 'Q2-QAPI-02', title: 'Bind QAPI policies and committee charter', owner: resolveDisplayName('Policy Admin'), due: 'Jun 10', status: 'Ready', chips: ['QA-PG-001', 'GV-GB-001'], progress: 92, tone: 'teal' },
+        { id: 'Q2-QAPI-03', title: 'Confirm committee quorum and attendee list', owner: resolveDisplayName('Administrator'), due: 'Jun 11', status: 'In progress', chips: ['Roster', 'Minutes'], progress: 76, tone: 'teal' },
       ],
     },
     {
@@ -480,10 +484,10 @@ const q2QapiSwimlane: CalendarSwimlaneData = {
       tone: 'orange',
       note: 'Gather indicator exports, clinical samples, and patient-safety inputs for the quarter.',
       cards: [
-        { id: 'Q2-QAPI-04', title: 'Export hospitalization and ER transfer trends', owner: 'QAPI Nurse', due: 'Jun 11', status: 'In progress', chips: ['Outcomes'], progress: 70, tone: 'teal' },
-        { id: 'Q2-QAPI-05', title: 'Compile infection-control surveillance log', owner: 'Clinical Manager', due: 'Jun 12', status: 'In progress', chips: ['CL-IC-001'], progress: 64, tone: 'teal' },
-        { id: 'Q2-QAPI-06', title: 'Pull medication reconciliation exception sample', owner: 'DON', due: 'Jun 12', status: 'Needs review', chips: ['Chart Audit'], progress: 58, tone: 'orange' },
-        { id: 'Q2-QAPI-07', title: 'Summarize incident and complaint themes', owner: 'Compliance Officer', due: 'Jun 13', status: 'Ready', chips: ['Risk'], progress: 82, tone: 'teal' },
+        { id: 'Q2-QAPI-04', title: 'Export hospitalization and ER transfer trends', owner: resolveDisplayName('QAPI Nurse'), due: 'Jun 11', status: 'In progress', chips: ['Outcomes'], progress: 70, tone: 'teal' },
+        { id: 'Q2-QAPI-05', title: 'Compile infection-control surveillance log', owner: resolveDisplayName('Clinical Manager'), due: 'Jun 12', status: 'In progress', chips: ['CL-IC-001'], progress: 64, tone: 'teal' },
+        { id: 'Q2-QAPI-06', title: 'Pull medication reconciliation exception sample', owner: resolveDisplayName('DON'), due: 'Jun 12', status: 'Needs review', chips: ['Chart Audit'], progress: 58, tone: 'orange' },
+        { id: 'Q2-QAPI-07', title: 'Summarize incident and complaint themes', owner: resolveDisplayName('Compliance Officer'), due: 'Jun 13', status: 'Ready', chips: ['Risk'], progress: 82, tone: 'teal' },
       ],
     },
     {
@@ -491,9 +495,9 @@ const q2QapiSwimlane: CalendarSwimlaneData = {
       tone: 'teal',
       note: 'Convert raw indicators into committee-ready findings and confirm responsible owners.',
       cards: [
-        { id: 'Q2-QAPI-08', title: 'Review 60-day recert and care-plan sample', owner: 'Clinical Manager', due: 'Jun 14', status: 'In progress', chips: ['Recert'], progress: 66, tone: 'teal' },
-        { id: 'Q2-QAPI-09', title: 'Score OASIS accuracy variance report', owner: 'QA Analyst', due: 'Jun 14', status: 'Watch', chips: ['OASIS'], progress: 48, tone: 'orange' },
-        { id: 'Q2-QAPI-10', title: 'Validate supervisory visit completion rate', owner: 'DON', due: 'Jun 15', status: 'Ready', chips: ['HR', 'Clinical'], progress: 86, tone: 'teal' },
+        { id: 'Q2-QAPI-08', title: 'Review 60-day recert and care-plan sample', owner: resolveDisplayName('Clinical Manager'), due: 'Jun 14', status: 'In progress', chips: ['Recert'], progress: 66, tone: 'teal' },
+        { id: 'Q2-QAPI-09', title: 'Score OASIS accuracy variance report', owner: resolveDisplayName('QA Analyst'), due: 'Jun 14', status: 'Watch', chips: ['OASIS'], progress: 48, tone: 'orange' },
+        { id: 'Q2-QAPI-10', title: 'Validate supervisory visit completion rate', owner: resolveDisplayName('DON'), due: 'Jun 15', status: 'Ready', chips: ['HR', 'Clinical'], progress: 86, tone: 'teal' },
       ],
     },
     {
@@ -501,9 +505,9 @@ const q2QapiSwimlane: CalendarSwimlaneData = {
       tone: 'orange',
       note: 'Create corrective actions for material gaps before the committee packet is routed.',
       cards: [
-        { id: 'Q2-QAPI-11', title: 'Draft CAPA for medication documentation gaps', owner: 'QAPI Lead', due: 'Jun 16', status: 'Needs owner', chips: ['CAPA'], progress: 42, tone: 'orange' },
-        { id: 'Q2-QAPI-12', title: 'Assign infection-control retraining action', owner: 'Clinical Educator', due: 'Jun 16', status: 'In progress', chips: ['Training'], progress: 61, tone: 'teal' },
-        { id: 'Q2-QAPI-13', title: 'Set target dates for chart-audit recheck', owner: 'Clinical Manager', due: 'Jun 17', status: 'Ready', chips: ['Follow-up'], progress: 78, tone: 'teal' },
+        { id: 'Q2-QAPI-11', title: 'Draft CAPA for medication documentation gaps', owner: resolveDisplayName('QAPI Lead'), due: 'Jun 16', status: 'Needs owner', chips: ['CAPA'], progress: 42, tone: 'orange' },
+        { id: 'Q2-QAPI-12', title: 'Assign infection-control retraining action', owner: resolveDisplayName('Clinical Educator'), due: 'Jun 16', status: 'In progress', chips: ['Training'], progress: 61, tone: 'teal' },
+        { id: 'Q2-QAPI-13', title: 'Set target dates for chart-audit recheck', owner: resolveDisplayName('Clinical Manager'), due: 'Jun 17', status: 'Ready', chips: ['Follow-up'], progress: 78, tone: 'teal' },
       ],
     },
     {
@@ -511,10 +515,10 @@ const q2QapiSwimlane: CalendarSwimlaneData = {
       tone: 'amber',
       note: 'Assemble agenda, dashboard, minutes, attachments, and required signatures.',
       cards: [
-        { id: 'Q2-QAPI-14', title: 'Build Q2 dashboard slide packet', owner: 'QAPI Lead', due: 'Jun 17', status: 'In progress', chips: ['Dashboard'], progress: 69, tone: 'teal' },
-        { id: 'Q2-QAPI-15', title: 'Attach aggregate report and evidence index', owner: 'Compliance Officer', due: 'Jun 18', status: 'In progress', chips: ['Evidence'], progress: 74, tone: 'teal' },
-        { id: 'Q2-QAPI-16', title: 'Prepare committee agenda and attendance log', owner: 'Administrator', due: 'Jun 18', status: 'Ready', chips: ['Form'], progress: 88, tone: 'teal' },
-        { id: 'Q2-QAPI-17', title: 'Draft committee minutes for post-meeting lock', owner: 'QAPI Lead', due: 'Jun 19', status: 'Watch', chips: ['Minutes'], progress: 46, tone: 'orange' },
+        { id: 'Q2-QAPI-14', title: 'Build Q2 dashboard slide packet', owner: resolveDisplayName('QAPI Lead'), due: 'Jun 17', status: 'In progress', chips: ['Dashboard'], progress: 69, tone: 'teal' },
+        { id: 'Q2-QAPI-15', title: 'Attach aggregate report and evidence index', owner: resolveDisplayName('Compliance Officer'), due: 'Jun 18', status: 'In progress', chips: ['Evidence'], progress: 74, tone: 'teal' },
+        { id: 'Q2-QAPI-16', title: 'Prepare committee agenda and attendance log', owner: resolveDisplayName('Administrator'), due: 'Jun 18', status: 'Ready', chips: ['Form'], progress: 88, tone: 'teal' },
+        { id: 'Q2-QAPI-17', title: 'Draft committee minutes for post-meeting lock', owner: resolveDisplayName('QAPI Lead'), due: 'Jun 19', status: 'Watch', chips: ['Minutes'], progress: 46, tone: 'orange' },
       ],
     },
     {
@@ -522,9 +526,9 @@ const q2QapiSwimlane: CalendarSwimlaneData = {
       tone: 'orange',
       note: 'Route the packet through administrator, DON, and committee chair sign-off.',
       cards: [
-        { id: 'Q2-QAPI-18', title: 'Route QAPI packet to DON for attestation', owner: 'DON', due: 'Jun 19', status: 'Awaiting signature', chips: ['eCIgn'], progress: 52, tone: 'orange' },
-        { id: 'Q2-QAPI-19', title: 'Administrator final certification', owner: 'Administrator', due: 'Jun 20', status: 'Pending', chips: ['Approval'], progress: 38, tone: 'orange' },
-        { id: 'Q2-QAPI-20', title: 'Committee chair lock and timestamp', owner: 'Committee Chair', due: 'Jun 20', status: 'Pending', chips: ['Signature'], progress: 34, tone: 'orange' },
+        { id: 'Q2-QAPI-18', title: 'Route QAPI packet to DON for attestation', owner: resolveDisplayName('DON'), due: 'Jun 19', status: 'Awaiting signature', chips: ['eCIgn'], progress: 52, tone: 'orange' },
+        { id: 'Q2-QAPI-19', title: 'Administrator final certification', owner: resolveDisplayName('Administrator'), due: 'Jun 20', status: 'Pending', chips: ['Approval'], progress: 38, tone: 'orange' },
+        { id: 'Q2-QAPI-20', title: 'Committee chair lock and timestamp', owner: resolveDisplayName('Committee Chair'), due: 'Jun 20', status: 'Pending', chips: ['Signature'], progress: 34, tone: 'orange' },
       ],
     },
     {
@@ -532,7 +536,7 @@ const q2QapiSwimlane: CalendarSwimlaneData = {
       tone: 'green',
       note: 'Finalize packet manifest, hash evidence, and expose surveyor-ready output.',
       cards: [
-        { id: 'Q2-QAPI-21', title: 'Publish Q2 QAPI survey packet manifest', owner: 'Compliance Officer', due: 'Jun 21', status: 'Ready to certify', chips: ['Survey Packet'], progress: 80, tone: 'green' },
+        { id: 'Q2-QAPI-21', title: 'Publish Q2 QAPI survey packet manifest', owner: resolveDisplayName('Compliance Officer'), due: 'Jun 21', status: 'Ready to certify', chips: ['Survey Packet'], progress: 80, tone: 'green' },
       ],
     },
   ],
@@ -594,9 +598,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Operations',
     forms: ['Personnel file audit worksheet', 'Credential evidence index'],
     id: 'evt-personnel-file-q1-audit',
-    owner: 'HR Credentialing',
+    owner: resolveDisplayName('HR Credentialing'),
     ownerRole: 'HR',
-    policyRefs: ['HR-PF-001'],
+    policyRefs: ['HR-WM-005'],
     summary: 'Q1 new-hire personnel file closeout and credential evidence review.',
     title: 'Personnel File Completeness Audit - Q1 New Hires',
     urgency: 'complete',
@@ -607,9 +611,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Clinical',
     forms: ['OASIS variance report', 'Clinical documentation audit sample'],
     id: 'evt-oasis-accuracy-apr',
-    owner: 'QAPI Analyst',
+    owner: resolveDisplayName('QA Analyst'),
     ownerRole: 'QAPI',
-    policyRefs: ['QA-OASIS-001'],
+    policyRefs: ['CL-OA-001'],
     summary: 'April OASIS accuracy sample review and variance scoring.',
     title: 'OASIS Accuracy Audit - April Sample Review',
   }),
@@ -619,9 +623,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Clinical',
     forms: ['Infection surveillance log', 'Clinical manager attestation'],
     id: 'evt-infection-surveillance-apr',
-    owner: 'Clinical Manager',
+    owner: resolveDisplayName('Clinical Manager'),
     ownerRole: 'Clinical',
-    policyRefs: ['CL-IC-001'],
+    policyRefs: ['CL-SD-016'],
     summary: 'April infection-control surveillance closeout.',
     title: 'Monthly Infection Surveillance Reporting - April',
   }),
@@ -631,9 +635,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Finance',
     forms: ['Claims denial trend export', 'Revenue-cycle exception sample'],
     id: 'evt-claims-denial-jun',
-    owner: 'Finance Lead',
+    owner: resolveDisplayName('Accounting'),
     ownerRole: 'Finance',
-    policyRefs: ['FIN-RC-001'],
+    policyRefs: ['FN-BC-001'],
     summary: 'June claims denial root-cause review and exception packet.',
     title: 'Claims Denial Root Cause Analysis - June Cycle',
   }),
@@ -643,9 +647,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'QAPI',
     forms: ['HHCAHPS survey administration packet', 'Patient-experience findings summary'],
     id: 'evt-hhcahps-q2-survey',
-    owner: 'QAPI Lead',
+    owner: resolveDisplayName('QAPI Lead'),
     ownerRole: 'QAPI',
-    policyRefs: ['QA-PG-001', 'QA-PIP-001'],
+    policyRefs: ['QA-PG-001', 'QA-PI-001'],
     summary: 'Q2 patient-experience survey administration and findings handoff to QAPI.',
     title: 'HHCAHPS Patient Satisfaction Survey - Q2 Administration',
     urgency: 'critical',
@@ -656,9 +660,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Clinical',
     forms: ['June infection surveillance log', 'Clinical recert exception index'],
     id: 'evt-infection-surveillance-jun',
-    owner: 'Clinical Manager',
+    owner: resolveDisplayName('Clinical Manager'),
     ownerRole: 'Clinical',
-    policyRefs: ['CL-IC-001'],
+    policyRefs: ['CL-SD-016'],
     summary: 'June infection surveillance closeout and related clinical recert review.',
     title: 'Monthly Infection Surveillance Reporting - June',
   }),
@@ -668,9 +672,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Clinical',
     forms: ['Medication reconciliation audit sample', 'Clinical variance worksheet'],
     id: 'evt-medrec-review-jul',
-    owner: 'QAPI Nurse',
+    owner: resolveDisplayName('QAPI Nurse'),
     ownerRole: 'Clinical',
-    policyRefs: ['CL-MR-001'],
+    policyRefs: ['CL-SD-013'],
     summary: 'July medication reconciliation documentation sample and variance review.',
     title: 'Medication Reconciliation Compliance Review - July',
   }),
@@ -680,9 +684,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'QAPI',
     forms: ['Q3 QAPI data packet', 'PIP progress tracker'],
     id: 'evt-qapi-q3-review',
-    owner: 'QAPI Lead',
+    owner: resolveDisplayName('QAPI Lead'),
     ownerRole: 'QAPI',
-    policyRefs: ['QA-PG-001', 'QA-PIP-001'],
+    policyRefs: ['QA-PG-001', 'QA-PI-001'],
     summary: 'Q3 QAPI quarterly data review and PIP progress discussion.',
     title: 'QAPI Committee - Q3 Data Review',
     urgency: 'critical',
@@ -693,7 +697,7 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Governance',
     forms: ['Governing body packet', 'Board minutes template'],
     id: 'evt-gb-q3-meeting',
-    owner: 'Administrator',
+    owner: resolveDisplayName('Administrator'),
     ownerRole: 'Governing Body',
     policyRefs: ['GV-GB-001'],
     summary: 'Q3 governing body oversight packet and minutes workflow.',
@@ -705,9 +709,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Compliance',
     forms: ['Emergency preparedness tabletop packet', 'After-action report'],
     id: 'evt-ep-tabletop-aug',
-    owner: 'Compliance Officer',
+    owner: resolveDisplayName('Compliance Officer'),
     ownerRole: 'Compliance',
-    policyRefs: ['EP-001', 'EP-004'],
+    policyRefs: ['RM-EP-001', 'RM-EP-003'],
     summary: 'Annual emergency preparedness tabletop exercise and after-action closeout.',
     title: 'Emergency Preparedness Tabletop Exercise - Annual',
   }),
@@ -717,7 +721,7 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Operations',
     forms: ['Accreditation readiness checklist', 'Survey gap remediation register'],
     id: 'evt-accred-readiness-aug',
-    owner: 'Compliance Officer',
+    owner: resolveDisplayName('Compliance Officer'),
     ownerRole: 'Compliance',
     policyRefs: ['CO-CP-001'],
     summary: 'Accreditation survey readiness assessment and remediation plan.',
@@ -730,9 +734,9 @@ const localRegulatorySources: readonly RegulatoryEvent[] = [
     domain: 'Clinical',
     forms: ['August infection surveillance log', 'Clinical action register'],
     id: 'evt-infection-surveillance-aug',
-    owner: 'Clinical Manager',
+    owner: resolveDisplayName('Clinical Manager'),
     ownerRole: 'Clinical',
-    policyRefs: ['CL-IC-001'],
+    policyRefs: ['CL-SD-016'],
     summary: 'August infection-control surveillance closeout.',
     title: 'Monthly Infection Surveillance Reporting - August',
   }),
@@ -954,7 +958,7 @@ const q2QapiCalendarEvent: CalendarEventData = withQapiQuarterlyFlow({
   id: 'qapi_meeting-20260507-08',
   label: 'Q2 QAPI quarterly review',
   month: 5,
-  owner: 'QAPI Lead',
+  owner: resolveDisplayName('QAPI Lead'),
   primaryDay: true,
   progress: 65,
   readiness: 'Needs review',
@@ -1060,7 +1064,7 @@ function getWorkflowEvent(eventId: string | undefined, workflowId?: string | nul
     day: 1,
     id: 'workflow-source-missing',
     label: lookupLabel ? `Workflow ${lookupLabel}` : 'Workflow source missing',
-    owner: 'Compliance Officer',
+    owner: resolveDisplayName('Compliance Officer'),
     progress: 0,
     tone: 'orange',
     workflowId: normalizedWorkflowId ?? normalizedEventId,
@@ -1413,36 +1417,29 @@ const boardMetrics: readonly MetricTileData[] = [
   { label: 'Certified', value: boardLaneCount('Completed'), helper: 'Completed and locked', tone: 'green' },
 ];
 
+// Real evidence/audit records now resolved from cesViewProjections + V3 seeds (ExecutionUnits evidenceStatus / auditReadiness / workflow refs)
+// Counts derived via .filter/.length for honesty (no deceptive constants)
+const evidenceRows = buildEvidenceRows();
+const auditRows = buildAuditRows();
+const evLocked = evidenceRows.filter((r) => /LOCK|VALID|PROMOT/i.test(r[2])).length;
+const evNeeds = evidenceRows.filter((r) => /PEND|UPLOAD/i.test(r[2])).length;
 const evidenceMetrics: readonly MetricTileData[] = [
-  { label: 'Artifacts', value: '445', helper: 'Indexed and searchable', tone: 'teal' },
-  { label: 'Locked', value: '318', helper: 'Hash and certificate saved', tone: 'green' },
-  { label: 'Needs upload', value: '11', helper: 'Owner action required', tone: 'orange' },
+  { label: 'Artifacts', value: String(evidenceRows.length), helper: 'Indexed and searchable', tone: 'teal' },
+  { label: 'Locked', value: String(evLocked), helper: 'Hash and certificate saved', tone: 'green' },
+  { label: 'Needs upload', value: String(evNeeds), helper: 'Owner action required', tone: 'orange' },
   { label: 'Retention', value: '7 yrs', helper: 'Default compliance window', tone: 'teal' },
 ];
 
-const evidenceRows = [
-  ['Signed policy packet', 'GV-GB-001', 'EVIDENCE_LOCKED', 'teal'],
-  ['Meeting minutes', 'GV-FM-005', 'PENDING_UPLOAD', 'orange'],
-  ['QAPI report', 'QA-QM-001', 'VALIDATED', 'teal'],
-  ['Training attestation', 'EN-FM-001', 'VALIDATING', 'amber'],
-  ['eCIgn certificate packet', 'GV-FM-006', 'PROMOTED', 'green'],
-  ['Survey rollup export', 'AU-2026-0618', 'EXPORTED', 'teal'],
-] as const satisfies readonly (readonly [string, string, string, Tone])[];
-
+const audReady = auditRows.filter((r) => /ready|certif/i.test(r[2])).length;
+const audMiss = auditRows.filter((r) => /miss/i.test(r[2])).length;
+const audPend = auditRows.filter((r) => /pend/i.test(r[2])).length;
+const audCert = auditRows.filter((r) => /certif/i.test(r[2])).length;
 const auditMetrics: readonly MetricTileData[] = [
-  { label: 'Audit ready', value: '18', helper: 'Instances in view', tone: 'teal' },
-  { label: 'Missing evidence', value: '2', helper: 'Requires upload', tone: 'orange' },
-  { label: 'Pending approval', value: '4', helper: 'Awaiting approver', tone: 'amber' },
-  { label: 'Certified locked', value: '12', helper: 'Final audit state', tone: 'green' },
+  { label: 'Audit ready', value: String(audReady), helper: 'Instances in view', tone: 'teal' },
+  { label: 'Missing evidence', value: String(audMiss), helper: 'Requires upload', tone: 'orange' },
+  { label: 'Pending approval', value: String(audPend), helper: 'Awaiting approver', tone: 'amber' },
+  { label: 'Certified locked', value: String(audCert), helper: 'Final audit state', tone: 'green' },
 ];
-
-const auditRows = [
-  ['QAPI Committee Review Packet', 'QA-WF-03', 'ready to certify', 'teal'],
-  ['Governing Body minutes signature', 'GV-FM-005', 'pending approval', 'orange'],
-  ['TB screening contractor file', 'HR-FM-012', 'missing evidence', 'orange'],
-  ['Emergency drill after-action', 'RM-WF-04', 'certified locked', 'green'],
-  ['HIPAA training completion roster', 'HR-TR-101', 'ready to certify', 'teal'],
-] as const satisfies readonly (readonly [string, string, string, Tone])[];
 
 const evidenceConfigs = {
   'audit-mode': {
@@ -1451,10 +1448,10 @@ const evidenceConfigs = {
     rows: auditRows,
     tileTone: 'orange',
     tiles: [
-      ['18', 'Ready'],
-      ['2', 'Missing'],
-      ['4', 'Pending'],
-      ['12', 'Locked'],
+      [String(audReady), 'Ready'],
+      [String(audMiss), 'Missing'],
+      [String(audPend), 'Pending'],
+      [String(audCert), 'Locked'],
     ],
     title: 'Audit health queue',
   },
@@ -1465,10 +1462,10 @@ const evidenceConfigs = {
     rows: evidenceRows,
     tileTone: 'teal',
     tiles: [
-      ['269', 'Policies'],
-      ['128', 'Forms'],
-      ['445', 'Evidence'],
-      ['72', 'Approvals'],
+      [String(POLICY_CORPUS.length), 'Policies'],
+      [String(FORMS_DATASET.length), 'Forms'],
+      [String(evidenceRows.length), 'Evidence'],
+      [String(evLocked), 'Approvals'],
     ],
     title: 'Evidence hierarchy',
   },
@@ -1483,28 +1480,32 @@ const artifactMetrics: readonly MetricTileData[] = [
   { label: 'Review', value: '1 gap', helper: 'Needs approver note', tone: 'orange' },
 ];
 
+const realStandardsCount = achcSurveyRows.reduce((sum, r) => sum + r.achcStandards.length, 0);
+const mappedCount = achcSurveyRows.filter(r => r.mappingType !== 'NONE').length;
 const achcMetrics: readonly MetricTileData[] = [
-  { label: 'Standards', value: '42', helper: 'ACHC items tracked', tone: 'teal' },
-  { label: 'Mapped', value: '38', helper: 'Policy support attached', tone: 'green' },
-  { label: 'Needs action', value: '4', helper: 'Evidence or owner gap', tone: 'orange' },
-  { label: 'Packet state', value: '92%', helper: 'Survey-ready posture', tone: 'teal' },
+  { label: 'Standards', value: String(realStandardsCount), helper: 'ACHC items tracked', tone: 'teal' },
+  { label: 'Mapped', value: String(mappedCount), helper: 'Policy support attached', tone: 'green' },
+  { label: 'Survey rows', value: String(achcSurveyRows.length), helper: 'Policy-linked ACHC entries', tone: 'orange' },
+  { label: 'Crosswalk rows', value: String(achcPrintCrosswalk.length), helper: 'Print + attachment coverage', tone: 'teal' },
 ];
 
-const achcRows: readonly BasicRow[] = [
-  { id: 'ACHC-HH4-1A', title: 'Governing body oversight evidence', owner: 'GV-GB-001', status: 'validated' },
-  { id: 'ACHC-HH5-2B', title: 'Clinical record review cadence', owner: 'CL-SD-010', status: 'ready' },
-  { id: 'ACHC-HH6-1C', title: 'QAPI performance indicators', owner: 'QA-QM-004', status: 'review-required' },
-  { id: 'ACHC-HH7-3A', title: 'Personnel file completeness', owner: 'HR-CG-021', status: 'validated' },
-  { id: 'ACHC-HH8-2D', title: 'Emergency drill after-action', owner: 'RM-EM-003', status: 'pending' },
-];
+// Real ACHC survey / crosswalk records (first N for representative view; full data in FrameworkScreen + projections)
+const achcRows: readonly BasicRow[] = achcSurveyRows.slice(0, 5).map(r => ({
+  id: r.achcStandards[0] || 'ACHC',
+  title: r.policyTitle,
+  owner: r.policyId,
+  status: r.mappingType === 'DIRECT' ? 'validated' : (r.mappingType === 'PARTIAL' ? 'ready' : 'review-required'),
+}));
 
-const crosswalkRows: readonly BasicRow[] = [
-  { id: '42 CFR 484.105', title: 'Organization and administration', owner: 'ACHC HH4-1A', status: 'direct' },
-  { id: '42 CFR 484.55', title: 'Comprehensive assessment', owner: 'ACHC HH5-2B', status: 'partial' },
-  { id: '42 CFR 484.65', title: 'QAPI program', owner: 'ACHC HH6-1C', status: 'direct' },
-  { id: 'Title 22 74723', title: 'Personnel records', owner: 'ACHC HH7-3A', status: 'direct' },
-  { id: 'OSHA 1910.1030', title: 'Exposure control', owner: 'ACHC HH8-2D', status: 'review-required' },
-];
+const crosswalkRows: readonly BasicRow[] = achcPrintCrosswalk
+  .filter(r => r.ibmPolicyId && r.ibmPolicyId !== 'UNMAPPED')
+  .slice(0, 5)
+  .map(r => ({
+    id: r.corridorPolicyNo || r.corridorSection,
+    title: r.corridorTitle,
+    owner: r.ibmPolicyId,
+    status: r.mappingConfidence === 'HIGH' ? 'direct' : 'partial',
+  }));
 
 const achcCards: readonly SurfaceCardData[] = [
   {
@@ -1638,10 +1639,11 @@ const guideEntries = [
 ] as const;
 
 const reportMetrics: readonly MetricTileData[] = buildReportMetrics();
+const cesReportSprint = buildSprintSummary();
 
 const reportCards: readonly SurfaceCardData[] = [
   {
-    body: 'Sprint 12 has 33 cards, 4 blockers, and 9 cards ready for certification.',
+    body: `Sprint 12 has ${cesReportSprint.total} cards, ${cesReportSprint.blocked} blockers, and ${cesReportSprint.readyToCertify} cards ready for certification.`,
     icon: BarChart3,
     progress: 84,
     status: 'ready',
@@ -1752,8 +1754,8 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       break;
     case 'ces-board':
       // Design cross-ref (Agent 12 background): ces-board to V6_DESIGN.html ~1320 (7-col kanbanLanes from complianceBoardColumns ~409 incl. dedicated "Awaiting Action / Evidence" with EVT-REV cards + meta/awaitingType/missing, metrics, filters, summary 'Sprint 12 - 38 cards - 5 awaiting action/evidence', desktop:grid-cols-7 via BoardLane).
-      // Current: exact lanes + cards (pragmatic subset), 7 metrics, awaiting column + fields, BoardScreen + filters. Proposals: dynamic from V3 seeds/snapshot or cesMasterControlAudit, link cards to evidence-center/swimlane, derive metrics from projections.
-      // Agent 21 read-only CES Integration/Routing gap vs design: BoardScreen renders <BoardLane lane={lane} /> (no onCardClick prop), so no navigation from cards. Design explicitly calls for future CTA links from board to evidence-center / swimlane (and exposure from Calendar/Events). Routing is complete, but interactive cross-CES-view integration is a gap in current prototype. See routeRegistry Agent 21 comment.
+      // Current: exact lanes + cards (pragmatic subset), 7 metrics, awaiting column + fields, BoardScreen + filters. Proposals: dynamic from V3 seeds/snapshot or cesMasterControlAudit, link cards to /evidence /swimlane, derive metrics from projections.
+      // Agent 21 read-only CES Integration/Routing gap vs design: BoardScreen renders <BoardLane lane={lane} /> (no onCardClick prop), so no navigation from cards. Design explicitly calls for future CTA links from board to /evidence / swimlane (and exposure from Calendar/Events). Routing is complete, but interactive cross-CES-view integration is a gap in current prototype. See routeRegistry Agent 21 comment.
       child = <BoardScreen />;
       break;
     case 'evidence-center':
@@ -2046,8 +2048,19 @@ function DashboardScreen() {
 }
 
 function ProfileListScreen({ mode }: { mode: keyof typeof profileFocus }) {
+  const navigate = useNavigate();
   const profile = profileFocus[mode];
   const coverageLabel = mode === 'clinicians' ? 'Coverage' : 'Clinical focus';
+
+  const handleRowClick = (row: BasicRow) => {
+    const targetId = row.id;
+    if (!targetId) return;
+    if (mode === 'clinicians') {
+      navigate(`/clinicians/${encodeURIComponent(targetId)}`);
+    } else {
+      navigate(`/patients/${encodeURIComponent(targetId)}`);
+    }
+  };
 
   return (
     <ScreenStack metrics={profile.metrics}>
@@ -2065,6 +2078,7 @@ function ProfileListScreen({ mode }: { mode: keyof typeof profileFocus }) {
             columns={profileColumns.map((column) => (column.key === 'owner' ? { ...column, label: coverageLabel } : column))}
             label={mode === 'clinicians' ? 'Clinician roster' : 'Patient roster'}
             rows={profile.rows}
+            onRowClick={handleRowClick}
           />
         </section>
         <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
@@ -2080,7 +2094,16 @@ function ProfileListScreen({ mode }: { mode: keyof typeof profileFocus }) {
               <ProgressMeter key={label} label={label} tone={tone as Tone} value={value as number} />
             ))}
           </div>
-          <Button className="mt-xl w-full border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange">
+          <Button
+            className="mt-xl w-full border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange"
+            onClick={() => {
+              const first = profile.rows[0];
+              if (first?.id) {
+                if (mode === 'clinicians') navigate(`/clinicians/${encodeURIComponent(first.id)}`);
+                else navigate(`/patients/${encodeURIComponent(first.id)}`);
+              }
+            }}
+          >
             Open detail
           </Button>
         </aside>
@@ -2090,6 +2113,11 @@ function ProfileListScreen({ mode }: { mode: keyof typeof profileFocus }) {
 }
 
 function ClinicianDetailScreen() {
+  const params = useParams<{ clinicianId?: string }>();
+  const clinicianId = params.clinicianId?.trim() || clinicianRows[0]?.id || 'clin-001';
+  const match = MOCK_CLINICIANS.find((c) => c.id === clinicianId) || MOCK_CLINICIANS[0];
+  const displayTitle = match ? `${match.firstName} ${match.lastName}, ${match.primaryDiscipline}` : 'Clinician Detail';
+
   return (
     <ScreenStack metrics={clinicianMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
@@ -2097,7 +2125,7 @@ function ClinicianDetailScreen() {
           <div className="mb-xl flex items-start justify-between gap-lg">
             <div>
               <ToneTag>/clinicians/:clinicianId</ToneTag>
-              <h2 className="mt-lg text-h2 font-medium text-ink">Maria Delgado, RN</h2>
+              <h2 className="mt-lg text-h2 font-medium text-ink">{displayTitle}</h2>
               <p className="mt-md text-sm text-muted">
                 Credential posture, assigned patients, training status, active compliance requirements, and schedule load.
               </p>
@@ -2131,11 +2159,16 @@ function ClinicianDetailScreen() {
 }
 
 function PolicyMatrixScreen() {
+  const navigate = useNavigate();
+  const handleRowClick = (row: BasicRow) => {
+    const id = row.id;
+    if (id) navigate(`/library/${encodeURIComponent(id)}`);
+  };
   return (
     <ScreenStack metrics={policyMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
         <section aria-label="Policy library matrix" className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
-          <DataTable columns={tableColumns} label="Policy library matrix" rows={policyRows} />
+          <DataTable columns={tableColumns} label="Policy library matrix" rows={policyRows} onRowClick={handleRowClick} />
         </section>
         <aside className="grid gap-lg">
           {policyCards.map((card) => (
@@ -2148,6 +2181,11 @@ function PolicyMatrixScreen() {
 }
 
 function PatientDetailScreen() {
+  const params = useParams<{ patientId?: string }>();
+  const patientId = params.patientId?.trim() || patientRows[0]?.id || 'pat-001';
+  const match = MOCK_PATIENTS.find((p) => p.id === patientId) || MOCK_PATIENTS[0];
+  const displayTitle = match ? `${match.firstName} ${match.lastName} - SOC Active` : 'Patient Detail';
+
   return (
     <ScreenStack metrics={patientMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
@@ -2155,7 +2193,7 @@ function PatientDetailScreen() {
           <div className="mb-xl flex items-start justify-between gap-lg">
             <div>
               <ToneTag>/patients/:patientId</ToneTag>
-              <h2 className="mt-lg text-h2 font-medium text-ink">Elena Vargas - SOC Active</h2>
+              <h2 className="mt-lg text-h2 font-medium text-ink">{displayTitle}</h2>
               <p className="mt-md text-sm text-muted">
                 Care plan, clinician assignments, documentation gaps, visit cadence, and high-risk indicators.
               </p>
@@ -2644,7 +2682,7 @@ function BoardScreen() {
               </button>
             ))}
           </div>
-          <p className="text-sm text-ink">Sprint 12 - 38 cards - 5 awaiting action/evidence</p>
+          <p className="text-sm text-ink">Sprint 12 - {boardLanes.reduce((s, l) => s + (l.count || l.cards.length), 0)} cards - {boardLaneCount('Awaiting Action / Evidence')} awaiting action/evidence</p>
         </div>
         <div className="overflow-x-hidden pb-sm">
           <div className="grid grid-cols-1 gap-md tablet-l:grid-cols-2 desktop:grid-cols-7">
@@ -2652,11 +2690,11 @@ function BoardScreen() {
               <BoardLane key={lane.title} lane={lane} onCardClick={(card) => {
                 const targetId = card.id || '';
                 if (card.awaitingType === 'evidence' || targetId) {
-                  navigate(`/evidence-center?control=${encodeURIComponent(targetId)}`);
+                  navigate(`/evidence?control=${encodeURIComponent(targetId)}`);
                 } else if (card.awaitingType === 'action' || targetId.includes('EVT')) {
                   navigate('/workflows');
                 } else {
-                  navigate('/evidence-center');
+                  navigate('/evidence');
                 }
               }} />
             ))}
@@ -2858,13 +2896,23 @@ function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
               <div
                 className="flex items-center justify-between gap-lg rounded-lg border border-card bg-tone-slate-bg p-lg cursor-pointer hover:bg-surface-hover"
                 key={ref}
-                onClick={() => navigate(`/audit-mode?ref=${encodeURIComponent(ref)}`)}
+                onClick={() => navigate(`/audit?ref=${encodeURIComponent(ref)}`)}
               >
                 <div>
                   <h3 className="text-body font-light text-ink">{title}</h3>
                   <p className="mt-xs text-xs text-muted">{ref}</p>
                 </div>
-                <ToneTag tone={tone}>{status}</ToneTag>
+                <div className="flex items-center gap-sm">
+                  <ToneTag tone={tone}>{status}</ToneTag>
+                  {/* Fix missing link: resolve ref (now workflowId or id from V3 seed) to artifact/detail view */}
+                  <button
+                    className="text-[10px] px-1.5 py-0.5 border border-hairline rounded hover:bg-surface text-brand-teal"
+                    onClick={(e) => { e.stopPropagation(); navigate(`/artifacts/${encodeURIComponent(ref)}`); }}
+                    type="button"
+                  >
+                    artifact
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -2892,6 +2940,10 @@ function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
 }
 
 function ArtifactViewerScreen() {
+  // Fix: resolve :artifactId from route params for real artifact detail views (was always hardcoded EV-4519).
+  // Supports /artifacts/<id> from registry; refs from evidence/audit now resolve correctly when linked.
+  const { artifactId } = useParams<{ artifactId?: string }>();
+  const resolvedArtifactId = artifactId || 'EV-4519';
   return (
     <ScreenStack metrics={artifactMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
@@ -2908,7 +2960,7 @@ function ArtifactViewerScreen() {
           </div>
           <div className="grid gap-md">
             {[
-              ['Artifact ID', 'EV-4519'],
+              ['Artifact ID', resolvedArtifactId],
               ['Requirement', 'GV-GB-001 / Governing Body packet'],
               ['Source', 'Signed policy packet + meeting minutes + eCIgn certificate'],
               ['Retention', '7 years from final packet lock'],
@@ -2983,7 +3035,8 @@ function AchcScreen({ mode }: { mode: 'crosswalk' | 'survey' }) {
 
 function FormWorkspaceScreen() {
   const { formId } = useParams();
-  const record = formId ? FORM_VIEWER_DATASET.get(formId) ?? null : null;
+  const canon = formId ? resolveCanonicalFormId(formId) ?? formId : undefined;
+  const record = canon ? FORM_VIEWER_DATASET.get(canon) ?? null : null;
 
   // No-match / unavailable state: keep the screen's surface, do not crash.
   if (!record) {
@@ -3193,7 +3246,7 @@ function ReportsScreen() {
               className="cursor-pointer"
               onClick={() => {
                 if (idx === 0) navigate('/master-controls');
-                else navigate('/evidence-center');
+                else navigate('/evidence');
               }}
             >
               <SurfaceCard card={card} />
