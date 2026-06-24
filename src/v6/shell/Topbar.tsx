@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react';
-import { Bot, Search, UserRound } from 'lucide-react';
+import { LogOut, SunMoon, UserRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { IconButton } from '../primitives';
 import { cx } from '../utils/classNames';
+import { cycleTheme, getTheme, TOD_LABEL } from '../theme/timeOfDayTheme';
 
 export interface TopbarProps {
   className?: string;
@@ -10,9 +11,12 @@ export interface TopbarProps {
   onPersonalOpsToggle?: () => void;
 }
 
+/* Floating user dock. Search + assistant shortcuts removed per design — the dock
+   now holds: theme toggle (time-of-day), sign out, and the user/face button. */
 export function Topbar({ className, isPersonalOpsOpen, onPersonalOpsToggle }: TopbarProps) {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [themeLabel, setThemeLabel] = useState(() => TOD_LABEL[getTheme()]);
   const retractTimer = useRef<number | undefined>(undefined);
 
   const clearRetractTimer = () => {
@@ -21,23 +25,15 @@ export function Topbar({ className, isPersonalOpsOpen, onPersonalOpsToggle }: To
       retractTimer.current = undefined;
     }
   };
-
-  const expandDock = () => {
-    clearRetractTimer();
-    setIsExpanded(true);
-  };
-
+  const expandDock = () => { clearRetractTimer(); setIsExpanded(true); };
   const scheduleRetract = () => {
     clearRetractTimer();
-    retractTimer.current = window.setTimeout(() => {
-      setIsExpanded(false);
-    }, 1500);
+    retractTimer.current = window.setTimeout(() => setIsExpanded(false), 1500);
   };
-
-  const selectAction = (action: () => void) => {
+  const selectAction = (action: () => void, close = true) => {
     clearRetractTimer();
     action();
-    setIsExpanded(false);
+    if (close) setIsExpanded(false);
   };
 
   const dockButtonClass =
@@ -56,18 +52,20 @@ export function Topbar({ className, isPersonalOpsOpen, onPersonalOpsToggle }: To
     >
       <div className="flex items-center gap-1">
         <IconButton
-          aria-label="Open search"
+          aria-label={`Theme: ${themeLabel} — change`}
+          title={`Theme: ${themeLabel}`}
           className={cx(dockButtonClass, !isExpanded && 'pointer-events-none opacity-0')}
-          icon={<Search aria-hidden="true" className="h-icon-md w-icon-md" />}
-          onClick={() => selectAction(() => navigate('/help'))}
+          icon={<SunMoon aria-hidden="true" className="h-icon-md w-icon-md" />}
+          onClick={() => selectAction(() => setThemeLabel(TOD_LABEL[cycleTheme()]), false)}
           tabIndex={isExpanded ? 0 : -1}
           variant="tertiary"
         />
         <IconButton
-          aria-label="Open iAdministrator"
+          aria-label="Sign out"
+          title="Sign out"
           className={cx(dockButtonClass, !isExpanded && 'pointer-events-none opacity-0')}
-          icon={<Bot aria-hidden="true" className="h-icon-md w-icon-md" />}
-          onClick={() => selectAction(() => navigate('/iadministrator'))}
+          icon={<LogOut aria-hidden="true" className="h-icon-md w-icon-md" />}
+          onClick={() => selectAction(() => navigate('/login'))}
           tabIndex={isExpanded ? 0 : -1}
           variant="tertiary"
         />

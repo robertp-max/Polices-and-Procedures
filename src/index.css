@@ -502,3 +502,50 @@ th {
   background-image: radial-gradient(#D9D6D5 1px, transparent 1px);
   background-size: 24px 24px;
 }
+
+/* ── Brad time-of-day themes ───────────────────────────────────────────────
+   Noon = original default (unchanged). Morning/Afternoon/Night are additive.
+   Scoped to .brad-workspace so no other page is restyled. The active theme is
+   set on <html data-tod="..."> by timeOfDayTheme.ts. */
+.brad-workspace {
+  --brad-canvas: linear-gradient(180deg, #FAFCFD 0%, #F2FAFB 100%);
+  --brad-grid: #D9D6D5;
+  --brad-ink: #524D4B;
+  --brad-muted: #7A7470;
+  --brad-heading: #004142;
+  --brad-surface: #ffffff;
+  --brad-surface-2: #FAF8F8;
+  --brad-border: #E9E5E3;
+  --brad-user-bubble: #E5F0EF;
+  --brad-user-text: #004142;
+}
+:root[data-tod="morning"] .brad-workspace {
+  --brad-canvas: radial-gradient(circle at 0% 0%, rgba(255,200,50,0.30), transparent 45%),
+                 radial-gradient(circle at 100% 12%, rgba(255,120,0,0.14), transparent 40%),
+                 linear-gradient(135deg, #FFF7E2 0%, #FFE9C2 60%, #FBE0C4 100%);
+  --brad-grid: #E8D9B8;
+  --brad-ink: #4A2E00; --brad-muted: #7A541A; --brad-heading: #5A3A00;
+  --brad-surface: #FFFCF4; --brad-surface-2: #FFF6E6; --brad-border: rgba(255,165,0,0.28);
+  --brad-user-bubble: #FFEFC9; --brad-user-text: #5A3A00;
+}
+:root[data-tod="afternoon"] .brad-workspace {
+  --brad-canvas: radial-gradient(circle at 0% 0%, rgba(255,130,60,0.28), transparent 45%),
+                 radial-gradient(circle at 100% 12%, rgba(199,70,1,0.18), transparent 40%),
+                 linear-gradient(135deg, #F7EAE2 0%, #EAD2C6 60%, #E3C6B7 100%);
+  --brad-grid: #D8C2B6;
+  --brad-ink: #3D2214; --brad-muted: #6E5345; --brad-heading: #5A2E12;
+  --brad-surface: #FBF1EB; --brad-surface-2: #F4E2D8; --brad-border: rgba(199,70,1,0.20);
+  --brad-user-bubble: #F3D8C7; --brad-user-text: #5A2E12;
+}
+:root[data-tod="night"] .brad-workspace {
+  --brad-canvas: radial-gradient(circle at 0% 0%, rgba(35,30,71,0.85), transparent 45%),
+                 radial-gradient(circle at 100% 12%, rgba(0,121,125,0.18), transparent 40%),
+                 linear-gradient(135deg, #0C0B16 0%, #141229 55%, #1B1940 100%);
+  --brad-grid: rgba(255,255,255,0.06);
+  --brad-ink: #F1EFEE; --brad-muted: #A39E9B; --brad-heading: #FFFFFF;
+  --brad-surface: #231F47; --brad-surface-2: #1C1935; --brad-border: rgba(255,255,255,0.12);
+  --brad-user-bubble: #2C2A5C; --brad-user-text: #EAF6F6;
+}
+.brad-workspace .brad-grid-pattern {
+  background-image: radial-gradient(var(--brad-grid) 1px, transparent 1px);
+}
