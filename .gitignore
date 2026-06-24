@@ -41,6 +41,9 @@ tmp-*.log
 # PM local persistence (JSON files; regenerated from in-memory store)
 data/pm/
 
+# Brad append-only generated-object store (runtime data; not source)
+data/brad/
+
 
 # Trash/archive folder
 Bin-(thrash)/

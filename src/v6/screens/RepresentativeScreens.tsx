@@ -1,4 +1,4 @@
-import { AlertTriangle, BarChart3, Bot, BookOpen, CalendarClock, CalendarRange, Camera, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, FileCheck2, FileText, FolderOpen, History, PanelRightOpen, Route, ShieldCheck, Sparkles, Stethoscope, Upload, Users, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, BarChart3, BookOpen, CalendarClock, CalendarRange, Camera, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, FileCheck2, FileText, FolderOpen, History, PanelRightOpen, Route, ShieldCheck, Stethoscope, Upload, Users, type LucideIcon } from 'lucide-react';
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -10,6 +10,7 @@ import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/da
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import { getWorkflowDetail } from './pageviews/WorkflowsScreen';
+import BradWorkspace from './brad/BradWorkspace';
 import { resolveCanonicalFormId } from '@/policy/data/formIdAliases';
 // V2 seed staffing data (not live production records; used for prototype staffing profile surfaces).
 import { MOCK_CLINICIANS } from '@/policy/staffing/data/mockClinicians';
@@ -22,7 +23,7 @@ import { Button, ToneBadge } from '../primitives';
 import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
-import { BoardLane, CESSubnav, ChatThread, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type ChatMessageData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
+import { BoardLane, CESSubnav, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
 import { workspaceSubnavItems } from '../routing/navigationManifest';
 import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, JourneyV1Screen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen } from './pageviews';
 import { achcSurveyRows } from '@/policy/data/achcSurveyProjection.generated';
@@ -1586,55 +1587,6 @@ const achcCards: readonly SurfaceCardData[] = [
 const FORM_VIEWER_DATASET = new Map<string, FormRecord>(FORMS_DATASET.map((record) => [record.id, record] as const));
 
 // FORM_VIEWER_DOMAIN_NAMES and helpers removed (unused after document viewer refactor)
-
-const bradMetrics: readonly MetricTileData[] = [
-  { label: 'Risk signals', value: '3', helper: '1 high severity', tone: 'orange' },
-  { label: 'Actions queued', value: '8', helper: '4 due this week', tone: 'teal' },
-  { label: 'Docs generated', value: '12', helper: 'Last 30 days', tone: 'green' },
-  { label: 'Confidence', value: 'High', helper: 'Grounded to policy corpus', tone: 'teal' },
-];
-
-const bradMessages: readonly ChatMessageData[] = [
-  { sender: 'user', body: 'What needs attention before end of day in Primary Operations?' },
-  {
-    sender: 'assistant',
-    body:
-      'Three items: SOC backup for Elena Vargas, CHHA weekend coverage, and James Kwon credential renewal evidence. The SOC backup has the highest service-continuity risk.',
-  },
-  { sender: 'user', body: 'Who should own the SOC backup?' },
-  {
-    sender: 'assistant',
-    body:
-      'Assign to the Clinical Manager with Maria Delgado as primary RN. I would keep Scheduling copied because the visit is inside the same-day coverage window.',
-  },
-];
-
-const bradCards: readonly SurfaceCardData[] = [
-  {
-    body: 'SOC backup and CHHA weekend pool are the highest priority service-continuity actions.',
-    icon: AlertTriangle,
-    progress: 64,
-    status: 'review-required',
-    title: 'Coverage risk',
-    tone: 'orange',
-  },
-  {
-    body: 'Robert Hale recert and Amina Yusuf wound evidence can close after nurse review.',
-    icon: Stethoscope,
-    progress: 78,
-    status: 'ready',
-    title: 'Clinical context',
-    tone: 'teal',
-  },
-  {
-    body: 'Assign Clinical Manager to SOC backup, keep Scheduling copied, and set a 3:00 PM checkpoint.',
-    icon: Sparkles,
-    progress: 82,
-    status: 'ready',
-    title: 'Recommended next action',
-    tone: 'teal',
-  },
-];
 
 const guideEntries = [
   ['Day 0 - Pre-Day-1 (Appendix F hard stop)', 'All items PASS/NA + HR Director signature before any work (HR-TA-001).'],
@@ -3490,26 +3442,8 @@ function FormWorkspaceScreen() {
 
 function BradScreen() {
   return (
-    <ScreenStack metrics={bradMetrics}>
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
-          <div className="mb-lg flex items-center gap-md border-b border-hairline pb-lg">
-            <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-brand-teal">
-              <Bot aria-hidden="true" className="h-icon-md w-icon-md" />
-            </span>
-            <div>
-              <h2 className="text-h2 font-medium text-ink">Brad decision thread</h2>
-              <p className="text-sm text-muted">Grounded response with actions, citations, and controls.</p>
-            </div>
-          </div>
-          <ChatThread messages={bradMessages} />
-        </section>
-        <aside className="grid gap-lg">
-          {bradCards.map((card) => (
-            <SurfaceCard card={card} key={card.title} />
-          ))}
-        </aside>
-      </section>
+    <ScreenStack metrics={[]}>
+      <BradWorkspace />
     </ScreenStack>
   );
 }

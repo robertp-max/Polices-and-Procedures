@@ -17,6 +17,7 @@ import { ceuRouter } from './ceu/routes.js';
 import { startAnomalyScheduler } from './audit/anomaly.js';
 import { authRouter } from './routes/auth.js';
 import { pmRouter } from './routes/pm.js';
+import { createBradRouter } from './routes/brad.js';
 
 /* ═══════════════════════════════════════════════════════════════
    Care Indeed — Backend API (Express)
@@ -95,6 +96,9 @@ if (!iaLoaded) {
   });
 }
 app.use('/api/ia', createIaRouter(iaService));
+
+// Brad assistant + Super Admin guarded-action layer (append-only generated objects).
+app.use('/api/brad', createBradRouter());
 
 // 404 for unknown routes under /api.
 app.use('/api', (req, _res, next) => {
