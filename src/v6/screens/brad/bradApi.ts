@@ -134,6 +134,17 @@ export interface MassAddSummary {
   rows: Array<{ index: number; firstName?: string; lastName?: string; email?: string; role?: string; issues: string[]; risky: boolean; duplicate: boolean; invalid: boolean }>;
 }
 
+export interface UploadMeta {
+  id: string;
+  filename: string;
+  mime: string;
+  size: number;
+  contentHash: string;
+  dateCreatedInSystem: string;
+  uploadedByUserId: string;
+  eventId?: string;
+}
+
 export const bradApi = {
   runtime: () => bradFetch<RuntimeInfo>('/runtime'),
   me: () => bradFetch<SuperAdminMe>('/superadmin/me'),
@@ -156,6 +167,10 @@ export const bradApi = {
       `/approvals/${approvalId}/decide`, { method: 'POST', body: JSON.stringify({ decision, reason }) }),
   profile: () => bradFetch<BradProfile>('/profile'),
   audit: () => bradFetch<{ audit: unknown[] }>('/audit'),
+  upload: (files: Array<{ filename: string; mime: string; contentBase64: string }>, eventId?: string) =>
+    bradFetch<{ uploaded: UploadMeta[] }>('/upload', { method: 'POST', body: JSON.stringify({ files, eventId }) }),
+  uploads: (eventId?: string) =>
+    bradFetch<{ uploads: UploadMeta[] }>(`/uploads${eventId ? `?eventId=${encodeURIComponent(eventId)}` : ''}`),
 
   /* ─── Builder Beta (Super Admin only; server re-verifies on every call) ──── */
   builder: {

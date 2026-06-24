@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import {
   bradApi, getIdentity, setIdentity, DEV_IDENTITIES,
-  type RuntimeInfo, type SuperAdminMe, type GeneratedObject, type ApprovalRequest, type EventMetaResult,
+  type RuntimeInfo, type SuperAdminMe, type GeneratedObject, type ApprovalRequest, type EventMetaResult, type UploadMeta,
 } from './bradApi';
 import { getQuickActions, SCOPED_ACTION_COPY, type QuickAction, type ScopedActionId } from './quickActions';
 import { HowBradWorksPanel } from './HowBradWorksPanel';
@@ -84,8 +84,32 @@ export default function BradWorkspace() {
   const [showResearch, setShowResearch] = useState(false);
   const [scoped, setScoped] = useState<ScopedActionId | null>(null);
 
+  const [attachments, setAttachments] = useState<UploadMeta[]>([]);
+  const [uploading, setUploading] = useState(false);
+
   const transcriptEnd = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const readB64 = (file: File) => new Promise<string>((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(',')[1] ?? '');
+    r.onerror = () => reject(new Error('read failed'));
+    r.readAsDataURL(file);
+  });
+
+  async function handleFiles(list: FileList | null) {
+    if (!list || !list.length) return;
+    setUploading(true); setError(null);
+    try {
+      const files = await Promise.all(Array.from(list).map(async (f) => ({
+        filename: f.name, mime: f.type || 'application/octet-stream', contentBase64: await readB64(f),
+      })));
+      const out = await bradApi.upload(files, eventId);
+      setAttachments((prev) => [...prev, ...out.uploaded]);
+    } catch (e) { setError((e as Error).message); }
+    finally { setUploading(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
+  }
 
   const refreshObjects = useCallback(async () => {
     try { setObjects((await bradApi.objects()).objects.reverse()); } catch { /* ignore */ }
@@ -112,12 +136,16 @@ export default function BradWorkspace() {
 
   const send = useCallback(async (raw?: string) => {
     const text = (raw ?? input).trim();
-    if (!text || thinking) return;
+    if ((!text && attachments.length === 0) || thinking) return;
     setError(null); setInput('');
-    setMessages((m) => [...m, { id: nextId(), role: 'user', text }]);
+    const docNote = attachments.length
+      ? `Attached documents (entered into the Care Indeed system today): ${attachments.map((a) => a.filename).join(', ')}.\n\n`
+      : '';
+    const shown = text || `Review my ${attachments.length} attached document(s).`;
+    setMessages((m) => [...m, { id: nextId(), role: 'user', text: shown }]);
     setThinking(true);
     try {
-      const ans = await bradApi.ask(text);
+      const ans = await bradApi.ask(`${docNote}${text || 'Organize the attached documents neatly and tell me what is needed to prepare the evidence packet.'}`);
       setMessages((m) => [...m, {
         id: nextId(), role: 'brad',
         text: ans.blocked ? PHI_BLOCK_MESSAGE : ans.text,
@@ -125,8 +153,9 @@ export default function BradWorkspace() {
       }]);
     } catch (e) {
       setMessages((m) => [...m, { id: nextId(), role: 'brad', text: `Sorry — I hit a problem: ${(e as Error).message}`, synthetic: false, blocked: false }]);
+      setAttachments([]);
     } finally { setThinking(false); }
-  }, [input, thinking]);
+  }, [input, thinking, attachments]);
 
   async function runAction(fn: () => Promise<{ object: GeneratedObject; eventUpdate?: EventMetaResult }>) {
     setError(null); setThinking(true);
@@ -175,6 +204,17 @@ export default function BradWorkspace() {
     <div className="group relative w-full">
       <div className={`absolute -inset-1.5 z-0 rounded-[32px] brad-rainbow-glow blur-xl transition-all duration-500 ${thinking ? 'opacity-100 blur-2xl' : 'opacity-60 group-focus-within:opacity-100'}`} aria-hidden />
       <div className="relative z-10 flex flex-col overflow-hidden rounded-3xl border border-[var(--brad-border)] bg-[var(--brad-surface)] shadow-lg">
+        <input ref={fileInputRef} type="file" multiple className="hidden" aria-label="Upload documents" title="Upload documents" onChange={(e) => void handleFiles(e.target.files)} />
+        {attachments.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 px-4 pt-3">
+            {attachments.map((a) => (
+              <span key={a.id} className="inline-flex items-center gap-1 rounded-full border border-[var(--brad-border)] bg-[var(--brad-surface-2)] px-2 py-0.5 text-xs text-[var(--brad-ink)]">
+                <Paperclip className="h-3 w-3" aria-hidden /> {a.filename}
+                <button type="button" aria-label={`Remove ${a.filename}`} onClick={() => setAttachments((p) => p.filter((x) => x.id !== a.id))} className="ml-0.5 text-[var(--brad-muted)] hover:text-[#C74601]"><X className="h-3 w-3" /></button>
+              </span>
+            ))}
+          </div>
+        )}
         <textarea
           ref={composerRef}
           value={input}
@@ -188,8 +228,8 @@ export default function BradWorkspace() {
         />
         <div className="flex items-center justify-between gap-2 px-4 pb-3 pt-1">
           <div className="flex items-center gap-3 pl-1">
-            <button type="button" disabled aria-label="Attach document (coming soon)" title="Document upload — coming soon" className="cursor-not-allowed text-[var(--brad-muted)] opacity-50">
-              <Paperclip aria-hidden className="h-5 w-5" />
+            <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} aria-label="Attach documents" title="Attach documents" className="text-[var(--brad-muted)] transition hover:text-[#00797D] disabled:opacity-50">
+              {uploading ? <Loader2 aria-hidden className="h-5 w-5 animate-spin" /> : <Paperclip aria-hidden className="h-5 w-5" />}
             </button>
             <span className="mx-1 hidden h-4 w-px bg-[var(--brad-border)] sm:block" />
             <span className="hidden items-center gap-1.5 text-[10px] font-medium uppercase tracking-widest text-[var(--brad-muted)] sm:flex">
@@ -197,7 +237,7 @@ export default function BradWorkspace() {
             </span>
           </div>
           <button
-            type="button" onClick={() => void send()} disabled={!input.trim() || thinking} aria-label="Send to Brad"
+            type="button" onClick={() => void send()} disabled={(!input.trim() && attachments.length === 0) || thinking} aria-label="Send to Brad"
             className="inline-flex items-center gap-2 rounded-xl bg-[#E56E2E] px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-[#C74601] disabled:cursor-not-allowed disabled:bg-[var(--brad-surface-2)] disabled:text-[var(--brad-muted)] disabled:shadow-none"
           >
             {thinking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Run with Brad

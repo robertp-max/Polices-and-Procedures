@@ -8,6 +8,7 @@ import { approvalRegistry } from '../ia/brad/superadminApprovals.js';
 import { superAdminAudit } from '../ia/brad/superadminAudit.js';
 import { planCloudChangeSet } from '../ia/brad/cloudChangeSets.js';
 import { getDemoSnapshot, listDemoEventIds } from '../ia/brad/demoSnapshot.js';
+import { getUploadStore } from '../ia/brad/uploads.js';
 import type { BradObjectType, CloudChangeOp, SuperAdminPermission } from '../ia/brad/types.js';
 import {
   builderGenerateOtp, builderCreatePermission, builderCreateRole, builderMassAddDryRun,
@@ -130,6 +131,29 @@ export function createBradRouter(): Router {
     const snapshot = getDemoSnapshot(req.body?.eventId);
     const out = svc.generateQapiMinutesDraft(snapshot, actor);
     res.json(out);
+  }));
+
+  // Document upload (base64 JSON). dateCreatedInSystem = ingest time → authoritative
+  // for compliance scope (late-reported events are dated when entered).
+  router.post('/upload', asyncH(async (req, res) => {
+    const actor = requireActor(req);
+    const files = Array.isArray(req.body?.files) ? req.body.files : (req.body?.filename ? [req.body] : []);
+    if (!files.length) throw new ApiError('validation_error', 'No files provided.', 400);
+    const store = getUploadStore();
+    const saved = files.map((f: { filename?: string; mime?: string; contentBase64?: string }) => {
+      if (!f?.filename || !f?.contentBase64) throw new ApiError('validation_error', 'Each file needs filename + contentBase64.', 400);
+      return store.save({
+        filename: String(f.filename), mime: f.mime, contentBase64: String(f.contentBase64),
+        uploadedByUserId: actor.userId, eventId: req.body?.eventId ? String(req.body.eventId) : undefined,
+      });
+    });
+    res.json({ uploaded: saved.map(({ storedPath: _p, ...m }) => m) });
+  }));
+
+  router.get('/uploads', asyncH(async (req, res) => {
+    requireActor(req);
+    const eventId = req.query.eventId ? String(req.query.eventId) : undefined;
+    res.json({ uploads: getUploadStore().list(eventId).map(({ storedPath: _p, ...m }) => m) });
   }));
 
   // List / view generated objects.

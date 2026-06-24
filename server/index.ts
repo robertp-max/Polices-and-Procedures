@@ -48,6 +48,10 @@ app.use(
   express.json({ limit: '32mb' }),
 );
 
+// Brad document uploads carry a base64-encoded file in a JSON body — allow a
+// larger limit on ONLY this route (mounted before the global 4mb parser).
+app.use('/api/brad/upload', express.json({ limit: '32mb' }));
+
 app.use(express.json({ limit: '4mb' })); // signature PNG payloads
 
 // Identity / session must run BEFORE the PEP, the bearer gate, and any
