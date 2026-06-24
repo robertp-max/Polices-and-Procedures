@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { Award, BookOpenCheck, ClipboardCheck, FileSignature, LockKeyhole, Route, ShieldCheck, Stethoscope, UserCheck, type LucideIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneSoftTileClasses, type MetricTileData, type SurfaceCardData } from '../../components';
-import { ToneBadge } from '../../primitives';
+import { Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
 
@@ -290,6 +291,8 @@ const guidanceCards = [
 
 export function JourneyOverviewScreen() {
   const navigate = useNavigate();
+  // V1 parity audit fix: mirrors JourneyHomePage (employee picker stub, phase progress, GAO/ROLE/ANN modules from src/policy/journey/data, nav to module-player/supervisor).
+  const [learner, setLearner] = useState('Maria Santos, RN');
 
   const handleOpenModule = (moduleId: string) => {
     navigate(`/journey/module/${encodeURIComponent(moduleId)}`);
@@ -303,6 +306,11 @@ export function JourneyOverviewScreen() {
       data-route="/journey"
       data-template="journey"
     >
+      <div className="text-[10px] text-muted flex gap-3 items-center -mb-2">
+        <span>Learner (V1 parity):</span>
+        <button onClick={() => setLearner('Maria Santos, RN')} className={learner.includes('Maria') ? 'font-medium text-brand-teal' : ''}>Maria Santos, RN</button>
+        <button onClick={() => setLearner('Dani Lopez, HHA')} className={learner.includes('Dani') ? 'font-medium text-brand-teal' : ''}>Dani Lopez, HHA</button>
+      </div>
       <MetricGrid metrics={journeyMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-12">
@@ -365,7 +373,12 @@ export function JourneyOverviewScreen() {
                 Journey modules track GAO, role, supervised-visit, and annual readiness steps for active learners.
               </p>
             </div>
-            <ToneTag tone="orange">GAO-EXAM locked</ToneTag>
+            <div className="flex items-center gap-sm">
+              <ToneTag tone="orange">GAO-EXAM locked</ToneTag>
+              <Button size="sm" variant="secondary" onClick={() => navigate('/journey/v1-journey')}>
+                View Journey v1
+              </Button>
+            </div>
           </div>
 
           <div className="grid gap-md tablet-l:grid-cols-2" role="list">

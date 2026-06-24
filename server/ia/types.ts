@@ -6,7 +6,7 @@
      - structured response contract returned over the API
 
    Frontend mirrors the response contract in
-   `src/policy/pages/iAdministrator/lib/responseTypes.ts`.
+   `src/policy/brad/*` (ported V1 iAdministrator logic) and server/ia/response shaping.
    ═══════════════════════════════════════════════════════════════ */
 
 export type DocumentType = 'policy' | 'form' | 'appendix' | 'workflow';

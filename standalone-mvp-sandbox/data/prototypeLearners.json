@@ -1,0 +1,86 @@
+[
+  {
+    "id": "passing",
+    "name": "Passing learner",
+    "profile": { "legalName": true, "cnaNumber": true },
+    "gates": { "providerOverride": true, "onlineCapAcknowledgement": true, "theoryActivity": true, "interaction": true, "activeTimeMet": true, "manualReviewHoldCleared": true, "finalExamPassed": true, "affidavitComplete": true, "certificateFieldsPopulated": true, "adminHoldClear": true },
+    "optionalClinical": { "hub": true, "skills": true, "confidence": true, "documentation": true, "help": true }
+  },
+  {
+    "id": "missing-legal-name",
+    "name": "Missing legal name learner",
+    "profile": { "legalName": false, "cnaNumber": true },
+    "gates": { "providerOverride": true, "onlineCapAcknowledgement": true, "theoryActivity": true, "interaction": true, "activeTimeMet": true, "manualReviewHoldCleared": true, "finalExamPassed": true, "affidavitComplete": true, "certificateFieldsPopulated": false, "adminHoldClear": true },
+    "optionalClinical": { "hub": false, "skills": false, "confidence": false, "documentation": false, "help": false }
+  },
+  {
+    "id": "missing-cna-number",
+    "name": "Missing CNA number learner",
+    "profile": { "legalName": true, "cnaNumber": false },
+    "gates": { "providerOverride": true, "onlineCapAcknowledgement": true, "theoryActivity": true, "interaction": true, "activeTimeMet": true, "manualReviewHoldCleared": true, "finalExamPassed": true, "affidavitComplete": true, "certificateFieldsPopulated": false, "adminHoldClear": true },
+    "optionalClinical": { "hub": false, "skills": false, "confidence": false, "documentation": false, "help": false }
+  },
+  {
+    "id": "skipped-online-cap",
+    "name": "Skipped online cap acknowledgement learner",
+    "profile": { "legalName": true, "cnaNumber": true },
+    "gates": { "providerOverride": true, "onlineCapAcknowledgement": false, "theoryActivity": true, "interaction": true, "activeTimeMet": true, "manualReviewHoldCleared": true, "finalExamPassed": true, "affidavitComplete": true, "certificateFieldsPopulated": true, "adminHoldClear": true },
+    "optionalClinical": { "hub": false, "skills": false, "confidence": false, "documentation": false, "help": false }
+  },
+  {
+    "id": "skipped-theory",
+    "name": "Skipped theory activity learner",
+    "profile": { "legalName": true, "cnaNumber": true },
+    "gates": { "providerOverride": true, "onlineCapAcknowledgement": true, "theoryActivity": false, "interaction": true, "activeTimeMet": true, "manualReviewHoldCleared": true, "finalExamPassed": true, "affidavitComplete": true, "certificateFieldsPopulated": true, "adminHoldClear": true },
+    "optionalClinical": { "hub": true, "skills": true, "confidence": false, "documentation": false, "help": false }
+  },
+  {
+    "id": "skipped-interaction",
+    "name": "Skipped interaction learner",
+    "profile": { "legalName": true, "cnaNumber": true },
+    "gates": { "providerOverride": true, "onlineCapAcknowledgement": true, "theoryActivity": true, "interaction": false, "activeTimeMet": true, "manualReviewHoldCleared": true, "finalExamPassed": true, "affidavitComplete": true, "certificateFieldsPopulated": true, "adminHoldClear": true },
+    "optionalClinical": { "hub": false, "skills": false, "confidence": false, "documentation": false, "help": false }
+  },
+  {
+    "id": "insufficient-active-time",
+    "name": "Insufficient active-time learner",
+    "profile": { "legalName": true, "cnaNumber": true },
+    "gates": { "providerOverride": true, "onlineCapAcknowledgement": true, "theoryActivity": true, "interaction": true, "activeTimeMet": false, "manualReviewHoldCleared": false, "finalExamPassed": true, "affidavitComplete": true, "certificateFieldsPopulated": true, "adminHoldClear": true },
+    "optionalClinical": { "hub": false, "skills": false, "confidence": false, "documentation": false, "help": false }
+  },
+  {
+    "id": "failed-exam",
+    "name": "Failed exam learner",
+    "profile": { "legalName": true, "cnaNumber": true },
+    "gates": { "providerOverride": true, "onlineCapAcknowledgement": true, "theoryActivity": true, "interaction": true, "activeTimeMet": true, "manualReviewHoldCleared": true, "finalExamPassed": false, "affidavitComplete": true, "certificateFieldsPopulated": true, "adminHoldClear": true },
+    "optionalClinical": { "hub": false, "skills": false, "confidence": false, "documentation": false, "help": false }
+  },
+  {
+    "id": "missing-affidavit",
+    "name": "Missing affidavit learner",
+    "profile": { "legalName": true, "cnaNumber": true },
+    "gates": { "providerOverride": true, "onlineCapAcknowledgement": true, "theoryActivity": true, "interaction": true, "activeTimeMet": true, "manualReviewHoldCleared": true, "finalExamPassed": true, "affidavitComplete": false, "certificateFieldsPopulated": true, "adminHoldClear": true },
+    "optionalClinical": { "hub": false, "skills": false, "confidence": false, "documentation": false, "help": false }
+  },
+  {
+    "id": "admin-hold",
+    "name": "Admin hold learner",
+    "profile": { "legalName": true, "cnaNumber": true },
+    "gates": { "providerOverride": true, "onlineCapAcknowledgement": true, "theoryActivity": true, "interaction": true, "activeTimeMet": true, "manualReviewHoldCleared": true, "finalExamPassed": true, "affidavitComplete": true, "certificateFieldsPopulated": true, "adminHoldClear": false },
+    "optionalClinical": { "hub": true, "skills": false, "confidence": false, "documentation": false, "help": false }
+  },
+  {
+    "id": "optional-clinical-skipped",
+    "name": "Optional clinical skipped learner",
+    "profile": { "legalName": true, "cnaNumber": true },
+    "gates": { "providerOverride": true, "onlineCapAcknowledgement": true, "theoryActivity": true, "interaction": true, "activeTimeMet": true, "manualReviewHoldCleared": true, "finalExamPassed": true, "affidavitComplete": true, "certificateFieldsPopulated": true, "adminHoldClear": true },
+    "optionalClinical": { "hub": false, "skills": false, "confidence": false, "documentation": false, "help": false }
+  },
+  {
+    "id": "mobile-path",
+    "name": "Mobile-path learner",
+    "profile": { "legalName": true, "cnaNumber": true },
+    "gates": { "providerOverride": true, "onlineCapAcknowledgement": true, "theoryActivity": true, "interaction": true, "activeTimeMet": true, "manualReviewHoldCleared": true, "finalExamPassed": true, "affidavitComplete": true, "certificateFieldsPopulated": true, "adminHoldClear": true },
+    "optionalClinical": { "hub": false, "skills": false, "confidence": false, "documentation": false, "help": false }
+  }
+]

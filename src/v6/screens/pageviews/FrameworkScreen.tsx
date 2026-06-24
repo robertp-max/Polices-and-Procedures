@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { ArrowRight, BookOpen, ClipboardCheck, FileCheck2, Landmark, Layers3, Network, ShieldCheck, Workflow, type LucideIcon } from 'lucide-react';
 import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, type MetricTileData, type SurfaceCardData } from '../../components';
-import { Button, ToneBadge } from '../../primitives';
+import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/data/policyCorpus';
@@ -186,8 +186,7 @@ const alignmentCards: readonly (readonly [string, string, string, Tone])[] = [
 
 export function FrameworkScreen() {
   const [activeTab, setActiveTab] = useState<'taxonomy' | 'mapping'>('taxonomy');
-  const [viewMode, setViewMode] = useState<'grid' | 'tree' | 'heat'>('grid');
-  
+
 
   return (
     <div className="grid gap-xl" data-hash-id="framework" data-route="/framework" data-template="framework">
@@ -232,17 +231,6 @@ export function FrameworkScreen() {
                 <p className="max-w-content text-sm text-muted">
                   Top-level taxonomy tiles show domain ownership, policy scope, ACHC anchor density, and survey-readiness signals.
                 </p>
-              </div>
-              <div className="flex flex-wrap gap-sm" aria-label="Framework view modes">
-                <Button selected={viewMode === 'grid'} size="sm" variant={viewMode === 'grid' ? 'secondary' : 'tertiary'} onClick={() => setViewMode('grid')}>
-                  Grid
-                </Button>
-                <Button selected={viewMode === 'tree'} size="sm" variant={viewMode === 'tree' ? 'secondary' : 'tertiary'} onClick={() => setViewMode('tree')}>
-                  Tree
-                </Button>
-                <Button selected={viewMode === 'heat'} size="sm" variant={viewMode === 'heat' ? 'secondary' : 'tertiary'} onClick={() => setViewMode('heat')}>
-                  Heat
-                </Button>
               </div>
             </div>
 

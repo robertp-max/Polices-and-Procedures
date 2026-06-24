@@ -19,6 +19,16 @@ export const v6Router = createBrowserRouter([
     errorElement: <RouteErrorBoundary />,
     children: [
       { index: true, element: <Navigate replace to="/dashboard" /> },
+
+      // V1 parity redirects for /admin/* and legacy security/identity aliases.
+      // Ensures bare /admin (and old links) resolve to the primary admin landing page,
+      // matching V1 App.tsx behavior.
+      { path: 'admin', element: <Navigate replace to="/admin/user-groups" /> },
+      { path: 'security/identity', element: <Navigate replace to="/admin/user-groups" /> },
+      { path: 'security/identity/user-groups', element: <Navigate replace to="/admin/user-groups" /> },
+      { path: 'security/identity/permission-catalog', element: <Navigate replace to="/admin/permissions" /> },
+      { path: 'security/identity/user-assignments', element: <Navigate replace to="/admin/users" /> },
+
       ...shellRoutes.map((route) => ({
         path: routeToChildPath(route.path),
         element: isRepresentativeRoute(route) ? <RepresentativeScreen route={route} /> : <V6RoutePlaceholder route={route} />,

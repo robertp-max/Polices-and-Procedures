@@ -8,8 +8,8 @@
  * Usage: npx tsx scripts/verifyBradRealLifeScenarios.ts
  * Exits 0 on all pass, 1 on any failure. Prints detailed report.
  *
- * NOTE ON FRONTEND: The iAdministrator UI/demo (src/policy/pages/iAdministrator/*) and mockBradEngine
- * use a *different* classifyScenario from src/policy/pages/iAdministrator/lib/classifyScenario.ts
+ * NOTE ON FRONTEND: The iAdministrator UI/demo (purged; V1 logic ported to src/policy/brad/) and mockBradEngine
+ * use a *different* classifyScenario from src/policy/brad/classifyScenario.ts
  * (backed by complianceActionMap.ts with only 11 scenarioIds and different structure).
  * Server changes do not automatically affect the in-app Brad demo UI. This script verifies the
  * server path (per original task files). See log and final report for mismatch details + paths.

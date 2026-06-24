@@ -159,7 +159,7 @@ export const FALLBACK_BOARD_LANES: readonly BoardLaneData[] = [
       { chips: ['Infection', 'Action'], due: 'Jun 18', id: 'EVT-REV-02', owner: 'Linda Patel', progress: 42, title: 'Q1 Infection Control Review', tone: 'amber', meta: 'Surveillance log, hand hygiene trends, PPE compliance', awaitingType: 'evidence', missing: 'log upload' },
       { chips: ['Incident', 'CAPA'], due: 'Jun 19', id: 'EVT-REV-03', owner: 'Angela Martinez', progress: 55, title: 'Incident / Adverse Event Review', tone: 'orange', meta: 'Root cause analysis + corrective action evidence', awaitingType: 'action', missing: 'RCA sign-off' },
       { chips: ['Grievance', 'Evidence'], due: 'Jun 22', id: 'EVT-REV-04', owner: 'Angela Martinez', progress: 28, title: 'Complaint / Grievance Investigation', tone: 'amber', meta: 'Investigation notes, resolution evidence, follow-up', awaitingType: 'evidence', missing: '3 docs' },
-      { chips: ['Audit', 'Action'], due: 'Jun 20', id: 'EVT-REV-05', owner: 'Nicole Foster', progress: 71, title: 'Medication Reconciliation Audit Review', tone: 'amber', meta: 'Five chart sample + exception findings', awaitingType: 'action', missing: 'DON review' },
+      { chips: ['Audit', 'Action'], due: 'Jun 20', id: 'EVT-REV-05', owner: 'Nicole Foster', progress: 71, title: 'Medication Reconciliation Audit Review', tone: 'amber', meta: 'Chart review + exception findings', awaitingType: 'action', missing: 'DON review' },
     ],
   },
   {
@@ -199,7 +199,7 @@ export const FALLBACK_EVENT_LANES: readonly BoardLaneData[] = [
       { chips: ['Audit', 'Documentation'], due: 'Jun 23', id: 'EVT-DA-01', owner: 'Nicole Foster', domain: 'QAPI / Documentation', progress: 65, title: 'Documentation Alignment Audit', tone: 'amber', meta: 'Cross-policy documentation vs regulatory alignment' },
       { chips: ['QAPI', 'Evidence'], due: 'Jun 21', id: 'EVT-REV-01', owner: 'Nicole Foster', domain: 'QAPI', progress: 65, title: 'Q2 QAPI Review', tone: 'amber', meta: 'Quarterly indicators, adverse events summary, CAPA tracker', awaitingType: 'evidence', missing: '2 artifacts' },
       { chips: ['Visit', 'CL-SD-025'], due: 'Jun 22', id: 'EVT-VIS-DOC', owner: 'Nicole Foster', progress: 71, title: 'Visit Documentation Audit', tone: 'teal' },
-      { chips: ['Audit', 'Action'], due: 'Jun 20', id: 'EVT-REV-05', owner: 'Nicole Foster', domain: 'QAPI', progress: 71, title: 'Medication Reconciliation Audit Review', tone: 'amber', meta: 'Five chart sample + exception findings', awaitingType: 'action', missing: 'DON review' },
+      { chips: ['Audit', 'Action'], due: 'Jun 20', id: 'EVT-REV-05', owner: 'Nicole Foster', domain: 'QAPI', progress: 71, title: 'Medication Reconciliation Audit Review', tone: 'amber', meta: 'Chart review + exception findings', awaitingType: 'action', missing: 'DON review' },
     ],
     count: 4,
     title: 'At Risk',
@@ -238,7 +238,7 @@ export const FALLBACK_TASK_LANES: readonly BoardLaneData[] = [
   {
     cards: [
       { chips: ['Recert'], due: 'Jun 19', id: 'MT-204', owner: 'Maria Gonzalez, RN', meta: 'Robert Hale - HH-88402', progress: 82, title: 'Review recert visit cadence', tone: 'teal' },
-      { chips: ['Audit'], due: 'Jun 20', id: 'MT-205', owner: 'Nicole Foster', meta: 'Five chart sample', progress: 71, title: 'Medication reconciliation audit', tone: 'teal' },
+      { chips: ['Audit'], due: 'Jun 20', id: 'MT-205', owner: 'Nicole Foster', meta: 'Chart review', progress: 71, title: 'Medication reconciliation audit', tone: 'teal' },
     ],
     count: 10,
     title: 'Clinical Review',
@@ -275,6 +275,7 @@ export const FALLBACK_CES_CALENDAR_EVENTS: readonly CesCalendarEvent[] = [
   { day: 11, label: 'Q2 QAPI committee and patient-experience review', owner: 'Nicole Foster', progress: 70, tone: 'teal', month: 6, bundleCategory: 'QAPI / Governance', bundleName: 'Q2 QAPI committee and patient-experience review', recurrencePattern: 'Second Thursday' },
 ];
 
+/** @deprecated for tests only — runtime evidence/audit now always use real V3 seed (or reg fallback); never these in UI screens. */
 export const FALLBACK_EVIDENCE_ROWS: readonly EvidenceRow[] = [
   ['Signed policy packet', 'GV-GB-001', 'EVIDENCE_LOCKED', 'teal'],
   ['Meeting minutes', 'GV-FM-005', 'PENDING_UPLOAD', 'orange'],
@@ -284,6 +285,7 @@ export const FALLBACK_EVIDENCE_ROWS: readonly EvidenceRow[] = [
   ['Survey rollup export', 'AU-2026-0618', 'EXPORTED', 'teal'],
 ] as const;
 
+/** @deprecated for tests only — runtime evidence/audit now always use real V3 seed (or reg fallback); never these in UI screens. */
 export const FALLBACK_AUDIT_ROWS: readonly AuditRow[] = [
   ['QAPI Committee Review Packet', 'QA-WF-03', 'ready to certify', 'teal'],
   ['Governing Body minutes signature', 'GV-FM-005', 'pending approval', 'orange'],
@@ -301,7 +303,7 @@ export const FALLBACK_REPORT_METRICS: readonly MetricTileData[] = [
 
 export const FALLBACK_REPORT_CARDS: readonly { body: string; progress: number; status: string; title: string; tone: Tone }[] = [
   {
-    body: 'Sprint 12 has 33 cards, 4 blockers, and 9 cards ready for certification.',
+    body: 'Current Sprint has 40 cards (seed), 4 blockers, and readiness cards ready for certification.',
     progress: 84,
     status: 'ready',
     title: 'Sprint readiness',
@@ -522,7 +524,7 @@ export function buildTaskLanes(input?: { units?: readonly ExecutionUnit[] }): re
 
 /** Build calendar events from V3 seeds + regulatory project. Real dates from dueDate/reg.date (source-correct), correct status/owner.
  *  Called by RepresentativeScreens CalendarScreen (ces mode). Dates NOT overridden in UI.
- *  Seed dates now guaranteed mostly Tue/Thu, <=4/day. See V3_CES_SeedData for source.
+ *  V2: full year (Jan-Dec) Tue/Thu, <=4 per day from real V3 seed (expanded with canonical patterns from workflows/reg events).
  */
 export function buildCalendarEvents(input?: { units?: readonly ExecutionUnit[] }): readonly CesCalendarEvent[] {
   const units = ((input && (input as any).units) || V3_ExecutionUnitsSeed || []) as readonly ExecutionUnit[];
@@ -591,7 +593,9 @@ export function buildEvidenceRows(input?: { snapshot?: CesSnapshot; units?: read
     });
     return finalize(rows, validateEvidenceRows, 'evidenceRows');
   }
-  return [...FALLBACK_EVIDENCE_ROWS];
+  // Real-only: derive minimal from regulatory seeds (no FALLBACK fakes for evidence rows)
+  const regDerived: EvidenceRow[] = (V3_REGULATORY_EVENTS || []).slice(0, 3).map((re: any, i: number) => ['Reg evidence: ' + String((re && re.title) || 'item').slice(0,20), String((re && re.id) || `EVT-${i}`), 'PENDING_UPLOAD', 'orange'] as const);
+  return regDerived.length ? finalize(regDerived, validateEvidenceRows, 'evidenceRows') : [];
 }
 
 /** Build audit rows. Seed-driven from V3 ExecutionUnits (real seed data) or snapshot for audit views.
@@ -607,7 +611,9 @@ export function buildAuditRows(input?: { snapshot?: CesSnapshot; units?: readonl
       return [String(u.title || '').slice(0, 30) || 'Audit packet', u.workflowId || u.id || 'QA-WF', st, tn] as AuditRow;
     }), validateAuditRows, 'auditRows');
   }
-  return [...FALLBACK_AUDIT_ROWS];
+  // Real-only: derive minimal from regulatory seeds (no FALLBACK fakes for audit rows)
+  const regAudit: AuditRow[] = (V3_REGULATORY_EVENTS || []).slice(0, 3).map((re: any, i: number) => ['Audit: ' + String((re && re.title) || 'packet').slice(0,22), String((re && re.id) || `EVT-A-${i}`), 'ready to certify', 'teal'] as const);
+  return regAudit.length ? finalize(regAudit, validateAuditRows, 'auditRows') : [];
 }
 
 /** Build report metrics. Derives directly from snapshot sprintMetrics (Phase 2 style already). */
@@ -639,9 +645,10 @@ export function buildReportCards(input?: { units?: readonly ExecutionUnit[] }): 
   const lockedCount = sprint.completed;
   const total = sprint.total || units.length;
   const readinessPct = total > 0 ? Math.round(((sprint.readyToCertify + sprint.completed) / total) * 100) : 80;
+  const sprintLabel = 'Current Sprint';
   const cards = [
     {
-      body: `Sprint 12 has ${sprint.total} cards, ${sprint.blocked} blockers, and ${sprint.readyToCertify} cards ready for certification.`,
+      body: `${sprintLabel} has ${sprint.total} cards, ${sprint.blocked} blockers, and ${sprint.readyToCertify} cards ready for certification.`,
       progress: Math.min(95, Math.max(60, readinessPct)),
       status: 'ready',
       title: 'Sprint readiness',

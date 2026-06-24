@@ -5,7 +5,7 @@ export function buildWorkflowSwimlaneRoute(workflowId: string, params: { eventId
   if (params.eventId) query.set('eventId', params.eventId);
   if (params.taskId) query.set('taskId', params.taskId);
   const suffix = query.toString();
-  const path = `/workflows/${encodeURIComponent(workflowId)}-swimlane`;
+  const path = `/workflows/${encodeURIComponent(workflowId)}/swimlane`;
   return `${path}${suffix ? `?${suffix}` : ''}`;
 }
 

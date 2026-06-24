@@ -245,6 +245,7 @@ export function ModulePlayerScreen() {
     <section
       aria-labelledby="module-player-title"
       className="grid gap-xl"
+      data-group={routeMarker.group}
       data-hash-id={routeMarker.hashId}
       data-route={routeMarker.path}
       data-template={routeMarker.template}

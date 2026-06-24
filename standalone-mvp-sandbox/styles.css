@@ -1,0 +1,263 @@
+:root {
+  --bg: #f6f8fb;
+  --panel: #ffffff;
+  --ink: #172033;
+  --muted: #667085;
+  --line: #d8dee8;
+  --accent: #006b64;
+  --accent-soft: #e6f6f4;
+  --warn: #b54708;
+  --warn-soft: #fff4e5;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
+  --safe: #067647;
+  --safe-soft: #e7f6ec;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.app-header,
+.app-footer {
+  background: #111827;
+  color: #fff;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  padding: 22px 28px;
+}
+
+.app-footer {
+  padding: 14px 28px;
+  font-size: 13px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 25px;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 18px;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.app-header .eyebrow {
+  color: #71e0d6;
+}
+
+.warning-line {
+  color: #d0d5dd;
+  margin-top: 7px;
+  font-size: 13px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 16px;
+  padding: 18px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.learner-panel,
+.optional-panel {
+  grid-row: span 2;
+}
+
+.panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+
+select {
+  min-width: 220px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 9px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.status-pill,
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-pill {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.badge.safe,
+.status-pass {
+  color: var(--safe);
+  background: var(--safe-soft);
+  border: 1px solid #abefc6;
+}
+
+.badge.block,
+.status-block {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border: 1px solid #fecdca;
+}
+
+.badge.neutral {
+  color: #344054;
+  background: #f2f4f7;
+  border: 1px solid #d0d5dd;
+}
+
+.summary-box,
+.certificate-status,
+.notice {
+  border: 1px solid var(--line);
+  background: #fbfcfe;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.notice {
+  background: var(--accent-soft);
+  border-color: #9fe3db;
+  color: #12413d;
+}
+
+.gate-list,
+.scenario-list,
+.audit-list,
+.activity-grid,
+.blocker-list {
+  display: grid;
+  gap: 8px;
+}
+
+.gate-row,
+.scenario-row,
+.audit-row,
+.activity-row,
+.blocker-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.gate-row small,
+.scenario-row small,
+.audit-row small,
+.activity-row small,
+.blocker-row small {
+  display: block;
+  color: var(--muted);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+.state {
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.state.pass {
+  color: var(--safe);
+  background: var(--safe-soft);
+}
+
+.state.block {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.state.info {
+  color: var(--warn);
+  background: var(--warn-soft);
+}
+
+.blocker-row {
+  border-color: #fecdca;
+  background: #fffafa;
+}
+
+@media (max-width: 860px) {
+  .app-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+
+  .learner-panel,
+  .optional-panel {
+    grid-row: auto;
+  }
+
+  .panel-head {
+    flex-direction: column;
+  }
+
+  select {
+    width: 100%;
+    min-width: 0;
+  }
+}
+

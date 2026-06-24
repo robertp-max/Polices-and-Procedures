@@ -1,0 +1,9 @@
+Γ¥î DESIGNLESS / V6 GATE FAILED:
+
+  [dist] legacy-color in dist\assets\index-DbE9520T.js
+  [dist] banned-weight in dist\assets\index-DbE9520T.js
+  [src] banned-weight in src\v6\screens\pageviews\HelpCenterScreen.tsx
+  [src] banned-weight in src\v6\screens\pageviews\SystemDocsScreen.tsx
+  [src] banned-weight in src\v6\screens\RepresentativeScreens.tsx
+
+5 issue(s). Reused public route paths are allowed; legacy COMPONENTS, colors, CDNs, and banned typography are not.

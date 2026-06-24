@@ -1,6 +1,13 @@
 import { Archive, ClipboardCheck, ClipboardList, FileCheck2, Link2, PenLine, ShieldCheck, Users } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
+import {
+  FORMS_DATASET,
+  type FormRecord,
+  formDomainName,
+  formPoliciesLabel,
+  formStatusFromUsage,
+  formEvidenceFromClassifications,
+} from '@/policy/data/formsLibraryDataset';
 import { DataTable, MetricGrid, SurfaceCard, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, ToneBadge } from '../../primitives';
 
@@ -18,57 +25,12 @@ interface FormsLibraryCard extends SurfaceCardData {
   meta: readonly [string, string][];
 }
 
-// Domain code → human name. Verified against FORMS_DATASET domainCode values
-// (EN, GV, HR, CL, QA, RM, OP, FN, CO, IT, IS). Unknown codes fall back to the code itself.
-const DOMAIN_NAMES: Record<string, string> = {
-  EN: 'Enterprise',
-  GV: 'Governance',
-  HR: 'Human Resources',
-  CL: 'Clinical',
-  QA: 'Quality',
-  RM: 'Risk Management',
-  OP: 'Operations',
-  FN: 'Finance',
-  IT: 'IT & Security',
-  IS: 'IT & Security',
-  CO: 'Compliance',
-};
-
-const domainName = (code: string): string => DOMAIN_NAMES[code] ?? code;
-
-// Linked-policy summary. "ALL (…)" sentinels pass through verbatim; otherwise a real count.
-const linkedPoliciesLabel = (policies: readonly string[]): string => {
-  const first = policies[0] ?? '';
-  if (first.startsWith('ALL')) return first;
-  const count = policies.length;
-  return count === 1 ? '1 policy' : `${count} policies`;
-};
-
-// Status derived from the real `usage` field (whether the artifact is mandatory).
-const statusFromUsage = (usage: string): string => {
-  switch (usage) {
-    case 'Required':
-      return 'active';
-    case 'Conditional':
-      return 'pending';
-    case 'Optional':
-      return 'draft';
-    default:
-      return usage;
-  }
-};
-
-// Evidence posture derived from real classifications: audit-critical artifacts are
-// validated evidence; everything else is informational.
-const evidenceFromClassifications = (classifications: readonly string[]): string =>
-  classifications.includes('audit_critical') ? 'validated' : 'info';
-
 const toRow = (record: FormRecord): FormLibraryRow => ({
-  domain: domainName(record.domainCode),
-  evidence: evidenceFromClassifications(record.classifications),
+  domain: formDomainName(record.domainCode),
+  evidence: formEvidenceFromClassifications(record.classifications),
   formId: record.id,
-  linkedPolicies: linkedPoliciesLabel(record.policies),
-  status: statusFromUsage(record.usage),
+  linkedPolicies: formPoliciesLabel(record.policies),
+  status: formStatusFromUsage(record.usage),
   title: record.name,
   type: record.type,
 });

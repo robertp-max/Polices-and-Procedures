@@ -1,7 +1,7 @@
 import { Layers, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { MetricGrid, DataTable, SurfaceCard, type MetricTileData, type SurfaceCardData, type DataTableColumn } from '../../components';
-import { buildSeedSnapshot } from '@/policy/onboarding-v2/store/seed';
+import { useOnboardingV2Store } from '@/policy/onboarding-v2';
 import type { OnboardingExecutionBatch } from '@/policy/onboarding-v2';
 
 interface BatchRow extends Record<string, string> {
@@ -13,16 +13,6 @@ interface BatchRow extends Record<string, string> {
   created: string;
 }
 
-const snap = buildSeedSnapshot();
-const totalB = snap.batches.length;
-const activeB = snap.batches.filter((b: any) => !String(b.status||'').toLowerCase().includes('complete')).length;
-const doneB = totalB - activeB;
-const metrics = [
-  { label: 'Total Batches', value: String(totalB), helper: 'Created since transition (from seed)', tone: 'teal' },
-  { label: 'Active Batches', value: String(activeB), helper: 'Currently processing', tone: 'orange' },
-  { label: 'Completed Batches', value: String(doneB), helper: 'All subjects activated', tone: 'green' },
-] satisfies readonly MetricTileData[];
-
 const columns: readonly DataTableColumn<BatchRow>[] = [
   { key: 'batchId', label: 'Batch ID' },
   { key: 'trigger', label: 'Batch Trigger' },
@@ -32,11 +22,9 @@ const columns: readonly DataTableColumn<BatchRow>[] = [
   { key: 'status', label: 'Batch State', status: true },
 ];
 
-// Real onboarding batch records from seed/store snapshot (buildSeedSnapshot).
-// This wires the preserved logic per V6 plan (transitive from v6 screen import; no tsconfig.app change).
-function mapBatchToRow(b: OnboardingExecutionBatch): BatchRow {
+// Helper (no snap dep; snap passed in)
+function mapBatchToRow(b: OnboardingExecutionBatch, units: any[]): BatchRow {
   const triggerType = (b.triggerType as string) || (b.triggerPayload && (b.triggerPayload as any).type) || '—';
-  const units = snap.units.filter((u: any) => u.batchId === b.id);
   const completedCount = units.filter((u: any) => u.status === 'Completed').length;
   const total = units.length || 1;
   const statusRaw = (b.status || 'InProgress').toLowerCase();
@@ -53,7 +41,6 @@ function mapBatchToRow(b: OnboardingExecutionBatch): BatchRow {
     status: uiStatus,
   };
 }
-const rows: readonly BatchRow[] = snap.batches.map(mapBatchToRow);
 
 const statsCards = [
   {
@@ -76,6 +63,20 @@ const statsCards = [
 
 export function OnboardingV2BatchesScreen() {
   const navigate = useNavigate();
+  const snap = useOnboardingV2Store(s => s.snap);
+  const totalB = snap.batches.length;
+  const activeB = snap.batches.filter((b: any) => !String(b.status||'').toLowerCase().includes('complete')).length;
+  const doneB = totalB - activeB;
+  const metrics = [
+    { label: 'Total Batches', value: String(totalB), helper: 'Created since transition (from seed)', tone: 'teal' },
+    { label: 'Active Batches', value: String(activeB), helper: 'Currently processing', tone: 'orange' },
+    { label: 'Completed Batches', value: String(doneB), helper: 'All subjects activated', tone: 'green' },
+  ] satisfies readonly MetricTileData[];
+
+  const rows: readonly BatchRow[] = snap.batches.map((b: OnboardingExecutionBatch) =>
+    mapBatchToRow(b, snap.units.filter((u: any) => u.batchId === b.id))
+  );
+
   const handleRowClick = (row: BatchRow) => {
     const id = row.batchId;
     if (id) navigate(`/onboarding-v2/batches/${encodeURIComponent(id)}`);

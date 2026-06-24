@@ -3,7 +3,7 @@
  * CES one-pass — View Projections tests (1.3)
  *
  * Pure build functions + FALLBACK coverage for boardLanes, eventLanes, taskLanes,
- * calendarEvents, evidenceRows, auditRows, reportMetrics.
+ * calendarEvents, evidenceRows, auditRows, reportMetrics, reportCards, reportTrendBars (Agent 21).
  *
  * Uses V3 seeds for seed-driven path; exercises fallback.
  * Matches shapes from RepresentativeScreens / pageview screens.
@@ -20,6 +20,8 @@ import {
   buildAuditRows,
   buildReportMetrics,
   buildSprintSummary,
+  buildReportCards,
+  buildReportTrendBars,
   getControlFromParams,
   getBucketFromParams,
   FALLBACK_BOARD_LANES,
@@ -29,6 +31,8 @@ import {
   FALLBACK_EVIDENCE_ROWS,
   FALLBACK_AUDIT_ROWS,
   FALLBACK_REPORT_METRICS,
+  FALLBACK_REPORT_CARDS,
+  FALLBACK_REPORT_BARS,
 } from './cesViewProjections';
 import { V3_ExecutionUnitsSeed } from './data/V3_CES_SeedData';
 

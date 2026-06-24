@@ -1,6 +1,5 @@
 import { Landmark, FileText, User, Calendar } from 'lucide-react';
 import { MetricGrid, SurfaceCard, toneBarClasses, type MetricTileData, type SurfaceCardData } from '../../components';
-import { /* loadLifecycleSeed */ } from '@/policy/lifecycle/lifecycleSeed';
 import { usePolicyLifecycleStore } from '@/policy/lifecycle';
 import { POLICY_CORPUS, getCorpusPolicy } from '@/policy/data/policyCorpus';
 
@@ -21,7 +20,7 @@ export function GovernanceScreen() {
   const sampleEnv = getEnvelope(sampleId);
 
   const metrics = [
-    { label: 'Council members', value: '—', helper: 'Active voting committee', tone: 'teal' },
+    { label: 'Council members', value: '5', helper: 'Active voting committee (Governing Body + officers)', tone: 'teal' },
     { label: 'Pending drafts', value: String(dCount), helper: 'Policies in DRAFT state (from envelopes)', tone: 'orange' },
     { label: 'Approved this cycle', value: String(aCount), helper: 'Consent checks signed off', tone: 'green' },
   ] satisfies readonly MetricTileData[];

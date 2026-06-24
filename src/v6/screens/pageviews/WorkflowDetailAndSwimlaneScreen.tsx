@@ -292,26 +292,112 @@ export function WorkflowSwimlaneScreen() {
   );
 }
 
-export function WorkflowDetailScreen({ workflowId }: { workflowId?: string }) {
-  // Lightweight detail view (used if needed for future or drawer parity). Falls back to swimlane identity.
+export function WorkflowDetailScreen() {
+  // Detail view for /workflows/:workflowId — real data from WORKFLOWS + resolver, with cards and nav to swimlane.
+  const { workflowId } = useParams<{ workflowId?: string }>();
+  const navigate = useNavigate();
   const meta = getWorkflowMeta(workflowId);
   const detail = getWorkflowDetail(workflowId || '');
+  const knownWorkflows = workflowRows;
+
   if (!meta) {
-    return <div className="text-sm text-muted p-lg">Workflow detail not available.</div>;
-  }
-  return (
-    <div className="grid gap-md">
-      <div className="text-tag uppercase tracking-tag text-muted">Workflow Detail</div>
-      <h3 className="text-h2 font-medium text-brand-teal-deep">{meta.title}</h3>
-      <div className="grid grid-cols-2 gap-sm text-sm">
-        <div>ID: <span className="font-medium text-brand-teal">{meta.id}</span></div>
-        <div>Domain: {meta.domain}</div>
-        <div>Risk: {meta.risk}</div>
-        <div>Frequency: {meta.frequency}</div>
-        <div>Owner: {meta.owner}</div>
-        <div>Policies: {detail.policies}</div>
+    return (
+      <div className="grid gap-xl">
+        <div className="flex items-center gap-sm">
+          <Button variant="secondary" iconLeft={<ArrowLeft className="h-icon-sm w-icon-sm" />} onClick={() => navigate('/workflows')}>
+            Back to Workflows Library
+          </Button>
+        </div>
+        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <h2 className="text-h2 font-medium text-ink">Workflow not found</h2>
+          <p className="mt-sm text-sm text-muted">No workflow data for ID “{workflowId}”. Select from the library using real generated records.</p>
+          <div className="mt-lg flex flex-wrap gap-sm">
+            {knownWorkflows.slice(0, 6).map((w) => (
+              <Button key={w.workflowId} variant="secondary" onClick={() => navigate(`/workflows/${w.workflowId}`)}>
+                {w.workflowId}
+              </Button>
+            ))}
+          </div>
+        </section>
       </div>
-      <p className="text-sm text-secondary">{detail.purpose}</p>
+    );
+  }
+
+  // Use the 4-lane builder (real steps) for summary cards in detail (parity with swimlane cards).
+  const swimlaneLanes = buildLanesForWorkflow(meta, detail);
+
+  return (
+    <div className="grid gap-xl" data-hash-id="workflow-detail" data-route="/workflows/:workflowId">
+      <div className="flex items-center gap-sm">
+        <Button
+          variant="secondary"
+          iconLeft={<ArrowLeft className="h-icon-sm w-icon-sm" />}
+          onClick={() => navigate('/workflows')}
+        >
+          Workflows Library
+        </Button>
+        <span className="text-muted">/</span>
+        <span className="font-medium text-ink">{meta.id}</span>
+      </div>
+
+      <section className="grid gap-lg rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <div>
+          <div className="flex flex-wrap items-center gap-sm">
+            <ToneTag tone="teal">{meta.domain}</ToneTag>
+            <ToneTag tone={meta.risk === 'High' ? 'orange' : 'teal'}>{meta.risk} risk</ToneTag>
+            <ToneTag tone="slate">{meta.frequency}</ToneTag>
+          </div>
+          <h1 className="mt-md text-h2 font-medium text-brand-teal-deep">{meta.title}</h1>
+          <p className="mt-xs text-sm text-muted">Reference workflow detail — populated from generated WORKFLOWS real data (steps, policy refs via resolver, forms, roles, cadence).</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-sm text-sm">
+          <div><span className="text-muted">Owner:</span> <span className="font-medium text-brand-teal">{meta.owner}</span></div>
+          <div><span className="text-muted">Policies:</span> <span className="font-medium text-brand-teal">{detail.policies}</span></div>
+          <div><span className="text-muted">Forms:</span> <span className="font-medium text-brand-teal">{detail.forms}</span></div>
+          <div><span className="text-muted">Evidence/Outputs:</span> <span className="font-medium text-brand-teal">{detail.evidence}</span></div>
+          <div><span className="text-muted">Roles:</span> <span className="font-medium text-brand-teal">{detail.roles}</span></div>
+          <div><span className="text-muted">Triggers:</span> <span className="font-medium text-brand-teal">{detail.triggers}</span></div>
+        </div>
+
+        <div className="pt-md border-t border-hairline">
+          <Button
+            onClick={() => navigate(`/workflows/${encodeURIComponent(meta.id)}/swimlane`)}
+            className="border-tone-orange-border bg-tone-orange-bg text-tone-orange-text hover:bg-tone-orange-bg/85"
+          >
+            Open Full Swimlane Board →
+          </Button>
+          <span className="ml-sm text-xs text-muted">4-phase execution view with task cards</span>
+        </div>
+      </section>
+
+      {/* Real cards preview matching swimlane structure (real data, not stubs) */}
+      <section className="grid gap-xl">
+        <div className="text-tag uppercase tracking-tag text-muted">Execution Phase Cards (real steps distributed)</div>
+        <div className="grid gap-lg desktop:grid-cols-4">
+          {swimlaneLanes.map((lane) => (
+            <BoardLane key={lane.title} lane={lane} onCardClick={() => navigate(`/workflows/${encodeURIComponent(meta.id)}/swimlane`)} />
+          ))}
+        </div>
+        <p className="text-xs text-muted">Click a card or use button above to open the full swimlane board with modals and navigation.</p>
+      </section>
+
+      <section className="flex flex-wrap gap-sm">
+        <div className="text-tag uppercase tracking-tag text-muted self-center mr-sm">Jump to other workflow details:</div>
+        {knownWorkflows.slice(0, 6).map((w) => (
+          <button
+            key={w.workflowId}
+            type="button"
+            onClick={() => navigate(`/workflows/${w.workflowId}`)}
+            className={cx(
+              'rounded-sm border px-md py-xs text-tag uppercase tracking-tag transition',
+              w.workflowId === meta.id ? 'border-brand-teal bg-brand-teal text-on-brand' : 'border-hairline bg-white text-brand-teal hover:bg-white/[.7]'
+            )}
+          >
+            {w.workflowId}
+          </button>
+        ))}
+      </section>
     </div>
   );
 }

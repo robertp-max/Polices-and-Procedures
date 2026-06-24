@@ -74,7 +74,7 @@ Key pieces:
 ## Response contract
 
 See `server/ia/types.ts` → `StructuredResponse`. Mirrored on the
-frontend in `src/policy/pages/iAdministrator/lib/responseTypes.ts`.
+frontend Brad logic now ported under `src/policy/brad/` (from V1 iAdministrator).
 Any change must be made in both files.
 
 ---

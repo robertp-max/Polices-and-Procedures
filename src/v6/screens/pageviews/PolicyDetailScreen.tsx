@@ -8,6 +8,7 @@ import { getPolicyContent } from '@/policy/data/policyContentMap';
 import { getCorpusPolicy, DOMAIN_LABEL, type CorpusPolicy } from '@/policy/data/policyCorpus';
 import type { PolicyContent, PolicyContentSection } from '@/policy/types';
 import { openPolicyPrintRoute } from '@/policy/utils/openPolicyPrintRoute';
+import { usePolicyLifecycleStore } from '@/policy/lifecycle';
 
 const routeMarker = {
   group: 'Taxonomy',
@@ -213,17 +214,50 @@ function MarkdownBody({ body }: { body: string }) {
   );
 }
 
-// ─── Section navigation ──────────────────────────────────────────────────
+// ─── Section navigation (hoisted for forward use in exported PolicySections) ─
 function buildAnchor(section: PolicyContentSection): string {
   return `section-${section.id}`;
 }
 
+// Exported for exact reuse (markdown + sections) by lifecycle screens so detail
+// rendering in /library/:policyId exactly matches the content shown in lifecycle detail.
+export { MarkdownBody, cleanInline };
+
+export function PolicySections({ sections }: { sections: readonly PolicyContentSection[] }) {
+  if (!sections || sections.length === 0) return null;
+  return (
+    <div className="grid gap-lg">
+      {sections.map((section, index) => (
+        <section
+          className="scroll-mt-28 rounded-lg border border-card bg-white/[.56] p-lg shadow-rest backdrop-blur-md"
+          id={buildAnchor(section)}
+          key={section.id}
+        >
+          <div className="mb-md flex flex-wrap items-start justify-between gap-md">
+            <div className="flex items-center gap-sm">
+              <span className="grid h-tap w-tap place-items-center rounded-md bg-surface text-brand-teal">
+                <FileText aria-hidden="true" className="h-icon-sm w-icon-sm" />
+              </span>
+              <div>
+                <p className="text-tag uppercase tracking-tag text-muted">Section {index + 1}</p>
+                <h3 className={cx('font-medium text-ink', section.level <= 2 ? 'text-h2' : 'text-h3')}>
+                  {cleanInline(section.title)}
+                </h3>
+              </div>
+            </div>
+          </div>
+          <MarkdownBody body={section.body} />
+        </section>
+      ))}
+    </div>
+  );
+}
+
 // ─── Source-unavailable panel ──────────────────────────────────────────────
-// The corpus + content sources do not carry per-policy linked forms, lifecycle
-// progress, evidence ledgers, or readiness scores. Rather than fabricate them,
-// we keep a tasteful shell that states the data is not in the policy content
-// source. (Header metadata such as status/version lives inside the rendered
-// "Policy Header" section as real content.)
+// The corpus + content sources do not carry per-policy linked forms, full
+// evidence ledgers, or readiness scores. Lifecycle state is now pulled live
+// from usePolicyLifecycleStore (envelope) to ensure detail + lifecycle match.
+// Keep shell for items not in source.
 function SourceUnavailable({
   title,
   description,
@@ -264,6 +298,12 @@ export function PolicyDetailScreen() {
   const corpus: CorpusPolicy | undefined = getCorpusPolicy(policyId);
   const content: PolicyContent | null = getPolicyContent(policyId);
 
+  // Lifecycle state integration (ensures Policy Detail shows live envelope state to match lifecycle views)
+  const getEnvelope = usePolicyLifecycleStore((s) => s.getEnvelope);
+  const envelope = corpus ? getEnvelope(corpus.id) : undefined;
+  const lifecycleState = envelope?.state;
+  const lifecycleDue = envelope ? (() => { const d = new Date(envelope.createdAt); d.setFullYear(d.getFullYear() + 1); return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); })() : null;
+
   const headerId = corpus?.id ?? policyId;
   const headerTitle = corpus?.title ?? content?.sections[0]?.title ?? policyId;
   const domainLabel = corpus ? DOMAIN_LABEL[corpus.domainCode] ?? corpus.domainCode : null;
@@ -273,6 +313,8 @@ export function PolicyDetailScreen() {
     ['Domain', domainLabel ?? '—'],
     ['Tier', corpus?.tier ?? '—'],
     ['Steward (corpus metadata)', corpus?.ownerSteward ?? '—'],
+    ['Lifecycle State', lifecycleState ?? '—'],
+    ['Next Review (from envelope)', lifecycleDue ?? '—'],
   ];
 
   const sections = content ? [...content.sections].sort((a, b) => a.order - b.order) : [];
@@ -339,10 +381,21 @@ export function PolicyDetailScreen() {
                 <div className="flex flex-wrap items-center gap-sm">
                   <ToneTag tone="teal">Policy ID: {headerId}</ToneTag>
                   {isPrintRoute && <ToneTag tone="teal">Print view</ToneTag>}
+                  {lifecycleState && <ToneTag tone="amber">Lifecycle: {lifecycleState}</ToneTag>}
                 </div>
                 <h2 className="text-[28px] font-medium leading-tight text-ink" id="policy-detail-title">
                   {cleanInline(headerTitle)}
                 </h2>
+                {!isPrintRoute && lifecycleState && (
+                  <div className="text-xs">
+                    <Link
+                      to={`/policy-lifecycle/${encodeURIComponent(headerId)}`}
+                      className="text-brand-teal hover:underline"
+                    >
+                      View full lifecycle workspace →
+                    </Link>
+                  </div>
+                )}
                 {!corpus && (
                   <p className="max-w-measure text-sm text-secondary">
                     No corpus record found for this policy ID. Header metadata is limited to the policy content source.
@@ -374,30 +427,7 @@ export function PolicyDetailScreen() {
           </div>
 
           {content ? (
-            <div className="grid gap-lg">
-              {sections.map((section, index) => (
-                <section
-                  className="scroll-mt-28 rounded-lg border border-card bg-white/[.56] p-lg shadow-rest backdrop-blur-md"
-                  id={buildAnchor(section)}
-                  key={section.id}
-                >
-                  <div className="mb-md flex flex-wrap items-start justify-between gap-md">
-                    <div className="flex items-center gap-sm">
-                      <span className="grid h-tap w-tap place-items-center rounded-md bg-surface text-brand-teal">
-                        <FileText aria-hidden="true" className="h-icon-sm w-icon-sm" />
-                      </span>
-                      <div>
-                        <p className="text-tag uppercase tracking-tag text-muted">Section {index + 1}</p>
-                        <h3 className={cx('font-medium text-ink', section.level <= 2 ? 'text-h2' : 'text-h3')}>
-                          {cleanInline(section.title)}
-                        </h3>
-                      </div>
-                    </div>
-                  </div>
-                  <MarkdownBody body={section.body} />
-                </section>
-              ))}
-            </div>
+            <PolicySections sections={sections} />
           ) : (
             <div className="rounded-lg border border-dashed border-card bg-white/[.56] p-xl text-center shadow-rest backdrop-blur-md">
               <span className="mx-auto grid h-tap w-tap place-items-center rounded-md bg-tone-slate-bg text-muted">
@@ -422,7 +452,7 @@ export function PolicyDetailScreen() {
         <SourceUnavailable
           icon={ListChecks}
           title="Lifecycle & Evidence"
-          description="Lifecycle progress and evidence records are not carried in the policy content source. Status, version, and review dates appear as real content within the Policy Header section above."
+          description="Lifecycle state (from PolicyLifecycleEnvelope) and evidence are shown in header above and linked from this view. Full transition history and actions live in the Policy Lifecycle workspace."
         />
       </section>
 

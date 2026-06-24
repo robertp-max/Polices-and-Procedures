@@ -52,11 +52,11 @@ export const V6_ROUTES = [
   { path: '/ces/board', hashId: 'ces-board', template: 'board', group: 'CES', title: 'CES Board', description: 'Operational Kanban board for sprint execution, blockers, evidence, signatures, and owner handoffs. Includes dedicated "Awaiting Action / Evidence" column for review events (QAPI, Infection Control, Incident/Adverse, Grievance, Audit).' },
   // Design cross-ref (Agent 15): All CES routes align to V6_DESIGN.html ~1308 (CES views),
   // V6_DESIGN_RECONCILIATION.md (most MATCHED_REFERENCE; see also events-board, evidence-center).
-  // Integration proposals (Agent 21): Link ces-board CTAs to evidence-center (per design future notes); ensure reports pull from controls/evidence projections; consistent navigation in CES group.
-  // Agent 21 read-only gap vs design analysis: Routes + CES nav group + descriptions are present and match design. However, actual interactive cross-view wiring (BoardLane onCardClick / CTAs in BoardScreen for ces-board → /evidence or /workflow-swimlane) is not implemented in the prototype (BoardScreen renders BoardLane without onCardClick; design notes "Future: link CTAs..."). Calendar has some event→swimlane nav, but full CES-internal integration (board↔evidence↔reports↔calendar) remains partial for one-pass. See RepresentativeScreens BoardScreen and ces-board case.
+  // Agent 21 (CES Board subagent): /ces/board uses real V3 via buildBoardLanes; clicks now open *real* inline swimlane with real cards (not placeholder) via attach + CalendarSwimlaneInline in RepresentativeScreens; always preserves full nav bar context (no navigate). Calendar clicks too. See RepresentativeScreens attachSwimlaneToCalendarEvent, BoardScreen onCardClick, ces-calendar handling.
   { path: '/ces/events', hashId: 'events-board', template: 'board', group: 'CES', title: 'Events Board', description: 'Risk-bucketed Events board matching live 4-col layout (Critical & Overdue 162, At Risk 4). Uses identical item data, owner/domain/due, progress, chips, meta. Sorted by due. New card design applied.' },
   { path: '/workflows', hashId: 'workflows', template: 'matrix', group: 'CES', title: 'Workflows', description: 'Workflow library linking domains, policies, evidence, forms, and history.' },
   { path: '/workflows/:workflowId/swimlane', hashId: 'workflow-swimlane', template: 'board', group: 'CES', title: 'Workflow Swimlane', description: 'Workflow swimlane for intake, evidence, review, signature, and lock steps (reference or event execution context).' },
+  { path: '/workflows/:workflowId', hashId: 'workflow-detail', template: 'detail', group: 'CES', title: 'Workflow Detail', description: 'Workflow detail with metadata, linked policies/forms/steps from real data, and navigation to swimlane board.' },
   { path: '/events/:eventId/swimlane', hashId: 'workflow-swimlane', template: 'board', group: 'CES', title: 'Workflow Swimlane', description: 'Event workflow swimlane for the selected event occurrence and workflow.' },
   { path: '/compliance/master-controls', hashId: 'master-controls', template: 'matrix', group: 'CES', title: 'Master Controls', description: 'Regulatory control matrix mapped to risk, evidence, and readiness.' },
   { path: '/audit', hashId: 'audit-mode', template: 'evidence', group: 'CES', title: 'Audit Mode', description: 'Read-only audit review surface for missing evidence and packet checks.' },
@@ -160,7 +160,8 @@ export function routeToChildPath(path: string): string {
 }
 
 export function routeToPreviewPath(path: string): string {
-  if (path.endsWith('/*')) return path.replace('/*', '/index');
+  // For splat routes (e.g. /help/*) produce clean deep link target /help (matches topbar + route)
+  if (path.endsWith('/*')) return path.replace('/*', '');
 
   let result = path.replace(/:([A-Za-z0-9_]+)\??/g, (_, key: string) => previewValues[key] ?? `${key}-sample`);
   // Clean trailing ? or /? from optional params that had no value substituted

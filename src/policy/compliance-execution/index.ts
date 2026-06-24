@@ -18,4 +18,4 @@ export * from './taskIdentity';
 export * from './useEventExecutionDataflow';
 export * from './stateMachine';
 export * from './eventStateEvaluator';
-export * from './seededMode';
+// seededMode removed from baseline (stubbed locally in consumers)

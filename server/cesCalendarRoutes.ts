@@ -29,7 +29,7 @@ export function buildEventSwimlanePath(eventId: string, workflowId?: string): st
 }
 
 export function buildWorkflowSwimlanePath(workflowId: string, eventId?: string): string {
-  const path = `/workflows/${encodeURIComponent(workflowId)}-swimlane`;
+  const path = `/workflows/${encodeURIComponent(workflowId)}/swimlane`;
   if (!eventId) return path;
   const q = new URLSearchParams({ eventId });
   return `${path}?${q.toString()}`;

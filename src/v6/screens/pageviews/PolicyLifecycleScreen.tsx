@@ -81,7 +81,8 @@ export function PolicyLifecycleScreen() {
     },
   ] satisfies readonly SurfaceCardData[];
 
-  // Show a few real policy lifecycle records (id + title + state + owner + due) for verification
+  // Show a few real policy lifecycle records (id + title + state + owner + due) for verification.
+  // Clicking goes to lifecycle detail (or /library for full detail). This keeps parity with V1 embedding.
   const sampleRecords = POLICY_CORPUS.slice(0, 3).map(p => {
     const e = getEnvelope(p.id);
     const st = e?.state ?? 'DRAFT';
@@ -149,11 +150,12 @@ export function PolicyLifecycleScreen() {
             <div className="grid gap-sm text-sm">
               {sampleRecords.map(rec => (
                 <div key={rec.id} className="rounded border border-hairline bg-tone-slate-bg p-md flex flex-wrap gap-x-md gap-y-xs items-baseline">
-                  <span className="font-mono font-medium text-ink">{rec.id}</span>
+                  <Link to={`/policy-lifecycle/${encodeURIComponent(rec.id)}`} className="font-mono font-medium text-brand-teal hover:underline">{rec.id}</Link>
                   <span className="text-secondary">{rec.title}</span>
                   <span className="text-tag uppercase px-2 py-0.5 rounded bg-tone-slate text-muted">{rec.state}</span>
                   <span className="flex items-center gap-xs text-muted"><User className="h-icon-xs w-icon-xs" />{rec.owner}</span>
                   <span className="flex items-center gap-xs text-muted"><Calendar className="h-icon-xs w-icon-xs" />Due: {rec.due}</span>
+                  <Link to={`/library/${encodeURIComponent(rec.id)}`} className="ml-auto text-xs text-brand-teal hover:underline">detail →</Link>
                 </div>
               ))}
             </div>

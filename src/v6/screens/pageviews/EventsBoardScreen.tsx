@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertTriangle, FileCheck2, Filter, LockKeyhole, ShieldCheck, Users } from 'lucide-react';
 import { BoardLane, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneGlassSurfaceClasses, type BoardLaneData, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, Button, ToneBadge } from '../../primitives';
@@ -146,29 +146,6 @@ export function EventsBoardScreen() {
 
   return (
     <div className="grid gap-lg">
-      {/* Top subnav for CES group (V1 parity + discoverability of sibling routes) using V2 UI component patterns (plain Link + design tokens). */}
-      <div className="mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="CES subnav">
-        <span className="mr-sm text-tag uppercase tracking-tag text-muted">CES:</span>
-        {[
-          { label: 'CES Calendar', path: '/ces/calendar' },
-          { label: 'Kanban Board', path: '/ces/board' },
-          { label: 'Events Board', path: '/ces/events' },
-          { label: 'Workflows Library', path: '/workflows' },
-          { label: 'Master Controls', path: '/compliance/master-controls' },
-          { label: 'Evidence Center', path: '/evidence' },
-          { label: 'Audit Mode', path: '/audit' },
-          { label: 'My Tasks', path: '/my-tasks' },
-          { label: 'CES Reports', path: '/ces/reports' },
-        ].map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className="rounded px-sm py-xs text-brand-teal hover:bg-surface-hover hover:text-brand-teal-deep border-b-2 border-transparent hover:border-brand-teal"
-          >
-            {item.label}
-          </Link>
-        ))}
-      </div>
       <MetricGrid metrics={eventMetricsDerived} />
 
       <section className="grid gap-md">

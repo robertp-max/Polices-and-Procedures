@@ -91,10 +91,8 @@ export const SIDEBAR_SECTIONS = [
       'ces-board',
       'events-board',
       'workflows',
-      'workflow-swimlane',
       'master-controls',
       'ces-reports',
-      'mobile-incident',
       'my-tasks',
     ],
   },
@@ -121,7 +119,7 @@ export const SIDEBAR_SECTIONS = [
   },
   {
     label: 'Staffing / Clinical',
-    hashIds: ['clinicians', 'clinician-detail', 'patients', 'patient-detail'],
+    hashIds: ['clinicians', 'patients'],
   },
   { label: 'iAdministrator', hashIds: ['brad'] },
   {
@@ -219,7 +217,7 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
     description: 'Credential posture, assigned patients, training status, and active compliance requirements.',
     eyebrow: 'Clinician Profiles',
     icon: UserRoundCheck,
-    title: 'Maria Delgado, RN',
+    title: 'Clinician Detail',
   },
   dashboard: {
     description: 'Primary operations command center for census pressure, staffing coverage, urgent tasks, and clinical risk.',
@@ -318,7 +316,7 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
     description: 'Care plan, clinician assignments, documentation gaps, visit cadence, and high-risk indicators.',
     eyebrow: 'Patient Profiles',
     icon: ClipboardPlus,
-    title: 'Elena Vargas - SOC Active',
+    title: 'Patient Detail',
   },
   'policy-detail': {
     description: 'Policy detail view with metadata, lifecycle state, linked forms, evidence readiness, and approval context.',
@@ -354,6 +352,12 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
     icon: Workflow,
     navLabel: 'Workflows Library',
     title: 'Workflows Library',
+  },
+  'workflow-detail': {
+    description: 'Workflow detail with real data, linked policies, forms, roles, and phase cards preview. Navigates to swimlane board.',
+    eyebrow: 'Compliance Execution (CES)',
+    icon: Workflow,
+    title: 'Workflow Detail',
   },
   'workflow-swimlane': {
     description:

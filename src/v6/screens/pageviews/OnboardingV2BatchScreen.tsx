@@ -4,7 +4,7 @@ import { Shield, Key, Heart, Award, FileSearch, ShieldCheck, Download, Check, Al
 import { DataTable, ProgressMeter, SurfaceCard, type DataTableColumn } from '../../components';
 import { ToneBadge, Button } from '../../primitives';
 import { cx } from '../../utils/classNames';
-import { buildSeedSnapshot } from '@/policy/onboarding-v2/store/seed';
+import { useOnboardingV2Store } from '@/policy/onboarding-v2';
 import type { OnboardingExecutionBatch } from '@/policy/onboarding-v2';
 
 interface RosterRow extends Record<string, string> {
@@ -29,48 +29,7 @@ const columns: readonly DataTableColumn<RosterRow>[] = [
   { key: 'gate5', label: 'Supervised', status: true },
 ];
 
-const snap = buildSeedSnapshot();
-const batchUnits = snap.units;
-
-// Real roster derived from batch units + workforce (no placeholders)
-const workforceById = new Map(snap.workforce.map((w: any) => [w.id, w]));
-function statusToUi(s: string): string {
-  const l = (s || '').toLowerCase();
-  if (l.includes('complete') || l === 'completed') return 'complete';
-  if (l.includes('block')) return 'blocked';
-  if (l.includes('await') || l.includes('pending')) return 'pending';
-  if (l.includes('progress')) return 'review-required';
-  return l || 'active';
-}
-const rows: readonly RosterRow[] = (() => {
-  const subjectIds = Array.from(new Set(batchUnits.map((u: any) => snap.batches.find((b:any)=>b.id===u.batchId)?.subjectId).filter((x): x is string => Boolean(x))));
-  return subjectIds.map((sid: string) => {
-    const subj: any = workforceById.get(sid) || { id: sid, legalName: sid, primaryRoleId: '—' };
-    const uForSubj = batchUnits.filter((u: any) => snap.batches.find((b:any)=>b.id===u.batchId)?.subjectId === sid);
-    const getGate = (needle: string) => {
-      const hit = uForSubj.find((u: any) => (u.requirementId || '').toLowerCase().includes(needle));
-      return hit ? statusToUi(hit.status) : 'locked';
-    };
-    return {
-      subjectId: sid,
-      name: subj.legalName || sid,
-      role: subj.primaryRoleId || '—',
-      gate1: getGate('bg') || getGate('background'),
-      gate2: getGate('license') || getGate('credential'),
-      gate3: getGate('tb') || getGate('health'),
-      gate4: getGate('hipaa') || getGate('training'),
-      gate5: getGate('supervis') || 'locked',
-    };
-  });
-})();
-
-const timelineEvents = (snap.audit && snap.audit.length ? snap.audit.slice(0,4).map((a: any) => ({
-  label: a.eventType || 'Event',
-  value: String(a.at || '').slice(0,16).replace('T',' '),
-  detail: JSON.stringify(a.payload || {}).slice(0,60),
-})) : [
-  { label: 'Batch initialized', value: '2026-04-27 08:00 UTC', detail: 'System generated trigger event (seed)' },
-]);
+// Gate checklists and evidence shapes are static reference for the sub view. All live snapshot derivation now happens inside the component (ensures per-route batch scoping + single snap source).
 
 interface ChecklistItem {
   id: string;
@@ -129,48 +88,87 @@ interface SubjectEvidence {
   signatures: { role: string; name: string; date: string; token: string }[];
 }
 
-// Real evidence/signatures derived from seed for current batch's subjects
-const subjectEvidenceData: Record<string, SubjectEvidence> = (() => {
-  const map: Record<string, SubjectEvidence> = {};
-  const sids = rows.map(r => r.subjectId);
-  sids.forEach((sid: string) => {
-    const evs = snap.evidence.filter((e: any) => e.subjectId === sid);
-    const sigs = snap.signatures.filter((s: any) => s.subjectId === sid);
-    const firstEv = evs[0];
-    map[sid] = {
-      fileName: firstEv ? firstEv.filename || 'seed-evidence.pdf' : 'seed-evidence.pdf',
-      uploadTime: (firstEv && firstEv.createdAt || '').slice(0,16).replace('T',' ') || 'seed time',
-      shaHash: (firstEv && firstEv.contentHash) || 'seed-hash-from-engine',
-      status: firstEv ? String(firstEv.status||'pending').toLowerCase() : 'pending',
-      signatures: sigs.map((s: any) => ({
-        role: s.signerRole || 'Signer',
-        name: s.signerName || sid,
-        date: (s.timestamp || s.status === 'Signed' ? 'signed' : 'Pending'),
-        token: s.envelopeId || 'seed-eCIgn',
-      })),
-    };
-  });
-  return map;
-})();
-
 export function OnboardingV2BatchScreen() {
   const { batchId: routeBatchId } = useParams<{ batchId?: string }>();
   const [activeTab, setActiveTab] = useState<'overview' | 'roster'>('overview');
   const [selectedGate, setSelectedGate] = useState<string | null>('Credentials');
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(rows[0]?.subjectId || null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
   const [activeSubTab, setActiveSubTab] = useState<'evidence' | 'signature'>('evidence');
   const [hashVerified, setHashVerified] = useState<Record<string, boolean>>({});
 
-  // Real batch record resolution from seed (wired via import; renders the seeded batch id from onboarding-v2 store seed).
-  const snap = buildSeedSnapshot();
+  const snap = useOnboardingV2Store(s => s.snap);
+  // Real batch record resolution + all derived data inside component (V1 parity fix: single source of truth, per-batch scope, no top-level snap/rows refs)
   const resolvedBatchId = routeBatchId || (snap.batches[0]?.id ?? 'BATCH-00000001');
   const realBatch: OnboardingExecutionBatch | undefined = snap.batches.find((b) => b.id === resolvedBatchId) || snap.batches[0];
   const batchUnits = snap.units.filter((u: any) => u.batchId === resolvedBatchId);
-  const batchRows = rows.filter((r) => batchUnits.some((u: any) => snap.batches.find((b: any) => b.id === u.batchId)?.subjectId === r.subjectId));
 
+  const workforceById = new Map(snap.workforce.map((w: any) => [w.id, w]));
+  const statusToUi = (s: string): string => {
+    const l = (s || '').toLowerCase();
+    if (l.includes('complete') || l === 'completed') return 'complete';
+    if (l.includes('block')) return 'blocked';
+    if (l.includes('await') || l.includes('pending')) return 'pending';
+    if (l.includes('progress')) return 'review-required';
+    return l || 'active';
+  };
+  const batchRows: readonly RosterRow[] = (() => {
+    const subjectIds = Array.from(new Set(batchUnits.map((u: any) => snap.batches.find((b: any) => b.id === u.batchId)?.subjectId).filter((x): x is string => Boolean(x))));
+    return (subjectIds as string[]).map((sid: string) => {
+      const subj: any = workforceById.get(sid) || { id: sid, legalName: sid, primaryRoleId: '—' };
+      const uForSubj = batchUnits.filter((u: any) => snap.batches.find((b: any) => b.id === u.batchId)?.subjectId === sid);
+      const getGate = (needle: string) => {
+        const hit = uForSubj.find((u: any) => (u.requirementId || '').toLowerCase().includes(needle));
+        return hit ? statusToUi(hit.status) : 'locked';
+      };
+      return {
+        subjectId: sid,
+        name: subj.legalName || sid,
+        role: subj.primaryRoleId || '—',
+        gate1: getGate('bg') || getGate('background'),
+        gate2: getGate('license') || getGate('credential'),
+        gate3: getGate('tb') || getGate('health'),
+        gate4: getGate('hipaa') || getGate('training'),
+        gate5: getGate('supervis') || 'locked',
+      };
+    });
+  })();
+
+  const timelineEvents: readonly { label: string; value: string; detail: string }[] = (snap.audit && snap.audit.length
+    ? snap.audit.slice(0, 4).map((a: any) => ({
+        label: a.eventType || 'Event',
+        value: String(a.at || '').slice(0, 16).replace('T', ' '),
+        detail: JSON.stringify(a.payload || {}).slice(0, 60),
+      }))
+    : [{ label: 'Batch initialized', value: '2026-04-27 08:00 UTC', detail: 'Trigger received' }]);
+
+  // Evidence map built for this batch's subjects from seed (no 'seed-' fallbacks where real data present)
+  const subjectEvidenceData: Record<string, SubjectEvidence> = (() => {
+    const map: Record<string, SubjectEvidence> = {};
+    const sids = batchRows.map((r) => r.subjectId);
+    sids.forEach((sid: string) => {
+      const evs = snap.evidence.filter((e: any) => e.subjectId === sid);
+      const sigs = snap.signatures.filter((s: any) => s.subjectId === sid);
+      const firstEv = evs[0];
+      map[sid] = {
+        fileName: firstEv ? (firstEv.filename || firstEv.id || 'evidence.pdf') : 'evidence.pdf',
+        uploadTime: (firstEv && firstEv.createdAt ? String(firstEv.createdAt).slice(0, 16).replace('T', ' ') : ''),
+        shaHash: (firstEv && firstEv.contentHash) || '—',
+        status: firstEv ? String(firstEv.status || 'pending').toLowerCase() : 'pending',
+        signatures: sigs.map((s: any) => ({
+          role: s.signerRole || 'Signer',
+          name: s.signerName || sid,
+          date: (s.timestamp || (s.status === 'Signed' ? 'signed' : 'Pending')),
+          token: s.envelopeId || '—',
+        })),
+      };
+    });
+    return map;
+  })();
+
+  const displaySelectedId = selectedSubjectId ?? batchRows[0]?.subjectId ?? null;
   const checklistData = selectedGate ? gateChecklists[selectedGate] : null;
-  const selectedSubject = batchRows.find((r) => r.subjectId === selectedSubjectId);
-  const evidenceDetails = selectedSubjectId ? subjectEvidenceData[selectedSubjectId] : null;
+  const selectedSubject = batchRows.find((r) => r.subjectId === displaySelectedId);
+  const evidenceDetails = displaySelectedId ? subjectEvidenceData[displaySelectedId] : null;
 
   const handleVerifyHash = (subjectId: string) => {
     setHashVerified(prev => ({ ...prev, [subjectId]: true }));
@@ -420,14 +418,14 @@ export function OnboardingV2BatchScreen() {
                           <div className="text-[11px] font-mono bg-surface p-sm rounded border border-hairline break-all text-secondary">
                             {evidenceDetails.shaHash}
                           </div>
-                          {selectedSubjectId && hashVerified[selectedSubjectId] ? (
+                          {displaySelectedId && hashVerified[displaySelectedId] ? (
                             <div className="flex items-center gap-xs text-xs text-tone-green-text font-medium bg-tone-green-bg p-xs rounded border border-tone-green-border">
                               <CheckCircle2 className="h-4 w-4" />
                               <span>SHA-256 Signature verified against preceptor ledger anchor.</span>
                             </div>
                           ) : (
                             <Button
-                              onClick={() => selectedSubjectId && handleVerifyHash(selectedSubjectId)}
+                              onClick={() => displaySelectedId && handleVerifyHash(displaySelectedId)}
                               size="sm"
                               variant="secondary"
                               className="w-full"

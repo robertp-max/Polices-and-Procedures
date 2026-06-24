@@ -216,6 +216,8 @@ const phaseBLearners = [
 ];
 
 export function SupervisorScreen() {
+  const navigate = useNavigate();
+  // V1 parity fix: mirrors SupervisorPage (roster rows + progress + clearance gates + visit logging + escalations).
   const [selectedLearner, setSelectedLearner] = useState(phaseBLearners[0]);
   const [learnerPickerOpen, setLearnerPickerOpen] = useState(false);
   const [visitDrawerOpen, setVisitDrawerOpen] = useState(false);

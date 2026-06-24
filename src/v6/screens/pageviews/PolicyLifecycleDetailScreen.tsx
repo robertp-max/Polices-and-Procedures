@@ -1,12 +1,15 @@
 import { Calendar, User, ShieldCheck, History } from 'lucide-react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { MetricGrid, type MetricTileData } from '../../components';
 import { getCorpusPolicy, POLICY_CORPUS, DOMAIN_LABEL, type CorpusPolicy } from '@/policy/data/policyCorpus';
+import { getPolicyContent } from '@/policy/data/policyContentMap';
 import { usePolicyLifecycleStore } from '@/policy/lifecycle';
+import { PolicySections } from './PolicyDetailScreen';
 
 // The lifecycle detail route is /policy-lifecycle/:policyId. The screen resolves
-// the requested REAL corpus record + its lifecycle envelope (status/owner/history/due).
-// Broken before: ignored store entirely, hardcoded "Active", no due date, no review/approval data.
+// the requested REAL corpus record + its lifecycle envelope (status/owner/history/due)
+// + identical policy document content via shared PolicySections from PolicyDetailScreen.
+// Ensures "detail and lifecycle match".
 const DEFAULT_POLICY: CorpusPolicy = POLICY_CORPUS[0];
 
 function computeNextReview(createdAt?: string): string {
@@ -34,6 +37,10 @@ export function PolicyLifecycleDetailScreen() {
   // Phase now comes from envelope (correct state); fallback only if no envelope
   const currentPhase = lifecycleStatus;
 
+  // Real content from same sources as PolicyDetailScreen, to ensure detail and lifecycle match.
+  const content = getPolicyContent(REPRESENTATIVE_POLICY.id);
+  const sections = content ? [...content.sections].sort((a, b) => a.order - b.order) : [];
+
   const metrics = [
     { label: 'Current Phase', value: currentPhase, helper: envelope ? 'From PolicyLifecycleEnvelope.state' : 'No envelope', tone: 'green' },
     { label: 'Policy ID', value: REPRESENTATIVE_POLICY.id, helper: REPRESENTATIVE_POLICY.title, tone: 'teal' },
@@ -54,14 +61,25 @@ export function PolicyLifecycleDetailScreen() {
       <section className="grid gap-xl desktop:grid-cols-12">
         <div className="grid content-start gap-lg desktop:col-span-8">
           <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
-            <h3 className="text-h3 font-medium text-ink mb-md">
-              {REPRESENTATIVE_POLICY.id} — {REPRESENTATIVE_POLICY.title}
-            </h3>
-            <div className="rounded-md border border-hairline bg-tone-slate-bg p-lg text-sm text-secondary leading-relaxed">
-              <p className="mb-md"><strong>1. Objective:</strong> Establish qualifications and credential checks for home health agency field workforce members.</p>
-              <p className="mb-md"><strong>2. Scope:</strong> Applies to all RN, LVN, HHA, and therapy tracks prior to independent visit clearance.</p>
-              <p><strong>3. Compliance:</strong> Governed under CMS 42 CFR 484.115 and ACHC standard expectations.</p>
+            <div className="flex items-start justify-between gap-md mb-md">
+              <h3 className="text-h3 font-medium text-ink">
+                {REPRESENTATIVE_POLICY.id} — {REPRESENTATIVE_POLICY.title}
+              </h3>
+              <Link
+                to={`/library/${encodeURIComponent(REPRESENTATIVE_POLICY.id)}`}
+                className="text-xs px-3 py-1 rounded border border-hairline hover:bg-surface shrink-0"
+              >
+                View full policy detail →
+              </Link>
             </div>
+            {/* Real policy document sections rendered identically to PolicyDetailScreen via shared PolicySections */}
+            {sections.length > 0 ? (
+              <PolicySections sections={sections} />
+            ) : (
+              <div className="rounded-md border border-hairline bg-tone-slate-bg p-lg text-sm text-secondary">
+                No content sections in source for this policy. (Matches detail view behavior.)
+              </div>
+            )}
           </section>
         </div>
 
@@ -99,6 +117,7 @@ export function PolicyLifecycleDetailScreen() {
                   </span>
                 )}
                 <span className="text-xs text-muted">Tier: {REPRESENTATIVE_POLICY.tier} (corpus)</span>
+                <div className="text-[10px] text-muted pt-1 border-t border-hairline">Content sections rendered via shared PolicySections (exact match to Policy Detail).</div>
               </div>
               {/* History length for approval/review records */}
               <div className="rounded-md bg-tone-slate-bg p-md text-xs text-muted">

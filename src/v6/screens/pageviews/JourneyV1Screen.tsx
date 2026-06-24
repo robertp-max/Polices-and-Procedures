@@ -223,7 +223,7 @@ export function JourneyV1Screen() {
   };
 
   return (
-    <section className="grid gap-xl" data-hash-id="journey-v1" data-route="/journey/v1-journey" data-template="journey">
+    <section className="grid gap-xl" data-group="Onboarding" data-hash-id="journey-v1" data-route="/journey/v1-journey" data-template="journey">
 
       <MetricGrid metrics={journeyMetrics} />
 

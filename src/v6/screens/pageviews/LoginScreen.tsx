@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from 'react';
 import { ArrowLeft, CheckCircle2, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { cx } from '../../utils/classNames';
 
 export function LoginScreen() {
@@ -31,13 +32,13 @@ export function LoginScreen() {
     >
       <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1/2 bg-surface/60" />
 
-      <a
+      <Link
         className="absolute right-lg top-lg z-20 inline-flex min-h-tap items-center gap-sm rounded-lg border border-tone-teal-border bg-tone-teal-bg px-md text-sm font-medium text-ink shadow-rest transition duration-fast ease-standard hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus"
-        href="/dashboard"
+        to="/dashboard"
       >
         <ArrowLeft aria-hidden="true" className="h-icon-sm w-icon-sm" />
         Back to Dashboard
-      </a>
+      </Link>
 
       <section className="relative z-10 w-full max-w-[440px] rounded-[32px] border border-card bg-surface shadow-hover">
         <div className="p-8">

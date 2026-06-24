@@ -1,10 +1,50 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { COMPLIANCE_ACTION_MAP } from '../src/policy/pages/iAdministrator/lib/complianceActionMap';
-import { createDemoCriticalEmergencyState } from '../src/policy/pages/iAdministrator/lib/demoCriticalEmergency';
-import { resolveIaReference, type IaReferenceType } from '../src/policy/pages/iAdministrator/lib/referenceResolver';
+import { COMPLIANCE_ACTION_MAP } from '../src/policy/brad/complianceActionMap';
+import { createDemoCriticalEmergencyState } from '../src/policy/brad/demoCriticalEmergency';
 import { WORKFLOWS } from '../src/policy/data/workflows.generated';
+
+// Minimal local resolver (V2 port of V1 behavior) to avoid @ alias / transitive load issues in tsx script runner.
+// Mirrors the core "exists in registry" check used by evaluate.
+const POLICY_IDS = new Set<string>();
+const FORM_IDS = new Set<string>();
+const WORKFLOW_IDS = new Set<string>();
+const EVENT_IDS = new Set<string>();
+
+// Lazy populate from data (avoid top level side effects / alias imports).
+async function ensureRegistries() {
+  if (POLICY_IDS.size > 0) return;
+  const { POLICY_CORPUS } = await import('../src/policy/data/policyCorpus.js');
+  const { FORMS_DATASET } = await import('../src/policy/data/formsLibraryDataset.js');
+  POLICY_CORPUS.forEach((p: any) => POLICY_IDS.add(p.id.toUpperCase()));
+  FORMS_DATASET.forEach((f: any) => FORM_IDS.add(f.id.toUpperCase()));
+  Object.keys(WORKFLOWS).forEach(id => WORKFLOW_IDS.add(id.toUpperCase()));
+  // events optional; treat workflow/policy/form as primary for this audit
+}
+
+type IaReferenceType = 'policy' | 'workflow' | 'form' | 'event' | 'appendix';
+
+function resolveIaReferenceLocal(input: { id: string; claimedType?: string | null; source?: string }): { resolved: boolean; resolvedType: string; reasonIfUnresolved?: string } {
+  const id = (input.id || '').trim().toUpperCase();
+  const claimed = (input.claimedType || '').toLowerCase();
+  if (!id) return { resolved: false, resolvedType: claimed || 'policy', reasonIfUnresolved: 'missing id' };
+
+  const inPolicy = POLICY_IDS.has(id);
+  const inForm = FORM_IDS.has(id);
+  const inWorkflow = WORKFLOW_IDS.has(id);
+
+  if (claimed === 'policy' && inPolicy) return { resolved: true, resolvedType: 'policy' };
+  if (claimed === 'form' && inForm) return { resolved: true, resolvedType: 'form' };
+  if (claimed === 'workflow' && inWorkflow) return { resolved: true, resolvedType: 'workflow' };
+
+  // fallback any
+  if (inPolicy) return { resolved: true, resolvedType: 'policy' };
+  if (inForm) return { resolved: true, resolvedType: 'form' };
+  if (inWorkflow) return { resolved: true, resolvedType: 'workflow' };
+
+  return { resolved: false, resolvedType: claimed || 'policy', reasonIfUnresolved: 'not found in primary registries' };
+}
 
 type RuntimeSurface = 'rendered' | 'hidden' | 'docs-only';
 
@@ -48,17 +88,17 @@ function add(
 function collectComplianceActionMap(): void {
   for (const definition of Object.values(COMPLIANCE_ACTION_MAP)) {
     for (const id of definition.relatedPolicyIds) {
-      add(id, 'policy', 'src/policy/pages/iAdministrator/lib/complianceActionMap.ts', `${definition.id}.relatedPolicyIds`);
+      add(id, 'policy', 'src/policy/brad/complianceActionMap.ts', `${definition.id}.relatedPolicyIds`);
     }
     for (const id of definition.relatedFormIds) {
-      add(id, 'form', 'src/policy/pages/iAdministrator/lib/complianceActionMap.ts', `${definition.id}.relatedFormIds`);
+      add(id, 'form', 'src/policy/brad/complianceActionMap.ts', `${definition.id}.relatedFormIds`);
     }
     for (const id of definition.relatedWorkflowIds) {
-      add(id, 'workflow', 'src/policy/pages/iAdministrator/lib/complianceActionMap.ts', `${definition.id}.relatedWorkflowIds`);
+      add(id, 'workflow', 'src/policy/brad/complianceActionMap.ts', `${definition.id}.relatedWorkflowIds`);
       collectWorkflowRequirements(id, `${definition.id}.workflowRequirements`);
     }
     for (const item of definition.needsMappings ?? []) {
-      add(item.id, item.type, 'src/policy/pages/iAdministrator/lib/complianceActionMap.ts', `${definition.id}.needsMappings`, 'hidden');
+      add(item.id, item.type, 'src/policy/brad/complianceActionMap.ts', `${definition.id}.needsMappings`, 'hidden');
     }
   }
 }
@@ -77,14 +117,14 @@ function collectWorkflowRequirements(workflowId: string, sourceDetail: string): 
 function collectDemoCriticalFixture(): void {
   const state = createDemoCriticalEmergencyState('validate reference integrity');
   if (state.workflowId) {
-    add(state.workflowId, 'workflow', 'src/policy/pages/iAdministrator/lib/demoCriticalEmergency.ts', 'workflowId');
+    add(state.workflowId, 'workflow', 'src/policy/brad/demoCriticalEmergency.ts', 'workflowId');
     collectWorkflowRequirements(state.workflowId, 'demoCritical.workflowRequirements');
   }
   for (const policy of state.policies) {
-    add(policy.id, 'policy', 'src/policy/pages/iAdministrator/lib/demoCriticalEmergency.ts', 'policies');
+    add(policy.id, 'policy', 'src/policy/brad/demoCriticalEmergency.ts', 'policies');
   }
   for (const form of state.forms) {
-    add(form.id, 'form', 'src/policy/pages/iAdministrator/lib/demoCriticalEmergency.ts', 'forms');
+    add(form.id, 'form', 'src/policy/brad/demoCriticalEmergency.ts', 'forms');
   }
 }
 
@@ -154,7 +194,7 @@ function* walk(dir: string): Generator<string> {
 
 function evaluate(check: ReferenceCheck): ReferenceResult {
   const claimedType = check.claimedType === 'any' ? undefined : check.claimedType;
-  const resolved = resolveIaReference({
+  const resolved = resolveIaReferenceLocal({
     id: check.id,
     claimedType,
     source: `validateReferenceIntegrity:${check.sourceFile}:${check.sourceDetail}`,
@@ -232,28 +272,33 @@ function printResults(results: ReferenceResult[]): void {
   for (const row of rows) console.log(format(row));
 }
 
-collectComplianceActionMap();
-collectDemoCriticalFixture();
-collectMockBradCitations();
-collectServerScenarioTemplates();
-collectBannedRuntimeIds();
+async function main() {
+  await ensureRegistries();
+  collectComplianceActionMap();
+  collectDemoCriticalFixture();
+  collectMockBradCitations();
+  collectServerScenarioTemplates();
+  collectBannedRuntimeIds();
 
-const unique = new Map<string, ReferenceCheck>();
-for (const check of checks) {
-  unique.set(
-    `${check.id}:${check.claimedType}:${check.sourceFile}:${check.sourceDetail}:${check.runtimeSurface}`,
-    check,
-  );
+  const unique = new Map<string, ReferenceCheck>();
+  for (const check of checks) {
+    unique.set(
+      `${check.id}:${check.claimedType}:${check.sourceFile}:${check.sourceDetail}:${check.runtimeSurface}`,
+      check,
+    );
+  }
+
+  const results = Array.from(unique.values()).map(evaluate);
+  printResults(results);
+
+  const failCount = results.filter(result => result.status === 'FAIL').length;
+  const passCount = results.filter(result => result.status === 'PASS').length;
+  const hiddenCount = results.filter(result => result.status === 'HIDDEN').length;
+
+  console.log('---');
+  console.log(`Reference integrity: ${failCount === 0 ? 'PASS' : 'FAIL'} (${passCount} resolved, ${hiddenCount} hidden, ${failCount} failed)`);
+
+  if (failCount > 0) process.exit(1);
 }
 
-const results = Array.from(unique.values()).map(evaluate);
-printResults(results);
-
-const failCount = results.filter(result => result.status === 'FAIL').length;
-const passCount = results.filter(result => result.status === 'PASS').length;
-const hiddenCount = results.filter(result => result.status === 'HIDDEN').length;
-
-console.log('---');
-console.log(`Reference integrity: ${failCount === 0 ? 'PASS' : 'FAIL'} (${passCount} resolved, ${hiddenCount} hidden, ${failCount} failed)`);
-
-if (failCount > 0) process.exit(1);
+main().catch((e) => { console.error(e); process.exit(1); });

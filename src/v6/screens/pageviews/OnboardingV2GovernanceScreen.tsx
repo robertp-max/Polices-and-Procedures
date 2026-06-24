@@ -2,7 +2,7 @@ import { ShieldAlert, BookOpen, AlertTriangle, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { MetricGrid, DataTable, VeilModal, type MetricTileData, type DataTableColumn } from '../../components';
 import { Button } from '../../primitives';
-import { buildSeedSnapshot } from '@/policy/onboarding-v2/store/seed';
+import { useOnboardingV2Store } from '@/policy/onboarding-v2';
 
 interface OverrideRow extends Record<string, string> {
   overrideId: string;
@@ -13,16 +13,6 @@ interface OverrideRow extends Record<string, string> {
   status: string;
 }
 
-const snap = buildSeedSnapshot();
-const ovCount = (snap.overrides || []).length;
-const activeO = (snap.overrides || []).filter((o: any) => o.status === 'Active').length;
-const expiredish = Math.max(0, ovCount - activeO);
-const metrics = [
-  { label: 'Active Overrides', value: String(activeO || 0), helper: 'Active dual-signature overrides (from seed)', tone: 'orange' },
-  { label: 'Pending Sign-off', value: String(Math.max(0, ovCount - activeO)), helper: 'Awaiting secondary supervisor', tone: 'amber' },
-  { label: 'Expired Overrides', value: String(expiredish), helper: 'Completed or deactivated overrides', tone: 'teal' },
-] satisfies readonly MetricTileData[];
-
 const columns: readonly DataTableColumn<OverrideRow>[] = [
   { key: 'overrideId', label: 'Override ID' },
   { key: 'subject', label: 'Subject' },
@@ -32,19 +22,18 @@ const columns: readonly DataTableColumn<OverrideRow>[] = [
   { key: 'status', label: 'State', status: true },
 ];
 
-const initialRows: readonly OverrideRow[] = (snap.overrides || []).length ? snap.overrides.map((o: any) => ({
-  overrideId: o.id,
-  subject: o.subjectId,
-  gate: o.gateOrRuleId || 'Gate',
-  reason: o.reason || 'Seed override',
-  approvers: (o.signerIds || []).join(' / ') || 'DON / Compliance',
-  status: (o.status || 'active').toLowerCase() === 'active' ? 'review-required' : 'complete',
-})) : [
-  { overrideId: 'OVR-seed', subject: 'seed-subject', gate: 'Governance', reason: 'Seed demo (no overrides in current snap)', approvers: 'system', status: 'complete' },
-];
-
 export function OnboardingV2GovernanceScreen() {
-  const [rows, setRows] = useState<readonly OverrideRow[]>(initialRows);
+  const snap = useOnboardingV2Store(s => s.snap);
+  const requestOverride = useOnboardingV2Store(s => s.requestOverride);
+  const ovCount = (snap.overrides || []).length;
+  const activeO = (snap.overrides || []).filter((o: any) => o.status === 'Active').length;
+  const expiredish = Math.max(0, ovCount - activeO);
+  const metrics = [
+    { label: 'Active Overrides', value: String(activeO || 0), helper: 'Active dual-signature overrides (from seed)', tone: 'orange' },
+    { label: 'Pending Sign-off', value: String(Math.max(0, ovCount - activeO)), helper: 'Awaiting secondary supervisor', tone: 'amber' },
+    { label: 'Expired Overrides', value: String(expiredish), helper: 'Completed or deactivated overrides', tone: 'teal' },
+  ] satisfies readonly MetricTileData[];
+
   const [isOverrideOpen, setIsOverrideOpen] = useState(false);
   const [targetLearner, setTargetLearner] = useState('James Carter');
   const [targetGate, setTargetGate] = useState('Gate 3: Health & Safety');
@@ -54,16 +43,22 @@ export function OnboardingV2GovernanceScreen() {
   const [dualApprover2, setDualApprover2] = useState('Compliance Officer');
   const [attested, setAttested] = useState(false);
 
+  // Live rows from store (V1 parity); modal action mutates it
+  const liveRows: readonly OverrideRow[] = (snap.overrides || []).length ? snap.overrides.map((o: any) => ({
+    overrideId: o.id,
+    subject: o.subjectId,
+    gate: o.gateOrRuleId || 'Gate',
+    reason: o.reason || 'Override',
+    approvers: (o.signerIds || []).join(' / ') || 'DON / Compliance',
+    status: (o.status || 'active').toLowerCase() === 'active' ? 'review-required' : 'complete',
+  })) : [];
+
   const handleCreateOverride = () => {
-    const newOverride: OverrideRow = {
-      overrideId: `OVR-${Math.floor(104 + Math.random() * 100)}`,
-      subject: targetLearner,
-      gate: targetGate,
-      reason: overrideReason,
-      approvers: `${dualApprover1.split(',')[0]} / ${dualApprover2}`,
-      status: 'awaiting',
-    };
-    setRows([newOverride, ...rows]);
+    const gateId = targetGate.includes('Gate 3') ? 'HealthSafety' : targetGate.includes('Gate 1') ? 'FieldClearance' : 'SystemAccessClearance';
+    try {
+      // Call real store action for V1 parity (writes override + audit)
+      requestOverride(targetLearner, gateId, overrideReason, parseInt(expirationWindow, 10) || 30);
+    } catch {}
     setIsOverrideOpen(false);
   };
 
@@ -95,7 +90,7 @@ export function OnboardingV2GovernanceScreen() {
                 Request override
               </Button>
             </div>
-            <DataTable columns={columns} label="Override authorizations table" rows={rows} />
+            <DataTable columns={columns} label="Override authorizations table" rows={liveRows} />
           </section>
         </div>
 

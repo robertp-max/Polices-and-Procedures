@@ -803,6 +803,56 @@ export const HELP_ARTICLES: Record<string, HelpArticle> = {
     updatedAt: '2026-04-21',
   },
 
+  /* ═══════════════════════════ iAdministrator / Brad ═══════════════════ */
+  'KB-IA-001': {
+    id: 'KB-IA-001',
+    title: 'Brad iAdministrator — Decision Support',
+    subtitle: 'AI-grounded policy queries, scenario classification, and compliance playbooks',
+    overview:
+      'Brad iAdministrator (/iadministrator) provides grounded answers to compliance and operational questions using the agency corpus plus deterministic scenario classification. It is a productivity tool, not a substitute for primary policy verification.',
+    purpose:
+      'Accelerate access to policy, form, workflow, event, and task knowledge for coordinators, managers, and compliance staff while maintaining full traceability and audit logging.',
+    whenRequired:
+      'Anytime a rapid, citation-backed answer is needed for policy interpretation, scenario response, pre-survey checks, or operational decisions. Always verify critical items against source policies.',
+    responsible:
+      'All users with brad.view permission. Outputs are advisory; final accountability remains with the human operator.',
+    steps: [
+      { label: 'Formulate Query',
+        detail: 'Be specific: include domain (Clinical, QAPI, etc.), requirement, and context. Quote IDs (e.g., CL-PR-005) to anchor retrieval.' },
+      { label: 'Review Structured Response',
+        detail: 'Read the direct answer, citations, required actions, and any scenario playbook surfaced (e.g., clinical_emergency human-first guidance).' },
+      { label: 'Follow References',
+        detail: 'Open cited policies/forms/workflows via the reference rail. Verify currency and applicability.' },
+      { label: 'Take Action + Log',
+        detail: 'Document decisions and evidence outside Brad. Brad queries themselves are logged for audit.' },
+      { label: 'Safety-First Override',
+        detail: 'For staff distress / life threat / boundary events, Brad surfaces calm human supervisor language first and suppresses full document dump until safe.' },
+    ],
+    formsRequired: [],
+    outputs: [
+      'Citation-backed answer with policy / form / workflow / event references.',
+      'Scenario classification + requiredActions list (when triggered).',
+      'Action plan / governing body brief / audit checklist generator options (in full iAdmin surface).',
+    ],
+    commonMistakes: [
+      'Treating Brad output as authoritative without verifying the cited source document.',
+      'Using Brad during active field safety incident without first ensuring personal safety and notifying supervisor.',
+      'Ignoring low-relevance or missing citations and acting on incomplete data.',
+    ],
+    auditTips: [
+      'Every Brad query is logged (actor, question text, timestamp, queryId).',
+      'Retain screenshots or export of critical Brad responses with the decision record.',
+      'Cross-check any generated action plan against live Master Control Inventory and current execution state.',
+    ],
+    relatedPolicies: [
+      { id: 'CO-CP-001', label: 'Corporate Compliance Program' },
+      { id: 'GV-GB-001', label: 'Governing Body Charter' },
+    ],
+    relatedEventIds: [],
+    estimatedMinutes: 5,
+    updatedAt: '2026-06-23',
+  },
+
 };
 
 /* Fallback article when an event references a KB id we don't ship with content. */

@@ -1,14 +1,61 @@
 /* ═══════════════════════════════════════════════════════════════
    FORMS LIBRARY — 410 Artifact Canonical Dataset (real records)
-   Shared between FormsPage (grid) and FormViewer (detail).
+   Shared data source for /forms (FormsLibraryScreen) and /forms/:formId (FormWorkspaceScreen / viewer).
+   V2 parity enforced via shared formatters below.
    Last built: 2026-04-23 (FullSystemBuild)
    Source of truth: Builder/Forns/*.txt — ingested + linked.
+   Legacy V1/Q1/FRM aliasing handled in formIdAliases.ts (all targets validated present).
    ═══════════════════════════════════════════════════════════════ */
 
 export interface FormRecord {
   id: string; name: string; type: string; policies: string[];
   domainCode: string; usage: string; frequency: string; classifications: string[];
 }
+
+// Shared formatters for Forms Library (/forms) and Form Viewer (/forms/:formId) — ensures V2 parity.
+// Derived from real fields only; no fabricated data. Legacy/V1 alias resolution lives in formIdAliases.ts.
+export const FORM_DOMAIN_NAMES: Record<string, string> = {
+  EN: 'Enterprise',
+  GV: 'Governance',
+  HR: 'Human Resources',
+  CL: 'Clinical',
+  QA: 'Quality',
+  RM: 'Risk Management',
+  OP: 'Operations',
+  FN: 'Finance',
+  IT: 'IT & Security',
+  IS: 'IT & Security',
+  CO: 'Compliance',
+};
+
+export const formDomainName = (code: string): string => FORM_DOMAIN_NAMES[code] ?? code;
+
+// Linked-policy summary. "ALL (…)" sentinels pass through verbatim; otherwise count summary.
+export const formPoliciesLabel = (policies: readonly string[]): string => {
+  const first = policies[0] ?? '';
+  if (first.startsWith('ALL')) return first;
+  const count = policies.length;
+  return count === 1 ? '1 policy' : `${count} policies`;
+};
+
+// Status/posture derived from the real `usage` field (whether the artifact is mandatory).
+// Uses 'ready' for Required to align with viewer/operations posture vocabulary.
+export const formStatusFromUsage = (usage: string): string => {
+  switch (usage) {
+    case 'Required':
+      return 'ready';
+    case 'Conditional':
+      return 'pending';
+    case 'Optional':
+      return 'draft';
+    default:
+      return 'info';
+  }
+};
+
+// Evidence posture: audit-critical artifacts are validated evidence; everything else is informational.
+export const formEvidenceFromClassifications = (classifications: readonly string[]): string =>
+  classifications.includes('audit_critical') ? 'validated' : 'info';
 
 export const FORMS_DATASET: FormRecord[] = [
   // ── ENTERPRISE CONTROL (EN) ── 37 records

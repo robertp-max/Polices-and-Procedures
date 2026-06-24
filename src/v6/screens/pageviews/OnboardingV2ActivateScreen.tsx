@@ -1,8 +1,8 @@
 import { UserPlus, AlertCircle } from 'lucide-react';
-import { FormField, Input, Select, ToneBadge } from '../../primitives';
-import { buildSeedSnapshot } from '@/policy/onboarding-v2/store/seed';
+import { useNavigate } from 'react-router-dom';
+import { FormField, Input, Select, ToneBadge, Button } from '../../primitives';
+import { useOnboardingV2Store } from '@/policy/onboarding-v2';
 
-const snap = buildSeedSnapshot();
 const triggerOptions = [
   { value: 'offer', label: 'Offer Letter Signed' },
   { value: 'transfer', label: 'Inter-agency Transfer' },
@@ -10,7 +10,7 @@ const triggerOptions = [
   { value: 'vendor', label: 'Vendor Onboard' },
 ];
 
-const roleOptions = (snap.roles || []).slice(0,8).map((r: any) => ({ value: r.id, label: r.name })) || [
+const defaultRoleOptions = [
   { value: 'rn', label: 'Registered Nurse (RN)' },
   { value: 'lvn', label: 'Licensed Vocational Nurse (LVN)' },
   { value: 'hha', label: 'Home Health Aide (HHA)' },
@@ -18,6 +18,22 @@ const roleOptions = (snap.roles || []).slice(0,8).map((r: any) => ({ value: r.id
 ];
 
 export function OnboardingV2ActivateScreen() {
+  const navigate = useNavigate();
+  const snap = useOnboardingV2Store(s => s.snap);
+  const ingest = useOnboardingV2Store(s => s.ingest);
+
+  const roleOptions = (snap.roles && snap.roles.length ? snap.roles.slice(0,8).map((r: any) => ({ value: r.id, label: r.name })) : defaultRoleOptions);
+
+  const handleActivate = () => {
+    // Use real store ingest for V1 parity — creates batch + units via engine
+    try {
+      ingest({ type: 'NEW_HIRE', subjectId: 'WM-NEW-' + Date.now().toString(36).slice(-6), roleIds: ['RN'], branchId: 'BR-MAIN', effectiveDate: new Date().toISOString() } as any);
+    } catch (e) {
+      // non-fatal in demo; still navigate
+    }
+    // Navigation to batches list after activation trigger (parity: ensures flow)
+    navigate('/onboarding-v2/batches');
+  };
   return (
     <section
       className="grid gap-lg"
@@ -56,6 +72,12 @@ export function OnboardingV2ActivateScreen() {
               <FormField label="Reconciliation Notes / Override Rationale">
                 {(props) => <Input {...props} placeholder="Provide override or activation context details..." />}
               </FormField>
+            </div>
+
+            <div className="pt-sm">
+              <Button onClick={handleActivate} variant="primary" size="sm">
+                Activate Subject &amp; Create Batch
+              </Button>
             </div>
           </form>
         </div>

@@ -17,7 +17,8 @@
 
 import { POLICY_CORPUS, getCorpusPolicy } from '@/policy/data/policyCorpus';
 import { emit } from '@/policy/security/auditLog';
-import { DEMO_SESSION } from '@/policy/components/FormSignatureContext';
+// Local stub for removed FormSignatureContext
+const DEMO_SESSION = { id: 'demo-session' };
 
 /* ── Public types ─────────────────────────────────────────────── */
 

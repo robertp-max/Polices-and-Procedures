@@ -6,8 +6,8 @@ import {
 import {
   classifyScenario,
   type ScenarioClassification,
-} from '@/policy/pages/iAdministrator/lib/classifyScenario';
-import { getComplianceActionDefinition } from '@/policy/pages/iAdministrator/lib/complianceActionMap';
+} from '@/policy/brad/classifyScenario';
+import { getComplianceActionDefinition } from '@/policy/brad/complianceActionMap';
 
 export interface BradCitation {
   policyId: string;

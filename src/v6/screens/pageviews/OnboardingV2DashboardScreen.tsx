@@ -1,7 +1,8 @@
 import { ShieldCheck, UserCheck, Users, AlertTriangle, FolderSync } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { MetricGrid, DataTable, SurfaceCard, type MetricTileData, type SurfaceCardData, type DataTableColumn } from '../../components';
 import { Badge } from '../../primitives';
-import { buildSeedSnapshot } from '@/policy/onboarding-v2/store/seed';
+import { useOnboardingV2Store } from '@/policy/onboarding-v2';
 import type { WorkforceMember } from '@/policy/onboarding-v2';
 
 interface QueueRow extends Record<string, string> {
@@ -11,24 +12,8 @@ interface QueueRow extends Record<string, string> {
   trigger: string;
   status: string;
   date: string;
+  batchId: string;
 }
-
-const snap = buildSeedSnapshot();
-const workforceById = new Map(snap.workforce.map((w: WorkforceMember) => [w.id, w]));
-
-const realBatchCount = snap.batches.length;
-const blockedCount = snap.units.filter((u: any) => u.status === 'Blocked').length;
-const awaitingSigCount = snap.signatures.filter((s: any) => s.status === 'Sent' || s.status === 'Requested').length;
-const completedUnits = snap.units.filter((u: any) => u.status === 'Completed').length;
-const totalUnits = snap.units.length || 1;
-const clearanceRate = Math.round((completedUnits / totalUnits) * 100);
-const metrics = [
-  { label: 'Total activations', value: String(realBatchCount), helper: 'Active and queued subjects (from seed)', tone: 'teal' },
-  { label: 'Clearance rate', value: `${clearanceRate}%`, helper: 'Gate passage from live units', tone: 'green' },
-  { label: 'Awaiting signature', value: String(awaitingSigCount), helper: 'Dual override or DON locks (from seed)', tone: 'amber' },
-  { label: 'Blocked activations', value: String(blockedCount), helper: 'Requires immediate intervention (from seed)', tone: 'orange' },
-  { label: 'SLA violations', value: '0', helper: 'Within standard processing time', tone: 'teal' },
-] satisfies readonly MetricTileData[];
 
 const queueColumns: readonly DataTableColumn<QueueRow>[] = [
   { key: 'id', label: 'Subject ID' },
@@ -38,23 +23,6 @@ const queueColumns: readonly DataTableColumn<QueueRow>[] = [
   { key: 'date', label: 'Trigger Date' },
   { key: 'status', label: 'Clearance State', status: true },
 ];
-
-// Real queue rows derived from batches + workforce seed (no placeholder subjects)
-const queueRows: readonly QueueRow[] = snap.batches.map((b: any) => {
-  const subj = workforceById.get(b.subjectId) || { id: b.subjectId, legalName: b.subjectId, primaryRoleId: '—' } as any;
-  const statusRaw = (b.status || 'InProgress').toLowerCase();
-  const uiStatus = statusRaw.includes('complete') ? 'complete' :
-                   statusRaw.includes('block') ? 'blocked' :
-                   statusRaw.includes('await') ? 'review-required' : 'active';
-  return {
-    id: subj.id,
-    name: subj.legalName || subj.id,
-    role: subj.primaryRoleId || '—',
-    trigger: (b.triggerType as string) || 'NEW_HIRE',
-    date: (b.createdAt || '').slice(0, 10),
-    status: uiStatus,
-  };
-});
 
 const gateCards = [
   {
@@ -100,6 +68,47 @@ const gateCards = [
 ] satisfies readonly SurfaceCardData[];
 
 export function OnboardingV2DashboardScreen() {
+  const navigate = useNavigate();
+  const snap = useOnboardingV2Store(s => s.snap);
+  const workforceById = new Map(snap.workforce.map((w: WorkforceMember) => [w.id, w]));
+
+  const realBatchCount = snap.batches.length;
+  const blockedCount = snap.units.filter((u: any) => u.status === 'Blocked').length;
+  const awaitingSigCount = snap.signatures.filter((s: any) => s.status === 'Sent' || s.status === 'Requested').length;
+  const completedUnits = snap.units.filter((u: any) => u.status === 'Completed').length;
+  const totalUnits = snap.units.length || 1;
+  const clearanceRate = Math.round((completedUnits / totalUnits) * 100);
+  const metrics = [
+    { label: 'Total activations', value: String(realBatchCount), helper: 'Active and queued subjects (from seed)', tone: 'teal' },
+    { label: 'Clearance rate', value: `${clearanceRate}%`, helper: 'Gate passage from live units', tone: 'green' },
+    { label: 'Awaiting signature', value: String(awaitingSigCount), helper: 'Dual override or DON locks (from seed)', tone: 'amber' },
+    { label: 'Blocked activations', value: String(blockedCount), helper: 'Requires immediate intervention (from seed)', tone: 'orange' },
+    { label: 'SLA violations', value: '0', helper: 'Within standard processing time', tone: 'teal' },
+  ] satisfies readonly MetricTileData[];
+
+  // Real queue rows derived from batches + workforce seed (no placeholder subjects)
+  const queueRows: readonly QueueRow[] = snap.batches.map((b: any) => {
+    const subj = workforceById.get(b.subjectId) || { id: b.subjectId, legalName: b.subjectId, primaryRoleId: '—' } as any;
+    const statusRaw = (b.status || 'InProgress').toLowerCase();
+    const uiStatus = statusRaw.includes('complete') ? 'complete' :
+                     statusRaw.includes('block') ? 'blocked' :
+                     statusRaw.includes('await') ? 'review-required' : 'active';
+    return {
+      id: subj.id,
+      name: subj.legalName || subj.id,
+      role: subj.primaryRoleId || '—',
+      trigger: (b.triggerType as string) || 'NEW_HIRE',
+      date: (b.createdAt || '').slice(0, 10),
+      status: uiStatus,
+      batchId: b.id,
+    };
+  });
+
+  const handleQueueRowClick = (row: QueueRow) => {
+    if (row.batchId) {
+      navigate(`/onboarding-v2/batches/${encodeURIComponent(row.batchId)}`);
+    }
+  };
   return (
     <section
       className="grid gap-lg"
@@ -116,11 +125,11 @@ export function OnboardingV2DashboardScreen() {
             <div className="mb-md flex flex-wrap items-start justify-between gap-md">
               <div>
                 <h3 className="text-h3 font-medium text-ink">Active Activation Queue</h3>
-                <p className="mt-xs text-sm text-muted">Subjects currently in the activation process.</p>
+                <p className="mt-xs text-sm text-muted">Subjects currently in the activation process. Click row to open batch detail.</p>
               </div>
               <Badge variant="count">5 Subjects</Badge>
             </div>
-            <DataTable columns={queueColumns} label="Activation queue" rows={queueRows} />
+            <DataTable columns={queueColumns} label="Activation queue" rows={queueRows} onRowClick={handleQueueRowClick} />
           </section>
         </div>
 

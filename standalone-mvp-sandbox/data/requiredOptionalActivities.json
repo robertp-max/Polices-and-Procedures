@@ -1,0 +1,27 @@
+[
+  {
+    "id": "hub",
+    "label": "Optional Clinical Support Hub",
+    "note": "Start page for support only; not online CE certificate progress."
+  },
+  {
+    "id": "skills",
+    "label": "Skills refresh",
+    "note": "Optional learning support; not clinical-hour credit."
+  },
+  {
+    "id": "confidence",
+    "label": "Optional confidence check",
+    "note": "Ungraded support; does not affect certificate availability."
+  },
+  {
+    "id": "documentation",
+    "label": "Optional documentation support",
+    "note": "Non-PHI support only. Do not upload patient or resident identifiers."
+  },
+  {
+    "id": "help",
+    "label": "Help/contact",
+    "note": "Support requests do not lower score or block certificate."
+  }
+]

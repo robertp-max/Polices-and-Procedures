@@ -1,0 +1,68 @@
+[
+  {
+    "id": "P1-QA-002",
+    "scenario": "Missing legal name blocks certificate",
+    "learnerId": "missing-legal-name",
+    "expected": "blocked"
+  },
+  {
+    "id": "P1-QA-003",
+    "scenario": "Missing CNA number blocks certificate",
+    "learnerId": "missing-cna-number",
+    "expected": "blocked"
+  },
+  {
+    "id": "P1-QA-004",
+    "scenario": "Missing online cap acknowledgement blocks certificate",
+    "learnerId": "skipped-online-cap",
+    "expected": "blocked"
+  },
+  {
+    "id": "P1-QA-005",
+    "scenario": "Skipped theory blocks certificate",
+    "learnerId": "skipped-theory",
+    "expected": "blocked"
+  },
+  {
+    "id": "P1-QA-006",
+    "scenario": "Skipped interaction blocks certificate",
+    "learnerId": "skipped-interaction",
+    "expected": "blocked"
+  },
+  {
+    "id": "P1-QA-007",
+    "scenario": "Insufficient active-time blocks certificate",
+    "learnerId": "insufficient-active-time",
+    "expected": "blocked"
+  },
+  {
+    "id": "P1-QA-008",
+    "scenario": "Failed final exam blocks certificate",
+    "learnerId": "failed-exam",
+    "expected": "blocked"
+  },
+  {
+    "id": "P1-QA-009",
+    "scenario": "Missing affidavit blocks certificate",
+    "learnerId": "missing-affidavit",
+    "expected": "blocked"
+  },
+  {
+    "id": "P1-QA-010",
+    "scenario": "Admin hold blocks certificate",
+    "learnerId": "admin-hold",
+    "expected": "blocked"
+  },
+  {
+    "id": "P1-QA-011",
+    "scenario": "Direct certificate URL blocked conceptually",
+    "learnerId": "missing-legal-name",
+    "expected": "blocked"
+  },
+  {
+    "id": "P1-QA-013",
+    "scenario": "Optional clinical skipped does not block certificate",
+    "learnerId": "optional-clinical-skipped",
+    "expected": "available"
+  }
+]

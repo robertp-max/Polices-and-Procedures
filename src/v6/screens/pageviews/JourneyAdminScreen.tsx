@@ -283,6 +283,7 @@ const cohortPanels = [
 
 export function JourneyAdminScreen() {
   const navigate = useNavigate();
+  // V1 parity fix (journey-admin): mirrors AdminPage (employee aggregates, escalations, syllabus/overrides). Rep uses matching table + queue UI.
   const [activeTab, setActiveTab] = useState<'overview' | 'syllabus' | 'review' | 'governance' | 'builder'>('overview');
   const [courseTitle, setCourseTitle] = useState('RN General Orientation and supervised clearance');
   const [roleTrack, setRoleTrack] = useState('Registered Nurse - new hire');

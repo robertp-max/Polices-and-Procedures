@@ -6,6 +6,11 @@
 // hides real changes. These files come from running an *emitting* `tsc`
 // (e.g. `tsc <file>` or `--noEmit false`), which ignores tsconfig's noEmit.
 //
+// Also clears Vite dev caches (node_modules/.vite etc). After heavy edits
+// (agents, refactors) the dev server module graph often gets out of sync
+// and produces exactly the "/src/.../index.js 404" errors even though
+// sources + build are fine. Clearing here makes `npm run dev` reliable.
+//
 // Runs automatically before `npm run dev` and `npm run build`. Safe & idempotent:
 // only deletes a `.js` when a `.ts` or `.tsx` sibling exists. A genuine `.js`
 // with no TS sibling (none today) is left untouched.
@@ -48,4 +53,29 @@ if (removed > 0) {
 if (kept.length > 0) {
   console.log(`[clean-emitted-js] Left ${kept.length} genuine .js file(s) with no TS sibling:`);
   for (const k of kept) console.log(`  - ${k}`);
+}
+
+// --- Also nuke Vite dev caches to prevent stale module graph 404s on .js rewrites ---
+// Common after bulk source changes (32-agent passes etc). Safe to run every time.
+// This directly fixes repeated "GET /src/.../foo.js 404" in the browser while build is green.
+const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const cacheDirs = [
+  join(projectRoot, 'node_modules', '.vite'),
+  join(projectRoot, 'node_modules', '.tmp'),
+  join(projectRoot, '.vite'),
+];
+
+let cachesCleared = 0;
+for (const dir of cacheDirs) {
+  try {
+    await access(dir);
+    await rm(dir, { recursive: true, force: true });
+    cachesCleared++;
+    console.log(`[clean-emitted-js] Cleared Vite cache dir: ${dir}`);
+  } catch {
+    // did not exist — nothing to do
+  }
+}
+if (cachesCleared > 0) {
+  console.log(`[clean-emitted-js] Vite dev caches cleared (${cachesCleared}). Fresh 'npm run dev' will have a clean module graph.`);
 }

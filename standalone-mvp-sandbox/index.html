@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Prototype Build 1 Standalone MVP Sandbox</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Standalone MVP sandbox only</p>
+        <h1>Prototype Build 1 Certificate Gate Simulator</h1>
+        <p class="warning-line">Not Moodle production. No real learner data. No live certificates. No PHI.</p>
+      </div>
+      <div class="status-pill" id="globalStatus">Loading sandbox data</div>
+    </header>
+
+    <main class="layout">
+      <section class="panel learner-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Synthetic learner switcher</p>
+            <h2>Learner Flow</h2>
+          </div>
+          <select id="learnerSelect" aria-label="Select synthetic learner"></select>
+        </div>
+        <div id="learnerSummary" class="summary-box"></div>
+        <div id="requiredGateList" class="gate-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Required-only certificate logic</p>
+            <h2>Certificate Gate Simulator</h2>
+          </div>
+          <span id="certificateBadge" class="badge neutral">Not evaluated</span>
+        </div>
+        <div id="certificateStatus" class="certificate-status"></div>
+        <div id="blockerList" class="blocker-list"></div>
+      </section>
+
+      <section class="panel optional-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Optional, non-credit, non-gating</p>
+            <h2>Optional Clinical Support</h2>
+          </div>
+          <span class="badge safe">Excluded from gate</span>
+        </div>
+        <div class="notice">
+          Optional clinical support is not clinical-hour credit, is not required, is not certificate-gated, and is excluded from online CE certificate progress.
+        </div>
+        <div id="optionalActivities" class="activity-grid"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Negative test matrix</p>
+            <h2>QA Scenarios</h2>
+          </div>
+        </div>
+        <div id="qaScenarioList" class="scenario-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Mock checklist only</p>
+            <h2>Audit Packet Preview</h2>
+          </div>
+          <span class="badge neutral">No files generated</span>
+        </div>
+        <div id="auditChecklist" class="audit-list"></div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      Standalone MVP sandbox only. Not Moodle production. No real learner data. No live certificates. No PHI.
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
+

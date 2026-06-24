@@ -12,14 +12,28 @@ export interface MetricTileData {
 
 export interface MetricTileProps {
   metric: MetricTileData;
+  onClick?: () => void;
 }
 
-export function MetricTile({ metric }: MetricTileProps) {
+export function MetricTile({ metric, onClick }: MetricTileProps) {
+  const interactive = Boolean(onClick);
   return (
-    <article className={cx(
-      'min-h-[106px] min-w-0 rounded-lg border p-lg shadow-rest transition duration-base ease-standard hover:translate-y-hover-lift hover:shadow-hover active:scale-press',
-      toneSurfaceClasses[metric.tone]
-    )}>
+    <article
+      className={cx(
+        'min-h-[106px] min-w-0 rounded-lg border p-lg shadow-rest transition duration-base ease-standard hover:translate-y-hover-lift hover:shadow-hover active:scale-press',
+        toneSurfaceClasses[metric.tone],
+        interactive && 'cursor-pointer focus-visible:outline-none focus-visible:shadow-focus hover:brightness-[0.985]'
+      )}
+      onClick={onClick}
+      role={interactive ? 'button' : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onKeyDown={interactive ? (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick!();
+        }
+      } : undefined}
+    >
       <div className="truncate text-tag font-medium uppercase tracking-tag opacity-75">
         {metric.label}
       </div>
@@ -33,7 +47,7 @@ export function MetricTile({ metric }: MetricTileProps) {
   );
 }
 
-export function MetricGrid({ metrics, className }: { metrics: readonly MetricTileData[]; className?: string }) {
+export function MetricGrid({ metrics, className }: { metrics: readonly (MetricTileData & { onClick?: () => void })[]; className?: string }) {
   const colCount = metrics.length;
   return (
     <section
@@ -44,8 +58,8 @@ export function MetricGrid({ metrics, className }: { metrics: readonly MetricTil
       )}
       aria-label="Route metrics"
     >
-      {metrics.map((metric) => (
-        <MetricTile key={`${metric.label}-${metric.value}`} metric={metric} />
+      {metrics.map((m) => (
+        <MetricTile key={`${m.label}-${m.value}`} metric={m} onClick={m.onClick} />
       ))}
     </section>
   );

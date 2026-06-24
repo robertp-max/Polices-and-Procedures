@@ -159,8 +159,6 @@ export default defineConfig([
     // Legacy scratch/backup files.
     '**/*.old.ts',
     '**/*.old.tsx',
-    // iAdministrator is not in the CES/Q1/eCIgn release path lint gate.
-    'src/policy/pages/iAdministrator/**',
   ]),
   {
     files: ['**/*.{ts,tsx}'],

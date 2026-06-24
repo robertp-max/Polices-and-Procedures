@@ -1,4 +1,5 @@
-import type { FormSignerSlot } from '@/policy/components/FormSignatureContext';
+// Local type stub (FormSignatureContext removed)
+type FormSignerSlot = { role?: string; required?: boolean; label?: string; userId?: string };
 
 /* ═══════════════════════════════════════════════════════════════
    ENTERPRISE FORMS LIBRARY — 281 ARTIFACTS · FULL CONTENT

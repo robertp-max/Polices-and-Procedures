@@ -1,0 +1,57 @@
+[
+  {
+    "key": "providerOverride",
+    "label": "Provider/course approval metadata or staging override present",
+    "source": "Admin-only staging override placeholder"
+  },
+  {
+    "key": "legalName",
+    "label": "Legal name present",
+    "source": "Required user profile field"
+  },
+  {
+    "key": "cnaNumber",
+    "label": "CNA certificate number present",
+    "source": "Required user profile field"
+  },
+  {
+    "key": "onlineCapAcknowledgement",
+    "label": "Online cap acknowledgement complete",
+    "source": "Quiz/Feedback acknowledgement"
+  },
+  {
+    "key": "theoryActivity",
+    "label": "Required theory activity complete",
+    "source": "Activity completion"
+  },
+  {
+    "key": "interaction",
+    "label": "Required interaction/check complete",
+    "source": "Attempt or completion record"
+  },
+  {
+    "key": "activeTimeOrManualReview",
+    "label": "Active-time met or manual review hold cleared",
+    "source": "Candidate plugin or manual admin review hold"
+  },
+  {
+    "key": "finalExamPassed",
+    "label": "Final exam/test passed",
+    "source": "Final quiz placeholder"
+  },
+  {
+    "key": "affidavitComplete",
+    "label": "Final signed statement/affidavit complete",
+    "source": "Feedback/Assignment placeholder"
+  },
+  {
+    "key": "certificateFieldsPopulated",
+    "label": "Certificate fields populated",
+    "source": "Certificate field map"
+  },
+  {
+    "key": "adminHoldClear",
+    "label": "Admin hold clear",
+    "source": "Manual hold gate"
+  }
+]
