@@ -479,7 +479,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
     requiredSigners: makeSigners([
       { userId: 'u-don-01', name: 'Maria Gonzalez, RN', initials: 'MG', role: 'DON', status: 'pending', hoursToEscalation: -4 },
     ]),
-    dueDate: '2026-05-12',  // Tuesday (Tue/Thu schedule)
+    dueDate: '2026-05-19',  // Tuesday (Tue/Thu schedule)
     escalationTimer: -4,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 5,
@@ -561,7 +561,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
       { userId: 'u-don-01', name: 'Maria Gonzalez, RN', initials: 'MG', role: 'DON', status: 'signed', signedAt: '2026-05-08T09:45:00Z' },
       { userId: 'u-admin-01', name: 'Robert Chen', initials: 'RC', role: 'Administrator', status: 'signed', signedAt: '2026-05-08T11:20:00Z' },
     ]),
-    dueDate: '2026-05-19',  // Tuesday (Tue/Thu schedule)
+    dueDate: '2026-05-05',  // Tuesday (Tue/Thu schedule)
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 6,
       requiredFormsComplete: 6,
@@ -601,7 +601,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
     requiredSigners: makeSigners([
       { userId: 'u-don-01', name: 'Maria Gonzalez, RN', initials: 'MG', role: 'DON', status: 'pending', hoursToEscalation: 72 },
     ]),
-    dueDate: '2026-05-21',  // Thursday (Tue/Thu schedule)
+    dueDate: '2026-04-09',  // Thursday (Tue/Thu schedule)
     escalationTimer: 72,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 4,
@@ -642,7 +642,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
     requiredSigners: makeSigners([
       { userId: 'u-don-01', name: 'Maria Gonzalez, RN', initials: 'MG', role: 'DON', status: 'pending', hoursToEscalation: 24 },
     ]),
-    dueDate: '2026-05-26',  // Tuesday (Tue/Thu schedule)
+    dueDate: '2026-05-19',  // Tuesday (Tue/Thu schedule)
     escalationTimer: 24,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 8,
@@ -979,7 +979,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
     requiredSigners: makeSigners([
       { userId: 'u-admin-01', name: 'Robert Chen', initials: 'RC', role: 'Administrator', status: 'signed', signedAt: '2026-05-13T09:00:00Z' },
     ]),
-    dueDate: '2026-05-19',  // Tuesday (Tue/Thu schedule)
+    dueDate: '2026-05-14',  // Thursday (Tue/Thu schedule)
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 3,
       requiredFormsComplete: 3,
@@ -1019,7 +1019,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
     requiredSigners: makeSigners([
       { userId: 'u-don-01', name: 'Maria Gonzalez, RN', initials: 'MG', role: 'DON', status: 'pending', hoursToEscalation: 60 },
     ]),
-    dueDate: '2026-05-21',  // Thursday (Tue/Thu schedule)
+    dueDate: '2026-03-10',  // Thursday (Tue/Thu schedule)
     escalationTimer: 60,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 4,
@@ -1148,7 +1148,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
       label: 'Awaiting vendor response — background check provider delay',
       resourceId: 'wf-bgcheck-2026-10',
     },
-    dueDate: '2026-05-12',  // Tuesday (Tue/Thu schedule)
+    dueDate: '2026-05-19',  // Tuesday (Tue/Thu schedule)
     escalationTimer: -8,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 4,
@@ -1189,7 +1189,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
     requiredSigners: makeSigners([
       { userId: 'u-don-01', name: 'Maria Gonzalez, RN', initials: 'MG', role: 'DON', status: 'pending', hoursToEscalation: 8 },
     ]),
-    dueDate: '2026-05-19',  // Tuesday (Tue/Thu schedule)
+    dueDate: '2026-05-12',  // Tuesday (Tue/Thu schedule)
     escalationTimer: 8,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 7,
@@ -1231,7 +1231,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
       { userId: 'u-gb-01', name: 'Patricia Hale', initials: 'PH', role: 'Governing Body', status: 'pending', hoursToEscalation: 84 },
       { userId: 'u-acc-01', name: 'David Kim, CPA', initials: 'DK', role: 'Accounting', status: 'pending', hoursToEscalation: 84 },
     ]),
-    dueDate: '2026-05-21',  // Thursday (Tue/Thu schedule)
+    dueDate: '2026-02-10',  // Tuesday (Tue/Thu schedule)
     escalationTimer: 84,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 5,
@@ -1273,7 +1273,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
       { userId: 'u-gb-01', name: 'Patricia Hale', initials: 'PH', role: 'Governing Body', status: 'pending', hoursToEscalation: 28 },
       { userId: 'u-admin-01', name: 'Robert Chen', initials: 'RC', role: 'Administrator', status: 'signed', signedAt: '2026-05-20T17:00:00Z' },
     ]),
-    dueDate: '2026-05-19',  // Tuesday (Tue/Thu schedule)
+    dueDate: '2026-05-07',  // Thursday (Tue/Thu schedule)
     escalationTimer: 28,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 2,
@@ -1316,7 +1316,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
       { userId: 'u-admin-01', name: 'Robert Chen', initials: 'RC', role: 'Administrator', status: 'signed', signedAt: '2026-05-18T10:00:00Z' },
       { userId: 'u-don-01', name: 'Maria Gonzalez, RN', initials: 'MG', role: 'DON', status: 'signed', signedAt: '2026-05-18T14:30:00Z' },
     ]),
-    dueDate: '2026-05-19',
+    dueDate: '2026-05-28',  // Thursday (Tue/Thu schedule)
     escalationTimer: -2,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 1,
@@ -1439,7 +1439,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
     requiredSigners: makeSigners([
       { userId: 'u-don-01', name: 'Maria Gonzalez, RN', initials: 'MG', role: 'DON', status: 'pending', hoursToEscalation: 44 },
     ]),
-    dueDate: '2026-05-21',  // Thursday (Tue/Thu schedule)
+    dueDate: '2026-01-08',  // Thursday (Tue/Thu schedule)
     escalationTimer: 44,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 3,
@@ -1521,7 +1521,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
     requiredSigners: makeSigners([
       { userId: 'u-gb-01', name: 'Patricia Hale', initials: 'PH', role: 'Governing Body', status: 'pending', hoursToEscalation: 90 },
     ]),
-    dueDate: '2026-05-26',  // Tuesday (Tue/Thu schedule)
+    dueDate: '2026-05-21',  // Thursday (Tue/Thu schedule)
     escalationTimer: 90,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 4,
@@ -1563,7 +1563,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
       { userId: 'u-don-01', name: 'Maria Gonzalez, RN', initials: 'MG', role: 'DON', status: 'pending', hoursToEscalation: 12 },
       { userId: 'u-admin-01', name: 'Robert Chen', initials: 'RC', role: 'Administrator', status: 'signed', signedAt: '2026-05-20T09:15:00Z' },
     ]),
-    dueDate: '2026-05-21',
+    dueDate: '2026-02-05',  // Thursday (Tue/Thu schedule)
     escalationTimer: 12,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 4,
@@ -1604,7 +1604,7 @@ export const V3_ExecutionUnitsSeed: ExecutionUnit[] = [
     requiredSigners: makeSigners([
       { userId: 'u-admin-01', name: 'Robert Chen', initials: 'RC', role: 'Administrator', status: 'pending', hoursToEscalation: -6 },
     ]),
-    dueDate: '2026-05-19',  // Tuesday (Tue/Thu schedule)
+    dueDate: '2026-05-21',  // Thursday (Tue/Thu schedule)
     escalationTimer: -6,
     evidenceStatus: makeEvidenceStatus({
       requiredFormsTotal: 10,

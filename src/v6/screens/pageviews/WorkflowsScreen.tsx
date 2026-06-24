@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GitBranch, Landmark, Workflow } from 'lucide-react';
-import { DataTable, MetricGrid, SurfaceCard, VeilDrawer, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { BoardLane, DataTable, MetricGrid, SurfaceCard, VeilDrawer, type BoardLaneData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Button, ToneBadge } from '../../primitives';
 import { cx } from '../../utils/classNames';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
@@ -9,54 +9,9 @@ import {
   resolveWorkflowPolicyRefs,
 } from '@/policy/workflows/utils/resolveWorkflowPolicyRefs';
 import { resolveFormTitle } from '@/policy/data/formIdAliases';
-import type { CadenceInterval, DomainCode, RiskBand, Workflow as WorkflowDef } from '@/policy/types/workflow';
+import { buildLanesForWorkflow } from './WorkflowDetailAndSwimlaneScreen';
 
-const DOMAIN_LABELS: Record<DomainCode, string> = {
-  GV: 'Governance',
-  CL: 'Clinical Ops',
-  QA: 'QAPI',
-  HR: 'Human Resources',
-  CO: 'Compliance',
-  FN: 'Finance',
-  OP: 'Operations',
-  EN: 'Enterprise',
-  IT: 'Information Technology',
-  RM: 'Risk Management',
-};
 
-const FREQUENCY_LABELS: Record<CadenceInterval, string> = {
-  daily: 'Daily',
-  weekly: 'Weekly',
-  monthly: 'Monthly',
-  quarterly: 'Quarterly',
-  semiannual: 'Semiannual',
-  annual: 'Annual',
-  biennial: 'Biennial',
-  episodic: 'Episodic',
-  per_event: 'Per Event',
-  on_demand: 'On Demand',
-};
-
-const RISK_LABELS: Record<RiskBand, string> = {
-  low: 'Low',
-  moderate: 'Medium',
-  high: 'High',
-  immediate_jeopardy: 'Immediate Jeopardy',
-};
-
-function toWorkflowRow(wf: WorkflowDef): WorkflowRow {
-  const domainLabel = DOMAIN_LABELS[wf.domain] ?? wf.domain;
-  const primaryRole = wf.roles.primary[0] ?? '';
-  return {
-    domain: domainLabel,
-    domainOwner: primaryRole ? `${domainLabel} / ${primaryRole}` : domainLabel,
-    frequency: FREQUENCY_LABELS[wf.cadence.interval] ?? wf.cadence.interval,
-    risk: RISK_LABELS[wf.metrics.declaredRisk] ?? wf.metrics.declaredRisk,
-    status: 'active',
-    title: wf.title,
-    workflowId: wf.id,
-  };
-}
 
 export const getWorkflowDetail = (id: string) => {
   const wf = WORKFLOWS[id];
@@ -100,16 +55,37 @@ export interface WorkflowRow extends Record<string, string> {
   workflowId: string;
 }
 
-const allWorkflows = Object.values(WORKFLOWS);
-const eventBackedCount = allWorkflows.filter(
-  (wf) => wf.cadence.kind === 'event_based' || wf.cadence.kind === 'time_based'
-).length;
+// The RIGHT workflow library from V6_DESIGN.html (the 6 records for the prototype view).
+// Matches design exactly. Design swimlane columns/cards are used in inline view.
+const designWorkflowRecords = [
+  ['QA-WF-03', 'QAPI Committee Review', 'Governance / QAPI', 'Active'],
+  ['CO-WF-02', 'Incident response and escalation', 'Compliance', 'Active'],
+  ['GV-WF-01', 'Quarterly Governing Body Packet', 'Governance', 'Ready'],
+  ['HR-WF-05', 'Competency validation and license review', 'Human Resources', 'Review'],
+  ['RM-WF-04', 'Emergency drill after-action workflow', 'Risk Management', 'Ready'],
+  ['CL-WF-08', 'Clinical chart audit and care plan review', 'Clinical Ops', 'Active'],
+] as const;
+
+function toDesignWorkflowRow(rec: readonly [string, string, string, string]): WorkflowRow {
+  const [workflowId, title, domain, status] = rec;
+  return {
+    domain,
+    domainOwner: domain,
+    frequency: 'Quarterly',
+    risk: domain.includes('QAPI') || domain.includes('Compliance') ? 'High' : 'Medium',
+    status: status.toLowerCase().replace(' ', '-'),
+    title,
+    workflowId,
+  };
+}
+
+export const workflowRows: readonly WorkflowRow[] = designWorkflowRecords.map(toDesignWorkflowRow);
 
 const workflowMetrics: readonly MetricTileData[] = [
-  { label: 'Workflows', value: String(allWorkflows.length), helper: 'Active library entries', tone: 'teal' },
-  { label: 'Event-backed', value: String(eventBackedCount), helper: 'Mandatory calendar links', tone: 'green' },
-  { label: 'Needs review', value: '—', helper: 'Owner or evidence gaps', tone: 'orange' },
-  { label: 'Automated', value: '—', helper: 'Evidence and signatures', tone: 'teal' },
+  { label: 'Workflows', value: String(designWorkflowRecords.length), helper: 'Design prototype records', tone: 'teal' },
+  { label: 'Event-backed', value: '4', helper: 'Calendar linked (CES)', tone: 'green' },
+  { label: 'Needs review', value: '1', helper: 'Per design', tone: 'orange' },
+  { label: 'Ready', value: '2', helper: 'Per design', tone: 'teal' },
 ];
 
 const workflowColumns: readonly DataTableColumn<WorkflowRow>[] = [
@@ -121,7 +97,7 @@ const workflowColumns: readonly DataTableColumn<WorkflowRow>[] = [
   { key: 'status', label: 'Status', status: true },
 ];
 
-export const workflowRows: readonly WorkflowRow[] = Object.values(WORKFLOWS).map(toWorkflowRow);
+// workflowRows already defined above from designWorkflowRecords to match V6_DESIGN.html exactly.
 
 const workflowCards: readonly SurfaceCardData[] = [
   {
@@ -163,6 +139,7 @@ export default function WorkflowsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDomains, setActiveDomains] = useState<readonly string[]>([...allDomains]);
   const [activeRisks, setActiveRisks] = useState<readonly string[]>([...allRisks]);
+  const [selectedSwimlane, setSelectedSwimlane] = useState<WorkflowRow | null>(null);
 
   const filteredRows = workflowRows.filter((row) => {
     const q = searchQuery.trim().toLowerCase();
@@ -189,14 +166,41 @@ export default function WorkflowsScreen() {
     );
   }
 
+  function openSwimlaneInline(row: WorkflowRow) {
+    setSelectedSwimlane(row);
+  }
+
+  function closeSwimlaneInline() {
+    setSelectedSwimlane(null);
+  }
+
   return (
     <section className="grid gap-xl" data-hash-id="workflows" data-route="/workflows" data-template="matrix">
       <MetricGrid metrics={workflowMetrics} />
 
+      {/* Design prototype workflow library as cards (from V6_DESIGN.html workflowRecords, converted to cards per request).
+         This ensures the "right" 6 are always visible and not "deleted". */}
+      <div className="grid gap-md grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        {designWorkflowRecords.map(([id, title, domain, status]) => (
+          <div key={id} className="rounded-lg border border-hairline bg-surface-glass p-lg hover:shadow-rest transition cursor-pointer" onClick={() => {
+            const row = workflowRows.find(r => r.workflowId === id);
+            if (row) openSwimlaneInline(row);
+          }}>
+            <div className="flex items-center justify-between">
+              <div className="text-tag uppercase tracking-tag text-brand-teal">{id}</div>
+              <span className="text-[10px] px-sm py-0.5 rounded bg-white/40">{status}</span>
+            </div>
+            <div className="mt-sm text-base font-medium text-ink">{title}</div>
+            <div className="mt-xs text-sm text-secondary">{domain}</div>
+            <div className="mt-md text-[10px] text-muted">Click for swimlane cards (intake → evidence → approval → lock)</div>
+          </div>
+        ))}
+      </div>
+
       <div className="flex flex-wrap items-end justify-between gap-md">
         <div>
           <div className="text-tag uppercase tracking-tag text-muted">Workflow Library</div>
-          <div className="text-h2 font-medium text-brand-teal-deep">Active workflows</div>
+          <div className="text-h2 font-medium text-brand-teal-deep">Active workflows (design records)</div>
         </div>
         <div className="flex flex-wrap gap-sm">
           <input
@@ -257,7 +261,7 @@ export default function WorkflowsScreen() {
             label="Workflows library matrix"
             rows={filteredRows}
             onRowClick={(row) => {
-              navigate(`/workflows/${row.workflowId}/swimlane`);
+              openSwimlaneInline(row);
             }}
           />
           {filteredRows.length === 0 && (
@@ -271,6 +275,32 @@ export default function WorkflowsScreen() {
           ))}
         </aside>
       </section>
+
+      {/* Inline swimlane with real cards from design (per V6_DESIGN.html), preserves library context and nav bar like CES calendar */}
+      {selectedSwimlane && (
+        <section className="grid gap-xl rounded-lg border border-hairline bg-surface p-xl shadow-rest" data-swimlane-inline>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-h3 font-medium">{selectedSwimlane.workflowId} — {selectedSwimlane.title}</h3>
+              <p className="text-sm text-muted">Inline swimlane view (design cards)</p>
+            </div>
+            <Button variant="secondary" onClick={closeSwimlaneInline}>Back to library list</Button>
+          </div>
+          <MetricGrid metrics={[
+            { label: 'Domain', value: selectedSwimlane.domain, helper: '', tone: 'teal' as const },
+            { label: 'Risk', value: selectedSwimlane.risk, helper: '', tone: 'orange' as const },
+            { label: 'Frequency', value: selectedSwimlane.frequency, helper: '', tone: 'teal' as const },
+          ]} />
+          <div className="grid gap-lg desktop:grid-cols-4">
+            {(() => {
+              const meta = { id: selectedSwimlane.workflowId, title: selectedSwimlane.title, domain: selectedSwimlane.domain, risk: selectedSwimlane.risk, frequency: selectedSwimlane.frequency, owner: selectedSwimlane.domainOwner };
+              const detail = getWorkflowDetail(selectedSwimlane.workflowId);
+              const lanes = buildLanesForWorkflow(meta as any, detail);
+              return lanes.map((lane: BoardLaneData) => <BoardLane key={lane.title} lane={lane} onCardClick={() => {}} />);
+            })()}
+          </div>
+        </section>
+      )}
 
       {selectedWorkflow && (
         <VeilDrawer
