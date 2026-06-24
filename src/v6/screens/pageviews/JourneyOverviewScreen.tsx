@@ -97,7 +97,7 @@ const journeyPhases = [
 ] satisfies readonly JourneyPhase[];
 
 const coreJourneys = ALL_MODULES
-  .filter((m: any) => m.group === 'GAO' || m.group === 'ANN')
+  .filter((m: any) => (m.group === 'GAO' || m.group === 'ANN') && !m.id?.startsWith('ACHC'))
   .slice(0, 41);
 
 const achcFromModules = ALL_MODULES.filter((m: any) => m.id?.startsWith('ACHC'));
@@ -126,12 +126,12 @@ const journeyModules = [
     policyRefs: m.policyRefs || [],
     score: 0,
     status: 'ready',
-    title: m.title,
+    title: 'ACHC Annual: ' + m.title,
     tone: 'amber',
   })),
 ] as any[];
 
-// data-driven: 41 onboarding journeys (GAO/ANN slice) + all 12 ACHC annual from canonical (ALL_MODULES + achcAnnualTests parity)
+// data-driven: 41 onboarding journeys (GAO/ANN slice, ACHC excluded) + all 12 ACHC annual from canonical (ALL_MODULES) for parity
 
 const supervisorReadiness = [
   {
@@ -255,7 +255,7 @@ export function JourneyOverviewScreen() {
                 Module cards and steps
               </h2>
               <p className="max-w-content text-sm text-muted">
-                Journey modules track GAO, role, supervised-visit, and annual readiness steps for active learners.
+                Journey modules track GAO, role, supervised-visit (41 from catalog) + 12 ACHC annual training modules for active learners.
               </p>
             </div>
             <ToneTag tone="orange">GAO-EXAM locked</ToneTag>
