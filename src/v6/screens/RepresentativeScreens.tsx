@@ -1585,45 +1585,7 @@ const achcCards: readonly SurfaceCardData[] = [
 // surface honest record metadata and conservatively derived posture tokens.
 const FORM_VIEWER_DATASET = new Map<string, FormRecord>(FORMS_DATASET.map((record) => [record.id, record] as const));
 
-const FORM_VIEWER_DOMAIN_NAMES: Record<string, string> = {
-  EN: 'Enterprise',
-  GV: 'Governance',
-  HR: 'Human Resources',
-  CL: 'Clinical',
-  QA: 'Quality',
-  RM: 'Risk Management',
-  OP: 'Operations',
-  FN: 'Finance',
-  IT: 'IT & Security',
-  IS: 'IT & Security',
-  CO: 'Compliance',
-};
-
-const formViewerDomainName = (code: string): string => FORM_VIEWER_DOMAIN_NAMES[code] ?? code;
-
-// Posture token derived only from the real `usage` field (mandatory vs conditional).
-const formViewerUsageStatus = (usage: string): string => {
-  switch (usage) {
-    case 'Required':
-      return 'ready';
-    case 'Conditional':
-      return 'pending';
-    case 'Optional':
-      return 'draft';
-    default:
-      return 'info';
-  }
-};
-
-// Audit-critical records carry validated evidence posture; others are informational.
-const formViewerEvidenceStatus = (classifications: readonly string[]): string =>
-  classifications.includes('audit_critical') ? 'validated' : 'info';
-
-const formViewerPoliciesLabel = (policies: readonly string[]): string => {
-  const first = policies[0] ?? '';
-  if (first.startsWith('ALL')) return first;
-  return policies.length === 1 ? '1 linked policy' : `${policies.length} linked policies`;
-};
+// FORM_VIEWER_DOMAIN_NAMES and helpers removed (unused after document viewer refactor)
 
 const bradMetrics: readonly MetricTileData[] = [
   { label: 'Risk signals', value: '3', helper: '1 high severity', tone: 'orange' },
@@ -3464,122 +3426,58 @@ function FormWorkspaceScreen() {
     );
   }
 
-  // Honest record metadata for the field cards. The dataset carries no per-form
-  // instance values, signer rosters, or status, so we surface real record fields
-  // with conservatively derived posture tokens — nothing fabricated.
-  const usageStatus = formViewerUsageStatus(record.usage);
-  const evidenceStatus = formViewerEvidenceStatus(record.classifications);
-  const recordFields: readonly (readonly [string, string, string])[] = [
-    ['Form ID', record.id, 'info'],
-    ['Form name', record.name, 'info'],
-    ['Type', record.type, 'info'],
-    ['Domain', formViewerDomainName(record.domainCode), 'info'],
-    ['Usage', record.usage, usageStatus],
-    ['Frequency', record.frequency, 'info'],
-    ['Linked policies', formViewerPoliciesLabel(record.policies), 'info'],
-    [
-      'Classifications',
-      record.classifications.length > 0 ? record.classifications.join(', ') : 'None on record',
-      evidenceStatus,
-    ],
-    ...(formInstanceId ? [['Form Instance ID', formInstanceId, 'teal'] as const] : []),
-  ];
+  // Document-style fillable form viewer (V1 print/download document style + fillable)
+  const [formValues, setFormValues] = useState<Record<string, any>>({});
+  const updateValue = (key: string, val: any) => setFormValues(p => ({ ...p, [key]: val }));
 
-  // Preserve formInstanceId on navigation for eCign / print (real records only)
   const buildFormNav = (suffix: string) => {
     const params = new URLSearchParams();
     if (formInstanceId) params.set('form_instance_id', formInstanceId);
     const qs = params.toString();
     return `/forms/${encodeURIComponent(record.id)}${suffix}${qs ? `?${qs}` : ''}`;
   };
-
   const navigateToEsign = () => navigate(buildFormNav('/esign'));
-  const navigateToPrint = () => {
-    // For print route, use the dedicated path so iframe/printForm util works
-    window.location.href = buildFormNav('/print');
-  };
+  const navigateToPrint = () => { window.location.href = buildFormNav('/print'); };
+
+  const demo = [
+    { l: 'Respondent Name', t: 'text' },
+    { l: 'Date', t: 'date' },
+    { l: 'Findings / Notes', t: 'textarea' },
+    { l: 'Confirmed Accurate', t: 'checkbox' },
+  ];
 
   return (
     <ScreenStack metrics={operationsMetrics}>
-      <section className="grid gap-xl desktop:grid-cols-[240px_minmax(0,3fr)_minmax(320px,2fr)]">
-        <aside className="rounded-lg border border-card bg-surface p-lg shadow-rest">
-          <h2 className="mb-lg text-h2 font-medium text-ink">Sections</h2>
-          <div className="grid gap-sm">
-            {['Identity', 'Disclosure', 'Reviewer', 'Signature', 'Audit'].map((section, index) => (
-              <button
-                className={cx(
-                  'min-h-row rounded-md px-md text-left text-sm transition duration-fast ease-standard hover:bg-surface-hover',
-                  index === 0 ? 'bg-tone-teal-bg text-brand-teal' : 'bg-tone-slate-bg text-ink',
-                )}
-                key={section}
-                type="button"
-              >
-                {section}
-              </button>
-            ))}
+      <div className="mx-auto max-w-[860px] bg-white p-8 shadow-sm border border-hairline print:shadow-none print:border-0" style={{ color: '#1F1C1B' }}>
+        <div className="flex justify-between mb-6">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.22em] text-[#607C7D]">Enterprise Forms Library</div>
+            <h1 className="text-2xl font-semibold mt-1">{record.name}</h1>
+            <div className="font-mono text-sm text-brand-teal mt-0.5">{record.id}</div>
           </div>
-        </aside>
-        <section className="rounded-lg bg-surface p-xl shadow-rest">
-          <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
-            <div>
-              <ToneTag tone="orange">Interactive form</ToneTag>
-              <h2 className="mt-lg text-h2 font-medium text-ink">{record.id} - {record.name}</h2>
-              {formInstanceId && (
-                <div className="mt-xs"><ToneTag tone="teal">Instance: {formInstanceId}</ToneTag></div>
-              )}
-              {isPrintRoute && <div className="mt-xs"><ToneTag tone="teal">Print view</ToneTag></div>}
-              <p className="mt-md text-sm text-muted">
-                Form renderer with section states, validation, linked policy, and required signer logic.
-              </p>
-              <div className="mt-md flex flex-wrap gap-sm">
-                <button type="button" onClick={navigateToPrint} className="text-xs px-3 py-1 rounded border border-hairline hover:bg-surface">Print / Download</button>
-                <button type="button" onClick={navigateToEsign} className="text-xs px-3 py-1 rounded border border-hairline hover:bg-surface">Open eCIgn Signing</button>
-              </div>
+          {!isPrintRoute && (
+            <div className="flex gap-2 text-xs no-print">
+              <button onClick={navigateToPrint} className="px-3 py-1 border rounded hover:bg-surface">Print / Download</button>
+              <button onClick={navigateToEsign} className="px-3 py-1 border rounded hover:bg-surface">Open eCIgn</button>
             </div>
-            <ToneTag tone="orange">{record.usage}</ToneTag>
-          </div>
-          <div className="grid gap-lg">
-            {recordFields.map(([label, value, status]) => (
-              <article className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={label}>
-                <div className="mb-sm flex items-center justify-between gap-md">
-                  <p className="text-tag uppercase tracking-tag text-ink">{label}</p>
-                  <ToneBadge size="sm" status={status} />
-                </div>
-                <div className="rounded-md border border-card bg-surface px-md py-md text-sm text-secondary">{value}</div>
-              </article>
-            ))}
-          </div>
-        </section>
-        <aside className="grid gap-lg">
-          <SurfaceCard
-            card={{
-              body:
-                record.policies[0]?.startsWith('ALL')
-                  ? `Linked to ${record.policies[0]}.`
-                  : `Linked to ${formViewerPoliciesLabel(record.policies)}: ${record.policies.join(', ')}.`,
-              icon: FileText,
-              status: 'ready',
-              title: 'Linked policy',
-              tone: 'teal',
-            }}
-          />
-          <SurfaceCard
-            card={{
-              body: `${record.type} form, ${record.usage.toLowerCase()} usage, ${record.frequency.toLowerCase()} frequency. Evidence posture: ${evidenceStatus}.`,
-              icon: ClipboardCheck,
-              status: usageStatus,
-              title: 'Record summary',
-              tone: usageStatus === 'ready' ? 'teal' : 'orange',
-            }}
-          />
-          <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
-            <h2 className="mb-lg text-h2 font-medium text-ink">Required signers</h2>
-            <div className="rounded-md bg-tone-slate-bg p-md text-sm text-muted">
-              Signer roster is not carried in the forms dataset for this record. Signer assignment is handled in the eCIgn signing workspace.
-            </div>
-          </section>
-        </aside>
-      </section>
+          )}
+        </div>
+
+        <div className="mb-4 p-3 bg-[#F7FEFF] border-l-4 border-brand-teal text-sm">Purpose: {record.usage} form. Domain: {record.domainCode || '—'}.</div>
+        <div className="mb-8 p-3 bg-[#FFFAF7] border-l-4 border-orange-500 text-sm">Instructions: Fill fields. Print captures values. eCign for signatures.</div>
+
+        <div className="space-y-4">
+          {demo.map((f, i) => {
+            const k = f.l; const v = formValues[k];
+            if (f.t === 'checkbox') return <label key={i} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!v} onChange={e=>updateValue(k, e.target.checked)} disabled={isPrintRoute} /> {f.l}</label>;
+            if (f.t === 'textarea') return <div key={i}><div className="text-xs text-muted mb-1">{f.l}</div><textarea value={v||''} onChange={e=>updateValue(k,e.target.value)} disabled={isPrintRoute} rows={3} className="w-full border p-2 text-sm" /></div>;
+            return <div key={i}><div className="text-xs text-muted mb-1">{f.l}</div><input type={f.t} value={v||''} onChange={e=>updateValue(k,e.target.value)} disabled={isPrintRoute} className="w-full border p-2 text-sm" /></div>;
+          })}
+        </div>
+
+        <div className="mt-8 pt-3 border-t text-[10px] text-muted print:hidden">Session values. Browser Print for filled PDF.</div>
+      </div>
+      {isPrintRoute && <div className="text-xs text-center mt-3 text-muted print:hidden">Browser Print (Ctrl/Cmd+P) or Save as PDF.</div>}
     </ScreenStack>
   );
 }
