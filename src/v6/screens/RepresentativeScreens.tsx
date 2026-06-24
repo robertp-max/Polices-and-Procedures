@@ -1879,8 +1879,11 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
 // Generic workspace subnav (top of workspace content, V1 style)
 function WorkspaceSubnav({ items, currentPath, prefix }: { items: any[]; currentPath: string; prefix: string }) {
   const isActivePath = (itemPath: string) => {
-    if (currentPath === itemPath) return true;
-    if (currentPath.startsWith(itemPath + '/')) return true;
+    const p = (currentPath || '').split(/[?#]/)[0];
+    if (p === itemPath) return true;
+    if (p.startsWith(itemPath + '/')) {
+      return itemPath !== '/journey';  // Overview root only exact match, not children
+    }
     return false;
   };
   return (

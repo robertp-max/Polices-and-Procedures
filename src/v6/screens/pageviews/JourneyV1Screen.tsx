@@ -1,4 +1,5 @@
 import { BookOpenCheck, CheckCircle2, ClipboardCheck, FileCheck2, LockKeyhole, Map, PlayCircle, Route, ShieldCheck, UserCheck, type LucideIcon } from 'lucide-react';
+import { achcAnnualTests } from '@/policy/journey/data/achcAnnualTests.data';
 import { useNavigate } from 'react-router-dom';
 import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneSoftTileClasses, toneGlassSurfaceClasses, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, Button, ToneBadge } from '../../primitives';
@@ -83,6 +84,7 @@ const legacyPhases: readonly LegacyPhase[] = [
 ];
 
 const lessonModules: readonly LessonModule[] = [
+  // Core onboarding from data
   {
     id: 'GAO-001',
     method: 'Read and attest',
@@ -149,16 +151,6 @@ const lessonModules: readonly LessonModule[] = [
     track: 'Onboarding',
   },
   {
-    id: 'ANN-001',
-    method: 'Quiz',
-    policy: 'CO-CP-001',
-    readiness: 'Annual ACHC item is staged but not blocking Day-1 clearance.',
-    status: 'ready',
-    title: 'Compliance and Code of Conduct',
-    tone: 'amber',
-    track: 'Annual ACHC',
-  },
-  {
     id: 'RN-001',
     method: 'Return demo',
     policy: 'CL-CD-001, IT-UP-001',
@@ -169,7 +161,19 @@ const lessonModules: readonly LessonModule[] = [
     tone: 'green',
     track: 'Onboarding',
   },
-];
+  // All 12 ACHC Annual training
+  ...achcAnnualTests.map((test, idx) => ({
+    id: test.topic_id,
+    method: 'Quiz',
+    policy: 'ACHC annual requirement',
+    readiness: idx < 3 ? 'Annual ACHC item staged.' : 'Part of 12 ACHC annual training set.',
+    score: '—',
+    status: idx === 0 ? 'active' : 'ready',
+    title: test.topic_id.replace('ACHC-ART-', 'ACHC Annual: '),
+    tone: idx === 0 ? 'orange' : 'amber',
+    track: 'Annual ACHC',
+  })),
+] as readonly LessonModule[];
 
 const readinessCards: readonly ReadinessCard[] = [
   {
