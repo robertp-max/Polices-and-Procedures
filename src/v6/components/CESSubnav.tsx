@@ -19,25 +19,25 @@ export function CESSubnav() {
   const location = useLocation();
   const currentPath = location.pathname;
 
-  const isActivePath = (itemPath: string) => {
-    if (currentPath === itemPath) return true;
-    if (itemPath === '/ces/calendar' && currentPath.startsWith('/ces/calendar')) return true;
-    if (itemPath === '/ces/board' && currentPath === '/ces/board') return true;
-    if (itemPath === '/workflows' && (currentPath === '/workflows' || currentPath.startsWith('/workflows/'))) return true;
-    if (itemPath === '/compliance/master-controls' && currentPath.startsWith('/compliance/master-controls')) return true;
-    if (itemPath === '/audit' && currentPath.startsWith('/audit')) return true;
-    if (itemPath === '/evidence' && currentPath.startsWith('/evidence')) return true;
-    if (itemPath === '/ces/reports' && currentPath.startsWith('/ces/reports')) return true;
-    // contextual deep routes activate their parent subitem (hidden ones like events/my-tasks not in visible subnav)
-    if (itemPath === '/ces/board' && currentPath.startsWith('/events/')) return true; // e.g. swimlane activates Sprint Board contextually if appropriate
-    return false;
-  };
+  // Longest-match reduce ensures exactly ONE active tab (no double underlines)
+  const activeTo = cesSubnavItems.reduce((best: string | null, item) => {
+    const to = item.path;
+    if (currentPath === to || currentPath.startsWith(to + '/')) {
+      if (!best || to.length > best.length) {
+        return to;
+      }
+    }
+    return best;
+  }, null as string | null);
+
+  // Contextual: /events/* swimlanes activate Sprint Board (not shown as direct CES child per spec)
+  const effectiveActive = currentPath.startsWith('/events/') ? '/ces/board' : activeTo;
 
   return (
     <div className="mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="CES subnav">
       <span className="mr-sm text-tag uppercase tracking-tag text-muted">CES:</span>
       {cesSubnavItems.map((item) => {
-        const isActive = isActivePath(item.path);
+        const isActive = effectiveActive === item.path;
         return (
           <Link
             key={item.path}

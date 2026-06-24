@@ -96,10 +96,14 @@ const journeyPhases = [
   },
 ] satisfies readonly JourneyPhase[];
 
-const journeyModules = ALL_MODULES
-  .filter((m: any) => m.group === 'GAO' || m.group === 'ANN' || m.id?.startsWith('ACHC'))
-  .slice(0, 41)
-  .map((m: any) => ({
+const coreJourneys = ALL_MODULES
+  .filter((m: any) => m.group === 'GAO' || m.group === 'ANN')
+  .slice(0, 41);
+
+const achcFromModules = ALL_MODULES.filter((m: any) => m.id?.startsWith('ACHC'));
+
+const journeyModules = [
+  ...coreJourneys.map((m: any) => ({
     description: m.title + ' (from full canonical onboarding catalog — 41 journeys loaded for 1:1 parity with V1).',
     group: m.group,
     icon: BookOpenCheck,
@@ -111,10 +115,23 @@ const journeyModules = ALL_MODULES
     status: 'complete',
     title: m.title,
     tone: 'green',
-  })) as any[];
+  })),
+  ...achcFromModules.map((m: any) => ({
+    description: m.title + ' (ACHC annual training)',
+    group: m.group,
+    icon: BookOpenCheck,
+    id: m.id,
+    method: m.method || 'Quiz',
+    phase: 'Annual',
+    policyRefs: m.policyRefs || [],
+    score: 0,
+    status: 'ready',
+    title: m.title,
+    tone: 'amber',
+  })),
+] as any[];
 
-
-// old list end removed; using data-driven journeyModules (41 onboarding journeys + 12 ACHC annual loaded for 1:1)
+// data-driven: 41 onboarding journeys (GAO/ANN slice) + all 12 ACHC annual from canonical (ALL_MODULES + achcAnnualTests parity)
 
 const supervisorReadiness = [
   {

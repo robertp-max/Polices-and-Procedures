@@ -124,3 +124,17 @@ Admin: conditional on auth, subnav User Groups, Roles, Permissions, Users
 No Part1Preview junk.
 
 V1 source inspected: CommandCenterLayout.tsx for NAV_ITEMS, groups, subnav behavior.
+
+## 2026-06-24 Update (current session)
+- CESSubnav.tsx: switched to longest-prefix reduce + effectiveActive (exact same pattern as WorkspaceSubnav). Guarantees exactly one `border-b-2` + one `aria-current="page"`. Kept events/ -> board contextual activation.
+- JourneyOverviewScreen.tsx: split core (GAO/ANN .slice(0,41)) + explicit achcFromModules (all 12 ACHC). Now renders 41 onboarding journeys + all 12 ACHC annual in list (data-driven from ALL_MODULES).
+- JourneyV1Screen: already spreads all 12 from achcAnnualTests + core.
+- Verified: tsc -b --noEmit PASS; npm run build PASS (full vite).
+- Lint: pre-existing only (no new from these 2 files' changes).
+- Reviewed user-provided screenshot (ces/calendar): subnav shows single active "Calendar" underline; sidebar CES parent highlighted. Correct for that route.
+- To see 41+12 and single subnav active: navigate /journey (Overview) and /journey/v1-journey (Journey v1).
+- Browser runtime smoke on latest: UNVERIFIED here (code + build verified; user to hard-refresh dev server + check).
+- No two active tabs in subnav logic now. No .js emitted to src/.
+- Local + evidence branch will be updated via commit/push of only these surgical files + ledger.
+
+Result: PARTIAL (full parity code + build; browser confirmation pending user screenshot of journey views post-refresh).
