@@ -54,8 +54,9 @@ export function Sidebar() {
         <div className="grid gap-xl">
           {/* PRIMARY OPERATIONS */}
           <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted px-sm">PRIMARY OPERATIONS</div>
-          {['brad', 'dashboard', 'clinicians', 'patients', 'calendar'].map(id => {
-            const item = primaryNavItems.find(i => i.id === id)!;
+          {['brad', 'dashboard'].map(id => {
+            const item = primaryNavItems.find(i => i.id === id);
+            if (!item) return null; // guard: hidden/removed nav items must not crash the sidebar
             const isActive = active?.parent?.id === item.id;
             return (
               <Link
@@ -79,7 +80,8 @@ export function Sidebar() {
           {/* COMPLIANCE EXECUTION */}
           <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted px-sm mt-sm">COMPLIANCE EXECUTION</div>
           {['ces', 'taxonomy', 'onboarding', 'policy-lifecycle', 'evidence'].map(id => {
-            const item = primaryNavItems.find(i => i.id === id)!;
+            const item = primaryNavItems.find(i => i.id === id);
+            if (!item) return null; // guard: hidden/removed nav items must not crash the sidebar
             const isActive = active?.parent?.id === item.id;
             return (
               <Link
