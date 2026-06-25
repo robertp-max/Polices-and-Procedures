@@ -30,8 +30,9 @@
   --text-on-brand: #FFFFFF;
 
   /* Borders */
-  --border-hairline: rgba(0, 65, 66, 0.06);
-  --border-card: rgba(255, 255, 255, 0.86);
+  /* White card borders for glassmorphism (depth comes from --shadow-rest). */
+  --border-hairline: rgba(255, 255, 255, 0.90);
+  --border-card: rgba(255, 255, 255, 0.95);
   --border-strong: rgba(0, 65, 66, 0.14);
 
   /* Base semantic aliases */
