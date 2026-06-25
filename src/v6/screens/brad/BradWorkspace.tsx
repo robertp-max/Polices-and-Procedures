@@ -245,7 +245,7 @@ export default function BradWorkspace() {
 
   return (
     <div
-      className="brad-workspace relative -m-md flex min-h-[84vh] flex-col overflow-hidden rounded-lg p-md font-light text-[var(--brad-ink)] [background:var(--brad-canvas)]"
+      className="brad-workspace relative flex min-h-screen flex-col overflow-hidden px-lg pb-lg pt-16 font-light text-[var(--brad-ink)] [background:var(--brad-canvas)]"
     >
       <div className="brad-grid-pattern pointer-events-none absolute inset-0 opacity-50" aria-hidden />
 

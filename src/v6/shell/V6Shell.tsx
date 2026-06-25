@@ -80,7 +80,10 @@ export function V6Shell() {
         <div className="flex h-full min-h-0 min-w-0 flex-1 flex-row">
           <main
             className={cx(
-              'v6-main-scrollmask min-h-0 flex-1 overflow-auto px-3xl pb-3xl pt-16',
+              'v6-main-scrollmask min-h-0 flex-1 overflow-auto',
+              // Brad is a full-bleed surface (it supplies its own top clearance for the
+              // fixed hamburger/logo cluster); every other route keeps the page padding.
+              pathname.startsWith('/iadministrator') ? 'p-0' : 'px-3xl pb-3xl pt-16',
               hasScrolledMain && 'v6-main-scrollmask--scrolled',
             )}
             id="main-content"
