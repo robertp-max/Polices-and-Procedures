@@ -270,8 +270,11 @@ export function WorkflowSwimlaneScreen() {
   );
 }
 
-export function WorkflowDetailScreen({ workflowId }: { workflowId?: string }) {
-  // Lightweight detail view (used if needed for future or drawer parity). Falls back to swimlane identity.
+export function WorkflowDetailScreen({ workflowId: propId }: { workflowId?: string }) {
+  // Resolve the id from the route (/workflows/:workflowId) when no prop is passed
+  // by the dispatcher — otherwise the detail renders an empty "not found" id.
+  const params = useParams<{ workflowId: string }>();
+  const workflowId = propId || params.workflowId;
   const meta = getWorkflowMeta(workflowId);
   const detail = getWorkflowDetail(workflowId || '') || {
     purpose: `Unresolved workflow ID: ${workflowId}. This ID does not exist in the generated WORKFLOWS collection. Return to the library to select a valid record.`,
