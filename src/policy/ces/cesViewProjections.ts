@@ -546,12 +546,24 @@ function mandatoryCalendarEvents(): CesCalendarEvent[] {
       const tone: Tone =
         (urg === 'overdue' || urg === 'critical' || urg === 'blocked' || urg === 'missing-evidence') ? 'orange'
         : (urg === 'complete') ? 'green' : 'teal';
-      return {
+      const e2 = ev as unknown as { processFlow?: Array<Record<string, unknown>>; ownerRole?: string };
+      const ownerRole = e2.ownerRole || ev.owner || 'Compliance Officer';
+      // Build an AUTHORED workflow from the template's own processFlow so clicking
+      // the event renders the real multi-step swimlane (not the generic fallback).
+      const steps = (e2.processFlow ?? []).map((s, i) => ({
+        order: i + 1,
+        action: String(s.action || s.label || s.title || `Step ${i + 1}`),
+        role: String(s.role || s.ownerRole || ownerRole),
+        formIds: Array.isArray(s.formIds) ? (s.formIds as string[]) : [],
+        deadline: typeof s.deadline === 'string' ? s.deadline : '',
+        formRaw: '',
+      }));
+      const cesEvent = {
         id: ev.id,
         label: ev.title || 'Mandatory CES Event',
         day,
         month,
-        owner: resolveDisplayName(ev.owner || ev.ownerRole) || 'Compliance Officer',
+        owner: resolveDisplayName(ev.owner || ownerRole) || 'Compliance Officer',
         progress: urg === 'complete' ? 100 : 55,
         tone,
         sourceEventId: ev.id,
@@ -561,6 +573,15 @@ function mandatoryCalendarEvents(): CesCalendarEvent[] {
         scheduleReason: ev.mandateType,
         recurrencePattern: ev.cadence,
       } as CesCalendarEvent;
+      if (steps.length) {
+        (cesEvent as unknown as Record<string, unknown>).authoredWorkflow = {
+          id: ev.id, domain: ev.domain, title: ev.title || 'CES Workflow', workflowType: 'operational',
+          policyReferences: [], policyRefs: ev.policyRefs ?? [], regulatoryAnchors: [],
+          roles: { primary: [ownerRole], supporting: [], approval: [] }, approvals: ev.approvals ?? [],
+          requiredForms: [], requiredFormsRaw: '', steps,
+        };
+      }
+      return cesEvent;
     });
   } catch {
     _mandatoryCalendarCache = [];

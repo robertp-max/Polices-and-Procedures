@@ -2385,6 +2385,12 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
           } catch {}
         }
       }
+      // Generated mandatory events carry their own authored workflow (from the
+      // template processFlow). Use it so the click renders the real swimlane.
+      if (!resolvedWorkflow && (e as any).authoredWorkflow) {
+        resolvedWorkflow = (e as any).authoredWorkflow;
+        resolvedWfId = (e as any).authoredWorkflow.id;
+      }
 
       if (resolvedWorkflow) {
         // Use the shared real workflow -> cards adapter. No generic two-step for backed workflows.
