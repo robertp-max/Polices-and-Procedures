@@ -11,6 +11,7 @@ import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDatase
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import { getWorkflowDetail } from './pageviews/WorkflowsScreen';
 import BradWorkspace from './brad/BradWorkspace';
+import { DocumentUploadZone } from './brad/DocumentUploadZone';
 import BuilderWorkspace from './brad/BuilderWorkspace';
 import { resolveCanonicalFormId } from '@/policy/data/formIdAliases';
 // V2 seed staffing data (not live production records; used for prototype staffing profile surfaces).
@@ -3295,6 +3296,7 @@ function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
               </div>
             ))}
           </div>
+          {mode === 'evidence-center' && <DocumentUploadZone title="Drop documents for Brad to package" />}
           <Button className="mt-lg w-full" variant="secondary" onClick={() => navigate('/ces/reports')}>
             Generate packet
           </Button>
