@@ -97,10 +97,10 @@ export const SIDEBAR_SECTIONS = [
   { label: 'Evidence Center', hashIds: ['evidence-center'] },
   { label: 'Audit Mode', hashIds: ['audit-mode'] },
   {
-    label: 'Journey / Training',
+    label: 'Onboarding & Training',
     hashIds: [
       'journey-overview',
-      'journey-v1',
+      'journey-new-hire',
       'appendix-f',
       'supervisor',
       'journey-admin',
@@ -273,7 +273,6 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
   hubstaff: { eyebrow: 'Hubstaff', icon: BarChart3 },
   'journey-admin': { eyebrow: 'Onboarding', icon: BarChart3 },
   'journey-overview': { eyebrow: 'Onboarding', icon: ListChecks },
-  'journey-v1': { eyebrow: 'Onboarding', icon: ListChecks },
   'master-calendar': {
     description:
       'Daily operations calendar for SOC starts, recertification locks, staffing huddles, audits, and coverage checkpoints.',

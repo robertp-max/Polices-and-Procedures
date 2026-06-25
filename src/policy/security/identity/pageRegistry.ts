@@ -67,7 +67,7 @@ export const COMPONENT_GROUPS: ComponentGroupEntry[] = [
   },
   {
     componentId: 'cmp-journey',
-    label: 'Journey / Training',
+    label: 'ACHC Annual Training',
     defaultAccess: 'read',
     description: 'Onboarding journey, modules, Onboarding v2 activation.',
     order: 80,
@@ -245,13 +245,6 @@ export const PAGE_REGISTRY: PageRegistryEntry[] = [
     pageId: 'page.journey-home',
     label: 'Journey Home',
     routePattern: '/journey',
-    componentGroup: 'cmp-journey',
-    defaultAccess: 'read',
-  },
-  {
-    pageId: 'page.journey-v1',
-    label: 'Journey v1',
-    routePattern: '/journey/v1-journey',
     componentGroup: 'cmp-journey',
     defaultAccess: 'read',
   },

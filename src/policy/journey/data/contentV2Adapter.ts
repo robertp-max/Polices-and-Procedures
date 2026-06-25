@@ -1,6 +1,8 @@
 import type { ModuleDef, ModuleLesson } from "./lessonModel";
 import { ALL_MODULES, type ModuleData, type LessonPage } from "./ACHC_Annual_Assembled";
 import { ALL_MODULES as onboardingModulesRaw } from "../../../v6/screens/pageviews/CareIndeedOnboardingLMS";
+import { cms485PlanOfCareModule } from "./advancedTraining/cms485PlanOfCare.data";
+import { qapiModule, qapiQuizzes } from "./advancedTraining/qapi.data";
 
 function appModuleId(moduleId: string): string {
   // moduleId is e.g. "ACHC-ART-M01" -> "m1"
@@ -277,6 +279,8 @@ export const courseModules: ModuleDef[] = [
   orientationModule,
   ...mappedOnboardingModules,
   ...mappedACHCModules,
+  cms485PlanOfCareModule,
+  qapiModule,
 ];
 
 export function getModuleDef(moduleId: string): ModuleDef | undefined {
@@ -301,6 +305,31 @@ export function getGeneratedLesson(moduleId: string, lessonId: string) {
 }
 
 export function getModuleAssessment(moduleId: string) {
+  if (moduleId.toLowerCase() === "cms-485") {
+    return {
+      title: "CMS-485 Plan of Care Clinical Audit Lab",
+      pass_percent: 100,
+      questions: [
+        { id: "case-1", prompt: "Henderson Case Study", choices: [], correct_id_internal: "" },
+        { id: "case-2", prompt: "Alvarez Case Study", choices: [], correct_id_internal: "" },
+        { id: "case-3", prompt: "Okafor Case Study", choices: [], correct_id_internal: "" },
+      ],
+    };
+  }
+
+  if (moduleId.toLowerCase() === "qapi") {
+    return {
+      title: "Quality Assessment & Performance Improvement (QAPI) Assessment",
+      pass_percent: 80,
+      questions: qapiQuizzes.map((q) => ({
+        id: q.id,
+        prompt: q.scenario ? `${q.scenario}\n\n${q.question}` : q.question,
+        choices: q.options.map((o) => ({ id: o.id, label: o.label })),
+        correct_id_internal: q.correctAnswerId,
+      }))
+    };
+  }
+
   // Try to find in onboarding modules first
   const onboardingMod = onboardingModulesRaw.filter(m => m.track !== "ANN").find(m => m.id.toLowerCase() === moduleId.toLowerCase());
   if (onboardingMod) {
@@ -315,6 +344,7 @@ export function getModuleAssessment(moduleId: string) {
       }))
     };
   }
+
 
   // Otherwise check ACHC
   const canonical = canonicalModuleId(moduleId);

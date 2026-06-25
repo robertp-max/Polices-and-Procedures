@@ -52,7 +52,8 @@ type TrackId =
   | "SLP"   // Speech-Language Pathologist
   | "MSW"   // Medical Social Worker
   | "HHA"   // Home Health Aide
-  | "ANN";  // Annual Mandatory Training
+  | "ANN"   // Annual Mandatory Training
+  | "ADV";  // Advanced Training
 
 interface TrackMeta {
   id: TrackId;
@@ -309,6 +310,16 @@ const TRACKS: Record<TrackId, TrackMeta> = {
       "ACHC-ART-M07","ACHC-ART-M08","ACHC-ART-M09","ACHC-ART-M10","ACHC-ART-M11","ACHC-ART-M12"
     ],
     completionGate: "All modules by Dec 31. Escalation at 30/45/60 days overdue per HR-TD-001 § 4.6.",
+  },
+  ADV: {
+    id: "ADV",
+    name: "Advanced Training",
+    cmsBasis: "Specialized Compliance & Plan of Care",
+    reportsTo: "Clinical Manager / DON",
+    color: "#F97316",
+    icon: "🎓",
+    moduleIds: ["cms-485", "qapi"],
+    completionGate: "Complete Plan of Care simulator final cases.",
   },
 };
 
@@ -3633,6 +3644,28 @@ const mappedACHCAnnualModules: TrainingModule[] = ACHC_ALL_MODULES.map((m) => ({
 // ─────────────────────────────────────────────────────────────────────────────
 // ALL_MODULES ARRAY (Assembled)
 // ─────────────────────────────────────────────────────────────────────────────
+const cms485OnboardingModule: TrainingModule = {
+  id: "cms-485",
+  title: "CMS-485 Plan of Care and Compliance Integration",
+  track: "ADV",
+  durationMinutes: 120,
+  policyMapped: ["CL-PR-001"],
+  pages: new Array(35) as any,
+  exam: new Array(3) as any,
+  passScore: 80,
+};
+
+const qapiOnboardingModule: TrainingModule = {
+  id: "qapi",
+  title: "Quality Assessment and Performance Improvement (QAPI) Training",
+  track: "ADV",
+  durationMinutes: 180,
+  policyMapped: ["QA-PR-001"],
+  pages: new Array(35) as any,
+  exam: new Array(15) as any,
+  passScore: 80,
+};
+
 const ALL_MODULES: TrainingModule[] = [
   ...GAO_MODULES_PART1,     // GAO 001-014
   ...GAO_MODULES_PART2,     // GAO 015-EXAM
@@ -3648,6 +3681,8 @@ const ALL_MODULES: TrainingModule[] = [
   ...MSW_MODULES,           // Medical Social Worker
   ...HHA_MODULES,           // Home Health Aide
   ...mappedACHCAnnualModules, // Mapped ACHC Annual Curriculum
+  cms485OnboardingModule,
+  qapiOnboardingModule,
 ];
 
 const MODULE_MAP: Record<string, TrainingModule> = {};
@@ -3902,7 +3937,7 @@ const ModuleList: React.FC<{
 
   return (
     <div>
-      {trackId !== "ANN" && (
+      {trackId !== "ANN" && trackId !== "ADV" && (
         <button
           style={{ ...styles.btn, ...styles.btnOutline, marginBottom: "16px" }}
           onClick={onBack}
@@ -4247,15 +4282,18 @@ type ViewState =
 const CareIndeedOnboardingLMS: React.FC = () => {
   const navigate = useNavigate();
   const { state: learnerState } = useLearner();
-  const [activeCategory, setActiveCategory] = useState<'onboarding' | 'annual'>(() => {
+  const [activeCategory, setActiveCategory] = useState<'onboarding' | 'annual' | 'advanced'>(() => {
     const saved = localStorage.getItem("ci_lms_active_tab");
-    return (saved === 'annual' || saved === 'onboarding') ? saved : 'onboarding';
+    return (saved === 'annual' || saved === 'onboarding' || saved === 'advanced') ? saved as any : 'onboarding';
   });
 
   const [viewState, setViewState] = useState<ViewState>(() => {
     const savedTab = localStorage.getItem("ci_lms_active_tab");
     if (savedTab === 'annual') {
       return { view: "modules", trackId: "ANN" };
+    }
+    if (savedTab === 'advanced') {
+      return { view: "modules", trackId: "ADV" };
     }
     return { view: "tracks" };
   });
@@ -4320,13 +4358,15 @@ const CareIndeedOnboardingLMS: React.FC = () => {
     }));
   }, []);
 
-  const handleTabChange = (tab: 'onboarding' | 'annual') => {
+  const handleTabChange = (tab: 'onboarding' | 'annual' | 'advanced') => {
     setActiveCategory(tab);
     localStorage.setItem("ci_lms_active_tab", tab);
     if (tab === 'onboarding') {
       setViewState({ view: "tracks" });
-    } else {
+    } else if (tab === 'annual') {
       setViewState({ view: "modules", trackId: "ANN" });
+    } else {
+      setViewState({ view: "modules", trackId: "ADV" });
     }
   };
 
@@ -4352,12 +4392,13 @@ const CareIndeedOnboardingLMS: React.FC = () => {
             outline: "none",
           }}
         >
-          Onboarding <span style={{ marginLeft: "6px", background: "#F1F5F9", padding: "2px 6px", borderRadius: "4px", fontSize: "10px", color: BRAND.textSecondary }}>41</span>
+          Onboarding Training <span style={{ marginLeft: "6px", background: "#F1F5F9", padding: "2px 6px", borderRadius: "4px", fontSize: "10px", color: BRAND.textSecondary }}>41</span>
         </button>
         <button
           type="button"
           onClick={() => handleTabChange('annual')}
           style={{
+            marginRight: "32px",
             paddingBottom: "12px",
             fontSize: "14px",
             fontWeight: 600,
@@ -4371,7 +4412,26 @@ const CareIndeedOnboardingLMS: React.FC = () => {
             outline: "none",
           }}
         >
-          ACHC Annual Training <span style={{ marginLeft: "6px", background: "#F1F5F9", padding: "2px 6px", borderRadius: "4px", fontSize: "10px", color: BRAND.textSecondary }}>12</span>
+          ACHC Training <span style={{ marginLeft: "6px", background: "#F1F5F9", padding: "2px 6px", borderRadius: "4px", fontSize: "10px", color: BRAND.textSecondary }}>12</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => handleTabChange('advanced')}
+          style={{
+            paddingBottom: "12px",
+            fontSize: "14px",
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            border: "none",
+            background: "none",
+            cursor: "pointer",
+            borderBottom: activeCategory === 'advanced' ? `2px solid ${BRAND.primary}` : "none",
+            color: activeCategory === 'advanced' ? BRAND.primary : BRAND.textSecondary,
+            outline: "none",
+          }}
+        >
+          Advanced Training <span style={{ marginLeft: "6px", background: "#F1F5F9", padding: "2px 6px", borderRadius: "4px", fontSize: "10px", color: BRAND.textSecondary }}>1</span>
         </button>
       </div>
 
@@ -4380,6 +4440,15 @@ const CareIndeedOnboardingLMS: React.FC = () => {
           <p style={{ margin: 0, fontWeight: 600, color: BRAND.primaryLight, textTransform: "uppercase", letterSpacing: "0.05em", fontSize: "12px" }}>ACHC Required — Field Worker Edition</p>
           <p style={{ margin: "4px 0 0 0", color: BRAND.textSecondary }}>
             12 modules · On hire + annually · 80% passing threshold · All modules include TTS narration and scenario-based challenges.
+          </p>
+        </div>
+      )}
+
+      {activeCategory === 'advanced' && viewState.view === 'modules' && (
+        <div style={{ borderLeft: `2px solid ${BRAND.warning}`, background: "#FFFBF0", padding: "16px 20px", borderRadius: "8px", marginBottom: "24px", fontSize: "14px" }}>
+          <p style={{ margin: 0, fontWeight: 600, color: BRAND.warning, textTransform: "uppercase", letterSpacing: "0.05em", fontSize: "12px" }}>Advanced Training — Plan of Care &amp; Compliance</p>
+          <p style={{ margin: "4px 0 0 0", color: BRAND.textSecondary }}>
+            Advanced compliance training covering establishment, specificity, defensibility, and clinical alignment of the CMS-485 Plan of Care.
           </p>
         </div>
       )}
@@ -4404,7 +4473,7 @@ const CareIndeedOnboardingLMS: React.FC = () => {
               navigate(`/journey/module/${standardId}`);
             }}
             onBack={() => {
-              if (activeCategory === 'annual') {
+              if (activeCategory === 'annual' || activeCategory === 'advanced') {
                 handleTabChange('onboarding');
               } else {
                 setViewState({ view: "tracks" });

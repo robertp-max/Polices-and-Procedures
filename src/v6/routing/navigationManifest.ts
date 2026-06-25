@@ -16,7 +16,7 @@ export const primaryNavItems: NavItem[] = [
   // Routes still resolve by direct URL; they are just removed from the nav.
   { id: 'ces', label: 'Compliance Execution (CES)', to: '/ces/calendar', hashIds: ['ces-calendar', 'ces-board', 'workflows', 'master-controls', 'audit-mode', 'evidence-center', 'ces-reports'] },
   { id: 'taxonomy', label: 'Taxonomy', to: '/framework', hashIds: ['taxonomy', 'framework', 'achc-survey', 'achc-crosswalk'] },
-  { id: 'onboarding', label: 'Onboarding', to: '/journey', hashIds: ['journey-overview', 'journey-v1', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'] },
+  { id: 'onboarding', label: 'Onboarding & Training', to: '/journey', hashIds: ['journey-overview', 'journey-new-hire', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'] },
   { id: 'policy-lifecycle', label: 'Policy Lifecycle', to: '/policy-lifecycle', hashIds: ['policy-lifecycle'], matchPaths: ['/policy-lifecycle', '/policy-lifecycle/:policyId'] },
   // 'Evidence' and 'Hubstaff' hidden from the sidebar per request. Routes still resolve by URL.
   { id: 'help-center', label: 'Help Center', to: '/help', hashIds: ['help-center'] },
@@ -44,8 +44,8 @@ export const workspaceSubnavItems: Record<string, NavItem[]> = {
     { id: 'achc-crosswalk', label: 'ACHC Crosswalk', to: '/framework/achc-survey/crosswalk', hashIds: ['achc-crosswalk'] },
   ],
   onboarding: [
-    { id: 'journey-overview', label: 'Overview', to: '/journey', hashIds: ['journey-overview'] },
-    { id: 'journey-v1', label: 'Journey v1', to: '/journey/v1-journey', hashIds: ['journey-v1'], matchPaths: ['/journey/v1-journey', '/journey/module/:moduleId'] },
+    { id: 'journey-overview', label: 'Journey', to: '/journey', hashIds: ['journey-overview'] },
+    { id: 'journey-new-hire', label: 'New Hire', to: '/journey/new-hire', hashIds: ['journey-new-hire'] },
     { id: 'appendix-f', label: 'Appendix F', to: '/journey/appendix-f', hashIds: ['appendix-f'] },
     { id: 'supervisor', label: 'Supervisor View', to: '/journey/supervisor', hashIds: ['supervisor'] },
     { id: 'journey-admin', label: 'Admin', to: '/journey/admin', hashIds: ['journey-admin'] },

@@ -1,4 +1,11 @@
-import type { FormSignerSlot } from '@/policy/components/FormSignatureContext';
+export interface FormSignerSlot {
+  field_id: string;
+  role: string;
+  tier: number;
+  required: boolean;
+  resolver: string | { role_id: string };
+  sequence_group: number;
+}
 
 /* ═══════════════════════════════════════════════════════════════
    ENTERPRISE FORMS LIBRARY — 281 ARTIFACTS · FULL CONTENT

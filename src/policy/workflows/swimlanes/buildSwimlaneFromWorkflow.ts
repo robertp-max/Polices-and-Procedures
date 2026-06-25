@@ -26,7 +26,7 @@ function laneForRole(role: string, lanes: SwimlaneLane[]): SwimlaneLane {
   return lane;
 }
 
-function statusForStep(step: WorkflowStep, index: number, exec: Record<string, unknown>, liveEvent: unknown): SwimlaneStatus {
+function statusForStep(step: WorkflowStep, index: number, exec: any, liveEvent: unknown): SwimlaneStatus {
   // For event mode use live store status if available
   const ex = exec as { effectiveStepStatus?: (ev: unknown, key: string | number) => string | undefined };
   if (liveEvent && ex.effectiveStepStatus) {

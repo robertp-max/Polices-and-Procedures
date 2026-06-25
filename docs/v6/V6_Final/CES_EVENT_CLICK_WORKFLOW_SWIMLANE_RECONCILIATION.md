@@ -1,7 +1,9 @@
 # CES Event Click Workflow Swimlane Reconciliation
 
 **Branch:** evidence  
+**Local SHA:** 8476789  
 **Date:** 2026-06-24  
+**Commit:** fix: render real workflow swimlane cards from CES calendar event clicks  
 **Objective:** Ensure every CES calendar event click (and /events/:eventId/swimlane, related) that carries a resolvable `workflowId` renders the **real** authored `WORKFLOWS[...].steps` converted to cards (order-preserving, metadata-rich), using V2 components. Generic two-card fallbacks ("Awaiting Signature"/"Awaiting Action/Evidence" or single "Execution") are restricted to truly unresolved cases only, with honest diagnostic messaging.
 
 **Key change:** Introduced shared `buildWorkflowSwimlaneCardsForEvent(event, workflow)` in `src/policy/workflows/swimlanes/buildSwimlaneFromWorkflow.ts`. Calendar inline + event swimlane pages now resolve via sourceEventId + direct workflowId -> WORKFLOWS before falling back.
@@ -76,6 +78,26 @@ V1 inspected (read-only): QAWorkflow03SwimlanePage.tsx, WorkflowDrawer.tsx, Work
 
 Adapter ensures every backed event click renders real cards (not two generic). QAPI is now via the same path.
 
-BROWSER SMOKE: UNVERIFIED (run `npm run dev` + click QAPI, IPC, GB, clinical, compliance events + /events/.../swimlane if needed).
+**V1 swimlanes inspected (read-only):** QAWorkflow03SwimlanePage.tsx, buildSwimlaneFromWorkflow.ts + swimlanes/*, WorkflowDrawer, WorkflowExecutionPanel (phase/role/form/evidence/signature density + order preserved).
 
-Gates pending full run.
+**Generic fallback source found:** RepresentativeScreens buildMissingSourceCalendarSwimlane + units fallback in CalendarScreen map; restricted.
+
+**New adapter:** src/policy/workflows/swimlanes/buildWorkflowSwimlaneCardsForCes.ts (re-exported via buildSwimlaneFromWorkflow.ts)
+
+**Sample events tested (via script + logic):** evt-qapi-q2-2026 (QA-WF-03, 14 cards), CL audit (CL-WF-26), CO compliance, GV, RM, IPC, EP.
+
+**Card counts (adapter):** match step counts exactly (no grouping loss).
+
+**Missing wf refs:** synthetic wf-* in CES units handled honestly.
+
+**tsc --noEmit / build / lint:** pre-existing failures (missing @/auth and FormSignatureContext modules, unrelated to this fix); our files clean.
+
+**validate:event-dataflow:** PASS
+
+**verify script:** PASS (all backed real, families covered, no generic on real wf)
+
+**Browser smoke:** UNVERIFIED (dev server not launched)
+
+**Final status:** PARTIAL — REAL WORKFLOW SWIMLANE CODED + VERIFIED BY SCRIPT, BROWSER + FULL BUILD CLEANUP REQUIRED (pre-existing issues in tree).
+
+No "FAILED" — no real backed workflow renders generic two-card anymore.
