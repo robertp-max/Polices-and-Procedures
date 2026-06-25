@@ -1,7 +1,8 @@
+import type { ReactNode } from 'react';
 import { AlertCircle, ChevronRight, FolderOpen, KeyRound, PenLine, BadgeCheck, ListChecks } from 'lucide-react';
 import { ToneTag } from '../components';
 
-export function PersonalOpsPanel() {
+export function PersonalOpsPanel({ dock }: { dock?: ReactNode }) {
   const focusItems = [
     { title: 'Missing disclosure signature', meta: 'GV-FM-006 - Due today', status: 'Critical', tone: 'orange' as const },
     { title: 'QAPI minutes packet', meta: 'QA-WF-03 - Due Jun 15', status: 'Review', tone: 'teal' as const },
@@ -18,9 +19,12 @@ export function PersonalOpsPanel() {
   return (
     <aside className="relative z-20 flex h-screen w-[380px] shrink-0 flex-col overflow-y-auto border-l border-hairline bg-surface text-ink shadow-right-rail">
       <header className="border-b border-hairline bg-tone-teal-bg/60 p-lg">
-        <div>
-          <p className="font-heading text-[10px] font-medium uppercase tracking-[0.2em] text-brand-teal">Personal Operations</p>
-          <h3 className="mt-xs text-xl font-medium text-brand-teal-deep">Today's Focus</h3>
+        <div className="flex items-start justify-between gap-md">
+          <div>
+            <p className="font-heading text-[10px] font-medium uppercase tracking-[0.2em] text-brand-teal">Personal Operations</p>
+            <h3 className="mt-xs text-xl font-medium text-brand-teal-deep">Today's Focus</h3>
+          </div>
+          {dock && <div className="shrink-0">{dock}</div>}
         </div>
       </header>
 
