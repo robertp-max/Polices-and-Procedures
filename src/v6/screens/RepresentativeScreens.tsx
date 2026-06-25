@@ -26,7 +26,7 @@ import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
 import { BoardLane, CESSubnav, ChatThread, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type ChatMessageData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
 import { workspaceSubnavItems } from '../routing/navigationManifest';
-import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, JourneyV1Screen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen } from './pageviews';
+import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen } from './pageviews';
 import { achcSurveyRows } from '@/policy/data/achcSurveyProjection.generated';
 import { achcPrintCrosswalk } from '@/policy/data/achcPrintCrosswalk.generated';
 import { LearnerProvider } from '@/policy/journey/lib/learnerState';
@@ -1773,8 +1773,8 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
     case 'journey-overview':
       child = <JourneyOverviewScreen />;
       break;
-    case 'journey-v1':
-      child = <JourneyV1Screen />;
+    case 'journey-new-hire':
+      child = <NewHireScreen />;
       break;
     case 'journey-orientation':
     case 'module-player':
@@ -1860,7 +1860,7 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
   const isCESGroup = route.group === 'CES' || cesHashIds.includes(route.hashId || '') || pathname.startsWith('/ces/') || pathname.startsWith('/workflows') || pathname.startsWith('/events/') || pathname === '/audit' || pathname === '/evidence' || pathname.startsWith('/compliance/');
 
   const isTaxonomyGroup = pathname.startsWith('/framework') || pathname.startsWith('/library') || pathname.startsWith('/forms') || pathname.startsWith('/taxonomy') || pathname.startsWith('/achc') || ['framework', 'taxonomy', 'policy-library', 'policy-detail', 'forms-library', 'form-viewer', 'achc-survey', 'achc-crosswalk'].includes(route.hashId || '') || route.group === 'Taxonomy';
-  const isOnboardingGroup = pathname.startsWith('/journey') || pathname.startsWith('/onboarding-v2') || ['journey-overview', 'journey-v1', 'journey-orientation', 'module-player', 'lesson-player', 'module-assessment-splash', 'module-assessment-quiz', 'final-assessment-splash', 'final-assessment-quiz', 'final-result', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'].includes(route.hashId || '') || route.group === 'Onboarding';
+  const isOnboardingGroup = pathname.startsWith('/journey') || pathname.startsWith('/onboarding-v2') || ['journey-overview', 'journey-new-hire', 'journey-orientation', 'module-player', 'lesson-player', 'module-assessment-splash', 'module-assessment-quiz', 'final-assessment-splash', 'final-assessment-quiz', 'final-result', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'].includes(route.hashId || '') || route.group === 'Onboarding';
   const isSystemGroup = pathname.startsWith('/system-documentation') || pathname.startsWith('/policy-lifecycle') || pathname === '/hubstaff' || pathname.startsWith('/help') || ['system-docs', 'policy-lifecycle', 'policy-lifecycle-detail', 'hubstaff', 'help-center', 'governance'].includes(route.hashId || '') || route.group === 'System';
   const isAdminGroup = pathname.startsWith('/admin/') || ['admin-groups', 'admin-roles', 'admin-permissions', 'admin-users', 'surveyor-viewer'].includes(route.hashId || '') || route.group === 'Admin';
 
@@ -1870,7 +1870,7 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
   } else if (isTaxonomyGroup && workspaceSubnavItems.taxonomy) {
     workspaceSubnav = <WorkspaceSubnav items={workspaceSubnavItems.taxonomy} currentPath={location?.pathname || ''} prefix="Taxonomy:" />;
   } else if (isOnboardingGroup && workspaceSubnavItems.onboarding) {
-    workspaceSubnav = <WorkspaceSubnav items={workspaceSubnavItems.onboarding} currentPath={location?.pathname || ''} prefix="Onboarding:" />;
+    workspaceSubnav = <WorkspaceSubnav items={workspaceSubnavItems.onboarding} currentPath={location?.pathname || ''} prefix="Onboarding & Training:" />;
   } else if (isSystemGroup && workspaceSubnavItems['system-docs']) {
     workspaceSubnav = <WorkspaceSubnav items={workspaceSubnavItems['system-docs']} currentPath={location?.pathname || ''} prefix="System Docs:" />;
   } else if (isAdminGroup && workspaceSubnavItems.admin) {
@@ -2408,6 +2408,11 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
     // Note: map runs on full pool; month filter below + per-event selection preserve source day.
     baseEvents = baseEvents.map((e) => {
       if (e.swimlane) return e;
+
+      // Force real workflow for POC audit and other known workflows even if data doesn't have it
+      if (e.id === 'EVT-POC-AUD' || (e.label && e.label.includes('Plan of Care Audit'))) {
+        (e as any).workflowId = 'CL-WF-26';
+      }
 
       // Resolve real workflow first: prefer direct wfId, else sourceEventId -> REGULATORY -> aligned wfId
       let resolvedWorkflow: any = null;
