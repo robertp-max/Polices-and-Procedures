@@ -27,7 +27,24 @@ import {
 import {
   clearDemoEcignForEvents,
 } from '@/policy/ecign/demoLocalApi';
-import type { SignerTask } from '@/policy/components/FormSignatureContext';
+export interface SignerTask {
+  taskId: string;
+  formInstanceId: string;
+  slotFieldId: string;
+  signerIndex: number;
+  parentTaskId?: string;
+  eventId: string;
+  linkedPolicyIds: string[];
+  formId: string;
+  slotPurpose?: string;
+  assignedToRole?: string;
+  assignedToName?: string;
+  assignedTo?: string;
+  status: 'pending' | 'opened' | 'signed' | 'declined' | 'expired';
+  declineReason?: string;
+  sequenceGroup: number;
+  [key: string]: any;
+}
 import {
   type EvidenceAuditEvent,
   type EvidenceStatus,
@@ -2850,7 +2867,7 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
         });
         event.requiredForms.forEach(f => {
           const templateId = getFormCanon(f.formId ?? f.id);
-          if (!FORM_TEMPLATE_IDS.has(templateId)) {
+          if (!templateId || !FORM_TEMPLATE_IDS.has(templateId)) {
             blockers.push({
               kind: 'form',
               label: `${f.label} (${templateId}) — Form template missing from Forms Library`,

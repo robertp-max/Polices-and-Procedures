@@ -76,7 +76,6 @@ const PAGE_TO_FEATURE_FALLBACK: Record<PageId, FeatureId> = {
   'page.evidence':              'evidence.view',
   'page.audit':                 'audit.view',
   'page.journey-home':          'journey.view',
-  'page.journey-v1':            'journey.view',
   'page.journey-appendix-f':    'journey.view',
   'page.journey-module':        'journey.view',
   'page.journey-supervisor':    'journey.view',

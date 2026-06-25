@@ -15,7 +15,7 @@ export { WorkflowSwimlaneScreen, WorkflowDetailScreen } from './WorkflowDetailAn
 export { AppendixFScreen } from './AppendixFScreen';
 export { JourneyAdminScreen } from './JourneyAdminScreen';
 export { JourneyOverviewScreen } from './JourneyOverviewScreen';
-export { JourneyV1Screen } from './JourneyV1Screen';
+export { NewHireScreen } from './NewHireScreen';
 export { ModulePlayerScreen } from './ModulePlayerScreen';
 export { SupervisorScreen } from './SupervisorScreen';
 export { OnboardingV2DashboardScreen } from './OnboardingV2DashboardScreen';
@@ -34,4 +34,6 @@ export { SurveyorViewerScreen } from './SurveyorViewerScreen';
 export { LoginScreen } from './LoginScreen';
 export { MobileIncidentScreen } from './MobileIncidentScreen';
 export { NotFoundScreen } from './NotFoundScreen';
+export { Cms485AssessmentQuizPage } from './Cms485AssessmentQuizPage';
+
 

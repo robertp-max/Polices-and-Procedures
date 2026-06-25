@@ -1,4 +1,4 @@
-import { resolveCanonicalFormId, resolveFormTitle } from '@/policy/data/formIdAliases';
+import { resolveFormTitle } from '@/policy/data/formIdAliases';
 import { formatCesFormInstanceId } from '@/policy/compliance-execution/cesFormInstanceId';
 import type { SwimlaneFormInstance, SwimlaneMode, SwimlaneSupportingDocumentationTask, SwimlaneStatus } from './types';
 import { buildSwimlaneSupportTaskId } from './eventSwimlaneIdentity';
