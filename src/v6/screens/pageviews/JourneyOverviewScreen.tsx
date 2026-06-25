@@ -6,6 +6,7 @@ import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
 import { ALL_MODULES } from '@/policy/journey/data/modules';
+import { JourneyLearningShell } from './JourneyLearningShell';
 
 interface JourneyPhase {
   detail: string;
@@ -193,23 +194,17 @@ export function JourneyOverviewScreen() {
   };
 
   return (
-    <section
-      className="grid gap-xl"
-      data-group="Onboarding"
-      data-hash-id="journey-overview"
-      data-route="/journey"
-      data-template="journey"
+    <JourneyLearningShell
+      title="My Learning"
+      subtitle={`${coreJourneyCount} journeys plus ${achcJourneyCount} ACHC annual training modules, with current gates and supervisor readiness visible in one course workspace.`}
     >
-      {/* My Learning header at top per spec: shows "Maria Santos, RN" prominently for the 41+12 overview */}
-      <div className="mb-lg">
-        <div className="flex flex-wrap items-center gap-md">
-          <h1 className="text-h1 font-medium text-ink">My Learning</h1>
-          <ToneTag tone="teal">Maria Santos, RN</ToneTag>
-        </div>
-        <p className="mt-xs text-sm text-muted">
-          {coreJourneyCount} journeys + {achcJourneyCount} ACHC annual training
-        </p>
-      </div>
+      <section
+        className="grid gap-xl"
+        data-group="Onboarding"
+        data-hash-id="journey-overview"
+        data-route="/journey"
+        data-template="journey"
+      >
 
       <MetricGrid metrics={journeyMetrics} />
 
@@ -384,7 +379,8 @@ export function JourneyOverviewScreen() {
           </section>
         </aside>
       </section>
-    </section>
+      </section>
+    </JourneyLearningShell>
   );
 }
 

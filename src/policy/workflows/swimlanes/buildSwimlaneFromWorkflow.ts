@@ -240,7 +240,7 @@ export function buildSwimlaneFromWorkflow(workflow: Workflow, context: SwimlaneB
       title: step.action,
       shortDescription: step.deadline ? `${step.action} Deadline: ${step.deadline}.` : step.action,
       ownerRole,
-      status: statusWithSignaturePath(statusForStep(step, index, exec, liveEvent), signaturePath.signatureTasks.length, signaturePath.reviewerRoles.length),
+      status: statusWithSignaturePath(statusForStep(step, index, exec as unknown as Record<string, unknown>, liveEvent), signaturePath.signatureTasks.length, signaturePath.reviewerRoles.length),
       requiredForms: step.formIds,
       formInstances,
       requiredEvidence,
@@ -458,3 +458,6 @@ export function buildSwimlaneFromWorkflow(workflow: Workflow, context: SwimlaneB
     missingContext,
   };
 }
+
+// Re-export the pure card adapter (implementation lives in dedicated pure module to avoid side-effect chains for verification + script isolation).
+export { buildWorkflowSwimlaneCardsForEvent } from './buildWorkflowSwimlaneCardsForCes';

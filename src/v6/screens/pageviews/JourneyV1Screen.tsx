@@ -7,6 +7,7 @@ import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneSoftTileClasses, t
 import { Badge, Button, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { JourneyLearningShell } from './JourneyLearningShell';
 
 interface LegacyPhase {
   completion: number;
@@ -238,6 +239,10 @@ export function JourneyV1Screen() {
   };
 
   return (
+    <JourneyLearningShell
+      title="My Learning - Maria Santos, RN"
+      subtitle="Course-style journey shell for legacy lessons, ACHC annual training, active module status, and evidence-ready completion gates."
+    >
     <section className="grid gap-xl" data-hash-id="journey-v1" data-route="/journey/v1-journey" data-template="journey">
 
       <MetricGrid metrics={journeyMetrics} />
@@ -375,6 +380,7 @@ export function JourneyV1Screen() {
         </aside>
       </section>
     </section>
+    </JourneyLearningShell>
   );
 }
 

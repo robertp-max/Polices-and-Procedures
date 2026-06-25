@@ -2510,7 +2510,7 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
             requirementSource: 'workflow',
             workflowId: SOURCE_EVENT_BY_ID[resolveCanonicalEventId(task.eventId)]?.workflowId,
             policyIds: task.linkedPolicyIds,
-            formIds: [task.formId],
+            formIds: task.formId ? [task.formId] : [],
             title: `eCIgn signature: ${task.slotPurpose ?? task.assignedToRole ?? task.slotFieldId}`,
             description: `Awaiting signature from ${task.assignedToName ?? task.assignedTo}.`,
             source: 'generated',
@@ -2554,7 +2554,7 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
                 ? 'blocked'
                 : 'awaiting_signature';
           get().updateTask(updatedTask.eventId, materializedId, { status: nextStatus }, {
-            reason: `SIGNER_TASK_${status.toUpperCase()}`,
+            reason: `SIGNER_TASK_${String(status ?? '').toUpperCase()}`,
           });
         }
       },
@@ -2849,7 +2849,7 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           }
         });
         event.requiredForms.forEach(f => {
-          const templateId = getFormCanon(f.formId ?? f.id);
+          const templateId = getFormCanon(f.formId ?? f.id) ?? '';
           if (!FORM_TEMPLATE_IDS.has(templateId)) {
             blockers.push({
               kind: 'form',
