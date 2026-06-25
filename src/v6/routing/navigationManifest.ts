@@ -30,8 +30,7 @@ export const primaryNavItems: NavItem[] = [
 export const workspaceSubnavItems: Record<string, NavItem[]> = {
   ces: [
     { id: 'ces-calendar', label: 'Calendar', to: '/ces/calendar', hashIds: ['ces-calendar'] },
-    { id: 'ces-board', label: 'Sprint Board', to: '/ces/board', hashIds: ['ces-board'] },
-    { id: 'events-board', label: 'Events Board', to: '/ces/events', hashIds: ['events-board'] },
+    // Sprint Board + Events Board hidden from the CES subnav per request (routes still resolve by URL).
     { id: 'workflows', label: 'Workflows', to: '/workflows', hashIds: ['workflows'], matchPaths: ['/workflows', '/workflows/:workflowId', '/workflows/:workflowId/swimlane'] },
     { id: 'master-controls', label: 'Master Controls', to: '/compliance/master-controls', hashIds: ['master-controls'] },
     { id: 'audit-mode', label: 'Audit Mode', to: '/audit', hashIds: ['audit-mode'] },
