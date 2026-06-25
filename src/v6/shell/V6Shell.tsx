@@ -57,18 +57,16 @@ export function V6Shell() {
           </main>
           {isPersonalOpsOpen && (
             <div className="sticky top-0 h-screen">
-              {/* When expanded, the dock lives INSIDE the panel header. */}
-              <PersonalOpsPanel
-                dock={<Topbar isPersonalOpsOpen onPersonalOpsToggle={togglePersonalOps} />}
-              />
+              {/* Theme toggle + sign out live INSIDE the panel header now. */}
+              <PersonalOpsPanel onClose={togglePersonalOps} />
             </div>
           )}
         </div>
       </div>
-      {/* Floating dock only when the panel is closed. */}
+      {/* Floating personal-ops toggle (only when the panel is closed), pinned to the top-right corner. */}
       {!isPersonalOpsOpen && (
         <Topbar
-          className="fixed right-3xl top-3xl z-command"
+          className="fixed right-4 top-4 z-command"
           isPersonalOpsOpen={false}
           onPersonalOpsToggle={togglePersonalOps}
         />

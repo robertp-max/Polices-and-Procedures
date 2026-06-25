@@ -1,8 +1,12 @@
-import type { ReactNode } from 'react';
-import { AlertCircle, ChevronRight, FolderOpen, KeyRound, PenLine, BadgeCheck, ListChecks } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AlertCircle, ChevronRight, FolderOpen, KeyRound, PenLine, BadgeCheck, ListChecks, SunMoon, LogOut, X } from 'lucide-react';
 import { ToneTag } from '../components';
+import { cycleTheme, getTheme, TOD_LABEL } from '../theme/timeOfDayTheme';
 
-export function PersonalOpsPanel({ dock }: { dock?: ReactNode }) {
+export function PersonalOpsPanel({ onClose }: { onClose?: () => void }) {
+  const navigate = useNavigate();
+  const [themeLabel, setThemeLabel] = useState(() => TOD_LABEL[getTheme()]);
   const focusItems = [
     { title: 'Missing disclosure signature', meta: 'GV-FM-006 - Due today', status: 'Critical', tone: 'orange' as const },
     { title: 'QAPI minutes packet', meta: 'QA-WF-03 - Due Jun 15', status: 'Review', tone: 'teal' as const },
@@ -24,7 +28,35 @@ export function PersonalOpsPanel({ dock }: { dock?: ReactNode }) {
             <p className="font-heading text-[10px] font-medium uppercase tracking-[0.2em] text-brand-teal">Personal Operations</p>
             <h3 className="mt-xs text-xl font-medium text-brand-teal-deep">Today's Focus</h3>
           </div>
-          {dock && <div className="shrink-0">{dock}</div>}
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setThemeLabel(TOD_LABEL[cycleTheme()])}
+              aria-label={`Theme: ${themeLabel} — change`}
+              title={`Theme: ${themeLabel}`}
+              className="grid h-9 w-9 place-items-center rounded-full text-brand-teal transition-colors hover:bg-tone-teal-bg focus-visible:outline-none focus-visible:shadow-focus"
+            >
+              <SunMoon aria-hidden="true" className="h-icon-sm w-icon-sm" />
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              aria-label="Sign out"
+              title="Sign out"
+              className="grid h-9 w-9 place-items-center rounded-full text-brand-teal transition-colors hover:bg-tone-teal-bg focus-visible:outline-none focus-visible:shadow-focus"
+            >
+              <LogOut aria-hidden="true" className="h-icon-sm w-icon-sm" />
+            </button>
+            <button
+              type="button"
+              onClick={() => onClose?.()}
+              aria-label="Close panel"
+              title="Close"
+              className="grid h-9 w-9 place-items-center rounded-full text-muted transition-colors hover:bg-tone-teal-bg hover:text-brand-teal focus-visible:outline-none focus-visible:shadow-focus"
+            >
+              <X aria-hidden="true" className="h-icon-sm w-icon-sm" />
+            </button>
+          </div>
         </div>
       </header>
 

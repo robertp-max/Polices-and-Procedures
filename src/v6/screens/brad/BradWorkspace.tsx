@@ -303,48 +303,43 @@ export default function BradWorkspace() {
         </div>
       )}
 
-      {/* ───────────────────────── LANDING ───────────────────────── */}
+      {/* ───────────────────────── LANDING (centered, decluttered) ───────────────────────── */}
       {landing && (
-        <div className="relative z-10 flex flex-1 flex-col">
-          <div className="mx-auto mt-sm w-full max-w-5xl">
+        <div className="relative z-10 flex flex-1 flex-col items-center justify-center py-xl">
+          <div className="w-full max-w-2xl text-center">
             <h1 className="text-4xl font-light tracking-tight text-[var(--brad-heading)] desktop:text-5xl">Welcome back</h1>
-            <p className="mt-3 text-base text-[var(--brad-muted)]">Ask Brad about policies, workflows, evidence, QAPI, onboarding, and compliance execution.</p>
+            <p className="mx-auto mt-3 max-w-xl text-base text-[var(--brad-muted)]">Ask Brad about policies, workflows, evidence, QAPI, onboarding, and compliance execution.</p>
           </div>
 
-          <div className="mx-auto mt-lg w-full max-w-5xl">
+          <div className="mt-lg w-full max-w-2xl">
             {events.length > 0 && (
-              <div className="mb-2 flex items-center gap-2 text-xs text-[var(--brad-muted)]">
+              <div className="mb-2 flex items-center justify-center gap-2 text-xs text-[var(--brad-muted)]">
                 <span>Context</span>
-                <select aria-label="Context event" value={eventId} onChange={(e) => setEventId(e.target.value)} className="max-w-[260px] truncate rounded-md border border-[var(--brad-border)] bg-[var(--brad-surface)] px-2 py-1 text-xs text-[var(--brad-ink)]">
+                <select aria-label="Context event" value={eventId} onChange={(e) => setEventId(e.target.value)} className="max-w-[280px] truncate rounded-md border border-[var(--brad-border)] bg-[var(--brad-surface)] px-2 py-1 text-xs text-[var(--brad-ink)]">
                   {events.map((ev) => <option key={ev.eventId} value={ev.eventId}>{ev.eventTitle}</option>)}
                 </select>
               </div>
             )}
             {composerInner}
-            <p className="mt-2 pl-2 text-xs text-[var(--brad-muted)]">Enter to send · Shift+Enter for a new line</p>
+            <p className="mt-2 text-center text-xs text-[var(--brad-muted)]">Enter to send · Shift+Enter for a new line</p>
           </div>
 
-          {/* Quick actions */}
-          <div className="mx-auto mt-lg w-full max-w-5xl">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 tablet-l:grid-cols-3 desktop:grid-cols-4">
-              {quickActions.map((a) => (
-                <button
-                  key={a.id} type="button" onClick={() => handleQuickAction(a)} disabled={thinking}
-                  className="group flex min-h-[108px] flex-col gap-3 rounded-2xl border border-[var(--brad-border)] bg-[var(--brad-surface)] p-5 text-left shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md active:scale-[0.98] disabled:opacity-50 motion-reduce:hover:translate-y-0"
-                >
-                  <span className={`grid h-10 w-10 place-items-center rounded-xl ${a.id === 'builder' ? 'bg-[#FFFAF7] text-[#C74601]' : 'bg-[var(--brad-surface-2)] text-[#00797D]'}`}>
-                    <a.Icon aria-hidden className="h-5 w-5" />
-                  </span>
-                  <span className="text-sm font-medium leading-snug text-[var(--brad-ink)]">{a.label}</span>
-                </button>
-              ))}
-            </div>
+          {/* Compact quick-action chips (no big card grid) */}
+          <div className="mt-lg flex w-full max-w-3xl flex-wrap justify-center gap-2">
+            {quickActions.map((a) => (
+              <button
+                key={a.id} type="button" onClick={() => handleQuickAction(a)} disabled={thinking}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition hover:border-[#00797D] hover:text-[#00797D] disabled:opacity-50 ${a.id === 'builder' ? 'border-[#FFD5BF] bg-[#FFFAF7] text-[#C74601]' : 'border-[var(--brad-border)] bg-[var(--brad-surface)] text-[var(--brad-ink)]'}`}
+              >
+                <a.Icon aria-hidden className="h-3.5 w-3.5" /> {a.label}
+              </button>
+            ))}
           </div>
 
-          {/* Collapsed generated-work card */}
-          <div className="mx-auto mt-lg w-full max-w-5xl">
-            <GeneratedWorkCard objects={objects} onOpen={() => setShowGenerated(true)} />
-          </div>
+          {/* Tiny generated-work link */}
+          <button type="button" onClick={() => setShowGenerated(true)} className="mt-md inline-flex items-center gap-1 text-xs text-[var(--brad-muted)] hover:text-[#00797D]">
+            <FolderClosed className="h-3.5 w-3.5" aria-hidden /> View generated work{objects.length ? ` (${objects.length})` : ''}
+          </button>
         </div>
       )}
 
@@ -455,27 +450,6 @@ export default function BradWorkspace() {
         <ScopedActionDialog scope={scoped} onClose={() => setScoped(null)} onDraft={(prompt) => { setScoped(null); setInput(prompt); focusComposer(); }} />
       )}
     </div>
-  );
-}
-
-/* Collapsed summary card shown on the landing page (no raw objects/JSON). */
-function GeneratedWorkCard({ objects, onOpen }: { objects: GeneratedObject[]; onOpen: () => void }) {
-  const latest = objects[0];
-  return (
-    <button type="button" onClick={onOpen} className="flex w-full items-center justify-between gap-4 rounded-2xl border border-[var(--brad-border)] bg-[var(--brad-surface)] p-5 text-left shadow-sm transition hover:shadow-md">
-      <div className="flex items-center gap-3">
-        <span className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--brad-surface-2)] text-[#00797D]"><FolderClosed aria-hidden className="h-5 w-5" /></span>
-        <div>
-          <div className="text-sm font-medium text-[var(--brad-heading)]">Generated work</div>
-          <div className="text-xs text-[var(--brad-muted)]">
-            {objects.length === 0
-              ? 'Recent Brad drafts and records will appear here for review.'
-              : `${objects.length} item${objects.length === 1 ? '' : 's'} · latest: ${objLabel(latest.metadata.object_type)} · ${new Date(latest.metadata.generated_at).toLocaleDateString()}`}
-          </div>
-        </div>
-      </div>
-      <span className="inline-flex items-center gap-1 rounded-full border border-[var(--brad-border)] px-3 py-1 text-xs font-medium text-[#00797D]">View generated work <ChevronRight className="h-3.5 w-3.5" /></span>
-    </button>
   );
 }
 

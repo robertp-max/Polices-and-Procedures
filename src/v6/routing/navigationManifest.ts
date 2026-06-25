@@ -19,8 +19,7 @@ export const primaryNavItems: NavItem[] = [
   { id: 'taxonomy', label: 'Taxonomy', to: '/framework', hashIds: ['taxonomy', 'framework', 'achc-survey', 'achc-crosswalk'] },
   { id: 'onboarding', label: 'Onboarding', to: '/journey', hashIds: ['journey-overview', 'journey-v1', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'] },
   { id: 'policy-lifecycle', label: 'Policy Lifecycle', to: '/policy-lifecycle', hashIds: ['policy-lifecycle'], matchPaths: ['/policy-lifecycle', '/policy-lifecycle/:policyId'] },
-  { id: 'evidence', label: 'Evidence', to: '/evidence', hashIds: ['evidence-center'] },
-  { id: 'hubstaff', label: 'Hubstaff', to: '/hubstaff', hashIds: ['hubstaff'] },
+  // 'Evidence' and 'Hubstaff' hidden from the sidebar per request. Routes still resolve by URL.
   { id: 'help-center', label: 'Help Center', to: '/help', hashIds: ['help-center'] },
   // System Documentation and Demo are hidden from the nav bar per request.
   // (Their routes still resolve by direct URL; they are just hidden from the sidebar.)
