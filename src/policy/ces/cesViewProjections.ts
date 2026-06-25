@@ -36,6 +36,8 @@ import {
 } from './data/V3_CES_SeedData';
 // nullFn import removed for CES type isolation (use units only)
 import type { ExecutionUnit } from './types';
+import { generateEvents } from '@/policy/autogen/annualGenerator';
+import { TEMPLATE_REGISTRY } from '@/policy/autogen/templateRegistry';
 
 // Minimal static projection of key regulatory from V3 seed (ensures reg events appear on calendar without pulling snapshot module into CES view build graph)
 // EXCEPTION: these dates are duplicated here (not in V3_CES_SeedData). Currently filtered out in build (because units cover the parentEventIds),
@@ -524,6 +526,48 @@ export function buildTaskLanes(input?: { units?: readonly ExecutionUnit[] }): re
  *  Called by RepresentativeScreens CalendarScreen (ces mode). Dates NOT overridden in UI.
  *  Seed dates now guaranteed mostly Tue/Thu, <=4/day. See V3_CES_SeedData for source.
  */
+/** Recurring MANDATORY CES events (Tue/Thu cadence, monthly QAPI, quarterly,
+    semi-annual, annual, biennial) materialized for the calendar year from the
+    template registry. Computed once. Fills the months that the sparse real seed
+    data leaves empty, so every month shows its scheduled compliance work. */
+let _mandatoryCalendarCache: CesCalendarEvent[] | null = null;
+function mandatoryCalendarEvents(): CesCalendarEvent[] {
+  if (_mandatoryCalendarCache) return _mandatoryCalendarCache;
+  try {
+    const result = generateEvents({
+      templates: TEMPLATE_REGISTRY,
+      rangeStart: '2026-01-01',
+      rangeEnd: '2026-12-31',
+      existingEvents: [],
+    });
+    _mandatoryCalendarCache = result.generated.map((ev) => {
+      const { day, month } = parseDueToDayMonth(ev.date);
+      const urg = ev.urgency;
+      const tone: Tone =
+        (urg === 'overdue' || urg === 'critical' || urg === 'blocked' || urg === 'missing-evidence') ? 'orange'
+        : (urg === 'complete') ? 'green' : 'teal';
+      return {
+        id: ev.id,
+        label: ev.title || 'Mandatory CES Event',
+        day,
+        month,
+        owner: resolveDisplayName(ev.owner || ev.ownerRole) || 'Compliance Officer',
+        progress: urg === 'complete' ? 100 : 55,
+        tone,
+        sourceEventId: ev.id,
+        sourceDate: ev.date,
+        sourceKind: 'v3-regulatory-event' as const,
+        detail: (ev.summary || '').slice(0, 80),
+        scheduleReason: ev.mandateType,
+        recurrencePattern: ev.cadence,
+      } as CesCalendarEvent;
+    });
+  } catch {
+    _mandatoryCalendarCache = [];
+  }
+  return _mandatoryCalendarCache;
+}
+
 export function buildCalendarEvents(input?: { units?: readonly ExecutionUnit[] }): readonly CesCalendarEvent[] {
   const units = ((input && (input as any).units) || V3_ExecutionUnitsSeed || []) as readonly ExecutionUnit[];
   const fromUnits = units.map((u: ExecutionUnit) => {
@@ -573,7 +617,11 @@ export function buildCalendarEvents(input?: { units?: readonly ExecutionUnit[] }
     } as CesCalendarEvent;
   });
 
-  const all = [...fromUnits, ...fromReg];
+  // Inject recurring mandatory CES events (deduped by id against units + reg).
+  const existingIds = new Set([...fromUnits, ...fromReg].map((e) => e.id));
+  const fromMandatory = mandatoryCalendarEvents().filter((e) => !existingIds.has(e.id));
+
+  const all = [...fromUnits, ...fromReg, ...fromMandatory];
   return finalize(all.length ? all : [...FALLBACK_CES_CALENDAR_EVENTS], validateCalendarEvents, 'calendarEvents');
 }
 
