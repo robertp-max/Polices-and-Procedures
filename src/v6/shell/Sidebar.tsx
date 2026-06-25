@@ -102,8 +102,9 @@ export function Sidebar() {
 
           {/* ADMINISTRATION / KNOWLEDGE */}
           <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted px-sm mt-sm">ADMINISTRATION / KNOWLEDGE</div>
-          {['hubstaff', 'system-docs', 'help-center', 'demo', 'admin'].map(id => {
-            const item = primaryNavItems.find(i => i.id === id)!;
+          {['hubstaff', 'admin'].map(id => {
+            const item = primaryNavItems.find(i => i.id === id);
+            if (!item) return null; // guard: nav items can be removed without crashing the sidebar
             const isActive = active?.parent?.id === item.id;
             return (
               <Link
