@@ -21,9 +21,8 @@ export const primaryNavItems: NavItem[] = [
   { id: 'policy-lifecycle', label: 'Policy Lifecycle', to: '/policy-lifecycle', hashIds: ['policy-lifecycle'], matchPaths: ['/policy-lifecycle', '/policy-lifecycle/:policyId'] },
   { id: 'evidence', label: 'Evidence', to: '/evidence', hashIds: ['evidence-center'] },
   { id: 'hubstaff', label: 'Hubstaff', to: '/hubstaff', hashIds: ['hubstaff'] },
-  { id: 'system-docs', label: 'System Documentation', to: '/system-documentation', hashIds: ['system-docs'] },
-  { id: 'help-center', label: 'Help Center', to: '/help', hashIds: ['help-center'] },
-  { id: 'demo', label: 'Demo', to: '/demo', hashIds: ['demo'] },
+  // System Documentation, Help Center, and Demo removed from the nav bar per request.
+  // (Their routes still resolve by direct URL; they are just hidden from the sidebar.)
   { id: 'admin', label: 'Admin', to: '/admin/user-groups', hashIds: ['admin-groups', 'admin-roles', 'admin-permissions', 'admin-users'] },
 ];
 
