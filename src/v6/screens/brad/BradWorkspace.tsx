@@ -5,8 +5,8 @@ import {
   FileText, ClipboardList, X, Paperclip, ChevronDown, ChevronRight, FolderClosed,
 } from 'lucide-react';
 import {
-  bradApi, getIdentity, setIdentity, DEV_IDENTITIES,
-  type RuntimeInfo, type SuperAdminMe, type GeneratedObject, type ApprovalRequest, type EventMetaResult, type UploadMeta,
+  bradApi, getIdentity,
+  type SuperAdminMe, type GeneratedObject, type ApprovalRequest, type EventMetaResult, type UploadMeta,
 } from './bradApi';
 import { getQuickActions, SCOPED_ACTION_COPY, type QuickAction, type ScopedActionId } from './quickActions';
 import { HowBradWorksPanel } from './HowBradWorksPanel';
@@ -59,17 +59,16 @@ const nextId = () => `m${++msgSeq}`;
 export default function BradWorkspace() {
   const navigate = useNavigate();
 
-  const [runtime, setRuntime] = useState<RuntimeInfo | null>(null);
   const [me, setMe] = useState<SuperAdminMe | null>(null);
   const [events, setEvents] = useState<Array<{ eventId: string; eventTitle: string; eventType: string }>>([]);
   const [eventId, setEventId] = useState<string>('');
-  const [identity, setIdentityState] = useState(getIdentity());
+  // Identity is read once at mount; the acting-as switcher lives in the nav drawer and reloads on change.
+  const [identity] = useState(getIdentity());
 
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [thinking, setThinking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showStatus, setShowStatus] = useState(false);
 
   const [objects, setObjects] = useState<GeneratedObject[]>([]);
   const [lastEventUpdate, setLastEventUpdate] = useState<EventMetaResult | null>(null);
@@ -121,8 +120,8 @@ export default function BradWorkspace() {
 
   const loadIdentityScoped = useCallback(async () => {
     try {
-      const [rt, who, ev] = await Promise.all([bradApi.runtime(), bradApi.me(), bradApi.events()]);
-      setRuntime(rt); setMe(who); setEvents(ev.events);
+      const [who, ev] = await Promise.all([bradApi.me(), bradApi.events()]);
+      setMe(who); setEvents(ev.events);
       if (!eventId && ev.events[0]) setEventId(ev.events[0].eventId);
     } catch (e) { setError((e as Error).message); }
   }, [eventId]);
@@ -131,7 +130,6 @@ export default function BradWorkspace() {
   useEffect(() => { void refreshApprovals(); }, [refreshApprovals]);
   useEffect(() => { transcriptEnd.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  function onIdentityChange(userId: string) { setIdentity(userId); setIdentityState(getIdentity()); }
   function focusComposer() { requestAnimationFrame(() => composerRef.current?.focus()); }
 
   const send = useCallback(async (raw?: string) => {
@@ -197,8 +195,6 @@ export default function BradWorkspace() {
 
   const quickActions = useMemo(() => getQuickActions(!!me?.isSuperAdmin), [me]);
   const landing = messages.length === 0;
-  const phiPermitted = !!runtime?.phiPermitted;
-  const statusLabel = phiPermitted ? 'Brad — PHI Enabled' : 'Brad MVP — Synthetic PHI Only';
 
   const composerInner = (
     <div className="group relative w-full">
@@ -252,45 +248,6 @@ export default function BradWorkspace() {
       className="brad-workspace relative -m-md flex min-h-[84vh] flex-col overflow-hidden rounded-lg p-md font-light text-[var(--brad-ink)] [background:var(--brad-canvas)]"
     >
       <div className="brad-grid-pattern pointer-events-none absolute inset-0 opacity-50" aria-hidden />
-
-      {/* Header strip — Brad identity only, no model/provider names */}
-      <div className="relative z-10 mb-xl flex flex-wrap items-center justify-between gap-md rounded-xl border border-[var(--brad-border)] bg-[var(--brad-surface)]/85 px-lg py-3 shadow-sm backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          <span className="grid h-9 w-9 place-items-center rounded-full border border-[#C4F4F5] bg-[#E5F0EF] text-[#00797D]">
-            <Bot aria-hidden className="h-5 w-5" />
-          </span>
-          <div className="leading-tight">
-            <div className="text-sm font-medium tracking-wide text-[var(--brad-heading)]">Brad iAdministrator</div>
-            <div className="text-[11px] text-[var(--brad-muted)]">Care Indeed compliance assistant</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <button
-              type="button" onClick={() => setShowStatus((v) => !v)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#C4F4F5] bg-[#F7FEFF] px-3 py-1.5 text-[11px] font-medium text-[#00797D] transition hover:bg-[#E5F0EF]"
-            >
-              <span className="h-2 w-2 rounded-full bg-[#00797D]" /> {statusLabel}
-            </button>
-            {showStatus && (
-              <div className="absolute right-0 top-9 z-20 w-72 rounded-xl border border-[var(--brad-border)] bg-[var(--brad-surface)] p-4 text-[var(--brad-ink)] shadow-lg">
-                <p className="text-xs font-light leading-relaxed">
-                  Brad is running in MVP mode with synthetic PHI only. Real PHI remains blocked until the approved production readiness gate passes.
-                </p>
-                <div className="mt-2 flex justify-end"><button type="button" onClick={() => setShowStatus(false)} className="text-xs font-medium text-[#00797D] hover:underline">Close</button></div>
-              </div>
-            )}
-          </div>
-          <select
-            aria-label="Acting-as identity (server verifies Super Admin)"
-            value={identity.userId} onChange={(e) => onIdentityChange(e.target.value)}
-            title="Review identity — the server independently verifies Super Admin status"
-            className="rounded-md border border-[var(--brad-border)] bg-[var(--brad-surface)] px-2 py-1 text-xs text-[var(--brad-ink)]"
-          >
-            {DEV_IDENTITIES.map((d) => <option key={d.userId} value={d.userId}>{d.displayName}</option>)}
-          </select>
-        </div>
-      </div>
 
       {me?.isSuperAdmin && (
         <div className="relative z-10 mb-md flex items-center gap-2 rounded-md border border-[#C4F4F5] bg-[#E5F0EF] px-md py-2 text-xs text-[#004142]">

@@ -3,6 +3,7 @@ import { Link, matchPath, useLocation } from 'react-router-dom';
 import { cx } from '../utils/classNames';
 import { primaryNavItems } from '../routing/navigationManifest';
 import { V6_ROUTES } from '../routing/routeRegistry';
+import { getIdentity, setIdentity, DEV_IDENTITIES } from '../screens/brad/bradApi';
 
 export function Sidebar() {
   const { pathname } = useLocation();
@@ -31,17 +32,8 @@ export function Sidebar() {
 
   return (
     <aside className="sticky top-0 z-command h-screen w-sidebar shrink-0 overflow-hidden border-r border-hairline bg-white/70 text-ink shadow-sidebar backdrop-blur-xl flex flex-col">
-      <div className="relative z-10 shrink-0 grid gap-lg px-lg pb-lg pt-2xl">
-        <div className="flex items-start gap-md">
-          <div className="flex items-center gap-sm px-sm" aria-label="Care Indeed">
-            <img
-              src="/ci-logo-gray.png"
-              alt="Care Indeed"
-              className="h-16 w-auto object-contain"
-            />
-          </div>
-        </div>
-      </div>
+      {/* Top spacer clears the fixed hamburger + logo cluster rendered by V6Shell. */}
+      <div className="relative z-10 shrink-0 px-lg pt-[64px]" aria-hidden />
 
       <nav
         aria-label="V6 routes"
@@ -128,6 +120,24 @@ export function Sidebar() {
           })}
         </div>
       </nav>
+
+      {/* Footer: acting-as identity (server independently verifies Super Admin). */}
+      <div className="shrink-0 border-t border-hairline px-lg py-md">
+        <label className="block text-[10px] font-medium uppercase tracking-[0.2em] text-muted">
+          Acting as
+        </label>
+        <select
+          aria-label="Acting-as identity (server verifies Super Admin)"
+          title="Review identity — the server independently verifies Super Admin status"
+          defaultValue={getIdentity().userId}
+          onChange={(e) => { setIdentity(e.target.value); window.location.reload(); }}
+          className="mt-1 w-full rounded-md border border-hairline bg-surface px-2 py-1.5 text-xs text-ink focus-visible:outline-none focus-visible:shadow-focus"
+        >
+          {DEV_IDENTITIES.map((d) => (
+            <option key={d.userId} value={d.userId}>{d.displayName}</option>
+          ))}
+        </select>
+      </div>
     </aside>
   );
 }

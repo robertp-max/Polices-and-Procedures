@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import { Menu } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { PersonalOpsPanel } from './PersonalOpsPanel';
 import { Topbar } from './Topbar';
@@ -12,6 +13,10 @@ export function V6Shell() {
   const { isPersonalOpsOpen, togglePersonalOps } = usePersonalOpsStore();
   const mainRef = useRef<HTMLElement | null>(null);
   const [hasScrolledMain, setHasScrolledMain] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
+
+  // Close the nav drawer whenever the route changes.
+  useEffect(() => { setNavOpen(false); }, [pathname]);
 
   useEffect(() => {
     const main = mainRef.current;
@@ -40,14 +45,42 @@ export function V6Shell() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-canvas font-light text-ink">
-      <Sidebar />
+      {/* Top-left: hamburger + logo (always visible; opens the nav drawer) */}
+      <div className="fixed left-3 top-3 z-modal flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setNavOpen((o) => !o)}
+          aria-label={navOpen ? 'Close menu' : 'Open menu'}
+          className="grid h-10 w-10 place-items-center rounded-lg border border-hairline bg-surface/90 text-brand-teal-deep shadow-rest backdrop-blur transition-colors hover:bg-tone-teal-bg focus-visible:outline-none focus-visible:shadow-focus"
+        >
+          <Menu aria-hidden="true" className="h-5 w-5" />
+        </button>
+        <img src="/ci-logo-gray.png" alt="Care Indeed" className="h-9 w-auto object-contain" />
+      </div>
+
+      {/* Off-canvas nav drawer + backdrop */}
+      {navOpen && (
+        <div
+          className="fixed inset-0 z-command bg-ink/20 backdrop-blur-sm"
+          onClick={() => setNavOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      <div
+        className={cx(
+          'fixed left-0 top-0 z-command h-full transition-transform duration-base ease-standard',
+          navOpen ? 'translate-x-0' : '-translate-x-full',
+        )}
+      >
+        <Sidebar />
+      </div>
+
+      {/* Full-width content */}
       <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col">
         <div className="flex h-full min-h-0 min-w-0 flex-1 flex-row">
           <main
             className={cx(
-              // Reduced right padding so wide content (e.g. 4-col swimlanes, boards) uses full width next to Sidebar.
-              // Topbar (fixed dock at top-right) overlays content top area; z-50 ensures nav bar always visible above content.
-              'v6-main-scrollmask min-h-0 flex-1 overflow-auto py-3xl pl-3xl pr-3xl',
+              'v6-main-scrollmask min-h-0 flex-1 overflow-auto px-3xl pb-3xl pt-16',
               hasScrolledMain && 'v6-main-scrollmask--scrolled',
             )}
             id="main-content"
