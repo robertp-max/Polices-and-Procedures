@@ -270,45 +270,228 @@ export function WorkflowSwimlaneScreen() {
   );
 }
 
+const WF_DOMAIN_LABEL: Record<string, string> = {
+  GV: 'Governance', CL: 'Clinical', QA: 'QAPI', HR: 'Human Resources', CO: 'Compliance',
+  FN: 'Finance', OP: 'Operations', EN: 'Enterprise', IT: 'IT', RM: 'Risk',
+};
+const WF_RISK: Record<string, { label: string; cls: string; dot: string }> = {
+  immediate_jeopardy: { label: 'Immediate Jeopardy', cls: 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text', dot: 'bg-brand-orange' },
+  high: { label: 'High Risk', cls: 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text', dot: 'bg-brand-orange' },
+  moderate: { label: 'Moderate', cls: 'border-tone-amber-border bg-tone-amber-bg text-tone-amber-text', dot: 'bg-tone-amber-text' },
+  low: { label: 'Low', cls: 'border-tone-teal-border bg-tone-teal-bg text-brand-teal', dot: 'bg-brand-teal' },
+};
+type WfTab = 'process' | 'steps' | 'forms' | 'approvals' | 'escalation' | 'audit' | 'compliance';
+const WF_TABS: Array<{ id: WfTab; label: string }> = [
+  { id: 'process', label: 'Process' }, { id: 'steps', label: 'Steps' }, { id: 'forms', label: 'Forms' },
+  { id: 'approvals', label: 'Approvals' }, { id: 'escalation', label: 'Escalation' },
+  { id: 'audit', label: 'Audit' }, { id: 'compliance', label: 'Compliance' },
+];
+
+function WfSectionTitle({ children }: { children: React.ReactNode }) {
+  return <div className="text-tag font-semibold uppercase tracking-tag text-brand-teal">{children}</div>;
+}
+
 export function WorkflowDetailScreen({ workflowId: propId }: { workflowId?: string }) {
   // Resolve the id from the route (/workflows/:workflowId) when no prop is passed
   // by the dispatcher — otherwise the detail renders an empty "not found" id.
   const params = useParams<{ workflowId: string }>();
-  const workflowId = propId || params.workflowId;
-  const meta = getWorkflowMeta(workflowId);
-  const detail = getWorkflowDetail(workflowId || '') || {
-    purpose: `Unresolved workflow ID: ${workflowId}. This ID does not exist in the generated WORKFLOWS collection. Return to the library to select a valid record.`,
-    policies: '—',
-    forms: '—',
-    evidence: '—',
-    roles: '—',
-    triggers: '—',
-    linkedWorkflows: '—',
-    history: [],
-  };
-  if (!meta && !WORKFLOWS[workflowId || '']) {
+  const navigate = useNavigate();
+  const workflowId = propId || params.workflowId || '';
+  const [tab, setTab] = useState<WfTab>('process');
+  const wf = WORKFLOWS[workflowId];
+
+  if (!wf) {
     return (
-      <div className="p-xl text-sm text-muted">
+      <div className="grid gap-sm rounded-xl border border-hairline bg-surface/80 p-xl text-sm text-muted shadow-rest backdrop-blur-md">
         <h3 className="text-h3 font-medium text-ink">Workflow not found</h3>
-        <p className="mt-sm">Unresolved workflow ID: <code>{workflowId}</code>.</p>
-        <p>This ID does not exist in the canonical generated WORKFLOWS. No fabricated data is shown.</p>
-        <Link to="/workflows" className="mt-md inline-block text-brand-teal hover:underline">Return to Workflows Library</Link>
+        <p>Unresolved workflow ID: <code>{workflowId || '—'}</code>. This ID does not exist in the canonical generated WORKFLOWS. No fabricated data is shown.</p>
+        <Link to="/workflows" className="mt-sm inline-block text-brand-teal hover:underline">Return to Workflows Library</Link>
       </div>
     );
   }
+
+  const risk = WF_RISK[wf.metrics?.declaredRisk ?? 'moderate'] ?? WF_RISK.moderate;
+  const cadenceLabel = `${wf.cadence?.interval ?? 'on demand'} · ${(wf.cadence?.kind ?? 'time_based').replace(/_/g, '-')}`;
+  const title = wf.title.replace(/\b\w/g, (c) => c.toUpperCase());
+  const glass = 'rounded-xl border border-hairline bg-surface/80 shadow-rest backdrop-blur-md';
+
   return (
-    <div className="grid gap-md">
-      <div className="text-tag uppercase tracking-tag text-muted">Workflow Detail</div>
-      <h3 className="text-h2 font-medium text-brand-teal-deep">{meta?.title}</h3>
-      <div className="grid grid-cols-2 gap-sm text-sm">
-        <div>ID: <span className="font-medium text-brand-teal">{meta?.id}</span></div>
-        <div>Domain: {meta?.domain}</div>
-        <div>Risk: {meta?.risk}</div>
-        <div>Frequency: {meta?.frequency}</div>
-        <div>Owner: {meta?.owner}</div>
-        <div>Policies: {(detail as any)?.policies || '—'}</div>
+    <div className="grid gap-lg">
+      <Link to="/workflows" className="text-sm font-medium text-brand-teal hover:underline">← Workflows</Link>
+
+      <div className="grid gap-lg desktop:grid-cols-[minmax(0,1fr)_300px]">
+        {/* Main glass card with tabs */}
+        <div className={`${glass} overflow-hidden`}>
+          {/* Header */}
+          <div className="flex flex-wrap items-start justify-between gap-md border-b border-hairline bg-tone-teal-bg/40 px-lg py-lg">
+            <div className="min-w-0">
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-tone-teal-border bg-surface px-2.5 py-1 text-tag font-semibold uppercase tracking-tag text-brand-teal-deep">
+                  {wf.domain} · {WF_DOMAIN_LABEL[wf.domain] ?? wf.domain}
+                </span>
+                <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-tag font-semibold uppercase tracking-tag ${risk.cls}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${risk.dot}`} /> {risk.label}
+                </span>
+              </div>
+              <div className="text-tag uppercase tracking-tag text-muted">{wf.id}</div>
+              <h2 className="mt-1 text-h1 font-medium text-brand-teal-deep">{title}</h2>
+              <button
+                type="button"
+                onClick={() => navigate(`/workflows/${wf.id}/swimlane`)}
+                className="mt-md inline-flex items-center gap-2 rounded-lg bg-brand-orange px-lg py-2.5 text-sm font-semibold uppercase tracking-wide text-on-brand shadow-rest transition hover:bg-brand-orange-deep focus-visible:outline-none focus-visible:shadow-focus"
+              >
+                Launch Swimlane
+              </button>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex flex-wrap gap-1 border-b border-hairline px-lg pt-3">
+            {WF_TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className={`-mb-px rounded-t-md border-b-2 px-3 py-2 text-sm font-medium transition ${tab === t.id ? 'border-brand-teal text-brand-teal-deep' : 'border-transparent text-muted hover:text-brand-teal'}`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab body */}
+          <div className="grid gap-lg p-lg desktop:grid-cols-[minmax(0,1fr)_240px]">
+            <div className="grid gap-lg">
+              {tab === 'process' && (
+                <>
+                  <div className="grid gap-2"><WfSectionTitle>Process Overview</WfSectionTitle><p className="text-sm leading-relaxed text-ink">{wf.processOverview || '—'}</p></div>
+                  <div className="grid gap-2">
+                    <WfSectionTitle>Triggers</WfSectionTitle>
+                    <ul className="grid gap-1.5 text-sm text-ink">
+                      {(wf.triggers ?? []).map((t, i) => (
+                        <li key={i} className="flex gap-2">
+                          <span className="shrink-0 rounded bg-tone-teal-bg px-1.5 py-0.5 text-tag font-semibold uppercase tracking-tag text-brand-teal">{t.kind.replace(/_/g, '-')}</span>
+                          <span>{t.description}</span>
+                        </li>
+                      ))}
+                      {!(wf.triggers ?? []).length && <li className="text-muted">—</li>}
+                    </ul>
+                  </div>
+                  <div className="grid gap-2">
+                    <WfSectionTitle>Inputs</WfSectionTitle>
+                    <ul className="ml-4 list-disc grid gap-1 text-sm text-ink">{(wf.inputs ?? []).map((x, i) => <li key={i}>{x}</li>)}{!(wf.inputs ?? []).length && <li className="list-none text-muted">—</li>}</ul>
+                  </div>
+                  <div className="grid gap-2"><WfSectionTitle>Outputs</WfSectionTitle><p className="text-sm leading-relaxed text-ink">{wf.outputs || '—'}</p></div>
+                </>
+              )}
+
+              {tab === 'steps' && (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-sm">
+                    <thead><tr className="border-b border-hairline text-left text-tag uppercase tracking-tag text-muted">
+                      <th className="py-2 pr-3">#</th><th className="py-2 pr-3">Action</th><th className="py-2 pr-3">Role</th><th className="py-2 pr-3">Forms</th><th className="py-2">Deadline</th>
+                    </tr></thead>
+                    <tbody>
+                      {(wf.steps ?? []).map((s) => (
+                        <tr key={s.order} className="border-b border-hairline/60 align-top">
+                          <td className="py-2.5 pr-3 font-medium text-brand-teal">{s.order}</td>
+                          <td className="py-2.5 pr-3 text-ink">{s.action}</td>
+                          <td className="py-2.5 pr-3 text-muted">{s.role}</td>
+                          <td className="py-2.5 pr-3"><div className="flex flex-wrap gap-1">{(s.formIds ?? []).map((f) => <span key={f} className="rounded border border-hairline bg-tone-slate-bg px-1.5 py-0.5 text-tag text-muted">{f}</span>)}{!(s.formIds ?? []).length && '—'}</div></td>
+                          <td className="py-2.5 text-muted">{s.deadline || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {tab === 'forms' && (
+                <div className="grid gap-3">
+                  <WfSectionTitle>Required Forms & Documents</WfSectionTitle>
+                  <div className="flex flex-wrap gap-2">{(wf.requiredForms ?? []).map((f) => <span key={f} className="rounded-md border border-tone-teal-border bg-tone-teal-bg px-2.5 py-1 text-sm font-medium text-brand-teal-deep">{f}</span>)}{!(wf.requiredForms ?? []).length && <span className="text-sm text-muted">—</span>}</div>
+                  {wf.requiredFormsRaw && <p className="text-xs leading-relaxed text-muted">{wf.requiredFormsRaw}</p>}
+                </div>
+              )}
+
+              {tab === 'approvals' && (
+                <div className="grid gap-3">
+                  <WfSectionTitle>Approvals</WfSectionTitle>
+                  <ul className="grid gap-2 text-sm text-ink">
+                    {(wf.approvals ?? []).map((a, i) => (
+                      <li key={i} className="rounded-lg border border-hairline bg-surface p-3">
+                        <div>{a.description}</div>
+                        {a.requiresGoverningBody && <span className="mt-1 inline-block rounded-full border border-tone-orange-border bg-tone-orange-bg px-2 py-0.5 text-tag font-semibold uppercase tracking-tag text-tone-orange-text">Governing Body required</span>}
+                      </li>
+                    ))}
+                    {!(wf.approvals ?? []).length && <li className="text-muted">{wf.approvalsRaw || '—'}</li>}
+                  </ul>
+                </div>
+              )}
+
+              {tab === 'escalation' && (
+                <div className="grid gap-lg">
+                  <div className="grid gap-2"><WfSectionTitle>SLA / Deadlines</WfSectionTitle><p className="text-sm leading-relaxed text-ink">{wf.sla || '—'}</p></div>
+                  <div className="grid gap-2"><WfSectionTitle>Escalation Logic</WfSectionTitle><p className="text-sm leading-relaxed text-ink">{wf.escalationLogic || '—'}</p></div>
+                  <div className="grid gap-2"><WfSectionTitle>Failure Conditions</WfSectionTitle><p className="text-sm leading-relaxed text-ink">{wf.failureConditions || '—'}</p></div>
+                </div>
+              )}
+
+              {tab === 'audit' && (
+                <div className="grid gap-2"><WfSectionTitle>Audit Requirements</WfSectionTitle><p className="text-sm leading-relaxed text-ink">{wf.auditRequirements || '—'}</p></div>
+              )}
+
+              {tab === 'compliance' && (
+                <div className="grid gap-lg">
+                  <div className="grid gap-2">
+                    <WfSectionTitle>Policy References</WfSectionTitle>
+                    <div className="flex flex-wrap gap-2">{(wf.policyRefs ?? []).map((p) => <span key={p} className="rounded-md border border-tone-teal-border bg-tone-teal-bg px-2.5 py-1 text-sm font-medium text-brand-teal-deep">{p}</span>)}{!(wf.policyRefs ?? []).length && <span className="text-sm text-muted">—</span>}</div>
+                    {(wf.policyReferences ?? []).map((p, i) => <p key={i} className="text-xs leading-relaxed text-muted">{p}</p>)}
+                  </div>
+                  <div className="grid gap-2">
+                    <WfSectionTitle>Regulatory Anchors</WfSectionTitle>
+                    <div className="flex flex-wrap gap-2">{(wf.regulatoryAnchors ?? []).map((r, i) => <span key={i} className="rounded-md border border-hairline bg-tone-slate-bg px-2.5 py-1 text-sm text-ink">{r}</span>)}{!(wf.regulatoryAnchors ?? []).length && <span className="text-sm text-muted">—</span>}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* In-tab right column: Responsible Roles + Anchors (shown on Process) */}
+            {tab === 'process' && (
+              <div className="grid content-start gap-lg">
+                <div className="grid gap-2">
+                  <WfSectionTitle>Responsible Roles</WfSectionTitle>
+                  <div className="grid gap-2 text-sm">
+                    <div><div className="text-tag uppercase tracking-tag text-muted">Primary</div><div className="text-ink">{(wf.roles?.primary ?? []).join(', ') || '—'}</div></div>
+                    <div><div className="text-tag uppercase tracking-tag text-muted">Supporting</div><div className="text-ink">{(wf.roles?.supporting ?? []).join(', ') || '—'}</div></div>
+                    <div><div className="text-tag uppercase tracking-tag text-muted">Approval</div><div className="text-ink">{(wf.roles?.approval ?? []).join(', ') || '—'}</div></div>
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <WfSectionTitle>Regulatory Anchors</WfSectionTitle>
+                  <div className="flex flex-wrap gap-1.5">{(wf.regulatoryAnchors ?? []).map((r, i) => <span key={i} className="rounded border border-hairline bg-surface px-2 py-0.5 text-xs text-ink">{r}</span>)}{!(wf.regulatoryAnchors ?? []).length && <span className="text-xs text-muted">—</span>}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Metrics sidebar card */}
+        <aside className={`${glass} grid h-fit content-start gap-3 p-lg`}>
+          {[
+            ['Cadence', cadenceLabel],
+            ['Steps', String(wf.metrics?.stepCount ?? wf.steps?.length ?? 0)],
+            ['Forms', String(wf.metrics?.formCount ?? wf.requiredForms?.length ?? 0)],
+            ['Policies', String(wf.metrics?.policyCount ?? wf.policyRefs?.length ?? 0)],
+            ['Primary', (wf.roles?.primary ?? [])[0] ?? '—'],
+          ].map(([k, v]) => (
+            <div key={k} className="flex items-center justify-between gap-3 border-b border-hairline/60 pb-2 last:border-0 last:pb-0">
+              <span className="text-tag uppercase tracking-tag text-muted">{k}</span>
+              <span className="text-right text-sm font-medium text-brand-teal-deep">{v}</span>
+            </div>
+          ))}
+        </aside>
       </div>
-      <p className="text-sm text-secondary">{(detail as any)?.purpose || ''}</p>
     </div>
   );
 }
