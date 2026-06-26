@@ -22,6 +22,7 @@ import { pingDrive, ensureFolderPath, listFolderChildren, driveFolderUrl } from 
 import {
   uploadEventEvidence,
   uploadIntakeEvidence,
+  savePacketToEvent,
   copyEvidenceToPacketFolder,
   buildEvidenceFolderSegments,
   evidenceFolderUrl,
@@ -467,6 +468,37 @@ calendarRouter.post('/intake/evidence/copy', asyncHandler(async (req, res) => {
     driveFolderPath: result.driveFolderPath,
     driveWebViewLink: result.driveFileUrl,
   });
+}));
+
+/**
+ * POST /api/calendar/intake/packet
+ * Save a generated packet to its event's Drive folder (upload-or-replace by a
+ * stable per-event filename, so a new packet for the same event replaces the
+ * prior one). Fails closed when Drive is unreachable — no simulated success.
+ * Body: { eventId, packetId, title, html, eventDate?, domain? }
+ */
+calendarRouter.post('/intake/packet', asyncHandler(async (req, res) => {
+  if (!env.calendarEvidenceEnabled) {
+    throw new ApiError('validation_error', 'Google Drive evidence is disabled.', 400);
+  }
+  const driveHealth = await pingDrive();
+  if (!driveHealth.reachable) {
+    throw new ApiError('validation_error', 'Packet save blocked: Google Drive is not reachable.', 503);
+  }
+  const b = (req.body ?? {}) as Record<string, unknown>;
+  const eventId = strOrEmpty(b.eventId);
+  const html = strOrEmpty(b.html);
+  if (!eventId) throw new ApiError('validation_error', '`eventId` is required.', 400);
+  if (!html) throw new ApiError('validation_error', '`html` is required.', 400);
+  const result = await savePacketToEvent({
+    eventId,
+    packetId: strOrEmpty(b.packetId) || eventId,
+    title: strOrEmpty(b.title) || eventId,
+    html,
+    eventDate: strOrUndef(b.eventDate),
+    domain: strOrUndef(b.domain),
+  });
+  res.status(201).json(result);
 }));
 
 /**

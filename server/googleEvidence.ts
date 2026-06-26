@@ -2,7 +2,7 @@ import { env } from './env.js';
 import { log } from './logger.js';
 import { ApiError } from './errors.js';
 import {
-  ensureFolderPath, uploadFile, copyFile, driveFileUrl, driveFolderUrl,
+  ensureFolderPath, uploadFile, uploadOrReplaceFile, copyFile, driveFileUrl, driveFolderUrl,
 } from './googleDrive.js';
 import {
   attachDriveFileToEvent, findByEventId, setEvidenceExtendedProperties,
@@ -572,6 +572,53 @@ export async function uploadIntakeEvidence(input: IntakeUploadInput): Promise<In
     driveFolderPath: segments.join('/'),
     driveFileUrl: uploaded.webViewLink ?? driveFileUrl(uploaded.fileId),
     contentStatus: 'available',
+  };
+}
+
+export interface SavePacketInput {
+  eventId: string;
+  packetId: string;
+  title: string;
+  html: string;
+  eventDate?: string;
+  domain?: string;
+}
+export interface SavePacketResult {
+  driveFileId: string;
+  driveFolderId: string;
+  driveFolderPath: string;
+  driveFileUrl: string;
+  replaced: boolean;
+}
+
+/**
+ * Save a generated packet to its event's Drive folder. Uses a STABLE per-event
+ * filename ({eventId}-packet.html) and upload-or-replace, so generating a new
+ * packet for the same event REPLACES the prior version (stable link/file id).
+ * Mock/training packets all land in the single Mock/Packets folder.
+ */
+export async function savePacketToEvent(input: SavePacketInput): Promise<SavePacketResult> {
+  if (!env.calendarEvidenceEnabled) {
+    throw new ApiError('validation_error', 'Google Drive evidence is disabled.', 400);
+  }
+  if (!input.eventId) throw new ApiError('validation_error', 'eventId is required.', 400);
+  if (!input.html) throw new ApiError('validation_error', 'Packet html is required.', 400);
+
+  const segments = input.eventId === MOCK_EVENT_ID
+    ? [...MOCK_EVIDENCE_SEGMENTS, 'Packets']
+    : buildEvidenceFolderSegments({ eventId: input.eventId, domain: input.domain, eventDate: input.eventDate, category: 'overview' }).slice(0, 4).concat('Packets');
+
+  const folderId = await ensureFolderPath(segments);
+  const safeName = sanitizeFileName(`${input.eventId}-packet.html`);
+  const buffer = Buffer.from(input.html, 'utf8');
+  const res = await uploadOrReplaceFile({ parentId: folderId, name: safeName, mimeType: 'text/html', buffer });
+  log.info('google.packet.saved', { eventId: input.eventId, packetId: input.packetId, fileId: res.fileId, replaced: res.replaced });
+  return {
+    driveFileId: res.fileId,
+    driveFolderId: folderId,
+    driveFolderPath: segments.join('/'),
+    driveFileUrl: res.webViewLink ?? driveFileUrl(res.fileId),
+    replaced: res.replaced,
   };
 }
 

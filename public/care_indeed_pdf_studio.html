@@ -258,6 +258,7 @@ body {
 .event-picker-id { margin-top: 8px; font-size: 12px; color: var(--gray-700, #444); }
 .event-picker-id.warn { color: var(--orange-500, #d9892b); }
 .event-picker-empty { font-size: 13px; color: var(--studio-text-dim, #888); }
+.notes-guide { margin-top: 10px; font-size: 11px; line-height: 1.6; color: var(--studio-text-dim, #64748b); border-left: 3px solid var(--teal-500, #00a6a8); padding-left: 10px; }
 .meeting-card {
   position: relative;
   padding: 12px 14px;
@@ -1450,6 +1451,7 @@ let selectedMeeting = null;
 let uploadedFiles = [];
 let fieldValues = {};
 let currentPacketId = null;
+const generatedEventIds = new Set();   // events generated this session (regenerate → replace warning)
 
 // Every packet is associated to a CES calendar event (supplied by the host).
 let availableEvents = [];
@@ -1662,6 +1664,12 @@ function nextStep() {
   }
   else if (currentStep === 2) {
     if (!selectedEventId) { showToast('Select the CES event this packet is for (Step 1).', 'error'); goToStep(1); return; }
+    // Warn: a new packet for the SAME event replaces the prior version (on Drive too).
+    if (generatedEventIds.has(selectedEventId)) {
+      const ev = allEventsWithMock().find(x => x.id === selectedEventId);
+      if (!window.confirm('A packet for "' + ((ev && ev.title) || selectedEventId) + '" was already generated.\n\nGenerating a new packet for the same event will REPLACE the previous version (including the copy saved to Google Drive).\n\nContinue?')) return;
+    }
+    generatedEventIds.add(selectedEventId);
     currentPacketId = mintPacketId();
     try { window.parent && window.parent.postMessage({ type: 'ci-packet-generated', packetId: currentPacketId, eventId: selectedEventId, meeting: selectedMeeting && selectedMeeting.id }, '*'); } catch (e) {}
     showGenerationOverlay(() => goToStep(3));
@@ -1812,7 +1820,13 @@ function renderStep2() {
       </div>
     </div>`;
 
-  document.getElementById('configGrid').innerHTML = colDetails + colStructure + colSources;
+  const colNotes = `
+    <div class="config-col" style="grid-column:1 / -1;">
+      <div class="sidebar-label">Reviewer Notes for Brad <span style="text-transform:none;color:var(--studio-text-dim);font-weight:400;">(optional override)</span></div>
+      <textarea data-key="reviewer_notes" rows="3" class="event-picker-select" style="min-height:70px;resize:vertical;font-family:inherit;" placeholder="e.g. &quot;Dig deeper into the 3 Friday missed-visit cases.&quot;  •  &quot;Note that the May infection spike was wound-related, not an outbreak.&quot;  •  &quot;Flag medication reconciliation as the board's priority PIP.&quot;" onchange="updateField('reviewer_notes', this.value)">${escHtml(fieldValues.reviewer_notes || '')}</textarea>
+      <div class="notes-guide"><strong>How to use this override:</strong> anything you type here is added to the generated packet as a highlighted <em>“Reviewer Notes &amp; Follow-Up Requests”</em> page (right after the cover) for the committee and Brad. Use it to (1) call out something <strong>you personally observed</strong>, (2) ask Brad to <strong>look deeper</strong> into a specific area, or (3) add context the source data didn't capture. It annotates the packet — it does not change the underlying source numbers.</div>
+    </div>`;
+  document.getElementById('configGrid').innerHTML = colDetails + colStructure + colSources + colNotes;
 }
 
 function updateField(key, value) {
@@ -2198,6 +2212,17 @@ function findPacketSection(s) {
 
 // Render rich, tailored content for a packet section.
 function renderSectionData(s) {
+  // Reviewer override notes — a highlighted, packet-front annotation page.
+  if (s && s.form === 'Reviewer Notes') {
+    const note = (fieldValues.reviewer_notes || '').trim();
+    const lines = note.split(/\n+/).filter(Boolean);
+    return '<div class="rp-glass primary"><div class="rp-h3">Reviewer Notes &amp; Follow-Up Requests</div>' +
+      '<p class="rp-p" style="margin:0 0 10px;font-size:11px;color:var(--gray-600);">Submitted by the reviewer for committee discussion and Brad follow-up. These annotate the packet; they do not alter the source data.</p>' +
+      (lines.length > 1
+        ? '<ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.7;color:var(--gray-900);">' + lines.map(l => '<li>' + escHtml(l) + '</li>').join('') + '</ul>'
+        : '<p class="rp-p" style="margin:0;font-size:12.5px;line-height:1.6;color:var(--gray-900);">' + escHtml(note) + '</p>') +
+      '</div>';
+  }
   const pk = findPacketSection(s);
   if (pk) return renderForm(pk);
   const a = analytics;
@@ -2638,8 +2663,8 @@ function emitFramedPage(section, pageDesc, footerPageNum, domIndex) {
 }
 
 let sectionFirstDomIndex = [];
-function rebuildThumbnails(m, totalPages) {
-  const thumbHTML = m.sections.map((s, i) => {
+function rebuildThumbnails(sections, totalPages) {
+  const thumbHTML = sections.map((s, i) => {
     const dom = sectionFirstDomIndex[i] != null ? sectionFirstDomIndex[i] : i;
     return '<div class="page-thumb ' + (i === 0 ? 'active' : '') + '" onclick="scrollToPage(' + dom + ')" data-page="' + dom + '">' +
       '<div class="thumb-top-rule"></div><div class="thumb-lines"><div class="thumb-line title"></div><div class="thumb-line med"></div>' +
@@ -2668,7 +2693,7 @@ function scheduleRepaginate() {
     renderStep3();
     try {
       const pm = document.getElementById('previewMain');
-      if (currentPacketId && pm && window.parent) window.parent.postMessage({ type: 'ci-packet-content', packetId: currentPacketId, title: document.title, html: pm.innerHTML }, '*');
+      if (currentPacketId && pm && window.parent) window.parent.postMessage({ type: 'ci-packet-content', packetId: currentPacketId, eventId: selectedEventId, title: document.title, html: pm.innerHTML }, '*');
     } catch (e) {}
   });
 }
@@ -2742,9 +2767,13 @@ function renderStep3() {
   `;
   
   // Section pages — paginate each section into fixed 8.5x11 pages (cover = page 1).
+  // Reviewer notes (if any) become the first content section right after the cover.
+  const notesSec = (fieldValues.reviewer_notes || '').trim() ? [{ form: 'Reviewer Notes', title: 'Reviewer Notes & Follow-Up Requests' }] : [];
+  const contentSections = notesSec.concat(m.sections.slice(1));
+  const allSections = [m.sections[0]].concat(contentSections);   // includes cover for thumbnails
   let footerPageNum = 2;   // first section page prints "Page 2"
   let domIndex = 1;        // cover is DOM page-0
-  m.sections.slice(1).forEach((s) => {
+  contentSections.forEach((s) => {
     sectionFirstDomIndex.push(domIndex);
     const { pages } = paginateSection(s, footerPageNum);
     pages.forEach((pg) => {
@@ -2755,7 +2784,7 @@ function renderStep3() {
 
   const totalPages = domIndex;   // cover + all emitted section pages
   document.getElementById('previewMain').innerHTML = pagesHTML;
-  rebuildThumbnails(m, totalPages);
+  rebuildThumbnails(allSections, totalPages);
   destroyMeasureHost();
 
   // Auto-name the exported PDF "EVENT NAME DATE" — browsers use document.title
@@ -2769,7 +2798,7 @@ function renderStep3() {
   // re-rendered on a tab switch (which clears the live preview).
   try {
     if (currentPacketId && window.parent) {
-      window.parent.postMessage({ type: 'ci-packet-content', packetId: currentPacketId, title: document.title, html: pagesHTML }, '*');
+      window.parent.postMessage({ type: 'ci-packet-content', packetId: currentPacketId, eventId: selectedEventId, title: document.title, html: pagesHTML }, '*');
     }
   } catch (e) {}
 

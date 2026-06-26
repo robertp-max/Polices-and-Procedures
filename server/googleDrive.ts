@@ -185,6 +185,51 @@ export async function uploadFile(input: {
 }
 
 /**
+ * Upload a file, REPLACING any existing file of the same name in the folder
+ * (content updated in place so the webViewLink/fileId stays stable). Used for
+ * generated packets: a new packet for the same event replaces the prior one.
+ */
+export async function uploadOrReplaceFile(input: {
+  parentId: string;
+  name: string;
+  mimeType: string;
+  buffer: Buffer;
+}): Promise<DriveUploadResult & { replaced: boolean }> {
+  const c = await getClient();
+  const escaped = input.name.replace(/'/g, "\\'");
+  try {
+    const existing = await c.files.list({
+      q: `name='${escaped}' and '${input.parentId}' in parents and trashed=false`,
+      fields: 'files(id,name)',
+      pageSize: 1,
+      ...driveScopeParams(),
+    });
+    const priorId = existing.data.files?.[0]?.id;
+    if (priorId) {
+      const res = await c.files.update({
+        fileId: priorId,
+        media: { mimeType: input.mimeType, body: Readable.from(input.buffer) },
+        fields: 'id,name,mimeType,webViewLink,webContentLink',
+        supportsAllDrives: true,
+      });
+      log.info('google.drive.replace.ok', { fileId: priorId, parentId: input.parentId, name: input.name });
+      return {
+        fileId: priorId,
+        webViewLink: res.data.webViewLink ?? driveFileUrl(priorId),
+        webContentLink: res.data.webContentLink ?? undefined,
+        mimeType: res.data.mimeType ?? input.mimeType,
+        name: res.data.name ?? input.name,
+        replaced: true,
+      };
+    }
+    const created = await uploadFile(input);
+    return { ...created, replaced: false };
+  } catch (e) {
+    throw fromGoogleError(e);
+  }
+}
+
+/**
  * Copy an existing Drive file into a destination folder (Section 10 — physical
  * packet copies). Returns the NEW file id. Preserves the source bytes; never
  * overwrites the canonical original. Provenance (canonicalEvidenceId, source

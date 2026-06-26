@@ -293,6 +293,14 @@ export const CalendarApi = {
   },
 
   /**
+   * Save a generated packet to its event's Drive folder (upload-or-replace by a
+   * stable per-event filename — a new packet for the same event replaces it).
+   */
+  async savePacket(input: SavePacketInput): Promise<SavePacketResponse> {
+    return request('POST', '/intake/packet', input);
+  },
+
+  /**
    * Seed the Brad Training library from the real "2026 Brad Training" Drive
    * folder — URL/metadata only (no document bytes). Returns the immediate
    * children (subfolders + files) of `folderId` (defaults to the root) so the
@@ -304,6 +312,22 @@ export const CalendarApi = {
     return request('GET', `/intake/brad-training${q}`);
   },
 };
+
+export interface SavePacketInput {
+  eventId: string;
+  packetId: string;
+  title: string;
+  html: string;
+  eventDate?: string;
+  domain?: string;
+}
+export interface SavePacketResponse {
+  driveFileId: string;
+  driveFolderId: string;
+  driveFolderPath: string;
+  driveFileUrl: string;
+  replaced: boolean;
+}
 
 export interface BradTrainingFile {
   id: string;

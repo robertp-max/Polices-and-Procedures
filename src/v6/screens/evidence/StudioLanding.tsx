@@ -81,22 +81,49 @@ export function StudioLanding() {
   useEffect(() => () => roRef.current?.disconnect(), []);
   useEffect(() => { postEventsToStudio(); }, [postEventsToStudio]);
 
+  // Save the generated packet to its event's Drive folder (auto, on generate).
+  // Builds a self-contained HTML (inlined studio CSS) and upload-or-replaces by
+  // a stable per-event filename, so a new packet for the same event replaces it.
+  const saveTimer = useRef<number | null>(null);
+  const lastSavedSig = useRef<string>('');
+  const [packetSave, setPacketSave] = useState<{ status: 'idle' | 'saving' | 'saved' | 'error'; replaced?: boolean; url?: string; msg?: string }>({ status: 'idle' });
+  const doSavePacket = useCallback((p: { packetId?: string; eventId?: string; title?: string; html?: string }) => {
+    if (!p.eventId || !p.html) return;
+    const ev = events.find((e) => e.id === p.eventId);
+    const doc = iframeRef.current?.contentDocument;
+    const styles = doc ? Array.from(doc.querySelectorAll('style')).map((s) => s.outerHTML).join('\n') : '';
+    const body = p.html.replace(/<img class="rp-logo"[^>]*>/g, '<div style="font:700 20px/1 sans-serif;color:#004142;">CareIndeed</div>');
+    const standalone = '<!doctype html><html><head><meta charset="utf-8"><title>' + (p.title || 'Care Indeed Packet') + '</title>' + styles +
+      '<style>@page{size:letter;margin:0;}html,body{margin:0!important;padding:0!important;background:#fff;}*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}' +
+      '.preview-sidebar,.studio-nav,.page-thumb,.toast-container,.gen-overlay,.page-modal{display:none!important;}' +
+      '.rendered-page{zoom:1!important;box-shadow:none!important;border-radius:0!important;width:8.5in!important;height:11in!important;overflow:hidden!important;margin:0 auto 10px;page-break-after:always;}</style></head><body>' + body + '</body></html>';
+    const sig = p.eventId + ':' + standalone.length;
+    if (sig === lastSavedSig.current) return; // dedupe identical re-paginate re-send
+    lastSavedSig.current = sig;
+    setPacketSave({ status: 'saving' });
+    CalendarApi.savePacket({ eventId: p.eventId, packetId: p.packetId || p.eventId, title: p.title || p.eventId, html: standalone, eventDate: ev?.date, domain: ev?.domain })
+      .then((r) => setPacketSave({ status: 'saved', replaced: r.replaced, url: r.driveFileUrl }))
+      .catch((e: unknown) => setPacketSave({ status: 'error', msg: e instanceof Error ? e.message : 'Drive save failed' }));
+  }, [events]);
+
   // When the studio's own event picker changes, keep the host's filing target in
-  // sync; and relay a print request from the Signature Tracker into the iframe
-  // (the host switches back to this tab first so the studio is visible to print).
+  // sync; relay a print request from the Signature Tracker into the iframe; and
+  // save each generated packet to Drive.
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
-      const d = e.data as { type?: string; eventId?: string } | undefined;
+      const d = e.data as { type?: string; eventId?: string; packetId?: string; title?: string; html?: string } | undefined;
       if (d?.type === 'ci-event-selected' && typeof d.eventId === 'string') setEventId(d.eventId || eventId);
       else if (d?.type === 'ci-print-packet') {
-        // Returned from the Signature Tracker — enable the studio's own Download
-        // button (a direct click prints just the packet pages, gesture-safe).
         window.setTimeout(() => { try { iframeRef.current?.contentWindow?.postMessage({ type: 'ci-enable-download' }, '*'); } catch { /* ignore */ } }, 200);
+      } else if (d?.type === 'ci-packet-content' && d.eventId && d.html) {
+        if (saveTimer.current) clearTimeout(saveTimer.current);
+        const payload = { packetId: d.packetId, eventId: d.eventId, title: d.title, html: d.html };
+        saveTimer.current = window.setTimeout(() => doSavePacket(payload), 700);
       }
     };
     window.addEventListener('message', onMsg);
     return () => window.removeEventListener('message', onMsg);
-  }, [eventId]);
+  }, [eventId, doSavePacket]);
 
   useEffect(() => {
     let on = true;
@@ -223,9 +250,19 @@ export function StudioLanding() {
     <section className="grid gap-sm">
       {/* Light, borderless action row — file source docs / capture into the Library */}
       <div className="flex flex-wrap items-center justify-end gap-sm px-xs text-[11px]">
-        <span className="mr-auto flex items-center gap-xs text-muted" title={driveReachable ? 'Google Drive reachable' : 'Google Drive unavailable'}>
-          <span className={`h-2 w-2 rounded-full ${driveReachable ? 'bg-brand-teal' : 'bg-[#c74601]'}`} />
-          Drive {driveReachable ? 'connected' : (driveHealth ? 'unavailable' : 'checking…')}
+        <span className="mr-auto flex items-center gap-sm">
+          <span className="flex items-center gap-xs text-muted" title={driveReachable ? 'Google Drive reachable' : 'Google Drive unavailable'}>
+            <span className={`h-2 w-2 rounded-full ${driveReachable ? 'bg-brand-teal' : 'bg-[#c74601]'}`} />
+            Drive {driveReachable ? 'connected' : (driveHealth ? 'unavailable' : 'checking…')}
+          </span>
+          {packetSave.status === 'saving' && <span className="flex items-center gap-xs text-muted"><Loader2 className="h-3 w-3 animate-spin" /> Saving packet…</span>}
+          {packetSave.status === 'saved' && (
+            <span className="flex items-center gap-xs text-brand-teal-deep">
+              <CheckCircle2 className="h-3.5 w-3.5" /> Packet {packetSave.replaced ? 'updated' : 'saved'} to Drive
+              {packetSave.url && <a href={packetSave.url} target="_blank" rel="noreferrer" className="underline hover:text-brand-teal">view</a>}
+            </span>
+          )}
+          {packetSave.status === 'error' && <span className="flex items-center gap-xs text-tone-orange-text" title={packetSave.msg}><XCircle className="h-3.5 w-3.5" /> Packet not saved to Drive</span>}
         </span>
         <select aria-label="File to event" title="File captured/added source documents to this event" value={eventId} onChange={(e) => setEventId(e.target.value)} className="max-w-[200px] rounded-lg border border-hairline bg-surface px-sm py-xs text-xs text-ink">
           <option value="mock-training">Mock Event (for training)</option>
