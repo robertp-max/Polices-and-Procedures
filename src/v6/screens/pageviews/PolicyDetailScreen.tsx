@@ -133,6 +133,16 @@ function parseMarkdown(body: string): MdBlock[] {
   return blocks;
 }
 
+// A section body is renderable only if it parses to something other than zero
+// blocks or a lone horizontal rule. ~298 corpus sections carry body "---" only
+// (a structural separator from extraction) which would otherwise render an empty
+// card with just a header — those are skipped entirely.
+function hasRenderableBody(body: string): boolean {
+  const blocks = parseMarkdown(body);
+  if (!blocks.length) return false;
+  return blocks.some((b) => b.kind !== 'rule');
+}
+
 function MarkdownBody({ body }: { body: string }) {
   const blocks = parseMarkdown(body);
   if (!blocks.length) return null;
@@ -171,7 +181,7 @@ function MarkdownBody({ body }: { body: string }) {
               <div className="overflow-x-auto rounded-md border border-card" key={key}>
                 <table className="w-full border-collapse text-sm">
                   <thead>
-                    <tr className="bg-tone-slate-bg">
+                    <tr className="bg-surface-glass backdrop-blur-md shadow-glass-inset">
                       {block.header.map((cell, cellIndex) => (
                         <th
                           className="border-b border-hairline px-md py-sm text-left text-tag uppercase tracking-tag text-muted"
@@ -234,14 +244,14 @@ function SourceUnavailable({
   icon?: typeof Info;
 }) {
   return (
-    <section className="rounded-lg border border-card bg-surface p-lg shadow-rest" aria-label={title}>
+    <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden shadow-rest" aria-label={title}>
       <div className="mb-md flex items-center gap-sm">
-        <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-slate-bg text-muted">
+        <span className="grid h-tap w-tap place-items-center rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset text-muted">
           <Icon aria-hidden="true" className="h-icon-sm w-icon-sm" />
         </span>
         <h2 className="text-h2 font-medium text-ink">{title}</h2>
       </div>
-      <div className="rounded-md border border-dashed border-card bg-tone-slate-bg/60 p-lg">
+      <div className="rounded-md border border-dashed border-card bg-surface-glass backdrop-blur-md shadow-glass-inset/60 p-lg">
         <ToneTag tone="slate">Not in policy content source</ToneTag>
         <p className="mt-sm text-sm text-secondary">{description}</p>
       </div>
@@ -277,16 +287,28 @@ export function PolicyDetailScreen() {
 
   const sections = content ? [...content.sections].sort((a, b) => a.order - b.order) : [];
 
-  // Auto-trigger native browser print for dedicated print routes (V1 /print/:id and /library/:id/print)
-  // Matches form print pattern; allows openPolicyPrintRoute new-tab + Save as PDF.
+  // Auto-name the saved PDF "{policy name} {YYYY-MM-DD}" (document.title is the
+  // browser's default Save-as filename) and auto-trigger print on dedicated
+  // print routes. Restores the prior title on cleanup.
   useEffect(() => {
-    if (isPrintRoute && typeof window !== 'undefined') {
-      const t = window.setTimeout(() => {
-        try { window.focus(); window.print(); } catch { /* noop */ }
-      }, 650);
-      return () => window.clearTimeout(t);
-    }
-  }, [isPrintRoute]);
+    if (!isPrintRoute || typeof window === 'undefined') return undefined;
+    // Force the NOON (default) theme so morning/afternoon/night palettes never
+    // bleed into a printed policy.
+    const el = document.documentElement;
+    const prevTod = el.getAttribute('data-tod');
+    el.setAttribute('data-tod', 'noon');
+    const printDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD, locale-stable
+    const previousTitle = document.title;
+    document.title = `${cleanInline(headerTitle)} ${printDate}`.replace(/\s+/g, ' ').trim();
+    const t = window.setTimeout(() => {
+      try { window.focus(); window.print(); } catch { /* noop */ }
+    }, 650);
+    return () => {
+      window.clearTimeout(t);
+      document.title = previousTitle;
+      if (prevTod) el.setAttribute('data-tod', prevTod); else el.removeAttribute('data-tod');
+    };
+  }, [isPrintRoute, headerTitle]);
 
   return (
     <section
@@ -296,10 +318,39 @@ export function PolicyDetailScreen() {
       data-route={routeMarker.path}
       data-template={routeMarker.template}
     >
-      <article className="relative isolate grid gap-xl overflow-visible rounded-lg border border-card bg-white/[.62] p-xl shadow-rest backdrop-blur-xl">
+      <article className={cx(
+        'relative isolate grid gap-xl overflow-visible rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest backdrop-blur-xl',
+        isPrintRoute && 'ci-premium-print-document ci-premium-policy-document bg-white text-[#1F1C1B]'
+      )}>
+        {isPrintRoute && (
+          <>
+            <div className="ci-premium-top-rule" />
+            <header className="ci-premium-header">
+              <img className="ci-premium-logo" src="/ci-logo-gray.png" alt="Care Indeed" />
+              <div className="ci-premium-header-meta">
+                <strong>{headerId} · {corpus?.tier ?? 'Policy'}</strong>
+                Corporate Policy Document<br />
+                Print / Download View
+              </div>
+            </header>
+            <section className="ci-premium-cover-block">
+              <p className="ci-premium-kicker">Corporate Policy Document · {headerId}{corpus?.tier ? ` · ${corpus.tier}` : ''}</p>
+              <h1>{cleanInline(headerTitle)}</h1>
+              <div className="ci-premium-meta-grid">
+                {headerFields.map(([label, value]) => (
+                  <div key={label}><span>{label}</span><strong>{value}</strong></div>
+                ))}
+              </div>
+              <p className="ci-premium-printed-on">Printed {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            </section>
+          </>
+        )}
         <nav
           aria-label="Policy document sections"
-          className="sticky top-0 z-30 -mx-xl -mt-xl flex gap-xl overflow-x-auto rounded-t-lg border-b border-hairline bg-white/[.92] px-xl pt-xl pb-xs shadow-sticky-tabs backdrop-blur-xl after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-16 after:h-16 after:bg-gradient-to-b after:from-white after:via-white/88 after:to-transparent"
+          className={cx(
+            'sticky top-0 z-30 -mx-xl -mt-xl flex gap-xl overflow-x-auto rounded-t-lg border-b border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset px-xl pt-xl pb-xs shadow-sticky-tabs backdrop-blur-xl after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-16 after:h-16 after:bg-gradient-to-b after:from-white after:via-white/88 after:to-transparent',
+            isPrintRoute && 'no-print hidden'
+          )}
           style={{
             maskImage: 'linear-gradient(to right, black 0, black calc(100% - 44px), transparent 100%)',
             WebkitMaskImage: 'linear-gradient(to right, black 0, black calc(100% - 44px), transparent 100%)',
@@ -333,12 +384,11 @@ export function PolicyDetailScreen() {
         </nav>
 
         <section className="grid scroll-mt-28 gap-xl" id="overview">
-          <div className="grid gap-lg rounded-lg border border-card bg-tone-slate-bg/80 p-xl">
+          {!isPrintRoute && <div className="grid gap-lg rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset/80 p-xl">
             <div className="flex flex-wrap items-start justify-between gap-lg border-b border-hairline pb-lg">
               <div className="grid gap-sm">
                 <div className="flex flex-wrap items-center gap-sm">
                   <ToneTag tone="teal">Policy ID: {headerId}</ToneTag>
-                  {isPrintRoute && <ToneTag tone="teal">Print view</ToneTag>}
                 </div>
                 <h2 className="text-[28px] font-medium leading-tight text-ink" id="policy-detail-title">
                   {cleanInline(headerTitle)}
@@ -351,39 +401,42 @@ export function PolicyDetailScreen() {
               </div>
               <div className="flex flex-wrap items-center gap-sm">
                 <ToneBadge size="sm" status="info" />
-                {!isPrintRoute && (
-                  <button
-                    type="button"
-                    onClick={() => openPolicyPrintRoute(`/print/${encodeURIComponent(policyId)}`)}
-                    className="text-xs px-3 py-1 rounded border border-hairline hover:bg-surface"
-                  >
-                    Print / Download
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => openPolicyPrintRoute(`/print/${encodeURIComponent(policyId)}`)}
+                  className="text-xs px-3 py-1 rounded border border-hairline hover:bg-surface-glass hover:backdrop-blur-md"
+                >
+                  Print / Download
+                </button>
               </div>
             </div>
 
             <dl className="grid gap-lg tablet:grid-cols-2 desktop:grid-cols-4">
               {headerFields.map(([label, value]) => (
-                <div className="min-h-row rounded-md border border-card bg-surface/80 p-md" key={label}>
+                <div className="min-h-row rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset/80 p-md" key={label}>
                   <dt className="text-tag uppercase tracking-tag text-muted">{label}</dt>
                   <dd className={cx('mt-xs text-sm font-medium text-ink', label === 'Tier' && 'text-brand-orange')}>{value}</dd>
                 </div>
               ))}
             </dl>
-          </div>
+          </div>}
 
           {content ? (
             <div className="grid gap-lg">
-              {sections.map((section, index) => (
+              {sections.map((section, index) => {
+                if (!hasRenderableBody(section.body)) return null;
+                return (
                 <section
-                  className="scroll-mt-28 rounded-lg border border-card bg-white/[.56] p-lg shadow-rest backdrop-blur-md"
+                  className={cx(
+                    'scroll-mt-28 rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden shadow-rest backdrop-blur-md',
+                    isPrintRoute && 'ci-premium-section'
+                  )}
                   id={buildAnchor(section)}
                   key={section.id}
                 >
                   <div className="mb-md flex flex-wrap items-start justify-between gap-md">
                     <div className="flex items-center gap-sm">
-                      <span className="grid h-tap w-tap place-items-center rounded-md bg-surface text-brand-teal">
+                      <span className="grid h-tap w-tap place-items-center rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal">
                         <FileText aria-hidden="true" className="h-icon-sm w-icon-sm" />
                       </span>
                       <div>
@@ -396,11 +449,12 @@ export function PolicyDetailScreen() {
                   </div>
                   <MarkdownBody body={section.body} />
                 </section>
-              ))}
+                );
+              })}
             </div>
           ) : (
-            <div className="rounded-lg border border-dashed border-card bg-white/[.56] p-xl text-center shadow-rest backdrop-blur-md">
-              <span className="mx-auto grid h-tap w-tap place-items-center rounded-md bg-tone-slate-bg text-muted">
+            <div className="rounded-lg border border-dashed border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl text-center shadow-rest backdrop-blur-md">
+              <span className="mx-auto grid h-tap w-tap place-items-center rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset text-muted">
                 <Info aria-hidden="true" className="h-icon-md w-icon-md" />
               </span>
               <h3 className="mt-md text-h2 font-medium text-ink">Policy content unavailable</h3>
@@ -411,9 +465,15 @@ export function PolicyDetailScreen() {
             </div>
           )}
         </section>
+        {isPrintRoute && (
+          <footer className="ci-premium-footer">
+            <span>Care Indeed Home Health Care, Inc.</span>
+            <span>{headerId} · Corporate Policy Document</span>
+          </footer>
+        )}
       </article>
 
-      <section className="grid gap-xl desktop:grid-cols-2" aria-label="Related policy data">
+      {!isPrintRoute && <section className="grid gap-xl desktop:grid-cols-2" aria-label="Related policy data">
         <SourceUnavailable
           icon={Link2}
           title="Linked Forms"
@@ -424,12 +484,12 @@ export function PolicyDetailScreen() {
           title="Lifecycle & Evidence"
           description="Lifecycle progress and evidence records are not carried in the policy content source. Status, version, and review dates appear as real content within the Policy Header section above."
         />
-      </section>
+      </section>}
 
-      <SourceUnavailable
+      {!isPrintRoute && <SourceUnavailable
         title="Readiness & Compliance Mapping"
         description="Survey-readiness scoring and standard-to-section mapping are not present in the policy content source and are not fabricated here. Regulatory references appear as real content within the policy's References section."
-      />
+      />}
     </section>
   );
 }

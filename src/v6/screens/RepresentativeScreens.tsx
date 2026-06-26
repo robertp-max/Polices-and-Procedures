@@ -1,13 +1,14 @@
-import { AlertTriangle, BarChart3, BookOpen, CalendarClock, CalendarRange, Camera, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, FileCheck2, FileText, FolderOpen, History, PanelRightOpen, Route, ShieldCheck, Stethoscope, Upload, Users, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, BarChart3, BookOpen, CalendarClock, CalendarRange, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, FileCheck2, FileText, FolderOpen, History, PanelRightOpen, ShieldCheck, Stethoscope, Upload, Users, type LucideIcon } from 'lucide-react';
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, matchPath, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { buildBoardLanes, buildCalendarEvents, buildReportMetrics, buildSprintSummary, buildReportCards, buildReportTrendBars, buildEvidenceRows, buildAuditRows, getControlFromParams, getTasksForEvent } from '@/policy/ces/cesViewProjections';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { buildBoardLanes, buildCalendarEvents, buildEventLanes, buildReportMetrics, buildSprintSummary, buildReportCards, buildReportTrendBars, buildEvidenceRows, buildAuditRows, FALLBACK_EVENT_LANES, getControlFromParams, getTasksForEvent } from '@/policy/ces/cesViewProjections';
 // Design cross-ref (Agent 19 background + Agent 19 read-only CES Data Seeds gap vs design subagent + Agent 09 read-only hygiene/validate gap): V3 seeds supply realistic ExecutionUnits for CES board/my-tasks/calendar/snapshots/projections.
 // Current: use build* or FALLBACK for exact design visual parity. See projections for seed-driven future and validators.
 import type { ExecutionUnit } from '@/policy/ces/types';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/data/policyCorpus';
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
+import { buildFormContent, type FormField, type FormSection } from '@/policy/data/formsLibraryContent';
 import EvidenceStudio from '@/v6/screens/evidence/EvidenceStudio';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import { getWorkflowDetail } from './pageviews/WorkflowsScreen';
@@ -28,8 +29,7 @@ import { Button, ToneBadge } from '../primitives';
 import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
-import { BoardLane, CESSubnav, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
-import { workspaceSubnavItems } from '../routing/navigationManifest';
+import { BoardLane, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
 import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen } from './pageviews';
 import { achcSurveyRows } from '@/policy/data/achcSurveyProjection.generated';
 import { achcPrintCrosswalk } from '@/policy/data/achcPrintCrosswalk.generated';
@@ -99,78 +99,78 @@ const operationsMetrics: readonly MetricTileData[] = [
 ];
 
 const dashboardMetrics: readonly MetricTileData[] = [
-  { label: 'Active census', value: '128', helper: '36 recert windows open', tone: 'teal' },
-  { label: 'Visits today', value: '74', helper: '6 need schedule attention', tone: 'orange' },
-  { label: 'Coverage', value: '92%', helper: 'Weekend pool pending', tone: 'green' },
-  { label: 'High acuity', value: '17', helper: 'CHF, wound, post-CVA', tone: 'orange' },
+  { label: 'CES events', value: '30', helper: 'June compliance calendar', tone: 'teal' },
+  { label: 'Blocked units', value: '8', helper: 'Evidence or signature gaps', tone: 'orange' },
+  { label: 'Ready to certify', value: '11', helper: 'Awaiting final lock', tone: 'green' },
+  { label: 'Survey critical', value: '14', helper: 'Needs owner action', tone: 'orange' },
 ];
 
 const dashboardActions: readonly ActionRow[] = [
   {
-    body: 'Start-of-care visit needs RN backup before 3:00 PM',
-    due: 'TODAY',
-    icon: Route,
-    owner: resolveDisplayName('Clinical Manager'),
-    progress: 64,
+    body: 'Q2 QAPI review packet needs final minutes, attendee reconciliation, and governing body evidence link.',
+    due: 'JUN 05',
+    icon: ClipboardCheck,
+    owner: resolveDisplayName('Compliance Officer'),
+    progress: 72,
     status: 'review-required',
-    title: 'Reassign SOC coverage for Elena Vargas',
+    title: 'Close QAPI committee packet',
     tone: 'orange',
   },
   {
-    body: 'Signed order and visit cadence need final confirmation',
-    due: 'JUN 19',
+    body: 'Monthly OIG / SAM exclusion check is ready after administrator attestation is attached.',
+    due: 'JUN 05',
     icon: ClipboardCheck,
-    owner: resolveDisplayName('Maria Gonzalez, RN'),
-    progress: 82,
+    owner: resolveDisplayName('HR Compliance Lead'),
+    progress: 88,
     status: 'ready',
-    title: 'Close Robert Hale recert plan review',
+    title: 'Certify exclusion check evidence',
     tone: 'teal',
   },
   {
-    body: 'Two high-acuity patients need weekend pool assignment',
-    due: 'JUN 20',
-    icon: CalendarRange,
-    owner: resolveDisplayName('Scheduling Lead'),
-    progress: 48,
+    body: 'Quarterly vulnerability scan has open remediation notes and missing IT sign-off.',
+    due: 'JUN 10',
+    icon: ShieldCheck,
+    owner: resolveDisplayName('IT Security Owner'),
+    progress: 54,
     status: 'blocked',
-    title: 'Resolve CHHA weekend coverage gap',
+    title: 'Resolve vulnerability scan blockers',
     tone: 'orange',
   },
   {
-    body: 'Amna Yusuf route requires evidence lock after field upload',
-    due: 'JUN 21',
-    icon: Camera,
-    owner: resolveDisplayName('QAPI Nurse'),
-    progress: 76,
+    body: 'Policy annual review attestation batch is staged for final leadership approval.',
+    due: 'JUN 09',
+    icon: FileCheck2,
+    owner: resolveDisplayName('Policy Steward'),
+    progress: 81,
     status: 'uploaded',
-    title: 'Approve wound photo protocol evidence',
+    title: 'Approve annual policy review batch',
     tone: 'teal',
   },
 ];
 
 const dashboardCards: readonly SurfaceCardData[] = [
   {
-    body: 'SOC backup and weekend coverage are the highest priority service-continuity actions.',
+    body: 'Evidence packets, forms, and workflow logs are grouped by lock state for survey review.',
     icon: AlertTriangle,
-    progress: 64,
+    progress: 68,
     status: 'review-required',
-    title: 'Service continuity',
+    title: 'Survey risk posture',
     tone: 'orange',
   },
   {
-    body: 'Recert packets, medication teaching, and wound protocol evidence are trending ready.',
-    icon: Stethoscope,
-    progress: 82,
+    body: 'Signed packets and attestation workflows are mostly ready, with administrator review still required.',
+    icon: FileCheck2,
+    progress: 84,
     status: 'ready',
-    title: 'Clinical readiness',
+    title: 'Evidence lock readiness',
     tone: 'teal',
   },
   {
-    body: 'Credential renewal and route load remain stable with one follow-up required.',
-    icon: Users,
-    progress: 76,
+    body: 'Calendar cadence is balanced across monthly, quarterly, annual, and event-based compliance obligations.',
+    icon: CalendarRange,
+    progress: 79,
     status: 'active',
-    title: 'Staff posture',
+    title: 'CES cadence health',
     tone: 'teal',
   },
 ];
@@ -1136,7 +1136,7 @@ function CalendarEventPreview({
   return createPortal(
     <aside
       aria-live="polite"
-      className="fixed z-popover w-[340px] pointer-events-none rounded-lg border border-white bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg text-ink shadow-rest"
+      className="v6-calendar-event-preview fixed z-popover w-[340px] pointer-events-none rounded-lg border border-white bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg text-ink shadow-rest"
       id="ces-event-preview"
       style={positionStyle}
     >
@@ -1361,7 +1361,7 @@ function CalendarSwimlaneInline({
               <button
                 aria-current={isSelected ? 'true' : undefined}
                 className={cx(
-                  'min-h-tap shrink-0 rounded-sm border px-md py-sm text-[10px] font-medium uppercase tracking-wider transition duration-fast hover:translate-y-[-1px]',
+                  'min-h-tap shrink-0 rounded-sm border px-md py-sm text-[10px] font-medium uppercase tracking-wider',
                   isSelected
                     ? 'border-brand-teal bg-brand-teal text-on-brand shadow-rest'
                     : item.tone === 'orange' || item.tone === 'amber'
@@ -1421,7 +1421,7 @@ function CalendarSwimlaneInline({
               style={{ '--lane-card-count': lane.cards.length } as CSSProperties}
             >
               {lane.cards.map((task) => (
-                <article className="min-w-0 rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg transition duration-fast hover:bg-tone-slate-bg" key={task.id}>
+                <article className="min-w-0 rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg" key={task.id}>
                   <div className="flex items-start justify-between gap-md">
                     <ToneTag tone={task.tone}>{task.id}</ToneTag>
                     <span className={cx('h-2.5 w-2.5 shrink-0 rounded-full', task.tone === 'orange' ? 'bg-brand-orange' : 'bg-brand-teal')} />
@@ -1713,7 +1713,7 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <BoardScreen />;
       break;
     case 'evidence-center':
-      child = <EvidenceStudio initialTab="library" />;
+      child = <EvidenceStudio initialTab="studio" />;
       break;
     case 'evidence-intake':
       child = <EvidenceStudio initialTab="studio" />;
@@ -1837,36 +1837,9 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
 
   const mainContent = <div key={location.key} className={`grid v6-page-transition ${pageTransitionClass}`}>{wrapped}</div>;
 
-  // Workspace subnav rendered inside the content area for V1 parity (not in main sidebar)
-  // Primary parents only in sidebar; children here.
   const pathname = location?.pathname || '';
-  const cesHashIds = ['ces-calendar', 'ces-board', 'events-board', 'master-controls', 'my-tasks', 'ces-reports', 'workflows', 'workflow-detail', 'workflow-swimlane', 'evidence-center', 'evidence-intake', 'evidence-packet-studio', 'audit-mode'];
-  const isCESGroup = route.group === 'CES' || cesHashIds.includes(route.hashId || '') || pathname.startsWith('/ces/') || pathname.startsWith('/workflows') || pathname.startsWith('/events/') || pathname === '/audit' || pathname === '/evidence' || pathname.startsWith('/compliance/');
-
-  const isTaxonomyGroup = pathname.startsWith('/framework') || pathname.startsWith('/library') || pathname.startsWith('/forms') || pathname.startsWith('/taxonomy') || pathname.startsWith('/achc') || pathname.startsWith('/policy-lifecycle') || pathname === '/policy-approvals' || pathname === '/pm/approvals' || ['framework', 'taxonomy', 'policy-library', 'policy-detail', 'forms-library', 'form-viewer', 'achc-survey', 'achc-crosswalk', 'policy-lifecycle', 'policy-lifecycle-detail', 'policy-approvals', 'pm-approvals'].includes(route.hashId || '') || route.group === 'Taxonomy';
   const isOnboardingGroup = pathname.startsWith('/journey') || pathname.startsWith('/onboarding-v2') || ['journey-overview', 'journey-new-hire', 'journey-orientation', 'module-player', 'lesson-player', 'module-assessment-splash', 'module-assessment-quiz', 'final-assessment-splash', 'final-assessment-quiz', 'final-result', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'].includes(route.hashId || '') || route.group === 'Onboarding';
-  const isSystemGroup = pathname.startsWith('/system-documentation') || pathname.startsWith('/policy-lifecycle') || pathname === '/hubstaff' || pathname.startsWith('/help') || ['system-docs', 'policy-lifecycle', 'policy-lifecycle-detail', 'hubstaff', 'help-center', 'governance'].includes(route.hashId || '') || route.group === 'System';
-  const isAdminGroup = pathname.startsWith('/admin/') || ['admin-groups', 'admin-roles', 'admin-permissions', 'admin-users', 'surveyor-viewer'].includes(route.hashId || '') || route.group === 'Admin';
-
-  let workspaceSubnav = null;
-  if (isCESGroup) {
-    workspaceSubnav = <CESSubnav />;
-  } else if (isTaxonomyGroup && workspaceSubnavItems.taxonomy) {
-    workspaceSubnav = <WorkspaceSubnav items={workspaceSubnavItems.taxonomy} currentPath={location?.pathname || ''} prefix="Taxonomy:" />;
-  } else if (isOnboardingGroup && workspaceSubnavItems.onboarding) {
-    workspaceSubnav = <WorkspaceSubnav items={workspaceSubnavItems.onboarding} currentPath={location?.pathname || ''} prefix="Onboarding & Training:" />;
-  } else if (isSystemGroup && workspaceSubnavItems['system-docs']) {
-    workspaceSubnav = <WorkspaceSubnav items={workspaceSubnavItems['system-docs']} currentPath={location?.pathname || ''} prefix="System Docs:" />;
-  } else if (isAdminGroup && workspaceSubnavItems.admin) {
-    workspaceSubnav = <WorkspaceSubnav items={workspaceSubnavItems.admin} currentPath={location?.pathname || ''} prefix="Admin:" />;
-  }
-
-  let content = workspaceSubnav ? (
-    <>
-      {workspaceSubnav}
-      {mainContent}
-    </>
-  ) : mainContent;
+  let content = mainContent;
 
   if (isOnboardingGroup) {
     content = (
@@ -1879,47 +1852,6 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
   }
 
   return content;
-}
-
-// Generic workspace subnav (top of workspace content, V1 style)
-function WorkspaceSubnav({ items, currentPath, prefix }: { items: any[]; currentPath: string; prefix: string }) {
-  const p = (currentPath || '').split(/[?#]/)[0];
-  // Find the most specific (longest matching to) active item to ensure exactly one active tab
-  const activeTo = items.reduce((best, item) => {
-    const to = item.to;
-    let matches = false;
-    if (item.matchPaths) {
-      matches = item.matchPaths.some((mp: string) => matchPath({ path: mp, end: false }, p));
-    } else {
-      matches = p === to || p.startsWith(to + '/');
-    }
-    if (matches) {
-      if (!best || to.length > best.length) {
-        return to;
-      }
-    }
-    return best;
-  }, null as string | null);
-  return (
-    <div className="mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="workspace subnav">
-      <span className="mr-sm text-tag uppercase tracking-tag text-muted">{prefix}</span>
-      {items.map((item) => {
-        const isActive = activeTo === item.to;
-        return (
-          <Link
-            key={item.to}
-            to={item.to}
-            aria-current={isActive ? 'page' : undefined}
-            className={`rounded px-sm py-xs text-brand-teal hover:bg-surface-hover hover:text-brand-teal-deep ${
-              isActive ? 'border-b-2 border-brand-teal text-brand-teal-deep font-medium' : 'border-transparent hover:border-brand-teal'
-            }`}
-          >
-            {item.label}
-          </Link>
-        );
-      })}
-    </div>
-  );
 }
 
 export function isRepresentativeRoute(route: RouteLike): boolean {
@@ -2061,10 +1993,226 @@ function ActionList({ rows }: { rows: readonly ActionRow[] }) {
   );
 }
 
-function DashboardScreen() {
+const dashboardOverview = [
+  { label: 'CES event load', value: 30, detail: 'Registry-backed packet types', tone: 'teal' as Tone, series: [12, 16, 22, 18, 26, 30, 28] },
+  { label: 'Evidence closure', value: 84, detail: 'Required artifacts complete', tone: 'green' as Tone, series: [46, 52, 61, 66, 73, 79, 84] },
+  { label: 'Blocker pressure', value: 8, detail: 'Signature or evidence blockers', tone: 'orange' as Tone, series: [18, 16, 13, 11, 10, 9, 8] },
+] as const;
+
+const dashboardCarouselPanels = [
+  {
+    title: 'Calendar readiness',
+    copy: 'Monthly, quarterly, annual, and event-based CES obligations grouped for survey-readiness review.',
+    tone: 'teal' as Tone,
+    items: ['30 active packet/event types', '6 monthly compliance events', '8 annual review items'],
+  },
+  {
+    title: 'Evidence lock queue',
+    copy: 'Packet and artifact signals grouped by human review, export readiness, and lock blockers.',
+    tone: 'orange' as Tone,
+    items: ['12 artifacts need review', '4 packets ready to export', '2 missing signatures'],
+  },
+  {
+    title: 'Audit mode posture',
+    copy: 'Survey-critical controls, audit exports, and validation checklists are monitored together.',
+    tone: 'green' as Tone,
+    items: ['11 ready-to-certify units', '14 survey-critical items', '3 export packets staged'],
+  },
+] as const;
+
+const cesFunnelStages = [
+  { label: 'Scheduled', value: 30, tone: 'teal' as Tone },
+  { label: 'Evidence mapped', value: 24, tone: 'teal' as Tone },
+  { label: 'Human reviewed', value: 18, tone: 'green' as Tone },
+  { label: 'Ready to lock', value: 11, tone: 'green' as Tone },
+  { label: 'Blocked', value: 8, tone: 'orange' as Tone },
+] as const;
+
+const cesOwnerLoad = [
+  { label: 'Compliance Officer', value: 11, tone: 'orange' as Tone },
+  { label: 'QAPI Nurse', value: 7, tone: 'teal' as Tone },
+  { label: 'Policy Steward', value: 5, tone: 'green' as Tone },
+  { label: 'IT Security Owner', value: 4, tone: 'orange' as Tone },
+  { label: 'HR Compliance Lead', value: 3, tone: 'teal' as Tone },
+] as const;
+
+const cesCadenceMix = [
+  { label: 'Monthly', value: 6, tone: 'teal' as Tone },
+  { label: 'Quarterly', value: 5, tone: 'orange' as Tone },
+  { label: 'Annual', value: 8, tone: 'green' as Tone },
+  { label: 'Event-based', value: 11, tone: 'orange' as Tone },
+] as const;
+
+const cesBlockerTaxonomy = [
+  ['Missing signed package', 2, 'orange'],
+  ['Evidence upload pending', 3, 'orange'],
+  ['Owner attestation', 2, 'amber'],
+  ['Policy cross-link review', 1, 'teal'],
+] as const;
+
+function MiniBarChart({ values, tone }: { values: readonly number[]; tone: Tone }) {
+  const maxValue = Math.max(...values, 1);
+
   return (
-    <div className="grid gap-2xl">
-      <MetricGrid metrics={dashboardMetrics} />
+    <div className="flex h-20 items-end gap-1.5" aria-hidden="true">
+      {values.map((value, index) => (
+        <span
+          className={cx(
+            'block flex-1 rounded-t-md',
+            tone === 'orange' ? 'bg-brand-orange/75' : tone === 'green' ? 'bg-emerald-500/70' : 'bg-brand-teal/75'
+          )}
+          key={`${value}-${index}`}
+          style={{ height: `${Math.max(18, (value / maxValue) * 100)}%` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function DonutGauge({ label, tone, value }: { label: string; tone: Tone; value: number }) {
+  const accent = tone === 'orange' ? 'var(--brand-orange)' : tone === 'green' ? '#10b981' : 'var(--brand-teal)';
+  const clamped = Math.max(0, Math.min(100, value));
+
+  return (
+    <div className="flex items-center gap-md">
+      <div
+        className="grid h-20 w-20 shrink-0 place-items-center rounded-full"
+        style={{ background: `conic-gradient(${accent} ${clamped * 3.6}deg, rgba(255,255,255,0.38) 0deg)` }}
+      >
+        <div className="grid h-14 w-14 place-items-center rounded-full bg-surface-glass text-sm font-medium text-ink shadow-glass-inset">
+          {clamped}%
+        </div>
+      </div>
+      <div>
+        <div className="text-sm font-medium text-ink">{label}</div>
+        <p className="mt-xs text-xs font-light leading-relaxed text-muted">Readiness, owner coverage, and evidence closure weighted together.</p>
+      </div>
+    </div>
+  );
+}
+
+function HorizontalBarSet({ items }: { items: readonly { label: string; value: number; tone: Tone }[] }) {
+  const maxValue = Math.max(...items.map((item) => item.value), 1);
+
+  return (
+    <div className="grid gap-md">
+      {items.map((item) => (
+        <div key={item.label}>
+          <div className="mb-xs flex items-center justify-between gap-md text-xs">
+            <span className="font-medium text-ink">{item.label}</span>
+            <span className="text-muted">{item.value}</span>
+          </div>
+          <div className="h-2.5 overflow-hidden rounded-full bg-white/35 shadow-glass-inset">
+            <div
+              className={cx('h-full rounded-full', item.tone === 'orange' ? 'bg-brand-orange' : item.tone === 'green' ? 'bg-emerald-500' : 'bg-brand-teal')}
+              style={{ width: `${Math.max(12, (item.value / maxValue) * 100)}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DashboardScreen() {
+  const [activePanel, setActivePanel] = useState(0);
+  const [isInsightOpen, setIsInsightOpen] = useState(false);
+  const panel = dashboardCarouselPanels[activePanel] ?? dashboardCarouselPanels[0];
+
+  return (
+    <div className="v6-dashboard grid gap-2xl">
+      <section className="grid gap-xl desktop:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
+        <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
+          <div className="mb-xl flex flex-col gap-md tablet-l:flex-row tablet-l:items-start tablet-l:justify-between">
+            <div>
+              <ToneTag tone="teal">CES dashboard</ToneTag>
+              <h1 className="mt-md text-3xl font-medium text-ink">CES command dashboard</h1>
+              <p className="mt-sm max-w-3xl text-sm font-light leading-relaxed text-muted">
+                Compliance calendar, evidence packets, workflow blockers, and survey-readiness signals are grouped here so CES page views stay focused.
+              </p>
+            </div>
+            <Button className="border-brand-teal bg-brand-teal text-on-brand hover:bg-brand-teal" size="sm" onClick={() => setIsInsightOpen(true)}>
+              Open insights
+            </Button>
+          </div>
+
+          <div className="grid gap-lg desktop:grid-cols-3">
+            {dashboardOverview.map((item) => (
+              <article className={cx('rounded-lg border p-lg shadow-rest', toneSurfaceClasses[item.tone])} key={item.label}>
+                <div className="flex items-start justify-between gap-md">
+                  <div>
+                    <div className="text-tag font-medium uppercase tracking-tag opacity-75">{item.label}</div>
+                    <div className="mt-sm text-3xl font-medium tracking-normal">{item.value}{item.label === 'Evidence closure' ? '%' : ''}</div>
+                    <div className="mt-xs text-xs font-light opacity-75">{item.detail}</div>
+                  </div>
+                  <DesignBadge tone={item.tone}>{item.tone === 'orange' ? 'watch' : 'steady'}</DesignBadge>
+                </div>
+                <div className="mt-lg">
+                  <MiniBarChart tone={item.tone} values={item.series} />
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <aside className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
+          <div className="mb-lg flex items-center justify-between gap-md">
+            <h2 className="text-h2 font-medium text-ink">Readiness mix</h2>
+            <DesignBadge tone="teal">live</DesignBadge>
+          </div>
+          <div className="grid gap-lg">
+            <DonutGauge label="Survey-ready evidence" tone="teal" value={84} />
+            <DonutGauge label="Signed packet readiness" tone="green" value={76} />
+            <DonutGauge label="Blocker burn-down" tone="orange" value={68} />
+          </div>
+        </aside>
+      </section>
+
+      <section className="grid gap-xl desktop:grid-cols-3">
+        <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
+          <div className="mb-lg flex items-center justify-between gap-md">
+            <h2 className="text-h2 font-medium text-ink">CES progression funnel</h2>
+            <DesignBadge tone="teal">30 events</DesignBadge>
+          </div>
+          <div className="grid gap-sm">
+            {cesFunnelStages.map((stage, index) => (
+              <div
+                className={cx('mx-auto rounded-md border px-md py-sm text-sm font-medium shadow-rest', toneSurfaceClasses[stage.tone])}
+                key={stage.label}
+                style={{ width: `${100 - index * 10}%` }}
+              >
+                <div className="flex items-center justify-between gap-md">
+                  <span>{stage.label}</span>
+                  <span>{stage.value}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
+          <div className="mb-lg flex items-center justify-between gap-md">
+            <h2 className="text-h2 font-medium text-ink">Owner load</h2>
+            <DesignBadge tone="orange">watch</DesignBadge>
+          </div>
+          <HorizontalBarSet items={cesOwnerLoad} />
+        </section>
+
+        <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
+          <div className="mb-lg flex items-center justify-between gap-md">
+            <h2 className="text-h2 font-medium text-ink">Cadence mix</h2>
+            <DesignBadge tone="green">balanced</DesignBadge>
+          </div>
+          <div className="grid grid-cols-2 gap-md">
+            {cesCadenceMix.map((item) => (
+              <div className={cx('rounded-lg border p-md shadow-rest', toneSurfaceClasses[item.tone])} key={item.label}>
+                <div className="text-tag font-medium uppercase tracking-tag opacity-75">{item.label}</div>
+                <div className="mt-sm text-2xl font-medium">{item.value}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </section>
 
       <section className="grid gap-xl desktop:grid-cols-5">
         <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest desktop:col-span-3">
@@ -2083,31 +2231,33 @@ function DashboardScreen() {
         <aside className="grid gap-lg desktop:col-span-2">
           <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
             <div className="mb-lg flex items-center justify-between gap-lg">
-              <h2 className="text-h2 font-medium text-brand-teal-deep">Dashboard signals</h2>
-              <DesignBadge tone="teal">
-                6 tracked
-              </DesignBadge>
+              <h2 className="text-h2 font-medium text-brand-teal-deep">Signal carousel</h2>
+              <DesignBadge tone={panel.tone}>{activePanel + 1} of {dashboardCarouselPanels.length}</DesignBadge>
             </div>
-            <div className="grid gap-md tablet-p:grid-cols-2">
-              {[
-                ['SOC starts', '9', '4 need RN confirmation', 'orange'],
-                ['High-acuity census', '17', 'CHF, wounds, post-CVA', 'teal'],
-                ['Open visit gaps', '6', '2 weekend coverage gaps', 'orange'],
-                ['Orders pending', '14', '5 physician signatures', 'amber'],
-                ['Credential risk', '2', 'PT and LVN renewal windows', 'orange'],
-                ['Discharge prep', '8', 'MSW coordination active', 'green'],
-              ].map(([label, value, note, tone]) => (
-                <div 
+            <div className={cx('rounded-lg border p-lg shadow-rest', toneSurfaceClasses[panel.tone])}>
+              <h3 className="text-lg font-medium text-ink">{panel.title}</h3>
+              <p className="mt-sm text-sm font-light leading-relaxed opacity-80">{panel.copy}</p>
+              <div className="mt-lg grid gap-sm">
+                {panel.items.map((item) => (
+                  <div className="flex items-center justify-between rounded-md bg-white/35 px-md py-sm text-xs font-medium shadow-glass-inset" key={item}>
+                    <span>{item}</span>
+                    <CheckCircle2 aria-hidden="true" className="h-icon-sm w-icon-sm" />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-md flex justify-center gap-sm">
+              {dashboardCarouselPanels.map((item, index) => (
+                <button
+                  aria-label={`Show ${item.title}`}
                   className={cx(
-                    'rounded-lg border p-md shadow-rest transition duration-base ease-standard hover:translate-y-[-2px] hover:shadow-hover active:scale-[0.997]', 
-                    toneSurfaceClasses[tone as Tone]
-                  )} 
-                  key={label}
-                >
-                  <div className="text-tag font-medium uppercase tracking-tag opacity-80">{label}</div>
-                  <div className="mt-sm text-2xl font-medium tracking-tight">{value}</div>
-                  <div className="mt-xs text-xs font-light leading-relaxed opacity-80">{note}</div>
-                </div>
+                    'h-2.5 rounded-full transition-all duration-base ease-standard',
+                    index === activePanel ? 'w-8 bg-brand-teal' : 'w-2.5 bg-brand-teal/25 hover:bg-brand-teal/50'
+                  )}
+                  key={item.title}
+                  onClick={() => setActivePanel(index)}
+                  type="button"
+                />
               ))}
             </div>
           </section>
@@ -2117,6 +2267,47 @@ function DashboardScreen() {
           ))}
         </aside>
       </section>
+
+      <section className="grid gap-xl desktop:grid-cols-[minmax(0,1fr)_minmax(360px,0.45fr)]">
+        <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
+          <div className="mb-lg flex items-center justify-between gap-md">
+            <h2 className="text-h2 font-medium text-ink">Blocker taxonomy</h2>
+            <DesignBadge tone="orange">8 blockers</DesignBadge>
+          </div>
+          <div className="grid gap-md tablet-l:grid-cols-4">
+            {cesBlockerTaxonomy.map(([label, value, tone]) => (
+              <div className={cx('rounded-lg border p-lg shadow-rest', toneSurfaceClasses[tone as Tone])} key={label}>
+                <div className="text-tag font-medium uppercase tracking-tag opacity-75">{label}</div>
+                <div className="mt-md text-3xl font-medium">{value}</div>
+                <p className="mt-xs text-xs font-light opacity-75">Requires human follow-up before lock.</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {dashboardCards.slice(2).map((card) => (
+          <SurfaceCard card={card} key={card.title} />
+        ))}
+      </section>
+
+      <VeilModal eyebrow="CES dashboard" open={isInsightOpen} onClose={() => setIsInsightOpen(false)} title="CES dashboard detail">
+        <div className="grid gap-lg">
+          <p className="text-sm font-light leading-relaxed text-muted">
+            The dashboard owns CES-wide metrics. Calendar, Sprint Board, Event Board, Evidence, Audit Mode, and packet views stay focused on their work surfaces.
+          </p>
+          <MetricGrid className="v6-dashboard-metrics desktop:grid-cols-4" metrics={dashboardMetrics} />
+          <div className="grid gap-md tablet-l:grid-cols-3">
+            {dashboardOverview.map((item) => (
+              <div className={cx('rounded-lg border p-lg shadow-rest', toneSurfaceClasses[item.tone])} key={`modal-${item.label}`}>
+                <div className="text-sm font-medium">{item.label}</div>
+                <div className="mt-md">
+                  <MiniBarChart tone={item.tone} values={item.series} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </VeilModal>
     </div>
   );
 }
@@ -2249,33 +2440,8 @@ function PolicyMatrixScreen() {
     if (id) navigate(`/library/${encodeURIComponent(id)}`);
   };
 
-  // Top subnav for Taxonomy group (V1 parity + discoverability of sibling routes)
-  const taxonomySubnav = (
-    <div className="mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="Taxonomy subnav">
-      <span className="mr-sm text-tag uppercase tracking-tag text-muted">Taxonomy:</span>
-      {[
-        { label: 'Taxonomy', path: '/taxonomy' },
-        { label: 'Framework', path: '/framework' },
-        { label: 'Policy Library', path: '/library' },
-        { label: 'Forms Library', path: '/forms' },
-        { label: 'Workflows Library', path: '/workflows' },
-        { label: 'ACHC Survey', path: '/framework/achc-survey' },
-        { label: 'ACHC Crosswalk', path: '/framework/achc-survey/crosswalk' },
-      ].map((item) => (
-        <Link
-          key={item.path}
-          to={item.path}
-          className="rounded px-sm py-xs text-brand-teal hover:bg-surface-hover hover:text-brand-teal-deep border-b-2 border-transparent hover:border-brand-teal"
-        >
-          {item.label}
-        </Link>
-      ))}
-    </div>
-  );
-
   return (
     <ScreenStack metrics={policyMetrics}>
-      {taxonomySubnav}
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
         <section aria-label="Policy library matrix" className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <div className="mb-md flex items-center gap-md">
@@ -2362,14 +2528,34 @@ function PatientDetailScreen() {
 function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | 'staffing-calendar' }) {
   const config = getCalendarConfig(mode);
   const isCesCalendar = mode === 'ces-calendar';
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const requestedEventId = isCesCalendar ? searchParams.get('event') : null;
   const requestedEvent = findCalendarEventByLookup(config.events, requestedEventId);
   const cesMonthOptions = isCesCalendar
     ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]  // Full Jan-Dec for CES calendar (real source records from seed months shown; empty for months with no 2026 data in seed)
     : [6];
-  const [cesMonth, setCesMonth] = useState(() => requestedEvent ? getEventMonth(requestedEvent) : 6);
-  const [cesYear, setCesYear] = useState(2026);
+  const requestedMonth = Number(searchParams.get('month'));
+  const requestedYear = Number(searchParams.get('year'));
+  const requestedView = searchParams.get('view');
+  const [cesMonth, setCesMonthState] = useState(() => requestedEvent ? getEventMonth(requestedEvent) : 6);
+  const [cesYear, setCesYearState] = useState(2026);
+  const setCesCalendarParam = (key: 'month' | 'year' | 'view', value: string | number) => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set(key, String(value));
+      if (key === 'month' || key === 'year' || key === 'view') next.delete('event');
+      return next;
+    });
+  };
+  const setCesMonth = (month: number) => {
+    setCesMonthState(month);
+    if (isCesCalendar) setCesCalendarParam('month', month);
+  };
+  const setCesYear = (year: number) => {
+    setCesYearState(year);
+    if (isCesCalendar) setCesCalendarParam('year', year);
+  };
   const activeCesMonth = isCesCalendar && cesMonthOptions.includes(cesMonth)
     ? cesMonth
     : cesMonthOptions[0] ?? 6;
@@ -2487,6 +2673,11 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
     .sort((a, b) => a.day - b.day || a.label.localeCompare(b.label));
   const [selectedEvent, setSelectedEvent] = useState<CalendarEventData | null>(null);
   const [agendaMode, setAgendaMode] = useState(isCesCalendar ? 'Month' : 'Week');
+  const [cesWorkspaceView, setCesWorkspaceViewState] = useState<'calendar' | 'sprint' | 'events'>('calendar');
+  const setCesWorkspaceView = (view: 'calendar' | 'sprint' | 'events') => {
+    setCesWorkspaceViewState(view);
+    if (isCesCalendar) setCesCalendarParam('view', view);
+  };
   const [resolverEvent, setResolverEvent] = useState<CalendarEventData | null>(
     mode === 'staffing-calendar'
       ? events.find((event) => event.tone === 'orange' || event.tone === 'amber') ?? null
@@ -2505,6 +2696,17 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
     const cardWidth = 340;
     const cardHeight = 340;
     const margin = 12;
+    const visibleViewport = window.visualViewport;
+    const viewportWidth = Math.min(
+      window.innerWidth,
+      visibleViewport?.width ?? window.innerWidth,
+      document.documentElement.clientWidth || window.innerWidth,
+    );
+    const viewportHeight = Math.min(
+      window.innerHeight,
+      visibleViewport?.height ?? window.innerHeight,
+      document.documentElement.clientHeight || window.innerHeight,
+    );
 
     let left = 0;
     let top = 0;
@@ -2513,7 +2715,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
     if (isSidebar) {
       // Position to the left of the sidebar button
       left = rect.left - cardWidth - 16;
-      top = Math.max(16, Math.min(rect.top - 30, window.innerHeight - cardHeight - 16));
+      top = rect.top - 30;
       placement = 'left-sidebar';
     } else {
       // Month grid positioning
@@ -2528,10 +2730,14 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
         left = rect.left - cardWidth - margin;
         placement = 'left';
       }
-      top = Math.max(16, Math.min(rect.top - 60, window.innerHeight - cardHeight - 16));
+      top = rect.top - 60;
     }
 
-    setActiveEventAnchor({ left, top, placement });
+    setActiveEventAnchor({
+      left: Math.max(16, Math.min(left, viewportWidth - cardWidth - 16)),
+      top: Math.max(104, Math.min(top, viewportHeight - cardHeight - 16)),
+      placement,
+    });
   };
 
   useEffect(() => {
@@ -2565,6 +2771,15 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
   }, [activeCesMonth, isCesCalendar, mode, requestedEventId]);
 
   useEffect(() => {
+    if (!isCesCalendar) return;
+    if (cesMonthOptions.includes(requestedMonth)) setCesMonthState(requestedMonth);
+    if ([2025, 2026, 2027].includes(requestedYear)) setCesYearState(requestedYear);
+    if (requestedView === 'calendar' || requestedView === 'sprint' || requestedView === 'events') {
+      setCesWorkspaceViewState(requestedView);
+    }
+  }, [cesMonthOptions, isCesCalendar, requestedMonth, requestedView, requestedYear]);
+
+  useEffect(() => {
     if (!isCesCalendar || !requestedEventId) return;
 
     const targetEvent = findCalendarEventByLookup(config.events, requestedEventId);
@@ -2589,7 +2804,9 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
     if (isCesCalendar) {
       // Per V6_DESIGN.html: calendar event click should set selected to show inline swimlane view (not navigate to board or placeholder).
       // The inline will build the swimlane below.
-      setSelectedEvent(event);
+      const next = new URLSearchParams(searchParams);
+      next.set('event', getCalendarEventKey(event));
+      navigate(`/ces/calendar?${next.toString()}`);
       return;
     }
 
@@ -2657,14 +2874,18 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                   </div>
                   <div className="flex flex-col items-end gap-md">
                     <div className="inline-flex rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs">
-                      {['Day', 'Week', 'Month'].map((label) => (
+                      {[
+                        ['calendar', 'Calendar'],
+                        ['sprint', 'Sprint'],
+                        ['events', 'Event Board'],
+                      ].map(([value, label]) => (
                         <button
                           className={cx(
                             'min-h-tap rounded-md px-lg text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
-                            label === agendaMode ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal shadow-rest' : 'text-secondary hover:bg-surface-hover',
+                            value === cesWorkspaceView ? 'bg-brand-teal text-on-brand shadow-rest' : 'text-secondary hover:bg-surface-hover',
                           )}
-                          key={label}
-                          onClick={() => setAgendaMode(label)}
+                          key={value}
+                          onClick={() => setCesWorkspaceView(value as 'calendar' | 'sprint' | 'events')}
                           type="button"
                         >
                           {label}
@@ -2712,12 +2933,24 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                   </div>
                 </div>
               </div>
-              {selectedEvent ? (
+              {cesWorkspaceView === 'sprint' ? (
+                <CesEmbeddedBoardView variant="sprint" />
+              ) : cesWorkspaceView === 'events' ? (
+                <CesEmbeddedBoardView variant="events" />
+              ) : selectedEvent ? (
                 <CalendarSwimlaneInline
                   event={selectedEvent}
                   events={events}
-                  onBack={() => setSelectedEvent(null)}
-                  onSelectEvent={setSelectedEvent}
+                  onBack={() => {
+                    const next = new URLSearchParams(searchParams);
+                    next.delete('event');
+                    navigate(`/ces/calendar?${next.toString()}`);
+                  }}
+                  onSelectEvent={(event) => {
+                    const next = new URLSearchParams(searchParams);
+                    next.set('event', getCalendarEventKey(event));
+                    navigate(`/ces/calendar?${next.toString()}`);
+                  }}
                 />
               ) : (
               <div className="overflow-hidden rounded-lg border border-hairline bg-surface-glass shadow-glass-inset">
@@ -2730,7 +2963,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                 {calendarCells.map((day, index) => day === null ? (
                   <div aria-hidden="true" className="min-h-[156px] border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset" key={`blank-${index}`} />
                 ) : (
-                  <div className="relative min-w-0 overflow-hidden min-h-[156px] border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-md !shadow-none transition duration-fast hover:bg-surface-glass hover:backdrop-blur-md" key={day}>
+                  <div className="relative min-w-0 overflow-visible min-h-[156px] border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-md !shadow-none" key={day}>
                     <p className="mb-md text-base font-medium text-brand-teal">{day}</p>
                     <div className="grid gap-xs">
                       {events
@@ -2738,13 +2971,13 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                         .map((event) => {
                           const key = getCalendarEventKey(event);
                           const pillClasses = cx(
-                            'truncate rounded-md px-md py-sm text-left text-xs font-medium text-on-brand transition duration-fast ease-standard',
+                            'truncate rounded-md px-md py-sm text-left text-xs font-medium text-on-brand',
                             event.tone === 'orange' || event.tone === 'amber' ? 'bg-brand-orange' : 'bg-brand-teal',
                           );
                           const isHovered = activeEventKey === key;
 
                           return (
-                            <div className="relative min-w-0 overflow-hidden" key={key}>
+                            <div className="relative min-w-0 overflow-visible" key={key}>
                               <button
                                 aria-describedby={isHovered ? 'ces-event-preview' : undefined}
                                 aria-label={`${event.label}, ${activeMonthLabel} ${event.day}. Click to open event workspace/swimlane.`}
@@ -2810,7 +3043,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                       .map((event) => (
                         <button
                           className={cx(
-                            'block min-w-0 max-w-full w-full overflow-hidden truncate rounded-sm px-sm py-xs text-left text-[10px] text-on-brand transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
+                            'block min-w-0 max-w-full w-full overflow-hidden truncate rounded-sm px-sm py-xs text-left text-[10px] text-on-brand focus-visible:outline-none focus-visible:shadow-focus',
                             event.tone === 'orange' || event.tone === 'amber' ? 'bg-brand-orange' : 'bg-brand-teal'
                           )}
                           key={getCalendarEventKey(event)}
@@ -2855,7 +3088,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                   <button
                     aria-label={`${event.label}, ${getCalendarMonthLabel(getEventMonth(event))} ${event.day}. Click to open event workspace/swimlane.`}
                     className={cx(
-                      'rounded-lg border p-md text-left transition duration-fast ease-standard hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus w-full',
+                      'rounded-lg border p-md text-left focus-visible:outline-none focus-visible:shadow-focus w-full',
                       isHovered
                         ? (event.tone === 'orange' || event.tone === 'amber'
                           ? 'border-brand-orange ring-1 ring-brand-orange bg-surface-glass backdrop-blur-md shadow-glass-inset'
@@ -2894,7 +3127,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                 </div>
               ) : (
                 <button
-                  className="rounded-lg border border-hairline bg-surface-glass p-md text-left transition duration-fast focus-visible:outline-none focus-visible:shadow-focus hover:bg-surface-hover"
+                  className="rounded-lg border border-hairline bg-surface-glass p-md text-left focus-visible:outline-none focus-visible:shadow-focus"
                   key={key}
                   onClick={() => openCalendarEvent(event)}
                   type="button"
@@ -2912,6 +3145,51 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
         />
       </section>
     </ScreenStack>
+  );
+}
+
+function CesEmbeddedBoardView({ variant }: { variant: 'sprint' | 'events' }) {
+  const navigate = useNavigate();
+  const lanes = variant === 'sprint' ? buildBoardLanes() : (buildEventLanes() || FALLBACK_EVENT_LANES);
+  const totalCards = lanes.reduce((sum, lane) => sum + (lane.count || lane.cards.length), 0);
+  const title = variant === 'sprint' ? 'Sprint Board' : 'Event Board';
+  const subtitle = variant === 'sprint'
+    ? 'Execution units grouped by readiness state inside the calendar workspace.'
+    : 'Operational events grouped by urgency without leaving the calendar workspace.';
+
+  return (
+    <div className="grid gap-lg">
+      <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-md shadow-rest">
+        <div>
+          <h3 className="text-h2 font-medium text-ink">{title}</h3>
+          <p className="mt-xs text-sm text-muted">{subtitle}</p>
+        </div>
+        <ToneTag tone={variant === 'sprint' ? 'teal' : 'orange'}>{totalCards} cards</ToneTag>
+      </div>
+      <div className="overflow-x-auto overflow-y-hidden pb-sm">
+        <div className={cx(
+          'grid min-w-[980px] gap-md desktop:min-w-0',
+          variant === 'sprint' ? 'desktop:grid-cols-7' : 'desktop:grid-cols-4'
+        )}>
+          {lanes.map((lane) => (
+            <BoardLane
+              key={lane.title}
+              lane={lane}
+              onCardClick={(card) => {
+                const targetId = card.id || '';
+                if (variant === 'events') {
+                  navigate(`/evidence?control=${encodeURIComponent(targetId)}`);
+                  return;
+                }
+                if (card.awaitingType === 'evidence' || targetId) {
+                  navigate(`/evidence?control=${encodeURIComponent(targetId)}`);
+                }
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -3492,17 +3770,6 @@ function FormWorkspaceScreen() {
   const canon = formId ? resolveCanonicalFormId(formId) ?? formId : undefined;
   const record = canon ? FORM_VIEWER_DATASET.get(canon) ?? null : null;
 
-  // Correct print/download support: when loaded via /print (as used by printForm util iframe), auto-trigger native print after settle.
-  // Preserves formInstanceId in URL for audit/evidence linkage.
-  useEffect(() => {
-    if (isPrintRoute && typeof window !== 'undefined') {
-      const t = window.setTimeout(() => {
-        try { window.focus(); window.print(); } catch { /* noop */ }
-      }, 650);
-      return () => window.clearTimeout(t);
-    }
-  }, [isPrintRoute]);
-
   // No-match / unavailable state: keep the screen's surface, do not crash.
   if (!record) {
     return (
@@ -3522,9 +3789,9 @@ function FormWorkspaceScreen() {
     );
   }
 
-  // Document-style fillable form viewer (V1 print/download document style + fillable)
-  const [formValues, setFormValues] = useState<Record<string, any>>({});
-  const updateValue = (key: string, val: any) => setFormValues(p => ({ ...p, [key]: val }));
+  const formContent = buildFormContent(record);
+  const [formValues, setFormValues] = useState<Record<string, string | boolean>>({});
+  const updateValue = (key: string, val: string | boolean) => setFormValues(p => ({ ...p, [key]: val }));
 
   const buildFormNav = (suffix: string) => {
     const params = new URLSearchParams();
@@ -3534,47 +3801,279 @@ function FormWorkspaceScreen() {
   };
   const navigateToEsign = () => navigate(buildFormNav('/esign'));
   const navigateToPrint = () => { window.location.href = buildFormNav('/print'); };
+  const printNow = () => {
+    try { window.print(); } catch { /* noop */ }
+  };
 
-  const demo = [
-    { l: 'Respondent Name', t: 'text' },
-    { l: 'Date', t: 'date' },
-    { l: 'Findings / Notes', t: 'textarea' },
-    { l: 'Confirmed Accurate', t: 'checkbox' },
-  ];
+  // Print routes: force the NOON (default) theme so morning/afternoon/night
+  // palettes never bleed into a printed form; auto-name the PDF "{form} {date}"
+  // and auto-print. Everything is restored on cleanup.
+  useEffect(() => {
+    if (!isPrintRoute || typeof window === 'undefined') return undefined;
+    const el = document.documentElement;
+    const prevTod = el.getAttribute('data-tod');
+    el.setAttribute('data-tod', 'noon');
+    const previousTitle = document.title;
+    document.title = `${formContent.title} ${new Date().toLocaleDateString('en-CA')}`.replace(/\s+/g, ' ').trim();
+    const t = window.setTimeout(() => { try { window.focus(); window.print(); } catch { /* noop */ } }, 650);
+    return () => {
+      window.clearTimeout(t);
+      document.title = previousTitle;
+      if (prevTod) el.setAttribute('data-tod', prevTod); else el.removeAttribute('data-tod');
+    };
+  }, [isPrintRoute, formContent.title]);
 
   return (
-    <ScreenStack metrics={operationsMetrics}>
-      <div className="mx-auto max-w-[860px] bg-surface-glass backdrop-blur-md shadow-glass-inset p-8 shadow-sm border border-hairline print:shadow-none print:border-0" style={{ color: '#1F1C1B' }}>
-        <div className="flex justify-between mb-6">
-          <div>
-            <div className="text-[10px] uppercase tracking-[0.22em] text-[#607C7D]">Enterprise Forms Library</div>
-            <h1 className="text-2xl font-semibold mt-1">{record.name}</h1>
-            <div className="font-mono text-sm text-brand-teal mt-0.5">{record.id}</div>
-          </div>
-          {!isPrintRoute && (
-            <div className="flex gap-2 text-xs no-print">
-              <button onClick={navigateToPrint} className="px-3 py-1 border rounded hover:bg-surface-glass hover:backdrop-blur-md">Print / Download</button>
-              <button onClick={navigateToEsign} className="px-3 py-1 border rounded hover:bg-surface-glass hover:backdrop-blur-md">Open eCIgn</button>
-            </div>
-          )}
+    <ScreenStack metrics={isPrintRoute ? [] : operationsMetrics}>
+      <div className="ci-premium-print-toolbar no-print mx-auto mb-md flex max-w-[8.5in] flex-wrap items-center justify-between gap-sm rounded-lg border border-hairline bg-surface-glass p-md text-xs shadow-rest">
+        <span className="text-muted">{isPrintRoute ? 'Fill the form, then print or save as PDF.' : 'Form viewer remains fillable before print/download.'}</span>
+        <div className="flex gap-sm">
+          <button onClick={isPrintRoute ? printNow : navigateToPrint} className="rounded border border-hairline px-3 py-1 hover:bg-surface-glass" type="button">
+            Print / Download
+          </button>
+          <button onClick={navigateToEsign} className="rounded border border-hairline px-3 py-1 hover:bg-surface-glass" type="button">
+            Open eCIgn
+          </button>
         </div>
+      </div>
 
-        <div className="mb-4 p-3 bg-[#F7FEFF] border-l-4 border-brand-teal text-sm">Purpose: {record.usage} form. Domain: {record.domainCode || '—'}.</div>
-        <div className="mb-8 p-3 bg-[#FFFAF7] border-l-4 border-orange-500 text-sm">Instructions: Fill fields. Print captures values. eCign for signatures.</div>
+      <article className="ci-premium-print-document ci-premium-form-document mx-auto bg-white text-[#1F1C1B]">
+        <div className="ci-premium-top-rule" />
+        <div className="ci-premium-inner">
+          <header className="ci-premium-header">
+            <img className="ci-premium-logo" src="/ci-logo-gray.png" alt="Care Indeed" />
+            <div className="ci-premium-header-meta">
+              <strong>{record.id} · v{formContent.version}</strong>
+              Enterprise Forms Library<br />
+              Fillable Form Workspace
+            </div>
+          </header>
 
-        <div className="space-y-4">
-          {demo.map((f, i) => {
-            const k = f.l; const v = formValues[k];
-            if (f.t === 'checkbox') return <label key={i} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!v} onChange={e=>updateValue(k, e.target.checked)} disabled={isPrintRoute} /> {f.l}</label>;
-            if (f.t === 'textarea') return <div key={i}><div className="text-xs text-muted mb-1">{f.l}</div><textarea value={v||''} onChange={e=>updateValue(k,e.target.value)} disabled={isPrintRoute} rows={3} className="w-full border p-2 text-sm" /></div>;
-            return <div key={i}><div className="text-xs text-muted mb-1">{f.l}</div><input type={f.t} value={v||''} onChange={e=>updateValue(k,e.target.value)} disabled={isPrintRoute} className="w-full border p-2 text-sm" /></div>;
+          <section className="ci-premium-cover-block">
+            <p className="ci-premium-kicker">Template · Form {record.id}</p>
+            <h1>{formContent.title}</h1>
+            <div className="ci-premium-meta-grid">
+              <div><span>Form ID</span><strong>{record.id}</strong></div>
+              <div><span>Domain</span><strong>{record.domainCode}</strong></div>
+              <div><span>Version</span><strong>v{formContent.version}</strong></div>
+              <div><span>Effective</span><strong>{formContent.effectiveDate}</strong></div>
+              <div><span>Next Review</span><strong>{formContent.revisionDate}</strong></div>
+              <div><span>Instance</span><strong>{formInstanceId ?? 'Draft'}</strong></div>
+            </div>
+          </section>
+
+          <section className="ci-premium-note ci-premium-note-teal">
+            <strong>Purpose</strong>
+            <p>{formContent.purpose}</p>
+          </section>
+          <section className="ci-premium-note ci-premium-note-orange">
+            <strong>Instructions</strong>
+            <p>{formContent.instructions}</p>
+          </section>
+
+          <form className="ci-premium-form-sections" onSubmit={(e) => e.preventDefault()}>
+            {formContent.sections.map((section, sectionIndex) => (
+              <PremiumFormSection
+                key={`${section.title}-${sectionIndex}`}
+                section={section}
+                sectionIndex={sectionIndex}
+                values={formValues}
+                setField={updateValue}
+              />
+            ))}
+          </form>
+
+          <footer className="ci-premium-footer">
+            <span>Care Indeed Home Health Care, Inc.</span>
+            <span>{record.id} · Fillable print/download view</span>
+          </footer>
+        </div>
+      </article>
+    </ScreenStack>
+  );
+}
+
+function PremiumFormSection({
+  section,
+  sectionIndex,
+  values,
+  setField,
+}: {
+  section: FormSection;
+  sectionIndex: number;
+  values: Record<string, string | boolean>;
+  setField: (key: string, value: string | boolean) => void;
+}) {
+  return (
+    <section className="ci-premium-section">
+      <h2>{section.title}</h2>
+      {section.description && <p className="ci-premium-section-desc">{section.description}</p>}
+
+      {section.layout === 'grid' && (
+        <div className="ci-premium-field-grid">
+          {(section.fields ?? []).map((field, fieldIndex) => (
+            <PremiumFieldControl
+              key={`${field.label}-${fieldIndex}`}
+              field={field}
+              fieldKey={`s${sectionIndex}-f${fieldIndex}`}
+              value={values[`s${sectionIndex}-f${fieldIndex}`]}
+              setField={setField}
+            />
+          ))}
+        </div>
+      )}
+
+      {section.layout === 'checklist' && (
+        <div className="ci-premium-checklist">
+          {(section.items ?? []).map((item, itemIndex) => {
+            const key = `s${sectionIndex}-chk${itemIndex}`;
+            return (
+              <label key={key}>
+                <input type="checkbox" checked={values[key] === true} onChange={(e) => setField(key, e.target.checked)} />
+                <span>{item}</span>
+              </label>
+            );
           })}
         </div>
+      )}
 
-        <div className="mt-8 pt-3 border-t text-[10px] text-muted print:hidden">Session values. Browser Print for filled PDF.</div>
+      {section.layout === 'attestation' && (
+        <div className="ci-premium-checklist">
+          {section.body && <p className="ci-premium-section-desc">{section.body}</p>}
+          {(section.acknowledgments ?? []).map((ack, itemIndex) => {
+            const key = `s${sectionIndex}-ack${itemIndex}`;
+            return (
+              <label key={key}>
+                <input type="checkbox" checked={values[key] === true} onChange={(e) => setField(key, e.target.checked)} />
+                <span>{ack}</span>
+              </label>
+            );
+          })}
+        </div>
+      )}
+
+      {(section.layout === 'narrative') && (
+        <textarea
+          rows={5}
+          value={(values[`s${sectionIndex}-narrative`] as string) ?? section.body ?? ''}
+          onChange={(e) => setField(`s${sectionIndex}-narrative`, e.target.value)}
+          className="ci-premium-input"
+        />
+      )}
+
+      {(section.layout === 'table' || section.layout === 'matrix') && (
+        <div className="ci-premium-table-wrap">
+          <table className="ci-premium-fill-table">
+            <thead>
+              <tr>
+                {(section.columns ?? section.matrixCols ?? ['Entry']).map((column) => <th key={column}>{column}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: Math.min(section.rowCount ?? 6, 8) }).map((_, rowIndex) => (
+                <tr key={rowIndex}>
+                  {(section.columns ?? section.matrixCols ?? ['Entry']).map((column, columnIndex) => {
+                    const key = `s${sectionIndex}-r${rowIndex}-c${columnIndex}`;
+                    return (
+                      <td key={`${column}-${columnIndex}`}>
+                        <input value={(values[key] as string) ?? ''} onChange={(e) => setField(key, e.target.value)} />
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {section.layout === 'signature' && (
+        <div className="ci-premium-field-grid">
+          {(section.fields ?? []).map((field, fieldIndex) => (
+            <PremiumFieldControl
+              key={`${field.label}-${fieldIndex}`}
+              field={field}
+              fieldKey={`s${sectionIndex}-sig${fieldIndex}`}
+              value={values[`s${sectionIndex}-sig${fieldIndex}`]}
+              setField={setField}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function PremiumFieldControl({
+  field,
+  fieldKey,
+  value,
+  setField,
+}: {
+  field: FormField;
+  fieldKey: string;
+  value: string | boolean | undefined;
+  setField: (key: string, value: string | boolean) => void;
+}) {
+  const spanClass = field.col === 1 ? 'ci-premium-field--span-1' : field.col === 4 ? 'ci-premium-field--span-4' : 'ci-premium-field--span-2';
+  const label = (
+    <span>
+      {field.label}{field.required ? <em> *</em> : null}
+    </span>
+  );
+
+  if (field.type === 'textarea') {
+    return (
+      <label className={`ci-premium-field ${spanClass}`}>
+        {label}
+        <textarea rows={3} value={(value as string) ?? ''} placeholder={field.placeholder} onChange={(e) => setField(fieldKey, e.target.value)} />
+      </label>
+    );
+  }
+
+  if (field.type === 'select') {
+    return (
+      <label className={`ci-premium-field ${spanClass}`}>
+        {label}
+        <select value={(value as string) ?? ''} onChange={(e) => setField(fieldKey, e.target.value)}>
+          <option value="">Select</option>
+          {(field.options ?? []).map((option) => <option key={option} value={option}>{option}</option>)}
+        </select>
+      </label>
+    );
+  }
+
+  if (field.type === 'checkbox') {
+    return (
+      <label className={`ci-premium-field ci-premium-check-field ${spanClass}`}>
+        <input type="checkbox" checked={value === true} onChange={(e) => setField(fieldKey, e.target.checked)} />
+        {label}
+      </label>
+    );
+  }
+
+  if (field.type === 'radio') {
+    return (
+      <div className={`ci-premium-field ${spanClass}`}>
+        {label}
+        <div className="ci-premium-radio-row">
+          {(field.options ?? []).map((option) => (
+            <label key={option}>
+              <input type="radio" name={fieldKey} checked={value === option} onChange={() => setField(fieldKey, option)} />
+              {option}
+            </label>
+          ))}
+        </div>
       </div>
-      {isPrintRoute && <div className="text-xs text-center mt-3 text-muted print:hidden">Browser Print (Ctrl/Cmd+P) or Save as PDF.</div>}
-    </ScreenStack>
+    );
+  }
+
+  const inputType = field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'tel' ? 'tel' : 'text';
+  return (
+    <label className={`ci-premium-field ${spanClass}`}>
+      {label}
+      <input type={inputType} value={(value as string) ?? ''} placeholder={field.placeholder} onChange={(e) => setField(fieldKey, e.target.value)} />
+    </label>
   );
 }
 
