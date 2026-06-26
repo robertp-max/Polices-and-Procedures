@@ -10,23 +10,15 @@ import {
 import { applyDriveOutcome, persistCanonicalEvidence } from '@/policy/evidence/intake/intakeService';
 
 /* ════════════════════════════════════════════════════════════════
-   Studio landing — the rebranded generation surface. Launches the
-   full branded Care Indeed Packet Studio and folds in the one useful
-   capability from the old Intake tab: drop source files → parse,
-   resolve created-date, classify, and FILE them into the Evidence
-   Library (and Drive when reachable). Light glass theme.
+   Studio pane — the branded Packet Studio rendered INLINE (in-page)
+   via an embedded, app-light-themed studio document, plus a slim
+   toolbar that folds in the one useful Intake capability: drop source
+   files → parse, resolve created-date, classify, and FILE into the
+   Evidence Library (and Drive when reachable).
    ════════════════════════════════════════════════════════════════ */
 
 const STUDIO_URL = '/care_indeed_pdf_studio.html';
 const ACCEPTED = '.json,.csv,.tsv,.md,.markdown,.txt';
-
-const CADENCES = [
-  { label: 'Monthly QAPI', hint: 'qapi_monthly' },
-  { label: 'Quarterly QAPI', hint: 'qapi_quarterly' },
-  { label: 'Annual QAPI', hint: 'qapi_annual' },
-  { label: 'Governing Body', hint: 'governing_body' },
-  { label: 'Clinical Record Review', hint: 'clinical_record_review' },
-];
 
 async function readText(file: File): Promise<{ text?: string; headBytes: Uint8Array }> {
   const buf = await file.arrayBuffer();
@@ -66,8 +58,6 @@ export function StudioLanding() {
     () => (Object.values(evidenceByEvent).flat() as EvidenceDoc[]).filter((d) => d.artifactVersion === 'evidence-intake-v1').length,
     [evidenceByEvent],
   );
-
-  const launch = useCallback(() => window.open(STUDIO_URL, '_blank', 'noopener,noreferrer'), []);
 
   const handleFiles = useCallback(async (list: FileList | null) => {
     if (!list || !list.length || !selectedEvent) return;
@@ -117,67 +107,51 @@ export function StudioLanding() {
   }, [selectedEvent, eventId, driveReachable]);
 
   return (
-    <section className="grid gap-lg">
-      {/* Hero / launch */}
-      <section className="rounded-lg border border-hairline bg-surface-glass p-xl shadow-rest">
-        <div className="flex flex-col gap-lg desktop:flex-row desktop:items-start desktop:justify-between">
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-sm text-brand-teal"><FileStack className="h-icon-sm w-icon-sm" /><span className="text-tag uppercase tracking-tag">Evidence Packet Studio</span></div>
-            <h1 className="mt-sm text-3xl font-medium text-ink">Generate a branded, survey-defensible packet</h1>
-            <p className="mt-sm text-sm font-light leading-relaxed text-secondary">
-              Build the full multi-page Care Indeed packet — cover, agenda, KPI dashboards, findings, evidence index, signature blocks — for monthly, quarterly, and annual cadences. Source documents you add here are filed into the Evidence Library and Drive, ready to assemble.
-            </p>
-            <div className="mt-lg flex flex-wrap items-center gap-sm">
-              <button type="button" onClick={launch} className="flex items-center gap-sm rounded-lg border border-brand-teal bg-brand-teal px-lg py-sm text-sm font-medium text-white hover:bg-brand-teal-deep">
-                <ExternalLink className="h-icon-sm w-icon-sm" /> Launch Packet Studio
-              </button>
-              <span className={`flex items-center gap-xs rounded-full border px-md py-xs text-xs ${driveReachable ? 'border-tone-teal-border bg-tone-teal-bg text-brand-teal-deep' : 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text'}`}>
-                <span className={`h-2 w-2 rounded-full ${driveReachable ? 'bg-brand-teal' : 'bg-[#c74601]'}`} />
-                Google Drive {driveReachable ? 'connected' : (driveHealth ? 'unavailable' : 'checking…')}
-              </span>
-              <span className="text-xs text-muted">{filedCount} evidence item(s) in the Library</span>
-            </div>
-          </div>
+    <section className="grid gap-md">
+      {/* Slim toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-hairline bg-surface-glass p-md shadow-rest">
+        <div className="flex flex-wrap items-center gap-sm">
+          <FileStack className="h-icon-sm w-icon-sm text-brand-teal" />
+          <span className="text-sm font-medium text-ink">Evidence Packet Studio</span>
+          <span className={`flex items-center gap-xs rounded-full border px-md py-xs text-[11px] ${driveReachable ? 'border-tone-teal-border bg-tone-teal-bg text-brand-teal-deep' : 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text'}`}>
+            <span className={`h-2 w-2 rounded-full ${driveReachable ? 'bg-brand-teal' : 'bg-[#c74601]'}`} />
+            Drive {driveReachable ? 'connected' : (driveHealth ? 'unavailable' : 'checking…')}
+          </span>
+          <span className="text-[11px] text-muted">{filedCount} item(s) in Library</span>
         </div>
-        <div className="mt-lg flex flex-wrap gap-sm">
-          {CADENCES.map((c) => (
-            <button key={c.hint} type="button" onClick={launch} className="rounded-lg border border-card bg-tone-slate-bg px-md py-sm text-xs font-medium text-secondary hover:bg-surface-hover hover:text-brand-teal-deep">
-              {c.label}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* Add source documents → file into Library */}
-      <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
-        <div className="flex flex-wrap items-end justify-between gap-md">
-          <div>
-            <h2 className="text-h2 font-medium text-ink">Add source documents</h2>
-            <p className="mt-xs text-xs text-secondary">JSON · CSV · TSV · MD · TXT — Brad resolves the source-system created date, classifies, dedupes, and files each record into the Evidence Library{driveReachable ? ' and Google Drive' : ''}.</p>
-          </div>
-          <label className="grid gap-xs text-xs text-secondary">
-            File to event
-            <select aria-label="File to event" title="File to event" value={eventId} onChange={(e) => setEventId(e.target.value)} className="min-w-[260px] rounded-lg border border-hairline bg-surface px-md py-sm text-sm text-ink">
-              {events.slice(0, 80).map((e) => <option key={e.id} value={e.id}>{e.title} ({e.id})</option>)}
+        <div className="flex flex-wrap items-center gap-sm">
+          <label className="flex items-center gap-xs text-[11px] text-secondary">
+            File to
+            <select aria-label="File to event" title="File to event" value={eventId} onChange={(e) => setEventId(e.target.value)} className="max-w-[220px] rounded-lg border border-hairline bg-surface px-sm py-xs text-xs text-ink">
+              {events.slice(0, 80).map((e) => <option key={e.id} value={e.id}>{e.title}</option>)}
             </select>
           </label>
-        </div>
-        <div className="mt-lg flex flex-wrap items-center gap-sm">
-          <input ref={fileInputRef} type="file" multiple accept={ACCEPTED} className="hidden" onChange={(e) => void handleFiles(e.target.files)} />
-          <button type="button" onClick={() => fileInputRef.current?.click()} disabled={busy || !eventId} className="flex items-center gap-sm rounded-lg border border-card bg-tone-slate-bg px-md py-sm text-sm text-secondary hover:bg-surface-hover disabled:opacity-50">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Choose files
+          <input ref={fileInputRef} aria-label="Upload source documents" title="Upload source documents" type="file" multiple accept={ACCEPTED} className="hidden" onChange={(e) => void handleFiles(e.target.files)} />
+          <button type="button" onClick={() => fileInputRef.current?.click()} disabled={busy || !eventId} title="Parse + file source documents into the Evidence Library" className="flex items-center gap-xs rounded-lg border border-card bg-tone-slate-bg px-md py-xs text-xs text-secondary hover:bg-surface-hover disabled:opacity-50">
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Add source documents
           </button>
-          {driveReachable && <span className="flex items-center gap-xs text-xs text-muted"><CloudUpload className="h-4 w-4 text-brand-teal" /> Uploads to Drive automatically</span>}
+          <button type="button" onClick={() => window.open(STUDIO_URL, '_blank', 'noopener,noreferrer')} title="Open the studio in a new tab" className="flex items-center gap-xs rounded-lg border border-card bg-tone-slate-bg px-md py-xs text-xs text-secondary hover:bg-surface-hover">
+            <ExternalLink className="h-4 w-4" /> New tab
+          </button>
         </div>
-        {result && (
-          <div className={`mt-md flex flex-wrap items-center gap-md rounded-lg border p-md text-sm ${result.failed > 0 ? 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text' : 'border-tone-teal-border bg-tone-teal-bg text-brand-teal-deep'}`}>
-            <span className="flex items-center gap-xs"><CheckCircle2 className="h-4 w-4" /> Filed {result.filed} to Library</span>
-            {driveReachable && <span className="flex items-center gap-xs"><CloudUpload className="h-4 w-4" /> {result.uploaded} uploaded to Drive</span>}
-            {result.failed > 0 && <span className="flex items-center gap-xs"><XCircle className="h-4 w-4" /> {result.failed} failed/skipped</span>}
-            <span className="text-xs text-muted">Open the Evidence Library tab to browse them.</span>
-          </div>
-        )}
-      </section>
+      </div>
+
+      {result && (
+        <div className={`flex flex-wrap items-center gap-md rounded-lg border p-md text-sm ${result.failed > 0 ? 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text' : 'border-tone-teal-border bg-tone-teal-bg text-brand-teal-deep'}`}>
+          <span className="flex items-center gap-xs"><CheckCircle2 className="h-4 w-4" /> Filed {result.filed} to Library</span>
+          {driveReachable && <span className="flex items-center gap-xs"><CloudUpload className="h-4 w-4" /> {result.uploaded} to Drive</span>}
+          {result.failed > 0 && <span className="flex items-center gap-xs"><XCircle className="h-4 w-4" /> {result.failed} failed/skipped</span>}
+          <span className="text-xs text-muted">Open the Evidence Drive tab to browse them.</span>
+        </div>
+      )}
+
+      {/* Studio rendered inline (app-light-themed) */}
+      <iframe
+        title="Evidence Packet Studio"
+        src={STUDIO_URL}
+        className="w-full rounded-lg border border-hairline bg-white shadow-rest"
+        style={{ minHeight: '82vh' }}
+      />
     </section>
   );
 }
