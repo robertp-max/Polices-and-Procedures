@@ -683,6 +683,56 @@ textarea.field-input {
   background: radial-gradient(ellipse at 50% 0%, rgba(0, 166, 168, 0.04), transparent 60%), var(--studio-bg);
 }
 
+/* ── Single-lane preview carousel + click-to-zoom modal ── */
+.preview-panel.carousel .preview-sidebar { display: none; }
+.preview-panel.carousel .preview-main {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 28px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 32px 40px;
+}
+.preview-panel.carousel .preview-main .rendered-page {
+  zoom: 0.42;
+  flex: 0 0 auto;
+  margin-bottom: 0 !important;
+  cursor: zoom-in;
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
+}
+.preview-panel.carousel .preview-main .rendered-page:hover {
+  box-shadow: 0 26px 90px rgba(0,0,0,0.5), 0 0 0 3px var(--teal-500, #00a6a8);
+}
+.carousel-hint {
+  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--studio-text-dim, #8aa); pointer-events: none;
+}
+.page-modal {
+  position: fixed; inset: 0; z-index: 4000;
+  background: rgba(6, 22, 24, 0.86);
+  display: none; flex-direction: column;
+}
+.page-modal.open { display: flex; }
+.page-modal-bar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 20px; color: #fff;
+  background: rgba(0,0,0,0.35); backdrop-filter: blur(8px);
+}
+.page-modal-bar .pm-title { font-size: 13px; font-weight: 500; letter-spacing: 0.04em; }
+.page-modal-bar .pm-spacer { flex: 1; }
+.pm-btn {
+  background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 8px; padding: 7px 14px; font-size: 13px; cursor: pointer;
+}
+.pm-btn:hover { background: rgba(255,255,255,0.22); }
+.page-modal-body {
+  flex: 1; overflow-y: auto; padding: 30px;
+  display: flex; flex-direction: column; align-items: center; gap: 30px;
+}
+.page-modal-body .rendered-page { zoom: 0.82; flex: 0 0 auto; cursor: default; }
+
 /* ═══════════════════════════════════════════════
    RENDERED PAGE (inside preview)
    ═══════════════════════════════════════════════ */
@@ -905,6 +955,10 @@ html.embed .config-sidebar,
 html.embed .config-main,
 html.embed .preview-sidebar,
 html.embed .preview-main { max-height: none; overflow: visible; }
+/* Carousel still scrolls horizontally inside the embedded iframe. */
+html.embed .preview-panel.carousel .preview-main { overflow-x: auto; overflow-y: hidden; }
+/* The full-page modal must cover the whole screen, not just the iframe box. */
+html.embed .page-modal { position: fixed; }
 </style>
 </head>
 <body>
@@ -958,7 +1012,7 @@ html.embed .preview-main { max-height: none; overflow: visible; }
 <!-- ═══════════════════════════════════════════════
      STEP 3: PREVIEW & GENERATE
      ═══════════════════════════════════════════════ -->
-  <div class="step-panel preview-panel" id="step3">
+  <div class="step-panel preview-panel carousel" id="step3">
     <div class="preview-sidebar" id="previewSidebar">
       <!-- Page thumbnails injected by JS -->
     </div>
@@ -981,6 +1035,20 @@ html.embed .preview-main { max-height: none; overflow: visible; }
     </div>
     <div class="gen-step-text" id="genStepText">Step 1 of 5</div>
   </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     FULL-PAGE PREVIEW MODAL (opened from the carousel)
+     ═══════════════════════════════════════════════ -->
+<div class="page-modal" id="pageModal">
+  <div class="page-modal-bar">
+    <span class="pm-title" id="pmTitle">Page preview</span>
+    <span class="pm-spacer"></span>
+    <button type="button" class="pm-btn" onclick="pmNav(-1)">← Prev</button>
+    <button type="button" class="pm-btn" onclick="pmNav(1)">Next →</button>
+    <button type="button" class="pm-btn" onclick="closePageModal()">✕ Close</button>
+  </div>
+  <div class="page-modal-body" id="pageModalBody"></div>
 </div>
 
 <!-- Toast Container -->
@@ -2083,7 +2151,7 @@ function renderStep3() {
   
   // Cover Page
   pagesHTML += `
-    <div class="rendered-page" id="page-0" data-page-index="0" style="margin-bottom:32px;">
+    <div class="rendered-page" id="page-0" data-page-index="0" style="margin-bottom:32px;" onclick="openPageModal(0)">
       <div class="rp-top-rule"></div>
       <div class="rp-inner" style="padding:62px 72px 54px;justify-content:space-between;">
         <header style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:88px;">
@@ -2137,7 +2205,7 @@ function renderStep3() {
   m.sections.slice(1).forEach((s, idx) => {
     const pageNum = idx + 2;
     pagesHTML += `
-      <div class="rendered-page" id="page-${idx + 1}" data-page-index="${idx + 1}" style="margin-bottom:32px;">
+      <div class="rendered-page" id="page-${idx + 1}" data-page-index="${idx + 1}" style="margin-bottom:32px;" onclick="openPageModal(${idx + 1})">
         <div class="rp-top-rule"></div>
         <div class="rp-inner">
           <div class="rp-header">
@@ -2202,6 +2270,40 @@ function scrollToPage(index) {
     document.querySelector(`.page-thumb[data-page="${index}"]`)?.classList.add('active');
   }
 }
+
+// ── Full-page preview modal (click a carousel page) ──
+let pmIndex = 0;
+function openPageModal(index) {
+  const modal = document.getElementById('pageModal');
+  const body = document.getElementById('pageModalBody');
+  if (!modal || !body) return;
+  body.innerHTML = document.getElementById('previewMain').innerHTML;
+  body.querySelectorAll('.rendered-page').forEach((p) => { p.removeAttribute('onclick'); p.removeAttribute('id'); });
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  pmScrollTo(index);
+}
+function pmScrollTo(index) {
+  const body = document.getElementById('pageModalBody');
+  const pages = body.querySelectorAll('.rendered-page');
+  if (!pages.length) return;
+  pmIndex = Math.max(0, Math.min(index, pages.length - 1));
+  pages[pmIndex].scrollIntoView({ block: 'start', behavior: 'smooth' });
+  const title = document.getElementById('pmTitle');
+  if (title) title.textContent = `Page ${pmIndex + 1} of ${pages.length}`;
+}
+function pmNav(delta) { pmScrollTo(pmIndex + delta); }
+function closePageModal() {
+  const modal = document.getElementById('pageModal');
+  if (modal) modal.classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('pageModal')?.classList.contains('open')) return;
+  if (e.key === 'Escape') closePageModal();
+  else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') pmNav(1);
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') pmNav(-1);
+});
 
 // ── Toast Notifications ───────────────────────
 function showToast(message, type = '') {
