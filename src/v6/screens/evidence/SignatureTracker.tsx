@@ -208,23 +208,29 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
             </div>
           )}
 
-          {/* SCHEDULE / GENERATE */}
+          {/* SCHEDULE / GENERATE — two-card panel (roster left, confirm/thank-you right) */}
           {view === 'schedule' && (
-            <div className="grid gap-md rounded-lg border border-hairline bg-surface p-lg shadow-rest">
-              <div className="flex items-center gap-sm">
-                <ClipboardCheck className="h-icon-sm w-icon-sm text-brand-teal" />
-                <h2 className="text-sm font-medium text-ink">Signature tasks · currently assigned signer roster</h2>
+            <div className="grid items-start gap-md desktop:grid-cols-2">
+              {/* Card 1 — signer roster + schedule note */}
+              <div className="grid content-start gap-md rounded-lg border border-hairline bg-surface p-lg shadow-rest">
+                <div className="flex items-center gap-sm">
+                  <ClipboardCheck className="h-icon-sm w-icon-sm text-brand-teal" />
+                  <h2 className="text-sm font-medium text-ink">Signature tasks · currently assigned signer roster</h2>
+                </div>
+                <RosterTable signers={(record?.signers ?? DEFAULT_ROSTER.map((r) => ({ ...r, status: 'scheduled' as const })))} />
+                <div className="flex items-center gap-xs rounded-lg border border-tone-teal-border bg-tone-teal-bg px-md py-sm text-xs text-brand-teal-deep">
+                  <CalendarClock className="h-4 w-4" />
+                  Signature tasks are scheduled to be assigned <strong>after the meeting</strong> — on {scheduledForLabel}.
+                </div>
               </div>
 
-              <RosterTable signers={(record?.signers ?? DEFAULT_ROSTER.map((r) => ({ ...r, status: 'scheduled' as const })))} />
-
-              <div className="flex items-center gap-xs rounded-lg border border-tone-teal-border bg-tone-teal-bg px-md py-sm text-xs text-brand-teal-deep">
-                <CalendarClock className="h-4 w-4" />
-                Signature tasks are scheduled to be assigned <strong>after the meeting</strong> — on {scheduledForLabel}.
-              </div>
-
+              {/* Card 2 — confirm + generate (pre) OR thank-you (post) */}
               {!record ? (
-                <>
+                <div className="grid content-start gap-md rounded-lg border border-hairline bg-surface p-lg shadow-rest">
+                  <div className="flex items-center gap-sm">
+                    <PenLine className="h-icon-sm w-icon-sm text-brand-teal" />
+                    <h2 className="text-sm font-medium text-ink">Schedule signing</h2>
+                  </div>
                   <label className="flex items-start gap-sm text-sm text-ink">
                     <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[var(--brand-teal,#00897B)]" />
                     I confirm these individuals will be assigned tasks to sign this packet after the scheduled meeting event.
@@ -232,7 +238,7 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
                   <button type="button" onClick={generate} disabled={!confirmed || busy} className="flex w-fit items-center gap-sm rounded-lg border border-brand-teal bg-brand-teal px-lg py-sm text-sm font-medium text-white enabled:hover:bg-brand-teal-deep disabled:cursor-not-allowed disabled:opacity-45">
                     {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <PenLine className="h-4 w-4" />} Generate &amp; schedule signature tasks
                   </button>
-                </>
+                </div>
               ) : (
                 <ThankYou eventName={eventInfo.name} dateLabel={fmtDate(eventInfo.date)} timeLabel={fmtTime(eventInfo.time)} scheduledFor={record.scheduledFor} signers={record.signers} onReview={() => setView('review')} onPrint={printPacket} />
               )}
