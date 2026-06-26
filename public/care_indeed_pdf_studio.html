@@ -895,40 +895,45 @@ textarea.field-input {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(0, 65, 66, 0.35);
-  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.33);   /* frosted veil — no green tint */
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
   display: none;
   align-items: center;
   justify-content: center;
 }
 .gen-overlay.active { display: flex; }
 .gen-modal {
-  width: 420px;
-  padding: 40px;
-  border-radius: 20px;
-  background: var(--studio-surface);
-  border: 1px solid var(--studio-border);
+  width: 480px; max-width: 92vw;
+  padding: 34px 36px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.33);
+  backdrop-filter: blur(16px) saturate(1.33) brightness(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.33) brightness(1.1);
+  border: 1px solid transparent;
   text-align: center;
-  box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
 }
-.gen-spinner {
-  width: 56px; height: 56px;
-  margin: 0 auto 24px;
-  border: 3px solid var(--studio-surface-3);
-  border-top-color: var(--teal-500);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+/* Static logo with twinkling rainbow AI stars (replaces the spinner) */
+.gen-logo { position: relative; width: 92px; height: 92px; margin: 0 auto 22px; }
+.gen-logo-img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.gen-star { position: absolute; overflow: visible; transform-origin: center; }
+.gen-star.s1 { width: 26px; height: 26px; top: -4px; right: -4px; animation: gstar 1.5s linear infinite; }
+.gen-star.s2 { width: 18px; height: 18px; bottom: -2px; left: 2px; animation: gstar 1.5s linear infinite -0.5s; }
+.gen-star.s3 { width: 11px; height: 11px; top: 24px; left: 12px; animation: gstar 1.5s linear infinite -1s; }
+@keyframes gstar {
+  0%, 100% { filter: hue-rotate(0deg) drop-shadow(0 0 2px rgba(255,255,255,0.4)); transform: scale(1); }
+  50%      { filter: hue-rotate(180deg) drop-shadow(0 0 6px rgba(255,255,255,0.9)); transform: scale(1.08); }
 }
-@keyframes spin { to { transform: rotate(360deg); } }
 .gen-title {
-  font-weight: 500; font-size: 18px;
-  color: var(--studio-text-bright);
-  margin-bottom: 8px;
+  font-weight: 700; font-size: 18px;
+  color: #0f172a; letter-spacing: -0.01em;
+  margin-bottom: 6px;
 }
 .gen-subtitle {
   font-size: 13px;
-  color: var(--studio-text-dim);
-  margin-bottom: 24px;
+  color: #64748b; font-weight: 500;
+  margin-bottom: 22px;
 }
 .gen-progress {
   height: 4px;
@@ -1147,8 +1152,14 @@ html.embed .page-modal { position: fixed; }
      ═══════════════════════════════════════════════ -->
 <div class="gen-overlay" id="genOverlay">
   <div class="gen-modal gen-modal-wide">
-    <div class="gen-spinner"></div>
-    <div class="gen-title" id="genTitle">🤖 Brad is generating the packet</div>
+    <svg width="0" height="0" aria-hidden="true"><defs><linearGradient id="gsg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#4285F4"/><stop offset="33%" stop-color="#9B72CB"/><stop offset="66%" stop-color="#D96570"/><stop offset="100%" stop-color="#F9AB00"/></linearGradient></defs></svg>
+    <div class="gen-logo">
+      <img class="gen-logo-img" src="/apple-icon.png" alt="Care Indeed" onerror="this.style.display='none'"/>
+      <svg class="gen-star s1" viewBox="0 0 100 100"><path d="M 50 2 C 50 25,25 50,2 50 C 25 50,50 75,50 98 C 50 75,75 50,98 50 C 75 50,50 25,50 2 Z" fill="none" stroke="url(#gsg)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg class="gen-star s2" viewBox="0 0 100 100"><path d="M 50 2 C 50 25,25 50,2 50 C 25 50,50 75,50 98 C 50 75,75 50,98 50 C 75 50,50 25,50 2 Z" fill="none" stroke="url(#gsg)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg class="gen-star s3" viewBox="0 0 100 100"><path d="M 50 2 C 50 25,25 50,2 50 C 25 50,50 75,50 98 C 50 75,75 50,98 50 C 75 50,50 25,50 2 Z" fill="none" stroke="url(#gsg)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="gen-title" id="genTitle">Brad is generating the packet</div>
     <div class="gen-subtitle" id="genSubtitle">Reviewing uploaded documents…</div>
     <div class="gen-progress">
       <div class="gen-progress-bar" id="genProgressBar"></div>
