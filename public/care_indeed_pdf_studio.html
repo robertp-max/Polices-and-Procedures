@@ -967,10 +967,30 @@ textarea.field-input {
 /* ═══════════════════════════════════════════════
    PRINT
    ═══════════════════════════════════════════════ */
+/* No browser header/footer or page margins — packet pages bleed to the sheet edge. */
+@page { size: letter; margin: 0; }
 @media print {
-  body { background: white; }
-  .studio-nav, .config-sidebar, .preview-sidebar, .toast-container, .gen-overlay { display: none !important; }
-  .rendered-page { box-shadow: none; border-radius: 0; page-break-after: always; }
+  html, body { background: white !important; margin: 0 !important; padding: 0 !important; }
+  .studio-nav, .preview-sidebar, .toast-container, .gen-overlay, .page-modal { display: none !important; }
+  /* Neutralize the on-screen carousel layout for print: full-size stacked pages. */
+  .preview-panel.carousel .preview-main,
+  .preview-main {
+    display: block !important;
+    overflow: visible !important;
+    max-height: none !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+  .preview-panel.carousel .preview-main .rendered-page,
+  .rendered-page {
+    zoom: 1 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    page-break-after: always;
+    break-after: page;
+  }
+  .rendered-page:last-child { page-break-after: auto; break-after: auto; }
 }
 /* ═══════════════════════════════════════════════
    EMBEDDED MODE — rendered inline inside the app (?embed=1).
