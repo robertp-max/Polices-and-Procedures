@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Download, FileText, PenLine, Search, ShieldCheck, X } from 'lucide-react';
+import { AlertTriangle, ChevronRight, Download, ExternalLink, FileText, Loader2, PenLine, Search, ShieldCheck, X } from 'lucide-react';
 import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
 import { useRegulatoryExecutionStore, type EvidenceDoc } from '@/policy/stores/regulatoryExecutionStore';
+import { CalendarApi, type BradTrainingFile, type BradTrainingResponse } from '@/policy/services/calendarApi';
 
 /* ════════════════════════════════════════════════════════════════
    Evidence Center — Windows-Explorer-style folder view.
@@ -89,11 +90,13 @@ function docLabel(doc: EvidenceDoc): string {
   return doc.name || doc.id;
 }
 
+interface DriveCrumb { id: string; name: string }
 type View =
   | { level: 'root' }
   | { level: 'year'; year: string }
   | { level: 'event'; year: string; eventId: string; eventTitle: string; color: string }
-  | { level: 'special'; key: string; title: string };
+  | { level: 'special'; key: string; title: string }
+  | { level: 'drive'; folderId: string; trail: DriveCrumb[] };
 
 export function EvidenceFolderExplorer() {
   const navigate = useNavigate();
@@ -101,6 +104,29 @@ export function EvidenceFolderExplorer() {
   const [view, setView] = useState<View>({ level: 'root' });
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<EvidenceDoc | null>(null);
+  const [selectedDrive, setSelectedDrive] = useState<BradTrainingFile | null>(null);
+
+  // Brad Training library is browsed LIVE from the real "2026 Brad Training"
+  // Drive folder — URL/metadata only (no bytes). Each level fetches just its
+  // immediate children (the tree holds 2k+ files); results are cached per
+  // folder so back-navigation is instant.
+  const driveCacheRef = useRef<Map<string, BradTrainingResponse>>(new Map());
+  const [drive, setDrive] = useState<{ status: 'idle' | 'loading' | 'ready' | 'error'; data: BradTrainingResponse | null; error?: string }>(
+    { status: 'idle', data: null },
+  );
+  const loadDrive = useCallback((folderId: string, force = false) => {
+    const cacheKey = folderId || '__root__';
+    if (!force) {
+      const cached = driveCacheRef.current.get(cacheKey);
+      if (cached) { setDrive({ status: 'ready', data: cached }); return; }
+    }
+    setDrive({ status: 'loading', data: null });
+    CalendarApi.bradTrainingDocs(folderId || undefined)
+      .then((r) => { driveCacheRef.current.set(cacheKey, r); setDrive({ status: 'ready', data: r }); })
+      .catch((e: unknown) => setDrive({ status: 'error', data: null, error: e instanceof Error ? e.message : 'Failed to reach Google Drive.' }));
+  }, []);
+  const driveFolderId = view.level === 'drive' ? view.folderId : null;
+  useEffect(() => { if (driveFolderId !== null) loadDrive(driveFolderId); }, [driveFolderId, loadDrive]);
 
   const events = useMemo(() => REGULATORY_EVENTS.filter((e) => !e.isContext), []);
   const allDocs = useMemo(() => Object.values(evidenceByEvent).flat() as EvidenceDoc[], [evidenceByEvent]);
@@ -118,11 +144,6 @@ export function EvidenceFolderExplorer() {
     () => allDocs.filter((d) => d.artifactVersion === 'packet-studio-v1' || /packet/i.test(d.name)),
     [allDocs],
   );
-  const bradTrainingDocs = useMemo(
-    () => allDocs.filter((d) => /training|hipaa|competency|in-?service|attestation/i.test(`${d.name} ${parseMeta(d).classification ?? ''}`)),
-    [allDocs],
-  );
-
   const eventsForYear = useMemo(() => {
     if (view.level !== 'year') return [];
     const list = events.filter((e) => yearOf(e.date) === view.year);
@@ -132,18 +153,26 @@ export function EvidenceFolderExplorer() {
 
   const docsForView = useMemo((): EvidenceDoc[] => {
     if (view.level === 'event') return (evidenceByEvent[view.eventId] ?? []) as EvidenceDoc[];
-    if (view.level === 'special') return view.key === SPECIAL.draftPackets ? draftPacketDocs : bradTrainingDocs;
+    if (view.level === 'special') return draftPacketDocs;
     return [];
-  }, [view, evidenceByEvent, draftPacketDocs, bradTrainingDocs]);
+  }, [view, evidenceByEvent, draftPacketDocs]);
+
+  const goDrive = (folderId: string, trail: DriveCrumb[]) => { setSelected(null); setSelectedDrive(null); setView({ level: 'drive', folderId, trail }); };
 
   const crumbs = useMemo(() => {
-    const out: { label: string; onClick?: () => void }[] = [{ label: 'Evidence', onClick: () => { setView({ level: 'root' }); setSelected(null); } }];
+    const out: { label: string; onClick?: () => void }[] = [{ label: 'Evidence', onClick: () => { setView({ level: 'root' }); setSelected(null); setSelectedDrive(null); } }];
     if (view.level === 'year') out.push({ label: view.year });
     if (view.level === 'event') {
       out.push({ label: view.year, onClick: () => { setView({ level: 'year', year: view.year }); setSelected(null); } });
       out.push({ label: view.eventTitle });
     }
     if (view.level === 'special') out.push({ label: view.title });
+    if (view.level === 'drive') {
+      view.trail.forEach((c, i) => {
+        const isLast = i === view.trail.length - 1;
+        out.push(isLast ? { label: c.name } : { label: c.name, onClick: () => goDrive(c.id, view.trail.slice(0, i + 1)) });
+      });
+    }
     return out;
   }, [view]);
 
@@ -174,7 +203,7 @@ export function EvidenceFolderExplorer() {
         <p className="mt-sm text-xs text-muted">Year → Event → Documents. Folders are color-coded by event domain; documents file flat inside each event.</p>
       </div>
 
-      <div className={`grid gap-lg ${selected ? 'desktop:grid-cols-[minmax(0,1fr)_minmax(360px,420px)]' : ''}`}>
+      <div className={`grid gap-lg ${(selected || selectedDrive) ? 'desktop:grid-cols-[minmax(0,1fr)_minmax(360px,420px)]' : ''}`}>
         {/* Folder / document canvas */}
         <div className="min-h-[420px] rounded-lg border border-hairline bg-surface p-xl shadow-rest">
           <div className="flex flex-wrap gap-sm">
@@ -184,7 +213,7 @@ export function EvidenceFolderExplorer() {
                 {years.map((y) => (
                   <FolderCell key={y} color={YEAR_COLOR} label={y} sub={`${events.filter((e) => yearOf(e.date) === y).length} events`} onOpen={() => setView({ level: 'year', year: y })} />
                 ))}
-                <FolderCell color={BRAD_COLOR} label="Brad Training" sub={`${bradTrainingDocs.length} docs`} onOpen={() => setView({ level: 'special', key: SPECIAL.bradTraining, title: 'Brad Training' })} />
+                <FolderCell color={BRAD_COLOR} label="Brad Training" sub="Google Drive" onOpen={() => goDrive('', [{ id: '', name: 'Brad Training' }])} />
                 <FolderCell color={PACKET_COLOR} label="Draft Evidence Packets" sub={`${draftPacketDocs.length} docs`} onOpen={() => setView({ level: 'special', key: SPECIAL.draftPackets, title: 'Draft Evidence Packets' })} />
               </>
             )}
@@ -204,7 +233,25 @@ export function EvidenceFolderExplorer() {
                   ))
             )}
 
-            {/* EVENT or SPECIAL: documents (flat) */}
+            {/* BRAD TRAINING: live folder-by-folder navigation of Google Drive (URL only) */}
+            {view.level === 'drive' && (
+              drive.status === 'loading'
+                ? <div className="flex h-48 w-full items-center justify-center gap-sm text-sm text-muted"><Loader2 className="h-4 w-4 animate-spin" /> Loading from Google Drive…</div>
+                : drive.status === 'error'
+                  ? <DriveAccessError message={drive.error} folderUrl={drive.data?.folderUrl ?? null} onRetry={() => loadDrive(view.folderId, true)} />
+                  : (drive.data && (drive.data.folders.length > 0 || drive.data.files.length > 0))
+                    ? <>
+                        {drive.data.folders.map((f) => (
+                          <FolderCell key={f.id} color={BRAD_COLOR} label={f.name} onOpen={() => goDrive(f.id, [...view.trail, { id: f.id, name: f.name }])} />
+                        ))}
+                        {drive.data.files.map((f) => (
+                          <DriveDocCell key={f.id} file={f} selected={selectedDrive?.id === f.id} onOpen={(d) => { setSelected(null); setSelectedDrive(d); }} />
+                        ))}
+                      </>
+                    : <EmptyState label="This Google Drive folder is empty." />
+            )}
+
+            {/* EVENT or DRAFT PACKETS: filed evidence documents (flat) */}
             {(view.level === 'event' || view.level === 'special') && (
               docsForView.length === 0
                 ? <EmptyState label={view.level === 'special' ? 'No documents yet. File evidence from Brad Evidence Intake.' : 'No documents in this event yet. File or upload evidence to populate it.'} />
@@ -214,10 +261,12 @@ export function EvidenceFolderExplorer() {
         </div>
 
         {/* Right-panel viewer */}
-        {selected && <DocumentViewer doc={selected} onClose={() => setSelected(null)} onSign={() => {
-          const formId = selected.linkedFormId || selected.formIds?.[0];
-          if (formId) navigate(`/forms/${encodeURIComponent(formId)}/esign?evidenceId=${encodeURIComponent(selected.id)}`);
-        }} />}
+        {selectedDrive
+          ? <DriveDocViewer file={selectedDrive} onClose={() => setSelectedDrive(null)} />
+          : selected && <DocumentViewer doc={selected} onClose={() => setSelected(null)} onSign={() => {
+              const formId = selected.linkedFormId || selected.formIds?.[0];
+              if (formId) navigate(`/forms/${encodeURIComponent(formId)}/esign?evidenceId=${encodeURIComponent(selected.id)}`);
+            }} />}
       </div>
     </section>
   );
@@ -325,6 +374,93 @@ function DocumentViewer({ doc, onClose, onSign }: { doc: EvidenceDoc; onClose: (
         </p>
       </div>
     </aside>
+  );
+}
+
+/* ─── Brad Training: documents seeded LIVE from Google Drive (URL only) ── */
+const drivePreviewUrl = (id: string) => `https://drive.google.com/file/d/${id}/preview`;
+
+function shortType(mime: string): string {
+  if (mime.includes('pdf')) return 'PDF';
+  if (mime.includes('document') || mime.includes('word')) return 'DOC';
+  if (mime.includes('spreadsheet') || mime.includes('excel') || mime.includes('sheet')) return 'SHEET';
+  if (mime.includes('presentation') || mime.includes('slide')) return 'SLIDES';
+  if (mime.startsWith('image/')) return 'IMG';
+  return 'FILE';
+}
+
+function DriveDocCell({ file, selected, onOpen }: { file: BradTrainingFile; selected: boolean; onOpen: (f: BradTrainingFile) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(file)}
+      className={`group flex w-[132px] flex-col items-center gap-xs rounded-lg p-md text-center hover:bg-surface-hover focus:outline-none ${selected ? 'bg-tone-teal-bg' : ''}`}
+      title={file.name}
+    >
+      <span className="relative">
+        <FileText className="h-12 w-12 text-brand-teal" strokeWidth={1.4} />
+        <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-brand-teal ring-2 ring-surface" title="On Google Drive" />
+      </span>
+      <span className="mt-xs line-clamp-2 text-xs font-medium text-ink">{file.name}</span>
+      <span className="text-[10px] uppercase tracking-tag text-muted">{shortType(file.mimeType)}</span>
+    </button>
+  );
+}
+
+/* Right-panel viewer that renders the document DIRECTLY from Google Drive.
+   The embed only shows content to users signed into Google with Care Indeed
+   shared-drive access; otherwise Google renders its own "request access" /
+   sign-in surface, reinforced by the note below. We never store the bytes. */
+function DriveDocViewer({ file, onClose }: { file: BradTrainingFile; onClose: () => void }) {
+  return (
+    <aside className="grid content-start gap-lg rounded-lg border border-hairline bg-surface-glass p-lg shadow-rest">
+      <div className="flex items-start justify-between gap-md">
+        <div className="flex items-center gap-sm">
+          <FileText className="h-6 w-6 text-brand-teal" />
+          <h2 className="text-h3 font-medium text-ink break-all">{file.name}</h2>
+        </div>
+        <button type="button" onClick={onClose} aria-label="Close viewer" className="text-muted hover:text-ink"><X className="h-4 w-4" /></button>
+      </div>
+
+      {/* Live Drive preview (Letter aspect) */}
+      <div className="aspect-[8.5/11] w-full overflow-hidden rounded-lg border border-card bg-white shadow-rest">
+        <iframe
+          title={file.name}
+          src={drivePreviewUrl(file.id)}
+          className="h-full w-full"
+          allow="autoplay"
+          referrerPolicy="no-referrer"
+        />
+      </div>
+
+      <p className="flex items-start gap-xs rounded-lg border border-amber-300/60 bg-amber-50/70 px-md py-sm text-xs text-amber-800">
+        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        If the preview is blank or shows a sign-in prompt, please log into the Care Indeed shared drive on Google to view this document.
+      </p>
+
+      <div className="grid gap-sm">
+        <a href={file.webViewLink} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-sm rounded-lg border border-tone-teal-border bg-tone-teal-bg px-md py-sm text-sm font-medium text-brand-teal-deep hover:bg-surface-hover">
+          <ExternalLink className="h-4 w-4" /> Open in Google Drive (secure link)
+        </a>
+        <p className="flex items-center gap-xs text-[10px] uppercase tracking-tag text-muted">
+          <ShieldCheck className="h-3 w-3" /> Seeded by URL only — Care Indeed never copies these training documents.
+        </p>
+      </div>
+    </aside>
+  );
+}
+
+function DriveAccessError({ message, folderUrl, onRetry }: { message?: string; folderUrl: string | null; onRetry: () => void }) {
+  return (
+    <div className="flex h-48 w-full flex-col items-center justify-center gap-sm rounded-lg border border-dashed border-amber-300/70 bg-amber-50/50 px-lg text-center">
+      <AlertTriangle className="h-5 w-5 text-amber-600" />
+      <p className="text-sm font-medium text-amber-800">Please log into the Care Indeed shared drive to view Brad Training.</p>
+      {message && <p className="text-[11px] text-amber-700/80">{message}</p>}
+      <div className="mt-xs flex items-center gap-sm">
+        <button type="button" onClick={onRetry} className="rounded-lg border border-amber-400 px-md py-xs text-xs font-medium text-amber-800 hover:bg-amber-100">Retry</button>
+        {folderUrl && <a href={folderUrl} target="_blank" rel="noreferrer" className="rounded-lg border border-tone-teal-border px-md py-xs text-xs font-medium text-brand-teal-deep hover:bg-surface-hover">Open in Google Drive</a>}
+      </div>
+    </div>
   );
 }
 

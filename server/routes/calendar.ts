@@ -18,7 +18,7 @@ import { listRows, getRow } from '../sync/eventStore.js';
 import { tailAudit } from '../sync/auditLog.js';
 import { tailNotifications } from '../sync/bradNotifier.js';
 import { env } from '../env.js';
-import { pingDrive, ensureFolderPath } from '../googleDrive.js';
+import { pingDrive, ensureFolderPath, listFolderChildren, driveFolderUrl } from '../googleDrive.js';
 import {
   uploadEventEvidence,
   uploadIntakeEvidence,
@@ -466,6 +466,37 @@ calendarRouter.post('/intake/evidence/copy', asyncHandler(async (req, res) => {
     driveFolderId: result.driveFolderId,
     driveFolderPath: result.driveFolderPath,
     driveWebViewLink: result.driveFileUrl,
+  });
+}));
+
+/**
+ * GET /api/calendar/intake/brad-training
+ *
+ * Seeds the "Brad Training" library from the real Drive folder "2026 Brad
+ * Training" — URL/metadata ONLY (no bytes are read or stored). Returns the
+ * IMMEDIATE children (subfolders + files) of the requested folder so the UI
+ * can navigate the tree folder-by-folder (the tree holds 2k+ files).
+ * The in-app viewer renders each file directly from Drive via its preview URL;
+ * an end user without Care Indeed shared-drive access cannot see the content.
+ *
+ * Query: folderId? (defaults to the configured 2026 Brad Training root)
+ */
+const BRAD_TRAINING_FOLDER_ID = process.env.DRIVE_BRAD_TRAINING_FOLDER_ID || '17_JEnmxL0HDxpj7SM0ZEmhOCDUc5xYfu';
+calendarRouter.get('/intake/brad-training', asyncHandler(async (req, res) => {
+  if (!env.calendarEvidenceEnabled) {
+    res.json({ enabled: false, rootId: null, folderId: null, folderUrl: null, folders: [], files: [] });
+    return;
+  }
+  const requested = strOrEmpty(req.query.folderId);
+  const folderId = requested || BRAD_TRAINING_FOLDER_ID;
+  const { folders, files } = await listFolderChildren(folderId);
+  res.json({
+    enabled: true,
+    rootId: BRAD_TRAINING_FOLDER_ID,
+    folderId,
+    folderUrl: driveFolderUrl(folderId),
+    folders,
+    files,
   });
 }));
 

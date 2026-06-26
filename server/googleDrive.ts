@@ -218,6 +218,110 @@ export async function copyFile(input: {
   }
 }
 
+export interface DriveTreeFile {
+  id: string;
+  name: string;
+  mimeType: string;
+  webViewLink: string;
+  path: string;
+}
+
+/**
+ * Recursively list non-folder files under a root folder (Shared-Drive aware).
+ * Returns each file's id/name/mimeType/webViewLink plus its folder path — used
+ * to seed the Brad Training library with URL-only references (no bytes).
+ */
+export async function listFolderTree(rootId: string, maxDepth = 4): Promise<DriveTreeFile[]> {
+  const c = await getClient();
+  const out: DriveTreeFile[] = [];
+  const escape = (s: string) => s.replace(/'/g, "\\'");
+
+  const listChildren = async (id: string): Promise<drive_v3.Schema$File[]> => {
+    const children: drive_v3.Schema$File[] = [];
+    let pageToken: string | undefined;
+    do {
+      const res = await c.files.list({
+        q: `'${escape(id)}' in parents and trashed=false`,
+        fields: 'nextPageToken, files(id,name,mimeType,webViewLink)',
+        pageSize: 1000,
+        orderBy: 'folder,name',
+        pageToken,
+        ...driveScopeParams(),
+      });
+      children.push(...(res.data.files ?? []));
+      pageToken = res.data.nextPageToken ?? undefined;
+    } while (pageToken);
+    return children;
+  };
+
+  // Walk subfolders concurrently — sequential recursion over a deep tree is
+  // dominated by round-trip latency and can exceed request timeouts.
+  const walk = async (id: string, path: string[], depth: number): Promise<void> => {
+    if (depth > maxDepth) return;
+    const children = await listChildren(id);
+    const subfolders: Promise<void>[] = [];
+    for (const f of children) {
+      if (!f.id) continue;
+      if (f.mimeType === DRIVE_FOLDER_MIME) {
+        subfolders.push(walk(f.id, [...path, f.name ?? ''], depth + 1));
+      } else {
+        out.push({
+          id: f.id,
+          name: f.name ?? f.id,
+          mimeType: f.mimeType ?? 'application/octet-stream',
+          webViewLink: f.webViewLink ?? driveFileUrl(f.id),
+          path: path.join(' / '),
+        });
+      }
+    }
+    await Promise.all(subfolders);
+  };
+  await walk(rootId, [], 0);
+  return out;
+}
+
+export interface DriveFolderRef { id: string; name: string }
+export interface DriveChildren { folders: DriveFolderRef[]; files: DriveTreeFile[] }
+
+/**
+ * List the IMMEDIATE children of a folder, split into subfolders and files
+ * (Shared-Drive aware, paginated). Used for lazy folder-by-folder navigation
+ * of the Brad Training drive — far cheaper than recursing the whole tree.
+ */
+export async function listFolderChildren(folderId: string): Promise<DriveChildren> {
+  const c = await getClient();
+  const escaped = folderId.replace(/'/g, "\\'");
+  const folders: DriveFolderRef[] = [];
+  const files: DriveTreeFile[] = [];
+  let pageToken: string | undefined;
+  do {
+    const res = await c.files.list({
+      q: `'${escaped}' in parents and trashed=false`,
+      fields: 'nextPageToken, files(id,name,mimeType,webViewLink)',
+      pageSize: 1000,
+      orderBy: 'folder,name',
+      pageToken,
+      ...driveScopeParams(),
+    });
+    for (const f of res.data.files ?? []) {
+      if (!f.id) continue;
+      if (f.mimeType === DRIVE_FOLDER_MIME) {
+        folders.push({ id: f.id, name: f.name ?? f.id });
+      } else {
+        files.push({
+          id: f.id,
+          name: f.name ?? f.id,
+          mimeType: f.mimeType ?? 'application/octet-stream',
+          webViewLink: f.webViewLink ?? driveFileUrl(f.id),
+          path: '',
+        });
+      }
+    }
+    pageToken = res.data.nextPageToken ?? undefined;
+  } while (pageToken);
+  return { folders, files };
+}
+
 /** Drive web link for a folder/file id (used when the API omits webViewLink). */
 export function driveFolderUrl(folderId: string): string {
   return `https://drive.google.com/drive/folders/${folderId}`;

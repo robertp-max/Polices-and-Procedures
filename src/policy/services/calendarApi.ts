@@ -291,7 +291,41 @@ export const CalendarApi = {
   async intakeCopyEvidence(input: IntakeCopyEvidenceInput): Promise<IntakeCopyEvidenceResponse> {
     return request('POST', '/intake/evidence/copy', input);
   },
+
+  /**
+   * Seed the Brad Training library from the real "2026 Brad Training" Drive
+   * folder — URL/metadata only (no document bytes). Returns the immediate
+   * children (subfolders + files) of `folderId` (defaults to the root) so the
+   * UI can navigate the tree folder-by-folder. The viewer renders each file
+   * directly from Drive; users without shared-drive access cannot see it.
+   */
+  async bradTrainingDocs(folderId?: string): Promise<BradTrainingResponse> {
+    const q = folderId ? `?folderId=${encodeURIComponent(folderId)}` : '';
+    return request('GET', `/intake/brad-training${q}`);
+  },
 };
+
+export interface BradTrainingFile {
+  id: string;
+  name: string;
+  mimeType: string;
+  webViewLink: string;
+  path: string;
+}
+
+export interface BradTrainingFolderRef {
+  id: string;
+  name: string;
+}
+
+export interface BradTrainingResponse {
+  enabled: boolean;
+  rootId: string | null;
+  folderId: string | null;
+  folderUrl: string | null;
+  folders: BradTrainingFolderRef[];
+  files: BradTrainingFile[];
+}
 
 export interface IntakeUploadEvidenceInput {
   canonicalEvidenceId: string;
