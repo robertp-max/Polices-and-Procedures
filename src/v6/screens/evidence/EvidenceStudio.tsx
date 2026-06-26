@@ -43,17 +43,20 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
   // Studio → Signature Tracker hand-off (signing must be set up before
   // printing/downloading), and the return trip back to Studio to print.
   useEffect(() => {
+    type PrintStash = Record<string, { title: string; html: string }>;
+    const stash = (payload?: { packetId?: string; title?: string; html?: string }) => {
+      if (!payload?.packetId || !payload.html) return;
+      const w = window as unknown as { __ciPacketPrint?: PrintStash };
+      w.__ciPacketPrint = { ...(w.__ciPacketPrint ?? {}), [payload.packetId]: { title: payload.title ?? 'Care Indeed Packet', html: payload.html } };
+    };
     const onMsg = (e: MessageEvent) => {
       const d = e.data as { type?: string; packetId?: string; title?: string; html?: string } | undefined;
+      // Studio stashes its rendered pages on every generate AND at hand-off, so
+      // the tracker can always print the packet (the iframe re-renders/clears on
+      // tab switch). Keyed by packet id.
+      if (d?.type === 'ci-packet-content') { stash(d); return; }
       if (d?.type === 'ci-open-signature-tracker') {
-        // Stash the rendered packet so the tracker can print it even if the
-        // studio iframe is re-rendered while we're on the Signature tab.
-        if (d.packetId && d.html) {
-          (window as unknown as { __ciPacketPrint?: Record<string, { title: string; html: string }> }).__ciPacketPrint = {
-            ...((window as unknown as { __ciPacketPrint?: Record<string, { title: string; html: string }> }).__ciPacketPrint ?? {}),
-            [d.packetId]: { title: d.title ?? 'Care Indeed Packet', html: d.html },
-          };
-        }
+        stash(d);
         setSearchParams((current) => {
           const next = new URLSearchParams(current);
           next.set('tab', 'signatures');

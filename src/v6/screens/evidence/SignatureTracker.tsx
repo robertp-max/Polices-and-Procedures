@@ -97,6 +97,9 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
     }
     const styles = doc ? Array.from(doc.querySelectorAll('style')).map((s) => s.outerHTML).join('\n') : '';
     const title = (saved?.title || doc?.title || 'Care Indeed Packet').replace(/[\\/:*?"<>|]/g, ' ').trim();
+    // The print window is about:blank — rewrite the (root-relative) logo to an
+    // absolute same-origin URL so it actually loads, and never block on it.
+    const printableHtml = html.replace(/src="\/ci-logo-gray\.png"/g, `src="${window.location.origin}/ci-logo-gray.png"`);
     const w = window.open('', '_blank');
     if (!w) { window.alert('Pop-up blocked — allow pop-ups for this site to download the PDF.'); return; }
     w.document.open();
@@ -104,9 +107,11 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
       '<!doctype html><html class="print-export"><head><meta charset="utf-8"><title>' + title + '</title>' + styles +
       '<style>@page{size:letter;margin:0;}html,body{margin:0!important;padding:0!important;background:#fff!important;}' +
       '.preview-sidebar,.page-thumb,.studio-nav,.toast-container,.gen-overlay,.page-modal{display:none!important;}' +
+      // Disable blur/backdrop effects for print — they rasterize slowly and can blank the preview.
+      '*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}' +
       '.rendered-page{zoom:1!important;box-shadow:none!important;border-radius:0!important;margin:0!important;overflow:visible!important;height:auto!important;page-break-after:always;break-after:page;}' +
       '.rendered-page:last-child{page-break-after:auto;break-after:auto;}.rp-glass,.rp-header{break-inside:avoid;}</style></head><body>' +
-      html + '</body></html>'
+      printableHtml + '</body></html>'
     );
     w.document.close();
     const go = () => { try { w.focus(); w.print(); } catch { /* ignore */ } };

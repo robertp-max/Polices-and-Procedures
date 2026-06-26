@@ -2267,7 +2267,7 @@ function renderStep3() {
       <div class="rp-top-rule"></div>
       <div class="rp-inner" style="padding:62px 72px 54px;justify-content:space-between;">
         <header style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:88px;">
-          <img class="rp-logo" src="https://care-indeed-hh-v2-brad-builder-455039212099.us-central1.run.app/ci-logo-gray.png" alt="Care Indeed" style="width:220px;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'220\\\' height=\\\'40\\\'><text x=\\\'0\\\' y=\\\'30\\\' font-family=\\\'sans-serif\\\' font-size=\\\'32\\\' font-weight=\\\'bold\\\' fill=\\\'%23004142\\\'>Care Indeed</text></svg>'"/>
+          <img class="rp-logo" src="/ci-logo-gray.png" alt="Care Indeed" style="width:220px;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'220\\\' height=\\\'40\\\'><text x=\\\'0\\\' y=\\\'30\\\' font-family=\\\'sans-serif\\\' font-size=\\\'32\\\' font-weight=\\\'bold\\\' fill=\\\'%23004142\\\'>Care Indeed</text></svg>'"/>
           <div style="text-align:right;color:var(--gray-500);font-size:12px;line-height:1.55;letter-spacing:0.12em;text-transform:uppercase;">
             <strong style="display:block;font-weight:500;color:var(--teal-700);letter-spacing:0.16em;margin-bottom:4px;">${m.id.toUpperCase()}-${yr}-${q}</strong>
             Internal Governance Packet<br/>Executive Pre-Read
@@ -2321,7 +2321,7 @@ function renderStep3() {
         <div class="rp-top-rule"></div>
         <div class="rp-inner">
           <div class="rp-header">
-            <img class="rp-logo" src="https://care-indeed-hh-v2-brad-builder-455039212099.us-central1.run.app/ci-logo-gray.png" alt="Care Indeed" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'140\\\' height=\\\'28\\\'><text x=\\\'0\\\' y=\\\'20\\\' font-family=\\\'sans-serif\\\' font-size=\\\'20\\\' font-weight=\\\'bold\\\' fill=\\\'%23004142\\\'>Care Indeed</text></svg>'"/>
+            <img class="rp-logo" src="/ci-logo-gray.png" alt="Care Indeed" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'140\\\' height=\\\'28\\\'><text x=\\\'0\\\' y=\\\'20\\\' font-family=\\\'sans-serif\\\' font-size=\\\'20\\\' font-weight=\\\'bold\\\' fill=\\\'%23004142\\\'>Care Indeed</text></svg>'"/>
             <div class="rp-header-meta">
               <div class="rp-packet-id">${s.form}</div>
               <div class="rp-page-title">${s.title}</div>
@@ -2368,6 +2368,16 @@ function renderStep3() {
   const evName = (selectedEventTitle || (selectedMeeting && selectedMeeting.title) || 'Care Indeed Packet');
   const evDate = fieldValues.meeting_date || '';
   document.title = `${evName} ${evDate}`.replace(/[\\/:*?"<>|]/g, ' ').replace(/\s+/g, ' ').trim();
+
+  // Stash the rendered packet to the host on EVERY generate (keyed by packet id)
+  // so it can be printed from the Signature Tracker even after this iframe is
+  // re-rendered on a tab switch (which clears the live preview). Without this,
+  // reaching the tracker by clicking its tab yields a blank PDF.
+  try {
+    if (currentPacketId && window.parent) {
+      window.parent.postMessage({ type: 'ci-packet-content', packetId: currentPacketId, title: document.title, html: pagesHTML }, '*');
+    }
+  } catch (e) {}
 }
 
 function scrollToPage(index) {
