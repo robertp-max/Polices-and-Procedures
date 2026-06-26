@@ -133,16 +133,6 @@ function parseMarkdown(body: string): MdBlock[] {
   return blocks;
 }
 
-// A section body is renderable only if it parses to something other than zero
-// blocks or a lone horizontal rule. ~298 corpus sections carry body "---" only
-// (a structural separator from extraction) which would otherwise render an empty
-// card with just a header — those are skipped entirely.
-function hasRenderableBody(body: string): boolean {
-  const blocks = parseMarkdown(body);
-  if (!blocks.length) return false;
-  return blocks.some((b) => b.kind !== 'rule');
-}
-
 function MarkdownBody({ body }: { body: string }) {
   const blocks = parseMarkdown(body);
   if (!blocks.length) return null;
@@ -424,7 +414,20 @@ export function PolicyDetailScreen() {
           {content ? (
             <div className="grid gap-lg">
               {sections.map((section, index) => {
-                if (!hasRenderableBody(section.body)) return null;
+                // Match V1 print fidelity: keep ALL section headings (document
+                // structure); drop only the order-1 title block and level-1
+                // separator ("---") sections. The body renders when present.
+                const _b = (section.body || '').trim();
+                if (section.order === 1 || (section.level === 1 && (_b === '' || _b === '---'))) return null;
+                // Heading-only section (body is a "---" separator): render a clean
+                // structural heading, not an empty card (V1 print parity).
+                if (_b === '' || _b === '---') {
+                  return (
+                    <div key={section.id} id={buildAnchor(section)} className={cx('scroll-mt-28', isPrintRoute && 'ci-premium-section')}>
+                      <h3 className={cx('font-medium text-ink', section.level <= 2 ? 'text-h2' : 'text-h3')}>{cleanInline(section.title)}</h3>
+                    </div>
+                  );
+                }
                 return (
                 <section
                   className={cx(
