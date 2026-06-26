@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CheckCircle2, CloudUpload, ExternalLink, Loader2, Upload, XCircle } from 'lucide-react';
+import { Camera, CheckCircle2, CloudUpload, ExternalLink, Loader2, Upload, XCircle } from 'lucide-react';
 import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
 import { useRegulatoryExecutionStore, type EvidenceDoc } from '@/policy/stores/regulatoryExecutionStore';
 import { CalendarApi, type EvidenceHealthResponse } from '@/policy/services/calendarApi';
@@ -44,6 +44,13 @@ export function StudioLanding() {
   );
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ filed: number; uploaded: number; failed: number } | null>(null);
+
+  // Camera capture (photograph physical documents → file as evidence).
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  useEffect(() => () => { streamRef.current?.getTracks().forEach((t) => t.stop()); }, []);
 
   // Embedded studio auto-grows to its content so the host page scrolls (no inner clipping).
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -123,6 +130,71 @@ export function StudioLanding() {
     setBusy(false);
   }, [selectedEvent, eventId, driveReachable]);
 
+  const openCamera = useCallback(async () => {
+    setCameraError(null);
+    setCameraOpen(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      streamRef.current = stream;
+      setTimeout(() => { if (videoRef.current) { videoRef.current.srcObject = stream; void videoRef.current.play(); } }, 0);
+    } catch (e) {
+      setCameraError((e as Error).message || 'Camera access was denied or is unavailable.');
+    }
+  }, []);
+
+  const closeCamera = useCallback(() => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    setCameraOpen(false);
+  }, []);
+
+  const captureDocument = useCallback(async () => {
+    const video = videoRef.current;
+    if (!video || !selectedEvent) return;
+    const w = video.videoWidth || 1280, h = video.videoHeight || 720;
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0, w, h);
+    const base64 = canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
+    setBusy(true);
+    const ts = new Date().toISOString();
+    const rec: EvidenceSourceRecord = extractRecordFromCell(
+      { pointer: `camera:${Date.now()}`, fields: { capturedAt: ts, kind: 'document_photo' }, text: 'scanned document photo capture' },
+      { batchId: `camera-${Date.now()}`, sourceFileId: `CAM-${Date.now()}`, sourceFileName: `document-capture-${ts.slice(0, 10)}.jpg`, sourceSystem: 'manual' as SourceSystem, uploadedAt: ts },
+    );
+    let filed = 0, uploaded = 0, failed = 0;
+    if (rec.filingPeriodKey) {
+      const id = { sourceSystem: rec.sourceSystem, sourceRecordId: rec.sourceRecordId, sourceSystemCreatedAt: rec.sourceSystemCreatedAt, contentHash: rec.contentHash, sourcePointer: rec.sourcePointer };
+      const persisted = persistCanonicalEvidence(rec, {
+        eventKey: eventId, eventId, workflowId: selectedEvent.workflowId, policyIds: selectedEvent.policyRefs ?? [],
+        identityScope: buildEvidenceIdentityScope(id), idempotencyKey: buildIdempotencyKey(id),
+      });
+      if (persisted.evidenceId) {
+        filed = 1;
+        if (driveReachable) {
+          try {
+            const out = await CalendarApi.intakeUploadEvidence({
+              canonicalEvidenceId: persisted.evidenceId, filingPeriodKey: rec.filingPeriodKey,
+              filingQuarterKey: rec.filingQuarterKey ?? undefined, classification: rec.classification,
+              title: `Document photo ${ts.slice(0, 10)}`, fileName: `document-capture-${Date.now()}.jpg`,
+              mimeType: 'image/jpeg', contentBase64: base64, eventId,
+            });
+            applyDriveOutcome(eventId, persisted.evidenceId, { ok: true, driveFileId: out.driveFileId, driveFolderId: out.driveFolderId, driveFolderPath: out.driveFolderPath, driveWebViewLink: out.driveWebViewLink });
+            uploaded = 1;
+          } catch (e) {
+            const err = e as { message?: string; code?: string };
+            applyDriveOutcome(eventId, persisted.evidenceId, { ok: false, errorCode: err.code, errorMessage: err.message });
+            failed = 1;
+          }
+        }
+      }
+    }
+    setResult({ filed, uploaded, failed });
+    setBusy(false);
+  }, [selectedEvent, eventId, driveReachable]);
+
   return (
     <section className="grid gap-md">
       {/* Slim toolbar */}
@@ -144,6 +216,9 @@ export function StudioLanding() {
           <input ref={fileInputRef} aria-label="Upload source documents" title="Upload source documents" type="file" multiple accept={ACCEPTED} className="hidden" onChange={(e) => void handleFiles(e.target.files)} />
           <button type="button" onClick={() => fileInputRef.current?.click()} disabled={busy || !eventId} title="Parse + file source documents into the Evidence Library" className="flex items-center gap-xs rounded-lg border border-card bg-tone-slate-bg px-md py-xs text-xs text-secondary hover:bg-surface-hover disabled:opacity-50">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Add source documents
+          </button>
+          <button type="button" onClick={() => void openCamera()} disabled={busy || !eventId} title="Photograph a physical document with your camera and file it as evidence" className="flex items-center gap-xs rounded-lg border border-card bg-tone-slate-bg px-md py-xs text-xs text-secondary hover:bg-surface-hover disabled:opacity-50">
+            <Camera className="h-4 w-4" /> Capture document
           </button>
           <button type="button" onClick={() => window.open(STUDIO_URL, '_blank', 'noopener,noreferrer')} title="Open the studio in a new tab" className="flex items-center gap-xs rounded-lg border border-card bg-tone-slate-bg px-md py-xs text-xs text-secondary hover:bg-surface-hover">
             <ExternalLink className="h-4 w-4" /> New tab
@@ -169,6 +244,29 @@ export function StudioLanding() {
         className="w-full rounded-lg border border-hairline bg-white shadow-rest"
         style={{ height: studioH, minHeight: '70vh' }}
       />
+
+      {cameraOpen && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-lg" role="dialog" aria-modal="true" aria-label="Capture document">
+          <div className="w-full max-w-2xl rounded-lg border border-hairline bg-surface p-lg shadow-rest">
+            <div className="flex items-center justify-between">
+              <h3 className="text-h3 font-medium text-ink">Capture document</h3>
+              <button type="button" onClick={closeCamera} aria-label="Close camera" className="text-muted hover:text-ink"><XCircle className="h-5 w-5" /></button>
+            </div>
+            {cameraError ? (
+              <p className="mt-md rounded-lg border border-tone-orange-border bg-tone-orange-bg p-md text-sm text-tone-orange-text">{cameraError}</p>
+            ) : (
+              <video ref={videoRef} autoPlay playsInline muted className="mt-md w-full rounded-lg bg-black" style={{ maxHeight: '60vh' }} />
+            )}
+            <div className="mt-md flex justify-end gap-sm">
+              <button type="button" onClick={closeCamera} className="rounded-lg border border-card bg-tone-slate-bg px-md py-sm text-sm text-secondary hover:bg-surface-hover">Close</button>
+              <button type="button" onClick={() => void captureDocument()} disabled={!!cameraError || busy} className="flex items-center gap-sm rounded-lg border border-brand-teal bg-brand-teal px-md py-sm text-sm font-medium text-white enabled:hover:bg-brand-teal-deep disabled:opacity-50">
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />} Capture &amp; file
+              </button>
+            </div>
+            <p className="mt-sm text-[11px] text-muted">Files the photo into the Evidence Drive{driveReachable ? ' and Google Drive' : ' (image upload pending — connect Drive to store it)'} under the selected event, dated to capture time. Capture multiple, then Close.</p>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
