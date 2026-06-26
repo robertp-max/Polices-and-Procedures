@@ -2447,9 +2447,41 @@ function gSourceNums() { return gExtractNums(JSON.stringify(packetData || {})); 
 function gGrounding(contentText) {
   const src = gSourceNums();
   const rendered = [...gExtractNums(contentText)];
-  if (!rendered.length) return { score: 1, ungrounded: [] };
+  if (!rendered.length) return { score: 1, ungrounded: [], checked: 0 };
   const ungrounded = rendered.filter(n => !src.has(n));
-  return { score: (rendered.length - ungrounded.length) / rendered.length, ungrounded };
+  return { score: (rendered.length - ungrounded.length) / rendered.length, ungrounded, checked: rendered.length };
+}
+
+// Real, data-derived observations (NOT an LLM's chain-of-thought — there is no
+// live model here; these are computed straight from the uploaded packet so the
+// log reflects genuine analysis of YOUR data rather than canned narration).
+function deriveObservations() {
+  const out = [];
+  const F = (packetData && packetData.forms) || {};
+  const d = F['QA-FM-020'];
+  if (d && Array.isArray(d.dashboard_kpis)) {
+    const k = d.dashboard_kpis;
+    const met = (x) => x.meets_target === true || /^(true|met|yes)$/i.test(String(x.meets_target));
+    const below = k.filter(x => !met(x));
+    out.push('Dashboard — ' + (k.length - below.length) + ' of ' + k.length + ' KPIs at/above target');
+    let worst = null, gap = -1;
+    below.forEach(x => { if (x.target_pct != null && x.q2_average != null) { const g = Math.abs(x.target_pct - x.q2_average); if (g > gap) { gap = g; worst = x; } } });
+    if (worst) out.push('Largest gap — ' + worst.indicator_name + ': ' + worst.q2_average + ' vs ' + worst.target_pct + ' target (' + gap.toFixed(1) + 'pt)');
+  }
+  const inc = F['QA-FM-026'];
+  if (inc) { const sc = inc.summary_counts || {}; out.push('Incidents — ' + (Array.isArray(inc.incidents) ? inc.incidents.length : (sc.total_incidents || 0)) + ' total, ' + (sc.sentinel_events != null ? sc.sentinel_events : 0) + ' sentinel, ' + (sc.rca_pending_count != null ? sc.rca_pending_count : '?') + ' RCA pending'); }
+  const pip = F['QA-FM-021'];
+  if (pip && Array.isArray(pip.pips)) out.push('PIPs — ' + pip.pips.length + ' active' + (Array.isArray(pip.new_pip_proposals) && pip.new_pip_proposals.length ? ' + ' + pip.new_pip_proposals.length + ' proposed' : ''));
+  const a = F['QA-FM-025'];
+  if (a && Array.isArray(a.audit_criteria)) {
+    const esc = a.audit_criteria.filter(c => c.meets_target !== true && ((c.target_pct || 0) - (c.compliance_rate_pct || 0)) >= 10).length;
+    const below = a.audit_criteria.filter(c => c.meets_target !== true).length;
+    out.push('Chart audit — ' + below + ' of ' + a.audit_criteria.length + ' criteria below target' + (esc ? ', ' + esc + ' to escalate' : ''));
+  }
+  const inf = F['QA-FM-027'];
+  if (inf && inf.surveillance_summary) out.push('Infection — ' + (Array.isArray(inf.infections) ? inf.infections.length : '?') + ' cases, rate ' + (inf.surveillance_summary.rate_per_1000_patient_days != null ? inf.surveillance_summary.rate_per_1000_patient_days : '?') + '/1k days');
+  if (fieldValues.reviewer_notes && fieldValues.reviewer_notes.trim()) out.push('Reviewer override note attached — will surface as a front-of-packet page');
+  return out;
 }
 
 async function showGenerationOverlay(callback) {
@@ -2475,7 +2507,14 @@ async function showGenerationOverlay(callback) {
   genLog('   • Source: ' + (packetData && packetData.packet_meta ? escHtml(packetData.packet_meta.packet_id) : (analytics ? 'flat records' : 'structured packet')));
   genLog('   • Detected ' + formCount + ' forms → mapping to ' + (selectedMeeting ? selectedMeeting.sections.length : 0) + ' packet sections');
   genLog('   • Isolation: packet data is authoritative (no other file mixed in)');
-  await genPause(600);
+  await genPause(500);
+  // Real, data-derived findings (computed from the uploaded packet).
+  const observations = deriveObservations();
+  if (observations.length) {
+    genLog('🧠 <span class="gl-head">Findings from your data</span>');
+    for (const ob of observations) { if (abortGeneration) break; genLog('   • ' + escHtml(ob)); await genPause(280); }
+  }
+  await genPause(300);
 
   const PASS_SIM = 0.95, PASS_GROUND = 0.95;
   let best = null;
@@ -2501,7 +2540,7 @@ async function showGenerationOverlay(callback) {
     let richest = 0; for (let i = 1; i < versions.length; i++) if (versions[i].length > versions[richest].length) richest = i;
     const g = gGrounding(texts[richest]);
     genLog('     • Iteration similarity: ' + pct(minSim) + (minSim >= PASS_SIM ? ' <span class="gl-ok">✓</span>' : ' <span class="gl-warn">below 95%</span>'));
-    genLog('     • Numbers grounded in source: ' + pct(g.score) + (g.score >= PASS_GROUND ? ' <span class="gl-ok">✓</span>' : ' <span class="gl-warn">below 95%</span>'));
+    genLog('     • Numbers grounded in source: ' + pct(g.score) + ' (' + g.checked + ' checked' + (g.ungrounded.length ? ', ' + g.ungrounded.length + ' unverified' : ', all traced to source') + ')' + (g.score >= PASS_GROUND ? ' <span class="gl-ok">✓</span>' : ' <span class="gl-warn">below 95%</span>'));
     genLog('     • Richest iteration: #' + (richest + 1) + ' (' + versions[richest].length.toLocaleString() + ' chars) — selected');
     const ok = minSim >= PASS_SIM && g.score >= PASS_GROUND;
     best = { pass, minSim, grounding: g.score, ungrounded: g.ungrounded, richest, ok };
