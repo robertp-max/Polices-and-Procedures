@@ -642,8 +642,9 @@ textarea.field-input {
 .preview-main {
   flex: 1;
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   padding: 32px;
   overflow-y: auto;
   max-height: calc(100vh - 56px);
@@ -948,7 +949,7 @@ html.embed .preview-main { max-height: none; overflow: visible; }
 <div class="gen-overlay" id="genOverlay">
   <div class="gen-modal">
     <div class="gen-spinner"></div>
-    <div class="gen-title">Generating Packet</div>
+    <div class="gen-title">🤖 Brad is generating the packet</div>
     <div class="gen-subtitle" id="genSubtitle">Parsing uploaded documents...</div>
     <div class="gen-progress">
       <div class="gen-progress-bar" id="genProgressBar"></div>
@@ -1487,7 +1488,10 @@ function setupDropZone() {
   });
 }
 
+let analytics = null;
+
 function handleFiles(files) {
+  if (files && files.length) showToast('🤖 Brad is reviewing documents…');
   files.forEach(file => {
     const id = 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
     const entry = {
@@ -1496,19 +1500,156 @@ function handleFiles(files) {
       size: file.size,
       type: file.type || guessType(file.name),
       status: 'parsing',
+      records: [],
       file
     };
     uploadedFiles.push(entry);
     renderFileList();
-    
-    // Simulate parsing
-    setTimeout(() => {
+
+    // Actually read + parse the file contents (no simulation).
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        entry.text = String(reader.result || '');
+        entry.records = parseRecords(entry.text, entry.name);
+      } catch (e) { entry.records = []; }
       entry.status = 'parsed';
+      analytics = computeAnalytics();
       renderFileList();
       updatePacketStructure();
-      showToast(`✓ Parsed: ${file.name}`, 'success');
-    }, 800 + Math.random() * 1200);
+      if (currentStep === 3) renderStep3();
+      showToast(`✓ Brad reviewed ${file.name} — ${entry.records.length} record(s)`, 'success');
+    };
+    reader.onerror = () => { entry.status = 'parsed'; entry.records = []; renderFileList(); };
+    reader.readAsText(file);
   });
+}
+
+// Parse JSON / CSV / TSV / text into an array of record objects.
+function parseRecords(text, name) {
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  const looksJson = ext === 'json' || /^\s*[[{]/.test(text);
+  if (looksJson) {
+    const tryParse = (s) => { try { return JSON.parse(s); } catch (e) { return undefined; } };
+    const fromValue = (v) => {
+      if (Array.isArray(v)) return v.filter(x => x && typeof x === 'object');
+      if (v && typeof v === 'object') {
+        const arr = Object.values(v).find(x => Array.isArray(x));
+        return arr ? arr.filter(x => x && typeof x === 'object') : [v];
+      }
+      return undefined;
+    };
+    // 1) strict parse  2) merge concatenated arrays ( ][ → , )  3) wrap+merge
+    let recs = fromValue(tryParse(text));
+    if (!recs) recs = fromValue(tryParse(text.replace(/\]\s*\[/g, ',')));
+    if (!recs) recs = fromValue(tryParse('[' + text.trim().replace(/^\[/, '').replace(/\]$/, '').replace(/\]\s*\[/g, ',') + ']'));
+    if (recs && recs.length) return recs;
+    // 4) last resort: scan balanced {...} objects out of malformed JSON
+    const objs = []; let depth = 0, start = -1;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (c === '{') { if (depth === 0) start = i; depth++; }
+      else if (c === '}') { depth--; if (depth === 0 && start >= 0) { const o = tryParse(text.slice(start, i + 1)); if (o && typeof o === 'object') objs.push(o); start = -1; } }
+    }
+    if (objs.length) return objs;
+  }
+  const delim = ext === 'tsv' || text.indexOf('\t') > -1 ? '\t' : ',';
+  const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(delim).map(h => h.trim());
+  return lines.slice(1).map(line => {
+    const cols = line.split(delim);
+    const o = {}; headers.forEach((h, i) => { o[h || ('col'+i)] = (cols[i] || '').trim(); });
+    return o;
+  });
+}
+
+// Aggregate parsed records into a generic + clinical summary used by sections.
+function computeAnalytics() {
+  const recs = uploadedFiles.flatMap(f => f.records || []);
+  if (!recs.length) return null;
+  const flat = recs.map(r => JSON.stringify(r).toLowerCase());
+  const countFlag = (re) => flat.filter(s => re.test(s)).length;
+  const tally = {};
+  recs.forEach(r => {
+    const dx = [].concat(r.primaryDiagnoses || [], r.clinicalComplexity || []);
+    dx.forEach(d => { const k = String(d); tally[k] = (tally[k] || 0) + 1; });
+    const st = r.admissionStatus; if (st) tally['status:' + st] = (tally['status:' + st] || 0) + 1;
+  });
+  const topDx = Object.entries(tally).filter(([k]) => !k.startsWith('status:')).sort((a,b) => b[1]-a[1]).slice(0, 8);
+  const columns = Object.keys(recs[0]).slice(0, 6);
+  return {
+    recordCount: recs.length,
+    active: recs.filter(r => String(r.admissionStatus || '').toLowerCase() === 'active').length,
+    highInfection: countFlag(/infection_risk_high|infection_risk":\s*"high/),
+    highFall: countFlag(/fall_risk_high|fall_risk":\s*"high/),
+    anticoag: countFlag(/anticoagulant|warfarin/),
+    recerts: recs.filter(r => r.recertDate || r.secondRecertDate).length,
+    topDx, columns, sample: recs.slice(0, 8), records: recs,
+  };
+}
+
+function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[c])); }
+
+// Render rich, tailored content for a packet section from the parsed records.
+function renderSectionData(s) {
+  const a = analytics;
+  if (!a) {
+    return `<div class="rp-glass primary"><p class="rp-p" style="margin:0;">Add source documents in Step 2 — Brad parses them and populates this section automatically.</p></div>`;
+  }
+  const form = ((s.form || '') + ' ' + (s.title || '')).toLowerCase();
+  const recs = a.records || [];
+  const TD = 'padding:5px 8px;border-bottom:1px solid var(--gray-200);';
+  const TH = 'text-align:left;padding:5px 8px;border-bottom:1.5px solid var(--teal-700);text-transform:uppercase;font-size:9px;color:var(--teal-700);';
+  const name = (r) => escHtml([r.firstName, r.lastName].filter(Boolean).join(' ') || r.clientId || r.mrn || '—');
+  const dxOf = (r) => escHtml([].concat(r.primaryDiagnoses || []).slice(0, 3).join(', ').replace(/_/g, ' ') || '—');
+  const flagsOf = (r) => escHtml([].concat(r.clinicalComplexity || []).filter(x => /risk|error|injury|stage3|inaccura|deficiency|jeopardy|failure|no_supervision|wound/i.test(String(x))).slice(0, 4).join(', ').replace(/_/g, ' ') || '—');
+  const matches = (re) => recs.filter(r => re.test(JSON.stringify(r).toLowerCase()));
+  const kpi = (label, val) => `<div style="border-radius:10px;padding:13px 15px;background:rgba(255,255,255,0.72);border:1px solid rgba(0,121,125,0.12);"><div style="font-size:23px;font-weight:600;color:var(--teal-900);line-height:1;">${val}</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-500);margin-top:4px;">${escHtml(label)}</div></div>`;
+  const kpiRow = (items) => `<div style="display:grid;grid-template-columns:repeat(${items.length},1fr);gap:10px;margin-bottom:16px;">${items.map(([l, v]) => kpi(l, v)).join('')}</div>`;
+  const bars = (entries) => { const max = Math.max(1, ...entries.map(e => e[1])); return `<div class="rp-glass primary"><div class="rp-h3">Top clinical indicators (Brad)</div>${entries.map(([k, n]) => `<div style="display:flex;align-items:center;gap:10px;margin:7px 0;font-size:11px;"><div style="width:160px;color:var(--gray-700);">${escHtml(k.replace(/_/g, ' '))}</div><div style="flex:1;height:9px;border-radius:6px;background:var(--gray-100);overflow:hidden;"><div style="height:100%;width:${Math.round(n / max * 100)}%;background:linear-gradient(90deg,var(--teal-700),var(--teal-500));"></div></div><div style="width:26px;text-align:right;font-weight:600;color:var(--teal-900);">${n}</div></div>`).join('')}</div>`; };
+  const table = (list, cols, emptyMsg) => list.length === 0
+    ? `<div class="rp-glass primary"><p class="rp-p" style="margin:0;">${escHtml(emptyMsg || 'No matching records in the source extract.')} (Brad reviewed ${a.recordCount} records.)</p></div>`
+    : `<div class="rp-glass"><table style="width:100%;border-collapse:collapse;font-size:10.5px;"><thead><tr>${cols.map(c => `<th style="${TH}">${escHtml(c.h)}</th>`).join('')}</tr></thead><tbody>${list.slice(0, 11).map(r => `<tr>${cols.map(c => `<td style="${TD}">${c.f(r)}</td>`).join('')}</tr>`).join('')}</tbody></table>${list.length > 11 ? `<p class="rp-p" style="font-size:10px;margin-top:8px;">+ ${list.length - 11} more in the full register.</p>` : ''}</div>`;
+
+  if (/complaint|grievance/.test(form)) {
+    const list = matches(/complaint|grievance/);
+    return table(list, [{ h: 'Patient', f: name }, { h: 'Detail', f: flagsOf }], 'No complaints or grievances recorded in the Q1–Q2 source extract.');
+  }
+  if (/governance|executive|summary|fm-023\b/.test(form)) {
+    return kpiRow([['Patients in scope', a.recordCount], ['Active census', a.active], ['Recerts in period', a.recerts], ['High-risk flags', a.highInfection + a.highFall]]) + bars(a.topDx);
+  }
+  if (/dashboard|kpi|fm-020|program evaluation|rollup/.test(form)) {
+    return kpiRow([['Patients', a.recordCount], ['Active', a.active], ['Recerts', a.recerts]]) + kpiRow([['High infection', a.highInfection], ['High fall', a.highFall], ['Anticoagulant', a.anticoag]]) + bars(a.topDx);
+  }
+  if (/incident|adverse/.test(form)) {
+    const list = matches(/fall_risk_(high|very_high)|medication_error|pressure_injury|stage3|wound|jeopardy/);
+    return kpiRow([['Flagged clients', list.length], ['Med-error flags', matches(/medication_error/).length], ['Pressure injury', matches(/pressure_injury|stage3/).length]]) + table(list, [{ h: 'Patient', f: name }, { h: 'Primary Dx', f: dxOf }, { h: 'Risk / event flags', f: flagsOf }], 'No incident-risk records identified.');
+  }
+  if (/infection/.test(form)) {
+    const list = matches(/infection_risk_high|infection/);
+    return kpiRow([['Infection-flagged', list.length], ['High infection risk', a.highInfection]]) + table(list, [{ h: 'Patient', f: name }, { h: 'Primary Dx', f: dxOf }, { h: 'Flags', f: flagsOf }], 'No infection-risk records identified.');
+  }
+  if (/chart audit|record review|oasis|documentation/.test(form)) {
+    const list = matches(/oasis|documentation|gross|inaccura|deficiency/);
+    return kpiRow([['Charts in scope', a.recordCount], ['Documentation flags', list.length]]) + table(list, [{ h: 'Patient', f: name }, { h: 'Audit findings', f: flagsOf }], 'No documentation/OASIS findings in the source extract.');
+  }
+  if (/action item|pip|corrective/.test(form)) {
+    return `<div class="rp-glass"><div class="rp-h3">Brad-recommended action items (draft)</div><table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr><th style="${TH}">ID</th><th style="${TH}">Recommended action</th><th style="${TH}">Status</th></tr></thead><tbody>${a.topDx.slice(0, 5).map(([k, n], i) => `<tr><td style="${TD}">AI-${String(i + 1).padStart(2, '0')}</td><td style="${TD}">Review care-plan adequacy for the <strong>${escHtml(k.replace(/_/g, ' '))}</strong> cohort (${n} patients)</td><td style="${TD};text-align:right;">Open</td></tr>`).join('')}</tbody></table><p class="rp-p" style="font-size:10px;margin-top:8px;">Draft — requires committee review and owner assignment.</p></div>`;
+  }
+  if (/agenda/.test(form)) {
+    const items = ['Call to order & quorum confirmation', 'Approval of prior minutes', 'QAPI data dashboard review', 'Incident & adverse-event review', 'Infection surveillance & trends', 'Chart audit / OASIS findings', 'Open & new corrective actions (PIP)', 'Governing Body escalations', 'Adjournment & next meeting'];
+    return `<div class="rp-glass primary"><ol style="margin:0;padding-left:20px;font-size:12px;line-height:1.95;color:var(--gray-900);">${items.map(i => `<li>${i}</li>`).join('')}</ol></div>`;
+  }
+  if (/toc|table of contents/.test(form)) {
+    const secs = (typeof selectedMeeting !== 'undefined' && selectedMeeting && selectedMeeting.sections) || [];
+    return `<div class="rp-glass"><table style="width:100%;border-collapse:collapse;font-size:11px;">${secs.map((x, i) => `<tr><td style="${TD};width:30px;color:var(--teal-700);font-weight:600;">${i + 1}</td><td style="${TD}">${escHtml(x.title)}</td><td style="${TD};text-align:right;color:var(--gray-500);">${escHtml(x.form)}</td></tr>`).join('')}</table></div>`;
+  }
+  if (/minutes/.test(form)) {
+    return `<div class="rp-glass"><p class="rp-p">Minutes scaffold — completed during the meeting. Attendance, motions, decisions, and action-item assignments are captured here. Brad has pre-populated the data sections above for discussion.</p></div>`;
+  }
+  const cols = a.columns;
+  return kpiRow([['Source records', a.recordCount], ['Active', a.active], ['Recerts', a.recerts]]) + `<div class="rp-glass"><div class="rp-h3">Source data sample (Brad)</div><table style="width:100%;border-collapse:collapse;font-size:10.5px;"><thead><tr>${cols.map(c => `<th style="${TH}">${escHtml(c)}</th>`).join('')}</tr></thead><tbody>${a.sample.slice(0, 6).map(r => `<tr>${cols.map(c => `<td style="${TD}">${escHtml(Array.isArray(r[c]) ? r[c].join(', ') : r[c])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
 
 function guessType(name) {
@@ -1616,12 +1757,12 @@ function showGenerationOverlay(callback) {
   bar.style.width = '0%';
   
   const steps = [
-    { pct: 15, sub: 'Parsing uploaded documents...', step: 'Step 1 of 5 · Document Extraction' },
-    { pct: 35, sub: 'Mapping content to packet sections...', step: 'Step 2 of 5 · Content Mapping' },
-    { pct: 55, sub: 'Generating branded page layouts...', step: 'Step 3 of 5 · Layout Generation' },
-    { pct: 75, sub: 'Populating tables, charts, and KPIs...', step: 'Step 4 of 5 · Data Population' },
-    { pct: 90, sub: 'Adding signature blocks and footers...', step: 'Step 5 of 5 · Finalization' },
-    { pct: 100, sub: 'Packet ready!', step: 'Complete' }
+    { pct: 15, sub: 'Brad is reviewing the source documents…', step: 'Step 1 of 5 · Document Review' },
+    { pct: 35, sub: 'Brad is mapping content to packet sections…', step: 'Step 2 of 5 · Content Mapping' },
+    { pct: 55, sub: 'Brad is building the branded pages…', step: 'Step 3 of 5 · Layout Generation' },
+    { pct: 75, sub: 'Brad is populating tables, charts, and KPIs…', step: 'Step 4 of 5 · Data Population' },
+    { pct: 90, sub: 'Brad is adding signature blocks and footers…', step: 'Step 5 of 5 · Finalization' },
+    { pct: 100, sub: 'Brad finished — packet ready!', step: 'Complete' }
   ];
   
   let i = 0;
@@ -1748,16 +1889,8 @@ function renderStep3() {
           <div class="rp-h2">${s.title}</div>
           <div class="rp-title-rule"></div>
           
-          <div class="rp-glass primary" style="text-align:center;padding:60px 40px;">
-            <div style="font-size:40px;margin-bottom:16px;">📄</div>
-            <div style="font-weight:500;font-size:16px;color:var(--teal-900);margin-bottom:8px;">Content Area — ${s.form}</div>
-            <p class="rp-p" style="max-width:400px;margin:0 auto;">
-              ${uploadedFiles.length > 0 ? 
-                'Content extracted from uploaded documents will populate this section automatically during full generation.' : 
-                'Upload source documents in Step 2 to auto-populate this section with extracted data.'}
-            </p>
-          </div>
-          
+          ${renderSectionData(s)}
+
           ${s.form === 'Signatures' || s.form.includes('Signature') ? `
             <div class="rp-glass" style="margin-top:auto;">
               <div class="rp-h3">Approval Signatures</div>
