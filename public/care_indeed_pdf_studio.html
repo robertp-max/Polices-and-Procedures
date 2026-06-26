@@ -1638,18 +1638,45 @@ function renderField(key, v) {
   }
   return `<div class="rp-glass"><div class="rp-h3">${escHtml(label)}</div><p class="rp-p" style="margin:0;">${escHtml(v)}</p></div>`;
 }
+function renderSignatures(sigs, heading) {
+  return `<div class="rp-glass"><div class="rp-h3">${escHtml(heading || 'Signatures')}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:22px 30px;margin-top:8px;">${sigs.map(s => `<div style="border-top:1px solid var(--teal-700);padding-top:7px;"><div style="font-weight:600;font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--teal-700);">${escHtml(s.role || 'Signer')}</div><div style="margin-top:20px;display:flex;justify-content:space-between;font-size:11px;color:var(--gray-900);"><span>${escHtml(s.name || '__________________')}${s.signature && s.signature !== '' ? ' ✓' : ''}</span><span>Date: ${escHtml(s.date || '___/___/____')}</span></div></div>`).join('')}</div></div>`;
+}
 function renderForm(form) {
   let html = '';
+  // Filled-form meta header (preparer / owner / period / approver).
+  const meta = [];
+  if (form.named_preparer) meta.push(['Prepared by', form.named_preparer]);
+  if (form.responsible_owner) meta.push(['Owner', form.responsible_owner]);
+  if (form.reporting_period || form.audit_period) meta.push(['Period', form.reporting_period || form.audit_period]);
+  if (form.responsible_signer_approver) meta.push(['Approver', form.responsible_signer_approver]);
+  if (meta.length) html += `<div style="display:flex;flex-wrap:wrap;gap:10px 18px;margin-bottom:14px;font-size:10px;color:var(--gray-600);">${meta.map(([k, v]) => `<span><strong style="color:var(--teal-700);text-transform:uppercase;letter-spacing:.04em;">${escHtml(k)}:</strong> ${escHtml(v)}</span>`).join('')}</div>`;
   const lead = form.executive_summary || form.narrative_summary;
   if (lead) html += `<div class="rp-glass primary"><p class="rp-p" style="margin:0;font-size:12.5px;line-height:1.6;">${escHtml(lead)}</p></div>`;
   for (const [k, v] of Object.entries(form)) { if (FORM_SKIP.has(k)) continue; html += renderField(k, v); }
+  // Signature lines (form approvals / attendee sign-offs) make it a filled, signed form.
+  for (const key of ['signature_lines', 'approver_signature_lines', 'attendee_signature_lines']) {
+    if (Array.isArray(form[key]) && form[key].length) html += renderSignatures(form[key], key === 'attendee_signature_lines' ? 'Attendee Sign-Off' : 'Approval Signatures');
+  }
+  if (form.recorder_signature_line) html += renderSignatures([form.recorder_signature_line], 'Recorder');
   return html || `<div class="rp-glass"><p class="rp-p" style="margin:0;">No structured content for this section.</p></div>`;
+}
+// Build an appendix from the packet: pre-read attachments + evidence references.
+function buildAppendix() {
+  const att = (packetData.packet_cover_agenda && packetData.packet_cover_agenda.pre_read_attachments) || [];
+  const evidence = [];
+  for (const f of Object.values(packetData.forms || {})) {
+    (f.action_items || []).forEach(ai => { if (ai.evidence_reference) evidence.push(ai.evidence_reference); });
+    (f.corrective_actions_initiated || []).forEach(c => evidence.push(c));
+  }
+  const forms = Object.values(packetData.forms || {}).map(f => `${f.form_id} — ${f.title}`);
+  return { pre_read_attachments: att, included_forms: forms, evidence_and_corrective_action_references: [...new Set(evidence)] };
 }
 function findPacketSection(s) {
   if (!packetData) return null;
   const fid = (s.form || '').toUpperCase();
   if (packetData.forms && packetData.forms[fid]) return packetData.forms[fid];
   const t = ((s.form || '') + ' ' + (s.title || '')).toLowerCase();
+  if (/appendix/.test(t)) return buildAppendix();
   if (/agenda|cover/.test(t) && packetData.packet_cover_agenda) return packetData.packet_cover_agenda;
   if (/toc|checklist|control/.test(t) && packetData.packet_checklist) return { packet_checklist: packetData.packet_checklist };
   if (packetData.forms) { for (const f of Object.values(packetData.forms)) { if (f && f.title && t.includes(String(f.title).toLowerCase().split(' ')[0])) return f; } }
