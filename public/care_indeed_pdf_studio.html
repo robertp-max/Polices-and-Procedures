@@ -906,7 +906,7 @@ html.embed .preview-main { max-height: none; overflow: visible; }
 </nav>
 
 <!-- Hidden File Input -->
-<input type="file" class="hidden-input" id="fileInput" multiple="" accept=".pdf,.doc,.docx,.json,.csv,.xlsx,.xls,.txt,.png,.jpg,.jpeg,.html">
+<input type="file" class="hidden-input" id="fileInput" multiple="" accept=".pdf,.doc,.docx,.json,.csv,.xlsx,.xls,.txt,.md,.markdown,.png,.jpg,.jpeg,.html">
 
 <!-- ═══════════════════════════════════════════════
      STEP 1: SELECT MEETING TYPE
@@ -1489,6 +1489,18 @@ function setupDropZone() {
 }
 
 let analytics = null;
+let packetData = null;
+
+// Detect a fully-structured packet payload (object with forms / packet_meta),
+// as opposed to a flat array of records. Tolerates markdown code fences.
+function detectPacket(text) {
+  let t = String(text || '').trim().replace(/^```(json)?/i, '').replace(/```$/, '').trim();
+  try {
+    const v = JSON.parse(t);
+    if (v && typeof v === 'object' && !Array.isArray(v) && (v.forms || v.packet_meta || v.packet_cover_agenda)) return v;
+  } catch (e) { /* not a packet */ }
+  return null;
+}
 
 function handleFiles(files) {
   if (files && files.length) showToast('🤖 Brad is reviewing documents…');
@@ -1511,14 +1523,17 @@ function handleFiles(files) {
     reader.onload = () => {
       try {
         entry.text = String(reader.result || '');
-        entry.records = parseRecords(entry.text, entry.name);
+        const pk = detectPacket(entry.text);
+        if (pk) { packetData = pk; entry.packet = true; entry.records = []; }
+        else entry.records = parseRecords(entry.text, entry.name);
       } catch (e) { entry.records = []; }
       entry.status = 'parsed';
       analytics = computeAnalytics();
       renderFileList();
       updatePacketStructure();
       if (currentStep === 3) renderStep3();
-      showToast(`✓ Brad reviewed ${file.name} — ${entry.records.length} record(s)`, 'success');
+      const summary = entry.packet ? `${Object.keys(packetData.forms || {}).length} sections` : `${entry.records.length} record(s)`;
+      showToast(`✓ Brad reviewed ${file.name} — ${summary}`, 'success');
     };
     reader.onerror = () => { entry.status = 'parsed'; entry.records = []; renderFileList(); };
     reader.readAsText(file);
@@ -1591,11 +1606,63 @@ function computeAnalytics() {
 
 function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[c])); }
 
-// Render rich, tailored content for a packet section from the parsed records.
+/* ─── Structured-packet rendering ────────────────────────────────
+   When the uploaded source is a fully-structured packet (forms with
+   real content), render each section's actual fields: arrays-of-objects
+   → tables, summary objects → key/value, scalar arrays → bullets,
+   narrative/executive_summary → lead paragraph. ───────────────────── */
+function humanizeKey(k) { return String(k).replace(/_/g, ' ').replace(/\bpct\b/gi, '%').replace(/\bq(\d)\b/gi, 'Q$1').replace(/\b\w/g, c => c.toUpperCase()); }
+function fmtCell(v) {
+  if (v === true) return '✓';
+  if (v === false) return '✗';
+  if (v == null || v === '') return '—';
+  if (Array.isArray(v)) return v.map(x => (x && typeof x === 'object') ? Object.values(x).map(String).join(' · ') : String(x)).join('; ');
+  if (typeof v === 'object') return Object.entries(v).map(([k, vv]) => `${humanizeKey(k)}: ${fmtCell(vv)}`).join('; ');
+  return String(v);
+}
+const FORM_SKIP = new Set(['form_id','title','description','responsible_owner','named_preparer','responsible_signer_approver','reporting_period','section_id','audit_period','meeting_date','meeting_time','meeting_time_start','meeting_time_end','location','signature_lines','recorder_signature_line','approver_signature_lines','attendee_signature_lines','executive_summary','narrative_summary','call_to_order_by','adjournment_time','next_meeting_date']);
+function renderField(key, v) {
+  const label = humanizeKey(key);
+  const TH = 'text-align:left;padding:5px 8px;border-bottom:1.5px solid var(--teal-700);text-transform:uppercase;font-size:8.5px;color:var(--teal-700);';
+  const TD = 'padding:5px 8px;border-bottom:1px solid var(--gray-200);vertical-align:top;';
+  if (Array.isArray(v)) {
+    if (!v.length) return '';
+    if (typeof v[0] === 'object' && v[0]) {
+      const cols = [...new Set(v.flatMap(r => Object.keys(r || {})))].slice(0, 9);
+      return `<div class="rp-glass"><div class="rp-h3">${escHtml(label)}</div><table style="width:100%;border-collapse:collapse;font-size:9.5px;"><thead><tr>${cols.map(c => `<th style="${TH}">${escHtml(humanizeKey(c))}</th>`).join('')}</tr></thead><tbody>${v.slice(0, 18).map(r => `<tr>${cols.map(c => `<td style="${TD}">${escHtml(fmtCell(r[c]))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    }
+    return `<div class="rp-glass"><div class="rp-h3">${escHtml(label)}</div><ul style="margin:0;padding-left:18px;font-size:11px;line-height:1.7;color:var(--gray-700);">${v.map(x => `<li>${escHtml(fmtCell(x))}</li>`).join('')}</ul></div>`;
+  }
+  if (v && typeof v === 'object') {
+    return `<div class="rp-glass"><div class="rp-h3">${escHtml(label)}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;font-size:11px;">${Object.entries(v).map(([k, vv]) => `<div style="display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--gray-100);padding:3px 0;"><span style="color:var(--gray-500);">${escHtml(humanizeKey(k))}</span><span style="color:var(--gray-900);text-align:right;font-weight:500;">${escHtml(fmtCell(vv))}</span></div>`).join('')}</div></div>`;
+  }
+  return `<div class="rp-glass"><div class="rp-h3">${escHtml(label)}</div><p class="rp-p" style="margin:0;">${escHtml(v)}</p></div>`;
+}
+function renderForm(form) {
+  let html = '';
+  const lead = form.executive_summary || form.narrative_summary;
+  if (lead) html += `<div class="rp-glass primary"><p class="rp-p" style="margin:0;font-size:12.5px;line-height:1.6;">${escHtml(lead)}</p></div>`;
+  for (const [k, v] of Object.entries(form)) { if (FORM_SKIP.has(k)) continue; html += renderField(k, v); }
+  return html || `<div class="rp-glass"><p class="rp-p" style="margin:0;">No structured content for this section.</p></div>`;
+}
+function findPacketSection(s) {
+  if (!packetData) return null;
+  const fid = (s.form || '').toUpperCase();
+  if (packetData.forms && packetData.forms[fid]) return packetData.forms[fid];
+  const t = ((s.form || '') + ' ' + (s.title || '')).toLowerCase();
+  if (/agenda|cover/.test(t) && packetData.packet_cover_agenda) return packetData.packet_cover_agenda;
+  if (/toc|checklist|control/.test(t) && packetData.packet_checklist) return { packet_checklist: packetData.packet_checklist };
+  if (packetData.forms) { for (const f of Object.values(packetData.forms)) { if (f && f.title && t.includes(String(f.title).toLowerCase().split(' ')[0])) return f; } }
+  return null;
+}
+
+// Render rich, tailored content for a packet section.
 function renderSectionData(s) {
+  const pk = findPacketSection(s);
+  if (pk) return renderForm(pk);
   const a = analytics;
   if (!a) {
-    return `<div class="rp-glass primary"><p class="rp-p" style="margin:0;">Add source documents in Step 2 — Brad parses them and populates this section automatically.</p></div>`;
+    return `<div class="rp-glass primary"><p class="rp-p" style="margin:0;">Add source documents in Step 2 to populate this section automatically.</p></div>`;
   }
   const form = ((s.form || '') + ' ' + (s.title || '')).toLowerCase();
   const recs = a.records || [];
@@ -1607,9 +1674,9 @@ function renderSectionData(s) {
   const matches = (re) => recs.filter(r => re.test(JSON.stringify(r).toLowerCase()));
   const kpi = (label, val) => `<div style="border-radius:10px;padding:13px 15px;background:rgba(255,255,255,0.72);border:1px solid rgba(0,121,125,0.12);"><div style="font-size:23px;font-weight:600;color:var(--teal-900);line-height:1;">${val}</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-500);margin-top:4px;">${escHtml(label)}</div></div>`;
   const kpiRow = (items) => `<div style="display:grid;grid-template-columns:repeat(${items.length},1fr);gap:10px;margin-bottom:16px;">${items.map(([l, v]) => kpi(l, v)).join('')}</div>`;
-  const bars = (entries) => { const max = Math.max(1, ...entries.map(e => e[1])); return `<div class="rp-glass primary"><div class="rp-h3">Top clinical indicators (Brad)</div>${entries.map(([k, n]) => `<div style="display:flex;align-items:center;gap:10px;margin:7px 0;font-size:11px;"><div style="width:160px;color:var(--gray-700);">${escHtml(k.replace(/_/g, ' '))}</div><div style="flex:1;height:9px;border-radius:6px;background:var(--gray-100);overflow:hidden;"><div style="height:100%;width:${Math.round(n / max * 100)}%;background:linear-gradient(90deg,var(--teal-700),var(--teal-500));"></div></div><div style="width:26px;text-align:right;font-weight:600;color:var(--teal-900);">${n}</div></div>`).join('')}</div>`; };
+  const bars = (entries) => { const max = Math.max(1, ...entries.map(e => e[1])); return `<div class="rp-glass primary"><div class="rp-h3">Top clinical indicators</div>${entries.map(([k, n]) => `<div style="display:flex;align-items:center;gap:10px;margin:7px 0;font-size:11px;"><div style="width:160px;color:var(--gray-700);">${escHtml(k.replace(/_/g, ' '))}</div><div style="flex:1;height:9px;border-radius:6px;background:var(--gray-100);overflow:hidden;"><div style="height:100%;width:${Math.round(n / max * 100)}%;background:linear-gradient(90deg,var(--teal-700),var(--teal-500));"></div></div><div style="width:26px;text-align:right;font-weight:600;color:var(--teal-900);">${n}</div></div>`).join('')}</div>`; };
   const table = (list, cols, emptyMsg) => list.length === 0
-    ? `<div class="rp-glass primary"><p class="rp-p" style="margin:0;">${escHtml(emptyMsg || 'No matching records in the source extract.')} (Brad reviewed ${a.recordCount} records.)</p></div>`
+    ? `<div class="rp-glass primary"><p class="rp-p" style="margin:0;">${escHtml(emptyMsg || 'No matching records in the source extract.')} (${a.recordCount} records reviewed.)</p></div>`
     : `<div class="rp-glass"><table style="width:100%;border-collapse:collapse;font-size:10.5px;"><thead><tr>${cols.map(c => `<th style="${TH}">${escHtml(c.h)}</th>`).join('')}</tr></thead><tbody>${list.slice(0, 11).map(r => `<tr>${cols.map(c => `<td style="${TD}">${c.f(r)}</td>`).join('')}</tr>`).join('')}</tbody></table>${list.length > 11 ? `<p class="rp-p" style="font-size:10px;margin-top:8px;">+ ${list.length - 11} more in the full register.</p>` : ''}</div>`;
 
   if (/complaint|grievance/.test(form)) {
@@ -1649,7 +1716,7 @@ function renderSectionData(s) {
     return `<div class="rp-glass"><p class="rp-p">Minutes scaffold — completed during the meeting. Attendance, motions, decisions, and action-item assignments are captured here. Brad has pre-populated the data sections above for discussion.</p></div>`;
   }
   const cols = a.columns;
-  return kpiRow([['Source records', a.recordCount], ['Active', a.active], ['Recerts', a.recerts]]) + `<div class="rp-glass"><div class="rp-h3">Source data sample (Brad)</div><table style="width:100%;border-collapse:collapse;font-size:10.5px;"><thead><tr>${cols.map(c => `<th style="${TH}">${escHtml(c)}</th>`).join('')}</tr></thead><tbody>${a.sample.slice(0, 6).map(r => `<tr>${cols.map(c => `<td style="${TD}">${escHtml(Array.isArray(r[c]) ? r[c].join(', ') : r[c])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  return kpiRow([['Source records', a.recordCount], ['Active', a.active], ['Recerts', a.recerts]]) + `<div class="rp-glass"><div class="rp-h3">Source data sample</div><table style="width:100%;border-collapse:collapse;font-size:10.5px;"><thead><tr>${cols.map(c => `<th style="${TH}">${escHtml(c)}</th>`).join('')}</tr></thead><tbody>${a.sample.slice(0, 6).map(r => `<tr>${cols.map(c => `<td style="${TD}">${escHtml(Array.isArray(r[c]) ? r[c].join(', ') : r[c])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
 
 function guessType(name) {
