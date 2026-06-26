@@ -77,7 +77,41 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
     setView(existing ? 'review' : 'schedule');
   }, [incomingPacketId]);
 
-  const printPacket = () => { try { window.postMessage({ type: 'ci-print-packet', packetId: loadedId }, '*'); } catch { /* ignore */ } };
+  // Print/Download the packet AFTER signing is set up. Runs in the host window
+  // (same-origin as the studio iframe), so a direct button click can open the
+  // clean print window in the same user gesture — only the packet pages, the
+  // studio's page rules, and the "EVENT NAME DATE" title (no app chrome).
+  const printPacket = () => {
+    const iframe = document.querySelector('iframe[title="Evidence Packet Studio"]') as HTMLIFrameElement | null;
+    const doc = iframe?.contentDocument ?? null;
+    // CSS is static — always read it live from the studio iframe. The packet
+    // pages + title come from the stash captured at hand-off (survives the
+    // studio iframe re-rendering while we're on this tab); fall back to live.
+    const stash = (window as unknown as { __ciPacketPrint?: Record<string, { title: string; html: string }> }).__ciPacketPrint;
+    const saved = (loadedId && stash && stash[loadedId]) || null;
+    const livePages = doc?.getElementById('previewMain');
+    const html = saved?.html || livePages?.innerHTML || '';
+    if (!html.trim()) {
+      window.alert('Open the Studio tab and generate this packet first, then return here to download.');
+      return;
+    }
+    const styles = doc ? Array.from(doc.querySelectorAll('style')).map((s) => s.outerHTML).join('\n') : '';
+    const title = (saved?.title || doc?.title || 'Care Indeed Packet').replace(/[\\/:*?"<>|]/g, ' ').trim();
+    const w = window.open('', '_blank');
+    if (!w) { window.alert('Pop-up blocked — allow pop-ups for this site to download the PDF.'); return; }
+    w.document.open();
+    w.document.write(
+      '<!doctype html><html class="print-export"><head><meta charset="utf-8"><title>' + title + '</title>' + styles +
+      '<style>@page{size:letter;margin:0;}html,body{margin:0!important;padding:0!important;background:#fff!important;}' +
+      '.preview-sidebar,.page-thumb,.studio-nav,.toast-container,.gen-overlay,.page-modal{display:none!important;}' +
+      '.rendered-page{zoom:1!important;box-shadow:none!important;border-radius:0!important;margin:0!important;overflow:visible!important;height:auto!important;page-break-after:always;break-after:page;}' +
+      '.rendered-page:last-child{page-break-after:auto;break-after:auto;}.rp-glass,.rp-header{break-inside:avoid;}</style></head><body>' +
+      html + '</body></html>'
+    );
+    w.document.close();
+    const go = () => { try { w.focus(); w.print(); } catch { /* ignore */ } };
+    if (w.document.readyState === 'complete') setTimeout(go, 350); else w.onload = () => setTimeout(go, 350);
+  };
 
   const eventInfo = useMemo(() => {
     const id = (loadedId ?? '').replace(/-\d+$/, '');

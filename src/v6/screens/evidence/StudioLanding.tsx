@@ -89,7 +89,9 @@ export function StudioLanding() {
       const d = e.data as { type?: string; eventId?: string } | undefined;
       if (d?.type === 'ci-event-selected' && typeof d.eventId === 'string') setEventId(d.eventId || eventId);
       else if (d?.type === 'ci-print-packet') {
-        window.setTimeout(() => { try { iframeRef.current?.contentWindow?.postMessage({ type: 'ci-do-print' }, '*'); } catch { /* ignore */ } }, 450);
+        // Returned from the Signature Tracker — enable the studio's own Download
+        // button (a direct click prints just the packet pages, gesture-safe).
+        window.setTimeout(() => { try { iframeRef.current?.contentWindow?.postMessage({ type: 'ci-enable-download' }, '*'); } catch { /* ignore */ } }, 200);
       }
     };
     window.addEventListener('message', onMsg);

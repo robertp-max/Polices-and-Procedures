@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FolderOpen, FileStack, PencilLine, FileSignature } from 'lucide-react';
 import EvidenceFolderExplorer from './EvidenceFolderExplorer';
 import StudioLanding from './StudioLanding';
@@ -24,20 +25,48 @@ const TABS: { id: EvidenceStudioTab; label: string; sub: string; Icon: typeof Fo
 ];
 
 export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: EvidenceStudioTab }) {
-  const [tab, setTab] = useState<EvidenceStudioTab>(initialTab);
-  const [sigPacketId, setSigPacketId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab') as EvidenceStudioTab | null;
+  const tab: EvidenceStudioTab = requestedTab && TABS.some((item) => item.id === requestedTab) ? requestedTab : initialTab;
+  // Packet id rides in the URL so it survives the URL-driven tab switch (React
+  // state would be lost when the query change re-renders the screen).
+  const sigPacketId = searchParams.get('packet');
+
+  const setTab = (nextTab: EvidenceStudioTab) => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set('tab', nextTab);
+      return next;
+    });
+  };
 
   // Studio → Signature Tracker hand-off (signing must be set up before
   // printing/downloading), and the return trip back to Studio to print.
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
-      const d = e.data as { type?: string; packetId?: string } | undefined;
-      if (d?.type === 'ci-open-signature-tracker') { setSigPacketId(d.packetId ?? null); setTab('signatures'); }
-      else if (d?.type === 'ci-print-packet') { setTab('studio'); }
+      const d = e.data as { type?: string; packetId?: string; title?: string; html?: string } | undefined;
+      if (d?.type === 'ci-open-signature-tracker') {
+        // Stash the rendered packet so the tracker can print it even if the
+        // studio iframe is re-rendered while we're on the Signature tab.
+        if (d.packetId && d.html) {
+          (window as unknown as { __ciPacketPrint?: Record<string, { title: string; html: string }> }).__ciPacketPrint = {
+            ...((window as unknown as { __ciPacketPrint?: Record<string, { title: string; html: string }> }).__ciPacketPrint ?? {}),
+            [d.packetId]: { title: d.title ?? 'Care Indeed Packet', html: d.html },
+          };
+        }
+        setSearchParams((current) => {
+          const next = new URLSearchParams(current);
+          next.set('tab', 'signatures');
+          if (d.packetId) next.set('packet', d.packetId);
+          return next;
+        });
+      } else if (d?.type === 'ci-print-packet') {
+        setSearchParams((current) => { const next = new URLSearchParams(current); next.set('tab', 'studio'); return next; });
+      }
     };
     window.addEventListener('message', onMsg);
     return () => window.removeEventListener('message', onMsg);
-  }, []);
+  }, [setSearchParams]);
 
   return (
     <section className="grid gap-lg" data-hash-id="evidence-center" data-route="/evidence" data-template="evidence">

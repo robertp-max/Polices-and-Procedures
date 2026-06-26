@@ -1476,6 +1476,35 @@ function missingItemsFor(s) {
 
 // ── Event association (events injected by the host app) ───────────────
 let templateLocked = false;
+let signingDone = false;
+
+// Print ONLY the packet pages in a dedicated window so the studio's page rules
+// and title actually apply (printing the embedded iframe would print the host
+// app page — wrong size, wrong filename, app chrome). The new window's <title>
+// becomes the default Save-as filename ("EVENT NAME DATE").
+function printPacket() {
+  const pagesEl = document.getElementById('previewMain');
+  if (!pagesEl || !pagesEl.innerHTML.trim()) { showToast('Generate the packet first.', 'error'); return; }
+  const styles = Array.from(document.querySelectorAll('style')).map(s => s.outerHTML).join('\n');
+  const title = (document.title || 'Care Indeed Packet').replace(/[\\/:*?"<>|]/g, ' ').trim();
+  const w = window.open('', '_blank', 'noopener');
+  if (!w) { showToast('Pop-up blocked — allow pop-ups for this site to download the PDF.', 'error'); return; }
+  w.document.open();
+  w.document.write(
+    '<!doctype html><html class="print-export"><head><meta charset="utf-8"><title>' + title + '</title>' + styles +
+    '<style>' +
+      '@page{size:letter;margin:0;}' +
+      'html,body{margin:0!important;padding:0!important;background:#fff!important;}' +
+      '.preview-sidebar,.page-thumb,.studio-nav,.toast-container,.gen-overlay,.page-modal{display:none!important;}' +
+      '.rendered-page{zoom:1!important;box-shadow:none!important;border-radius:0!important;margin:0!important;overflow:visible!important;height:auto!important;page-break-after:always;break-after:page;}' +
+      '.rendered-page:last-child{page-break-after:auto;break-after:auto;}' +
+      '.rp-glass,.rp-header{break-inside:avoid;}' +
+    '</style></head><body>' + pagesEl.innerHTML + '</body></html>'
+  );
+  w.document.close();
+  const go = () => { try { w.focus(); w.print(); } catch (e) {} };
+  if (w.document.readyState === 'complete') setTimeout(go, 350); else w.onload = () => setTimeout(go, 350);
+}
 let eventFilterYear = '';
 let eventFilterMonth = '';
 const MOCK_EVENT = { id: 'mock-training', title: 'Mock Event (for training)', date: '' };
@@ -1577,8 +1606,10 @@ window.addEventListener('message', function (e) {
     if (d.selectedEventId && d.selectedEventId !== selectedEventId) {
       applyEventSelection(d.selectedEventId, { fromHost: true });
     }
-  } else if (d.type === 'ci-do-print') {
-    window.print();
+  } else if (d.type === 'ci-enable-download') {
+    signingDone = true;
+    if (currentStep === 3) updateNav();
+    showToast('✓ Signing scheduled — click “Download / Print PDF”.');
   }
 });
 
@@ -1621,10 +1652,20 @@ function nextStep() {
     showGenerationOverlay(() => goToStep(3));
   }
   else if (currentStep === 3) {
-    // Signing must be set up BEFORE printing/downloading — hand off to the
-    // Signature Tracker (host switches tabs and prefills the packet ID).
-    try { window.parent && window.parent.postMessage({ type: 'ci-open-signature-tracker', packetId: currentPacketId, eventId: selectedEventId }, '*'); } catch (e) {}
-    showToast('Set up signing in the Signature Tracker — print/download is available there.');
+    if (signingDone) {
+      // Signing was set up — now download/print the packet (gesture-safe).
+      printPacket();
+    } else {
+      // Signing must be set up BEFORE printing/downloading — hand off to the
+      // Signature Tracker (host switches tabs and prefills the packet ID). Send
+      // the rendered pages + title too, so the packet can be printed even after
+      // this iframe is re-rendered while on another tab.
+      try {
+        const pm = document.getElementById('previewMain');
+        window.parent && window.parent.postMessage({ type: 'ci-open-signature-tracker', packetId: currentPacketId, eventId: selectedEventId, title: document.title, html: pm ? pm.innerHTML : '' }, '*');
+      } catch (e) {}
+      showToast('Set up signing in the Signature Tracker first — you’ll return here to download.');
+    }
   }
 }
 
@@ -1659,7 +1700,7 @@ function updateNav() {
     btnNext.innerHTML = '⚡ Generate Packet';
   } else {
     btnNext.disabled = false;
-    btnNext.innerHTML = 'Set up Signing →';
+    btnNext.innerHTML = signingDone ? '📥 Download / Print PDF' : 'Set up Signing →';
   }
 }
 
