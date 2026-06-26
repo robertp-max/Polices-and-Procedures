@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Camera, CheckCircle2, CloudUpload, ExternalLink, Loader2, Upload, XCircle } from 'lucide-react';
 import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
-import { useRegulatoryExecutionStore, type EvidenceDoc } from '@/policy/stores/regulatoryExecutionStore';
 import { CalendarApi, type EvidenceHealthResponse } from '@/policy/services/calendarApi';
 import {
   buildEvidenceIdentityScope, buildIdempotencyKey, detectFormat, extractRecordFromCell,
@@ -36,7 +35,6 @@ function b64(s: string): string {
 
 export function StudioLanding() {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const evidenceByEvent = useRegulatoryExecutionStore((s) => s.evidence);
   const [driveHealth, setDriveHealth] = useState<EvidenceHealthResponse | null>(null);
   const [eventId, setEventId] = useState<string>(
     REGULATORY_EVENTS.find((e) => /qapi/i.test(e.title) && (e.policyRefs?.length ?? 0) > 0 && !!e.workflowId)?.id
@@ -56,7 +54,20 @@ export function StudioLanding() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const roRef = useRef<ResizeObserver | null>(null);
   const [studioH, setStudioH] = useState(960);
+  // Push CES calendar events into the embedded studio so a packet can be tied
+  // to an event (its id/title/date drive the packet ID + Step-2 auto-fill).
+  const events = useMemo(() => REGULATORY_EVENTS.filter((e) => !e.isContext), []);
+  const postEventsToStudio = useCallback(() => {
+    try {
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: 'ci-events', events: events.map((e) => ({ id: e.id, title: e.title, date: e.date })), selectedEventId: eventId },
+        '*',
+      );
+    } catch { /* ignore */ }
+  }, [events, eventId]);
+
   const handleStudioLoad = useCallback(() => {
+    postEventsToStudio();
     try {
       const doc = iframeRef.current?.contentDocument;
       if (!doc) return;
@@ -66,8 +77,19 @@ export function StudioLanding() {
       roRef.current = new ResizeObserver(measure);
       roRef.current.observe(doc.documentElement);
     } catch { /* cross-origin guard — keep fallback height */ }
-  }, []);
+  }, [postEventsToStudio]);
   useEffect(() => () => roRef.current?.disconnect(), []);
+  useEffect(() => { postEventsToStudio(); }, [postEventsToStudio]);
+
+  // When the studio's own event picker changes, keep the host's filing target in sync.
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      const d = e.data as { type?: string; eventId?: string } | undefined;
+      if (d?.type === 'ci-event-selected' && typeof d.eventId === 'string') setEventId(d.eventId || eventId);
+    };
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, [eventId]);
 
   useEffect(() => {
     let on = true;
@@ -76,12 +98,7 @@ export function StudioLanding() {
   }, []);
   const driveReachable = !!driveHealth?.drive?.reachable;
 
-  const events = useMemo(() => REGULATORY_EVENTS.filter((e) => !e.isContext), []);
   const selectedEvent = useMemo(() => events.find((e) => e.id === eventId), [events, eventId]);
-  const filedCount = useMemo(
-    () => (Object.values(evidenceByEvent).flat() as EvidenceDoc[]).filter((d) => d.artifactVersion === 'evidence-intake-v1').length,
-    [evidenceByEvent],
-  );
 
   const handleFiles = useCallback(async (list: FileList | null) => {
     if (!list || !list.length || !selectedEvent) return;
@@ -196,42 +213,34 @@ export function StudioLanding() {
   }, [selectedEvent, eventId, driveReachable]);
 
   return (
-    <section className="grid gap-md">
-      {/* Slim toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-hairline bg-surface-glass p-md shadow-rest">
-        <div className="flex flex-wrap items-center gap-sm">
-          <span className={`flex items-center gap-xs rounded-full border px-md py-xs text-[11px] ${driveReachable ? 'border-tone-teal-border bg-tone-teal-bg text-brand-teal-deep' : 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text'}`}>
-            <span className={`h-2 w-2 rounded-full ${driveReachable ? 'bg-brand-teal' : 'bg-[#c74601]'}`} />
-            Drive {driveReachable ? 'connected' : (driveHealth ? 'unavailable' : 'checking…')}
-          </span>
-          <span className="text-[11px] text-muted">{filedCount} item(s) in Library</span>
-        </div>
-        <div className="flex flex-wrap items-center gap-sm">
-          <label className="flex items-center gap-xs text-[11px] text-secondary">
-            File to
-            <select aria-label="File to event" title="File to event" value={eventId} onChange={(e) => setEventId(e.target.value)} className="max-w-[220px] rounded-lg border border-hairline bg-surface px-sm py-xs text-xs text-ink">
-              {events.slice(0, 80).map((e) => <option key={e.id} value={e.id}>{e.title}</option>)}
-            </select>
-          </label>
-          <input ref={fileInputRef} aria-label="Upload source documents" title="Upload source documents" type="file" multiple accept={ACCEPTED} className="hidden" onChange={(e) => void handleFiles(e.target.files)} />
-          <button type="button" onClick={() => fileInputRef.current?.click()} disabled={busy || !eventId} title="Parse + file source documents into the Evidence Library" className="flex items-center gap-xs rounded-lg border border-card bg-tone-slate-bg px-md py-xs text-xs text-secondary hover:bg-surface-hover disabled:opacity-50">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Add source documents
-          </button>
-          <button type="button" onClick={() => void openCamera()} disabled={busy || !eventId} title="Photograph a physical document with your camera and file it as evidence" className="flex items-center gap-xs rounded-lg border border-card bg-tone-slate-bg px-md py-xs text-xs text-secondary hover:bg-surface-hover disabled:opacity-50">
-            <Camera className="h-4 w-4" /> Capture document
-          </button>
-          <button type="button" onClick={() => window.open(STUDIO_URL, '_blank', 'noopener,noreferrer')} title="Open the studio in a new tab" className="flex items-center gap-xs rounded-lg border border-card bg-tone-slate-bg px-md py-xs text-xs text-secondary hover:bg-surface-hover">
-            <ExternalLink className="h-4 w-4" /> New tab
-          </button>
-        </div>
+    <section className="grid gap-sm">
+      {/* Light, borderless action row — file source docs / capture into the Library */}
+      <div className="flex flex-wrap items-center justify-end gap-sm px-xs text-[11px]">
+        <span className="mr-auto flex items-center gap-xs text-muted" title={driveReachable ? 'Google Drive reachable' : 'Google Drive unavailable'}>
+          <span className={`h-2 w-2 rounded-full ${driveReachable ? 'bg-brand-teal' : 'bg-[#c74601]'}`} />
+          Drive {driveReachable ? 'connected' : (driveHealth ? 'unavailable' : 'checking…')}
+        </span>
+        <select aria-label="File to event" title="File captured/added source documents to this event" value={eventId} onChange={(e) => setEventId(e.target.value)} className="max-w-[200px] rounded-lg border border-hairline bg-surface px-sm py-xs text-xs text-ink">
+          <option value="mock-training">Mock Event (for training)</option>
+          {events.slice(0, 80).map((e) => <option key={e.id} value={e.id}>{e.title}</option>)}
+        </select>
+        <input ref={fileInputRef} aria-label="Upload source documents" title="Upload source documents" type="file" multiple accept={ACCEPTED} className="hidden" onChange={(e) => void handleFiles(e.target.files)} />
+        <button type="button" onClick={() => fileInputRef.current?.click()} disabled={busy || !eventId} title="Parse + file source documents into the Evidence Library" className="flex items-center gap-xs rounded-lg px-sm py-xs text-secondary hover:bg-surface-hover disabled:opacity-50">
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Add source
+        </button>
+        <button type="button" onClick={() => void openCamera()} disabled={busy || !eventId} title="Photograph a physical document with your camera and file it as evidence" className="flex items-center gap-xs rounded-lg px-sm py-xs text-secondary hover:bg-surface-hover disabled:opacity-50">
+          <Camera className="h-4 w-4" /> Capture
+        </button>
+        <button type="button" onClick={() => window.open(STUDIO_URL, '_blank', 'noopener,noreferrer')} title="Open the studio in a new tab" className="flex items-center gap-xs rounded-lg px-sm py-xs text-secondary hover:bg-surface-hover">
+          <ExternalLink className="h-4 w-4" /> New tab
+        </button>
       </div>
 
       {result && (
-        <div className={`flex flex-wrap items-center gap-md rounded-lg border p-md text-sm ${result.failed > 0 ? 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text' : 'border-tone-teal-border bg-tone-teal-bg text-brand-teal-deep'}`}>
+        <div className={`flex flex-wrap items-center gap-md rounded-lg px-md py-sm text-xs ${result.failed > 0 ? 'text-tone-orange-text' : 'text-brand-teal-deep'}`}>
           <span className="flex items-center gap-xs"><CheckCircle2 className="h-4 w-4" /> Filed {result.filed} to Library</span>
           {driveReachable && <span className="flex items-center gap-xs"><CloudUpload className="h-4 w-4" /> {result.uploaded} to Drive</span>}
           {result.failed > 0 && <span className="flex items-center gap-xs"><XCircle className="h-4 w-4" /> {result.failed} failed/skipped</span>}
-          <span className="text-xs text-muted">Open the Evidence Drive tab to browse them.</span>
         </div>
       )}
 

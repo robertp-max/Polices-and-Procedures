@@ -226,6 +226,38 @@ body {
   max-width: 1200px;
   width: 100%;
 }
+.event-picker {
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 22px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: var(--studio-surface, rgba(255,255,255,0.6));
+  border: 1px solid var(--studio-border, rgba(0,121,125,0.16));
+}
+.event-picker-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--teal-700, #00797d);
+  margin-bottom: 8px;
+}
+.event-picker-row { display: flex; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.event-picker-select {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--studio-border, rgba(0,121,125,0.22));
+  background: #fff;
+  color: var(--gray-900, #1a1a1a);
+  font-size: 13px;
+}
+.event-picker-select.small { flex: 1; min-width: 120px; }
+.event-picker-id { margin-top: 8px; font-size: 12px; color: var(--gray-700, #444); }
+.event-picker-id.warn { color: var(--orange-500, #d9892b); }
+.event-picker-empty { font-size: 13px; color: var(--studio-text-dim, #888); }
 .meeting-card {
   position: relative;
   padding: 12px 14px;
@@ -880,15 +912,7 @@ html.embed .preview-main { max-height: none; overflow: visible; }
      NAVIGATION BAR
      ═══════════════════════════════════════════════ -->
 <nav class="studio-nav">
-  <div class="nav-left">
-    <!-- Replaced local image path with fallback SVG generating image -->
-    <img class="nav-logo" src="https://care-indeed-hh-v2-brad-builder-455039212099.us-central1.run.app/ci-logo-gray.png" alt="Care Indeed" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'28\'><text x=\'0\' y=\'20\' font-family=\'sans-serif\' font-size=\'20\' font-weight=\'bold\' fill=\'%2300a6a8\'>Care Indeed</text></svg>'">
-    <div class="nav-divider"></div>
-    <div>
-      <div class="nav-title">PDF Studio</div>
-      <div class="nav-subtitle">Meeting Packet Generator</div>
-    </div>
-  </div>
+  <div class="nav-left"></div>
   <div class="nav-center">
     <div class="step-indicators">
       <div class="step-dot active" data-step="1" onclick="goToStep(1)"></div>
@@ -913,6 +937,7 @@ html.embed .preview-main { max-height: none; overflow: visible; }
      ═══════════════════════════════════════════════ -->
 <div class="studio-main">
   <div class="step-panel active select-panel" id="step1">
+    <div class="event-picker" id="eventPicker"><!-- Injected by JS --></div>
     <div class="meeting-grid" id="meetingGrid">
       <!-- Injected by JS -->
     </div>
@@ -1261,9 +1286,137 @@ let currentStep = 1;
 let selectedMeeting = null;
 let uploadedFiles = [];
 let fieldValues = {};
+let currentPacketId = null;
+
+// Every packet is associated to a CES calendar event (supplied by the host).
+let availableEvents = [];
+let selectedEventId = '';
+let selectedEventTitle = '';
+
+// Packet ID = {eventId}-{X}, where X is a per-event sequence (1..∞), so every
+// generated packet for an event is uniquely numbered. Stamped on the cover +
+// every page footer and quotable in the Edit Packet tab.
+function nextSeqFor(eventId) {
+  try { return parseInt(localStorage.getItem('ci-pkt-seq-' + eventId) || '0', 10) + 1; } catch (e) { return 1; }
+}
+function mintPacketId() {
+  if (!selectedEventId) return null;
+  let n = 1;
+  try { const k = 'ci-pkt-seq-' + selectedEventId; n = parseInt(localStorage.getItem(k) || '0', 10) + 1; localStorage.setItem(k, String(n)); } catch (e) {}
+  return `${selectedEventId}-${n}`;
+}
+
+// Required source items per section type — listed when a section has no data.
+function missingItemsFor(s) {
+  const t = ((s.form || '') + ' ' + (s.title || '')).toLowerCase();
+  const map = [
+    [/governance|executive|summary|fm-023/, ['QAPI metrics dashboard export', 'Active census & recertification counts', 'High-risk flag rollup', 'Prior-period comparison']],
+    [/dashboard|kpi|fm-020|program evaluation|rollup/, ['Patient census export', 'Infection & fall risk indicators', 'Anticoagulant / medication-management metrics']],
+    [/incident|adverse|sentinel/, ['Incident reports for the period', 'Root-cause analyses (RCA)', 'Medication-error log']],
+    [/infection/, ['Infection surveillance line list', 'High-infection-risk patient flags', 'Trend data vs. prior period']],
+    [/complaint|grievance/, ['Complaint & grievance log', 'Resolution / follow-up records']],
+    [/chart audit|record review|oasis|documentation|completeness/, ['Chart audit findings', 'OASIS accuracy results', 'Documentation deficiency list']],
+    [/action item|pip|corrective/, ['Open PIP / corrective-action register', 'Owner assignments & due dates', 'Status updates']],
+    [/agenda|cover/, ['Meeting date, time, location & chair', 'Attendee roster']],
+    [/minutes/, ['Attendance', 'Motions & decisions', 'Action-item assignments']],
+    [/signature|approval/, ['Approver names & roles', 'Signature-authority confirmation']],
+    [/competency|training|in-?service|hipaa/, ['Completion roster', 'Attestations / sign-in sheets', 'Competency validation results']],
+  ];
+  for (const [re, items] of map) if (re.test(t)) return items;
+  return ['Source data export for this section', 'Supporting documentation', 'Owner sign-off'];
+}
+
+// ── Event association (events injected by the host app) ───────────────
+let eventFilterYear = '';
+let eventFilterMonth = '';
+const MOCK_EVENT = { id: 'mock-training', title: 'Mock Event (for training)', date: '' };
+function allEventsWithMock() { return [MOCK_EVENT].concat(availableEvents); }
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function eventYear(e) { const m = /(\d{4})-(\d{2})/.exec(String(e.date || '')); return m ? m[1] : ''; }
+function eventMonth(e) { const m = /(\d{4})-(\d{2})/.exec(String(e.date || '')); return m ? m[2] : ''; }
+function filteredEvents() {
+  return availableEvents.filter(e =>
+    (!eventFilterYear || eventYear(e) === eventFilterYear) &&
+    (!eventFilterMonth || eventMonth(e) === eventFilterMonth));
+}
+function renderEventPicker() {
+  const host = document.getElementById('eventPicker');
+  if (!host) return;
+  if (!availableEvents.length) { host.innerHTML = '<div class="event-picker-empty">Loading CES calendar events…</div>'; return; }
+  const years = Array.from(new Set(availableEvents.map(eventYear).filter(Boolean))).sort((a, b) => b.localeCompare(a));
+  const yearOpts = ['<option value="">All years</option>'].concat(years.map(y => `<option value="${y}" ${y === eventFilterYear ? 'selected' : ''}>${y}</option>`)).join('');
+  const monthOpts = ['<option value="">All months</option>'].concat(MONTH_NAMES.map((n, i) => { const v = String(i + 1).padStart(2, '0'); return `<option value="${v}" ${v === eventFilterMonth ? 'selected' : ''}>${n}</option>`; })).join('');
+  const list = filteredEvents();
+  const evOpts = ['<option value="">— Select the CES event this packet is for —</option>']
+    .concat(`<option value="${MOCK_EVENT.id}" ${MOCK_EVENT.id === selectedEventId ? 'selected' : ''}>${MOCK_EVENT.title}</option>`)
+    .concat(list.map(e => `<option value="${escHtml(e.id)}" ${e.id === selectedEventId ? 'selected' : ''}>${escHtml(e.title)}${e.date ? ' · ' + escHtml(e.date) : ''}</option>`))
+    .join('');
+  host.innerHTML = `
+    <label class="event-picker-label">CES Calendar Event <span style="color:var(--orange-500);">*</span></label>
+    <div class="event-picker-row">
+      <select class="event-picker-select small" aria-label="Filter by year" onchange="onEventFilter('year', this.value)">${yearOpts}</select>
+      <select class="event-picker-select small" aria-label="Filter by month" onchange="onEventFilter('month', this.value)">${monthOpts}</select>
+    </div>
+    <select id="eventSelect" class="event-picker-select" onchange="onEventChange(this.value)">${evOpts}</select>
+    <div class="event-picker-id ${selectedEventId ? '' : 'warn'}">${selectedEventId ? `Packet ID → <strong>${escHtml(selectedEventId)}-${nextSeqFor(selectedEventId)}</strong>` : 'Required — every packet must be tied to a CES event.'} <span style="color:var(--gray-500);">· ${list.length} event${list.length === 1 ? '' : 's'} match</span></div>`;
+}
+function onEventFilter(which, v) {
+  if (which === 'year') eventFilterYear = v; else eventFilterMonth = v;
+  if (selectedEventId && !filteredEvents().some(e => e.id === selectedEventId)) { /* keep selection even if filtered out */ }
+  renderEventPicker();
+}
+// Auto-fill Step 2 meeting details from the selected event.
+function applyEventToFields(ev) {
+  if (!ev) return;
+  if (ev.date) {
+    fieldValues.meeting_date = ev.date;
+    const m = /(\d{4})-(\d{2})/.exec(String(ev.date));
+    if (m) { fieldValues.year = m[1]; fieldValues.quarter = 'Q' + Math.ceil(parseInt(m[2], 10) / 3); }
+  }
+  if (ev.title) fieldValues.meeting_title = ev.title;
+  if (ev.time) fieldValues.meeting_time = ev.time;
+  if (ev.location) fieldValues.location = ev.location;
+  if (ev.chair) fieldValues.chair = ev.chair;
+  if (currentStep === 2) renderStep2();
+}
+// Map a CES event to the most appropriate packet template.
+function templateForEvent(ev) {
+  const t = ((ev && ev.id || '') + ' ' + (ev && ev.title || '')).toLowerCase();
+  if (/qapi/.test(t) && /annual/.test(t)) return 'qapi_annual';
+  if (/qapi/.test(t) && /month/.test(t)) return 'qapi_monthly';
+  if (/qapi/.test(t)) return 'qapi_quarterly';
+  if (/governing|governance|board|gb_/.test(t)) return 'governing_body';
+  if (/infection/.test(t)) return 'infection_control';
+  if (/incident|sentinel|adverse|patient_safety|safety|rca|complaint|grievance/.test(t)) return 'patient_safety';
+  if (/chart|record|oasis|documentation|clinical|completeness|plan_of_care|poc/.test(t)) return 'clinical_record_review';
+  if (/inservice|in-?service|training|competency|hipaa|bbp|education|skill/.test(t)) return 'staff_inservice';
+  if (/cag|pac|advisory/.test(t)) return 'cag_pac';
+  return null;
+}
+function onEventChange(v) {
+  selectedEventId = v;
+  const ev = allEventsWithMock().find(x => x.id === v);
+  selectedEventTitle = ev ? ev.title : '';
+  applyEventToFields(ev);
+  const tpl = templateForEvent(ev);
+  if (tpl) selectMeeting(tpl);
+  try { window.parent && window.parent.postMessage({ type: 'ci-event-selected', eventId: v }, '*'); } catch (e) {}
+  renderEventPicker();
+  updateNav();
+}
+window.addEventListener('message', function (e) {
+  const d = e.data || {};
+  if (d.type === 'ci-events' && Array.isArray(d.events)) {
+    availableEvents = d.events;
+    if (d.selectedEventId && !selectedEventId) selectedEventId = d.selectedEventId;
+    if (selectedEventId) { const ev = allEventsWithMock().find(x => x.id === selectedEventId); if (ev) selectedEventTitle = ev.title; }
+    renderEventPicker();
+  }
+});
 
 // ── Initialize ────────────────────────────────
 function init() {
+  renderEventPicker();
   renderMeetingCards();
   updateNav();
 }
@@ -1285,8 +1438,15 @@ function goToStep(step) {
 }
 
 function nextStep() {
-  if (currentStep === 1 && selectedMeeting) goToStep(2);
+  if (currentStep === 1) {
+    if (!selectedEventId) { showToast('Select the CES calendar event this packet is for.', 'error'); return; }
+    if (!selectedMeeting) { showToast('Select a packet template.', 'error'); return; }
+    goToStep(2);
+  }
   else if (currentStep === 2) {
+    if (!selectedEventId) { showToast('Select the CES event this packet is for (Step 1).', 'error'); goToStep(1); return; }
+    currentPacketId = mintPacketId();
+    try { window.parent && window.parent.postMessage({ type: 'ci-packet-generated', packetId: currentPacketId, eventId: selectedEventId, meeting: selectedMeeting && selectedMeeting.id }, '*'); } catch (e) {}
     showGenerationOverlay(() => goToStep(3));
   }
   else if (currentStep === 3) {
@@ -1689,7 +1849,12 @@ function renderSectionData(s) {
   if (pk) return renderForm(pk);
   const a = analytics;
   if (!a) {
-    return `<div class="rp-glass primary"><p class="rp-p" style="margin:0;">Add source documents in Step 2 to populate this section automatically.</p></div>`;
+    const items = missingItemsFor(s);
+    const pid = currentPacketId || (selectedEventId ? selectedEventId + '-' + nextSeqFor(selectedEventId) : 'eventID-X');
+    return `<div class="rp-glass primary">
+      <p class="rp-p" style="margin:0 0 10px;">Please use <strong>Evidence Studio</strong>, enter <strong>Packet ID&nbsp;#&nbsp;${escHtml(pid)}</strong>, and provide the required missing information:</p>
+      <ul style="margin:0;padding-left:20px;font-size:12px;line-height:1.85;color:var(--gray-900);">${items.map(i => `<li>${escHtml(i)}</li>`).join('')}</ul>
+    </div>`;
   }
   const form = ((s.form || '') + ' ' + (s.title || '')).toLowerCase();
   const recs = a.records || [];
@@ -1885,7 +2050,8 @@ function renderStep3() {
   
   const q = fieldValues.quarter || 'Q2';
   const yr = fieldValues.year || '2026';
-  const meetDate = fieldValues.meeting_date ? new Date(fieldValues.meeting_date).toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'}) : 'TBD';
+  const _md = fieldValues.meeting_date;
+  const meetDate = _md ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(_md) ? _md + 'T00:00:00' : _md).toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'}) : 'TBD';
   const time = fieldValues.meeting_time || '10:00 AM – 12:00 PM';
   const location = fieldValues.location || 'Conference Room / Zoom Hybrid';
   const chair = fieldValues.chair || 'TBD';
@@ -1925,6 +2091,8 @@ function renderStep3() {
           <div style="text-align:right;color:var(--gray-500);font-size:12px;line-height:1.55;letter-spacing:0.12em;text-transform:uppercase;">
             <strong style="display:block;font-weight:500;color:var(--teal-700);letter-spacing:0.16em;margin-bottom:4px;">${m.id.toUpperCase()}-${yr}-${q}</strong>
             Internal Governance Packet<br/>Executive Pre-Read
+            ${selectedEventTitle ? `<div style="margin-top:10px;font-size:11px;letter-spacing:0.1em;color:var(--gray-700);">Event<br/><strong style="color:var(--teal-900);font-weight:600;text-transform:none;">${escHtml(selectedEventTitle)}</strong></div>` : ''}
+            <div style="margin-top:8px;font-size:11px;letter-spacing:0.14em;color:var(--gray-700);">Packet ID<br/><strong style="color:var(--teal-900);font-weight:600;">${escHtml(currentPacketId || (selectedEventId ? selectedEventId + '-' + nextSeqFor(selectedEventId) : '—'))}</strong></div>
           </div>
         </header>
         
@@ -2006,7 +2174,7 @@ function renderStep3() {
           
           <div class="rp-footer">
             <div><strong style="color:var(--teal-700);font-weight:500;">Care Indeed Home Health</strong><br/>890 Santa Cruz Ave # B, Menlo Park, CA 94025</div>
-            <div style="font-weight:500;color:var(--teal-900);">Page ${pageNum}</div>
+            <div style="text-align:right;font-weight:500;color:var(--teal-900);">Packet ${currentPacketId || ''}<br/>Page ${pageNum}</div>
           </div>
         </div>
       </div>
@@ -2014,6 +2182,12 @@ function renderStep3() {
   });
   
   document.getElementById('previewMain').innerHTML = pagesHTML;
+
+  // Auto-name the exported PDF "EVENT NAME DATE" — browsers use document.title
+  // as the default Save-as / print filename.
+  const evName = (selectedEventTitle || (selectedMeeting && selectedMeeting.title) || 'Care Indeed Packet');
+  const evDate = fieldValues.meeting_date || '';
+  document.title = `${evName} ${evDate}`.replace(/[\\/:*?"<>|]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 function scrollToPage(index) {

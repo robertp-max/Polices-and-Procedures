@@ -468,11 +468,22 @@ function partsFromFilingPeriodKey(filingPeriodKey: string): { year: string; mont
  * Build the sanitized Drive folder segments for an intake canonical-evidence
  * upload, filed by the resolved created-date filing period.
  */
+/** The single Drive folder that ALL mock/training evidence is filed under. */
+export const MOCK_EVENT_ID = 'mock-training';
+export const MOCK_EVIDENCE_SEGMENTS = ['01_CES', 'Evidence', 'Mock'];
+
 export function buildIntakeEvidenceFolderSegments(input: {
   filingPeriodKey: string;
   classification: string;
   leaf?: string;
+  eventId?: string;
 }): string[] | null {
+  // Mock/training packets all land in one folder — no period/classification split.
+  if (input.eventId === MOCK_EVENT_ID) {
+    const segments = [...MOCK_EVIDENCE_SEGMENTS];
+    if (input.leaf) segments.push(sanitizeName(input.leaf));
+    return segments;
+  }
   const parts = partsFromFilingPeriodKey(input.filingPeriodKey);
   if (!parts) return null; // never guess a period
   const segments = [
@@ -524,7 +535,8 @@ export async function uploadIntakeEvidence(input: IntakeUploadInput): Promise<In
   const segments = buildIntakeEvidenceFolderSegments({
     filingPeriodKey: input.filingPeriodKey,
     classification: input.classification,
-    leaf: input.eventId,
+    eventId: input.eventId,
+    leaf: input.eventId === MOCK_EVENT_ID ? undefined : input.eventId,
   });
   if (!segments) {
     // Never silently upload to a generic root after a folder-resolution failure.

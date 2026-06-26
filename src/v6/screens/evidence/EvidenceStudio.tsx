@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { FolderOpen, FileStack } from 'lucide-react';
+import { FolderOpen, FileStack, PencilLine } from 'lucide-react';
 import EvidenceFolderExplorer from './EvidenceFolderExplorer';
 import StudioLanding from './StudioLanding';
+import EditPacketRemediation from './EditPacketRemediation';
 
 /* ════════════════════════════════════════════════════════════════
    Evidence Studio — two cohesive surfaces:
@@ -12,11 +13,12 @@ import StudioLanding from './StudioLanding';
    launches the full branded Packet Studio. No metric tiles. Light glass.
    ════════════════════════════════════════════════════════════════ */
 
-export type EvidenceStudioTab = 'library' | 'studio';
+export type EvidenceStudioTab = 'library' | 'studio' | 'edit';
 
 const TABS: { id: EvidenceStudioTab; label: string; sub: string; Icon: typeof FolderOpen }[] = [
   { id: 'library', label: 'Evidence Drive', sub: 'Browse filed evidence', Icon: FolderOpen },
   { id: 'studio', label: 'Studio', sub: 'Generate branded packets', Icon: FileStack },
+  { id: 'edit', label: 'Edit Packet', sub: 'Remediate by packet ID', Icon: PencilLine },
 ];
 
 export function EvidenceStudio({ initialTab = 'library' }: { initialTab?: EvidenceStudioTab }) {
@@ -55,6 +57,7 @@ export function EvidenceStudio({ initialTab = 'library' }: { initialTab?: Eviden
       {/* Panes stay mounted; only the active one is visible. */}
       <div className={tab === 'library' ? '' : 'hidden'}><EvidenceFolderExplorer /></div>
       <div className={tab === 'studio' ? '' : 'hidden'}><StudioLanding /></div>
+      <div className={tab === 'edit' ? '' : 'hidden'}><EditPacketRemediation /></div>
     </section>
   );
 }
