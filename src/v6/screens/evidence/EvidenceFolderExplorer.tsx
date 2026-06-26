@@ -213,7 +213,7 @@ export function EvidenceFolderExplorer() {
                 {years.map((y) => (
                   <FolderCell key={y} color={YEAR_COLOR} label={y} sub={`${events.filter((e) => yearOf(e.date) === y).length} events`} onOpen={() => setView({ level: 'year', year: y })} />
                 ))}
-                <FolderCell color={BRAD_COLOR} label="Brad Training" sub="Google Drive" onOpen={() => goDrive('', [{ id: '', name: 'Brad Training' }])} />
+                <FolderCell color={BRAD_COLOR} label="Brad Training" sub="Training library" onOpen={() => goDrive('', [{ id: '', name: 'Brad Training' }])} />
                 <FolderCell color={PACKET_COLOR} label="Draft Evidence Packets" sub={`${draftPacketDocs.length} docs`} onOpen={() => setView({ level: 'special', key: SPECIAL.draftPackets, title: 'Draft Evidence Packets' })} />
               </>
             )}
