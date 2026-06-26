@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FolderOpen, FileStack, PencilLine, FileSignature } from 'lucide-react';
 import EvidenceFolderExplorer from './EvidenceFolderExplorer';
 import StudioLanding from './StudioLanding';
@@ -25,6 +25,19 @@ const TABS: { id: EvidenceStudioTab; label: string; sub: string; Icon: typeof Fo
 
 export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: EvidenceStudioTab }) {
   const [tab, setTab] = useState<EvidenceStudioTab>(initialTab);
+  const [sigPacketId, setSigPacketId] = useState<string | null>(null);
+
+  // Studio → Signature Tracker hand-off (signing must be set up before
+  // printing/downloading), and the return trip back to Studio to print.
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      const d = e.data as { type?: string; packetId?: string } | undefined;
+      if (d?.type === 'ci-open-signature-tracker') { setSigPacketId(d.packetId ?? null); setTab('signatures'); }
+      else if (d?.type === 'ci-print-packet') { setTab('studio'); }
+    };
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
 
   return (
     <section className="grid gap-lg" data-hash-id="evidence-center" data-route="/evidence" data-template="evidence">
@@ -60,7 +73,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
       <div className={tab === 'library' ? '' : 'hidden'}><EvidenceFolderExplorer /></div>
       <div className={tab === 'studio' ? '' : 'hidden'}><StudioLanding /></div>
       <div className={tab === 'edit' ? '' : 'hidden'}><EditPacketRemediation /></div>
-      <div className={tab === 'signatures' ? '' : 'hidden'}><SignatureTracker /></div>
+      <div className={tab === 'signatures' ? '' : 'hidden'}><SignatureTracker incomingPacketId={sigPacketId} /></div>
     </section>
   );
 }

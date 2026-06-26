@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { AlertTriangle, CalendarClock, CheckCircle2, ClipboardCheck, FileSignature, Loader2, PenLine } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, CalendarClock, CheckCircle2, ClipboardCheck, FileSignature, Loader2, PenLine, Printer } from 'lucide-react';
 import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
 
 /* ════════════════════════════════════════════════════════════════
@@ -56,7 +56,7 @@ function fmtDate(d?: string): string {
   return isNaN(dt.getTime()) ? d : dt.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 }
 
-export function SignatureTracker() {
+export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: string | null }) {
   const [packetId, setPacketId] = useState('');
   const [loadedId, setLoadedId] = useState<string | null>(null);
   const [record, setRecord] = useState<PacketSignatureRecord | null>(null);
@@ -66,11 +66,26 @@ export function SignatureTracker() {
 
   const idValid = PACKET_ID_RE.test(packetId.trim());
 
+  // The Studio hands off the packet here before printing/downloading.
+  useEffect(() => {
+    if (!incomingPacketId || !PACKET_ID_RE.test(incomingPacketId)) return;
+    setPacketId(incomingPacketId);
+    setLoadedId(incomingPacketId);
+    setConfirmed(false);
+    const existing = loadAll()[incomingPacketId] ?? null;
+    setRecord(existing);
+    setView(existing ? 'review' : 'schedule');
+  }, [incomingPacketId]);
+
+  const printPacket = () => { try { window.postMessage({ type: 'ci-print-packet', packetId: loadedId }, '*'); } catch { /* ignore */ } };
+
   const eventInfo = useMemo(() => {
     const id = (loadedId ?? '').replace(/-\d+$/, '');
     if (id === 'mock-training') return { id, name: 'Mock Event (for training)', date: '', time: '', durationMin: 120 };
     const ev = REGULATORY_EVENTS.find((e) => e.id === id);
-    return ev ? { id, name: ev.title, date: ev.date, time: ev.time, durationMin: ev.durationMin ?? 120 } : { id, name: id || '(unknown event)', date: '', time: '', durationMin: 120 };
+    const evWithDuration = ev as (typeof ev & { durationMin?: unknown });
+    const durationMin = typeof evWithDuration?.durationMin === 'number' ? evWithDuration.durationMin : 120;
+    return ev ? { id, name: ev.title, date: ev.date, time: ev.time, durationMin } : { id, name: id || '(unknown event)', date: '', time: '', durationMin: 120 };
   }, [loadedId]);
 
   const endTime = useMemo(() => addMinutes(eventInfo.time, eventInfo.durationMin), [eventInfo]);
@@ -179,7 +194,7 @@ export function SignatureTracker() {
                   </button>
                 </>
               ) : (
-                <ThankYou eventName={eventInfo.name} dateLabel={fmtDate(eventInfo.date)} timeLabel={fmtTime(eventInfo.time)} scheduledFor={record.scheduledFor} signers={record.signers} onReview={() => setView('review')} />
+                <ThankYou eventName={eventInfo.name} dateLabel={fmtDate(eventInfo.date)} timeLabel={fmtTime(eventInfo.time)} scheduledFor={record.scheduledFor} signers={record.signers} onReview={() => setView('review')} onPrint={printPacket} />
               )}
             </div>
           )}
@@ -200,7 +215,12 @@ export function SignatureTracker() {
                 <div className="h-full rounded-full bg-brand-teal transition-all" style={{ width: `${total ? (signedCount / total) * 100 : 0}%` }} />
               </div>
               <RosterTable signers={record.signers} onMarkSigned={markSigned} />
-              <p className="text-[11px] text-muted">Signing happens in eCIgn after the meeting. Use “Mark signed” to record completion here, or open the packet’s forms to sign.</p>
+              <div className="flex flex-wrap items-center justify-between gap-sm">
+                <p className="text-[11px] text-muted">Signing happens in eCIgn after the meeting. Use “Mark signed” to record completion here, or open the packet’s forms to sign.</p>
+                <button type="button" onClick={printPacket} className="flex items-center gap-sm rounded-lg border border-brand-teal bg-brand-teal px-lg py-sm text-sm font-medium text-white hover:bg-brand-teal-deep">
+                  <Printer className="h-4 w-4" /> Print / Download packet
+                </button>
+              </div>
             </div>
           )}
 
@@ -252,7 +272,7 @@ function RosterTable({ signers, onMarkSigned }: { signers: SignerTask[]; onMarkS
   );
 }
 
-function ThankYou({ eventName, dateLabel, timeLabel, scheduledFor, signers, onReview }: { eventName: string; dateLabel: string; timeLabel: string; scheduledFor: string; signers: SignerTask[]; onReview: () => void }) {
+function ThankYou({ eventName, dateLabel, timeLabel, scheduledFor, signers, onReview, onPrint }: { eventName: string; dateLabel: string; timeLabel: string; scheduledFor: string; signers: SignerTask[]; onReview: () => void; onPrint: () => void }) {
   return (
     <div className="grid gap-sm rounded-lg border border-tone-teal-border bg-tone-teal-bg p-lg text-sm text-brand-teal-deep">
       <div className="flex items-center gap-sm font-medium"><CheckCircle2 className="h-5 w-5" /> Thank you — your meeting packet is ready.</div>
@@ -262,9 +282,14 @@ function ThankYou({ eventName, dateLabel, timeLabel, scheduledFor, signers, onRe
         {signers.map((s, i) => <li key={i} className="list-disc">{s.name} — {s.role}</li>)}
       </ul>
       <p className="text-[11px] text-brand-teal-deep/80">An eCIgn process has been scheduled to assign these signing tasks at the meeting’s end time.</p>
-      <button type="button" onClick={onReview} className="mt-xs flex w-fit items-center gap-sm rounded-lg border border-brand-teal bg-surface px-md py-sm text-xs font-medium text-brand-teal-deep hover:bg-surface-hover">
-        <CheckCircle2 className="h-4 w-4" /> View completion status
-      </button>
+      <div className="mt-xs flex flex-wrap gap-sm">
+        <button type="button" onClick={onPrint} className="flex w-fit items-center gap-sm rounded-lg border border-brand-teal bg-brand-teal px-md py-sm text-xs font-medium text-white hover:bg-brand-teal-deep">
+          <Printer className="h-4 w-4" /> Print / Download packet
+        </button>
+        <button type="button" onClick={onReview} className="flex w-fit items-center gap-sm rounded-lg border border-brand-teal bg-surface px-md py-sm text-xs font-medium text-brand-teal-deep hover:bg-surface-hover">
+          <CheckCircle2 className="h-4 w-4" /> View completion status
+        </button>
+      </div>
     </div>
   );
 }

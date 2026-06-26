@@ -354,6 +354,21 @@ body {
   border-color: var(--teal-500);
   color: white;
 }
+.meeting-card.locked-dim { opacity: 0.4; pointer-events: none; filter: grayscale(0.3); }
+.lock-badge {
+  position: absolute; top: 8px; left: 10px;
+  font-size: 9px; font-weight: 600; letter-spacing: 0.04em;
+  color: var(--orange-500, #E2683C);
+  background: rgba(226,104,60,0.12); border: 1px solid rgba(226,104,60,0.3);
+  border-radius: 999px; padding: 2px 8px;
+}
+.change-tpl {
+  flex: 0 0 auto; align-self: center;
+  background: none; border: 1px dashed var(--studio-border, #cbd5e1);
+  color: var(--studio-text-dim, #64748b); border-radius: 8px;
+  padding: 8px 14px; font-size: 12px; cursor: pointer;
+}
+.change-tpl:hover { border-color: var(--teal-500, #00a6a8); color: var(--teal-700, #00797d); }
 
 /* ═══════════════════════════════════════════════
    STEP 2: DOCUMENT UPLOAD & CONFIGURATION
@@ -987,10 +1002,15 @@ textarea.field-input {
     box-shadow: none !important;
     border-radius: 0 !important;
     margin: 0 !important;
+    /* Don't clip — let a long section flow onto additional sheets. */
+    overflow: visible !important;
+    height: auto !important;
     page-break-after: always;
     break-after: page;
   }
   .rendered-page:last-child { page-break-after: auto; break-after: auto; }
+  /* Keep inner blocks intact across page breaks where possible. */
+  .rp-glass, .rp-header { break-inside: avoid; }
 }
 /* ═══════════════════════════════════════════════
    EMBEDDED MODE — rendered inline inside the app (?embed=1).
@@ -1455,6 +1475,7 @@ function missingItemsFor(s) {
 }
 
 // ── Event association (events injected by the host app) ───────────────
+let templateLocked = false;
 let eventFilterYear = '';
 let eventFilterMonth = '';
 const MOCK_EVENT = { id: 'mock-training', title: 'Mock Event (for training)', date: '' };
@@ -1521,29 +1542,49 @@ function templateForEvent(ev) {
   if (/cag|pac|advisory/.test(t)) return 'cag_pac';
   return null;
 }
-function onEventChange(v) {
+// Single entry point for selecting an event — used by the in-studio dropdown
+// AND by host-injected selections. Auto-fills Step 2 and auto-selects + LOCKS
+// the matching packet template so the two always stay correct.
+function applyEventSelection(v, opts) {
   selectedEventId = v;
   const ev = allEventsWithMock().find(x => x.id === v);
   selectedEventTitle = ev ? ev.title : '';
   applyEventToFields(ev);
-  const tpl = templateForEvent(ev);
-  if (tpl) selectMeeting(tpl);
-  try { window.parent && window.parent.postMessage({ type: 'ci-event-selected', eventId: v }, '*'); } catch (e) {}
+  const tpl = v ? templateForEvent(ev) : null;
+  if (tpl) {
+    templateLocked = true;
+    selectedMeeting = MEETING_TYPES.find(m => m.id === tpl) || selectedMeeting;
+  } else {
+    templateLocked = false;
+  }
   renderEventPicker();
+  renderMeetingCards();
+  if (currentStep === 2) renderStep2();
   updateNav();
+  if (!opts || !opts.fromHost) {
+    try { window.parent && window.parent.postMessage({ type: 'ci-event-selected', eventId: v }, '*'); } catch (e) {}
+  }
 }
+function onEventChange(v) { applyEventSelection(v); }
+function unlockTemplate() { templateLocked = false; renderMeetingCards(); }
 window.addEventListener('message', function (e) {
   const d = e.data || {};
   if (d.type === 'ci-events' && Array.isArray(d.events)) {
     availableEvents = d.events;
-    if (d.selectedEventId && !selectedEventId) selectedEventId = d.selectedEventId;
-    if (selectedEventId) { const ev = allEventsWithMock().find(x => x.id === selectedEventId); if (ev) selectedEventTitle = ev.title; }
     renderEventPicker();
+    // Host injected (or changed) the selected event — run the FULL selection so
+    // the template auto-selects/locks and Step 2 prefills, same as the dropdown.
+    if (d.selectedEventId && d.selectedEventId !== selectedEventId) {
+      applyEventSelection(d.selectedEventId, { fromHost: true });
+    }
+  } else if (d.type === 'ci-do-print') {
+    window.print();
   }
 });
 
 // ── Initialize ────────────────────────────────
 function init() {
+  selectedMeeting = MEETING_TYPES.find(m => m.id === 'governing_body') || MEETING_TYPES[0];
   renderEventPicker();
   renderMeetingCards();
   setupDropZone();
@@ -1580,7 +1621,10 @@ function nextStep() {
     showGenerationOverlay(() => goToStep(3));
   }
   else if (currentStep === 3) {
-    window.print();
+    // Signing must be set up BEFORE printing/downloading — hand off to the
+    // Signature Tracker (host switches tabs and prefills the packet ID).
+    try { window.parent && window.parent.postMessage({ type: 'ci-open-signature-tracker', packetId: currentPacketId, eventId: selectedEventId }, '*'); } catch (e) {}
+    showToast('Set up signing in the Signature Tracker — print/download is available there.');
   }
 }
 
@@ -1615,16 +1659,21 @@ function updateNav() {
     btnNext.innerHTML = '⚡ Generate Packet';
   } else {
     btnNext.disabled = false;
-    btnNext.innerHTML = '🖨 Print / Export PDF';
+    btnNext.innerHTML = 'Set up Signing →';
   }
 }
 
 // ── Step 1: Meeting Cards ─────────────────────
 function renderMeetingCards() {
   const grid = document.getElementById('meetingGrid');
-  grid.innerHTML = MEETING_TYPES.map(m => `
-    <div class="meeting-card ${m.id === 'governing_body' ? 'selected' : ''}" data-id="${m.id}" onclick="selectMeeting('${m.id}')">
+  const selId = selectedMeeting ? selectedMeeting.id : 'governing_body';
+  grid.innerHTML = MEETING_TYPES.map(m => {
+    const isSel = m.id === selId;
+    const dim = templateLocked && !isSel;
+    return `
+    <div class="meeting-card ${isSel ? 'selected' : ''} ${dim ? 'locked-dim' : ''}" data-id="${m.id}" onclick="selectMeeting('${m.id}')">
       <div class="check-circle">✓</div>
+      ${isSel && templateLocked ? '<div class="lock-badge">🔒 Set by event</div>' : ''}
       <div class="card-icon">${m.icon}</div>
       <div class="card-title">${m.title}</div>
       <div class="card-desc">${m.desc}</div>
@@ -1632,17 +1681,16 @@ function renderMeetingCards() {
         ${m.tags.map(t => `<span class="card-tag ${t.type}">${t.label}</span>`).join('')}
       </div>
     </div>
-  `).join('');
-  
-  // Set default
-  selectMeeting('governing_body');
+  `; }).join('') + (templateLocked ? `<button type="button" class="change-tpl" onclick="unlockTemplate()">Change template</button>` : '');
 }
 
 function selectMeeting(id) {
-  selectedMeeting = MEETING_TYPES.find(m => m.id === id);
-  document.querySelectorAll('.meeting-card').forEach(c => {
-    c.classList.toggle('selected', c.dataset.id === id);
-  });
+  if (templateLocked && selectedMeeting && id !== selectedMeeting.id) {
+    showToast('Template is set by the selected event — use "Change template" to override.');
+    return;
+  }
+  selectedMeeting = MEETING_TYPES.find(m => m.id === id) || selectedMeeting;
+  renderMeetingCards();
   updateNav();
 }
 

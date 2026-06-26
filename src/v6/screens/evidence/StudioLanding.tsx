@@ -81,11 +81,16 @@ export function StudioLanding() {
   useEffect(() => () => roRef.current?.disconnect(), []);
   useEffect(() => { postEventsToStudio(); }, [postEventsToStudio]);
 
-  // When the studio's own event picker changes, keep the host's filing target in sync.
+  // When the studio's own event picker changes, keep the host's filing target in
+  // sync; and relay a print request from the Signature Tracker into the iframe
+  // (the host switches back to this tab first so the studio is visible to print).
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
       const d = e.data as { type?: string; eventId?: string } | undefined;
       if (d?.type === 'ci-event-selected' && typeof d.eventId === 'string') setEventId(d.eventId || eventId);
+      else if (d?.type === 'ci-print-packet') {
+        window.setTimeout(() => { try { iframeRef.current?.contentWindow?.postMessage({ type: 'ci-do-print' }, '*'); } catch { /* ignore */ } }, 450);
+      }
     };
     window.addEventListener('message', onMsg);
     return () => window.removeEventListener('message', onMsg);
