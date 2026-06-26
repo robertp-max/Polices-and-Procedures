@@ -221,15 +221,15 @@ body {
 }
 .meeting-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
   max-width: 1200px;
   width: 100%;
 }
 .meeting-card {
   position: relative;
-  padding: 24px;
-  border-radius: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
   border: 1px solid var(--studio-border);
   background: var(--studio-surface);
   cursor: pointer;
@@ -259,27 +259,31 @@ body {
 }
 .meeting-card.selected::before { opacity: 1; }
 .card-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
   background: linear-gradient(135deg, var(--teal-900), var(--teal-700));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  margin-bottom: 16px;
+  font-size: 13px;
+  margin-bottom: 8px;
 }
 .card-title {
   font-weight: 500;
-  font-size: 15px;
+  font-size: 12.5px;
   color: var(--studio-text-bright);
-  margin-bottom: 6px;
+  margin-bottom: 3px;
 }
 .card-desc {
-  font-size: 12px;
+  font-size: 10.5px;
   color: var(--studio-text-dim);
-  line-height: 1.5;
-  margin-bottom: 12px;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .card-meta {
   display: flex;
@@ -288,9 +292,9 @@ body {
 }
 .card-tag {
   display: inline-block;
-  padding: 3px 8px;
+  padding: 2px 6px;
   border-radius: 4px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -302,8 +306,8 @@ body {
 .card-tag.reg { background: rgba(0, 133, 64, 0.1); color: var(--green-500); border-color: rgba(0, 133, 64, 0.15); }
 .check-circle {
   position: absolute;
-  top: 16px; right: 16px;
-  width: 24px; height: 24px;
+  top: 10px; right: 10px;
+  width: 18px; height: 18px;
   border-radius: 50%;
   border: 2px solid var(--studio-border);
   display: flex;
@@ -857,6 +861,17 @@ textarea.field-input {
   .studio-nav, .config-sidebar, .preview-sidebar, .toast-container, .gen-overlay { display: none !important; }
   .rendered-page { box-shadow: none; border-radius: 0; page-break-after: always; }
 }
+/* ═══════════════════════════════════════════════
+   EMBEDDED MODE — rendered inline inside the app (?embed=1).
+   Drops the full-window 100vh caps so the host page scrolls naturally.
+   ═══════════════════════════════════════════════ */
+html.embed, html.embed body { height: auto; min-height: 0; overflow: visible; background: transparent; }
+html.embed .studio-nav { position: sticky; top: 0; }
+html.embed .studio-main { min-height: 0; }
+html.embed .config-sidebar,
+html.embed .config-main,
+html.embed .preview-sidebar,
+html.embed .preview-main { max-height: none; overflow: visible; }
 </style>
 </head>
 <body>
@@ -897,10 +912,6 @@ textarea.field-input {
      ═══════════════════════════════════════════════ -->
 <div class="studio-main">
   <div class="step-panel active select-panel" id="step1">
-    <div class="select-header">
-      <h1>What are we building today?</h1>
-      <p>Select a mandated meeting type. The Studio will configure the correct packet structure, required forms, signature blocks, and survey-defensible sections automatically.</p>
-    </div>
     <div class="meeting-grid" id="meetingGrid">
       <!-- Injected by JS -->
     </div>
@@ -952,6 +963,13 @@ textarea.field-input {
 <!-- ═══════════════════════════════════════════════
      APPLICATION LOGIC
      ═══════════════════════════════════════════════ -->
+<script>
+// Embedded mode: when rendered inside the app (?embed=1 or in an iframe),
+// flow naturally so the host page scrolls instead of clipping at 100vh.
+if (new URLSearchParams(location.search).has('embed') || window.self !== window.top) {
+  document.documentElement.classList.add('embed');
+}
+</script>
 <script>
 // ── Meeting Type Definitions ──────────────────
 const MEETING_TYPES = [
@@ -1396,13 +1414,7 @@ function renderStep2() {
 
   // Main area: Drop Zone
   document.getElementById('configMain').innerHTML = `
-    <div style="margin-bottom:32px;">
-      <h2 style="font-weight:300;font-size:28px;color:var(--studio-text-bright);margin-bottom:8px;">Upload Source Documents</h2>
-      <p style="color:var(--studio-text-dim);font-size:14px;line-height:1.6;">
-        Drop your data files, prior meeting minutes, reports, dashboards, or raw logs. The Studio will parse each document and automatically map content to the correct packet sections.
-      </p>
-    </div>
-    
+
     <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
       <div class="drop-icon">📄</div>
       <div class="drop-title">Drop files here or click to browse</div>

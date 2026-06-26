@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CheckCircle2, CloudUpload, ExternalLink, FileStack, Loader2, Upload, XCircle } from 'lucide-react';
+import { CheckCircle2, CloudUpload, ExternalLink, Loader2, Upload, XCircle } from 'lucide-react';
 import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
 import { useRegulatoryExecutionStore, type EvidenceDoc } from '@/policy/stores/regulatoryExecutionStore';
 import { CalendarApi, type EvidenceHealthResponse } from '@/policy/services/calendarApi';
@@ -44,6 +44,23 @@ export function StudioLanding() {
   );
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ filed: number; uploaded: number; failed: number } | null>(null);
+
+  // Embedded studio auto-grows to its content so the host page scrolls (no inner clipping).
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const roRef = useRef<ResizeObserver | null>(null);
+  const [studioH, setStudioH] = useState(960);
+  const handleStudioLoad = useCallback(() => {
+    try {
+      const doc = iframeRef.current?.contentDocument;
+      if (!doc) return;
+      const measure = () => { const h = doc.documentElement.scrollHeight || doc.body.scrollHeight; if (h) setStudioH(h + 12); };
+      measure();
+      roRef.current?.disconnect();
+      roRef.current = new ResizeObserver(measure);
+      roRef.current.observe(doc.documentElement);
+    } catch { /* cross-origin guard — keep fallback height */ }
+  }, []);
+  useEffect(() => () => roRef.current?.disconnect(), []);
 
   useEffect(() => {
     let on = true;
@@ -111,8 +128,6 @@ export function StudioLanding() {
       {/* Slim toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-hairline bg-surface-glass p-md shadow-rest">
         <div className="flex flex-wrap items-center gap-sm">
-          <FileStack className="h-icon-sm w-icon-sm text-brand-teal" />
-          <span className="text-sm font-medium text-ink">Evidence Packet Studio</span>
           <span className={`flex items-center gap-xs rounded-full border px-md py-xs text-[11px] ${driveReachable ? 'border-tone-teal-border bg-tone-teal-bg text-brand-teal-deep' : 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text'}`}>
             <span className={`h-2 w-2 rounded-full ${driveReachable ? 'bg-brand-teal' : 'bg-[#c74601]'}`} />
             Drive {driveReachable ? 'connected' : (driveHealth ? 'unavailable' : 'checking…')}
@@ -147,10 +162,12 @@ export function StudioLanding() {
 
       {/* Studio rendered inline (app-light-themed) */}
       <iframe
+        ref={iframeRef}
+        onLoad={handleStudioLoad}
         title="Evidence Packet Studio"
-        src={STUDIO_URL}
+        src={`${STUDIO_URL}?embed=1`}
         className="w-full rounded-lg border border-hairline bg-white shadow-rest"
-        style={{ minHeight: '82vh' }}
+        style={{ height: studioH, minHeight: '70vh' }}
       />
     </section>
   );

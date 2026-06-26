@@ -24,12 +24,8 @@ export function EvidenceStudio({ initialTab = 'library' }: { initialTab?: Eviden
 
   return (
     <section className="grid gap-lg" data-hash-id="evidence-center" data-route="/evidence" data-template="evidence">
-      <header className="rounded-lg border border-hairline bg-surface-glass p-lg shadow-rest">
-        <h1 className="text-2xl font-medium text-ink">Evidence Studio</h1>
-        <p className="mt-xs text-sm font-light text-secondary">
-          Browse the evidence drive and generate branded, survey-defensible packets.
-        </p>
-        <div className="mt-lg flex flex-wrap gap-sm" role="tablist" aria-label="Evidence Studio sections">
+      <header className="rounded-lg border border-hairline bg-surface-glass p-md shadow-rest">
+        <div className="flex flex-wrap gap-sm" role="tablist" aria-label="Evidence Studio sections">
           {TABS.map(({ id, label, sub, Icon }) => {
             const active = tab === id;
             return (
