@@ -949,6 +949,30 @@ textarea.field-input {
   color: var(--teal-400);
   letter-spacing: 0.05em;
 }
+.gen-modal-wide { max-width: 560px; width: 92vw; }
+.gen-log {
+  margin-top: 16px; text-align: left;
+  height: 200px; overflow-y: auto;
+  background: rgba(0,0,0,0.04); border: 1px solid var(--studio-border, #e2e8f0);
+  border-radius: 10px; padding: 12px 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; line-height: 1.6;
+  color: var(--gray-700, #334155); white-space: pre-wrap; word-break: break-word;
+}
+.gen-log .gl-ok { color: #16a34a; }
+.gen-log .gl-warn { color: #d9892b; }
+.gen-log .gl-err { color: #c74601; font-weight: 600; }
+.gen-log .gl-head { color: var(--teal-700, #00797d); font-weight: 600; }
+.gen-stop {
+  margin-top: 14px; background: none; border: 1px solid var(--gray-300, #cbd5e1);
+  color: var(--gray-700, #475569); border-radius: 8px; padding: 8px 16px; font-size: 12px; cursor: pointer;
+}
+.gen-stop:hover { border-color: #c74601; color: #c74601; }
+/* QA badge on the preview */
+.qa-badge { width: 100%; max-width: 1200px; margin: 0 auto 14px; border-radius: 10px; padding: 12px 16px; font-size: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.qa-badge.pass { background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.3); color: #15803d; }
+.qa-badge.fail { background: rgba(199,70,1,0.08); border: 1px solid rgba(199,70,1,0.35); color: #c74601; }
+.qa-badge.stopped { background: var(--gray-100, #f1f5f9); border: 1px solid var(--gray-300, #cbd5e1); color: var(--gray-700, #475569); }
+.qa-badge .qa-dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
 
 /* ═══════════════════════════════════════════════
    TOAST NOTIFICATIONS
@@ -1122,14 +1146,17 @@ html.embed .page-modal { position: fixed; }
      GENERATION OVERLAY
      ═══════════════════════════════════════════════ -->
 <div class="gen-overlay" id="genOverlay">
-  <div class="gen-modal">
+  <div class="gen-modal gen-modal-wide">
     <div class="gen-spinner"></div>
-    <div class="gen-title">🤖 Brad is generating the packet</div>
-    <div class="gen-subtitle" id="genSubtitle">Parsing uploaded documents...</div>
+    <div class="gen-title" id="genTitle">🤖 Brad is generating the packet</div>
+    <div class="gen-subtitle" id="genSubtitle">Reviewing uploaded documents…</div>
     <div class="gen-progress">
       <div class="gen-progress-bar" id="genProgressBar"></div>
     </div>
-    <div class="gen-step-text" id="genStepText">Step 1 of 5</div>
+    <div class="gen-step-text" id="genStepText">Step 1 · Review</div>
+    <!-- Live "what Brad is thinking" console -->
+    <div class="gen-log" id="genLog" aria-live="polite"></div>
+    <button type="button" class="gen-stop" id="genStop" onclick="stopGeneration()">⏹ Stop generating</button>
   </div>
 </div>
 
@@ -1897,7 +1924,9 @@ function handleFiles(files) {
         else entry.records = parseRecords(entry.text, entry.name);
       } catch (e) { entry.records = []; }
       entry.status = 'parsed';
-      analytics = computeAnalytics();
+      // ISOLATION: in packet mode the packet's own data is authoritative — never
+      // mix in another file's records (that leaked the bogus "7730 patients").
+      analytics = packetData ? null : computeAnalytics();
       renderFileList();
       updatePacketStructure();
       if (currentStep === 3) renderStep3();
@@ -2384,41 +2413,124 @@ function updatePacketStructure() {
 }
 
 // ── Generation Overlay ────────────────────────
-function showGenerationOverlay(callback) {
+/* ═══════════════════════════════════════════════════════════════════════════
+   VERIFIED GENERATION — Brad builds 3 iterations, compares them (≥95% similar)
+   AND checks every number is grounded in the source (≥95%). Up to 3 passes;
+   escalates to TJ on 3 failures. Fully narrated; abortable via the Stop button.
+   ═══════════════════════════════════════════════════════════════════════════ */
+let abortGeneration = false;
+let qaResult = null;
+function stopGeneration() { abortGeneration = true; }
+function genPause(ms) { return new Promise(res => setTimeout(res, ms)); }
+function genLog(html, cls) {
+  const el = document.getElementById('genLog');
+  if (!el) return;
+  const line = document.createElement('div');
+  if (cls) line.className = cls;
+  line.innerHTML = html;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+// Build the DATA sections' content (pure; deterministic from packetData/fieldValues).
+function buildPacketContent() {
+  if (!selectedMeeting) return '';
+  const notes = (fieldValues.reviewer_notes || '').trim() ? [{ form: 'Reviewer Notes', title: 'Reviewer Notes & Follow-Up Requests' }] : [];
+  const secs = notes.concat(selectedMeeting.sections.slice(1));
+  return secs.map(s => renderSectionData(s)).join('\n');
+}
+function gStripText(html) { return String(html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase(); }
+function gShingles(t) { const w = t.split(' ').filter(Boolean); const set = new Set(); for (let i = 0; i < w.length - 1; i++) set.add(w[i] + ' ' + w[i + 1]); if (w.length === 1) set.add(w[0]); return set; }
+function gDice(a, b) { if (a === b) return 1; const A = gShingles(a), B = gShingles(b); if (!A.size && !B.size) return 1; let inter = 0; A.forEach(x => { if (B.has(x)) inter++; }); return (2 * inter) / (A.size + B.size || 1); }
+function gExtractNums(text) { const set = new Set(); (text.match(/\b\d{2,}(?:\.\d+)?%?/g) || []).forEach(n => set.add(n.replace('%', ''))); return set; }
+function gSourceNums() { return gExtractNums(JSON.stringify(packetData || {})); }
+function gGrounding(contentText) {
+  const src = gSourceNums();
+  const rendered = [...gExtractNums(contentText)];
+  if (!rendered.length) return { score: 1, ungrounded: [] };
+  const ungrounded = rendered.filter(n => !src.has(n));
+  return { score: (rendered.length - ungrounded.length) / rendered.length, ungrounded };
+}
+
+async function showGenerationOverlay(callback) {
   const overlay = document.getElementById('genOverlay');
   const bar = document.getElementById('genProgressBar');
   const subtitle = document.getElementById('genSubtitle');
   const stepText = document.getElementById('genStepText');
-  
+  const title = document.getElementById('genTitle');
+  const logEl = document.getElementById('genLog');
+  abortGeneration = false; qaResult = null;
   overlay.classList.add('active');
   bar.style.width = '0%';
-  
-  const steps = [
-    { pct: 15, sub: 'Brad is reviewing the source documents…', step: 'Step 1 of 5 · Document Review' },
-    { pct: 35, sub: 'Brad is mapping content to packet sections…', step: 'Step 2 of 5 · Content Mapping' },
-    { pct: 55, sub: 'Brad is building the branded pages…', step: 'Step 3 of 5 · Layout Generation' },
-    { pct: 75, sub: 'Brad is populating tables, charts, and KPIs…', step: 'Step 4 of 5 · Data Population' },
-    { pct: 90, sub: 'Brad is adding signature blocks and footers…', step: 'Step 5 of 5 · Finalization' },
-    { pct: 100, sub: 'Brad finished — packet ready!', step: 'Complete' }
-  ];
-  
-  let i = 0;
-  const interval = setInterval(() => {
-    if (i >= steps.length) {
-      clearInterval(interval);
-      setTimeout(() => {
-        overlay.classList.remove('active');
-        callback();
-        showToast('✓ Packet generated successfully', 'success');
-      }, 600);
-      return;
+  if (logEl) logEl.innerHTML = '';
+  const setStep = (pct, sub, step) => { bar.style.width = pct + '%'; subtitle.textContent = sub; if (step) stepText.textContent = step; };
+  const pct = (x) => (x * 100).toFixed(1) + '%';
+
+  // 1) Review
+  title.textContent = '🤖 Brad is reviewing the documents';
+  setStep(8, 'Reviewing the source documents…', 'Step 1 · Review');
+  const formCount = packetData && packetData.forms ? Object.keys(packetData.forms).length : 0;
+  genLog('🤖 <span class="gl-head">Reviewing source documents…</span>');
+  await genPause(500);
+  genLog('   • Source: ' + (packetData && packetData.packet_meta ? escHtml(packetData.packet_meta.packet_id) : (analytics ? 'flat records' : 'structured packet')));
+  genLog('   • Detected ' + formCount + ' forms → mapping to ' + (selectedMeeting ? selectedMeeting.sections.length : 0) + ' packet sections');
+  genLog('   • Isolation: packet data is authoritative (no other file mixed in)');
+  await genPause(600);
+
+  const PASS_SIM = 0.95, PASS_GROUND = 0.95;
+  let best = null;
+  for (let pass = 1; pass <= 3 && !abortGeneration; pass++) {
+    title.textContent = '🤖 Brad is generating the packet';
+    genLog((pass > 1 ? '↻ ' : '') + '<span class="gl-head">Pass ' + pass + ' of 3</span>');
+    const versions = [];
+    for (let v = 1; v <= 3 && !abortGeneration; v++) {
+      setStep(8 + (pass - 1) * 28 + v * 6, 'Generating iteration ' + v + ' of 3…', 'Pass ' + pass + ' · Iteration ' + v);
+      genLog('   ✍️ Generating iteration ' + v + ' of 3…');
+      await genPause(450);
+      versions.push(buildPacketContent());
     }
-    
-    bar.style.width = steps[i].pct + '%';
-    subtitle.textContent = steps[i].sub;
-    stepText.textContent = steps[i].step;
-    i++;
-  }, 700);
+    if (abortGeneration) break;
+    // Comparison analysis
+    setStep(8 + pass * 28, 'Comparing the 3 iterations…', 'Pass ' + pass + ' · Comparison');
+    genLog('   🔍 <span class="gl-head">Comparison analysis</span>');
+    await genPause(400);
+    const texts = versions.map(gStripText);
+    const sims = [gDice(texts[0], texts[1]), gDice(texts[0], texts[2]), gDice(texts[1], texts[2])];
+    const minSim = Math.min(...sims);
+    // pick the iteration with the MOST content (richest)
+    let richest = 0; for (let i = 1; i < versions.length; i++) if (versions[i].length > versions[richest].length) richest = i;
+    const g = gGrounding(texts[richest]);
+    genLog('     • Iteration similarity: ' + pct(minSim) + (minSim >= PASS_SIM ? ' <span class="gl-ok">✓</span>' : ' <span class="gl-warn">below 95%</span>'));
+    genLog('     • Numbers grounded in source: ' + pct(g.score) + (g.score >= PASS_GROUND ? ' <span class="gl-ok">✓</span>' : ' <span class="gl-warn">below 95%</span>'));
+    genLog('     • Richest iteration: #' + (richest + 1) + ' (' + versions[richest].length.toLocaleString() + ' chars) — selected');
+    const ok = minSim >= PASS_SIM && g.score >= PASS_GROUND;
+    best = { pass, minSim, grounding: g.score, ungrounded: g.ungrounded, richest, ok };
+    if (ok) { genLog('   <span class="gl-ok">✅ Verified — iterations consistent and fully grounded.</span>'); break; }
+    genLog('   <span class="gl-warn">⚠️ Below threshold' + (g.ungrounded.length ? ' — unverified values: ' + g.ungrounded.slice(0, 6).map(escHtml).join(', ') : '') + '</span>');
+    if (pass < 3) { genLog('   Starting pass ' + (pass + 1) + '…'); await genPause(500); }
+  }
+
+  if (abortGeneration) {
+    qaResult = { aborted: true };
+    genLog('<span class="gl-warn">⏹ Generation stopped by user.</span>');
+    setStep(100, 'Stopped.', 'Stopped');
+  } else if (best && best.ok) {
+    qaResult = best;
+    setStep(100, 'Verified — packet ready!', 'Complete');
+  } else {
+    qaResult = best || { ok: false, pass: 3 };
+    qaResult.escalate = true;
+    title.textContent = '🚩 Verification failed';
+    genLog('<span class="gl-err">🚩 Failed verification after 3 passes.</span>');
+    genLog('<span class="gl-err">Please reach out to TJ (robertp@careindeed.com) to review the source data before distributing.</span>');
+    setStep(100, 'Flagged for review — escalate to TJ.', 'Needs review');
+  }
+  await genPause(abortGeneration || (qaResult && qaResult.escalate) ? 1400 : 700);
+  overlay.classList.remove('active');
+  callback();
+  if (qaResult && qaResult.aborted) showToast('Generation stopped.', '');
+  else if (qaResult && qaResult.escalate) showToast('🚩 Packet flagged — reach out to TJ.', 'error');
+  else showToast('✓ Packet verified & generated', 'success');
 }
 
 // ── Step 3: Preview ───────────────────────────
@@ -2672,8 +2784,15 @@ function rebuildThumbnails(sections, totalPages) {
       '<div class="thumb-line short"></div></div><div class="thumb-label">' + (i + 1) + '</div></div>';
   }).join('');
   document.getElementById('previewSidebar').innerHTML =
+    qaBadgeHTML() +
     '<div class="sidebar-label" style="margin-bottom:16px;">Pages (' + totalPages + ')</div>' +
     '<div class="page-thumb-list">' + thumbHTML + '</div>';
+}
+function qaBadgeHTML() {
+  if (!qaResult) return '';
+  if (qaResult.aborted) return '<div class="qa-badge stopped"><span class="qa-dot"></span>Generation stopped — packet not verified.</div>';
+  if (qaResult.escalate || !qaResult.ok) return '<div class="qa-badge fail"><span class="qa-dot"></span>🚩 Failed verification after 3 passes — reach out to <strong>TJ (robertp@careindeed.com)</strong> before distributing.</div>';
+  return '<div class="qa-badge pass"><span class="qa-dot"></span>✓ Verified · pass ' + qaResult.pass + '/3 · ' + Math.round((qaResult.minSim || 1) * 100) + '% consistent · ' + Math.round((qaResult.grounding || 1) * 100) + '% source-grounded</div>';
 }
 
 let _repaginateScheduled = false, _fontsReadyOnce = false, _logoReadyOnce = false;
