@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FolderOpen, Upload, FileStack } from 'lucide-react';
+import { FolderOpen, Upload, FileStack, ExternalLink } from 'lucide-react';
 import EvidenceFolderExplorer from './EvidenceFolderExplorer';
 import BradEvidenceIntake from './BradEvidenceIntake';
 import EvidencePacketStudio from '@/policy/evidence/packetStudio/EvidencePacketStudio';
@@ -39,7 +39,7 @@ export function EvidenceStudio({ initialTab = 'library' }: { initialTab?: Eviden
               <button
                 key={id}
                 role="tab"
-                aria-selected={active}
+                aria-selected={active ? 'true' : 'false'}
                 type="button"
                 onClick={() => setTab(id)}
                 className={`flex items-center gap-sm rounded-lg border px-lg py-sm text-left transition ${
@@ -62,7 +62,22 @@ export function EvidenceStudio({ initialTab = 'library' }: { initialTab?: Eviden
       {/* Panes stay mounted; only the active one is visible. */}
       <div className={tab === 'library' ? '' : 'hidden'}><EvidenceFolderExplorer /></div>
       <div className={tab === 'intake' ? '' : 'hidden'}><BradEvidenceIntake /></div>
-      <div className={tab === 'packet' ? '' : 'hidden'}><EvidencePacketStudio /></div>
+      <div className={tab === 'packet' ? '' : 'hidden'}>
+        <div className="mb-lg flex flex-wrap items-center justify-between gap-md rounded-lg border border-hairline bg-surface-glass p-lg shadow-rest">
+          <div>
+            <h2 className="text-h3 font-medium text-ink">Branded Packet Studio</h2>
+            <p className="mt-xs text-sm font-light text-secondary">Full survey-defensible PDF generator — QAPI monthly / quarterly / annual, Governing Body, Clinical Record Review, and more, with the branded cover, sections, signature blocks, and print/export.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => window.open('/care_indeed_pdf_studio.html', '_blank', 'noopener,noreferrer')}
+            className="flex items-center gap-sm rounded-lg border border-brand-teal bg-brand-teal px-lg py-sm text-sm font-medium text-white hover:bg-brand-teal-deep"
+          >
+            <ExternalLink className="h-icon-sm w-icon-sm" /> Launch Packet Studio
+          </button>
+        </div>
+        <EvidencePacketStudio />
+      </div>
     </section>
   );
 }
