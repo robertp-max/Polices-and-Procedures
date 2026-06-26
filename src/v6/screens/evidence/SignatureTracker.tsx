@@ -109,8 +109,9 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
       '.preview-sidebar,.page-thumb,.studio-nav,.toast-container,.gen-overlay,.page-modal{display:none!important;}' +
       // Disable blur/backdrop effects for print — they rasterize slowly and can blank the preview.
       '*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}' +
-      '.rendered-page{zoom:1!important;box-shadow:none!important;border-radius:0!important;margin:0!important;overflow:visible!important;height:auto!important;page-break-after:always;break-after:page;}' +
-      '.rendered-page:last-child{page-break-after:auto;break-after:auto;}.rp-glass,.rp-header{break-inside:avoid;}</style></head><body>' +
+      // Pages are PRE-PAGINATED to fixed 8.5x11 — lock them, one sheet each.
+      '.rendered-page{zoom:1!important;box-shadow:none!important;border-radius:0!important;margin:0!important;width:8.5in!important;height:11in!important;overflow:hidden!important;page-break-after:always;break-after:page;break-inside:avoid;}' +
+      '.rendered-page:last-child{page-break-after:auto;break-after:auto;}</style></head><body>' +
       printableHtml + '</body></html>'
     );
     w.document.close();

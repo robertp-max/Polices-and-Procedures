@@ -781,9 +781,9 @@ textarea.field-input {
    ═══════════════════════════════════════════════ */
 .rendered-page {
   width: var(--page-width);
-  min-height: var(--page-height);
+  height: var(--page-height);        /* LOCKED to 8.5x11 — never grows */
+  overflow: hidden;                  /* clip, content is pre-paginated */
   border-radius: 14px;
-  overflow: hidden;
   background:
     radial-gradient(circle at 18% 18%, rgba(255,255,255,0.95), transparent 34%),
     radial-gradient(circle at 82% 78%, rgba(196,244,245,0.85), transparent 42%),
@@ -793,6 +793,8 @@ textarea.field-input {
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
+/* The cover keeps its bespoke growable layout so a long title can't clip. */
+.rendered-page.rp-cover { height: auto; min-height: var(--page-height); }
 .rendered-page::before {
   content: "";
   position: absolute;
@@ -815,10 +817,22 @@ textarea.field-input {
   position: relative;
   z-index: 2;
   padding: 40px 50px;
-  min-height: calc(var(--page-height) - 14px);
+  height: calc(var(--page-height) - 14px);   /* LOCKED */
   display: flex;
   flex-direction: column;
 }
+.rendered-page.rp-cover .rp-inner { height: auto; min-height: calc(var(--page-height) - 14px); }
+/* Flowed content lives here; flex:1 lets the footer pin to the bottom and
+   min-height:0 makes the flex child actually clip instead of expanding. */
+.rp-body { flex: 1 1 auto; min-height: 0; overflow: hidden; }
+.rp-continued { font-size: 16px; font-weight: 300; color: var(--gray-500); letter-spacing: 0.04em; }
+/* Offscreen measuring host — never inside the carousel, forced zoom:1, fixed page. */
+.rp-measure { position: absolute; left: -100000px; top: 0; width: var(--page-width); pointer-events: none; visibility: hidden; z-index: -1; }
+.rp-measure .rp-measure-page { zoom: 1 !important; height: var(--page-height); overflow: hidden; box-shadow: none; }
+.rp-measure .rp-measure-page .rp-inner { height: calc(var(--page-height) - 14px); }
+/* Measure body sizes to its CONTENT (NOT flex-filled) so scrollHeight is the real
+   content height — flex:1 would make scrollHeight always equal the slot height. */
+.rp-measure .rp-measure-body { flex: 0 0 auto !important; height: auto !important; min-height: 0; overflow: visible; }
 .rp-header {
   display: flex;
   justify-content: space-between;
@@ -827,7 +841,7 @@ textarea.field-input {
   padding-bottom: 16px;
   border-bottom: 1px solid rgba(0, 121, 125, 0.15);
 }
-.rp-logo { width: 140px; opacity: 0.95; }
+.rp-logo { width: 140px; height: 28px; object-fit: contain; opacity: 0.95; }
 .rp-header-meta { text-align: right; color: var(--teal-900); }
 .rp-packet-id {
   font-weight: 500; font-size: 11px;
@@ -866,7 +880,7 @@ textarea.field-input {
   background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(229,254,255,0.6));
 }
 .rp-footer {
-  margin-top: auto; padding-top: 16px;
+  margin-top: auto; padding-top: 16px; min-height: 44px;
   border-top: 1px solid rgba(0, 121, 125, 0.15);
   display: flex; justify-content: space-between;
   align-items: flex-end; font-size: 10px;
@@ -1002,15 +1016,16 @@ textarea.field-input {
     box-shadow: none !important;
     border-radius: 0 !important;
     margin: 0 !important;
-    /* Don't clip — let a long section flow onto additional sheets. */
-    overflow: visible !important;
-    height: auto !important;
+    /* Pages are PRE-PAGINATED to fixed 8.5x11 — lock them, one sheet each. */
+    width: var(--page-width) !important;
+    height: var(--page-height) !important;
+    overflow: hidden !important;
     page-break-after: always;
     break-after: page;
+    break-inside: avoid;
   }
+  .rendered-page.rp-cover { height: var(--page-height) !important; } /* cover = one sheet */
   .rendered-page:last-child { page-break-after: auto; break-after: auto; }
-  /* Keep inner blocks intact across page breaks where possible. */
-  .rp-glass, .rp-header { break-inside: avoid; }
 }
 /* ═══════════════════════════════════════════════
    EMBEDDED MODE — rendered inline inside the app (?embed=1).
@@ -1487,7 +1502,7 @@ function printPacket() {
   if (!pagesEl || !pagesEl.innerHTML.trim()) { showToast('Generate the packet first.', 'error'); return; }
   const styles = Array.from(document.querySelectorAll('style')).map(s => s.outerHTML).join('\n');
   const title = (document.title || 'Care Indeed Packet').replace(/[\\/:*?"<>|]/g, ' ').trim();
-  const w = window.open('', '_blank', 'noopener');
+  const w = window.open('', '_blank');   // NOT 'noopener' — that returns null and we can't write
   if (!w) { showToast('Pop-up blocked — allow pop-ups for this site to download the PDF.', 'error'); return; }
   w.document.open();
   w.document.write(
@@ -1496,9 +1511,9 @@ function printPacket() {
       '@page{size:letter;margin:0;}' +
       'html,body{margin:0!important;padding:0!important;background:#fff!important;}' +
       '.preview-sidebar,.page-thumb,.studio-nav,.toast-container,.gen-overlay,.page-modal{display:none!important;}' +
-      '.rendered-page{zoom:1!important;box-shadow:none!important;border-radius:0!important;margin:0!important;overflow:visible!important;height:auto!important;page-break-after:always;break-after:page;}' +
+      '*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}' +
+      '.rendered-page{zoom:1!important;box-shadow:none!important;border-radius:0!important;margin:0!important;width:8.5in!important;height:11in!important;overflow:hidden!important;page-break-after:always;break-after:page;break-inside:avoid;}' +
       '.rendered-page:last-child{page-break-after:auto;break-after:auto;}' +
-      '.rp-glass,.rp-header{break-inside:avoid;}' +
     '</style></head><body>' + pagesEl.innerHTML + '</body></html>'
   );
   w.document.close();
@@ -2224,10 +2239,286 @@ function showGenerationOverlay(callback) {
 }
 
 // ── Step 3: Preview ───────────────────────────
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGINATOR — locks every section page to fixed 8.5x11 (816x1056 px @96dpi) and
+   splits long sections across framed continuation pages. Cover is exempt.
+   Measures offscreen at zoom:1 (carousel uses zoom:0.42); cumulative scrollHeight.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const PAGINATE_SAFETY_PX = 6;
+const MAX_PAGES_PER_SECTION = 80;
+const RP_LOGO_HTML = '<img class="rp-logo" src="/ci-logo-gray.png" alt="Care Indeed"/>';
+
+function rpHeaderHTML(sec) {
+  return '<div class="rp-header">' + RP_LOGO_HTML +
+    '<div class="rp-header-meta"><div class="rp-packet-id">' + escHtml(sec.form) + '</div>' +
+    '<div class="rp-page-title">' + escHtml(sec.title) + '</div></div></div>';
+}
+function rpH2RuleHTML(sec, cont) {
+  return '<div class="rp-h2">' + escHtml(sec.title) + (cont ? ' <span class="rp-continued">(cont.)</span>' : '') +
+    '</div><div class="rp-title-rule"></div>';
+}
+function rpFooterHTML(pageNum) {
+  return '<div class="rp-footer"><div><strong style="color:var(--teal-700);font-weight:500;">Care Indeed Home Health</strong>' +
+    '<br/>890 Santa Cruz Ave # B, Menlo Park, CA 94025</div>' +
+    '<div style="text-align:right;font-weight:500;color:var(--teal-900);">Packet ' + escHtml(currentPacketId || '') + '<br/>Page ' + pageNum + '</div></div>';
+}
+
+let _measureHost = null;
+function ensureMeasureHost() {
+  if (_measureHost && document.body.contains(_measureHost)) return _measureHost;
+  const host = document.createElement('div');
+  host.className = 'rp-measure';
+  host.innerHTML = '<div class="rendered-page rp-measure-page"><div class="rp-top-rule"></div>' +
+    '<div class="rp-inner"><div class="rp-measure-chrome"></div><div class="rp-body rp-measure-body"></div>' +
+    '<div class="rp-measure-foot"></div></div></div>';
+  document.body.appendChild(host);
+  _measureHost = host;
+  return host;
+}
+function destroyMeasureHost() { if (_measureHost) { _measureHost.remove(); _measureHost = null; } }
+
+// Usable body height = inner content box (clientHeight - padding) minus the
+// chrome (header+h2+rule) and footer. Computed (not read from the body rect),
+// because the measure body is content-sized, not flex-filled.
+function measureAvailBody(sec, cont) {
+  const host = ensureMeasureHost();
+  const chrome = host.querySelector('.rp-measure-chrome');
+  const foot = host.querySelector('.rp-measure-foot');
+  const inner = host.querySelector('.rp-inner');
+  chrome.innerHTML = rpHeaderHTML(sec) + rpH2RuleHTML(sec, cont);
+  host.querySelector('.rp-measure-body').innerHTML = '';
+  foot.innerHTML = rpFooterHTML(8888);
+  void inner.offsetHeight;
+  const cs = getComputedStyle(inner);
+  const usable = inner.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  return Math.floor(usable - chrome.offsetHeight - foot.offsetHeight) - PAGINATE_SAFETY_PX;
+}
+function fitCount(sec, cont, nodes, avail) {
+  const host = ensureMeasureHost();
+  host.querySelector('.rp-measure-chrome').innerHTML = rpHeaderHTML(sec) + rpH2RuleHTML(sec, cont);
+  const body = host.querySelector('.rp-measure-body');
+  body.innerHTML = '';
+  let n = 0;
+  for (let i = 0; i < nodes.length; i++) {
+    body.appendChild(nodes[i].cloneNode(true));
+    if (body.scrollHeight > avail) return n === 0 ? 1 : n;
+    n++;
+  }
+  return n;
+}
+function nodeFitsAlone(sec, cont, node, avail) {
+  const host = ensureMeasureHost();
+  host.querySelector('.rp-measure-chrome').innerHTML = rpHeaderHTML(sec) + rpH2RuleHTML(sec, cont);
+  const body = host.querySelector('.rp-measure-body');
+  body.innerHTML = '';
+  body.appendChild(node.cloneNode(true));
+  return body.scrollHeight <= avail;
+}
+
+function parseBlocks(html) {
+  const t = document.createElement('div');
+  t.innerHTML = html;
+  return Array.from(t.children);
+}
+function pickSplitContainer(node) {
+  const kids = Array.from(node.children).filter(c => c.nodeType === 1);
+  if (kids.length === 1) return kids[0].children.length > 1 ? kids[0] : node;
+  const tall = kids.find(c => c.children.length > 1 && /grid|flex/.test(getComputedStyle(c).display));
+  return tall || node;
+}
+function splitOversized(sec, node, avail) {
+  const table = node.matches('table') ? node : node.querySelector('table');
+  if (table && table.tBodies.length && table.tBodies[0].rows.length > 1) return splitTableNode(sec, node, table, avail);
+  const list = node.matches('ol,ul') ? node : node.querySelector('ol,ul');
+  if (list && list.children.length > 1) return splitListNode(sec, node, list, avail);
+  const container = pickSplitContainer(node);
+  if (container && container.children.length > 1) return splitChildrenNode(sec, node, container, avail);
+  return [scaleNodeToFit(node, avail)];
+}
+function splitTableNode(sec, glass, table, avail) {
+  const thead = table.querySelector('thead');
+  const rows = Array.from(table.tBodies[0].rows);
+  const preamble = [], trailing = [];
+  let seenTable = false;
+  for (const ch of glass.children) {
+    if (ch === table || ch.contains(table)) { seenTable = true; continue; }
+    (seenTable ? trailing : preamble).push(ch);
+  }
+  const tableStyle = table.getAttribute('style') || '';
+  const out = [];
+  let i = 0, isFirst = true, guard = 0;
+  while (i < rows.length) {
+    if (++guard > MAX_PAGES_PER_SECTION) break;
+    const frag = glass.cloneNode(false);
+    if (isFirst) preamble.forEach(p => frag.appendChild(p.cloneNode(true)));
+    const t = document.createElement('table');
+    if (tableStyle) t.setAttribute('style', tableStyle);
+    if (thead) t.appendChild(thead.cloneNode(true));
+    const tb = document.createElement('tbody');
+    t.appendChild(tb);
+    frag.appendChild(t);
+    let added = 0;
+    while (i < rows.length) {
+      tb.appendChild(rows[i].cloneNode(true));
+      if (!nodeFitsAlone(sec, !isFirst, frag, avail)) {
+        if (added === 0) { i++; added = 1; break; }
+        tb.removeChild(tb.lastElementChild);
+        break;
+      }
+      i++; added++;
+    }
+    if (i >= rows.length) trailing.forEach(p => frag.appendChild(p.cloneNode(true)));
+    out.push(nodeFitsAlone(sec, !isFirst, frag, avail) ? frag : scaleNodeToFit(frag, avail));
+    isFirst = false;
+  }
+  return out.length ? out : [glass];
+}
+function splitListNode(sec, glass, list, avail) {
+  const tag = list.tagName.toLowerCase();
+  const items = Array.from(list.children);
+  const preamble = Array.from(glass.children).filter(c => c !== list && !c.contains(list));
+  const listStyle = list.getAttribute('style') || '';
+  const out = [];
+  let i = 0, isFirst = true, startNum = 1, guard = 0;
+  while (i < items.length) {
+    if (++guard > MAX_PAGES_PER_SECTION) break;
+    const frag = glass.cloneNode(false);
+    if (isFirst) preamble.forEach(p => frag.appendChild(p.cloneNode(true)));
+    const l = document.createElement(tag);
+    if (listStyle) l.setAttribute('style', listStyle);
+    if (tag === 'ol') l.setAttribute('start', String(startNum));
+    frag.appendChild(l);
+    let added = 0;
+    while (i < items.length) {
+      l.appendChild(items[i].cloneNode(true));
+      if (!nodeFitsAlone(sec, !isFirst, frag, avail)) {
+        if (added === 0) { i++; added = 1; break; }
+        l.removeChild(l.lastElementChild);
+        break;
+      }
+      i++; added++; startNum++;
+    }
+    out.push(nodeFitsAlone(sec, !isFirst, frag, avail) ? frag : scaleNodeToFit(frag, avail));
+    isFirst = false;
+  }
+  return out.length ? out : [glass];
+}
+function splitChildrenNode(sec, node, container, avail) {
+  const kids = Array.from(container.children);
+  const makeFrag = (subset, isFirst) => {
+    const frag = node.cloneNode(false);
+    if (container === node) {
+      subset.forEach(k => frag.appendChild(k.cloneNode(true)));
+    } else {
+      if (isFirst) { for (const ch of node.children) { if (ch !== container) frag.appendChild(ch.cloneNode(true)); } }
+      const cClone = container.cloneNode(false);
+      subset.forEach(k => cClone.appendChild(k.cloneNode(true)));
+      frag.appendChild(cClone);
+    }
+    return frag;
+  };
+  const out = [];
+  let i = 0, isFirst = true, guard = 0;
+  while (i < kids.length) {
+    if (++guard > MAX_PAGES_PER_SECTION) break;
+    let take = 1;
+    while (i + take <= kids.length) {
+      const frag = makeFrag(kids.slice(i, i + take), isFirst);
+      if (!nodeFitsAlone(sec, !isFirst, frag, avail)) { take = Math.max(1, take - 1); break; }
+      if (i + take === kids.length) break;
+      take++;
+    }
+    let frag = makeFrag(kids.slice(i, i + take), isFirst);
+    if (take === 1 && !nodeFitsAlone(sec, !isFirst, frag, avail)) frag = scaleNodeToFit(frag, avail);
+    out.push(frag);
+    i += take; isFirst = false;
+  }
+  return out.length ? out : [node];
+}
+function scaleNodeToFit(node, avail) {
+  const host = ensureMeasureHost();
+  const body = host.querySelector('.rp-measure-body');
+  body.innerHTML = ''; body.appendChild(node.cloneNode(true));
+  const h = body.scrollHeight || 1;
+  const scale = Math.max(0.4, Math.min(1, (avail - 2) / h));
+  body.innerHTML = '';
+  if (scale >= 1) return node;
+  const wrap = document.createElement('div');
+  wrap.setAttribute('style', 'zoom:' + scale.toFixed(3) + ';');
+  wrap.appendChild(node.cloneNode(true));
+  return wrap;
+}
+
+// Paginate ONE section → { pages:[{nodes,cont}], nextPageNumber }.
+function paginateSection(section, startingPageNumber) {
+  const sec = { form: section.form || '', title: section.title || '' };
+  let queue = parseBlocks(renderSectionData(section));
+  if (!queue.length) queue = parseBlocks('<div class="rp-glass"><p class="rp-p" style="margin:0;">No content.</p></div>');
+  const pages = [];
+  let pageNum = startingPageNumber, cont = false, guard = 0;
+  while (queue.length) {
+    if (++guard > MAX_PAGES_PER_SECTION) break;
+    const avail = measureAvailBody(sec, cont);
+    if (!nodeFitsAlone(sec, cont, queue[0], avail)) {
+      const frags = splitOversized(sec, queue[0], avail);
+      queue.splice(0, 1, ...frags);
+    }
+    const n = Math.max(1, fitCount(sec, cont, queue, avail));
+    pages.push({ nodes: queue.slice(0, n), cont });
+    queue = queue.slice(n);
+    pageNum++; cont = true;
+  }
+  return { pages, nextPageNumber: pageNum };
+}
+function emitFramedPage(section, pageDesc, footerPageNum, domIndex) {
+  const sec = { form: section.form || '', title: section.title || '' };
+  const bodyHTML = pageDesc.nodes.map(n => n.outerHTML).join('');
+  return '<div class="rendered-page" id="page-' + domIndex + '" data-page-index="' + domIndex + '"' +
+    ' style="margin-bottom:32px;" onclick="openPageModal(' + domIndex + ')"><div class="rp-top-rule"></div>' +
+    '<div class="rp-inner">' + rpHeaderHTML(sec) + rpH2RuleHTML(sec, pageDesc.cont) +
+    '<div class="rp-body">' + bodyHTML + '</div>' + rpFooterHTML(footerPageNum) + '</div></div>';
+}
+
+let sectionFirstDomIndex = [];
+function rebuildThumbnails(m, totalPages) {
+  const thumbHTML = m.sections.map((s, i) => {
+    const dom = sectionFirstDomIndex[i] != null ? sectionFirstDomIndex[i] : i;
+    return '<div class="page-thumb ' + (i === 0 ? 'active' : '') + '" onclick="scrollToPage(' + dom + ')" data-page="' + dom + '">' +
+      '<div class="thumb-top-rule"></div><div class="thumb-lines"><div class="thumb-line title"></div><div class="thumb-line med"></div>' +
+      '<div class="thumb-line"></div><div class="thumb-line short"></div><div class="thumb-line"></div><div class="thumb-line med"></div>' +
+      '<div class="thumb-line short"></div></div><div class="thumb-label">' + (i + 1) + '</div></div>';
+  }).join('');
+  document.getElementById('previewSidebar').innerHTML =
+    '<div class="sidebar-label" style="margin-bottom:16px;">Pages (' + totalPages + ')</div>' +
+    '<div class="page-thumb-list">' + thumbHTML + '</div>';
+}
+
+let _repaginateScheduled = false, _fontsReadyOnce = false, _logoReadyOnce = false;
+function scheduleRepaginate() {
+  const fontsReady = !(document.fonts && document.fonts.status !== 'loaded');
+  const logo = document.querySelector('#previewMain .rp-logo');
+  const logoReady = !logo || logo.complete;
+  if ((fontsReady || _fontsReadyOnce) && (logoReady || _logoReadyOnce)) return;
+  if (_repaginateScheduled) return;
+  _repaginateScheduled = true;
+  const waits = [];
+  if (!fontsReady && document.fonts) waits.push(document.fonts.ready);
+  if (!logoReady && logo.decode) waits.push(logo.decode().catch(() => {}));
+  Promise.all(waits).then(() => {
+    _repaginateScheduled = false; _fontsReadyOnce = true; _logoReadyOnce = true;
+    if (currentStep !== 3 || !selectedMeeting) return;
+    renderStep3();
+    try {
+      const pm = document.getElementById('previewMain');
+      if (currentPacketId && pm && window.parent) window.parent.postMessage({ type: 'ci-packet-content', packetId: currentPacketId, title: document.title, html: pm.innerHTML }, '*');
+    } catch (e) {}
+  });
+}
+
 function renderStep3() {
   if (!selectedMeeting) return;
   const m = selectedMeeting;
-  
+
   const q = fieldValues.quarter || 'Q2';
   const yr = fieldValues.year || '2026';
   const _md = fieldValues.meeting_date;
@@ -2235,35 +2526,14 @@ function renderStep3() {
   const time = fieldValues.meeting_time || '10:00 AM – 12:00 PM';
   const location = fieldValues.location || 'Conference Room / Zoom Hybrid';
   const chair = fieldValues.chair || 'TBD';
-  
-  // Render page thumbnails
-  const thumbHTML = m.sections.map((s, i) => `
-    <div class="page-thumb ${i === 0 ? 'active' : ''}" onclick="scrollToPage(${i})" data-page="${i}">
-      <div class="thumb-top-rule"></div>
-      <div class="thumb-lines">
-        <div class="thumb-line title"></div>
-        <div class="thumb-line med"></div>
-        <div class="thumb-line"></div>
-        <div class="thumb-line short"></div>
-        <div class="thumb-line"></div>
-        <div class="thumb-line med"></div>
-        <div class="thumb-line short"></div>
-      </div>
-      <div class="thumb-label">${i + 1}</div>
-    </div>
-  `).join('');
-  
-  document.getElementById('previewSidebar').innerHTML = `
-    <div class="sidebar-label" style="margin-bottom:16px;">Pages (${m.sections.length})</div>
-    <div class="page-thumb-list">${thumbHTML}</div>
-  `;
-  
-  // Render cover page + placeholder pages
+
+  ensureMeasureHost();
+  sectionFirstDomIndex = [0];   // section 0 (cover) → DOM page 0
   let pagesHTML = '';
-  
-  // Cover Page
+
+  // Cover Page (EXEMPT from the fixed-height lock via .rp-cover)
   pagesHTML += `
-    <div class="rendered-page" id="page-0" data-page-index="0" style="margin-bottom:32px;" onclick="openPageModal(0)">
+    <div class="rendered-page rp-cover" id="page-0" data-page-index="0" style="margin-bottom:32px;" onclick="openPageModal(0)">
       <div class="rp-top-rule"></div>
       <div class="rp-inner" style="padding:62px 72px 54px;justify-content:space-between;">
         <header style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:88px;">
@@ -2313,55 +2583,22 @@ function renderStep3() {
     </div>
   `;
   
-  // Remaining section pages
-  m.sections.slice(1).forEach((s, idx) => {
-    const pageNum = idx + 2;
-    pagesHTML += `
-      <div class="rendered-page" id="page-${idx + 1}" data-page-index="${idx + 1}" style="margin-bottom:32px;" onclick="openPageModal(${idx + 1})">
-        <div class="rp-top-rule"></div>
-        <div class="rp-inner">
-          <div class="rp-header">
-            <img class="rp-logo" src="/ci-logo-gray.png" alt="Care Indeed" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'140\\\' height=\\\'28\\\'><text x=\\\'0\\\' y=\\\'20\\\' font-family=\\\'sans-serif\\\' font-size=\\\'20\\\' font-weight=\\\'bold\\\' fill=\\\'%23004142\\\'>Care Indeed</text></svg>'"/>
-            <div class="rp-header-meta">
-              <div class="rp-packet-id">${s.form}</div>
-              <div class="rp-page-title">${s.title}</div>
-            </div>
-          </div>
-          
-          <div class="rp-h2">${s.title}</div>
-          <div class="rp-title-rule"></div>
-          
-          ${renderSectionData(s)}
-
-          ${s.form === 'Signatures' || s.form.includes('Signature') ? `
-            <div class="rp-glass" style="margin-top:auto;">
-              <div class="rp-h3">Approval Signatures</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:16px;">
-                ${[1,2,3,4].map(n => `
-                  <div style="border-top:1px solid var(--teal-700);padding-top:8px;">
-                    <div style="font-weight:500;font-size:11px;text-transform:uppercase;color:var(--teal-700);letter-spacing:0.05em;margin-bottom:24px;">
-                      Signature Line ${n}
-                    </div>
-                    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--gray-900);">
-                      <span>_________________________</span>
-                      <span>Date: ___/___/______</span>
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          ` : ''}
-          
-          <div class="rp-footer">
-            <div><strong style="color:var(--teal-700);font-weight:500;">Care Indeed Home Health</strong><br/>890 Santa Cruz Ave # B, Menlo Park, CA 94025</div>
-            <div style="text-align:right;font-weight:500;color:var(--teal-900);">Packet ${currentPacketId || ''}<br/>Page ${pageNum}</div>
-          </div>
-        </div>
-      </div>
-    `;
+  // Section pages — paginate each section into fixed 8.5x11 pages (cover = page 1).
+  let footerPageNum = 2;   // first section page prints "Page 2"
+  let domIndex = 1;        // cover is DOM page-0
+  m.sections.slice(1).forEach((s) => {
+    sectionFirstDomIndex.push(domIndex);
+    const { pages } = paginateSection(s, footerPageNum);
+    pages.forEach((pg) => {
+      pagesHTML += emitFramedPage(s, pg, footerPageNum, domIndex);
+      footerPageNum++; domIndex++;
+    });
   });
-  
+
+  const totalPages = domIndex;   // cover + all emitted section pages
   document.getElementById('previewMain').innerHTML = pagesHTML;
+  rebuildThumbnails(m, totalPages);
+  destroyMeasureHost();
 
   // Auto-name the exported PDF "EVENT NAME DATE" — browsers use document.title
   // as the default Save-as / print filename.
@@ -2371,13 +2608,15 @@ function renderStep3() {
 
   // Stash the rendered packet to the host on EVERY generate (keyed by packet id)
   // so it can be printed from the Signature Tracker even after this iframe is
-  // re-rendered on a tab switch (which clears the live preview). Without this,
-  // reaching the tracker by clicking its tab yields a blank PDF.
+  // re-rendered on a tab switch (which clears the live preview).
   try {
     if (currentPacketId && window.parent) {
       window.parent.postMessage({ type: 'ci-packet-content', packetId: currentPacketId, title: document.title, html: pagesHTML }, '*');
     }
   } catch (e) {}
+
+  // Corrective re-paginate once fonts + logo settle (metrics can shift).
+  scheduleRepaginate();
 }
 
 function scrollToPage(index) {
