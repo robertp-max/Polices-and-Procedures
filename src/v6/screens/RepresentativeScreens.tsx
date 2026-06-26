@@ -39,6 +39,14 @@ import { UiStateProvider } from '@/policy/journey/lib/uiState';
 type RouteLike = V6RouteDefinition;
 type BasicRow = Record<string, string>;
 
+function pickMotionVariant(seed: string, variants: string[]): string {
+  let hash = 0;
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = ((hash << 5) - hash + seed.charCodeAt(index)) | 0;
+  }
+  return variants[Math.abs(hash) % variants.length];
+}
+
 const displayAcronyms: Record<string, string> = {
   capa: 'CAPA',
   ces: 'CES',
@@ -1616,8 +1624,8 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
   const overlay = searchParams.get('v6-overlay');
   const pageTransitionClass = useMemo(() => {
     const variants = ['v6-page-transition--rise', 'v6-page-transition--slide', 'v6-page-transition--scale'];
-    return variants[Math.floor(Math.random() * variants.length)];
-  }, [location.key]);
+    return pickMotionVariant(`${location.key}:${location.pathname}:${location.search}`, variants);
+  }, [location.key, location.pathname, location.search]);
 
   if (overlay === 'drawer-system') return <OverlaySystemScreen />;
 
@@ -1708,10 +1716,10 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <EvidenceStudio initialTab="library" />;
       break;
     case 'evidence-intake':
-      child = <EvidenceStudio initialTab="intake" />;
+      child = <EvidenceStudio initialTab="studio" />;
       break;
     case 'evidence-packet-studio':
-      child = <EvidenceStudio initialTab="packet" />;
+      child = <EvidenceStudio initialTab="studio" />;
       break;
     case 'form-viewer':
       child = <FormWorkspaceScreen />;
@@ -2617,7 +2625,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
           )}
           onMouseLeave={isCesCalendar ? () => setActiveEventKey(null) : undefined}
         >
-          <div className={cx('flex flex-wrap items-center justify-between gap-lg', isCesCalendar ? 'mb-2xl' : 'mb-xl')}>
+          {!isCesCalendar && <div className={cx('flex flex-wrap items-center justify-between gap-lg', 'mb-xl')}>
             <div className="inline-flex rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs">
               {['Day', 'Week', 'Month'].map((label) => (
                 <button
@@ -2638,51 +2646,69 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                 <CalendarFilterButton key={label} label={label} />
               ))}
             </div>
-          </div>
+          </div>}
           {isCesCalendar ? (
             <>
               <div className="mb-lg">
-                <div className="flex flex-wrap items-end justify-between gap-md">
+                <div className="flex flex-wrap items-start justify-between gap-lg">
                   <div>
                     <h2 className="text-h2 font-medium text-ink">{activeMonthLabel} {cesYear} CES Calendar</h2>
                     <p className="mt-xs text-sm text-muted">{config.legend}</p>
                   </div>
-                  <div className="flex flex-wrap gap-xs rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs">
-                    {cesMonthOptions.map((month) => (
-                      <button
-                        aria-current={month === activeCesMonth ? 'true' : undefined}
-                        className={cx(
-                          'min-h-tap rounded-md px-md text-xs font-medium uppercase tracking-tag transition duration-fast focus-visible:outline-none focus-visible:shadow-focus',
-                          month === activeCesMonth
-                            ? 'bg-brand-teal text-on-brand shadow-rest'
-                            : 'text-brand-teal hover:bg-surface-glass hover:backdrop-blur-md',
-                        )}
-                        key={month}
-                        onClick={() => setCesMonth(month)}
-                        type="button"
-                      >
-                        {getCalendarMonthLabel(month)}
-                      </button>
-                    ))}
-                  </div>
-                  {/* Year selection for full year CES calendar support */}
-                  <div className="flex flex-wrap gap-xs rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs ml-xs">
-                    {[2025, 2026, 2027].map((y) => (
-                      <button
-                        aria-current={y === cesYear ? 'true' : undefined}
-                        className={cx(
-                          'min-h-tap rounded-md px-md text-xs font-medium uppercase tracking-tag transition duration-fast focus-visible:outline-none focus-visible:shadow-focus',
-                          y === cesYear
-                            ? 'bg-brand-teal text-on-brand shadow-rest'
-                            : 'text-brand-teal hover:bg-surface-glass hover:backdrop-blur-md',
-                        )}
-                        key={y}
-                        onClick={() => setCesYear(y)}
-                        type="button"
-                      >
-                        {y}
-                      </button>
-                    ))}
+                  <div className="flex flex-col items-end gap-md">
+                    <div className="inline-flex rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs">
+                      {['Day', 'Week', 'Month'].map((label) => (
+                        <button
+                          className={cx(
+                            'min-h-tap rounded-md px-lg text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
+                            label === agendaMode ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal shadow-rest' : 'text-secondary hover:bg-surface-hover',
+                          )}
+                          key={label}
+                          onClick={() => setAgendaMode(label)}
+                          type="button"
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap justify-end gap-md">
+                      <div className="flex flex-wrap gap-xs rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs">
+                        {cesMonthOptions.map((month) => (
+                          <button
+                            aria-current={month === activeCesMonth ? 'true' : undefined}
+                            className={cx(
+                              'min-h-tap rounded-md px-md text-xs font-medium uppercase tracking-tag transition duration-fast focus-visible:outline-none focus-visible:shadow-focus',
+                              month === activeCesMonth
+                                ? 'bg-brand-teal text-on-brand shadow-rest'
+                                : 'text-brand-teal hover:bg-surface-glass hover:backdrop-blur-md',
+                            )}
+                            key={month}
+                            onClick={() => setCesMonth(month)}
+                            type="button"
+                          >
+                            {getCalendarMonthLabel(month)}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap gap-xs rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs">
+                        {[2025, 2026, 2027].map((y) => (
+                          <button
+                            aria-current={y === cesYear ? 'true' : undefined}
+                            className={cx(
+                              'min-h-tap rounded-md px-md text-xs font-medium uppercase tracking-tag transition duration-fast focus-visible:outline-none focus-visible:shadow-focus',
+                              y === cesYear
+                                ? 'bg-brand-teal text-on-brand shadow-rest'
+                                : 'text-brand-teal hover:bg-surface-glass hover:backdrop-blur-md',
+                            )}
+                            key={y}
+                            onClick={() => setCesYear(y)}
+                            type="button"
+                          >
+                            {y}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
