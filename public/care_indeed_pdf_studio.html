@@ -1996,6 +1996,159 @@ function renderField(key, v) {
 function renderSignatures(sigs, heading) {
   return `<div class="rp-glass"><div class="rp-h3">${escHtml(heading || 'Signatures')}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:22px 30px;margin-top:8px;">${sigs.map(s => `<div style="border-top:1px solid var(--teal-700);padding-top:7px;"><div style="font-weight:600;font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--teal-700);">${escHtml(s.role || 'Signer')}</div><div style="margin-top:20px;display:flex;justify-content:space-between;font-size:11px;color:var(--gray-900);"><span>${escHtml(s.name || '__________________')}${s.signature && s.signature !== '' ? ' ✓' : ''}</span><span>Date: ${escHtml(s.date || '___/___/____')}</span></div></div>`).join('')}</div></div>`;
 }
+/* ─── Rich, Gemini-grade renderers for known packet structures ───────────── */
+function rfPill(text, color) {
+  return '<span style="white-space:nowrap;font-size:8.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:' + color +
+    ';border:1px solid ' + color + '55;background:' + color + '14;border-radius:999px;padding:3px 9px;">' + escHtml(text) + '</span>';
+}
+function rfTiles(items) {
+  return '<div class="rp-glass"><div style="display:grid;grid-template-columns:repeat(' + Math.min(items.length, 4) + ',1fr);gap:12px;">' +
+    items.map(([l, v, sub]) => '<div><div style="font-size:24px;font-weight:600;color:var(--teal-900);line-height:1;">' + escHtml(v) + '</div>' +
+      '<div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-500);margin-top:4px;">' + escHtml(l) + '</div>' +
+      (sub ? '<div style="font-size:9.5px;color:var(--gray-600);margin-top:3px;">' + escHtml(sub) + '</div>' : '') + '</div>').join('') +
+    '</div></div>';
+}
+function rfList(label, arr) {
+  if (!Array.isArray(arr) || !arr.length) return '';
+  return '<div class="rp-glass"><div class="rp-h3">' + escHtml(label) + '</div><ul style="margin:0;padding-left:18px;font-size:11px;line-height:1.7;color:var(--gray-700);">' +
+    arr.map(x => '<li>' + escHtml(fmtCell(x)) + '</li>').join('') + '</ul></div>';
+}
+function rfKpis(arr) {
+  const card = (k) => {
+    const val = k.q2_average != null ? k.q2_average : (k.jun_actual != null ? k.jun_actual : '');
+    const met = k.meets_target === true || /^(true|met|yes)$/i.test(String(k.meets_target));
+    const improving = !met && /improv|up/i.test(String(k.trend || ''));
+    const status = met ? 'TARGET MET' : (improving ? 'IMPROVING' : 'BELOW TARGET');
+    const color = met ? '#16a34a' : (improving ? '#d9892b' : '#c74601');
+    const target = k.target_pct != null ? ('Target: ' + k.target_pct + (typeof val === 'number' && val <= 100 ? '%' : '')) : '';
+    const unit = (typeof val === 'number' && k.target_pct != null && k.target_pct > 5) ? '%' : '';
+    const w = typeof val === 'number' ? Math.max(4, Math.min(100, val <= 100 ? val : 100)) : 0;
+    return '<div style="border:1px solid var(--gray-200);border-radius:12px;padding:13px 15px;background:rgba(255,255,255,0.74);">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;"><div style="font-weight:600;font-size:11.5px;color:var(--gray-900);line-height:1.25;">' + escHtml(k.indicator_name) + '</div>' + rfPill(status, color) + '</div>' +
+      '<div style="margin-top:8px;font-size:25px;font-weight:600;color:var(--teal-900);line-height:1;">' + escHtml(val) + unit + ' <span style="font-size:10.5px;font-weight:400;color:var(--gray-500);">' + escHtml(target) + '</span></div>' +
+      '<div style="margin-top:8px;height:7px;border-radius:6px;background:var(--gray-100);overflow:hidden;"><div style="height:100%;width:' + w + '%;background:' + color + ';"></div></div></div>';
+  };
+  return '<div class="rp-glass"><div class="rp-h3">Performance Indicator Dashboard</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">' + arr.map(card).join('') + '</div></div>';
+}
+function rfPips(arr) {
+  return arr.map((p) => {
+    const color = /track|complet|met/i.test(p.status || '') ? '#16a34a' : (/risk|behind|escal/i.test(p.status || '') ? '#c74601' : '#d9892b');
+    const grid = [['Owner', p.owner], ['Target Date', p.target_completion_date], ['Baseline', p.baseline_metric], ['Target', p.target_metric], ['Q1 Actual', p.q1_remeasurement], ['Q2 Actual', p.q2_remeasurement]];
+    return '<div class="rp-glass"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;"><div class="rp-h3" style="margin:0;">' + escHtml(p.pip_title || p.pip_id) + '</div>' + rfPill((p.status || '').replace(/_/g, ' ') || 'active', color) + '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px 18px;margin:12px 0;font-size:10.5px;">' +
+      grid.map(([l, v]) => '<div><span style="color:var(--teal-700);text-transform:uppercase;font-size:8.5px;font-weight:600;display:block;letter-spacing:.04em;">' + escHtml(l) + '</span><span style="color:var(--gray-900);font-weight:500;">' + escHtml(v || '—') + '</span></div>').join('') + '</div>' +
+      (p.root_cause_summary ? '<p class="rp-p" style="margin:6px 0;font-size:11px;"><strong style="color:var(--teal-700);">Root Cause:</strong> ' + escHtml(p.root_cause_summary) + '</p>' : '') +
+      (Array.isArray(p.interventions) && p.interventions.length ? '<div style="font-size:11px;color:var(--gray-700);"><strong style="color:var(--teal-700);">Interventions:</strong><ul style="margin:4px 0 0;padding-left:18px;line-height:1.6;">' + p.interventions.map(i => '<li>' + escHtml(i) + '</li>').join('') + '</ul></div>' : '') + '</div>';
+  }).join('');
+}
+function rfPipProposals(arr) {
+  return '<div class="rp-glass primary"><div class="rp-h3">New PIP Proposal' + (arr.length > 1 ? 's' : '') + '</div>' +
+    arr.map(p => '<div style="margin-bottom:10px;"><div style="font-weight:600;color:var(--teal-900);font-size:12px;">' + escHtml(p.proposed_title) + '</div>' +
+      '<p class="rp-p" style="margin:4px 0;font-size:11px;"><strong>Justification:</strong> ' + escHtml(p.justification || '') + '</p>' +
+      '<div style="font-size:10px;color:var(--gray-600);">Proposed Owner: ' + escHtml(p.proposed_owner || '—') + ' · Start: ' + escHtml(p.proposed_start_date || '—') + '</div></div>').join('') + '</div>';
+}
+function rfTable(label, cols, rows) {
+  const TH = 'text-align:left;padding:6px 8px;border-bottom:1.5px solid var(--teal-700);text-transform:uppercase;font-size:8.5px;color:var(--teal-700);';
+  const TD = 'padding:6px 8px;border-bottom:1px solid var(--gray-200);vertical-align:top;font-size:10px;color:var(--gray-900);';
+  return '<div class="rp-glass">' + (label ? '<div class="rp-h3">' + escHtml(label) + '</div>' : '') +
+    '<table style="width:100%;border-collapse:collapse;"><thead><tr>' + cols.map(c => '<th style="' + TH + (c.w ? 'width:' + c.w + ';' : '') + '">' + escHtml(c.h) + '</th>').join('') + '</tr></thead><tbody>' +
+    rows.map(r => '<tr>' + cols.map(c => '<td style="' + TD + '">' + (c.html ? c.f(r) : escHtml(c.f(r))) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>';
+}
+function rfSevColor(s) { s = String(s || '').toLowerCase(); return /near/.test(s) ? '#16a34a' : /moderate/.test(s) ? '#d9892b' : /severe|major|high|critical/.test(s) ? '#c74601' : '#64748b'; }
+function rfStatusColor(s) { s = String(s || '').toLowerCase(); return /closed|complet|resolved/.test(s) ? '#16a34a' : /pending|in.?progress/.test(s) ? '#d9892b' : /open|overdue|escal/.test(s) ? '#c74601' : '#64748b'; }
+function rfIncidents(arr) {
+  return rfTable('Incident Report Log', [
+    { h: 'Date', f: r => r.date_of_incident || r.date || '—', w: '11%' },
+    { h: 'Category', f: r => r.category || '—', w: '13%' },
+    { h: 'Description & Action', html: true, f: r => escHtml(r.description || '') + (r.immediate_action_taken ? '<br/><em style="color:var(--gray-600);">Action: ' + escHtml(r.immediate_action_taken) + '</em>' : '') },
+    { h: 'Severity', html: true, f: r => rfPill(r.severity || '—', rfSevColor(r.severity)), w: '11%' },
+    { h: 'Status', html: true, f: r => '<span style="color:' + rfStatusColor(r.status) + ';font-weight:600;">' + escHtml(r.status || '—') + '</span>', w: '9%' },
+  ], arr);
+}
+function rfInfections(arr) {
+  return rfTable('Infection Line List', [
+    { h: 'Onset', f: r => r.date_onset || '—', w: '11%' },
+    { h: 'Type / Organism', html: true, f: r => escHtml(r.infection_type || '') + (r.organism ? '<br/><em style="color:var(--gray-600);">' + escHtml(r.organism) + '</em>' : '') },
+    { h: 'Site', f: r => r.site || '—' },
+    { h: 'Class', f: r => r.healthcare_associated ? 'Healthcare' : (r.community_acquired ? 'Community' : '—'), w: '12%' },
+    { h: 'Outcome', html: true, f: r => rfPill(r.outcome || '—', /resolv/i.test(r.outcome || '') ? '#16a34a' : '#d9892b'), w: '13%' },
+  ], arr);
+}
+function rfAuditCriteria(arr) {
+  return rfTable('Clinical Chart Audit Results', [
+    { h: 'Audit Criteria', f: r => r.criteria_description || r.criteria_id || '—' },
+    { h: 'Reviewed', f: r => r.total_reviewed != null ? r.total_reviewed : '—', w: '10%' },
+    { h: 'Compliant', f: r => r.compliant != null ? r.compliant : '—', w: '10%' },
+    { h: 'Rate', f: r => r.compliance_rate_pct != null ? r.compliance_rate_pct + '%' : '—', w: '9%' },
+    { h: 'Target', f: r => r.target_pct != null ? r.target_pct + '%' : '—', w: '9%' },
+    { h: 'Status', html: true, f: r => { const met = r.meets_target === true; const gap = (r.target_pct || 0) - (r.compliance_rate_pct || 0); const lbl = met ? 'MET' : (gap >= 10 ? 'ESCALATE' : 'BELOW'); const col = met ? '#16a34a' : (gap >= 10 ? '#c74601' : '#d9892b'); return rfPill(lbl, col); }, w: '13%' },
+  ], arr);
+}
+function rfActionItems(arr) {
+  return rfTable('Action Item Log', [
+    { h: 'ID / Due', html: true, f: r => '<strong>' + escHtml(r.item_id || '') + '</strong>' + (r.due_date ? '<br/><span style="color:var(--gray-500);">' + escHtml(r.due_date) + '</span>' : ''), w: '14%' },
+    { h: 'Description & Next Action', html: true, f: r => '<strong>' + escHtml(r.description || '') + '</strong>' + (r.notes ? '<br/><span style="color:var(--gray-600);">' + escHtml(r.notes) + '</span>' : '') },
+    { h: 'Owner', f: r => r.assigned_owner || '—', w: '15%' },
+    { h: 'Status', html: true, f: r => rfPill((r.status || '').replace(/_/g, ' ') || '—', rfStatusColor(r.status)), w: '13%' },
+  ], arr);
+}
+function rfMotions(arr) {
+  return rfTable('Motions & Adjournment', [
+    { h: 'Motion Recorded', f: r => r.motion_description || '—' },
+    { h: 'Moved / Sec', html: true, f: r => escHtml(r.moved_by || '') + (r.seconded_by ? ' / ' + escHtml(r.seconded_by) : ''), w: '22%' },
+    { h: 'Result', html: true, f: r => '<span style="color:#16a34a;font-weight:600;">' + escHtml(r.vote_result || '—') + '</span>', w: '16%' },
+  ], arr);
+}
+function rfAttendees(arr) {
+  return rfTable('Attendance & Quorum Roster', [
+    { h: 'Name', f: r => r.name || '—' },
+    { h: 'Role', f: r => r.role || '—' },
+    { h: 'Present', html: true, f: r => r.present ? '<span style="color:#16a34a;font-weight:700;">✓</span>' : '—', w: '12%' },
+  ], arr);
+}
+function rfMinutes(arr) {
+  return arr.map((d) => '<div class="rp-glass"><div class="rp-h3" style="margin-bottom:8px;">' + escHtml((d.agenda_item_number != null ? d.agenda_item_number + '. ' : '') + (d.topic || '')) + '</div>' +
+    (d.discussion_summary ? '<p class="rp-p" style="margin:0 0 6px;font-size:11px;">' + escHtml(d.discussion_summary) + '</p>' : '') +
+    (d.decisions_made ? '<p class="rp-p" style="margin:0;font-size:11px;"><strong style="color:var(--teal-700);">Decision:</strong> ' + escHtml(d.decisions_made) + '</p>' : '') +
+    (Array.isArray(d.action_items_generated) && d.action_items_generated.length ? '<div style="font-size:10.5px;color:var(--gray-600);margin-top:4px;">Action items: ' + escHtml(d.action_items_generated.join('; ')) + '</div>' : '') + '</div>').join('');
+}
+function rfSummaryObj(label, obj) {
+  const narrative = obj.narrative || '';
+  const stats = Object.entries(obj).filter(([k, v]) => k !== 'narrative' && (typeof v === 'number' || typeof v === 'string'));
+  return '<div class="rp-glass"><div class="rp-h3">' + escHtml(label) + '</div>' +
+    (stats.length ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;font-size:11px;margin-bottom:' + (narrative ? '10px' : '0') + ';">' +
+      stats.map(([k, v]) => '<div style="display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--gray-100);padding:3px 0;"><span style="color:var(--gray-500);">' + escHtml(humanizeKey(k)) + '</span><span style="color:var(--gray-900);font-weight:600;text-align:right;">' + escHtml(fmtCell(v)) + '</span></div>').join('') + '</div>' : '') +
+    (narrative ? '<p class="rp-p" style="margin:0;font-size:11px;">' + escHtml(narrative) + '</p>' : '') + '</div>';
+}
+
+// field name → rich renderer (falls back to generic renderField when absent).
+const FIELD_RENDERERS = {
+  dashboard_kpis: (v) => rfKpis(v),
+  pips: (v) => rfPips(v),
+  new_pip_proposals: (v) => rfPipProposals(v),
+  action_items: (v) => rfActionItems(v),
+  incidents: (v) => rfIncidents(v),
+  infections: (v) => rfInfections(v),
+  audit_criteria: (v) => rfAuditCriteria(v),
+  motions: (v) => rfMotions(v),
+  attendees: (v) => rfAttendees(v),
+  discussion_items: (v) => rfMinutes(v),
+  control_measures: (v) => rfList('Control Measures Implemented', v),
+  common_deficiencies: (v) => rfList('Common Deficiencies', v),
+  corrective_actions_initiated: (v) => rfList('Corrective Actions Initiated', v),
+  governing_body_recommendations: (v) => rfList('Governing Body Recommendations & Escalations', v),
+  agenda_items: (v) => rfTable('Agenda', [{ h: '#', f: r => r.item_number != null ? r.item_number : '—', w: '6%' }, { h: 'Agenda Item', f: r => r.description || '—' }, { h: 'Presenter', f: r => r.presenter || '—', w: '20%' }, { h: 'Time', f: r => r.time_allotted_minutes != null ? r.time_allotted_minutes + ' min' : '—', w: '10%' }], v),
+  quality_indicator_summary: (v) => rfSummaryObj('Indicator Summary', v),
+  pip_summary: (v) => rfSummaryObj('PIP Summary', v),
+  adverse_event_summary: (v) => rfSummaryObj('Adverse Event Summary', v),
+  patient_complaints_summary: (v) => rfSummaryObj('Patient Complaints Summary', v),
+  infection_control_summary: (v) => rfSummaryObj('Infection Control Summary', v),
+  surveillance_summary: (v) => rfSummaryObj('Surveillance Summary', v),
+  committee_membership: (v) => rfSummaryObj('Committee Membership', v),
+  summary_counts: (v) => rfSummaryObj('Summary', v),
+  prior_minutes_approval: (v) => rfSummaryObj('Prior Minutes Approval', v),
+};
+
 function renderForm(form) {
   let html = '';
   // Filled-form meta header (preparer / owner / period / approver).
@@ -2007,7 +2160,12 @@ function renderForm(form) {
   if (meta.length) html += `<div style="display:flex;flex-wrap:wrap;gap:10px 18px;margin-bottom:14px;font-size:10px;color:var(--gray-600);">${meta.map(([k, v]) => `<span><strong style="color:var(--teal-700);text-transform:uppercase;letter-spacing:.04em;">${escHtml(k)}:</strong> ${escHtml(v)}</span>`).join('')}</div>`;
   const lead = form.executive_summary || form.narrative_summary;
   if (lead) html += `<div class="rp-glass primary"><p class="rp-p" style="margin:0;font-size:12.5px;line-height:1.6;">${escHtml(lead)}</p></div>`;
-  for (const [k, v] of Object.entries(form)) { if (FORM_SKIP.has(k)) continue; html += renderField(k, v); }
+  for (const [k, v] of Object.entries(form)) {
+    if (FORM_SKIP.has(k)) continue;
+    if (v == null || v === '' || (Array.isArray(v) && !v.length)) continue;
+    const rich = FIELD_RENDERERS[k];
+    html += rich ? rich(v) : renderField(k, v);
+  }
   // Signature lines (form approvals / attendee sign-offs) make it a filled, signed form.
   for (const key of ['signature_lines', 'approver_signature_lines', 'attendee_signature_lines']) {
     if (Array.isArray(form[key]) && form[key].length) html += renderSignatures(form[key], key === 'attendee_signature_lines' ? 'Attendee Sign-Off' : 'Approval Signatures');
