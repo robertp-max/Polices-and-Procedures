@@ -17,13 +17,13 @@ import SignatureTracker from './SignatureTracker';
 export type EvidenceStudioTab = 'library' | 'studio' | 'edit' | 'signatures';
 
 const TABS: { id: EvidenceStudioTab; label: string; sub: string; Icon: typeof FolderOpen }[] = [
-  { id: 'library', label: 'Evidence Drive', sub: 'Browse filed evidence', Icon: FolderOpen },
   { id: 'studio', label: 'Studio', sub: 'Generate branded packets', Icon: FileStack },
   { id: 'edit', label: 'Edit Packet', sub: 'Remediate by packet ID', Icon: PencilLine },
   { id: 'signatures', label: 'Signature Tracker', sub: 'Schedule & track signing', Icon: FileSignature },
+  { id: 'library', label: 'Evidence Drive', sub: 'Browse filed evidence', Icon: FolderOpen },
 ];
 
-export function EvidenceStudio({ initialTab = 'library' }: { initialTab?: EvidenceStudioTab }) {
+export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: EvidenceStudioTab }) {
   const [tab, setTab] = useState<EvidenceStudioTab>(initialTab);
 
   return (

@@ -1,13 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
 
 const cesSubnavItems = [
+  { label: 'Evidence Studio', path: '/evidence', brand: true },
   { label: 'Calendar', path: '/ces/calendar' },
-  { label: 'Sprint Board', path: '/ces/board' },
-  { label: 'Events Board', path: '/ces/events' },
   { label: 'Workflows', path: '/workflows' },
   { label: 'Master Controls', path: '/compliance/master-controls' },
   { label: 'Audit Mode', path: '/audit' },
-  { label: 'Evidence Studio', path: '/evidence' },
   { label: 'Reports', path: '/ces/reports' },
 ];
 
@@ -15,6 +13,8 @@ const cesSubnavItems = [
  * Static sub-navigation for all pages in the CES group.
  * Rendered once from the parent so it is consistent and always present
  * when navigating between CES pages (no duplication, no disappearing).
+ * Evidence Studio leads and is branded "CI Evidence Studio" with a glowing
+ * orange "CI" mark.
  */
 export function CESSubnav() {
   const location = useLocation();
@@ -31,14 +31,18 @@ export function CESSubnav() {
     return best;
   }, null as string | null);
 
-  // Contextual: /events/* swimlanes activate Events Board
-  const effectiveActive = currentPath.startsWith('/events/') ? '/ces/events' : activeTo;
-
   return (
-    <div className="mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="Compliance subnav">
-      <span className="mr-sm text-tag uppercase tracking-tag text-muted">Compliance:</span>
+    <div className="mb-lg flex flex-wrap items-center justify-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="Compliance subnav">
+      <style>{`
+        @keyframes ciGlowPulse {
+          0%, 100% { text-shadow: 0 0 5px rgba(226,104,60,0.55), 0 0 11px rgba(226,104,60,0.30); }
+          50%      { text-shadow: 0 0 9px rgba(226,104,60,0.95), 0 0 20px rgba(226,104,60,0.55); }
+        }
+        .ci-mark { color: #E2683C; font-weight: 800; letter-spacing: 0.02em; animation: ciGlowPulse 2.2s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) { .ci-mark { animation: none; text-shadow: 0 0 8px rgba(226,104,60,0.6); } }
+      `}</style>
       {cesSubnavItems.map((item) => {
-        const isActive = effectiveActive === item.path;
+        const isActive = activeTo === item.path;
         return (
           <Link
             key={item.path}
@@ -48,7 +52,7 @@ export function CESSubnav() {
               isActive ? 'border-brand-teal text-brand-teal-deep font-medium' : 'border-transparent hover:border-brand-teal'
             }`}
           >
-            {item.label}
+            {item.brand ? (<><span className="ci-mark">CI</span> Evidence Studio</>) : item.label}
           </Link>
         );
       })}
