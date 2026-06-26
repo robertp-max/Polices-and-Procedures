@@ -359,24 +359,52 @@ body {
    STEP 2: DOCUMENT UPLOAD & CONFIGURATION
    ═══════════════════════════════════════════════ */
 .config-panel {
-  flex-direction: row;
+  flex-direction: column;
   gap: 0;
 }
-.config-sidebar {
-  width: 360px;
-  min-width: 360px;
-  border-right: 1px solid var(--studio-border);
+/* Step 1 — two-panel: select template (left) + upload (right) */
+.step1-grid {
+  width: 100%;
+  max-width: 1280px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+.step1-left, .step1-right { min-width: 0; }
+.step1-section-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--studio-text-dim, #8aa);
+  margin: 4px 0 12px;
+}
+.step1-right .drop-zone { margin-top: 0; }
+@media (max-width: 900px) { .step1-grid { grid-template-columns: 1fr; } }
+
+/* Step 2 — configure as 3 columns to minimize scrolling */
+.config-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  padding: 28px 32px;
+  align-items: start;
+}
+.config-col {
   background: var(--studio-surface);
-  padding: 32px 24px;
-  overflow-y: auto;
-  max-height: calc(100vh - 56px);
+  border: 1px solid var(--studio-border);
+  border-radius: 12px;
+  padding: 20px 18px;
+  min-width: 0;
 }
-.config-main {
-  flex: 1;
-  padding: 32px 40px;
-  overflow-y: auto;
-  max-height: calc(100vh - 56px);
+.config-source {
+  display: flex; justify-content: space-between; gap: 10px; align-items: center;
+  padding: 8px 10px; border-radius: 8px; background: rgba(0,121,125,0.05);
+  border: 1px solid var(--studio-border); margin-bottom: 8px; font-size: 12px;
 }
+.config-source .cs-name { color: var(--studio-text-bright); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.config-source .cs-status { color: var(--studio-text-dim); white-space: nowrap; }
+.config-source .cs-status.ok { color: var(--green-500, #008540); }
+@media (max-width: 1000px) { .config-grid { grid-template-columns: 1fr; } }
 .sidebar-section {
   margin-bottom: 28px;
 }
@@ -951,8 +979,8 @@ textarea.field-input {
 html.embed, html.embed body { height: auto; min-height: 0; overflow: visible; background: transparent; }
 html.embed .studio-nav { position: sticky; top: 0; }
 html.embed .studio-main { min-height: 0; }
-html.embed .config-sidebar,
-html.embed .config-main,
+html.embed .config-grid,
+html.embed .config-col,
 html.embed .preview-sidebar,
 html.embed .preview-main { max-height: none; overflow: visible; }
 /* Carousel still scrolls horizontally inside the embedded iframe. */
@@ -991,9 +1019,24 @@ html.embed .page-modal { position: fixed; }
      ═══════════════════════════════════════════════ -->
 <div class="studio-main">
   <div class="step-panel active select-panel" id="step1">
-    <div class="event-picker" id="eventPicker"><!-- Injected by JS --></div>
-    <div class="meeting-grid" id="meetingGrid">
-      <!-- Injected by JS -->
+    <div class="step1-grid">
+      <div class="step1-left">
+        <div class="event-picker" id="eventPicker"><!-- Injected by JS --></div>
+        <div class="step1-section-label">Select a packet template</div>
+        <div class="meeting-grid" id="meetingGrid"><!-- Injected by JS --></div>
+      </div>
+      <div class="step1-right">
+        <div class="step1-section-label">Upload source documents</div>
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <div class="drop-icon">📄</div>
+          <div class="drop-title">Drop files here or click to browse</div>
+          <div class="drop-subtitle">JSON data packets, PDFs, Word docs, spreadsheets, images, or text. The Studio extracts and organizes content automatically.</div>
+          <div class="drop-formats">
+            <span class="format-badge">.JSON</span><span class="format-badge">.PDF</span><span class="format-badge">.DOCX</span><span class="format-badge">.XLSX</span><span class="format-badge">.CSV</span><span class="format-badge">.TXT</span><span class="format-badge">.HTML</span><span class="format-badge">.PNG / .JPG</span>
+          </div>
+        </div>
+        <div class="file-list" id="fileList" style="margin-top:16px;"></div>
+      </div>
     </div>
   </div>
 
@@ -1001,11 +1044,8 @@ html.embed .page-modal { position: fixed; }
      STEP 2: UPLOAD & CONFIGURE
      ═══════════════════════════════════════════════ -->
   <div class="step-panel config-panel" id="step2">
-    <div class="config-sidebar" id="configSidebar">
-      <!-- Sidebar content injected by JS -->
-    </div>
-    <div class="config-main" id="configMain">
-      <!-- Main content injected by JS -->
+    <div class="config-grid" id="configGrid">
+      <!-- 3 columns injected by JS -->
     </div>
   </div>
 
@@ -1486,6 +1526,8 @@ window.addEventListener('message', function (e) {
 function init() {
   renderEventPicker();
   renderMeetingCards();
+  setupDropZone();
+  renderFileList();
   updateNav();
 }
 
@@ -1584,48 +1626,42 @@ function selectMeeting(id) {
   updateNav();
 }
 
-// ── Step 2: Config ────────────────────────────
+// ── Step 2: Configure (3 columns, minimal scrolling) ──
+function fieldControl(f) {
+  const v = fieldValues[f.key] || '';
+  if (f.type === 'select') {
+    return `<select class="field-input" data-key="${f.key}" onchange="updateField('${f.key}', this.value)">
+      <option value="">Select...</option>
+      ${f.options.map(o => `<option value="${o}" ${o === v ? 'selected' : ''}>${o}</option>`).join('')}
+    </select>`;
+  }
+  if (f.type === 'textarea') {
+    return `<textarea class="field-input" data-key="${f.key}" placeholder="${f.placeholder || ''}" onchange="updateField('${f.key}', this.value)">${escHtml(v)}</textarea>`;
+  }
+  return `<input type="${f.type}" class="field-input" data-key="${f.key}" placeholder="${f.placeholder || ''}" value="${escHtml(v)}" onchange="updateField('${f.key}', this.value)" />`;
+}
 function renderStep2() {
   if (!selectedMeeting) return;
   const m = selectedMeeting;
-  
-  // Sidebar
-  document.getElementById('configSidebar').innerHTML = `
-    <div class="sidebar-section">
+  const sources = uploadedFiles || [];
+
+  const colDetails = `
+    <div class="config-col">
       <div class="sidebar-label">Meeting Type</div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
         <span style="font-size:24px;">${m.icon}</span>
         <div>
           <div style="font-weight:500;color:var(--studio-text-bright);font-size:13px;">${m.title}</div>
-          <div style="font-size:11px;color:var(--studio-text-dim);">${m.sections.length} sections</div>
+          <div style="font-size:11px;color:var(--studio-text-dim);">${m.sections.length} sections${selectedEventTitle ? ' · ' + escHtml(selectedEventTitle) : ''}</div>
         </div>
       </div>
-    </div>
-    
-    <div class="sidebar-section">
       <div class="sidebar-label">Meeting Details</div>
-      ${m.fields.map(f => `
-        <div class="field-group">
-          <div class="field-label">${f.label}</div>
-          ${f.type === 'select' ? `
-            <select class="field-input" data-key="${f.key}" onchange="updateField('${f.key}', this.value)">
-              <option value="">Select...</option>
-              ${f.options.map(o => `<option value="${o}">${o}</option>`).join('')}
-            </select>
-          ` : f.type === 'textarea' ? `
-            <textarea class="field-input" data-key="${f.key}" placeholder="${f.placeholder || ''}" 
-              onchange="updateField('${f.key}', this.value)"></textarea>
-          ` : `
-            <input type="${f.type}" class="field-input" data-key="${f.key}" 
-              placeholder="${f.placeholder || ''}" 
-              onchange="updateField('${f.key}', this.value)" />
-          `}
-        </div>
-      `).join('')}
-    </div>
-    
-    <div class="sidebar-section">
-      <div class="sidebar-label">Packet Structure</div>
+      ${m.fields.map(f => `<div class="field-group"><div class="field-label">${f.label}</div>${fieldControl(f)}</div>`).join('')}
+    </div>`;
+
+  const colStructure = `
+    <div class="config-col">
+      <div class="sidebar-label">Packet Structure (${m.sections.length})</div>
       <div class="packet-structure" id="packetStructure">
         ${m.sections.map((s, i) => `
           <div class="packet-section unmapped">
@@ -1634,58 +1670,25 @@ function renderStep2() {
               <div class="section-title">${s.title}</div>
               <div class="section-form">${s.form}</div>
             </div>
-            <span class="section-status empty">Empty</span>
-          </div>
-        `).join('')}
+          </div>`).join('')}
       </div>
-    </div>
-  `;
+    </div>`;
 
-  // Main area: Drop Zone
-  document.getElementById('configMain').innerHTML = `
+  const colSources = `
+    <div class="config-col">
+      <div class="sidebar-label">Source Documents (${sources.length})</div>
+      ${sources.length
+        ? `<div class="file-list">${sources.map(f => `<div class="config-source"><span class="cs-name">${escHtml(f.name)}</span><span class="cs-status ${f.status === 'ready' ? 'ok' : ''}">${f.status === 'ready' ? '✓ Ready' : (f.packet ? '✓ Packet' : f.status)}</span></div>`).join('')}</div>`
+        : `<div style="font-size:12px;color:var(--studio-text-dim);line-height:1.6;">No source documents uploaded. Add them in Step 1 — empty sections will list the required missing information in the packet.</div>`}
+      <div class="sidebar-label" style="margin-top:22px;">How it works</div>
+      <div style="display:grid;gap:14px;">
+        <div><div style="font-weight:500;color:var(--studio-text-bright);font-size:12px;margin-bottom:2px;">1. Upload</div><div style="font-size:11px;color:var(--studio-text-dim);line-height:1.5;">Drop raw data — JSON packets, minutes, dashboards, logs.</div></div>
+        <div><div style="font-weight:500;color:var(--studio-text-bright);font-size:12px;margin-bottom:2px;">2. Parse &amp; Map</div><div style="font-size:11px;color:var(--studio-text-dim);line-height:1.5;">The Studio extracts structured data and maps it to sections.</div></div>
+        <div><div style="font-weight:500;color:var(--studio-text-bright);font-size:12px;margin-bottom:2px;">3. Generate</div><div style="font-size:11px;color:var(--studio-text-dim);line-height:1.5;">A survey-defensible, print-ready packet with branding &amp; signatures.</div></div>
+      </div>
+    </div>`;
 
-    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-      <div class="drop-icon">📄</div>
-      <div class="drop-title">Drop files here or click to browse</div>
-      <div class="drop-subtitle">
-        Upload JSON data packets, PDFs, Word documents, spreadsheets, images, or plain text files. 
-        The Studio will extract and organize content automatically.
-      </div>
-      <div class="drop-formats">
-        <span class="format-badge">.JSON</span>
-        <span class="format-badge">.PDF</span>
-        <span class="format-badge">.DOCX</span>
-        <span class="format-badge">.XLSX</span>
-        <span class="format-badge">.CSV</span>
-        <span class="format-badge">.TXT</span>
-        <span class="format-badge">.HTML</span>
-        <span class="format-badge">.PNG / .JPG</span>
-      </div>
-    </div>
-    
-    <div class="file-list" id="fileList" style="margin-top:20px;"></div>
-    
-    <div style="margin-top:40px;padding:24px;border-radius:14px;background:var(--studio-surface);border:1px solid var(--studio-border);">
-      <div style="font-weight:500;color:var(--teal-400);font-size:13px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">💡 How it works</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;">
-        <div>
-          <div style="font-weight:500;color:var(--studio-text-bright);margin-bottom:4px;">1. Upload</div>
-          <div style="font-size:12px;color:var(--studio-text-dim);line-height:1.5;">Drop your raw data — JSON packets, prior minutes, dashboard exports, incident logs, anything.</div>
-        </div>
-        <div>
-          <div style="font-weight:500;color:var(--studio-text-bright);margin-bottom:4px;">2. Parse & Map</div>
-          <div style="font-size:12px;color:var(--studio-text-dim);line-height:1.5;">The Studio reads every file, extracts structured data, and maps it to the correct packet sections.</div>
-        </div>
-        <div>
-          <div style="font-weight:500;color:var(--studio-text-bright);margin-bottom:4px;">3. Generate</div>
-          <div style="font-size:12px;color:var(--studio-text-dim);line-height:1.5;">Hit Generate — a survey-defensible, print-ready PDF packet appears with all branding and signatures.</div>
-        </div>
-      </div>
-    </div>
-  `;
-  
-  setupDropZone();
-  renderFileList();
+  document.getElementById('configGrid').innerHTML = colDetails + colStructure + colSources;
 }
 
 function updateField(key, value) {
