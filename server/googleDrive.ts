@@ -184,6 +184,40 @@ export async function uploadFile(input: {
   }
 }
 
+/**
+ * Copy an existing Drive file into a destination folder (Section 10 — physical
+ * packet copies). Returns the NEW file id. Preserves the source bytes; never
+ * overwrites the canonical original. Provenance (canonicalEvidenceId, source
+ * file id) is recorded by the caller, not here.
+ */
+export async function copyFile(input: {
+  sourceFileId: string;
+  destFolderId: string;
+  name?: string;
+}): Promise<DriveUploadResult> {
+  const c = await getClient();
+  try {
+    const res = await c.files.copy({
+      fileId: input.sourceFileId,
+      requestBody: { name: input.name, parents: [input.destFolderId] },
+      fields: 'id,name,mimeType,webViewLink,webContentLink',
+      supportsAllDrives: true,
+    });
+    const fileId = res.data.id;
+    if (!fileId) throw new ApiError('upstream_error', 'Drive copy returned no file id.', 502);
+    log.info('google.drive.copy.ok', { fileId, sourceFileId: input.sourceFileId, destFolderId: input.destFolderId });
+    return {
+      fileId,
+      webViewLink: res.data.webViewLink ?? undefined,
+      webContentLink: res.data.webContentLink ?? undefined,
+      mimeType: res.data.mimeType ?? undefined,
+      name: res.data.name ?? input.name,
+    };
+  } catch (e) {
+    throw fromGoogleError(e);
+  }
+}
+
 /** Drive web link for a folder/file id (used when the API omits webViewLink). */
 export function driveFolderUrl(folderId: string): string {
   return `https://drive.google.com/drive/folders/${folderId}`;

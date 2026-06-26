@@ -8,6 +8,9 @@ import { buildBoardLanes, buildCalendarEvents, buildReportMetrics, buildSprintSu
 import type { ExecutionUnit } from '@/policy/ces/types';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/data/policyCorpus';
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
+import BradEvidenceIntake from '@/v6/screens/evidence/BradEvidenceIntake';
+import EvidenceFolderExplorer from '@/v6/screens/evidence/EvidenceFolderExplorer';
+import EvidencePacketStudio from '@/policy/evidence/packetStudio/EvidencePacketStudio';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import { getWorkflowDetail } from './pageviews/WorkflowsScreen';
 import BradWorkspace from './brad/BradWorkspace';
@@ -29,7 +32,7 @@ import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
 import { BoardLane, CESSubnav, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
 import { workspaceSubnavItems } from '../routing/navigationManifest';
-import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen } from './pageviews';
+import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen } from './pageviews';
 import { achcSurveyRows } from '@/policy/data/achcSurveyProjection.generated';
 import { achcPrintCrosswalk } from '@/policy/data/achcPrintCrosswalk.generated';
 import { LearnerProvider } from '@/policy/journey/lib/learnerState';
@@ -921,6 +924,9 @@ function isQapiQuarterlyWorkflowKey(value: string | undefined): boolean {
     || key === 'evt-qapi-q2-2026'
     || key === 'qapi_meeting-20260507-08'
     || key === 'q2-qapi-quarterly-review'
+    || key === 'ceu-qapi-2026-10-014'
+    || key === 'wf-qapi-data-2026-10'
+    || key.includes('tpl-qa-quarterly-qapi')
     || key.includes('q2 qapi quarterly')
     || key.includes('qapi quarterly swimlane');
 }
@@ -929,7 +935,8 @@ function isQapiQuarterlyEvent(event: CalendarEventData): boolean {
   return isQapiQuarterlyWorkflowKey(event.id)
     || isQapiQuarterlyWorkflowKey(event.workflowId)
     || isQapiQuarterlyWorkflowKey(event.workflow)
-    || (event.label.toLowerCase().includes('qapi') && event.label.toLowerCase().includes('q2 data review'));
+    || isQapiQuarterlyWorkflowKey((event as any).sourceEventId)
+    || (event.label.toLowerCase().includes('qapi') && (event.label.toLowerCase().includes('q2 data review') || event.label.toLowerCase().includes('q2 aggregate report') || event.label.toLowerCase().includes('quarterly review')));
 }
 
 function withQapiQuarterlyFlow(event: CalendarEventData): CalendarEventData {
@@ -1123,7 +1130,7 @@ function CalendarEventPreview({
   return createPortal(
     <aside
       aria-live="polite"
-      className="fixed z-popover w-[340px] pointer-events-none rounded-lg border border-white bg-white p-lg text-ink shadow-rest"
+      className="fixed z-popover w-[340px] pointer-events-none rounded-lg border border-white bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg text-ink shadow-rest"
       id="ces-event-preview"
       style={positionStyle}
     >
@@ -1335,7 +1342,7 @@ function CalendarSwimlaneInline({
       <section className="grid gap-xl rounded-lg border border-hairline bg-surface-glass p-xl shadow-rest">
         <div
           aria-label="CES event carousel"
-          className="flex gap-sm overflow-x-auto rounded-lg border border-hairline bg-white/[.30] p-sm backdrop-blur-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex gap-sm overflow-x-auto rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-sm backdrop-blur-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           style={{
             maskImage: 'linear-gradient(to right, black 0, black calc(100% - 44px), transparent 100%)',
             WebkitMaskImage: 'linear-gradient(to right, black 0, black calc(100% - 44px), transparent 100%)',
@@ -1353,7 +1360,7 @@ function CalendarSwimlaneInline({
                     ? 'border-brand-teal bg-brand-teal text-on-brand shadow-rest'
                     : item.tone === 'orange' || item.tone === 'amber'
                       ? 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text'
-                      : 'border-hairline bg-white/[.45] text-brand-teal hover:bg-white/[.60]'
+                      : 'border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal hover:bg-surface-glass hover:backdrop-blur-md'
                 )}
                 key={item.label}
                 onClick={() => onSelectEvent(item)}
@@ -1382,7 +1389,7 @@ function CalendarSwimlaneInline({
           {lanes.map((lane, index) => (
             <article className={cx('rounded-lg p-lg shadow-none', toneGlassSurfaceClasses[lane.tone])} key={lane.title}>
               <div className="flex items-center justify-between gap-sm">
-                <span className="grid h-tap w-tap place-items-center rounded-full bg-white/[.55] text-sm font-medium">{index + 1}</span>
+                <span className="grid h-tap w-tap place-items-center rounded-full bg-surface-glass backdrop-blur-md shadow-glass-inset text-sm font-medium">{index + 1}</span>
                 <span className="text-[10px] font-medium uppercase tracking-wider opacity-75">{lane.cards.length} tasks</span>
               </div>
               <h3 className="mt-md text-sm font-medium leading-tight">{lane.title}</h3>
@@ -1397,7 +1404,7 @@ function CalendarSwimlaneInline({
           <section className="grid gap-lg rounded-lg border border-hairline bg-surface-glass p-lg shadow-rest laptop:grid-cols-[150px_minmax(0,1fr)] desktop:grid-cols-[180px_minmax(0,1fr)]" key={lane.title}>
             <aside className={cx('rounded-lg p-lg shadow-none', toneGlassSurfaceClasses[lane.tone])}>
               <div className="flex items-center justify-between gap-md">
-                <span className="grid h-10 w-10 place-items-center rounded-full bg-white/[.55] text-sm font-medium">{laneIndex + 1}</span>
+                <span className="grid h-10 w-10 place-items-center rounded-full bg-surface-glass backdrop-blur-md shadow-glass-inset text-sm font-medium">{laneIndex + 1}</span>
                 <ToneTag tone={lane.tone}>{lane.cards.length}</ToneTag>
               </div>
               <h2 className="mt-lg text-base font-medium">{lane.title}</h2>
@@ -1408,7 +1415,7 @@ function CalendarSwimlaneInline({
               style={{ '--lane-card-count': lane.cards.length } as CSSProperties}
             >
               {lane.cards.map((task) => (
-                <article className="min-w-0 rounded-lg border border-hairline bg-white p-lg transition duration-fast hover:bg-tone-slate-bg" key={task.id}>
+                <article className="min-w-0 rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg transition duration-fast hover:bg-tone-slate-bg" key={task.id}>
                   <div className="flex items-start justify-between gap-md">
                     <ToneTag tone={task.tone}>{task.id}</ToneTag>
                     <span className={cx('h-2.5 w-2.5 shrink-0 rounded-full', task.tone === 'orange' ? 'bg-brand-orange' : 'bg-brand-teal')} />
@@ -1426,7 +1433,7 @@ function CalendarSwimlaneInline({
                   </div>
                   <div className="mt-md flex flex-wrap gap-xs">
                     {task.chips.map((chip) => (
-                      <span className="rounded-sm border border-tone-teal-border bg-white/[.45] px-sm py-xs text-[9px] font-medium uppercase tracking-wider text-brand-teal" key={`${task.id}-${chip}`}>
+                      <span className="rounded-sm border border-tone-teal-border bg-surface-glass backdrop-blur-md shadow-glass-inset px-sm py-xs text-[9px] font-medium uppercase tracking-wider text-brand-teal" key={`${task.id}-${chip}`}>
                         {chip}
                       </span>
                     ))}
@@ -1483,7 +1490,7 @@ function StaffingConflictDrawer({
           <p className="mt-sm text-xs leading-relaxed">Clinician coverage needs reassignment before the visit window. Candidate ranking uses discipline match, distance, and current caseload.</p>
         </div>
         {candidates.map(([name, match, distance, load], index) => (
-          <article className="rounded-lg border border-card bg-surface p-lg shadow-rest" key={name}>
+          <article className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest" key={name}>
             <div className="flex items-start justify-between gap-md">
               <div>
                 <h4 className="text-sm font-medium text-brand-teal-deep">{name}</h4>
@@ -1696,7 +1703,13 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <BoardScreen />;
       break;
     case 'evidence-center':
-      child = <EvidenceScreen mode="evidence-center" />;
+      child = <EvidenceFolderExplorer />;
+      break;
+    case 'evidence-intake':
+      child = <BradEvidenceIntake />;
+      break;
+    case 'evidence-packet-studio':
+      child = <EvidencePacketStudio />;
       break;
     case 'form-viewer':
       child = <FormWorkspaceScreen />;
@@ -1776,6 +1789,10 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
     case 'policy-lifecycle-detail':
       child = <PolicyLifecycleDetailScreen />;
       break;
+    case 'policy-approvals':
+    case 'pm-approvals':
+      child = <PolicyApprovalsScreen />;
+      break;
     case 'hubstaff':
       child = <HubstaffScreen />;
       break;
@@ -1813,10 +1830,10 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
   // Workspace subnav rendered inside the content area for V1 parity (not in main sidebar)
   // Primary parents only in sidebar; children here.
   const pathname = location?.pathname || '';
-  const cesHashIds = ['ces-calendar', 'ces-board', 'events-board', 'master-controls', 'my-tasks', 'ces-reports', 'workflows', 'workflow-detail', 'workflow-swimlane', 'evidence-center', 'audit-mode'];
+  const cesHashIds = ['ces-calendar', 'ces-board', 'events-board', 'master-controls', 'my-tasks', 'ces-reports', 'workflows', 'workflow-detail', 'workflow-swimlane', 'evidence-center', 'evidence-intake', 'evidence-packet-studio', 'audit-mode'];
   const isCESGroup = route.group === 'CES' || cesHashIds.includes(route.hashId || '') || pathname.startsWith('/ces/') || pathname.startsWith('/workflows') || pathname.startsWith('/events/') || pathname === '/audit' || pathname === '/evidence' || pathname.startsWith('/compliance/');
 
-  const isTaxonomyGroup = pathname.startsWith('/framework') || pathname.startsWith('/library') || pathname.startsWith('/forms') || pathname.startsWith('/taxonomy') || pathname.startsWith('/achc') || ['framework', 'taxonomy', 'policy-library', 'policy-detail', 'forms-library', 'form-viewer', 'achc-survey', 'achc-crosswalk'].includes(route.hashId || '') || route.group === 'Taxonomy';
+  const isTaxonomyGroup = pathname.startsWith('/framework') || pathname.startsWith('/library') || pathname.startsWith('/forms') || pathname.startsWith('/taxonomy') || pathname.startsWith('/achc') || pathname.startsWith('/policy-lifecycle') || pathname === '/policy-approvals' || pathname === '/pm/approvals' || ['framework', 'taxonomy', 'policy-library', 'policy-detail', 'forms-library', 'form-viewer', 'achc-survey', 'achc-crosswalk', 'policy-lifecycle', 'policy-lifecycle-detail', 'policy-approvals', 'pm-approvals'].includes(route.hashId || '') || route.group === 'Taxonomy';
   const isOnboardingGroup = pathname.startsWith('/journey') || pathname.startsWith('/onboarding-v2') || ['journey-overview', 'journey-new-hire', 'journey-orientation', 'module-player', 'lesson-player', 'module-assessment-splash', 'module-assessment-quiz', 'final-assessment-splash', 'final-assessment-quiz', 'final-result', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'].includes(route.hashId || '') || route.group === 'Onboarding';
   const isSystemGroup = pathname.startsWith('/system-documentation') || pathname.startsWith('/policy-lifecycle') || pathname === '/hubstaff' || pathname.startsWith('/help') || ['system-docs', 'policy-lifecycle', 'policy-lifecycle-detail', 'hubstaff', 'help-center', 'governance'].includes(route.hashId || '') || route.group === 'System';
   const isAdminGroup = pathname.startsWith('/admin/') || ['admin-groups', 'admin-roles', 'admin-permissions', 'admin-users', 'surveyor-viewer'].includes(route.hashId || '') || route.group === 'Admin';
@@ -1928,6 +1945,8 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
     'workflow-swimlane',
     'ces-board',
     'evidence-center',
+    'evidence-intake',
+    'evidence-packet-studio',
     'form-viewer',
     'brad',
     'user-guide',
@@ -1946,6 +1965,7 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
     'onboarding-v2-governance',
     'policy-lifecycle',
     'policy-lifecycle-detail',
+    'policy-approvals',
     'hubstaff',
     'system-docs',
     'help-center',
@@ -1990,7 +2010,7 @@ function ActionList({ rows }: { rows: readonly ActionRow[] }) {
 
         return (
           <article 
-            className="rounded-lg border border-card bg-tone-slate-bg p-lg transition duration-fast ease-standard hover:shadow-hover" 
+            className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg transition duration-fast ease-standard hover:shadow-hover" 
             key={row.title}
           >
             <div className="flex items-start justify-between gap-lg">
@@ -2018,7 +2038,7 @@ function ActionList({ rows }: { rows: readonly ActionRow[] }) {
               </div>
             </div>
 
-            <div className="mt-md h-1.5 w-full rounded-full bg-white/85">
+            <div className="mt-md h-1.5 w-full rounded-full bg-surface-glass backdrop-blur-md shadow-glass-inset">
               <div 
                 className={cx('h-full rounded-full', row.tone === 'orange' ? 'bg-brand-orange' : 'bg-brand-teal')} 
                 style={{ width: `${row.progress}%` }} 
@@ -2037,7 +2057,7 @@ function DashboardScreen() {
       <MetricGrid metrics={dashboardMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-5">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest desktop:col-span-3">
+        <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest desktop:col-span-3">
           <div className="mb-lg flex items-center justify-between gap-lg">
             <div>
               <h2 className="text-h2 font-medium text-brand-teal-deep">Dashboard work queue</h2>
@@ -2051,7 +2071,7 @@ function DashboardScreen() {
         </section>
 
         <aside className="grid gap-lg desktop:col-span-2">
-          <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+          <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
             <div className="mb-lg flex items-center justify-between gap-lg">
               <h2 className="text-h2 font-medium text-brand-teal-deep">Dashboard signals</h2>
               <DesignBadge tone="teal">
@@ -2109,7 +2129,7 @@ function ProfileListScreen({ mode }: { mode: keyof typeof profileFocus }) {
   return (
     <ScreenStack metrics={profile.metrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(320px,1fr)]">
-        <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <div className="mb-lg">
             <h2 className="text-h2 font-medium text-ink">{mode === 'clinicians' ? 'Clinician roster' : 'Patient roster'}</h2>
             <p className="mt-xs text-sm text-muted">
@@ -2125,7 +2145,7 @@ function ProfileListScreen({ mode }: { mode: keyof typeof profileFocus }) {
             onRowClick={handleRowClick}
           />
         </section>
-        <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+        <aside className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <div className="mb-xl flex items-start justify-between gap-md">
             <div>
               <h2 className="text-h2 font-medium text-ink">{profile.title}</h2>
@@ -2165,7 +2185,7 @@ function ClinicianDetailScreen() {
   return (
     <ScreenStack metrics={clinicianMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <div className="mb-xl flex items-start justify-between gap-lg">
             <div>
               <ToneTag>/clinicians/:clinicianId</ToneTag>
@@ -2184,7 +2204,7 @@ function ClinicianDetailScreen() {
             ))}
           </div>
         </section>
-        <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+        <aside className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <h2 className="mb-lg text-h2 font-medium text-ink">Assigned caseload</h2>
           <DataTable
             columns={[
@@ -2247,14 +2267,14 @@ function PolicyMatrixScreen() {
     <ScreenStack metrics={policyMetrics}>
       {taxonomySubnav}
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section aria-label="Policy library matrix" className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+        <section aria-label="Policy library matrix" className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <div className="mb-md flex items-center gap-md">
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search ID, title, or domain…"
-              className="min-w-[240px] flex-1 rounded-md border border-card bg-surface px-md py-sm text-sm placeholder:text-muted focus-visible:outline-none focus-visible:shadow-focus"
+              className="min-w-[240px] flex-1 rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset px-md py-sm text-sm placeholder:text-muted focus-visible:outline-none focus-visible:shadow-focus"
               aria-label="Search policy library"
             />
             <span className="text-xs text-muted">{filteredRows.length} of {policyRowsBase.length}</span>
@@ -2280,7 +2300,7 @@ function PatientDetailScreen() {
   return (
     <ScreenStack metrics={patientMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <div className="mb-xl flex items-start justify-between gap-lg">
             <div>
               <ToneTag>/patients/:patientId</ToneTag>
@@ -2299,7 +2319,7 @@ function PatientDetailScreen() {
             ))}
           </div>
         </section>
-        <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+        <aside className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <div className="mb-lg grid gap-xs">
             <h2 className="text-h2 font-medium text-ink">Care coordination</h2>
             <p className="text-sm text-muted">Version history, linked forms, evidence, and approvals for the active SOC plan.</p>
@@ -2309,7 +2329,7 @@ function PatientDetailScreen() {
               const Icon = item.icon;
 
               return (
-                <div className="flex items-center justify-between gap-lg rounded-lg border border-hairline bg-white/36 p-md backdrop-blur-sm" key={item.label}>
+                <div className="flex items-center justify-between gap-lg rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-md backdrop-blur-sm" key={item.label}>
                   <span className="flex items-center gap-md text-sm text-ink">
                     <Icon aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
                     {item.label}
@@ -2319,7 +2339,7 @@ function PatientDetailScreen() {
               );
             })}
           </div>
-          <div className="mt-lg rounded-lg border border-hairline bg-white/[.30] p-lg backdrop-blur-sm">
+          <div className="mt-lg rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg backdrop-blur-sm">
             <p className="text-tag uppercase tracking-tag text-brand-teal">Next review</p>
             <p className="mt-sm text-sm text-secondary">Clinical manager validates coverage and evidence before the afternoon SOC window closes.</p>
           </div>
@@ -2590,18 +2610,18 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
 
         <section
           className={cx(
-            'relative rounded-lg border border-card bg-surface shadow-rest',
+            'relative rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset shadow-rest',
             isCesCalendar ? 'p-2xl' : 'p-xl',
           )}
           onMouseLeave={isCesCalendar ? () => setActiveEventKey(null) : undefined}
         >
           <div className={cx('flex flex-wrap items-center justify-between gap-lg', isCesCalendar ? 'mb-2xl' : 'mb-xl')}>
-            <div className="inline-flex rounded-lg bg-tone-slate-bg p-xs">
+            <div className="inline-flex rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs">
               {['Day', 'Week', 'Month'].map((label) => (
                 <button
                   className={cx(
                     'min-h-tap rounded-md px-lg text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
-                    label === agendaMode ? 'bg-surface text-brand-teal shadow-rest' : 'text-secondary hover:bg-surface-hover',
+                    label === agendaMode ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal shadow-rest' : 'text-secondary hover:bg-surface-hover',
                   )}
                   key={label}
                   onClick={() => setAgendaMode(label)}
@@ -2625,7 +2645,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                     <h2 className="text-h2 font-medium text-ink">{activeMonthLabel} {cesYear} CES Calendar</h2>
                     <p className="mt-xs text-sm text-muted">{config.legend}</p>
                   </div>
-                  <div className="flex flex-wrap gap-xs rounded-lg border border-hairline bg-white/[.36] p-xs">
+                  <div className="flex flex-wrap gap-xs rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs">
                     {cesMonthOptions.map((month) => (
                       <button
                         aria-current={month === activeCesMonth ? 'true' : undefined}
@@ -2633,7 +2653,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                           'min-h-tap rounded-md px-md text-xs font-medium uppercase tracking-tag transition duration-fast focus-visible:outline-none focus-visible:shadow-focus',
                           month === activeCesMonth
                             ? 'bg-brand-teal text-on-brand shadow-rest'
-                            : 'text-brand-teal hover:bg-white/[.55]',
+                            : 'text-brand-teal hover:bg-surface-glass hover:backdrop-blur-md',
                         )}
                         key={month}
                         onClick={() => setCesMonth(month)}
@@ -2644,7 +2664,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                     ))}
                   </div>
                   {/* Year selection for full year CES calendar support */}
-                  <div className="flex flex-wrap gap-xs rounded-lg border border-hairline bg-white/[.36] p-xs ml-xs">
+                  <div className="flex flex-wrap gap-xs rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs ml-xs">
                     {[2025, 2026, 2027].map((y) => (
                       <button
                         aria-current={y === cesYear ? 'true' : undefined}
@@ -2652,7 +2672,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                           'min-h-tap rounded-md px-md text-xs font-medium uppercase tracking-tag transition duration-fast focus-visible:outline-none focus-visible:shadow-focus',
                           y === cesYear
                             ? 'bg-brand-teal text-on-brand shadow-rest'
-                            : 'text-brand-teal hover:bg-white/[.55]',
+                            : 'text-brand-teal hover:bg-surface-glass hover:backdrop-blur-md',
                         )}
                         key={y}
                         onClick={() => setCesYear(y)}
@@ -2680,9 +2700,9 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                   </div>
                 ))}
                 {calendarCells.map((day, index) => day === null ? (
-                  <div aria-hidden="true" className="min-h-[156px] border border-hairline bg-white/24" key={`blank-${index}`} />
+                  <div aria-hidden="true" className="min-h-[156px] border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset" key={`blank-${index}`} />
                 ) : (
-                  <div className="relative min-w-0 overflow-hidden min-h-[156px] border border-hairline bg-white/62 p-md !shadow-none transition duration-fast hover:bg-white/86" key={day}>
+                  <div className="relative min-w-0 overflow-hidden min-h-[156px] border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-md !shadow-none transition duration-fast hover:bg-surface-glass hover:backdrop-blur-md" key={day}>
                     <p className="mb-md text-base font-medium text-brand-teal">{day}</p>
                     <div className="grid gap-xs">
                       {events
@@ -2754,7 +2774,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                 </div>
               ))}
               {days.map((day) => (
-                <div className="relative min-w-0 overflow-hidden min-h-[112px] border border-hairline bg-surface p-sm !shadow-none" key={day}>
+                <div className="relative min-w-0 overflow-hidden min-h-[112px] border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-sm !shadow-none" key={day}>
                   <p className="mb-sm text-sm text-brand-teal">{day}</p>
                   <div className="grid gap-xs">
                     {events
@@ -2780,7 +2800,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
             <CalendarAgendaList events={events} legend={config.legend} onOpenEvent={openCalendarEvent} title={isCesCalendar ? `${activeMonthLabel} ${cesYear}` : config.title} />
           )}
         </section>
-        {!isCesCalendar && <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+        {!isCesCalendar && <aside className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <div className="mb-lg flex items-center justify-between gap-md">
             <h2 className="text-h2 font-medium text-ink">{config.railTitle}</h2>
             <ToneTag tone={config.railTone as Tone}>{events.length} active</ToneTag>
@@ -2810,9 +2830,9 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                       'rounded-lg border p-md text-left transition duration-fast ease-standard hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus w-full',
                       isHovered
                         ? (event.tone === 'orange' || event.tone === 'amber'
-                          ? 'border-brand-orange ring-1 ring-brand-orange bg-surface'
-                          : 'border-brand-teal ring-1 ring-brand-teal bg-surface')
-                        : 'border-card bg-tone-slate-bg'
+                          ? 'border-brand-orange ring-1 ring-brand-orange bg-surface-glass backdrop-blur-md shadow-glass-inset'
+                          : 'border-brand-teal ring-1 ring-brand-teal bg-surface-glass backdrop-blur-md shadow-glass-inset')
+                        : 'border-card bg-surface-glass backdrop-blur-md shadow-glass-inset'
                     )}
                     onBlur={() => {
                       setActiveEventKey(null);
@@ -2895,7 +2915,7 @@ function BoardScreen() {
   return (
     <ScreenStack metrics={boardMetricsLocal}>
       <section className="grid gap-lg">
-        <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-card bg-surface p-md shadow-rest">
+        <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-md shadow-rest">
           <div className="flex flex-wrap gap-sm">
             {['All work', 'Mine', 'Blocked', 'Missing evidence', 'Awaiting signature', 'Awaiting action / evidence'].map((label) => (
               <button
@@ -2903,7 +2923,7 @@ function BoardScreen() {
                   'min-h-tap rounded-md border px-md text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
                   label === activeFilter
                     ? 'border-brand-teal bg-brand-teal text-on-brand'
-                    : 'border-card bg-surface text-brand-teal hover:bg-surface-hover',
+                    : 'border-card bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal hover:bg-surface-hover',
                 )}
                 key={label}
                 type="button"
@@ -3059,7 +3079,7 @@ function WorkflowSwimlaneScreen() {
 
   // Prefer real workflow cards via shared adapter for event-clicked workflows
   let lanes = buildWorkflowSwimlane(event);
-  const directWf = (event as any).workflowId && WORKFLOWS[(event as any).workflowId] ? WORKFLOWS[(event as any).workflowId] : null;
+  const directWf = (event as any).workflowId && WORKFLOWS[(event as any).workflowId] && !isQapiQuarterlyEvent(event) ? WORKFLOWS[(event as any).workflowId] : null;
   if (directWf) {
     const viaAdapter: any = buildWorkflowSwimlaneCardsForEvent(event as any, directWf);
     if (viaAdapter && viaAdapter.lanes && viaAdapter.lanes.length && !/source missing/i.test(viaAdapter.summary || '')) {
@@ -3107,7 +3127,7 @@ function WorkflowSwimlaneScreen() {
           {lanes.map((lane, index) => (
             <div className={cx('rounded-lg p-md shadow-none', toneGlassSurfaceClasses[lane.tone])} key={lane.title}>
               <div className="mb-sm flex items-center justify-between gap-sm">
-                <span className="grid h-tap w-tap place-items-center rounded-md bg-white/[.55] text-brand-teal">{index + 1}</span>
+                <span className="grid h-tap w-tap place-items-center rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal">{index + 1}</span>
                 <span className="text-tag uppercase tracking-tag">{lane.count} cards</span>
               </div>
               <h3 className="text-body font-medium">{lane.title}</h3>
@@ -3116,14 +3136,14 @@ function WorkflowSwimlaneScreen() {
           ))}
         </section>
 
-        <div className="flex gap-sm overflow-x-auto rounded-lg border border-hairline bg-white/[.30] p-sm backdrop-blur-sm">
+        <div className="flex gap-sm overflow-x-auto rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-sm backdrop-blur-sm">
           {(buildCalendarEvents() as readonly CalendarEventData[]).map((calendarEvent) => (
             <button
               className={cx(
                 'min-h-tap shrink-0 rounded-sm border px-md text-xs font-medium uppercase tracking-tag transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
                 calendarEvent.workflowId === event.workflowId
                   ? 'border-brand-teal bg-brand-teal text-on-brand'
-                  : 'border-hairline bg-white/[.45] text-brand-teal hover:bg-white/[.60]',
+                  : 'border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal hover:bg-surface-glass hover:backdrop-blur-md',
               )}
               key={calendarEvent.id}
               onClick={() => navigate(toWorkflowSwimlanePath(calendarEvent))}
@@ -3182,20 +3202,20 @@ function WorkflowSwimlaneScreen() {
                 ['eCIgn signing ready', 'Awaiting'],
                 ['Audit note reviewed', 'Ready'],
               ].map(([item, status]) => (
-                <div key={item} className="flex items-center justify-between rounded-md bg-tone-slate-bg p-md text-xs">
+                <div key={item} className="flex items-center justify-between rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md text-xs">
                   <span className="font-light text-secondary">{item}</span>
                   <ToneBadge status={status === 'Ready' ? 'validated' : 'awaiting'} />
                 </div>
               ))}
             </div>
-            <div className="rounded-md border border-card bg-surface p-md flex flex-col gap-sm">
+            <div className="rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-md flex flex-col gap-sm">
               <h4 className="text-sm font-medium text-ink">Evidence and signature status</h4>
               <div className="grid gap-xs text-xs font-light text-secondary">
-                <div className="rounded-md bg-tone-slate-bg p-md">
+                <div className="rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md">
                   <span className="text-[10px] font-medium text-brand-teal uppercase block mb-xs">Required file</span>
                   Q2_QAPI_minutes_packet.pdf
                 </div>
-                <div className="rounded-md bg-tone-slate-bg p-md">
+                <div className="rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md">
                   <span className="text-[10px] font-medium text-brand-teal uppercase block mb-xs">eCIgn sequence</span>
                   Administrator, Governing Body Chair
                 </div>
@@ -3259,14 +3279,14 @@ function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
   return (
     <ScreenStack metrics={screenMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <h2 className="text-h2 font-medium text-ink">{config.title}</h2>
           <p className="mt-xs text-sm text-muted">{config.description}</p>
           {control && <p className="mt-xs text-xs text-brand-teal">Filtered by: {control}</p>}
           <div className="mt-lg grid gap-md">
             {displayRows.map(([title, ref, status, tone]) => (
               <div
-                className="flex items-center justify-between gap-lg rounded-lg border border-card bg-tone-slate-bg p-lg cursor-pointer hover:bg-surface-hover"
+                className="flex items-center justify-between gap-lg rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset shadow-rest p-lg cursor-pointer hover:bg-surface-hover hover:shadow-hover transition duration-base"
                 key={ref}
                 onClick={() => navigate(`${isAudit ? '/audit' : '/evidence'}?ref=${encodeURIComponent(ref)}`)}
               >
@@ -3278,7 +3298,7 @@ function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
                   <ToneTag tone={tone}>{status}</ToneTag>
                   {/* Fix missing link: resolve ref (now workflowId or id from V3 seed) to artifact/detail view */}
                   <button
-                    className="text-[10px] px-1.5 py-0.5 border border-hairline rounded hover:bg-surface text-brand-teal"
+                    className="text-[10px] px-1.5 py-0.5 border border-hairline rounded hover:bg-surface-glass hover:backdrop-blur-md text-brand-teal"
                     onClick={(e) => {
                       e.stopPropagation();
                       const fi = searchParams.get('form_instance_id');
@@ -3295,11 +3315,11 @@ function EvidenceScreen({ mode }: { mode: keyof typeof evidenceConfigs }) {
           </div>
           {displayRows.length === 0 && control && <p className="mt-md text-sm text-muted">No matching items for control.</p>}
         </section>
-        <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+        <aside className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <h2 className="mb-lg text-h2 font-medium text-ink">{isAudit ? 'Audit packet' : 'Evidence packet'}</h2>
           <div className="grid gap-md tablet-p:grid-cols-2">
             {((isAudit || mode === 'evidence-center') ? realTiles : config.tiles).map(([value, label]) => (
-              <div className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={label}>
+              <div className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset shadow-rest p-lg" key={label}>
                 <p className={cx('text-display', config.tileTone === 'orange' ? 'text-brand-orange' : 'text-brand-teal')}>
                   {value}
                 </p>
@@ -3328,7 +3348,7 @@ function ArtifactViewerScreen() {
   return (
     <ScreenStack metrics={artifactMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <div className="mb-lg flex items-start justify-between gap-lg">
             <div>
               <ToneTag>/artifacts/:artifactId</ToneTag>
@@ -3348,7 +3368,7 @@ function ArtifactViewerScreen() {
               ['Hash', `sha256: ${resolvedArtifactId.toLowerCase().slice(0,8)}...real`],
               ...(fi ? [['Form Instance ID (preserved)', fi] as const] : []),
             ].map(([label, value]) => (
-              <div className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={label}>
+              <div className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg" key={label}>
                 <p className="text-tag uppercase tracking-tag text-brand-teal">{label}</p>
                 <p className="mt-sm text-body text-ink">{value}</p>
               </div>
@@ -3410,7 +3430,7 @@ function AchcScreen({ mode }: { mode: 'crosswalk' | 'survey' }) {
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
         <section
           aria-label={isCrosswalk ? 'ACHC regulatory crosswalk matrix' : 'ACHC survey checklist matrix'}
-          className="rounded-lg border border-hairline bg-surface p-xl shadow-rest"
+          className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest"
         >
           <DataTable
             columns={columns}
@@ -3459,7 +3479,7 @@ function FormWorkspaceScreen() {
   if (!record) {
     return (
       <ScreenStack metrics={operationsMetrics}>
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <ToneTag tone="orange">Form unavailable</ToneTag>
           <h2 className="mt-lg text-h2 font-medium text-ink">
             {formId ? `${formId} - not found` : 'No form selected'}
@@ -3496,7 +3516,7 @@ function FormWorkspaceScreen() {
 
   return (
     <ScreenStack metrics={operationsMetrics}>
-      <div className="mx-auto max-w-[860px] bg-white p-8 shadow-sm border border-hairline print:shadow-none print:border-0" style={{ color: '#1F1C1B' }}>
+      <div className="mx-auto max-w-[860px] bg-surface-glass backdrop-blur-md shadow-glass-inset p-8 shadow-sm border border-hairline print:shadow-none print:border-0" style={{ color: '#1F1C1B' }}>
         <div className="flex justify-between mb-6">
           <div>
             <div className="text-[10px] uppercase tracking-[0.22em] text-[#607C7D]">Enterprise Forms Library</div>
@@ -3505,8 +3525,8 @@ function FormWorkspaceScreen() {
           </div>
           {!isPrintRoute && (
             <div className="flex gap-2 text-xs no-print">
-              <button onClick={navigateToPrint} className="px-3 py-1 border rounded hover:bg-surface">Print / Download</button>
-              <button onClick={navigateToEsign} className="px-3 py-1 border rounded hover:bg-surface">Open eCIgn</button>
+              <button onClick={navigateToPrint} className="px-3 py-1 border rounded hover:bg-surface-glass hover:backdrop-blur-md">Print / Download</button>
+              <button onClick={navigateToEsign} className="px-3 py-1 border rounded hover:bg-surface-glass hover:backdrop-blur-md">Open eCIgn</button>
             </div>
           )}
         </div>
@@ -3550,14 +3570,14 @@ function DocsScreen() {
   return (
     <ScreenStack metrics={operationsMetrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(280px,1fr)_minmax(0,3fr)]">
-        <aside className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+        <aside className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <h2 className="mb-lg text-h2 font-medium text-ink">Contents</h2>
           <div className="grid gap-sm">
             {guideEntries.map(([title], index) => (
               <button
                 className={cx(
                   'min-h-row rounded-md px-md text-left text-sm transition duration-fast ease-standard hover:bg-surface-hover',
-                  index === 0 ? 'bg-tone-teal-bg text-brand-teal' : 'bg-tone-slate-bg text-ink',
+                  index === 0 ? 'bg-tone-teal-bg text-brand-teal' : 'bg-surface-glass backdrop-blur-md shadow-glass-inset text-ink',
                 )}
                 key={title}
                 type="button"
@@ -3567,12 +3587,12 @@ function DocsScreen() {
             ))}
           </div>
         </aside>
-        <article className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+        <article className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <ToneTag>/journey/guide</ToneTag>
           <h2 className="mt-lg text-h2 font-medium text-ink">User Guide</h2>
           <div className="mt-xl grid gap-lg">
             {guideEntries.map(([title, body]) => (
-              <section className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={title}>
+              <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg" key={title}>
                 <h3 className="text-body font-light text-ink">{title}</h3>
                 <p className="mt-md text-sm text-muted">{body}</p>
               </section>
@@ -3609,18 +3629,18 @@ function ReportsScreen() {
   return (
     <ScreenStack metrics={metrics}>
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <div className="flex items-center justify-between">
             <h2 className="text-h2 font-medium text-ink">Sprint readiness trend{isPrintRoute && <span className="ml-2 inline-block"><ToneTag tone="teal">Print view</ToneTag></span>}</h2>
             <button
               type="button"
               onClick={() => { window.location.href = '/ces/reports?print=1'; }}
-              className="text-xs px-3 py-1 rounded border border-hairline hover:bg-surface"
+              className="text-xs px-3 py-1 rounded border border-hairline hover:bg-surface-glass hover:backdrop-blur-md"
             >
               Print / Download
             </button>
           </div>
-          <div className="mt-xl rounded-lg bg-tone-slate-bg p-lg">
+          <div className="mt-xl rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg">
             <div className="flex h-[260px] items-end justify-around gap-lg">
               {trendBars.map((value, index) => (
                 <div className="flex h-full flex-1 flex-col justify-end gap-md" key={`${value}-${index}`}>
@@ -3668,8 +3688,8 @@ function OverlaySystemScreen() {
             subtitle="Blocking policy or evidence decision with one orange primary action and a quiet secondary action."
             title="Centered Review Modal"
           >
-            <div className="rounded-lg border border-card bg-tone-slate-bg p-xl">
-              <div className="mx-auto max-w-[450px] rounded-lg border border-card bg-surface p-xl shadow-hover">
+            <div className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl">
+              <div className="mx-auto max-w-[450px] rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-hover">
                 <div className="mb-lg flex items-start justify-between">
                   <ToneTag tone="orange">Review required</ToneTag>
                   <button className="rounded-sm px-sm text-brand-teal hover:bg-surface-hover" type="button">
@@ -3705,7 +3725,7 @@ function OverlaySystemScreen() {
             title="Confirmation Dialog"
           >
             <div className="rounded-lg border border-tone-orange-border bg-tone-orange-bg p-xl">
-              <div className="rounded-lg bg-surface p-xl shadow-rest">
+              <div className="rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
                 <ToneTag tone="orange">Confirm action</ToneTag>
                 <h2 className="mt-lg text-h2 font-medium text-ink">Close evidence gap?</h2>
                 <p className="mt-md text-sm text-muted">This will mark the packet complete and notify the assigned reviewer.</p>
@@ -3719,7 +3739,7 @@ function OverlaySystemScreen() {
         </div>
         <div className="grid gap-xl desktop:grid-cols-3">
           <OverlayPanel icon={PanelRightOpen} subtitle="Dense task detail panel with status, owner, evidence, and next action." title="Right Drawer">
-            <div className="ml-auto max-w-[410px] rounded-lg border border-card bg-surface p-xl shadow-hover">
+            <div className="ml-auto max-w-[410px] rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-hover">
               <div className="mb-lg flex items-center justify-between">
                 <ToneTag>Task drawer</ToneTag>
                 <span className="text-muted">x</span>
@@ -3727,7 +3747,7 @@ function OverlaySystemScreen() {
               <h2 className="text-h2 font-medium text-ink">QAPI minutes packet</h2>
               <div className="mt-lg grid gap-sm">
                 {['Owner: Compliance Officer', 'Evidence: 3 files', 'Next: Send for signature'].map((item) => (
-                  <div className="flex items-center justify-between rounded-md bg-tone-slate-bg p-md text-sm text-ink" key={item}>
+                  <div className="flex items-center justify-between rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md text-sm text-ink" key={item}>
                     {item}
                     <CheckCircle2 aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
                   </div>
@@ -3736,9 +3756,9 @@ function OverlaySystemScreen() {
             </div>
           </OverlayPanel>
           <OverlayPanel icon={Upload} subtitle="Mobile-first action sheet for field evidence capture and signature steps." title="Bottom Sheet">
-            <div className="rounded-2xl border border-card bg-tone-slate-bg p-lg">
+            <div className="rounded-2xl border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg">
               <div className="mx-auto mb-md h-xs w-[52px] rounded-sm bg-disabled" />
-              <div className="rounded-lg bg-surface p-lg shadow-rest">
+              <div className="rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
                 <ToneTag>Field action</ToneTag>
                 <h2 className="mt-md text-h2 font-medium text-ink">Capture wound photo</h2>
                 <p className="mt-sm text-sm text-muted">Attach image, select visit, and submit to the audit packet.</p>
@@ -3746,9 +3766,9 @@ function OverlaySystemScreen() {
             </div>
           </OverlayPanel>
           <OverlayPanel icon={FileText} subtitle="Anchored menu with low-noise surface, teal active state, and orange intervention action." title="Popover and Inline Menu">
-            <div className="rounded-lg border border-card bg-tone-slate-bg p-xl">
+            <div className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl">
               <Button>Evidence actions</Button>
-              <div className="mt-md rounded-lg border border-card bg-surface p-md shadow-rest">
+              <div className="mt-md rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-md shadow-rest">
                 {['Open source file', 'Attach packet', 'Request override'].map((item, index) => (
                   <div
                     className={cx('rounded-md p-md text-sm', index === 2 ? 'text-brand-orange' : 'text-brand-teal')}
@@ -3778,7 +3798,7 @@ function OverlayPanel({
   title: string;
 }) {
   return (
-    <section className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+    <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
       <div className="mb-lg flex items-start gap-md">
         <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-brand-teal">
           <Icon aria-hidden="true" className="h-icon-md w-icon-md" />

@@ -14,12 +14,11 @@ export const primaryNavItems: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', to: '/dashboard', hashIds: ['dashboard'] },
   // 'Clinician Profiles', 'Patient Profiles' and 'Calendar' hidden from the sidebar per request.
   // Routes still resolve by direct URL; they are just removed from the nav.
-  { id: 'ces', label: 'Compliance Execution (CES)', to: '/ces/calendar', hashIds: ['ces-calendar', 'ces-board', 'workflows', 'master-controls', 'audit-mode', 'evidence-center', 'ces-reports'] },
-  { id: 'taxonomy', label: 'Taxonomy', to: '/framework', hashIds: ['taxonomy', 'framework', 'achc-survey', 'achc-crosswalk'] },
-  { id: 'onboarding', label: 'Onboarding & Training', to: '/journey', hashIds: ['journey-overview', 'journey-new-hire', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'] },
-  { id: 'policy-lifecycle', label: 'Policy Lifecycle', to: '/policy-lifecycle', hashIds: ['policy-lifecycle'], matchPaths: ['/policy-lifecycle', '/policy-lifecycle/:policyId'] },
+  { id: 'ces', label: 'Compliance', to: '/ces/calendar', hashIds: ['ces-calendar', 'ces-board', 'workflows', 'master-controls', 'audit-mode', 'evidence-center', 'evidence-intake', 'evidence-packet-studio', 'ces-reports'] },
+  { id: 'taxonomy', label: 'Policies', to: '/framework', hashIds: ['taxonomy', 'framework', 'achc-survey', 'achc-crosswalk', 'policy-lifecycle', 'policy-lifecycle-detail', 'policy-approvals', 'pm-approvals'] },
+  { id: 'onboarding', label: 'Training', to: '/journey', hashIds: ['journey-overview', 'journey-new-hire', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'] },
   // 'Evidence' and 'Hubstaff' hidden from the sidebar per request. Routes still resolve by URL.
-  { id: 'help-center', label: 'Help Center', to: '/help', hashIds: ['help-center'] },
+  { id: 'help-center', label: 'Help', to: '/help', hashIds: ['help-center'] },
   // System Documentation and Demo are hidden from the nav bar per request.
   // (Their routes still resolve by direct URL; they are just hidden from the sidebar.)
   { id: 'admin', label: 'Admin', to: '/admin/user-groups', hashIds: ['admin-groups', 'admin-roles', 'admin-permissions', 'admin-users'] },
@@ -34,11 +33,15 @@ export const workspaceSubnavItems: Record<string, NavItem[]> = {
     { id: 'master-controls', label: 'Master Controls', to: '/compliance/master-controls', hashIds: ['master-controls'] },
     { id: 'audit-mode', label: 'Audit Mode', to: '/audit', hashIds: ['audit-mode'] },
     { id: 'evidence-center', label: 'Evidence Center', to: '/evidence', hashIds: ['evidence-center'] },
+    { id: 'evidence-intake', label: 'Brad Evidence Intake', to: '/evidence/intake', hashIds: ['evidence-intake'] },
+    { id: 'evidence-packet-studio', label: 'Evidence Packet Studio', to: '/evidence/packet-studio', hashIds: ['evidence-packet-studio'] },
     { id: 'ces-reports', label: 'Reports', to: '/ces/reports', hashIds: ['ces-reports'] },
   ],
   taxonomy: [
     { id: 'framework', label: 'Framework', to: '/framework', hashIds: ['framework'] },
     { id: 'policy-library', label: 'Policies', to: '/library', hashIds: ['policy-library'], matchPaths: ['/library', '/library/:policyId', '/library/:policyId/print', '/print/:policyId'] },
+    { id: 'policy-lifecycle', label: 'Policy Lifecycle', to: '/policy-lifecycle', hashIds: ['policy-lifecycle'], matchPaths: ['/policy-lifecycle', '/policy-lifecycle/:policyId'] },
+    { id: 'policy-approvals', label: 'Policy Approvals', to: '/policy-approvals', hashIds: ['policy-approvals', 'pm-approvals'], matchPaths: ['/policy-approvals', '/pm/approvals'] },
     { id: 'forms-library', label: 'Forms', to: '/forms', hashIds: ['forms-library'], matchPaths: ['/forms', '/forms/:formId', '/forms/:formId/print', '/forms/:formId/esign'] },
     { id: 'achc-survey', label: 'ACHC Survey', to: '/framework/achc-survey', hashIds: ['achc-survey'] },
     { id: 'achc-crosswalk', label: 'ACHC Crosswalk', to: '/framework/achc-survey/crosswalk', hashIds: ['achc-crosswalk'] },
@@ -82,11 +85,15 @@ export const WORKSPACE_SUBNAV: Record<string, NavItem[]> = {
     { id: 'master-controls', label: 'Master Controls', to: '/compliance/master-controls', hashIds: ['master-controls'] },
     { id: 'audit-mode', label: 'Audit Mode', to: '/audit', hashIds: ['audit-mode'] },
     { id: 'evidence-center', label: 'Evidence Center', to: '/evidence', hashIds: ['evidence-center'] },
+    { id: 'evidence-intake', label: 'Brad Evidence Intake', to: '/evidence/intake', hashIds: ['evidence-intake'] },
+    { id: 'evidence-packet-studio', label: 'Evidence Packet Studio', to: '/evidence/packet-studio', hashIds: ['evidence-packet-studio'] },
     { id: 'ces-reports', label: 'Reports', to: '/ces/reports', hashIds: ['ces-reports'] },
   ],
   taxonomy: [
     { id: 'framework', label: 'Framework', to: '/framework', hashIds: ['framework'] },
     { id: 'policy-library', label: 'Policies', to: '/library', hashIds: ['policy-library'] },
+    { id: 'policy-lifecycle', label: 'Policy Lifecycle', to: '/policy-lifecycle', hashIds: ['policy-lifecycle'] },
+    { id: 'policy-approvals', label: 'Policy Approvals', to: '/policy-approvals', hashIds: ['policy-approvals', 'pm-approvals'] },
     { id: 'forms-library', label: 'Forms', to: '/forms', hashIds: ['forms-library'] },
     { id: 'achc-survey', label: 'ACHC Survey', to: '/framework/achc-survey', hashIds: ['achc-survey'] },
     { id: 'achc-crosswalk', label: 'ACHC Crosswalk', to: '/framework/achc-survey/crosswalk', hashIds: ['achc-crosswalk'] },

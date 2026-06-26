@@ -2,7 +2,7 @@ import { env } from './env.js';
 import { log } from './logger.js';
 import { ApiError } from './errors.js';
 import {
-  ensureFolderPath, uploadFile, driveFileUrl, driveFolderUrl,
+  ensureFolderPath, uploadFile, copyFile, driveFileUrl, driveFolderUrl,
 } from './googleDrive.js';
 import {
   attachDriveFileToEvent, findByEventId, setEvidenceExtendedProperties,
@@ -74,7 +74,8 @@ export function sanitizeName(input: string): string {
   return String(input ?? '')
     .normalize('NFKD')
     .replace(/[/\\?%*:|"<>]/g, '-')   // unsafe filename characters
-    .replace(new RegExp('[\x00-\x1f\x7f]', 'g'), '')  // control chars (new RegExp avoids no-control-regex)
+    // eslint-disable-next-line no-control-regex -- intentional control-char stripping for Drive folder/file names
+    .replace(new RegExp('[\x00-\x1f\x7f]', 'g'), '')  // control chars
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^[.-]+|[.-]+$/g, '')
@@ -433,4 +434,189 @@ export async function uploadEventEvidence(input: UploadEvidenceInput): Promise<U
 /** Folder link helper re-exported for route/UI convenience. */
 export function evidenceFolderUrl(folderId: string): string {
   return driveFolderUrl(folderId);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Brad Evidence Intake — created-date filing (Section 9 + 3A).
+
+   Intake canonical evidence is filed by the resolved SOURCE-SYSTEM
+   CREATED date (the filing period), NOT the event/occurrence/upload
+   date. The folder convention extends the existing 01_CES/Evidence
+   tree with a dedicated Intake branch keyed to the filing period:
+
+     01_CES/Evidence/Intake/{filingYear}/{filingMonthName}/{classification}/{leaf}
+
+   This preserves the established Drive root + 01_CES/Evidence prefix
+   while making created-date filing explicit and auditable.
+   ═══════════════════════════════════════════════════════════════ */
+
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+/** Parse a "YYYY-MM" filing-period key into year + month name. */
+function partsFromFilingPeriodKey(filingPeriodKey: string): { year: string; monthName: string } | null {
+  const m = /^(\d{4})-(\d{2})$/.exec(String(filingPeriodKey ?? '').trim());
+  if (!m) return null;
+  const month = Number(m[2]);
+  if (month < 1 || month > 12) return null;
+  return { year: m[1], monthName: MONTH_NAMES[month - 1] };
+}
+
+/**
+ * Build the sanitized Drive folder segments for an intake canonical-evidence
+ * upload, filed by the resolved created-date filing period.
+ */
+export function buildIntakeEvidenceFolderSegments(input: {
+  filingPeriodKey: string;
+  classification: string;
+  leaf?: string;
+}): string[] | null {
+  const parts = partsFromFilingPeriodKey(input.filingPeriodKey);
+  if (!parts) return null; // never guess a period
+  const segments = [
+    '01_CES',
+    'Evidence',
+    'Intake',
+    sanitizeName(parts.year),
+    sanitizeName(parts.monthName),
+    sanitizeName(input.classification || 'unclassified'),
+  ];
+  if (input.leaf) segments.push(sanitizeName(input.leaf));
+  return segments;
+}
+
+export interface IntakeUploadInput {
+  canonicalEvidenceId: string;
+  filingPeriodKey: string;   // YYYY-MM (resolved created-date period)
+  filingQuarterKey?: string; // YYYY-Qn
+  classification: string;
+  title: string;
+  fileName: string;
+  mimeType: string;
+  contentBase64: string;
+  eventId?: string;
+  uploadedBy?: string;
+}
+
+export interface IntakeUploadResult {
+  driveFileId: string;
+  driveFolderId: string;
+  driveFolderPath: string;
+  driveFileUrl: string;
+  contentStatus: 'available';
+}
+
+/**
+ * Upload a canonical intake evidence file to its created-date filing folder in
+ * Drive. Returns a REAL driveFileId — never a simulated id. Throws (fail-closed)
+ * when the integration is disabled, the filing period is unresolved, or the
+ * name looks like PHI.
+ */
+export async function uploadIntakeEvidence(input: IntakeUploadInput): Promise<IntakeUploadResult> {
+  if (!env.calendarEvidenceEnabled) {
+    throw new ApiError('validation_error', 'Google Drive evidence is disabled (GOOGLE_CALENDAR_EVIDENCE_ENABLED=false).', 400);
+  }
+  if (!input.canonicalEvidenceId) throw new ApiError('validation_error', 'canonicalEvidenceId is required.', 400);
+  if (!input.contentBase64) throw new ApiError('validation_error', 'File content is required.', 400);
+
+  const segments = buildIntakeEvidenceFolderSegments({
+    filingPeriodKey: input.filingPeriodKey,
+    classification: input.classification,
+    leaf: input.eventId,
+  });
+  if (!segments) {
+    // Never silently upload to a generic root after a folder-resolution failure.
+    throw new ApiError('validation_error', `Unresolved filing period "${input.filingPeriodKey}"; refusing to file evidence without a resolved created-date period.`, 400);
+  }
+
+  const safeFileName = sanitizeFileName(input.fileName || input.title || input.canonicalEvidenceId);
+  if (looksLikePhiName(safeFileName) || looksLikePhiName(input.title)) {
+    throw new ApiError('validation_error', 'Evidence name appears to contain PHI/patient identifiers. Use system IDs only.', 400);
+  }
+
+  const buffer = Buffer.from(input.contentBase64, 'base64');
+  if (buffer.length === 0) throw new ApiError('validation_error', 'Decoded file is empty.', 400);
+
+  const folderId = await ensureFolderPath(segments);
+  const uploaded = await uploadFile({
+    parentId: folderId,
+    name: safeFileName,
+    mimeType: input.mimeType || 'application/octet-stream',
+    buffer,
+  });
+
+  log.info('google.evidence.intake.upload.ok', {
+    canonicalEvidenceId: input.canonicalEvidenceId,
+    driveFileId: uploaded.fileId,
+    filingPeriodKey: input.filingPeriodKey,
+    classification: input.classification,
+  });
+
+  return {
+    driveFileId: uploaded.fileId,
+    driveFolderId: folderId,
+    driveFolderPath: segments.join('/'),
+    driveFileUrl: uploaded.webViewLink ?? driveFileUrl(uploaded.fileId),
+    contentStatus: 'available',
+  };
+}
+
+export interface IntakeCopyInput {
+  canonicalEvidenceId: string;
+  copiedFromDriveFileId: string;
+  packetId: string;
+  eventId: string;
+  filingPeriodKey: string;
+  classification: string;
+  packetFolderName?: string;
+  name?: string;
+}
+
+export interface IntakeCopyResult {
+  driveCopyFileId: string;
+  driveFolderId: string;
+  driveFolderPath: string;
+  driveFileUrl: string;
+}
+
+/**
+ * Create a physical Drive copy of canonical evidence into a packet folder
+ * (Section 10). Uses the Drive copy API, preserves canonicalEvidenceId
+ * provenance (recorded by the caller), and never overwrites the original.
+ */
+export async function copyEvidenceToPacketFolder(input: IntakeCopyInput): Promise<IntakeCopyResult> {
+  if (!env.calendarEvidenceEnabled) {
+    throw new ApiError('validation_error', 'Google Drive evidence is disabled.', 400);
+  }
+  if (!input.copiedFromDriveFileId) throw new ApiError('validation_error', 'copiedFromDriveFileId is required for a packet copy.', 400);
+
+  const parts = partsFromFilingPeriodKey(input.filingPeriodKey);
+  const segments = [
+    '01_CES', 'Evidence', 'Packets',
+    sanitizeName(parts?.year ?? 'unknown'),
+    sanitizeName(input.packetId),
+    sanitizeName(input.packetFolderName ?? input.classification),
+  ];
+  const folderId = await ensureFolderPath(segments);
+  const copied = await copyFile({
+    sourceFileId: input.copiedFromDriveFileId,
+    destFolderId: folderId,
+    name: input.name,
+  });
+
+  log.info('google.evidence.intake.copy.ok', {
+    canonicalEvidenceId: input.canonicalEvidenceId,
+    packetId: input.packetId,
+    driveCopyFileId: copied.fileId,
+    copiedFromDriveFileId: input.copiedFromDriveFileId,
+  });
+
+  return {
+    driveCopyFileId: copied.fileId,
+    driveFolderId: folderId,
+    driveFolderPath: segments.join('/'),
+    driveFileUrl: copied.webViewLink ?? driveFileUrl(copied.fileId),
+  };
 }

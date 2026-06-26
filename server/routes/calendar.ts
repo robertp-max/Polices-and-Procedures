@@ -21,9 +21,10 @@ import { env } from '../env.js';
 import { pingDrive, ensureFolderPath } from '../googleDrive.js';
 import {
   uploadEventEvidence,
+  uploadIntakeEvidence,
+  copyEvidenceToPacketFolder,
   buildEvidenceFolderSegments,
   evidenceFolderUrl,
-  validateEvidenceRef,
   type EvidenceCategory,
   type GoogleCalendarDriveEvidenceRef,
 } from '../googleEvidence.js';
@@ -368,6 +369,104 @@ calendarRouter.get('/events/:eventId/evidence', asyncHandler(async (req, res) =>
   const eventId = String(req.params.eventId);
   const items = await getCesMetadataStore().listEvidence(eventId);
   res.json({ eventId, items, count: items.length });
+}));
+
+/**
+ * POST /api/calendar/intake/evidence/upload
+ *
+ * Brad Evidence Intake — upload a CANONICAL evidence file filed by its resolved
+ * SOURCE-SYSTEM CREATED date (Section 9 + 3A). The filing month/quarter come
+ * from filingPeriodKey (e.g. "2026-03"), NEVER from the occurrence/event/upload
+ * date. Returns a REAL driveFileId; honest failure when Drive is unreachable.
+ *
+ * Body: { canonicalEvidenceId, filingPeriodKey, filingQuarterKey?, classification,
+ *         title, fileName, mimeType, contentBase64, eventId?, uploadedBy? }
+ */
+calendarRouter.post('/intake/evidence/upload', asyncHandler(async (req, res) => {
+  if (!env.calendarEvidenceEnabled) {
+    throw new ApiError('validation_error', 'Google Drive evidence is disabled.', 400);
+  }
+  const driveHealth = await pingDrive();
+  if (!driveHealth.reachable) {
+    throw new ApiError('validation_error', 'Intake upload blocked: Google Drive evidence persistence is not reachable.', 503);
+  }
+  const b = (req.body ?? {}) as Record<string, unknown>;
+  const canonicalEvidenceId = strOrEmpty(b.canonicalEvidenceId);
+  const filingPeriodKey = strOrEmpty(b.filingPeriodKey);
+  const classification = strOrEmpty(b.classification) || 'unknown_needs_review';
+  const contentBase64 = strOrEmpty(b.contentBase64);
+  if (!canonicalEvidenceId) throw new ApiError('validation_error', '`canonicalEvidenceId` is required.', 400);
+  if (!filingPeriodKey) throw new ApiError('validation_error', '`filingPeriodKey` (resolved created-date period) is required.', 400);
+  if (!contentBase64) throw new ApiError('validation_error', '`contentBase64` is required.', 400);
+
+  const result = await uploadIntakeEvidence({
+    canonicalEvidenceId,
+    filingPeriodKey,
+    filingQuarterKey: strOrUndef(b.filingQuarterKey),
+    classification,
+    title: strOrEmpty(b.title) || canonicalEvidenceId,
+    fileName: strOrEmpty(b.fileName) || `${canonicalEvidenceId}.txt`,
+    mimeType: strOrEmpty(b.mimeType) || 'application/octet-stream',
+    contentBase64,
+    eventId: strOrUndef(b.eventId),
+    uploadedBy: strOrUndef(b.uploadedBy) ?? resolveActor(req),
+  });
+
+  res.status(201).json({
+    canonicalEvidenceId,
+    driveFileId: result.driveFileId,
+    driveFolderId: result.driveFolderId,
+    driveFolderPath: result.driveFolderPath,
+    driveWebViewLink: result.driveFileUrl,
+    driveUploadStatus: 'uploaded',
+    contentStatus: result.contentStatus,
+    filingPeriodKey,
+    storageProvider: env.evidenceStorageProvider,
+  });
+}));
+
+/**
+ * POST /api/calendar/intake/evidence/copy
+ *
+ * Create a physical Drive copy of canonical evidence into a packet folder
+ * (Section 10). Preserves canonicalEvidenceId + copiedFromDriveFileId
+ * provenance; never overwrites the canonical original.
+ *
+ * Body: { canonicalEvidenceId, copiedFromDriveFileId, packetId, eventId,
+ *         filingPeriodKey, classification, name?, packetFolderName? }
+ */
+calendarRouter.post('/intake/evidence/copy', asyncHandler(async (req, res) => {
+  if (!env.calendarEvidenceEnabled) {
+    throw new ApiError('validation_error', 'Google Drive evidence is disabled.', 400);
+  }
+  const b = (req.body ?? {}) as Record<string, unknown>;
+  const canonicalEvidenceId = strOrEmpty(b.canonicalEvidenceId);
+  const copiedFromDriveFileId = strOrEmpty(b.copiedFromDriveFileId);
+  const packetId = strOrEmpty(b.packetId);
+  if (!canonicalEvidenceId) throw new ApiError('validation_error', '`canonicalEvidenceId` is required.', 400);
+  if (!copiedFromDriveFileId) throw new ApiError('validation_error', '`copiedFromDriveFileId` is required.', 400);
+  if (!packetId) throw new ApiError('validation_error', '`packetId` is required.', 400);
+
+  const result = await copyEvidenceToPacketFolder({
+    canonicalEvidenceId,
+    copiedFromDriveFileId,
+    packetId,
+    eventId: strOrEmpty(b.eventId),
+    filingPeriodKey: strOrEmpty(b.filingPeriodKey),
+    classification: strOrEmpty(b.classification) || 'unknown_needs_review',
+    name: strOrUndef(b.name),
+    packetFolderName: strOrUndef(b.packetFolderName),
+  });
+
+  res.status(201).json({
+    canonicalEvidenceId,
+    copiedFromDriveFileId,
+    packetId,
+    driveCopyFileId: result.driveCopyFileId,
+    driveFolderId: result.driveFolderId,
+    driveFolderPath: result.driveFolderPath,
+    driveWebViewLink: result.driveFileUrl,
+  });
 }));
 
 /**

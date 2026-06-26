@@ -8,6 +8,8 @@ const cesSubnavItems = [
   { label: 'Master Controls', path: '/compliance/master-controls' },
   { label: 'Audit Mode', path: '/audit' },
   { label: 'Evidence Center', path: '/evidence' },
+  { label: 'Brad Evidence Intake', path: '/evidence/intake' },
+  { label: 'Evidence Packet Studio', path: '/evidence/packet-studio' },
   { label: 'Reports', path: '/ces/reports' },
 ];
 
@@ -35,8 +37,8 @@ export function CESSubnav() {
   const effectiveActive = currentPath.startsWith('/events/') ? '/ces/events' : activeTo;
 
   return (
-    <div className="mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="CES subnav">
-      <span className="mr-sm text-tag uppercase tracking-tag text-muted">CES:</span>
+    <div className="mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="Compliance subnav">
+      <span className="mr-sm text-tag uppercase tracking-tag text-muted">Compliance:</span>
       {cesSubnavItems.map((item) => {
         const isActive = effectiveActive === item.path;
         return (

@@ -275,7 +275,69 @@ export const CalendarApi = {
       contentBase64,
     });
   },
+
+  /* ─── Brad Evidence Intake (created-date filing; real Drive) ─── */
+
+  /**
+   * Upload a CANONICAL intake evidence file filed by its resolved source-system
+   * created date (filingPeriodKey). Returns a REAL driveFileId from the server;
+   * the server fails closed when Drive is unreachable (no simulated success).
+   */
+  async intakeUploadEvidence(input: IntakeUploadEvidenceInput): Promise<IntakeUploadEvidenceResponse> {
+    return request('POST', '/intake/evidence/upload', input);
+  },
+
+  /** Create a physical Drive copy of canonical evidence into a packet folder. */
+  async intakeCopyEvidence(input: IntakeCopyEvidenceInput): Promise<IntakeCopyEvidenceResponse> {
+    return request('POST', '/intake/evidence/copy', input);
+  },
 };
+
+export interface IntakeUploadEvidenceInput {
+  canonicalEvidenceId: string;
+  filingPeriodKey: string;   // YYYY-MM (resolved created-date period)
+  filingQuarterKey?: string;
+  classification: string;
+  title: string;
+  fileName: string;
+  mimeType: string;
+  contentBase64: string;
+  eventId?: string;
+  uploadedBy?: string;
+}
+
+export interface IntakeUploadEvidenceResponse {
+  canonicalEvidenceId: string;
+  driveFileId: string;
+  driveFolderId: string;
+  driveFolderPath: string;
+  driveWebViewLink: string;
+  driveUploadStatus: 'uploaded';
+  contentStatus: 'available';
+  filingPeriodKey: string;
+  storageProvider: string;
+}
+
+export interface IntakeCopyEvidenceInput {
+  canonicalEvidenceId: string;
+  copiedFromDriveFileId: string;
+  packetId: string;
+  eventId: string;
+  filingPeriodKey: string;
+  classification: string;
+  name?: string;
+  packetFolderName?: string;
+}
+
+export interface IntakeCopyEvidenceResponse {
+  canonicalEvidenceId: string;
+  copiedFromDriveFileId: string;
+  packetId: string;
+  driveCopyFileId: string;
+  driveFolderId: string;
+  driveFolderPath: string;
+  driveWebViewLink: string;
+}
 
 /** Read a File into a base64 string (strips the data: URL prefix). */
 async function fileToBase64(file: File): Promise<string> {

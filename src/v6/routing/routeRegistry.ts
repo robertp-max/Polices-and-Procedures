@@ -63,13 +63,15 @@ export const V6_ROUTES = [
   { path: '/compliance/master-controls', hashId: 'master-controls', template: 'matrix', group: 'CES', title: 'Master Controls', description: 'Regulatory control matrix mapped to risk, evidence, and readiness.' },
   { path: '/audit', hashId: 'audit-mode', template: 'evidence', group: 'CES', title: 'Audit Mode', description: 'Read-only audit review surface for missing evidence and packet checks.' },
   { path: '/evidence', hashId: 'evidence-center', template: 'evidence', group: 'CES', title: 'Evidence Center', description: 'Evidence repository for files, hashes, signatures, and audit metadata.' },
+  { path: '/evidence/intake', hashId: 'evidence-intake', template: 'evidence', group: 'CES', title: 'Brad Evidence Intake', description: 'Brad Evidence Intake inside Evidence Center: upload source exports, resolve created-date filing, classify and dedupe, file to Drive, run full-population review, and prepare draft forms, agendas, tasks, and packets for human approval.' },
+  { path: '/evidence/packet-studio', hashId: 'evidence-packet-studio', template: 'evidence', group: 'CES', title: 'Evidence Packet Studio', description: 'Brad-assisted evidence packet generator inside Evidence Center for event packets, source mapping, preview, and export readiness.' },
   { path: '/ces/reports', hashId: 'ces-reports', template: 'reports', group: 'CES', title: 'CES Reports', description: 'Compliance Execution reports for posture, packets, approvals, and throughput.' },
   { path: '/calendar/event/:eventId/task/:taskId', hashId: 'mobile-incident', template: 'detail', group: 'CES', title: 'Mobile Incident', description: 'Mobile task execution surface for evidence capture and field completion.' },
   { path: '/my-tasks', hashId: 'my-tasks', template: 'board', group: 'CES', title: 'My Tasks', description: 'Personal task board for assigned compliance and operations work.' },
   { path: '/pm/my-tasks', hashId: 'pm-my-tasks', template: 'board', group: 'CES', title: 'PM My Tasks', description: 'PM personal task board (V1 parity).' },
   { path: '/pm/sprint-plan', hashId: 'pm-sprint-plan', template: 'board', group: 'CES', title: 'PM Sprint Plan', description: 'Capacity-aware sprint planner, allocator, rollover (V1 parity).' },
   { path: '/pm/sprint-review', hashId: 'pm-sprint-review', template: 'reports', group: 'CES', title: 'PM Sprint Review', description: 'Sprint retrospective, per-assignee delivery, carry-over (V1 parity).' },
-  { path: '/pm/approvals', hashId: 'pm-approvals', template: 'board', group: 'CES', title: 'PM Approvals', description: 'Approvals queue for tasks in_review (V1 parity).' },
+  { path: '/pm/approvals', hashId: 'pm-approvals', template: 'board', group: 'Taxonomy', title: 'PM Approvals', description: 'Approvals queue for tasks in_review (V1 parity).' },
   { path: '/pm/dashboard', hashId: 'pm-dashboard', template: 'reports', group: 'CES', title: 'PM Dashboard', description: 'PM sprint burndown, throughput, status mix (V1 parity).' },
   { path: '/framework', hashId: 'framework', template: 'framework', group: 'Taxonomy', title: 'Framework', description: 'Regulatory framework map for domains, policies, forms, workflows, and authorities.' },
   { path: '/taxonomy', hashId: 'taxonomy', template: 'framework', group: 'Taxonomy', title: 'Taxonomy', description: 'Regulatory framework taxonomy (V1 alias to Framework for domains, policies, forms, workflows, and authorities).' },
@@ -77,6 +79,7 @@ export const V6_ROUTES = [
   { path: '/framework/achc-survey/crosswalk', hashId: 'achc-crosswalk', template: 'achc-crosswalk', group: 'Taxonomy', title: 'ACHC Crosswalk', description: 'ACHC, CMS, Title 22, policy, form, and evidence crosswalk.' },
   { path: '/library', hashId: 'policy-library', template: 'matrix', group: 'Taxonomy', title: 'Policy Library', description: 'Policy library matrix for active agency policies and survey-ready context.' },
   { path: '/library/:policyId', hashId: 'policy-detail', template: 'detail', group: 'Taxonomy', title: 'Policy Detail', description: 'Policy detail with version metadata, required codes, section tabs, and appendices.' },
+  { path: '/policy-approvals', hashId: 'policy-approvals', template: 'board', group: 'Taxonomy', title: 'Policy Approvals', description: 'Policy approval queue for lifecycle review, approval authority, and publication readiness.' },
   // Protected policy print route — reuses policy-detail hashId so existing PolicyDetailScreen
   // (which resolves real policyId via getCorpusPolicy + getPolicyContent from seeds) renders
   // the record. Enables openPolicyPrintRoute + browser print / PDF without view changes.
@@ -113,7 +116,7 @@ export const V6_ROUTES = [
   { path: '/onboarding-v2/batches/:batchId', hashId: 'onboarding-v2-batch', template: 'detail', group: 'Onboarding v2', title: 'Onboarding Batch', description: 'Batch detail for gates, checklists, evidence, signatures, and timeline hashes.' },
   { path: '/onboarding-v2/audit', hashId: 'onboarding-v2-audit', template: 'evidence', group: 'Onboarding v2', title: 'Onboarding Audit', description: 'Onboarding audit readiness surface for dossiers, hashes, and overrides.' },
   { path: '/onboarding-v2/governance', hashId: 'onboarding-v2-governance', template: 'reports', group: 'Onboarding v2', title: 'Onboarding Overrides', description: 'Onboarding override governance panel for requests, approvers, and audit warnings.' },
-  { path: '/policy-lifecycle', hashId: 'policy-lifecycle', template: 'lifecycle', group: 'System', title: 'Policy Lifecycle', description: 'Policy lifecycle workspace for draft, review, approval, publication, and archive states.' },
+  { path: '/policy-lifecycle', hashId: 'policy-lifecycle', template: 'lifecycle', group: 'Taxonomy', title: 'Policy Lifecycle', description: 'Policy lifecycle workspace for draft, review, approval, publication, and archive states.' },
   { path: '/hubstaff', hashId: 'hubstaff', template: 'reports', group: 'System', title: 'Hubstaff', description: 'Hubstaff reporting surface for time-tracking and documentation timelines.' },
   { path: '/system-documentation/:sectionId?', hashId: 'system-docs', template: 'docs', group: 'System', title: 'System Documentation', description: 'System documentation for architecture, workflow engines, and operating references.' },
   { path: '/help/*', hashId: 'help-center', template: 'docs', group: 'System', title: 'Help Center', description: 'Help center for operator guides and compliance articles.' },
@@ -123,7 +126,7 @@ export const V6_ROUTES = [
   { path: '/admin/permissions', hashId: 'admin-permissions', template: 'matrix', group: 'Admin', title: 'Permissions', description: 'Permission matrix for capabilities, roles, risk, readiness, and governance evidence.' },
   { path: '/admin/users', hashId: 'admin-users', template: 'matrix', group: 'Admin', title: 'Users', description: 'User directory and administration surface with role and override controls.' },
   { path: '/surveyor/policy/:policyId', hashId: 'surveyor-viewer', template: 'detail', group: 'Admin', title: 'Surveyor Viewer', description: 'Read-only surveyor policy viewer for external audit access.' },
-  { path: '/policy-lifecycle/:policyId', hashId: 'policy-lifecycle-detail', template: 'lifecycle', group: 'System', title: 'Policy Lifecycle Detail', description: 'Policy lifecycle deep link for a specific policy record.' },
+  { path: '/policy-lifecycle/:policyId', hashId: 'policy-lifecycle-detail', template: 'lifecycle', group: 'Taxonomy', title: 'Policy Lifecycle Detail', description: 'Policy lifecycle deep link for a specific policy record.' },
   { path: '/login', hashId: 'login-page', template: 'login', group: 'Auth', title: 'Sign In', description: 'Authentication entry screen outside the V6 shell.' },
 ] as const satisfies readonly V6RouteDefinition[];
 
