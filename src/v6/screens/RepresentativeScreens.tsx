@@ -1,5 +1,5 @@
 import { AlertTriangle, BarChart3, BookOpen, CalendarClock, CalendarRange, Camera, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, FileCheck2, FileText, FolderOpen, History, PanelRightOpen, Route, ShieldCheck, Stethoscope, Upload, Users, type LucideIcon } from 'lucide-react';
-import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useState } from 'react';
+import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, matchPath, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { buildBoardLanes, buildCalendarEvents, buildReportMetrics, buildSprintSummary, buildReportCards, buildReportTrendBars, buildEvidenceRows, buildAuditRows, getControlFromParams, getTasksForEvent } from '@/policy/ces/cesViewProjections';
@@ -8,9 +8,7 @@ import { buildBoardLanes, buildCalendarEvents, buildReportMetrics, buildSprintSu
 import type { ExecutionUnit } from '@/policy/ces/types';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/data/policyCorpus';
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
-import BradEvidenceIntake from '@/v6/screens/evidence/BradEvidenceIntake';
-import EvidenceFolderExplorer from '@/v6/screens/evidence/EvidenceFolderExplorer';
-import EvidencePacketStudio from '@/policy/evidence/packetStudio/EvidencePacketStudio';
+import EvidenceStudio from '@/v6/screens/evidence/EvidenceStudio';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import { getWorkflowDetail } from './pageviews/WorkflowsScreen';
 import BradWorkspace from './brad/BradWorkspace';
@@ -1616,6 +1614,10 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const overlay = searchParams.get('v6-overlay');
+  const pageTransitionClass = useMemo(() => {
+    const variants = ['v6-page-transition--rise', 'v6-page-transition--slide', 'v6-page-transition--scale'];
+    return variants[Math.floor(Math.random() * variants.length)];
+  }, [location.key]);
 
   if (overlay === 'drawer-system') return <OverlaySystemScreen />;
 
@@ -1703,13 +1705,13 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <BoardScreen />;
       break;
     case 'evidence-center':
-      child = <EvidenceFolderExplorer />;
+      child = <EvidenceStudio initialTab="library" />;
       break;
     case 'evidence-intake':
-      child = <BradEvidenceIntake />;
+      child = <EvidenceStudio initialTab="intake" />;
       break;
     case 'evidence-packet-studio':
-      child = <EvidencePacketStudio />;
+      child = <EvidenceStudio initialTab="packet" />;
       break;
     case 'form-viewer':
       child = <FormWorkspaceScreen />;
@@ -1825,7 +1827,7 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
 
   const wrapped = child;
 
-  const mainContent = <div className="grid">{wrapped}</div>;
+  const mainContent = <div key={location.key} className={`grid v6-page-transition ${pageTransitionClass}`}>{wrapped}</div>;
 
   // Workspace subnav rendered inside the content area for V1 parity (not in main sidebar)
   // Primary parents only in sidebar; children here.

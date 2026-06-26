@@ -32,9 +32,7 @@ export const workspaceSubnavItems: Record<string, NavItem[]> = {
     { id: 'workflows', label: 'Workflows', to: '/workflows', hashIds: ['workflows'], matchPaths: ['/workflows', '/workflows/:workflowId', '/workflows/:workflowId/swimlane'] },
     { id: 'master-controls', label: 'Master Controls', to: '/compliance/master-controls', hashIds: ['master-controls'] },
     { id: 'audit-mode', label: 'Audit Mode', to: '/audit', hashIds: ['audit-mode'] },
-    { id: 'evidence-center', label: 'Evidence Center', to: '/evidence', hashIds: ['evidence-center'] },
-    { id: 'evidence-intake', label: 'Brad Evidence Intake', to: '/evidence/intake', hashIds: ['evidence-intake'] },
-    { id: 'evidence-packet-studio', label: 'Evidence Packet Studio', to: '/evidence/packet-studio', hashIds: ['evidence-packet-studio'] },
+    { id: 'evidence-studio', label: 'Evidence Studio', to: '/evidence', hashIds: ['evidence-center', 'evidence-intake', 'evidence-packet-studio'] },
     { id: 'ces-reports', label: 'Reports', to: '/ces/reports', hashIds: ['ces-reports'] },
   ],
   taxonomy: [
@@ -84,9 +82,7 @@ export const WORKSPACE_SUBNAV: Record<string, NavItem[]> = {
     { id: 'workflows', label: 'Workflows', to: '/workflows', hashIds: ['workflows'] },
     { id: 'master-controls', label: 'Master Controls', to: '/compliance/master-controls', hashIds: ['master-controls'] },
     { id: 'audit-mode', label: 'Audit Mode', to: '/audit', hashIds: ['audit-mode'] },
-    { id: 'evidence-center', label: 'Evidence Center', to: '/evidence', hashIds: ['evidence-center'] },
-    { id: 'evidence-intake', label: 'Brad Evidence Intake', to: '/evidence/intake', hashIds: ['evidence-intake'] },
-    { id: 'evidence-packet-studio', label: 'Evidence Packet Studio', to: '/evidence/packet-studio', hashIds: ['evidence-packet-studio'] },
+    { id: 'evidence-studio', label: 'Evidence Studio', to: '/evidence', hashIds: ['evidence-center', 'evidence-intake', 'evidence-packet-studio'] },
     { id: 'ces-reports', label: 'Reports', to: '/ces/reports', hashIds: ['ces-reports'] },
   ],
   taxonomy: [

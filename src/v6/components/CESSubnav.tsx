@@ -7,9 +7,7 @@ const cesSubnavItems = [
   { label: 'Workflows', path: '/workflows' },
   { label: 'Master Controls', path: '/compliance/master-controls' },
   { label: 'Audit Mode', path: '/audit' },
-  { label: 'Evidence Center', path: '/evidence' },
-  { label: 'Brad Evidence Intake', path: '/evidence/intake' },
-  { label: 'Evidence Packet Studio', path: '/evidence/packet-studio' },
+  { label: 'Evidence Studio', path: '/evidence' },
   { label: 'Reports', path: '/ces/reports' },
 ];
 
