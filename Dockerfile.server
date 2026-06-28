@@ -35,6 +35,11 @@ COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/tsconfig.json ./tsconfig.json
 COPY --from=build /app/tsconfig.app.json ./tsconfig.app.json
 COPY --from=build /app/tsconfig.node.json ./tsconfig.node.json
+# Server-side packet PDF rendering (server/htmlToPdf.ts) needs Chromium. Install
+# it + system libs to a world-readable path so the non-root runtime user can
+# launch it. Only used when PDF_RENDER_ENABLED=true (otherwise saves fall to HTML).
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN npx playwright install --with-deps chromium && chmod -R o+rx /ms-playwright
 EXPOSE 8080
 USER node
 CMD ["npx", "tsx", "server/index.ts"]
