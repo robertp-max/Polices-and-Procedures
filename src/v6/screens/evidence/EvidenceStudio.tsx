@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FolderOpen, Calendar, ClipboardCheck, Landmark, Stethoscope, ShieldCheck, AlertTriangle, Users, GraduationCap, Settings, FileStack } from 'lucide-react';
+import StudioLanding from './StudioLanding';
 
 /* ════════════════════════════════════════════════════════════════════════════
    Evidence Studio — DefenCIble UI (ported from the approved design
@@ -373,8 +374,17 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
           </div>
         )}
 
-        {/* ==================== CREATE PACKET TAB ==================== */}
+        {/* ==================== CREATE PACKET TAB — real packet studio (upload + Drive folder picker + optimized logos) ==================== */}
         {activeTab === 'CREATE PACKET' && (
+          <div className="animate-fade-in">
+            <StudioLanding />
+          </div>
+        )}
+
+        {/* Legacy mock preview flow — DISABLED (condition never matches a real tab). The real
+            generator (StudioLanding → /care_indeed_pdf_studio.html: upload, uploaded-docs,
+            Drive folder picker modal) renders above. Kept un-rendered; safe to delete later. */}
+        {activeTab === '__legacy_mock_disabled__' && (
           <div className="space-y-6">
 
             {/* STAGE 1: TEMPLATE */}
