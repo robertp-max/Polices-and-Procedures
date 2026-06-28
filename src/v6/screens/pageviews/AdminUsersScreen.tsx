@@ -258,7 +258,6 @@ export function AdminUsersScreen() {
       <PageHeader
         badge="Admin"
         title="Users"
-        description="User directory and administration surface with role and override controls."
       />
       <MetricGrid metrics={userMetrics} />
 
@@ -272,7 +271,7 @@ export function AdminUsersScreen() {
           />
 
           {selectedUser && (
-            <section className="mt-md rounded-lg border border-tone-orange-border bg-surface p-xl shadow-rest transition duration-normal">
+            <section className="mt-md rounded-lg border border-tone-orange-border bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest transition duration-normal">
               <div className="mb-lg flex flex-wrap items-start justify-between gap-lg border-b border-hairline pb-md">
                 <div className="grid gap-xs">
                   <div className="flex flex-wrap items-center gap-sm">
@@ -298,12 +297,12 @@ export function AdminUsersScreen() {
                 </button>
               </div>
 
-              <div className="overflow-hidden rounded-lg border border-hairline bg-tone-slate-bg" aria-label="Permission override grid">
+              <div className="overflow-hidden rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset" aria-label="Permission override grid">
                 <div className="grid grid-cols-[minmax(0,1fr)_minmax(360px,auto)] gap-md border-b border-hairline px-lg py-sm text-tag uppercase tracking-tag text-muted">
                   <span>Access area</span>
                   <span className="text-center">Override state</span>
                 </div>
-                <div className="divide-y divide-hairline bg-surface">
+                <div className="divide-y divide-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset">
                   {overridePermissions.map((permission) => (
                     <div
                       className="grid gap-md px-lg py-md tablet-l:grid-cols-[minmax(0,1fr)_minmax(360px,auto)]"
@@ -313,7 +312,7 @@ export function AdminUsersScreen() {
                         <p className="text-sm font-medium text-ink">{permission.label}</p>
                         <p className="text-xs text-secondary">{permission.desc}</p>
                       </div>
-                      <div className="grid grid-cols-3 gap-xs rounded-md border border-hairline bg-tone-slate-bg p-xs">
+                      <div className="grid grid-cols-3 gap-xs rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs">
                         {overrideOptions.map((option) => {
                           const isSelected = overrideModes[permission.id] === option.mode;
 
@@ -376,7 +375,7 @@ export function AdminUsersScreen() {
 
           <section className="grid gap-md tablet-l:grid-cols-2" aria-label="Admin user security summary">
             {securitySummaries.map((summary) => (
-              <article className="rounded-lg border border-card bg-surface p-lg shadow-rest" key={summary.label}>
+              <article className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden shadow-rest" key={summary.label}>
                 <div className="mb-md flex flex-wrap items-start justify-between gap-md">
                   <div>
                     <p className="text-tag uppercase tracking-tag text-muted">{summary.label}</p>
@@ -393,7 +392,7 @@ export function AdminUsersScreen() {
         </section>
 
         <aside className="grid content-start gap-lg" aria-label="Admin users security panels">
-          <nav aria-label="User admin tabs" className="flex gap-xs overflow-x-auto rounded-lg border border-card bg-surface/90 p-xs shadow-rest backdrop-blur-xl">
+          <nav aria-label="User admin tabs" className="flex gap-xs overflow-x-auto rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset/90 p-xs shadow-rest backdrop-blur-xl">
             {userPanelTabs.map((tab) => (
               <button
                 aria-selected={activePanel === tab.id}
@@ -419,7 +418,7 @@ export function AdminUsersScreen() {
                 <SurfaceCard card={card} key={card.title} />
               ))}
 
-              <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="mfa-readiness-title">
+              <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="mfa-readiness-title">
                 <div className="mb-lg flex items-start justify-between gap-md">
                   <div className="grid gap-sm">
                     <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
@@ -444,7 +443,7 @@ export function AdminUsersScreen() {
                     ['Locked privileged lane', '11 users', 'locked'],
                     ['Access review ready', '92 accounts', 'ready'],
                   ].map(([label, value, status]) => (
-                    <div className="flex flex-wrap items-center justify-between gap-md rounded-md bg-tone-slate-bg p-md" key={label}>
+                    <div className="flex flex-wrap items-center justify-between gap-md rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md" key={label}>
                       <div>
                         <p className="text-tag uppercase tracking-tag text-muted">{label}</p>
                         <p className="mt-xs text-sm text-ink">{value}</p>
@@ -458,7 +457,7 @@ export function AdminUsersScreen() {
           )}
 
           {activePanel === 'assignments' && (
-            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="assignment-lanes-title" role="tabpanel">
+            <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="assignment-lanes-title" role="tabpanel">
               <div className="mb-lg flex items-start gap-md">
                 <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
                   <UserCog aria-hidden="true" className="h-icon-md w-icon-md" />
@@ -473,7 +472,7 @@ export function AdminUsersScreen() {
                 </div>
               </div>
 
-              <div className="divide-y divide-hairline rounded-md border border-hairline bg-tone-slate-bg">
+              <div className="divide-y divide-hairline rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset">
                 {assignmentLanes.map((lane) => (
                   <div className="grid gap-sm p-md" key={lane.group}>
                     <div className="flex flex-wrap items-center justify-between gap-sm">

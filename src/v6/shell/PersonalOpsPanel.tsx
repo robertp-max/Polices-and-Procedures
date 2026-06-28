@@ -21,8 +21,8 @@ export function PersonalOpsPanel({ onClose }: { onClose?: () => void }) {
   ];
 
   return (
-    <aside className="relative z-20 flex h-screen w-[380px] shrink-0 flex-col overflow-y-auto border-l border-hairline bg-surface text-ink shadow-right-rail">
-      <header className="border-b border-hairline bg-tone-teal-bg/60 p-lg">
+    <aside className="personal-ops-panel relative z-20 flex h-full w-[380px] shrink-0 flex-col overflow-hidden border-l border-hairline pt-20 text-ink shadow-right-rail">
+      <header className="personal-ops-panel__header sticky top-0 z-10 shrink-0 border-b-0 p-lg shadow-none">
         <div className="flex items-start justify-between gap-md">
           <div>
             <p className="font-heading text-[10px] font-medium uppercase tracking-[0.2em] text-brand-teal">Personal Operations</p>
@@ -60,7 +60,7 @@ export function PersonalOpsPanel({ onClose }: { onClose?: () => void }) {
         </div>
       </header>
 
-      <div className="p-lg flex-1 space-y-xl overflow-y-auto bg-tone-teal-bg/30">
+      <div className="p-lg flex-1 space-y-xl overflow-y-auto bg-transparent">
         {/* Stats Grid */}
         <div className="grid grid-cols-5 gap-sm">
           {[
@@ -70,7 +70,7 @@ export function PersonalOpsPanel({ onClose }: { onClose?: () => void }) {
             { value: '7', label: 'Ev' },
             { value: '4', label: 'Rev' }
           ].map((stat) => (
-            <div key={stat.label} className="rounded-lg border border-tone-teal-border bg-surface p-sm text-center shadow-sm">
+            <div key={stat.label} className="rounded-lg border border-hairline bg-surface p-sm text-center shadow-sm">
               <div className="text-sm font-medium text-brand-teal">{stat.value}</div>
               <div className="text-[8px] font-medium uppercase tracking-wider text-muted mt-xs">{stat.label}</div>
             </div>
@@ -116,7 +116,7 @@ export function PersonalOpsPanel({ onClose }: { onClose?: () => void }) {
               return (
                 <button
                   key={group.label}
-                  className="rounded-lg border border-hairline bg-surface p-md text-left shadow-sm transition hover:shadow-md hover:border-tone-teal-border"
+                  className="rounded-lg border border-hairline bg-surface p-md text-left shadow-sm transition hover:shadow-md"
                 >
                   <div className="flex items-center justify-between">
                     <Icon className={`h-icon-sm w-icon-sm ${group.tone === 'orange' ? 'text-brand-orange' : 'text-brand-teal'}`} />

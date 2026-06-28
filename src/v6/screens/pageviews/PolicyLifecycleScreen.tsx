@@ -1,5 +1,4 @@
 import { BookOpen, AlertTriangle, FileText, ArrowRight, User, Calendar } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { MetricGrid, SurfaceCard, type MetricTileData, type SurfaceCardData } from '../../components';
 import { ToneBadge } from '../../primitives';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/data/policyCorpus';
@@ -98,36 +97,16 @@ export function PolicyLifecycleScreen() {
       data-route="/policy-lifecycle"
       data-template="lifecycle"
     >
-      {/* Top subnav for Taxonomy group (V1 parity) using V2 UI patterns. Policies workspace. */}
-      <div className="mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="Taxonomy subnav">
-        <span className="mr-sm text-tag uppercase tracking-tag text-muted">Taxonomy:</span>
-        {[
-          { label: 'Framework', path: '/framework' },
-          { label: 'Policy Library', path: '/library' },
-          { label: 'Forms Library', path: '/forms' },
-          { label: 'Workflows Library', path: '/workflows' },
-          { label: 'ACHC Survey', path: '/framework/achc-survey' },
-          { label: 'ACHC Crosswalk', path: '/framework/achc-survey/crosswalk' },
-        ].map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className="rounded px-sm py-xs text-brand-teal hover:bg-surface-hover hover:text-brand-teal-deep border-b-2 border-transparent hover:border-brand-teal"
-          >
-            {item.label}
-          </Link>
-        ))}
-      </div>
       <MetricGrid metrics={metrics} />
 
       <section className="grid gap-xl desktop:grid-cols-12">
         <div className="grid content-start gap-lg desktop:col-span-8">
-          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-lg">Domain Grouping Board</h3>
             <div className="flex flex-wrap gap-md items-center justify-between">
               {stages.map((stage, index) => (
                 <div className="flex items-center gap-md" key={stage.label}>
-                  <div className="rounded-lg border border-card bg-tone-slate-bg p-lg min-w-[120px] text-center shadow-rest flex flex-col items-center gap-xs">
+                  <div className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden min-w-[120px] text-center shadow-rest flex flex-col items-center gap-xs">
                     <span className="text-tag uppercase tracking-tag text-muted">{stage.label}</span>
                     <span className="text-h2 font-medium text-ink mt-sm">{stage.count}</span>
                     <ToneBadge size="sm" status={stage.status} />
@@ -141,14 +120,14 @@ export function PolicyLifecycleScreen() {
             <div className="mt-md text-xs text-muted">State counts from usePolicyLifecycleStore (envelopes); owner/dues joined from corpus. All start DRAFT per lifecycleStore seed rule.</div>
           </section>
 
-          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md">Active Policies Checklist — Real Records (corpus + lifecycle)</h3>
             <p className="text-sm text-secondary mb-md">
               Showing live-mapped records (first 3 of {POLICY_CORPUS.length}). Virtualization placeholder retained for scale. Status/owner/due resolved correctly.
             </p>
             <div className="grid gap-sm text-sm">
               {sampleRecords.map(rec => (
-                <div key={rec.id} className="rounded border border-hairline bg-tone-slate-bg p-md flex flex-wrap gap-x-md gap-y-xs items-baseline">
+                <div key={rec.id} className="rounded border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-md flex flex-wrap gap-x-md gap-y-xs items-baseline">
                   <span className="font-mono font-medium text-ink">{rec.id}</span>
                   <span className="text-secondary">{rec.title}</span>
                   <span className="text-tag uppercase px-2 py-0.5 rounded bg-tone-slate text-muted">{rec.state}</span>

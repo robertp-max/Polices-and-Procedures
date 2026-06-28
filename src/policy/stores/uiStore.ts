@@ -15,8 +15,12 @@ interface UiState {
   selectedStatus: string;
   selectedAccessTier: string;
   sortField: SortField;
+  bradLanding: boolean;
+  bradActivityActive: boolean;
   setFilter: (key: 'search' | 'selectedDomain' | 'selectedSubdomain' | 'selectedTier' | 'selectedStatus' | 'selectedAccessTier', value: string) => void;
   setSortField: (field: SortField) => void;
+  setBradLanding: (v: boolean) => void;
+  setBradActivityActive: (v: boolean) => void;
   resetFilters: () => void;
 }
 
@@ -28,6 +32,8 @@ const defaultState = {
   selectedStatus: 'ALL',
   selectedAccessTier: 'ALL',
   sortField: 'id' as SortField,
+  bradLanding: true,
+  bradActivityActive: false,
 };
 
 export const useUiStore = create<UiState>(set => ({
@@ -35,6 +41,8 @@ export const useUiStore = create<UiState>(set => ({
   setFilter: <K extends keyof UiState>(key: K, value: UiState[K]) =>
     set({ [key]: value } as Pick<UiState, K>),
   setSortField: sortField => set({ sortField }),
+  setBradLanding: bradLanding => set({ bradLanding }),
+  setBradActivityActive: bradActivityActive => set({ bradActivityActive }),
   resetFilters: () => set({ ...defaultState }),
 }));
 

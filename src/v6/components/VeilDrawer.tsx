@@ -1,4 +1,4 @@
-import { useEffect, useId, type ReactNode } from 'react';
+import { useEffect, useId, useState, type ReactNode } from 'react';
 import ReactDOM from 'react-dom';
 import { X } from 'lucide-react';
 import { ToneBadge } from '../primitives';
@@ -23,9 +23,23 @@ export function VeilDrawer({
   footer,
 }: VeilDrawerProps) {
   const titleId = useId();
+  const [mounted, setMounted] = useState(open);
+  const [visible, setVisible] = useState(open);
 
   useEffect(() => {
-    if (!open) return undefined;
+    if (open) {
+      setMounted(true);
+      const frame = window.requestAnimationFrame(() => setVisible(true));
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    setVisible(false);
+    const timer = window.setTimeout(() => setMounted(false), 500);
+    return () => window.clearTimeout(timer);
+  }, [open]);
+
+  useEffect(() => {
+    if (!mounted) return undefined;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -33,12 +47,12 @@ export function VeilDrawer({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, open]);
+  }, [mounted, onClose]);
 
-  if (!open) return null;
+  if (!mounted) return null;
 
   return ReactDOM.createPortal(
-    <div className="fixed inset-0 z-backdrop flex justify-end bg-brand-teal/15 backdrop-blur-sm">
+    <div className="fixed inset-0 z-backdrop flex justify-end bg-brand-teal/15 backdrop-blur-sm v6-overlay-transition">
       <div 
         className="fixed inset-0" 
         onClick={onClose} 
@@ -46,7 +60,7 @@ export function VeilDrawer({
       />
       <aside
         aria-labelledby={titleId}
-        className="relative z-drawer flex h-full w-full max-w-md flex-col overflow-hidden border-l border-card bg-surface shadow-hover transition-transform duration-base ease-standard"
+        className={`relative z-drawer flex h-full w-full max-w-md flex-col overflow-hidden border-l border-card bg-surface-glass backdrop-blur-md shadow-glass-inset shadow-hover transition-transform duration-500 ease-standard ${visible ? 'translate-x-0' : 'translate-x-full'}`}
         role="dialog"
         aria-modal="true"
       >
@@ -57,7 +71,7 @@ export function VeilDrawer({
           </div>
           <button
             onClick={onClose}
-            className="shrink-0 rounded-md border border-card bg-surface p-sm text-muted transition duration-fast ease-standard hover:text-brand-teal focus:outline-none focus-visible:shadow-focus"
+            className="shrink-0 rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-sm text-muted transition duration-fast ease-standard hover:text-brand-teal focus:outline-none focus-visible:shadow-focus"
             aria-label="Close drawer"
             type="button"
           >
@@ -65,7 +79,7 @@ export function VeilDrawer({
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto p-lg">{children}</div>
-        {footer && <div className="shrink-0 border-t border-hairline bg-surface p-lg">{footer}</div>}
+        {footer && <div className="shrink-0 border-t border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg">{footer}</div>}
       </aside>
     </div>,
     document.body

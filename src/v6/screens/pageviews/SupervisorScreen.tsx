@@ -4,6 +4,7 @@ import { useLearner } from "@/policy/journey/lib/learnerState";
 import { appCopy, contentV2 } from "@/policy/journey/data/contentV2Adapter";
 import { JourneyLearningShell } from "./JourneyLearningShell";
 import { ReviewerToolsPanel } from "@/policy/journey/components/ReviewerToolsPanel";
+import { DemoOnlyBanner } from "@/policy/journey/components/DemoOnlyBanner";
 
 export function PhiWarningBlock() {
   return (
@@ -36,6 +37,7 @@ export function SupervisorScreen() {
       title="Clinical Hub"
       subtitle="Access supplementary nursing guides, return demonstrations, and de-identified charting practices. This section is entirely optional and does not affect required course hours."
     >
+      <DemoOnlyBanner />
       <div className="space-y-6">
         {/* Reviewer Tools */}
         <ReviewerToolsPanel />
@@ -64,7 +66,7 @@ export function SupervisorScreen() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {appCopy.clinicalHub.scenarios.map((scenario, index) => (
-              <div key={scenario.title} className="p-5 rounded-lg bg-white border border-hairline hover:border-brand-teal/20 transition-all shadow-sm">
+              <div key={scenario.title} className="p-5 rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline hover:border-brand-teal/20 transition-all shadow-sm">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-brand-teal-deep mb-2 font-mono">{scenario.title}</h3>
                 <p className="text-xs text-secondary leading-relaxed mb-4">{scenario.body}</p>
                 <div className="flex items-center justify-between gap-3">
@@ -90,7 +92,7 @@ export function SupervisorScreen() {
           )}
 
           {/* Documentation support (practice) */}
-          <div className="bg-white/80 border border-hairline rounded-xl p-6 md:p-8 shadow-sm">
+          <div className="bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline rounded-xl p-6 md:p-8 shadow-sm">
             <h2 className="text-lg font-bold text-brand-teal-deep mb-6">{appCopy.clinicalHub.documentation_title}</h2>
 
             <div className="mb-6 space-y-3">
@@ -104,12 +106,12 @@ export function SupervisorScreen() {
                 rows={4}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                className="w-full bg-white border border-hairline rounded-lg p-4 text-xs text-secondary focus:outline-none focus:border-brand-teal shadow-sm resize-none"
+                className="w-full bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline rounded-lg p-4 text-xs text-secondary focus:outline-none focus:border-brand-teal shadow-sm resize-none"
                 placeholder="Do not type patient or resident identifiers. Use fictional practice notes only."
               />
             </div>
 
-            <button disabled className="px-6 py-3 rounded-lg bg-tone-slate-bg border border-hairline text-muted font-semibold text-xs uppercase tracking-wider cursor-not-allowed">
+            <button disabled className="px-6 py-3 rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline text-muted font-semibold text-xs uppercase tracking-wider cursor-not-allowed">
               Mock upload disabled
             </button>
           </div>

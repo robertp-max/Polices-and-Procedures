@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 import { ArrowRight, BookOpen, ClipboardCheck, FileCheck2, Landmark, Layers3, Network, ShieldCheck, Workflow, type LucideIcon } from 'lucide-react';
 import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, type MetricTileData, type SurfaceCardData } from '../../components';
@@ -185,19 +184,32 @@ const alignmentCards: readonly (readonly [string, string, string, Tone])[] = [
 ];
 
 export function FrameworkScreen() {
-  const [activeTab, setActiveTab] = useState<'taxonomy' | 'mapping'>('taxonomy');
-  const [viewMode, setViewMode] = useState<'grid' | 'tree' | 'heat'>('grid');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab: 'taxonomy' | 'mapping' = searchParams.get('tab') === 'mapping' ? 'mapping' : 'taxonomy';
+  const setActiveTab = (tab: 'taxonomy' | 'mapping') => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set('tab', tab);
+      return next;
+    });
+  };
+  const viewParam = searchParams.get('view');
+  const viewMode: 'grid' | 'tree' | 'heat' =
+    viewParam === 'tree' || viewParam === 'heat' ? viewParam : 'grid';
+  const setViewMode = (view: 'grid' | 'tree' | 'heat') => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set('view', view);
+      return next;
+    });
+  };
   
 
   return (
     <div className="grid gap-xl" data-hash-id="framework" data-route="/framework" data-template="framework">
-
-
-      <MetricGrid metrics={frameworkMetrics} />
-
       {/* Premium Segmented Tab Control */}
       <div className="flex justify-start">
-        <div className="flex rounded-lg border border-hairline bg-tone-slate-bg/30 p-xs gap-xs">
+        <div className="flex rounded-lg border border-hairline bg-surface-glass backdrop-blur-md p-xs gap-xs">
           <button
             onClick={() => setActiveTab('taxonomy')}
             className={cx(
@@ -222,6 +234,8 @@ export function FrameworkScreen() {
           </button>
         </div>
       </div>
+
+      <MetricGrid metrics={frameworkMetrics} />
 
       {activeTab === 'taxonomy' ? (
         <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
@@ -258,7 +272,7 @@ export function FrameworkScreen() {
               <SurfaceCard card={card} key={card.title} />
             ))}
 
-            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+            <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
               <div className="mb-lg flex items-start justify-between gap-md">
                 <div>
                   <ToneTag tone="orange">Authority context</ToneTag>
@@ -268,7 +282,7 @@ export function FrameworkScreen() {
               </div>
               <div className="grid gap-md">
                 {alignmentCards.map(([label, value, helper, tone]) => (
-                  <div className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={label}>
+                  <div className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg" key={label}>
                     <div className="flex items-start justify-between gap-md">
                       <div>
                         <p className="text-tag uppercase tracking-tag text-muted">{label}</p>
@@ -284,7 +298,7 @@ export function FrameworkScreen() {
           </aside>
         </section>
       ) : (
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
             <div className="grid gap-xs">
               <h2 className="text-h2 font-medium text-ink">Standard mapping snapshot</h2>
@@ -304,7 +318,7 @@ export function FrameworkScreen() {
 
           <div className="hidden overflow-x-auto laptop:block">
             <table className="min-w-full border-collapse text-left text-xs" aria-label="Framework standard mapping snapshot">
-              <thead className="bg-tone-slate-bg text-tag uppercase tracking-tag text-muted">
+              <thead className="bg-surface-glass backdrop-blur-md shadow-glass-inset text-tag uppercase tracking-tag text-muted">
                 <tr>
                   <th className="border-b border-card px-lg py-md font-light" scope="col">
                     ACHC
@@ -350,7 +364,7 @@ export function FrameworkScreen() {
 
           <div className="grid gap-md laptop:hidden">
             {mappingRows.map((row) => (
-              <article className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={row.achc}>
+              <article className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg" key={row.achc}>
                 <div className="mb-md flex flex-wrap items-start justify-between gap-sm">
                   <ToneTag tone={row.tone}>{row.achc}</ToneTag>
                   <ToneBadge size="sm" status={row.status} />
@@ -376,7 +390,7 @@ function DomainTile({ domain }: { domain: DomainTileData }) {
 
   return (
     <article
-      className="grid min-h-[270px] content-between gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest transition duration-fast ease-standard hover:shadow-hover"
+      className="grid min-h-[270px] content-between gap-lg rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest transition duration-fast ease-standard hover:shadow-hover overflow-hidden"
       role="listitem"
     >
       <div className="grid gap-md">
@@ -416,7 +430,7 @@ function DomainTile({ domain }: { domain: DomainTileData }) {
 
 function DomainStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-hairline bg-tone-slate-bg p-sm">
+    <div className="rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-sm overflow-hidden">
       <p className="text-h3 text-ink">{value}</p>
       <p className="mt-xs text-tag uppercase tracking-tag text-muted">{label}</p>
     </div>
@@ -429,7 +443,7 @@ const domainIconClasses: Record<Tone, string> = {
   green: 'bg-tone-green-bg text-tone-green-text',
   orange: 'bg-tone-orange-bg text-tone-orange-text',
   red: 'bg-tone-red-bg text-tone-red-text',
-  slate: 'bg-tone-slate-bg text-tone-slate-text',
+  slate: 'bg-surface-glass backdrop-blur-md shadow-glass-inset text-tone-slate-text',
   teal: 'bg-tone-teal-bg text-tone-teal-text',
   violet: 'bg-tone-violet-bg text-tone-violet-text',
 };

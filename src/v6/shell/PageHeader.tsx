@@ -2,11 +2,10 @@ import { type ReactNode } from 'react';
 
 export interface PageHeaderProps {
   badge?: ReactNode;
-  description?: ReactNode;
   title: ReactNode;
 }
 
-export function PageHeader({ badge, description, title }: PageHeaderProps) {
+export function PageHeader({ badge, title }: PageHeaderProps) {
   return (
     <header className="grid bg-canvas pb-3xl pt-2xl">
       {badge ? (
@@ -16,7 +15,6 @@ export function PageHeader({ badge, description, title }: PageHeaderProps) {
         </div>
       ) : null}
       <h1 className="mt-3 text-3xl font-medium leading-tight tracking-normal text-brand-teal-deep">{title}</h1>
-      {description ? <p className="mt-1 max-w-4xl text-sm font-medium leading-relaxed text-secondary">{description}</p> : null}
     </header>
   );
 }

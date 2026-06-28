@@ -1,6 +1,6 @@
 import { CheckCircle2, FileText, Info, Link2, ListChecks } from 'lucide-react';
 import { useEffect } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { ToneBadge } from '../../primitives';
 import { ToneTag } from '../../components';
 import { cx } from '../../utils/classNames';
@@ -252,6 +252,7 @@ function SourceUnavailable({
 export function PolicyDetailScreen() {
   const params = useParams<{ policyId?: string }>();
   const policyId = params.policyId?.trim() || DEFAULT_POLICY_ID;
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   // Reference / print view only — never pulls CES execution state, stores, or V3 seeds.
   // Matches V1 detail semantics: corpus metadata + rendered content sections + regulatory refs from source.
@@ -276,6 +277,9 @@ export function PolicyDetailScreen() {
   ];
 
   const sections = content ? [...content.sections].sort((a, b) => a.order - b.order) : [];
+  const backState = location.state as { policyBackLabel?: string; policyBackTo?: string } | null;
+  const backTo = backState?.policyBackTo || '/library';
+  const backLabel = backState?.policyBackLabel || 'Policies';
 
   // Auto-name the saved PDF "{policy name} {YYYY-MM-DD}" (document.title is the
   // browser's default Save-as filename) and auto-trigger print on dedicated
@@ -335,48 +339,16 @@ export function PolicyDetailScreen() {
             </section>
           </>
         )}
-        <nav
-          aria-label="Policy document sections"
-          className={cx(
-            'sticky top-0 z-30 -mx-xl -mt-xl flex gap-xl overflow-x-auto rounded-t-lg border-b border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset px-xl pt-xl pb-xs shadow-sticky-tabs backdrop-blur-xl after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-16 after:h-16 after:bg-gradient-to-b after:from-white after:via-white/88 after:to-transparent',
-            isPrintRoute && 'no-print hidden'
-          )}
-          style={{
-            maskImage: 'linear-gradient(to right, black 0, black calc(100% - 44px), transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(to right, black 0, black calc(100% - 44px), transparent 100%)',
-          }}
-        >
-          {sections.length === 0 ? (
-            <span className="shrink-0 px-xs pb-md text-sm font-normal text-muted">No sections available</span>
-          ) : (
-            sections.map((section, index) => (
-              <a
-                aria-current={index === 0 ? 'page' : undefined}
-                className={cx(
-                  'shrink-0 border-b-2 px-xs pb-md text-sm font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
-                  index === 0
-                    ? 'border-brand-teal text-brand-teal'
-                    : 'border-transparent text-secondary hover:border-tone-teal-border hover:text-brand-teal',
-                )}
-                href={`#${buildAnchor(section)}`}
-                key={section.id}
-              >
-                {cleanInline(section.title)}
-              </a>
-            ))
-          )}
-          <Link
-            className="shrink-0 border-b-2 border-transparent px-xs pb-md text-sm font-medium text-brand-teal transition duration-fast ease-standard hover:border-brand-teal focus-visible:outline-none focus-visible:shadow-focus"
-            to="/journey/appendix-f"
-          >
-            Appendices
-          </Link>
-        </nav>
-
         <section className="grid scroll-mt-28 gap-xl" id="overview">
           {!isPrintRoute && <div className="grid gap-lg rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset/80 p-xl">
             <div className="flex flex-wrap items-start justify-between gap-lg border-b border-hairline pb-lg">
               <div className="grid gap-sm">
+                <Link
+                  className="w-fit text-xs font-medium uppercase tracking-tag text-brand-teal transition hover:text-brand-teal-deep"
+                  to={backTo}
+                >
+                  &larr; Back to {backLabel}
+                </Link>
                 <div className="flex flex-wrap items-center gap-sm">
                   <ToneTag tone="teal">Policy ID: {headerId}</ToneTag>
                 </div>

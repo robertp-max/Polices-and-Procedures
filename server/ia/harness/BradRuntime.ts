@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import type {
   HarnessConfig, BradModelAdapter, BradRuntimeMode, RuntimeBadge,
-  BradPhiReadinessResult, RelayOutcome,
+  BradPhiReadinessResult, RelayOutcome, BradReference,
 } from './types.js';
 import { readHarnessConfig, BRAD_SYSTEM_PROMPT } from './config.js';
 import { MockBradAdapter } from './modelAdapters/MockBradAdapter.js';
@@ -28,6 +28,10 @@ export interface BradAnswer {
   synthetic: boolean;
   blocked: boolean;
   reason?: string;
+  /** Structured internal references the UI renders as clickable document links. */
+  references?: BradReference[];
+  /** Broad critical-incident track the message routed to. */
+  track?: string;
 }
 
 export interface BradRuntimeDescription {
@@ -110,7 +114,11 @@ export class BradRuntime {
     return process.env.BRAD_SYNTHETIC_DATA_ONLY === 'true';
   }
 
-  /** Answer from approved internal sources. PHI prompts are blocked unless PHI
+  /** Answer from approved internal sources (policies/procedures/workflows/forms/
+      regulatory events/help articles) ONLY. This path is fully internal and
+      NEVER reaches the internet — public research is a separate, non-PHI
+      capability exposed via `research()` (the audited Brad→Nolan relay), which
+      internal policy answers do not invoke. PHI prompts are blocked unless PHI
       mode is verified-ready OR the environment is declared synthetic-data-only. */
   async answer(userText: string, actorId = 'system', role = 'user'): Promise<BradAnswer> {
     const phiPermitted = this.isPhiPermitted();
@@ -131,7 +139,7 @@ export class BradRuntime {
       modelId: res.modelId, promptVersion: this.cfg.brad.promptVersion,
       phiMode: phiPermitted, result: 'ok', toolCalls: [],
     });
-    return { text: res.content, synthetic: res.synthetic, blocked: false };
+    return { text: res.content, synthetic: res.synthetic, blocked: false, references: res.references, track: res.track };
   }
 
   /** Public research via the ONLY bridge. Result is untrusted external data. */

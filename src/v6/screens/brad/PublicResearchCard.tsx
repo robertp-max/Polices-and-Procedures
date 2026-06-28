@@ -68,7 +68,7 @@ export function PublicResearchCard({ excerpt, citations, reviewTo = '/help/brad-
             <ul className="mt-md grid gap-1.5">
               {citations!.map((c, i) => (
                 <li key={i} className="flex flex-wrap items-center gap-2 text-xs text-muted">
-                  <span className="rounded border border-hairline bg-surface px-1.5 py-0.5 text-[10px]">Source</span>
+                  <span className="rounded border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset px-1.5 py-0.5 text-[10px]">Source</span>
                   {c.url ? (
                     <a href={c.url} target="_blank" rel="noopener noreferrer" className="font-medium text-brand-teal hover:underline">
                       {c.label}

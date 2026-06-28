@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Shield, Key, Heart, Award, FileSearch, ShieldCheck, Download, Check, AlertTriangle, FileText, CheckCircle2 } from 'lucide-react';
 import { DataTable, ProgressMeter, SurfaceCard, type DataTableColumn } from '../../components';
 import { ToneBadge, Button } from '../../primitives';
@@ -155,10 +155,27 @@ const subjectEvidenceData: Record<string, SubjectEvidence> = (() => {
 
 export function OnboardingV2BatchScreen() {
   const { batchId: routeBatchId } = useParams<{ batchId?: string }>();
-  const [activeTab, setActiveTab] = useState<'overview' | 'roster'>('overview');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const subTabParam = searchParams.get('subtab');
+  const activeTab: 'overview' | 'roster' = tabParam === 'roster' ? 'roster' : 'overview';
+  const activeSubTab: 'evidence' | 'signature' = subTabParam === 'signature' ? 'signature' : 'evidence';
+  const setActiveTab = (tab: 'overview' | 'roster') => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set('tab', tab);
+      return next;
+    });
+  };
+  const setActiveSubTab = (subtab: 'evidence' | 'signature') => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set('subtab', subtab);
+      return next;
+    });
+  };
   const [selectedGate, setSelectedGate] = useState<string | null>('Credentials');
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(rows[0]?.subjectId || null);
-  const [activeSubTab, setActiveSubTab] = useState<'evidence' | 'signature'>('evidence');
   const [hashVerified, setHashVerified] = useState<Record<string, boolean>>({});
 
   // Real batch record resolution from seed (wired via import; renders the seeded batch id from onboarding-v2 store seed).
@@ -191,7 +208,7 @@ export function OnboardingV2BatchScreen() {
     >
       {/* Tab Control */}
       <div className="flex flex-wrap items-center justify-between gap-md">
-        <div className="inline-flex max-w-full flex-wrap rounded-lg bg-tone-slate-bg p-xs">
+        <div className="inline-flex max-w-full flex-wrap rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs">
           {[
             { id: 'overview', label: 'Gate Overview' },
             { id: 'roster', label: 'Subjects & Evidence' },
@@ -200,7 +217,7 @@ export function OnboardingV2BatchScreen() {
               className={cx(
                 'min-h-tap rounded-md px-md text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
                 activeTab === tab.id
-                  ? 'bg-surface text-brand-teal shadow-rest'
+                  ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal shadow-rest'
                   : 'text-secondary hover:bg-surface-hover',
               )}
               key={tab.id}
@@ -237,12 +254,12 @@ export function OnboardingV2BatchScreen() {
                     onClick={() => setSelectedGate(selectedGate === gate.key ? null : gate.key)}
                     className={cx(
                       'flex flex-col items-center gap-xs rounded-lg border p-sm text-center shadow-rest transition duration-fast hover:border-brand-teal/40 hover:bg-surface-hover',
-                      isSelected ? 'border-brand-teal bg-surface-hover ring-1 ring-brand-teal/30' : 'border-card bg-surface'
+                      isSelected ? 'border-brand-teal bg-surface-hover ring-1 ring-brand-teal/30' : 'border-card bg-surface-glass backdrop-blur-md shadow-glass-inset'
                     )}
                     key={gate.label}
                     type="button"
                   >
-                    <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-slate-bg text-brand-teal mb-sm">
+                    <span className="grid h-tap w-tap place-items-center rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal mb-sm">
                       <Icon aria-hidden="true" className="h-icon-md w-icon-md" />
                     </span>
                     <span className="text-sm font-medium text-ink">{gate.label}</span>
@@ -254,7 +271,7 @@ export function OnboardingV2BatchScreen() {
 
             {/* Gate Checklist Expander Panel */}
             {selectedGate && checklistData && (
-              <section className="mt-md rounded-lg border border-tone-teal-border bg-surface p-lg shadow-rest transition duration-normal">
+              <section className="mt-md rounded-lg border border-tone-teal-border bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest transition duration-normal">
                 <div className="mb-md flex items-center justify-between border-b border-hairline pb-sm">
                   <div>
                     <h3 className="text-h3 font-medium text-ink">{checklistData.title}</h3>
@@ -270,14 +287,14 @@ export function OnboardingV2BatchScreen() {
                 </div>
                 <div className="grid gap-sm">
                   {checklistData.items.map((item) => (
-                    <div key={item.id} className="flex flex-wrap items-center justify-between gap-md rounded-md border border-hairline bg-tone-slate-bg p-sm">
+                    <div key={item.id} className="flex flex-wrap items-center justify-between gap-md rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-sm">
                       <div className="flex items-start gap-md">
                         <span className={cx(
                           'grid h-6 w-6 place-items-center rounded-full mt-xs',
                           item.status === 'PASS' && 'bg-tone-green-bg text-tone-green-text',
                           item.status === 'PENDING' && 'bg-tone-amber-bg text-tone-amber-text',
                           item.status === 'MISSING' && 'bg-tone-orange-bg text-tone-orange-text',
-                          item.status === 'LOCKED' && 'bg-tone-slate-bg text-muted'
+                          item.status === 'LOCKED' && 'bg-surface-glass backdrop-blur-md shadow-glass-inset text-muted'
                         )}>
                           {item.status === 'PASS' && <Check className="h-4 w-4" />}
                           {item.status === 'PENDING' && <AlertTriangle className="h-4 w-4" />}
@@ -319,7 +336,7 @@ export function OnboardingV2BatchScreen() {
               <ProgressMeter label="Batch clearance completion" tone="teal" value={68} />
             </SurfaceCard>
 
-            <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+            <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
               <h3 className="text-h3 font-medium text-ink mb-md">Hash-Chain Timeline</h3>
               <div className="grid gap-sm">
                 {timelineEvents.map((event) => (
@@ -337,7 +354,7 @@ export function OnboardingV2BatchScreen() {
       ) : (
         <section className="grid gap-lg">
           <div className="grid content-start gap-md">
-            <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+            <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
               <div className="mb-md flex flex-wrap items-start justify-between gap-md">
                 <div>
                   <h3 className="text-h3 font-medium text-ink">Batch Subjects Roster</h3>
@@ -354,7 +371,7 @@ export function OnboardingV2BatchScreen() {
 
             {/* Evidence / Signature Log */}
             {selectedSubject && evidenceDetails && (
-              <section className="mt-md rounded-lg border border-card bg-surface p-lg shadow-rest transition duration-normal">
+              <section className="mt-md rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest transition duration-normal">
                 <div className="mb-md flex flex-wrap items-start justify-between gap-md border-b border-hairline pb-sm">
                   <div>
                     <div className="flex items-center gap-sm">
@@ -363,7 +380,7 @@ export function OnboardingV2BatchScreen() {
                     </div>
                     <p className="text-xs text-secondary mt-xs">Role: {selectedSubject.role}</p>
                   </div>
-                  <div className="inline-flex rounded-lg bg-tone-slate-bg p-xs">
+                  <div className="inline-flex rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs">
                     {[
                       { id: 'evidence', label: 'Evidence File' },
                       { id: 'signature', label: 'Signature Log' },
@@ -372,7 +389,7 @@ export function OnboardingV2BatchScreen() {
                         className={cx(
                         'min-h-tap rounded-md px-md text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
                           activeSubTab === tab.id 
-                            ? 'bg-surface text-brand-teal shadow-rest' 
+                            ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal shadow-rest' 
                             : 'text-secondary hover:bg-surface-hover',
                         )}
                         key={tab.id}
@@ -388,7 +405,7 @@ export function OnboardingV2BatchScreen() {
                 {activeSubTab === 'evidence' ? (
                   <div className="grid gap-md text-sm">
                     <div className="grid gap-md desktop:grid-cols-2">
-                      <div className="grid gap-xs rounded-md bg-tone-slate-bg p-md border border-hairline">
+                      <div className="grid gap-xs rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md border border-hairline">
                         <div className="flex items-center gap-sm text-brand-teal">
                           <FileText className="h-icon-sm w-icon-sm" />
                           <span className="font-medium text-ink">Document Details</span>
@@ -411,13 +428,13 @@ export function OnboardingV2BatchScreen() {
                         </div>
                       </div>
 
-                      <div className="grid gap-xs rounded-md bg-tone-slate-bg p-md border border-hairline">
+                      <div className="grid gap-xs rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md border border-hairline">
                         <div className="flex items-center gap-sm text-brand-teal">
                           <ShieldCheck className="h-icon-sm w-icon-sm" />
                           <span className="font-medium text-ink">Hash Integrity (SHA-256)</span>
                         </div>
                         <div className="mt-sm grid gap-sm">
-                          <div className="text-[11px] font-mono bg-surface p-sm rounded border border-hairline break-all text-secondary">
+                          <div className="text-[11px] font-mono bg-surface-glass backdrop-blur-md shadow-glass-inset p-sm rounded border border-hairline break-all text-secondary">
                             {evidenceDetails.shaHash}
                           </div>
                           {selectedSubjectId && hashVerified[selectedSubjectId] ? (
@@ -450,9 +467,9 @@ export function OnboardingV2BatchScreen() {
                   </div>
                 ) : (
                   <div className="grid gap-md text-sm">
-                    <div className="rounded-md bg-tone-slate-bg p-md border border-hairline mb-sm flex justify-between items-center">
+                    <div className="rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md border border-hairline mb-sm flex justify-between items-center">
                       <span className="text-xs font-medium text-secondary">eCIgn Audit Token:</span>
-                      <span className="text-xs font-mono font-medium text-brand-teal-deep bg-surface px-sm py-xs rounded border border-hairline">
+                      <span className="text-xs font-mono font-medium text-brand-teal-deep bg-surface-glass backdrop-blur-md shadow-glass-inset px-sm py-xs rounded border border-hairline">
                         {evidenceDetails?.signatures?.[0]?.token || 'seed-eCIgn'}
                       </span>
                     </div>
@@ -461,7 +478,7 @@ export function OnboardingV2BatchScreen() {
                         <div key={sig.role} className="relative">
                           <span className={cx(
                             'absolute -left-[21px] top-xs h-[10px] w-[10px] rounded-full border-2',
-                            sig.date === 'Pending' ? 'bg-surface border-text-disabled' : 'bg-brand-teal border-brand-teal'
+                            sig.date === 'Pending' ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset border-text-disabled' : 'bg-brand-teal border-brand-teal'
                           )} />
                           <div className="grid gap-xs">
                             <div className="flex items-center gap-sm">

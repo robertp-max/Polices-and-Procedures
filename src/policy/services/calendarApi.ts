@@ -311,7 +311,35 @@ export const CalendarApi = {
     const q = folderId ? `?folderId=${encodeURIComponent(folderId)}` : '';
     return request('GET', `/intake/brad-training${q}`);
   },
+
+  /**
+   * Browse a packet library Drive folder live (URL/metadata only): the Mock
+   * Event Packets folder (01_CES/Evidence/Mock/Packets) or the Patient
+   * Admission Packets folder (01_CES/Evidence/Admission/Packets). Returns the
+   * immediate children of `folderId` (defaults to the library root).
+   */
+  async packetLibraryDocs(kind: 'mock' | 'admission', folderId?: string): Promise<BradTrainingResponse> {
+    const params = new URLSearchParams({ kind });
+    if (folderId) params.set('folderId', folderId);
+    return request('GET', `/intake/packet-library?${params.toString()}`);
+  },
+
+  /**
+   * Save a generated Patient Admission packet to the Admission Packets Drive
+   * folder (upload-or-replace by the patient's packet id). Fails closed when
+   * Drive is unreachable — never simulated.
+   */
+  async saveAdmissionPacket(input: SaveAdmissionPacketInput): Promise<SavePacketResponse> {
+    return request('POST', '/intake/admission-packet', input);
+  },
 };
+
+export interface SaveAdmissionPacketInput {
+  packetId: string;
+  title: string;
+  html: string;
+  patientRef?: string;
+}
 
 export interface SavePacketInput {
   eventId: string;

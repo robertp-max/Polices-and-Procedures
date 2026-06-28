@@ -2,7 +2,7 @@ import { type FormEvent, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
 import { cx } from '../../utils/classNames';
-import { safeReturnTo } from '../../utils/safeRedirect';
+import { BRAD_DEFAULT_ROUTE, safeReturnTo } from '../../utils/safeRedirect';
 
 export function LoginScreen() {
   const navigate = useNavigate();
@@ -38,18 +38,18 @@ export function LoginScreen() {
     >
       {/* Subtle background enhancement matching V6 prototype */}
       <div aria-hidden="true" className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-x-0 top-0 h-1/2 bg-white/40 backdrop-blur-3xl" />
+        <div className="absolute inset-x-0 top-0 h-1/2 bg-surface-glass backdrop-blur-md shadow-glass-inset backdrop-blur-3xl" />
       </div>
 
       <a
         className="absolute right-lg top-lg z-20 inline-flex min-h-tap items-center gap-sm rounded-lg border border-tone-teal-border bg-tone-teal-bg px-md text-sm font-medium text-ink shadow-rest transition duration-fast ease-standard hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus"
-        href="/dashboard"
+        href={BRAD_DEFAULT_ROUTE}
       >
         <ArrowLeft aria-hidden="true" className="h-icon-sm w-icon-sm" />
         Back to Dashboard
       </a>
 
-      <section className="relative z-10 w-full max-w-[440px] rounded-[32px] border border-card bg-surface shadow-hover">
+      <section className="relative z-10 w-full max-w-[440px] rounded-[32px] border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset shadow-hover">
         <div className="p-8">
         <div className="mb-2xl flex justify-center">
           <img
@@ -67,7 +67,7 @@ export function LoginScreen() {
         <form className="space-y-5" noValidate onSubmit={handleSubmit}>
           <label className="grid gap-sm">
             <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Email Address</span>
-            <span className="relative flex h-control items-center rounded-2xl border border-card bg-surface text-brand-teal shadow-rest transition duration-fast ease-standard focus-within:border-brand-teal">
+            <span className="relative flex h-control items-center rounded-2xl border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal shadow-rest transition duration-fast ease-standard focus-within:border-brand-teal">
               <Mail aria-hidden="true" className="absolute left-md h-icon-sm w-icon-sm" />
               <input
                 autoComplete="email"
@@ -86,7 +86,7 @@ export function LoginScreen() {
                 Forgot password?
               </a>
             </span>
-            <span className="relative flex h-control items-center rounded-2xl border border-card bg-surface text-brand-teal shadow-rest transition duration-fast ease-standard focus-within:border-brand-teal">
+            <span className="relative flex h-control items-center rounded-2xl border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal shadow-rest transition duration-fast ease-standard focus-within:border-brand-teal">
               <LockKeyhole aria-hidden="true" className="absolute left-md h-icon-sm w-icon-sm" />
               <input
                 autoComplete="current-password"

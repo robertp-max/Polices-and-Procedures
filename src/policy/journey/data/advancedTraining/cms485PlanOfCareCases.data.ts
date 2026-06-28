@@ -977,7 +977,7 @@ export const cms485Cases: ClinicalCase[] = [
             "id": "h-int-e",
             "label": "HHA to perform daily blood glucose monitoring, assist with insulin administration, and perform wound dressing changes under SN supervision.",
             "isCorrect": false,
-            "rationale": "HHA scope issues: HHAs cannot administer insulin (medication administration), and wound dressing changes on a MRSA-positive Wagner 3 wound require skilled nursing, not HHA. BG monitoring by HHA may be acceptable in some states but must be within state practice act and agency policy.",
+            "rationale": "HHA scope issues: HHAs cannot administer insulin (medication administration), and wound dressing changes on a MRSA-positive Wagner 3 wound require skilled nursing, not HHA. BG monitoring by HHA may be acceptable in some states but must be within state practice act and CL-CP-001 (Plan of Care Development & Approval).",
             "whyTempting": "Seems efficient — HHA provides daily support while SN visits less frequently. Daily BG monitoring makes clinical sense. \"Under SN supervision\" sounds like proper oversight.",
             "failureReason": "HHA performing wound care on a complex MRSA wound and administering insulin violates scope of practice in most states. \"Under SN supervision\" does not change scope limitations. This would be a survey citation.",
             "realWorldConsequence": "HHA administering insulin and performing complex wound care on a MRSA-positive wound violates scope of practice — a resulting patient injury would constitute negligent delegation, exposing the agency to malpractice and survey citation.",

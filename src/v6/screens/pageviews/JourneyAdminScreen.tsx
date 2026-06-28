@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertTriangle, ArrowDown, ArrowUp, BarChart3, CalendarClock, CheckCircle2, FileCheck2, GripVertical, LockKeyhole, Plus, ShieldCheck, Trash2, Users } from 'lucide-react';
 import { DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneBarClasses, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Button, ToneBadge, Input, Textarea } from '../../primitives';
@@ -283,7 +283,20 @@ const cohortPanels = [
 
 export function JourneyAdminScreen() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'overview' | 'syllabus' | 'review' | 'governance' | 'builder'>('overview');
+  const [searchParams, setSearchParams] = useSearchParams();
+  type JourneyAdminTab = 'overview' | 'syllabus' | 'review' | 'governance' | 'builder';
+  const requestedTab = searchParams.get('tab');
+  const activeTab: JourneyAdminTab =
+    requestedTab === 'syllabus' || requestedTab === 'review' || requestedTab === 'governance' || requestedTab === 'builder'
+      ? requestedTab
+      : 'overview';
+  const setActiveTab = (tab: JourneyAdminTab) => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set('tab', tab);
+      return next;
+    });
+  };
   const [courseTitle, setCourseTitle] = useState('RN General Orientation and supervised clearance');
   const [roleTrack, setRoleTrack] = useState('Registered Nurse - new hire');
   const [targetTimeline, setTargetTimeline] = useState('30 calendar days with 2 supervised visits');
@@ -360,7 +373,7 @@ export function JourneyAdminScreen() {
     >
       {/* Tab Segment Controls */}
       <div className="flex flex-wrap items-center justify-between gap-lg mb-sm">
-        <div className="inline-flex rounded-lg bg-tone-slate-bg p-xs">
+        <div className="inline-flex rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs">
           {[
             { id: 'overview', label: 'Overview' },
             { id: 'syllabus', label: 'Syllabus Catalog' },
@@ -372,7 +385,7 @@ export function JourneyAdminScreen() {
               className={cx(
                 'min-h-tap rounded-md px-lg text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
                 activeTab === tab.id
-                  ? 'bg-surface text-brand-teal shadow-rest'
+                  ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal shadow-rest'
                   : 'text-secondary hover:bg-surface-hover',
               )}
               key={tab.id}
@@ -392,7 +405,7 @@ export function JourneyAdminScreen() {
       {activeTab === 'builder' ? (
         <section className="grid gap-xl desktop:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           {/* Left Column: Course details */}
-          <div className="rounded-lg border border-card bg-surface p-xl shadow-rest flex flex-col justify-between">
+          <div className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest flex flex-col justify-between">
             <div className="grid gap-md">
               <div className="flex items-center gap-sm">
                 <ToneBadge status="active" />
@@ -448,7 +461,7 @@ export function JourneyAdminScreen() {
           </div>
 
           {/* Right Column: Module sequence */}
-          <div className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <div className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest">
             <div className="flex flex-wrap items-center justify-between gap-md mb-lg">
               <div className="grid gap-xs">
                 <h3 className="text-h2 font-medium text-ink">Module sequence</h3>
@@ -468,7 +481,7 @@ export function JourneyAdminScreen() {
               {sequence.map((item, index) => (
                 <div
                   key={item.code}
-                  className="rounded-md border border-card bg-tone-slate-bg p-md flex flex-col gap-sm"
+                  className="rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-md flex flex-col gap-sm"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-md">
                      <div className="flex items-start gap-sm">
@@ -493,7 +506,7 @@ export function JourneyAdminScreen() {
                     {item.refs.map((ref) => (
                       <span
                         key={ref}
-                        className="rounded-full border border-card bg-surface px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-brand-teal"
+                        className="rounded-full border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-brand-teal"
                       >
                         {ref}
                       </span>
@@ -538,7 +551,7 @@ export function JourneyAdminScreen() {
             <div className="grid gap-xl">
               <MetricGrid metrics={journeyAdminMetrics} />
               <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-                <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="cohort-trend-title">
+                <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="cohort-trend-title">
                   <div className="flex flex-wrap items-start justify-between gap-lg">
                     <div className="grid gap-xs">
                       <h2 className="text-h2 font-medium text-ink" id="cohort-trend-title">
@@ -552,7 +565,7 @@ export function JourneyAdminScreen() {
                     <ToneBadge size="sm" status="active" />
                   </div>
 
-                  <div className="mt-lg rounded-lg bg-tone-slate-bg p-lg">
+                  <div className="mt-lg rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg">
                     <div className="flex h-[220px] items-end gap-md" aria-label="Cohort completion percentages">
                       {completionTrend.map((point) => (
                         <div className="flex h-full min-w-tap flex-1 flex-col justify-end gap-sm" key={point.label}>
@@ -574,7 +587,7 @@ export function JourneyAdminScreen() {
 
                 <section className="grid gap-md" aria-label="Gate readiness progress">
                   {gatePanels.map((gate) => (
-                    <article className="rounded-lg border border-card bg-surface p-lg shadow-rest" key={gate.label}>
+                    <article className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden shadow-rest" key={gate.label}>
                       <div className="mb-md flex flex-wrap items-start justify-between gap-md">
                         <div className="grid gap-xs">
                           <p className="text-tag font-light uppercase tracking-tag text-muted">{gate.label}</p>
@@ -632,7 +645,7 @@ export function JourneyAdminScreen() {
                     const Icon = panel.icon;
 
                     return (
-                      <article className="rounded-lg border border-card bg-surface p-lg shadow-rest" key={panel.label}>
+                      <article className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden shadow-rest" key={panel.label}>
                         <div className="mb-md flex items-start justify-between gap-md">
                           <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-brand-teal">
                             <Icon aria-hidden="true" className="h-icon-md w-icon-md" />
@@ -646,7 +659,7 @@ export function JourneyAdminScreen() {
                   })}
                 </section>
 
-                <section className="rounded-lg border border-card bg-surface p-xl shadow-rest mt-lg" aria-labelledby="mapped-regulatory-title">
+                <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest mt-lg" aria-labelledby="mapped-regulatory-title">
                   <div className="mb-lg flex items-start gap-md">
                     <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
                       <BarChart3 aria-hidden="true" className="h-icon-md w-icon-md" />
@@ -662,7 +675,7 @@ export function JourneyAdminScreen() {
                   </div>
                   <div className="grid gap-sm">
                     {regulatoryRefs.map(([label, detail, status]) => (
-                      <div className="grid gap-sm rounded-md bg-tone-slate-bg p-md" key={label}>
+                      <div className="grid gap-sm rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md" key={label}>
                         <div className="flex flex-wrap items-start justify-between gap-md">
                           <p className="text-tag font-light uppercase tracking-tag text-brand-teal">{label}</p>
                           <ToneBadge size="sm" status={status} />

@@ -1,3 +1,5 @@
+import { cms485AudioLocations } from "./cms485AudioLocations";
+
 // Narration asset manifest (TTS readiness).
 //
 // No approved/authorized narration audio is bundled in the MVP. Audio production
@@ -16,13 +18,17 @@ export const NARRATION_ASSET_BASE = "/assets/narration";
  */
 export function narrationAssetPath(appLocation: string): string {
   const safe = appLocation.trim().replace(/[^a-z0-9._-]/gi, "-").toLowerCase();
-  return `${NARRATION_ASSET_BASE}/${safe}.mp3`;
+  const ext = appLocation.startsWith("cms-485") ? "wav" : "mp3";
+  return `${NARRATION_ASSET_BASE}/${safe}.${ext}`;
 }
 
 /** app.locations that have an authorized audio file present on disk. */
 export const availableNarrationAudio: ReadonlySet<string> = new Set<string>();
 
 export function hasNarrationAudio(appLocation: string): boolean {
+  if (appLocation.startsWith("cms-485")) {
+    return cms485AudioLocations.has(appLocation);
+  }
   return availableNarrationAudio.has(appLocation);
 }
 

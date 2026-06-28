@@ -152,7 +152,7 @@ export function WorkflowSwimlaneScreen() {
             Back to Workflows Library
           </Button>
         </div>
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest">
           <h2 className="text-h2 font-medium text-ink">Workflow not found</h2>
           <p className="mt-sm text-sm text-muted">No workflow data for ID “{workflowId}”. Use the library list (real generated records) to open a reference swimlane with steps, policies, forms, roles, cadence.</p>
           <div className="mt-lg flex flex-wrap gap-sm">
@@ -182,7 +182,7 @@ export function WorkflowSwimlaneScreen() {
         <span className="font-medium text-ink">{meta.id}</span>
       </div>
 
-      <section className="grid gap-lg rounded-lg border border-card bg-surface p-xl shadow-rest">
+      <section className="grid gap-lg rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest">
         <div>
           <div className="flex flex-wrap items-center gap-sm">
             <ToneTag tone="teal">{meta.domain}</ToneTag>
@@ -206,7 +206,7 @@ export function WorkflowSwimlaneScreen() {
                 'rounded-sm border px-md py-xs text-tag uppercase tracking-tag transition',
                 w.workflowId === meta.id
                   ? 'border-brand-teal bg-brand-teal text-on-brand'
-                  : 'border-hairline bg-white text-brand-teal hover:bg-white/[.7]'
+                  : 'border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal hover:bg-surface-glass hover:backdrop-blur-md'
               )}
             >
               {w.workflowId}
@@ -247,18 +247,18 @@ export function WorkflowSwimlaneScreen() {
                 ['Evidence state', meta ? ((getWorkflowDetail(meta.id) as any)?.evidence || '—') : '—'],
                 ['Owner', selectedCard.owner],
               ].map(([label, val]) => (
-                <div key={label} className="flex items-center justify-between rounded-md bg-tone-slate-bg p-md text-xs">
+                <div key={label} className="flex items-center justify-between rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md text-xs">
                   <span className="font-light text-secondary">{label}</span>
                   <span className="font-medium text-brand-teal">{val}</span>
                 </div>
               ))}
             </div>
-            <div className="rounded-md border border-card bg-surface p-md flex flex-col gap-sm">
+            <div className="rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-md flex flex-col gap-sm">
               <h4 className="text-sm font-medium text-ink">Reference source details</h4>
               <div className="grid gap-xs text-xs font-light text-secondary">
-                <div className="rounded-md bg-tone-slate-bg p-md">Authored step from generated workflow definition</div>
-                <div className="rounded-md bg-tone-slate-bg p-md">Linked forms and policies shown for reference</div>
-                <div className="rounded-md bg-tone-slate-bg p-md">
+                <div className="rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md">Authored step from generated workflow definition</div>
+                <div className="rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md">Linked forms and policies shown for reference</div>
+                <div className="rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md">
                   No completion or execution action is performed here
                 </div>
               </div>
@@ -302,7 +302,7 @@ export function WorkflowDetailScreen({ workflowId: propId }: { workflowId?: stri
 
   if (!wf) {
     return (
-      <div className="grid gap-sm rounded-xl border border-hairline bg-surface/80 p-xl text-sm text-muted shadow-rest backdrop-blur-md">
+      <div className="grid gap-sm rounded-xl border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset/80 p-xl text-sm text-muted shadow-rest backdrop-blur-md">
         <h3 className="text-h3 font-medium text-ink">Workflow not found</h3>
         <p>Unresolved workflow ID: <code>{workflowId || '—'}</code>. This ID does not exist in the canonical generated WORKFLOWS. No fabricated data is shown.</p>
         <Link to="/workflows" className="mt-sm inline-block text-brand-teal hover:underline">Return to Workflows Library</Link>
@@ -313,7 +313,7 @@ export function WorkflowDetailScreen({ workflowId: propId }: { workflowId?: stri
   const risk = WF_RISK[wf.metrics?.declaredRisk ?? 'moderate'] ?? WF_RISK.moderate;
   const cadenceLabel = `${wf.cadence?.interval ?? 'on demand'} · ${(wf.cadence?.kind ?? 'time_based').replace(/_/g, '-')}`;
   const title = wf.title.replace(/\b\w/g, (c) => c.toUpperCase());
-  const glass = 'rounded-xl border border-hairline bg-surface/80 shadow-rest backdrop-blur-md';
+  const glass = 'rounded-xl border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset/80 shadow-rest backdrop-blur-md';
 
   return (
     <div className="grid gap-lg">
@@ -326,7 +326,7 @@ export function WorkflowDetailScreen({ workflowId: propId }: { workflowId?: stri
           <div className="flex flex-wrap items-start justify-between gap-md border-b border-hairline bg-tone-teal-bg/40 px-lg py-lg">
             <div className="min-w-0">
               <div className="mb-2 flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-tone-teal-border bg-surface px-2.5 py-1 text-tag font-semibold uppercase tracking-tag text-brand-teal-deep">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-tone-teal-border bg-surface-glass backdrop-blur-md shadow-glass-inset px-2.5 py-1 text-tag font-semibold uppercase tracking-tag text-brand-teal-deep">
                   {wf.domain} · {WF_DOMAIN_LABEL[wf.domain] ?? wf.domain}
                 </span>
                 <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-tag font-semibold uppercase tracking-tag ${risk.cls}`}>
@@ -397,7 +397,7 @@ export function WorkflowDetailScreen({ workflowId: propId }: { workflowId?: stri
                           <td className="py-2.5 pr-3 font-medium text-brand-teal">{s.order}</td>
                           <td className="py-2.5 pr-3 text-ink">{s.action}</td>
                           <td className="py-2.5 pr-3 text-muted">{s.role}</td>
-                          <td className="py-2.5 pr-3"><div className="flex flex-wrap gap-1">{(s.formIds ?? []).map((f) => <span key={f} className="rounded border border-hairline bg-tone-slate-bg px-1.5 py-0.5 text-tag text-muted">{f}</span>)}{!(s.formIds ?? []).length && '—'}</div></td>
+                          <td className="py-2.5 pr-3"><div className="flex flex-wrap gap-1">{(s.formIds ?? []).map((f) => <span key={f} className="rounded border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset px-1.5 py-0.5 text-tag text-muted">{f}</span>)}{!(s.formIds ?? []).length && '—'}</div></td>
                           <td className="py-2.5 text-muted">{s.deadline || '—'}</td>
                         </tr>
                       ))}
@@ -419,7 +419,7 @@ export function WorkflowDetailScreen({ workflowId: propId }: { workflowId?: stri
                   <WfSectionTitle>Approvals</WfSectionTitle>
                   <ul className="grid gap-2 text-sm text-ink">
                     {(wf.approvals ?? []).map((a, i) => (
-                      <li key={i} className="rounded-lg border border-hairline bg-surface p-3">
+                      <li key={i} className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-3">
                         <div>{a.description}</div>
                         {a.requiresGoverningBody && <span className="mt-1 inline-block rounded-full border border-tone-orange-border bg-tone-orange-bg px-2 py-0.5 text-tag font-semibold uppercase tracking-tag text-tone-orange-text">Governing Body required</span>}
                       </li>
@@ -450,7 +450,7 @@ export function WorkflowDetailScreen({ workflowId: propId }: { workflowId?: stri
                   </div>
                   <div className="grid gap-2">
                     <WfSectionTitle>Regulatory Anchors</WfSectionTitle>
-                    <div className="flex flex-wrap gap-2">{(wf.regulatoryAnchors ?? []).map((r, i) => <span key={i} className="rounded-md border border-hairline bg-tone-slate-bg px-2.5 py-1 text-sm text-ink">{r}</span>)}{!(wf.regulatoryAnchors ?? []).length && <span className="text-sm text-muted">—</span>}</div>
+                    <div className="flex flex-wrap gap-2">{(wf.regulatoryAnchors ?? []).map((r, i) => <span key={i} className="rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset px-2.5 py-1 text-sm text-ink">{r}</span>)}{!(wf.regulatoryAnchors ?? []).length && <span className="text-sm text-muted">—</span>}</div>
                   </div>
                 </div>
               )}
@@ -469,7 +469,7 @@ export function WorkflowDetailScreen({ workflowId: propId }: { workflowId?: stri
                 </div>
                 <div className="grid gap-2">
                   <WfSectionTitle>Regulatory Anchors</WfSectionTitle>
-                  <div className="flex flex-wrap gap-1.5">{(wf.regulatoryAnchors ?? []).map((r, i) => <span key={i} className="rounded border border-hairline bg-surface px-2 py-0.5 text-xs text-ink">{r}</span>)}{!(wf.regulatoryAnchors ?? []).length && <span className="text-xs text-muted">—</span>}</div>
+                  <div className="flex flex-wrap gap-1.5">{(wf.regulatoryAnchors ?? []).map((r, i) => <span key={i} className="rounded border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset px-2 py-0.5 text-xs text-ink">{r}</span>)}{!(wf.regulatoryAnchors ?? []).length && <span className="text-xs text-muted">—</span>}</div>
                 </div>
               </div>
             )}

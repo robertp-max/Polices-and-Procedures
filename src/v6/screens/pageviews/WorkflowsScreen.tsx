@@ -149,12 +149,12 @@ export default function WorkflowsScreen() {
           const stepC = wf.steps?.length || 0;
           const formC = (wf.requiredForms || []).length;
           return (
-            <div key={row.workflowId} className="rounded-lg border border-hairline bg-surface-glass p-lg hover:shadow-rest transition cursor-pointer" onClick={() => {
+            <div key={row.workflowId} className="rounded-lg border border-hairline bg-surface-glass p-lg hover:shadow-rest transition cursor-pointer overflow-hidden" onClick={() => {
               openRealDetail(row);
             }}>
               <div className="flex items-center justify-between">
                 <div className="text-tag uppercase tracking-tag text-brand-teal">{row.workflowId}</div>
-                <span className="text-[10px] px-sm py-0.5 rounded bg-white/40">{row.status}</span>
+                <span className="text-[10px] px-sm py-0.5 rounded bg-surface-glass backdrop-blur-md shadow-glass-inset">{row.status}</span>
               </div>
               <div className="mt-sm text-base font-medium text-ink">{row.title}</div>
               <div className="mt-xs text-sm text-secondary">{row.domain} • {row.frequency} • {row.risk} risk</div>
@@ -175,7 +175,7 @@ export default function WorkflowsScreen() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search ID, title, domain..."
-            className="min-w-[220px] rounded-md border border-card bg-surface px-md py-sm text-sm placeholder:text-muted focus-visible:outline-none focus-visible:shadow-focus"
+            className="min-w-[220px] rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset px-md py-sm text-sm placeholder:text-muted focus-visible:outline-none focus-visible:shadow-focus"
             aria-label="Search workflows"
           />
         </div>
@@ -194,7 +194,7 @@ export default function WorkflowsScreen() {
                 'rounded-sm border px-md py-xs text-tag uppercase tracking-tag transition',
                 on
                   ? 'border-brand-teal bg-brand-teal text-on-brand'
-                  : 'border-hairline bg-white text-brand-teal hover:bg-white/[.8]'
+                  : 'border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal hover:bg-surface-glass hover:backdrop-blur-md'
               )}
             >
               {domain}
@@ -204,7 +204,7 @@ export default function WorkflowsScreen() {
         <span className="text-tag uppercase tracking-tag text-muted self-center ml-md mr-xs">Risk:</span>
         {allRisks.map((risk) => {
           const on = activeRisks.includes(risk);
-          const toneClass = risk === 'High' ? 'border-tone-orange-border text-tone-orange-text' : risk === 'Medium' ? 'border-brand-teal text-brand-teal' : 'border-tone-green-border text-tone-green-text';
+          const toneClass = risk === 'High' ? 'border-tone-orange-border text-tone-orange-text' : risk === 'Medium' ? 'border-tone-amber-border text-tone-amber-text' : 'border-tone-green-border text-tone-green-text';
           return (
             <button
               key={risk}
@@ -212,7 +212,7 @@ export default function WorkflowsScreen() {
               onClick={() => toggleRisk(risk)}
               className={cx(
                 'rounded-sm border px-md py-xs text-tag uppercase tracking-tag transition',
-                on ? 'bg-white border-brand-teal text-brand-teal' : `bg-white/[.6] ${toneClass} opacity-70 hover:opacity-100`
+                on ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset border-brand-teal text-brand-teal' : `bg-surface-glass backdrop-blur-md shadow-glass-inset ${toneClass} opacity-70 hover:opacity-100`
               )}
             >
               {risk}
@@ -222,7 +222,7 @@ export default function WorkflowsScreen() {
       </div>
 
       <section className="grid gap-lg desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-        <section aria-label="Workflows library matrix" className="rounded-lg border border-card bg-surface p-xl shadow-rest overflow-hidden">
+        <section aria-label="Workflows library matrix" className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest overflow-hidden">
           <DataTable
             columns={workflowColumns}
             label="Workflows library matrix"

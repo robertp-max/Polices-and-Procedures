@@ -85,8 +85,9 @@ export function buildWorkflowSwimlaneCardsForEvent(
       return {
         id: `${event.id || wfId}-S${String(s.order || (si + 1)).padStart(2, '0')}`,
         title: `${s.order || (si + 1)}. ${s.action}`,
+        description: s.description || '',
         owner: normalizeRole(s.role || workflow.roles?.primary?.[0] || event.owner || '—'),
-        due: s.deadline || (typeof event.day === 'number' ? `Jun ${event.day}` : '—'),
+        due: s.deadline || (typeof event.day === 'number' ? `June ${event.day}` : '—'),
         progress: Math.min(95, Math.max(10, Math.round(20 + ((si + 1) / Math.max(1, stepsIn.length)) * 60))),
         status: isSig ? 'Awaiting signature' : (s.formIds && s.formIds.length ? 'Needs evidence' : 'Pending'),
         chips: [...(s.formIds || []), ...((workflow.policyRefs || []).slice(0, 1))].filter(Boolean).slice(0, 3),

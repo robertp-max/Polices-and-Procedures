@@ -19,7 +19,7 @@ export function Badge({ className, size = 'md', variant = 'label', ...props }: B
     <span
       {...props}
       className={cx(
-        'inline-flex items-center rounded-sm border border-hairline bg-tone-slate-bg font-light text-muted',
+        'inline-flex items-center rounded-sm border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset font-light text-muted',
         variant === 'count' && 'tabular-nums',
         sizeClasses[size],
         className,

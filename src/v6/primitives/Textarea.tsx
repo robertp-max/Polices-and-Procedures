@@ -12,7 +12,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       ref={ref}
       aria-invalid={invalid || undefined}
       className={cx(
-        'min-h-tap w-full resize-y rounded-md border bg-surface px-md py-sm text-body font-light text-ink shadow-none',
+        'min-h-tap w-full resize-y rounded-md border bg-surface-glass backdrop-blur-md shadow-glass-inset px-md py-sm text-body font-light text-ink shadow-none',
         'placeholder:text-muted',
         'transition duration-fast ease-standard',
         'hover:border-strong focus-visible:outline-none focus-visible:shadow-focus',

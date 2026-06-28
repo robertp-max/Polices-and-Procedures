@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AlertTriangle, ClipboardCheck, FileCheck2, KeyRound, LockKeyhole, ShieldCheck, UserCog } from 'lucide-react';
 import { DataTable, MetricGrid, SurfaceCard, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { PageHeader } from '../../shell';
@@ -205,7 +205,18 @@ const permissionMetrics: readonly MetricTileData[] = [
 ];
 
 export function AdminPermissionsScreen() {
-  const [activeTab, setActiveTab] = useState<PermissionTabId>('matrix');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab');
+  const activeTab: PermissionTabId = permissionTabs.some((tab) => tab.id === requestedTab)
+    ? requestedTab as PermissionTabId
+    : 'matrix';
+  const setActiveTab = (tab: PermissionTabId) => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set('tab', tab);
+      return next;
+    });
+  };
 
   return (
     <section
@@ -218,11 +229,10 @@ export function AdminPermissionsScreen() {
       <PageHeader
         badge="Admin"
         title="Permissions"
-        description="Permission matrix for capabilities, roles, risk, readiness, and governance evidence."
       />
       <MetricGrid metrics={permissionMetrics} />
-      <section className="grid gap-xl rounded-lg border border-card bg-surface/90 p-xl shadow-rest backdrop-blur-xl">
-        <nav aria-label="Permission detail tabs" className="flex gap-xs overflow-x-auto rounded-lg border border-card bg-surface p-xs shadow-rest">
+      <section className="grid gap-xl rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset/90 p-xl shadow-rest backdrop-blur-xl">
+        <nav aria-label="Permission detail tabs" className="flex gap-xs overflow-x-auto rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs overflow-hidden shadow-rest">
           {permissionTabs.map((tab) => (
             <button
               aria-selected={activeTab === tab.id}
@@ -283,7 +293,7 @@ export function AdminPermissionsScreen() {
         )}
 
         {activeTab === 'evidence' && (
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="permission-audit-trail-title" role="tabpanel">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="permission-audit-trail-title" role="tabpanel">
             <div className="mb-lg flex items-start gap-md">
               <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
                 <FileCheck2 aria-hidden="true" className="h-icon-md w-icon-md" />
@@ -299,7 +309,7 @@ export function AdminPermissionsScreen() {
             </div>
             <div className="grid gap-sm">
               {auditTrailItems.map(([label, value, status]) => (
-                <div className="flex flex-wrap items-center justify-between gap-md rounded-md bg-tone-slate-bg p-md" key={label}>
+                <div className="flex flex-wrap items-center justify-between gap-md rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md" key={label}>
                   <div>
                     <p className="text-tag font-light uppercase tracking-tag text-muted">{label}</p>
                     <p className="mt-xs text-sm font-light text-ink">{value}</p>
@@ -312,7 +322,7 @@ export function AdminPermissionsScreen() {
         )}
 
         {activeTab === 'control-path' && (
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="permission-control-path-title" role="tabpanel">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="permission-control-path-title" role="tabpanel">
             <div className="mb-lg flex items-start gap-md">
               <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
                 <KeyRound aria-hidden="true" className="h-icon-md w-icon-md" />
@@ -335,7 +345,7 @@ export function AdminPermissionsScreen() {
                 const Icon = item.icon;
 
                 return (
-                  <div className="flex items-start gap-md rounded-md bg-tone-slate-bg p-md" key={item.label}>
+                  <div className="flex items-start gap-md rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md" key={item.label}>
                     <Icon aria-hidden="true" className="mt-xs h-icon-sm w-icon-sm shrink-0 text-brand-teal" />
                     <div className="grid gap-xs">
                       <p className="text-tag font-light uppercase tracking-tag text-secondary">{item.label}</p>

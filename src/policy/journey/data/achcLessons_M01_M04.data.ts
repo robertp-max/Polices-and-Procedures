@@ -1,10 +1,10 @@
 import type { Lesson } from './achcContentTypes';
 
 const IMG = {
-  M01: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=600&auto=format&fit=crop',
-  M02: 'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?q=80&w=600&auto=format&fit=crop',
-  M03: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?q=80&w=600&auto=format&fit=crop',
-  M04: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=600&auto=format&fit=crop',
+  M01: '/assets/media/gao-mission-values.jpg',
+  M02: '/assets/media/emergency-prep.jpg',
+  M03: '/assets/media/abuse-reporting.jpg',
+  M04: '/assets/media/hipaa-privacy.jpg',
 };
 
 export const achcLessons_M01_M04: Lesson[] = [
@@ -30,7 +30,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m01_l0_obj', type: 'content', title: 'Learning Objectives',
         content: 'After completing this module, you will be able to:\n\n1. Define cultural competence and distinguish it from workforce diversity training.\n2. Identify at least 4 categories of cultural difference that affect patient care.\n3. Apply communication strategies when cultural barriers exist.\n4. Recognize workplace discrimination behaviors and describe reporting obligations.\n5. Demonstrate patient interaction techniques that respect cultural norms.',
         narration_script: 'Here is what you will be able to do after this module. One: define cultural competence and distinguish it from workforce diversity training. Two: identify at least four categories of cultural difference that affect patient care. Three: apply communication strategies when cultural barriers exist. Four: recognize workplace discrimination and describe your reporting obligations. Five: demonstrate patient interaction techniques that respect cultural norms.',
-        audio_path: '/training-audio/ACHC-ART-M01/l0/objectives.wav', image_url: IMG.M01, estimated_duration: '0:50', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M01/l0/objectives.wav', image_url: IMG.M01, estimated_duration: '1:00', completion_required: true,
       },
       {
         card_id: 'achc_m01_l0_concepts', type: 'content', title: 'Key Terms to Know',
@@ -60,7 +60,13 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m01_l1_tkwy', type: 'content', title: 'Key Operational Takeaways',
         content: '• Cultural competence affects patients DIRECTLY — not just staff morale\n• Quality of communication determines whether patients can safely follow instructions\n• Multilingual capability is a clinical asset\n• Discrimination extends beyond race: religion, age, disability, national origin, sexuality\n• The CLAS Standards are federally required — ACHC surveys for compliance\n• Implicit bias can cause care quality disparities even when no overt discrimination occurs',
         narration_script: 'Key takeaways from this lesson. Cultural competence affects patients directly, not just staff morale. Communication quality determines whether patients can safely follow instructions. Multilingual capability is a clinical asset. Discrimination extends beyond race — it includes religion, age, disability, national origin, and sexual orientation. The CLAS Standards are federally required, and ACHC surveys for compliance. Finally, implicit bias can create care disparities even without overt discrimination.',
-        audio_path: '/training-audio/ACHC-ART-M01/l1/takeaways.wav', image_url: IMG.M01, estimated_duration: '0:55', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M01/l1/takeaways.wav', image_url: IMG.M01, estimated_duration: '1:10', completion_required: true,
+      },
+      {
+        card_id: 'achc_m01_l1_c2', type: 'content', title: 'Field Scenario: Cultural Preference in Medication Timing',
+        content: 'Field scenario: A Muslim patient fasts during Ramadan and requests that you time insulin teaching and administration after sunset. The POC calls for morning and evening doses.\n\nPer CL-PR-001 (Patient Rights & Responsibilities), you:\n• Respect the preference and negotiate timing within clinical safety (e.g., adjust within window if physician approves)\n• Document the accommodation and patient teaching\n• If it risks therapeutic level, escalate to DON and physician for order change\n\nNever override without escalation. This protects adherence and avoids harm.',
+        narration_script: 'Field scenario. A patient fasting for Ramadan asks to shift insulin teaching after sunset. Per CL-PR-001 (Patient Rights & Responsibilities), respect the request, negotiate safe windows, document thoroughly, and escalate to physician for any order adjustment. Never override unilaterally.',
+        audio_path: '/training-audio/ACHC-ART-M01/l1/content2.wav', image_url: IMG.M01, estimated_duration: '1:25', completion_required: true,
       },
       {
         card_id: 'achc_m01_l1_ch', type: 'challenge', title: 'Challenge: Workforce Diversity Scenario',
@@ -102,7 +108,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m01_l2_tkwy', type: 'content', title: 'Interpreter Requirements',
         content: 'Language Access is a CMS Condition of Participation requirement:\n• Qualified interpreters: professionally trained, medically literate, bound by confidentiality\n• NOT acceptable for clinical education: children, family members, neighbors\n• Acceptable uses for family interpreters: general greetings, scheduling only\n• Telephone interpreter services must be available and used when needed\n• Document: who interpreted, method of interpretation, patient teach-back confirmation\n\nFailure to provide qualified interpreter = immediate jeopardy risk at survey.',
         narration_script: 'Language Access is a CMS Condition of Participation. Qualified interpreters are professionally trained, medically literate, and bound by confidentiality. Children and family members are NOT acceptable for clinical education. Family may assist with general greetings or scheduling only. Telephone interpreter services must be available. Always document who interpreted, how interpretation was arranged, and the patient\'s teach-back confirmation. Failure to provide a qualified interpreter is an immediate jeopardy risk.',
-        audio_path: '/training-audio/ACHC-ART-M01/l2/takeaways.wav', image_url: IMG.M01, estimated_duration: '0:55', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M01/l2/takeaways.wav', image_url: IMG.M01, estimated_duration: '1:05', completion_required: true,
       },
       {
         card_id: 'achc_m01_l2_ch', type: 'challenge', title: 'Challenge: Dietary Cultural Barrier',
@@ -144,7 +150,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m01_l3_tkwy', type: 'content', title: 'Your Reporting Obligations',
         content: '• Every employee has a duty to report AND intervene when witnessing discrimination\n• Report to HR/Compliance Officer → document the pattern → supervisor counseling/retraining\n• EEOC complaints can be filed by any individual who experiences or witnesses discrimination\n• Retaliation for reporting = separate federal violation with its own penalties\n• Positive stereotyping (assigning harder work because "you\'re stronger") is still illegal stereotyping\n• Staff training on non-discrimination policies is required at orientation AND annually',
         narration_script: 'Your obligations. Every employee must report AND intervene when witnessing discrimination. Report to HR or the Compliance Officer, document the pattern, and ensure supervisor retraining. EEOC complaints can be filed by anyone who experiences or witnesses discrimination. Retaliation for reporting is a separate federal violation. Positive stereotyping — assigning harder work because "you\'re stronger" — is still illegal stereotyping. Staff training on non-discrimination is required at orientation and annually.',
-        audio_path: '/training-audio/ACHC-ART-M01/l3/takeaways.wav', image_url: IMG.M01, estimated_duration: '0:55', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M01/l3/takeaways.wav', image_url: IMG.M01, estimated_duration: '1:05', completion_required: true,
       },
       {
         card_id: 'achc_m01_l3_ch', type: 'challenge', title: 'Challenge: Discriminatory Assignment Pattern',
@@ -184,15 +190,15 @@ export const achcLessons_M01_M04: Lesson[] = [
       },
       {
         card_id: 'achc_m01_l4_nxt', type: 'content', title: 'Operational Next Steps',
-        content: 'Your field preceptor will evaluate:\n• Appropriate greeting and address of patients (no nicknames unless patient-directed)\n• Use of qualified interpreters (not family) for clinical conversations\n• Documentation of cultural considerations in visit notes\n• Ability to negotiate between cultural preferences and clinical requirements\n• Recognition of and response to discriminatory behavior in the field\n\nResources:\n• Agency Cultural Competence Policy\n• EEOC: www.eeoc.gov\n• National CLAS Standards reference\n• Agency interpreter services contact',
-        narration_script: 'Operational next steps. Your field preceptor will evaluate: appropriate greeting and address of patients — no nicknames unless patient-directed. Use of qualified interpreters, not family members, for clinical conversations. Documentation of cultural considerations in visit notes. Ability to negotiate between cultural preferences and clinical requirements. And recognition of and response to discriminatory behavior in the field. Resources: the Agency Cultural Competence Policy, EEOC at www.eeoc.gov, the National CLAS Standards reference, and your Agency interpreter services contact.',
-        audio_path: '/training-audio/ACHC-ART-M01/l4/nextsteps.wav', image_url: IMG.M01, estimated_duration: '0:55', completion_required: true,
+        content: 'Your field preceptor will evaluate:\n• Appropriate greeting and address of patients (no nicknames unless patient-directed)\n• Use of qualified interpreters (not family) for clinical conversations\n• Documentation of cultural considerations in visit notes\n• Ability to negotiate between cultural preferences and clinical requirements\n• Recognition of and response to discriminatory behavior in the field\n\nResources:\n• CL-PR-001 (Patient Rights & Responsibilities)\n• EEOC: www.eeoc.gov\n• National CLAS Standards reference\n• CL-PR-001 (Patient Rights & Responsibilities) interpreter services contact',
+        narration_script: 'Operational next steps. Your field preceptor will evaluate: appropriate greeting and address of patients — no nicknames unless patient-directed. Use of qualified interpreters, not family members, for clinical conversations. Documentation of cultural considerations in visit notes. Ability to negotiate between cultural preferences and clinical requirements. And recognition of and response to discriminatory behavior in the field. Resources: the CL-PR-001 (Patient Rights & Responsibilities), EEOC at www.eeoc.gov, the National CLAS Standards reference, and your CL-PR-001 (Patient Rights & Responsibilities) interpreter services contact.',
+        audio_path: '/training-audio/ACHC-ART-M01/l4/nextsteps.wav', image_url: IMG.M01, estimated_duration: '1:05', completion_required: true,
       },
       {
         card_id: 'achc_m01_l4_surv', type: 'content', title: 'Module Evaluation',
         content: 'Please take a moment to evaluate this module:\n\n1. The content was relevant to my daily work. (1–5)\n2. The scenarios reflected realistic situations I may encounter. (1–5)\n3. The explanations helped me understand the "why" behind correct actions. (1–5)\n4. I feel more prepared to handle cultural barriers in patient care. (1–5)\n5. What topic would you like explored in more depth? (Share with your supervisor)\n\nCompletion of this module validates knowledge reasoning only. It does not constitute clinical field competency or operational clearance. Your completion triggers certificate generation, evidence attachment, and retraining timer initialization (365 days).',
         narration_script: 'Thank you for completing this module. Please evaluate your experience. One: the content was relevant to my daily work. Two: the scenarios reflected realistic situations. Three: the explanations helped me understand the why. Four: I feel more prepared to handle cultural barriers. And five: what topic would you like explored in more depth? Completion of this module validates knowledge reasoning only. It does not constitute clinical field competency. Your completion triggers certificate generation, evidence attachment, and a 365-day retraining timer.',
-        audio_path: '/training-audio/ACHC-ART-M01/l4/survey.wav', image_url: IMG.M01, estimated_duration: '0:55', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M01/l4/survey.wav', image_url: IMG.M01, estimated_duration: '1:05', completion_required: true,
       },
     ],
   },
@@ -218,7 +224,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m02_l0_obj', type: 'content', title: 'Learning Objectives',
         content: 'After completing this module, you will be able to:\n\n1. Describe the Agency\'s Emergency Preparedness and Response Plan structure and your role within it.\n2. Classify patients using the 4-tier emergency triage system (Class I–IV).\n3. Identify the three categories of emergencies (Man-Made, Natural, Technological).\n4. Execute personal and automobile preparedness requirements for field staff.\n5. Apply correct communication and escalation protocols when normal systems are compromised.\n6. Describe documentation requirements during and after an emergency event.',
         narration_script: 'Learning objectives for this module. One: describe the Agency\'s Emergency Preparedness Plan structure and your role within it. Two: classify patients using the four-tier triage system, Class I through IV. Three: identify the three emergency categories — man-made, natural, and technological. Four: execute personal and automobile preparedness requirements. Five: apply communication and escalation protocols when normal systems are down. Six: describe documentation requirements during and after an emergency.',
-        audio_path: '/training-audio/ACHC-ART-M02/l0/objectives.wav', image_url: IMG.M02, estimated_duration: '0:50', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M02/l0/objectives.wav', image_url: IMG.M02, estimated_duration: '1:00', completion_required: true,
       },
       {
         card_id: 'achc_m02_l0_concepts', type: 'content', title: 'Key Terms to Know',
@@ -248,12 +254,12 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m02_l1_tkwy', type: 'content', title: 'Key Operational Takeaways',
         content: '• Know the communication chain BEFORE an emergency — primary AND alternate contacts\n• Your job in an emergency: triage → communicate → coordinate, not independently manage\n• Patient triage classifications must be documented and accessible in every chart\n• "Freelancing" during emergencies (acting without following the communication chain) is prohibited\n• Keep the patient triage classification list updated with each visit',
         narration_script: 'Operational takeaways. Know the communication chain before an emergency — primary and alternate contacts. Your role is to triage, communicate, and coordinate — not to manage emergencies independently. Patient triage classifications must be documented and accessible in every chart. Freelancing — acting without following the communication chain — is prohibited. Keep your patient triage classification list updated with each visit.',
-        audio_path: '/training-audio/ACHC-ART-M02/l1/takeaways.wav', image_url: IMG.M02, estimated_duration: '0:50', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M02/l1/takeaways.wav', image_url: IMG.M02, estimated_duration: '1:00', completion_required: true,
       },
       {
         card_id: 'achc_m02_l1_ch', type: 'challenge', title: 'Challenge: 2 AM Flash Flood Alert',
-        content: 'It\'s 2 AM Saturday. You receive a weather alert about flash flooding in your service area. You have 6 patients scheduled for morning visits. The office is closed and you cannot reach the Administrator.\n\nAccording to Agency policy, what should you do FIRST?',
-        narration_script: 'Challenge scenario. It is 2 AM on a Saturday. You receive a weather alert about flash flooding in your service area. Six patients are scheduled for morning visits. The office is closed and you cannot reach the Administrator. According to Agency policy, what should you do first?',
+        content: 'It\'s 2 AM Saturday. You receive a weather alert about flash flooding in your service area. You have 6 patients scheduled for morning visits. The office is closed and you cannot reach the Administrator.\n\nAccording to OP-FM-005 (Emergency Operations & Business Continuity), what should you do FIRST?',
+        narration_script: 'Challenge scenario. It is 2 AM on a Saturday. You receive a weather alert about flash flooding in your service area. Six patients are scheduled for morning visits. The office is closed and you cannot reach the Administrator. According to OP-FM-005 (Emergency Operations & Business Continuity), what should you do first?',
         audio_path: '/training-audio/ACHC-ART-M02/l1/challenge.wav', image_url: IMG.M02, estimated_duration: '0:40', completion_required: true,
         options: [
           { id: 'A', label: 'Cancel all visits and go back to sleep — the office will handle it Monday', isCorrect: false, rationale: 'Class I patients cannot wait until Monday. Abandoning the communication protocol is a serious safety failure.' },
@@ -290,7 +296,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m02_l2_tkwy', type: 'content', title: 'Evacuation and Continuity Rules',
         content: '• Agency is NOT required to transport patients — facilitate and coordinate with EMS\n• Do NOT use your personal vehicle to transport patients (liability, safety, insurance)\n• Patient who refuses to evacuate: document refusal, explain risks, notify supervisor, contact EMS\n• HIPAA and documentation obligations do NOT disappear during emergencies\n• All 3 contact attempts must be documented with time, method, and result\n• After the emergency: debrief, update triage classifications, revise emergency plan if needed',
         narration_script: 'Evacuation rules. The Agency is not required to transport patients — facilitate and coordinate with EMS. Never use your personal vehicle to transport patients. When a patient refuses to evacuate: document the refusal, explain the risks, notify your supervisor, and contact EMS. HIPAA and documentation obligations continue during emergencies. Each of your three contact attempts must be documented with time, method, and result. After the emergency, debrief and update triage classifications.',
-        audio_path: '/training-audio/ACHC-ART-M02/l2/takeaways.wav', image_url: IMG.M02, estimated_duration: '0:55', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M02/l2/takeaways.wav', image_url: IMG.M02, estimated_duration: '1:05', completion_required: true,
       },
       {
         card_id: 'achc_m02_l2_ch', type: 'challenge', title: 'Challenge: Patient Refuses Evacuation',
@@ -308,7 +314,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m02_l2_deb', type: 'content', title: 'Operational Debrief: Documenting Refusal',
         content: 'Patient refusal during an emergency does not end your documentation obligation — it triggers it.\n\nRequired documentation elements:\n1. The specific refusal and patient\'s stated reason\n2. Risks you explained and patient\'s response\n3. All notifications made (supervisor, EMS) and at what time\n4. Any alternative safety measures offered\n5. Your plan for follow-up\n\nSurvey implication: ACHC reviews whether staff appropriately documented patient contact and safety counseling during emergency events. Inadequate documentation = deficiency regardless of clinical outcome.',
         narration_script: 'Debrief. Patient refusal during an emergency does not end your documentation obligation — it triggers it. Required elements: the specific refusal and patient\'s reason, the risks you explained, all notifications made with timestamps, any alternative safety measures offered, and your follow-up plan. ACHC reviews emergency documentation during surveys. Inadequate documentation is a deficiency regardless of the clinical outcome.',
-        audio_path: '/training-audio/ACHC-ART-M02/l2/debrief.wav', image_url: IMG.M02, estimated_duration: '0:55', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M02/l2/debrief.wav', image_url: IMG.M02, estimated_duration: '1:05', completion_required: true,
       },
     ],
   },
@@ -332,7 +338,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m02_l3_tkwy', type: 'content', title: 'Key Operational Takeaways',
         content: '• Know your communication chain BEFORE you need it — primary AND alternate\n• Know the triage classification of EVERY patient on your caseload\n• Personal vehicle transport of patients = liability; ALWAYS use EMS\n• Documentation continues during emergencies — time-stamp, paper backup, EHR transfer\n• Report to your Disaster Coordinator — do not make independent resource commitments\n• Annual drill is required; ACHC surveys for drill documentation and compliance',
         narration_script: 'Key takeaways. Know your communication chain before you need it. Know the triage classification of every patient on your caseload. Never use your personal vehicle to transport patients. Documentation continues during emergencies — use paper backup and transfer to EHR when restored. Report to your Disaster Coordinator — do not make independent resource commitments. Annual drills are required and ACHC surveys for compliance.',
-        audio_path: '/training-audio/ACHC-ART-M02/l3/takeaways.wav', image_url: IMG.M02, estimated_duration: '0:50', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M02/l3/takeaways.wav', image_url: IMG.M02, estimated_duration: '1:00', completion_required: true,
       },
       {
         card_id: 'achc_m02_l3_ch', type: 'challenge', title: 'Challenge: Post-Emergency Documentation',
@@ -350,7 +356,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m02_l3_deb', type: 'content', title: 'Operational Debrief: EHR Backup Transfer',
         content: 'The 24-hour EHR transfer requirement begins at system restoration, not at the end of the emergency period.\n\nWhy the others fail:\n• A: Paper forms are not the final record. They are temporary documentation until EHR transfer.\n• C: Visit schedule is irrelevant to the documentation transfer timeline.\n• D: No additional authorization is needed — this is standard protocol.\n\nAfter an emergency: complete the debrief report, update patient triage classifications based on new information, and contribute to the emergency plan revision as needed.\n\nACHC surveys emergency response documentation as part of the emergency preparedness standards.',
         narration_script: 'Debrief. The 24-hour transfer requirement begins at system restoration, not at the end of the emergency. Paper forms are temporary — they are not the final record. Visit schedule is irrelevant to the transfer timeline. No additional authorization is needed to transfer records. After every emergency, complete the debrief report, update patient triage classifications, and contribute to emergency plan revision. ACHC surveys emergency response documentation as part of preparedness standards.',
-        audio_path: '/training-audio/ACHC-ART-M02/l3/debrief.wav', image_url: IMG.M02, estimated_duration: '0:55', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M02/l3/debrief.wav', image_url: IMG.M02, estimated_duration: '1:05', completion_required: true,
       },
     ],
   },
@@ -372,15 +378,15 @@ export const achcLessons_M01_M04: Lesson[] = [
       },
       {
         card_id: 'achc_m02_l4_nxt', type: 'content', title: 'Operational Next Steps',
-        content: 'Your field preceptor will evaluate:\n• Knowledge of the Agency\'s emergency communication chain (can you name primary and alternate contacts?)\n• Ability to classify your current patients using the Class I-IV system\n• Documentation practices during simulated communication failure\n• Knowledge of personal and automobile preparedness requirements\n• Response to a patient who refuses emergency evacuation\n\nResources:\n• Agency Emergency Preparedness and Response Plan (full document)\n• Patient triage classification forms\n• Disaster Coordinator contact information\n• Agency after-hours/on-call contact list',
-        narration_script: 'Operational next steps. Your field preceptor will evaluate: your knowledge of the Agency\'s emergency communication chain, your ability to classify patients using the Class I through IV system, your documentation practices during simulated communication failure, your personal and automobile preparedness, and your response to a patient who refuses evacuation. Resources: the Agency Emergency Preparedness Plan, patient triage forms, Disaster Coordinator contact, and after-hours contact list.',
-        audio_path: '/training-audio/ACHC-ART-M02/l4/nextsteps.wav', image_url: IMG.M02, estimated_duration: '0:55', completion_required: true,
+        content: 'Your field preceptor will evaluate:\n• Knowledge of the OP-FM-005 (Emergency Operations & Business Continuity) communication chain (can you name primary and alternate contacts?)\n• Ability to classify your current patients using the Class I-IV system\n• Documentation practices during simulated communication failure\n• Knowledge of personal and automobile preparedness requirements\n• Response to a patient who refuses emergency evacuation\n\nResources:\n• OP-FM-005 (Emergency Operations & Business Continuity)\n• Patient triage classification forms\n• Disaster Coordinator contact information\n• Agency after-hours/on-call contact list',
+        narration_script: 'Operational next steps. Your field preceptor will evaluate: your knowledge of the OP-FM-005 (Emergency Operations & Business Continuity) communication chain, your ability to classify patients using the Class I through IV system, your documentation practices during simulated communication failure, your personal and automobile preparedness, and your response to a patient who refuses evacuation. Resources: the OP-FM-005 (Emergency Operations & Business Continuity), patient triage forms, Disaster Coordinator contact, and after-hours contact list.',
+        audio_path: '/training-audio/ACHC-ART-M02/l4/nextsteps.wav', image_url: IMG.M02, estimated_duration: '1:05', completion_required: true,
       },
       {
         card_id: 'achc_m02_l4_surv', type: 'content', title: 'Module Evaluation',
         content: 'Please evaluate this module:\n\n1. The content was relevant to emergency scenarios I may encounter. (1–5)\n2. The triage classification system was clearly explained. (1–5)\n3. The communication chain process was understandable. (1–5)\n4. I feel more prepared to respond to emergencies in the field. (1–5)\n5. What emergency scenario would you like more training on? (Share with your supervisor)\n\nCompletion of this module validates knowledge reasoning only. It does not constitute clinical field competency or operational clearance. Completion triggers certificate generation, evidence attachment, and 365-day retraining timer initialization.',
         narration_script: 'Thank you for completing this module. Please evaluate: the relevance to emergency scenarios, clarity of the triage classification system, understanding of the communication chain process, and your preparedness level. Also share what emergency scenario you\'d like more training on. Completion validates knowledge reasoning only, not field competency. It triggers certificate generation, evidence attachment, and a 365-day retraining timer.',
-        audio_path: '/training-audio/ACHC-ART-M02/l4/survey.wav', image_url: IMG.M02, estimated_duration: '0:50', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M02/l4/survey.wav', image_url: IMG.M02, estimated_duration: '1:00', completion_required: true,
       },
     ],
   },
@@ -406,7 +412,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m03_l0_obj', type: 'content', title: 'Learning Objectives',
         content: 'After completing this module, you will be able to:\n\n1. Define the difference between a complaint, grievance, and abuse allegation.\n2. Describe the Agency\'s complaint/grievance investigation and resolution process.\n3. Demonstrate professional de-escalation techniques when patients express dissatisfaction.\n4. Identify required timeframes for complaint acknowledgment and resolution.\n5. Explain staff rights within the grievance process, including protection from retaliation.\n6. Complete a complaint form accurately with required elements.',
         narration_script: 'Learning objectives. One: define the difference between a complaint, grievance, and abuse allegation. Two: describe the Agency\'s investigation and resolution process. Three: demonstrate de-escalation techniques. Four: identify required timeframes for complaint resolution. Five: explain staff rights in the grievance process, including retaliation protection. Six: complete a complaint form accurately.',
-        audio_path: '/training-audio/ACHC-ART-M03/l0/objectives.wav', image_url: IMG.M03, estimated_duration: '0:50', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M03/l0/objectives.wav', image_url: IMG.M03, estimated_duration: '1:00', completion_required: true,
       },
       {
         card_id: 'achc_m03_l0_concepts', type: 'content', title: 'Key Terms to Know',
@@ -422,8 +428,8 @@ export const achcLessons_M01_M04: Lesson[] = [
     cards: [
       {
         card_id: 'achc_m03_l1_s', type: 'summary', title: 'Any Employee Can Receive a Complaint',
-        content: 'Agency policy states: "Any employee receiving a complaint/grievance will complete and submit a report to the Administrator." There are no exceptions based on role, severity perception, or department. Receiving a complaint is your responsibility regardless of whether it is "your area."',
-        narration_script: 'Agency policy is clear: any employee receiving a complaint or grievance must complete and submit a report to the Administrator. There are no exceptions based on role, perceived severity, or department. Receiving and documenting complaints is your responsibility regardless of whether the issue is in your department.',
+        content: 'CL-PR-004 (Restraint & Seclusion Prohibition) states: "Any employee receiving a complaint/grievance will complete and submit a report to the Administrator." There are no exceptions based on role, severity perception, or department. Receiving a complaint is your responsibility regardless of whether it is "your area."',
+        narration_script: 'CL-PR-004 (Restraint & Seclusion Prohibition) is clear: any employee receiving a complaint or grievance must complete and submit a report to the Administrator. There are no exceptions based on role, perceived severity, or department. Receiving and documenting complaints is your responsibility regardless of whether the issue is in your department.',
         audio_path: '/training-audio/ACHC-ART-M03/l1/summary.wav', image_url: IMG.M03, estimated_duration: '0:40', completion_required: true,
       },
       {
@@ -436,7 +442,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m03_l1_tkwy', type: 'content', title: 'Key Operational Takeaways',
         content: '• ALL patients receive the regulatory hotline and ACHC number at admission — verify this happened\n• Every complaint must be documented — even if you believe it is minor or unfounded\n• Staff are trained on grievance policies at orientation AND annually\n• Never promise a resolution you cannot guarantee — acknowledge and submit\n• After-hours complaint: notify supervisor → form next business day',
         narration_script: 'Takeaways. All patients receive the regulatory hotline and ACHC number at admission. Every complaint must be documented — even if it seems minor or unfounded. Staff are trained on grievance policies at orientation and annually. Never promise a resolution you cannot guarantee — acknowledge the concern and submit the form. For after-hours complaints: notify the on-call supervisor and submit the form the next business day.',
-        audio_path: '/training-audio/ACHC-ART-M03/l1/takeaways.wav', image_url: IMG.M03, estimated_duration: '0:50', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M03/l1/takeaways.wav', image_url: IMG.M03, estimated_duration: '1:00', completion_required: true,
       },
       {
         card_id: 'achc_m03_l1_ch', type: 'challenge', title: 'Challenge: Scheduling Complaint',
@@ -454,7 +460,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m03_l1_deb', type: 'content', title: 'Operational Debrief: Complaint Reception',
         content: 'Policy leaves no room for interpretation: "Any employee receiving a complaint will complete and submit a report." No exceptions.\n\nWhy the others fail:\n• A: Promises without authority create false expectations and do not trigger the formal process\n• C: Redirecting the patient to call violates the right to have any staff member receive the complaint\n• D: "Not my department" is never acceptable — you are the Agency\'s representative in the field\n\nPatient safety note: A missed dialysis transport is a potential adverse event — the scheduling pattern should trigger root cause analysis, not just an apology.',
         narration_script: 'Debrief. Policy is clear: any employee receiving a complaint must submit a report. No exceptions. Option A creates false expectations without triggering the formal process. Option C violates the patient\'s right to have any staff member receive their complaint. Option D is never acceptable. And a clinical note: a missed dialysis transport is a potential adverse event. The scheduling pattern should trigger root cause analysis, not just an apology.',
-        audio_path: '/training-audio/ACHC-ART-M03/l1/debrief.wav', image_url: IMG.M03, estimated_duration: '0:55', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M03/l1/debrief.wav', image_url: IMG.M03, estimated_duration: '1:05', completion_required: true,
       },
     ],
   },
@@ -496,7 +502,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m03_l2_deb', type: 'content', title: 'Operational Debrief: Timeline Precision',
         content: 'Timelines exist to protect patients. Confusion between 10-day and 30-day deadlines is one of the most common survey deficiencies.\n\n• 10 days: initial written response to ALL grievances (verbal and written)\n• 30 days: Governing Body review of appeal\n• These timelines are measured from RECEIPT, not from investigation completion\n\nACHC surveyors will check complaint logs for response dates. A late response — even by one day — is an automatic survey finding.',
         narration_script: 'Debrief. Confusion between the 10-day and 30-day deadlines is one of the most common survey deficiencies. Ten days is the initial written response to all grievances — verbal and written. Thirty days is the Governing Body appeal review. Both timelines begin at receipt, not at the end of the investigation. ACHC surveyors check complaint logs for response dates. A late response, even by one day, is an automatic finding.',
-        audio_path: '/training-audio/ACHC-ART-M03/l2/debrief.wav', image_url: IMG.M03, estimated_duration: '0:50', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M03/l2/debrief.wav', image_url: IMG.M03, estimated_duration: '1:00', completion_required: true,
       },
     ],
   },
@@ -520,7 +526,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m03_l3_tkwy', type: 'content', title: 'Key Operational Takeaways',
         content: '• Acknowledge → Don\'t blame → Stay professional → Document → Report\n• Your physical safety assessment is part of the de-escalation sequence\n• An angry patient is expressing a concern — address the concern, not the anger\n• Never argue, contradict, or dismiss — these escalate and may constitute an admission\n• When a complaint involves suspected abuse/neglect → mandatory reporting pathway (not grievance process)\n• "Injuries of unknown source" are automatic investigation triggers',
         narration_script: 'Takeaways. The sequence: acknowledge, don\'t blame, stay professional, document, report. Your physical safety assessment is part of de-escalation. An angry patient is expressing a concern — address the concern, not the anger. Never argue, contradict, or dismiss. When a complaint involves suspected abuse or neglect, it goes to the mandatory reporting pathway, not just the grievance process. Injuries of unknown source are automatic investigation triggers.',
-        audio_path: '/training-audio/ACHC-ART-M03/l3/takeaways.wav', image_url: IMG.M03, estimated_duration: '0:50', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M03/l3/takeaways.wav', image_url: IMG.M03, estimated_duration: '1:00', completion_required: true,
       },
       {
         card_id: 'achc_m03_l3_ch', type: 'challenge', title: 'Challenge: Confrontational Family Member',
@@ -538,7 +544,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m03_l3_deb', type: 'content', title: 'Operational Debrief: Safety + Clinical Priority',
         content: 'De-escalation must address BOTH the behavioral situation AND the legitimate clinical concern.\n\nWhy the others fail:\n• A: Matching aggression and forcing entry may result in physical confrontation and personal harm\n• C: While staff safety is paramount, verbal frustration (not threat) requires de-escalation before departure\n• D: Threatening police before de-escalation creates confrontation and delays care for a real clinical gap\n\nKey insight: The unfilled medication is a legitimate care gap. Regardless of the son\'s behavior, the clinical issue demands attention.\nDocument: the complaint substance AND the circumstances of delivery.',
         narration_script: 'Debrief. De-escalation must address both the behavioral situation and the legitimate clinical concern. Option A risks physical confrontation. Option C — while staff safety is paramount — verbal frustration alone doesn\'t require immediate departure before attempting de-escalation. Option D converts a complaint into a confrontation. Key insight: the unfilled medication is a real clinical gap. Address it regardless of the son\'s behavior. Document both the complaint substance and the delivery circumstances.',
-        audio_path: '/training-audio/ACHC-ART-M03/l3/debrief.wav', image_url: IMG.M03, estimated_duration: '0:55', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M03/l3/debrief.wav', image_url: IMG.M03, estimated_duration: '1:05', completion_required: true,
       },
     ],
   },
@@ -550,7 +556,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m03_l4_syn', type: 'summary', title: 'Summary & Synthesis',
         content: '6 things you must take from this module:\n\n1. ANY employee receiving a complaint MUST document and submit to Administrator — no exceptions\n2. Written response required within 10 days; appeal response within 30 days\n3. Both existence AND resolution documented in clinical record AND Administrator\'s log\n4. Patients receive hotline numbers at admission; staff educated at orientation + annually\n5. Retaliation against patients OR staff who complain is itself a separate violation\n6. De-escalation sequence: Acknowledge → Don\'t blame → Stay professional → Document → Report\n\nOperational bridge: Your preceptor will evaluate your ability to receive, document, and de-escalate complaints professionally.',
         narration_script: 'Six takeaways. One: any employee receiving a complaint must document and submit it — no exceptions. Two: 10-day written response, 30-day appeal. Three: document in both the clinical record and Administrator\'s log. Four: patients receive hotline numbers at admission. Five: retaliation against anyone who complains is a separate violation. Six: the de-escalation sequence is acknowledge, don\'t blame, stay professional, document, report. Your preceptor will evaluate your ability to handle complaints professionally.',
-        audio_path: '/training-audio/ACHC-ART-M03/l4/synthesis.wav', image_url: IMG.M03, estimated_duration: '0:55', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M03/l4/synthesis.wav', image_url: IMG.M03, estimated_duration: '1:05', completion_required: true,
       },
       {
         card_id: 'achc_m03_l4_fdeb', type: 'content', title: 'Mandatory Final Debrief',
@@ -560,15 +566,15 @@ export const achcLessons_M01_M04: Lesson[] = [
       },
       {
         card_id: 'achc_m03_l4_nxt', type: 'content', title: 'Operational Next Steps',
-        content: 'Your field preceptor will evaluate:\n• Can you locate and complete the Agency complaint form?\n• Do you know the submission pathway (who receives it)?\n• Can you articulate the patient\'s rights when they express a concern?\n• Can you demonstrate de-escalation without blame assignment?\n• Do you understand when a complaint becomes a mandatory report (abuse/neglect)?\n\nResources:\n• Agency Complaint Form (blank)\n• Patient Bill of Rights (complaint section)\n• State Regulatory Hotline number\n• ACHC complaint line\n• De-escalation quick reference card',
-        narration_script: 'Operational next steps. Your preceptor will evaluate: whether you can locate and complete the complaint form, whether you know who receives it, whether you can articulate patient rights, whether you can de-escalate without assigning blame, and whether you understand when a complaint becomes a mandatory report. Resources: the Agency complaint form, patient bill of rights, state regulatory hotline, ACHC complaint line, and de-escalation quick reference.',
-        audio_path: '/training-audio/ACHC-ART-M03/l4/nextsteps.wav', image_url: IMG.M03, estimated_duration: '0:55', completion_required: true,
+        content: 'Your field preceptor will evaluate:\n• Can you locate and complete the CL-PR-004 (Restraint & Seclusion Prohibition) complaint form?\n• Do you know the submission pathway (who receives it)?\n• Can you articulate the patient\'s rights when they express a concern?\n• Can you demonstrate de-escalation without blame assignment?\n• Do you understand when a complaint becomes a mandatory report (abuse/neglect)?\n\nResources:\n• CL-PR-004 (Restraint & Seclusion Prohibition) Complaint Form (blank)\n• CL-PR-001 (Patient Rights & Responsibilities) (complaint section)\n• State Regulatory Hotline number\n• ACHC complaint line\n• De-escalation quick reference card',
+        narration_script: 'Operational next steps. Your preceptor will evaluate: whether you can locate and complete the complaint form, whether you know who receives it, whether you can articulate patient rights, whether you can de-escalate without assigning blame, and whether you understand when a complaint becomes a mandatory report. Resources: the CL-PR-004 (Restraint & Seclusion Prohibition) complaint form, CL-PR-001 (Patient Rights & Responsibilities), state regulatory hotline, ACHC complaint line, and de-escalation quick reference.',
+        audio_path: '/training-audio/ACHC-ART-M03/l4/nextsteps.wav', image_url: IMG.M03, estimated_duration: '1:05', completion_required: true,
       },
       {
         card_id: 'achc_m03_l4_surv', type: 'content', title: 'Module Evaluation',
         content: 'Please evaluate this module:\n\n1. The content was relevant to situations I encounter in the field. (1–5)\n2. The complaint documentation process was clearly explained. (1–5)\n3. The de-escalation scenarios were realistic. (1–5)\n4. I feel more prepared to handle patient complaints professionally. (1–5)\n5. What complaint scenario would you like more training on? (Share with your supervisor)\n\nCompletion validates knowledge reasoning only. Certificate generation, evidence attachment, and 365-day retraining timer triggered.',
         narration_script: 'Thank you for completing this module. Please evaluate: the relevance to field situations, clarity of the documentation process, realism of the de-escalation scenarios, and your preparedness level. Also share what complaint scenario you\'d like more training on. Completion validates knowledge reasoning only. Certificate, evidence attachment, and 365-day retraining timer are now triggered.',
-        audio_path: '/training-audio/ACHC-ART-M03/l4/survey.wav', image_url: IMG.M03, estimated_duration: '0:50', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M03/l4/survey.wav', image_url: IMG.M03, estimated_duration: '1:00', completion_required: true,
       },
     ],
   },
@@ -594,7 +600,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m04_l0_obj', type: 'content', title: 'Learning Objectives',
         content: 'After completing this module, you will be able to:\n\n1. Define Protected Health Information (PHI) and Individually Identifiable Health Information (IIHI).\n2. Identify all "covered entities" under HIPAA and their obligations.\n3. Distinguish between patient consent (treatment/payment) and authorization (other uses).\n4. Apply the "minimum necessary rule" in clinical and documentation contexts.\n5. Enumerate specific patient rights under HIPAA privacy regulations.\n6. Describe situations where PHI may be disclosed without patient consent.',
         narration_script: 'Learning objectives. One: define PHI and Individually Identifiable Health Information. Two: identify covered entities and their obligations. Three: distinguish between patient consent for treatment and authorization for other uses. Four: apply the minimum necessary rule. Five: enumerate patient rights under HIPAA. Six: describe situations where PHI may be disclosed without consent.',
-        audio_path: '/training-audio/ACHC-ART-M04/l0/objectives.wav', image_url: IMG.M04, estimated_duration: '0:50', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M04/l0/objectives.wav', image_url: IMG.M04, estimated_duration: '1:00', completion_required: true,
       },
       {
         card_id: 'achc_m04_l0_concepts', type: 'content', title: 'Key Terms to Know',
@@ -624,7 +630,13 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m04_l1_tkwy', type: 'content', title: 'Key Operational Takeaways',
         content: '• PHI includes what you SAY verbally — not just what\'s written\n• Even confirming someone IS a patient = disclosure of PHI\n• HIPAA violations don\'t require intent — negligence is sufficient\n• The field environment (cars, homes, public spaces) creates MORE risk than office settings\n• Never access records of patients not on your caseload\n• Minimum necessary rule applies EVEN WHEN authorization exists',
         narration_script: 'Takeaways. PHI includes what you say verbally — not just what\'s written. Even confirming someone is a patient is a PHI disclosure. HIPAA violations don\'t require intent — negligence is sufficient. The field environment creates more risk than office settings. Never access records of patients not on your caseload. The minimum necessary rule applies even when authorization exists.',
-        audio_path: '/training-audio/ACHC-ART-M04/l1/takeaways.wav', image_url: IMG.M04, estimated_duration: '0:50', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M04/l1/takeaways.wav', image_url: IMG.M04, estimated_duration: '1:00', completion_required: true,
+      },
+      {
+        card_id: 'achc_m04_l1_c2', type: 'content', title: 'Field Scenario: Family Member PHI Request During Visit',
+        content: 'Field scenario: Adult son is present during wound care. After visit, he asks privately: "Can you tell me what the doctor said about mom\'s wound infection? I\'m her son and pay the bills." Patient is competent, no auth on file.\n\nPer CO-HP-001 (HIPAA Privacy Program):\n• Even confirming patient status or existence of wound = PHI\n• Must have patient authorization or meet limited exception (treatment/payment)\n• Son paying bills does NOT grant access\n• "Cannot confirm or deny" + redirect to patient or Privacy Officer\n• Document the request and your response\n\nPersonal liability for improper disclosure.',
+        narration_script: 'Field scenario. Son requests details on mother\'s wound. Per CO-HP-001 (HIPAA Privacy Program), no authorization means no disclosure — even to family. Cannot confirm/deny. Redirect to patient or Privacy Officer. Document the interaction.',
+        audio_path: '/training-audio/ACHC-ART-M04/l1/content2.wav', image_url: IMG.M04, estimated_duration: '1:20', completion_required: true,
       },
       {
         card_id: 'achc_m04_l1_ch', type: 'challenge', title: 'Challenge: Unsecured Text Message',
@@ -666,7 +678,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m04_l2_tkwy', type: 'content', title: 'Key Operational Takeaways',
         content: '• Consent ≠ Authorization: consent covers routine care; authorization required for everything else\n• Emergency contact ≠ authorization. Relationship ≠ authorization. Family ≠ authorization\n• Cognitively intact patients must directly authorize ALL disclosures\n• Partial disclosure is still PHI (medication names without dosages = still protected)\n• When in doubt, DON\'T disclose. Check with Privacy Officer first\n• You are personally liable — not just the agency',
         narration_script: 'Takeaways. Consent is not the same as authorization. Emergency contact, relationship, and family status are not authorizations. Cognitively intact patients must directly authorize all disclosures. Partial disclosure — like medication names without dosages — is still PHI. When in doubt, don\'t disclose. Check with the Privacy Officer. And remember: you are personally liable, not just the agency.',
-        audio_path: '/training-audio/ACHC-ART-M04/l2/takeaways.wav', image_url: IMG.M04, estimated_duration: '0:50', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M04/l2/takeaways.wav', image_url: IMG.M04, estimated_duration: '1:00', completion_required: true,
       },
       {
         card_id: 'achc_m04_l2_ch', type: 'challenge', title: 'Challenge: Emergency Contact Calling for Medications',
@@ -738,7 +750,7 @@ export const achcLessons_M01_M04: Lesson[] = [
         card_id: 'achc_m04_l4_syn', type: 'summary', title: 'Summary & Synthesis',
         content: '6 things you must take from this module:\n\n1. PHI = ALL information in ALL forms (paper, electronic, verbal, visual) about a patient\n2. Even confirming someone IS a patient constitutes disclosure\n3. Emergency contact ≠ authorization. Relationship ≠ authorization. Family ≠ authorization\n4. Minimum necessary rule applies EVEN WHEN authorization exists\n5. Mandatory reporting (TB, abuse, communicable diseases) overrides patient consent\n6. You are personally liable — not just the agency\n\nOperational bridge: Your preceptor will evaluate PHI handling in the field, response to family requests, and understanding of when disclosure IS permitted.',
         narration_script: 'Six takeaways. One: PHI is all patient information in all forms. Two: even confirming someone is a patient is disclosure. Three: emergency contact, relationship, and family status are not authorizations. Four: the minimum necessary rule applies even with authorization. Five: mandatory reporting overrides patient consent. Six: you are personally liable. Your preceptor will evaluate your PHI handling in the field, your response to family information requests, and your understanding of permitted disclosures.',
-        audio_path: '/training-audio/ACHC-ART-M04/l4/synthesis.wav', image_url: IMG.M04, estimated_duration: '0:55', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M04/l4/synthesis.wav', image_url: IMG.M04, estimated_duration: '1:05', completion_required: true,
       },
       {
         card_id: 'achc_m04_l4_fdeb', type: 'content', title: 'Mandatory Final Debrief',
@@ -748,15 +760,15 @@ export const achcLessons_M01_M04: Lesson[] = [
       },
       {
         card_id: 'achc_m04_l4_nxt', type: 'content', title: 'Operational Next Steps',
-        content: 'Your field preceptor will evaluate:\n• Secure handling of paper records in your vehicle\n• Device lock/encryption practices\n• Response to family member information requests during visits\n• Documentation security during home visits\n• Appropriate disposal of PHI (shredding, not regular trash)\n\nResources:\n• Agency HIPAA Policy & Procedures\n• Privacy Officer contact information\n• Breach reporting form\n• PHI safeguarding checklist for field staff\n• U.S. HHS Office for Civil Rights (OCR) guidance',
-        narration_script: 'Operational next steps. Your preceptor will evaluate: secure handling of paper records in your vehicle, device lock and encryption practices, your response to family information requests during visits, documentation security in patient homes, and proper PHI disposal practices. Resources: Agency HIPAA Policy, Privacy Officer contact, breach reporting form, PHI safeguarding checklist for field staff, and HHS Office for Civil Rights guidance.',
-        audio_path: '/training-audio/ACHC-ART-M04/l4/nextsteps.wav', image_url: IMG.M04, estimated_duration: '0:50', completion_required: true,
+        content: 'Your field preceptor will evaluate:\n• Secure handling of paper records in your vehicle\n• Device lock/encryption practices\n• Response to family member information requests during visits\n• Documentation security during home visits\n• Appropriate disposal of PHI (shredding, not regular trash)\n\nResources:\n• CO-HP-001 (HIPAA Privacy Program)\n• Privacy Officer contact information\n• Breach reporting form\n• PHI safeguarding checklist for field staff\n• U.S. HHS Office for Civil Rights (OCR) guidance',
+        narration_script: 'Operational next steps. Your preceptor will evaluate: secure handling of paper records in your vehicle, device lock and encryption practices, your response to family information requests during visits, documentation security in patient homes, and proper PHI disposal practices. Resources: CO-HP-001 (HIPAA Privacy Program), Privacy Officer contact, breach reporting form, PHI safeguarding checklist for field staff, and HHS Office for Civil Rights guidance.',
+        audio_path: '/training-audio/ACHC-ART-M04/l4/nextsteps.wav', image_url: IMG.M04, estimated_duration: '1:00', completion_required: true,
       },
       {
         card_id: 'achc_m04_l4_surv', type: 'content', title: 'Module Evaluation',
         content: 'Please evaluate this module:\n\n1. The content was relevant to my daily handling of patient information. (1–5)\n2. The distinction between consent and authorization was clear. (1–5)\n3. The scenarios reflected realistic HIPAA challenges in the field. (1–5)\n4. I feel more confident in protecting patient privacy. (1–5)\n5. What HIPAA situation would you like more guidance on? (Share with your supervisor)\n\nCompletion validates knowledge reasoning only. Certificate, evidence attachment, and 365-day retraining timer triggered.',
         narration_script: 'Thank you for completing this module. Please evaluate: the relevance to your daily information handling, the clarity of consent versus authorization, the realism of the field scenarios, and your confidence level. Also share what HIPAA situation you\'d like more guidance on. Completion validates knowledge reasoning only. Certificate, evidence attachment, and 365-day retraining timer are now triggered.',
-        audio_path: '/training-audio/ACHC-ART-M04/l4/survey.wav', image_url: IMG.M04, estimated_duration: '0:50', completion_required: true,
+        audio_path: '/training-audio/ACHC-ART-M04/l4/survey.wav', image_url: IMG.M04, estimated_duration: '1:00', completion_required: true,
       },
     ],
   },

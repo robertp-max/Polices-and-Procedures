@@ -87,7 +87,7 @@ export function SystemDocsScreen() {
       <section className="grid gap-xl desktop:grid-cols-12">
         <div className="grid content-start gap-lg desktop:col-span-8">
           {/* Chapters nav + table */}
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
               <div>
                 <h3 className="text-h3 font-medium text-ink">Documentation Chapters</h3>
@@ -117,7 +117,7 @@ export function SystemDocsScreen() {
 
           {/* Param-driven detail content (real V2 descriptions + refs). Shows when :sectionId present. */}
           {selected && (
-            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+            <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
               <div className="mb-md flex items-center gap-sm">
                 <Link to={basePath} className="inline-flex items-center gap-sm text-sm font-medium text-brand-teal hover:underline">
                   <ArrowLeft aria-hidden="true" className="h-icon-sm w-icon-sm" /> All chapters
@@ -142,14 +142,14 @@ export function SystemDocsScreen() {
           )}
 
           {!selected && (
-            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest text-sm text-secondary">
+            <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest text-sm text-secondary">
               Select a chapter from the navigation above (or visit <code>/system-documentation/SEC-001</code>) for detailed architecture notes. Bare route <code>/system-documentation</code> shows the index.
             </section>
           )}
         </div>
 
         <aside className="grid content-start gap-lg desktop:col-span-4" aria-label="Documentation search">
-          <label className="flex h-control items-center gap-sm rounded-lg border border-card bg-surface px-md text-muted shadow-rest">
+          <label className="flex h-control items-center gap-sm rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset px-md text-muted shadow-rest">
             <Search aria-hidden="true" className="h-icon-sm w-icon-sm" />
             <span className="sr-only">Search manual chapters</span>
             <input
@@ -159,7 +159,7 @@ export function SystemDocsScreen() {
             />
           </label>
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md flex items-center gap-sm">
               <Info aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
               Documentation Guide
@@ -172,7 +172,7 @@ export function SystemDocsScreen() {
           </section>
 
           {/* Quick nav for V1 audit parity */}
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
             <h3 className="text-sm font-semibold text-ink mb-sm">Chapter Quick Links</h3>
             <div className="flex flex-wrap gap-xs text-xs">
               {sectionRows.map((r) => (

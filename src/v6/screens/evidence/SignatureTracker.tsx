@@ -1,6 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, CalendarClock, CheckCircle2, ClipboardCheck, FileSignature, Loader2, PenLine, Printer } from 'lucide-react';
+import { CalendarClock, CheckCircle2, ClipboardCheck, ExternalLink, Loader2, PenLine, Printer } from 'lucide-react';
 import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
+import { useRegulatoryExecutionStore, type EvidenceDoc } from '@/policy/stores/regulatoryExecutionStore';
+import { Button } from '@/v6/primitives';
+import {
+  computeAdmissionSigners,
+  buildAdmissionSignerTasks,
+  ADMISSION_TEMPLATE_ID,
+  type AdmissionSignerInput,
+  type SignerRoleId,
+} from '@/policy/admission/admissionSignerModel';
+import type { PaymentRoute, RepresentativeAuthority } from '@/policy/admission/patientAdmissionPacket';
 
 /* ════════════════════════════════════════════════════════════════
    Signature Tracker — enter a packet ID to (a) generate eCIgn signature
@@ -22,8 +32,24 @@ const DEFAULT_ROSTER: { role: string; name: string }[] = [
   { role: 'Social Worker', name: 'Jordan SW' },
 ];
 
-interface SignerTask { role: string; name: string; status: 'scheduled' | 'signed'; signedAt?: string }
-interface PacketSignatureRecord { eventId: string; scheduledFor: string; createdAt: string; signers: SignerTask[] }
+interface SignerTask { role: string; name: string; status: 'scheduled' | 'signed'; signedAt?: string; tier?: 'required' | 'conditional'; separateWorkflow?: boolean }
+interface PacketSignatureRecord {
+  eventId: string;
+  scheduledFor: string;
+  createdAt: string;
+  signers: SignerTask[];
+  /** Marks records produced by the computed admission signer model. */
+  model?: 'admission';
+  /** Audit trail of the generated eCIgn tasks (admission packets only). */
+  audit?: { packetHash: string; paymentRoute?: string; taskIds: string[]; artifactId: string };
+}
+interface PacketArtifactNote {
+  packetId?: string;
+  templateId?: string;
+  paymentRoute?: string;
+  signerType?: 'PATIENT' | 'REPRESENTATIVE';
+  driveFiles?: { id: string; name: string; mimeType?: string; webViewLink?: string }[];
+}
 
 const LS_KEY = 'ci-signature-tasks';
 function loadAll(): Record<string, PacketSignatureRecord> {
@@ -31,6 +57,26 @@ function loadAll(): Record<string, PacketSignatureRecord> {
 }
 function saveAll(m: Record<string, PacketSignatureRecord>) {
   try { localStorage.setItem(LS_KEY, JSON.stringify(m)); } catch { /* ignore */ }
+}
+function parsePacketNote(note?: string): PacketArtifactNote {
+  try { return note ? JSON.parse(note) as PacketArtifactNote : {}; } catch { return {}; }
+}
+
+/** Admission packets use the computed signer model; governance packets keep the
+ *  fixed roster. Detect via the artifact template id, then the packet-id prefix. */
+function isAdmissionPacket(loadedId: string | null, note: PacketArtifactNote): boolean {
+  if (note.templateId === ADMISSION_TEMPLATE_ID) return true;
+  const id = loadedId ?? '';
+  return id.startsWith(ADMISSION_TEMPLATE_ID) || id.startsWith('ADM-');
+}
+
+function simpleHash(input: string): string {
+  let hash = 2166136261;
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `fnv1a-${(hash >>> 0).toString(16).padStart(8, '0')}`;
 }
 
 function fmtTime(t?: string): string {
@@ -57,19 +103,16 @@ function fmtDate(d?: string): string {
 }
 
 export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: string | null }) {
-  const [packetId, setPacketId] = useState('');
+  const evidenceByEvent = useRegulatoryExecutionStore((s) => s.evidence);
   const [loadedId, setLoadedId] = useState<string | null>(null);
   const [record, setRecord] = useState<PacketSignatureRecord | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [view, setView] = useState<'schedule' | 'review'>('schedule');
 
-  const idValid = PACKET_ID_RE.test(packetId.trim());
-
   // The Studio hands off the packet here before printing/downloading.
   useEffect(() => {
     if (!incomingPacketId || !PACKET_ID_RE.test(incomingPacketId)) return;
-    setPacketId(incomingPacketId);
     setLoadedId(incomingPacketId);
     setConfirmed(false);
     const existing = loadAll()[incomingPacketId] ?? null;
@@ -82,41 +125,29 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
   // clean print window in the same user gesture — only the packet pages, the
   // studio's page rules, and the "EVENT NAME DATE" title (no app chrome).
   const printPacket = () => {
-    const iframe = document.querySelector('iframe[title="Evidence Packet Studio"]') as HTMLIFrameElement | null;
-    const doc = iframe?.contentDocument ?? null;
-    // CSS is static — always read it live from the studio iframe. The packet
-    // pages + title come from the stash captured at hand-off (survives the
-    // studio iframe re-rendering while we're on this tab); fall back to live.
-    const stash = (window as unknown as { __ciPacketPrint?: Record<string, { title: string; html: string }> }).__ciPacketPrint;
-    const saved = (loadedId && stash && stash[loadedId]) || null;
-    const livePages = doc?.getElementById('previewMain');
-    const html = saved?.html || livePages?.innerHTML || '';
-    if (!html.trim()) {
-      window.alert('Open the Studio tab and generate this packet first, then return here to download.');
+    if (packetArtifact?.webViewLink) {
+      const driveWindow = window.open(packetArtifact.webViewLink, '_blank', 'noopener,noreferrer');
+      if (!driveWindow) {
+        window.alert('Pop-up blocked — allow pop-ups for this site to open the Google Drive PDF.');
+        return;
+      }
+      window.setTimeout(() => {
+        try {
+          driveWindow.focus();
+          driveWindow.print();
+        } catch {
+          window.alert('The Google Drive PDF opened in a new window. Use Ctrl+P on Windows or Cmd+P on Mac to print/download it.');
+        }
+      }, 1000);
       return;
     }
-    const styles = doc ? Array.from(doc.querySelectorAll('style')).map((s) => s.outerHTML).join('\n') : '';
-    const title = (saved?.title || doc?.title || 'Care Indeed Packet').replace(/[\\/:*?"<>|]/g, ' ').trim();
-    // The print window is about:blank — rewrite the (root-relative) logo to an
-    // absolute same-origin URL so it actually loads, and never block on it.
-    const printableHtml = html.replace(/src="\/ci-logo-gray\.png"/g, `src="${window.location.origin}/ci-logo-gray.png"`);
-    const w = window.open('', '_blank');
-    if (!w) { window.alert('Pop-up blocked — allow pop-ups for this site to download the PDF.'); return; }
-    w.document.open();
-    w.document.write(
-      '<!doctype html><html class="print-export"><head><meta charset="utf-8"><title>' + title + '</title>' + styles +
-      '<style>@page{size:letter;margin:0;}html,body{margin:0!important;padding:0!important;background:#fff!important;}' +
-      '.preview-sidebar,.page-thumb,.studio-nav,.toast-container,.gen-overlay,.page-modal{display:none!important;}' +
-      // Disable blur/backdrop effects for print — they rasterize slowly and can blank the preview.
-      '*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}' +
-      // Pages are PRE-PAGINATED to fixed 8.5x11 — lock them, one sheet each.
-      '.rendered-page{zoom:1!important;box-shadow:none!important;border-radius:0!important;margin:0!important;width:8.5in!important;height:11in!important;overflow:hidden!important;page-break-after:always;break-after:page;break-inside:avoid;}' +
-      '.rendered-page:last-child{page-break-after:auto;break-after:auto;}</style></head><body>' +
-      printableHtml + '</body></html>'
-    );
-    w.document.close();
-    const go = () => { try { w.focus(); w.print(); } catch { /* ignore */ } };
-    if (w.document.readyState === 'complete') setTimeout(go, 350); else w.onload = () => setTimeout(go, 350);
+
+    if (packetArtifact) {
+      window.alert('This generated packet does not have a Google Drive PDF URL yet. Upload/link the packet PDF to Google Drive before printing from Signature Tracker.');
+      return;
+    }
+
+    window.alert('No Google Drive PDF URL is attached to this packet yet.');
   };
 
   const eventInfo = useMemo(() => {
@@ -130,16 +161,6 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
 
   const endTime = useMemo(() => addMinutes(eventInfo.time, eventInfo.durationMin), [eventInfo]);
   const scheduledForLabel = `${fmtDate(eventInfo.date)} at ${endTime}`;
-
-  const load = () => {
-    const id = packetId.trim();
-    if (!PACKET_ID_RE.test(id)) return;
-    setLoadedId(id);
-    setConfirmed(false);
-    const existing = loadAll()[id] ?? null;
-    setRecord(existing);
-    setView(existing ? 'review' : 'schedule');
-  };
 
   const generate = () => {
     if (!loadedId || !confirmed) return;
@@ -164,47 +185,113 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
 
   const signedCount = record?.signers.filter((s) => s.status === 'signed').length ?? 0;
   const total = record?.signers.length ?? 0;
+  const packetArtifact = useMemo(() => {
+    if (!loadedId) return null;
+    const docs = Object.values(evidenceByEvent).flat() as EvidenceDoc[];
+    return docs.find((doc) => {
+      if (doc.artifactId === loadedId) return true;
+      const note = parsePacketNote(doc.note);
+      return note.packetId === loadedId;
+    }) ?? null;
+  }, [evidenceByEvent, loadedId]);
+  const packetArtifactNote = useMemo(() => parsePacketNote(packetArtifact?.note), [packetArtifact]);
+  const driveSourceFiles = packetArtifactNote.driveFiles?.filter((file) => file.webViewLink) ?? [];
+  const isAdmission = useMemo(() => isAdmissionPacket(loadedId, packetArtifactNote), [loadedId, packetArtifactNote]);
 
   return (
     <section className="grid gap-md" data-hash-id="signature-tracker" data-route="/evidence" data-template="evidence">
-      {/* Packet ID entry */}
-      <div className="rounded-lg border border-hairline bg-surface-glass p-lg shadow-rest">
-        <div className="flex flex-wrap items-end gap-md">
-          <label className="grid gap-xs">
-            <span className="text-[11px] font-medium uppercase tracking-tag text-muted">Packet ID</span>
-            <input
-              value={packetId}
-              onChange={(e) => { setPacketId(e.target.value); setLoadedId(null); setRecord(null); }}
-              placeholder="qapi_meeting-20260609-10-1"
-              aria-label="Packet ID"
-              className="w-[280px] rounded-lg border border-hairline bg-surface px-md py-sm font-mono text-sm text-ink outline-none focus:border-brand-teal"
-            />
-          </label>
-          <button type="button" onClick={load} disabled={!idValid} className="flex items-center gap-sm rounded-lg border border-brand-teal bg-brand-teal px-lg py-sm text-sm font-medium text-white enabled:hover:bg-brand-teal-deep disabled:cursor-not-allowed disabled:opacity-45">
-            <FileSignature className="h-4 w-4" /> Load packet
-          </button>
-          {packetId.trim() && !idValid && (
-            <span className="flex items-center gap-xs text-xs text-tone-orange-text"><AlertTriangle className="h-3.5 w-3.5" /> Expected format {'{eventId}-{number}'}.</span>
-          )}
-        </div>
-        {loadedId && (
-          <p className="mt-sm text-xs text-muted">Packet <span className="font-mono text-brand-teal-deep">{loadedId}</span> · Event <strong className="text-ink">{eventInfo.name}</strong>{eventInfo.date ? ` · ${fmtDate(eventInfo.date)}` : ''}</p>
-        )}
-      </div>
-
       {!loadedId && (
-        <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-hairline text-sm text-muted">
-          Enter a packet ID to generate signature tasks or review completion.
+        <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-card bg-surface-glass backdrop-blur-md p-lg text-sm text-muted">
+          Generate a packet in Create Packet to schedule signatures or review completion.
         </div>
       )}
 
       {loadedId && (
         <>
+          <div className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
+            <div className="flex flex-wrap items-start justify-between gap-md">
+              <div>
+                <h2 className="text-sm font-medium text-ink">Google Drive URL</h2>
+                <p className="mt-xs text-xs text-muted">
+                  {packetArtifact?.webViewLink
+                    ? 'Packet artifact is linked to Google Drive.'
+                    : driveSourceFiles.length > 0
+                      ? 'Packet source document URLs selected from Google Drive.'
+                      : 'No Google Drive URL is attached to this generated packet yet.'}
+                </p>
+              </div>
+              {packetArtifact?.webViewLink && (
+                <a
+                  href={packetArtifact.webViewLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-xs rounded-full bg-brand-teal px-md py-sm text-xs font-medium text-on-brand shadow-rest hover:bg-brand-teal-deep"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" /> Open packet in Drive
+                </a>
+              )}
+            </div>
+            {packetArtifact?.webViewLink && (
+              <p className="mt-md break-all rounded-md bg-white/60 px-md py-sm font-mono text-xs text-brand-teal-deep">{packetArtifact.webViewLink}</p>
+            )}
+            {driveSourceFiles.length > 0 && (
+              <div className="mt-md grid gap-xs">
+                {driveSourceFiles.map((file) => (
+                  <a
+                    key={file.id}
+                    href={file.webViewLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between gap-md rounded-md bg-white/60 px-md py-sm text-xs text-secondary hover:text-brand-teal-deep"
+                  >
+                    <span className="min-w-0 truncate">{file.name}</span>
+                    <span className="shrink-0 inline-flex items-center gap-xs font-medium text-brand-teal"><ExternalLink className="h-3.5 w-3.5" /> Open</span>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {isAdmission && (
+            <AdmissionSignerPanel
+              loadedId={loadedId}
+              note={packetArtifactNote}
+              scheduledForLabel={scheduledForLabel}
+              eventName={eventInfo.name}
+              artifactId={packetArtifact?.artifactId ?? loadedId}
+              onPrint={printPacket}
+            />
+          )}
+
+          {!isAdmission && (
+          <>
           {/* View toggle */}
           {record && (
-            <div className="flex gap-sm">
-              <button type="button" onClick={() => setView('schedule')} className={`rounded-lg border px-md py-xs text-xs ${view === 'schedule' ? 'border-brand-teal bg-tone-teal-bg text-brand-teal-deep' : 'border-card bg-tone-slate-bg text-secondary hover:bg-surface-hover'}`}>Tasks & schedule</button>
-              <button type="button" onClick={() => setView('review')} className={`rounded-lg border px-md py-xs text-xs ${view === 'review' ? 'border-brand-teal bg-tone-teal-bg text-brand-teal-deep' : 'border-card bg-tone-slate-bg text-secondary hover:bg-surface-hover'}`}>Completion review</button>
+            <div className="flex justify-start">
+              <div className="flex rounded-lg border border-hairline bg-surface-glass backdrop-blur-md p-xs gap-xs">
+                <button
+                  type="button"
+                  onClick={() => setView('schedule')}
+                  className={`px-lg py-sm text-xs font-heading font-medium uppercase tracking-wider rounded-md transition-all duration-fast ${
+                    view === 'schedule'
+                      ? 'bg-brand-teal text-on-brand shadow-rest'
+                      : 'text-brand-teal-deep hover:bg-surface-hover hover:text-brand-teal'
+                  }`}
+                >
+                  Tasks &amp; schedule
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setView('review')}
+                  className={`px-lg py-sm text-xs font-heading font-medium uppercase tracking-wider rounded-md transition-all duration-fast ${
+                    view === 'review'
+                      ? 'bg-brand-teal text-on-brand shadow-rest'
+                      : 'text-brand-teal-deep hover:bg-surface-hover hover:text-brand-teal'
+                  }`}
+                >
+                  Completion review
+                </button>
+              </div>
             </div>
           )}
 
@@ -212,7 +299,7 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
           {view === 'schedule' && (
             <div className="grid items-start gap-md desktop:grid-cols-2">
               {/* Card 1 — signer roster + schedule note */}
-              <div className="grid content-start gap-md rounded-lg border border-hairline bg-surface p-lg shadow-rest">
+              <div className="grid content-start gap-md rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
                 <div className="flex items-center gap-sm">
                   <ClipboardCheck className="h-icon-sm w-icon-sm text-brand-teal" />
                   <h2 className="text-sm font-medium text-ink">Signature tasks · currently assigned signer roster</h2>
@@ -226,7 +313,7 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
 
               {/* Card 2 — confirm + generate (pre) OR thank-you (post) */}
               {!record ? (
-                <div className="grid content-start gap-md rounded-lg border border-hairline bg-surface p-lg shadow-rest">
+                <div className="grid content-start gap-md rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
                   <div className="flex items-center gap-sm">
                     <PenLine className="h-icon-sm w-icon-sm text-brand-teal" />
                     <h2 className="text-sm font-medium text-ink">Schedule signing</h2>
@@ -235,9 +322,15 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
                     <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[var(--brand-teal,#00897B)]" />
                     I confirm these individuals will be assigned tasks to sign this packet after the scheduled meeting event.
                   </label>
-                  <button type="button" onClick={generate} disabled={!confirmed || busy} className="flex w-fit items-center gap-sm rounded-lg border border-brand-teal bg-brand-teal px-lg py-sm text-sm font-medium text-white enabled:hover:bg-brand-teal-deep disabled:cursor-not-allowed disabled:opacity-45">
-                    {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <PenLine className="h-4 w-4" />} Generate &amp; schedule signature tasks
-                  </button>
+                  <Button
+                    onClick={generate}
+                    disabled={!confirmed || busy}
+                    variant="primary"
+                    size="sm"
+                    iconLeft={busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <PenLine className="h-4 w-4" />}
+                  >
+                    Generate &amp; schedule signature tasks
+                  </Button>
                 </div>
               ) : (
                 <ThankYou eventName={eventInfo.name} dateLabel={fmtDate(eventInfo.date)} timeLabel={fmtTime(eventInfo.time)} scheduledFor={record.scheduledFor} signers={record.signers} onReview={() => setView('review')} onPrint={printPacket} />
@@ -247,7 +340,7 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
 
           {/* COMPLETION REVIEW */}
           {view === 'review' && record && (
-            <div className="grid gap-md rounded-lg border border-hairline bg-surface p-lg shadow-rest">
+            <div className="grid gap-md rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
               <div className="flex flex-wrap items-center justify-between gap-sm">
                 <div className="flex items-center gap-sm">
                   <CheckCircle2 className="h-icon-sm w-icon-sm text-brand-teal" />
@@ -263,17 +356,24 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
               <RosterTable signers={record.signers} onMarkSigned={markSigned} />
               <div className="flex flex-wrap items-center justify-between gap-sm">
                 <p className="text-[11px] text-muted">Signing happens in eCIgn after the meeting. Use “Mark signed” to record completion here, or open the packet’s forms to sign.</p>
-                <button type="button" onClick={printPacket} className="flex items-center gap-sm rounded-lg border border-brand-teal bg-brand-teal px-lg py-sm text-sm font-medium text-white hover:bg-brand-teal-deep">
-                  <Printer className="h-4 w-4" /> Print / Download packet
-                </button>
+                <Button
+                  onClick={printPacket}
+                  variant="primary"
+                  size="sm"
+                  iconLeft={<Printer className="h-4 w-4" />}
+                >
+                  Print / Download packet
+                </Button>
               </div>
             </div>
           )}
 
           {view === 'review' && !record && (
-            <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-hairline text-sm text-muted">
+            <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-card bg-surface-glass backdrop-blur-md p-lg text-sm text-muted">
               No signature tasks scheduled for this packet yet. Switch to “Tasks &amp; schedule” to generate them.
             </div>
+          )}
+          </>
           )}
         </>
       )}
@@ -283,7 +383,7 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
 
 function RosterTable({ signers, onMarkSigned }: { signers: SignerTask[]; onMarkSigned?: (i: number) => void }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-hairline">
+    <div className="overflow-hidden rounded-lg border border-card bg-surface-glass shadow-glass-inset">
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-tone-slate-bg text-left text-[10px] uppercase tracking-tag text-muted">
@@ -307,7 +407,16 @@ function RosterTable({ signers, onMarkSigned }: { signers: SignerTask[]; onMarkS
               </td>
               {onMarkSigned && (
                 <td className="px-md py-sm text-right">
-                  {s.status !== 'signed' && <button type="button" onClick={() => onMarkSigned(i)} className="rounded-lg border border-card px-md py-xs text-xs text-secondary hover:bg-surface-hover">Mark signed</button>}
+                  {s.status !== 'signed' && (
+                    <Button
+                      onClick={() => onMarkSigned(i)}
+                      variant="secondary"
+                      size="sm"
+                      className="px-md py-xs text-xs"
+                    >
+                      Mark signed
+                    </Button>
+                  )}
                 </td>
               )}
             </tr>
@@ -320,7 +429,7 @@ function RosterTable({ signers, onMarkSigned }: { signers: SignerTask[]; onMarkS
 
 function ThankYou({ eventName, dateLabel, timeLabel, scheduledFor, signers, onReview, onPrint }: { eventName: string; dateLabel: string; timeLabel: string; scheduledFor: string; signers: SignerTask[]; onReview: () => void; onPrint: () => void }) {
   return (
-    <div className="grid gap-sm rounded-lg border border-tone-teal-border bg-tone-teal-bg p-lg text-sm text-brand-teal-deep">
+    <div className="grid gap-sm rounded-lg border border-tone-teal-border bg-tone-teal-bg p-lg text-sm text-brand-teal-deep shadow-rest">
       <div className="flex items-center gap-sm font-medium"><CheckCircle2 className="h-5 w-5" /> Thank you — your meeting packet is ready.</div>
       <p>Please use this as your agenda for the upcoming <strong>{eventName}</strong> on <strong>{dateLabel}</strong> at <strong>{timeLabel}</strong>. Please go over this packet and use the Evidence Studio if you have any corrections.</p>
       <p>Signature tasks are scheduled to be assigned to these individuals on <strong>{scheduledFor}</strong>:</p>
@@ -329,13 +438,389 @@ function ThankYou({ eventName, dateLabel, timeLabel, scheduledFor, signers, onRe
       </ul>
       <p className="text-[11px] text-brand-teal-deep/80">An eCIgn process has been scheduled to assign these signing tasks at the meeting’s end time.</p>
       <div className="mt-xs flex flex-wrap gap-sm">
-        <button type="button" onClick={onPrint} className="flex w-fit items-center gap-sm rounded-lg border border-brand-teal bg-brand-teal px-md py-sm text-xs font-medium text-white hover:bg-brand-teal-deep">
-          <Printer className="h-4 w-4" /> Print / Download packet
-        </button>
-        <button type="button" onClick={onReview} className="flex w-fit items-center gap-sm rounded-lg border border-brand-teal bg-surface px-md py-sm text-xs font-medium text-brand-teal-deep hover:bg-surface-hover">
-          <CheckCircle2 className="h-4 w-4" /> View completion status
-        </button>
+        <Button
+          onClick={onPrint}
+          variant="primary"
+          size="sm"
+          iconLeft={<Printer className="h-4 w-4" />}
+        >
+          Print / Download packet
+        </Button>
+        <Button
+          onClick={onReview}
+          variant="secondary"
+          size="sm"
+          iconLeft={<CheckCircle2 className="h-4 w-4" />}
+        >
+          View completion status
+        </Button>
       </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   Admission packet — COMPUTED signer requirement panel.
+   Required (Patient/Representative + Admitting Clinician) and conditional
+   signers (witness, interpreter, HIPAA ROI §5, private-pay §8, telehealth/RPM
+   §19, CMS official forms) are derived from the packet route + selected options.
+   "Generate & schedule" stays disabled until everything is resolved.
+   ════════════════════════════════════════════════════════════════ */
+
+const PAYMENT_ROUTE_LABELS: Record<string, string> = {
+  PRIVATE_PAY: 'Private Pay',
+  LONG_TERM_CARE_INSURANCE: 'Long-Term Care Insurance',
+  MEDICARE_ADVANTAGE_OR_PRIVATE_INSURANCE: 'Medicare Advantage / Private Insurance',
+  ORIGINAL_MEDICARE_FFS: 'Original Medicare (FFS)',
+  MEDI_CAL_OR_MEDICAID: 'Medi-Cal / Medicaid',
+  VA_WORKERS_COMP_OR_OTHER_CONTRACT: "VA / Workers' Comp / Contract",
+  PENDING_VERIFICATION: 'Pending Verification',
+  NOT_APPLICABLE_NO_BILLABLE_SERVICES: 'N/A — No Billable Services',
+};
+
+const REP_AUTHORITIES: { id: RepresentativeAuthority; label: string }[] = [
+  { id: 'POWER_OF_ATTORNEY', label: 'Power of Attorney' },
+  { id: 'LEGAL_GUARDIAN', label: 'Legal Guardian' },
+  { id: 'HEALTH_CARE_SURROGATE', label: 'Health Care Surrogate' },
+  { id: 'AUTHORIZED_REPRESENTATIVE', label: 'Authorized Representative' },
+];
+
+type Tri = boolean | 'undecided';
+
+function TriToggle({ value, onYes, onNo }: { value: Tri; onYes: () => void; onNo: () => void }) {
+  return (
+    <div className="flex gap-xs">
+      {([['Yes', true, onYes], ['No', false, onNo]] as const).map(([label, v, fn]) => (
+        <button
+          key={label}
+          type="button"
+          onClick={fn}
+          className={`rounded-full px-md py-xs text-xs font-medium transition ${value === v ? 'bg-brand-teal text-on-brand shadow-rest' : 'bg-surface-hover text-secondary hover:text-brand-teal'}`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function AdmissionSignerPanel({
+  loadedId,
+  note,
+  scheduledForLabel,
+  eventName,
+  artifactId,
+  onPrint,
+}: {
+  loadedId: string;
+  note: PacketArtifactNote;
+  scheduledForLabel: string;
+  eventName: string;
+  artifactId: string;
+  onPrint: () => void;
+}) {
+  const paymentRoute = note.paymentRoute as PaymentRoute | undefined;
+  const [signerType, setSignerType] = useState<'PATIENT' | 'REPRESENTATIVE'>(note.signerType ?? 'PATIENT');
+  const [repAuthority, setRepAuthority] = useState<RepresentativeAuthority>('POWER_OF_ATTORNEY');
+  const [repDocOnFile, setRepDocOnFile] = useState(false);
+  const [interpreterUsed, setInterpreterUsed] = useState<Tri>('undecided');
+  const [hipaaRoi, setHipaaRoi] = useState<Tri>('undecided');
+  const [telehealth, setTelehealth] = useState<Tri>('undecided');
+  const [witness, setWitness] = useState<Tri>('undecided');
+  const [assignNames, setAssignNames] = useState<Partial<Record<SignerRoleId, string>>>({});
+  const [confirmed, setConfirmed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [record, setRecord] = useState<PacketSignatureRecord | null>(() => {
+    const existing = loadAll()[loadedId];
+    return existing && existing.model === 'admission' ? existing : null;
+  });
+  const [view, setView] = useState<'schedule' | 'review'>(record ? 'review' : 'schedule');
+
+  const assignments = useMemo(() => {
+    const a: NonNullable<AdmissionSignerInput['assignments']> = {};
+    (Object.keys(assignNames) as SignerRoleId[]).forEach((id) => {
+      a[id] = { assigneeName: assignNames[id] };
+    });
+    return a;
+  }, [assignNames]);
+
+  const model = useMemo(
+    () =>
+      computeAdmissionSigners({
+        templateId: ADMISSION_TEMPLATE_ID,
+        paymentRoute,
+        signerType,
+        representativeAuthority: signerType === 'REPRESENTATIVE' ? repAuthority : 'PATIENT_SELF',
+        representativeDocumentOnFile: repDocOnFile,
+        interpreterUsed,
+        hipaaRoiRequested: hipaaRoi,
+        telehealthRpmEnrolled: telehealth,
+        witnessRequired: witness,
+        privatePayResponsiblePartyName: assignNames.PRIVATE_PAY_RESPONSIBLE_PARTY,
+        assignments,
+      }),
+    [paymentRoute, signerType, repAuthority, repDocOnFile, interpreterUsed, hipaaRoi, telehealth, witness, assignNames, assignments],
+  );
+
+  const setName = (id: SignerRoleId, name: string) => setAssignNames((prev) => ({ ...prev, [id]: name }));
+
+  const generate = () => {
+    if (!model.canGenerate || !confirmed) return;
+    setBusy(true);
+    const generatedAt = new Date().toISOString();
+    const allActive = [...model.required, ...model.conditional.filter((r) => r.decision === 'included' || (r.decisionLocked && r.required))];
+    const excluded = model.conditional.filter((r) => !(r.decision === 'included' || (r.decisionLocked && r.required)));
+    const packetHash = simpleHash(`${loadedId}|${paymentRoute ?? 'NO_ROUTE'}|${signerType}|${allActive.map((r) => `${r.id}:${r.assigneeName ?? ''}`).join('|')}`);
+    const tasks = buildAdmissionSignerTasks(model, {
+      packetId: loadedId,
+      formInstanceId: loadedId,
+      artifactId,
+      packetHash,
+      paymentRoute,
+      renderedSectionIds: allActive.map((r) => r.formRef ?? r.id),
+      suppressedSectionIds: excluded.map((r) => r.id),
+      generatedAt,
+    });
+    const rec: PacketSignatureRecord = {
+      eventId: loadedId.replace(/-\d+$/, ''),
+      scheduledFor: scheduledForLabel,
+      createdAt: generatedAt,
+      model: 'admission',
+      signers: tasks.map((t) => ({ role: t.role, name: t.assigneeName, status: 'scheduled' as const, tier: t.tier, separateWorkflow: t.separateWorkflow })),
+      audit: { packetHash, paymentRoute, taskIds: tasks.map((t) => t.taskId), artifactId },
+    };
+    const all = loadAll();
+    all[loadedId] = rec;
+    saveAll(all);
+    setRecord(rec);
+    setView('review');
+    setBusy(false);
+  };
+
+  const markSigned = (i: number) => {
+    if (!record) return;
+    const next = { ...record, signers: record.signers.map((s, j) => (j === i ? { ...s, status: 'signed' as const, signedAt: new Date().toISOString() } : s)) };
+    const all = loadAll();
+    all[loadedId] = next;
+    saveAll(all);
+    setRecord(next);
+  };
+
+  const signedCount = record?.signers.filter((s) => s.status === 'signed').length ?? 0;
+  const total = record?.signers.length ?? 0;
+  const routeLabel = paymentRoute ? PAYMENT_ROUTE_LABELS[paymentRoute] ?? paymentRoute : 'Not selected';
+
+  return (
+    <div className="grid gap-md">
+      {record && (
+        <div className="flex justify-start">
+          <div className="flex rounded-lg border border-hairline bg-surface-glass backdrop-blur-md p-xs gap-xs">
+            {(['schedule', 'review'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setView(v)}
+                className={`px-lg py-sm text-xs font-heading font-medium uppercase tracking-wider rounded-md transition-all duration-fast ${
+                  view === v ? 'bg-brand-teal text-on-brand shadow-rest' : 'text-brand-teal-deep hover:bg-surface-hover hover:text-brand-teal'
+                }`}
+              >
+                {v === 'schedule' ? 'Signers & schedule' : 'Completion review'}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {view === 'schedule' && (
+        <>
+          {/* Admission context + conditional triggers */}
+          <div className="grid content-start gap-md rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
+            <div className="flex items-center gap-sm">
+              <ClipboardCheck className="h-icon-sm w-icon-sm text-brand-teal" />
+              <h2 className="text-sm font-medium text-ink">Admission signer requirements · {routeLabel}</h2>
+            </div>
+            <div className="grid gap-md tablet:grid-cols-2">
+              <label className="grid gap-xs text-xs text-secondary">
+                Signer type
+                <select
+                  value={signerType}
+                  onChange={(e) => setSignerType(e.target.value as 'PATIENT' | 'REPRESENTATIVE')}
+                  className="rounded-md border border-card bg-white/70 px-md py-sm text-sm text-ink"
+                >
+                  <option value="PATIENT">Patient signs</option>
+                  <option value="REPRESENTATIVE">Authorized representative signs</option>
+                </select>
+              </label>
+              {signerType === 'REPRESENTATIVE' && (
+                <label className="grid gap-xs text-xs text-secondary">
+                  Representative authority
+                  <select
+                    value={repAuthority}
+                    onChange={(e) => setRepAuthority(e.target.value as RepresentativeAuthority)}
+                    className="rounded-md border border-card bg-white/70 px-md py-sm text-sm text-ink"
+                  >
+                    {REP_AUTHORITIES.map((a) => (
+                      <option key={a.id} value={a.id}>{a.label}</option>
+                    ))}
+                  </select>
+                </label>
+              )}
+            </div>
+            {signerType === 'REPRESENTATIVE' && (
+              <label className="flex items-center gap-sm text-xs text-ink">
+                <input type="checkbox" checked={repDocOnFile} onChange={(e) => setRepDocOnFile(e.target.checked)} className="h-4 w-4 accent-[var(--brand-teal,#00897B)]" />
+                Documented representative authority is on file.
+              </label>
+            )}
+            <div className="grid gap-sm tablet:grid-cols-2">
+              {signerType === 'PATIENT' && (
+                <div className="flex items-center justify-between gap-sm rounded-md bg-white/50 px-md py-sm text-xs text-secondary">
+                  Witness required? <TriToggle value={witness} onYes={() => setWitness(true)} onNo={() => setWitness(false)} />
+                </div>
+              )}
+              <div className="flex items-center justify-between gap-sm rounded-md bg-white/50 px-md py-sm text-xs text-secondary">
+                Interpreter used? <TriToggle value={interpreterUsed} onYes={() => setInterpreterUsed(true)} onNo={() => setInterpreterUsed(false)} />
+              </div>
+              <div className="flex items-center justify-between gap-sm rounded-md bg-white/50 px-md py-sm text-xs text-secondary">
+                HIPAA ROI requested (§5)? <TriToggle value={hipaaRoi} onYes={() => setHipaaRoi(true)} onNo={() => setHipaaRoi(false)} />
+              </div>
+              <div className="flex items-center justify-between gap-sm rounded-md bg-white/50 px-md py-sm text-xs text-secondary">
+                Telehealth / RPM (§19)? <TriToggle value={telehealth} onYes={() => setTelehealth(true)} onNo={() => setTelehealth(false)} />
+              </div>
+            </div>
+          </div>
+
+          {/* Required signers */}
+          <div className="grid content-start gap-sm rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
+            <h2 className="text-sm font-medium text-ink">Required signers</h2>
+            {model.required.map((r) => (
+              <SignerRow key={r.id} role={r.role} reason={r.reason} badge="Required" badgeTone="teal" name={assignNames[r.id] ?? ''} onName={(v) => setName(r.id, v)} />
+            ))}
+          </div>
+
+          {/* Conditional signers */}
+          <div className="grid content-start gap-sm rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
+            <h2 className="text-sm font-medium text-ink">Conditional signers</h2>
+            {model.conditional.map((r) => {
+              const active = r.decision === 'included' || (r.decisionLocked && r.required);
+              const undecided = !r.decisionLocked && (!r.decision || r.decision === 'undecided');
+              const badge = undecided ? 'Decision needed' : active ? 'Required' : 'Not required';
+              const tone: 'teal' | 'orange' | 'slate' = undecided ? 'orange' : active ? 'teal' : 'slate';
+              return (
+                <SignerRow
+                  key={r.id}
+                  role={r.role}
+                  reason={r.reason}
+                  badge={badge}
+                  badgeTone={tone}
+                  separateWorkflow={r.separateWorkflow}
+                  name={assignNames[r.id] ?? ''}
+                  onName={active && !r.separateWorkflow ? (v) => setName(r.id, v) : undefined}
+                />
+              );
+            })}
+          </div>
+
+          {/* Gating + generate */}
+          <div className="grid content-start gap-md rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
+            <div className="flex items-center gap-sm">
+              <PenLine className="h-icon-sm w-icon-sm text-brand-teal" />
+              <h2 className="text-sm font-medium text-ink">Schedule signing</h2>
+            </div>
+            {model.unresolved.length > 0 ? (
+              <div className="grid gap-xs rounded-lg border border-tone-orange-border bg-tone-orange-bg px-md py-sm text-xs text-tone-orange-text">
+                <span className="font-medium">Resolve before scheduling:</span>
+                <ul className="grid gap-xs pl-md">
+                  {model.unresolved.map((u) => (
+                    <li key={u} className="list-disc">{u}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <div className="flex items-center gap-xs rounded-lg border border-tone-teal-border bg-tone-teal-bg px-md py-sm text-xs text-brand-teal-deep">
+                <CalendarClock className="h-4 w-4" />
+                All required signers assigned and conditional decisions resolved. Tasks will be assigned after the meeting — {scheduledForLabel}.
+              </div>
+            )}
+            <label className="flex items-start gap-sm text-sm text-ink">
+              <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} disabled={!model.canGenerate} className="mt-0.5 h-4 w-4 accent-[var(--brand-teal,#00897B)]" />
+              I confirm these signers will be assigned eCIgn tasks for this admission packet.
+            </label>
+            <Button
+              onClick={generate}
+              disabled={!model.canGenerate || !confirmed || busy}
+              variant="primary"
+              size="sm"
+              iconLeft={busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <PenLine className="h-4 w-4" />}
+            >
+              Generate &amp; schedule signature tasks
+            </Button>
+          </div>
+        </>
+      )}
+
+      {view === 'review' && record && (
+        <div className="grid gap-md rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
+          <div className="flex flex-wrap items-center justify-between gap-sm">
+            <div className="flex items-center gap-sm">
+              <CheckCircle2 className="h-icon-sm w-icon-sm text-brand-teal" />
+              <h2 className="text-sm font-medium text-ink">Signature completion · {eventName}</h2>
+            </div>
+            <span className={`rounded-full px-md py-xs text-xs font-medium ${signedCount === total ? 'bg-tone-teal-bg text-brand-teal-deep' : 'bg-tone-orange-bg text-tone-orange-text'}`}>
+              {signedCount} of {total} signed{signedCount === total ? ' · complete' : ''}
+            </span>
+          </div>
+          <RosterTable signers={record.signers} onMarkSigned={markSigned} />
+          <div className="flex flex-wrap items-center justify-between gap-sm">
+            <p className="text-[11px] text-muted">Tasks are bound to packet {loadedId}. Signing happens in eCIgn after the meeting; use “Mark signed” to record completion here.</p>
+            <Button onClick={onPrint} variant="primary" size="sm" iconLeft={<Printer className="h-4 w-4" />}>
+              Print / Download packet
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SignerRow({
+  role,
+  reason,
+  badge,
+  badgeTone,
+  separateWorkflow,
+  name,
+  onName,
+}: {
+  role: string;
+  reason: string;
+  badge: string;
+  badgeTone: 'teal' | 'orange' | 'slate';
+  separateWorkflow?: boolean;
+  name: string;
+  onName?: (v: string) => void;
+}) {
+  const toneClass =
+    badgeTone === 'teal' ? 'bg-tone-teal-bg text-brand-teal-deep' : badgeTone === 'orange' ? 'bg-tone-orange-bg text-tone-orange-text' : 'bg-tone-slate-bg text-muted';
+  return (
+    <div className="grid gap-xs rounded-lg border border-hairline bg-white/50 p-md">
+      <div className="flex flex-wrap items-center justify-between gap-sm">
+        <span className="text-sm font-medium text-ink">{role}</span>
+        <span className="flex items-center gap-xs">
+          {separateWorkflow && <span className="rounded-full bg-tone-slate-bg px-sm py-xs text-[10px] font-medium uppercase tracking-tag text-muted">Separate workflow</span>}
+          <span className={`rounded-full px-md py-xs text-[10px] font-medium uppercase tracking-tag ${toneClass}`}>{badge}</span>
+        </span>
+      </div>
+      <p className="text-xs text-secondary">{reason}</p>
+      {onName && (
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => onName(e.target.value)}
+          placeholder="Assign signer name"
+          className="rounded-md border border-card bg-white/80 px-md py-sm text-sm text-ink placeholder:text-muted"
+        />
+      )}
     </div>
   );
 }

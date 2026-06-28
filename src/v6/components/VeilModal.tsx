@@ -1,7 +1,15 @@
-import { useEffect, useId, type ReactNode } from 'react';
+import { useEffect, useId, useMemo, type ReactNode } from 'react';
 import ReactDOM from 'react-dom';
 import { X } from 'lucide-react';
 import { ToneBadge } from '../primitives';
+
+function pickMotionVariant(seed: string, variants: string[]): string {
+  let hash = 0;
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = ((hash << 5) - hash + seed.charCodeAt(index)) | 0;
+  }
+  return variants[Math.abs(hash) % variants.length];
+}
 
 export interface VeilModalProps {
   open: boolean;
@@ -25,6 +33,10 @@ export function VeilModal({
   maxWidthClass = 'max-w-modal-md',
 }: VeilModalProps) {
   const titleId = useId();
+  const motionClass = useMemo(() => {
+    const variants = ['v6-modal-transition--rise', 'v6-modal-transition--scale', 'v6-modal-transition--drift'];
+    return pickMotionVariant(`${titleId}:${title}:${eyebrow}:${open ? 'open' : 'closed'}`, variants);
+  }, [eyebrow, open, title, titleId]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -40,14 +52,14 @@ export function VeilModal({
   if (!open) return null;
 
   return ReactDOM.createPortal(
-    <div className="fixed inset-0 z-backdrop flex items-center justify-center bg-brand-teal/15 p-md backdrop-blur-sm">
+    <div className="fixed inset-0 z-backdrop flex items-center justify-center bg-brand-teal/15 p-md backdrop-blur-sm v6-overlay-transition">
       <div 
         className="fixed inset-0" 
         onClick={onClose} 
         aria-hidden="true" 
       />
       <section 
-        className={`relative z-modal flex max-h-[90vh] w-full ${maxWidthClass} flex-col overflow-hidden rounded-lg border border-card bg-surface shadow-hover transition-all`}
+        className={`v6-modal-surface relative z-modal flex max-h-[90vh] w-full ${maxWidthClass} flex-col overflow-hidden rounded-lg border border-card backdrop-blur-md transition-all v6-modal-transition ${motionClass}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
@@ -59,14 +71,14 @@ export function VeilModal({
           </div>
           <button
             onClick={onClose}
-            className="shrink-0 rounded-md border border-card bg-surface p-sm text-muted transition duration-fast ease-standard hover:text-brand-teal focus:outline-none focus-visible:shadow-focus"
+            className="shrink-0 rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-sm text-muted transition duration-fast ease-standard hover:text-brand-teal focus:outline-none focus-visible:shadow-focus"
             aria-label="Close modal"
             type="button"
           >
             <X className="h-icon-sm w-icon-sm" />
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto p-lg">{children}</div>
+        <div className="v6-modal-content min-h-0 flex-1 overflow-y-auto p-lg">{children}</div>
         {footer && <div className="flex shrink-0 justify-end gap-md border-t border-hairline p-lg">{footer}</div>}
       </section>
     </div>,

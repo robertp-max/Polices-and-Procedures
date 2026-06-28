@@ -246,9 +246,9 @@
 
     const primaryOpsActionRows = [
       { title: 'Reassign SOC coverage for Elena Vargas', meta: 'Start-of-care visit needs RN backup before 3:00 PM', owner: 'Clinical Manager', due: 'Today', tone: 'orange', icon: 'route', progress: 64 },
-      { title: 'Close Robert Hale recert plan review', meta: 'Signed order and visit cadence need final confirmation', owner: 'Maria Delgado, RN', due: 'Jun 19', tone: 'teal', icon: 'clipboard-check', progress: 82 },
-      { title: 'Resolve CHHA weekend coverage gap', meta: 'Two high-acuity patients need confirmed weekend pool assignment', owner: 'Scheduling Lead', due: 'Jun 20', tone: 'orange', icon: 'calendar-range', progress: 48 },
-      { title: 'Approve wound photo protocol evidence', meta: 'Amina Yusuf route requires evidence lock after field upload', owner: 'QAPI Nurse', due: 'Jun 21', tone: 'teal', icon: 'camera', progress: 76 },
+      { title: 'Close Robert Hale recert plan review', meta: 'Signed order and visit cadence need final confirmation', owner: 'Maria Delgado, RN', due: 'June 19', tone: 'teal', icon: 'clipboard-check', progress: 82 },
+      { title: 'Resolve CHHA weekend coverage gap', meta: 'Two high-acuity patients need confirmed weekend pool assignment', owner: 'Scheduling Lead', due: 'June 20', tone: 'orange', icon: 'calendar-range', progress: 48 },
+      { title: 'Approve wound photo protocol evidence', meta: 'Amina Yusuf route requires evidence lock after field upload', owner: 'QAPI Nurse', due: 'June 21', tone: 'teal', icon: 'camera', progress: 76 },
     ];
 
     const primaryOpsSignals = [
@@ -273,24 +273,24 @@
         title: 'Clinical Review',
         tone: 'teal',
         cards: [
-          { title: 'Review recert visit cadence', owner: 'Maria Delgado, RN', due: 'Jun 19', meta: 'Robert Hale - HH-88402', tone: 'teal', chips: ['Recert'], progress: 82 },
-          { title: 'Medication reconciliation audit', owner: 'QAPI Nurse', due: 'Jun 20', meta: 'Five chart sample', tone: 'teal', chips: ['Audit'], progress: 71 },
+          { title: 'Review recert visit cadence', owner: 'Maria Delgado, RN', due: 'June 19', meta: 'Robert Hale - HH-88402', tone: 'teal', chips: ['Recert'], progress: 82 },
+          { title: 'Medication reconciliation audit', owner: 'QAPI Nurse', due: 'June 20', meta: 'Five chart sample', tone: 'teal', chips: ['Audit'], progress: 71 },
         ],
       },
       {
         title: 'Blocked',
         tone: 'amber',
         cards: [
-          { title: 'PT credential renewal packet', owner: 'HR Credentialing', due: 'Jun 22', meta: 'James Kwon, PT', tone: 'orange', chips: ['Credential'], progress: 38 },
-          { title: 'Physician order signature follow-up', owner: 'Clinical Ops', due: 'Jun 23', meta: 'Five pending signatures', tone: 'amber', chips: ['Orders'], progress: 55 },
+          { title: 'PT credential renewal packet', owner: 'HR Credentialing', due: 'June 22', meta: 'James Kwon, PT', tone: 'orange', chips: ['Credential'], progress: 38 },
+          { title: 'Physician order signature follow-up', owner: 'Clinical Ops', due: 'June 23', meta: 'Five pending signatures', tone: 'amber', chips: ['Orders'], progress: 55 },
         ],
       },
       {
         title: 'Ready',
         tone: 'green',
         cards: [
-          { title: 'Discharge teaching checklist', owner: 'Nora Patel, MSW', due: 'Jun 24', meta: 'George Lin - HH-88910', tone: 'green', chips: ['Discharge'], progress: 94 },
-          { title: 'Wound photo evidence approved', owner: 'QAPI Nurse', due: 'Jun 21', meta: 'Amina Yusuf - HH-88701', tone: 'green', chips: ['Evidence'], progress: 88 },
+          { title: 'Discharge teaching checklist', owner: 'Nora Patel, MSW', due: 'June 24', meta: 'George Lin - HH-88910', tone: 'green', chips: ['Discharge'], progress: 94 },
+          { title: 'Wound photo evidence approved', owner: 'QAPI Nurse', due: 'June 21', meta: 'Amina Yusuf - HH-88701', tone: 'green', chips: ['Evidence'], progress: 88 },
         ],
       },
     ];
@@ -316,9 +316,9 @@
           tone: 'teal',
           note: 'Open the quarterly QAPI event and bind policy, forms, owners, and due windows.',
           cards: [
-            { id: 'Q2-QAPI-01', title: 'Create Q2 QAPI event shell', owner: 'Compliance Officer', due: 'Jun 10', status: 'Ready', chips: ['CES', 'QA-WF-03'], progress: 100, tone: 'green' },
-            { id: 'Q2-QAPI-02', title: 'Bind QAPI policies and committee charter', owner: 'Policy Admin', due: 'Jun 10', status: 'Ready', chips: ['QA-PG-001', 'GV-GB-001'], progress: 92, tone: 'teal' },
-            { id: 'Q2-QAPI-03', title: 'Confirm committee quorum and attendee list', owner: 'Administrator', due: 'Jun 11', status: 'In progress', chips: ['Roster', 'Minutes'], progress: 76, tone: 'teal' },
+            { id: 'Q2-QAPI-01', title: 'Create Q2 QAPI event shell', owner: 'Compliance Officer', due: 'June 10', status: 'Ready', chips: ['CES', 'QA-WF-03'], progress: 100, tone: 'green' },
+            { id: 'Q2-QAPI-02', title: 'Bind QAPI policies and committee charter', owner: 'Policy Admin', due: 'June 10', status: 'Ready', chips: ['QA-PG-001', 'GV-GB-001'], progress: 92, tone: 'teal' },
+            { id: 'Q2-QAPI-03', title: 'Confirm committee quorum and attendee list', owner: 'Administrator', due: 'June 11', status: 'In progress', chips: ['Roster', 'Minutes'], progress: 76, tone: 'teal' },
           ],
         },
         {
@@ -326,10 +326,10 @@
           tone: 'orange',
           note: 'Gather indicator exports, clinical samples, and patient-safety inputs for the quarter.',
           cards: [
-            { id: 'Q2-QAPI-04', title: 'Export hospitalization and ER transfer trends', owner: 'QAPI Nurse', due: 'Jun 11', status: 'In progress', chips: ['Outcomes'], progress: 70, tone: 'teal' },
-            { id: 'Q2-QAPI-05', title: 'Compile infection-control surveillance log', owner: 'Clinical Manager', due: 'Jun 12', status: 'In progress', chips: ['CL-IC-001'], progress: 64, tone: 'teal' },
-            { id: 'Q2-QAPI-06', title: 'Pull medication reconciliation exception sample', owner: 'DON', due: 'Jun 12', status: 'Needs review', chips: ['Chart Audit'], progress: 58, tone: 'orange' },
-            { id: 'Q2-QAPI-07', title: 'Summarize incident and complaint themes', owner: 'Compliance Officer', due: 'Jun 13', status: 'Ready', chips: ['Risk'], progress: 82, tone: 'teal' },
+            { id: 'Q2-QAPI-04', title: 'Export hospitalization and ER transfer trends', owner: 'QAPI Nurse', due: 'June 11', status: 'In progress', chips: ['Outcomes'], progress: 70, tone: 'teal' },
+            { id: 'Q2-QAPI-05', title: 'Compile infection-control surveillance log', owner: 'Clinical Manager', due: 'June 12', status: 'In progress', chips: ['CL-IC-001'], progress: 64, tone: 'teal' },
+            { id: 'Q2-QAPI-06', title: 'Pull medication reconciliation exception sample', owner: 'DON', due: 'June 12', status: 'Needs review', chips: ['Chart Audit'], progress: 58, tone: 'orange' },
+            { id: 'Q2-QAPI-07', title: 'Summarize incident and complaint themes', owner: 'Compliance Officer', due: 'June 13', status: 'Ready', chips: ['Risk'], progress: 82, tone: 'teal' },
           ],
         },
         {
@@ -337,9 +337,9 @@
           tone: 'teal',
           note: 'Convert raw indicators into committee-ready findings and confirm responsible owners.',
           cards: [
-            { id: 'Q2-QAPI-08', title: 'Review 60-day recert and care-plan sample', owner: 'Clinical Manager', due: 'Jun 14', status: 'In progress', chips: ['Recert'], progress: 66, tone: 'teal' },
-            { id: 'Q2-QAPI-09', title: 'Score OASIS accuracy variance report', owner: 'QA Analyst', due: 'Jun 14', status: 'Watch', chips: ['OASIS'], progress: 48, tone: 'orange' },
-            { id: 'Q2-QAPI-10', title: 'Validate supervisory visit completion rate', owner: 'DON', due: 'Jun 15', status: 'Ready', chips: ['HR', 'Clinical'], progress: 86, tone: 'teal' },
+            { id: 'Q2-QAPI-08', title: 'Review 60-day recert and care-plan sample', owner: 'Clinical Manager', due: 'June 14', status: 'In progress', chips: ['Recert'], progress: 66, tone: 'teal' },
+            { id: 'Q2-QAPI-09', title: 'Score OASIS accuracy variance report', owner: 'QA Analyst', due: 'June 14', status: 'Watch', chips: ['OASIS'], progress: 48, tone: 'orange' },
+            { id: 'Q2-QAPI-10', title: 'Validate supervisory visit completion rate', owner: 'DON', due: 'June 15', status: 'Ready', chips: ['HR', 'Clinical'], progress: 86, tone: 'teal' },
           ],
         },
         {
@@ -347,9 +347,9 @@
           tone: 'orange',
           note: 'Create corrective actions for material gaps before the committee packet is routed.',
           cards: [
-            { id: 'Q2-QAPI-11', title: 'Draft CAPA for medication documentation gaps', owner: 'QAPI Lead', due: 'Jun 16', status: 'Needs owner', chips: ['CAPA'], progress: 42, tone: 'orange' },
-            { id: 'Q2-QAPI-12', title: 'Assign infection-control retraining action', owner: 'Clinical Educator', due: 'Jun 16', status: 'In progress', chips: ['Training'], progress: 61, tone: 'teal' },
-            { id: 'Q2-QAPI-13', title: 'Set target dates for chart-audit recheck', owner: 'Clinical Manager', due: 'Jun 17', status: 'Ready', chips: ['Follow-up'], progress: 78, tone: 'teal' },
+            { id: 'Q2-QAPI-11', title: 'Draft CAPA for medication documentation gaps', owner: 'QAPI Lead', due: 'June 16', status: 'Needs owner', chips: ['CAPA'], progress: 42, tone: 'orange' },
+            { id: 'Q2-QAPI-12', title: 'Assign infection-control retraining action', owner: 'Clinical Educator', due: 'June 16', status: 'In progress', chips: ['Training'], progress: 61, tone: 'teal' },
+            { id: 'Q2-QAPI-13', title: 'Set target dates for chart-audit recheck', owner: 'Clinical Manager', due: 'June 17', status: 'Ready', chips: ['Follow-up'], progress: 78, tone: 'teal' },
           ],
         },
         {
@@ -357,10 +357,10 @@
           tone: 'amber',
           note: 'Assemble agenda, dashboard, minutes, attachments, and required signatures.',
           cards: [
-            { id: 'Q2-QAPI-14', title: 'Build Q2 dashboard slide packet', owner: 'QAPI Lead', due: 'Jun 17', status: 'In progress', chips: ['Dashboard'], progress: 69, tone: 'teal' },
-            { id: 'Q2-QAPI-15', title: 'Attach aggregate report and evidence index', owner: 'Compliance Officer', due: 'Jun 18', status: 'In progress', chips: ['Evidence'], progress: 74, tone: 'teal' },
-            { id: 'Q2-QAPI-16', title: 'Prepare committee agenda and attendance log', owner: 'Administrator', due: 'Jun 18', status: 'Ready', chips: ['Form'], progress: 88, tone: 'teal' },
-            { id: 'Q2-QAPI-17', title: 'Draft committee minutes for post-meeting lock', owner: 'QAPI Lead', due: 'Jun 19', status: 'Watch', chips: ['Minutes'], progress: 46, tone: 'orange' },
+            { id: 'Q2-QAPI-14', title: 'Build Q2 dashboard slide packet', owner: 'QAPI Lead', due: 'June 17', status: 'In progress', chips: ['Dashboard'], progress: 69, tone: 'teal' },
+            { id: 'Q2-QAPI-15', title: 'Attach aggregate report and evidence index', owner: 'Compliance Officer', due: 'June 18', status: 'In progress', chips: ['Evidence'], progress: 74, tone: 'teal' },
+            { id: 'Q2-QAPI-16', title: 'Prepare committee agenda and attendance log', owner: 'Administrator', due: 'June 18', status: 'Ready', chips: ['Form'], progress: 88, tone: 'teal' },
+            { id: 'Q2-QAPI-17', title: 'Draft committee minutes for post-meeting lock', owner: 'QAPI Lead', due: 'June 19', status: 'Watch', chips: ['Minutes'], progress: 46, tone: 'orange' },
           ],
         },
         {
@@ -368,9 +368,9 @@
           tone: 'orange',
           note: 'Route the packet through administrator, DON, and committee chair sign-off.',
           cards: [
-            { id: 'Q2-QAPI-18', title: 'Route QAPI packet to DON for attestation', owner: 'DON', due: 'Jun 19', status: 'Awaiting signature', chips: ['eCIgn'], progress: 52, tone: 'orange' },
-            { id: 'Q2-QAPI-19', title: 'Administrator final certification', owner: 'Administrator', due: 'Jun 20', status: 'Pending', chips: ['Approval'], progress: 38, tone: 'orange' },
-            { id: 'Q2-QAPI-20', title: 'Committee chair lock and timestamp', owner: 'Committee Chair', due: 'Jun 20', status: 'Pending', chips: ['Signature'], progress: 34, tone: 'orange' },
+            { id: 'Q2-QAPI-18', title: 'Route QAPI packet to DON for attestation', owner: 'DON', due: 'June 19', status: 'Awaiting signature', chips: ['eCIgn'], progress: 52, tone: 'orange' },
+            { id: 'Q2-QAPI-19', title: 'Administrator final certification', owner: 'Administrator', due: 'June 20', status: 'Pending', chips: ['Approval'], progress: 38, tone: 'orange' },
+            { id: 'Q2-QAPI-20', title: 'Committee chair lock and timestamp', owner: 'Committee Chair', due: 'June 20', status: 'Pending', chips: ['Signature'], progress: 34, tone: 'orange' },
           ],
         },
         {
@@ -378,7 +378,7 @@
           tone: 'green',
           note: 'Finalize packet manifest, hash evidence, and expose surveyor-ready output.',
           cards: [
-            { id: 'Q2-QAPI-21', title: 'Publish Q2 QAPI survey packet manifest', owner: 'Compliance Officer', due: 'Jun 21', status: 'Ready to certify', chips: ['Survey Packet'], progress: 80, tone: 'green' },
+            { id: 'Q2-QAPI-21', title: 'Publish Q2 QAPI survey packet manifest', owner: 'Compliance Officer', due: 'June 21', status: 'Ready to certify', chips: ['Survey Packet'], progress: 80, tone: 'green' },
           ],
         },
       ],
@@ -420,11 +420,11 @@
         tone: 'teal',
         count: 12,
         cards: [
-          { id: 'EVT-WK-CLM', title: 'Weekly Claims Submission Cycle', owner: 'Billing Lead', due: 'Jun 20', chips: ['Claims', 'FN-BL-002'], progress: 65, tone: 'teal' },
-          { id: 'EVT-MO-OIG', title: 'Monthly OIG / SAM Exclusion Check', owner: 'Compliance Officer', due: 'Jun 25', chips: ['OIG', 'SAM', 'HR-TA-003'], progress: 40, tone: 'orange' },
-          { id: 'EVT-POC-AUD', title: 'Plan of Care Audit', owner: 'Clinical Manager', due: 'Jun 21', chips: ['POC', 'CL-CA-001'], progress: 82, tone: 'teal' },
-          { id: 'EVT-OAS-ACC', title: 'OASIS Accuracy Audit', owner: 'QA Analyst', due: 'Jun 19', chips: ['OASIS', 'CL-OA-101'], progress: 55, tone: 'teal' },
-          { id: 'EVT-VIS-DOC', title: 'Visit Documentation Audit', owner: 'QAPI Nurse', due: 'Jun 22', chips: ['Visit', 'CL-VN-010'], progress: 71, tone: 'teal' },
+          { id: 'EVT-WK-CLM', title: 'Weekly Claims Submission Cycle', owner: 'Billing Lead', due: 'June 20', chips: ['Claims', 'FN-BL-002'], progress: 65, tone: 'teal' },
+          { id: 'EVT-MO-OIG', title: 'Monthly OIG / SAM Exclusion Check', owner: 'Compliance Officer', due: 'June 25', chips: ['OIG', 'SAM', 'HR-TA-003'], progress: 40, tone: 'orange' },
+          { id: 'EVT-POC-AUD', title: 'Plan of Care Audit', owner: 'Clinical Manager', due: 'June 21', chips: ['POC', 'CL-CA-001'], progress: 82, tone: 'teal' },
+          { id: 'EVT-OAS-ACC', title: 'OASIS Accuracy Audit', owner: 'QA Analyst', due: 'June 19', chips: ['OASIS', 'CL-OA-101'], progress: 55, tone: 'teal' },
+          { id: 'EVT-VIS-DOC', title: 'Visit Documentation Audit', owner: 'QAPI Nurse', due: 'June 22', chips: ['Visit', 'CL-VN-010'], progress: 71, tone: 'teal' },
         ],
       },
       {
@@ -441,11 +441,11 @@
         tone: 'amber',
         count: 5,
         cards: [
-          { id: 'EVT-REV-01', title: 'Q2 QAPI Review', owner: 'QAPI Lead', due: 'Jun 21', meta: 'Quarterly indicators, adverse events summary, CAPA tracker', chips: ['QAPI', 'Evidence'], progress: 65, tone: 'amber', awaitingType: 'evidence', missing: '2 artifacts' },
-          { id: 'EVT-REV-02', title: 'Q1 Infection Control Review', owner: 'Clinical Manager', due: 'Jun 18', meta: 'Surveillance log, hand hygiene trends, PPE compliance', chips: ['Infection', 'Action'], progress: 42, tone: 'amber', awaitingType: 'evidence', missing: 'log upload' },
-          { id: 'EVT-REV-03', title: 'Incident / Adverse Event Review', owner: 'Compliance Officer', due: 'Jun 19', meta: 'Root cause analysis + corrective action evidence', chips: ['Incident', 'CAPA'], progress: 55, tone: 'orange', awaitingType: 'action', missing: 'RCA sign-off' },
-          { id: 'EVT-REV-04', title: 'Complaint / Grievance Investigation', owner: 'Risk Manager', due: 'Jun 22', meta: 'Investigation notes, resolution evidence, follow-up', chips: ['Grievance', 'Evidence'], progress: 28, tone: 'amber', awaitingType: 'evidence', missing: '3 docs' },
-          { id: 'EVT-REV-05', title: 'Medication Reconciliation Audit Review', owner: 'QAPI Nurse', due: 'Jun 20', meta: 'Five chart sample + exception findings', chips: ['Audit', 'Action'], progress: 71, tone: 'amber', awaitingType: 'action', missing: 'DON review' },
+          { id: 'EVT-REV-01', title: 'Q2 QAPI Review', owner: 'QAPI Lead', due: 'June 21', meta: 'Quarterly indicators, adverse events summary, CAPA tracker', chips: ['QAPI', 'Evidence'], progress: 65, tone: 'amber', awaitingType: 'evidence', missing: '2 artifacts' },
+          { id: 'EVT-REV-02', title: 'Q1 Infection Control Review', owner: 'Clinical Manager', due: 'June 18', meta: 'Surveillance log, hand hygiene trends, PPE compliance', chips: ['Infection', 'Action'], progress: 42, tone: 'amber', awaitingType: 'evidence', missing: 'log upload' },
+          { id: 'EVT-REV-03', title: 'Incident / Adverse Event Review', owner: 'Compliance Officer', due: 'June 19', meta: 'Root cause analysis + corrective action evidence', chips: ['Incident', 'CAPA'], progress: 55, tone: 'orange', awaitingType: 'action', missing: 'RCA sign-off' },
+          { id: 'EVT-REV-04', title: 'Complaint / Grievance Investigation', owner: 'Risk Manager', due: 'June 22', meta: 'Investigation notes, resolution evidence, follow-up', chips: ['Grievance', 'Evidence'], progress: 28, tone: 'amber', awaitingType: 'evidence', missing: '3 docs' },
+          { id: 'EVT-REV-05', title: 'Medication Reconciliation Audit Review', owner: 'QAPI Nurse', due: 'June 20', meta: 'Five chart sample + exception findings', chips: ['Audit', 'Action'], progress: 71, tone: 'amber', awaitingType: 'action', missing: 'DON review' },
         ],
       },
       {
@@ -502,10 +502,10 @@
         count: 162,
         cards: [
           // exact same items data as seeded in Awaiting Action/Evidence + In Progress analogs for live match
-          { id: 'EVT-REV-03', title: 'Incident / Adverse Event Review', owner: 'Compliance Officer', domain: 'Compliance / Incident Mgmt', due: 'Jun 19', meta: 'Root cause analysis + corrective action evidence', chips: ['Incident', 'CAPA'], progress: 55, tone: 'orange', awaitingType: 'action', missing: 'RCA sign-off' },
-          { id: 'EVT-MO-OIG', title: 'Monthly OIG / SAM Exclusion Check', owner: 'Compliance Officer', due: 'Jun 25', chips: ['OIG', 'SAM', 'HR-TA-003'], progress: 40, tone: 'orange' },
-          { id: 'EVT-REV-02', title: 'Q1 Infection Control Review', owner: 'Clinical Manager', due: 'Jun 18', meta: 'Surveillance log, hand hygiene trends, PPE compliance', chips: ['Infection', 'Action'], progress: 42, tone: 'amber', awaitingType: 'evidence', missing: 'log upload' },
-          { id: 'EVT-REV-04', title: 'Complaint / Grievance Investigation', owner: 'Risk Manager', due: 'Jun 22', meta: 'Investigation notes, resolution evidence, follow-up', chips: ['Grievance', 'Evidence'], progress: 28, tone: 'amber', awaitingType: 'evidence', missing: '3 docs' },
+          { id: 'EVT-REV-03', title: 'Incident / Adverse Event Review', owner: 'Compliance Officer', domain: 'Compliance / Incident Mgmt', due: 'June 19', meta: 'Root cause analysis + corrective action evidence', chips: ['Incident', 'CAPA'], progress: 55, tone: 'orange', awaitingType: 'action', missing: 'RCA sign-off' },
+          { id: 'EVT-MO-OIG', title: 'Monthly OIG / SAM Exclusion Check', owner: 'Compliance Officer', due: 'June 25', chips: ['OIG', 'SAM', 'HR-TA-003'], progress: 40, tone: 'orange' },
+          { id: 'EVT-REV-02', title: 'Q1 Infection Control Review', owner: 'Clinical Manager', due: 'June 18', meta: 'Surveillance log, hand hygiene trends, PPE compliance', chips: ['Infection', 'Action'], progress: 42, tone: 'amber', awaitingType: 'evidence', missing: 'log upload' },
+          { id: 'EVT-REV-04', title: 'Complaint / Grievance Investigation', owner: 'Risk Manager', due: 'June 22', meta: 'Investigation notes, resolution evidence, follow-up', chips: ['Grievance', 'Evidence'], progress: 28, tone: 'amber', awaitingType: 'evidence', missing: '3 docs' },
         ],
       },
       {
@@ -513,11 +513,11 @@
         tone: 'amber',
         count: 4,
         cards: [
-          { id: 'EVT-DA-01', title: 'Documentation Alignment Audit', owner: 'QAPI Lead', domain: 'QAPI / Documentation', due: 'Jun 23', meta: 'Cross-policy documentation vs regulatory alignment', chips: ['Audit', 'Documentation'], progress: 65, tone: 'amber' },
+          { id: 'EVT-DA-01', title: 'Documentation Alignment Audit', owner: 'QAPI Lead', domain: 'QAPI / Documentation', due: 'June 23', meta: 'Cross-policy documentation vs regulatory alignment', chips: ['Audit', 'Documentation'], progress: 65, tone: 'amber' },
           // reuse same item semantics for the 4
-          { id: 'EVT-REV-01', title: 'Q2 QAPI Review', owner: 'QAPI Lead', due: 'Jun 21', meta: 'Quarterly indicators, adverse events summary, CAPA tracker', chips: ['QAPI', 'Evidence'], progress: 65, tone: 'amber', awaitingType: 'evidence', missing: '2 artifacts' },
-          { id: 'EVT-VIS-DOC', title: 'Visit Documentation Audit', owner: 'QAPI Nurse', due: 'Jun 22', chips: ['Visit', 'CL-VN-010'], progress: 71, tone: 'teal' },
-          { id: 'EVT-REV-05', title: 'Medication Reconciliation Audit Review', owner: 'QAPI Nurse', due: 'Jun 20', meta: 'Five chart sample + exception findings', chips: ['Audit', 'Action'], progress: 71, tone: 'amber', awaitingType: 'action', missing: 'DON review' },
+          { id: 'EVT-REV-01', title: 'Q2 QAPI Review', owner: 'QAPI Lead', due: 'June 21', meta: 'Quarterly indicators, adverse events summary, CAPA tracker', chips: ['QAPI', 'Evidence'], progress: 65, tone: 'amber', awaitingType: 'evidence', missing: '2 artifacts' },
+          { id: 'EVT-VIS-DOC', title: 'Visit Documentation Audit', owner: 'QAPI Nurse', due: 'June 22', chips: ['Visit', 'CL-VN-010'], progress: 71, tone: 'teal' },
+          { id: 'EVT-REV-05', title: 'Medication Reconciliation Audit Review', owner: 'QAPI Nurse', due: 'June 20', meta: 'Five chart sample + exception findings', chips: ['Audit', 'Action'], progress: 71, tone: 'amber', awaitingType: 'action', missing: 'DON review' },
         ],
       },
       {
@@ -526,8 +526,8 @@
         count: 12,
         cards: [
           // reuse from seeds for exact same data
-          { id: 'EVT-POC-AUD', title: 'Plan of Care Audit', owner: 'Clinical Manager', due: 'Jun 21', chips: ['POC', 'CL-CA-001'], progress: 82, tone: 'teal' },
-          { id: 'EVT-OAS-ACC', title: 'OASIS Accuracy Audit', owner: 'QA Analyst', due: 'Jun 19', chips: ['OASIS', 'CL-OA-101'], progress: 55, tone: 'teal' },
+          { id: 'EVT-POC-AUD', title: 'Plan of Care Audit', owner: 'Clinical Manager', due: 'June 21', chips: ['POC', 'CL-CA-001'], progress: 82, tone: 'teal' },
+          { id: 'EVT-OAS-ACC', title: 'OASIS Accuracy Audit', owner: 'QA Analyst', due: 'June 19', chips: ['OASIS', 'CL-OA-101'], progress: 55, tone: 'teal' },
         ],
       },
       {
@@ -554,31 +554,31 @@
         title: 'Intake',
         tone: 'teal',
         cards: [
-          { title: 'Trigger Q2 governance event', owner: 'Compliance', due: 'Jun 19', meta: 'Mandatory events calendar', tone: 'teal', chips: ['Event'], progress: 92 },
-          { title: 'Attach policy source set', owner: 'Policy Admin', due: 'Jun 19', meta: 'GV-GB-001, CO-CP-001', tone: 'teal', chips: ['Policy'], progress: 88 },
+          { title: 'Trigger Q2 governance event', owner: 'Compliance', due: 'June 19', meta: 'Mandatory events calendar', tone: 'teal', chips: ['Event'], progress: 92 },
+          { title: 'Attach policy source set', owner: 'Policy Admin', due: 'June 19', meta: 'GV-GB-001, CO-CP-001', tone: 'teal', chips: ['Policy'], progress: 88 },
         ],
       },
       {
         title: 'Evidence Build',
         tone: 'orange',
         cards: [
-          { title: 'Collect board minutes and roster', owner: 'Administrator', due: 'Jun 20', meta: 'GV-FM-005 and GV-FM-011', tone: 'orange', chips: ['Forms'], progress: 56 },
-          { title: 'Prepare QAPI trend packet', owner: 'QAPI Lead', due: 'Jun 21', meta: 'Quarterly indicators', tone: 'teal', chips: ['QAPI'], progress: 74 },
+          { title: 'Collect board minutes and roster', owner: 'Administrator', due: 'June 20', meta: 'GV-FM-005 and GV-FM-011', tone: 'orange', chips: ['Forms'], progress: 56 },
+          { title: 'Prepare QAPI trend packet', owner: 'QAPI Lead', due: 'June 21', meta: 'Quarterly indicators', tone: 'teal', chips: ['QAPI'], progress: 74 },
         ],
       },
       {
         title: 'Approval',
         tone: 'amber',
         cards: [
-          { title: 'Route chair signature', owner: 'Governing Body Chair', due: 'Jun 22', meta: 'eCIgn sequence 2 of 3', tone: 'orange', chips: ['eCIgn'], progress: 42 },
-          { title: 'Administrator certification', owner: 'Robert Chen', due: 'Jun 23', meta: 'Audit packet lock', tone: 'amber', chips: ['Approval'], progress: 64 },
+          { title: 'Route chair signature', owner: 'Governing Body Chair', due: 'June 22', meta: 'eCIgn sequence 2 of 3', tone: 'orange', chips: ['eCIgn'], progress: 42 },
+          { title: 'Administrator certification', owner: 'Robert Chen', due: 'June 23', meta: 'Audit packet lock', tone: 'amber', chips: ['Approval'], progress: 64 },
         ],
       },
       {
         title: 'Locked',
         tone: 'green',
         cards: [
-          { title: 'Publish survey packet index', owner: 'Compliance', due: 'Jun 24', meta: 'HTML, markdown, evidence hash', tone: 'green', chips: ['Audit'], progress: 94 },
+          { title: 'Publish survey packet index', owner: 'Compliance', due: 'June 24', meta: 'HTML, markdown, evidence hash', tone: 'green', chips: ['Audit'], progress: 94 },
         ],
       },
     ];
@@ -2554,8 +2554,8 @@
           tone: 'slate',
           count: 8,
           cards: [
-            { id: 'CEU-1201', title: 'Validate governing body roster', owner: 'Compliance', due: 'Jun 12', chips: ['Policy', 'Roster'], progress: 24, tone: 'teal' },
-            { id: 'CEU-1204', title: 'Queue conflict disclosure forms', owner: 'Governance', due: 'Jun 13', chips: ['Forms'], progress: 18, tone: 'orange' },
+            { id: 'CEU-1201', title: 'Validate governing body roster', owner: 'Compliance', due: 'June 12', chips: ['Policy', 'Roster'], progress: 24, tone: 'teal' },
+            { id: 'CEU-1204', title: 'Queue conflict disclosure forms', owner: 'Governance', due: 'June 13', chips: ['Forms'], progress: 18, tone: 'orange' },
           ],
         },
         {
@@ -2563,11 +2563,11 @@
           tone: 'teal',
           count: 279,
           cards: [
-            { id: 'EVT-WK-CLM', title: 'Weekly Claims Submission Cycle', owner: 'Billing Lead', due: 'Jun 20', chips: ['Claims', 'FN-BL-002'], progress: 65, tone: 'teal' },
-            { id: 'EVT-MO-OIG', title: 'Monthly OIG / SAM Exclusion Check', owner: 'Compliance Officer', due: 'Jun 25', chips: ['OIG', 'SAM', 'HR-TA-003'], progress: 40, tone: 'orange' },
-            { id: 'EVT-POC-AUD', title: 'Plan of Care Audit', owner: 'Clinical Manager', due: 'Jun 21', chips: ['POC', 'CL-CA-001'], progress: 82, tone: 'teal' },
-            { id: 'EVT-OAS-ACC', title: 'OASIS Accuracy Audit', owner: 'QA Analyst', due: 'Jun 19', chips: ['OASIS', 'CL-OA-101'], progress: 55, tone: 'teal' },
-            { id: 'EVT-VIS-DOC', title: 'Visit Documentation Audit', owner: 'QAPI Nurse', due: 'Jun 22', chips: ['Visit', 'CL-VN-010'], progress: 71, tone: 'teal' },
+            { id: 'EVT-WK-CLM', title: 'Weekly Claims Submission Cycle', owner: 'Billing Lead', due: 'June 20', chips: ['Claims', 'FN-BL-002'], progress: 65, tone: 'teal' },
+            { id: 'EVT-MO-OIG', title: 'Monthly OIG / SAM Exclusion Check', owner: 'Compliance Officer', due: 'June 25', chips: ['OIG', 'SAM', 'HR-TA-003'], progress: 40, tone: 'orange' },
+            { id: 'EVT-POC-AUD', title: 'Plan of Care Audit', owner: 'Clinical Manager', due: 'June 21', chips: ['POC', 'CL-CA-001'], progress: 82, tone: 'teal' },
+            { id: 'EVT-OAS-ACC', title: 'OASIS Accuracy Audit', owner: 'QA Analyst', due: 'June 19', chips: ['OASIS', 'CL-OA-101'], progress: 55, tone: 'teal' },
+            { id: 'EVT-VIS-DOC', title: 'Visit Documentation Audit', owner: 'QAPI Nurse', due: 'June 22', chips: ['Visit', 'CL-VN-010'], progress: 71, tone: 'teal' },
           ],
         },
         {
@@ -2575,8 +2575,8 @@
           tone: 'orange',
           count: 4,
           cards: [
-            { id: 'CEU-1232', title: 'Missing signed board minutes', owner: 'Administrator', due: 'Jun 14', chips: ['Blocked', 'Minutes'], progress: 36, tone: 'orange' },
-            { id: 'CEU-1234', title: 'Credential renewal evidence', owner: 'HR Credentialing', due: 'Jun 16', chips: ['Evidence'], progress: 28, tone: 'orange' },
+            { id: 'CEU-1232', title: 'Missing signed board minutes', owner: 'Administrator', due: 'June 14', chips: ['Blocked', 'Minutes'], progress: 36, tone: 'orange' },
+            { id: 'CEU-1234', title: 'Credential renewal evidence', owner: 'HR Credentialing', due: 'June 16', chips: ['Evidence'], progress: 28, tone: 'orange' },
           ],
         },
         {
@@ -2584,8 +2584,8 @@
           tone: 'green',
           count: 9,
           cards: [
-            { id: 'CEU-1240', title: 'Annual compliance evaluation', owner: 'Compliance', due: 'Jun 19', chips: ['Approved'], progress: 96, tone: 'green' },
-            { id: 'CEU-1241', title: 'Emergency drill artifact packet', owner: 'Operations', due: 'Jun 20', chips: ['Evidence'], progress: 88, tone: 'green' },
+            { id: 'CEU-1240', title: 'Annual compliance evaluation', owner: 'Compliance', due: 'June 19', chips: ['Approved'], progress: 96, tone: 'green' },
+            { id: 'CEU-1241', title: 'Emergency drill artifact packet', owner: 'Operations', due: 'June 20', chips: ['Evidence'], progress: 88, tone: 'green' },
           ],
         },
       ];
@@ -4268,10 +4268,10 @@
 
     function DashboardPrototype({ view }) {
       const actionRows = view.actionRows || [
-        { title: 'Resolve missing governing body disclosure', meta: 'Linked form and approval sequence need completion.', owner: 'Governance', due: 'Jun 12', tone: 'orange', icon: 'file-warning', progress: 46 },
-        { title: 'Route QAPI minutes for final signature', meta: 'Evidence packet is ready for administrator review.', owner: 'QAPI Lead', due: 'Jun 13', tone: 'orange', icon: 'pen-line', progress: 64 },
-        { title: 'Confirm CHHA competency packet', meta: 'Training and skill checklist need final reconciliation.', owner: 'HR', due: 'Jun 14', tone: 'teal', icon: 'badge-check', progress: 78 },
-        { title: 'Publish updated emergency drill evidence', meta: 'After-action artifact is ready for evidence lock.', owner: 'Operations', due: 'Jun 15', tone: 'teal', icon: 'folder-open', progress: 88 },
+        { title: 'Resolve missing governing body disclosure', meta: 'Linked form and approval sequence need completion.', owner: 'Governance', due: 'June 12', tone: 'orange', icon: 'file-warning', progress: 46 },
+        { title: 'Route QAPI minutes for final signature', meta: 'Evidence packet is ready for administrator review.', owner: 'QAPI Lead', due: 'June 13', tone: 'orange', icon: 'pen-line', progress: 64 },
+        { title: 'Confirm CHHA competency packet', meta: 'Training and skill checklist need final reconciliation.', owner: 'HR', due: 'June 14', tone: 'teal', icon: 'badge-check', progress: 78 },
+        { title: 'Publish updated emergency drill evidence', meta: 'After-action artifact is ready for evidence lock.', owner: 'Operations', due: 'June 15', tone: 'teal', icon: 'folder-open', progress: 88 },
       ];
       const signalRows = view.signalRows || null;
       const primaryOps = view.group === 'Primary Operations';

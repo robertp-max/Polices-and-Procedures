@@ -1,35 +1,23 @@
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { FolderOpen, FileStack, PencilLine, FileSignature } from 'lucide-react';
 import EvidenceFolderExplorer from './EvidenceFolderExplorer';
 import StudioLanding from './StudioLanding';
 import EditPacketRemediation from './EditPacketRemediation';
 import SignatureTracker from './SignatureTracker';
 
-/* ════════════════════════════════════════════════════════════════
-   Evidence Studio — two cohesive surfaces:
-     • Evidence Drive  — Windows-style folder library of filed evidence
-     • Studio          — branded packet generation (launch + intake-to-library)
-   The standalone Intake and in-app Packet-builder panes were folded in:
-   ingestion lives in the Studio's "Add source documents", generation
-   launches the full branded Packet Studio. No metric tiles. Light glass.
-   ════════════════════════════════════════════════════════════════ */
-
 export type EvidenceStudioTab = 'library' | 'studio' | 'edit' | 'signatures';
 
-const TABS: { id: EvidenceStudioTab; label: string; sub: string; Icon: typeof FolderOpen }[] = [
-  { id: 'studio', label: 'Studio', sub: 'Generate branded packets', Icon: FileStack },
-  { id: 'edit', label: 'Edit Packet', sub: 'Remediate by packet ID', Icon: PencilLine },
-  { id: 'signatures', label: 'Signature Tracker', sub: 'Schedule & track signing', Icon: FileSignature },
-  { id: 'library', label: 'Evidence Drive', sub: 'Browse filed evidence', Icon: FolderOpen },
+const TABS: { id: EvidenceStudioTab; label: string }[] = [
+  { id: 'studio', label: 'CREATE PACKET' },
+  { id: 'edit', label: 'EDIT PACKET' },
+  { id: 'signatures', label: 'SIGNATURE TRACKER' },
+  { id: 'library', label: 'FOLDERS' },
 ];
 
 export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: EvidenceStudioTab }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get('tab') as EvidenceStudioTab | null;
   const tab: EvidenceStudioTab = requestedTab && TABS.some((item) => item.id === requestedTab) ? requestedTab : initialTab;
-  // Packet id rides in the URL so it survives the URL-driven tab switch (React
-  // state would be lost when the query change re-renders the screen).
   const sigPacketId = searchParams.get('packet');
 
   const setTab = (nextTab: EvidenceStudioTab) => {
@@ -51,9 +39,6 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
     };
     const onMsg = (e: MessageEvent) => {
       const d = e.data as { type?: string; packetId?: string; title?: string; html?: string } | undefined;
-      // Studio stashes its rendered pages on every generate AND at hand-off, so
-      // the tracker can always print the packet (the iframe re-renders/clears on
-      // tab switch). Keyed by packet id.
       if (d?.type === 'ci-packet-content') { stash(d); return; }
       if (d?.type === 'ci-open-signature-tracker') {
         stash(d);
@@ -73,9 +58,11 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
 
   return (
     <section className="grid gap-lg" data-hash-id="evidence-center" data-route="/evidence" data-template="evidence">
-      <header className="rounded-lg border border-hairline bg-surface-glass p-md shadow-rest">
-        <div className="flex flex-wrap gap-sm" role="tablist" aria-label="Evidence Studio sections">
-          {TABS.map(({ id, label, sub, Icon }) => {
+      
+      {/* Premium Segmented Navigation Tabs */}
+      <div className="flex justify-start">
+        <div className="bg-white/80 backdrop-blur-md rounded-full inline-flex p-1 shadow-md border border-transparent mb-2 overflow-x-auto max-w-full no-scrollbar">
+          {TABS.map(({ id, label }) => {
             const active = tab === id;
             return (
               <button
@@ -84,22 +71,18 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                 aria-selected={active ? 'true' : 'false'}
                 type="button"
                 onClick={() => setTab(id)}
-                className={`flex items-center gap-sm rounded-lg border px-lg py-sm text-left transition ${
+                className={`px-6 py-3 text-xs font-medium tracking-[0.1em] uppercase whitespace-nowrap rounded-full transition-all duration-300 ${
                   active
-                    ? 'border-brand-teal bg-tone-teal-bg text-brand-teal-deep shadow-rest'
-                    : 'border-card bg-tone-slate-bg text-secondary hover:bg-surface-hover'
+                    ? 'bg-[#007C7A] text-white shadow-md'
+                    : 'text-[#007C7A] hover:bg-teal-50/50'
                 }`}
               >
-                <Icon className={`h-icon-sm w-icon-sm ${active ? 'text-brand-teal' : 'text-muted'}`} />
-                <span className="grid">
-                  <span className="text-sm font-medium">{label}</span>
-                  <span className="text-[10px] uppercase tracking-tag text-muted">{sub}</span>
-                </span>
+                {label}
               </button>
             );
           })}
         </div>
-      </header>
+      </div>
 
       {/* Panes stay mounted; only the active one is visible. */}
       <div className={tab === 'library' ? '' : 'hidden'}><EvidenceFolderExplorer /></div>

@@ -15,13 +15,16 @@ import { summarizeGates, type GateStatus } from '@/policy/journey/lib/gates';
 import { appCopy } from '@/policy/journey/data/contentV2Adapter';
 import { JourneyLearningShell } from './JourneyLearningShell';
 import { ReviewerToolsPanel } from '@/policy/journey/components/ReviewerToolsPanel';
+import { useJourneyStore } from '@/policy/journey/stores/journeyStore';
+import { APPENDIX_F_TEMPLATE } from '@/policy/journey/data/appendices';
+import type { AppendixFItem, SignatureRecord } from '@/policy/journey/types/journey';
 
 const LOGO_DARK = 'https://dovdry3t4njek.cloudfront.net/assets/ci-logo-gray-Dju7zS6k.png';
 const SIGNATURE_SRC = 'image_be8721.png'; // Vanessa Valerio's Signature
 
 function GateRow({ done, locked, title, detail }: { done: boolean; locked?: boolean; title: string; detail: React.ReactNode }) {
   return (
-    <div className="flex items-start gap-3 p-3 bg-white border border-hairline rounded-lg shadow-sm">
+    <div className="flex items-start gap-3 p-3 bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline rounded-lg shadow-sm">
       <div className="mt-0.5 shrink-0">
         {done ? (
           <CheckCircle2 size={16} className="text-brand-teal" />
@@ -64,8 +67,41 @@ const achcTopics = [
 
 export function AppendixFScreen() {
   const { state, update } = useLearner();
+  const journey = useJourneyStore();
   const { demoSeconds } = useUiState();
   const [viewingCert, setViewingCert] = useState(false);
+  const [localItems, setLocalItems] = useState<AppendixFItem[] | null>(null);
+  const [sigName, setSigName] = useState('');
+  const [sigRole, setSigRole] = useState<'HRDirector' | 'Supervisor' | 'Other'>('HRDirector');
+  const [sigMessage, setSigMessage] = useState<string | null>(null);
+
+  const currentEmpId = journey.currentEmployeeId;
+  const employee = journey.employees.find(e => e.id === currentEmpId) || journey.employees[0];
+  const storedItems = journey.appendixF[currentEmpId] ?? APPENDIX_F_TEMPLATE.map(i => ({ ...i }));
+  const items = localItems ?? storedItems;
+  const allCleared = items.every(i => i.status === 'PASS' || i.status === 'NA');
+
+  function updateItem(id: number, status: AppendixFItem['status'], notes?: string) {
+    const updated = items.map(it => it.id === id ? { ...it, status, notes: notes ?? it.notes, completedAt: new Date().toISOString() } : it);
+    setLocalItems(updated);
+    journey.updateAppendixFItem(currentEmpId, id, status, notes);
+  }
+
+  function handleSignAppendixF() {
+    setSigMessage(null);
+    if (!allCleared) {
+      setSigMessage('All 15 items must be PASS or NA.');
+      return;
+    }
+    if (sigRole !== 'HRDirector') {
+      setSigMessage('Signature requires HRDirector role.');
+      return;
+    }
+    const sig: SignatureRecord = { name: sigName.trim() || employee.name, role: 'HRDirector', pngDataUrl: '', signedAt: new Date().toISOString() };
+    const res = journey.signAppendixF(currentEmpId, sig);
+    setSigMessage(res.message);
+    if (res.ok) setLocalItems(null);
+  }
 
   const legalReady = Boolean(state.legalFirstName.trim() && state.legalLastName.trim() && state.cnaNumber.trim());
   const hoursMet = activeTimeMet(state);
@@ -79,9 +115,10 @@ export function AppendixFScreen() {
   const recipientName = `${state.legalFirstName} ${state.legalLastName}`;
   const completionDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-  const handleSigError = (e: any) => {
-    e.target.style.display = 'none';
-    const fallback = e.target.nextElementSibling;
+  const handleSigError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    img.style.display = 'none';
+    const fallback = img.nextElementSibling as HTMLElement | null;
     if (fallback) fallback.style.display = 'block';
   };
 
@@ -153,7 +190,7 @@ export function AppendixFScreen() {
             <span className="text-xs text-muted italic">Watermarked Mock Preview</span>
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-tone-teal-border text-brand-teal font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-surface-hover transition shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-surface-glass backdrop-blur-md shadow-glass-inset border border-tone-teal-border text-brand-teal font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-surface-hover transition shadow-sm"
             >
               <Printer size={14} /> Print Certificate
             </button>
@@ -175,7 +212,7 @@ export function AppendixFScreen() {
               <span className="text-5xl md:text-8xl font-black font-mono tracking-widest text-white">MOCK PREVIEW ONLY</span>
             </div>
 
-            <div className="absolute select-none pointer-events-none z-30 opacity-40 border border-brand-orange bg-white/90 px-3 py-1.5 text-center leading-none rounded shadow" style={{ left: "45%", top: "72%", transform: "translate(-50%, -50%) rotate(-10deg)" }}>
+            <div className="absolute select-none pointer-events-none z-30 opacity-40 border border-brand-orange bg-surface-glass backdrop-blur-md shadow-glass-inset px-3 py-1.5 text-center leading-none rounded shadow" style={{ left: "45%", top: "72%", transform: "translate(-50%, -50%) rotate(-10deg)" }}>
               <span className="text-[10px] font-bold text-brand-orange tracking-wider font-mono block">MOCK PREVIEW ONLY</span>
               <span className="text-[7px] font-mono text-secondary block mt-0.5 uppercase">Production issuance disabled</span>
             </div>
@@ -331,7 +368,7 @@ export function AppendixFScreen() {
                           onClick={() => update("affidavitComplete", !affidavit)}
                           className={`w-full py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors border ${
                             affidavit 
-                              ? "bg-white border-hairline text-secondary hover:bg-surface-hover shadow-sm" 
+                              ? "bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline text-secondary hover:bg-surface-hover shadow-sm" 
                               : "bg-brand-orange border-brand-orange hover:bg-brand-orange/95 text-white shadow-pill-action"
                           }`}
                         >
@@ -366,6 +403,70 @@ export function AppendixFScreen() {
                 </div>
               </details>
             </div>
+
+            {/* Appendix F — Pre-Employment Screening checklist + HR sign-off */}
+            <div className="bg-surface-glass border border-hairline rounded-xl p-5 shadow-rest backdrop-blur-xl">
+              <h2 className="text-base font-bold text-brand-teal-deep mb-2 uppercase tracking-wider">Appendix F · Pre-Employment Screening</h2>
+              <p className="text-xs text-secondary leading-relaxed mb-4">Each item must be PASS or NA before the HR Director can sign off Appendix F.</p>
+              <div className="space-y-2">
+                {items.map((it) => (
+                  <div key={it.id} className="flex items-center justify-between gap-3 border-b border-hairline pb-2">
+                    <span className="text-[11px] text-secondary font-medium">{it.id}. {it.label}</span>
+                    <div className="flex gap-1 shrink-0">
+                      {(['PASS', 'NA', 'FAIL'] as const).map((st) => (
+                        <button
+                          key={st}
+                          type="button"
+                          onClick={() => updateItem(it.id, st)}
+                          className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border transition-colors ${
+                            it.status === st
+                              ? st === 'FAIL'
+                                ? 'bg-tone-red-bg text-tone-red-text border-hairline'
+                                : 'bg-brand-teal text-white border-brand-teal-deep'
+                              : 'bg-white text-muted border-hairline hover:bg-surface-hover'
+                          }`}
+                        >
+                          {st}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 border-t border-hairline pt-4 space-y-3">
+                <label className="block text-[10px] uppercase font-bold text-muted tracking-wider">HR Director sign-off</label>
+                <input
+                  type="text"
+                  value={sigName}
+                  onChange={(e) => setSigName(e.target.value)}
+                  placeholder={employee.name}
+                  className="w-full rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs text-ink placeholder:text-muted"
+                />
+                <select
+                  value={sigRole}
+                  onChange={(e) => setSigRole(e.target.value as 'HRDirector' | 'Supervisor' | 'Other')}
+                  aria-label="Appendix F sign-off role"
+                  className="w-full rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs text-ink"
+                >
+                  <option value="HRDirector">HR Director</option>
+                  <option value="Supervisor">Supervisor</option>
+                  <option value="Other">Other</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={handleSignAppendixF}
+                  disabled={!allCleared}
+                  className={`w-full py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors border ${
+                    allCleared
+                      ? 'bg-brand-orange border-brand-orange text-white hover:bg-brand-orange/95 shadow-pill-action'
+                      : 'bg-surface-hover border-hairline text-muted cursor-not-allowed'
+                  }`}
+                >
+                  Sign Appendix F
+                </button>
+                {sigMessage && <p className="text-[10px] text-secondary">{sigMessage}</p>}
+              </div>
+            </div>
           </div>
 
           {/* Right: preview engine */}
@@ -377,7 +478,7 @@ export function AppendixFScreen() {
               </div>
 
               {allReady ? (
-                <div className="p-8 text-left space-y-6 bg-white/70 border border-hairline rounded-xl shadow-sm">
+                <div className="p-8 text-left space-y-6 bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline rounded-xl shadow-sm">
                   <div className="w-16 h-16 rounded-full bg-tone-teal-bg border border-tone-teal-border flex items-center justify-center mr-auto text-brand-teal shadow-sm">
                     <ShieldCheck size={32} />
                   </div>
@@ -397,8 +498,8 @@ export function AppendixFScreen() {
                   </div>
                 </div>
               ) : (
-                <div className="p-12 text-left space-y-6 bg-white/70 border border-hairline rounded-xl shadow-sm">
-                  <div className="w-12 h-12 rounded-full bg-tone-slate-bg border border-hairline flex items-center justify-center mr-auto text-muted">
+                <div className="p-12 text-left space-y-6 bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline rounded-xl shadow-sm">
+                  <div className="w-12 h-12 rounded-full bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline flex items-center justify-center mr-auto text-muted">
                     <Lock size={20} />
                   </div>
                   <div>
@@ -410,7 +511,7 @@ export function AppendixFScreen() {
                 </div>
               )}
 
-              <div className="mt-4 p-4 rounded-lg bg-tone-slate-bg/30 border border-hairline shadow-sm">
+              <div className="mt-4 p-4 rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset/30 border border-hairline shadow-sm">
                 <p className="text-xs text-secondary leading-relaxed">
                   <strong>Legal Restriction:</strong> {appCopy.certificate.restriction}
                 </p>

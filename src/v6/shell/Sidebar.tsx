@@ -31,7 +31,7 @@ export function Sidebar() {
   }, [pathname]);
 
   return (
-    <aside className="sticky top-0 z-command h-screen w-sidebar shrink-0 overflow-hidden border-r border-hairline bg-white/70 text-ink shadow-sidebar backdrop-blur-xl flex flex-col">
+    <aside className="sticky top-0 z-command h-screen w-sidebar shrink-0 overflow-hidden border-r border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset text-ink shadow-sidebar backdrop-blur-xl flex flex-col">
       {/* Top spacer clears the fixed hamburger + logo cluster rendered by V6Shell. */}
       <div className="relative z-10 shrink-0 px-lg pt-[64px]" aria-hidden />
 
@@ -71,7 +71,7 @@ export function Sidebar() {
 
           {/* COMPLIANCE EXECUTION */}
           <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted px-sm mt-sm">COMPLIANCE EXECUTION</div>
-          {['ces', 'taxonomy', 'onboarding', 'policy-lifecycle'].map(id => {
+          {['ces', 'taxonomy', 'onboarding'].map(id => {
             const item = primaryNavItems.find(i => i.id === id);
             if (!item) return null; // guard: hidden/removed nav items must not crash the sidebar
             const isActive = active?.parent?.id === item.id;
@@ -131,7 +131,7 @@ export function Sidebar() {
           title="Review identity — the server independently verifies Super Admin status"
           defaultValue={getIdentity().userId}
           onChange={(e) => { setIdentity(e.target.value); window.location.reload(); }}
-          className="mt-1 w-full rounded-md border border-hairline bg-surface px-2 py-1.5 text-xs text-ink focus-visible:outline-none focus-visible:shadow-focus"
+          className="mt-1 w-full rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset px-2 py-1.5 text-xs text-ink focus-visible:outline-none focus-visible:shadow-focus"
         >
           {DEV_IDENTITIES.map((d) => (
             <option key={d.userId} value={d.userId}>{d.displayName}</option>

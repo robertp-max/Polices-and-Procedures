@@ -82,9 +82,7 @@ export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
                   <span
                     className={cx(
                       'max-w-full truncate rounded-sm border px-sm py-xs text-tag uppercase tracking-tag',
-                      card.tone === 'orange' || card.tone === 'amber'
-                        ? toneSurfaceClasses.orange
-                        : 'border-tone-teal-border bg-white text-brand-teal',
+                      toneSurfaceClasses[card.tone],
                     )}
                     key={`${card.id}-${chip}`}
                   >

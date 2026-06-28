@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
-   APPENDIX F — Pre-Employment Screening Checklist (HR-TA-001)
+   APPENDIX F — Pre-Employment Screening Checklist (HR-TA-001 §6.4)
    This is the HARD STOP. Every line must be PASS or N/A and the
-   form must be signed by HR Director before ANY work is permitted.
+   form must be signed by HR Director before ANY work is permitted. (screening checklist per §6.4.4)
    ═══════════════════════════════════════════════════════════════ */
 
 import type { AppendixFItem } from '@/policy/journey/types/journey';
@@ -12,9 +12,9 @@ export const APPENDIX_F_TEMPLATE: AppendixFItem[] = [
   { id: 3, label: 'SAM screening CLEARED',                                            policyRef: 'HR-TA-003',         status: 'PENDING' },
   { id: 4, label: 'Primary source licensure verification completed',                  policyRef: 'HR-TA-004',         status: 'PENDING' },
   { id: 5, label: 'License expiration tracked (min 30 days remaining at hire)',        policyRef: 'HR-TA-004 §6.2',    status: 'PENDING' },
-  { id: 6, label: 'Reference #1 verified',                                            policyRef: 'HR-TA-001 §6.4.3(d)', status: 'PENDING' },
-  { id: 7, label: 'Reference #2 verified',                                            policyRef: 'HR-TA-001 §6.4.3(d)', status: 'PENDING' },
-  { id: 8, label: 'I-9 completed',                                                    policyRef: 'HR-TA-001 §6.4.3(e)', status: 'PENDING' },
+  { id: 6, label: 'Reference #1 verified',                                            policyRef: 'HR-TA-001 §6.4.4', status: 'PENDING' },
+  { id: 7, label: 'Reference #2 verified',                                            policyRef: 'HR-TA-001 §6.4.4', status: 'PENDING' },
+  { id: 8, label: 'I-9 completed',                                                    policyRef: 'HR-TA-001 §6.4.4', status: 'PENDING' },
   { id: 9, label: 'Health screening completed',                                       policyRef: 'HR-WM-003',         status: 'PENDING' },
   { id: 10, label: 'Required immunizations verified',                                 policyRef: 'HR-WM-003',         status: 'PENDING' },
   { id: 11, label: 'Drug screening completed (if applicable)',                        policyRef: 'HR-ER-005',         status: 'PENDING' },
@@ -24,7 +24,7 @@ export const APPENDIX_F_TEMPLATE: AppendixFItem[] = [
   { id: 15, label: 'Job description acknowledgment signed',                           policyRef: 'HR-TA-006',         status: 'PENDING' },
 ];
 
-/* Appendix D — HR-TA-005 General Orientation Quiz item bank (abridged demo). */
+/* HR-TA-005 Appendix D - General Orientation Quiz item bank (abridged demo). Internal key HRTA005_D kept. */
 export const GAO_EXAM_ITEMS: { q: string; options: string[]; correct: number; policyRef: string }[] = [
   {
     q: 'A patient asks you not to document a change in condition. You must:',

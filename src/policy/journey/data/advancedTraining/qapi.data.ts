@@ -10,6 +10,7 @@ export const qapiModule: ModuleDef = {
   "kind": "lesson",
   "status": "ready",
   "countsTowardTheory": true,
+  "policyRefs": ["QA-PG-001"],
   "learningObjectives": [
     "Define QAPI as a CMS-mandated quality framework and connect it to patient safety, compliance, and reimbursement outcomes.",
     "Identify the five CMS QAPI standards and their operational requirements for home health agencies.",
@@ -152,6 +153,36 @@ export const qapiModule: ModuleDef = {
           "media_prompt_placeholder": {
             "app_location": "qapi.lesson.l1.s1.debrief",
             "scene_title": "Debriefing: What QAPI Is and Why It Matters"
+          }
+        },
+        {
+          "module_id": "qapi",
+          "lesson_id": "L01",
+          "card_id": "qapi_l1_sX_detailed_scenario",
+          "card_type": "challenge",
+          "app": {
+            "location": "qapi.lesson.l1.sX.detailed_scenario"
+          },
+          "display_title": "QA-PG-001 Scenario: Written Policy vs Active QAPI Program",
+          "learner_facing_content": "Detailed Scenario (QA-PG-001): During annual survey prep, the QAPI Coordinator presents the binder containing only the QA-PG-001 policy document and three unsigned meeting logs from last year. No trending data, no active PIPs with baseline/outcomes, no evidence of governing body review per QA-PG-001 (QAPI Program Establishment & Governance). Surveyor asks for indicator data tied to OASIS rehospitalization and falls, and the last PIP status report. Per QA-PG-001, what must be produced to demonstrate an effective program beyond the written policy? The agency must show data collection, analysis, measurable improvement activities, and executive oversight — not just the policy text.",
+          "transcript_text": "QA-PG-001 requires the QAPI program to be operational and data-driven with evidence of implementation, not merely documented in policy.",
+          "estimated_narration_seconds": 50,
+          "media_prompt_placeholder": {
+            "app_location": "qapi.lesson.l1.sX.detailed_scenario",
+            "scene_title": "Detailed Scenario Card: QA-PG-001 Active Program"
+          },
+          "internal_challenge": {
+            "id": "qapi_qapg001_scenario",
+            "prompt": "What does QA-PG-001 require to demonstrate an effective QAPI program?",
+            "choices": [
+              { "id": "A", "label": "Evidence of ongoing data collection, analysis, measurable PIPs with outcomes, and governing body oversight — beyond the written policy document." },
+              { "id": "B", "label": "Only a current written QA-PG-001 policy document on file." },
+              { "id": "C", "label": "Meeting logs from the past year are sufficient regardless of content." },
+              { "id": "D", "label": "QAPI is satisfied if the binder exists and is shown to surveyors." },
+              { "id": "E", "label": "Annual policy review alone meets all QA-PG-001 requirements." }
+            ],
+            "correct_id_internal": "A",
+            "rationale_internal": "QA-PG-001 establishes that the QAPI program must be actively implemented with data-driven activities, documented improvement cycles, and executive accountability. The policy document alone without operational evidence violates the standard."
           }
         }
       ],

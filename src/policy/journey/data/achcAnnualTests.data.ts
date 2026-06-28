@@ -14,17 +14,17 @@ export const achcAnnualTests: TopicTest[] = [
       {
         question_id: 'q_m01_02', prompt: 'Cultural humility differs from cultural competence in that:',
         choices: ['It requires memorizing customs of all cultures', 'It is a static achievement you reach with enough training', 'It is a lifelong process of self-reflection and openness to learning from each patient', 'It only applies to international patients'],
-        correct_answer: 2, rationale: 'Cultural humility is an ongoing process of self-examination. Cultural competence implies a level of mastery that can never truly be reached in the diversity of human culture.',
+        correct_answer: 2, rationale: 'Cultural humility is an ongoing process of self-examination per M01 lesson and CL-PR-001 (Patient Rights & Responsibilities). Cultural competence implies a level of mastery that can never truly be reached.',
       },
       {
         question_id: 'q_m01_03', prompt: 'A patient\'s family member offers to interpret for a medical appointment. The BEST practice is:',
         choices: ['Accept — it saves cost and the patient prefers it', 'Use the family member only if no professional interpreter is available', 'Request a professional interpreter — family members may omit, alter, or filter clinical information', 'Use a bilingual colleague from another department'],
-        correct_answer: 2, rationale: 'Family members may unconsciously or deliberately omit sensitive information, change meaning, or have poor medical vocabulary. Professional interpreters are the standard.',
+        correct_answer: 2, rationale: 'Family members may unconsciously or deliberately omit sensitive information, change meaning, or have poor medical vocabulary per CL-PR-001 (Patient Rights & Responsibilities) and M01 lesson. Professional interpreters are the standard.',
       },
       {
         question_id: 'q_m01_04', prompt: 'Which of the following is the MOST accurate statement about cultural practices and clinical care?',
         choices: ['Harmful cultural practices must always be immediately prohibited', 'Cultural practices should be accommodated only when scientifically proven safe', 'Clinical accommodation of cultural practices improves adherence, outcomes, and dignity — safety is evaluated case by case', 'Staff personal comfort with cultural practices determines accommodation'],
-        correct_answer: 2, rationale: 'Accommodation of cultural practices must be assessed individually for patient safety. Blanket prohibition damages trust and adherence.',
+        correct_answer: 2, rationale: 'Accommodation of cultural practices must be assessed individually for patient safety per CL-PR-001 (Patient Rights & Responsibilities). Blanket prohibition damages trust and adherence.',
       },
       {
         question_id: 'q_m01_05', prompt: 'A nurse refers to a Muslim patient\'s dietary restrictions as "inconvenient." This represents:',
@@ -49,12 +49,22 @@ export const achcAnnualTests: TopicTest[] = [
       {
         question_id: 'q_m01_09', prompt: 'The PRIMARY goal of the Agency\'s Cultural Awareness Program is:',
         choices: ['To eliminate all cultural differences in care delivery', 'To provide standardized care protocols for each cultural group', 'To deliver individualized, culturally sensitive care that improves outcomes and patient dignity', 'To satisfy accreditation requirements only'],
-        correct_answer: 2, rationale: 'Individualized, culturally sensitive care — not generalization or standardization — is the program\'s goal.',
+        correct_answer: 2, rationale: 'Individualized, culturally sensitive care per CL-PR-001 (Patient Rights & Responsibilities) — not generalization or standardization — is the program\'s goal.',
       },
       {
         question_id: 'q_m01_10', prompt: 'A Vietnamese patient avoids eye contact during clinical teaching. This is MOST likely:',
         choices: ['A sign of deception or disinterest', 'A cultural norm of respect that should not be misinterpreted as disengagement', 'Indication of cognitive impairment', 'A universal signal of low health literacy'],
-        correct_answer: 1, rationale: 'Eye contact norms vary significantly across cultures. Avoiding eye contact is a sign of respect in many Southeast Asian cultures.',
+        correct_answer: 1, rationale: 'Eye contact norms vary significantly across cultures per CL-PR-001 (Patient Rights & Responsibilities) and lesson content. Avoiding eye contact is a sign of respect in many Southeast Asian cultures.',
+      },
+      {
+        question_id: 'q_m01_11', prompt: 'A coworker makes a discriminatory remark about a new hire\'s accent during a team meeting. The MOST appropriate immediate action is:',
+        choices: ['Laugh along to keep the peace', 'Say nothing but report to HR later', 'Calmly state that the comment is inappropriate and creates a hostile environment', 'Confront aggressively in front of the group'],
+        correct_answer: 2, rationale: 'Per lesson in ACHC-ART-M01: immediate calm intervention prevents normalization of discriminatory behavior. Bystander silence endorses it. This aligns with CL-PR-001 (Patient Rights & Responsibilities) expectations for workplace culture.',
+      },
+      {
+        question_id: 'q_m01_12', prompt: 'Which statement accurately distinguishes workforce diversity training from cultural competence training?',
+        choices: ['They are the same thing', 'Diversity training addresses staff composition; cultural competence addresses delivery of care to patients with diverse needs', 'Cultural competence only applies to international patients', 'Diversity training is federally mandated but cultural competence is not'],
+        correct_answer: 1, rationale: 'Direct from lesson content: CLAS Standards and cultural competence training focus on patient-care delivery. Workforce diversity addresses representation. Both support CL-PR-001 (Patient Rights & Responsibilities) and federally required culturally responsive care.',
       },
     ],
   },
@@ -71,7 +81,7 @@ export const achcAnnualTests: TopicTest[] = [
       {
         question_id: 'q_m02_02', prompt: 'The Agency Emergency Preparedness Plan includes which of the following?',
         choices: ['Response procedures for natural disasters only', 'A comprehensive plan covering natural disasters, man-made emergencies, and service continuity', 'A plan developed by the local government, not the Agency', 'Procedures that only apply to office staff, not field workers'],
-        correct_answer: 1, rationale: 'The Agency Emergency Preparedness Plan is a comprehensive, agency-specific plan covering all emergency types and all staff.',
+        correct_answer: 1, rationale: 'OP-FM-005 (Emergency Operations & Business Continuity) is a comprehensive, agency-specific plan covering all emergency types and all staff.',
       },
       {
         question_id: 'q_m02_03', prompt: 'Patient prioritization during a disaster is based on:',
@@ -81,7 +91,7 @@ export const achcAnnualTests: TopicTest[] = [
       {
         question_id: 'q_m02_04', prompt: 'You cannot reach a patient during a hurricane warning. The correct action is:',
         choices: ['Document "unable to reach" and continue to next patient', 'Notify your supervisor immediately so the Agency can activate emergency protocols', 'Try once more the following day', 'Only escalate if the patient is on the priority list'],
-        correct_answer: 1, rationale: 'Unreachable high-risk patients require immediate supervisor notification to activate Agency emergency protocols.',
+        correct_answer: 1, rationale: 'Unreachable high-risk patients require immediate supervisor notification to activate OP-FM-005 (Emergency Operations & Business Continuity) protocols.',
       },
       {
         question_id: 'q_m02_05', prompt: 'A patient\'s emergency contact list should be:',
@@ -126,9 +136,9 @@ export const achcAnnualTests: TopicTest[] = [
         correct_answer: 1, rationale: '"Complaint" refers to issues resolvable promptly at the point of care. "Grievance" involves formal written complaints, rights violations, or complaints unresolved through the normal process.',
       },
       {
-        question_id: 'q_m03_02', prompt: 'A patient submits a written letter of complaint about the care they are receiving. The Agency must respond within:',
-        choices: ['24 hours', '7 days', '30 days in writing', '60 days'],
-        correct_answer: 2, rationale: 'Written grievances require a written response within 30 days per ACHC requirements.',
+        question_id: 'q_m03_02', prompt: 'A patient submits a written grievance about the care they are receiving. The Agency must provide its written response within:',
+        choices: ['24 hours', '7 days', '10 days (decision + appeal rights)', '30 days'],
+        correct_answer: 2, rationale: 'Per updated lesson and CL-PR-001 (Patient Rights & Responsibilities): written response required within 10 days of receipt; 30 days is the Governing Body appeal review timeline. Confusion of these is a common survey deficiency.',
       },
       {
         question_id: 'q_m03_03', prompt: 'A field nurse receives a complaint from a family member about a coworker. The correct action is:',
@@ -148,7 +158,7 @@ export const achcAnnualTests: TopicTest[] = [
       {
         question_id: 'q_m03_06', prompt: 'The Agency\'s complaint and grievance process serves which regulatory function?',
         choices: ['It is a customer service option, not a regulatory requirement', 'It is a mandatory ACHC requirement and a patient rights protection mechanism', 'It only applies to Medicare patients', 'It is only required if the state mandates it'],
-        correct_answer: 1, rationale: 'The complaint and grievance process is a mandatory ACHC requirement that protects patient rights.',
+        correct_answer: 1, rationale: 'The complaint and grievance process is a mandatory ACHC requirement per CL-PR-001 (Patient Rights & Responsibilities) that protects patient rights.',
       },
       {
         question_id: 'q_m03_07', prompt: 'Retaliating against a patient who filed a grievance by reducing their care quality is:',
@@ -162,8 +172,8 @@ export const achcAnnualTests: TopicTest[] = [
       },
       {
         question_id: 'q_m03_09', prompt: 'You receive a complaint from a patient saying a coworker discussed their case in a restaurant. This represents:',
-        choices: ['A minor complaint about staff behavior', 'A HIPAA violation AND a patient grievance requiring immediate escalation to the supervisor and Compliance Officer', 'Hearsay that doesn\'t require action without proof', 'A complaint to be resolved at the next team meeting'],
-        correct_answer: 1, rationale: 'Discussing PHI in a public setting is a HIPAA violation requiring immediate escalation beyond normal complaint processing.',
+        choices: ['A minor complaint about staff behavior', 'A HIPAA violation per CO-HP-001 (HIPAA Privacy Program) AND a patient grievance requiring immediate escalation to the supervisor and Compliance Officer', 'Hearsay that doesn\'t require action without proof', 'A complaint to be resolved at the next team meeting'],
+        correct_answer: 1, rationale: 'Discussing PHI in a public setting is a HIPAA violation per CO-HP-001 (HIPAA Privacy Program) requiring immediate escalation beyond normal complaint processing.',
       },
       {
         question_id: 'q_m03_10', prompt: 'Patient feedback surveys collected after each visit serve primarily to:',
@@ -225,7 +235,17 @@ export const achcAnnualTests: TopicTest[] = [
       {
         question_id: 'q_m04_10', prompt: 'The HIPAA Security Rule specifically governs:',
         choices: ['All forms of PHI in any medium', 'Electronic PHI (ePHI) — administrative, physical, and technical safeguards', 'Verbal communications about patients', 'PHI in paper records only'],
-        correct_answer: 1, rationale: 'The HIPAA Security Rule specifically addresses ePHI and requires administrative, physical, and technical safeguards.',
+        correct_answer: 1, rationale: 'The HIPAA Security Rule specifically addresses ePHI and requires administrative, physical, and technical safeguards per CO-HP-002 (HIPAA Security Program).',
+      },
+      {
+        question_id: 'q_m04_11', prompt: 'Accidentally texting a patient\'s medication list to the wrong phone number requires what immediate action?',
+        choices: ['Ignore if the recipient did not respond', 'Notify supervisor immediately and conduct breach risk assessment', 'Wait to see if patient complains', 'Only document if the wrong recipient reads it'],
+        correct_answer: 1, rationale: 'Per lesson and CO-HP-001 (HIPAA Privacy Program): accidental disclosure of PHI to unauthorized party is a potential breach requiring immediate notification and risk assessment regardless of outcome.',
+      },
+      {
+        question_id: 'q_m04_12', prompt: 'Using a patient photo with visible face on social media without written authorization is:',
+        choices: ['Acceptable with verbal consent', 'A HIPAA violation requiring written authorization for identifiable images', 'OK if privacy settings are restricted', 'Not PHI because it is not clinical data'],
+        correct_answer: 1, rationale: 'Photos with face are PHI. Posting without explicit written authorization violates CO-HP-001 (HIPAA Privacy Program) per ACHC M04 content.',
       },
     ],
   },
@@ -237,12 +257,12 @@ export const achcAnnualTests: TopicTest[] = [
       {
         question_id: 'q_m05_01', prompt: 'Standard Precautions apply:',
         choices: ['Only to patients with known infections', 'To ALL patients at ALL times regardless of diagnosis', 'Only when blood is visible', 'Only during invasive procedures'],
-        correct_answer: 1, rationale: 'Standard Precautions treat ALL patients as potentially infectious at all times. Known status is irrelevant.',
+        correct_answer: 1, rationale: 'Standard Precautions per CL-SD-016 (Infection Prevention & Control) treat ALL patients as potentially infectious at all times. Known status is irrelevant.',
       },
       {
         question_id: 'q_m05_02', prompt: 'The single most effective infection control intervention is:',
         choices: ['Wearing gloves for all patient contact', 'Proper hand hygiene at all 5 moments', 'Annual flu vaccination', 'Wearing N95 respirators for all home visits'],
-        correct_answer: 1, rationale: 'Hand hygiene at all 5 WHO moments is the most evidence-based, effective infection control intervention.',
+        correct_answer: 1, rationale: 'Hand hygiene at all 5 WHO moments per CL-SD-016 (Infection Prevention & Control) is the most evidence-based, effective infection control intervention.',
       },
       {
         question_id: 'q_m05_03', prompt: 'Alcohol-based hand rub is NOT appropriate when:',
@@ -651,7 +671,7 @@ export const achcAnnualTests: TopicTest[] = [
       {
         question_id: 'q_m12_04', prompt: 'After a device malfunctions and causes patient injury, the device should be:',
         choices: ['Returned to the DME company immediately', 'Preserved in its current state and not returned, repaired, or discarded until released by risk management', 'Repaired and returned to service if the patient is stable', 'Photographed and then discarded to prevent further injury'],
-        correct_answer: 1, rationale: 'The device is evidentiary and must be preserved for the MDR investigation.',
+        correct_answer: 1, rationale: 'The device is evidentiary and must be preserved for the MDR investigation per RM-MD-001 (Medical Device Reporting).',
       },
       {
         question_id: 'q_m12_05', prompt: '"Serious injury" in MDR reporting includes which of the following?',

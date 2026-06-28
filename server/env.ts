@@ -42,6 +42,19 @@ const iaIndexRoot = path.isAbsolute(iaIndexRaw)
   ? iaIndexRaw
   : path.resolve(repoRoot, iaIndexRaw);
 
+/** ───── Google Drive Evidence — LOCKED canonical identity ───────────────────
+ * Pinned to protect the evidence pipeline from accidental config drift (a wrong
+ * service-account key, a different shared drive, or a mistyped provider). These
+ * values are the single source of truth; `assertDriveEvidenceLock()` verifies the
+ * live config matches them at boot and FAILS CLOSED on any mismatch. To change a
+ * value, edit it HERE in a reviewed code change — not via an ad-hoc env var. */
+export const DRIVE_EVIDENCE_LOCK = {
+  serviceAccountEmail: 'careindeed-drive-evidence@orbital-stage-443721-v1.iam.gserviceaccount.com',
+  projectId: 'orbital-stage-443721-v1',
+  sharedDriveId: '0AMhwVb2RmU-fUk9PVA',
+  storageProvider: 'google_drive_calendar',
+} as const;
+
 export const env = {
   port: Number(process.env.PORT ?? 8787),
   /** Calendar — optional at boot. */
@@ -54,13 +67,15 @@ export const env = {
    * Extends the Calendar integration. Reuses the SAME service-account
    * key (credentialsPath above) — no second Google auth path. Drive
    * stores files; Calendar attaches/indexes them. */
-  evidenceStorageProvider: process.env.GOOGLE_EVIDENCE_STORAGE_PROVIDER ?? 'google_drive_calendar',
+  // Provider is PINNED to the canonical value — a mistyped env var can no longer
+  // change it (the whole evidence pipeline asserts this exact string).
+  evidenceStorageProvider: DRIVE_EVIDENCE_LOCK.storageProvider,
   calendarEvidenceEnabled: (process.env.GOOGLE_CALENDAR_EVIDENCE_ENABLED ?? 'true').toLowerCase() === 'true',
-  driveEvidenceSharedDriveId: process.env.GOOGLE_DRIVE_EVIDENCE_SHARED_DRIVE_ID ?? '0AMhwVb2RmU-fUk9PVA',
+  driveEvidenceSharedDriveId: process.env.GOOGLE_DRIVE_EVIDENCE_SHARED_DRIVE_ID ?? DRIVE_EVIDENCE_LOCK.sharedDriveId,
   driveEvidenceRootFolderId:
     process.env.GOOGLE_DRIVE_EVIDENCE_ROOT_FOLDER_ID
     ?? process.env.GOOGLE_DRIVE_EVIDENCE_SHARED_DRIVE_ID
-    ?? '0AMhwVb2RmU-fUk9PVA',
+    ?? DRIVE_EVIDENCE_LOCK.sharedDriveId,
 
   /** ───── CES metadata backend (NON-PHI metadata; NO file bytes) ─────
    * `file_local` (default) writes to .cache/ces-metadata for local/dev so the
@@ -100,3 +115,70 @@ export const env = {
   setupTokenTtlMinutes: Number(process.env.SETUP_TOKEN_TTL_MINUTES ?? 60),
   autoApprovedDomain: (process.env.AUTO_APPROVED_DOMAIN ?? 'careindeed.com').toLowerCase(),
 };
+
+export interface DriveLockResult {
+  ok: boolean;
+  enforced: boolean;
+  problems: string[];
+  info: Record<string, string>;
+}
+
+/**
+ * Verify the live Google Drive evidence config matches the LOCKED canonical
+ * identity (service account, project, shared drive, provider). Reads only the
+ * non-secret identity fields of the credentials JSON (never the private key).
+ *
+ * Fail-closed: when credentials are present AND evidence is enabled, a mismatch
+ * throws (so a swapped key / drive / provider cannot silently run). When no
+ * credentials are present (e.g. a dev box without the key), it soft-passes so
+ * unrelated subsystems can still boot.
+ */
+export function assertDriveEvidenceLock(opts: { throwOnMismatch?: boolean } = {}): DriveLockResult {
+  const problems: string[] = [];
+  const info: Record<string, string> = {
+    storageProvider: env.evidenceStorageProvider,
+    sharedDriveId: env.driveEvidenceSharedDriveId,
+    rootFolderId: env.driveEvidenceRootFolderId,
+    credentialsPath: env.credentialsPath,
+    evidenceEnabled: String(env.calendarEvidenceEnabled),
+  };
+
+  if (env.evidenceStorageProvider !== DRIVE_EVIDENCE_LOCK.storageProvider) {
+    problems.push(`storageProvider "${env.evidenceStorageProvider}" != locked "${DRIVE_EVIDENCE_LOCK.storageProvider}"`);
+  }
+  if (env.driveEvidenceSharedDriveId !== DRIVE_EVIDENCE_LOCK.sharedDriveId) {
+    problems.push(`sharedDriveId "${env.driveEvidenceSharedDriveId}" != locked "${DRIVE_EVIDENCE_LOCK.sharedDriveId}"`);
+  }
+
+  if (env.calendarCredentialsPresent) {
+    try {
+      const k = JSON.parse(fs.readFileSync(env.credentialsPath, 'utf8')) as {
+        type?: string; client_email?: string; project_id?: string; private_key?: string;
+      };
+      info.serviceAccountEmail = k.client_email ?? '(missing)';
+      info.projectId = k.project_id ?? '(missing)';
+      info.hasPrivateKey = String(!!k.private_key);
+      if (k.client_email !== DRIVE_EVIDENCE_LOCK.serviceAccountEmail) {
+        problems.push(`service account "${k.client_email}" != locked "${DRIVE_EVIDENCE_LOCK.serviceAccountEmail}"`);
+      }
+      if (k.project_id !== DRIVE_EVIDENCE_LOCK.projectId) {
+        problems.push(`project "${k.project_id}" != locked "${DRIVE_EVIDENCE_LOCK.projectId}"`);
+      }
+      if (!k.private_key) problems.push('credentials JSON has no private_key');
+    } catch (e) {
+      problems.push(`could not read credentials at ${env.credentialsPath}: ${(e as Error).message}`);
+    }
+  } else {
+    info.serviceAccountEmail = '(credentials absent on this host)';
+  }
+
+  const ok = problems.length === 0;
+  const enforced = env.calendarCredentialsPresent && env.calendarEvidenceEnabled;
+  if (!ok && enforced && opts.throwOnMismatch) {
+    throw new Error(
+      `[drive-lock] Google Drive evidence config drift detected — refusing to start:\n  - ${problems.join('\n  - ')}\n` +
+      `  These settings are locked in server/env.ts (DRIVE_EVIDENCE_LOCK). Change them only via a reviewed code edit.`,
+    );
+  }
+  return { ok, enforced, problems, info };
+}

@@ -12,9 +12,9 @@ export function SurveyorViewerScreen() {
     >
       <section className="grid gap-xl desktop:grid-cols-12">
         <div className="grid content-start gap-lg desktop:col-span-8">
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md">Policy Body Text</h3>
-            <div className="rounded-md border border-hairline bg-tone-slate-bg p-lg text-sm text-secondary leading-relaxed max-h-[400px] overflow-y-auto">
+            <div className="rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg text-sm text-secondary leading-relaxed max-h-[400px] overflow-y-auto">
               <h4 className="font-medium text-ink mb-sm">CL-SD-012 Medication Management Policy</h4>
               <p className="mb-md"><strong>Purpose:</strong> Ensure all patients receive safe medication reconciliation sweeps within 48 hours of intake.</p>
               <p className="mb-md"><strong>Procedure:</strong> Clinicians reconcile all discharge records, enter list reconciliation in EHR, and report exceptions to clinical supervisor immediately.</p>
@@ -24,7 +24,7 @@ export function SurveyorViewerScreen() {
         </div>
 
         <aside className="grid content-start gap-lg desktop:col-span-4" aria-label="Survey checklist">
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md flex items-center gap-sm">
               <ShieldCheck aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
               Compliance Checklist
@@ -44,7 +44,7 @@ export function SurveyorViewerScreen() {
             </div>
           </section>
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md flex items-center gap-sm">
               <FileText aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
               Policy Metadata

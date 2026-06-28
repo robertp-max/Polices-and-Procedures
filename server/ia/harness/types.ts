@@ -171,6 +171,29 @@ export interface ModelChatResult {
   runtimeMode: BradRuntimeMode | NolanRuntimeMode;
   /** Mock adapters set this so the UI never presents mock output as live Gemini. */
   synthetic: boolean;
+  /** Structured internal references the UI renders as clickable document links. */
+  references?: BradReference[];
+  /** Broad critical-incident track the message routed to (diagnostics + UI hint). */
+  track?: string;
+}
+
+/* ─── Internal reference (clickable document link metadata) ──────────────────
+   Brad attaches these so the chat UI can render references as interactive links
+   that resolve to a real policy/workflow/form/help/event document. The UI
+   resolver decides if each is openable; unresolved ones render as plain text. */
+export type BradReferenceType = 'policy' | 'workflow' | 'form' | 'help' | 'event';
+
+export interface BradReference {
+  /** Resolver hint — the document family this reference belongs to. */
+  type: BradReferenceType;
+  /** Representative document ID (resolver tries exact-ID then title match). */
+  id: string;
+  /** Human title shown in the link. */
+  title: string;
+  /** Optional section/anchor within the document. */
+  section?: string;
+  /** Human reference-family label (e.g. "Incident Reporting"). */
+  family?: string;
 }
 
 export interface BradModelAdapter {

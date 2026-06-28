@@ -126,8 +126,15 @@ const eventMetricsDerived: readonly MetricTileData[] = eventMetrics.map((tile) =
 
 export function EventsBoardScreen() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<'board' | 'evidence'>('board');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab: 'board' | 'evidence' = searchParams.get('tab') === 'evidence' ? 'evidence' : 'board';
+  const setActiveTab = (tab: 'board' | 'evidence') => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set('tab', tab);
+      return next;
+    });
+  };
   const [activeFilter, setActiveFilter] = useState(() => {
     const b = getBucketFromParams(searchParams);
     // visible pre-filter if bucket param matches a known filter label
@@ -151,7 +158,7 @@ export function EventsBoardScreen() {
       <section className="grid gap-md">
         {/* Premium Segmented Tab Control */}
         <div className="flex justify-start">
-          <div className="flex rounded-lg border border-hairline bg-tone-slate-bg/30 p-xs gap-xs">
+          <div className="flex rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset/30 p-xs gap-xs">
             <button
               onClick={() => setActiveTab('board')}
               className={cx(
@@ -178,7 +185,7 @@ export function EventsBoardScreen() {
         </div>
 
         {activeTab === 'board' && (
-          <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-card bg-surface p-md shadow-rest">
+          <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-md overflow-hidden shadow-rest">
             <div aria-label="Event status filters" className="flex flex-wrap gap-sm">
               {eventFilters.map((filter) => {
                 const Icon = filter.icon;
@@ -226,7 +233,7 @@ export function EventsBoardScreen() {
           </aside>
         </section>
       ) : (
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+        <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest">
           <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
             <div>
               <h2 className="text-h2 font-medium text-ink">Evidence and status signals</h2>

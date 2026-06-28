@@ -1,7 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, FileSearch, Loader2, PencilLine, Send, Sparkles } from 'lucide-react';
+import { AlertTriangle, Building2, CalendarDays, FileSearch, Hash, Loader2, PencilLine, Send, Sparkles } from 'lucide-react';
 import { bradApi, type BradReference } from '@/v6/screens/brad/bradApi';
+import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
+import type { BradTrainingFile } from '@/policy/services/calendarApi';
+import { Button, Input, Textarea } from '@/v6/primitives';
+import { DrivePickerModal } from './StudioLanding';
 
 /* ════════════════════════════════════════════════════════════════
    Edit Packet — remediation. Enter the unique ID printed on a
@@ -30,6 +34,8 @@ export function EditPacketRemediation() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [busy, setBusy] = useState(false);
+  const [drivePickerOpen, setDrivePickerOpen] = useState(false);
+  const [selectedDrivePacket, setSelectedDrivePacket] = useState<BradTrainingFile | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // The Studio posts the newest packet ID when one is generated — prefill it.
@@ -46,6 +52,30 @@ export function EditPacketRemediation() {
 
   const idValid = PACKET_ID_RE.test(packetId.trim());
 
+  const loadPacket = () => {
+    if (idValid) {
+      setSelectedDrivePacket(null);
+      setLocked(true);
+      return;
+    }
+    setDrivePickerOpen(true);
+  };
+
+  const loadDrivePacket = (file: BradTrainingFile) => {
+    setSelectedDrivePacket(file);
+    setPacketId(file.name);
+    setLocked(true);
+    setDrivePickerOpen(false);
+  };
+
+  // Derive the associated CES event from the {eventId}-{sequence} packet id.
+  const { event, eventIdPart, sequence } = useMemo(() => {
+    const m = /^(.*)-(\d+)$/.exec(packetId.trim());
+    const eventIdPart = m ? m[1] : '';
+    const sequence = m ? m[2] : '';
+    return { event: eventIdPart ? REGULATORY_EVENTS.find((e) => e.id === eventIdPart) : undefined, eventIdPart, sequence };
+  }, [packetId]);
+
   const send = async () => {
     const content = input.trim();
     if (!content || !locked || busy) return;
@@ -54,7 +84,7 @@ export function EditPacketRemediation() {
     setInput('');
     setBusy(true);
     try {
-      const prompt = `A reviewer is remediating evidence packet ${packetId.trim()}. They submitted a ${kind}: "${content}". Acknowledge it, describe precisely how it would be applied to that packet, flag any compliance risk, and cite the relevant policy/form references.`;
+      const prompt = `A reviewer is remediating evidence packet ${packetId.trim()}${selectedDrivePacket ? ` from Google Drive URL ${selectedDrivePacket.webViewLink}` : ''}. They submitted a ${kind}: "${content}". Acknowledge it, describe precisely how it would be applied to that packet, flag any compliance risk, and cite the relevant policy/form references.`;
       const ans = await bradApi.ask(prompt);
       setMessages((m) => [...m, { role: 'brad', text: ans.text, refs: ans.references, synthetic: ans.synthetic }]);
     } catch (e) {
@@ -74,41 +104,72 @@ export function EditPacketRemediation() {
   return (
     <section className="grid gap-md" data-hash-id="edit-packet" data-route="/evidence" data-template="evidence">
       {/* Packet ID entry */}
-      <div className="rounded-lg border border-hairline bg-surface-glass p-lg shadow-rest">
+      <div className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
         <div className="flex flex-wrap items-end gap-md">
           <label className="grid gap-xs">
             <span className="text-[11px] font-medium uppercase tracking-tag text-muted">Packet ID</span>
-            <input
+            <Input
               value={packetId}
-              onChange={(e) => { setPacketId(e.target.value.toUpperCase()); setLocked(false); }}
+              onChange={(e) => { setPacketId(e.target.value); setLocked(false); }}
               placeholder="qapi_meeting-20260609-10-1"
               aria-label="Packet ID"
-              className="w-[280px] rounded-lg border border-hairline bg-surface px-md py-sm font-mono text-sm text-ink outline-none focus:border-brand-teal"
+              className="w-full max-w-[280px] font-mono text-sm"
             />
           </label>
-          <button
-            type="button"
-            onClick={() => idValid && setLocked(true)}
-            disabled={!idValid || locked}
-            className="flex items-center gap-sm rounded-lg border border-brand-teal bg-brand-teal px-lg py-sm text-sm font-medium text-white enabled:hover:bg-brand-teal-deep disabled:cursor-not-allowed disabled:opacity-45"
+          <Button
+            onClick={loadPacket}
+            disabled={locked}
+            variant="primary"
+            size="sm"
+            iconLeft={<FileSearch className="h-4 w-4" />}
           >
-            <FileSearch className="h-4 w-4" /> {locked ? 'Loaded' : 'Load packet'}
-          </button>
+            {locked ? 'Loaded' : 'Load packet'}
+          </Button>
           {packetId.trim() && !idValid && (
             <span className="flex items-center gap-xs text-xs text-tone-orange-text"><AlertTriangle className="h-3.5 w-3.5" /> Expected format {'{eventId}-{number}'} (printed on the packet cover &amp; footer).</span>
           )}
         </div>
         <p className="mt-sm text-xs text-muted">Find the Packet ID on the cover page and every page footer of a generated packet. Loading it starts a remediation thread with Brad.</p>
+        {drivePickerOpen && (
+          <DrivePickerModal
+            onClose={() => setDrivePickerOpen(false)}
+            onSelect={loadDrivePacket}
+          />
+        )}
       </div>
 
+      {/* Packet summary card (event association is the source of truth) */}
+      {locked && (
+        <div className="grid gap-sm rounded-lg border border-tone-teal-border bg-tone-teal-bg p-md shadow-rest">
+          <div className="flex flex-wrap items-center gap-x-md gap-y-xs">
+            <span className="font-mono text-sm font-medium text-brand-teal-deep break-all">{packetId.trim()}</span>
+            <span className="rounded-full bg-surface px-sm py-[2px] text-[10px] uppercase tracking-tag text-muted">Remediation thread</span>
+          </div>
+          <h3 className="text-h3 font-medium text-ink">{event ? event.title : (eventIdPart === 'mock-training' ? 'Mock training event' : `Event ${eventIdPart || '—'}`)}</h3>
+          {selectedDrivePacket && (
+            <a href={selectedDrivePacket.webViewLink} target="_blank" rel="noreferrer" className="text-xs font-medium text-brand-teal hover:text-brand-teal-deep">
+              Open selected packet in Google Drive
+            </a>
+          )}
+          <div className="flex flex-wrap gap-x-lg gap-y-xs text-xs text-secondary">
+            {event?.date && <span className="inline-flex items-center gap-xs"><CalendarDays className="h-3.5 w-3.5 text-brand-teal" /> {event.date}</span>}
+            {event?.domain && <span className="inline-flex items-center gap-xs"><Building2 className="h-3.5 w-3.5 text-brand-teal" /> {event.domain}</span>}
+            {sequence && <span className="inline-flex items-center gap-xs"><Hash className="h-3.5 w-3.5 text-brand-teal" /> Packet #{sequence}</span>}
+          </div>
+          {!event && eventIdPart && eventIdPart !== 'mock-training' && (
+            <p className="text-xs text-tone-orange-text">This packet's event ({eventIdPart}) isn't in the current CES calendar — corrections still log against the packet ID.</p>
+          )}
+        </div>
+      )}
+
       {/* Chat */}
-      <div className={`grid gap-md rounded-lg border border-hairline bg-surface p-lg shadow-rest ${locked ? '' : 'opacity-55'}`}>
+      <div className={`grid gap-md rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest ${locked ? '' : 'opacity-55'}`}>
         <div className="flex items-center gap-sm">
           <PencilLine className="h-icon-sm w-icon-sm text-brand-teal" />
           <h2 className="text-sm font-medium text-ink">Remediation {locked && <span className="font-mono text-brand-teal-deep">· {packetId.trim()}</span>}</h2>
         </div>
 
-        <div ref={scrollRef} className="grid max-h-[440px] min-h-[220px] content-start gap-sm overflow-auto rounded-lg border border-hairline bg-surface-glass p-md">
+        <div ref={scrollRef} className="grid max-h-[46dvh] min-h-[200px] content-start gap-sm overflow-auto rounded-lg border border-card bg-surface p-md tablet-l:max-h-[440px]">
           {messages.length === 0 && (
             <div className="flex h-full min-h-[180px] flex-col items-center justify-center gap-xs text-center text-sm text-muted">
               <Sparkles className="h-5 w-5 text-brand-teal" />
@@ -116,14 +177,14 @@ export function EditPacketRemediation() {
             </div>
           )}
           {messages.map((m, i) => (
-            <div key={i} className={`max-w-[88%] rounded-lg px-md py-sm text-sm ${m.role === 'user' ? 'justify-self-end bg-tone-teal-bg text-brand-teal-deep' : 'justify-self-start border border-hairline bg-surface text-ink'}`}>
+            <div key={i} className={`max-w-[88%] rounded-lg px-md py-sm text-sm ${m.role === 'user' ? 'justify-self-end bg-tone-teal-bg text-brand-teal-deep' : 'justify-self-start border border-card bg-surface text-ink'}`}>
               {m.role === 'user' && m.kind && <span className="mr-xs rounded-full bg-brand-teal/15 px-sm py-[1px] text-[10px] uppercase tracking-tag text-brand-teal-deep">{m.kind}</span>}
               <span className="whitespace-pre-wrap">{m.text}</span>
               {m.synthetic && <span className="ml-xs align-middle text-[10px] uppercase tracking-tag text-muted">· synthetic</span>}
               {m.refs && m.refs.length > 0 && (
                 <div className="mt-xs flex flex-wrap gap-xs">
                   {m.refs.map((r, j) => (
-                    <button key={j} type="button" onClick={() => openRef(r)} className="rounded-full border border-tone-teal-border bg-tone-teal-bg px-sm py-[1px] text-[10px] text-brand-teal-deep hover:bg-surface-hover">
+                    <button key={j} type="button" onClick={() => openRef(r)} className="rounded-full border border-tone-teal-border bg-tone-teal-bg px-sm py-1 text-xs text-brand-teal-deep hover:bg-surface-hover">
                       {r.title || r.id}
                     </button>
                   ))}
@@ -131,28 +192,29 @@ export function EditPacketRemediation() {
               )}
             </div>
           ))}
-          {busy && <div className="flex items-center gap-xs justify-self-start rounded-lg border border-hairline bg-surface px-md py-sm text-sm text-muted"><Loader2 className="h-4 w-4 animate-spin" /> Brad is reviewing…</div>}
+          {busy && <div className="flex items-center gap-xs justify-self-start rounded-lg border border-card bg-surface px-md py-sm text-sm text-muted"><Loader2 className="h-4 w-4 animate-spin" /> Brad is reviewing…</div>}
         </div>
 
-        {/* Kind chips */}
-        <div className="flex flex-wrap gap-xs">
+        {/* Kind chips (suggestion type) — full touch targets, no tiny pills */}
+        <div className="flex flex-wrap gap-xs" role="group" aria-label="Correction type">
           {KINDS.map((k) => (
             <button
               key={k.id}
               type="button"
               onClick={() => setKind(k.id)}
               title={k.hint}
+              aria-pressed={kind === k.id}
               disabled={!locked}
-              className={`rounded-full border px-md py-xs text-xs transition ${kind === k.id ? 'border-brand-teal bg-tone-teal-bg text-brand-teal-deep' : 'border-card bg-tone-slate-bg text-secondary hover:bg-surface-hover'} disabled:opacity-50`}
+              className={`inline-flex min-h-tap items-center rounded-full border px-md text-sm transition ${kind === k.id ? 'border-brand-teal bg-tone-teal-bg text-brand-teal-deep' : 'border-card bg-tone-slate-bg text-secondary hover:bg-surface-hover'} disabled:opacity-50`}
             >
               {k.label}
             </button>
           ))}
         </div>
 
-        {/* Composer */}
+        {/* Composer — 16px font prevents iOS focus-zoom; stays reachable above the keyboard */}
         <div className="flex items-end gap-sm">
-          <textarea
+          <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(); } }}
@@ -160,16 +222,17 @@ export function EditPacketRemediation() {
             rows={2}
             placeholder={locked ? `Enter a ${kind} for ${packetId.trim()}…` : 'Load a packet first'}
             aria-label="Remediation message"
-            className="min-h-[44px] flex-1 resize-y rounded-lg border border-hairline bg-surface px-md py-sm text-sm text-ink outline-none focus:border-brand-teal disabled:opacity-50"
+            className="text-[16px] text-ink"
           />
-          <button
-            type="button"
+          <Button
             onClick={() => void send()}
             disabled={!locked || busy || !input.trim()}
-            className="flex items-center gap-sm rounded-lg border border-brand-teal bg-brand-teal px-lg py-sm text-sm font-medium text-white enabled:hover:bg-brand-teal-deep disabled:cursor-not-allowed disabled:opacity-45"
+            variant="primary"
+            size="sm"
+            iconLeft={<Send className="h-4 w-4" />}
           >
-            <Send className="h-4 w-4" /> Send
-          </button>
+            Send
+          </Button>
         </div>
       </div>
     </section>

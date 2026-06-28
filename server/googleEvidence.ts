@@ -9,6 +9,7 @@ import {
   type CalendarAttachmentStatus,
 } from './googleCalendar.js';
 import { getRow } from './sync/eventStore.js';
+import { htmlToPdf } from './htmlToPdf.js';
 
 /* ═══════════════════════════════════════════════════════════════
    Google Calendar + Drive evidence orchestration.
@@ -609,14 +610,68 @@ export async function savePacketToEvent(input: SavePacketInput): Promise<SavePac
     : buildEvidenceFolderSegments({ eventId: input.eventId, domain: input.domain, eventDate: input.eventDate, category: 'overview' }).slice(0, 4).concat('Packets');
 
   const folderId = await ensureFolderPath(segments);
-  const safeName = sanitizeFileName(`${input.eventId}-packet.html`);
-  const buffer = Buffer.from(input.html, 'utf8');
-  const res = await uploadOrReplaceFile({ parentId: folderId, name: safeName, mimeType: 'text/html', buffer });
-  log.info('google.packet.saved', { eventId: input.eventId, packetId: input.packetId, fileId: res.fileId, replaced: res.replaced });
+  // Render to a real PDF when a browser is available; fall back to HTML otherwise.
+  const pdf = await htmlToPdf(input.html);
+  const safeName = sanitizeFileName(`${input.eventId}-packet.${pdf ? 'pdf' : 'html'}`);
+  const res = await uploadOrReplaceFile({
+    parentId: folderId, name: safeName,
+    mimeType: pdf ? 'application/pdf' : 'text/html',
+    buffer: pdf ?? Buffer.from(input.html, 'utf8'),
+  });
+  log.info('google.packet.saved', { eventId: input.eventId, packetId: input.packetId, fileId: res.fileId, replaced: res.replaced, format: pdf ? 'pdf' : 'html' });
   return {
     driveFileId: res.fileId,
     driveFolderId: folderId,
     driveFolderPath: segments.join('/'),
+    driveFileUrl: res.webViewLink ?? driveFileUrl(res.fileId),
+    replaced: res.replaced,
+  };
+}
+
+/** Drive folders that back the Evidence-Drive packet libraries. */
+export const MOCK_PACKET_SEGMENTS = [...MOCK_EVIDENCE_SEGMENTS, 'Packets'];
+export const ADMISSION_PACKET_SEGMENTS = ['01_CES', 'Evidence', 'Admission', 'Packets'];
+
+/** Resolve (auto-create) the root folder id for a packet library. */
+export async function resolvePacketLibraryRoot(kind: 'mock' | 'admission'): Promise<string> {
+  if (!env.calendarEvidenceEnabled) {
+    throw new ApiError('validation_error', 'Google Drive evidence is disabled.', 400);
+  }
+  const segments = kind === 'admission' ? ADMISSION_PACKET_SEGMENTS : MOCK_PACKET_SEGMENTS;
+  return ensureFolderPath(segments);
+}
+
+export interface SaveAdmissionPacketInput {
+  packetId: string;
+  title: string;
+  html: string;
+  patientRef?: string;
+}
+
+/**
+ * Save a Patient Admission packet into 01_CES/Evidence/Admission/Packets, using
+ * a stable per-packet filename so re-generating the same packet id replaces it.
+ */
+export async function saveAdmissionPacket(input: SaveAdmissionPacketInput): Promise<SavePacketResult> {
+  if (!env.calendarEvidenceEnabled) {
+    throw new ApiError('validation_error', 'Google Drive evidence is disabled.', 400);
+  }
+  if (!input.packetId) throw new ApiError('validation_error', 'packetId is required.', 400);
+  if (!input.html) throw new ApiError('validation_error', 'Packet html is required.', 400);
+  const folderId = await ensureFolderPath(ADMISSION_PACKET_SEGMENTS);
+  // Render to a real PDF when a browser is available; fall back to HTML otherwise.
+  const pdf = await htmlToPdf(input.html);
+  const safeName = sanitizeFileName(`${input.packetId}.${pdf ? 'pdf' : 'html'}`);
+  const res = await uploadOrReplaceFile({
+    parentId: folderId, name: safeName,
+    mimeType: pdf ? 'application/pdf' : 'text/html',
+    buffer: pdf ?? Buffer.from(input.html, 'utf8'),
+  });
+  log.info('google.admission-packet.saved', { packetId: input.packetId, fileId: res.fileId, replaced: res.replaced, format: pdf ? 'pdf' : 'html' });
+  return {
+    driveFileId: res.fileId,
+    driveFolderId: folderId,
+    driveFolderPath: ADMISSION_PACKET_SEGMENTS.join('/'),
     driveFileUrl: res.webViewLink ?? driveFileUrl(res.fileId),
     replaced: res.replaced,
   };

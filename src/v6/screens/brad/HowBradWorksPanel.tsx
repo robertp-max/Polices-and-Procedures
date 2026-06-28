@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { X, ArrowRight, ChevronRight, ShieldAlert, ShieldCheck, Lock, Eye, GitBranch } from 'lucide-react';
 
@@ -112,7 +112,7 @@ export function HowBradWorksPanel({ open, onClose }: { open: boolean; onClose: (
 
   return (
     <div
-      className="fixed inset-0 z-modal flex items-center justify-center bg-ink/10 p-lg backdrop-blur-sm motion-reduce:backdrop-blur-0"
+      className="fixed inset-0 z-modal flex items-center justify-center bg-ink/20 p-md backdrop-blur-md motion-reduce:backdrop-blur-0"
       onClick={onClose}
       onKeyDown={handleKeyDown}
     >
@@ -121,11 +121,11 @@ export function HowBradWorksPanel({ open, onClose }: { open: boolean; onClose: (
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="grid max-h-[90vh] w-full max-w-2xl gap-lg overflow-y-auto rounded-2xl border border-hairline bg-surface p-xl shadow-hover"
+        className="v6-modal-surface flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-hairline backdrop-blur-md v6-modal-transition v6-modal-transition--rise"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-md">
+        <div className="v6-modal-content flex shrink-0 items-start justify-between gap-md p-xl pb-lg">
           <div>
             <h2 id={titleId} className="text-h2 font-medium text-ink">Built for trusted healthcare operations</h2>
             <p className="mt-1 text-sm font-light text-ink">
@@ -137,92 +137,96 @@ export function HowBradWorksPanel({ open, onClose }: { open: boolean; onClose: (
             type="button"
             onClick={onClose}
             aria-label="Close How Brad works"
-            className="grid h-tap w-tap shrink-0 place-items-center rounded-md bg-canvas text-muted transition hover:bg-tone-teal-bg hover:text-brand-teal focus-visible:outline-none focus-visible:shadow-focus"
+            className="v6-modal-panel grid h-tap w-tap shrink-0 place-items-center rounded-md text-muted transition hover:bg-tone-teal-bg hover:text-brand-teal focus-visible:outline-none focus-visible:shadow-focus"
           >
             <X aria-hidden className="h-icon-sm w-icon-sm" />
           </button>
         </div>
 
-        <p className="text-sm font-light leading-relaxed text-muted">
-          Brad is designed for healthcare compliance work where accuracy, traceability, and control matter. It helps teams generate reports, prepare event packets, draft QAPI minutes, review policies, and identify gaps while keeping protected actions governed by Care Indeed rules.
-        </p>
+        <div className="v6-modal-content min-h-0 flex-1 overflow-y-auto px-xl pb-lg">
+          <div className="grid gap-lg">
+            <p className="text-sm font-light leading-relaxed text-muted">
+              Brad is designed for healthcare compliance work where accuracy, traceability, and control matter. It helps teams generate reports, prepare event packets, draft QAPI minutes, review policies, and identify gaps while keeping protected actions governed by Care Indeed rules.
+            </p>
 
-        {/* Interactive selling points */}
-        <div className="grid gap-md">
-          <div className="grid grid-cols-2 gap-sm" role="tablist" aria-label="Selling points">
-            {SELLING_POINTS.map((p) => {
-              const active = p.id === selectedPoint;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => setSelectedPoint(p.id)}
-                  className={
-                    'flex items-center gap-2 rounded-lg border px-md py-sm text-left text-sm font-medium transition focus-visible:outline-none focus-visible:shadow-focus ' +
-                    (active
-                      ? 'border-brand-teal bg-tone-teal-bg text-brand-teal-deep shadow-rest'
-                      : 'border-hairline bg-canvas text-ink hover:border-brand-teal hover:text-brand-teal')
-                  }
-                >
-                  <p.Icon aria-hidden className="h-icon-sm w-icon-sm shrink-0" />
-                  <span>{p.title}</span>
-                </button>
-              );
-            })}
-          </div>
-          <div className="rounded-lg border border-hairline bg-canvas p-lg text-sm font-light leading-relaxed text-ink" role="region" aria-live="polite">
-            {point.detail}
-          </div>
-        </div>
+            {/* Interactive selling points */}
+            <div className="grid gap-md">
+              <div className="grid grid-cols-1 gap-sm tablet-p:grid-cols-2" role="tablist" aria-label="Selling points">
+                {SELLING_POINTS.map((p) => {
+                  const active = p.id === selectedPoint;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={active}
+                      onClick={() => setSelectedPoint(p.id)}
+                      className={
+                        'flex min-h-row items-center gap-2 rounded-lg border px-md py-sm text-left text-sm font-medium transition focus-visible:outline-none focus-visible:shadow-focus ' +
+                        (active
+                          ? 'border-transparent bg-tone-teal-bg text-brand-teal-deep shadow-rest'
+                          : 'v6-modal-panel border-transparent text-ink hover:text-brand-teal')
+                      }
+                    >
+                      <p.Icon aria-hidden className="h-icon-sm w-icon-sm shrink-0" />
+                      <span>{p.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="v6-modal-panel rounded-lg border border-transparent p-lg text-sm font-light leading-relaxed text-ink" role="region" aria-live="polite">
+                {point.detail}
+              </div>
+            </div>
 
-        {/* Clickable mini flow */}
-        <div className="grid gap-md">
-          <div className="flex flex-col items-stretch gap-1.5 sm:flex-row sm:items-center sm:justify-between">
-            {FLOW_STEPS.map((s, i) => {
-              const active = s.id === selectedStep;
-              return (
-                <div key={s.id} className="flex items-center gap-1.5 sm:flex-1">
-                  <button
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => setSelectedStep(s.id)}
-                    className={
-                      'flex-1 rounded-md border px-2 py-2 text-center text-[11px] font-medium uppercase tracking-tag transition focus-visible:outline-none focus-visible:shadow-focus ' +
-                      (active
-                        ? 'border-brand-teal bg-brand-teal text-on-brand'
-                        : 'border-hairline bg-tone-teal-bg text-brand-teal hover:border-brand-teal')
-                    }
-                  >
-                    {s.label}
-                  </button>
-                  {i < FLOW_STEPS.length - 1 && (
-                    <ArrowRight aria-hidden className="hidden h-icon-sm w-icon-sm shrink-0 text-muted sm:block" />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          <div className="rounded-lg border border-hairline bg-canvas p-lg text-sm font-light leading-relaxed text-ink" role="region" aria-live="polite">
-            <span className="font-medium text-brand-teal-deep">{step.label}: </span>{step.detail}
-          </div>
-        </div>
+            {/* Clickable mini flow */}
+            <div className="grid gap-md">
+              <div className="grid gap-sm tablet-l:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] tablet-l:items-center">
+                {FLOW_STEPS.map((s, i) => {
+                  const active = s.id === selectedStep;
+                  return (
+                    <Fragment key={s.id}>
+                      <button
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() => setSelectedStep(s.id)}
+                        className={
+                          'min-h-row rounded-md border px-sm py-2 text-center text-[11px] font-medium uppercase tracking-tag transition focus-visible:outline-none focus-visible:shadow-focus ' +
+                          (active
+                            ? 'border-transparent bg-brand-teal text-on-brand shadow-rest'
+                            : 'border-transparent bg-tone-teal-bg text-brand-teal shadow-rest hover:text-brand-teal-deep')
+                        }
+                      >
+                        {s.label}
+                      </button>
+                      {i < FLOW_STEPS.length - 1 && (
+                        <ArrowRight key={`${s.id}-arrow`} aria-hidden className="hidden h-icon-sm w-icon-sm shrink-0 text-muted tablet-l:block" />
+                      )}
+                    </Fragment>
+                  );
+                })}
+              </div>
+              <div className="v6-modal-panel rounded-lg border border-transparent p-lg text-sm font-light leading-relaxed text-ink" role="region" aria-live="polite">
+                <span className="font-medium text-brand-teal-deep">{step.label}: </span>{step.detail}
+              </div>
+            </div>
 
-        {/* Status */}
-        <div className="grid gap-md rounded-lg border border-hairline bg-canvas p-lg">
-          <div className="flex items-start gap-2 text-sm">
-            <ShieldAlert aria-hidden className="mt-0.5 h-icon-sm w-icon-sm shrink-0 text-brand-orange" />
-            <span className="font-medium text-brand-orange">MVP: Synthetic PHI only. Real PHI is blocked.</span>
-          </div>
-          <div className="border-t border-hairline pt-md text-sm font-light text-muted">
-            <span className="font-medium text-ink">Production target: </span>
-            Google Vertex AI after BAA, eligible services, security controls, and readiness gate pass.
+            {/* Status */}
+            <div className="v6-modal-panel grid gap-md rounded-lg border border-transparent p-lg">
+              <div className="flex items-start gap-2 text-sm">
+                <ShieldAlert aria-hidden className="mt-0.5 h-icon-sm w-icon-sm shrink-0 text-brand-orange" />
+                <span className="font-medium text-brand-orange">MVP: Synthetic PHI only. Real PHI is blocked.</span>
+              </div>
+              <div className="border-t border-hairline pt-md text-sm font-light text-muted">
+                <span className="font-medium text-ink">Production target: </span>
+                Google Vertex AI after BAA, eligible services, security controls, and readiness gate pass.
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-md">
+        <div className="v6-modal-content flex shrink-0 items-center justify-between gap-md border-t border-hairline p-xl pt-lg">
           <Link
             to="/help/brad-how-brad-works"
             onClick={onClose}

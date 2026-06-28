@@ -131,7 +131,7 @@ export function Cms485AssessmentQuizPage() {
       </div>
 
       {/* Case Tabs / Progress */}
-      <div className="flex items-center justify-between p-3 rounded-lg border border-hairline bg-white overflow-x-auto shadow-sm">
+      <div className="flex items-center justify-between p-3 rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset overflow-x-auto shadow-sm">
         {cms485Cases.map((c, idx) => {
           const isActive = idx === activeCaseIdx;
           const isDone = idx < activeCaseIdx;
@@ -143,7 +143,7 @@ export function Cms485AssessmentQuizPage() {
                     ? "bg-brand-orange border-brand-orange text-white"
                     : isDone
                     ? "bg-tone-teal-bg text-brand-teal border-tone-teal-border"
-                    : "bg-white border-hairline text-muted"
+                    : "bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline text-muted"
                 }`}
               >
                 {isDone ? <Check size={10} /> : idx + 1}
@@ -167,7 +167,7 @@ export function Cms485AssessmentQuizPage() {
           {currentCase.title}
         </span>
         <h1 className="text-2xl font-bold tracking-tight">{currentCase.subtitle}</h1>
-        <p className="text-xs text-slate-200 mt-2 max-w-3xl leading-relaxed">
+        <p className="text-xs text-white/70 mt-2 max-w-3xl leading-relaxed">
           Verify the CMS-485 Plan of Care against the clinical evidence below. Correct all 8 deficiencies to align the plan with CMS Conditions of Participation and pass the audit.
         </p>
       </div>
@@ -176,15 +176,15 @@ export function Cms485AssessmentQuizPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* LEFT PANE: Patient Evidence Folder (5 columns) */}
-        <div className="col-span-12 lg:col-span-5 bg-white border border-hairline rounded-xl shadow-sm overflow-hidden flex flex-col h-[750px]">
+        <div className="col-span-12 lg:col-span-5 bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline rounded-xl shadow-sm overflow-hidden flex flex-col h-[750px]">
           {/* Document Folder Tab Header */}
-          <div className="bg-slate-50 border-b border-hairline p-2 flex gap-1 overflow-x-auto">
+          <div className="bg-surface-glass border-b border-hairline p-2 flex gap-1 overflow-x-auto">
             <button
               onClick={() => setEvidenceTab("overview")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider shrink-0 transition-colors ${
                 evidenceTab === "overview"
-                  ? "bg-brand-teal text-white"
-                  : "text-secondary hover:bg-slate-100"
+                  ? "bg-brand-teal text-on-brand"
+                  : "text-secondary hover:bg-surface-hover"
               }`}
             >
               Overview &amp; Vitals
@@ -193,8 +193,8 @@ export function Cms485AssessmentQuizPage() {
               onClick={() => setEvidenceTab("narratives")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider shrink-0 transition-colors ${
                 evidenceTab === "narratives"
-                  ? "bg-brand-teal text-white"
-                  : "text-secondary hover:bg-slate-100"
+                  ? "bg-brand-teal text-on-brand"
+                  : "text-secondary hover:bg-surface-hover"
               }`}
             >
               Narrative &amp; Notes
@@ -203,8 +203,8 @@ export function Cms485AssessmentQuizPage() {
               onClick={() => setEvidenceTab("meds")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider shrink-0 transition-colors ${
                 evidenceTab === "meds"
-                  ? "bg-brand-teal text-white"
-                  : "text-secondary hover:bg-slate-100"
+                  ? "bg-brand-teal text-on-brand"
+                  : "text-secondary hover:bg-surface-hover"
               }`}
             >
               Meds &amp; Risks
@@ -213,8 +213,8 @@ export function Cms485AssessmentQuizPage() {
               onClick={() => setEvidenceTab("oasis")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider shrink-0 transition-colors ${
                 evidenceTab === "oasis"
-                  ? "bg-brand-teal text-white"
-                  : "text-secondary hover:bg-slate-100"
+                  ? "bg-brand-teal text-on-brand"
+                  : "text-secondary hover:bg-surface-hover"
               }`}
             >
               OASIS Findings
@@ -223,8 +223,8 @@ export function Cms485AssessmentQuizPage() {
               onClick={() => setEvidenceTab("safety")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider shrink-0 transition-colors ${
                 evidenceTab === "safety"
-                  ? "bg-brand-teal text-white"
-                  : "text-secondary hover:bg-slate-100"
+                  ? "bg-brand-teal text-on-brand"
+                  : "text-secondary hover:bg-surface-hover"
               }`}
             >
               Safety &amp; Wound
@@ -238,13 +238,13 @@ export function Cms485AssessmentQuizPage() {
               <div className="space-y-5">
                 <div>
                   <h3 className="text-xs uppercase font-bold text-brand-teal font-mono tracking-wider mb-2">Patient Demographics</h3>
-                  <div className="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-lg border border-hairline font-mono text-secondary">
-                    <div><span className="text-muted">Name:</span> <strong className="text-slate-800">{currentCase.evidence.patientName}</strong></div>
-                    <div><span className="text-muted">Age / Sex:</span> <strong className="text-slate-800">{currentCase.evidence.age} / {currentCase.evidence.gender}</strong></div>
-                    <div><span className="text-muted">HIC / Medicare ID:</span> <strong className="text-slate-800">{currentCase.evidence.patientHIC}</strong></div>
-                    <div><span className="text-muted">MRN:</span> <strong className="text-slate-800">{currentCase.evidence.medicalRecordNumber}</strong></div>
-                    <div><span className="text-muted">SOC Date:</span> <strong className="text-slate-800">{currentCase.evidence.socDate}</strong></div>
-                    <div><span className="text-muted">Cert Period:</span> <strong className="text-slate-800">{currentCase.evidence.certPeriod}</strong></div>
+                  <div className="grid grid-cols-2 gap-4 text-xs bg-surface-glass p-4 rounded-lg border border-hairline font-mono text-secondary">
+                    <div><span className="text-muted">Name:</span> <strong className="text-ink">{currentCase.evidence.patientName}</strong></div>
+                    <div><span className="text-muted">Age / Sex:</span> <strong className="text-ink">{currentCase.evidence.age} / {currentCase.evidence.gender}</strong></div>
+                    <div><span className="text-muted">HIC / Medicare ID:</span> <strong className="text-ink">{currentCase.evidence.patientHIC}</strong></div>
+                    <div><span className="text-muted">MRN:</span> <strong className="text-ink">{currentCase.evidence.medicalRecordNumber}</strong></div>
+                    <div><span className="text-muted">SOC Date:</span> <strong className="text-ink">{currentCase.evidence.socDate}</strong></div>
+                    <div><span className="text-muted">Cert Period:</span> <strong className="text-ink">{currentCase.evidence.certPeriod}</strong></div>
                   </div>
                 </div>
 
@@ -256,8 +256,8 @@ export function Cms485AssessmentQuizPage() {
                         key={v.label}
                         className={`p-3 rounded-lg border flex flex-col text-xs transition-colors ${
                           v.alert
-                            ? "bg-orange-50/50 border-orange-200 text-orange-950"
-                            : "bg-white border-hairline text-secondary"
+                            ? "bg-tone-orange-bg border-tone-orange-border text-tone-orange-text"
+                            : "bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline text-secondary"
                         }`}
                       >
                         <span className="text-[10px] text-muted font-mono">{v.label}</span>
@@ -274,7 +274,7 @@ export function Cms485AssessmentQuizPage() {
 
                 <div>
                   <h3 className="text-xs uppercase font-bold text-brand-teal font-mono tracking-wider mb-2">Discharge Summary Reference</h3>
-                  <div className="bg-slate-50 border border-hairline p-4 rounded-lg text-xs leading-relaxed text-secondary whitespace-pre-line">
+                  <div className="bg-surface-glass border border-hairline p-4 rounded-lg text-xs leading-relaxed text-secondary whitespace-pre-line">
                     {currentCase.evidence.dischargeSummary}
                   </div>
                 </div>
@@ -285,7 +285,7 @@ export function Cms485AssessmentQuizPage() {
               <div className="space-y-5">
                 <div>
                   <h3 className="text-xs uppercase font-bold text-brand-teal font-mono tracking-wider mb-2">Start of Care (SOC) Narrative</h3>
-                  <div className="bg-slate-50 border border-hairline p-4 rounded-lg text-xs leading-relaxed text-secondary whitespace-pre-line font-serif italic">
+                  <div className="bg-surface-glass border border-hairline p-4 rounded-lg text-xs leading-relaxed text-secondary whitespace-pre-line font-serif italic">
                     "{currentCase.evidence.socNarrative}"
                   </div>
                 </div>
@@ -293,7 +293,7 @@ export function Cms485AssessmentQuizPage() {
                 {currentCase.evidence.functionalStatus && (
                   <div>
                     <h3 className="text-xs uppercase font-bold text-brand-teal font-mono tracking-wider mb-2">Functional Status &amp; Mobility</h3>
-                    <div className="bg-slate-50 border border-hairline p-4 rounded-lg text-xs leading-relaxed text-secondary">
+                    <div className="bg-surface-glass border border-hairline p-4 rounded-lg text-xs leading-relaxed text-secondary">
                       {currentCase.evidence.functionalStatus}
                     </div>
                   </div>
@@ -302,7 +302,7 @@ export function Cms485AssessmentQuizPage() {
                 {currentCase.evidence.socialEnvironmental && (
                   <div>
                     <h3 className="text-xs uppercase font-bold text-brand-teal font-mono tracking-wider mb-2">Social &amp; Environmental Factors</h3>
-                    <div className="bg-slate-50 border border-hairline p-4 rounded-lg text-xs leading-relaxed text-secondary">
+                    <div className="bg-surface-glass border border-hairline p-4 rounded-lg text-xs leading-relaxed text-secondary">
                       {currentCase.evidence.socialEnvironmental}
                     </div>
                   </div>
@@ -316,18 +316,18 @@ export function Cms485AssessmentQuizPage() {
                   <h3 className="text-xs uppercase font-bold text-brand-teal font-mono tracking-wider mb-2">Medication Reconciliation List</h3>
                   <div className="space-y-3">
                     {currentCase.evidence.medications.map((med, idx) => (
-                      <div key={idx} className="p-3 bg-slate-50 border border-hairline rounded-lg text-xs space-y-1.5">
+                      <div key={idx} className="p-3 bg-surface-glass border border-hairline rounded-lg text-xs space-y-1.5">
                         <div className="flex justify-between items-start">
-                          <strong className="text-slate-800">{med.name} {med.dose}</strong>
-                          <span className="px-2 py-0.5 rounded text-[9px] font-mono bg-white border border-hairline uppercase text-brand-teal">
+                          <strong className="text-ink">{med.name} {med.dose}</strong>
+                          <span className="px-2 py-0.5 rounded text-[9px] font-mono bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline uppercase text-brand-teal">
                             {med.route} · {med.frequency}
                           </span>
                         </div>
                         <div className="text-[11px] text-secondary">
-                          <span className="font-semibold text-slate-600">Indication:</span> {med.indication}
+                          <span className="font-semibold text-secondary">Indication:</span> {med.indication}
                         </div>
                         {med.reconciliationNote && (
-                          <div className="text-[11px] p-1.5 rounded bg-orange-50 border border-orange-100 text-orange-950 font-mono">
+                          <div className="text-[11px] p-1.5 rounded bg-tone-orange-bg border border-tone-orange-border text-tone-orange-text font-mono">
                             <span className="font-semibold text-brand-orange">Audit Note:</span> {med.reconciliationNote}
                           </div>
                         )}
@@ -346,8 +346,8 @@ export function Cms485AssessmentQuizPage() {
                           risk.severity === "critical"
                             ? "bg-red-50 border-red-200 text-red-950"
                             : risk.severity === "moderate"
-                            ? "bg-orange-50 border-orange-200 text-orange-950"
-                            : "bg-slate-50 border-hairline text-secondary"
+                            ? "bg-tone-orange-bg border-tone-orange-border text-tone-orange-text"
+                            : "bg-surface-glass border-hairline text-secondary"
                         }`}
                       >
                         <ShieldAlert size={16} className="shrink-0 mt-0.5" />
@@ -373,13 +373,13 @@ export function Cms485AssessmentQuizPage() {
                   </p>
                   <div className="space-y-3.5">
                     {currentCase.evidence.oasisFindings.map((finding, idx) => (
-                      <div key={idx} className="p-3 bg-slate-50 border border-hairline rounded-lg text-xs space-y-1.5">
+                      <div key={idx} className="p-3 bg-surface-glass border border-hairline rounded-lg text-xs space-y-1.5">
                         <div>
-                          <strong className="text-slate-800">{finding.item}</strong>
+                          <strong className="text-ink">{finding.item}</strong>
                           <p className="text-brand-teal-deep font-semibold mt-0.5">{finding.response}</p>
                         </div>
                         {finding.conflictNote && (
-                          <div className="p-2 rounded bg-orange-50 border border-orange-100 text-orange-950 font-mono text-[10px] leading-relaxed">
+                          <div className="p-2 rounded bg-tone-orange-bg border border-tone-orange-border text-tone-orange-text font-mono text-[10px] leading-relaxed">
                             <span className="font-bold text-brand-orange uppercase block text-[8px] tracking-wider mb-0.5">
                               ⚠️ Compliance Audit Conflict
                             </span>
@@ -398,7 +398,7 @@ export function Cms485AssessmentQuizPage() {
                 {currentCase.evidence.woundAssessment && (
                   <div>
                     <h3 className="text-xs uppercase font-bold text-brand-teal font-mono tracking-wider mb-2">Wound Assessment Profile</h3>
-                    <div className="bg-slate-50 border border-hairline p-4 rounded-lg text-xs leading-relaxed text-secondary whitespace-pre-line font-mono">
+                    <div className="bg-surface-glass border border-hairline p-4 rounded-lg text-xs leading-relaxed text-secondary whitespace-pre-line font-mono">
                       {currentCase.evidence.woundAssessment}
                     </div>
                   </div>
@@ -407,7 +407,7 @@ export function Cms485AssessmentQuizPage() {
                 {currentCase.evidence.mentalStatus && (
                   <div>
                     <h3 className="text-xs uppercase font-bold text-brand-teal font-mono tracking-wider mb-2">Cognitive &amp; Mental Status</h3>
-                    <div className="bg-slate-50 border border-hairline p-4 rounded-lg text-xs leading-relaxed text-secondary">
+                    <div className="bg-surface-glass border border-hairline p-4 rounded-lg text-xs leading-relaxed text-secondary">
                       {currentCase.evidence.mentalStatus}
                     </div>
                   </div>
@@ -415,7 +415,7 @@ export function Cms485AssessmentQuizPage() {
 
                 <div>
                   <h3 className="text-xs uppercase font-bold text-brand-teal font-mono tracking-wider mb-2">Physician Collaboration Record</h3>
-                  <div className="bg-slate-50 border border-hairline p-4 rounded-lg text-xs leading-relaxed text-secondary font-mono">
+                  <div className="bg-surface-glass border border-hairline p-4 rounded-lg text-xs leading-relaxed text-secondary font-mono">
                     {currentCase.evidence.physicianCollaboration}
                   </div>
                 </div>
@@ -425,23 +425,23 @@ export function Cms485AssessmentQuizPage() {
           </div>
 
           {/* Hidden clues footer helper */}
-          <div className="bg-slate-50 border-t border-hairline p-3 text-[10px] text-muted font-mono leading-relaxed flex items-center gap-2">
+          <div className="bg-surface-glass border-t border-hairline p-3 text-[10px] text-muted font-mono leading-relaxed flex items-center gap-2">
             <BookOpenCheck size={14} className="text-brand-teal shrink-0" />
             <span>Examine all tabs to locate hidden audit traps. Options labeled first in source are correct.</span>
           </div>
         </div>
 
         {/* RIGHT PANE: CMS-485 Auditor Form (7 columns) */}
-        <div className="col-span-12 lg:col-span-7 bg-[#F1F5F9] border border-hairline rounded-xl p-5 shadow-sm space-y-6 overflow-y-auto h-[750px]">
+        <div className="col-span-12 lg:col-span-7 bg-surface-glass border border-hairline rounded-xl p-5 shadow-sm space-y-6 overflow-y-auto h-[750px]">
           
-          <div className="flex justify-between items-center bg-white p-3.5 rounded-lg border border-hairline shadow-sm">
+          <div className="flex justify-between items-center bg-surface-glass backdrop-blur-md shadow-glass-inset p-3.5 rounded-lg border border-hairline shadow-sm">
             <div>
               <span className="text-[9px] font-bold text-brand-orange uppercase tracking-wider font-mono">
                 Audit Progress
               </span>
-              <h2 className="text-sm font-semibold text-slate-800">Plan of Care Compliance Checklist</h2>
+              <h2 className="text-sm font-semibold text-ink">Plan of Care Compliance Checklist</h2>
             </div>
-            <div className="font-mono text-xs text-secondary bg-slate-100 px-3 py-1 rounded border border-hairline">
+            <div className="font-mono text-xs text-secondary bg-surface-glass px-3 py-1 rounded border border-hairline">
               Compliant Boxes: <strong className="text-brand-teal">{compliantCount}</strong> / 8
             </div>
           </div>
@@ -455,34 +455,34 @@ export function Cms485AssessmentQuizPage() {
               return (
                 <div
                   key={field.id}
-                  className={`bg-white rounded-xl border transition-all overflow-hidden ${
+                  className={`bg-surface-glass backdrop-blur-md shadow-glass-inset rounded-xl border transition-all overflow-hidden ${
                     isAudited
                       ? compliant
-                        ? "border-[#10B981] shadow-sm shadow-[#10B981]/15"
-                        : "border-[#F97316] shadow-sm shadow-[#F97316]/15"
-                      : "border-[#E2E8F0] shadow-sm"
+                        ? "border-tone-green-border shadow-sm shadow-tone-green-text/15"
+                        : "border-tone-orange-border shadow-sm shadow-tone-orange-text/15"
+                      : "border-hairline shadow-sm"
                   }`}
                 >
                   {/* Field Header Card */}
-                  <div className="p-4 border-b border-[#E2E8F0] flex items-start justify-between gap-3">
+                  <div className="p-4 border-b border-hairline flex items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="bg-slate-800 text-white font-mono text-[10px] font-bold px-2 py-0.5 rounded tracking-wide">
+                        <span className="bg-brand-teal text-on-brand font-mono text-[10px] font-bold px-2 py-0.5 rounded tracking-wide">
                           {field.formBoxNumber}
                         </span>
-                        <span className="text-xs text-slate-500 font-mono capitalize">
+                        <span className="text-xs text-muted font-mono capitalize">
                           {field.domain.replace("-", " ")}
                         </span>
                       </div>
-                      <h3 className="text-sm font-bold text-[#0D4F4F] mt-1.5">{field.label}</h3>
+                      <h3 className="text-sm font-bold text-ink mt-1.5">{field.label}</h3>
                     </div>
 
                     {isAudited && (
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${
                           compliant
-                            ? "bg-green-50 border-green-200 text-green-700"
-                            : "bg-orange-50 border-orange-200 text-orange-700"
+                            ? "bg-tone-green-bg border-tone-green-border text-tone-green-text"
+                            : "bg-tone-orange-bg border-tone-orange-border text-tone-orange-text"
                         }`}
                       >
                         {compliant ? "Compliant" : "Deficient"}
@@ -491,8 +491,8 @@ export function Cms485AssessmentQuizPage() {
                   </div>
 
                   {/* Options List */}
-                  <div className="p-4 space-y-2 bg-[#FAFBFD]">
-                    <span className="text-[9px] uppercase font-bold text-slate-400 font-mono tracking-wider block mb-1">
+                  <div className="p-4 space-y-2 bg-surface-glass">
+                    <span className="text-[9px] uppercase font-bold text-muted font-mono tracking-wider block mb-1">
                       {field.type === "single-select" ? "Select the single compliant entry:" : "Select all compliant entries:"}
                     </span>
 
@@ -506,19 +506,19 @@ export function Cms485AssessmentQuizPage() {
                           onClick={() => handleSelectOption(field, opt.id)}
                           className={`w-full text-left p-3.5 rounded-lg border text-xs flex items-start gap-3 transition-all ${
                             isSelected
-                              ? "bg-[#E0F7FA] border-brand-teal text-[#0D4F4F] font-semibold"
-                              : "bg-white border-hairline hover:border-brand-teal/20 text-slate-600 shadow-sm"
+                              ? "bg-tone-teal-bg border-tone-teal-border text-brand-teal font-semibold"
+                              : "bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline hover:border-brand-teal/20 text-secondary shadow-sm"
                           }`}
                         >
                           <div
                             className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center text-[10px] font-bold shrink-0 ${
                               isSelected
                                 ? "bg-brand-teal text-white border-brand-teal"
-                                : "border-hairline text-slate-300"
+                                : "border-hairline text-muted"
                             }`}
                           >
                             {field.type === "single-select" ? (
-                              <div className={`w-2 h-2 rounded-full ${isSelected ? "bg-white" : ""}`} />
+                              <div className={`w-2 h-2 rounded-full ${isSelected ? "bg-surface-glass backdrop-blur-md shadow-glass-inset" : ""}`} />
                             ) : (
                               isSelected && <Check size={10} />
                             )}
@@ -530,7 +530,7 @@ export function Cms485AssessmentQuizPage() {
                   </div>
 
                   {/* Action or Feedback Area */}
-                  <div className="p-4 border-t border-hairline bg-slate-50 flex flex-col gap-3">
+                  <div className="p-4 border-t border-hairline bg-surface-glass flex flex-col gap-3">
                     {!isAudited ? (
                       <button
                         type="button"
@@ -543,8 +543,8 @@ export function Cms485AssessmentQuizPage() {
                     ) : (
                       <div className="space-y-3">
                         {/* Audit Note & Verdict */}
-                        <div className="p-3 bg-white border border-hairline rounded-lg text-xs leading-relaxed text-secondary">
-                          <span className="font-bold text-slate-800 font-mono block uppercase text-[9px] tracking-wider mb-0.5">
+                        <div className="p-3 bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline rounded-lg text-xs leading-relaxed text-secondary">
+                          <span className="font-bold text-ink font-mono block uppercase text-[9px] tracking-wider mb-0.5">
                             Audit Clinician Note:
                           </span>
                           {field.auditNote}
@@ -558,8 +558,8 @@ export function Cms485AssessmentQuizPage() {
                               key={opt.id}
                               className={`p-3.5 rounded-lg border text-xs space-y-2 ${
                                 opt.isCorrect
-                                  ? "bg-green-50 border-green-200 text-green-950"
-                                  : "bg-orange-50 border-orange-200 text-orange-950"
+                                  ? "bg-tone-green-bg border-tone-green-border text-tone-green-text"
+                                  : "bg-tone-orange-bg border-tone-orange-border text-tone-orange-text"
                               }`}
                             >
                               <div className="flex justify-between items-start gap-2">
@@ -571,7 +571,7 @@ export function Cms485AssessmentQuizPage() {
                                     {opt.trapTags.map((tag) => (
                                       <span
                                         key={tag}
-                                        className="px-1.5 py-0.5 rounded text-[8px] font-mono bg-white border border-hairline uppercase text-[#F97316]"
+                                        className="px-1.5 py-0.5 rounded text-[8px] font-mono bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline uppercase text-brand-orange"
                                       >
                                         #{tag}
                                       </span>
@@ -592,7 +592,7 @@ export function Cms485AssessmentQuizPage() {
                                   <p className="leading-relaxed">
                                     <span className="font-semibold text-brand-orange">Failure reason:</span> {opt.failureReason}
                                   </p>
-                                  <div className="p-2 rounded bg-white border border-orange-100 text-orange-950 leading-relaxed">
+                                  <div className="p-2 rounded bg-surface-glass backdrop-blur-md shadow-glass-inset border border-tone-orange-border text-tone-orange-text leading-relaxed">
                                     <span className="font-bold uppercase text-[9px] text-red-600 block mb-0.5">
                                       Real-World Consequence:
                                     </span>
@@ -629,10 +629,10 @@ export function Cms485AssessmentQuizPage() {
                               {field.options.map((opt) => (
                                 <div
                                   key={opt.id}
-                                  className="p-3 bg-white border border-hairline rounded-lg text-xs leading-relaxed text-secondary"
+                                  className="p-3 bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline rounded-lg text-xs leading-relaxed text-secondary"
                                 >
                                   <div className="flex justify-between items-center">
-                                    <strong className="text-slate-800">
+                                    <strong className="text-ink">
                                       Option {opt.id} {opt.isCorrect && "(Correct)"}
                                     </strong>
                                     {opt.trapTags && opt.trapTags.length > 0 && (
@@ -651,7 +651,7 @@ export function Cms485AssessmentQuizPage() {
                         {/* Retry interface */}
                         {!compliant && (
                           <div className="flex items-center justify-between pt-2 border-t border-hairline/60">
-                            <span className="text-[10px] text-slate-500 italic leading-none">
+                            <span className="text-[10px] text-muted italic leading-none">
                               This box remains deficient. Please adjust your selections.
                             </span>
                             <button
@@ -660,7 +660,7 @@ export function Cms485AssessmentQuizPage() {
                                 setSelections((prev) => ({ ...prev, [field.id]: [] }));
                                 setAuditedFields((prev) => ({ ...prev, [field.id]: false }));
                               }}
-                              className="inline-flex items-center gap-1 px-3 py-1 border border-tone-orange-border text-brand-orange rounded text-[10px] font-bold uppercase hover:bg-orange-50 transition-colors"
+                              className="inline-flex items-center gap-1 px-3 py-1 border border-tone-orange-border text-brand-orange rounded text-[10px] font-bold uppercase hover:bg-tone-orange-bg transition-colors"
                             >
                               <Repeat size={10} /> Reset Box
                             </button>
@@ -676,14 +676,14 @@ export function Cms485AssessmentQuizPage() {
 
           {/* Submit/Next Case Button */}
           {isCaseFullyCompliant && (
-            <div className="bg-[#E0F7FA] border border-brand-teal p-5 rounded-xl space-y-4">
+            <div className="bg-tone-teal-bg border border-tone-teal-border p-5 rounded-xl space-y-4">
               <div className="flex items-start gap-3">
-                <CheckCircle2 size={24} className="text-[#10B981] shrink-0 mt-0.5" />
+                <CheckCircle2 size={24} className="text-tone-green-text shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="text-sm font-bold text-[#0D4F4F]">
+                  <h3 className="text-sm font-bold text-ink">
                     Case Completed Successfully!
                   </h3>
-                  <p className="text-xs text-[#0D4F4F] mt-1 leading-relaxed">
+                  <p className="text-xs text-secondary mt-1 leading-relaxed">
                     You have successfully corrected all 8 Plan of Care deficiencies for {currentCase.evidence.patientName}. Every box is now fully compliant and audit-proof under Conditions of Participation.
                   </p>
                 </div>
@@ -692,7 +692,7 @@ export function Cms485AssessmentQuizPage() {
               <button
                 type="button"
                 onClick={handleNextCase}
-                className="w-full bg-[#10B981] hover:bg-[#059669] text-white font-bold py-3 px-6 rounded-lg text-xs uppercase tracking-wider transition-colors text-center shadow-md"
+                className="w-full bg-tone-green-text hover:bg-tone-green-border text-on-brand font-bold py-3 px-6 rounded-lg text-xs uppercase tracking-wider transition-colors text-center shadow-md"
               >
                 {activeCaseIdx < cms485Cases.length - 1
                   ? "Proceed to Next Clinical Case"

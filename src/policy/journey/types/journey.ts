@@ -2,7 +2,7 @@
    ROLE-BASED ONBOARDING & COMPETENCY JOURNEY — type model
    Directly aligned with:
      • 42 CFR Part 484 (CMS CoPs for HHAs)
-     • HR-TA-001 through HR-TA-006, HR-TD-001..005, HR-ER-*, CO-HP-*
+     • HR-TA-001 (Recruitment & Hiring Standards), HR-TA-005 (Employee Orientation & Onboarding), HR-TD-001..005, HR-ER-*, CO-HP-*
      • HR-TA-005 Appendices A/B/D/E and HR-TD-003 Appendices A-E
    All identifiers and fields are audit-defensible and SCORM-trackable.
    ═══════════════════════════════════════════════════════════════ */
@@ -23,7 +23,7 @@ export type JourneyRole =
 
 /** Life-cycle phase. Gating is enforced in this order. */
 export type JourneyPhase =
-  | 'PRE_DAY_1'   // Phase 0  — HR-TA-001 §§ 6.4-6.5
+  | 'PRE_DAY_1'   // Phase 0  — HR-TA-001 § 6.4 (Appendix F screening)
   | 'GAO'         // Phase 1  — General Agency Orientation, Days 1-5
   | 'ROLE'        // Phase 2  — Role-specific, Days 1-30
   | 'SUPERVISED'  // Phase 3  — Direct-supervision visits
@@ -48,14 +48,14 @@ export type CompetencyMethod =
   | 'MockSurvey'
   | 'SupervisedVisit';
 
-/** Evidence appendix references (HR-TA-001/004/005 + HR-TD-003). */
+/** Evidence appendix references (HR-TA-001/004/005 + HR-TD-003). Use current policy titles (HR-TA-005 = Employee Orientation & Onboarding). */
 export type EvidenceAppendix =
   | 'F'   // HR-TA-001 Appendix F  — Pre-Employment Screening Checklist
   | 'A'   // HR-TA-003 Appendix A  — OIG/SAM Screening Result Form
   | 'B'   // HR-TA-004 Appendix B  — Licensure Verification Record
   | 'HRTA005_A' // HR-TA-005 Appendix A — General Orientation sign-off
   | 'HRTA005_B' // HR-TA-005 Appendix B — Role-specific sign-off / clearance
-  | 'HRTA005_D' // HR-TA-005 Appendix D — General Orientation Quiz
+  | 'HRTA005_D' // HR-TA-005 Appendix D - General Orientation Quiz
   | 'HRTA005_E' // HR-TA-005 Appendix E — Supervised Visit Form
   | 'HRTD003_A' // HR-TD-003 Appendix A — Annual Competency Evaluation
   | 'HRTD003_C' // HR-TD-003 Appendix C — Remediation Plan
@@ -263,7 +263,7 @@ export interface JourneyProgress {
   supervisedVisitsRequired: number;
   annualCompletePct: number;
   competencyAnnualCompleted: boolean;
-  /** DON has signed HR-TA-005 Appendix B = SATISFACTORY. Authoritative. */
+  /** DON has signed HR-TA-005 Appendix B = SATISFACTORY (Employee Orientation & Onboarding). Authoritative. */
   clearedForIndependentWork: boolean;
   /** All gating gaps closed; DON sign-off is the remaining step. */
   eligibleForClearance: boolean;

@@ -64,9 +64,9 @@ export function GovernanceScreen() {
 
       <section className="grid gap-xl desktop:grid-cols-12">
         <div className="grid content-start gap-lg desktop:col-span-8">
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest overflow-hidden">
             <h3 className="text-h3 font-medium text-ink mb-lg">Policy Distribution by Stage</h3>
-            <div className="rounded-lg bg-tone-slate-bg p-lg">
+            <div className="rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg">
               <div className="flex h-[200px] items-end gap-lg" aria-label="Policy count per stage chart">
                 {chartData.map((point) => (
                   <div className="flex h-full min-w-tap flex-1 flex-col justify-end gap-sm" key={point.label}>
@@ -99,7 +99,7 @@ export function GovernanceScreen() {
             <SurfaceCard card={card} key={card.title} />
           ))}
           {/* Owner + due date mapping confirmation */}
-          <div className="text-xs text-muted mt-xs rounded bg-tone-slate-bg p-md">
+          <div className="text-xs text-muted mt-xs rounded bg-surface-glass backdrop-blur-md shadow-glass-inset p-md">
             <div className="flex items-center gap-xs"><User className="h-icon-xs w-icon-xs" /> Owner: {owner}</div>
             <div className="flex items-center gap-xs mt-1"><Calendar className="h-icon-xs w-icon-xs" /> Derived next review: {dueLabel} (from envelope.createdAt + 1y)</div>
           </div>

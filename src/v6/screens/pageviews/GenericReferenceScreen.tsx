@@ -220,7 +220,7 @@ export function GenericReferenceScreen() {
       <MetricGrid metrics={referenceMetrics} />
 
       {/* PDF / Image Preview Toolbar */}
-      <section className="rounded-lg border border-card bg-surface p-md shadow-rest flex flex-wrap items-center justify-between gap-md sticky top-[88px] z-sticky backdrop-blur-md">
+      <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-md overflow-hidden shadow-rest flex flex-wrap items-center justify-between gap-md sticky top-[88px] z-sticky backdrop-blur-md">
         <div className="flex items-center gap-md">
           <div className="flex items-center gap-xs border-r border-hairline pr-md">
             <Button size="sm" variant="secondary">Zoom Out (-)</Button>
@@ -255,7 +255,7 @@ export function GenericReferenceScreen() {
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
         <div className="grid content-start gap-lg">
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="reference-source-title">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="reference-source-title">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
               <div className="grid gap-sm">
                 <ToneTag tone="teal">Source metadata</ToneTag>
@@ -285,7 +285,7 @@ export function GenericReferenceScreen() {
             </dl>
           </section>
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="mandate-title">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="mandate-title">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
               <div className="grid gap-xs">
                 <h2 className="text-h2 font-medium text-ink" id="mandate-title">
@@ -300,7 +300,7 @@ export function GenericReferenceScreen() {
 
             <div className="grid gap-md tablet-l:grid-cols-3">
               {mandateHighlights.map((highlight) => (
-                <article className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={highlight.label}>
+                <article className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden" key={highlight.label}>
                   <div className="mb-md flex flex-wrap items-center justify-between gap-sm">
                     <h3 className="text-body font-light text-ink">{highlight.label}</h3>
                     <ToneBadge size="sm" status={highlight.status} />
@@ -314,7 +314,7 @@ export function GenericReferenceScreen() {
             </div>
           </section>
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="linked-items-title">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="linked-items-title">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
               <div className="grid gap-xs">
                 <h2 className="text-h2 font-medium text-ink" id="linked-items-title">
@@ -330,7 +330,7 @@ export function GenericReferenceScreen() {
             <DataTable columns={linkedReferenceColumns} label="Linked policies forms and artifacts" rows={linkedReferenceRows} />
           </section>
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="hash-state-title">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="hash-state-title">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
               <div className="grid gap-xs">
                 <h2 className="text-h2 font-medium text-ink" id="hash-state-title">
@@ -365,7 +365,7 @@ export function GenericReferenceScreen() {
             </SurfaceCard>
           ))}
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="source-links-title">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="source-links-title">
             <div className="mb-lg flex items-start gap-md">
               <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
                 <Link2 aria-hidden="true" className="h-icon-md w-icon-md" />
@@ -379,7 +379,7 @@ export function GenericReferenceScreen() {
             </div>
             <div className="grid gap-sm">
               {sourceLinks.map(([label, detail, status]) => (
-                <div className="rounded-md border border-card bg-tone-slate-bg p-md" key={label}>
+                <div className="rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-md" key={label}>
                   <div className="mb-sm flex flex-wrap items-center justify-between gap-sm">
                     <p className="text-tag uppercase tracking-tag text-secondary">{label}</p>
                     <ToneBadge size="sm" status={status} />
@@ -390,7 +390,7 @@ export function GenericReferenceScreen() {
             </div>
           </section>
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="reference-actions-title">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="reference-actions-title">
             <div className="mb-lg flex items-start gap-md">
               <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-orange-bg text-tone-orange-text">
                 <FileCheck2 aria-hidden="true" className="h-icon-md w-icon-md" />
@@ -421,7 +421,7 @@ function HashStateStep({ step }: { step: HashStep }) {
   const Icon = step.icon;
 
   return (
-    <article className="rounded-lg border border-card bg-tone-slate-bg p-lg">
+    <article className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden">
       <div className="mb-md flex items-start justify-between gap-md">
         <span className={cx('grid h-tap w-tap place-items-center rounded-md', toneSoftTileClasses[step.tone])}>
           <Icon aria-hidden="true" className="h-icon-md w-icon-md" />
@@ -436,7 +436,7 @@ function HashStateStep({ step }: { step: HashStep }) {
 
 function MetadataTile({ item }: { item: MetadataItem }) {
   return (
-    <div className="rounded-lg border border-card bg-tone-slate-bg p-lg">
+    <div className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden">
       <dt className="text-tag uppercase tracking-tag text-secondary">{item.label}</dt>
       <dd className="mt-sm break-words text-sm text-ink">
         {item.tone ? <ToneTag tone={item.tone}>{item.value}</ToneTag> : item.value}

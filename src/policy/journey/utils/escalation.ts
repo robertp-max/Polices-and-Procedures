@@ -4,7 +4,7 @@
      HR-TD-003 § 6.3  (competency remediation)
      HR-TA-003 § 6.3  (OIG/SAM)
      HR-TA-004 § 6.2  (license expiration + 120-day pre-renewal)
-     HR-TA-001 § 6.7  (working before screening)
+     HR-TA-001 §6.4 (Appendix F) / §6.7 (working before screening)
 
    Returns a fresh set of escalations each tick. The store merges
    them against already-existing Acknowledged/Resolved tickets so
@@ -50,7 +50,7 @@ export function evaluateEscalations(ctx: EscalationCtx): JourneyEscalation[] {
   for (const emp of ctx.employees) {
     if (emp.terminated) continue;
 
-    /* 1. Worker started before Appendix F complete — HR-TA-001 §6.7 */
+    /* 1. Worker started before Appendix F complete — HR-TA-001 §6.4 (screening) / §6.7 (violation) */
     if (emp.startDate && !emp.appendixFCleared && new Date(emp.startDate) <= ctx.now) {
       mk(out, `ESC-APXF-${emp.id}`, {
         employeeId: emp.id,
@@ -58,7 +58,7 @@ export function evaluateEscalations(ctx: EscalationCtx): JourneyEscalation[] {
         severity: 'CRITICAL',
         triggerAt: ctx.now.toISOString(),
         action: 'Immediate admin leave. Document incident. Counsel supervisor.',
-        policyRef: 'HR-TA-001 §6.7',
+        policyRef: 'HR-TA-001 §6.4',
       });
     }
 

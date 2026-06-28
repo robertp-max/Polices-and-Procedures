@@ -28,7 +28,8 @@ export type V6RouteTemplate =
   | 'module-player'
   | 'profiles'
   | 'reference-viewer'
-  | 'reports';
+  | 'reports'
+  | 'ai-review';
 
 export interface V6RouteDefinition {
   description: string;
@@ -65,7 +66,9 @@ export const V6_ROUTES = [
   { path: '/evidence', hashId: 'evidence-center', template: 'evidence', group: 'CES', title: 'Evidence Center', description: 'Evidence repository for files, hashes, signatures, and audit metadata.' },
   { path: '/evidence/intake', hashId: 'evidence-intake', template: 'evidence', group: 'CES', title: 'Brad Evidence Intake', description: 'Brad Evidence Intake inside Evidence Center: upload source exports, resolve created-date filing, classify and dedupe, file to Drive, run full-population review, and prepare draft forms, agendas, tasks, and packets for human approval.' },
   { path: '/evidence/packet-studio', hashId: 'evidence-packet-studio', template: 'evidence', group: 'CES', title: 'Evidence Packet Studio', description: 'Brad-assisted evidence packet generator inside Evidence Center for event packets, source mapping, preview, and export readiness.' },
+  { path: '/evidence/admission-packet-preview', hashId: 'admission-packet-preview', template: 'evidence', group: 'CES', title: 'Patient Admission Packet Preview', description: 'DefenCIble preview route for the fixed multi-page patient admission packet template.' },
   { path: '/ces/reports', hashId: 'ces-reports', template: 'reports', group: 'CES', title: 'CES Reports', description: 'Compliance Execution reports for posture, packets, approvals, and throughput.' },
+  { path: '/compliance/review', hashId: 'ai-compliance-review', template: 'ai-review', group: 'CES', title: 'AI Compliance Review', description: 'Controlled Vertex AI / Gemini harness for secure evidence, admission packet, and compliance review with PHI guardrails and hash-chain audit.' },
   { path: '/calendar/event/:eventId/task/:taskId', hashId: 'mobile-incident', template: 'detail', group: 'CES', title: 'Mobile Incident', description: 'Mobile task execution surface for evidence capture and field completion.' },
   { path: '/my-tasks', hashId: 'my-tasks', template: 'board', group: 'CES', title: 'My Tasks', description: 'Personal task board for assigned compliance and operations work.' },
   { path: '/pm/my-tasks', hashId: 'pm-my-tasks', template: 'board', group: 'CES', title: 'PM My Tasks', description: 'PM personal task board (V1 parity).' },
@@ -77,6 +80,7 @@ export const V6_ROUTES = [
   { path: '/taxonomy', hashId: 'taxonomy', template: 'framework', group: 'Taxonomy', title: 'Taxonomy', description: 'Regulatory framework taxonomy (V1 alias to Framework for domains, policies, forms, workflows, and authorities).' },
   { path: '/framework/achc-survey', hashId: 'achc-survey', template: 'achc-survey', group: 'Taxonomy', title: 'ACHC Survey', description: 'ACHC survey alignment surface for policy support and open evidence gaps.' },
   { path: '/framework/achc-survey/crosswalk', hashId: 'achc-crosswalk', template: 'achc-crosswalk', group: 'Taxonomy', title: 'ACHC Crosswalk', description: 'ACHC, CMS, Title 22, policy, form, and evidence crosswalk.' },
+  { path: '/framework/hh-evidence-map', hashId: 'hh-evidence-map', template: 'matrix', group: 'Taxonomy', title: 'HH Tag Evidence Map', description: 'Spreadsheet-backed HH standard to policy section evidence map with anchors, confidence, duplicates, and review flags.' },
   { path: '/library', hashId: 'policy-library', template: 'matrix', group: 'Taxonomy', title: 'Policy Library', description: 'Policy library matrix for active agency policies and survey-ready context.' },
   { path: '/library/:policyId', hashId: 'policy-detail', template: 'detail', group: 'Taxonomy', title: 'Policy Detail', description: 'Policy detail with version metadata, required codes, section tabs, and appendices.' },
   { path: '/policy-approvals', hashId: 'policy-approvals', template: 'board', group: 'Taxonomy', title: 'Policy Approvals', description: 'Policy approval queue for lifecycle review, approval authority, and publication readiness.' },
