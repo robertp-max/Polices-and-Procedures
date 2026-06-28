@@ -30,6 +30,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import type { ActionType, RiskLevel, StudioOutputType } from './types.js';
+import { PATIENT_SEXUAL_MISCONDUCT_RE } from './brad/sexualMisconductPatterns.js';
 
 /* ─────────────────────────────────────────────────────────────
    Taxonomy
@@ -144,7 +145,7 @@ const RULES: ScenarioRule[] = [
       /\b(murder(ed)?|homicide|killed|shot dead)\b/i,
       /\b(patient|client|pt\.?)[^.]{0,60}\b(dead|deceased|expired|died|death)\b/i,
       /\bfound[^.]{0,40}\b(dead|deceased|unresponsive|not breathing)\b/i,
-      /\b(sentinel event|never event|wrong[- ]patient|wrong[- ]site|unexpected death)\b/i,
+      /\b(sentinel event|never event|wrong[- ]site|wrong[- ]patient\s+(procedure|surgery|treatment|medication|med|dose|blood)|unexpected death)\b/i,
       /\b(major permanent (loss of (function|limb)|disability))\b/i,
       /\b(suicide|attempted suicide|self[- ]harm(?!\s+warning))\b/i,
     ],
@@ -188,20 +189,31 @@ const RULES: ScenarioRule[] = [
       /\b(i cannot|i can't|can't get out|cannot get out|won't let me out)\b/i,
       /\b(my client|the client|patient|family)\b[^.]{0,60}\b(chasing|chase|after me|has a (knife|gun|weapon))\b/i,
       /\b(trying to hurt|attacking|coming at|threatening)\b[^.]{0,40}\b(me|us|the (nurse|clinician|aide|therapist))\b/i,
+      // Patient-originated sexual misconduct (advances, comments, harassment,
+      // inappropriate touching, exposure, boundary violations). Routes here so it
+      // is urgent and never hits the cold fallback; bradIncidentProfiles then
+      // splits assault (trauma-informed) vs. non-contact harassment (boundary script).
+      PATIENT_SEXUAL_MISCONDUCT_RE,
     ],
-    captureWords: /\b(assaulted|threatened|stalked|robbed|weapon|gun|knife|hostile|unsafe|accident|crash|needle|stick|exposure|impaired|drunk|blocks?|refus.*entry|chasing|trapped|not safe|has a knife|has a gun)\b/gi,
+    captureWords: /\b(assaulted|threatened|stalked|robbed|weapon|gun|knife|hostile|unsafe|accident|crash|needle|stick|exposure|impaired|drunk|blocks?|refus.*entry|chasing|trapped|not safe|has a knife|has a gun|sexual\w*|advances?|harass\w*|inappropriate\w*|flirt\w*|propos\w*|expose\w*|boundar\w*|touched)\b/gi,
   },
   {
     category: 'ABUSE_NEGLECT',
     priority: 85,
     patterns: [
-      /\b(elder abuse|patient abuse|neglect(ed)?|exploitation|financial exploitation)\b/i,
-      /\b(abandon(ed|ment))\b/i,
-      /\b(bruise|injury)[^.]{0,40}\b(unexplained|suspicious|inconsistent)\b/i,
+      /\b(elder|patient|child|sexual|physical|verbal|emotional|financial)\s+abuse\b/i,
+      // Verb / noun forms: abuse, abused, abuses, abusing, abuser, abusive.
+      /\babus(e|ed|es|ing|er|ive)\b/i,
+      // Neglect: neglect, neglected, neglecting, neglectful, neglects.
+      /\bneglect(s|ed|ing|ful)?\b/i,
+      /\b(exploit(s|ed|ing|ation)?|financial exploitation)\b/i,
+      /\b(abandon(ed|ment|ing|s)?)\b/i,
+      /\b(mistreat(s|ed|ment|ing)?|maltreat\w*)\b/i,
+      /\b(bruise|injury|mark|welt)[^.]{0,40}\b(unexplained|suspicious|inconsistent)\b/i,
       /\b(aps|adult protective services)\b/i,
-      /\b(mandated report|mandatory report)\b/i,
+      /\b(mandated report|mandatory report(ing)?)\b/i,
     ],
-    captureWords: /\b(abuse|neglect|exploitation|abandon\w*|APS)\b/gi,
+    captureWords: /\b(abus\w*|neglect\w*|exploit\w*|abandon\w*|mistreat\w*|APS)\b/gi,
   },
   {
     category: 'ADVERSE_EVENT',
@@ -212,10 +224,12 @@ const RULES: ScenarioRule[] = [
       /\b(adverse event|adverse drug|near miss|incident report)\b/i,
       /\b(pressure (ulcer|injury)|hospital[- ]?acquired)\b/i,
       /\b(unplanned (hospitalization|admission|re-?admission))\b/i,
-      /\b(property damage|damaged|broke|broken (lamp|tv|item|belonging)|lost (item|property|belonging) during visit)\b/i,
+      /\bproperty damage\b/i,
+      /\b(broke|broken|cracked|smashed|damaged|spilled on|ruined|knocked over)\b[^.]{0,15}\b(lamp|tv|television|furniture|window|dish|dishes|vase|chair|table|glasses|phone|device|belonging|property|item|wall|floor|carpet|door|picture|frame)\b/i,
+      /\blost (item|property|belonging) during visit\b/i,
       /\b(missing (med|medication|pill|count is short|meds? short))\b/i,
     ],
-    captureWords: /\b(med error|fall|adverse|near miss|pressure ulcer|hospitalization|property damage|damaged|broke|missing med)\b/gi,
+    captureWords: /\b(med error|fall|adverse|near miss|pressure ulcer|hospitalization|property damage|broke|missing med)\b/gi,
   },
   {
     category: 'PRIVACY_BREACH',
@@ -510,28 +524,36 @@ const PLAYBOOKS: Record<ScenarioCategory, Omit<ScenarioMapping, 'confidence' | '
     summary: 'Suspected abuse, neglect, or exploitation. Mandated reporting laws apply — report within jurisdictional timelines.',
     headline: 'SUSPECTED ABUSE / NEGLECT — mandated reporting applies. Do not investigate; report first, then document.',
     immediateActions: [
-      'If patient is in immediate danger, call 911.',
-      'Do NOT interrogate the patient or accused party — this is not an investigation.',
-      'Notify Adult Protective Services (APS) within the state-mandated window.',
-      'Notify law enforcement if statute requires (varies by state and victim type).',
-      'Notify Administrator and Compliance Officer within 1 hour.',
-      'Document observations objectively — no conclusions or opinions.',
-      'Open Incident Report within 24 hours.',
-      'Attach to QAPI agenda for trend review and policy reinforcement.',
+      'If the patient is in immediate danger, call 911 first, then make sure the patient is safe.',
+      'Notify your supervisor, the Administrator/DON, and the Compliance Officer immediately (within 1 hour).',
+      'Do NOT interrogate the patient or the accused party — this is not your investigation to run.',
+      'Notify Adult Protective Services (APS) within the state-mandated reporting window.',
+      'Notify law enforcement if your state statute requires it (varies by state and victim type).',
+      'Document your observations objectively — facts and direct quotes only, no conclusions or opinions about fault.',
+      'Preserve any related evidence; do not rearrange or clean up the scene.',
+      'Open an Incident Report within 24 hours and complete the Abuse / Neglect / Exploitation reporting workflow.',
+      'Bring it to QAPI for trend review and corrective action.',
     ],
     requiredWorkflows: [
       { id: 'CL-WF-22', label: 'Abuse / Neglect / Exploitation Reporting' },
+      { id: 'WF-INCIDENT-REPORT', label: 'Incident / Adverse Event Report (24-hr intake)' },
+      { id: 'WF-GRIEVANCE-INTAKE', label: 'Complaint / Grievance Intake' },
     ],
     complianceNotes: [
       'Mandatory reporting is state-specific; most states require reporting within 24–72 hours.',
-      'CoP §484.50(c) — patient rights include freedom from abuse, neglect, exploitation.',
-      'Never document opinions about guilt — only observations.',
+      'CoP §484.50(c) — patient rights include freedom from abuse, neglect, and exploitation.',
+      'Never document opinions about guilt — only objective observations.',
+      'Escalate through the abuse/neglect/exploitation and grievance/adverse-event process; treat external reporting timelines as hard deadlines.',
     ],
     domains: ['Risk', 'Compliance', 'Clinical'],
     relatedPolicies: [
-      { id: 'CL-PR-006', name: 'Abuse, Neglect & Exploitation Reporting', domain: 'Clinical' },
       { id: 'CL-PR-001', name: 'Patient Rights & Responsibilities', domain: 'Clinical' },
+      { id: 'CL-PR-006', name: 'Abuse, Neglect & Exploitation Reporting', domain: 'Clinical' },
+      { id: 'CL-MR-001',  name: 'Mandatory Reporting', domain: 'Clinical', isDomainFallback: true },
       { id: 'OP-PA-001', name: 'Patient Complaint & Grievance Resolution', domain: 'Operations' },
+      { id: 'RM-INC-001', name: 'Incident / Adverse Event Reporting', domain: 'Risk' },
+      { id: 'QA-QAPI-001', name: 'QAPI / Corrective Action', domain: 'QAPI' },
+      { id: 'CL-DOC-001', name: 'Documentation Requirements', domain: 'Clinical', isDomainFallback: true },
     ],
     missingInformation: [
       'Is the patient in immediate physical danger?',

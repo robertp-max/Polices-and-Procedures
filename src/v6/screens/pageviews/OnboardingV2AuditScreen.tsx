@@ -65,7 +65,7 @@ export function OnboardingV2AuditScreen() {
 
       <section className="grid gap-lg desktop:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
         <div className="grid content-start gap-md">
-          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
             <div className="mb-md flex flex-wrap items-start justify-between gap-md">
               <div>
                 <h3 className="text-h3 font-medium text-ink">Verification Audit Trail</h3>
@@ -77,7 +77,7 @@ export function OnboardingV2AuditScreen() {
         </div>
 
         <aside className="grid content-start gap-md" aria-label="Overrides check">
-          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md flex items-center gap-sm">
               <ScanSearch aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
               Active Overrides
@@ -87,7 +87,7 @@ export function OnboardingV2AuditScreen() {
             </p>
             <div className="grid gap-sm">
               {(snap.overrides || []).slice(0,2).map((ov: any, idx: number) => (
-                <div className="rounded-md bg-tone-slate-bg p-md" key={ov.id || idx}>
+                <div className="rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md" key={ov.id || idx}>
                   <div className="flex items-center justify-between mb-sm">
                     <span className="text-sm font-medium text-ink">{ov.subjectId} Override</span>
                     <ToneBadge size="sm" status="review-required" />
@@ -96,12 +96,12 @@ export function OnboardingV2AuditScreen() {
                 </div>
               ))}
               {(!snap.overrides || snap.overrides.length === 0) && (
-                <div className="rounded-md bg-tone-slate-bg p-md text-xs text-muted">No active overrides in current seed snapshot.</div>
+                <div className="rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md text-xs text-muted">No active overrides in current seed snapshot.</div>
               )}
             </div>
           </section>
 
-          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md flex items-center gap-sm">
               <FileText aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
               Audit Integrity Check

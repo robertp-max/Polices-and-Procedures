@@ -1,0 +1,124 @@
+TRANSCRIPT 2 — HIGH-PLUS ACUITY
+Referral Source: Physician Office (Direct MD Call)
+Date: 06/24/2025 | Time: 12:47 PM PST
+Call Duration: 22 minutes
+
+[CALL INITIATED — INBOUND]
+
+CI: Care Indeed Home Health, intake. This is Rachel.
+
+CALLER: Rachel, hi, this is Dr. Svetlana Petrova, I'm a family medicine physician at Peninsula Family Practice in Burlingame. I need to set up home health for one of my patients — she's a complicated lady. I saw her in clinic this morning and I almost sent her to the ER but she's refusing hospitalization.
+
+CI: I understand, Dr. Petrova. Let me take the referral right now. What's the patient's name?
+
+CALLER: Beatrice Lorraine Hawthorne-St. Claire. She goes by Bea.
+
+CI: Spelling on the last name?
+
+CALLER: H-A-W-T-H-O-R-N-E, hyphen, S-T, period, C-L-A-I-R-E. I know, it's a mouthful.
+
+CI: Got it. Date of birth?
+
+CALLER: March 28, 1944. She's 81.
+
+CI: Address?
+
+CALLER: 1920 Easton Drive, Burlingame, California 94010. It's a single-story house. She lives alone.
+
+CI: Alone at 81 — any family or support?
+
+CALLER: Her husband passed away two years ago. She has one daughter, Claire Fontaine, who lives in Marin — San Rafael. Claire's phone is (415) 555-0613. Claire works full-time but she comes down on weekends. There's also a housekeeper who comes Tuesdays and Fridays — name is Marta, I don't have her last name — she does cleaning and grocery shopping. No formal caregiver in the home.
+
+CI: Got it. What's Bea's phone number?
+
+CALLER: Her landline is (650) 555-0923. She doesn't have a cell phone. She thinks cell phones cause brain cancer — her words, not mine. She's got very strong opinions about a lot of things.
+
+CI: [laughs] Noted. What's going on with her today, Dr. Petrova?
+
+CALLER: Okay so Bea came in this morning because her legs are swelling and she's been having increasing shortness of breath for about two weeks. She's got a known history of congestive heart failure — systolic, EF was 30 percent on echo in January. She's NYHA Class III on a good day, but right now she's looking more like Class IV. She's gained 11 pounds in the last two weeks — her dry weight is about 135 and she was 146 on my scale today. Her blood pressure was 178 over 96, heart rate 104 and irregular — she's got chronic atrial fibrillation — and her oxygen sat was 88 percent on room air. I put her on 2 liters in the office and she came up to 93.
+
+CI: And she's refusing admission?
+
+CALLER: Flat out refusing. She told me — and I'm quoting — "I am not going back to that hospital, they nearly killed me last time with that catheter infection, and I would rather die in my own bed with my cat than in that miserable place." She was hospitalized in February for the same thing — CHF exacerbation — and she developed a CAUTI from a Foley and a C. diff infection from the antibiotics. She was in the hospital for twelve days and then a SNF for another ten. It was traumatic for her. I understand her feelings, honestly.
+
+CI: I understand too. So we're managing an acute CHF decompensation at home.
+
+CALLER: Exactly. I'm going to treat her aggressively outpatient. I've bumped her furosemide from 40 mg daily to 80 mg twice a day, added a metolazone 2.5 mg on Monday, Wednesday, and Friday before the furosemide — synergistic diuresis. I want daily weights, daily nursing visits for the first week to monitor her fluid status, electrolytes, vital signs, oxygen, and mental status. She needs a BMP drawn on day three and day seven — I'm especially worried about potassium and creatinine with this aggressive diuresis. If her creatinine goes above 2.5 or her potassium drops below 3.0, I want to be called immediately. If her weight doesn't drop by at least three pounds in the first five days, call me and we may need to discuss IV diuretics at home or I'll have to push harder on the hospitalization.
+
+CI: Got it — this is essentially ICU-level monitoring at home. We can do this. Let me get the full picture. What's her complete medical history?
+
+CALLER: So. Systolic heart failure, EF 30%, ischemic cardiomyopathy from an MI in 2018. Chronic atrial fibrillation — she was on warfarin for years but she was non-compliant with the INR checks so her cardiologist switched her to apixaban, but — and this is important — she sometimes forgets to take the apixaban, and her daughter found the bottles and said she was missing multiple doses. So stroke risk is real. Coronary artery disease — she had two stents placed in 2018, on dual antiplatelet at the time, now just aspirin since she's on apixaban. Hypertension — poorly controlled, honestly, because she doesn't like taking pills. Type 2 diabetes — on metformin and glipizide, her last A1c was 8.9 in April. CKD stage 3B — GFR was 38 in April, creatinine 1.5, but I bet it's worse today with the fluid overload. Moderate aortic stenosis — being followed by cardiology, not yet surgical. COPD — mild, she was a social smoker decades ago. Hypothyroidism — on levothyroxine. Osteoporosis with a T12 compression fracture from a fall last year — she wears a TLSO brace intermittently but she hates it and usually doesn't wear it. Depression — lost her husband, it hit her hard. She's on mirtazapine but I don't think it's doing enough. Macular degeneration — bilateral, wet type left eye, she's getting Eylea injections — so her vision is impaired, which affects her medication management, her ability to read her scale, her glucose monitor, everything.
+
+CI: That's quite a list. How's her cognition?
+
+CALLER: That's the thing I'm most worried about beyond the heart failure. She was sharp as a tack until about six months ago. She was a retired federal judge — U.S. District Court, Northern District of California. Brilliant woman. But her daughter has been telling me she's noticing lapses. Bea is repeating stories, she left the stove on twice last month, she's mismanaging her medications — Claire found pills scattered on the kitchen counter, some in the wrong bottles, and a week's worth of glipizide untouched. I did a MoCA today and she scored 19 out of 30. That's a significant drop from her baseline. I'm concerned about early vascular dementia given her cardiovascular risk factors. I've ordered an MRI brain and a neuropsych evaluation but those won't happen for weeks. In the meantime, she's managing a complex medication regimen alone with impaired vision and declining cognition. It's a disaster waiting to happen.
+
+CI: This is exactly why she needs us. Tell me about her medications.
+
+CALLER: Okay, this is the list as of today — I reconciled it in clinic:
+
+One — Furosemide 80 mg twice a day. That's the new dose as of today. Two — Metolazone 2.5 mg Monday Wednesday Friday, thirty minutes before the morning furosemide. Three — Potassium chloride 40 mEq daily — was on 20, I doubled it with the increased diuresis. Four — Carvedilol 25 mg twice a day. Heart failure. Five — Sacubitril-valsartan, Entresto, 49/51 mg twice a day. Heart failure — she was recently uptitrated. Six — Apixaban 5 mg twice a day. A-fib. Compliance is a problem. Seven — Aspirin 81 mg daily. CAD. Eight — Atorvastatin 80 mg at bedtime. Lipids/CAD. Nine — Metformin 1000 mg twice a day. Diabetes — I need to watch this with the creatinine. Ten — Glipizide 10 mg twice a day. Diabetes — and she's not taking it consistently. Eleven — Levothyroxine 75 mcg daily on empty stomach thirty minutes before food. Thyroid. Twelve — Mirtazapine 15 mg at bedtime. Depression, appetite. Thirteen — Alendronate 70 mg weekly, Sunday morning, on empty stomach with full glass of water, sit upright for thirty minutes. Osteoporosis. Her daughter supervises this one on Sundays. Fourteen — Calcium 600 mg with Vitamin D 400 IU twice a day. Bone health. Not on the same day as alendronate. Fifteen — Tiotropium Spiriva 18 mcg inhaled daily. COPD. Sixteen — Albuterol MDI 2 puffs every four to six hours as needed. COPD. Seventeen — Acetaminophen 650 mg every six hours as needed. Pain — back and general. No NSAIDs. Eighteen — Polyethylene glycol, MiraLAX, 17 grams daily. Constipation — chronic. Nineteen — Artificial tears, one drop each eye four times daily. Dry eyes/macular degeneration. Twenty — Oxygen, 2 liters continuous — this is NEW as of today. I'm writing the order. She's never been on home O2 before.
+
+CI: Twenty medications. And she's managing these alone with impaired vision and declining cognition.
+
+CALLER: Right. And she has opinions about all of them. She told me the Entresto is "too expensive and probably doesn't work" and that she researched it on the internet. She cross-examined me about the metolazone like I was on the witness stand. She asked me to cite the clinical trial. I'm not kidding. She's declining cognitively but she still has the personality of a federal judge.
+
+CI: [laughs] That's actually a gift — it means she's engaged. We can work with that. Allergies?
+
+CALLER: Sulfonamides — TMP-SMX caused a severe rash and fever, which is why the C. diff situation was so bad because they couldn't use Bactrim for the CAUTI. Codeine — severe nausea and vomiting. Lisinopril — cough, persistent, intolerable.
+
+CI: Functional status?
+
+CALLER: She was baseline independent before this exacerbation — slow, but independent. She drove until six months ago when Claire took the keys away because of the vision. Now she's having significant orthopnea — sleeping in a recliner with three pillows. She told me she can barely walk to the bathroom — maybe 15 feet — without having to stop and catch her breath. Her ankles are like tree trunks — +3 pitting edema to the knees bilaterally. She can't put her shoes on. She's been wearing slippers for a week. She can't bend to put on socks or shoes — between the back brace, the belly, and the swelling. Her appetite is poor — she's eating maybe one meal a day. The housekeeper Marta has been bringing her soup and sandwiches but Bea says she can't eat because "my stomach feels full before I even start" — that's early satiety from the ascites. I didn't tap her but I could feel a fluid wave on exam.
+
+CI: That's significant. Home environment?
+
+CALLER: Single-story ranch house. She's been there 40 years. It's well-maintained — Marta keeps it clean. But it's cluttered with books — she has thousands of books everywhere, stacked on the floor, on tables. Trip hazard. Her bathroom has a tub with no shower — she's been doing sponge baths. No grab bars. No shower chair. Her cat — "Justice" — is a large Maine Coon who apparently likes to lie in walkways. The daughter says the lighting is poor because Bea keeps the curtains drawn. She doesn't want to spend money on "unnecessary things" like a walk-in shower. She owns the house outright, pension income, she's comfortable financially but frugal to the point of it being detrimental.
+
+CI: Is she going to allow us in? Some patients who refuse hospitalization also refuse home health.
+
+CALLER: That's a great question. I had to negotiate with her. She agreed to home health on two conditions — one, she gets to approve which nurse comes to her home, and two, nobody touches her books. I told her that's reasonable. She also said she wants someone who "has read at least one book in the last year and can have an intelligent conversation." That's a direct quote.
+
+CI: We've got some well-read nurses on staff. We'll find a good match. What about the daughter?
+
+CALLER: Claire is highly involved but she feels guilty about not doing more. She's a lawyer — ironic, given her mother was a judge — and she's got a demanding job. She can do weekends. She's very organized and she'll be your best ally for medication management, getting DME ordered, and holding Bea accountable. She wants to be on all calls.
+
+CI: We'll include her. Advance directives?
+
+CALLER: This is interesting. Bea executed an AHCD in 2023 — Claire is the agent. She also has a POLST completed in February 2025 during the hospitalization. The POLST says limited treatment — she wants antibiotics, IV fluids, and cardiac meds, but she does NOT want intubation or mechanical ventilation. She is DNR. She told me today: "I've had a full life. I'm not going on a machine. When it's my time, let me go."
+
+CI: DNR, limited treatment on POLST. That's important context given the severity of her current decompensation.
+
+CALLER: Exactly. And that's partly why I'm sending you instead of fighting her on the hospital. If she decompensates further and doesn't want aggressive intervention, maybe she's better served at home with good monitoring and comfort than in a hospital where she'll be miserable.
+
+CI: Understood. What services are you ordering?
+
+CALLER:
+
+Skilled nursing daily for the first seven days — I cannot emphasize this enough. Daily weights, vitals, edema assessment, lung sounds, SpO2, mental status, medication reconciliation and setup, lab draws on day three and seven, fluid restriction monitoring — I want her on 1.5 liters per day fluid restriction plus 2 grams sodium per day. If she refuses the fluid restriction I need to know.
+After the first week, if she's improving, we can go to three times a week.
+Physical therapy two to three times a week — gentle reconditioning, endurance, fall prevention, safe mobility.
+Occupational therapy two times a week — medication management system, energy conservation, ADL training, home safety modifications.
+Medical social work weekly for four weeks — depression, grief counseling (husband's death), cognitive decline concerns, advanced care planning support, community resources.
+Home health aide three times a week — bathing assist, personal care.
+
+CI: We'll get this started. Do we have a start of care date?
+
+CALLER: Today if possible. Tomorrow at the absolute latest. If she gets through the next 72 hours without crashing, I think we can manage this outpatient. But those first few days are critical.
+
+CI: We'll do our best for today. I'll have the admitting RN call within the hour. Your office number for callback?
+
+CALLER: My direct line is (650) 555-0523. My MA is Dolores, extension 3. Fax is (650) 555-0524. I'll have Dolores fax the orders, face-to-face documentation, and recent labs within the hour.
+
+CI: Dr. Petrova, one more question — did you do the face-to-face yourself today?
+
+CALLER: Yes, I saw her this morning. I'll document the F2F encounter findings — homebound due to severe dyspnea on minimal exertion, lower extremity edema limiting ambulation, functional decline, oxygen-dependent, impaired vision, and cognitive decline making it unsafe to navigate community.
+
+CI: Perfect. We'll take it from here. Thank you, Dr. Petrova.
+
+CALLER: Thank you. And Rachel — find her someone smart. She'll chew up and spit out anyone she doesn't respect.
+
+CI: Understood. We'll send our best.
+
+[CALL ENDED — 01:09 PM]
+

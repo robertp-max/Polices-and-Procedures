@@ -72,104 +72,106 @@ export function EditPacketRemediation() {
   };
 
   return (
-    <section className="grid gap-md" data-hash-id="edit-packet" data-route="/evidence" data-template="evidence">
+    <section className="grid gap-6 animate-fade-in" data-hash-id="edit-packet" data-route="/evidence" data-template="evidence">
       {/* Packet ID entry */}
-      <div className="rounded-lg border border-hairline bg-surface-glass p-lg shadow-rest">
-        <div className="flex flex-wrap items-end gap-md">
-          <label className="grid gap-xs">
-            <span className="text-[11px] font-medium uppercase tracking-tag text-muted">Packet ID</span>
-            <input
-              value={packetId}
-              onChange={(e) => { setPacketId(e.target.value.toUpperCase()); setLocked(false); }}
-              placeholder="qapi_meeting-20260609-10-1"
-              aria-label="Packet ID"
-              className="w-[280px] rounded-lg border border-hairline bg-surface px-md py-sm font-mono text-sm text-ink outline-none focus:border-brand-teal"
-            />
-          </label>
+      <div className="rounded-[32px] border border-transparent bg-white/95 p-8 shadow-xl backdrop-blur-sm">
+        <div className="mb-2 text-[10px] font-medium uppercase tracking-widest text-gray-500">Packet ID</div>
+        <div className="mb-3 flex flex-col gap-4 md:flex-row md:items-center">
+          <input
+            value={packetId}
+            onChange={(e) => { setPacketId(e.target.value.toUpperCase()); setLocked(false); }}
+            placeholder="qapi_meeting-20260609-10-1"
+            aria-label="Packet ID"
+            className="max-w-md flex-1 rounded-[12px] border border-gray-200 bg-gray-50 px-4 py-3 font-mono text-sm text-gray-800 transition-all focus:border-[#007C7A] focus:bg-white focus:outline-none"
+          />
           <button
             type="button"
             onClick={() => idValid && setLocked(true)}
             disabled={!idValid || locked}
-            className="flex items-center gap-sm rounded-lg border border-brand-teal bg-brand-teal px-lg py-sm text-sm font-medium text-white enabled:hover:bg-brand-teal-deep disabled:cursor-not-allowed disabled:opacity-45"
+            className="flex w-full items-center justify-center gap-2 rounded-[12px] bg-[#69A7A3] px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors enabled:hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto"
           >
             <FileSearch className="h-4 w-4" /> {locked ? 'Loaded' : 'Load packet'}
           </button>
           {packetId.trim() && !idValid && (
-            <span className="flex items-center gap-xs text-xs text-tone-orange-text"><AlertTriangle className="h-3.5 w-3.5" /> Expected format {'{eventId}-{number}'} (printed on the packet cover &amp; footer).</span>
+            <span className="flex items-center gap-1 text-xs text-orange-600"><AlertTriangle className="h-3.5 w-3.5" /> Expected format {'{eventId}-{number}'}.</span>
           )}
         </div>
-        <p className="mt-sm text-xs text-muted">Find the Packet ID on the cover page and every page footer of a generated packet. Loading it starts a remediation thread with Brad.</p>
+        <p className="text-xs font-light text-gray-400">Find the Packet ID on the cover page and every page footer of a generated packet. Loading it starts a remediation thread with Brad.</p>
       </div>
 
       {/* Chat */}
-      <div className={`grid gap-md rounded-lg border border-hairline bg-surface p-lg shadow-rest ${locked ? '' : 'opacity-55'}`}>
-        <div className="flex items-center gap-sm">
-          <PencilLine className="h-icon-sm w-icon-sm text-brand-teal" />
-          <h2 className="text-sm font-medium text-ink">Remediation {locked && <span className="font-mono text-brand-teal-deep">· {packetId.trim()}</span>}</h2>
-        </div>
+      <div className="flex min-h-[500px] flex-col rounded-[32px] border border-transparent bg-white/95 p-8 shadow-xl backdrop-blur-sm">
+        <h3 className="mb-6 flex items-center gap-2 font-medium text-teal-800">
+          <PencilLine className="h-5 w-5" /> Remediation {locked && <span className="font-mono text-sm text-[#007C7A]">· {packetId.trim()}</span>}
+        </h3>
 
-        <div ref={scrollRef} className="grid max-h-[440px] min-h-[220px] content-start gap-sm overflow-auto rounded-lg border border-hairline bg-surface-glass p-md">
-          {messages.length === 0 && (
-            <div className="flex h-full min-h-[180px] flex-col items-center justify-center gap-xs text-center text-sm text-muted">
-              <Sparkles className="h-5 w-5 text-brand-teal" />
-              {locked ? 'Describe a correction, feedback, or suggestion below.' : 'Load a packet ID to begin.'}
+        <div ref={scrollRef} className="mb-6 flex flex-1 flex-col justify-end overflow-y-auto rounded-[24px] border border-gray-100 bg-gray-50/50 p-6">
+          {messages.length === 0 ? (
+            <div className="flex h-full min-h-[180px] flex-col items-center justify-center gap-2 text-center text-gray-400">
+              <Sparkles className="h-6 w-6 text-[#007C7A]/70" />
+              <p className="text-sm font-light">{locked ? 'Describe a correction, feedback, or suggestion below.' : 'Load a packet ID to begin.'}</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {messages.map((m, i) => (
+                <div key={i} className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  {m.role === 'brad' && <img src="/apple-icon.png" alt="Brad" className="h-6 w-6 shrink-0 rounded" />}
+                  <div className={`max-w-[80%] rounded-[16px] p-4 text-sm font-light ${m.role === 'user' ? 'bg-[#007C7A] text-white' : 'border border-gray-200 bg-white text-gray-800 shadow-sm'}`}>
+                    {m.role === 'user' && m.kind && <span className="mr-1 rounded-full bg-white/20 px-2 py-[1px] text-[10px] uppercase tracking-wider">{m.kind}</span>}
+                    <span className="whitespace-pre-wrap">{m.text}</span>
+                    {m.synthetic && <span className="ml-1 align-middle text-[10px] uppercase tracking-wider text-gray-400">· synthetic</span>}
+                    {m.refs && m.refs.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {m.refs.map((r, j) => (
+                          <button key={j} type="button" onClick={() => openRef(r)} className="rounded-full border border-teal-100 bg-teal-50 px-2 py-[1px] text-[10px] text-[#007C7A] hover:bg-teal-100">
+                            {r.title || r.id}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {busy && <div className="flex items-center gap-2 text-sm font-light text-gray-400"><img src="/apple-icon.png" alt="Brad" className="h-6 w-6 rounded opacity-70" /><Loader2 className="h-4 w-4 animate-spin" /> Brad is reviewing…</div>}
             </div>
           )}
-          {messages.map((m, i) => (
-            <div key={i} className={`max-w-[88%] rounded-lg px-md py-sm text-sm ${m.role === 'user' ? 'justify-self-end bg-tone-teal-bg text-brand-teal-deep' : 'justify-self-start border border-hairline bg-surface text-ink'}`}>
-              {m.role === 'user' && m.kind && <span className="mr-xs rounded-full bg-brand-teal/15 px-sm py-[1px] text-[10px] uppercase tracking-tag text-brand-teal-deep">{m.kind}</span>}
-              <span className="whitespace-pre-wrap">{m.text}</span>
-              {m.synthetic && <span className="ml-xs align-middle text-[10px] uppercase tracking-tag text-muted">· synthetic</span>}
-              {m.refs && m.refs.length > 0 && (
-                <div className="mt-xs flex flex-wrap gap-xs">
-                  {m.refs.map((r, j) => (
-                    <button key={j} type="button" onClick={() => openRef(r)} className="rounded-full border border-tone-teal-border bg-tone-teal-bg px-sm py-[1px] text-[10px] text-brand-teal-deep hover:bg-surface-hover">
-                      {r.title || r.id}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-          {busy && <div className="flex items-center gap-xs justify-self-start rounded-lg border border-hairline bg-surface px-md py-sm text-sm text-muted"><Loader2 className="h-4 w-4 animate-spin" /> Brad is reviewing…</div>}
         </div>
 
-        {/* Kind chips */}
-        <div className="flex flex-wrap gap-xs">
-          {KINDS.map((k) => (
+        <div>
+          <div className="mb-4 flex gap-2">
+            {KINDS.map((k) => (
+              <button
+                key={k.id}
+                type="button"
+                onClick={() => setKind(k.id)}
+                title={k.hint}
+                disabled={!locked}
+                className={`rounded-full border px-4 py-1.5 text-xs font-light transition-colors ${kind === k.id ? 'border-[#007C7A] bg-teal-50 text-[#007C7A]' : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100'} disabled:opacity-50`}
+              >
+                {k.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-col gap-4 md:flex-row md:items-end">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(); } }}
+              disabled={!locked || busy}
+              rows={2}
+              placeholder={locked ? `Enter a ${kind} for ${packetId.trim()}…` : 'Load a packet first'}
+              aria-label="Remediation message"
+              className="min-h-[48px] flex-1 resize-y rounded-[24px] border border-gray-200 bg-gray-50 px-6 py-3 text-sm text-gray-800 transition-all focus:border-[#007C7A] focus:bg-white focus:outline-none disabled:opacity-50"
+            />
             <button
-              key={k.id}
               type="button"
-              onClick={() => setKind(k.id)}
-              title={k.hint}
-              disabled={!locked}
-              className={`rounded-full border px-md py-xs text-xs transition ${kind === k.id ? 'border-brand-teal bg-tone-teal-bg text-brand-teal-deep' : 'border-card bg-tone-slate-bg text-secondary hover:bg-surface-hover'} disabled:opacity-50`}
+              onClick={() => void send()}
+              disabled={!locked || busy || !input.trim()}
+              className="flex items-center justify-center gap-2 rounded-full bg-[#69A7A3] px-8 py-3 font-medium text-white shadow-md transition-colors enabled:hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {k.label}
+              <Send className="h-4 w-4" /> Send
             </button>
-          ))}
-        </div>
-
-        {/* Composer */}
-        <div className="flex items-end gap-sm">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(); } }}
-            disabled={!locked || busy}
-            rows={2}
-            placeholder={locked ? `Enter a ${kind} for ${packetId.trim()}…` : 'Load a packet first'}
-            aria-label="Remediation message"
-            className="min-h-[44px] flex-1 resize-y rounded-lg border border-hairline bg-surface px-md py-sm text-sm text-ink outline-none focus:border-brand-teal disabled:opacity-50"
-          />
-          <button
-            type="button"
-            onClick={() => void send()}
-            disabled={!locked || busy || !input.trim()}
-            className="flex items-center gap-sm rounded-lg border border-brand-teal bg-brand-teal px-lg py-sm text-sm font-medium text-white enabled:hover:bg-brand-teal-deep disabled:cursor-not-allowed disabled:opacity-45"
-          >
-            <Send className="h-4 w-4" /> Send
-          </button>
+          </div>
         </div>
       </div>
     </section>

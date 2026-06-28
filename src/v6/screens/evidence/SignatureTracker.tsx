@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, CalendarClock, CheckCircle2, ClipboardCheck, FileSignature, Loader2, PenLine, Printer } from 'lucide-react';
 import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
+import { resolveSignerName } from '@/policy/evidence/signerDirectory';
 
 /* ════════════════════════════════════════════════════════════════
    Signature Tracker — enter a packet ID to (a) generate eCIgn signature
@@ -11,12 +12,13 @@ import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
 
 const PACKET_ID_RE = /^.+-\d+$/;
 
-/** Currently-assigned governance signer roster (name · signer role). */
+/** Currently-assigned governance signer roster (name · signer role). Compliance
+ *  and billing roles resolve to the real signers via the canonical directory. */
 const DEFAULT_ROSTER: { role: string; name: string }[] = [
   { role: 'DON / Chair', name: 'Dakota Director' },
   { role: 'Clinical Manager', name: 'Riley RN' },
-  { role: 'Accounting', name: 'Bailey Billing' },
-  { role: 'Compliance Officer', name: 'Cameron Compliance' },
+  { role: 'Billing / Accounting', name: resolveSignerName('billing', 'Adrian Lindain') },
+  { role: 'Compliance / HIPAA / Security / Infection Control Officer', name: resolveSignerName('compliance', 'Dee Bustos') },
   { role: 'Medical Director', name: 'Morgan MD' },
   { role: 'Administrator', name: 'Avery Admin' },
   { role: 'Social Worker', name: 'Jordan SW' },
@@ -82,6 +84,22 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
   // clean print window in the same user gesture — only the packet pages, the
   // studio's page rules, and the "EVENT NAME DATE" title (no app chrome).
   const printPacket = () => {
+    // Prefer the packet's Google Drive PDF: open it in a new window and bring up
+    // the print view. Falls back to a clean client-side print if no Drive URL yet.
+    const driveUrl = (() => {
+      try {
+        const map = JSON.parse(localStorage.getItem('ci-packet-drive-urls') || '{}') as Record<string, string>;
+        return (loadedId && map[loadedId]) || (eventInfo.id && map[eventInfo.id]) || '';
+      } catch { return ''; }
+    })();
+    if (driveUrl) {
+      const dw = window.open(driveUrl, '_blank', 'noopener,noreferrer');
+      if (!dw) { window.alert('Pop-up blocked — allow pop-ups for this site to open the Google Drive PDF.'); return; }
+      // Bring up the print view once the Drive PDF has loaded. Cross-origin Drive
+      // tabs may block programmatic print — then the user prints with Ctrl/Cmd+P.
+      window.setTimeout(() => { try { dw.focus(); dw.print(); } catch { /* use Ctrl/Cmd+P in the Drive tab */ } }, 1500);
+      return;
+    }
     const iframe = document.querySelector('iframe[title="Evidence Packet Studio"]') as HTMLIFrameElement | null;
     const doc = iframe?.contentDocument ?? null;
     // CSS is static — always read it live from the studio iframe. The packet
@@ -168,7 +186,7 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
   return (
     <section className="grid gap-md" data-hash-id="signature-tracker" data-route="/evidence" data-template="evidence">
       {/* Packet ID entry */}
-      <div className="rounded-lg border border-hairline bg-surface-glass p-lg shadow-rest">
+      <div className="rounded-[32px] border border-transparent bg-white/95 p-8 shadow-xl backdrop-blur-sm">
         <div className="flex flex-wrap items-end gap-md">
           <label className="grid gap-xs">
             <span className="text-[11px] font-medium uppercase tracking-tag text-muted">Packet ID</span>
@@ -212,7 +230,7 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
           {view === 'schedule' && (
             <div className="grid items-start gap-md desktop:grid-cols-2">
               {/* Card 1 — signer roster + schedule note */}
-              <div className="grid content-start gap-md rounded-lg border border-hairline bg-surface p-lg shadow-rest">
+              <div className="grid content-start gap-md rounded-[32px] border border-transparent bg-white/95 p-8 shadow-xl backdrop-blur-sm">
                 <div className="flex items-center gap-sm">
                   <ClipboardCheck className="h-icon-sm w-icon-sm text-brand-teal" />
                   <h2 className="text-sm font-medium text-ink">Signature tasks · currently assigned signer roster</h2>
@@ -226,7 +244,7 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
 
               {/* Card 2 — confirm + generate (pre) OR thank-you (post) */}
               {!record ? (
-                <div className="grid content-start gap-md rounded-lg border border-hairline bg-surface p-lg shadow-rest">
+                <div className="grid content-start gap-md rounded-[32px] border border-transparent bg-white/95 p-8 shadow-xl backdrop-blur-sm">
                   <div className="flex items-center gap-sm">
                     <PenLine className="h-icon-sm w-icon-sm text-brand-teal" />
                     <h2 className="text-sm font-medium text-ink">Schedule signing</h2>
@@ -247,7 +265,7 @@ export function SignatureTracker({ incomingPacketId }: { incomingPacketId?: stri
 
           {/* COMPLETION REVIEW */}
           {view === 'review' && record && (
-            <div className="grid gap-md rounded-lg border border-hairline bg-surface p-lg shadow-rest">
+            <div className="grid gap-md rounded-[32px] border border-transparent bg-white/95 p-8 shadow-xl backdrop-blur-sm">
               <div className="flex flex-wrap items-center justify-between gap-sm">
                 <div className="flex items-center gap-sm">
                   <CheckCircle2 className="h-icon-sm w-icon-sm text-brand-teal" />

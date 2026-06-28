@@ -13,7 +13,7 @@ import { REUSABLE_REPORT_TYPES } from './builderReportTypes';
    an explicit "Super Admin confirmation" checkbox. Beta: reviewable + removable.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const inputCls = 'w-full rounded-md border border-hairline bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand-teal focus-visible:shadow-focus';
+const inputCls = 'w-full rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset px-3 py-2 text-sm text-ink outline-none focus:border-brand-teal focus-visible:shadow-focus';
 const labelCls = 'grid gap-1 text-xs font-medium text-muted';
 const btnPrimary = 'inline-flex items-center gap-2 rounded-lg bg-brand-teal px-lg py-2 text-sm font-medium text-on-brand transition hover:bg-brand-teal-deep focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-50';
 
@@ -51,7 +51,7 @@ export default function BuilderWorkspace() {
         <Lock aria-hidden className="mx-auto h-8 w-8 text-brand-orange" />
         <h1 className="mt-md text-h3 font-medium text-ink">Access restricted</h1>
         <p className="mt-sm text-sm text-tone-orange-text">Brad Builder is available to approved Super Admin users only. {me?.reason ? `(${me.reason})` : ''}</p>
-        <button type="button" onClick={() => navigate('/iadministrator')} className="mt-lg inline-flex items-center gap-2 rounded-lg border border-hairline bg-white px-lg py-2 text-sm font-medium text-ink hover:bg-tone-teal-bg">
+        <button type="button" onClick={() => navigate('/iadministrator')} className="mt-lg inline-flex items-center gap-2 rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset px-lg py-2 text-sm font-medium text-ink hover:bg-tone-teal-bg">
           <ArrowLeft className="h-4 w-4" /> Back to Brad
         </button>
       </div>
@@ -60,7 +60,7 @@ export default function BuilderWorkspace() {
 
   return (
     <div className="grid gap-xl font-light">
-      <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-hairline bg-surface px-lg py-md shadow-rest">
+      <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset px-lg py-md shadow-rest">
         <div className="flex items-center gap-md">
           <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-orange-bg text-brand-orange"><Wrench aria-hidden className="h-icon-md w-icon-md" /></span>
           <div>
@@ -68,7 +68,7 @@ export default function BuilderWorkspace() {
             <p className="text-sm text-muted">Super Admin tools for users, permissions, reusable reports, OTPs, cloud updates, and component requests.</p>
           </div>
         </div>
-        <button type="button" onClick={() => navigate('/iadministrator')} className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-white px-md py-1.5 text-xs font-medium text-ink hover:bg-tone-teal-bg">
+        <button type="button" onClick={() => navigate('/iadministrator')} className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset px-md py-1.5 text-xs font-medium text-ink hover:bg-tone-teal-bg">
           <ArrowLeft className="h-4 w-4" /> Back to Brad
         </button>
       </div>
@@ -85,7 +85,7 @@ export default function BuilderWorkspace() {
             key={t.id}
             type="button"
             onClick={() => setWizard(t.id)}
-            className={`flex min-h-[112px] flex-col justify-between gap-md rounded-lg border p-lg text-left shadow-rest transition hover:-translate-y-0.5 hover:border-brand-teal hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus motion-reduce:hover:translate-y-0 ${wizard === t.id ? 'border-brand-teal bg-tone-teal-bg' : 'border-hairline bg-surface'}`}
+            className={`flex min-h-[112px] flex-col justify-between gap-md rounded-lg border p-lg text-left shadow-rest transition hover:-translate-y-0.5 hover:border-brand-teal hover:shadow-hover focus-visible:outline-none focus-visible:shadow-focus motion-reduce:hover:translate-y-0 ${wizard === t.id ? 'border-brand-teal bg-tone-teal-bg' : 'border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset'}`}
           >
             <span className="grid h-10 w-10 place-items-center rounded-md bg-tone-teal-bg text-brand-teal"><t.Icon aria-hidden className="h-icon-md w-icon-md" /></span>
             <span><span className="block text-sm font-medium text-ink">{t.label}</span><span className="mt-0.5 block text-xs text-muted">{t.desc}</span></span>
@@ -95,7 +95,7 @@ export default function BuilderWorkspace() {
 
       {/* Selected wizard */}
       {wizard && (
-        <div className="rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+        <div className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
           {wizard === 'otp' && <OtpWizard />}
           {wizard === 'permission' && <PermissionWizard />}
           {wizard === 'role' && <RoleWizard />}
@@ -242,7 +242,7 @@ function MassAddWizard() {
       <p className="text-sm text-muted">Paste CSV with headers: firstName, lastName, email, role, department, startDate, supervisor. Dry-run first. Super Admin / elevated roles can never be created via mass add. Real account creation is not wired — a draft import object is recorded.</p>
       <textarea className={`${inputCls} font-mono`} rows={6} value={csv} onChange={(e) => setCsv(e.target.value)} />
       <div className="flex flex-wrap gap-2">
-        <button type="button" disabled={dry.busy} className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-white px-lg py-2 text-sm font-medium text-ink hover:bg-tone-teal-bg disabled:opacity-50" onClick={() => dry.run(() => bradApi.builder.massAddDryRun(parseRows()))}>{dry.busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ListChecks className="h-4 w-4" />} Dry-run</button>
+        <button type="button" disabled={dry.busy} className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset px-lg py-2 text-sm font-medium text-ink hover:bg-tone-teal-bg disabled:opacity-50" onClick={() => dry.run(() => bradApi.builder.massAddDryRun(parseRows()))}>{dry.busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ListChecks className="h-4 w-4" />} Dry-run</button>
         <label className="flex items-center gap-2 text-sm text-ink"><input type="checkbox" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} className="h-4 w-4 accent-brand-teal" /> Super Admin confirmation</label>
         <button type="button" disabled={commit.busy || !confirm} className={btnPrimary} onClick={() => commit.run(() => bradApi.builder.massAddCommit(parseRows(), confirm))}>{commit.busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />} Create import draft</button>
       </div>
@@ -347,7 +347,7 @@ function CloudWizard() {
         <label className={labelCls}>Max instances<input type="number" min={1} className={inputCls} value={max} onChange={(e) => setMax(Number(e.target.value))} /></label>
       </div>
       <div className="flex flex-wrap gap-2">
-        <button type="button" disabled={dry.busy} className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-white px-lg py-2 text-sm font-medium text-ink hover:bg-tone-teal-bg disabled:opacity-50" onClick={() => dry.run(() => bradApi.builder.cloudDryRun(ops))}>{dry.busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Cloud className="h-4 w-4" />} Dry-run (no mutation)</button>
+        <button type="button" disabled={dry.busy} className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset px-lg py-2 text-sm font-medium text-ink hover:bg-tone-teal-bg disabled:opacity-50" onClick={() => dry.run(() => bradApi.builder.cloudDryRun(ops))}>{dry.busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Cloud className="h-4 w-4" />} Dry-run (no mutation)</button>
         <label className="flex items-center gap-2 text-sm text-ink"><input type="checkbox" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} className="h-4 w-4 accent-brand-teal" /> Super Admin confirmation</label>
         <button type="button" disabled={propose.busy || !confirm} className={btnPrimary} onClick={() => propose.run(() => bradApi.builder.proposeCloud(ops))}>{propose.busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Propose change set</button>
       </div>
@@ -371,7 +371,7 @@ function PendingWizard() {
   useEffect(() => { void s.run(() => bradApi.builder.pending()); }, []);
   return (
     <WizardShell title="Review Pending Builder Changes">
-      <button type="button" className="w-fit inline-flex items-center gap-2 rounded-lg border border-hairline bg-white px-md py-1.5 text-xs font-medium text-ink hover:bg-tone-teal-bg" onClick={() => s.run(() => bradApi.builder.pending())}><ListChecks className="h-4 w-4" /> Refresh</button>
+      <button type="button" className="w-fit inline-flex items-center gap-2 rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset px-md py-1.5 text-xs font-medium text-ink hover:bg-tone-teal-bg" onClick={() => s.run(() => bradApi.builder.pending())}><ListChecks className="h-4 w-4" /> Refresh</button>
       {s.error && <ErrorNote msg={s.error} />}
       {s.result && (
         <div className="grid gap-2">

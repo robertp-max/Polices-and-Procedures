@@ -46,6 +46,7 @@ export type ModuleDef = {
   status: ModuleStatus;
   lessons: ModuleLesson[];
   learningObjectives: string[];
+  policyRefs?: string[];
   reviewerNote?: string;
   /** Whether this module counts toward required-theory completion in Phase 2. */
   countsTowardTheory: boolean;

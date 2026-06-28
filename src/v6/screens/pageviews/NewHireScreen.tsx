@@ -41,7 +41,7 @@ export function NewHireScreen() {
       title: "Gate 4: Orientation Coursework",
       desc: "Complete the 12-hour mandatory training modules and role-specific paths.",
       status: "Pending Gate 3",
-      statusColor: "text-secondary bg-tone-slate-bg border-hairline",
+      statusColor: "text-secondary bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline",
       icon: GraduationCap,
     },
     {
@@ -49,7 +49,7 @@ export function NewHireScreen() {
       title: "Gate 5: Supervised Visit",
       desc: "First independent patient visit under direct preceptor/supervisor check-off.",
       status: "Locked",
-      statusColor: "text-muted bg-tone-slate-bg border-hairline opacity-60",
+      statusColor: "text-muted bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline opacity-60",
       icon: FolderSync,
     },
   ];
@@ -80,7 +80,7 @@ export function NewHireScreen() {
         
         {/* Left 2 Columns: Onboarding gates checklist */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-surface-glass border border-hairline rounded-2xl p-6 shadow-rest backdrop-blur-xl">
+          <div className="bg-surface-glass border border-hairline rounded-2xl p-6 shadow-rest backdrop-blur-xl overflow-hidden">
             <h2 className="text-base font-bold text-brand-teal-deep mb-2 uppercase tracking-wider">
               Your Onboarding Checklist
             </h2>
@@ -94,10 +94,10 @@ export function NewHireScreen() {
                 return (
                   <div 
                     key={gate.id} 
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white/70 border border-hairline rounded-xl shadow-sm hover:bg-white/90 transition-all duration-fast"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline rounded-xl shadow-sm hover:bg-surface-glass hover:backdrop-blur-md transition-all duration-fast"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="mt-1 shrink-0 p-2 rounded-lg bg-tone-slate-bg border border-hairline text-brand-teal">
+                      <div className="mt-1 shrink-0 p-2 rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline text-brand-teal">
                         <Icon size={18} />
                       </div>
                       <div>
@@ -120,7 +120,7 @@ export function NewHireScreen() {
         <div className="space-y-6">
           
           {/* Quick Actions Panel */}
-          <div className="bg-surface-glass border border-hairline rounded-2xl p-6 shadow-rest backdrop-blur-xl space-y-4">
+          <div className="bg-surface-glass border border-hairline rounded-2xl p-6 shadow-rest backdrop-blur-xl overflow-hidden space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-brand-teal-deep font-mono">
               Onboarding Quick Links
             </h3>
@@ -128,7 +128,7 @@ export function NewHireScreen() {
             <div className="space-y-3">
               <Link 
                 to="/journey"
-                className="flex items-center justify-between p-3 bg-white border border-hairline rounded-xl shadow-sm hover:border-brand-teal/20 transition-all group"
+                className="flex items-center justify-between p-3 bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline rounded-xl shadow-sm hover:border-brand-teal/20 transition-all group"
               >
                 <div className="flex items-center gap-2.5">
                   <GraduationCap size={16} className="text-brand-teal" />
@@ -139,7 +139,7 @@ export function NewHireScreen() {
 
               <Link 
                 to="/journey/appendix-f"
-                className="flex items-center justify-between p-3 bg-white border border-hairline rounded-xl shadow-sm hover:border-brand-teal/20 transition-all group"
+                className="flex items-center justify-between p-3 bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline rounded-xl shadow-sm hover:border-brand-teal/20 transition-all group"
               >
                 <div className="flex items-center gap-2.5">
                   <ClipboardList size={16} className="text-brand-teal" />
@@ -150,7 +150,7 @@ export function NewHireScreen() {
 
               <Link 
                 to="/journey/guide"
-                className="flex items-center justify-between p-3 bg-white border border-hairline rounded-xl shadow-sm hover:border-brand-teal/20 transition-all group"
+                className="flex items-center justify-between p-3 bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline rounded-xl shadow-sm hover:border-brand-teal/20 transition-all group"
               >
                 <div className="flex items-center gap-2.5">
                   <BookOpen size={16} className="text-brand-teal" />
@@ -162,14 +162,14 @@ export function NewHireScreen() {
           </div>
 
           {/* Support Panel */}
-          <div className="bg-surface-glass border border-hairline rounded-2xl p-6 shadow-rest backdrop-blur-xl">
+          <div className="bg-surface-glass border border-hairline rounded-2xl p-6 shadow-rest backdrop-blur-xl overflow-hidden">
             <h3 className="text-xs font-bold uppercase tracking-wider text-brand-teal-deep font-mono mb-2">
               Need Assistance?
             </h3>
             <p className="text-xs text-secondary leading-relaxed mb-4">
               If you have questions regarding your credentials, health check submissions, or supervisor visit locks:
             </p>
-            <div className="bg-white/80 border border-hairline rounded-xl p-3 text-[11px] font-mono leading-loose text-secondary">
+            <div className="bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline rounded-xl p-3 text-[11px] font-mono leading-loose text-secondary">
               <p className="flex justify-between border-b border-hairline pb-1.5 mb-1.5">
                 <span className="font-bold text-brand-teal-deep">HR Hotline:</span>
                 <span>(650) 555-0182</span>

@@ -7,7 +7,7 @@ export interface V6RoutePlaceholderProps {
 
 export function V6RoutePlaceholder({ route }: V6RoutePlaceholderProps) {
   return (
-    <section className="grid gap-lg rounded-lg border border-card bg-surface p-lg shadow-rest">
+    <section className="grid gap-lg rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
       <div className="flex flex-wrap items-center gap-sm">
         <Badge>{route?.template ?? 'not-found'}</Badge>
         <Badge>{route?.hashId ?? 'route-missing'}</Badge>

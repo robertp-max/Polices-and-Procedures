@@ -42,7 +42,10 @@ export function isModulePassed(
   if (!attempt) return false;
   if (attempt.status === 'failed') return false;
   if (attempt.lessonStatus === 'passed') return true;
-  if (attempt.lessonStatus === 'completed' && module.method === 'None') return true;
+  // P0-007: None modules require explicit completion record from learner (not just view)
+  if (attempt.lessonStatus === 'completed' && module.method === 'None') {
+    return attempt.status === 'completed' && (attempt.scoreRaw ?? 0) >= 0; // bridged record
+  }
   const threshold = (module.passThreshold ?? 0.8) * 100;
   return (attempt.scoreRaw ?? 0) >= threshold && attempt.lessonStatus !== 'failed';
 }
@@ -57,7 +60,7 @@ export function canStartModule(
     return {
       unlocked: false,
       reason:
-        'BLOCKED — Pre-Employment Screening (Appendix F) is not complete & signed by HR Director. No individual performs ANY work, including orientation, until HR-TA-001 §4.3 is satisfied.',
+        'BLOCKED — Pre-Employment Screening (Appendix F) is not complete & signed by HR Director. No individual performs ANY work, including orientation, until HR-TA-001 §6.4.4 is satisfied.',
     };
   }
 
@@ -72,7 +75,7 @@ export function canStartModule(
     if (gaoPending.length) {
       return {
         unlocked: false,
-        reason: 'BLOCKED — General Agency Orientation (GAO) not complete. Per HR-TA-005 §8.2, no clinical staff may be assigned until GAO is finished.',
+        reason: 'BLOCKED — General Agency Orientation (GAO) not complete. Per HR-TA-005 §6.2, no clinical staff may be assigned until GAO is finished.',
         blockedBy: gaoPending.map(g => g.id),
       };
     }
@@ -105,7 +108,7 @@ export function canClearForIndependentWork(
   const gaoExam = mods.find(m => m.id === 'GAO-EXAM');
   const gaoExamAttempt = gaoExam ? latestAttempt(attempts, employee.id, gaoExam.id) : undefined;
   if (!gaoExam || !isModulePassed(gaoExam, gaoExamAttempt)) {
-    gaps.push('GAO-EXAM must be passed at ≥80% (HR-TA-005 Appendix D).');
+    gaps.push('GAO-EXAM must be passed at ≥80% (HR-TA-005).');
   }
   const roleMods = mods.filter(m => m.group === 'ROLE' && m.phase !== 'SUPERVISED');
   const rolePending = roleMods.filter(r => !isModulePassed(r, latestAttempt(attempts, employee.id, r.id)));

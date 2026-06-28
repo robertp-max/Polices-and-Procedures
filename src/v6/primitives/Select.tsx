@@ -23,7 +23,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         ref={ref}
         aria-invalid={invalid || undefined}
         className={cx(
-          'h-control w-full rounded-md border bg-surface px-md text-body font-light text-ink shadow-none',
+          'h-control w-full rounded-md border bg-surface-glass backdrop-blur-md shadow-glass-inset px-md text-body font-light text-ink shadow-none',
           'transition duration-fast ease-standard',
           'hover:border-strong focus-visible:outline-none focus-visible:shadow-focus',
           'disabled:cursor-not-allowed disabled:bg-tone-slate-bg disabled:text-disabled disabled:opacity-80',

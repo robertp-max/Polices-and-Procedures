@@ -191,7 +191,6 @@ export function AdminGroupsScreen() {
       <PageHeader
         badge="Admin"
         title="User Groups"
-        description="User group membership and scope management matrix."
       />
       <MetricGrid metrics={groupMetrics} />
 
@@ -201,7 +200,7 @@ export function AdminGroupsScreen() {
 
           <section className="grid gap-md tablet-l:grid-cols-2" aria-label="Admin scope summary">
             {scopeTiles.map((tile) => (
-              <article className="rounded-lg border border-card bg-surface p-lg shadow-rest" key={tile.label}>
+              <article className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest" key={tile.label}>
                 <div className="mb-md flex flex-wrap items-start justify-between gap-md">
                   <div>
                     <p className="text-tag uppercase tracking-tag text-muted">{tile.label}</p>
@@ -218,7 +217,7 @@ export function AdminGroupsScreen() {
         </section>
 
         <aside className="grid content-start gap-lg" aria-label="Admin group governance panels">
-          <nav aria-label="Group governance tabs" className="flex gap-xs overflow-x-auto rounded-lg border border-card bg-surface/90 p-xs shadow-rest backdrop-blur-xl">
+          <nav aria-label="Group governance tabs" className="flex gap-xs overflow-x-auto rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset/90 p-xs shadow-rest backdrop-blur-xl">
             {groupPanelTabs.map((tab) => (
               <button
                 aria-selected={activePanel === tab.id}
@@ -247,7 +246,7 @@ export function AdminGroupsScreen() {
           )}
 
           {activePanel === 'matrix' && (
-            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" role="tabpanel">
+            <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest" role="tabpanel">
             <div className="mb-lg flex items-start justify-between gap-md">
               <div className="grid gap-sm">
                 <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
@@ -265,7 +264,7 @@ export function AdminGroupsScreen() {
 
             <div className="grid gap-sm">
               {permissionPreview.map((item) => (
-                <div className="rounded-md border border-hairline bg-tone-slate-bg p-md" key={item.permission}>
+                <div className="rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-md" key={item.permission}>
                   <div className="mb-sm flex flex-wrap items-center justify-between gap-sm">
                     <span className="text-xs font-medium text-brand-teal">{item.permission}</span>
                     <ToneBadge size="sm" status={item.posture} />
@@ -278,7 +277,7 @@ export function AdminGroupsScreen() {
           )}
 
           {activePanel === 'evidence' && (
-            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" role="tabpanel">
+            <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest" role="tabpanel">
             <div className="mb-lg flex items-start gap-md">
               <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
                 <FileCheck2 aria-hidden="true" className="h-icon-md w-icon-md" />
@@ -297,7 +296,7 @@ export function AdminGroupsScreen() {
                 ['Open exceptions', '2 limited scopes', 'review-required'],
                 ['Audit export', 'Ready for packet', 'ready'],
               ].map(([label, value, status]) => (
-                <div className="flex flex-wrap items-center justify-between gap-md rounded-md bg-tone-slate-bg p-md" key={label}>
+                <div className="flex flex-wrap items-center justify-between gap-md rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md" key={label}>
                   <div>
                     <p className="text-tag uppercase tracking-tag text-muted">{label}</p>
                     <p className="mt-xs text-sm text-ink">{value}</p>

@@ -67,11 +67,25 @@ export interface SuperAdminMe {
   reason?: string;
 }
 
+export type BradReferenceType = 'policy' | 'workflow' | 'form' | 'help' | 'event';
+
+export interface BradReference {
+  type: BradReferenceType;
+  id: string;
+  title: string;
+  section?: string;
+  family?: string;
+}
+
 export interface BradAnswer {
   text: string;
   synthetic: boolean;
   blocked: boolean;
   reason?: string;
+  /** Structured internal references the UI renders as clickable document links. */
+  references?: BradReference[];
+  /** Broad critical-incident track the message routed to. */
+  track?: string;
 }
 
 export interface ObjectMetadata {

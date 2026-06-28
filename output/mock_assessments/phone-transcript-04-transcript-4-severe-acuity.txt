@@ -1,0 +1,160 @@
+TRANSCRIPT 4 — SEVERE ACUITY
+Referral Source: Home Infusion Pharmacy / Transplant Coordinator
+Date: 06/26/2025 | Time: 08:02 AM PST
+Call Duration: 41 minutes
+
+[CALL INITIATED — INBOUND]
+
+CI: Care Indeed Home Health, intake. This is Vanessa.
+
+CALLER 1: Good morning Vanessa, this is Sandra Oguike, I'm the transplant coordinator at UCSF for the kidney-pancreas transplant team. I have on the line with me Dr. Faisal Abboud, who's the transplant nephrologist. We're calling about a patient we need set up with home health — she's discharging tomorrow and there's a lot going on.
+
+CALLER 2: Good morning. This is Dr. Abboud.
+
+CI: Good morning to you both. I'm ready whenever you are.
+
+CALLER 1: Great. The patient is Priscilla Anh-Tuyet Nguyen-Okafor. P-R-I-S-C-I-L-L-A. Middle name A-N-H, hyphen, T-U-Y-E-T. Last name N-G-U-Y-E-N, hyphen, O-K-A-F-O-R. She goes by Priscilla or sometimes "Prissy."
+
+CI: Date of birth?
+
+CALLER 1: November 11, 1982. She's 42.
+
+CI: Address?
+
+CALLER 1: 888 Hillsdale Boulevard, Apartment 4F, San Mateo, California 94403. Fourth floor, elevator building. She's lived there for six years.
+
+CI: Lives with?
+
+CALLER 1: She lives with her husband, Chukwudi "Chuks" Okafor, age 45. He's a software engineer — works from home three days a week and in-office two days. He's been the primary caregiver since the transplant and he's been great but he's exhausted. They don't have children. Her mother, Lan Nguyen, age 68, has been staying with them since the surgery — she flew in from Houston. Lan speaks Vietnamese and limited English — she can understand simple English but for complex medical teaching, you'll need a Vietnamese interpreter. Lan is actually the person in the home during the day when Chuks is at the office.
+
+CI: Okay — Vietnamese interpreter for the mother-in-law. Got it. Phone numbers?
+
+CALLER 1: Priscilla's cell is (650) 555-0714. Chuks' cell is (650) 555-0715. Lan doesn't have a cell phone — she uses Priscilla's phone. Home number (650) 555-0716.
+
+CI: Great. Tell me the story.
+
+CALLER 2: I'll take this. Priscilla received a simultaneous kidney-pancreas transplant on May 30th at UCSF. The donor was deceased, 24-year-old traumatic brain death donor — excellent organ quality. The surgery itself went well. Her native kidneys were left in place — the transplant kidney is in the right iliac fossa, transplant pancreas in the left iliac fossa with enteric drainage.
+
+The reason it's been almost four weeks is complications. She developed delayed graft function of the kidney — she was on hemodialysis for the first ten days post-transplant while the kidney woke up. The kidney is now functioning — her creatinine has come down from a peak of 8.2 to 2.1 as of yesterday — but it's not perfect. Her GFR is about 32 right now. We're cautiously optimistic but we need close monitoring.
+
+The pancreas graft function is better — her blood sugars normalized by post-op day 3. She went from an insulin-dependent diabetic with an A1c of 10.4 to blood sugars running 80 to 120 without any insulin. That's the miracle of a pancreas transplant. However — and this is a big however — she had an episode of acute pancreatic graft pancreatitis on day 12 that was managed conservatively, and she had a mild acute cellular rejection of the kidney at biopsy on day 14. We pulse-dosed her with methylprednisolone for three days and increased her tacrolimus target. The rejection is improving on biopsy repeat but she's now on higher immunosuppression than we'd like.
+
+CI: So she's profoundly immunosuppressed.
+
+CALLER 2: Very much so. Which brings us to complication number three — she developed CMV viremia on day 21. Her CMV PCR came back at 12,000 copies. She was donor CMV-positive, recipient CMV-negative — that's the highest-risk combination. We started her on IV ganciclovir and she needs to complete at least 21 days of IV treatment, then transition to oral valganciclovir for secondary prophylaxis for six months. The IV ganciclovir is the main reason she needs home health — she's got a PICC line and she needs daily IV infusion at home.
+
+CALLER 1: I'll jump in with the line details. She's got a right-arm PICC, single-lumen, 4 French, inserted June 18th. X-ray confirmed tip at the SVC-RA junction. She'll need it for the ganciclovir — which is 5 mg per kg IV every 12 hours, so for her weight of 58 kg, that's approximately 290 mg IV Q12H. The infusion runs over one hour each dose. So she needs twice-daily IV infusions. The ganciclovir is being provided by Option Care Health — they'll deliver the medication and supplies weekly. But they don't do the nursing. That's where you come in.
+
+CI: Understood — we provide the skilled nursing for the infusions, the PICC care, the monitoring. Option Care provides the drug and supplies.
+
+CALLER 1: Exactly.
+
+CI: What about the rest of her medical picture? Dr. Abboud, can you walk me through her history?
+
+CALLER 2: Of course. Pre-transplant: she had type 1 diabetes since age 12 — thirty years. Not type 2. Type 1 — insulin-dependent her entire life. The diabetes caused:
+
+End-stage renal disease — she was on peritoneal dialysis for two years, then transitioned to hemodialysis for the last year because of peritonitis. Her PD catheter was removed. Her HD access was a left upper arm AV fistula — it's still in place and patent, but we're not using it. We want to keep it as a backup in case the transplant fails.
+Diabetic retinopathy — proliferative, bilateral, treated with laser photocoagulation. Her vision is impaired — she has limited peripheral vision and difficulty with fine print. She uses a magnifying glass for medication labels.
+Diabetic neuropathy — bilateral lower extremities, moderate. Numbness, tingling, burning — she can't feel her feet well. She's had a prior foot ulcer (right great toe, 2022) that healed after eight weeks of wound care.
+Gastroparesis — diagnosed 2019. She has episodes of severe nausea, vomiting, and early satiety. She was on metoclopramide but developed tardive dyskinesia so that was stopped. She's currently on erythromycin low-dose for motility but we need to be careful because of drug interactions with tacrolimus.
+Hypertension — long-standing, on multiple agents.
+Dyslipidemia — on statin.
+Osteoporosis — steroid-induced, pre-transplant. DEXA T-score -3.2 at lumbar spine.
+Depression and anxiety — long history, managed with duloxetine (which also helps the neuropathy).
+
+New post-transplant:
+
+CMV viremia on IV treatment as described
+History of acute rejection (treating, responding)
+History of pancreatic graft pancreatitis (resolved)
+Delayed graft function (improving)
+Surgical wounds — bilateral iliac fossa incisions (kidney R, pancreas L), healing well, staples removed, Steri-Strips in place; also a midline laparotomy for the enteric drainage
+Anemia — Hgb 8.4 (post-surgical, CKD-related); on darbepoetin
+
+CI: Allergies?
+
+CALLER 2:
+
+Metoclopramide — tardive dyskinesia (documented, irreversible)
+TMP-SMX — Steven-Johnson Syndrome in 2015. So she's on atovaquone for PJP prophylaxis instead.
+Shellfish — urticaria.
+Latex — contact dermatitis.
+
+CI: Medications?
+
+CALLER 1: I'll do this one — I have the discharge med rec in front of me. It's long. Ready?
+
+CI: Go.
+
+CALLER 1: One — Tacrolimus (Prograf) 5 mg BID at 8 AM and 8 PM exactly. Trough Monday AM before dose. Target 10-15 during this acute rejection phase. Two — Mycophenolate (CellCept) 1000 mg BID. Three — Prednisone 20 mg daily — taper per transplant: reduce 2.5 mg every two weeks. Four — Ganciclovir 290 mg IV Q12H via PICC. Through at least 07/17/2025, then reassess CMV PCR. Five — Atovaquone 1500 mg daily with fatty food — PJP prophylaxis. Six — Fluconazole 100 mg daily — fungal prophylaxis. Interaction with tacrolimus — we're watching levels. Seven — Valganciclovir — NOT yet; this is the oral transition AFTER IV ganciclovir is complete. Just noting for the plan. Eight — Amlodipine 10 mg daily — HTN. Nine — Metoprolol succinate 50 mg daily — HTN, heart rate. Ten — Duloxetine 60 mg daily — depression, neuropathy. Eleven — Erythromycin 250 mg TID before meals — gastroparesis prokinetic. Interaction with tacrolimus (increases levels) — we know, we're monitoring. Twelve — Pantoprazole 40 mg daily — GI protection. Thirteen — Ondansetron 4 mg Q8H PRN — nausea (gastroparesis). Fourteen — Gabapentin 300 mg TID — neuropathic pain. Fifteen — Darbepoetin 40 mcg SubQ every two weeks — anemia. Sixteen — Calcium + Vitamin D 600/400 BID — bone health. Seventeen — Vitamin D3 50,000 IU weekly — deficiency. Eighteen — Magnesium oxide 400 mg BID — hypomagnesemia (tacrolimus). Nineteen — Iron sucrose 200 mg IV weekly x4 doses via PICC — iron deficiency anemia. This is another IV med for you. Twenty — Sodium bicarbonate 650 mg TID — metabolic acidosis (renal). Twenty-one — Atorvastatin 20 mg HS — lipids. Twenty-two — Acetaminophen 650 mg Q6H PRN — pain. Max 2g/day (renal consideration). Twenty-three — Melatonin 5 mg HS — sleep.
+
+CI: Twenty-three medications. Two IV meds via PICC. Any controlled substances?
+
+CALLER 1: No controlled substances. She managed her post-surgical pain with gabapentin and Tylenol. She refused opioids — she said she was "already dealing with enough" and didn't want to add addiction concerns. I respected that.
+
+CI: Sharps?
+
+CALLER 1: Yes — darbepoetin syringes. And PICC flush syringes. Sharps container to be provided by Option Care.
+
+CI: PICC care protocol?
+
+CALLER 1: CHG-impregnated dressing (Biopatch + Tegaderm), change every 7 days and PRN. NS flush 10 mL before and after each med. Heparin lock when not infusing — wait, actually, let me check. Dr. Abboud, does she have a heparin allergy?
+
+CALLER 2: No heparin allergy. Standard heparin lock protocol is fine for her.
+
+CALLER 1: Okay — heparin lock 100 units/mL, 3 mL, after final infusion of the day and PRN.
+
+CI: Got it. Functional status?
+
+CALLER 1: She's actually doing pretty well functionally considering everything. She was ambulatory before the transplant — she walked, she did her own dialysis, she cooked. She's deconditioned from the month-long admission but she's ambulating with a rolling walker, 50 to 75 feet, standby assist. She's getting up and down from bed and chair with supervision. She's independent with upper body ADLs. Lower body — she needs minimal assist for shoes and socks because of the neuropathy (can't feel if the shoe is on properly) and the abdominal incisions limiting bending. She tires easily — standing tolerance about 5-7 minutes.
+
+The vision impairment is a functional barrier for medication management — she has 23 medications with complicated timing requirements. She can't read the bottles without a magnifying glass. Chuks has been managing the meds in the hospital but he'll be at work two days a week.
+
+CI: Homebound?
+
+CALLER 2: Yes — homebound. Connected to PICC infusions twice daily, deconditioned, immunosuppressed (advised to avoid public spaces), impaired vision, and requiring considerable effort to leave home.
+
+CI: Advance directives?
+
+CALLER 1: She has an AHCD — husband Chuks is the agent. Executed in 2024 before the transplant. She's Full Code. She waited three years for these organs and she told us: "You fight for me if anything goes wrong."
+
+CI: Services?
+
+CALLER 1:
+
+Skilled nursing twice daily for the first 21+ days — for the ganciclovir IV infusions (Q12H). Plus: PICC care, weekly iron sucrose infusion, tacrolimus trough draws (Monday), CMV PCR (weekly per transplant), BMP and CBC (weekly), wound assessment (three surgical incisions), blood glucose monitoring (even though pancreas graft is working — need to detect early graft failure, which would manifest as rising blood sugars), immunosuppression monitoring, gastroparesis symptom management, neuropathy/foot assessment, patient/caregiver teaching.
+After ganciclovir is complete and PICC is removed, reduce to 3x/week for monitoring and teaching.
+Physical therapy 3x/week — reconditioning, endurance, gait, fall prevention (neuropathic feet — fall risk).
+Occupational therapy 2x/week — medication management system (vision-adapted), energy conservation, ADL training, foot care teaching.
+Medical social work biweekly — adjustment to transplant life, depression monitoring, caregiver support, community resources.
+Home health aide 3x/week — bathing assist, ADL support.
+
+CI: Discharge date?
+
+CALLER 1: Tomorrow, June 27th. First infusion at home should be the evening dose — around 8 PM. We'll give her the 8 AM dose here before discharge. Your RN needs to be at the home by 7:30 PM for the first home infusion. Option Care will have the ganciclovir and supplies delivered by 5 PM.
+
+CI: That's tight but we'll make it work. Let me confirm insurance.
+
+CALLER 1: She has Medicare — she qualified through ESRD. Medicare number 6TY2-KM8-JR44. Secondary is Blue Shield of California PPO through Chuks' employer — I have the ID as BSC-773219845, group TEC-4400. You'll bill Medicare primary. Home infusion drugs are billed separately through Option Care under Medicare Part B.
+
+CI: Perfect. Dr. Abboud, Sandra — anything else?
+
+CALLER 2: One critical thing. If her blood glucose starts rising — consistently above 200 fasting — that could mean the pancreas graft is failing. That's a transplant emergency. Call us immediately. Don't wait.
+
+CALLER 1: And if she spikes a fever above 100.4 — in an immunosuppressed transplant patient, fever is an emergency until proven otherwise. Call us at the 24-hour transplant line: (415) 555-2200. Don't call the PCP first. Call us.
+
+CI: Understood. Pancreas graft failure signs and fever threshold — got it. Your fax for orders?
+
+CALLER 1: (415) 555-2201. I'll fax the full packet this afternoon. And here are all the providers for your records:
+
+Dr. Faisal Abboud, Transplant Nephrology, UCSF — (415) 555-2205
+Dr. Miriam Katz, Transplant Surgery, UCSF — (415) 555-2210
+Dr. Amy Tran, Endocrinology (DM/pancreas graft), UCSF — (415) 555-2215
+Dr. Kenneth Lee, Ophthalmology (retinopathy), UCSF — (415) 555-2220
+Dr. James Holden, PCP, San Mateo — (650) 555-0485
+Transplant 24-Hour Line — (415) 555-2200
+
+CI: Got them all. Thank you both. We'll be ready tomorrow evening.
+
+[CALL ENDED — 08:43 AM]
+

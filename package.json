@@ -14,6 +14,9 @@
     "check:designless": "node scripts/check-designless.mjs",
     "verify:designless": "npm run build && node scripts/check-designless.mjs",
     "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:threads": "vitest run src/policy/help-center/threads",
     "preview": "vite preview",
     "sync:master-control-inventory": "node scripts/syncMasterControlInventory.mjs",
     "ia:index": "tsx server/cli/build-index.ts",
@@ -34,6 +37,14 @@
     "verify:brad-scenario": "tsx --tsconfig tsconfig.app.json scripts/verifyBradScenarioActionLayer.ts",
     "verify:brad-home": "tsx --tsconfig tsconfig.app.json scripts/verifyBradDefaultHomeNav.ts",
     "verify:brad-builder": "tsx scripts/verifyBradBuilder.ts",
+    "verify:brad-chat": "tsx scripts/verifyBradChatNoHarness.ts",
+    "verify:brad-critical": "tsx scripts/verifyBradCriticalIncidentRouting.ts",
+    "verify:brad-refs": "tsx --tsconfig tsconfig.app.json scripts/verifyBradReferenceResolver.ts",
+    "verify:brad-trauma": "tsx scripts/verifyBradTraumaResponse.ts",
+    "verify:brad-harassment": "tsx scripts/verifyBradSexualHarassmentResponse.ts",
+    "verify:brad-forms": "tsx --tsconfig tsconfig.app.json scripts/verifyBradFormRendering.ts",
+    "verify:brad-guided": "tsx --tsconfig tsconfig.app.json scripts/verifyBradGuidedAssistance.ts",
+    "verify:drive-lock": "tsx scripts/verifyDriveEvidenceLock.ts",
     "validate:event-dataflow": "tsx --tsconfig tsconfig.app.json scripts/validateEventDataflow.ts",
     "validate:references": "tsx --tsconfig tsconfig.app.json scripts/validateReferenceIntegrity.ts",
     "validate:signer-hierarchy-ecign": "tsx --tsconfig tsconfig.app.json Builder/_system/audit-signer-hierarchy-and-ecign-task-mapping.ts",
@@ -100,6 +111,8 @@
     "@axe-core/playwright": "^4.11.3",
     "@eslint/js": "^9.39.4",
     "@playwright/test": "^1.59.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^24.12.0",
@@ -119,6 +132,8 @@
     "tsx": "^4.19.2",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
-    "vite": "^8.0.1"
+    "vite": "^8.0.1",
+    "vitest": "^3.2.4",
+    "jsdom": "^25.0.1"
   }
 }

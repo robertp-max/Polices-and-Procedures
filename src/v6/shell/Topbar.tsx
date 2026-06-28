@@ -19,11 +19,14 @@ export function Topbar({ className, isPersonalOpsOpen, onPersonalOpsToggle }: To
       aria-pressed={!!isPersonalOpsOpen}
       title="Personal operations"
       className={cx(
-        'grid h-11 w-11 place-items-center rounded-full bg-brand-orange text-white shadow-shell-dock transition-colors duration-fast hover:bg-brand-orange-deep focus-visible:outline-none focus-visible:shadow-focus',
+        'group relative grid h-12 w-[84px] place-items-center overflow-visible rounded-xl border border-transparent bg-transparent text-[var(--text-primary)] transition duration-500 ease-standard hover:text-[var(--brand-teal)] focus-visible:outline-none focus-visible:shadow-focus',
         className,
       )}
     >
-      <UserRound aria-hidden="true" className="h-icon-md w-icon-md" />
+      <UserRound aria-hidden="true" className="h-10 w-10 transition duration-500 ease-standard group-hover:scale-75 group-hover:opacity-0 group-focus-visible:scale-75 group-focus-visible:opacity-0" />
+      <span className="pointer-events-none absolute left-1/2 top-1/2 w-[84px] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-transparent bg-transparent px-3 py-2 text-center text-xs font-medium text-[var(--text-primary)] opacity-0 shadow-none backdrop-blur-none transition duration-500 ease-standard group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100">
+        me :D
+      </span>
     </button>
   );
 }

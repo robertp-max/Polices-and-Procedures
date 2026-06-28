@@ -55,6 +55,9 @@ interface JourneyState {
     learner?: SignatureRecord,
   ) => ModuleAttempt;
 
+  /** Bridge from learner player (GAO/role quizzes, lessons) — self-completed without immediate supervisor sig. */
+  recordLearnerCompletion: (employeeId: string, moduleId: string, passed: boolean, score?: number, notes?: string) => ModuleAttempt;
+
   /** Add evidence (Appendix capture). */
   addEvidence: (ev: Omit<JourneyEvidence, 'id' | 'createdAt' | 'updatedAt'>) => JourneyEvidence;
 
@@ -270,6 +273,36 @@ export const useJourneyStore = create<JourneyState>()(
           updatedAt: nowIso(),
         };
         set(s => ({ attempts: [attempt, ...s.attempts], evidence: [evidence, ...s.evidence] }));
+        get().recomputeEscalations();
+        return attempt;
+      },
+
+      recordLearnerCompletion(employeeId, moduleId, passed, score, _notes) {
+        const module = moduleById(moduleId);
+        if (!module) throw new Error(`Unknown module ${moduleId}`);
+        const existing = get().attempts.filter(a => a.employeeId === employeeId && a.moduleId === moduleId);
+        const attemptNumber = existing.length + 1;
+        const now = nowIso();
+        const finalScore = score ?? (passed ? 100 : 0);
+        const lessonStatus = passed ? 'passed' : 'failed';
+        const attempt: ModuleAttempt = {
+          id: `ATT-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          employeeId,
+          moduleId,
+          attemptNumber,
+          startedAt: now,
+          completedAt: now,
+          lessonStatus,
+          scoreRaw: finalScore,
+          scoreMin: 0,
+          scoreMax: 100,
+          timeSpentSec: 0,
+          suspendData: '',
+          lessonLocation: '',
+          exit: 'normal',
+          status: passed ? 'completed' : 'failed',
+        };
+        set(s => ({ attempts: [attempt, ...s.attempts] }));
         get().recomputeEscalations();
         return attempt;
       },

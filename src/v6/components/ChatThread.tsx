@@ -15,7 +15,7 @@ export function ChatThread({ messages }: { messages: readonly ChatMessageData[] 
             'max-w-[74%] rounded-lg border px-xl py-lg text-body shadow-rest',
             message.sender === 'user'
               ? 'ml-auto border-brand-teal bg-brand-teal text-on-brand'
-              : 'mr-auto border-card bg-tone-slate-bg text-secondary',
+              : 'mr-auto border-card bg-surface-glass backdrop-blur-md shadow-glass-inset text-secondary',
           )}
           key={`chat-${message.sender}-${index}`}
         >

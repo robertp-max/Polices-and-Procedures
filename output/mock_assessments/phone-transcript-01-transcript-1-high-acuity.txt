@@ -1,0 +1,147 @@
+TRANSCRIPT 1 — HIGH ACUITY
+Referral Source: Hospital Discharge Planner
+Date: 06/23/2025 | Time: 09:14 AM PST
+Call Duration: 28 minutes
+
+[CALL INITIATED — INBOUND]
+
+CARE INDEED INTAKE (CI): Care Indeed Home Health, this is Vanessa speaking, intake department. How can I help you?
+
+CALLER: Hi Vanessa, this is Brenda Holt, I'm a discharge planner at Kaiser Redwood City. I've got a referral for you — a patient we're trying to get out today if possible. Are you accepting new patients in the Redwood City area?
+
+CI: Yes, we're accepting in Redwood City. Let me pull up a new intake form. Go ahead whenever you're ready, Brenda.
+
+CALLER: Great. So the patient is Clement Obadiah Nwachukwu. That's spelled C-L-E-M-E-N-T, last name N-W-A-C-H-U-K-W-U. Date of birth is January 3rd, 1939. So he's 86 years old.
+
+CI: Got it. 86-year-old male. And the address for services?
+
+CALLER: He lives at 4501 Farm Hill Boulevard, Apartment 12B, Redwood City, California 94061. It's a second-floor apartment but there's an elevator in the building.
+
+CI: Second floor with elevator, noted. Who does he live with?
+
+CALLER: He lives with his wife, Ngozi Nwachukwu. She's 81. She's actually the reason I'm calling so urgently — she's his primary caregiver but she's got her own issues. She has moderate COPD, uses a cane, and honestly she told me straight out she's overwhelmed. They don't have kids in the area. Their son Emeka lives in Houston and their daughter Adaeze is in Lagos, Nigeria. So it's really just the two of them.
+
+CI: That's an important consideration. What's the best phone number for the household?
+
+CALLER: Home phone is (650) 555-0472. The wife's cell is (650) 555-0119. She answers that one more reliably. Oh and the son's number — she gave me (713) 555-0834 for Emeka in Houston. He asked to be called for any major updates.
+
+CI: Got it. Now tell me about the primary diagnosis and why he's being referred.
+
+CALLER: Okay so Mr. Nwachukwu was admitted on June 17th for an acute COPD exacerbation with pneumonia — right lower lobe, community-acquired. He was on IV antibiotics for five days, transitioned to oral. He also went into new-onset atrial fibrillation during the hospitalization — rapid ventricular response, got him rate-controlled, started on diltiazem and apixaban. But here's where it gets complicated. His blood sugars went through the roof during the admission because they had him on steroids for the COPD — prednisone burst. He's a known type 2 diabetic but he was diet-controlled before this admission. Now his fasting glucoses are running 220 to 280 and they started him on insulin — glargine at bedtime plus a sliding scale with lispro. He's never been on insulin before. His wife is scared to death of the needles.
+
+CI: So we've got COPD exacerbation, pneumonia resolving, new a-fib on anticoagulation, and new insulin-dependent diabetes. What else is in his history?
+
+CALLER: Let me pull up the chart here. So his past medical — COPD, diagnosed about eight years ago, he's on home oxygen, 2 liters at rest, 3 with activity. Type 2 diabetes like I said, was diet-controlled, now insulin. Hypertension, long-standing. Benign prostatic hyperplasia — he's on tamsulosin. Osteoarthritis, bilateral hips, uses a quad cane. Chronic kidney disease stage 3, creatinine was 1.6 at discharge, GFR around 42. Depression — he's on citalopram, his wife says he's been more withdrawn since the hospitalization. And a history of falls — he fell twice in the last three months. The second fall is actually what triggered the pneumonia because he was on the ground for several hours before his wife found him. He couldn't get up on his own.
+
+CI: Oh that's concerning. Was there any injury from the fall?
+
+CALLER: No fractures, thank God, but he had a significant skin tear on his right forearm from the fall — it was repaired with Steri-Strips in the ED and it's healing but it still needs wound care. About 4 centimeters, linear, on the dorsal right forearm. The skin around it is paper-thin — he's on chronic prednisone, low-dose, 5 mg daily for the COPD, so his skin is just tissue paper at this point.
+
+CI: Got it. Let me document that wound. Anything else on the skin?
+
+CALLER: His sacrum is intact but it was getting red when he was here — Braden was 14, so he's at risk. His heels are intact. No other open wounds.
+
+CI: Okay. Let me get his allergies.
+
+CALLER: He's allergic to erythromycin — gives him severe GI upset, vomiting — and ACE inhibitors, specifically lisinopril — he had angioedema years ago, lip and tongue swelling. So that's why he's on amlodipine and not an ACE.
+
+CI: Noted — erythromycin and ACE inhibitors. What about his current medication list?
+
+CALLER: I'll go through them. Ready?
+
+CI: Go ahead.
+
+CALLER: One — Apixaban, Eliquis, 5 mg twice a day, for the new a-fib. Two — Diltiazem extended-release, 180 mg once daily, for a-fib rate control. Three — Amlodipine 10 mg daily, blood pressure. Four — Insulin glargine, Lantus, 16 units subcutaneous at bedtime, new. Five — Insulin lispro, Humalog, per sliding scale before meals, new. Six — Metformin 500 mg twice a day — they kept this since his kidneys can handle it at this GFR, but they want it monitored. Seven — Prednisone, tapering — currently 20 mg daily, decrease by 5 mg every three days until he gets to his baseline of 5 mg. Eight — Amoxicillin-clavulanate, Augmentin, 875 mg twice a day for five more days — completing the pneumonia course. Nine — Albuterol inhaler, 2 puffs every four to six hours as needed. Ten — Tiotropium, Spiriva, 18 mcg inhaled once daily. Eleven — Fluticasone-salmeterol, Advair 250/50, one puff twice daily. Twelve — Citalopram 20 mg daily, depression. Thirteen — Tamsulosin 0.4 mg at bedtime, BPH. Fourteen — Acetaminophen 650 mg every six hours as needed for pain — and the note says no NSAIDs given the kidneys and the anticoagulation. Fifteen — Docusate 100 mg twice daily, for constipation. Sixteen — Oxygen, 2 liters by nasal cannula at rest, 3 liters with activity, continuous.
+
+CI: That's 16 medications. Any controlled substances?
+
+CALLER: No controlled substances.
+
+CI: Sharps?
+
+CALLER: Yes — insulin syringes and pen needles. They gave him a Lantus pen and Humalog pen. He doesn't have a sharps container — can your nurse bring one?
+
+CI: Absolutely, we'll bring one on the first visit. Now tell me about his functional status.
+
+CALLER: He's deconditioned. Before this admission he was independent with a quad cane — slow but independent. Now he's requiring moderate assist of one for all transfers. He can bear weight but he fatigues in about ten seconds of standing. Ambulation — he did about 20 feet with the walker and max assist of one with PT here yesterday and his oxygen dropped to 86% and he had to sit down. He was absolutely wiped out.
+
+CI: What about ADLs?
+
+CALLER: Bathing — he needs moderate to maximum assist. He can wash his face and upper body but can't safely manage the shower even with a seat. Dressing — upper body is minimal assist, lower body is moderate assist because he can't bend well with the hip arthritis and he gets short of breath leaning forward. Toileting — he's using a bedside commode at the hospital and at home they have a regular toilet, no grab bars, no raised seat. That needs to be addressed. Eating — he's independent once food is in front of him, but he's only eating about 30 to 40 percent of meals. He says things taste funny since the antibiotics. And meal prep — his wife makes the food but she's struggling with the low-sodium, diabetic-friendly cooking. They eat a lot of traditional Nigerian food — a lot of stews, a lot of salt, palm oil, garlic, yams, plantains. The dietitian here talked to them but I'm not sure how much landed.
+
+CI: That's really helpful. What about his cognitive status?
+
+CALLER: He's alert and oriented times four. His cognition is intact — he's very sharp, actually. He was an engineering professor at San Jose State before he retired. He understands everything you tell him. But he's slow to respond — there's a processing delay that's new since the pneumonia, probably delirium-related, and his wife says he wasn't like this before. The hospitalist thinks it'll improve but it bears watching. His MMSE was 24 out of 30 here — he missed the date, he missed one of the serial sevens, and he only recalled two of three words at five minutes.
+
+CI: Any psychiatric concerns beyond the depression?
+
+CALLER: His wife told the social worker that he's been saying things like "I'm just tired of all this" and "I don't want to be a burden." We did a safety assessment — he denies active suicidal ideation, denies plan or intent, but the passive statements are concerning, especially given the depression, the functional decline, and the social isolation. His wife is the only person he sees regularly. He doesn't go to church anymore — he used to go to a Nigerian Pentecostal church in East Palo Alto every Sunday. He stopped three months ago after the first fall.
+
+CI: Understood. We'll flag that for nursing and MSW monitoring. Let me ask about the home environment.
+
+CALLER: I don't have a lot of detail on the home. The wife says it's a two-bedroom apartment, second floor with elevator, carpeted mostly. She said the bathroom is small and there's no shower chair, no grab bars. They have area rugs. He uses a quad cane at home but he's going to need the rolling walker now — physical therapy here recommended a rolling walker and a bedside commode for discharge. The DME company was supposed to deliver today but I haven't confirmed yet.
+
+CI: We'll verify DME on the first visit. What about his oxygen equipment at home?
+
+CALLER: He's got a stationary concentrator — 5 LPM — and portable tanks for outings. But his wife says one of the portable tanks is empty and she doesn't know how to get a refill.
+
+CI: We'll address that. Home O2 vendor?
+
+CALLER: Apria Healthcare — I think the account number is on file but I don't have it handy.
+
+CI: No problem, we'll verify. Now — who are his physicians?
+
+CALLER: His primary care is Dr. Oluwafemi Adeyemi, internal medicine, at Kaiser Redwood City. Phone (650) 555-0630, fax (650) 555-0631. He'll be the certifying physician.
+
+The cardiologist who saw him for the a-fib is Dr. Janet Yamamoto, also Kaiser. She wants a follow-up in two weeks. Phone (650) 555-0770.
+
+And his pulmonologist for the COPD is Dr. Raj Kapoor, Kaiser. (650) 555-0810. He wants to see him in three weeks.
+
+CI: Got all three. Was the face-to-face encounter done?
+
+CALLER: Yes — Dr. Adeyemi did the face-to-face on June 22nd, yesterday. He documented homebound status — severe dyspnea on exertion, oxygen-dependent, deconditioned, requires assistance to ambulate, unable to safely leave home without considerable and taxing effort. I'll fax you the face-to-face documentation with the referral packet.
+
+CI: Perfect. And what services are being ordered?
+
+CALLER: The orders are for:
+
+Skilled nursing three times a week for four weeks, then two times a week — for wound care on that skin tear, medication management and teaching especially the insulin, blood sugar monitoring, vitals, lung sounds, a-fib monitoring, fall risk assessment, depression screening, overall disease management.
+Physical therapy three times a week to start — for strengthening, ambulation training, endurance, fall prevention, home exercise program.
+Occupational therapy two times a week — ADL training, energy conservation, home safety assessment and modifications, adaptive equipment.
+Medical social work once a week for four weeks — depression monitoring, community resources, caregiver support for the wife, cultural considerations.
+Home health aide three times a week — bathing assist, ADL support.
+
+CI: That's comprehensive. Let me confirm payer information.
+
+CALLER: He's got Kaiser Medicare Senior Advantage — that's a Medicare Advantage plan. ID number KSA-44281903. Group MPSA-2210. He's been on this plan since 2015.
+
+CI: Any secondary?
+
+CALLER: No secondary.
+
+CI: Advance directives?
+
+CALLER: He has an Advance Health Care Directive — executed in 2020. His wife Ngozi is the agent. He is Full Code — no DNR, no POLST. He told the chaplain here very clearly he wants "everything done."
+
+CI: Alright Brenda, I think I've got everything I need. Let me read back the highlights to confirm.
+
+CALLER: Go ahead.
+
+CI: 86-year-old Nigerian American male, Clement Nwachukwu, discharging today from Kaiser Redwood City. Primary diagnoses: COPD exacerbation with RLL pneumonia resolving, new-onset atrial fibrillation on apixaban and diltiazem, type 2 diabetes newly transitioned to insulin, CKD stage 3, depression with concerning passive statements, history of recurrent falls, right forearm skin tear healing. Lives with elderly wife who is overwhelmed with caregiving. Sixteen medications, no controlled substances. Oxygen-dependent. Deconditioned, requires moderate to max assist. Home needs safety assessment — no grab bars, area rugs, no shower chair. Services: SN, PT, OT, MSW, HHA. Kaiser Medicare Senior Advantage. Full code.
+
+CALLER: That's perfect. One more thing — can you try to have your admitting nurse call the wife before going out? She's very anxious about having strangers in the home. She's a private person. If the nurse can introduce herself by phone first, it'll go a lot smoother.
+
+CI: Absolutely, we'll do that. We'll try to get the SOC visit done today or first thing tomorrow morning. I'll have the admitting RN call Mrs. Nwachukwu at the cell number you gave me before heading out.
+
+CALLER: Thank you so much. I'm faxing the referral packet now — it'll have the discharge summary, medication reconciliation, face-to-face documentation, physician orders, the recent labs, and the chest X-ray report.
+
+CI: Perfect. Brenda, what's your direct callback number?
+
+CALLER: (650) 555-0399, extension 214. Email is brenda.holt@kp.org.
+
+CI: Got it. Thank you, Brenda. We'll take good care of him.
+
+CALLER: Thank you, Vanessa.
+
+[CALL ENDED — 09:42 AM]
+

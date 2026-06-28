@@ -37,7 +37,7 @@ export function RadioGroup({
         return (
           <label
             className={cx(
-              'flex min-h-tap items-start gap-sm rounded-md border border-card bg-surface p-sm',
+              'flex min-h-tap items-start gap-sm rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-sm',
               'transition duration-fast ease-standard hover:bg-surface-hover',
               'focus-within:shadow-focus',
               optionDisabled && 'cursor-not-allowed opacity-60',

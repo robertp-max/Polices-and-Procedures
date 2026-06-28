@@ -1,14 +1,25 @@
 import { type Tone } from '../tokens';
 
+export const toneBorderClasses: Record<Tone, string> = {
+  amber: 'border-tone-amber-border',
+  blue: 'border-tone-blue-border',
+  green: 'border-tone-green-border',
+  orange: 'border-tone-orange-border',
+  red: 'border-tone-red-border',
+  slate: 'border-tone-slate-border',
+  teal: 'border-tone-teal-border',
+  violet: 'border-tone-violet-border',
+};
+
 export const toneSurfaceClasses: Record<Tone, string> = {
-  amber: 'border-tone-amber-border bg-tone-amber-bg text-tone-amber-text',
-  blue: 'border-tone-blue-border bg-tone-blue-bg text-tone-blue-text',
-  green: 'border-tone-green-border bg-tone-green-bg text-tone-green-text',
-  orange: 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text',
-  red: 'border-tone-red-border bg-tone-red-bg text-tone-red-text',
-  slate: 'border-tone-slate-border bg-tone-slate-bg text-tone-slate-text',
-  teal: 'border-tone-teal-border bg-tone-teal-bg text-tone-teal-text',
-  violet: 'border-tone-violet-border bg-tone-violet-bg text-tone-violet-text',
+  amber: 'border-tone-amber-border bg-tone-amber-bg backdrop-blur-md shadow-glass-inset text-tone-amber-text',
+  blue: 'border-tone-blue-border bg-tone-blue-bg backdrop-blur-md shadow-glass-inset text-tone-blue-text',
+  green: 'border-tone-green-border bg-tone-green-bg backdrop-blur-md shadow-glass-inset text-tone-green-text',
+  orange: 'border-tone-orange-border bg-tone-orange-bg backdrop-blur-md shadow-glass-inset text-tone-orange-text',
+  red: 'border-tone-red-border bg-tone-red-bg backdrop-blur-md shadow-glass-inset text-tone-red-text',
+  slate: 'border-tone-slate-border bg-tone-slate-bg backdrop-blur-md shadow-glass-inset text-tone-slate-text',
+  teal: 'border-tone-teal-border bg-tone-teal-bg backdrop-blur-md shadow-glass-inset text-tone-teal-text',
+  violet: 'border-tone-violet-border bg-tone-violet-bg backdrop-blur-md shadow-glass-inset text-tone-violet-text',
 };
 
 export const toneGlassSurfaceClasses: Record<Tone, string> = {

@@ -181,7 +181,7 @@ export function EvidenceFolderExplorer() {
   return (
     <section className="grid gap-lg" data-hash-id="evidence-center" data-route="/evidence" data-template="evidence">
       {/* Header + breadcrumb */}
-      <div className="rounded-lg border border-hairline bg-surface-glass p-lg shadow-rest">
+      <div className="rounded-[28px] border border-transparent bg-white/95 p-lg shadow-xl backdrop-blur-sm">
         <div className="flex flex-wrap items-center gap-sm text-sm">
           {crumbs.map((c, i) => (
             <span key={`${c.label}-${i}`} className="flex items-center gap-sm">
@@ -205,7 +205,7 @@ export function EvidenceFolderExplorer() {
 
       <div className={`grid gap-lg ${(selected || selectedDrive) ? 'desktop:grid-cols-[minmax(0,1fr)_minmax(360px,420px)]' : ''}`}>
         {/* Folder / document canvas */}
-        <div className="min-h-[420px] rounded-lg border border-hairline bg-surface p-xl shadow-rest">
+        <div className="min-h-[420px] rounded-[32px] border border-transparent bg-white/95 p-8 shadow-xl backdrop-blur-sm">
           <div className="flex flex-wrap gap-sm">
             {/* ROOT: years + special folders */}
             {view.level === 'root' && (
@@ -325,7 +325,7 @@ function DocumentViewer({ doc, onClose, onSign }: { doc: EvidenceDoc; onClose: (
   ) : null;
 
   return (
-    <aside className="grid content-start gap-lg rounded-lg border border-hairline bg-surface-glass p-lg shadow-rest">
+    <aside className="grid content-start gap-lg rounded-[28px] border border-transparent bg-white/95 p-lg shadow-xl backdrop-blur-sm">
       <div className="flex items-start justify-between gap-md">
         <div className="flex items-center gap-sm">
           <FileText className="h-6 w-6 text-brand-teal" />
@@ -413,7 +413,7 @@ function DriveDocCell({ file, selected, onOpen }: { file: BradTrainingFile; sele
    sign-in surface, reinforced by the note below. We never store the bytes. */
 function DriveDocViewer({ file, onClose }: { file: BradTrainingFile; onClose: () => void }) {
   return (
-    <aside className="grid content-start gap-lg rounded-lg border border-hairline bg-surface-glass p-lg shadow-rest">
+    <aside className="grid content-start gap-lg rounded-[28px] border border-transparent bg-white/95 p-lg shadow-xl backdrop-blur-sm">
       <div className="flex items-start justify-between gap-md">
         <div className="flex items-center gap-sm">
           <FileText className="h-6 w-6 text-brand-teal" />

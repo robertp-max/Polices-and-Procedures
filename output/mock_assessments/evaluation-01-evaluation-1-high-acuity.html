@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Care Indeed Mock Evaluation 1</title>
+<style>
+  @page { size: Letter; margin: 0.55in; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f3f7f7; color: #1f2a2d; font-family: Roboto, Arial, sans-serif; font-size: 12px; line-height: 1.45; }
+  .page { max-width: 8.5in; margin: 24px auto; background: #fff; border: 1px solid #d9e4e4; box-shadow: 0 12px 30px rgba(0,65,66,.08); }
+  .top-rule { display: grid; grid-template-columns: 2fr 1fr; height: 8px; }
+  .top-rule div:first-child { background: #008c8c; } .top-rule div:last-child { background: #f26a21; }
+  header { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; padding: 26px 30px 18px; border-bottom: 1px solid #d9e4e4; }
+  .brand { display: flex; gap: 14px; align-items: center; } .brand img { width: 44px; height: auto; }
+  .brand-title { font-size: 16px; font-weight: 700; color: #004142; } .brand-sub { margin-top: 2px; color: #667579; font-size: 11px; }
+  .mock { text-align: right; color: #b44713; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; font-size: 10px; }
+  main { padding: 26px 30px 34px; }
+  h1 { margin: 0 0 18px; color: #004142; font-size: 24px; line-height: 1.15; }
+  h2 { margin: 22px 0 8px; padding: 8px 10px; border-left: 5px solid #008c8c; background: #eef8f7; color: #004142; font-size: 14px; break-after: avoid; }
+  p { margin: 8px 0 12px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 18px; break-inside: avoid; }
+  th, td { border: 1px solid #d9e4e4; padding: 6px 7px; vertical-align: top; text-align: left; }
+  th { background: #f7fbfb; color: #004142; font-weight: 700; }
+  .risk { border: 1px solid #d9581f; border-left: 6px solid #d9581f; background: #fff4ee; padding: 10px 12px; break-inside: avoid; }
+  footer { display: flex; justify-content: space-between; gap: 16px; padding: 12px 30px; border-top: 1px solid #d9e4e4; color: #667579; font-size: 10px; }
+  .signature { margin-top: 24px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; break-inside: avoid; }
+  .sigbox { border: 1px solid #a9b9bb; min-height: 74px; padding: 10px; color: #667579; }
+  @media print { body { background: #fff; } .page { margin: 0; max-width: none; border: 0; box-shadow: none; } h2, table, .risk, .signature { break-inside: avoid; } }
+</style>
+</head>
+<body>
+  <article class="page">
+    <div class="top-rule"><div></div><div></div></div>
+    <header>
+      <div class="brand"><img src="http://localhost:5174/ci-logo-gray.png" alt="Care Indeed" /><div><div class="brand-title">Care Indeed Home Health</div><div class="brand-sub">Mock Patient Evaluation Document · Version 1.0 MOCK · Training Date July 1, 2026</div></div></div>
+      <div class="mock">MOCK TRAINING RECORD<br/>Synthetic UAT Data<br/>Not for clinical use<br/>Do not upload to live patient chart</div>
+    </header>
+    <main>
+      <h1>EVALUATION 1 — HIGH ACUITY</h1>
+<p>Primary Diagnosis: Acute Exacerbation of Congestive Heart Failure (NYHA Class III)</p>
+<h2>PATIENT DEMOGRAPHICS</h2>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Patient Name</td><td>Margaret Louise Finnegan</td></tr>
+<tr><td>Date of Birth</td><td>03/14/1941</td></tr>
+<tr><td>Age</td><td>84</td></tr>
+<tr><td>Sex</td><td>Female</td></tr>
+<tr><td>Gender Identity</td><td>Female (she/her)</td></tr>
+<tr><td>Race/Ethnicity</td><td>White / Non-Hispanic</td></tr>
+<tr><td>Primary Language</td><td>English</td></tr>
+<tr><td>Interpreter Needed</td><td>No</td></tr>
+<tr><td>Marital Status</td><td>Widowed</td></tr>
+<tr><td>Social Security # (last 4)</td><td>XXX-XX-7823</td></tr>
+<tr><td>Medical Record Number</td><td>CI-2025-00417</td></tr>
+<tr><td>Address of Service</td><td>1847 Oleander Court, Unit B, San Mateo, CA 94401</td></tr>
+<tr><td>Home Phone</td><td>(650) 555-0193</td></tr>
+<tr><td>Cell Phone</td><td>(650) 555-0247</td></tr>
+<tr><td>Email</td><td>None</td></tr>
+<tr><td>County</td><td>San Mateo</td></tr>
+</table>
+<h2>EMERGENCY CONTACTS</h2>
+<table>
+<tr><th>Priority</th><th>Name</th><th>Relationship</th><th>Phone (Primary)</th><th>Phone (Alt)</th><th>Lives with Patient?</th></tr>
+<tr><td>1</td><td>Robert Finnegan</td><td>Son</td><td>(650) 555-0381</td><td>(415) 555-0294</td><td>No — lives 12 miles away</td></tr>
+<tr><td>2</td><td>Diana Finnegan-Marsh</td><td>Daughter</td><td>(510) 555-0762</td><td>(510) 555-0148</td><td>No — lives 38 miles away</td></tr>
+<tr><td>3</td><td>Patricia Yuen</td><td>Neighbor / Friend</td><td>(650) 555-0455</td><td>N/A</td><td>No — lives next door, Unit A</td></tr>
+</table>
+<h2>LIVING SITUATION</h2>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Lives With</td><td>Alone</td></tr>
+<tr><td>Residence Type</td><td>Single-story duplex, rented</td></tr>
+<tr><td>Stairs to Enter</td><td>2 steps to front door (no handrail)</td></tr>
+<tr><td>Interior Stairs</td><td>None</td></tr>
+<tr><td>Elevator</td><td>N/A</td></tr>
+<tr><td>Pets</td><td>1 indoor cat (&quot;Biscuit&quot;) — elderly, not aggressive</td></tr>
+<tr><td>Home Access Instructions</td><td>Lockbox on front door handle; code to be provided to care team by son Robert</td></tr>
+<tr><td>DME in Home</td><td>Hospital bed (rented), bedside commode, rolling walker, portable oxygen concentrator (5 LPM)</td></tr>
+</table>
+<h2>PAYER INFORMATION</h2>
+<table>
+<tr><th>Priority</th><th>Payer</th><th>ID / Policy Number</th><th>Group Number</th><th>Effective Date</th></tr>
+<tr><td>Primary</td><td>Medicare Part A (Traditional)</td><td>1EG4-TE5-MK72</td><td>N/A</td><td>07/01/2014</td></tr>
+<tr><td>Secondary</td><td>Medi-Cal (Fee-for-Service)</td><td>94038712A</td><td>N/A</td><td>01/01/2019</td></tr>
+<tr><td>Tertiary</td><td>N/A</td><td></td><td></td><td></td></tr>
+</table>
+<p>Private Pay: No Workers&#39; Comp: No VA/TRICARE: No</p>
+<h2>PHYSICIAN INFORMATION</h2>
+<table>
+<tr><th>Role</th><th>Name</th><th>Specialty</th><th>Phone</th><th>Fax</th><th>NPI</th><th>Address</th></tr>
+<tr><td>Attending / Certifying Physician</td><td>Dr. Alan K. Chowdhury</td><td>Internal Medicine</td><td>(650) 555-0612</td><td>(650) 555-0613</td><td>1234567890</td><td>2100 Bay Medical Plaza, Ste 310, San Mateo, CA 94401</td></tr>
+<tr><td>Cardiologist</td><td>Dr. Renata Silva-Gutierrez</td><td>Cardiology</td><td>(650) 555-0820</td><td>(650) 555-0821</td><td>2345678901</td><td>2100 Bay Medical Plaza, Ste 445, San Mateo, CA 94401</td></tr>
+<tr><td>PCP (if different)</td><td>Same as attending</td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+<p>Face-to-Face Encounter Date: 06/18/2025 F2F Performed By: Dr. Alan K. Chowdhury F2F Encounter Findings: Patient seen in office; significant dyspnea on minimal exertion (walking &gt;15 ft), bilateral lower extremity edema (+2 pitting), weight gain 8 lbs in 10 days, oxygen saturation 89% on room air at rest. Requires skilled nursing for CHF management, medication teaching, daily weight monitoring, and oxygen management. Homebound due to severe dyspnea and functional limitation.</p>
+<h2>REFERRAL / HOSPITALIZATION HISTORY</h2>
+<table>
+<tr><th>Event</th><th>Facility</th><th>Dates</th><th>Reason</th></tr>
+<tr><td>Hospital Discharge</td><td>San Mateo Medical Center</td><td>06/12/2025 – 06/17/2025</td><td>Acute CHF exacerbation, fluid overload, IV diuresis</td></tr>
+<tr><td>ED Visit</td><td>San Mateo Medical Center</td><td>05/01/2025</td><td>Syncope — evaluated and released</td></tr>
+<tr><td>Hospital Admission</td><td>San Mateo Medical Center</td><td>02/08/2025 – 02/12/2025</td><td>CHF exacerbation, pneumonia</td></tr>
+<tr><td>Hospital Admission</td><td>Sequoia Hospital</td><td>11/15/2024 – 11/19/2024</td><td>CHF exacerbation with atrial fibrillation RVR</td></tr>
+</table>
+<p>Start of Care Date: 06/19/2025 Referral Source: San Mateo Medical Center Discharge Planning — Case Manager: Linda Torres, RN, (650) 555-0399</p>
+<h2>DIAGNOSES</h2>
+<table>
+<tr><th>Priority</th><th>ICD-10 Code</th><th>Diagnosis</th><th>Onset</th></tr>
+<tr><td>Primary</td><td>I50.33</td><td>Acute on chronic diastolic (congestive) heart failure, NYHA Class III</td><td>06/12/2025</td></tr>
+<tr><td>Secondary</td><td>I48.91</td><td>Unspecified atrial fibrillation (chronic, rate-controlled)</td><td>2018</td></tr>
+<tr><td>Secondary</td><td>I10</td><td>Essential (primary) hypertension</td><td>2005</td></tr>
+<tr><td>Secondary</td><td>E11.65</td><td>Type 2 diabetes mellitus with hyperglycemia</td><td>2010</td></tr>
+<tr><td>Secondary</td><td>N18.3</td><td>Chronic kidney disease, stage 3 (GFR 38 mL/min, 06/2025)</td><td>2020</td></tr>
+<tr><td>Secondary</td><td>E78.5</td><td>Dyslipidemia, unspecified</td><td>2008</td></tr>
+<tr><td>Secondary</td><td>J44.1</td><td>Chronic obstructive pulmonary disease with acute exacerbation (resolved, history of)</td><td>2022</td></tr>
+<tr><td>Secondary</td><td>M81.0</td><td>Age-related osteoporosis without current pathological fracture</td><td>2019</td></tr>
+<tr><td>Secondary</td><td>G47.33</td><td>Obstructive sleep apnea</td><td>2017</td></tr>
+<tr><td>Secondary</td><td>F32.1</td><td>Major depressive disorder, single episode, moderate</td><td>2023</td></tr>
+<tr><td>Secondary</td><td>H25.13</td><td>Age-related nuclear cataract, bilateral</td><td>2021</td></tr>
+</table>
+<p>Surgical History:</p>
+<p>Right total knee arthroplasty (2016)<br />Cholecystectomy (2003)<br />Hysterectomy, total abdominal (1998)<br />Cataract extraction, left eye (2022)</p>
+<h2>ALLERGIES</h2>
+<table>
+<tr><th>Allergen</th><th>Type</th><th>Reaction</th><th>Severity</th></tr>
+<tr><td>Penicillin</td><td>Drug</td><td>Anaphylaxis (throat swelling, hypotension) — documented 1987</td><td>SEVERE</td></tr>
+<tr><td>Sulfa drugs</td><td>Drug</td><td>Diffuse maculopapular rash, pruritus</td><td>Moderate</td></tr>
+<tr><td>Iodine contrast dye</td><td>Contrast</td><td>Urticaria, facial swelling</td><td>Moderate</td></tr>
+<tr><td>Latex</td><td>Environmental</td><td>Contact dermatitis</td><td>Mild</td></tr>
+<tr><td>Shellfish</td><td>Food</td><td>Nausea, abdominal cramping</td><td>Mild</td></tr>
+</table>
+<p>NKDA: ☐ No known drug allergies — NOT applicable; see above</p>
+<p>CURRENT MEDICATIONS (as of discharge 06/17/2025)</p>
+<table>
+<tr><th>#</th><th>Medication</th><th>Dose</th><th>Route</th><th>Frequency</th><th>Prescriber</th><th>Purpose</th><th>High-Risk?</th></tr>
+<tr><td>1</td><td>Furosemide (Lasix)</td><td>80 mg</td><td>PO</td><td>BID (8 AM, 2 PM)</td><td>Chowdhury</td><td>Diuresis / CHF</td><td>Yes</td></tr>
+<tr><td>2</td><td>Potassium Chloride (K-Dur)</td><td>20 mEq</td><td>PO</td><td>BID</td><td>Chowdhury</td><td>K+ replacement (with diuretic)</td><td>Yes</td></tr>
+<tr><td>3</td><td>Carvedilol (Coreg)</td><td>12.5 mg</td><td>PO</td><td>BID</td><td>Silva-Gutierrez</td><td>Heart failure / rate control</td><td>Yes</td></tr>
+<tr><td>4</td><td>Lisinopril</td><td>10 mg</td><td>PO</td><td>Daily (AM)</td><td>Chowdhury</td><td>HTN / CHF / renal protection</td><td>Yes</td></tr>
+<tr><td>5</td><td>Warfarin (Coumadin)</td><td>4 mg</td><td>PO</td><td>Daily (6 PM)</td><td>Silva-Gutierrez</td><td>Anticoagulation (A-fib)</td><td>YES — HIGH ALERT</td></tr>
+<tr><td>6</td><td>Digoxin (Lanoxin)</td><td>0.125 mg</td><td>PO</td><td>Daily (AM)</td><td>Silva-Gutierrez</td><td>A-fib rate control / CHF</td><td>YES — HIGH ALERT</td></tr>
+<tr><td>7</td><td>Metformin</td><td>500 mg</td><td>PO</td><td>BID (with meals)</td><td>Chowdhury</td><td>Type 2 DM</td><td>Yes</td></tr>
+<tr><td>8</td><td>Atorvastatin (Lipitor)</td><td>40 mg</td><td>PO</td><td>Daily (HS)</td><td>Chowdhury</td><td>Dyslipidemia</td><td>No</td></tr>
+<tr><td>9</td><td>Sertraline (Zoloft)</td><td>100 mg</td><td>PO</td><td>Daily (AM)</td><td>Chowdhury</td><td>Depression</td><td>No</td></tr>
+<tr><td>10</td><td>Albuterol (ProAir HFA)</td><td>2 puffs</td><td>INH</td><td>Q4-6H PRN</td><td>Chowdhury</td><td>Bronchospasm / COPD</td><td>No</td></tr>
+<tr><td>11</td><td>Alendronate (Fosamax)</td><td>70 mg</td><td>PO</td><td>Weekly (Sunday AM, 30 min before food/meds)</td><td>Chowdhury</td><td>Osteoporosis</td><td>No</td></tr>
+<tr><td>12</td><td>Calcium + Vitamin D</td><td>600 mg / 400 IU</td><td>PO</td><td>BID</td><td>Chowdhury</td><td>Bone health</td><td>No</td></tr>
+<tr><td>13</td><td>Docusate Sodium (Colace)</td><td>100 mg</td><td>PO</td><td>BID</td><td>Chowdhury</td><td>Constipation prophylaxis</td><td>No</td></tr>
+<tr><td>14</td><td>Acetaminophen (Tylenol)</td><td>650 mg</td><td>PO</td><td>Q6H PRN</td><td>Chowdhury</td><td>Pain (knee, general)</td><td>No</td></tr>
+<tr><td>15</td><td>Oxygen</td><td>2-3 LPM</td><td>Nasal cannula</td><td>Continuous at rest; 3 LPM with activity</td><td>Chowdhury</td><td>Hypoxemia / CHF / COPD</td><td>Yes</td></tr>
+</table>
+<p>Medication Reconciliation Completed: ☐ Yes — by admitting RN on __________ Discrepancies Identified: ☐ Yes ☐ No (if yes, document and notify physician) Controlled Substances in Home: None Insulin in Home: No Sharps in Home: No Medication Organizer Used: Yes — 7-day AM/PM pill organizer (filled by son Robert weekly)</p>
+<h2>CLINICAL ASSESSMENT — VITAL SIGNS AT ADMISSION</h2>
+<table>
+<tr><th>Parameter</th><th>Value</th><th>Date/Time</th><th>Normal Range</th><th>Abnormal?</th></tr>
+<tr><td>Blood Pressure</td><td>158/92 mmHg</td><td>06/19/2025 10:30 AM</td><td>&lt;130/80</td><td>Yes — elevated</td></tr>
+<tr><td>Heart Rate</td><td>88 bpm, irregularly irregular</td><td>06/19/2025 10:30 AM</td><td>60-100</td><td>WNL (irregular rhythm — known A-fib)</td></tr>
+<tr><td>Respiratory Rate</td><td>22 breaths/min</td><td>06/19/2025 10:30 AM</td><td>12-20</td><td>Yes — mildly elevated</td></tr>
+<tr><td>Temperature</td><td>98.2&#176;F (oral)</td><td>06/19/2025 10:30 AM</td><td>97.0-99.0</td><td>WNL</td></tr>
+<tr><td>Oxygen Saturation (SpO2)</td><td>91% on 2 LPM O2</td><td>06/19/2025 10:30 AM</td><td>≥95%</td><td>Yes — low</td></tr>
+<tr><td>SpO2 on Room Air</td><td>87% (desaturated within 45 seconds of O2 removal)</td><td>06/19/2025 10:35 AM</td><td>≥95%</td><td>Yes — significantly low</td></tr>
+<tr><td>Weight</td><td>178 lbs (80.7 kg)</td><td>06/19/2025 10:25 AM</td><td>Baseline ~165 lbs pre-exacerbation</td><td>Yes — 13 lbs above baseline</td></tr>
+<tr><td>Height</td><td>5&#39;4&quot; (162.5 cm)</td><td>Per history</td><td></td><td></td></tr>
+<tr><td>BMI</td><td>30.5</td><td>Calculated</td><td>18.5-24.9</td><td>Yes — obese class I</td></tr>
+<tr><td>Pain</td><td>4/10 (bilateral knee pain, worse with standing)</td><td>06/19/2025</td><td>0 = no pain</td><td>Yes</td></tr>
+<tr><td>Blood Glucose</td><td>188 mg/dL (fasting)</td><td>06/19/2025 08:15 AM (patient report)</td><td>70-130 fasting</td><td>Yes — elevated</td></tr>
+</table>
+<h2>CLINICAL ASSESSMENT — SYSTEMS REVIEW</h2>
+<p>Cardiovascular:</p>
+<p>History of CHF (diastolic, NYHA Class III at present), chronic atrial fibrillation (rate-controlled), hypertension.<br />Currently on anticoagulation with warfarin; INR due for check (last INR 2.3 on 06/16/2025 — inpatient).<br />Bilateral lower extremity edema: +2 pitting, bilateral, to mid-shin. Skin intact, no weeping.<br />JVD noted at 45 degrees.<br />S3 gallop appreciated on auscultation.<br />Peripheral pulses: dorsalis pedis 1+ bilaterally, posterior tibial 1+ bilaterally.<br />Capillary refill: 4 seconds bilaterally (delayed).<br />No calf tenderness, no Homans&#39; sign.<br />Daily weight monitoring ordered — patient has digital scale in bathroom.</p>
+<p>Respiratory:</p>
+<p>History of COPD (mild-moderate, FEV1 62% predicted on last PFT 2023).<br />Oxygen-dependent at rest (2 LPM) and with activity (3 LPM).<br />Bilateral basilar crackles (fine), more prominent on right than left — consistent with residual fluid.<br />Dyspnea on exertion: onset with walking &gt;10-15 feet; relieved with rest and supplemental O2 increase.<br />Dyspnea at rest: intermittent, particularly when supine (orthopnea — sleeps with 3 pillows elevated).<br />Productive cough: small amounts of white/frothy sputum, non-purulent.<br />No hemoptysis.<br />CPAP for OSA — patient reports non-compliance x 6 months (&quot;the mask bothers me&quot;).</p>
+<p>Neurological / Cognitive:</p>
+<p>Alert and oriented x4 (person, place, time, situation).<br />MMSE-equivalent screening: 26/30 (missed serial 7s, missed date by 1 day, difficulty with 3-item recall at 5 minutes — 1/3 recalled).<br />Speech clear, appropriate, coherent. No aphasia or dysarthria.<br />Cranial nerves grossly intact.<br />Bilateral upper extremity strength 4/5 (mild generalized weakness post-hospitalization).<br />Bilateral lower extremity strength 3+/5 (weakness, deconditioning, knee pain).<br />Sensation intact to light touch bilaterally — diminished at toes bilaterally (diabetic neuropathy suspected).<br />No tremor, no focal deficits.<br />Visual acuity: diminished (cataracts bilateral, L &gt; R; uses reading glasses). Difficulty reading medication bottles.<br />Hearing: mild bilateral sensorineural hearing loss — no hearing aids, denies need but frequently asks for repetition.</p>
+<p>Gastrointestinal:</p>
+<p>Abdomen soft, non-tender, non-distended. Bowel sounds active x4 quadrants.<br />Last BM: 06/18/2025 — soft, brown, no blood.<br />Dentures: upper plate (fits well); lower natural teeth (several missing).<br />Appetite: poor since hospitalization; estimates eating 40-50% of meals.<br />Diet order: low-sodium (2g Na+/day), diabetic-consistent, fluid restriction 1.5L/day.<br />Reports difficulty preparing meals; son Robert brings meals 3x/week, otherwise relies on frozen meals (high sodium concern).</p>
+<p>Genitourinary:</p>
+<p>Voiding independently; nocturia x3-4 (likely related to diuretic timing and CHF).<br />No incontinence. No dysuria, no hematuria.<br />No catheter. No history of UTI in past 12 months.<br />CKD Stage 3 — last creatinine 1.8, BUN 34, GFR 38 (06/15/2025 inpatient labs).<br />Nephrology referral pending.</p>
+<p>Integumentary / Skin:</p>
+<p>Skin generally intact.<br />Bilateral lower extremities: +2 pitting edema, skin taut and shiny, no breakdown, no cellulitis. Hemosiderin staining bilateral medial ankles (chronic venous changes).<br />Sacrum/coccyx: intact, no redness, no pressure injury. Braden Scale: 16 (mild risk).<br />Bilateral knees: well-healed surgical scar right knee (TKA 2016); no erythema, warmth, or drainage.<br />No wounds, no ulcers, no skin tears.<br />Skin turgor: mildly decreased (upper extremities) — may indicate suboptimal hydration despite fluid overload.</p>
+<p>Musculoskeletal / Functional:</p>
+<p>Transfers: bed to chair with moderate assist of 1 and use of bedrail. Stands with rolling walker and moderate assist of 1.<br />Ambulation: rolling walker, 10-15 feet maximum before significant dyspnea and fatigue. Requires contact guard to standby assist.<br />Stairs: unable at this time (2 steps to front door — uses single handrail + assist of 1).<br />ADLs:<br />Bathing: requires moderate assist (seated shower, uses shower chair)<br />Dressing upper body: minimal assist (difficulty with overhead motion due to fatigue)<br />Dressing lower body: moderate assist (cannot bend to put on shoes/socks due to edema, dyspnea)<br />Toileting: uses bedside commode at night; ambulates to bathroom with walker during day (standby assist)<br />Eating: independent (when food is prepared and placed within reach)<br />Grooming: independent (seated)<br />IADLs:<br />Meal preparation: unable (fatigue, dyspnea, standing tolerance &lt;3 minutes)<br />Medication management: requires supervision/assist (poor understanding of regimen changes post-discharge; visual impairment limits label reading)<br />Telephone use: independent<br />Laundry: unable<br />Light housekeeping: unable<br />Shopping: unable<br />Transportation: unable to drive; dependent on son or paratransit</p>
+<p>Psychosocial / Emotional:</p>
+<p>PHQ-9 Score: 14 (moderate depression)<br />Reports feeling &quot;useless&quot; and &quot;like a burden to my kids.&quot;<br />Widowed x 7 years; reports ongoing grief, worsened with repeated hospitalizations.<br />Social isolation: lives alone, limited visitors (son 2-3x/week; daughter monthly). Neighbor Patricia checks in daily by phone.<br />Previous psychotherapy: none. Open to MSW support &quot;if it would help.&quot;<br />Denies suicidal ideation, homicidal ideation, or self-harm.<br />Denies alcohol, tobacco (quit 1995), or illicit drug use.<br />Spiritual: Catholic; parish priest visits monthly. Faith is important to her.<br />Reports anxiety about falling when alone, especially at night.</p>
+<h2>HOMEBOUND STATUS ASSESSMENT</h2>
+<table>
+<tr><th>Criterion</th><th>Finding</th></tr>
+<tr><td>Criterion 1 — Considerable and taxing effort to leave home</td><td>MET. Patient develops significant dyspnea (SpO2 drops to 87% on RA) with ambulation &gt;10-15 feet. Requires rolling walker + assist of 1 to ambulate. Unable to navigate 2 steps to front door without assist. Severe fatigue with minimal activity. Bilateral LE edema limits mobility.</td></tr>
+<tr><td>Criterion 2 — Absences from home are infrequent/short/for medical care</td><td>MET. Patient has not left home since hospital discharge 06/17/2025. Son drives her to medical appointments only. No other outings planned or feasible.</td></tr>
+<tr><td>Homebound Status</td><td>CONFIRMED — homebound</td></tr>
+</table>
+<h2>ADVANCE DIRECTIVES</h2>
+<table>
+<tr><th>Document</th><th>Status</th><th>On File?</th><th>Date Executed</th></tr>
+<tr><td>Advance Health Care Directive (AHCD)</td><td>Yes — executed</td><td>☐ Copy provided at admission</td><td>03/2021</td></tr>
+<tr><td>Power of Attorney for Health Care</td><td>Robert Finnegan (son) designated as agent</td><td>Included in AHCD</td><td>03/2021</td></tr>
+<tr><td>POLST</td><td>Yes — completed</td><td>☐ Copy provided at admission</td><td>06/2025 (updated during hospitalization)</td></tr>
+<tr><td>POLST Orders</td><td>Full treatment (Section A); selective treatment including hospitalization but no intubation (Section B); trial period of artificial nutrition (Section D)</td><td></td><td></td></tr>
+<tr><td>DNR</td><td>No — patient is FULL CODE per POLST Section A</td><td></td><td></td></tr>
+<tr><td>Mental Health Directive</td><td>None</td><td></td><td></td></tr>
+</table>
+<h2>HOME SAFETY ASSESSMENT</h2>
+<table>
+<tr><th>Area</th><th>Finding</th><th>Recommendation</th><th>Patient Response</th></tr>
+<tr><td>Entry</td><td>2 steps, no handrail on left side</td><td>Install grab rail left side of steps</td><td>Son Robert will install this weekend</td></tr>
+<tr><td>Lighting — Entry</td><td>Dim; single 40W bulb</td><td>Replace with higher-wattage LED bulb</td><td>Agreed</td></tr>
+<tr><td>Lighting — Hallway to Bathroom</td><td>Adequate</td><td>None</td><td>N/A</td></tr>
+<tr><td>Lighting — Bedroom</td><td>Nightlight present but burned out</td><td>Replace nightlight</td><td>Agreed</td></tr>
+<tr><td>Flooring</td><td>2 loose area rugs in living room; 1 bath mat (non-slip backing worn)</td><td>Remove area rugs; replace bath mat</td><td>Patient reluctant about rugs (&quot;they make it feel like home&quot;) — educated on fall risk, will discuss with son</td></tr>
+<tr><td>Bathroom</td><td>Shower chair present (stable); no grab bars near toilet or shower; bath mat worn</td><td>Install grab bars at toilet and inside shower; replace bath mat</td><td>Son will arrange installation</td></tr>
+<tr><td>Bedroom</td><td>Hospital bed present (functional); bedside commode in place; path to bathroom clear; 3 pillows for orthopnea positioning</td><td>None — adequate</td><td>N/A</td></tr>
+<tr><td>Kitchen</td><td>Moderate clutter on counters; no fire extinguisher; smoke detector present (functional)</td><td>Reduce clutter; obtain fire extinguisher; educate on stove safety</td><td>Agreed to clutter reduction; son will bring extinguisher</td></tr>
+<tr><td>Smoke Detectors</td><td>1 in hallway (functional; battery tested); none in bedroom or kitchen</td><td>Install smoke detectors in bedroom and kitchen</td><td>Son will install</td></tr>
+<tr><td>Carbon Monoxide Detector</td><td>None</td><td>Install CO detector near bedroom</td><td>Son will purchase and install</td></tr>
+<tr><td>Medications</td><td>Stored in kitchen cabinet; not organized; multiple expired medications from prior regimens mixed in; Coumadin not separated from other meds</td><td>Organize medications; discard expired meds; separate high-alert medications; place medication list on refrigerator; consider locking med box for Coumadin</td><td>RN will organize at next visit with patient/son</td></tr>
+<tr><td>Oxygen</td><td>Portable concentrator present; tubing adequate length (25 ft); no open flames observed; patient aware of O2 safety (verbal confirmation); no &quot;No Smoking&quot; sign posted</td><td>Post &quot;Oxygen in Use — No Smoking&quot; signs at front door and in bedroom</td><td>RN will provide signs at next visit</td></tr>
+<tr><td>Sharps</td><td>None in home at this time</td><td>N/A</td><td>N/A</td></tr>
+<tr><td>Emergency Numbers</td><td>Not posted</td><td>Post emergency numbers (911, CI after-hours, son Robert, Dr. Chowdhury) on refrigerator</td><td>RN will provide card at next visit</td></tr>
+<tr><td>Phone Access</td><td>Cordless landline in living room; cell phone usually on nightstand</td><td>Ensure phone within reach at all times, including bathroom trips</td><td>Agreed — will keep cell phone in robe pocket</td></tr>
+<tr><td>Weapons</td><td>Patient denies firearms or weapons in home</td><td>None</td><td>N/A</td></tr>
+<tr><td>Pets</td><td>1 indoor cat — elderly, calm, not a tripping hazard; litter box in laundry room (son cleans weekly)</td><td>Monitor cat litter area for fall risk</td><td>N/A</td></tr>
+<tr><td>General Cleanliness</td><td>Adequate; mild clutter in living room (magazines, mail)</td><td>Reduce clutter in walkways</td><td>Agreed</td></tr>
+<tr><td>Temperature</td><td>Central heating/cooling present; thermostat set at 72&#176;F; adequate</td><td>None</td><td>N/A</td></tr>
+<tr><td>Water Temperature</td><td>Tested at bathroom sink: 118&#176;F</td><td>Within safe range (&lt;120&#176;F)</td><td>N/A</td></tr>
+</table>
+<p>Overall Home Safety Risk Level: Moderate Immediate Hazards Identified: Loose area rugs (fall risk); absent grab bars at toilet/shower; expired medications mixed with current; no CO detector; no bedroom smoke detector.</p>
+<h2>SERVICES ORDERED</h2>
+<table>
+<tr><th>Service</th><th>Discipline</th><th>Frequency</th><th>Duration</th><th>Start Date</th></tr>
+<tr><td>Skilled Nursing</td><td>RN</td><td>3x/week x 3 weeks, then 2x/week x 3 weeks, then 1x/week x 2 weeks</td><td>8 weeks (anticipated)</td><td>06/19/2025</td></tr>
+<tr><td>Physical Therapy</td><td>PT</td><td>3x/week x 4 weeks, then 2x/week x 4 weeks</td><td>8 weeks (anticipated)</td><td>06/20/2025</td></tr>
+<tr><td>Occupational Therapy</td><td>OT</td><td>2x/week x 3 weeks, then 1x/week x 3 weeks</td><td>6 weeks (anticipated)</td><td>06/20/2025</td></tr>
+<tr><td>Medical Social Work</td><td>MSW</td><td>1x/week x 4 weeks, then PRN</td><td>4 weeks + PRN</td><td>06/23/2025</td></tr>
+<tr><td>Home Health Aide</td><td>HHA</td><td>3x/week (bathing assist, ADL support)</td><td>Duration of need</td><td>06/23/2025</td></tr>
+</table>
+<h2>SKILLED NURSING CARE PLAN FOCUS AREAS</h2>
+<p>CHF Management &amp; Monitoring</p>
+<p class="risk">Daily weight monitoring — patient/caregiver education on technique, timing (AM, after void, before breakfast, same clothing), and documentation<br />Teach CHF &quot;zone&quot; system: Green zone (stable), Yellow zone (call MD — weight gain &gt;2 lbs/day or &gt;5 lbs/week, increased swelling, increased dyspnea), Red zone (call 911 — chest pain, severe SOB, fainting)<br />Assess bilateral lower extremity edema each visit — measure circumference at ankle and mid-calf<br />Monitor JVD, lung sounds (crackles), and SpO2 each visit<br />Reinforce fluid restriction (1.5L/day) — teach fluid measurement and tracking<br />Reinforce low-sodium diet (2g/day) — provide written materials, review food labels, evaluate frozen meal sodium content<br />Educate on sodium hidden sources (canned soups, frozen meals, condiments, bread)</p>
+<p>Medication Management</p>
+<p>Complete medication reconciliation — compare discharge summary, pharmacy bottles, and pill organizer<br />Dispose of expired/discontinued medications safely<br />Organize current medications with son/patient<br />Teach purpose, dose, frequency, timing, side effects, and interactions for all medications, with emphasis on:<br />Warfarin: INR monitoring schedule, signs of bleeding (bruising, gum bleeding, blood in stool/urine, prolonged wound bleeding, headache), dietary consistency (Vitamin K foods), drug interactions (OTC meds, herbals), lab schedule<br />Digoxin: teach to check pulse before taking (hold and call MD if &lt;60 or &gt;110 or irregular change), signs of toxicity (nausea, vomiting, visual disturbances, confusion, bradycardia)<br />Furosemide: timing (not after 2 PM to reduce nocturia), electrolyte monitoring, signs of dehydration vs. fluid overload, importance of potassium supplementation<br />Carvedilol: orthostatic hypotension precautions, do not abruptly discontinue<br />Lisinopril: cough as common side effect, report angioedema immediately<br />Metformin: take with meals, hold if NPO or having contrast procedures, signs of lactic acidosis (rare — muscle pain, weakness, difficulty breathing)<br />Coordinate with son Robert re: weekly pill organizer filling<br />Assess need for pharmacy medication synchronization (med sync) program<br />INR monitoring: draw or coordinate INR draw per physician-specified schedule (goal INR 2.0-3.0 for A-fib)</p>
+<p>Oxygen Management</p>
+<p>Assess O2 compliance — patient reports removing O2 at night (&quot;it dries out my nose&quot;)<br />Educate on importance of continuous O2 use<br />Recommend humidifier bottle for concentrator<br />Verify O2 flow rate matches orders (2 LPM rest, 3 LPM activity)<br />Assess equipment function at each visit<br />Monitor SpO2 at each visit (on and off O2 if tolerated)<br />Reinforce O2 safety (no open flame, no smoking, post signs)</p>
+<p>Diabetes Monitoring</p>
+<p>FSBS monitoring: patient currently not testing at home (glucometer present but &quot;I forget&quot;)<br />Reinforce daily AM fasting FSBS and PRN if symptomatic<br />Review FSBS targets per physician (goal 100-180 for this patient given age and comorbidities)<br />Teach hypo/hyperglycemia signs and management<br />A1c monitoring: last A1c 7.8% (05/2025) — coordinate with MD for follow-up</p>
+<p>Renal Function Monitoring</p>
+<p>Monitor for signs of CKD progression: decreased urine output, increased edema, new-onset confusion, nausea<br />Coordinate lab draws per MD order (BMP/CMP frequency)<br />Educate patient on CKD and relationship to CHF and DM<br />Support nephrology referral follow-up</p>
+<p>Fall Prevention</p>
+<p>Assess fall risk at each visit (current risk: HIGH — history of syncope 05/2025, LE edema, orthostatic BP changes on carvedilol, visual impairment, nocturia, deconditioning)<br />Reinforce safe transfer techniques<br />Reinforce call light/phone within reach at all times<br />Coordinate with PT/OT on fall prevention program<br />Educate on orthostatic hypotension precautions (rise slowly, sit on edge of bed before standing)</p>
+<p>Wound / Skin Surveillance</p>
+<p>No wounds currently — monitor for breakdown given edema, CKD, DM, and reduced mobility<br />Braden Scale reassessment each visit<br />Educate on skin inspection, moisturizing, and pressure relief<br />Educate on diabetic foot care (daily inspection, proper footwear, no walking barefoot, no heating pads on feet)</p>
+<p>Depression Monitoring</p>
+<p>PHQ-9 reassessment every 2 weeks<br />Assess response to sertraline (started 2023)<br />Monitor for suicidal ideation<br />Coordinate with MSW for psychosocial support<br />Encourage social engagement, activity tolerance progression</p>
+<p>Patient/Caregiver Education</p>
+<p class="risk">All of the above<br />When to call the MD vs. when to call 911 — provide written wallet card<br />Teach-back for all education points (CHF zones, weight monitoring, fluid restriction, medications, O2, diet)<br />Assess and address health literacy limitations (visual impairment, hearing impairment)</p>
+<h2>PHYSICAL THERAPY EVALUATION FOCUS AREAS</h2>
+<p>Functional Mobility Assessment</p>
+<p>Timed Up and Go (TUG): ___ seconds (anticipated &gt;20 seconds = high fall risk)<br />30-Second Chair Stand Test: ___ (anticipated &lt;8 = below norm for age)<br />6-Minute Walk Test: defer until functional status allows; use timed distance test (e.g., 2-minute walk)<br />Berg Balance Scale: anticipated score &lt;40 (fall risk)</p>
+<p>Strengthening Program</p>
+<p>Progressive lower extremity strengthening (seated → standing → ambulatory exercises)<br />Core stabilization<br />Emphasis on functional task training (sit-to-stand, bed mobility, toilet transfers)</p>
+<p>Endurance / Activity Tolerance</p>
+<p>Graded activity progression with SpO2 and HR monitoring<br />Teach Borg Dyspnea Scale for self-monitoring<br />Collaborate with RN on O2 titration during activity</p>
+<p>Gait Training</p>
+<p>Rolling walker assessment and training (proper height, technique, turning)<br />Stair training (2 steps with rail) when safe and appropriate<br />Obstacle navigation in home</p>
+<p>Fall Prevention Program</p>
+<p>Balance exercises (static → dynamic)<br />Environmental modifications (coordinate with OT)<br />Education on fall recovery techniques</p>
+<h2>OCCUPATIONAL THERAPY EVALUATION FOCUS AREAS</h2>
+<p>ADL Training</p>
+<p>Energy conservation techniques for bathing, dressing, meal preparation<br />Adaptive equipment assessment (long-handled shoehorn, sock aid, reacher, tub bench)<br />Seated task training for kitchen activities</p>
+<p>Home Modification Recommendations</p>
+<p>Grab bar placement (toilet, shower)<br />Raised toilet seat assessment<br />Kitchen organization for accessibility</p>
+<p>Medication Management Support</p>
+<p>Large-print medication list<br />Medication organizer setup with visual aids<br />Adaptive strategies for visual impairment (magnifying glass, contrasting labels)</p>
+<p>Energy Conservation / Work Simplification</p>
+<p>Activity pacing for CHF management<br />Teach diaphragmatic breathing during ADLs<br />Reorganize home to minimize unnecessary ambulation</p>
+<h2>MEDICAL SOCIAL WORK FOCUS AREAS</h2>
+<p>Psychosocial Assessment &amp; Support</p>
+<p>Depression management — coping strategies, grief counseling referral<br />Social isolation intervention — community resources, senior center (when mobility improves), phone-based support groups, parish visitor program<br />Caregiver burden assessment (son Robert)</p>
+<p>Community Resources</p>
+<p class="risk">Meals on Wheels referral (address nutritional needs + sodium-controlled options)<br />Paratransit enrollment for medical appointments<br />PG&amp;E Medical Baseline Program enrollment (O2 concentrator)<br />County emergency services registration<br />Catholic Charities or parish-based support services</p>
+<p>Financial / Insurance Counseling</p>
+<p>Verify Medicare/Medi-Cal dual-eligible benefits<br />Assist with prescription assistance programs if needed<br />Health Insurance Counseling &amp; Advocacy Program (HICAP) referral for benefits review</p>
+<p>Advance Care Planning Support</p>
+<p>Review existing AHCD and POLST — confirm patient understands and wishes are current<br />Facilitate family discussion about goals of care if patient desires</p>
+<h2>HOME HEALTH AIDE CARE PLAN</h2>
+<table>
+<tr><th>Task</th><th>Frequency</th><th>Specific Instructions</th></tr>
+<tr><td>Bathing Assist</td><td>3x/week</td><td>Seated shower using shower chair; patient washes upper body, aide assists with back, lower body, feet, hair. Water temperature check before bathing. Observe skin for breakdown, redness, new bruising.</td></tr>
+<tr><td>Dressing Assist</td><td>3x/week (post-bath)</td><td>Assist with lower body dressing (socks, shoes — use adaptive equipment as trained by OT). Patient independent with upper body dressing (minimal assist as needed).</td></tr>
+<tr><td>Personal Care</td><td>3x/week</td><td>Nail care (file only — no cutting due to DM and Coumadin); skin moisturizing (lower legs, feet — avoid between toes); oral care assist if needed.</td></tr>
+<tr><td>Vital Signs</td><td>Each visit</td><td>Weight, BP, HR, SpO2. Report to RN: weight gain &gt;2 lbs since last visit, SBP &gt;160 or &lt;90, HR &lt;60 or &gt;110, SpO2 &lt;90%.</td></tr>
+<tr><td>Ambulation Assist</td><td>Each visit</td><td>Assist with ambulation using rolling walker as tolerated. Monitor for dyspnea, fatigue, dizziness.</td></tr>
+<tr><td>Light Meal Prep</td><td>Each visit (as time allows)</td><td>Prepare simple meals per dietary restrictions (low sodium, diabetic). Assist with fluid measurement/tracking.</td></tr>
+<tr><td>Environmental Observations</td><td>Each visit</td><td>Report any safety hazards, changes in home environment, or changes in patient behavior/cognition to RN supervisor.</td></tr>
+</table>
+<p>HHA Supervision: RN supervisory visit every 14 days per 42 CFR &#167;484.80(h). RN must make an on-site visit to patient&#39;s home during an HHA visit at least once every 14 days.</p>
+<h2>PLAN OF CARE GOALS (60-DAY CERTIFICATION PERIOD)</h2>
+<table>
+<tr><th>#</th><th>Goal Area</th><th>Measurable Goal</th><th>Target Date</th></tr>
+<tr><td>1</td><td>CHF Management</td><td>Patient/caregiver will verbalize understanding of CHF zones and demonstrate daily weight monitoring with 90% accuracy over 2 consecutive weeks</td><td>08/01/2025</td></tr>
+<tr><td>2</td><td>CHF — Fluid Status</td><td>Patient will achieve dry weight of ≤168 lbs (return toward baseline 165 lbs) with no rehospitalization</td><td>08/17/2025</td></tr>
+<tr><td>3</td><td>Medication Management</td><td>Patient/caregiver will correctly identify all medications by name, purpose, dose, and key side effects using teach-back with ≥80% accuracy</td><td>07/31/2025</td></tr>
+<tr><td>4</td><td>INR Stability</td><td>INR will remain within therapeutic range (2.0-3.0) for ≥80% of draws during episode</td><td>Ongoing</td></tr>
+<tr><td>5</td><td>Oxygen Compliance</td><td>Patient will demonstrate continuous O2 use as ordered, including during sleep, with ≥90% compliance per self-report and equipment use data</td><td>07/31/2025</td></tr>
+<tr><td>6</td><td>SpO2 Improvement</td><td>SpO2 will be ≥92% on prescribed O2 at rest consistently</td><td>08/17/2025</td></tr>
+<tr><td>7</td><td>Functional Mobility</td><td>Patient will ambulate 100 feet with rolling walker and standby assist with SpO2 ≥90%</td><td>08/17/2025</td></tr>
+<tr><td>8</td><td>Transfer Independence</td><td>Patient will transfer bed-to-chair with supervision only (no physical assist)</td><td>08/01/2025</td></tr>
+<tr><td>9</td><td>Fall Prevention</td><td>Zero falls during episode of care</td><td>08/17/2025</td></tr>
+<tr><td>10</td><td>ADLs</td><td>Patient will perform upper body dressing independently and lower body dressing with minimal assist</td><td>08/17/2025</td></tr>
+<tr><td>11</td><td>Nutrition</td><td>Patient will verbalize understanding of low-sodium, diabetic-consistent diet and demonstrate ability to identify high-sodium foods with ≥80% accuracy</td><td>07/31/2025</td></tr>
+<tr><td>12</td><td>Depression</td><td>PHQ-9 score will decrease to ≤10 (from 14)</td><td>08/17/2025</td></tr>
+<tr><td>13</td><td>Diabetes</td><td>Fasting blood glucose will be within target range (100-180) for ≥70% of readings</td><td>08/17/2025</td></tr>
+<tr><td>14</td><td>Skin Integrity</td><td>Skin will remain intact with no new pressure injuries, skin tears, or breakdown</td><td>08/17/2025</td></tr>
+<tr><td>15</td><td>Home Safety</td><td>All identified safety hazards will be remediated (grab bars, rugs, smoke/CO detectors, medication organization)</td><td>07/15/2025</td></tr>
+</table>
+<h2>DISCHARGE CRITERIA (ANTICIPATED)</h2>
+<p>Patient will be considered for discharge when:</p>
+<p>CHF is compensated and stable (at or near dry weight, no signs/symptoms of decompensation x 2 consecutive weeks).<br />Medications are reconciled, organized, and patient/caregiver demonstrates competence in medication management.<br />INR is stable within therapeutic range.<br />O2 requirements are stable and patient is compliant.<br />Functional goals are met or plateau is reached.<br />Patient/caregiver verbalizes understanding of disease management, dietary restrictions, activity guidelines, and when to seek medical attention.<br />Home environment is safe.<br />Community resources are in place (Meals on Wheels, paratransit, etc.).<br />Follow-up appointments are scheduled with cardiologist, nephrologist, and PCP.<br />Emotional status is improved and support systems are engaged.</p>
+<p>Anticipated Discharge Date: 08/17/2025 (end of first 60-day certification period) — subject to reassessment.</p>
+<h2>PATIENT / REPRESENTATIVE SIGNATURES — EVALUATION 1</h2>
+<p>I confirm that the information provided above is accurate and complete to the best of my knowledge. I have participated in the development of this plan of care and agree to the services described.</p>
+<p>Patient Signature: ______________________________ Date: __________ Time: __________</p>
+<p>Print Name: Margaret Louise Finnegan</p>
+<p>Authorized Representative Signature (if applicable): ______________________________</p>
+<p>Print Name: Robert Finnegan</p>
+<p>Relationship: Son / Health Care Agent (POA)</p>
+<p>Witness / Admitting Clinician Signature: ______________________________ Date: __________</p>
+<p>Print Name / Title / Credentials: ______________________________</p>
+      <section class="signature">
+        <div class="sigbox">Patient / Representative / Conservator<br/><br/>Mock signature area — training only.</div>
+        <div class="sigbox">Evaluating Clinician<br/><br/>Mock signature area — training only.</div>
+        <div class="sigbox">Caregiver / Interpreter if applicable<br/><br/>Mock signature area — training only.</div>
+        <div class="sigbox">Date / Attestation<br/><br/>Mock signature area — training only.</div>
+      </section>
+    </main>
+    <footer><span>MOCK TRAINING RECORD · Synthetic UAT Data · Not a real patient record</span><span>Evaluation 1 · Page <span class="page-number"></span></span></footer>
+  </article>
+</body>
+</html>

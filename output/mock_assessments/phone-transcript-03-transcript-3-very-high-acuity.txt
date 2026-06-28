@@ -1,0 +1,134 @@
+TRANSCRIPT 3 — VERY HIGH ACUITY
+Referral Source: Inpatient Rehabilitation Facility
+Date: 06/25/2025 | Time: 02:33 PM PST
+Call Duration: 34 minutes
+
+[CALL INITIATED — INBOUND]
+
+CI: Care Indeed Home Health, this is Marcus, intake coordinator.
+
+CALLER: Hi Marcus, this is Dr. Hyun-Joo Kwon, I'm the physiatrist at Seton Rehabilitation Center in Daly City. I'm calling with a referral for one of my patients who's discharging on Friday. This is a really complex case so I apologize in advance, this might take a while.
+
+CI: No problem at all, Dr. Kwon. I've got my form open and plenty of time. Let's go.
+
+CALLER: Okay, the patient is Tomás Rafael Guerrero-Salazar. T-O-M-A-S, accent on the A. Last name G-U-E-R-R-E-R-O, hyphen, S-A-L-A-Z-A-R. Date of birth is May 15, 1978. So he's 47.
+
+CI: Young guy. What happened?
+
+CALLER: Motorcycle accident. He was riding on Highway 1 near Pacifica on April 28th, a truck ran a red light, hit him broadside. He wasn't wearing a helmet — I know, I know. He was airlifted to Stanford Trauma. He had a traumatic brain injury — bilateral frontal contusions with a small subdural hematoma that was managed conservatively — plus a T11 burst fracture that was stabilized with posterior fusion T9 to L1, plus a left femoral shaft fracture with an intramedullary rod, plus a left open tibial fracture, Gustilo grade IIIA, with external fixator initially, converted to intramedullary nail at two weeks. So we're talking about polytrauma — brain injury, spinal fracture with instrumentation, and two left lower extremity fractures.
+
+CI: That's devastating. What's his neurological status?
+
+CALLER: The TBI is the complicating factor. He was GCS 7 at the scene. He was intubated in the field, stayed on the vent for eight days. He's been at my rehab facility since May 22nd — so about five weeks. His Rancho Los Amigos level on admission to rehab was Level V — confused, inappropriate, non-agitated. He's now progressed to Level VII — automatic, appropriate. So he's oriented times three most of the time — he knows who he is, he knows he's in California, he usually knows the month but he gets the date wrong. His memory is the big issue — he's got significant short-term memory impairment. He can't retain new information for more than about 10-15 minutes without cues. You tell him something, he'll ask you the same question fifteen minutes later. His long-term memory is mostly intact — he remembers his family, his job, the general facts of the accident.
+
+His executive function is impaired — poor judgment, impulsive, difficulty with planning and sequencing. He tried to get out of bed by himself three times last week even though he's non-weight-bearing on the left leg. He has reduced insight into his deficits — he thinks he's fine to go back to work. He was a construction foreman. He keeps telling his wife he'll be back on the job site by August. That's not happening.
+
+CI: Behavioral concerns?
+
+CALLER: Yes. He has intermittent agitation — not violent, but he gets frustrated, he raises his voice, he's thrown a water pitcher once when PT asked him to do his exercises. It's frontal lobe disinhibition. He's also emotionally labile — he'll be cracking jokes one minute and crying the next. He told his wife he was sorry for "ruining everything" and started sobbing, then two minutes later he was asking the nurse for a cheeseburger as if nothing had happened. His speech and language are functionally intact — no aphasia, no dysarthria — but his language pragmatics are off. He interrupts constantly, he's tangential, he'll start telling you about his motorcycle in the middle of a conversation about his medications. He's also developed some mild disinhibited sexual behavior — he made an inappropriate comment to a female PT and he's been making remarks about the nurses. This is new behavior — his wife says he was "never like this before."
+
+CI: That's classic frontal TBI. How's his wife handling it?
+
+CALLER: His wife is Marisol Guerrero, age 44. She's been here every day. She's struggling. She started crying in the family meeting last week and said "This is not my husband. This looks like him but he's not in there anymore." She's scared and she's angry. They've got three kids — Diego, age 16; Luna, age 12; and Mateo, age 8. The older two are aware that something is very wrong with dad. The youngest doesn't fully understand. Marisol is working part-time as a medical assistant at a pediatrician's office — she can't take more time off. Her mother, Guadalupe Torres, age 70, is going to move in temporarily to help. Guadalupe speaks Spanish only. Marisol is bilingual. Tomás is bilingual but since the TBI he defaults to Spanish when agitated or fatigued — his English comprehension is intact but his English expression degrades under stress.
+
+CI: Good to know — we'll need a bilingual or Spanish-speaking team for this household. Address?
+
+CALLER: 2244 Skyline Drive, Pacifica, CA 94044. Split-level house — there are six steps to the front door with a handrail on the right side. The bedroom is on the main level, thankfully, but the bathroom with the only shower is on the lower level — eight steps down, narrow staircase, no handrail on the left. This is going to be a problem because he's non-weight-bearing on the left and he can't do stairs yet.
+
+CI: So either a bedside bath setup or we need to find a solution for that staircase.
+
+CALLER: Right. PT here recommended a temporary commode-shower chair setup on the main level — sponge bath at the bedside initially, then maybe a portable shower system. Or the family can look into a stair lift. But financially — they're strained. He was the primary earner. Workers' comp isn't covering this because it was a personal motorcycle, not work-related. They've got health insurance through Marisol's employer — Sutter Health Plus HMO — but the benefits are limited. They're going to need MSW for financial counseling urgently.
+
+CI: Understood. Let me get his full medical picture.
+
+CALLER: Here's his history. Before the accident he was a healthy guy. His only pre-existing was type 2 diabetes — metformin 500 mg twice a day, relatively well-controlled, A1c was 7.1. Now the list is much longer.
+
+Active diagnoses:
+
+TBI — bilateral frontal contusions, resolved subdural hematoma, Rancho VII, cognitive impairment as described
+T11 burst fracture status post posterior fusion T9-L1 — healing, TLSO brace required at all times when upright; he's non-compliant with the brace because he says it's uncomfortable and he forgets
+Left femoral shaft fracture status post intramedullary rod — healing; weight-bearing as tolerated per ortho
+Left open tibial fracture, Gustilo IIIA, status post intramedullary nail — healing; non-weight-bearing left lower extremity for 4 more weeks (until 07/25/2025 ortho f/u); external fixator pin sites closed, healing
+Heterotopic ossification developing at left hip — identified on X-ray last week; started indomethacin; ortho aware
+Type 2 diabetes — glucose was elevated during hospitalization (stress + steroids), now controlled on metformin alone; FSBS running 140-190
+Neurogenic bladder — was on Foley; transitioned to intermittent catheterization Q6H during rehab; he can't self-cath due to cognitive impairment and impulsivity — someone needs to cath him
+DVT prophylaxis — on enoxaparin 40 mg daily (immobility); will continue until ambulatory
+Post-traumatic seizure — had one tonic-clonic seizure at Stanford on day 9 (likely early post-traumatic); started levetiracetam; no seizures since; continue anticonvulsant per neurology (minimum 6 months)
+Depression / adjustment disorder — started sertraline in rehab; dosing up
+Chronic pain — left leg, back; on gabapentin and scheduled acetaminophen; occasional oxycodone PRN but we're tapering it
+
+CI: Tell me his medications.
+
+CALLER: One — Levetiracetam (Keppra) 750 mg twice a day. Seizure prophylaxis. Two — Sertraline 50 mg daily. Depression. May need uptitration. Three — Gabapentin 300 mg three times a day. Neuropathic pain, agitation modulation. Four — Metformin 500 mg twice a day. Diabetes. Five — Enoxaparin 40 mg subcutaneous daily. DVT prophylaxis. Continue until ambulatory. Six — Indomethacin 25 mg three times a day with food. Heterotopic ossification prophylaxis. Monitor GI and renal. Seven — Pantoprazole 40 mg daily. GI protection (indomethacin). Eight — Oxycodone 5 mg every six hours as needed — currently using about two doses per day, tapering. Goal: off by week 3 at home. Nine — Acetaminophen 1000 mg every eight hours scheduled. Pain baseline. Ten — Docusate-senna twice a day. Bowel. Eleven — Melatonin 5 mg at bedtime. Sleep cycle regulation (TBI-related sleep disturbance). Twelve — Multivitamin daily.
+
+CI: Controlled substances — oxycodone. Anyone else in the home who might be a concern?
+
+CALLER: No substance abuse history for him or the family. But with three kids in the house including an 8-year-old — secure storage is essential. And with his cognitive impairment, he shouldn't be self-administering opioids. Marisol or Guadalupe need to control the medication.
+
+CI: Absolutely. Allergies?
+
+CALLER: No known drug allergies. He has a seasonal allergy to grass pollen — sneezing, congestion — treats with OTC loratadine as needed.
+
+CI: Great. Let me get the rest of the functional picture.
+
+CALLER:
+
+Transfers: bed to wheelchair — moderate assist of one with transfer board. He can help but he needs cueing and physical guidance. He forgets the steps even though PT has gone over it a hundred times.
+Ambulation: he's non-weight-bearing on the left lower extremity — he's using a wheelchair exclusively right now. When he's cleared for weight-bearing, he'll start on a walker. Currently, he can stand on the right leg with a walker and max assist for standing pivot transfer to commode — but only for 15-20 seconds before fatigue.
+Upper extremities: bilateral strength is 5/5, ROM full. He's right-handed and his right side is completely intact. This is good for the rehab trajectory.
+ADLs: he can feed himself independently — messy but functional. He can brush his teeth with setup. Upper body dressing with supervision and verbal cues. Lower body — needs mod assist because of the left leg, the back brace, and the cognitive sequencing issue. Bathing — total assist currently. Toileting — intermittent catheterization Q6H, requires caregiver to perform; bowel — continent but needs reminders (occasional urgency).
+Cognitive impact on ADLs: this is the real barrier. He doesn't remember the steps of tasks. You can tell him "put on your shirt" and he'll stare at it. If you hand it to him and get him started, he can do it. It's initiation and sequencing, not motor ability.
+
+CI: Homebound status?
+
+CALLER: Absolutely homebound. Non-weight-bearing left leg, wheelchair-dependent, requires assist for all transfers, cognitive impairment limiting safe community participation, and TLSO brace requirement. He can't safely leave home without significant assistance and adaptive equipment.
+
+CI: Advance directives?
+
+CALLER: No advance directives on file. This came up in the family meeting and Marisol got very upset — she doesn't want to think about it. The social worker here recommended they address it but it hasn't happened. He's Full Code. His capacity for medical decision-making is — well, it's borderline. He can express preferences but he can't fully understand risks and benefits. Marisol is effectively making the decisions. There's no legal conservatorship or power of attorney.
+
+CI: We should flag this for our MSW — advance care planning and possibly a healthcare POA should be addressed.
+
+CALLER: Agreed. I'd recommend it strongly.
+
+CI: Services ordered?
+
+CALLER: This patient needs everything:
+
+Skilled nursing — three to five times per week for the first four weeks. Intermittent catheterization Q6H is the driver — someone has to cath this man every six hours and he can't do it himself. If the family can be trained to do it between nurse visits, that would be ideal, but Marisol is at work during the day and Guadalupe is 70 years old and I'm not sure she can learn sterile cath technique. Also: wound assessment on the tibial pin sites and the femoral incision; medication management; FSBS monitoring; enoxaparin teaching; seizure precautions; cognitive and behavioral monitoring.
+Physical therapy — five times a week for the first four weeks, then three times a week. Left leg ROM, right leg and core strengthening, transfer training, pre-gait training, balance. Weight-bearing progression per ortho clearance.
+Occupational therapy — five times a week for four weeks, then three times a week. Cognitive rehabilitation is the primary focus — memory strategies, compensatory techniques, ADL retraining, executive function training, home safety, TLSO brace compliance, medication management with cognitive aids.
+Speech-language pathology — three times a week. Cognitive-linguistic therapy — memory, attention, pragmatics, self-monitoring, safety awareness. This is separate from OT cog rehab — SLP focuses on language-based cognition and social communication. He needs both.
+Medical social work — weekly at minimum. Family counseling, caregiver support (Marisol is at breaking point), financial assistance, advance directive discussion, community resources for TBI survivors, possible support group.
+Home health aide — daily. Personal care, intermittent cath assist if trained, mobility assistance, brace application, supervision for safety.
+
+CI: That's a full-service intensive plan. Insurance?
+
+CALLER: Sutter Health Plus HMO. Member ID SHP-221487630. Marisol is the subscriber. I don't know the group number off the top of my head. Prior auth is required for home health — my office will initiate it.
+
+CI: We'll verify benefits. Discharge date?
+
+CALLER: Friday, June 27th. SOC should be same day if at all possible. He should not have a gap in services. The catheterization alone — if he goes more than eight hours without being catheterized, he's going to develop urinary retention and possibly autonomic complications.
+
+CI: Understood — we'll prioritize same-day SOC. Let me confirm the household for scheduling.
+
+CALLER:
+
+Marisol — works 8 AM to 2 PM Monday through Friday. She'll be home after 2:30.
+Guadalupe (mother-in-law, Spanish only) — in the home during the day. She can open the door and be present but she can't provide clinical assistance without training.
+Diego (16) — in school until 3 PM, summer break starts 07/10. He's mature and has been helping with his dad. He could potentially learn catheterization if appropriate.
+Luna (12) and Mateo (8) — should not be involved in clinical care.
+Phone: Marisol's cell (650) 555-0276. Home (650) 555-0118. Guadalupe has a phone but it's a prepaid flip phone — (650) 555-0880 — she texts in Spanish with her daughter.
+
+CI: Got everything. Dr. Kwon, is there anything else you want us to know?
+
+CALLER: Yes — one more thing. Tomás doesn't fully understand why he's going home with all this help. He thinks he's going home because he's "better." He's going to resist the level of supervision and assistance. He's going to try to do things himself. He's going to try to get up without the brace. He's going to forget he's non-weight-bearing and try to walk. He is a fall risk, a catheter retention risk, and a behavioral escalation risk. Your team needs to be prepared for a patient who is physically strong, cognitively impaired, and has no idea how impaired he is. He's a 47-year-old former construction foreman who thinks nothing is wrong with him. That combination is dangerous.
+
+CI: That is incredibly helpful context. We'll make sure the whole team is briefed. Thank you for being so thorough, Dr. Kwon.
+
+CALLER: Thank you for taking him. My direct line is (650) 555-1048. Fax (650) 555-1049. The rehab discharge packet will come over tomorrow with everything — discharge summary, med rec, imaging reports, PT/OT/SLP discharge evaluations, ortho weight-bearing orders, and the catheterization protocol.
+
+CI: We'll watch for it. Thanks again.
+
+[CALL ENDED — 03:07 PM]
+

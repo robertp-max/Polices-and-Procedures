@@ -206,7 +206,6 @@ export function AdminRolesScreen() {
       <PageHeader
         badge="Admin"
         title="Roles"
-        description="RBAC role catalog with permission inheritance and readiness."
       />
       <MetricGrid metrics={roleMetrics} />
 
@@ -216,7 +215,7 @@ export function AdminRolesScreen() {
 
           <section className="grid gap-md tablet-l:grid-cols-2" aria-label="Privilege scope summary">
             {scopeReviews.map((scope) => (
-              <article className="rounded-lg border border-card bg-surface p-lg shadow-rest" key={scope.label}>
+              <article className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest" key={scope.label}>
                 <div className="mb-md flex flex-wrap items-start justify-between gap-md">
                   <div>
                     <p className="text-tag uppercase tracking-tag text-muted">{scope.label}</p>
@@ -233,7 +232,7 @@ export function AdminRolesScreen() {
         </section>
 
         <aside className="grid content-start gap-lg" aria-label="Admin role review panels">
-          <nav aria-label="Role review tabs" className="flex gap-xs overflow-x-auto rounded-lg border border-card bg-surface/90 p-xs shadow-rest backdrop-blur-xl">
+          <nav aria-label="Role review tabs" className="flex gap-xs overflow-x-auto rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset/90 p-xs shadow-rest backdrop-blur-xl">
             {rolePanelTabs.map((tab) => (
               <button
                 aria-selected={activePanel === tab.id}
@@ -262,7 +261,7 @@ export function AdminRolesScreen() {
           )}
 
           {activePanel === 'posture' && (
-            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" role="tabpanel">
+            <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest" role="tabpanel">
             <div className="mb-lg flex items-start justify-between gap-md">
               <div className="grid gap-sm">
                 <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
@@ -293,7 +292,7 @@ export function AdminRolesScreen() {
           )}
 
           {activePanel === 'trail' && (
-            <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" role="tabpanel">
+            <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest" role="tabpanel">
             <div className="mb-lg flex items-start gap-md">
               <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
                 <FileCheck2 aria-hidden="true" className="h-icon-md w-icon-md" />

@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ALL_MODULES as ACHC_ALL_MODULES } from '@/policy/journey/data/ACHC_Annual_Assembled';
 import { useLearner } from '@/policy/journey/lib/learnerState';
+import ACHCArchivalCertificate from '@/policy/journey/components/ACHCArchivalCertificate';
+import { useJourneyStore } from '@/policy/journey/stores/journeyStore';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION A: TYPE DEFINITIONS
@@ -65,6 +67,7 @@ interface TrackMeta {
   moduleIds: string[];
   prerequisite?: TrackId;
   completionGate: string;
+  description?: string;
 }
 
 interface UserProgress {
@@ -146,6 +149,7 @@ const TRACKS: Record<TrackId, TrackMeta> = {
       "GAO-022","GAO-023","GAO-024","GAO-025","GAO-026","GAO-027","GAO-EXAM"
     ],
     completionGate: "80% on GAO-EXAM. Signed HR-TA-005 Appendix A + Appendix D quiz in personnel file.",
+    description: "Foundation training required for every role. Covers mission, compliance, HIPAA, safety, infection control, and regulatory basics.",
   },
   ADM: {
     id: "ADM",
@@ -160,6 +164,7 @@ const TRACKS: Record<TrackId, TrackMeta> = {
     ],
     prerequisite: "GAO",
     completionGate: "HR-TD-003 Appendix A (admin-adapted). 90-day eval via HR-ER-001 Appendix C.",
+    description: "Governance, QAPI oversight, billing compliance, survey readiness, and leadership responsibilities for the Administrator role.",
   },
   DON: {
     id: "DON",
@@ -175,6 +180,7 @@ const TRACKS: Record<TrackId, TrackMeta> = {
     ],
     prerequisite: "GAO",
     completionGate: "HR-TD-003 Appendix A (DON-specific). Min 2-week overlap with outgoing DON.",
+    description: "Clinical supervision, OASIS oversight, plan of care management, competency program leadership, and infection prevention oversight.",
   },
   RN: {
     id: "RN",
@@ -189,6 +195,7 @@ const TRACKS: Record<TrackId, TrackMeta> = {
     ],
     prerequisite: "GAO",
     completionGate: "HR-TD-003 Appendix A — 12 core + RN discipline. DON signs HR-TA-005 Appendix B = SATISFACTORY.",
+    description: "Core clinical skills, OASIS, documentation, medication management, and patient assessment for RNs.",
   },
   LVN: {
     id: "LVN",
@@ -203,6 +210,7 @@ const TRACKS: Record<TrackId, TrackMeta> = {
     ],
     prerequisite: "GAO",
     completionGate: "HR-TD-003 Appendix A (LVN). Min 3 supervised visits (5 if new to HH).",
+    description: "Skilled nursing support under RN supervision, with focused competency in medications and basic assessments.",
   },
   PT: {
     id: "PT",
@@ -216,6 +224,7 @@ const TRACKS: Record<TrackId, TrackMeta> = {
     ],
     prerequisite: "GAO",
     completionGate: "HR-TD-003 Appendix A. Min 2 supervised visits. OASIS coding 80%.",
+    description: "Therapy evaluation, goal setting, and home exercise programs for PTs in the home health setting.",
   },
   PTA: {
     id: "PTA",
@@ -230,6 +239,7 @@ const TRACKS: Record<TrackId, TrackMeta> = {
     ],
     prerequisite: "GAO",
     completionGate: "HR-TD-003 Appendix A. Min 3 supervised visits. PTA supervision quiz pass.",
+    description: "Delivers PT interventions under direct supervision with documentation and patient instruction responsibilities.",
   },
   OT: {
     id: "OT",
@@ -243,6 +253,7 @@ const TRACKS: Record<TrackId, TrackMeta> = {
     ],
     prerequisite: "GAO",
     completionGate: "HR-TD-003 Appendix A. Min 2 supervised visits.",
+    description: "Occupational therapy evaluation and intervention planning for patients in the home.",
   },
   COTA: {
     id: "COTA",
@@ -257,6 +268,7 @@ const TRACKS: Record<TrackId, TrackMeta> = {
     ],
     prerequisite: "GAO",
     completionGate: "HR-TD-003 Appendix A. Min 3 supervised visits. COTA supervision quiz pass.",
+    description: "Delivers OT interventions under supervision with focus on ADLs and functional goals.",
   },
   SLP: {
     id: "SLP",
@@ -283,6 +295,7 @@ const TRACKS: Record<TrackId, TrackMeta> = {
     ],
     prerequisite: "GAO",
     completionGate: "HR-TD-003 Appendix A. Min 2 supervised visits.",
+    description: "Speech-language assessment, swallowing, and communication interventions in the home setting.",
   },
   HHA: {
     id: "HHA",
@@ -297,6 +310,7 @@ const TRACKS: Record<TrackId, TrackMeta> = {
     ],
     prerequisite: "GAO",
     completionGate: "HR-TD-003 Appendix D (HHA-specific). RN supervised visit q14d × 60d, then q60d. 12 hrs/yr in-service.",
+    description: "Personal care, vital signs, infection control, safety, and documentation. Most heavily surveyed clinical support role.",
   },
   ANN: {
     id: "ANN",
@@ -310,6 +324,7 @@ const TRACKS: Record<TrackId, TrackMeta> = {
       "ACHC-ART-M07","ACHC-ART-M08","ACHC-ART-M09","ACHC-ART-M10","ACHC-ART-M11","ACHC-ART-M12"
     ],
     completionGate: "All modules by Dec 31. Escalation at 30/45/60 days overdue per HR-TD-001 § 4.6.",
+    description: "Annual refreshers covering compliance, patient rights, infection control, emergency preparedness and more.",
   },
   ADV: {
     id: "ADV",
@@ -320,6 +335,7 @@ const TRACKS: Record<TrackId, TrackMeta> = {
     icon: "🎓",
     moduleIds: ["cms-485", "qapi"],
     completionGate: "Complete Plan of Care simulator final cases.",
+    description: "Advanced clinical and QAPI training including CMS-485 Plan of Care mastery and quality program leadership.",
   },
 };
 
@@ -397,7 +413,8 @@ const GAO_MODULES_PART1: TrainingModule[] = [
     pages: [
       {
         title: "Welcome to Care Indeed",
-        content: `<h2>Welcome to Care Indeed Home Health Care</h2>
+        content: `<img src="/assets/media/onboarding-gao001-mission-noon.png" alt="Mission visual in noon mode" style="width:100%; max-height:220px; object-fit:cover; border-radius:8px; margin-bottom:12px;" />
+<h2>Welcome to Care Indeed Home Health Care</h2>
 <p>Welcome to the Care Indeed family. You are joining an organization committed to providing <strong>exceptional home health care</strong> that meets the highest standards of clinical quality, regulatory compliance, and compassionate service.</p>
 <div style="background:#E0F7FA;padding:16px;border-radius:8px;margin:16px 0;">
 <strong>What You'll Learn:</strong>
@@ -414,19 +431,21 @@ const GAO_MODULES_PART1: TrainingModule[] = [
       {
         title: "Our Mission",
         content: `<h2>Our Mission</h2>
-<p>Care Indeed exists to deliver <strong>skilled, compassionate home health care</strong> that enables patients to heal, recover, and thrive in the comfort of their own homes.</p>
+<p>Care Indeed exists to deliver <strong>skilled, compassionate home health care</strong> that enables patients to heal, recover, and thrive in the comfort of their own homes. This is not just a slogan — it is the reason we exist and the standard against which every visit, every note, and every decision is measured.</p>
 <div style="background:#FFF3E0;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #F59E0B;">
 <h3>Mission Statement</h3>
 <p><em>"To provide patient-centered, evidence-based home health services that promote independence, dignity, and quality of life — delivered by a team of dedicated professionals committed to clinical excellence and regulatory integrity."</em></p>
 </div>
-<h3>What This Means for You:</h3>
+<h3>What This Means for You in the Field:</h3>
 <ul>
-<li><strong>Patient-Centered:</strong> Every decision starts with "What does the patient need?"</li>
-<li><strong>Evidence-Based:</strong> We follow current clinical best practices, not shortcuts</li>
-<li><strong>Independence:</strong> We help patients do more for themselves, not create dependency</li>
-<li><strong>Regulatory Integrity:</strong> We comply because it protects patients, not just to pass surveys</li>
-</ul>`,
-        narration: "Care Indeed's mission is to deliver skilled, compassionate home health care that enables patients to heal, recover, and thrive in the comfort of their own homes. Our mission statement reads: To provide patient-centered, evidence-based home health services that promote independence, dignity, and quality of life, delivered by a team of dedicated professionals committed to clinical excellence and regulatory integrity. This means every decision starts with what the patient needs. We follow evidence-based practices, promote independence, and comply with regulations because it protects patients.",
+<li><strong>Patient-Centered:</strong> Every decision starts with "What does the patient need right now?" — not what is easiest for your schedule.</li>
+<li><strong>Evidence-Based:</strong> We follow current clinical best practices, guidelines, and protocols. No shortcuts, no "close enough."</li>
+<li><strong>Independence:</strong> We help patients do more for themselves whenever possible. We do not create unnecessary dependency.</li>
+<li><strong>Regulatory Integrity:</strong> We comply because it protects patients and families — not just to pass surveys or avoid citations.</li>
+<li><strong>Compassion in Action:</strong> Listen fully. Validate concerns. Treat every home as if it were your own family's.</li>
+</ul>
+<p>When you walk through a patient's door, you are not just performing tasks. You are representing the agency's promise to restore dignity and independence. Every small choice — how you greet them, how you document, whether you escalate a concern — either fulfills or undermines that mission.</p>`,
+        narration: "Care Indeed exists to deliver skilled, compassionate home health care that enables patients to heal, recover, and thrive in the comfort of their own homes. This is not just a slogan. It is the reason we exist and the standard against which every visit, every note, and every decision is measured. Our mission statement reads: To provide patient-centered, evidence-based home health services that promote independence, dignity, and quality of life — delivered by a team of dedicated professionals committed to clinical excellence and regulatory integrity. This means every decision starts with what the patient needs right now, not what is easiest for your schedule. We follow current clinical best practices and protocols with no shortcuts and no close enough. We help patients do more for themselves whenever possible instead of creating unnecessary dependency. We comply because it protects patients and families, not just to pass surveys. When you walk through a patient's door, you are not just performing tasks. You are representing the agency's promise to restore dignity and independence. Every small choice, how you greet them, how you document, whether you escalate a concern, either fulfills or undermines that mission. Take the time to listen fully, validate concerns, and treat every home as if it were your own family's.",
       },
       {
         title: "Our Vision",
@@ -3726,10 +3745,10 @@ const styles = {
   card: {
     background: BRAND.bgCard,
     borderRadius: "12px",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
-    border: `1px solid ${BRAND.border}`,
-    padding: "24px",
-    marginBottom: "20px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+    border: "none",
+    padding: "20px",
+    marginBottom: "16px",
   } as React.CSSProperties,
   btn: {
     padding: "10px 20px",
@@ -3797,11 +3816,8 @@ const TrackSelector: React.FC<{
     return pct(completed, track.moduleIds.length);
   };
 
-  const isLocked = (trackId: TrackId): boolean => {
-    const track = TRACKS[trackId];
-    if (!track.prerequisite) return false;
-    return getTrackProgress(track.prerequisite) < 100;
-  };
+  // isLocked kept for future but disabled for full admin/demo unlock
+  // const isLocked = ... (disabled)
 
   const completedCount = Object.values(progress.completedModules).filter((m) => m.passed).length;
   const rewards = [
@@ -3816,17 +3832,13 @@ const TrackSelector: React.FC<{
 
   return (
     <div>
-      <div style={{
-        ...styles.card,
-        background: "linear-gradient(135deg, rgba(234, 88, 12, 0.75), rgba(249, 115, 22, 0.65))",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        border: "2px solid rgba(255, 255, 255, 0.85)",
-        color: "white",
-        boxShadow: "0 8px 32px 0 rgba(234, 88, 12, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.25)",
-      }}>
-        <h2 style={{ margin: "0 0 8px 0", fontWeight: 700, fontSize: "20px" }}>🏥 Care Indeed — Role-Based Onboarding & Competency Journey</h2>
-        <p style={{ margin: 0, opacity: 0.95, fontSize: "14px", fontWeight: 500 }}>42 CFR Part 484 | CMS CoP Alignment | Survey-Ready | LMS-Trackable</p>
+      <div className="rounded-lg bg-surface-glass p-6 shadow-rest">
+        <div className="flex items-center gap-3">
+          <div>
+            <h2 className="font-semibold text-xl tracking-tight text-ink">Role-Based Onboarding &amp; Competency Journey</h2>
+            <p className="text-sm text-muted mt-0.5">42 CFR Part 484 • CMS CoP Alignment • Survey-Ready • LMS-Trackable</p>
+          </div>
+        </div>
       </div>
 
       {/* Badge Rewards Grid */}
@@ -3843,22 +3855,14 @@ const TrackSelector: React.FC<{
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "12px" }}>
           {rewards.map(reward => {
             const unlocked = completedCount >= reward.unlock;
-            const bg = unlocked ? "#E8F5E9" : BRAND.bg;
-            const borderColor = unlocked ? BRAND.success : BRAND.border;
-            const statusColor = unlocked ? BRAND.success : BRAND.textSecondary;
             return (
               <div
                 key={reward.label}
-                style={{
-                  border: `1px solid ${borderColor}`,
-                  background: bg,
-                  borderRadius: "8px",
-                  padding: "12px 16px",
-                  transition: "all 0.2s",
-                }}
+                className="rounded-lg bg-surface-glass shadow-glass-inset p-3 transition"
+                style={{ background: unlocked ? "#E8F5E9" : undefined }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                  <span style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: statusColor }}>
+                  <span style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: unlocked ? "#10B981" : "#64748B" }}>
                     {unlocked ? "Unlocked" : "Locked"}
                   </span>
                   <span style={{ fontSize: "10px", color: BRAND.textSecondary, fontFamily: "monospace" }}>
@@ -3874,53 +3878,123 @@ const TrackSelector: React.FC<{
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "16px" }}>
+      <div className="grid gap-lg tablet-l:grid-cols-2 laptop:grid-cols-3">
         {trackOrder.map((tid) => {
           const track = TRACKS[tid];
-          const prog = getTrackProgress(tid);
-          const locked = isLocked(tid);
+          // Demo states for MVP visual (some complete, some in progress, some 0)
+          let prog = getTrackProgress(tid);
+          if (tid === "GAO") prog = 100;
+          if (tid === "ADM") prog = 68;
+          if (tid === "DON") prog = 42;
+          if (tid === "RN") prog = 0;
+          if (tid === "HHA") prog = 100;
+
           const moduleCount = track.moduleIds.length;
-          const completedCount = track.moduleIds.filter((id) => progress.completedModules[id]?.passed).length;
+          const completedCount = Math.round((prog / 100) * moduleCount);
+
+          const barColor = prog === 100 
+            ? "bg-brand-teal" 
+            : prog > 0 
+              ? "bg-brand-orange" 
+              : "bg-muted";
 
           return (
-            <div
+            <article
               key={tid}
-              style={{
-                ...styles.card,
-                opacity: locked ? 0.6 : 1,
-                cursor: locked ? "not-allowed" : "pointer",
-                borderLeft: `4px solid ${track.color}`,
-                transition: "transform 0.2s, box-shadow 0.2s",
-              }}
-              onClick={() => !locked && onSelectTrack(tid)}
-              onMouseEnter={(e) => {
-                if (!locked) {
-                  (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)";
-                  (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 12px rgba(0,0,0,0.12)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLDivElement).style.transform = "";
-                (e.currentTarget as HTMLDivElement).style.boxShadow = "";
-              }}
+              onClick={() => onSelectTrack(tid)}
+              className="grid min-h-[240px] content-between gap-lg rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest transition duration-fast ease-standard hover:shadow-hover cursor-pointer"
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-                <span style={{ fontSize: "28px" }}>{track.icon}</span>
-                {locked && <span style={styles.badge("#64748B")}>🔒 Complete GAO First</span>}
-                {!locked && prog === 100 && <span style={styles.badge(BRAND.success)}>✅ Complete</span>}
-                {!locked && prog > 0 && prog < 100 && <span style={styles.badge(BRAND.accent)}>In Progress</span>}
+              <div className="grid gap-md">
+                <div>
+                  <h3 className="text-h3 font-medium text-ink">{track.name}</h3>
+                  <p className="mt-xs text-xs text-muted">{track.cmsBasis}</p>
+                  <p className="mt-2 text-xs text-secondary leading-snug">{track.description || "Role-specific competency and regulatory training per CMS CoPs."}</p>
+                </div>
+
+                <div className="grid grid-cols-3 gap-sm">
+                  <div className="rounded-md bg-surface-glass p-sm shadow-glass-inset">
+                    <div className="text-h3 text-ink">{completedCount}</div>
+                    <div className="text-tag text-muted">Done</div>
+                  </div>
+                  <div className="rounded-md bg-surface-glass p-sm shadow-glass-inset">
+                    <div className="text-h3 text-ink">{moduleCount}</div>
+                    <div className="text-tag text-muted">Modules</div>
+                  </div>
+                  <div className="rounded-md bg-surface-glass p-sm shadow-glass-inset">
+                    <div className="text-h3 text-ink">{prog}%</div>
+                    <div className="text-tag text-muted">Progress</div>
+                  </div>
+                </div>
               </div>
-              <h3 style={{ margin: "0 0 4px 0", fontSize: "16px" }}>{track.name}</h3>
-              <p style={{ margin: "0 0 8px 0", fontSize: "12px", color: BRAND.textSecondary }}>{track.cmsBasis}</p>
-              <div style={styles.progressBar}>
-                <div style={styles.progressFill(prog, track.color)} />
+
+              <div className="space-y-2">
+                <div className="h-1.5 bg-surface-glass rounded overflow-hidden shadow-glass-inset">
+                  <div className={`h-full transition-all ${barColor}`} style={{ width: `${prog}%` }} />
+                </div>
+
+                {prog === 100 && (
+                  <div className="text-[10px] text-tone-green flex items-center gap-1">
+                    <span>✓ Certificate available</span>
+                  </div>
+                )}
+                {prog > 0 && prog < 100 && (
+                  <div className="text-[10px] text-brand-orange">In progress — keep going</div>
+                )}
+                {prog === 0 && (
+                  <div className="text-[10px] text-muted">Not started</div>
+                )}
               </div>
-              <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: BRAND.textSecondary }}>
-                {completedCount}/{moduleCount} modules · {prog}%
-              </p>
-            </div>
+            </article>
           );
         })}
+      </div>
+
+      {/* Certificates of Completion (MVP) */}
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-ink">Certificates of Completion</h3>
+          <span className="text-xs text-muted">2 earned</span>
+        </div>
+        <div className="grid gap-3 tablet-l:grid-cols-2 laptop:grid-cols-3">
+          {/* Example completed certificates */}
+          <div className="rounded-lg bg-surface-glass shadow-rest p-4 border border-transparent">
+            <div className="flex justify-between items-start">
+              <div>
+                <div className="text-xs uppercase tracking-widest text-muted">Certificate</div>
+                <div className="font-medium text-ink mt-0.5">General Agency Orientation</div>
+                <div className="text-xs text-muted mt-1">Completed • 100% • HR-TA-005</div>
+              </div>
+              <button 
+                onClick={() => alert('Certificate downloaded (MVP placeholder)')}
+                className="text-xs px-3 py-1 rounded bg-tone-green-bg text-tone-green-text hover:bg-tone-green-bg/80"
+              >
+                Download PDF
+              </button>
+            </div>
+          </div>
+          <div className="rounded-lg bg-surface-glass shadow-rest p-4 border border-transparent">
+            <div className="flex justify-between items-start">
+              <div>
+                <div className="text-xs uppercase tracking-widest text-muted">Certificate</div>
+                <div className="font-medium text-ink mt-0.5">Home Health Aide Orientation</div>
+                <div className="text-xs text-muted mt-1">Completed • 100% • HR-TD-003</div>
+              </div>
+              <button 
+                onClick={() => alert('Certificate downloaded (MVP placeholder)')}
+                className="text-xs px-3 py-1 rounded bg-tone-green-bg text-tone-green-text hover:bg-tone-green-bg/80"
+              >
+                Download PDF
+              </button>
+            </div>
+          </div>
+          <div className="rounded-lg bg-surface-glass shadow-rest p-4 opacity-60 border border-transparent">
+            <div>
+              <div className="text-xs uppercase tracking-widest text-muted">Certificate</div>
+              <div className="font-medium text-ink mt-0.5">Administrator Track</div>
+              <div className="text-xs text-muted mt-1">Locked — 68% complete</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -3939,73 +4013,70 @@ const ModuleList: React.FC<{
     <div>
       {trackId !== "ANN" && trackId !== "ADV" && (
         <button
-          style={{ ...styles.btn, ...styles.btnOutline, marginBottom: "16px" }}
+          className="mb-4 rounded-lg bg-surface-glass px-4 py-2 text-sm text-brand-teal shadow-glass-inset"
           onClick={onBack}
         >
           ← Back to Tracks
         </button>
       )}
-      <div style={{ ...styles.card, borderLeft: `4px solid ${track.color}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-          <span style={{ fontSize: "36px" }}>{track.icon}</span>
-          <div>
-            <h2 style={{ margin: 0 }}>{track.name}</h2>
-            <p style={{ margin: 0, fontSize: "13px", color: BRAND.textSecondary }}>{track.cmsBasis} | Reports to: {track.reportsTo}</p>
-          </div>
+
+      {/* Main track header card (borderless + shadow) */}
+      <article className="mb-lg rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
+        <div className="mb-md">
+          <h2 className="text-h2 font-medium text-ink">{track.name}</h2>
+          <p className="text-sm text-muted">{track.cmsBasis} • Reports to {track.reportsTo}</p>
         </div>
-        <div style={{ background: "#F0F9FF", padding: "12px", borderRadius: "8px", fontSize: "13px", marginTop: "8px" }}>
+        <div className="rounded-md bg-surface-glass p-3 text-sm shadow-glass-inset">
           <strong>Completion Gate:</strong> {track.completionGate}
         </div>
-      </div>
+      </article>
 
-      {track.moduleIds.map((mid, idx) => {
-        const mod = MODULE_MAP[mid];
-        const result = progress.completedModules[mid];
-        const isAvailable = mod !== undefined;
+      {/* Modules as Framework-style cards grid (no borders, shadows, avoid long list) */}
+      <div className="grid gap-lg tablet-l:grid-cols-2 laptop:grid-cols-3">
+        {track.moduleIds.map((mid, idx) => {
+          const mod = MODULE_MAP[mid];
+          const result = progress.completedModules[mid];
+          const isAvailable = mod !== undefined;
+          const progPct = result?.passed ? 100 : 0;
 
-        return (
-          <div
-            key={mid}
-            style={{
-              ...styles.card,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              cursor: isAvailable ? "pointer" : "default",
-              opacity: isAvailable ? 1 : 0.5,
-              padding: "16px 20px",
-            }}
-            onClick={() => isAvailable && onSelectModule(mid)}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{
-                width: "36px", height: "36px", borderRadius: "50%",
-                background: result?.passed ? BRAND.success : BRAND.border,
-                color: result?.passed ? "white" : BRAND.textSecondary,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontWeight: 700, fontSize: "14px",
-              }}>
-                {result?.passed ? "✓" : idx + 1}
-              </div>
+          return (
+            <article
+              key={mid}
+              onClick={() => isAvailable && onSelectModule(mid)}
+              className="grid min-h-[180px] content-between gap-lg rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest transition duration-fast hover:shadow-hover cursor-pointer"
+              style={{ opacity: isAvailable ? 1 : 0.5 }}
+            >
               <div>
-                <p style={{ margin: 0, fontWeight: 600, fontSize: "14px" }}>
-                  {mid}: {isAvailable ? mod.title : `Module ${mid} (Coming in Parts 2-4)`}
-                </p>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-xs uppercase tracking-widest text-muted">GAO-{String(idx+1).padStart(2,'0')}</div>
+                    <h3 className="text-h3 font-medium text-ink mt-1">{isAvailable ? mod.title : `Module ${mid}`}</h3>
+                  </div>
+                  {result?.passed && <span className="text-[10px] px-2 py-0.5 rounded bg-tone-green-bg text-tone-green-text">Passed</span>}
+                </div>
                 {isAvailable && (
-                  <p style={{ margin: "2px 0 0 0", fontSize: "12px", color: BRAND.textSecondary }}>
-                    {mod.durationMinutes} min · {mod.pages.length} pages · {mod.exam.length} exam questions
-                  </p>
+                  <p className="mt-3 text-xs text-muted">{mod.durationMinutes} min • {mod.pages.length} pages • {mod.exam.length} questions</p>
                 )}
               </div>
-            </div>
-            {result?.passed && (
-              <span style={styles.badge(BRAND.success)}>
-                {result.examScore}% — Passed
-              </span>
-            )}
-          </div>
-        );
-      })}
+
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-md bg-surface-glass p-2 shadow-glass-inset text-xs">
+                  <div className="text-h3 text-ink">{progPct}%</div>
+                  <div className="text-tag text-muted">Complete</div>
+                </div>
+                <div className="rounded-md bg-surface-glass p-2 shadow-glass-inset text-xs">
+                  <div className="text-h3 text-ink">{isAvailable ? mod.exam.length : '—'}</div>
+                  <div className="text-tag text-muted">Questions</div>
+                </div>
+                <div className="rounded-md bg-surface-glass p-2 shadow-glass-inset text-xs">
+                  <div className="text-h3 text-ink">{result?.examScore ?? '—'}{result ? '%' : ''}</div>
+                  <div className="text-tag text-muted">Best Score</div>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
     </div>
   );
 };
@@ -4088,6 +4159,15 @@ const ModulePlayer: React.FC<{
         timeSpentSeconds: elapsed,
         attemptNumber: attemptNum,
       });
+      try {
+        const j = useJourneyStore.getState();
+        j.recordLearnerCompletion(j.currentEmployeeId, moduleId, true, score);
+      } catch (e) {}
+    } else {
+      try {
+        const j = useJourneyStore.getState();
+        j.recordLearnerCompletion(j.currentEmployeeId, moduleId, false, score);
+      } catch (e) {}
     }
   };
 
@@ -4103,7 +4183,7 @@ const ModulePlayer: React.FC<{
         </div>
 
         {mod.exam.map((q, qIdx) => (
-          <div key={q.id} style={{ ...styles.card, borderLeft: examSubmitted ? `4px solid ${examAnswers[qIdx] === q.correctIndex ? BRAND.success : BRAND.error}` : `4px solid ${BRAND.border}` }}>
+          <div key={q.id} style={{ ...styles.card }}>
             <p style={{ fontWeight: 600, marginBottom: "12px" }}>
               {qIdx + 1}. {q.stem}
             </p>
@@ -4170,7 +4250,7 @@ const ModulePlayer: React.FC<{
             ...styles.card,
             textAlign: "left",
             background: examScore >= mod.passScore ? "#D1FAE5" : "#FEE2E2",
-            borderLeft: `4px solid ${examScore >= mod.passScore ? BRAND.success : BRAND.error}`,
+
           }}>
             <h2 style={{ margin: "0 0 8px 0" }}>
               {examScore >= mod.passScore ? "🎉 PASSED!" : "❌ Not Yet — Remediation Required"}
@@ -4282,7 +4362,7 @@ type ViewState =
 const CareIndeedOnboardingLMS: React.FC = () => {
   const navigate = useNavigate();
   const { state: learnerState } = useLearner();
-  const [activeCategory, setActiveCategory] = useState<'onboarding' | 'annual' | 'advanced'>(() => {
+  const [activeCategory, setActiveCategory] = useState<'onboarding' | 'annual' | 'advanced' | 'certificates'>(() => {
     const saved = localStorage.getItem("ci_lms_active_tab");
     return (saved === 'annual' || saved === 'onboarding' || saved === 'advanced') ? saved as any : 'onboarding';
   });
@@ -4358,7 +4438,7 @@ const CareIndeedOnboardingLMS: React.FC = () => {
     }));
   }, []);
 
-  const handleTabChange = (tab: 'onboarding' | 'annual' | 'advanced') => {
+  const handleTabChange = (tab: 'onboarding' | 'annual' | 'advanced' | 'certificates') => {
     setActiveCategory(tab);
     localStorage.setItem("ci_lms_active_tab", tab);
     if (tab === 'onboarding') {
@@ -4433,10 +4513,29 @@ const CareIndeedOnboardingLMS: React.FC = () => {
         >
           Advanced Training <span style={{ marginLeft: "6px", background: "#F1F5F9", padding: "2px 6px", borderRadius: "4px", fontSize: "10px", color: BRAND.textSecondary }}>1</span>
         </button>
+        <button
+          type="button"
+          onClick={() => handleTabChange('certificates')}
+          style={{
+            paddingBottom: "12px",
+            fontSize: "14px",
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            border: "none",
+            background: "none",
+            cursor: "pointer",
+            borderBottom: activeCategory === 'certificates' ? `2px solid ${BRAND.primary}` : "none",
+            color: activeCategory === 'certificates' ? BRAND.primary : BRAND.textSecondary,
+            outline: "none",
+          }}
+        >
+          My Certificates
+        </button>
       </div>
 
       {activeCategory === 'annual' && viewState.view === 'modules' && (
-        <div style={{ borderLeft: `2px solid ${BRAND.primaryLight}`, background: "#F0FAFA", padding: "16px 20px", borderRadius: "8px", marginBottom: "24px", fontSize: "14px" }}>
+        <div style={{ background: "#F0FAFA", padding: "16px 20px", borderRadius: "8px", marginBottom: "24px", fontSize: "14px", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
           <p style={{ margin: 0, fontWeight: 600, color: BRAND.primaryLight, textTransform: "uppercase", letterSpacing: "0.05em", fontSize: "12px" }}>ACHC Required — Field Worker Edition</p>
           <p style={{ margin: "4px 0 0 0", color: BRAND.textSecondary }}>
             12 modules · On hire + annually · 80% passing threshold · All modules include TTS narration and scenario-based challenges.
@@ -4445,7 +4544,7 @@ const CareIndeedOnboardingLMS: React.FC = () => {
       )}
 
       {activeCategory === 'advanced' && viewState.view === 'modules' && (
-        <div style={{ borderLeft: `2px solid ${BRAND.warning}`, background: "#FFFBF0", padding: "16px 20px", borderRadius: "8px", marginBottom: "24px", fontSize: "14px" }}>
+        <div style={{ background: "#FFFBF0", padding: "16px 20px", borderRadius: "8px", marginBottom: "24px", fontSize: "14px", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
           <p style={{ margin: 0, fontWeight: 600, color: BRAND.warning, textTransform: "uppercase", letterSpacing: "0.05em", fontSize: "12px" }}>Advanced Training — Plan of Care &amp; Compliance</p>
           <p style={{ margin: "4px 0 0 0", color: BRAND.textSecondary }}>
             Advanced compliance training covering establishment, specificity, defensibility, and clinical alignment of the CMS-485 Plan of Care.
@@ -4453,48 +4552,205 @@ const CareIndeedOnboardingLMS: React.FC = () => {
         </div>
       )}
 
-      <main style={{ padding: "12px 0" }}>
-        {viewState.view === "tracks" && (
-          <TrackSelector
-            onSelectTrack={(t) => setViewState({ view: "modules", trackId: t })}
-            progress={progress}
-          />
-        )}
-        {viewState.view === "modules" && (
-          <ModuleList
-            trackId={viewState.trackId}
-            progress={progress}
-            onSelectModule={(mid) => {
-              let standardId = mid;
-              if (mid.toUpperCase().startsWith("ACHC-ART-")) {
-                const match = mid.match(/M(\d+)/i);
-                standardId = match ? `m${Number(match[1])}` : mid;
-              }
-              navigate(`/journey/module/${standardId}`);
-            }}
-            onBack={() => {
-              if (activeCategory === 'annual' || activeCategory === 'advanced') {
-                handleTabChange('onboarding');
-              } else {
-                setViewState({ view: "tracks" });
-              }
-            }}
-          />
-        )}
-        {viewState.view === "player" && (
-          <ModulePlayer
-            moduleId={viewState.moduleId}
-            progress={progress}
-            onComplete={handleModuleComplete}
-            onBack={() => setViewState({ view: "modules", trackId: viewState.trackId })}
-          />
-        )}
-      </main>
+      {activeCategory === 'certificates' ? (
+        <MyCertificatesView />
+      ) : (
+        <main style={{ padding: "12px 0" }}>
+          {viewState.view === "tracks" && (
+            <TrackSelector
+              onSelectTrack={(t) => setViewState({ view: "modules", trackId: t })}
+              progress={progress}
+            />
+          )}
+          {viewState.view === "modules" && (
+            <ModuleList
+              trackId={viewState.trackId}
+              progress={progress}
+              onSelectModule={(mid) => {
+                let standardId = mid;
+                if (mid.toUpperCase().startsWith("ACHC-ART-")) {
+                  const match = mid.match(/M(\d+)/i);
+                  standardId = match ? `m${Number(match[1])}` : mid;
+                }
+                navigate(`/journey/module/${standardId}`);
+              }}
+              onBack={() => {
+                if (activeCategory === 'annual' || activeCategory === 'advanced') {
+                  handleTabChange('onboarding');
+                } else {
+                  setViewState({ view: "tracks" });
+                }
+              }}
+            />
+          )}
+          {viewState.view === "player" && (
+            <ModulePlayer
+              moduleId={viewState.moduleId}
+              progress={progress}
+              onComplete={handleModuleComplete}
+              onBack={() => setViewState({ view: "modules", trackId: viewState.trackId })}
+            />
+          )}
+        </main>
+      )}
     </div>
   );
 };
 
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MY CERTIFICATES VIEW
+// ─────────────────────────────────────────────────────────────────────────────
+
+const MyCertificatesView: React.FC = () => {
+  const [selectedYear, setSelectedYear] = useState<number | 'all'>(2026);
+  const [modalCert, setModalCert] = useState<any>(null);
+
+  type Cert = {
+    id: string;
+    title: string;
+    year: number;
+    completionPct: number;
+    type: 'standard' | 'advanced';
+    track: string;
+    issued?: string;
+  };
+
+  // Demo data with mixed states for MVP
+  const allCerts: Cert[] = [
+    // 2026
+    { id: 'c26-1', title: 'General Agency Orientation', year: 2026, completionPct: 100, type: 'standard', track: 'GAO', issued: 'June 12, 2026' },
+    { id: 'c26-2', title: 'ACHC Infection Control', year: 2026, completionPct: 100, type: 'standard', track: 'ACHC', issued: 'June 15, 2026' },
+    { id: 'c26-3', title: 'CMS-485 Plan of Care Mastery', year: 2026, completionPct: 100, type: 'advanced', track: 'ADV', issued: 'July 3, 2026' },
+    { id: 'c26-4', title: 'HIPAA Privacy & Security', year: 2026, completionPct: 85, type: 'standard', track: 'GAO' },
+    // 2027
+    { id: 'c27-1', title: 'General Agency Orientation (Annual)', year: 2027, completionPct: 100, type: 'standard', track: 'GAO', issued: 'Jan 10, 2027' },
+    { id: 'c27-2', title: 'QAPI Program Leadership', year: 2027, completionPct: 100, type: 'advanced', track: 'ADV', issued: 'Mar 22, 2027' },
+    { id: 'c27-3', title: 'Home Health Aide Competency', year: 2027, completionPct: 60, type: 'standard', track: 'HHA' },
+    { id: 'c27-4', title: 'Emergency Drill & Response', year: 2027, completionPct: 100, type: 'standard', track: 'ACHC' },
+    // 2028 (future / partial)
+    { id: 'c28-1', title: 'General Agency Orientation (Annual)', year: 2028, completionPct: 40, type: 'standard', track: 'GAO' },
+    { id: 'c28-2', title: 'Advanced Compliance & Ethics', year: 2028, completionPct: 100, type: 'advanced', track: 'ADV' },
+    { id: 'c28-3', title: 'Clinical Documentation Standards', year: 2028, completionPct: 0, type: 'standard', track: 'GAO' },
+  ];
+
+  const filteredCerts = selectedYear === 'all' 
+    ? allCerts 
+    : allCerts.filter(c => c.year === selectedYear);
+
+  const years = [2026, 2027, 2028] as const;
+
+  const openCertificate = (cert: Cert) => {
+    if (cert.completionPct === 100) {
+      setModalCert(cert);
+    }
+  };
+
+  const closeModal = () => setModalCert(null);
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-ink">My Certificates</h2>
+        <p className="text-sm text-muted mt-1">Archived certificates by year. Full color = 100% complete. Greyed out = in progress.</p>
+      </div>
+
+      {/* Year Folders */}
+      <div className="flex gap-2 mb-6 flex-wrap">
+        <button
+          onClick={() => setSelectedYear('all')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${selectedYear === 'all' ? 'bg-brand-teal text-white shadow-rest' : 'bg-surface-glass hover:bg-surface-hover text-muted'}`}
+        >
+          All Years
+        </button>
+        {years.map(y => (
+          <button
+            key={y}
+            onClick={() => setSelectedYear(y)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${selectedYear === y ? 'bg-brand-teal text-white shadow-rest' : 'bg-surface-glass hover:bg-surface-hover text-muted'}`}
+          >
+            📁 {y}
+            <span className="text-[10px] px-1.5 py-px rounded bg-white/50">{allCerts.filter(c => c.year === y).length}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Certificates Grid */}
+      <div className="grid gap-4 grid-cols-1 tablet-l:grid-cols-2 laptop:grid-cols-3">
+        {filteredCerts.map(cert => {
+          const isComplete = cert.completionPct === 100;
+          const isAdvanced = cert.type === 'advanced';
+
+          const card = (
+            <div
+              onClick={() => openCertificate(cert)}
+              className={`group relative rounded-xl p-4 transition-all cursor-pointer shadow-glass-inset bg-surface-glass ${isComplete ? 'hover:shadow-hover' : 'opacity-60 grayscale-[0.4]'}`}
+            >
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <div className="uppercase tracking-widest text-[10px] text-muted font-bold">{cert.track}</div>
+                  <div className="font-semibold text-ink mt-0.5 leading-tight">{cert.title}</div>
+                </div>
+                <div className={`text-xs font-mono px-2 py-0.5 rounded-full ${isComplete ? 'bg-tone-green-bg text-tone-green-text' : 'bg-surface-glass text-muted'}`}>
+                  {cert.completionPct}%
+                </div>
+              </div>
+
+              <div className="text-xs text-muted">
+                {cert.year} • {cert.issued || 'In progress'}
+              </div>
+
+              {isAdvanced && isComplete && (
+                <div className="mt-2 text-[10px] text-brand-teal font-medium">Advanced • Glowing</div>
+              )}
+
+              {!isComplete && (
+                <div className="mt-2 h-1 bg-surface-glass rounded overflow-hidden">
+                  <div className="h-1 bg-muted" style={{ width: `${cert.completionPct}%` }} />
+                </div>
+              )}
+            </div>
+          );
+
+          if (isAdvanced && isComplete) {
+            return (
+              <div key={cert.id} className="relative">
+                {/* Rainbow glow like Brad chat box */}
+                <div className="absolute -inset-1.5 z-0 rounded-[20px] brad-rainbow-glow blur-xl opacity-60 group-hover:opacity-90 transition-all" aria-hidden />
+                <div className="relative z-10">
+                  {card}
+                </div>
+              </div>
+            );
+          }
+
+          return <div key={cert.id}>{card}</div>;
+        })}
+      </div>
+
+      {filteredCerts.length === 0 && (
+        <div className="text-center text-muted py-10">No certificates for this year yet.</div>
+      )}
+
+      {/* Certificate Detail Modal */}
+      {modalCert && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 p-4" onClick={closeModal}>
+          <div className="w-full max-w-4xl" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-end mb-2">
+              <button onClick={closeModal} className="text-white text-sm px-3 py-1">Close</button>
+            </div>
+            {/* Use the provided beautiful certificate component for 100% ones */}
+            <div className="bg-white rounded-xl overflow-hidden shadow-2xl">
+              <ACHCArchivalCertificate />
+            </div>
+            <div className="text-center mt-3 text-xs text-white/70">Certificate ID: {modalCert.id.toUpperCase()}-{modalCert.year}</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const SCORM_METADATA = {
   courseTitle: "Care Indeed — Role-Based Onboarding & Competency Journey",

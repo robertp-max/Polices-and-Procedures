@@ -1,5 +1,5 @@
 import { Archive, ClipboardCheck, ClipboardList, FileCheck2, Link2, PenLine, ShieldCheck, Users } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
 import { DataTable, MetricGrid, SurfaceCard, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Badge, ToneBadge } from '../../primitives';
@@ -184,27 +184,6 @@ export function FormsLibraryScreen() {
   };
   return (
     <section className="grid gap-xl" data-hash-id="forms-library" data-route="/forms">
-      {/* Top subnav for Taxonomy group (V1 parity + discoverability of sibling routes) using V2 patterns. */}
-      <div className="mb-lg flex flex-wrap items-center gap-sm border-b border-hairline pb-md text-sm" role="navigation" aria-label="Taxonomy subnav">
-        <span className="mr-sm text-tag uppercase tracking-tag text-muted">Taxonomy:</span>
-        {[
-          { label: 'Taxonomy', path: '/taxonomy' },
-          { label: 'Framework', path: '/framework' },
-          { label: 'Policy Library', path: '/library' },
-          { label: 'Forms Library', path: '/forms' },
-          { label: 'Workflows Library', path: '/workflows' },
-          { label: 'ACHC Survey', path: '/framework/achc-survey' },
-          { label: 'ACHC Crosswalk', path: '/framework/achc-survey/crosswalk' },
-        ].map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className="rounded px-sm py-xs text-brand-teal hover:bg-surface-hover hover:text-brand-teal-deep border-b-2 border-transparent hover:border-brand-teal"
-          >
-            {item.label}
-          </Link>
-        ))}
-      </div>
       <MetricGrid metrics={formsMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-5" aria-label="Forms library matrix and evidence readiness">
@@ -223,7 +202,7 @@ export function FormsLibraryScreen() {
 
           <section className="grid gap-md tablet-l:grid-cols-3" aria-label="Signer and evidence metadata summary">
             {signerEvidencePanels.map((panel) => (
-              <article className="rounded-lg border border-card bg-tone-slate-bg p-lg" key={panel.label}>
+              <article className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden" key={panel.label}>
                 <div className="mb-md flex flex-wrap items-center justify-between gap-sm">
                   <h3 className="text-body font-light text-ink">{panel.label}</h3>
                   <ToneBadge size="sm" status={panel.status} />
@@ -248,7 +227,7 @@ export function FormsLibraryScreen() {
             </SurfaceCard>
           ))}
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="forms-quick-stats-heading">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="forms-quick-stats-heading">
             <div className="mb-lg flex items-start gap-md">
               <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-blue-bg text-tone-blue-text">
                 <ClipboardCheck aria-hidden="true" className="h-icon-md w-icon-md" />
@@ -265,7 +244,7 @@ export function FormsLibraryScreen() {
                 const Icon = stat.icon;
 
                 return (
-                  <div className="flex flex-wrap items-center justify-between gap-md rounded-md bg-tone-slate-bg p-md" key={stat.label}>
+                  <div className="flex flex-wrap items-center justify-between gap-md rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md" key={stat.label}>
                     <span className="inline-flex min-w-0 items-center gap-sm text-sm font-light text-secondary">
                       <Icon aria-hidden="true" className="h-icon-sm w-icon-sm shrink-0 text-brand-teal" />
                       {stat.label}

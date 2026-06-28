@@ -37,5 +37,8 @@
     "src/_scaffold",
     "src/v6",
     "src/vite-env.d.ts"
+  ],
+  "exclude": [
+    "src/v6/components/controlled-vertex-ai-compliance-review-harness"
   ]
 }

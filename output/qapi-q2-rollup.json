@@ -1,0 +1,163 @@
+{
+  "interim_may7": {
+    "window": {
+      "eventDate": "2026-05-07",
+      "quarterStart": "2026-04-01",
+      "quarterEnd": "2026-06-30",
+      "dataThroughDate": "2026-05-07",
+      "packetType": "interim",
+      "title": "Interim Q2 2026 QAPI Review",
+      "quarterLabel": "Q2 2026"
+    },
+    "census": {
+      "patientsInScope": 73,
+      "activeCensus": 42,
+      "discharged": 13,
+      "recertDue": 18,
+      "highAcuity": 73,
+      "uniquePatients": 71,
+      "duplicateClientIds": [
+        "MOCK-PT-Q2-0012"
+      ]
+    },
+    "highRisk": {
+      "immediateActionCases": 65,
+      "qapiRequiredCases": 73,
+      "topFlags": [
+        {
+          "flag": "hospitalization_30d",
+          "count": 23
+        },
+        {
+          "flag": "fall_risk_high",
+          "count": 22
+        },
+        {
+          "flag": "polypharmacy_15plus",
+          "count": 22
+        },
+        {
+          "flag": "wound_deterioration",
+          "count": 21
+        },
+        {
+          "flag": "infection_high",
+          "count": 19
+        },
+        {
+          "flag": "pressure_injury",
+          "count": 17
+        }
+      ],
+      "systemicThemes": [
+        "hospitalization 30d",
+        "fall risk high",
+        "polypharmacy 15plus",
+        "wound deterioration",
+        "infection high",
+        "pressure injury"
+      ]
+    },
+    "incidents": {
+      "total": 19,
+      "byCategory": {
+        "near_miss": 3,
+        "fall": 4,
+        "pressure_injury": 2,
+        "fall_with_injury": 2,
+        "elopement": 2,
+        "medication_error": 4,
+        "unreported_fall": 2
+      },
+      "openRca": 8,
+      "unreported": 7,
+      "excludedFutureDated": 9
+    },
+    "infections": {
+      "total": 4,
+      "healthcareAssociated": 0,
+      "communityAcquired": 2,
+      "unreportedToState": 3,
+      "excludedFutureDated": 5
+    },
+    "labs": {
+      "criticalTotal": 7,
+      "criticalUnreported": 1
+    },
+    "documentation": {
+      "oasisLateSoc": 24,
+      "pocMissingF2F": 12,
+      "pocUnsignedOrMissingSignature": 35,
+      "homeboundNotJustified": 13,
+      "medReconMismatch": 40,
+      "pressureInjuryNoWoundOrders": 16,
+      "therapyNeedNoOrder": 5
+    },
+    "exceptionCount": 9
+  },
+  "final_jul10": {
+    "window": {
+      "eventDate": "2026-07-10",
+      "quarterStart": "2026-04-01",
+      "quarterEnd": "2026-06-30",
+      "dataThroughDate": "2026-06-30",
+      "packetType": "final",
+      "title": "Q2 2026 QAPI Review (Final)",
+      "quarterLabel": "Q2 2026"
+    },
+    "census": {
+      "patientsInScope": 73,
+      "activeCensus": 42,
+      "discharged": 13,
+      "recertDue": 18,
+      "highAcuity": 73,
+      "uniquePatients": 71,
+      "duplicateClientIds": [
+        "MOCK-PT-Q2-0012"
+      ]
+    },
+    "incidents": {
+      "total": 28,
+      "byCategory": {
+        "near_miss": 5,
+        "fall": 6,
+        "pressure_injury": 3,
+        "fall_with_injury": 3,
+        "elopement": 3,
+        "medication_error": 5,
+        "unreported_fall": 3
+      },
+      "openRca": 14,
+      "unreported": 11,
+      "excludedFutureDated": 0
+    },
+    "infections": {
+      "total": 9,
+      "healthcareAssociated": 3,
+      "communityAcquired": 4,
+      "unreportedToState": 8,
+      "excludedFutureDated": 0
+    },
+    "exceptionCount": 9
+  },
+  "addendumReference": {
+    "addendumId": "QAPI-HR-ADDENDUM-Q2-2026",
+    "hash": "hb8b2eda6",
+    "personnelActionReviewsOpened": 53,
+    "countByCategory": {
+      "beyond_scope": 9,
+      "unreported_falls": 5,
+      "missing_competency": 7,
+      "expired_license": 4,
+      "late_documentation": 4,
+      "failed_pip_pending_termination": 4,
+      "unauthorized_tasks": 6,
+      "expired_cpr": 5,
+      "unreported_critical_labs": 5,
+      "falsified_visits": 3,
+      "hha_no_supervision": 1
+    },
+    "statusSummary": "53 personnel-action review(s) opened across 11 categories; details sealed.",
+    "confidentialityStatement": "Confidential personnel details retained in restricted HR/Compliance addendum."
+  }
+}

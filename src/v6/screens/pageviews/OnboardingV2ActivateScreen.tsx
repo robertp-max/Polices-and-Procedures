@@ -28,7 +28,7 @@ export function OnboardingV2ActivateScreen() {
     >
       <div className="grid gap-lg desktop:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
         <div className="grid content-start gap-md">
-          <form className="grid gap-md rounded-lg border border-card bg-surface p-lg shadow-rest">
+          <form className="grid gap-md rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
             <h3 className="flex items-center gap-sm border-b border-hairline pb-sm text-h3 font-medium text-ink">
               <UserPlus aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
               Activation Details
@@ -61,7 +61,7 @@ export function OnboardingV2ActivateScreen() {
         </div>
 
         <aside className="grid content-start gap-md" aria-label="Reconciliation preview">
-          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
             <h3 className="mb-md flex items-center gap-sm text-h3 font-medium text-ink">
               <AlertCircle aria-hidden="true" className="h-icon-sm w-icon-sm text-tone-orange-text" />
               Reconciliation Preview
@@ -70,15 +70,15 @@ export function OnboardingV2ActivateScreen() {
               Verification locks and gate prerequisites that will be established immediately upon activation.
             </p>
             <div className="grid gap-sm">
-              <div className="flex items-center justify-between rounded-md bg-tone-slate-bg p-sm">
+              <div className="flex items-center justify-between rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-sm">
                 <span className="text-sm text-secondary">Gate 1: Background</span>
                 <ToneBadge size="sm" status="pending" />
               </div>
-              <div className="flex items-center justify-between rounded-md bg-tone-slate-bg p-sm">
+              <div className="flex items-center justify-between rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-sm">
                 <span className="text-sm text-secondary">Gate 2: Credentials</span>
                 <ToneBadge size="sm" status="locked" />
               </div>
-              <div className="flex items-center justify-between rounded-md bg-tone-slate-bg p-sm">
+              <div className="flex items-center justify-between rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-sm">
                 <span className="text-sm text-secondary">Gate 3: Health Screening</span>
                 <ToneBadge size="sm" status="locked" />
               </div>

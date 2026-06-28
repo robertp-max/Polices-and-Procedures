@@ -1,0 +1,119 @@
+TRANSCRIPT 6 — "THE NIGHTMARE REFERRAL"
+Referral Source: Emergency Department Social Worker
+Date: 06/28/2025 | Time: 04:48 PM PST (Friday afternoon)
+Call Duration: 58 minutes
+
+[CALL INITIATED — INBOUND]
+
+CI: Care Indeed Home Health, intake. This is Rachel.
+
+CALLER: Rachel, thank God you're still there. It's Friday afternoon and I've been calling agencies for two hours. This is Tamika Jefferson, I'm a social worker at San Mateo Medical Center ED. I have a patient in the ED who is about to be discharged and he has nowhere to go and no services set up. I need you to listen to everything and tell me if you can take him because three agencies have already said no.
+
+CI: I'm listening. Tell me what you've got.
+
+CALLER: Okay. His name is Volodymyr Ivanovich Zheleznyak. I'm going to spell it. V-O-L-O-D-Y-M-Y-R. Last name Z-H-E-L-E-Z-N-Y-A-K. He goes by "Volo." He's Ukrainian. He's 63 years old, date of birth December 8, 1961.
+
+CI: Ukrainian — does he speak English?
+
+CALLER: Barely. He understands simple English — "sit," "eat," "medicine," "pain." But for anything medical, it has to be in Ukrainian or Russian — he understands both. His ex-wife Iryna speaks English well enough to interpret for simple things but for consent, teaching, and complex medical discussions, you need a Ukrainian interpreter. His daughter speaks English and Ukrainian fluently but she lives 45 minutes away.
+
+CI: Noted. Where does he live?
+
+CALLER: Here's where it gets complicated. He's been living in a converted garage behind a house at 1547 North Delaware Street, San Mateo, 94401. It's one of those informal rental situations — he pays cash to the homeowner, no lease. The garage has been converted to a studio — it has a bed, a mini-fridge, a microwave, and a bathroom with a toilet and a shower stall. No stove. One window. Space heater for warmth. It's legal-ish. The homeowner is a guy named Mr. Petrov — no relation, just a Russian-speaking landlord. The point is: the living conditions are marginal.
+
+CI: Who else lives there?
+
+CALLER: Nobody. Volo lives alone. His ex-wife Iryna Kovalenko lives in Daly City — (650) 555-0934 — they've been divorced for five years but she still helps him. She brought him to the ED today. Their daughter Oksana Zheleznyak, age 32, lives in Fremont — (510) 555-0677 — she works full-time and has two young kids. She comes by on weekends when she can. There's also a friend from the Ukrainian church, Petro Bondar, age 58 — (650) 555-0812 — who checks in on him a few times a week.
+
+CI: So his support system is thin and geographically scattered. What brought him to the ED?
+
+CALLER: He came in this morning because Iryna found him on the floor of the garage when she came to bring him groceries. He was on the floor — unclear how long, maybe 12 to 16 hours — he's confused about the timeline. He was incontinent of urine, he was hypothermic at 95.8°F — that garage is cold at night and the space heater was off — and he had a large skin tear on his left shin, about 6 centimeters, that was bleeding and had dirt in it. He also had a hematoma on his right temporal area from hitting his head on the floor, but CT head was negative for bleed.
+
+CI: What caused the fall?
+
+CALLER: Probably a combination of things. Here's his medical picture. He's got:
+
+Parkinson's disease — diagnosed eight years ago. He's on carbidopa-levodopa but the dosing is all wrong because he hasn't seen a neurologist in two years. He can't afford the copay. He's got significant motor symptoms — resting tremor bilateral (worse on the right), cogwheel rigidity, bradykinesia, festinating gait, and postural instability. He's fallen at least six times in the last three months according to Iryna. This is the first time he was on the ground for an extended period.
+
+Type 2 diabetes — on metformin and glipizide. He hasn't checked his blood sugar in months. He doesn't have a working glucometer. His A1c — we don't even have one. The last one anyone can find in the system is from 2023 and it was 9.6. His blood sugar in the ED was 342. He's probably been running in the 300s consistently.
+
+Heart failure — he's got an EF of about 35-40% on an echo from two years ago. He's supposed to be on carvedilol, lisinopril, and furosemide but — and here's where it gets really ugly — he ran out of all three of those medications about three weeks ago and he hasn't been taking them. He says he couldn't afford the refills. He has Medi-Cal but there was some issue with his pharmacy benefits being disconnected when he missed a redetermination. Iryna has been trying to help him fix it but between her limited English with government systems and his inability to advocate for himself —
+
+CI: His Medi-Cal lapsed?
+
+CALLER: It lapsed temporarily. It's been reinstated as of today — I spent two hours on the phone with the county eligibility office. His Medi-Cal is now active through Health Plan of San Mateo. Medi-Cal ID is HPSM-90381455G. So insurance is not a barrier going forward. But the gap in meds is a crisis. The ED physician is restarting everything today and the social pharmacy downstairs is going to fill a 30-day supply before he leaves.
+
+CI: Good — at least the meds will be in hand. Continue with the medical picture.
+
+CALLER: Chronic kidney disease stage 3B — GFR about 35. Creatinine 2.0 today. Hypertension — uncontrolled without his meds. BP in ED was 188/104. Peripheral neuropathy — bilateral feet, diabetes-related. He can't feel his feet well, which contributes to the falls. Chronic low back pain — degenerative disc disease, lumbar stenosis. He's on gabapentin but — surprise — he ran out of that too. Depression — he told the interpreter that he "doesn't want to live like this anymore" but when I explored it further with the interpreter, he clarified he doesn't want to kill himself, he just doesn't want to be sick and alone. He said, in Ukrainian, "What kind of life is this? I am a man who built buildings in Kyiv and now I can't get off the floor." No active suicidal ideation but this is a man in despair. Alcohol use — he drinks 2 to 4 beers a day. Has for years. He doesn't identify it as a problem. His liver enzymes are elevated — AST 68, ALT 54. He may have early alcoholic liver disease on top of everything else. PTSD — he's never been formally diagnosed but Iryna says he has nightmares about the war. He left Ukraine in 2022 when the Russian invasion started. His brother was killed in Bucha. He saw things. He won't talk about it. He was a civil engineer in Kyiv — he designed bridges. He came to the U.S. with Temporary Protected Status. He speaks very little about his past.
+
+CI: This man has been through hell in more ways than one.
+
+CALLER: Yeah. And the system has failed him at every turn. No primary care for 18 months because his Medi-Cal lapsed. No neurologist ever. No ophthalmologist — and his diabetic eye exam is years overdue. No mental health care. No social support beyond his ex-wife and his church friend. He's been surviving, not living.
+
+CI: Allergies?
+
+CALLER: He told the interpreter no known allergies. But I'm not 100% confident in the history given the communication barrier. The RN here did a thorough check and there's nothing flagged in any of our systems.
+
+CI: Medications — what's being prescribed at discharge?
+
+CALLER: The ED physician and I put together a restart list with social pharmacy:
+
+One — Carbidopa-levodopa 25/100 TID. Parkinson's. Needs neurologist adjustment — this is probably subtherapeutic. Two — Carvedilol 12.5 mg BID. Heart failure / HTN. Three — Lisinopril 10 mg daily. Heart failure / HTN / renal. Four — Furosemide 40 mg daily. Heart failure / fluid management. Five — Potassium chloride 20 mEq daily. Diuretic replacement. Six — Metformin 500 mg BID. Diabetes. Seven — Glipizide 5 mg BID. Diabetes. Eight — Gabapentin 300 mg TID. Neuropathy / back pain. Nine — Amlodipine 5 mg daily. HTN (added today because his BP is so high). Ten — Omeprazole 20 mg daily. GI. Eleven — Acetaminophen 650 mg Q6H PRN. Pain. Twelve — Docusate 100 mg BID. Bowel. Thirteen — Thiamine 100 mg daily. Alcohol use / nutritional deficiency. Fourteen — Folic acid 1 mg daily. Alcohol / nutritional. Fifteen — Multivitamin daily.
+
+That's 15 medications. He was on zero for three weeks. So we're restarting everything at once, which means he needs close monitoring for refeeding-type effects, BP fluctuations (restarting multiple antihypertensives simultaneously), glucose swings (restarting diabetic meds with a glucose of 342), and Parkinson's med adjustments.
+
+CI: Absolutely. That restart protocol alone is a skilled nursing driver. Let me ask about function.
+
+CALLER: Bad. Even before this fall, Iryna says he was declining. Today in the ED:
+
+Ambulation: he can take about 10 shuffling steps with a front-wheeled walker and standby assist. Festinating gait — he leans forward and accelerates. He cannot stop himself. Classic Parkinson's.
+Transfers: he needs moderate assist of one. He has freezing episodes — he'll go to stand up and his feet just won't move. The nurses here have been using verbal cues ("big step, Volo, big step") and it sometimes helps.
+Balance: nonexistent. He sways standing. He'd fail a TUG test in three seconds.
+ADLs: He's been mostly doing his own care but poorly. Iryna says his hygiene has been declining for months. His clothes were dirty today. His fingernails were long and had debris under them. His feet — the ED nurse checked — there's a callus on the right great toe with underlying discoloration that could be a developing ulcer. We didn't debride it but your wound care nurse needs to look at it.
+Left shin skin tear: 6 cm, irregular, partial thickness, cleaned and dressed in ED with non-adherent pad and Kerlix (he says he's allergic to adhesive tape but Iryna isn't sure — might just be skin sensitivity). Needs wound care follow-up.
+Eating: he's been eating canned soup, bread, beer, and whatever Iryna brings. His nutritional status is poor. He's 155 lbs at 5'11" — BMI 21.6, on the low side. He's losing weight.
+Cognition: Mini-Cog today — 2 out of 5 (abnormal). He drew a somewhat recognizable clock but the numbers were off. He recalled 1 out of 3 words. Some of this could be related to the Parkinson's (PD-MCI or PD-D), some to the acute event (delirium from floor time, hypothermia, hyperglycemia), and some to alcohol. We don't know. He needs neuropsych evaluation when he's stable.
+
+CI: Is he safe to go home?
+
+CALLER: Honestly? Marginally. But we don't have a better option. He doesn't qualify for SNF under Medi-Cal for this presentation — he's medically stable. He refused a board-and-care. He said through the interpreter: "I will die in my own place." The garage is — it's not ideal. But it's clean enough, it has running water, heat (when the space heater works), and a bed. We're going to make it work.
+
+CI: What does he need from us?
+
+CALLER: Everything:
+
+Skilled nursing 5x/week for the first two weeks (daily except weekends if possible; weekends Iryna or Oksana can check on him) — medication management and teaching (he doesn't understand what half his meds are for), BP monitoring (restarting 4 antihypertensives), blood glucose monitoring (bring a glucometer), wound care (left shin + right foot assessment), Parkinson's symptom assessment, fall risk assessment, depression screening, nutritional assessment, hydration, labs (BMP within 3 days, A1c, LFTs, CBC). Then step down to 3x/week.
+Physical therapy 3x/week — fall prevention is the absolute #1 priority. Parkinson's-specific gait training (big movements, LSVT BIG-type approach if your PT is trained), balance, strengthening, home exercise program, assistive device evaluation (he may need a different walker — the front-wheeled walker may not be enough).
+Occupational therapy 3x/week — home safety assessment (that garage needs everything — grab bars in the shower, non-slip mat, nightlight, medication organizer, meal prep strategies, adaptive equipment for tremor), ADL training with Parkinson's adaptations (weighted utensils, button hooks, long-handled shoe horn, rocker knife), energy conservation.
+Medical social work weekly — establish primary care ASAP, get neurology referral, get ophthalmology, get mental health. This man needs a full medical home and he has nothing. Also: financial resources, food assistance (CalFresh, Meals on Wheels), utility assistance (LIHEAP for heating), possible housing referral (is the garage sustainable long-term?), veteran status — wait, he's not a veteran, but check for TPS-related social services, Ukrainian community resources, substance abuse assessment and brief intervention for alcohol use.
+Home health aide daily — personal care (bathing, grooming, dressing), meal support (he's not eating well and he has a microwave and a mini-fridge — that's it), medication reminders, safety supervision.
+
+CI: I'm going to be honest — the converted garage is a challenge for home health delivery. But we've worked in harder settings. Let me confirm a few things. Do we have a physician to certify?
+
+CALLER: That's a problem. He doesn't have a PCP. The ED physician today is Dr. Lauren Maxwell — she's willing to do the initial certification and face-to-face. She documented it today. But she's an ED doc — she can't do ongoing management. I've got a referral into San Mateo County Health Clinic for primary care — the appointment is July 10th with Dr. Carlos Mendes. In the meantime, Dr. Maxwell has signed off on the home health orders and she'll be the certifying physician until Dr. Mendes takes over. Her number is (650) 555-1200, fax (650) 555-1201.
+
+CI: We'll make that work. Advance directives?
+
+CALLER: None. No AHCD, no POLST, no POA. He doesn't have capacity to fully understand them right now — between the cognition, the language barrier, and the acute illness. His ex-wife Iryna has no legal authority. His daughter Oksana has no legal authority. If he has a medical emergency and can't make decisions, there's nobody legally designated. This is a priority — your MSW needs to work with the family on a healthcare POA or conservatorship.
+
+CI: Flagged. He's full code by default then?
+
+CALLER: Full code by default. He hasn't expressed any specific wishes about resuscitation.
+
+CI: When is he leaving the ED?
+
+CALLER: We're trying to get him out by 7 PM tonight. He's medically cleared. Social pharmacy should have the meds ready by 6 PM. Iryna is going to drive him home and stay with him tonight. Can your nurse see him tomorrow morning? Saturday?
+
+CI: We'll arrange a Saturday SOC visit. Give me a start time preference.
+
+CALLER: Any time after 10 AM. Iryna will be there. She can interpret for basic things. For the full assessment, please use a Ukrainian phone interpreter.
+
+CI: Got it. Tamika — you've done incredible work for this man today.
+
+CALLER: He fell through the cracks for a year and a half. Nobody saw him. A 63-year-old man with Parkinson's and uncontrolled diabetes was living alone in a garage in one of the wealthiest counties in America with no medical care, no medications, and no social support beyond his ex-wife and a church friend. The system failed him. I'm glad you're stepping in.
+
+CI: We'll do everything we can.
+
+[CALL ENDED — 05:46 PM]
+

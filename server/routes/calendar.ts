@@ -23,12 +23,15 @@ import {
   uploadEventEvidence,
   uploadIntakeEvidence,
   savePacketToEvent,
+  saveAdmissionPacket,
+  resolvePacketLibraryRoot,
   copyEvidenceToPacketFolder,
   buildEvidenceFolderSegments,
   evidenceFolderUrl,
   type EvidenceCategory,
   type GoogleCalendarDriveEvidenceRef,
 } from '../googleEvidence.js';
+import { transcribeAudio } from '../transcription.js';
 import { getCesMetadataStore, type CesEvidenceRef } from '../cesMetadataStore.js';
 import { store as ecignStore } from '../ecign/store.js';
 
@@ -530,6 +533,70 @@ calendarRouter.get('/intake/brad-training', asyncHandler(async (req, res) => {
     folders,
     files,
   });
+}));
+
+/**
+ * POST /api/calendar/intake/transcribe
+ * Transcribe a call recording (or any audio) to text using the configured
+ * provider (local ASR for MVP, Vertex in production). Body:
+ * { filename, mimeType, dataBase64 }. Returns { text, provider }.
+ * No bytes are stored — the audio is transcribed and discarded.
+ */
+calendarRouter.post('/intake/transcribe', asyncHandler(async (req, res) => {
+  const b = (req.body ?? {}) as Record<string, unknown>;
+  const dataBase64 = strOrEmpty(b.dataBase64);
+  if (!dataBase64) throw new ApiError('validation_error', '`dataBase64` is required.', 400);
+  const filename = strOrEmpty(b.filename) || 'recording.wav';
+  const mimeType = strOrEmpty(b.mimeType) || 'audio/wav';
+  const buffer = Buffer.from(dataBase64, 'base64');
+  if (!buffer.length) throw new ApiError('validation_error', 'Empty audio payload.', 400);
+  const result = await transcribeAudio(buffer, filename, mimeType);
+  res.json(result);
+}));
+
+/**
+ * GET /api/calendar/intake/packet-library?kind=mock|admission&folderId=
+ * Browse a packet-library Drive folder live (URL/metadata only): Mock Event
+ * Packets (01_CES/Evidence/Mock/Packets) or Patient Admission Packets
+ * (01_CES/Evidence/Admission/Packets). Returns immediate children.
+ */
+calendarRouter.get('/intake/packet-library', asyncHandler(async (req, res) => {
+  if (!env.calendarEvidenceEnabled) {
+    res.json({ enabled: false, rootId: null, folderId: null, folderUrl: null, folders: [], files: [] });
+    return;
+  }
+  const kind = strOrEmpty(req.query.kind) === 'admission' ? 'admission' : 'mock';
+  const rootId = await resolvePacketLibraryRoot(kind);
+  const folderId = strOrEmpty(req.query.folderId) || rootId;
+  const { folders, files } = await listFolderChildren(folderId);
+  res.json({ enabled: true, rootId, folderId, folderUrl: driveFolderUrl(folderId), folders, files });
+}));
+
+/**
+ * POST /api/calendar/intake/admission-packet
+ * Save a Patient Admission packet to the Admission Packets Drive folder.
+ * Body: { packetId, title, html, patientRef? }. Fails closed if Drive is down.
+ */
+calendarRouter.post('/intake/admission-packet', asyncHandler(async (req, res) => {
+  if (!env.calendarEvidenceEnabled) {
+    throw new ApiError('validation_error', 'Google Drive evidence is disabled.', 400);
+  }
+  const driveHealth = await pingDrive();
+  if (!driveHealth.reachable) {
+    throw new ApiError('validation_error', 'Packet save blocked: Google Drive is not reachable.', 503);
+  }
+  const b = (req.body ?? {}) as Record<string, unknown>;
+  const packetId = strOrEmpty(b.packetId);
+  const html = strOrEmpty(b.html);
+  if (!packetId) throw new ApiError('validation_error', '`packetId` is required.', 400);
+  if (!html) throw new ApiError('validation_error', '`html` is required.', 400);
+  const result = await saveAdmissionPacket({
+    packetId,
+    title: strOrEmpty(b.title) || packetId,
+    html,
+    patientRef: strOrUndef(b.patientRef),
+  });
+  res.status(201).json(result);
 }));
 
 /**

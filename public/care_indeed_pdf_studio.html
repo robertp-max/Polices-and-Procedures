@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Care Indeed Home Health — PDF Studio</title>
+<title>DefenCIble — Care Indeed</title>
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
 <!-- Fixed: Replaced local font path with Google Fonts CDN -->
@@ -65,6 +65,58 @@
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+html[data-tod="morning"] {
+  --studio-bg: #eefbfb;
+  --studio-surface: rgba(255, 255, 255, 0.74);
+  --studio-surface-2: rgba(244, 255, 255, 0.82);
+  --studio-surface-3: rgba(224, 248, 248, 0.76);
+  --studio-border: rgba(255, 255, 255, 0.54);
+  --studio-border-hover: rgba(0, 166, 168, 0.40);
+  --studio-glow: rgba(0, 166, 168, 0.13);
+  --studio-text: #24302f;
+  --studio-text-dim: #6c7b7a;
+  --studio-text-bright: #004142;
+}
+
+html[data-tod="noon"] {
+  --studio-bg: #eaf6f6;
+  --studio-surface: rgba(255, 255, 255, 0.78);
+  --studio-surface-2: rgba(244, 250, 250, 0.86);
+  --studio-surface-3: rgba(233, 244, 244, 0.86);
+  --studio-border: rgba(255, 255, 255, 0.58);
+  --studio-border-hover: rgba(0, 121, 125, 0.40);
+  --studio-glow: rgba(0, 166, 168, 0.10);
+  --studio-text: #1f1c1b;
+  --studio-text-dim: #6b7a7a;
+  --studio-text-bright: #004142;
+}
+
+html[data-tod="afternoon"] {
+  --studio-bg: #202326;
+  --studio-surface: rgba(35, 37, 40, 0.78);
+  --studio-surface-2: rgba(43, 45, 49, 0.84);
+  --studio-surface-3: rgba(54, 56, 60, 0.76);
+  --studio-border: rgba(255, 255, 255, 0.11);
+  --studio-border-hover: rgba(229, 110, 46, 0.46);
+  --studio-glow: rgba(229, 110, 46, 0.13);
+  --studio-text: rgba(255, 247, 235, 0.88);
+  --studio-text-dim: rgba(255, 247, 235, 0.56);
+  --studio-text-bright: rgba(255, 252, 245, 0.96);
+}
+
+html[data-tod="night"] {
+  --studio-bg: #10132a;
+  --studio-surface: rgba(35, 31, 71, 0.78);
+  --studio-surface-2: rgba(44, 39, 87, 0.86);
+  --studio-surface-3: rgba(29, 34, 63, 0.82);
+  --studio-border: rgba(255, 255, 255, 0.10);
+  --studio-border-hover: rgba(0, 166, 168, 0.50);
+  --studio-glow: rgba(0, 166, 168, 0.16);
+  --studio-text: rgba(248, 247, 255, 0.90);
+  --studio-text-dim: rgba(248, 247, 255, 0.58);
+  --studio-text-bright: rgba(255, 255, 255, 0.96);
+}
+
 /* ═══════════════════════════════════════════════
    RESET & BASE
    ═══════════════════════════════════════════════ */
@@ -76,10 +128,17 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 body {
-  background: var(--studio-bg);
+  background: linear-gradient(135deg, #F0FDF4 0%, #E0F2FE 100%);
+  background-attachment: fixed;
   color: var(--studio-text);
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+html[data-tod="afternoon"] body,
+html[data-tod="night"] body {
+  background: linear-gradient(135deg, #F0FDF4 0%, #E0F2FE 100%);
+  background-attachment: fixed;
 }
 
 /* ═══════════════════════════════════════════════
@@ -95,7 +154,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--studio-surface);
   backdrop-filter: blur(20px) saturate(150%);
   -webkit-backdrop-filter: blur(20px) saturate(150%);
   border-bottom: 1px solid var(--studio-border);
@@ -250,9 +309,13 @@ body {
   padding: 9px 12px;
   border-radius: 8px;
   border: 1px solid var(--studio-border, rgba(0,121,125,0.22));
-  background: #fff;
-  color: var(--gray-900, #1a1a1a);
+  background: var(--studio-surface-2);
+  color: var(--studio-text);
   font-size: 13px;
+}
+.event-picker-select option {
+  background: var(--studio-bg);
+  color: var(--studio-text);
 }
 .event-picker-select.small { flex: 1; min-width: 120px; }
 .event-picker-id { margin-top: 8px; font-size: 12px; color: var(--gray-700, #444); }
@@ -753,6 +816,18 @@ textarea.field-input {
   font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--studio-text-dim, #8aa); pointer-events: none;
 }
+/* Mobile preview carousel controls — hidden on desktop, shown ≤640px (see RESPONSIVE). */
+.carousel-controls { display: none; }
+.carousel-controls .cc-btn {
+  width: 44px; height: 44px; border-radius: 999px; border: none;
+  background: var(--teal-700, #00797d); color: #fff; font-size: 20px; line-height: 1;
+  display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+}
+.carousel-controls .cc-btn:disabled { opacity: 0.4; cursor: default; }
+.carousel-controls .cc-indicator {
+  background: rgba(6,22,24,0.85); color: #fff; border-radius: 999px;
+  padding: 10px 16px; font-size: 13px; font-weight: 500; min-width: 96px; text-align: center;
+}
 .page-modal {
   position: fixed; inset: 0; z-index: 4000;
   background: rgba(6, 22, 24, 0.86);
@@ -843,6 +918,7 @@ textarea.field-input {
   border-bottom: 1px solid rgba(0, 121, 125, 0.15);
 }
 .rp-logo { width: 140px; height: 28px; object-fit: contain; opacity: 0.95; }
+.rp-cover-logo { width: 240px; height: auto; display: block; }
 .rp-header-meta { text-align: right; color: var(--teal-900); }
 .rp-packet-id {
   font-weight: 500; font-size: 11px;
@@ -895,7 +971,7 @@ textarea.field-input {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(255, 255, 255, 0.33);   /* frosted veil — no green tint */
+  background: color-mix(in srgb, var(--studio-bg) 72%, transparent);
   backdrop-filter: blur(16px) saturate(1.1);
   -webkit-backdrop-filter: blur(16px) saturate(1.1);
   display: none;
@@ -907,7 +983,7 @@ textarea.field-input {
   width: 480px; max-width: 92vw;
   padding: 34px 36px;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.33);
+  background: var(--studio-surface);
   backdrop-filter: blur(16px) saturate(1.33) brightness(1.1);
   -webkit-backdrop-filter: blur(16px) saturate(1.33) brightness(1.1);
   border: 1px solid transparent;
@@ -927,12 +1003,12 @@ textarea.field-input {
 }
 .gen-title {
   font-weight: 700; font-size: 18px;
-  color: #0f172a; letter-spacing: -0.01em;
+  color: var(--studio-text-bright); letter-spacing: -0.01em;
   margin-bottom: 6px;
 }
 .gen-subtitle {
   font-size: 13px;
-  color: #64748b; font-weight: 500;
+  color: var(--studio-text-dim); font-weight: 500;
   margin-bottom: 22px;
 }
 .gen-progress {
@@ -1023,6 +1099,48 @@ textarea.field-input {
   .meeting-grid { grid-template-columns: 1fr; }
 }
 
+/* ── Lazy page paint (§14): skip rendering off-screen pages on screen so a
+   14-page packet stays light. Elements stay in the DOM, so print and the saved
+   standalone HTML still contain every page (content-visibility:auto content is
+   force-rendered when printing). */
+@media screen {
+  .preview-main .rendered-page {
+    content-visibility: auto;
+    contain-intrinsic-size: 8.5in 11in;
+  }
+}
+
+/* ── Mobile packet preview: one-page swipe carousel + full-screen viewer (§9) ──
+   Screen-only + ≤640px so print and the saved standalone HTML are unaffected. */
+@media screen and (max-width: 640px) {
+  /* Stack the preview area + its controls vertically. */
+  .preview-panel { flex-direction: column; }
+  /* One page per lane, snap to it while swiping. */
+  .preview-panel.carousel .preview-main {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 20px;
+    padding: 16px 16px 20px;
+  }
+  .preview-panel.carousel .preview-main .rendered-page {
+    zoom: 0.40;
+    scroll-snap-align: center;
+    cursor: zoom-in;
+  }
+  .carousel-controls {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    padding: 6px 0 18px;
+  }
+  /* Full-screen viewer: fit page to width; Zoom toggle enlarges for fine print. */
+  .page-modal-body { padding: 14px 0 28px; gap: 18px; }
+  .page-modal-body .rendered-page { zoom: 0.44; }
+  .page-modal-body.pm-zoomed { align-items: flex-start; }
+  .page-modal-body.pm-zoomed .rendered-page { zoom: 0.86; }
+  .page-modal-bar { padding: 10px 12px; gap: 8px; flex-wrap: wrap; }
+  .page-modal-bar .pm-btn { padding: 9px 12px; min-height: 40px; }
+  .page-modal-bar .pm-title { width: 100%; order: -1; }
+}
+
 /* ═══════════════════════════════════════════════
    PRINT
    ═══════════════════════════════════════════════ */
@@ -1030,7 +1148,7 @@ textarea.field-input {
 @page { size: letter; margin: 0; }
 @media print {
   html, body { background: white !important; margin: 0 !important; padding: 0 !important; }
-  .studio-nav, .preview-sidebar, .toast-container, .gen-overlay, .page-modal { display: none !important; }
+  .studio-nav, .preview-sidebar, .toast-container, .gen-overlay, .page-modal, .carousel-controls { display: none !important; }
   /* Neutralize the on-screen carousel layout for print: full-size stacked pages. */
   .preview-panel.carousel .preview-main,
   .preview-main {
@@ -1061,17 +1179,281 @@ textarea.field-input {
    EMBEDDED MODE — rendered inline inside the app (?embed=1).
    Drops the full-window 100vh caps so the host page scrolls naturally.
    ═══════════════════════════════════════════════ */
-html.embed, html.embed body { height: auto; min-height: 0; overflow: visible; background: transparent; }
-html.embed .studio-nav { position: sticky; top: 0; }
-html.embed .studio-main { min-height: 0; }
+html.embed, html.embed body {
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+  background: transparent !important;
+}
+
+/* Glassmorphism Variables Override */
+html.embed {
+  --studio-bg: transparent !important;
+  --studio-surface: rgba(255, 255, 255, 0.33);
+  --studio-surface-2: rgba(255, 255, 255, 0.50);
+  --studio-surface-3: rgba(255, 255, 255, 0.20);
+  --studio-border: rgba(0, 121, 125, 0.12);
+  --studio-border-hover: rgba(0, 121, 125, 0.28);
+  --studio-glow: rgba(0, 166, 168, 0.05);
+  
+  /* 8-tone set variables matching design system */
+  --tone-teal-bg: #F7FEFF;
+  --tone-teal-border: #C4F4F5;
+  --tone-teal-text: #00797D;
+  --tone-orange-bg: #FFFAF7;
+  --tone-orange-border: #FFD5BF;
+  --tone-orange-text: #C74601;
+  --tone-green-bg: #E6F4ED;
+  --tone-green-border: #A3D9B8;
+  --tone-green-text: #006B3A;
+  
+  /* Shadows */
+  --shadow-rest: 0 18px 44px rgba(0, 65, 66, 0.05), 0 2px 12px rgba(0, 65, 66, 0.02);
+  --shadow-hover: 0 24px 58px rgba(0, 65, 66, 0.10), 0 4px 16px rgba(0, 65, 66, 0.04);
+}
+
+/* Dark Mode Overrides inside Embed */
+html.embed[data-tod="afternoon"], html.embed[data-tod="night"] {
+  --studio-surface: rgba(30, 34, 38, 0.45);
+  --studio-surface-2: rgba(30, 34, 38, 0.65);
+  --studio-surface-3: rgba(30, 34, 38, 0.25);
+  --studio-border: rgba(255, 255, 255, 0.12);
+  --studio-border-hover: rgba(255, 255, 255, 0.28);
+  --studio-glow: rgba(255, 255, 255, 0.05);
+  --studio-text: rgba(248, 247, 255, 0.90);
+  --studio-text-dim: rgba(248, 247, 255, 0.58);
+  --studio-text-bright: rgba(255, 255, 255, 0.96);
+  
+  --tone-teal-bg: rgba(0, 166, 168, 0.1);
+  --tone-teal-border: rgba(0, 166, 168, 0.2);
+  --tone-teal-text: #33b8ba;
+}
+
+html.embed .studio-nav {
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(20px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(120%) !important;
+  border-bottom: 1px solid var(--studio-border) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.02) !important;
+}
+
+html.embed[data-tod="afternoon"] .studio-nav,
+html.embed[data-tod="night"] .studio-nav {
+  background: rgba(30, 34, 38, 0.45) !important;
+}
+
+html.embed .studio-main {
+  min-height: 0;
+}
+
+/* Glass Panels and Cards */
+html.embed .config-col,
+html.embed .meeting-card,
+html.embed .event-picker,
+html.embed .adm-panel-card,
+html.embed .cam-tile {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid transparent !important;
+  border-radius: 24px !important;
+  box-shadow: 0 10px 30px rgba(0, 65, 66, 0.08) !important;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+html.embed .meeting-card:hover,
+html.embed .event-picker:hover,
+html.embed .adm-panel-card:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 18px 44px rgba(0, 65, 66, 0.14) !important;
+  border-color: transparent !important;
+}
+
+/* Special Case for Drop Zone (Keep it dashed but glassmorphic) */
+html.embed .drop-zone {
+  background: var(--studio-surface) !important;
+  backdrop-filter: blur(22px) saturate(122%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(122%) !important;
+  border: 2px dashed var(--studio-border) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-rest) !important;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+/* Hover States for Interactives */
+html.embed .meeting-card:hover,
+html.embed .cam-tile:hover {
+  background: var(--studio-surface-2) !important;
+  border-color: var(--studio-border-hover) !important;
+  box-shadow: var(--shadow-hover) !important;
+  transform: translateY(-2px);
+}
+
+html.embed .drop-zone:hover,
+html.embed .drop-zone.dragover {
+  border-color: var(--teal-700) !important;
+  background: rgba(0, 121, 125, 0.03) !important;
+  box-shadow: var(--shadow-hover) !important;
+}
+
+/* Selected Meeting Card */
+html.embed .meeting-card.selected {
+  border-color: var(--teal-700) !important;
+  background: var(--studio-surface-2) !important;
+  box-shadow: 0 0 0 1px var(--teal-700), var(--shadow-hover) !important;
+}
+
+/* Inputs and Select fields inside embed */
+html.embed .field-input {
+  background: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid var(--studio-border) !important;
+  border-radius: 8px !important;
+  color: var(--studio-text) !important;
+  font-weight: 300 !important;
+  transition: all 0.2s ease;
+}
+
+html.embed[data-tod="afternoon"] .field-input,
+html.embed[data-tod="night"] .field-input {
+  background: rgba(0, 0, 0, 0.25) !important;
+}
+
+html.embed .field-input:focus {
+  border-color: var(--teal-700) !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 0 0 3px rgba(0, 121, 125, 0.15) !important;
+}
+
+html.embed[data-tod="afternoon"] .field-input:focus,
+html.embed[data-tod="night"] .field-input:focus {
+  background: rgba(0, 0, 0, 0.45) !important;
+  border-color: var(--teal-400) !important;
+  box-shadow: 0 0 0 3px rgba(51, 184, 186, 0.2) !important;
+}
+
+/* Nav Buttons in Embed Mode */
+html.embed .nav-btn {
+  font-weight: 300 !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  height: 38px !important;
+  padding: 0 18px !important;
+  box-shadow: var(--shadow-rest) !important;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  background: rgba(255, 255, 255, 0.33) !important;
+  border: 1px solid rgba(0, 121, 125, 0.15) !important;
+  color: var(--teal-700) !important;
+}
+
+html.embed .nav-btn:hover {
+  background: rgba(255, 255, 255, 0.50) !important;
+  border-color: var(--teal-700) !important;
+  box-shadow: var(--shadow-hover) !important;
+}
+
+html.embed .nav-btn.primary {
+  background: var(--teal-700) !important;
+  border-color: var(--teal-700) !important;
+  color: #ffffff !important;
+}
+
+html.embed .nav-btn.primary:hover {
+  background: var(--teal-900) !important;
+  border-color: var(--teal-900) !important;
+}
+
+html.embed[data-tod="afternoon"] .nav-btn,
+html.embed[data-tod="night"] .nav-btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: var(--teal-400) !important;
+}
+
+html.embed[data-tod="afternoon"] .nav-btn:hover,
+html.embed[data-tod="night"] .nav-btn:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: var(--teal-400) !important;
+}
+
+html.embed[data-tod="afternoon"] .nav-btn.primary,
+html.embed[data-tod="night"] .nav-btn.primary {
+  background: var(--teal-400) !important;
+  border-color: var(--teal-400) !important;
+  color: #1c2422 !important;
+}
+
+/* Step Indicators (Premium Pills) */
+html.embed .step-dot {
+  background: rgba(0, 121, 125, 0.12) !important;
+  height: 6px !important;
+  border-radius: 3px !important;
+  width: 32px !important;
+}
+
+html.embed .step-dot.active {
+  background: var(--teal-700) !important;
+  width: 48px !important;
+}
+
+html.embed .step-dot.completed {
+  background: var(--teal-700) !important;
+}
+
+html.embed[data-tod="afternoon"] .step-dot,
+html.embed[data-tod="night"] .step-dot {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.embed[data-tod="afternoon"] .step-dot.active,
+html.embed[data-tod="night"] .step-dot.active {
+  background: var(--teal-400) !important;
+}
+
+html.embed[data-tod="afternoon"] .step-dot.completed,
+html.embed[data-tod="night"] .step-dot.completed {
+  background: var(--teal-400) !important;
+}
+
+/* Card Typography Adjustments */
+html.embed .card-title {
+  font-weight: 300 !important;
+}
+
+/* Tone Tag overrides inside embed mode */
+html.embed .card-tag {
+  background: var(--tone-teal-bg) !important;
+  color: var(--tone-teal-text) !important;
+  border-color: var(--tone-teal-border) !important;
+}
+html.embed .card-tag.freq {
+  background: var(--tone-orange-bg) !important;
+  color: var(--tone-orange-text) !important;
+  border-color: var(--tone-orange-border) !important;
+}
+html.embed .card-tag.reg {
+  background: var(--tone-green-bg) !important;
+  color: var(--tone-green-text) !important;
+  border-color: var(--tone-green-border) !important;
+}
+
+/* Layout overrides */
 html.embed .config-grid,
 html.embed .config-col,
 html.embed .preview-sidebar,
-html.embed .preview-main { max-height: none; overflow: visible; }
-/* Carousel still scrolls horizontally inside the embedded iframe. */
-html.embed .preview-panel.carousel .preview-main { overflow-x: auto; overflow-y: hidden; }
-/* The full-page modal must cover the whole screen, not just the iframe box. */
-html.embed .page-modal { position: fixed; }
+html.embed .preview-main {
+  max-height: none;
+  overflow: visible;
+}
+
+html.embed .preview-panel.carousel .preview-main {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+html.embed .page-modal {
+  position: fixed;
+}
 </style>
 </head>
 <body>
@@ -1097,7 +1479,7 @@ html.embed .page-modal { position: fixed; }
 </nav>
 
 <!-- Hidden File Input -->
-<input type="file" class="hidden-input" id="fileInput" multiple="" accept=".pdf,.doc,.docx,.json,.csv,.xlsx,.xls,.txt,.md,.markdown,.png,.jpg,.jpeg,.html">
+<input type="file" class="hidden-input" id="fileInput" multiple="" accept=".pdf,.doc,.docx,.json,.csv,.xlsx,.xls,.txt,.md,.markdown,.png,.jpg,.jpeg,.html,.mp3,.m4a,.wav,.webm,.ogg,.aac,.flac,audio/*">
 
 <!-- ═══════════════════════════════════════════════
      STEP 1: SELECT MEETING TYPE
@@ -1111,15 +1493,23 @@ html.embed .page-modal { position: fixed; }
         <div class="meeting-grid" id="meetingGrid"><!-- Injected by JS --></div>
       </div>
       <div class="step1-right">
-        <div class="step1-section-label">Upload source documents</div>
+        <div class="step1-section-label step1-upload-head">
+          <span>Upload source documents</span>
+          <button type="button" class="cam-btn" id="camBtn" onclick="openStudioCamera()" title="Photograph a document, handwritten note, or screen">📷 Take photo</button>
+        </div>
         <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
           <div class="drop-icon">📄</div>
-          <div class="drop-title">Drop files here or click to browse</div>
-          <div class="drop-subtitle">JSON data packets, PDFs, Word docs, spreadsheets, images, or text. The Studio extracts and organizes content automatically.</div>
+          <div class="drop-title">Drop files here, click to browse, or 📷 take a photo</div>
+          <div class="drop-subtitle">Any format — JSON, Excel/CSV, PDF, Word, text/markdown, narrative assessments, scanned forms, photos, or even a <strong>call recording</strong> (Brad transcribes it). Patient details are extracted automatically.</div>
           <div class="drop-formats">
-            <span class="format-badge">.JSON</span><span class="format-badge">.PDF</span><span class="format-badge">.DOCX</span><span class="format-badge">.XLSX</span><span class="format-badge">.CSV</span><span class="format-badge">.TXT</span><span class="format-badge">.HTML</span><span class="format-badge">.PNG / .JPG</span>
+            <span class="format-badge">.JSON</span><span class="format-badge">.PDF</span><span class="format-badge">.DOCX</span><span class="format-badge">.XLSX</span><span class="format-badge">.CSV</span><span class="format-badge">.TXT</span><span class="format-badge">.HTML</span><span class="format-badge">.PNG / .JPG</span><span class="format-badge">🎙️ .MP3 / .WAV</span>
           </div>
         </div>
+        <button type="button" class="cam-tile" id="camTile" onclick="openStudioCamera()">
+          <span class="cam-tile-ic">📷</span>
+          <span class="cam-tile-t">Take photos with your camera</span>
+          <span class="cam-tile-d">Snap a document, Excel printout, scanned form, or handwritten note. Capture multiple shots without pausing — each is filed automatically.</span>
+        </button>
         <div class="file-list" id="fileList" style="margin-top:16px;"></div>
       </div>
     </div>
@@ -1143,6 +1533,12 @@ html.embed .page-modal { position: fixed; }
     </div>
     <div class="preview-main" id="previewMain">
       <!-- Rendered pages injected by JS -->
+    </div>
+    <!-- Mobile-only: page indicator + prev/next for the swipe carousel -->
+    <div class="carousel-controls" id="carouselControls" role="group" aria-label="Packet page navigation">
+      <button type="button" class="cc-btn" id="ccPrev" onclick="carouselNav(-1)" aria-label="Previous page">&#8249;</button>
+      <span class="cc-indicator" id="carouselIndicator" aria-live="polite">Page 1</span>
+      <button type="button" class="cc-btn" id="ccNext" onclick="carouselNav(1)" aria-label="Next page">&#8250;</button>
     </div>
   </div>
 </div>
@@ -1180,6 +1576,7 @@ html.embed .page-modal { position: fixed; }
     <span class="pm-spacer"></span>
     <button type="button" class="pm-btn" onclick="pmNav(-1)">← Prev</button>
     <button type="button" class="pm-btn" onclick="pmNav(1)">Next →</button>
+    <button type="button" class="pm-btn" id="pmZoomBtn" onclick="pmZoom()">⤢ Zoom</button>
     <button type="button" class="pm-btn" onclick="closePageModal()">✕ Close</button>
   </div>
   <div class="page-modal-body" id="pageModalBody"></div>
@@ -1194,7 +1591,13 @@ html.embed .page-modal { position: fixed; }
 <script>
 // Embedded mode: when rendered inside the app (?embed=1 or in an iframe),
 // flow naturally so the host page scrolls instead of clipping at 100vh.
-if (new URLSearchParams(location.search).has('embed') || window.self !== window.top) {
+const studioParams = new URLSearchParams(location.search);
+const studioThemes = new Set(['morning', 'noon', 'afternoon', 'night']);
+function applyStudioTheme(theme) {
+  document.documentElement.setAttribute('data-tod', studioThemes.has(theme) ? theme : 'noon');
+}
+applyStudioTheme(studioParams.get('tod') || 'noon');
+if (studioParams.has('embed') || window.self !== window.top) {
   document.documentElement.classList.add('embed');
 }
 </script>
@@ -1537,28 +1940,59 @@ let signingDone = false;
 // and title actually apply (printing the embedded iframe would print the host
 // app page — wrong size, wrong filename, app chrome). The new window's <title>
 // becomes the default Save-as filename ("EVENT NAME DATE").
+// Cache the packet logos (small per-page + cover) as data URIs so the print/PDF
+// export is self-contained — root-relative paths fail to load in the about:blank
+// print window (and would otherwise render unconstrained / page-filling).
+let _logoDataUris = null;
+function loadLogoUri(path) {
+  return fetch(path).then(r => r.blob()).then(b => new Promise(res => {
+    const fr = new FileReader(); fr.onload = () => res(String(fr.result || '')); fr.onerror = () => res(''); fr.readAsDataURL(b);
+  })).catch(() => '');
+}
+function ensureLogoDataUri() {
+  if (_logoDataUris !== null) return Promise.resolve(_logoDataUris);
+  return Promise.all([loadLogoUri('/ci-logo-packet-page.png'), loadLogoUri('/ci-logo-packet-cover.png')])
+    .then(([page, cover]) => { _logoDataUris = { page: page, cover: cover }; return _logoDataUris; });
+}
+const PRINT_LOGO_CSS =
+  '.rp-cover-logo{width:240px!important;height:auto!important}' +
+  '.rp-logo{width:140px!important;height:28px!important;object-fit:contain!important}' +
+  '.adm-pvpic{width:200px!important;height:auto!important}' +
+  '.adm-phead img{width:130px!important;height:auto!important}' +
+  '.rendered-page img,.adm-page img{max-width:100%!important}';
 function printPacket() {
   const pagesEl = document.getElementById('previewMain');
   if (!pagesEl || !pagesEl.innerHTML.trim()) { showToast('Generate the packet first.', 'error'); return; }
-  const styles = Array.from(document.querySelectorAll('style')).map(s => s.outerHTML).join('\n');
-  const title = (document.title || 'Care Indeed Packet').replace(/[\\/:*?"<>|]/g, ' ').trim();
+  // Open the window NOW (inside the click gesture) so it isn't pop-up blocked,
+  // then fill it once the logo data URI is ready.
   const w = window.open('', '_blank');   // NOT 'noopener' — that returns null and we can't write
   if (!w) { showToast('Pop-up blocked — allow pop-ups for this site to download the PDF.', 'error'); return; }
-  w.document.open();
-  w.document.write(
-    '<!doctype html><html class="print-export"><head><meta charset="utf-8"><title>' + title + '</title>' + styles +
-    '<style>' +
-      '@page{size:letter;margin:0;}' +
-      'html,body{margin:0!important;padding:0!important;background:#fff!important;}' +
-      '.preview-sidebar,.page-thumb,.studio-nav,.toast-container,.gen-overlay,.page-modal{display:none!important;}' +
-      '*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}' +
-      '.rendered-page{zoom:1!important;box-shadow:none!important;border-radius:0!important;margin:0!important;width:8.5in!important;height:11in!important;overflow:hidden!important;page-break-after:always;break-after:page;break-inside:avoid;}' +
-      '.rendered-page:last-child{page-break-after:auto;break-after:auto;}' +
-    '</style></head><body>' + pagesEl.innerHTML + '</body></html>'
-  );
-  w.document.close();
-  const go = () => { try { w.focus(); w.print(); } catch (e) {} };
-  if (w.document.readyState === 'complete') setTimeout(go, 350); else w.onload = () => setTimeout(go, 350);
+  try { w.document.write('<!doctype html><title>Preparing…</title><body style="font:14px sans-serif;padding:24px;color:#004142;">Preparing your PDF…</body>'); } catch (e) {}
+  const styles = Array.from(document.querySelectorAll('style')).map(s => s.outerHTML).join('\n');
+  const title = (document.title || 'Care Indeed Packet').replace(/[\\/:*?"<>|]/g, ' ').trim();
+  ensureLogoDataUri().then(uris => {
+    let body = pagesEl.innerHTML;
+    if (uris.page) body = body.split('/ci-logo-packet-page.png').join(uris.page);
+    if (uris.cover) body = body.split('/ci-logo-packet-cover.png').join(uris.cover);
+    try {
+      w.document.open();
+      w.document.write(
+        '<!doctype html><html class="print-export"><head><meta charset="utf-8"><title>' + title + '</title>' + styles +
+        '<style>' +
+          '@page{size:letter;margin:0;}' +
+          'html,body{margin:0!important;padding:0!important;background:#fff!important;}' +
+          '.preview-sidebar,.page-thumb,.studio-nav,.toast-container,.gen-overlay,.page-modal{display:none!important;}' +
+          '*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}' + PRINT_LOGO_CSS +
+          '.rendered-page{zoom:1!important;box-shadow:none!important;border-radius:0!important;margin:0!important;width:8.5in!important;height:11in!important;overflow:hidden!important;page-break-after:always;break-after:page;break-inside:avoid;}' +
+          '.rendered-page:last-child{page-break-after:auto;break-after:auto;}' +
+          '.rendered-page.adm-doc{height:auto!important;min-height:0!important;overflow:visible!important;page-break-after:auto!important;margin:0!important;box-shadow:none!important;}' +
+        '</style></head><body>' + body + '</body></html>'
+      );
+      w.document.close();
+      const go = () => { try { w.focus(); w.print(); } catch (e) {} };
+      if (w.document.readyState === 'complete') setTimeout(go, 350); else w.onload = () => setTimeout(go, 350);
+    } catch (e) { showToast('Could not prepare the PDF window.', 'error'); }
+  });
 }
 let eventFilterYear = '';
 let eventFilterMonth = '';
@@ -1634,7 +2068,9 @@ function applyEventSelection(v, opts) {
   const ev = allEventsWithMock().find(x => x.id === v);
   selectedEventTitle = ev ? ev.title : '';
   applyEventToFields(ev);
-  const tpl = v ? templateForEvent(ev) : null;
+  // Mock/training event is a free sandbox — never lock the template so any
+  // packet type can be generated against it.
+  const tpl = (v && v !== MOCK_EVENT.id) ? templateForEvent(ev) : null;
   if (tpl) {
     templateLocked = true;
     selectedMeeting = MEETING_TYPES.find(m => m.id === tpl) || selectedMeeting;
@@ -1665,6 +2101,8 @@ window.addEventListener('message', function (e) {
     signingDone = true;
     if (currentStep === 3) updateNav();
     showToast('✓ Signing scheduled — click “Download / Print PDF”.');
+  } else if (d.type === 'ci-theme') {
+    applyStudioTheme(d.theme);
   }
 });
 
@@ -1695,6 +2133,7 @@ function goToStep(step) {
 }
 
 function nextStep() {
+  if (window.ADM && ADM.family() === 'admission') { ADM.nextStep(); return; }
   if (currentStep === 1) {
     if (!selectedEventId) { showToast('Select the CES calendar event this packet is for.', 'error'); return; }
     if (!selectedMeeting) { showToast('Select a packet template.', 'error'); return; }
@@ -1925,11 +2364,10 @@ function handleFiles(files) {
     uploadedFiles.push(entry);
     renderFileList();
 
-    // Actually read + parse the file contents (no simulation).
-    const reader = new FileReader();
-    reader.onload = () => {
+    // Once we have text (read directly, or transcribed from audio), parse + detect.
+    const ingestText = (text) => {
       try {
-        entry.text = String(reader.result || '');
+        entry.text = String(text || '');
         const pk = detectPacket(entry.text);
         if (pk) { packetData = pk; entry.packet = true; entry.records = []; }
         else entry.records = parseRecords(entry.text, entry.name);
@@ -1940,10 +2378,35 @@ function handleFiles(files) {
       analytics = packetData ? null : computeAnalytics();
       renderFileList();
       updatePacketStructure();
-      if (currentStep === 3) renderStep3();
+      if (window.ADM) ADM.onFilesParsed();
+      if (currentStep === 3 && !(window.ADM && ADM.family() === 'admission')) renderStep3();
       const summary = entry.packet ? `${Object.keys(packetData.forms || {}).length} sections` : `${entry.records.length} record(s)`;
       showToast(`✓ Brad reviewed ${file.name} — ${summary}`, 'success');
     };
+
+    // Audio (call recordings) → transcribe to text via the configured ASR
+    // provider, then run the same parse/detect pipeline on the transcript.
+    const isAudio = /^audio\//.test(file.type) || /\.(mp3|m4a|wav|webm|ogg|aac|flac|mp4)$/i.test(file.name);
+    if (isAudio) {
+      entry.status = 'transcribing'; renderFileList();
+      showToast('🎙️ Transcribing the call recording…');
+      const fr = new FileReader();
+      fr.onload = () => {
+        const dataBase64 = String(fr.result || '').split(',')[1] || '';
+        fetch('/api/calendar/intake/transcribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ filename: file.name, mimeType: file.type || 'audio/wav', dataBase64 }) })
+          .then(r => r.ok ? r.json() : r.json().then(j => Promise.reject(new Error((j && (j.error || j.message)) || ('HTTP ' + r.status)))))
+          .then(j => { ingestText(j.text || ''); if (!j.text) showToast('Transcript was empty — drop the call transcript text instead.', 'error'); })
+          .catch(e => { entry.status = 'parsed'; entry.records = []; renderFileList(); showToast('Transcription unavailable: ' + (e && e.message || 'error') + ' — paste/drop the call transcript text instead.', 'error'); });
+      };
+      fr.onerror = () => { entry.status = 'parsed'; renderFileList(); };
+      fr.readAsDataURL(file);
+      return;
+    }
+
+    // Everything else: read as text directly.
+    const reader = new FileReader();
+    reader.onload = () => ingestText(reader.result);
     reader.onerror = () => { entry.status = 'parsed'; entry.records = []; renderFileList(); };
     reader.readAsText(file);
   });
@@ -2270,7 +2733,7 @@ function renderSectionData(s) {
     const items = missingItemsFor(s);
     const pid = currentPacketId || (selectedEventId ? selectedEventId + '-' + nextSeqFor(selectedEventId) : 'eventID-X');
     return `<div class="rp-glass primary">
-      <p class="rp-p" style="margin:0 0 10px;">Please use <strong>Evidence Studio</strong>, enter <strong>Packet ID&nbsp;#&nbsp;${escHtml(pid)}</strong>, and provide the required missing information:</p>
+      <p class="rp-p" style="margin:0 0 10px;">Please use <strong>DefenCIble</strong>, enter <strong>Packet ID&nbsp;#&nbsp;${escHtml(pid)}</strong>, and provide the required missing information:</p>
       <ul style="margin:0;padding-left:20px;font-size:12px;line-height:1.85;color:var(--gray-900);">${items.map(i => `<li>${escHtml(i)}</li>`).join('')}</ul>
     </div>`;
   }
@@ -2504,9 +2967,26 @@ async function showGenerationOverlay(callback) {
   const logEl = document.getElementById('genLog');
   abortGeneration = false; qaResult = null;
   overlay.classList.add('active');
+  if (window.__genActive) window.__genActive(true);
   bar.style.width = '0%';
   if (logEl) logEl.innerHTML = '';
   const setStep = (pct, sub, step) => { bar.style.width = pct + '%'; subtitle.textContent = sub; if (step) stepText.textContent = step; };
+  // Superadmin Testing toggle — skip the 3-pass / 3-iteration verification loop.
+  if (window.__bradSkipIterations) {
+    title.textContent = '⚙ Testing mode — single pass';
+    genLog('⚙ <span class="gl-head">Testing mode (superadmin)</span> — multi-iteration verification skipped.');
+    setStep(35, 'Generating one iteration…', 'Testing · single pass');
+    await genPause(450);
+    try { buildPacketContent(); } catch (e) {}
+    qaResult = { ok: true, testing: true };
+    setStep(100, 'Generated (testing mode).', 'Complete');
+    await genPause(450);
+    overlay.classList.remove('active');
+    if (window.__genActive) window.__genActive(false);
+    callback();
+    showToast('✓ Packet generated (testing mode — verification skipped)', 'success');
+    return;
+  }
   const pct = (x) => (x * 100).toFixed(1) + '%';
 
   // 1) Review
@@ -2577,6 +3057,7 @@ async function showGenerationOverlay(callback) {
   }
   await genPause(abortGeneration || (qaResult && qaResult.escalate) ? 1400 : 700);
   overlay.classList.remove('active');
+  if (window.__genActive) window.__genActive(false);
   callback();
   if (qaResult && qaResult.aborted) showToast('Generation stopped.', '');
   else if (qaResult && qaResult.escalate) showToast('🚩 Packet flagged — reach out to TJ.', 'error');
@@ -2591,7 +3072,7 @@ async function showGenerationOverlay(callback) {
    ═══════════════════════════════════════════════════════════════════════════ */
 const PAGINATE_SAFETY_PX = 6;
 const MAX_PAGES_PER_SECTION = 80;
-const RP_LOGO_HTML = '<img class="rp-logo" src="/ci-logo-gray.png" alt="Care Indeed"/>';
+const RP_LOGO_HTML = '<img class="rp-logo" src="/ci-logo-packet-page.png" alt="Care Indeed"/>';
 
 function rpHeaderHTML(sec) {
   return '<div class="rp-header">' + RP_LOGO_HTML +
@@ -2889,7 +3370,7 @@ function renderStep3() {
       <div class="rp-top-rule"></div>
       <div class="rp-inner" style="padding:62px 72px 54px;justify-content:space-between;">
         <header style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:88px;">
-          <img class="rp-logo" src="/ci-logo-gray.png" alt="Care Indeed" style="width:220px;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'220\\\' height=\\\'40\\\'><text x=\\\'0\\\' y=\\\'30\\\' font-family=\\\'sans-serif\\\' font-size=\\\'32\\\' font-weight=\\\'bold\\\' fill=\\\'%23004142\\\'>Care Indeed</text></svg>'"/>
+          <img class="rp-cover-logo" src="/ci-logo-packet-cover.png" alt="Care Indeed" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'220\\\' height=\\\'90\\\'><text x=\\\'0\\\' y=\\\'60\\\' font-family=\\\'sans-serif\\\' font-size=\\\'42\\\' font-weight=\\\'bold\\\' fill=\\\'%23004142\\\'>CareIndeed</text></svg>'"/>
           <div style="text-align:right;color:var(--gray-500);font-size:12px;line-height:1.55;letter-spacing:0.12em;text-transform:uppercase;">
             <strong style="display:block;font-weight:500;color:var(--teal-700);letter-spacing:0.16em;margin-bottom:4px;">${m.id.toUpperCase()}-${yr}-${q}</strong>
             Internal Governance Packet<br/>Executive Pre-Read
@@ -2954,6 +3435,7 @@ function renderStep3() {
   const totalPages = domIndex;   // cover + all emitted section pages
   document.getElementById('previewMain').innerHTML = pagesHTML;
   rebuildThumbnails(allSections, totalPages);
+  carouselIndex = 0; updateCarouselIndicator();   // reset mobile carousel indicator
   destroyMeasureHost();
 
   // Auto-name the exported PDF "EVENT NAME DATE" — browsers use document.title
@@ -2996,6 +3478,8 @@ function openPageModal(index) {
   if (!modal || !body) return;
   body.innerHTML = document.getElementById('previewMain').innerHTML;
   body.querySelectorAll('.rendered-page').forEach((p) => { p.removeAttribute('onclick'); p.removeAttribute('id'); });
+  body.classList.remove('pm-zoomed');
+  const zb = document.getElementById('pmZoomBtn'); if (zb) zb.textContent = '⤢ Zoom';
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
   pmScrollTo(index);
@@ -3005,16 +3489,69 @@ function pmScrollTo(index) {
   const pages = body.querySelectorAll('.rendered-page');
   if (!pages.length) return;
   pmIndex = Math.max(0, Math.min(index, pages.length - 1));
-  pages[pmIndex].scrollIntoView({ block: 'start', behavior: 'smooth' });
+  // Center in both axes so it works for the desktop vertical stack AND the
+  // mobile horizontal swipe layout.
+  pages[pmIndex].scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
   const title = document.getElementById('pmTitle');
   if (title) title.textContent = `Page ${pmIndex + 1} of ${pages.length}`;
 }
 function pmNav(delta) { pmScrollTo(pmIndex + delta); }
+// Zoom toggle for the full-screen viewer (read fine print on mobile, then pan by scrolling).
+function pmZoom() {
+  const body = document.getElementById('pageModalBody');
+  if (!body) return;
+  const zoomed = body.classList.toggle('pm-zoomed');
+  const zb = document.getElementById('pmZoomBtn');
+  if (zb) zb.textContent = zoomed ? '⤡ Fit' : '⤢ Zoom';
+  pmScrollTo(pmIndex);
+}
 function closePageModal() {
   const modal = document.getElementById('pageModal');
   if (modal) modal.classList.remove('open');
   document.body.style.overflow = '';
 }
+
+/* ── Mobile preview carousel (page indicator + prev/next + scroll sync) ── */
+let carouselIndex = 0;
+function _carouselPages() { return Array.from(document.querySelectorAll('#previewMain .rendered-page')); }
+function updateCarouselIndicator() {
+  const pages = _carouselPages();
+  const ind = document.getElementById('carouselIndicator');
+  const prev = document.getElementById('ccPrev');
+  const next = document.getElementById('ccNext');
+  if (ind) ind.textContent = pages.length ? ('Page ' + (carouselIndex + 1) + ' of ' + pages.length) : 'No pages';
+  if (prev) prev.disabled = carouselIndex <= 0;
+  if (next) next.disabled = carouselIndex >= pages.length - 1;
+}
+function carouselGoTo(index) {
+  const pages = _carouselPages();
+  if (!pages.length) return;
+  carouselIndex = Math.max(0, Math.min(index, pages.length - 1));
+  pages[carouselIndex].scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  updateCarouselIndicator();
+}
+function carouselNav(delta) { carouselGoTo(carouselIndex + delta); }
+function _syncCarouselFromScroll() {
+  const main = document.getElementById('previewMain');
+  const pages = _carouselPages();
+  if (!main || !pages.length) return;
+  const r = main.getBoundingClientRect();
+  const mid = r.left + r.width / 2;
+  let best = 0, bestDist = Infinity;
+  pages.forEach((p, i) => {
+    const pr = p.getBoundingClientRect();
+    const d = Math.abs((pr.left + pr.width / 2) - mid);
+    if (d < bestDist) { bestDist = d; best = i; }
+  });
+  if (best !== carouselIndex) { carouselIndex = best; updateCarouselIndicator(); }
+}
+(function bindCarouselScroll() {
+  const main = document.getElementById('previewMain');
+  if (!main || main.dataset.ccBound) return;
+  main.dataset.ccBound = '1';
+  let t;
+  main.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(_syncCarouselFromScroll, 90); }, { passive: true });
+})();
 document.addEventListener('keydown', (e) => {
   if (!document.getElementById('pageModal')?.classList.contains('open')) return;
   if (e.key === 'Escape') closePageModal();
@@ -3034,6 +3571,777 @@ function showToast(message, type = '') {
 
 // ── Boot ──────────────────────────────────────
 init();
+</script>
+
+<!-- ═══════════════════════════════════════════════
+     PATIENT ADMISSION PACKET — integrated mode
+     (toggle from host swaps ONLY the Step-1 red-square content;
+      shares the same nav, upload zone, preview & print pipeline)
+     ═══════════════════════════════════════════════ -->
+<style>
+:root{
+  --adm-orange-600:#913100;--adm-orange-500:#c74601;--adm-green-500:#008540;
+  --adm-red-500:#d70101;--adm-red-100:#fbe6e6;--adm-gray-900:#1f1c1b;
+  --adm-gray-700:#524d4b;--adm-gray-500:#7a7470;--adm-gray-400:#a39f9d;
+}
+/* Admission pages reuse the studio's .rendered-page frame but flow to content height */
+.rendered-page.adm-page{height:auto;min-height:11in;overflow:visible;background:radial-gradient(circle at 50% 100%,#e2f6f6 0%,#f4fcfc 60%,#fff 100%);display:flex;flex-direction:column;padding:0;}
+.adm-page .adm-banner{background:#00797d;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:12px 36px;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;}
+.adm-page .adm-inner{flex:1;padding:32px 44px;display:flex;flex-direction:column;}
+.adm-page .adm-phead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.adm-page .adm-phead img{width:130px;}
+.adm-page .adm-formref{font-size:10px;font-weight:600;color:var(--adm-orange-500);letter-spacing:.08em;text-transform:uppercase;}
+.adm-page .adm-title{font-size:24px;font-weight:500;color:#1a3b40;margin:0;letter-spacing:-.01em;}
+.adm-page .adm-rule{width:50px;height:2px;background:var(--adm-orange-500);margin:12px 0 20px;}
+.adm-page .adm-h3{font-size:13px;font-weight:600;color:#00797d;margin:0 0 10px;letter-spacing:.03em;text-transform:uppercase;}
+.adm-page .adm-p{font-size:11.5px;line-height:1.6;color:var(--adm-gray-700);margin:0 0 10px;}
+.adm-page .adm-card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 6px 20px rgba(0,65,66,.05);margin-bottom:14px;}
+.adm-page .adm-card.compact{padding:12px 14px;margin-bottom:10px;}
+.adm-page .adm-table{width:100%;border-collapse:collapse;font-size:10.5px;margin-bottom:12px;background:#fff;border-radius:6px;overflow:hidden;}
+.adm-page .adm-table th{text-align:left;padding:8px 10px;font-weight:600;color:#1a3b40;background:rgba(0,121,125,.05);border-bottom:2px solid rgba(0,121,125,.12);}
+.adm-page .adm-table td{padding:8px 10px;border-bottom:1px solid rgba(0,121,125,.06);color:var(--adm-gray-700);vertical-align:top;}
+.adm-page .adm-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,121,125,.08);font-size:11px;}
+.adm-page .adm-row:last-child{border-bottom:0;}
+.adm-page .adm-rlabel{font-weight:600;color:#00797d;font-size:10px;}
+.adm-page .adm-rval{color:var(--adm-gray-900);text-align:right;}
+.adm-page .adm-bullets{margin:0 0 10px 16px;padding:0;font-size:11.5px;color:var(--adm-gray-700);line-height:1.6;}
+.adm-page .adm-cbx{display:flex;align-items:flex-start;margin-bottom:6px;}
+.adm-page .adm-box{width:12px;height:12px;border:1px solid #00797d;border-radius:2px;margin-right:8px;margin-top:2px;flex-shrink:0;}
+.adm-page .adm-ctext{font-size:11px;line-height:1.4;color:var(--adm-gray-900);}
+.adm-page .adm-notice{padding:10px 14px;border-radius:6px;border:1px solid rgba(0,121,125,.12);background:rgba(0,166,168,.05);margin-bottom:12px;font-size:10.5px;color:#1a3b40;}
+.adm-page .adm-flag{display:inline-block;padding:2px 6px;border-radius:3px;font-size:9px;font-weight:600;background:var(--adm-red-100);color:var(--adm-red-500);border:1px solid rgba(215,1,1,.2);}
+.adm-page .adm-sigline{height:28px;border-bottom:1px solid var(--adm-gray-400);}
+.adm-page .adm-sigrole{font-size:9px;font-weight:600;color:#00797d;text-transform:uppercase;letter-spacing:.04em;margin-top:4px;}
+.adm-page .adm-grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:14px;}
+.adm-page .adm-footer{margin-top:auto;padding-top:12px;border-top:1px solid rgba(0,121,125,.1);display:flex;justify-content:space-between;font-size:9px;color:var(--adm-gray-500);}
+.adm-page .adm-cover{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;}
+.adm-page .adm-cover h1{font-size:44px;font-weight:500;color:#1a3b40;line-height:1.05;letter-spacing:-.02em;margin:0;}
+.adm-page .adm-cover .eyebrow{font-size:12px;font-weight:600;color:#00a6a8;letter-spacing:.2em;text-transform:uppercase;margin-bottom:12px;}
+.adm-page .adm-cover .crule{width:100px;height:2px;background:var(--adm-orange-500);margin:24px auto;}
+.adm-page .adm-cover .csub{font-size:18px;font-weight:300;color:var(--adm-gray-500);margin-bottom:36px;}
+.adm-page .adm-cover .ccard{background:#fff;border-radius:16px;box-shadow:0 12px 36px rgba(0,0,0,.05);padding:28px 40px;width:100%;max-width:560px;text-align:left;}
+.adm-page .adm-cover .cgrid{display:grid;grid-template-columns:1fr 1fr;row-gap:20px;column-gap:28px;}
+.adm-page .adm-cover .clabel{font-size:11px;font-weight:600;color:#00797d;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;}
+.adm-page .adm-cover .cval{font-size:13px;color:var(--adm-gray-900);}
+.adm-page .adm-pvpic{width:200px;margin-bottom:30px;}
+.adm-page .adm-action{width:100%;max-width:560px;margin:0 auto 18px;padding:12px 16px;border-radius:10px;background:#fff3ec;border:1px solid #f3c4a8;border-left:4px solid #c74601;color:#913100;font-size:12px;line-height:1.5;text-align:left;}
+/* Step-1 admission config panel (lives inside the red square) */
+#admPanel{display:none;}
+#admPanel.show{display:block;}
+.adm-cfg-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--studio-text-dim,#7a9494);margin:18px 0 10px;}
+.adm-route-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:6px;}
+.adm-route-card{position:relative;padding:14px 16px;border-radius:10px;border:1px solid var(--studio-border,rgba(0,166,168,.18));background:var(--studio-surface,#0f2424);cursor:pointer;transition:all .2s;}
+html:not(.embed) .adm-route-card{color:var(--studio-text,#e0eaea);}
+.embed .adm-route-card{background:#fff;color:#1a3b40;border:1px solid rgba(0,121,125,.18);}
+.adm-route-card:hover{border-color:#00a6a8;}
+.adm-route-card.sel{border-color:#00797d;box-shadow:0 0 0 1px #00797d;}
+.adm-route-card .ar-ic{font-size:20px;}
+.adm-route-card .ar-t{font-weight:600;font-size:12.5px;margin:6px 0 3px;}
+.adm-route-card .ar-d{font-size:10.5px;opacity:.7;line-height:1.4;}
+.adm-detect{font-size:12px;line-height:1.6;color:#1a3b40;background:rgba(0,166,168,.06);border:1px solid rgba(0,121,125,.14);border-radius:8px;padding:10px 12px;}
+.adm-detect .miss{color:#c74601;font-weight:600;}
+.step1-upload-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.cam-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1px solid #00797d;background:#00797d;color:#fff;font:inherit;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.02em;}
+.cam-btn:hover{background:#00a6a8;}
+#camOverlay .adm-modal-card{width:min(560px,92vw);}
+.cam-video{width:100%;border-radius:10px;background:#000;max-height:50vh;}
+.cam-err{color:#c74601;font-size:12px;margin-top:8px;}
+.cam-count{font-size:13px;font-weight:600;color:#008540;margin-top:10px;min-height:18px;}
+.cam-tile{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;margin-top:16px;padding:26px 20px;border-radius:12px;border:2px dashed #00a6a8;background:rgba(0,166,168,.06);color:#00797d;font:inherit;cursor:pointer;text-align:center;transition:all .2s;}
+.cam-tile:hover{background:rgba(0,166,168,.12);border-color:#00797d;}
+.cam-tile-ic{font-size:32px;}
+.cam-tile-t{font-size:15px;font-weight:700;}
+.cam-tile-d{font-size:12px;color:#52706f;max-width:420px;line-height:1.5;}
+.adm-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.adm-field{display:flex;flex-direction:column;}
+.adm-field.full{grid-column:1 / -1;}
+.adm-field label{font-size:10px;font-weight:600;color:#00797d;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+.adm-field input{padding:8px 10px;border-radius:6px;border:1px solid rgba(0,121,125,.2);font:inherit;font-size:12px;outline:0;}
+.adm-field input:focus{border-color:#00a6a8;}
+/* Multi-patient modal */
+.adm-modal{position:fixed;inset:0;z-index:1200;display:none;align-items:center;justify-content:center;background:rgba(10,26,26,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
+.adm-modal.open{display:flex;}
+/* When embedded, the iframe is taller than the screen — pin the card to the
+   host's visible center (set via --adm-cy) instead of the iframe midpoint. */
+.adm-modal.posed{display:block;}
+.adm-modal.posed .adm-modal-card{position:absolute;left:50%;top:var(--adm-cy,50%);transform:translate(-50%,-50%);}
+.adm-modal-card{width:min(640px,92vw);max-height:86vh;overflow:auto;background:#fff;border-radius:16px;box-shadow:0 40px 100px rgba(0,0,0,.4);padding:26px 28px;}
+.adm-modal-card h3{margin:0 0 4px;font-size:18px;color:#1a3b40;font-weight:600;}
+.adm-modal-card .sub{font-size:12.5px;color:#7a7470;margin-bottom:16px;}
+.adm-prow{display:grid;grid-template-columns:24px 1fr 190px;gap:10px;align-items:center;padding:10px 8px;border-bottom:1px solid rgba(0,121,125,.1);}
+.adm-prow .pn{font-weight:600;font-size:13px;color:#1f1c1b;}
+.adm-prow .pm{font-size:11px;color:#7a7470;}
+.adm-prow select{padding:6px 8px;border-radius:6px;border:1px solid rgba(0,121,125,.22);font:inherit;font-size:11.5px;width:100%;}
+.adm-allrow{display:flex;align-items:center;gap:8px;padding:8px;font-size:12px;font-weight:600;color:#00797d;}
+.adm-modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;}
+.adm-btn{padding:9px 18px;border-radius:8px;border:1px solid rgba(0,121,125,.25);background:#fff;color:#00797d;font:inherit;font-size:13px;font-weight:600;cursor:pointer;}
+.adm-btn.primary{background:#00797d;border-color:#00797d;color:#fff;}
+.adm-btn:disabled{opacity:.4;cursor:not-allowed;}
+/* Generating overlay — when embedded, pin the modal to the host's visible
+   center (the iframe is taller than the screen, so plain fixed-centering lands
+   off-screen). Host posts ci-host-viewport with the visible center Y. */
+.gen-overlay.posed{display:block;}
+.gen-overlay.posed .gen-modal{position:absolute;left:50%;top:var(--gen-cy,50%);transform:translate(-50%,-50%);margin:0;max-height:88vh;overflow:auto;}
+/* Testing toggle in nav */
+.adm-testing{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--studio-text-dim,#7a9494);cursor:pointer;-webkit-user-select:none;user-select:none;padding:4px 10px;border-radius:8px;border:1px solid var(--studio-border,rgba(0,166,168,.18));}
+.adm-testing input{accent-color:#c74601;}
+@media print{.adm-modal,.adm-testing{display:none!important;}.rendered-page.adm-page{box-shadow:none!important;border-radius:0!important;height:11in!important;min-height:0!important;overflow:hidden!important;background:#fff!important;}}
+</style>
+
+<div class="adm-modal" id="camOverlay">
+  <div class="adm-modal-card">
+    <h3>Capture documents</h3>
+    <div class="sub">Point your camera at a document, Excel printout, scanned form, or handwritten note. Each shot is filed automatically — capture as many as you need, then press Done.</div>
+    <video id="camVideo" class="cam-video" autoplay playsinline muted></video>
+    <div id="camCount" class="cam-count"></div>
+    <div id="camErr" class="cam-err"></div>
+    <div class="adm-modal-foot">
+      <button type="button" class="adm-btn" onclick="closeStudioCamera()">Cancel</button>
+      <button type="button" class="adm-btn" onclick="captureStudioPhoto()">📷 Capture shot</button>
+      <button type="button" class="adm-btn primary" onclick="finishStudioCamera()">✓ Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal" id="admReviewModal">
+  <div class="adm-modal-card">
+    <h3>Review admission details</h3>
+    <div class="sub" id="admReviewSub">Brad reviewed the upload. Confirm or type any missing details — or leave them blank to complete by hand on the printed packet.</div>
+    <div class="adm-fields" id="admReviewFields"></div>
+    <div class="adm-modal-foot">
+      <button type="button" class="adm-btn" onclick="ADM.closeReview()">Upload missing info</button>
+      <button type="button" class="adm-btn primary" onclick="ADM.generateFromReview()">Generate packet</button>
+    </div>
+  </div>
+</div>
+
+<div class="adm-modal" id="admMultiModal">
+  <div class="adm-modal-card">
+    <h3 id="admModalTitle">Multiple patient profiles detected</h3>
+    <div class="sub" id="admModalSub">Select which patients to generate an admission packet for, and confirm each payer route.</div>
+    <label class="adm-allrow"><input type="checkbox" id="admSelectAll" checked onchange="ADM.toggleAll(this.checked)"> Select all</label>
+    <div id="admProfileRows"></div>
+    <div class="adm-modal-foot">
+      <button type="button" class="adm-btn" onclick="ADM.closeModal()">Cancel</button>
+      <button type="button" class="adm-btn primary" id="admGenBtn" onclick="ADM.generateSelected()">Generate selected</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══ Patient Admission integration module ═══ */
+window.ADM = (function () {
+  let packetFamily = 'event';
+  let route = null;             // single-path selected payer route id
+  let profiles = [];            // detected patient profiles
+  let single = {};              // auto-detected single-patient details (no manual inline fields)
+  let lastModalSig = '';        // so the modal re-pops when the detected set changes
+  const FIELD_DEFS = [
+    { k:'name', label:'Patient name', ph:'Last, First', req:true },
+    { k:'dob', label:'Date of birth', ph:'mm/dd/yyyy', type:'date' },
+    { k:'mr', label:'Medical record #', ph:'MR#' },
+    { k:'soc', label:'Start of care', ph:'mm/dd/yyyy', type:'date' },
+    { k:'dx', label:'Primary diagnosis', ph:'ICD-10 / description' },
+    { k:'physician', label:'Ordering physician', ph:'Name, NPI', full:true },
+  ];
+
+  const ROUTES = [
+    { id:'PRIVATE_PAY', ic:'💵', t:'Private Pay', d:'Patient/family pays directly. Rate schedule, tokenized payment authorization.' },
+    { id:'LONG_TERM_CARE_INSURANCE', ic:'🏦', t:'Long-Term Care Insurance', d:'LTC insurer covers eligible services; patient responsibility for non-covered.' },
+    { id:'MEDICARE_ADVANTAGE_OR_PRIVATE_INSURANCE', ic:'🏥', t:'Medicare Advantage / Private Insurance', d:'Prior auth, copay/coinsurance, denial responsibility.' },
+    { id:'ORIGINAL_MEDICARE_FFS', ic:'🇺🇸', t:'Original Medicare (FFS)', d:'Part A home health benefit. $0 covered. CMS notice matrix.' },
+    { id:'MEDI_CAL_OR_MEDICAID', ic:'🏛️', t:'Medi-Cal / Medicaid', d:'No balance billing. Legal review for any patient responsibility.' },
+    { id:'VA_WORKERS_COMP_OR_OTHER_CONTRACT', ic:'⭐', t:"VA / Workers' Comp / Contract", d:'Contracted payer; authorization, scope, claim submission.' },
+    { id:'PENDING_VERIFICATION', ic:'⏳', t:'Pending Verification', d:'Payer not yet confirmed. Estimates only; finalize by deadline.' },
+    { id:'NOT_APPLICABLE_NO_BILLABLE_SERVICES', ic:'📋', t:'N/A — No Billable Services', d:'Administrative/intake only. No payment clauses.' },
+  ];
+  const routeById = (id) => ROUTES.find(r => r.id === id) || ROUTES[6];
+  // Patient rights modules listed on the signature map (concise, payer-agnostic core).
+  const CORE_MODULES = [
+    'Document Control','Consent to Evaluation & Skilled Services','Plan of Care Participation & Acceptance',
+    'Patient Rights & Responsibilities','Notice of Privacy Practices (HIPAA)','Confidentiality & Clinical Records',
+    'Advance Directive / POLST / DNR','Emergency Treatment, 911 & Preparedness','Home Safety & Infection Control',
+    'Medication Management & Reconciliation','Scheduling / Missed Visits / Cancellations','Payer-Specific Financial Responsibility',
+    'HIPAA Authorization / Release of Information','Abuse / Neglect Notice','Complaint / Grievance / Non-Retaliation',
+    'Transfer / Discharge / Change-of-Care Rights','Copy Provided / Refusal Record','Final One-Signature Attestation',
+  ];
+
+  const esc = (s) => (window.escHtml ? escHtml(String(s == null ? '' : s)) : String(s == null ? '' : s));
+  const v = (x, fallback) => (x != null && String(x).trim() !== '' ? esc(x) : '<span style="color:#c74601;">' + esc(fallback || '—') + '</span>');
+  function nowISO(){ try { return new Date().toISOString().slice(0,10); } catch(e){ return ''; } }
+
+  /* ── detect patient profiles from uploaded records ── */
+  function pick(o, keys){ for (const k of keys){ if (o && o[k] != null && String(o[k]).trim() !== '') return o[k]; } return ''; }
+  function isFilled(x){ return x != null && String(x).trim() !== '' && !/^[_\s]+$/.test(String(x)); }
+  function profileFromRecord(r){
+    if (!r || typeof r !== 'object') return null;
+    // Patient identifier (de-identified data keys patients by client_id / patient_id / MRN).
+    const id = pick(r, ['client_id','clientId','patient_id','patientId','mrn','mr','medicalRecordNumber','medicalRecord','recordNumber']);
+    let name = pick(r, ['patientName','patient_name','fullName','client_name','name','PatientName']);
+    const last = pick(r, ['lastName','last','LastName']);
+    const first = pick(r, ['firstName','first','FirstName']);
+    if (!isFilled(name) && (isFilled(last) || isFilled(first))) name = (isFilled(last) ? last : '') + (isFilled(last) && isFilled(first) ? ', ' : '') + (isFilled(first) ? first : '');
+    if (name && /^[_\s]+$/.test(name)) name = '';
+    // Staff / attendee / signature rows carry a role + present/signature — never patients.
+    const isStaff = isFilled(pick(r, ['role'])) && (r.present !== undefined || isFilled(pick(r, ['signature','date_signed'])) || /chair|don|administrator|compliance|director|recorder|manager|medical director|preparer|approver|social worker/i.test(String(pick(r, ['role']))));
+    const dob = pick(r, ['dob','dateOfBirth','DOB','birthDate']);
+    const dx = pick(r, ['primaryDiagnosis','diagnosis','primaryDx','infection_type','category']) || (Array.isArray(r.primaryDiagnoses) ? r.primaryDiagnoses[0] : '');
+    const physician = pick(r, ['physician','orderingPhysician','md','doctor','attending']);
+    const age = pick(r, ['age','patientAge','Age']);
+    const gRaw = String(pick(r, ['gender','sex','Gender','Sex'])).toLowerCase();
+    const gender = /fem|^f$|woman/.test(gRaw) ? 'Female' : /male|^m$|man/.test(gRaw) ? 'Male' : (gRaw ? gRaw : '');
+    const payerTxt = String(pick(r, ['payer','payerType','paymentRoute','insurance','payerName','plan'])).toLowerCase();
+    // Qualify: a patient identifier, OR a real name backed by clinical/demographic detail (not staff).
+    const qualifies = isFilled(id) || (isFilled(name) && !isStaff && (isFilled(dob) || isFilled(dx)));
+    if (!qualifies) return null;
+    const label = isFilled(name) ? name : (isFilled(id) ? String(id) : '(unnamed patient)');
+    return {
+      key: (isFilled(id) ? String(id) : String(label)).toLowerCase(),
+      name: label, hasName: isFilled(name), mr: isFilled(id) ? String(id) : '',
+      dob: isFilled(dob) ? dob : '', dx: isFilled(dx) ? dx : '', physician: isFilled(physician) ? physician : '',
+      age: isFilled(age) ? String(age) : '', gender,
+      route: guessRoute(payerTxt),
+    };
+  }
+  // Deep-walk an entire parsed JSON tree so patients embedded in packets
+  // (incident logs, infection line lists, chart audits) are all found.
+  function deepCollect(node, out, seen){
+    if (Array.isArray(node)) { node.forEach(n => deepCollect(n, out, seen)); return; }
+    if (node && typeof node === 'object') {
+      const p = profileFromRecord(node);
+      if (p && !seen.has(p.key)) { seen.add(p.key); out.push(p); }
+      for (const v of Object.values(node)) { if (v && typeof v === 'object') deepCollect(v, out, seen); }
+    }
+  }
+  function guessRoute(t){
+    t = String(t || '').toLowerCase();
+    if (!t) return 'PENDING_VERIFICATION';
+    if (/medicare advantage|\bma plan\b|advantage (?:through|plan)/.test(t)) return 'MEDICARE_ADVANTAGE_OR_PRIVATE_INSURANCE';
+    if (/veterans? affairs|\bva\b|va community care|veteran/.test(t)) return 'VA_WORKERS_COMP_OR_OTHER_CONTRACT';
+    if (/workers.?\s*comp|workers’?\s*compensation|state compensation/.test(t)) return 'VA_WORKERS_COMP_OR_OTHER_CONTRACT';
+    if (/original medicare|medicare fee-for-service|fee[- ]for[- ]service|medicare ffs|\bffs\b|part a/.test(t)) return 'ORIGINAL_MEDICARE_FFS';
+    if (/long.?term care insurance|\bltc\b|genworth/.test(t)) return 'LONG_TERM_CARE_INSURANCE';
+    if (/medi.?cal|medicaid/.test(t)) return 'MEDI_CAL_OR_MEDICAID';
+    if (/ppo|hmo|aetna|cigna|anthem|blue cross|blue shield|unitedhealthcare|united healthcare|kaiser|humana|commercial|retiree plan|employer/.test(t)) return 'MEDICARE_ADVANTAGE_OR_PRIVATE_INSURANCE';
+    if (/private pay|self.?pay|\bcash\b|family trust/.test(t)) return 'PRIVATE_PAY';
+    if (/medicare/.test(t)) return 'ORIGINAL_MEDICARE_FFS';
+    return 'PENDING_VERIFICATION';
+  }
+  // Parse paragraph-form intake/assessment narratives ("Patient N — Name … ").
+  function profilesFromText(text){
+    const out = []; const seen = new Set();
+    const blocks = String(text).split(/(?:^|\n)[ \t]*Patient\s+\d+\b[^A-Za-z\n]*/);
+    for (let i = 1; i < blocks.length; i++){
+      const blk = blocks[i];
+      const firstLine = blk.replace(/^[\s]+/, '').split('\n')[0] || '';
+      let name = firstLine.split(/\s+is\s+(?:an?|the)\b/i)[0].replace(/[.;,]+$/, '').trim();
+      if (!name || name.length > 60) continue;
+      const grab = (re) => { const m = blk.match(re); return m ? m[1].trim() : ''; };
+      const mr = grab(/medical record number is\s+([A-Za-z0-9\-]+)/i);
+      const dob = grab(/date of birth is\s+([A-Za-z]+\s+\d{1,2},\s*\d{4})/i);
+      let dx = grab(/primary diagnosis is\s+([^,]+(?:,\s*[^,]+){0,1})/i).replace(/,?\s*ICD-10.*$/i, '');
+      const phys = grab(/by\s+(Dr\.?\s+[A-Z][A-Za-z.'’\-]+\s+[A-Z][A-Za-z.'’\-]+)/);
+      const soc = grab(/start of care(?:\s+date)?\s+is\s+([A-Za-z]+\s+\d{1,2},\s*\d{4})/i);
+      const age = grab(/\b(\d{1,3})[-\s]year[-\s]old/i);
+      const gm = blk.match(/\b(female|male|woman|man|nonbinary|non-binary)\b/i);
+      const gender = gm ? (/fem|woman/i.test(gm[1]) ? 'Female' : /non/i.test(gm[1]) ? 'Nonbinary' : 'Male') : '';
+      const payer = grab(/(?:insurance(?:\s+coverage)?\s+is|covered (?:under|by)|coverage is|insurance is)\s+([^.]+)\.?/i) || blk;
+      const key = (mr || name).toLowerCase();
+      if (seen.has(key)) continue; seen.add(key);
+      out.push({ key, name, hasName: true, mr, dob, dx, physician: phys, soc, age, gender, route: guessRoute(payer) });
+    }
+    return out;
+  }
+  function detectProfiles(){
+    const out = []; const seen = new Set();
+    // uploadedFiles is a top-level `let` in the studio's main script (shared
+    // global lexical scope) — NOT window.uploadedFiles. Read it lexically.
+    const files = (typeof uploadedFiles !== 'undefined' && Array.isArray(uploadedFiles)) ? uploadedFiles : (window.uploadedFiles || []);
+    for (const f of files){
+      let parsed = null;
+      if (f.text){
+        try { parsed = JSON.parse(f.text); }
+        catch (e) { try { parsed = JSON.parse('[' + String(f.text).trim().replace(/^\[/, '').replace(/\]$/, '').replace(/\]\s*\[/g, ',') + ']'); } catch (e2) {} }
+      }
+      if (parsed) deepCollect(parsed, out, seen);
+      else if (f.text && /(?:^|\n)\s*Patient\s+\d+\b/.test(f.text)) {
+        profilesFromText(f.text).forEach(p => { if (!seen.has(p.key)) { seen.add(p.key); out.push(p); } });
+      }
+      else (f.records || []).forEach(r => { const p = profileFromRecord(r); if (p && !seen.has(p.key)) { seen.add(p.key); out.push(p); } });
+    }
+    return out;
+  }
+  function onFilesParsed(){
+    if (packetFamily !== 'admission') return;
+    profiles = detectProfiles();
+    if (profiles.length > 1){
+      single = {};
+      const sig = profiles.map(p => p.name + '|' + p.mr).join('::');
+      if (sig !== lastModalSig){ lastModalSig = sig; openModal(); }
+    } else if (profiles.length === 1){
+      single = Object.assign({}, profiles[0]);
+      if (single.route) route = single.route;
+      renderRouteGrid();
+    } else {
+      single = {};
+    }
+    updateDetectSummary();
+  }
+  function missingFields(o){ return FIELD_DEFS.filter(f => f.req || ['name','dob','mr','dx','physician'].includes(f.k)).filter(f => !o || !String(o[f.k] || '').trim()); }
+  function updateDetectSummary(){
+    const el = document.getElementById('admDetectSummary'); if (!el) return;
+    if (profiles.length > 1){ el.innerHTML = '<strong>' + profiles.length + ' patients detected.</strong> A selector will open on Generate so you can pick patients and a payer route for each.'; return; }
+    if (!single || !single.name){ el.innerHTML = 'No referral / SOC file uploaded yet. You can still <strong>Generate</strong> a blank packet to complete by hand.'; return; }
+    const parts = [];
+    parts.push('<strong>' + esc(single.name) + '</strong>');
+    parts.push(single.mr ? 'MR# ' + esc(single.mr) : '<span class="miss">MR# missing</span>');
+    parts.push(single.dob ? 'DOB ' + esc(single.dob) : '<span class="miss">DOB missing</span>');
+    parts.push(single.dx ? esc(single.dx) : '<span class="miss">diagnosis missing</span>');
+    parts.push(single.physician ? esc(single.physician) : '<span class="miss">physician missing</span>');
+    const miss = missingFields(single).length;
+    el.innerHTML = 'Detected: ' + parts.join(' · ') + (miss ? '<div style="margin-top:6px;color:#c74601;">' + miss + ' field(s) missing — review on Generate to type or leave blank.</div>' : '<div style="margin-top:6px;color:#008540;">All key fields detected.</div>');
+  }
+
+  /* ── single-patient review modal ── */
+  function openReview(){
+    const host = document.getElementById('admReviewFields'); if (!host) return;
+    const o = single || {};
+    host.innerHTML = FIELD_DEFS.map(f => `
+      <div class="adm-field ${f.full ? 'full' : ''}"><label>${esc(f.label)}${(!String(o[f.k]||'').trim()) ? ' <span style="color:#c74601;">· missing</span>' : ''}</label>
+      <input id="admr_${f.k}" ${f.type ? 'type="' + f.type + '"' : ''} placeholder="${esc(f.ph)}" value="${esc(o[f.k] || '')}"></div>`).join('')
+      + `<div class="adm-field full"><label>Payer route</label><select id="admr_route">${ROUTES.map(r => `<option value="${r.id}" ${r.id === (route || (o.route) || 'PENDING_VERIFICATION') ? 'selected' : ''}>${r.ic} ${esc(r.t)}</option>`).join('')}</select></div>`;
+    const miss = missingFields(o).length;
+    document.getElementById('admReviewSub').innerHTML = miss
+      ? 'Brad found <strong style="color:#c74601;">' + miss + ' missing field(s)</strong>. Type them in, upload a file with the info, or leave blank to complete by hand on the printed packet.'
+      : 'Brad detected all key fields. Confirm and generate, or edit anything below.';
+    document.getElementById('admReviewModal').classList.add('open');
+    if (window.__ciOverlayChanged) window.__ciOverlayChanged();
+  }
+  function closeReview(){ document.getElementById('admReviewModal').classList.remove('open'); if (window.__ciOverlayChanged) window.__ciOverlayChanged(); if (window.showToast) showToast('Upload a referral / SOC file on the right to fill in missing details, then Generate again.'); }
+  function generateFromReview(){
+    const get = (k) => { const el = document.getElementById('admr_' + k); return el ? el.value.trim() : ''; };
+    const nm = get('name');
+    const p = { name: nm || '(to be completed)', hasName: !!nm, dob: get('dob'), mr: get('mr'), soc: get('soc'), dx: get('dx'), physician: get('physician'), route: (document.getElementById('admr_route') || {}).value || route || 'PENDING_VERIFICATION' };
+    document.getElementById('admReviewModal').classList.remove('open');
+    if (window.__ciOverlayChanged) window.__ciOverlayChanged();
+    generate([p]);
+  }
+
+  /* ── multi-patient modal ── */
+  function openModal(){
+    const rows = document.getElementById('admProfileRows');
+    rows.innerHTML = profiles.map((p, i) => {
+      const demo = [p.age ? p.age + ' yrs' : '', p.gender || '', p.mr ? 'MR# ' + esc(p.mr) : ''].filter(Boolean).map(esc).join(' · ');
+      return `
+      <div class="adm-prow">
+        <input type="checkbox" class="adm-pchk" data-i="${i}" checked onchange="ADM.syncAll()" aria-label="Select ${esc(p.name)}">
+        <div><div class="pn">${esc(p.name)}</div><div class="pm">${demo || 'No demographics detected'}${p.dx ? ' · ' + esc(p.dx) : ''}</div></div>
+        <select class="adm-proute" data-i="${i}" aria-label="Payer route for ${esc(p.name)}">${ROUTES.map(r => `<option value="${r.id}" ${r.id === p.route ? 'selected' : ''}>${r.ic} ${esc(r.t)}</option>`).join('')}</select>
+      </div>`;
+    }).join('');
+    const tEl = document.getElementById('admModalTitle'); if (tEl) tEl.textContent = profiles.length + ' patient profiles detected';
+    document.getElementById('admModalSub').textContent = 'Select which ones you need packets for (name · age · gender), and confirm each payer route. Use Select all to choose everyone.';
+    document.getElementById('admSelectAll').checked = true;
+    document.getElementById('admMultiModal').classList.add('open');
+    if (window.__ciOverlayChanged) window.__ciOverlayChanged();
+    updateGenBtn();
+  }
+  function closeModal(){ document.getElementById('admMultiModal').classList.remove('open'); if (window.__ciOverlayChanged) window.__ciOverlayChanged(); }
+  function toggleAll(on){ document.querySelectorAll('.adm-pchk').forEach(c => { c.checked = on; }); updateGenBtn(); }
+  function syncAll(){ const all = [...document.querySelectorAll('.adm-pchk')]; document.getElementById('admSelectAll').checked = all.every(c => c.checked); updateGenBtn(); }
+  function updateGenBtn(){ const n = document.querySelectorAll('.adm-pchk:checked').length; const b = document.getElementById('admGenBtn'); b.textContent = 'Generate selected (' + n + ')'; b.disabled = n === 0; }
+  function generateSelected(){
+    const chosen = [];
+    document.querySelectorAll('.adm-pchk:checked').forEach(c => {
+      const i = +c.dataset.i; const sel = document.querySelector('.adm-proute[data-i="' + i + '"]');
+      chosen.push(Object.assign({}, profiles[i], { route: sel ? sel.value : profiles[i].route }));
+    });
+    if (!chosen.length) return;
+    closeModal();
+    generate(chosen);
+  }
+
+  /* ── Step-1 red-square panel ── */
+  function ensurePanel(){
+    if (document.getElementById('admPanel')) return;
+    const left = document.querySelector('.step1-left');
+    if (!left) return;
+    const div = document.createElement('div');
+    div.id = 'admPanel';
+    div.innerHTML = `
+      <div class="event-picker-label" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#00797d;">Patient Admission Agreement <span style="color:#c74601;">· CI-HH-ADM-001 v2.0</span></div>
+      <div class="adm-cfg-label">1 · Select payer route <span style="color:#c74601;">*</span></div>
+      <div class="adm-route-grid" id="admRouteGrid"></div>
+      <div class="adm-cfg-label">2 · Patient details (auto-detected)</div>
+      <div id="admDetectSummary" class="adm-detect">No referral / SOC file uploaded yet.</div>
+      <div style="margin-top:12px;font-size:11px;color:var(--studio-text-dim,#7a9494);line-height:1.55;">
+        Brad auto-detects patient details from the uploaded file. If <strong>more than one patient</strong> is found, a selector pops up.
+        On <strong>Generate</strong>, Brad shows a review of what it found — anything missing can be <strong>uploaded</strong>, <strong>typed in</strong>, or <strong>left blank</strong> to complete by hand on the printed packet.
+      </div>`;
+    left.appendChild(div);
+    renderRouteGrid();
+  }
+  function renderRouteGrid(){
+    const g = document.getElementById('admRouteGrid'); if (!g) return;
+    g.innerHTML = ROUTES.map(r => `
+      <div class="adm-route-card ${r.id === route ? 'sel' : ''}" data-id="${r.id}" onclick="ADM.selectRoute('${r.id}')">
+        <div class="ar-ic">${r.ic}</div><div class="ar-t">${esc(r.t)}</div><div class="ar-d">${esc(r.d)}</div>
+      </div>`).join('');
+  }
+  function renderPanel(){ ensurePanel(); renderRouteGrid(); updateDetectSummary(); }
+  function selectRoute(id){ route = id; renderRouteGrid(); if (window.updateNav) updateNav(); }
+
+  /* ── render an admission packet (array of .rendered-page.adm-page) for ONE patient ── */
+  /* ── Patient Admission Packet v3.0.0 (CI-HH-ADM-001) — ported from the
+        canonical template src/policy/admission/patientAdmissionPacket.tsx.
+        Route-suppressed: only the selected payer pathway renders. ── */
+  const ADM_TEMPLATE_ID = 'CI-HH-ADM-001', ADM_TEMPLATE_VERSION = '3.0.0';
+  // Patient-facing document release identity (distinct from the form-engine version).
+  const ADM_DOC_VERSION = '1.0 FINAL', ADM_EFFECTIVE_DATE = 'July 1, 2026';
+  const ADM_CFG = {
+    PRIVATE_PAY: { label: 'Private Pay', summary: 'You or your responsible payer will be billed directly for agreed private-pay services.', rendered: ['private-pay-rate', 'private-pay-direct-billing', 'private-pay-collection'], notices: [], legal: ['private-pay-collection-terms-review'] },
+    LONG_TERM_CARE_INSURANCE: { label: 'Long-Term Care Insurance', summary: 'Services may be submitted to the long-term care insurance carrier identified during intake.', rendered: ['ltc-carrier', 'insurance-assignment', 'patient-cooperation'], notices: [], legal: ['carrier-specific-authorization-review'] },
+    MEDICARE_ADVANTAGE_OR_PRIVATE_INSURANCE: { label: 'Medicare Advantage or Private Insurance', summary: 'Services will be routed through the listed health plan or private insurance pathway.', rendered: ['insurance-carrier', 'insurance-assignment', 'authorization-dependent-services'], notices: ['health-plan-authorization-summary'], legal: ['plan-specific-patient-liability-review'] },
+    ORIGINAL_MEDICARE_FFS: { label: 'Original Medicare Fee-for-Service', summary: 'Services will follow Original Medicare home health coverage and notice rules.', rendered: ['medicare-ffs-rights', 'medicare-coverage-rights', 'medicare-advance-notice'], notices: ['ABN-CMS-R-131', 'HHCCN-CMS-10280', 'NOMNC-CMS-10123', 'DENC-CMS-10124'], legal: ['official-cms-notice-attachment-required'] },
+    MEDI_CAL_OR_MEDICAID: { label: 'Medi-Cal or Medicaid', summary: 'Services will follow Medicaid coverage and patient financial responsibility limits.', rendered: ['medicaid-coverage', 'medicaid-balance-billing'], notices: ['medicaid-coverage-rights-summary'], legal: ['medicaid-financial-responsibility-review'] },
+    VA_WORKERS_COMP_OR_OTHER_CONTRACT: { label: "VA, Workers' Compensation, or Other Contract", summary: 'Services will be coordinated with the authorized contract sponsor.', rendered: ['contract-sponsor', 'authorization-dependent-services', 'patient-cooperation'], notices: ['contract-authorization-summary'], legal: ['contract-sponsor-terms-review'] },
+    PENDING_VERIFICATION: { label: 'Pending Verification', summary: 'Coverage is not final. This packet provides preliminary estimate language only.', rendered: ['pending-estimate-only'], notices: ['coverage-verification-pending-summary'], legal: ['coverage-verification-before-finalization'] },
+    NOT_APPLICABLE_NO_BILLABLE_SERVICES: { label: 'Not Applicable - No Billable Services', summary: 'No billable services are being admitted under this packet.', rendered: ['no-billable-services'], notices: [], legal: [] },
+  };
+  function admClause(id) {
+    switch (id) {
+      case 'private-pay-rate': return 'The current private-pay rate or rate schedule is provided to you at intake and recorded with this agreement.';
+      case 'private-pay-direct-billing': return 'For private-pay services, the patient or responsible payer receives billing directly from the agency according to the agreed rate schedule.';
+      case 'private-pay-collection': return 'Questions about balances should be raised promptly so the agency can review the account and available options before further action.';
+      case 'ltc-carrier': return 'The long-term care insurance carrier identified at intake is recorded with this agreement. The patient remains responsible for cooperating with claim documentation requests.';
+      case 'insurance-carrier': return 'The health plan or private insurance carrier identified at intake is recorded with this agreement. Coverage may depend on authorization, eligibility, plan rules, and medical necessity.';
+      case 'insurance-assignment': return 'The patient authorizes the agency to submit claims and related documentation to the applicable payer for covered services.';
+      case 'authorization-dependent-services': return 'Some services may require prior authorization or continued authorization before they can be provided or billed to the payer.';
+      case 'patient-cooperation': return 'The patient agrees to provide payer information, identification numbers, and requested documents needed to support claim submission.';
+      case 'medicare-ffs-rights': return 'For Original Medicare Fee-for-Service, Medicare coverage rules and applicable beneficiary notices control when coverage changes or services are not expected to be covered.';
+      case 'medicare-coverage-rights': return 'Medicare notices may be provided when required, including notices related to noncoverage, changes in care, or appeal rights.';
+      case 'medicare-advance-notice': return 'When an advance notice is required, the agency will provide the official notice form and explain the available options before the patient makes an election.';
+      case 'medicaid-coverage': return 'For Medi-Cal or Medicaid, covered services and patient financial responsibility are limited by applicable program rules.';
+      case 'medicaid-balance-billing': return 'The agency will not seek private-pay collection for covered Medicaid services unless permitted by applicable program rules and an approved addendum.';
+      case 'contract-sponsor': return 'The authorized contract sponsor identified at intake is recorded with this agreement. Services are coordinated according to the sponsor authorization and applicable program rules.';
+      case 'pending-estimate-only': return 'Coverage remains pending. Final payment responsibility is not confirmed until verification is complete; figures provided before then are preliminary estimates only.';
+      case 'no-billable-services': return 'No billable services are admitted under this packet.';
+      default: return '';
+    }
+  }
+  const ADM_BASE_SECTIONS = [
+    { id: 'patient-identification', title: 'Patient and Admission Information', body: ['Care Indeed Home Health uses this agreement to confirm the patient, admission date, agency contact information, receipt of required notices, and the selected payment pathway.', 'The patient or authorized representative should ask questions before signing if any section is unclear.'] },
+    { id: 'patient-rights', title: 'Patient Rights and Responsibilities', body: ['You have the right to receive respectful care, participate in planning your care, receive information about services, voice concerns, and receive notice of your rights before care begins whenever possible.', 'You agree to provide accurate information, notify the agency of changes that may affect services, and participate in care planning within your ability.'] },
+    { id: 'privacy-practices', title: 'Privacy Practices', body: ['The agency provides a Notice of Privacy Practices and explains how protected health information may be used for treatment, payment, health care operations, and other permitted purposes.', 'A separate authorization is required for uses or disclosures that require a dedicated authorization form.'] },
+    { id: 'copy-receipt', title: 'Copies and Acknowledgments', body: ['The patient or authorized representative confirms whether a copy of this admission agreement, patient rights information, and privacy notice was provided or refused.'] },
+  ];
+  function buildAdmissionSections(p) {
+    if (!p.route || !ADM_CFG[p.route]) return ADM_BASE_SECTIONS.slice();
+    const cfg = ADM_CFG[p.route];
+    const payer = { id: 'route-' + p.route, title: 'Payment Pathway - ' + cfg.label, body: [cfg.summary].concat(cfg.rendered.map(admClause)) };
+    const notices = { id: 'notices-and-attachments', title: 'Notices and Attachments', body: cfg.notices.length ? ['The following notices or summaries apply to the selected payment pathway:', cfg.notices.join(', ')] : ['No payer-specific CMS notices are triggered by the selected payment pathway.'] };
+    const sig = { id: 'final-signature', title: 'Final Acknowledgment and Signature', body: ['By signing once below, the signer acknowledges the selected sections, payer pathway, patient rights, privacy notice receipt, and copy-provided or refusal status shown in this packet.', 'Separate forms may still be required for authorizations that legally require a dedicated signature.'] };
+    return ADM_BASE_SECTIONS.concat([payer, notices, sig]);
+  }
+  function ensureAdmCss() {
+    if (document.getElementById('ci-adm-v3-css')) return;
+    const s = document.createElement('style'); s.id = 'ci-adm-v3-css';
+    s.textContent = '.ci-admission-packet{--ci-teal:#007c7a;--ci-teal-dark:#005f5e;--ci-orange:#e87722;--ci-text:#1a1a1a;--ci-muted:#4a4a4a;--ci-border:#d1d5db;--ci-bg-soft:#f7fafa;width:min(100%,8.5in);margin:0 auto;background:#fff;color:var(--ci-text);font-family:Roboto,Arial,sans-serif;font-size:11pt;line-height:1.5;}'
+      + '.ci-admission-page{min-height:11in;padding:.6in .72in;}'
+      + '.ci-admission-header{display:flex;justify-content:space-between;gap:24px;border-bottom:4px solid var(--ci-teal);padding-bottom:14px;margin-bottom:22px;}'
+      + '.ci-brand{color:var(--ci-teal-dark);font-weight:500;font-size:18pt;}.ci-brand span{color:var(--ci-orange);}'
+      + '.ci-meta{color:var(--ci-muted);font-size:8pt;text-align:right;}'
+      + '.ci-title{color:var(--ci-teal-dark);font-size:20pt;font-weight:500;margin:0 0 4px;}'
+      + '.ci-subtitle{color:var(--ci-muted);margin:0 0 18px;}'
+      + '.ci-section{border:1px solid var(--ci-border);border-radius:8px;margin-bottom:16px;overflow:hidden;break-inside:avoid;}'
+      + '.ci-section h2{margin:0;padding:10px 14px;background:var(--ci-teal);color:#fff;font-size:12pt;font-weight:500;}'
+      + '.ci-section-body{padding:14px;}.ci-section-body p{margin:0 0 8px;}'
+      + '.ci-field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px;margin-bottom:18px;}'
+      + '.ci-field label{display:block;color:var(--ci-muted);font-size:8pt;font-weight:500;letter-spacing:.04em;text-transform:uppercase;}'
+      + '.ci-field div{min-height:22px;border-bottom:1px solid var(--ci-border);padding:2px 0;}'
+      + '.ci-signature-block{border:2px solid var(--ci-teal);border-radius:8px;padding:16px;background:var(--ci-bg-soft);break-inside:avoid;}'
+      + '.ci-signature-lines{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:22px;}'
+      + '.ci-signature-line{border-top:1px solid var(--ci-text);padding-top:6px;color:var(--ci-muted);font-size:8pt;}'
+      + '.ci-staffnote{background:#fff7ed;border:1px solid #f3c4a8;border-left:4px solid #c74601;border-radius:8px;padding:9px 13px;font-size:9pt;color:#9a3412;margin-bottom:16px;}'
+      + '.rendered-page.adm-doc{height:auto!important;min-height:0!important;overflow:visible!important;background:#fff;display:block;padding:0;}'
+      + '.ci-admission-page{break-after:page;}'
+      + '.ci-admission-page:last-child{break-after:auto;}'
+      + '@media print{.rendered-page.adm-doc{height:auto!important;overflow:visible!important;}.ci-admission-page{padding:.6in .72in;}}';
+    document.head.appendChild(s);
+  }
+  function packetMissing(p){
+    const miss = [];
+    if (!p.hasName) miss.push('patient name');
+    if (!isFilled(p.dob)) miss.push('date of birth');
+    if (!isFilled(p.mr)) miss.push('MR#');
+    if (!isFilled(p.soc)) miss.push('start of care');
+    if (!isFilled(p.dx)) miss.push('primary diagnosis');
+    if (!isFilled(p.physician)) miss.push('ordering physician');
+    if (!p.route || p.route === 'PENDING_VERIFICATION') miss.push('confirmed payer route');
+    return miss;
+  }
+  function actionBand(p){
+    const miss = packetMissing(p);
+    if (!miss.length) return '';
+    return `<div class="adm-action"><strong>⚠ ACTION REQUIRED — incomplete admission record.</strong> Missing: ${esc(miss.join(', '))}.
+      <br>When this information is obtained, <strong>update this packet using Packet ID ${esc(p.packetId || '')}</strong> and re-generate before filing / signature.</div>`;
+  }
+  function buildPatientPacket(p){
+    ensureAdmCss();
+    const cfg = p.route && ADM_CFG[p.route];
+    const routeLabel = cfg ? cfg.label : 'Not selected';
+    const release = cfg ? 'Production ready with legal hold items' : 'Not production ready (payer route required)';
+    const sections = buildAdmissionSections(p);
+    const fld = (label, val) => `<div class="ci-field"><label>${esc(label)}</label><div>${val ? esc(val) : ''}</div></div>`;
+    const sectionsHtml = sections.map(s => `<section class="ci-section" id="${esc(s.id)}"><h2>${esc(s.title)}</h2><div class="ci-section-body">${s.body.map(b=>`<p>${esc(b)}</p>`).join('')}</div></section>`).join('');
+    const miss = packetMissing(p);
+    const staffNote = miss.length ? `<div class="ci-staffnote"><strong>STAFF NOTE (not part of patient copy):</strong> incomplete admission record — missing ${esc(miss.join(', '))}. Update using Packet ID ${esc(p.packetId || '')} when obtained, then re-generate before signature.</div>` : '';
+    return `<section class="rendered-page adm-doc"><article class="ci-admission-packet" data-template-id="${ADM_TEMPLATE_ID}">
+      <div class="ci-admission-page">
+        <header class="ci-admission-header">
+          <div><div class="ci-brand">Care<span>Indeed</span></div><p class="ci-subtitle">Home Health Admission Agreement</p></div>
+          <div class="ci-meta"><div>Form ID: ${ADM_TEMPLATE_ID}</div><div>Document Version: ${ADM_DOC_VERSION}</div><div>Effective Date: ${ADM_EFFECTIVE_DATE}</div><div>Packet ID: ${esc(p.packetId || '')}</div><div>Release status: ${esc(release)}</div></div>
+        </header>
+        <h1 class="ci-title">Patient Admission Agreement</h1>
+        <p class="ci-subtitle">This patient-facing packet shows only the selected payer pathway and required admission acknowledgments.</p>
+        ${staffNote}
+        <section class="ci-field-grid" aria-label="Admission details">
+          ${fld('Patient', p.hasName ? p.name : '')}
+          ${fld('Date of Birth', p.dob)}
+          ${fld('Medical Record Number', p.mr)}
+          ${fld('Admission Date', p.soc)}
+          ${fld('Agency', 'Care Indeed Home Health')}
+          ${fld('Agency Phone', '(650) 328-1001')}
+          ${fld('Selected Payment Pathway', routeLabel)}
+          ${fld('Effective Date', ADM_EFFECTIVE_DATE)}
+          ${fld('Document Version', ADM_DOC_VERSION)}
+          ${fld('Copy Status', 'Pending')}
+        </section>
+        ${sectionsHtml}
+        <section class="ci-signature-block" aria-label="Final signature">
+          <strong>One Final Signature</strong>
+          <p>This signature applies to the selected patient-facing sections and selected payer pathway shown in this packet. Separate forms may still be required for authorizations that legally require a dedicated signature.</p>
+          <div class="ci-signature-lines"><div class="ci-signature-line">Patient or Authorized Representative Signature</div><div class="ci-signature-line">Date</div></div>
+        </section>
+      </div>
+    </article></section>`;
+  }
+
+  function admOverlay(cb){
+    const o = document.getElementById('genOverlay'), bar = document.getElementById('genProgressBar'),
+      sub = document.getElementById('genSubtitle'), st = document.getElementById('genStepText'), ttl = document.getElementById('genTitle');
+    if (!o){ cb(); return; }
+    ttl.textContent = '🤖 Brad is assembling the admission packet';
+    o.classList.add('active'); bar.style.width = '0%';
+    if (window.__genActive) window.__genActive(true);
+    const steps = [[15,'Validating payer pathway…','Step 1 · Payer'],[40,'Assembling required admission modules…','Step 2 · Modules'],[70,'Rendering agreement sections…','Step 3 · Render'],[90,'Building signature & eCign certificate…','Step 4 · Signature'],[100,'Packet ready.','Complete']];
+    let i = 0;
+    const iv = setInterval(() => {
+      if (i >= steps.length){ clearInterval(iv); setTimeout(() => { o.classList.remove('active'); if (window.__genActive) window.__genActive(false); cb(); }, 350); return; }
+      bar.style.width = steps[i][0] + '%'; sub.textContent = steps[i][1]; st.textContent = steps[i][2]; i++;
+    }, 420);
+  }
+  function slug(s){ return String(s || '').replace(/[^A-Za-z0-9]+/g, '').slice(0, 18); }
+  function generate(list){
+    const main = document.getElementById('previewMain'); if (!main) return;
+    const side = document.getElementById('previewSidebar');
+    // Assign a stable per-patient Packet ID (used in the action notice the user
+    // updates by once missing info is acquired).
+    const date = nowISO();
+    list.forEach((p, i) => { p.packetId = 'ADM-' + (slug(p.mr) || ('PT' + String(i + 1).padStart(3, '0'))) + '-' + date; });
+    admOverlay(() => {
+      const perPatient = list.map(p => ({ packetId: p.packetId, name: p.name, html: buildPatientPacket(p) }));
+      const html = perPatient.map(x => x.html).join('');
+      main.innerHTML = html;
+      // Save each admission packet to Google Drive via the host.
+      try { window.parent && window.parent.postMessage({ type: 'ci-admission-generated', patients: perPatient }, '*'); } catch (e) {}
+      if (side){
+        const pages = main.querySelectorAll('.rendered-page').length;
+        const pend = list.filter(p => packetMissing(p).length).length;
+        side.innerHTML = '<div style="padding:10px 6px;font-size:11px;color:var(--studio-text-dim,#7a9494);">' + list.length + ' admission packet' + (list.length === 1 ? '' : 's') + '<br>' + pages + ' pages' + (pend ? '<br><span style="color:#c74601;">' + pend + ' pending update</span>' : '') + '</div>';
+      }
+      // Filename: single patient name + date, or batch label.
+      document.title = (list.length === 1 ? String(list[0].name).replace(/[,]/g,'') : 'Patient Admission Packets') + ' ' + date;
+      window.currentPacketId = list.length === 1 ? list[0].packetId : ('ADM-BATCH-' + list.length + '-' + date);
+      if (window.goToStepRaw) window.goToStepRaw(3); else goToStep(3);
+      if (window.showToast) showToast('✓ Admission packet generated for ' + list.length + ' patient' + (list.length === 1 ? '' : 's'), 'success');
+    });
+  }
+
+  /* ── nav: Continue from step 1 (manual single patient) / print from step 3 ── */
+  function admNextStep(){
+    const cur = (typeof currentStep !== 'undefined' ? currentStep : (window.currentStep || 1));
+    if (cur === 1){
+      // Multiple patients → per-patient selector; otherwise → review (auto-detected,
+      // editable, blanks allowed). Never blocks: missing info is handled in review.
+      if (profiles.length > 1){ openModal(); return; }
+      openReview();
+    } else if (cur === 3){
+      if (window.printPacket) printPacket();
+    } else if (window.goToStepRaw){ window.goToStepRaw(Math.min(3, cur + 1)); }
+  }
+
+  /* ── family toggle from host ── */
+  function setFamily(f){
+    packetFamily = (f === 'admission') ? 'admission' : 'event';
+    const left = document.querySelector('.step1-left');
+    const picker = document.getElementById('eventPicker');
+    const grid = document.getElementById('meetingGrid');
+    const tplLabel = left ? left.querySelector('.step1-section-label') : null;
+    ensurePanel();
+    const adm = document.getElementById('admPanel');
+    if (packetFamily === 'admission'){
+      if (picker) picker.style.display = 'none';
+      if (grid) grid.style.display = 'none';
+      if (tplLabel) tplLabel.style.display = 'none';
+      if (adm) adm.classList.add('show');
+      renderPanel();
+    } else {
+      if (picker) picker.style.display = '';
+      if (grid) grid.style.display = '';
+      if (tplLabel) tplLabel.style.display = '';
+      if (adm) adm.classList.remove('show');
+    }
+    // reset to step 1 view and refresh nav label/button
+    if (window.goToStepRaw) window.goToStepRaw(1); else if (window.goToStep) goToStep(1);
+    refreshNav();
+  }
+  function refreshNav(){
+    const lbl = document.getElementById('stepLabel');
+    const btn = document.getElementById('btnNext');
+    if (packetFamily === 'admission' && (typeof currentStep !== 'undefined' ? currentStep : 1) === 1){
+      if (lbl) lbl.textContent = 'Step 1 · Patient Admission Agreement';
+      if (btn){ btn.disabled = false; btn.innerHTML = '⚡ Generate Admission Packet'; }
+    }
+  }
+
+  return {
+    family: () => packetFamily, setFamily, onFilesParsed, nextStep: admNextStep,
+    selectRoute, renderPanel, openModal, closeModal, toggleAll, syncAll, generateSelected,
+    openReview, closeReview, generateFromReview,
+  };
+})();
+
+// Preserve a raw goToStep so admission can navigate without the event-mode guard,
+// and keep admission nav label sticky.
+(function () {
+  if (typeof goToStep === 'function' && !window.goToStepRaw) {
+    window.goToStepRaw = function (s) {
+      currentStep = s;
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+      const el = document.getElementById('step' + s); if (el) el.classList.add('active');
+      if (s === 2 && ADM.family() === 'event') renderStep2();
+      if (s === 3 && ADM.family() === 'event') renderStep3();
+      updateNav();
+      if (ADM.family() === 'admission') {
+        const lbl = document.getElementById('stepLabel');
+        const btn = document.getElementById('btnNext');
+        if (s === 1 && lbl) lbl.textContent = 'Step 1 · Patient Admission Agreement';
+        if (s === 3 && lbl) lbl.textContent = 'Step 3 · Preview & Export';
+        if (btn) { btn.disabled = false; btn.innerHTML = s === 3 ? '📥 Download / Print PDF' : (s === 1 ? '⚡ Generate Admission Packet' : 'Continue →'); }
+      }
+    };
+  }
+  // Inject the superadmin Testing toggle into the (empty) nav-left.
+  const navLeft = document.querySelector('.studio-nav .nav-left');
+  if (navLeft && !document.getElementById('admTesting')) {
+    const lab = document.createElement('label');
+    lab.className = 'adm-testing'; lab.title = 'Superadmin — skip the 3-pass verification loop while testing';
+    lab.innerHTML = '<input type="checkbox" id="admTesting" onchange="window.__bradSkipIterations=this.checked"> ⚙ Testing · skip iterations';
+    navLeft.appendChild(lab);
+  }
+  // ── Overlay/modal centering (embed mode) ──
+  // The embedded iframe is taller than the screen, so position:fixed centers at
+  // the iframe midpoint (off-screen). The host streams the visible center (--*-cy)
+  // and we pin the active overlay/modal there.
+  const isEmbed = document.documentElement.classList.contains('embed');
+  const genOverlay = document.getElementById('genOverlay');
+  const MODAL_IDS = ['admMultiModal', 'admReviewModal', 'camOverlay'];
+  let viewportCY = null;
+  function anyOverlayOpen() {
+    if (genOverlay && genOverlay.classList.contains('active')) return true;
+    return MODAL_IDS.some(id => { const e = document.getElementById(id); return e && e.classList.contains('open'); });
+  }
+  function applyCentering() {
+    if (!isEmbed) return;
+    if (genOverlay) {
+      if (viewportCY != null && genOverlay.classList.contains('active')) { genOverlay.style.setProperty('--gen-cy', viewportCY + 'px'); genOverlay.classList.add('posed'); }
+      else { genOverlay.classList.remove('posed'); genOverlay.style.removeProperty('--gen-cy'); }
+    }
+    MODAL_IDS.forEach(id => {
+      const e = document.getElementById(id); if (!e) return;
+      if (viewportCY != null && e.classList.contains('open')) { e.style.setProperty('--adm-cy', viewportCY + 'px'); e.classList.add('posed'); }
+      else { e.classList.remove('posed'); e.style.removeProperty('--adm-cy'); }
+    });
+  }
+  // Notify the host whenever any overlay/modal opens or closes so it can stream
+  // (or stop streaming) the visible center. Called by gen overlay AND ADM modals.
+  function overlayChanged() {
+    const active = anyOverlayOpen();
+    try { window.parent && window.parent.postMessage({ type: 'ci-generating', active }, '*'); } catch (e) {}
+    if (!active) viewportCY = null;
+    applyCentering();
+  }
+  window.__genActive = overlayChanged;        // gen overlay calls this
+  window.__ciOverlayChanged = overlayChanged; // ADM modals call this
+
+  window.addEventListener('message', function (e) {
+    const d = e.data || {};
+    if (d.type === 'ci-packet-family') ADM.setFamily(d.family);
+    else if (d.type === 'ci-theme' && typeof d.theme === 'string') {
+      if (typeof applyStudioTheme === 'function') applyStudioTheme(d.theme);
+    }
+    else if (d.type === 'ci-host-viewport') { viewportCY = d.centerY; applyCentering(); }
+  });
+})();
+</script>
+
+<script>
+/* ── In-studio camera capture — multiple shots, each auto-filed, no pausing ── */
+var _camStream = null, _camShots = 0;
+function _camSetCount() {
+  const el = document.getElementById('camCount');
+  if (el) el.textContent = _camShots ? '✓ ' + _camShots + ' shot' + (_camShots === 1 ? '' : 's') + ' filed — keep capturing or press Done.' : '';
+}
+function openStudioCamera() {
+  const o = document.getElementById('camOverlay'), err = document.getElementById('camErr'), v = document.getElementById('camVideo');
+  _camShots = 0; _camSetCount(); if (err) err.textContent = '';
+  o.classList.add('open'); if (window.__ciOverlayChanged) window.__ciOverlayChanged();
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    err.textContent = 'Live camera not available here — use “click to browse” and pick your phone’s camera, or drop a photo file.'; return;
+  }
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+    .then(function (s) { _camStream = s; v.srcObject = s; })
+    .catch(function (e) { err.textContent = 'Camera unavailable (' + ((e && e.name) || 'error') + '). Allow camera access, or use “click to browse” to add a photo.'; });
+}
+function captureStudioPhoto() {
+  const v = document.getElementById('camVideo'), err = document.getElementById('camErr');
+  if (!v || !v.videoWidth) { if (err) err.textContent = 'Camera still starting — wait a moment, then capture.'; return; }
+  const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight;
+  c.getContext('2d').drawImage(v, 0, 0);
+  // File this shot immediately; the live preview keeps running for the next one.
+  c.toBlob(function (b) {
+    if (!b) return;
+    _camShots++;
+    const f = new File([b], 'captured-' + _camShots + '.jpg', { type: 'image/jpeg' });
+    if (window.handleFiles) window.handleFiles([f]);
+    _camSetCount();
+  }, 'image/jpeg', 0.92);
+}
+function _camStop() {
+  const o = document.getElementById('camOverlay'), v = document.getElementById('camVideo');
+  o.classList.remove('open'); if (window.__ciOverlayChanged) window.__ciOverlayChanged();
+  if (_camStream) { _camStream.getTracks().forEach(function (t) { t.stop(); }); _camStream = null; }
+  if (v) v.srcObject = null;
+}
+function closeStudioCamera() { _camStop(); }   // Cancel — keep any already-filed shots
+function finishStudioCamera() {
+  const shots = _camShots; _camStop();
+  if (shots > 0 && window.showToast) window.showToast('📷 ' + shots + ' image' + (shots === 1 ? '' : 's') + ' filed — Brad is reviewing.');
+  // Images can't be auto-read for text, so open the review so details can be
+  // confirmed/typed from the captured photos (or left blank to complete by hand).
+  if (shots > 0 && window.ADM && ADM.family() === 'admission') ADM.openReview();
+}
 </script>
 </body>
 </html>

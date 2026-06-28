@@ -272,7 +272,7 @@ const orientationModule: ModuleDef = {
 // 2. Load all mapped modules
 const mappedACHCModules: ModuleDef[] = ALL_MODULES.map(toModuleDef);
 
-const onboardingModulesOnly = onboardingModulesRaw.filter(m => m.track !== "ANN");
+const onboardingModulesOnly = onboardingModulesRaw.filter(m => m.track !== "ANN" && m.id !== "cms-485" && m.id !== "qapi");
 const mappedOnboardingModules = onboardingModulesOnly.map(onboardingToModuleDef);
 
 export const courseModules: ModuleDef[] = [

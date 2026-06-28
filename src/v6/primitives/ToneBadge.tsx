@@ -31,7 +31,7 @@ const toneClasses: Record<Tone, string> = {
   green: 'border-tone-green-border bg-tone-green-bg text-tone-green-text',
   orange: 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text',
   red: 'border-tone-red-border bg-tone-red-bg text-tone-red-text',
-  slate: 'border-tone-slate-border bg-tone-slate-bg text-tone-slate-text',
+  slate: 'border-tone-slate-border bg-surface-glass backdrop-blur-md shadow-glass-inset text-tone-slate-text',
   teal: 'border-tone-teal-border bg-tone-teal-bg text-tone-teal-text',
   violet: 'border-tone-violet-border bg-tone-violet-bg text-tone-violet-text',
 };

@@ -47,7 +47,7 @@ export function DocumentUploadZone({ eventId, title = 'Drop documents for Brad' 
         onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
         onDragLeave={() => setDrag(false)}
         onDrop={(e) => { e.preventDefault(); setDrag(false); void handleFiles(e.dataTransfer.files); }}
-        className={cxLocal('flex w-full flex-col items-center gap-2 rounded-lg border-2 border-dashed p-lg text-center transition', drag ? 'border-brand-teal bg-tone-teal-bg' : 'border-hairline bg-tone-slate-bg hover:border-brand-teal')}
+        className={cxLocal('flex w-full flex-col items-center gap-2 rounded-lg border-2 border-dashed p-lg text-center transition', drag ? 'border-brand-teal bg-tone-teal-bg' : 'border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset hover:border-brand-teal')}
       >
         {uploading ? <Loader2 className="h-icon-md w-icon-md animate-spin text-brand-teal" aria-hidden /> : <Upload className="h-icon-md w-icon-md text-brand-teal" aria-hidden />}
         <span className="text-sm font-medium text-ink">{title}</span>
@@ -60,7 +60,7 @@ export function DocumentUploadZone({ eventId, title = 'Drop documents for Brad' 
         <div className="mt-md space-y-1.5">
           <p className="text-tag uppercase tracking-tag text-muted">Uploaded ({files.length})</p>
           {files.map((f) => (
-            <div key={f.id} className="flex items-center justify-between gap-2 rounded-md border border-hairline bg-surface px-3 py-1.5 text-xs text-ink">
+            <div key={f.id} className="flex items-center justify-between gap-2 rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset px-3 py-1.5 text-xs text-ink">
               <span className="flex min-w-0 items-center gap-1.5"><Paperclip className="h-3 w-3 shrink-0 text-brand-teal" aria-hidden /> <span className="truncate">{f.filename}</span></span>
               <span className="shrink-0 text-muted">{new Date(f.dateCreatedInSystem).toLocaleDateString()}</span>
             </div>

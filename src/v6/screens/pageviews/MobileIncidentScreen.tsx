@@ -163,7 +163,7 @@ export function MobileIncidentScreen() {
             ))}
           </section>
 
-          <form className="grid gap-lg rounded-lg border border-card bg-white/[.58] p-xl shadow-rest backdrop-blur-xl">
+          <form className="grid gap-lg rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest backdrop-blur-xl">
             <h3 className="flex items-center gap-sm border-b border-hairline pb-sm text-h3 font-medium text-ink">
               <FileText aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
               Report Details
@@ -193,7 +193,7 @@ export function MobileIncidentScreen() {
                   role="button"
                   tabIndex={0}
                 >
-                  <span className="grid h-tap w-tap place-items-center rounded-md bg-white/[.66] text-brand-teal shadow-rest">
+                  <span className="grid h-tap w-tap place-items-center rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal shadow-rest">
                     <Upload aria-hidden="true" className="h-icon-md w-icon-md" />
                   </span>
                   <div>
@@ -207,7 +207,7 @@ export function MobileIncidentScreen() {
         </div>
 
         <aside className="grid content-start gap-lg" aria-label="Incident review preview">
-          <section className="rounded-lg border border-card bg-white/[.58] p-xl shadow-rest backdrop-blur-xl">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest backdrop-blur-xl">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
               <div>
                 <h2 className="text-h2 font-medium text-ink">Right panel preview</h2>
@@ -217,7 +217,7 @@ export function MobileIncidentScreen() {
             </div>
             <dl className="grid gap-sm">
               {previewRows.map(([label, value]) => (
-                <div className="rounded-md border border-card bg-tone-slate-bg p-md" key={label}>
+                <div className="rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-md" key={label}>
                   <dt className="text-tag uppercase tracking-tag text-muted">{label}</dt>
                   <dd className="mt-xs text-sm text-ink">{value}</dd>
                 </div>

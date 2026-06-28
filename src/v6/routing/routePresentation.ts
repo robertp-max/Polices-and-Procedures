@@ -137,6 +137,12 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
     icon: ShieldCheck,
     title: 'ACHC Survey Alignment',
   },
+  'hh-evidence-map': {
+    description: 'HH standard evidence map tying spreadsheet anchors to policy sections, confidence, duplicates, and review flags.',
+    eyebrow: 'Taxonomy',
+    icon: FileSearch,
+    title: 'HH Tag Evidence Map',
+  },
   'admin-groups': {
     description: 'Administrative user-group matrix with member counts, linked roles, permission posture, and governance review state.',
     eyebrow: 'Admin',

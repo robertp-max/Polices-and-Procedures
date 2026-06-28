@@ -80,19 +80,46 @@ export function StudioLanding() {
   }, [postEventsToStudio]);
   useEffect(() => () => roRef.current?.disconnect(), []);
   useEffect(() => { postEventsToStudio(); }, [postEventsToStudio]);
+  // Preload both logos as data URIs so packet exports (server PDF / Drive copy)
+  // are self-contained — fetched same-origin from the app, where they resolve.
+  useEffect(() => {
+    let cancelled = false;
+    const load = (path: string) => fetch(path)
+      .then((r) => r.blob())
+      .then((b) => new Promise<string>((res) => {
+        const fr = new FileReader();
+        fr.onloadend = () => res(typeof fr.result === 'string' ? fr.result : '');
+        fr.readAsDataURL(b);
+      }))
+      .catch(() => '');
+    Promise.all([load('/ci-logo-packet-page.png'), load('/ci-logo-packet-cover.png')])
+      .then(([page, cover]) => { if (!cancelled) logoDataUris.current = { page, cover }; });
+    return () => { cancelled = true; };
+  }, []);
 
   // Save the generated packet to its event's Drive folder (auto, on generate).
   // Builds a self-contained HTML (inlined studio CSS) and upload-or-replaces by
   // a stable per-event filename, so a new packet for the same event replaces it.
   const saveTimer = useRef<number | null>(null);
   const lastSavedSig = useRef<string>('');
+  // Logos cached as data URIs so they render in the server-side PDF + standalone
+  // Drive copy (root-relative paths can't resolve in the headless renderer). A
+  // tiny per-page logo (<5KB) + a richer cover logo (~25KB) keep the payload small.
+  const logoDataUris = useRef<{ page: string; cover: string }>({ page: '', cover: '' });
   const [packetSave, setPacketSave] = useState<{ status: 'idle' | 'saving' | 'saved' | 'error'; replaced?: boolean; url?: string; msg?: string }>({ status: 'idle' });
   const doSavePacket = useCallback((p: { packetId?: string; eventId?: string; title?: string; html?: string }) => {
     if (!p.eventId || !p.html) return;
     const ev = events.find((e) => e.id === p.eventId);
     const doc = iframeRef.current?.contentDocument;
     const styles = doc ? Array.from(doc.querySelectorAll('style')).map((s) => s.outerHTML).join('\n') : '';
-    const body = p.html.replace(/<img class="rp-logo"[^>]*>/g, '<div style="font:700 20px/1 sans-serif;color:#004142;">CareIndeed</div>');
+    // Inline both logos as data URIs so they render in the server PDF + Drive copy
+    // (root-relative paths can't resolve there). Tiny payload: page logo <5KB,
+    // cover ~25KB. Text wordmark fallback only if a URI isn't ready yet.
+    const { page: pageLogo, cover: coverLogo } = logoDataUris.current;
+    let body = pageLogo
+      ? p.html.split('/ci-logo-packet-page.png').join(pageLogo)
+      : p.html.replace(/<img class="rp-logo"[^>]*>/g, '<div style="font:700 20px/1 sans-serif;color:#004142;">CareIndeed</div>');
+    if (coverLogo) body = body.split('/ci-logo-packet-cover.png').join(coverLogo);
     const standalone = '<!doctype html><html><head><meta charset="utf-8"><title>' + (p.title || 'Care Indeed Packet') + '</title>' + styles +
       '<style>@page{size:letter;margin:0;}html,body{margin:0!important;padding:0!important;background:#fff;}*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}' +
       '.preview-sidebar,.studio-nav,.page-thumb,.toast-container,.gen-overlay,.page-modal{display:none!important;}' +
@@ -102,7 +129,19 @@ export function StudioLanding() {
     lastSavedSig.current = sig;
     setPacketSave({ status: 'saving' });
     CalendarApi.savePacket({ eventId: p.eventId, packetId: p.packetId || p.eventId, title: p.title || p.eventId, html: standalone, eventDate: ev?.date, domain: ev?.domain })
-      .then((r) => setPacketSave({ status: 'saved', replaced: r.replaced, url: r.driveFileUrl }))
+      .then((r) => {
+        setPacketSave({ status: 'saved', replaced: r.replaced, url: r.driveFileUrl });
+        // Persist the Drive URL so the Signature Tracker's Print button can open
+        // the saved PDF directly (keyed by both event id and packet id).
+        if (r.driveFileUrl) {
+          try {
+            const map = JSON.parse(localStorage.getItem('ci-packet-drive-urls') || '{}') as Record<string, string>;
+            if (p.eventId) map[p.eventId] = r.driveFileUrl;
+            if (p.packetId) map[p.packetId] = r.driveFileUrl;
+            localStorage.setItem('ci-packet-drive-urls', JSON.stringify(map));
+          } catch { /* ignore */ }
+        }
+      })
       .catch((e: unknown) => setPacketSave({ status: 'error', msg: e instanceof Error ? e.message : 'Drive save failed' }));
   }, [events]);
 

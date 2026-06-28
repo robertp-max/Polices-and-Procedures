@@ -182,7 +182,7 @@ export function EcignWorkspaceScreen() {
       <MetricGrid metrics={ecignMetrics} />
 
       {(canonFormId || formInstanceId) && (
-        <div className="rounded-lg border border-card bg-surface p-md text-sm">
+        <div className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-md overflow-hidden text-sm">
           <span className="font-medium">Context: </span>
           {canonFormId && <span>Form {canonFormId} </span>}
           {formInstanceId && <span className="text-brand-teal">· formInstanceId: {formInstanceId}</span>}
@@ -192,7 +192,7 @@ export function EcignWorkspaceScreen() {
 
       <section className={cx('rounded-lg p-xl', toneGlassSurfaceClasses.teal)} aria-label="eCIgn data source notice">
         <div className="flex flex-wrap items-start gap-md">
-          <span className="grid h-tap w-tap flex-none place-items-center rounded-md bg-surface">
+          <span className="grid h-tap w-tap flex-none place-items-center rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset">
             <Server aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
           </span>
           <div className="min-w-0">
@@ -210,7 +210,7 @@ export function EcignWorkspaceScreen() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="ecign-hierarchy-heading">
+      <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="ecign-hierarchy-heading">
         <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
           <div>
             <ToneTag tone="teal">Authority model</ToneTag>
@@ -240,7 +240,7 @@ export function EcignWorkspaceScreen() {
       </section>
 
       <section className="grid gap-xl desktop:grid-cols-2">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="ecign-lifecycle-heading">
+        <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="ecign-lifecycle-heading">
           <div className="mb-lg">
             <ToneTag tone="green">Signing lifecycle</ToneTag>
             <h2 className="mt-md text-h2 font-medium text-ink" id="ecign-lifecycle-heading">Lifecycle model</h2>
@@ -256,7 +256,7 @@ export function EcignWorkspaceScreen() {
         </section>
 
         <div className="grid content-start gap-xl">
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="ecign-permission-heading">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="ecign-permission-heading">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
               <div>
                 <ToneTag tone="amber">Permission ladder</ToneTag>
@@ -272,7 +272,7 @@ export function EcignWorkspaceScreen() {
             </p>
             <ul className="grid gap-sm">
               {ECIGN_PERMISSION_ROLES.map((role) => (
-                <li className="flex flex-wrap items-center justify-between gap-sm rounded-md border border-hairline bg-tone-slate-bg p-md" key={role}>
+                <li className="flex flex-wrap items-center justify-between gap-sm rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-md" key={role}>
                   <span className="text-sm text-ink">{role}</span>
                   <ToneTag tone={HIERARCHICAL_PERMISSIONS.has(role) ? 'teal' : 'slate'}>
                     {HIERARCHICAL_PERMISSIONS.has(role) ? 'Hierarchical' : 'Discrete'}
@@ -282,7 +282,7 @@ export function EcignWorkspaceScreen() {
             </ul>
           </section>
 
-          <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="ecign-status-heading">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="ecign-status-heading">
             <div className="mb-lg">
               <ToneTag tone="teal">Status vocabulary</ToneTag>
               <h2 className="mt-md text-h2 font-medium text-ink" id="ecign-status-heading">Requirement states</h2>
@@ -300,7 +300,7 @@ export function EcignWorkspaceScreen() {
       </section>
 
       <section className="grid gap-xl desktop:grid-cols-2">
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="ecign-consent-heading">
+        <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="ecign-consent-heading">
           <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
             <div>
               <ToneTag tone="green">E-SIGN Act consent</ToneTag>
@@ -314,15 +314,15 @@ export function EcignWorkspaceScreen() {
             </span>
           </div>
           <dl className="grid gap-sm">
-            <div className="rounded-md border border-hairline bg-tone-slate-bg p-md">
+            <div className="rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-md">
               <dt className="text-tag uppercase tracking-tag text-muted">Agreement version</dt>
               <dd className="mt-xs text-sm text-ink">{ECIGN_AGREEMENT_VERSION}</dd>
             </div>
-            <div className="rounded-md border border-hairline bg-tone-slate-bg p-md">
+            <div className="rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-md">
               <dt className="text-tag uppercase tracking-tag text-muted">Consent text hash</dt>
               <dd className="mt-xs break-all text-sm text-ink">{CONSENT_TEXT_HASH}</dd>
             </div>
-            <div className="rounded-md border border-hairline bg-tone-slate-bg p-md">
+            <div className="rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-md">
               <dt className="text-tag uppercase tracking-tag text-muted">Binding</dt>
               <dd className="mt-xs text-sm text-secondary">
                 The accepted electronic signature is legally equivalent to a handwritten signature for agency
@@ -332,7 +332,7 @@ export function EcignWorkspaceScreen() {
           </dl>
         </section>
 
-        <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="ecign-certificate-heading">
+        <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="ecign-certificate-heading">
           <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
             <div>
               <ToneTag tone="teal">Certificate schema</ToneTag>
@@ -347,7 +347,7 @@ export function EcignWorkspaceScreen() {
           </div>
           <dl className="grid gap-sm">
             {CERTIFICATE_SCHEMA.map((row) => (
-              <div className="rounded-md border border-hairline bg-tone-slate-bg p-md" key={row.group}>
+              <div className="rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-md" key={row.group}>
                 <dt className="text-tag uppercase tracking-tag text-muted">{row.group}</dt>
                 <dd className="mt-xs break-words text-sm text-ink">{row.fields}</dd>
               </div>
@@ -356,7 +356,7 @@ export function EcignWorkspaceScreen() {
         </section>
       </section>
 
-      <section className="rounded-lg border border-card bg-surface p-xl shadow-rest" aria-labelledby="ecign-unavailable-heading">
+      <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="ecign-unavailable-heading">
         <div className="mb-lg flex flex-wrap items-start justify-between gap-md">
           <div>
             <ToneTag tone="slate">Source unavailable</ToneTag>
@@ -366,7 +366,7 @@ export function EcignWorkspaceScreen() {
               They are intentionally not shown here rather than fabricated.
             </p>
           </div>
-          <span className="grid h-tap w-tap flex-none place-items-center rounded-md bg-tone-slate-bg">
+          <span className="grid h-tap w-tap flex-none place-items-center rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset">
             <Ban aria-hidden="true" className="h-icon-sm w-icon-sm text-muted" />
           </span>
         </div>
@@ -382,7 +382,7 @@ export function EcignWorkspaceScreen() {
 
 function RoleRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-hairline bg-surface p-md">
+    <div className="rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-md">
       <dt className="text-tag uppercase tracking-tag text-muted">{label}</dt>
       <dd className="mt-xs text-sm text-ink">{value}</dd>
     </div>
@@ -393,7 +393,7 @@ function LifecycleCard({ stage }: { stage: LifecycleStage }) {
   const Icon = stage.icon;
 
   return (
-    <article className="rounded-lg border border-card bg-surface p-lg">
+    <article className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden">
       <div className="flex items-start gap-md">
         <span className={cx('grid h-tap w-tap flex-none place-items-center rounded-md', toneSurfaceClasses[stage.tone])}>
           <Icon aria-hidden="true" className="h-icon-sm w-icon-sm" />
@@ -416,7 +416,7 @@ function UnavailableCard({ panel }: { panel: UnavailablePanel }) {
   return (
     <article className={cx('rounded-lg p-lg', toneGlassSurfaceClasses.slate)}>
       <div className="mb-md flex flex-wrap items-start justify-between gap-md">
-        <span className="grid h-tap w-tap place-items-center rounded-md bg-surface">
+        <span className="grid h-tap w-tap place-items-center rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset">
           <Icon aria-hidden="true" className="h-icon-sm w-icon-sm text-muted" />
         </span>
         <ToneTag tone="slate">Path B</ToneTag>

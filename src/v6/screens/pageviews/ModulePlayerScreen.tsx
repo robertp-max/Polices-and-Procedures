@@ -1,5 +1,9 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
+import { useJourneyStore } from "@/policy/journey/stores/journeyStore";
+import { canStartModule } from "@/policy/journey/utils/gating";
+import { moduleById } from "@/policy/journey/data/modules";
+import { DemoOnlyBanner } from "@/policy/journey/components/DemoOnlyBanner";
 import {
   ArrowLeft,
   Check,
@@ -26,7 +30,10 @@ import {
   ImageIcon,
   CheckSquare,
   Square,
-  Circle
+  Eye,
+  Search,
+  Unlock,
+  BookOpen,
 } from "lucide-react";
 
 import { useLearner } from "@/policy/journey/lib/learnerState";
@@ -54,6 +61,8 @@ import { buildLessonRemediation, buildModuleRemediation, buildFinalRemediation }
 import type { LessonRemediation, ModuleRemediation, RemediationChallenge } from "@/policy/journey/data/remediation";
 import { hasMedia, mediaAltText, mediaAssetPath } from "@/policy/journey/data/mediaManifest";
 import { hasNarrationAudio, narrationAssetPath } from "@/policy/journey/data/narrationManifest";
+import { getTermsForSection } from "@/policy/journey/data/advancedTraining/cms485Terminology";
+import { TRAINING_CARDS } from "@/policy/journey/data/advancedTraining/cms485SourceCards";
 import { Cms485AssessmentQuizPage } from "./Cms485AssessmentQuizPage";
 
 
@@ -77,7 +86,7 @@ function MediaSlot({ appLocation, sceneTitle }: { appLocation: string; sceneTitl
   const alt = mediaAltText(sceneTitle);
   if (ready) {
     return (
-      <div className="w-full aspect-video bg-white border border-hairline rounded-lg overflow-hidden shadow-sm">
+      <div className="w-full aspect-video bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline rounded-lg overflow-hidden shadow-sm mb-4">
         <img src={mediaAssetPath(appLocation)} alt={alt} className="w-full h-full object-cover" />
       </div>
     );
@@ -86,12 +95,12 @@ function MediaSlot({ appLocation, sceneTitle }: { appLocation: string; sceneTitl
     <div
       role="img"
       aria-label={alt}
-      className="w-full aspect-video rounded-lg relative overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-tone-teal-bg via-white to-tone-slate-bg border border-tone-teal-border/40"
+      className="w-full aspect-video rounded-lg relative overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-tone-teal-bg to-tone-slate-bg border border-tone-teal-border/40"
     >
-      <div className="absolute top-3 left-3 bg-white border border-tone-orange-border/30 rounded px-2 py-0.5 text-[9px] font-mono text-brand-orange uppercase tracking-wider">
+      <div className="absolute top-3 left-3 bg-surface-glass backdrop-blur-md shadow-glass-inset border border-tone-orange-border/30 rounded px-2 py-0.5 text-[9px] font-mono text-brand-orange uppercase tracking-wider">
         Visual Aid Pending
       </div>
-      <div className="w-16 h-16 rounded-full border border-tone-teal-border/30 bg-white flex items-center justify-center text-brand-teal shadow-sm">
+      <div className="w-16 h-16 rounded-full border border-tone-teal-border/30 bg-surface-glass backdrop-blur-md shadow-glass-inset flex items-center justify-center text-brand-teal shadow-sm">
         <ImageIcon size={28} />
       </div>
       {sceneTitle && (
@@ -150,29 +159,34 @@ function NarrationPlayer({
       return;
     }
     window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(transcript);
-    utter.rate = 0.95;
-    utter.onend = () => setSpeaking(false);
-    utter.onerror = () => setSpeaking(false);
-    setSpeaking(true);
-    window.speechSynthesis.speak(utter);
+    setTimeout(() => {
+      const utter = new SpeechSynthesisUtterance(transcript);
+      utter.rate = 0.95;
+      utter.onend = () => setSpeaking(false);
+      utter.onerror = (e) => {
+        console.error("SpeechSynthesis error:", e);
+        setSpeaking(false);
+      };
+      setSpeaking(true);
+      window.speechSynthesis.speak(utter);
+    }, 50);
   };
 
   return (
-    <div className="px-6 py-4 bg-tone-slate-bg border-t border-hairline rounded-b-xl">
+    <div className="px-6 py-4 bg-surface-glass backdrop-blur-md shadow-glass-inset border-t border-hairline rounded-b-xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           {audioReady ? (
             <button
               onClick={toggleAudio}
-              className="w-10 h-10 rounded-full bg-white border border-tone-teal-border/40 flex items-center justify-center text-brand-teal hover:bg-surface-hover transition-colors shrink-0 shadow-sm"
+              className="w-10 h-10 rounded-full bg-surface-glass backdrop-blur-md shadow-glass-inset border border-tone-teal-border/40 flex items-center justify-center text-brand-teal hover:bg-surface-hover transition-colors shrink-0 shadow-sm"
               aria-label={playing ? "Pause narration" : "Play narration"}
             >
               {playing ? <Pause size={16} className="fill-current" /> : <Play size={16} className="fill-current ml-0.5" />}
             </button>
           ) : (
             <div
-              className="w-10 h-10 rounded-full bg-white border border-hairline flex items-center justify-center text-muted shrink-0 shadow-sm"
+              className="w-10 h-10 rounded-full bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline flex items-center justify-center text-muted shrink-0 shadow-sm"
               title="Narration audio asset pending approval"
               aria-disabled
             >
@@ -192,13 +206,13 @@ function NarrationPlayer({
         </div>
 
         <div className="flex items-center gap-2">
-          {!audioReady && speechSupported && (
+          {!audioReady && speechSupported && !appLocation.startsWith("cms-485") && (
             <button
               onClick={toggleSpeech}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all ${
                 speaking
                   ? "bg-tone-teal-bg text-brand-teal border-tone-teal-border font-bold shadow-sm"
-                  : "bg-white border-hairline text-secondary hover:bg-surface-hover"
+                  : "bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline text-secondary hover:bg-surface-hover"
               }`}
               title="Browser preview only — not approved production audio"
             >
@@ -210,7 +224,7 @@ function NarrationPlayer({
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all ${
               showTranscript
                 ? "bg-tone-teal-bg text-brand-teal border-tone-teal-border font-bold shadow-sm"
-                : "bg-white border-hairline text-secondary hover:bg-surface-hover"
+                : "bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline text-secondary hover:bg-surface-hover"
             }`}
           >
             <FileText size={12} /> Transcript
@@ -227,7 +241,7 @@ function NarrationPlayer({
       )}
 
       {showTranscript && (
-        <div className="mt-3 px-4 py-3 bg-white text-secondary text-xs italic leading-relaxed border border-hairline rounded-lg whitespace-pre-line shadow-sm">
+        <div className="mt-3 px-4 py-3 bg-surface-glass backdrop-blur-md shadow-glass-inset text-secondary text-xs italic leading-relaxed border border-hairline rounded-lg whitespace-pre-line shadow-sm">
           {transcript}
         </div>
       )}
@@ -274,7 +288,7 @@ function ChallengeDebrief({
 
         <div className="rounded-lg border border-tone-teal-border bg-tone-teal-bg/30 p-4 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-white text-brand-teal border border-tone-teal-border uppercase tracking-wider">
+            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal border border-tone-teal-border uppercase tracking-wider">
               Safest Response
             </span>
           </div>
@@ -287,15 +301,15 @@ function ChallengeDebrief({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="rounded-lg border border-hairline bg-tone-slate-bg/30 p-4">
+        <div className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset/30 p-4">
           <Section icon={<UserCheck size={12} />} title="CNA Scope Note">{remediation.cnaScopeNote}</Section>
         </div>
-        <div className="rounded-lg border border-hairline bg-tone-slate-bg/30 p-4">
+        <div className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset/30 p-4">
           <Section icon={<HeartPulse size={12} />} title="Resident Safety Note">{remediation.residentSafetyNote}</Section>
         </div>
       </div>
 
-      <div className="rounded-lg border border-hairline bg-tone-slate-bg/30 p-4">
+      <div className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset/30 p-4">
         <Section icon={<BookOpenCheck size={12} />} title="What to Remember">{remediation.whatToRemember}</Section>
       </div>
 
@@ -319,7 +333,7 @@ function ChallengeDebrief({
                     ? isSafest
                       ? "bg-tone-teal-bg border-tone-teal-border"
                       : "bg-tone-orange-bg border-tone-orange-border"
-                    : "bg-white border-hairline hover:bg-surface-hover shadow-sm"
+                    : "bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline hover:bg-surface-hover shadow-sm"
                 }`}
               >
                 <div className="flex items-center justify-between gap-3 mb-1.5">
@@ -327,8 +341,8 @@ function ChallengeDebrief({
                     <span
                       className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider shrink-0 border ${
                         isSafest
-                          ? "bg-white text-brand-teal border-tone-teal-border"
-                          : "bg-white text-brand-orange border-tone-orange-border"
+                          ? "bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal border-tone-teal-border"
+                          : "bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-orange border-tone-orange-border"
                       }`}
                     >
                       {isSafest ? "Safest Response" : "Needs Review"}
@@ -405,17 +419,17 @@ function QuizRunner({
                 className={`w-full text-left p-4 rounded-lg border text-xs flex items-start gap-3 transition-colors ${
                   selected
                     ? "bg-tone-teal-bg border-brand-teal text-brand-teal-deep font-semibold"
-                    : "bg-white border-hairline hover:border-brand-teal/20 text-secondary shadow-sm"
+                    : "bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline hover:border-brand-teal/20 text-secondary shadow-sm"
                 }`}
               >
-                <div className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center text-[10px] font-bold shrink-0 ${selected ? "bg-brand-teal text-white border-brand-teal" : "border-hairline text-muted"}`}>{opt.id}</div>
+                <div className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center text-[10px] font-bold shrink-0 ${selected ? "bg-brand-teal text-on-brand border-brand-teal" : "border-hairline text-muted"}`}>{opt.id}</div>
                 <span>{opt.label}</span>
               </button>
             );
           })}
         </div>
 
-        <div className="bg-tone-slate-bg border border-hairline p-3 rounded-lg text-[10px] text-muted font-mono leading-relaxed">
+        <div className="bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline p-3 rounded-lg text-[10px] text-muted font-mono leading-relaxed">
           Compliance guardrail: responses are recorded silently. No correct-answer key is shown during or after the exam.
         </div>
 
@@ -432,7 +446,7 @@ function QuizRunner({
             <button
               onClick={() => setCurrentIdx((i) => Math.min(questions.length - 1, i + 1))}
               disabled={!answers[q.id]}
-              className="bg-white hover:bg-surface-hover text-brand-teal border border-tone-teal-border font-bold px-5 py-2 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action disabled:opacity-40"
+              className="bg-surface-glass backdrop-blur-md shadow-glass-inset hover:bg-surface-hover text-brand-teal border border-tone-teal-border font-bold px-5 py-2 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action disabled:opacity-40"
             >
               Next
             </button>
@@ -479,7 +493,7 @@ function ModuleRemediationPanel({
             Required Theory Remediation
           </span>
           <h1 className="text-2xl font-bold text-brand-teal-deep">Module Review Before Retry</h1>
-          <div className="inline-flex items-center gap-2 bg-tone-slate-bg border border-hairline px-4 py-1.5 rounded-lg font-mono text-xs text-secondary">
+          <div className="inline-flex items-center gap-2 bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline px-4 py-1.5 rounded-lg font-mono text-xs text-secondary">
             <span>Recorded score</span>
             <strong className="text-brand-orange">{scorePct}%</strong>
             <span className="text-muted">· need {passPct}%</span>
@@ -501,7 +515,7 @@ function ModuleRemediationPanel({
           </h4>
           <div className="grid grid-cols-1 gap-2.5">
             {remediation.missedTopics.map((topic) => (
-              <div key={topic.title} className="p-4 rounded-lg border border-hairline bg-white shadow-sm">
+              <div key={topic.title} className="p-4 rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset shadow-sm">
                 <h5 className="text-xs font-semibold text-brand-teal-deep mb-1">{topic.title}</h5>
                 <p className="text-[11px] text-secondary leading-relaxed">{topic.review}</p>
               </div>
@@ -523,7 +537,7 @@ function ModuleRemediationPanel({
           </h4>
           <div className="space-y-2">
             {remediation.retryReadiness.map((item, idx) => (
-              <label key={item} className="flex items-start gap-2.5 p-3 rounded-lg border border-hairline bg-white cursor-pointer hover:border-brand-teal/20 shadow-sm transition-colors">
+              <label key={item} className="flex items-start gap-2.5 p-3 rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset cursor-pointer hover:border-brand-teal/20 shadow-sm transition-colors">
                 <input
                   type="checkbox"
                   checked={checked[idx]}
@@ -546,7 +560,7 @@ function ModuleRemediationPanel({
           </button>
           <button
             onClick={onStudyAgain}
-            className="bg-white hover:bg-surface-hover text-brand-teal border border-tone-teal-border font-bold px-6 py-3 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action"
+            className="bg-surface-glass backdrop-blur-md shadow-glass-inset hover:bg-surface-hover text-brand-teal border border-tone-teal-border font-bold px-6 py-3 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action"
           >
             Reopen Module Lesson
           </button>
@@ -590,7 +604,7 @@ function Module0OrientationPage() {
                 type="text"
                 value={state.legalFirstName}
                 onChange={(e) => update("legalFirstName", e.target.value)}
-                className="w-full bg-white border border-hairline text-secondary text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-brand-teal shadow-sm"
+                className="w-full bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline text-secondary text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-brand-teal shadow-sm"
               />
             </div>
             <div>
@@ -599,7 +613,7 @@ function Module0OrientationPage() {
                 type="text"
                 value={state.legalLastName}
                 onChange={(e) => update("legalLastName", e.target.value)}
-                className="w-full bg-white border border-hairline text-secondary text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-brand-teal shadow-sm"
+                className="w-full bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline text-secondary text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-brand-teal shadow-sm"
               />
             </div>
             <div>
@@ -608,7 +622,7 @@ function Module0OrientationPage() {
                 type="text"
                 value={state.cnaNumber}
                 onChange={(e) => update("cnaNumber", e.target.value)}
-                className="w-full bg-white border border-hairline text-secondary text-xs px-3 py-2 rounded-lg font-mono focus:outline-none focus:border-brand-teal shadow-sm"
+                className="w-full bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline text-secondary text-xs px-3 py-2 rounded-lg font-mono focus:outline-none focus:border-brand-teal shadow-sm"
               />
             </div>
           </div>
@@ -627,7 +641,7 @@ function Module0OrientationPage() {
                 className={`w-full text-left p-4 rounded-lg border flex items-start gap-3 transition-colors ${
                   checked
                     ? "bg-tone-teal-bg border-brand-teal text-brand-teal-deep font-semibold"
-                    : "bg-white border-hairline hover:border-brand-teal/20 text-secondary shadow-sm"
+                    : "bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline hover:border-brand-teal/20 text-secondary shadow-sm"
                 }`}
               >
                 <div className="mt-0.5 text-brand-teal shrink-0">{checked ? <CheckSquare size={16} /> : <Square size={16} />}</div>
@@ -678,75 +692,66 @@ function Module1OverviewPage() {
             </span>
             <h1 className="text-2xl font-bold text-brand-teal-deep tracking-tight">{module.shortTitle}</h1>
           </div>
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border ${
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold shadow-glass-inset ${
             moduleExam
-              ? "bg-tone-green-bg border-tone-green-border text-tone-green-text"
+              ? "bg-tone-green-bg text-tone-green-text"
               : module.status === "sme-review"
-              ? "bg-tone-orange-bg border-tone-orange-border text-brand-orange"
-              : "bg-tone-teal-bg border-tone-teal-border text-brand-teal"
+              ? "bg-tone-orange-bg text-brand-orange"
+              : "bg-tone-teal-bg text-brand-teal"
           }`}>
-            {moduleExam ? <CheckCircle2 size={12} /> : module.status === "sme-review" ? <AlertTriangle size={12} /> : <Circle size={12} />}
             {moduleExam ? "Assessment Passed" : module.status === "sme-review" ? "SME Review Flagged" : "Not Attempted"}
           </span>
         </div>
 
         <div className="py-6 space-y-4">
           <h3 className="text-xs uppercase tracking-wider font-bold text-brand-teal-deep">Lesson Objectives</h3>
-          <div className="grid grid-cols-1 gap-2.5">
-            {module.learningObjectives.map((obj, idx) => (
-              <div key={obj} className="flex gap-2.5 items-start text-xs text-secondary leading-relaxed">
-                <span className="text-brand-orange font-bold font-mono">{String(idx + 1).padStart(2, "0")}.</span>
-                <span>{obj}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {module.learningObjectives.map((obj) => (
+              <div key={obj} className="rounded-md bg-surface-glass shadow-glass-inset p-3 text-xs text-secondary leading-relaxed">
+                {obj}
               </div>
             ))}
           </div>
-          {module.reviewerNote && (
-            <div className="bg-tone-orange-bg/25 border border-tone-orange-border/30 rounded-lg p-3 text-[11px] text-brand-orange font-mono leading-relaxed">
-              {module.reviewerNote}
-            </div>
-          )}
         </div>
 
-        <div className="space-y-3 pt-4 border-t border-hairline">
-          <h3 className="text-xs uppercase tracking-wider font-bold text-brand-teal-deep">Course Component Lessons</h3>
+        <div className="pt-4">
+          <h3 className="text-xs uppercase tracking-wider font-bold text-brand-teal-deep mb-3">Course Component Lessons</h3>
 
-          {module.lessons.map((item) => {
-            const complete = isLessonComplete(state, module.id, item.id);
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => navigate(`/journey/module/${module.id}/lesson/${item.id}`)}
-                className="w-full p-4 rounded-lg border transition-all flex items-center justify-between text-left bg-white border-hairline hover:border-brand-teal/30 hover:bg-surface-hover shadow-sm"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-tone-teal-bg flex items-center justify-center border border-tone-teal-border text-brand-teal font-bold font-mono text-xs shrink-0 shadow-sm">
-                    {item.index}
+          {/* Grid of sub-cards (no borders, with shadows) — more like Framework inner stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {module.lessons.map((item) => {
+              const complete = isLessonComplete(state, module.id, item.id);
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => navigate(`/journey/module/${module.id}/lesson/${item.id}`)}
+                  className="text-left rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-4 hover:shadow-hover transition-all flex flex-col gap-2"
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-[10px] font-mono uppercase tracking-widest text-muted">Lesson {item.index}</div>
+                      <h4 className="text-sm font-semibold text-brand-teal-deep mt-0.5 leading-tight">{item.title}</h4>
+                    </div>
+                    {complete ? (
+                      <span className="text-[10px] text-brand-teal font-semibold shrink-0">Done</span>
+                    ) : (
+                      <span className="text-[10px] text-brand-orange font-semibold shrink-0">Play</span>
+                    )}
                   </div>
-                  <div className="min-w-0">
-                    <h4 className="text-xs font-semibold text-brand-teal-deep truncate">{item.title}</h4>
-                    <span className="text-[10px] text-muted font-mono uppercase tracking-wide">
-                      {item.estMinutes} min - ACHC Training Manual source-backed lesson
-                    </span>
+
+                  <div className="text-[10px] text-muted">
+                    {item.estMinutes} min • ACHC source-backed
                   </div>
-                </div>
-                {complete ? (
-                  <span className="text-brand-teal font-semibold flex items-center gap-1 text-[10px] shrink-0">
-                    <CheckCircle2 size={12} /> Finished
-                  </span>
-                ) : (
-                  <span className="text-brand-orange font-semibold flex items-center gap-1 text-[10px] shrink-0">
-                    <Play size={12} className="fill-current" /> Play
-                  </span>
-                )}
-              </button>
-            );
-          })}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="pt-8 border-t border-hairline flex flex-col sm:flex-row items-center gap-4 justify-between mt-4">
+        <div className="pt-6 flex flex-col sm:flex-row items-center gap-4 justify-between">
           <div className="text-xs text-muted font-medium">
-            {moduleDone ? "All lessons complete. Continue to the module assessment." : "Complete each ACHC Training Manual objective lesson to unlock the module assessment."}
+            {moduleDone ? "All lessons complete. Continue to the module assessment." : "Complete each lesson to unlock the module assessment."}
           </div>
           <div className="flex gap-3 w-full sm:w-auto">
             {moduleDone && (
@@ -759,7 +764,7 @@ function Module1OverviewPage() {
             )}
             <button
               onClick={() => navigate(`/journey/module/${module.id}/lesson/${module.lessons[0]?.id ?? "l1"}`)}
-              className="w-full sm:w-auto bg-white hover:bg-surface-hover text-brand-teal border border-tone-teal-border font-bold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action"
+              className="w-full sm:w-auto bg-surface-glass backdrop-blur-md shadow-glass-inset hover:bg-surface-hover text-brand-teal font-bold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action"
             >
               {moduleDone ? "Review Theory" : "Start Theory"}
             </button>
@@ -802,6 +807,15 @@ function LessonPlayerPage() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [openedOptions, setOpenedOptions] = useState<string[]>([]);
+  const [acknowledgedTerms, setAcknowledgedTerms] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    setAcknowledgedTerms(new Set());
+    setSelectedAnswer(null);
+    setSubmitted(false);
+    setOpenedOptions([]);
+    setCurrentIdx(0);
+  }, [moduleId, lessonId]);
 
   const { lessonSeconds, idleWarning, resume, meetsLessonMinimum } = useActiveTime(moduleId, lessonId);
 
@@ -822,6 +836,11 @@ function LessonPlayerPage() {
   const isDebriefCard = currentCard.card_type === "debrief";
   const isLast = currentIdx === cards.length - 1;
 
+  const isCms485 = moduleId === "cms-485";
+  const terms = getTermsForSection(lesson.title);
+  const allTermsAcked = terms.every((t) => acknowledgedTerms.has(t.id));
+  const isTerminologyCard = isCms485 && currentCard.card_type === "delivery";
+
   // Read-before-continue gating logic:
   const requiredReads = remediation
     ? Array.from(new Set([remediation.safestId, selectedAnswer].filter(Boolean) as string[]))
@@ -832,9 +851,22 @@ function LessonPlayerPage() {
     ? submitted
     : isDebriefCard
     ? debriefReadDone
+    : isTerminologyCard
+    ? allTermsAcked
     : isLast
     ? meetsLessonMinimum
     : true;
+
+  const continueLabel = useMemo(() => {
+    if (!isCms485) {
+      return isLast ? "Complete Theory Lesson" : isDebriefCard ? remediation?.continueLabel ?? "Continue" : "Continue";
+    }
+    if (currentCard.card_type === "overview") return "Next: Terminology";
+    if (currentCard.card_type === "delivery") return "Proceed to Challenge";
+    if (isChallengeCard) return "Continue";
+    if (isDebriefCard) return "Complete Theory Lesson";
+    return "Continue";
+  }, [isCms485, currentCard, isLast, isDebriefCard, isChallengeCard, remediation]);
 
   const handleNext = () => {
     if (currentIdx < cards.length - 1) {
@@ -852,7 +884,7 @@ function LessonPlayerPage() {
       {/* Idle warning overlay */}
       {idleWarning && (
         <div className="fixed inset-0 bg-black/55 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-xl border border-hairline shadow-glass p-6 max-w-md w-full text-center space-y-4">
+          <div className="bg-surface-glass backdrop-blur-md shadow-glass-inset rounded-xl border border-hairline shadow-glass p-6 max-w-md w-full text-center space-y-4">
             <div className="w-12 h-12 rounded-full bg-tone-orange-bg border border-tone-orange-border text-brand-orange flex items-center justify-center mx-auto">
               <Clock size={24} />
             </div>
@@ -890,7 +922,7 @@ function LessonPlayerPage() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between p-3 rounded-lg border border-hairline bg-white overflow-x-auto shadow-sm">
+      <div className="flex items-center justify-between p-3 rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset overflow-x-auto shadow-sm">
         {cards.map((card: any, idx: number) => (
           <div key={card.app.location} className="flex items-center gap-3 shrink-0 mx-2">
             <div className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-mono font-bold ${
@@ -898,7 +930,7 @@ function LessonPlayerPage() {
                 ? "bg-brand-orange border-brand-orange text-white"
                 : currentIdx > idx
                 ? "bg-tone-teal-bg text-brand-teal border-tone-teal-border"
-                : "bg-white border-hairline text-muted"
+                : "bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline text-muted"
             }`}>
               {currentIdx > idx ? <Check size={10} /> : idx + 1}
             </div>
@@ -910,7 +942,7 @@ function LessonPlayerPage() {
         ))}
       </div>
 
-      <div className="border border-hairline bg-surface-glass rounded-xl overflow-hidden flex flex-col min-h-[500px] shadow-rest backdrop-blur-xl">
+      <div className="border border-hairline bg-surface-glass rounded-xl overflow-hidden flex flex-col min-h-[500px] shadow-rest backdrop-blur-xl isolate">
         <div className="p-6 md:p-8 flex-1 space-y-6">
           <div>
             <span className="text-[10px] font-bold uppercase tracking-widest font-mono text-muted">
@@ -926,103 +958,285 @@ function LessonPlayerPage() {
 
           <MediaSlot appLocation={currentCard.app.location} sceneTitle={currentCard.media_prompt_placeholder.scene_title} />
 
-          {currentCard.card_type === "overview" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <h4 className="text-xs uppercase font-bold font-mono tracking-wider text-brand-teal-deep">Learning Goal</h4>
-                <p className="text-xs leading-relaxed text-secondary">{currentCard.learning_goal}</p>
-              </div>
-              <div className="space-y-2">
-                <h4 className="text-xs uppercase font-bold font-mono tracking-wider text-brand-teal-deep">Why It Matters</h4>
-                <ul className="space-y-1.5 text-xs leading-relaxed text-secondary list-disc pl-4">
-                  {currentCard.why_it_matters.map((item: string) => <li key={item}>{item}</li>)}
-                </ul>
-              </div>
-            </div>
-          )}
+          {isCms485 ? (
+            <>
+              {currentCard.card_type === "overview" && (() => {
+                const bullets = currentCard.learner_facing_content.split("\n").filter(Boolean);
+                const sourceCard = TRAINING_CARDS.find((c) => c.title === lesson.title || c.title === currentCard.display_title);
+                const auditFocusText = sourceCard?.auditFocus;
+                return (
+                  <div className="space-y-6">
+                    <div className="border border-tone-teal-border/30 bg-tone-teal-bg/10 p-4 rounded-xl flex gap-3 items-start">
+                      <div className="w-8 h-8 rounded bg-brand-teal/10 border border-brand-teal/20 text-brand-teal flex items-center justify-center shrink-0">
+                        <Target size={18} />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-brand-teal-deep uppercase font-mono tracking-wider">Objective</h4>
+                        <p className="text-xs leading-relaxed text-secondary mt-1">{currentCard.learning_goal}</p>
+                      </div>
+                    </div>
 
-          {currentCard.card_type === "delivery" && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <h4 className="text-xs uppercase font-bold font-mono tracking-wider text-brand-teal-deep">Lesson Content</h4>
-                {currentCard.learner_facing_content.includes("<") && currentCard.learner_facing_content.includes(">") ? (
-                  <div
-                    className="text-xs leading-relaxed text-secondary space-y-2"
-                    dangerouslySetInnerHTML={{ __html: currentCard.learner_facing_content }}
-                  />
-                ) : (
-                  <p className="text-xs leading-relaxed whitespace-pre-line text-secondary">{currentCard.learner_facing_content}</p>
-                )}
-              </div>
-              {currentCard.cna_practice_example && (
-                <div className="p-3 border border-tone-orange-border/30 bg-tone-orange-bg/10 rounded-lg">
-                  <p className="text-[11px] leading-relaxed text-secondary">
-                    <strong>CNA practice example:</strong> {currentCard.cna_practice_example}
-                  </p>
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-bold text-brand-teal-deep uppercase font-mono tracking-wider">Key Points</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {bullets.map((bullet: string, bIdx: number) => (
+                          <div key={bIdx} className="border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-4 rounded-xl flex gap-3 hover:border-brand-teal/30 transition-all duration-300">
+                            <div className="w-5 h-5 rounded-full bg-brand-teal/10 border border-brand-teal/20 text-brand-teal-deep text-[10px] font-mono font-bold flex items-center justify-center shrink-0">
+                              {bIdx + 1}
+                            </div>
+                            <p className="text-[11px] leading-relaxed text-secondary">{bullet}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {auditFocusText && (
+                      <div className="border border-tone-orange-border/30 bg-tone-orange-bg/10 p-4 rounded-xl flex gap-3 items-start">
+                        <div className="w-8 h-8 rounded bg-brand-orange/10 border border-brand-orange/20 text-brand-orange flex items-center justify-center shrink-0">
+                          <Search size={18} />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-brand-orange uppercase font-mono tracking-wider">Audit Focus</h4>
+                          <p className="text-xs leading-relaxed text-secondary mt-1">{auditFocusText}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="border border-hairline bg-surface-glass/40 p-4 rounded-xl space-y-2">
+                      <h5 className="text-[10px] uppercase font-bold tracking-widest font-mono text-muted">Additional Context Transcript</h5>
+                      <p className="text-[11px] leading-relaxed text-secondary whitespace-pre-line">
+                        {currentCard.narration_script || currentCard.transcript_text}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {currentCard.card_type === "delivery" && (
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-bold text-brand-teal-deep flex items-center gap-1.5">
+                      <BookOpen size={16} /> Key Terminology — {lesson.title}
+                    </h3>
+                    <p className="text-[11px] text-muted">
+                      Review each term below and confirm your understanding before proceeding.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {terms.map((t) => {
+                      const isAcked = acknowledgedTerms.has(t.id);
+                      return (
+                        <div
+                          key={t.id}
+                          className={`border rounded-xl p-4 transition-all duration-300 flex flex-col justify-between min-h-[120px] ${
+                            isAcked
+                              ? "bg-tone-teal-bg/20 border-brand-teal/40 shadow-sm"
+                              : "bg-surface-glass border-hairline shadow-glass-inset shadow-sm"
+                          }`}
+                        >
+                          <div>
+                            <h4 className="text-xs font-bold text-brand-teal-deep">{t.term}</h4>
+                            <p className="text-[11px] leading-relaxed text-secondary mt-1">{t.def}</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setAcknowledgedTerms((prev) => {
+                                const next = new Set(prev);
+                                if (prev.has(t.id)) next.delete(t.id);
+                                else next.add(t.id);
+                                return next;
+                              });
+                            }}
+                            className={`mt-4 self-start flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                              isAcked
+                                ? "bg-brand-teal text-white animate-fade-in"
+                                : "bg-brand-teal/10 text-brand-teal-deep border border-brand-teal/20 hover:bg-brand-teal/20"
+                            }`}
+                          >
+                            {isAcked ? <Check size={10} /> : <Eye size={10} />}
+                            {isAcked ? "Understood" : "I Understand"}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
-            </div>
-          )}
 
-          {isChallengeCard && challenge && (
-            <div className="space-y-4">
-              <p className="text-xs leading-relaxed font-semibold text-brand-teal-deep">{challenge.prompt}</p>
-              <div className="grid grid-cols-1 gap-2.5">
-                {challengeChoices.map((ans) => (
-                  <button
-                    key={ans.id}
-                    onClick={() => !submitted && setSelectedAnswer(ans.id)}
-                    disabled={submitted}
-                    className={`w-full text-left p-4 rounded-lg border text-xs flex items-start gap-3 transition-colors ${
-                      selectedAnswer === ans.id
-                        ? "bg-tone-teal-bg border-brand-teal text-brand-teal-deep font-semibold"
-                        : "bg-white border-hairline hover:border-brand-teal/20 text-secondary shadow-sm"
-                    }`}
-                  >
-                    <div className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                      selectedAnswer === ans.id
-                        ? "bg-brand-teal text-white border-brand-teal"
-                        : "border-hairline text-muted"
-                    }`}>{ans.id}</div>
-                    <span>{ans.label}</span>
-                  </button>
-                ))}
-              </div>
-              {!submitted && (
-                <button
-                  onClick={() => setSubmitted(true)}
-                  disabled={!selectedAnswer}
-                  className="bg-brand-orange hover:bg-brand-orange/95 text-white font-bold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  Submit Response
-                </button>
-              )}
-              {submitted && (
-                <p className="text-[11px] font-mono text-brand-orange/90 font-bold">Your response has been submitted. Continue to the Challenge Debrief.</p>
-              )}
-            </div>
-          )}
+              {isChallengeCard && challenge && (
+                <div className="space-y-5">
+                  <div className="flex items-center gap-2">
+                    <Target size={18} className="text-brand-orange" />
+                    <h3 className="text-sm font-bold text-brand-teal-deep">Scenario Practice</h3>
+                  </div>
 
-          {isDebriefCard && remediation && (
+                  <div className="border border-brand-orange/20 bg-tone-orange-bg/10 p-4 rounded-xl">
+                    <p className="text-[10px] font-bold text-brand-orange uppercase font-mono tracking-wider mb-1">📋 Clinical Scenario</p>
+                    <p className="text-xs leading-relaxed text-secondary">{currentCard.learner_facing_content}</p>
+                  </div>
+
+                  <p className="text-xs font-semibold text-brand-teal-deep">{challenge.prompt}</p>
+
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {challengeChoices.map((ans) => {
+                      const isSelected = selectedAnswer === ans.id;
+                      return (
+                        <button
+                          key={ans.id}
+                          onClick={() => !submitted && setSelectedAnswer(ans.id)}
+                          disabled={submitted}
+                          className={`w-full text-left p-4 rounded-xl border text-xs flex items-start gap-3 transition-all duration-200 ${
+                            isSelected
+                              ? "bg-tone-teal-bg border-brand-teal text-brand-teal-deep font-semibold"
+                              : "bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline hover:border-brand-teal/20 text-secondary shadow-sm"
+                          }`}
+                        >
+                          <div className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                            isSelected
+                              ? "bg-brand-teal text-white border-brand-teal"
+                              : "border-hairline text-muted"
+                          }`}>{ans.id}</div>
+                          <span className="leading-snug">{ans.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {!submitted && (
+                    <button
+                      onClick={() => setSubmitted(true)}
+                      disabled={!selectedAnswer}
+                      className="bg-brand-orange hover:bg-brand-orange/95 text-white font-bold px-6 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Submit Response
+                    </button>
+                  )}
+                  {submitted && (
+                    <p className="text-[11px] font-mono text-brand-teal font-bold flex items-center gap-1.5">
+                      <Unlock size={12} /> Response submitted. Click "Continue" to review the explanation.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {isDebriefCard && remediation && (
+                <>
+                  <ChallengeDebrief
+                    remediation={remediation}
+                    selectedId={selectedAnswer}
+                    openedIds={openedOptions}
+                    onOpen={(id) => setOpenedOptions((cur) => (cur.includes(id) ? cur : [...cur, id]))}
+                  />
+                  {!debriefReadDone && (
+                    <p className="text-[11px] font-mono text-brand-orange font-bold">
+                      Review the safest response{selectedAnswer && selectedAnswer !== remediation.safestId ? " and your own choice" : ""} in the option review to unlock lesson completion.
+                    </p>
+                  )}
+                </>
+              )}
+            </>
+          ) : (
             <>
-              <ChallengeDebrief
-                remediation={remediation}
-                selectedId={selectedAnswer}
-                openedIds={openedOptions}
-                onOpen={(id) => setOpenedOptions((cur) => (cur.includes(id) ? cur : [...cur, id]))}
-              />
-              {!debriefReadDone && (
-                <p className="text-[11px] font-mono text-brand-orange font-bold">
-                  Review the safest response{selectedAnswer && selectedAnswer !== remediation.safestId ? " and your own choice" : ""} in the option review to unlock lesson completion.
-                </p>
+              {currentCard.card_type === "overview" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <h4 className="text-xs uppercase font-bold font-mono tracking-wider text-brand-teal-deep">Learning Goal</h4>
+                    <p className="text-xs leading-relaxed text-secondary">{currentCard.learning_goal}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="text-xs uppercase font-bold font-mono tracking-wider text-brand-teal-deep">Why It Matters</h4>
+                    <ul className="space-y-1.5 text-xs leading-relaxed text-secondary list-disc pl-4">
+                      {currentCard.why_it_matters.map((item: string) => <li key={item}>{item}</li>)}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {currentCard.card_type === "delivery" && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <h4 className="text-xs uppercase font-bold font-mono tracking-wider text-brand-teal-deep">Lesson Content</h4>
+                    {currentCard.learner_facing_content.includes("<") && currentCard.learner_facing_content.includes(">") ? (
+                      <div
+                        className="text-xs leading-relaxed text-secondary space-y-2"
+                        dangerouslySetInnerHTML={{ __html: currentCard.learner_facing_content }}
+                      />
+                    ) : (
+                      <p className="text-xs leading-relaxed whitespace-pre-line text-secondary">{currentCard.learner_facing_content}</p>
+                    )}
+                  </div>
+                  {currentCard.cna_practice_example && (
+                    <div className="p-3 border border-tone-orange-border/30 bg-tone-orange-bg/10 rounded-lg">
+                      <p className="text-[11px] leading-relaxed text-secondary">
+                        <strong>CNA practice example:</strong> {currentCard.cna_practice_example}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {isChallengeCard && challenge && (
+                <div className="space-y-4">
+                  <p className="text-xs leading-relaxed font-semibold text-brand-teal-deep">{challenge.prompt}</p>
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {challengeChoices.map((ans) => (
+                      <button
+                        key={ans.id}
+                        onClick={() => !submitted && setSelectedAnswer(ans.id)}
+                        disabled={submitted}
+                        className={`w-full text-left p-4 rounded-lg border text-xs flex items-start gap-3 transition-colors ${
+                          selectedAnswer === ans.id
+                            ? "bg-tone-teal-bg border-brand-teal text-brand-teal-deep font-semibold"
+                            : "bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline hover:border-brand-teal/20 text-secondary shadow-sm"
+                        }`}
+                      >
+                        <div className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                          selectedAnswer === ans.id
+                            ? "bg-brand-teal text-white border-brand-teal"
+                            : "border-hairline text-muted"
+                        }`}>{ans.id}</div>
+                        <span>{ans.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {!submitted && (
+                    <button
+                      onClick={() => setSubmitted(true)}
+                      disabled={!selectedAnswer}
+                      className="bg-brand-orange hover:bg-brand-orange/95 text-white font-bold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Submit Response
+                    </button>
+                  )}
+                  {submitted && (
+                    <p className="text-[11px] font-mono text-brand-orange/90 font-bold">Your response has been submitted. Continue to the Challenge Debrief.</p>
+                  )}
+                </div>
+              )}
+
+              {isDebriefCard && remediation && (
+                <>
+                  <ChallengeDebrief
+                    remediation={remediation}
+                    selectedId={selectedAnswer}
+                    openedIds={openedOptions}
+                    onOpen={(id) => setOpenedOptions((cur) => (cur.includes(id) ? cur : [...cur, id]))}
+                  />
+                  {!debriefReadDone && (
+                    <p className="text-[11px] font-mono text-brand-orange font-bold">
+                      Review the safest response{selectedAnswer && selectedAnswer !== remediation.safestId ? " and your own choice" : ""} in the option review to unlock lesson completion.
+                    </p>
+                  )}
+                </>
               )}
             </>
           )}
 
-          {!isDebriefCard && (
+          {!isDebriefCard && currentCard.key_terms && currentCard.key_terms.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
               {currentCard.key_terms.slice(0, 3).map((term: any) => (
-                <div key={term.term} className="border border-hairline bg-white/70 p-3 rounded-lg shadow-sm">
+                <div key={term.term} className="border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-3 rounded-lg shadow-sm">
                   <h4 className="text-[10px] uppercase font-bold font-mono text-brand-orange">{term.term}</h4>
                   <p className="text-[11px] leading-relaxed mt-1 text-secondary">{term.definition}</p>
                 </div>
@@ -1038,7 +1252,7 @@ function LessonPlayerPage() {
           estSeconds={currentCard.estimated_narration_seconds}
         />
 
-        <div className="px-6 py-4 border-t border-hairline bg-white flex items-center justify-between rounded-b-xl">
+        <div className="px-6 py-4 border-t border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset flex items-center justify-between rounded-b-xl">
           <button
             onClick={() => setCurrentIdx((idx) => Math.max(0, idx - 1))}
             disabled={currentIdx === 0}
@@ -1051,9 +1265,10 @@ function LessonPlayerPage() {
             <button
               onClick={handleNext}
               disabled={!canContinue}
-              className="bg-brand-orange hover:bg-brand-orange/95 text-white border border-brand-orange font-bold px-6 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action disabled:opacity-40 disabled:cursor-not-allowed"
+              className="bg-brand-orange hover:bg-brand-orange/95 text-white border border-brand-orange font-bold px-6 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
             >
-              {isLast ? "Complete Theory Lesson" : isDebriefCard ? remediation?.continueLabel ?? "Continue" : "Continue"} &rarr;
+              {isTerminologyCard && !allTermsAcked && <Lock size={12} />}
+              {continueLabel} &rarr;
             </button>
           ) : (
             <div className="flex items-center gap-2 border border-tone-orange-border/30 bg-tone-orange-bg/10 text-brand-orange px-4 py-2.5 rounded-lg text-[10px] font-mono font-bold leading-none">
@@ -1100,7 +1315,7 @@ function ModuleAssessmentSplashPage() {
           </p>
         </div>
 
-        <div className="bg-white/80 p-4 rounded-lg border border-hairline text-left max-w-md space-y-3 font-mono text-[11px] text-secondary shadow-sm">
+        <div className="bg-surface-glass backdrop-blur-md shadow-glass-inset p-4 rounded-lg border border-hairline text-left max-w-md space-y-3 font-mono text-[11px] text-secondary shadow-sm">
           <div className="flex justify-between">
             <span>Structured Questions:</span>
             <span className="text-brand-teal-deep font-bold">
@@ -1125,7 +1340,7 @@ function ModuleAssessmentSplashPage() {
           </button>
           <button
             onClick={() => navigate(`/journey/module/${module.id}`)}
-            className="bg-white hover:bg-surface-hover text-brand-teal border border-tone-teal-border font-bold px-6 py-3 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action"
+            className="bg-surface-glass backdrop-blur-md shadow-glass-inset hover:bg-surface-hover text-brand-teal border border-tone-teal-border font-bold px-6 py-3 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action"
           >
             Study Material Again
           </button>
@@ -1225,7 +1440,7 @@ function ModuleAssessmentQuizPage() {
               : "The course-wide Final Assessment gate is now available on the Modules page."}
           </p>
         </div>
-        <div className="bg-white/80 p-4 rounded-lg border border-hairline max-w-sm font-mono text-xs text-secondary flex justify-between shadow-sm">
+        <div className="bg-surface-glass backdrop-blur-md shadow-glass-inset p-4 rounded-lg border border-hairline max-w-sm font-mono text-xs text-secondary flex justify-between shadow-sm">
           <span>Recorded Score:</span><strong className="text-brand-teal">{result.pct}%</strong>
         </div>
         <div className="pt-2 flex justify-start">
@@ -1266,7 +1481,7 @@ function FinalAssessmentSplashPage() {
           </p>
         </div>
 
-        <div className="bg-white/80 p-5 rounded-lg border border-hairline text-left max-w-md space-y-3 font-mono text-[11px] text-secondary shadow-sm">
+        <div className="bg-surface-glass backdrop-blur-md shadow-glass-inset p-5 rounded-lg border border-hairline text-left max-w-md space-y-3 font-mono text-[11px] text-secondary shadow-sm">
           <div className="flex justify-between"><span>Active Time Logged (demo):</span><span className="text-brand-teal-deep font-bold">{formatHoursAndMins(demoSeconds)}</span></div>
           <div className="flex justify-between"><span>Minimum Passing:</span><span className="text-brand-orange font-bold">{EXAM.PASS_PCT}% Correct</span></div>
           <div className="flex justify-between"><span>Post-Exam Track:</span><span className="text-brand-teal-deep font-bold">Affidavit Validation</span></div>
@@ -1287,7 +1502,7 @@ function FinalAssessmentSplashPage() {
           </button>
           <button
             onClick={() => navigate("/journey")}
-            className="bg-white hover:bg-surface-hover text-brand-teal border border-tone-teal-border font-bold px-6 py-3 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action"
+            className="bg-surface-glass backdrop-blur-md shadow-glass-inset hover:bg-surface-hover text-brand-teal border border-tone-teal-border font-bold px-6 py-3 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action"
           >
             Go Back &amp; Study Modules
           </button>
@@ -1353,7 +1568,7 @@ function FinalResultPage() {
               <h1 className="text-3xl font-bold text-brand-teal-deep mt-3">{appCopy.final.pass_title}</h1>
               <p className="text-xs text-secondary mt-2">{appCopy.final.pass_body}</p>
             </div>
-            <div className="bg-white/80 p-4 rounded-lg border border-hairline max-w-sm ml-0 mr-auto font-mono text-xs text-secondary flex justify-between shadow-sm">
+            <div className="bg-surface-glass backdrop-blur-md shadow-glass-inset p-4 rounded-lg border border-hairline max-w-sm ml-0 mr-auto font-mono text-xs text-secondary flex justify-between shadow-sm">
               <span>Recorded Score:</span><strong className="text-brand-teal font-bold">{pct}% Correct</strong>
             </div>
             <div className="pt-4 flex justify-start">
@@ -1375,7 +1590,7 @@ function FinalResultPage() {
               <h1 className="text-3xl font-bold text-brand-teal-deep mt-3">{appCopy.final.fail_title}</h1>
               <p className="text-xs text-secondary mt-2 max-w-md leading-relaxed">{remediation.overview}</p>
             </div>
-            <div className="bg-white/80 p-4 rounded-lg border border-hairline max-w-sm ml-0 mr-auto font-mono text-xs text-secondary flex justify-between shadow-sm">
+            <div className="bg-surface-glass backdrop-blur-md shadow-glass-inset p-4 rounded-lg border border-hairline max-w-sm ml-0 mr-auto font-mono text-xs text-secondary flex justify-between shadow-sm">
               <span>Recorded Score:</span><strong className="text-brand-orange font-bold">{pct}% Correct · need {EXAM.PASS_PCT}%</strong>
             </div>
 
@@ -1386,7 +1601,7 @@ function FinalResultPage() {
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {remediation.topicAreas.map((topic) => (
-                  <div key={topic.code} className="p-3 rounded-lg border border-hairline bg-white shadow-sm">
+                  <div key={topic.code} className="p-3 rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset shadow-sm">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[10px] font-mono font-bold text-brand-orange uppercase">{topic.code}</span>
                     </div>
@@ -1411,7 +1626,7 @@ function FinalResultPage() {
               </ol>
             </div>
 
-            <div className="bg-tone-slate-bg border border-hairline p-3 rounded-lg text-left max-w-xl ml-0 mr-auto flex items-start gap-2 shadow-sm">
+            <div className="bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline p-3 rounded-lg text-left max-w-xl ml-0 mr-auto flex items-start gap-2 shadow-sm">
               <Lock size={12} className="text-muted shrink-0 mt-0.5" />
               <p className="text-[10px] text-muted leading-relaxed font-mono">{remediation.retryInstructions}</p>
             </div>
@@ -1425,7 +1640,7 @@ function FinalResultPage() {
               </button>
               <button
                 onClick={() => navigate("/journey")}
-                className="bg-white hover:bg-surface-hover text-brand-teal border border-tone-teal-border font-bold px-6 py-3 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action"
+                className="bg-surface-glass backdrop-blur-md shadow-glass-inset hover:bg-surface-hover text-brand-teal border border-tone-teal-border font-bold px-6 py-3 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action"
               >
                 Return to Modules
               </button>
@@ -1444,6 +1659,59 @@ function FinalResultPage() {
 export function ModulePlayerScreen() {
   const { pathname } = useLocation();
   const params = useParams<{ moduleId?: string; lessonId?: string }>();
+
+  // P0-002 + P0-008 guard: use journeyStore as source of truth for employee + clearance
+  const { currentEmployeeId, employees, attempts } = useJourneyStore();
+  const employee = employees.find(e => e.id === currentEmployeeId);
+  const rawModuleId = params.moduleId || (pathname.includes('/module/') ? pathname.split('/module/')[1]?.split('/')[0] : undefined);
+  const journeyMod = rawModuleId ? moduleById(rawModuleId) : null;
+
+  // Early guards
+  if (!employee) {
+    return (
+      <section className="p-8">
+        <div className="max-w-xl mx-auto bg-surface-glass border border-hairline rounded-xl p-6">
+          <h2 className="text-xl font-bold">Select an employee to continue</h2>
+          <p className="mt-2 text-sm text-secondary">No active onboarding subject is selected. Go to the Journey overview or Admin to choose an employee (e.g. Maria Santos, RN).</p>
+          <Link to="/journey" className="mt-4 inline-block text-brand-teal underline">Back to Journey overview</Link>
+        </div>
+      </section>
+    );
+  }
+
+  if (rawModuleId && !journeyMod && !['m0'].includes(rawModuleId)) {
+    // Unknown module
+    return (
+      <section className="p-8">
+        <div className="max-w-xl mx-auto bg-surface-glass border border-hairline rounded-xl p-6">
+          <h2 className="text-xl font-bold">Unknown module</h2>
+          <p className="mt-2 text-sm text-secondary">Module "{rawModuleId}" is not recognized in the current catalog.</p>
+          <Link to="/journey" className="mt-4 inline-block text-brand-teal underline">Return to Journey overview</Link>
+        </div>
+      </section>
+    );
+  }
+
+  // Hard gate using existing canStartModule for non-orientation modules
+  const isOrientation = rawModuleId === 'm0' || pathname === '/journey/module/m0';
+  if (!isOrientation && journeyMod && employee) {
+    const decision = canStartModule(employee, journeyMod, attempts);
+    if (!decision.unlocked) {
+      return (
+        <section className="p-8">
+          <div className="max-w-xl mx-auto bg-surface-glass border border-amber-500/50 rounded-xl p-6">
+            <h2 className="font-bold text-lg">Blocked — cannot start this module</h2>
+            <p className="mt-2 text-sm">{decision.reason}</p>
+            <div className="mt-4 flex gap-3">
+              <Link to="/journey/appendix-f" className="text-brand-teal underline">Complete Appendix F</Link>
+              <Link to="/journey" className="text-brand-teal underline">Back to overview</Link>
+            </div>
+            <p className="mt-3 text-[10px] text-muted font-mono">Current employee: {employee.name} ({employee.role})</p>
+          </div>
+        </section>
+      );
+    }
+  }
 
   // Determine content block based on URL
   const element = useMemo(() => {
@@ -1487,6 +1755,7 @@ export function ModulePlayerScreen() {
       data-template="module-player"
     >
       <div className="mr-auto max-w-[1320px] p-2 md:p-6">
+        <DemoOnlyBanner />
         {element}
         <p className="text-left text-tag text-muted mt-8">
           No PHI. Demo training data only. Required theory modules do not access patient medical records.

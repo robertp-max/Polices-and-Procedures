@@ -38,6 +38,7 @@ import {
 import type { ExecutionUnit } from './types';
 import { generateEvents } from '@/policy/autogen/annualGenerator';
 import { TEMPLATE_REGISTRY } from '@/policy/autogen/templateRegistry';
+import { buildWorkflowSwimlaneCardsForEvent } from '@/policy/workflows/swimlanes/buildWorkflowSwimlaneCardsForCes';
 
 // Minimal static projection of key regulatory from V3 seed (ensures reg events appear on calendar without pulling snapshot module into CES view build graph)
 // EXCEPTION: these dates are duplicated here (not in V3_CES_SeedData). Currently filtered out in build (because units cover the parentEventIds),
@@ -157,11 +158,11 @@ export const FALLBACK_BOARD_LANES: readonly BoardLaneData[] = [
     count: 5,
     note: '3 Evidence / 2 Action',
     cards: [
-      { chips: ['QAPI', 'Evidence'], due: 'Jun 21', id: 'EVT-REV-01', owner: 'Nicole Foster', progress: 65, title: 'Q2 QAPI Review', tone: 'amber', meta: 'Quarterly indicators, adverse events summary, CAPA tracker', awaitingType: 'evidence', missing: '2 artifacts' },
-      { chips: ['Infection', 'Action'], due: 'Jun 18', id: 'EVT-REV-02', owner: 'Linda Patel', progress: 42, title: 'Q1 Infection Control Review', tone: 'amber', meta: 'Surveillance log, hand hygiene trends, PPE compliance', awaitingType: 'evidence', missing: 'log upload' },
-      { chips: ['Incident', 'CAPA'], due: 'Jun 19', id: 'EVT-REV-03', owner: 'Angela Martinez', progress: 55, title: 'Incident / Adverse Event Review', tone: 'orange', meta: 'Root cause analysis + corrective action evidence', awaitingType: 'action', missing: 'RCA sign-off' },
-      { chips: ['Grievance', 'Evidence'], due: 'Jun 22', id: 'EVT-REV-04', owner: 'Angela Martinez', progress: 28, title: 'Complaint / Grievance Investigation', tone: 'amber', meta: 'Investigation notes, resolution evidence, follow-up', awaitingType: 'evidence', missing: '3 docs' },
-      { chips: ['Audit', 'Action'], due: 'Jun 20', id: 'EVT-REV-05', owner: 'Nicole Foster', progress: 71, title: 'Medication Reconciliation Audit Review', tone: 'amber', meta: 'Five chart sample + exception findings', awaitingType: 'action', missing: 'DON review' },
+      { chips: ['QAPI', 'Evidence'], due: 'June 21', id: 'EVT-REV-01', owner: 'Nicole Foster', progress: 65, title: 'Q2 QAPI Review', tone: 'amber', meta: 'Quarterly indicators, adverse events summary, CAPA tracker', awaitingType: 'evidence', missing: '2 artifacts' },
+      { chips: ['Infection', 'Action'], due: 'June 18', id: 'EVT-REV-02', owner: 'Linda Patel', progress: 42, title: 'Q1 Infection Control Review', tone: 'amber', meta: 'Surveillance log, hand hygiene trends, PPE compliance', awaitingType: 'evidence', missing: 'log upload' },
+      { chips: ['Incident', 'CAPA'], due: 'June 19', id: 'EVT-REV-03', owner: 'Angela Martinez', progress: 55, title: 'Incident / Adverse Event Review', tone: 'orange', meta: 'Root cause analysis + corrective action evidence', awaitingType: 'action', missing: 'RCA sign-off' },
+      { chips: ['Grievance', 'Evidence'], due: 'June 22', id: 'EVT-REV-04', owner: 'Angela Martinez', progress: 28, title: 'Complaint / Grievance Investigation', tone: 'amber', meta: 'Investigation notes, resolution evidence, follow-up', awaitingType: 'evidence', missing: '3 docs' },
+      { chips: ['Audit', 'Action'], due: 'June 20', id: 'EVT-REV-05', owner: 'Nicole Foster', progress: 71, title: 'Medication Reconciliation Audit Review', tone: 'amber', meta: 'Five chart sample + exception findings', awaitingType: 'action', missing: 'DON review' },
     ],
   },
   {
@@ -187,10 +188,10 @@ export const FALLBACK_BOARD_LANES: readonly BoardLaneData[] = [
 export const FALLBACK_EVENT_LANES: readonly BoardLaneData[] = [
   {
     cards: [
-      { chips: ['Incident', 'CAPA'], due: 'Jun 19', id: 'EVT-REV-03', owner: 'Angela Martinez', domain: 'Compliance / Incident Mgmt', progress: 55, title: 'Incident / Adverse Event Review', tone: 'orange', meta: 'Root cause analysis + corrective action evidence', awaitingType: 'action', missing: 'RCA sign-off' },
-      { chips: ['OIG', 'SAM', 'HR-TA-003'], due: 'Jun 25', id: 'EVT-MO-OIG', owner: 'Angela Martinez', progress: 40, title: 'Monthly OIG / SAM Exclusion Check', tone: 'orange' },
-      { chips: ['Infection', 'Action'], due: 'Jun 18', id: 'EVT-REV-02', owner: 'Linda Patel', domain: 'Clinical', progress: 42, title: 'Q1 Infection Control Review', tone: 'amber', meta: 'Surveillance log, hand hygiene trends, PPE compliance', awaitingType: 'evidence', missing: 'log upload' },
-      { chips: ['Grievance', 'Evidence'], due: 'Jun 22', id: 'EVT-REV-04', owner: 'Angela Martinez', domain: 'Risk', progress: 28, title: 'Complaint / Grievance Investigation', tone: 'amber', meta: 'Investigation notes, resolution evidence, follow-up', awaitingType: 'evidence', missing: '3 docs' },
+      { chips: ['Incident', 'CAPA'], due: 'June 19', id: 'EVT-REV-03', owner: 'Angela Martinez', domain: 'Compliance / Incident Mgmt', progress: 55, title: 'Incident / Adverse Event Review', tone: 'orange', meta: 'Root cause analysis + corrective action evidence', awaitingType: 'action', missing: 'RCA sign-off' },
+      { chips: ['OIG', 'SAM', 'HR-TA-003'], due: 'June 25', id: 'EVT-MO-OIG', owner: 'Angela Martinez', progress: 40, title: 'Monthly OIG / SAM Exclusion Check', tone: 'orange' },
+      { chips: ['Infection', 'Action'], due: 'June 18', id: 'EVT-REV-02', owner: 'Linda Patel', domain: 'Clinical', progress: 42, title: 'Q1 Infection Control Review', tone: 'amber', meta: 'Surveillance log, hand hygiene trends, PPE compliance', awaitingType: 'evidence', missing: 'log upload' },
+      { chips: ['Grievance', 'Evidence'], due: 'June 22', id: 'EVT-REV-04', owner: 'Angela Martinez', domain: 'Risk', progress: 28, title: 'Complaint / Grievance Investigation', tone: 'amber', meta: 'Investigation notes, resolution evidence, follow-up', awaitingType: 'evidence', missing: '3 docs' },
     ],
     count: 4,
     title: 'Critical & Overdue',
@@ -198,10 +199,10 @@ export const FALLBACK_EVENT_LANES: readonly BoardLaneData[] = [
   },
   {
     cards: [
-      { chips: ['Audit', 'Documentation'], due: 'Jun 23', id: 'EVT-DA-01', owner: 'Nicole Foster', domain: 'QAPI / Documentation', progress: 65, title: 'Documentation Alignment Audit', tone: 'amber', meta: 'Cross-policy documentation vs regulatory alignment' },
-      { chips: ['QAPI', 'Evidence'], due: 'Jun 21', id: 'EVT-REV-01', owner: 'Nicole Foster', domain: 'QAPI', progress: 65, title: 'Q2 QAPI Review', tone: 'amber', meta: 'Quarterly indicators, adverse events summary, CAPA tracker', awaitingType: 'evidence', missing: '2 artifacts' },
-      { chips: ['Visit', 'CL-SD-025'], due: 'Jun 22', id: 'EVT-VIS-DOC', owner: 'Nicole Foster', progress: 71, title: 'Visit Documentation Audit', tone: 'teal' },
-      { chips: ['Audit', 'Action'], due: 'Jun 20', id: 'EVT-REV-05', owner: 'Nicole Foster', domain: 'QAPI', progress: 71, title: 'Medication Reconciliation Audit Review', tone: 'amber', meta: 'Five chart sample + exception findings', awaitingType: 'action', missing: 'DON review' },
+      { chips: ['Audit', 'Documentation'], due: 'June 23', id: 'EVT-DA-01', owner: 'Nicole Foster', domain: 'QAPI / Documentation', progress: 65, title: 'Documentation Alignment Audit', tone: 'amber', meta: 'Cross-policy documentation vs regulatory alignment' },
+      { chips: ['QAPI', 'Evidence'], due: 'June 21', id: 'EVT-REV-01', owner: 'Nicole Foster', domain: 'QAPI', progress: 65, title: 'Q2 QAPI Review', tone: 'amber', meta: 'Quarterly indicators, adverse events summary, CAPA tracker', awaitingType: 'evidence', missing: '2 artifacts' },
+      { chips: ['Visit', 'CL-SD-025'], due: 'June 22', id: 'EVT-VIS-DOC', owner: 'Nicole Foster', progress: 71, title: 'Visit Documentation Audit', tone: 'teal' },
+      { chips: ['Audit', 'Action'], due: 'June 20', id: 'EVT-REV-05', owner: 'Nicole Foster', domain: 'QAPI', progress: 71, title: 'Medication Reconciliation Audit Review', tone: 'amber', meta: 'Five chart sample + exception findings', awaitingType: 'action', missing: 'DON review' },
     ],
     count: 4,
     title: 'At Risk',
@@ -209,8 +210,8 @@ export const FALLBACK_EVENT_LANES: readonly BoardLaneData[] = [
   },
   {
     cards: [
-      { chips: ['POC', 'CL-CA-001'], due: 'Jun 21', id: 'EVT-POC-AUD', owner: 'Linda Patel', progress: 82, title: 'Plan of Care Audit', tone: 'teal' },
-      { chips: ['OASIS', 'CL-OA-101'], due: 'Jun 19', id: 'EVT-OAS-ACC', owner: 'Nicole Foster', progress: 55, title: 'OASIS Accuracy Audit', tone: 'teal' },
+      { chips: ['POC', 'CL-CA-001'], due: 'June 21', id: 'EVT-POC-AUD', owner: 'Linda Patel', progress: 82, title: 'Plan of Care Audit', tone: 'teal' },
+      { chips: ['OASIS', 'CL-OA-101'], due: 'June 19', id: 'EVT-OAS-ACC', owner: 'Nicole Foster', progress: 55, title: 'OASIS Accuracy Audit', tone: 'teal' },
     ],
     count: 12,
     title: 'Needs Attention',
@@ -239,8 +240,8 @@ export const FALLBACK_TASK_LANES: readonly BoardLaneData[] = [
   },
   {
     cards: [
-      { chips: ['Recert'], due: 'Jun 19', id: 'MT-204', owner: 'Maria Gonzalez, RN', meta: 'Robert Hale - HH-88402', progress: 82, title: 'Review recert visit cadence', tone: 'teal' },
-      { chips: ['Audit'], due: 'Jun 20', id: 'MT-205', owner: 'Nicole Foster', meta: 'Five chart sample', progress: 71, title: 'Medication reconciliation audit', tone: 'teal' },
+      { chips: ['Recert'], due: 'June 19', id: 'MT-204', owner: 'Maria Gonzalez, RN', meta: 'Robert Hale - HH-88402', progress: 82, title: 'Review recert visit cadence', tone: 'teal' },
+      { chips: ['Audit'], due: 'June 20', id: 'MT-205', owner: 'Nicole Foster', meta: 'Five chart sample', progress: 71, title: 'Medication reconciliation audit', tone: 'teal' },
     ],
     count: 10,
     title: 'Clinical Review',
@@ -248,8 +249,8 @@ export const FALLBACK_TASK_LANES: readonly BoardLaneData[] = [
   },
   {
     cards: [
-      { chips: ['Credential'], due: 'Jun 22', id: 'MT-206', owner: 'Destiny Brown', meta: 'James Kwon, PT', progress: 38, title: 'PT credential renewal packet', tone: 'orange' },
-      { chips: ['Orders'], due: 'Jun 23', id: 'MT-213', owner: 'Maria Gonzalez, RN', meta: 'Five pending signatures', progress: 55, title: 'Physician order signature follow-up', tone: 'amber' },
+      { chips: ['Credential'], due: 'June 22', id: 'MT-206', owner: 'Destiny Brown', meta: 'James Kwon, PT', progress: 38, title: 'PT credential renewal packet', tone: 'orange' },
+      { chips: ['Orders'], due: 'June 23', id: 'MT-213', owner: 'Maria Gonzalez, RN', meta: 'Five pending signatures', progress: 55, title: 'Physician order signature follow-up', tone: 'amber' },
     ],
     count: 4,
     title: 'Blocked',
@@ -257,8 +258,8 @@ export const FALLBACK_TASK_LANES: readonly BoardLaneData[] = [
   },
   {
     cards: [
-      { chips: ['Discharge'], due: 'Jun 24', id: 'MT-307', owner: 'James Torres', meta: 'George Lin - HH-88910', progress: 94, title: 'Discharge teaching checklist', tone: 'green' },
-      { chips: ['Evidence'], due: 'Jun 21', id: 'MT-308', owner: 'Nicole Foster', meta: 'Amina Yusuf - HH-88701', progress: 88, title: 'Wound photo evidence approved', tone: 'green' },
+      { chips: ['Discharge'], due: 'June 24', id: 'MT-307', owner: 'James Torres', meta: 'George Lin - HH-88910', progress: 94, title: 'Discharge teaching checklist', tone: 'green' },
+      { chips: ['Evidence'], due: 'June 21', id: 'MT-308', owner: 'Nicole Foster', meta: 'Amina Yusuf - HH-88701', progress: 88, title: 'Wound photo evidence approved', tone: 'green' },
     ],
     count: 12,
     title: 'Ready',
@@ -531,7 +532,8 @@ export function buildTaskLanes(input?: { units?: readonly ExecutionUnit[] }): re
     template registry. Computed once. Fills the months that the sparse real seed
     data leaves empty, so every month shows its scheduled compliance work. */
 let _mandatoryCalendarCache: CesCalendarEvent[] | null = null;
-function mandatoryCalendarEvents(): CesCalendarEvent[] {
+function mandatoryCalendarEvents(force = false): CesCalendarEvent[] {
+  if (force) _mandatoryCalendarCache = null;
   if (_mandatoryCalendarCache) return _mandatoryCalendarCache;
   try {
     const result = generateEvents({
@@ -553,6 +555,7 @@ function mandatoryCalendarEvents(): CesCalendarEvent[] {
       const steps = (e2.processFlow ?? []).map((s, i) => ({
         order: i + 1,
         action: String(s.action || s.label || s.title || `Step ${i + 1}`),
+        description: String(s.description || ''),
         role: String(s.role || s.ownerRole || ownerRole),
         formIds: Array.isArray(s.formIds) ? (s.formIds as string[]) : [],
         deadline: typeof s.deadline === 'string' ? s.deadline : '',
@@ -574,12 +577,24 @@ function mandatoryCalendarEvents(): CesCalendarEvent[] {
         recurrencePattern: ev.cadence,
       } as CesCalendarEvent;
       if (steps.length) {
-        (cesEvent as unknown as Record<string, unknown>).authoredWorkflow = {
+        const authored = {
           id: ev.id, domain: ev.domain, title: ev.title || 'CES Workflow', workflowType: 'operational',
           policyReferences: [], policyRefs: ev.policyRefs ?? [], regulatoryAnchors: [],
           roles: { primary: [ownerRole], supporting: [], approval: [] }, approvals: ev.approvals ?? [],
           requiredForms: [], requiredFormsRaw: '', steps,
         };
+        (cesEvent as unknown as Record<string, unknown>).authoredWorkflow = authored;
+        // Also attach full processFlow for event-specific task details (forms, evidence)
+        (cesEvent as any).processFlow = e2.processFlow;
+        // Generate unique event-specific swimlane here during event generation from template
+        // so that click opens real template-derived cards with event-specific IDs (not source-missing fallback)
+        try {
+          const built = buildWorkflowSwimlaneCardsForEvent(cesEvent as any, authored as any);
+          if (built && built.lanes && built.lanes.length > 0 && !/source missing/i.test((built.summary || '').toString())) {
+            (cesEvent as any).swimlane = built;
+            (cesEvent as any).workflowId = authored.id;
+          }
+        } catch {}
       }
       return cesEvent;
     });
@@ -589,7 +604,7 @@ function mandatoryCalendarEvents(): CesCalendarEvent[] {
   return _mandatoryCalendarCache;
 }
 
-export function buildCalendarEvents(input?: { units?: readonly ExecutionUnit[] }): readonly CesCalendarEvent[] {
+export function buildCalendarEvents(input?: { units?: readonly ExecutionUnit[]; force?: boolean }): readonly CesCalendarEvent[] {
   const units = ((input && (input as any).units) || V3_ExecutionUnitsSeed || []) as readonly ExecutionUnit[];
   const fromUnits = units.map((u: ExecutionUnit) => {
     const { day, month } = parseDueToDayMonth(u.dueDate);
@@ -639,10 +654,13 @@ export function buildCalendarEvents(input?: { units?: readonly ExecutionUnit[] }
   });
 
   // Inject recurring mandatory CES events (deduped by id against units + reg).
-  const existingIds = new Set([...fromUnits, ...fromReg].map((e) => e.id));
-  const fromMandatory = mandatoryCalendarEvents().filter((e) => !existingIds.has(e.id));
+  // To trigger CES template process for event-specific swimlanes/tasks, prefer fromMandatory (which have processFlow/authored/swimlane)
+  const fromMandatory = mandatoryCalendarEvents(!!input?.force);
+  const mandatoryIds = new Set(fromMandatory.map((e) => e.id));
+  const filteredUnits = fromUnits.filter((e) => !mandatoryIds.has(e.id));
+  const filteredReg = fromReg.filter((e) => !mandatoryIds.has(e.id));
 
-  const all = [...fromUnits, ...fromReg, ...fromMandatory];
+  const all = [...fromMandatory, ...filteredUnits, ...filteredReg];
   return finalize(all.length ? all : [...FALLBACK_CES_CALENDAR_EVENTS], validateCalendarEvents, 'calendarEvents');
 }
 
@@ -820,4 +838,32 @@ export function getControlFromParams(params: URLSearchParams | null | undefined)
 export function getBucketFromParams(params: URLSearchParams | null | undefined): string | null {
   if (!params) return null;
   return params.get('bucket');
+}
+
+// Dev-only manual trigger for already-generated template events.
+// Call from browser console: window.triggerCESCalendarSwimlaneProcess()
+// This will force rebuild of mandatory events + attach real swimlanes from their template processFlow.
+if (import.meta.env?.DEV && typeof window !== 'undefined') {
+  (window as any).triggerCESCalendarSwimlaneProcess = (force = true) => {
+    try {
+      _mandatoryCalendarCache = null;
+      const events = buildCalendarEvents({ force });
+      const templateEvents = events.filter((e: any) => (e as any).authoredWorkflow || (e as any).swimlane);
+      console.log(`[CES] Manually triggered swimlane process. Total events: ${events.length}`);
+      console.log(`[CES] Events with authored/swimlane: ${templateEvents.length}`);
+      console.table(templateEvents.slice(0, 5).map((e: any) => ({
+        id: e.id,
+        label: e.label,
+        hasSwimlane: !!e.swimlane,
+        swimlaneLanes: e.swimlane?.lanes?.length || 0,
+        workflowId: e.workflowId,
+      })));
+      // Optional: dispatch to force UI re-render if needed
+      window.dispatchEvent(new CustomEvent('ces-calendar-rebuilt', { detail: { events } }));
+      return events;
+    } catch (err) {
+      console.error('[CES] trigger failed', err);
+    }
+  };
+  console.log('%c[CES] Dev helper ready: window.triggerCESCalendarSwimlaneProcess() to manually attach swimlanes to generated events', 'color:#0a7');
 }

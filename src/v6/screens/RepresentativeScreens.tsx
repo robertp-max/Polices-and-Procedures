@@ -1,5 +1,5 @@
 import { AlertTriangle, BarChart3, BookOpen, CalendarClock, CalendarRange, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, FileCheck2, FileText, FolderOpen, History, PanelRightOpen, ShieldCheck, Stethoscope, Upload, Users, type LucideIcon } from 'lucide-react';
-import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { buildBoardLanes, buildCalendarEvents, buildEventLanes, buildReportMetrics, buildSprintSummary, buildReportCards, buildReportTrendBars, buildEvidenceRows, buildAuditRows, FALLBACK_EVENT_LANES, getControlFromParams, getTasksForEvent } from '@/policy/ces/cesViewProjections';
@@ -10,6 +10,7 @@ import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/da
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
 import { buildFormContent, type FormField, type FormSection } from '@/policy/data/formsLibraryContent';
 import EvidenceStudio from '@/v6/screens/evidence/EvidenceStudio';
+import AIComplianceReviewScreen from './pageviews/AIComplianceReviewScreen';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import { getWorkflowDetail } from './pageviews/WorkflowsScreen';
 import BradWorkspace from './brad/BradWorkspace';
@@ -30,22 +31,15 @@ import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
 import { BoardLane, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
-import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen } from './pageviews';
+import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, AdmissionPacketPreviewScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, UserGuideScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen } from './pageviews';
 import { achcSurveyRows } from '@/policy/data/achcSurveyProjection.generated';
 import { achcPrintCrosswalk } from '@/policy/data/achcPrintCrosswalk.generated';
+import { hhEvidenceRows } from '@/policy/data/achcHhEvidenceMap';
 import { LearnerProvider } from '@/policy/journey/lib/learnerState';
 import { UiStateProvider } from '@/policy/journey/lib/uiState';
 
 type RouteLike = V6RouteDefinition;
 type BasicRow = Record<string, string>;
-
-function pickMotionVariant(seed: string, variants: string[]): string {
-  let hash = 0;
-  for (let index = 0; index < seed.length; index += 1) {
-    hash = ((hash << 5) - hash + seed.charCodeAt(index)) | 0;
-  }
-  return variants[Math.abs(hash) % variants.length];
-}
 
 const displayAcronyms: Record<string, string> = {
   capa: 'CAPA',
@@ -1136,32 +1130,32 @@ function CalendarEventPreview({
   return createPortal(
     <aside
       aria-live="polite"
-      className="v6-calendar-event-preview fixed z-popover w-[340px] pointer-events-none rounded-lg border border-white bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg text-ink shadow-rest"
+      className="v6-calendar-event-preview fixed z-popover w-[680px] max-w-[min(680px,90vw)] pointer-events-none rounded-lg border border-white bg-surface-glass backdrop-blur-md shadow-glass-inset p-2xl text-ink shadow-rest"
       id="ces-event-preview"
       style={positionStyle}
     >
-      <div className="mb-md flex items-start justify-between gap-md">
+      <div className="mb-lg flex items-start justify-between gap-lg">
         <ToneTag tone={event.tone}>{readiness}</ToneTag>
         <ToneTag tone={event.tone}>Click opens swimlane</ToneTag>
       </div>
-      <h3 className="text-h3 font-medium text-ink leading-tight">{event.label}</h3>
-      <p className="mt-xs text-xs text-muted">
+      <h3 className="text-h2 font-medium text-ink leading-tight">{event.label}</h3>
+      <p className="mt-sm text-sm text-muted">
         {displayMonth} {event.day} - {event.owner}
       </p>
-      <div className="mt-md grid gap-xs grid-cols-2">
+      <div className="mt-lg grid gap-sm grid-cols-2">
         {[
           ['Risk', risk],
           ['Required forms', `${formsCount}`],
           ['Evidence', evidenceStatus],
           ['Tasks', `${taskCount}`],
         ].map(([label, value]) => (
-          <div className={cx('rounded-md border p-sm', toneSurfaceClasses[event.tone])} key={label}>
-            <p className="text-[9px] uppercase tracking-tag text-secondary">{label}</p>
-            <p className="mt-xs text-xs font-medium">{value}</p>
+          <div className={cx('rounded-md border p-md', toneSurfaceClasses[event.tone])} key={label}>
+            <p className="text-xs uppercase tracking-tag text-secondary">{label}</p>
+            <p className="mt-sm text-sm font-medium">{value}</p>
           </div>
         ))}
       </div>
-      <div className="mt-md grid gap-xs text-[11px]">
+      <div className="mt-lg grid gap-sm text-sm">
         <p className="text-secondary">
           <span className="font-medium text-ink">Attendees:</span> {attendees}
         </p>
@@ -1170,7 +1164,7 @@ function CalendarEventPreview({
         </p>
       </div>
       <p className={cx(
-        "mt-md rounded-md border px-sm py-xs text-[11px] font-medium text-center",
+        "mt-lg rounded-md border px-md py-sm text-sm font-medium text-center",
         event.tone === 'orange' || event.tone === 'amber'
           ? 'border-tone-orange-border bg-tone-orange-bg text-brand-orange'
           : 'border-tone-teal-border bg-tone-teal-bg text-brand-teal'
@@ -1546,6 +1540,16 @@ const artifactMetrics: readonly MetricTileData[] = [
 
 const realStandardsCount = achcSurveyRows.reduce((sum, r) => sum + r.achcStandards.length, 0);
 const mappedCount = achcSurveyRows.filter(r => r.mappingType !== 'NONE').length;
+const hhStandards = new Set(hhEvidenceRows.map((r) => r.hhStandard).filter(Boolean));
+const hhDuplicateKeys = new Set<string>();
+const hhSeenKeys = new Set<string>();
+hhEvidenceRows.forEach((r) => {
+  const key = `${r.hhStandard}::${r.policyId}`;
+  if (hhSeenKeys.has(key)) hhDuplicateKeys.add(key);
+  hhSeenKeys.add(key);
+});
+const hhReferenceOnlyRows = hhEvidenceRows.filter((r) => /reference|appendix|bibliograph|citation/i.test(`${r.sectionId} ${r.sectionTitle} ${r.notes}`));
+const hhMissingContentRows = hhEvidenceRows.filter((r) => !r.supportingContent.trim());
 const achcMetrics: readonly MetricTileData[] = [
   { label: 'Standards', value: String(realStandardsCount), helper: 'ACHC items tracked', tone: 'teal' },
   { label: 'Mapped', value: String(mappedCount), helper: 'Policy support attached', tone: 'green' },
@@ -1562,15 +1566,52 @@ const achcRows: readonly BasicRow[] = achcSurveyRows.map(r => ({
 }));
 
 const crosswalkRows: readonly BasicRow[] = achcPrintCrosswalk
-  .filter(r => r.ibmPolicyId && r.ibmPolicyId !== 'UNMAPPED')
   .map(r => ({
-    id: r.corridorPolicyNo || r.corridorSection,
-    title: r.corridorTitle,
+    id: r.achcStandards.length ? r.achcStandards.join(', ') : '—',
+    title: r.ibmPolicyTitle || r.corridorTitle,
     owner: r.ibmPolicyId,
-    cmsTitle22: (r.title22 && r.title22.length ? r.title22[0] : (r.medicareCop && r.medicareCop.length ? r.medicareCop[0] : '—')),
+    cmsTitle22: [
+      ...(r.medicareCop || []),
+      ...(r.title22 || []),
+    ].join(' | ') || '—',
     evidence: (r.evidenceCodes && r.evidenceCodes.length ? r.evidenceCodes.join('/') : '—'),
-    status: r.mappingConfidence === 'HIGH' ? 'validated' : 'review-required',
+    sectionAnchor: hhEvidenceRows
+      .filter((m) => (m.policyId === r.ibmPolicyId || r.achcStandards.includes(m.hhStandard)) && r.achcStandards.includes(m.hhStandard))
+      .slice(0, 2)
+      .map((m) => `${m.policyId} ${m.sectionTitle}`)
+      .join(' | ') || '—',
+    status: r.mappingConfidence === 'HIGH' ? 'validated' : (r.mappingConfidence === 'UNMAPPED' ? 'review-required' : 'ready'),
   }));
+
+const hhEvidenceMapMetrics: readonly MetricTileData[] = [
+  { label: 'HH mappings', value: String(hhEvidenceRows.length), helper: 'Rows from policy_hh_section_map.csv', tone: 'teal' },
+  { label: 'HH standards', value: String(hhStandards.size), helper: 'Distinct HH tags with anchors', tone: 'green' },
+  { label: 'Review flags', value: String(hhEvidenceRows.filter((r) => r.matchType === 'REVIEW_REQUIRED' || r.confidence !== 'HIGH').length), helper: 'Non-high or review-required', tone: 'orange' },
+  { label: 'Duplicates', value: String(hhDuplicateKeys.size), helper: 'Duplicate HH/policy pairs', tone: 'amber' },
+];
+
+const hhEvidenceMapRows: readonly BasicRow[] = hhEvidenceRows.map((r) => {
+  const duplicate = hhDuplicateKeys.has(`${r.hhStandard}::${r.policyId}`);
+  const referenceOnly = /reference|appendix|bibliograph|citation/i.test(`${r.sectionId} ${r.sectionTitle} ${r.notes}`);
+  const status = !r.supportingContent.trim()
+    ? 'review-required'
+    : referenceOnly
+      ? 'review-required'
+      : duplicate
+        ? 'ready'
+        : r.confidence === 'HIGH'
+          ? 'validated'
+          : 'review-required';
+  return {
+    id: r.hhStandard,
+    title: r.policyTitle,
+    owner: r.policyId,
+    sectionAnchor: `${r.sectionTitle} (${r.sectionId})`,
+    evidence: r.matchType,
+    confidence: r.confidence,
+    status,
+  };
+});
 
 const achcCards: readonly SurfaceCardData[] = [
   {
@@ -1607,25 +1648,13 @@ const FORM_VIEWER_DATASET = new Map<string, FormRecord>(FORMS_DATASET.map((recor
 
 // FORM_VIEWER_DOMAIN_NAMES and helpers removed (unused after document viewer refactor)
 
-const guideEntries = [
-  ['Day 0 - Pre-Day-1 (Appendix F hard stop)', 'All items PASS/NA + HR Director signature before any work (HR-TA-001).'],
-  ['GAO Phase (27 modules + EXAM)', 'Quizzes at 80%, EXAM with dual sign-off. 3 business days remediation window.'],
-  ['ROLE + Supervised', 'Role-specific modules plus supervised visits per 42 CFR 484.80. Dual sign for skills.'],
-  ['Clearance (App B)', 'DON signature for independent practice. GAO-EXAM plus visits required.'],
-  ['Escalations & Remediation', 'Overdue training and competency fails trigger 60-day plans.'],
-  ['Contextual User-Guide Links', 'Dashboard, Calendar, Forms, Signing, Audit, Evidence, and Master Controls.'],
-] as const;
-
 // ReportsScreen recomputes live via builders for real V3 data (no placeholders).
 
 export function RepresentativeScreen({ route }: { route: RouteLike }) {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const overlay = searchParams.get('v6-overlay');
-  const pageTransitionClass = useMemo(() => {
-    const variants = ['v6-page-transition--rise', 'v6-page-transition--slide', 'v6-page-transition--scale'];
-    return pickMotionVariant(`${location.key}:${location.pathname}:${location.search}`, variants);
-  }, [location.key, location.pathname, location.search]);
+  const routeTransitionKey = `${location.pathname}${location.search}:${route.hashId}`;
 
   if (overlay === 'drawer-system') return <OverlaySystemScreen />;
 
@@ -1647,7 +1676,10 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <AchcScreen mode="crosswalk" />;
       break;
     case 'achc-survey':
-      child = <AchcScreen mode="survey" />;
+      child = <AchcScreen mode={searchParams.get('view') === 'crosswalk' ? 'crosswalk' : 'survey'} />;
+      break;
+    case 'hh-evidence-map':
+      child = <HhEvidenceMapScreen />;
       break;
     case 'artifact-viewer':
       child = <ArtifactViewerScreen />;
@@ -1721,6 +1753,12 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
     case 'evidence-packet-studio':
       child = <EvidenceStudio initialTab="studio" />;
       break;
+    case 'admission-packet-preview':
+      child = <AdmissionPacketPreviewScreen />;
+      break;
+    case 'ai-review':
+      child = <AIComplianceReviewScreen />;
+      break;
     case 'form-viewer':
       child = <FormWorkspaceScreen />;
       break;
@@ -1731,7 +1769,7 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <BuilderScreen />;
       break;
     case 'user-guide':
-      child = <DocsScreen />;
+      child = <UserGuideScreen />;
       break;
     case 'ces-reports':
       // Design cross-ref (Agent 03/23/16): ces-reports to V6_DESIGN.html ~1410 (cesReportCards, reportBars ~1414, metrics ~1416-1421).
@@ -1829,13 +1867,47 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       break;
   }
 
+  const wrapped = child;
+  const [displayedPage, setDisplayedPage] = useState<{
+    content: ReactNode;
+    phase: 'fade-in' | 'fade-out';
+    routeKey: string;
+  }>({
+    content: wrapped,
+    phase: 'fade-in',
+    routeKey: routeTransitionKey,
+  });
+
+  useEffect(() => {
+    if (displayedPage.routeKey === routeTransitionKey) return undefined;
+
+    setDisplayedPage((current) => ({ ...current, phase: 'fade-out' }));
+    const timer = window.setTimeout(() => {
+      setDisplayedPage({
+        content: wrapped,
+        phase: 'fade-in',
+        routeKey: routeTransitionKey,
+      });
+    }, 500);
+
+    return () => window.clearTimeout(timer);
+  }, [displayedPage.routeKey, routeTransitionKey]);
+
   if (route.group === 'Auth') {
     return child;
   }
 
-  const wrapped = child;
-
-  const mainContent = <div key={location.key} className={`grid v6-page-transition ${pageTransitionClass}`}>{wrapped}</div>;
+  const mainContent = (
+    <div
+      key={`${displayedPage.routeKey}-${displayedPage.phase}`}
+      className={cx(
+        'grid v6-page-transition',
+        displayedPage.phase === 'fade-out' ? 'v6-page-transition--fade-out' : 'v6-page-transition--fade-in',
+      )}
+    >
+      {displayedPage.content}
+    </div>
+  );
 
   const pathname = location?.pathname || '';
   const isOnboardingGroup = pathname.startsWith('/journey') || pathname.startsWith('/onboarding-v2') || ['journey-overview', 'journey-new-hire', 'journey-orientation', 'module-player', 'lesson-player', 'module-assessment-splash', 'module-assessment-quiz', 'final-assessment-splash', 'final-assessment-quiz', 'final-result', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'].includes(route.hashId || '') || route.group === 'Onboarding';
@@ -1862,6 +1934,7 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
     'admin-users',
     'achc-crosswalk',
     'achc-survey',
+    'hh-evidence-map',
     'artifact-viewer',
     'audit-mode',
     'ces-calendar',
@@ -2070,7 +2143,7 @@ function MiniBarChart({ values, tone }: { values: readonly number[]; tone: Tone 
 }
 
 function DonutGauge({ label, tone, value }: { label: string; tone: Tone; value: number }) {
-  const accent = tone === 'orange' ? 'var(--brand-orange)' : tone === 'green' ? '#10b981' : 'var(--brand-teal)';
+  const accent = tone === 'orange' ? 'var(--brand-orange)' : tone === 'green' ? 'var(--tone-green-text)' : 'var(--brand-teal)';
   const clamped = Math.max(0, Math.min(100, value));
 
   return (
@@ -2437,7 +2510,7 @@ function PolicyMatrixScreen() {
 
   const handleRowClick = (row: BasicRow) => {
     const id = row.id;
-    if (id) navigate(`/library/${encodeURIComponent(id)}`);
+    if (id) navigate(`/library/${encodeURIComponent(id)}`, { state: { policyBackLabel: 'Policies', policyBackTo: '/library' } });
   };
 
   return (
@@ -2693,9 +2766,9 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
 
   const positionEventCard = (element: HTMLElement, event: CalendarEventData, isSidebar: boolean) => {
     const rect = element.getBoundingClientRect();
-    const cardWidth = 340;
-    const cardHeight = 340;
-    const margin = 12;
+    const cardWidth = 680;
+    const cardHeight = 480;
+    const margin = 16;
     const visibleViewport = window.visualViewport;
     const viewportWidth = Math.min(
       window.innerWidth,
@@ -2869,8 +2942,14 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
               <div className="mb-lg">
                 <div className="flex flex-wrap items-start justify-between gap-lg">
                   <div>
-                    <h2 className="text-h2 font-medium text-ink">{activeMonthLabel} {cesYear} CES Calendar</h2>
-                    <p className="mt-xs text-sm text-muted">{config.legend}</p>
+                    {/* Compact header — the month/year is shown (and changed) in the
+                        selector below, so this no longer repeats it as a hero line. */}
+                    <div className="flex flex-wrap items-center gap-sm">
+                      <h2 className="text-h3 font-medium text-ink">CES Calendar</h2>
+                      <span className="rounded-full border border-hairline bg-surface-glass px-sm py-[2px] text-xs font-medium text-brand-teal-deep">{activeMonthLabel} {cesYear}</span>
+                    </div>
+                    {/* Desktop grid has no legend of its own; the mobile agenda renders its own, so hide here on mobile. */}
+                    <p className="mt-xs hidden text-xs text-muted tablet-l:block">{config.legend}</p>
                   </div>
                   <div className="flex flex-col items-end gap-md">
                     <div className="inline-flex rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs">
@@ -2953,7 +3032,13 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                   }}
                 />
               ) : (
-              <div className="overflow-hidden rounded-lg border border-hairline bg-surface-glass shadow-glass-inset">
+              <>
+              {/* Mobile: readable agenda list — the 7-column grid clips event pills on phones. */}
+              <div className="tablet-l:hidden">
+                <CalendarAgendaList events={events} legend={config.legend} onOpenEvent={openCalendarEvent} title={`${activeMonthLabel} ${cesYear}`} />
+              </div>
+              {/* Desktop / tablet: full month grid. */}
+              <div className="hidden overflow-hidden rounded-lg border border-hairline bg-surface-glass shadow-glass-inset tablet-l:block">
               <div className="grid grid-cols-7 text-xs">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                   <div className="border border-hairline bg-tone-teal-bg/45 p-md text-center text-tag uppercase tracking-tag text-brand-teal" key={day}>
@@ -3025,6 +3110,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                 ))}
               </div>
               </div>
+              </>
               )}
             </>
           ) : agendaMode === 'Month' ? (
@@ -3722,6 +3808,7 @@ function AchcScreen({ mode }: { mode: 'crosswalk' | 'survey' }) {
         { key: 'owner', label: 'Policy ID' },
         { key: 'cmsTitle22', label: 'CMS / Title 22' },
         { key: 'evidence', label: 'Evidence' },
+        { key: 'sectionAnchor', label: 'Policy section anchor' },
         { key: 'status', label: 'Mapping', status: true },
       ]
     : [
@@ -3746,7 +3833,12 @@ function AchcScreen({ mode }: { mode: 'crosswalk' | 'survey' }) {
               // Parity with V1: clicking ACHC row opens policy library or detail for the supporting policy
               const polId = (row.owner || row.id || '').toString();
               if (polId && polId !== '—') {
-                navigate(`/library/${encodeURIComponent(polId)}`);
+                navigate(`/library/${encodeURIComponent(polId)}`, {
+                  state: {
+                    policyBackLabel: isCrosswalk ? 'ACHC Crosswalk' : 'ACHC Survey Alignment',
+                    policyBackTo: isCrosswalk ? '/framework/achc-survey/crosswalk' : '/framework/achc-survey',
+                  },
+                });
               }
             }}
           />
@@ -3755,6 +3847,121 @@ function AchcScreen({ mode }: { mode: 'crosswalk' | 'survey' }) {
           {achcCards.map((card) => (
             <SurfaceCard card={card} key={card.title} />
           ))}
+        </aside>
+      </section>
+    </ScreenStack>
+  );
+}
+
+function HhEvidenceMapScreen() {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState('');
+  const [confidence, setConfidence] = useState('ALL');
+  const [status, setStatus] = useState('ALL');
+
+  const filteredRows = hhEvidenceMapRows.filter((row) => {
+    const q = query.trim().toLowerCase();
+    const matchesQuery =
+      !q ||
+      row.id.toLowerCase().includes(q) ||
+      row.title.toLowerCase().includes(q) ||
+      row.owner.toLowerCase().includes(q) ||
+      row.sectionAnchor.toLowerCase().includes(q) ||
+      row.evidence.toLowerCase().includes(q);
+    const matchesConfidence = confidence === 'ALL' || row.confidence === confidence;
+    const matchesStatus = status === 'ALL' || row.status === status;
+    return matchesQuery && matchesConfidence && matchesStatus;
+  });
+
+  const columns: readonly DataTableColumn<BasicRow>[] = [
+    { key: 'id', label: 'HH standard' },
+    { key: 'title', label: 'Policy title' },
+    { key: 'owner', label: 'Policy ID' },
+    { key: 'sectionAnchor', label: 'Section / anchor' },
+    { key: 'evidence', label: 'Match / evidence source' },
+    { key: 'confidence', label: 'Confidence' },
+    { key: 'status', label: 'Review state', status: true },
+  ];
+
+  return (
+    <ScreenStack metrics={hhEvidenceMapMetrics}>
+      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
+        <section className="grid gap-lg rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
+          <div className="flex flex-wrap items-end justify-between gap-md">
+            <div className="grid gap-xs">
+              <ToneTag tone="teal">Spreadsheet source</ToneTag>
+              <h2 className="text-h2 font-medium text-ink">HH tag evidence map</h2>
+              <p className="max-w-content text-sm text-muted">
+                Source: src/policy/data/policy_hh_section_map.csv. Rows map HH standards to policy section anchors, confidence, match type, duplicate flags, and review posture.
+              </p>
+            </div>
+            <input
+              aria-label="Search HH evidence mappings"
+              className="min-w-[260px] rounded-md border border-card bg-surface-glass px-md py-sm text-sm text-ink placeholder:text-muted focus-visible:outline-none focus-visible:shadow-focus"
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search HH tag, policy, section..."
+              value={query}
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-sm" aria-label="HH evidence map filters">
+            {['ALL', 'HIGH', 'MEDIUM', 'LOW'].map((value) => (
+              <Button key={value} selected={confidence === value} size="sm" variant={confidence === value ? 'secondary' : 'tertiary'} onClick={() => setConfidence(value)}>
+                {value === 'ALL' ? 'All Confidence' : value}
+              </Button>
+            ))}
+            {['ALL', 'validated', 'ready', 'review-required'].map((value) => (
+              <Button key={value} selected={status === value} size="sm" variant={status === value ? 'secondary' : 'tertiary'} onClick={() => setStatus(value)}>
+                {value === 'ALL' ? 'All States' : value}
+              </Button>
+            ))}
+          </div>
+
+          {filteredRows.length ? (
+            <DataTable
+              columns={columns}
+              label="HH tag evidence map"
+              rows={filteredRows}
+              onRowClick={(row) => navigate(`/library/${encodeURIComponent(row.owner)}`, { state: { policyBackLabel: 'HH Tag Evidence Map', policyBackTo: '/framework/hh-evidence-map' } })}
+            />
+          ) : (
+            <div className="rounded-lg border border-dashed border-card bg-surface-glass p-xl text-sm text-muted">
+              No HH evidence mappings match the current filters. Source checked: src/policy/data/policy_hh_section_map.csv.
+            </div>
+          )}
+        </section>
+
+        <aside className="grid content-start gap-lg">
+          <SurfaceCard
+            card={{
+              body: `Duplicate HH/policy pairs: ${hhDuplicateKeys.size}. Reference/header-only candidates: ${hhReferenceOnlyRows.length}. Missing source content rows: ${hhMissingContentRows.length}.`,
+              icon: AlertTriangle,
+              progress: Math.max(0, 100 - hhDuplicateKeys.size),
+              status: hhDuplicateKeys.size || hhReferenceOnlyRows.length || hhMissingContentRows.length ? 'review-required' : 'validated',
+              title: 'Defensibility checks',
+              tone: hhDuplicateKeys.size || hhReferenceOnlyRows.length || hhMissingContentRows.length ? 'orange' : 'green',
+            }}
+          />
+          <SurfaceCard
+            card={{
+              body: 'Evidence code legend: P = Policy, D = Document, I = Interview, O = Observation, S = Survey. HH anchors come from the hardening spreadsheet, not static sample rows.',
+              icon: BookOpen,
+              progress: 100,
+              status: 'validated',
+              title: 'Evidence legend',
+              tone: 'teal',
+            }}
+          />
+          <SurfaceCard
+            card={{
+              body: 'Click any row to open the supporting policy detail. Rows marked review-required need SME review, a stronger section anchor, or source-content repair.',
+              icon: ShieldCheck,
+              progress: 86,
+              status: 'ready',
+              title: 'Survey workflow',
+              tone: 'teal',
+            }}
+          />
         </aside>
       </section>
     </ScreenStack>
@@ -4089,44 +4296,6 @@ function BuilderScreen() {
   return (
     <ScreenStack metrics={[]}>
       <BuilderWorkspace />
-    </ScreenStack>
-  );
-}
-
-function DocsScreen() {
-  return (
-    <ScreenStack metrics={operationsMetrics}>
-      <section className="grid gap-xl desktop:grid-cols-[minmax(280px,1fr)_minmax(0,3fr)]">
-        <aside className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
-          <h2 className="mb-lg text-h2 font-medium text-ink">Contents</h2>
-          <div className="grid gap-sm">
-            {guideEntries.map(([title], index) => (
-              <button
-                className={cx(
-                  'min-h-row rounded-md px-md text-left text-sm transition duration-fast ease-standard hover:bg-surface-hover',
-                  index === 0 ? 'bg-tone-teal-bg text-brand-teal' : 'bg-surface-glass backdrop-blur-md shadow-glass-inset text-ink',
-                )}
-                key={title}
-                type="button"
-              >
-                {title}
-              </button>
-            ))}
-          </div>
-        </aside>
-        <article className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
-          <ToneTag>/journey/guide</ToneTag>
-          <h2 className="mt-lg text-h2 font-medium text-ink">User Guide</h2>
-          <div className="mt-xl grid gap-lg">
-            {guideEntries.map(([title, body]) => (
-              <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg" key={title}>
-                <h3 className="text-body font-light text-ink">{title}</h3>
-                <p className="mt-md text-sm text-muted">{body}</p>
-              </section>
-            ))}
-          </div>
-        </article>
-      </section>
     </ScreenStack>
   );
 }

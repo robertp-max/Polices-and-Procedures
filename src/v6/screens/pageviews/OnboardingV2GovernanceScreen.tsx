@@ -79,7 +79,7 @@ export function OnboardingV2GovernanceScreen() {
 
       <section className="grid gap-lg desktop:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
         <div className="grid content-start gap-md">
-          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
             <div className="mb-md flex flex-wrap items-start justify-between gap-md">
               <div>
                 <h3 className="text-h3 font-medium text-ink">Override Authorizations</h3>
@@ -100,7 +100,7 @@ export function OnboardingV2GovernanceScreen() {
         </div>
 
         <aside className="grid content-start gap-md" aria-label="Governance checks">
-          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md flex items-center gap-sm">
               <ShieldAlert aria-hidden="true" className="h-icon-sm w-icon-sm text-tone-orange-text" />
               Safety Alerts
@@ -114,7 +114,7 @@ export function OnboardingV2GovernanceScreen() {
             </div>
           </section>
 
-          <section className="rounded-lg border border-card bg-surface p-lg shadow-rest">
+          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
             <h3 className="text-h3 font-medium text-ink mb-md flex items-center gap-sm">
               <BookOpen aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
               Audit Constraints
@@ -155,7 +155,7 @@ export function OnboardingV2GovernanceScreen() {
               type="text"
               value={targetLearner}
               onChange={(e) => setTargetLearner(e.target.value)}
-              className="w-full rounded-md border border-card bg-tone-slate-bg px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
+              className="w-full rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
               placeholder="e.g. James Carter"
             />
           </div>
@@ -165,7 +165,7 @@ export function OnboardingV2GovernanceScreen() {
             <select
               value={targetGate}
               onChange={(e) => setTargetGate(e.target.value)}
-              className="w-full rounded-md border border-card bg-tone-slate-bg px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
+              className="w-full rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
             >
               <option value="Gate 1: Background & Screening">Gate 1: Background & Screening</option>
               <option value="Gate 2: Credentials & License">Gate 2: Credentials & License</option>
@@ -180,7 +180,7 @@ export function OnboardingV2GovernanceScreen() {
             <select
               value={overrideReason}
               onChange={(e) => setOverrideReason(e.target.value)}
-              className="w-full rounded-md border border-card bg-tone-slate-bg px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
+              className="w-full rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
             >
               <option value="Primary source latency">Primary source latency</option>
               <option value="TB screening delay">TB screening delay</option>
@@ -197,7 +197,7 @@ export function OnboardingV2GovernanceScreen() {
               min={1}
               value={expirationWindow}
               onChange={(e) => setExpirationWindow(e.target.value)}
-              className="w-full rounded-md border border-card bg-tone-slate-bg px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
+              className="w-full rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
             />
           </div>
 
@@ -208,7 +208,7 @@ export function OnboardingV2GovernanceScreen() {
                 type="text"
                 value={dualApprover1}
                 onChange={(e) => setDualApprover1(e.target.value)}
-                className="w-full rounded-md border border-card bg-tone-slate-bg px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
+                className="w-full rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
                 readOnly
               />
             </div>
@@ -217,7 +217,7 @@ export function OnboardingV2GovernanceScreen() {
               <select
                 value={dualApprover2}
                 onChange={(e) => setDualApprover2(e.target.value)}
-                className="w-full rounded-md border border-card bg-tone-slate-bg px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
+                className="w-full rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset px-3 py-2 text-sm text-secondary outline-none focus:border-brand-teal font-light"
               >
                 <option value="Compliance Officer">Compliance Officer</option>
                 <option value="HR Director">HR Director</option>
@@ -225,7 +225,7 @@ export function OnboardingV2GovernanceScreen() {
             </div>
           </div>
 
-          <label className="flex items-start gap-md rounded-md bg-tone-slate-bg p-md text-xs text-secondary mt-sm">
+          <label className="flex items-start gap-md rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md text-xs text-secondary mt-sm">
             <input
               type="checkbox"
               checked={attested}

@@ -2,7 +2,7 @@
    CANONICAL MODULE CATALOG
    Every row traces to the source table in
    "ROLE-BASED ONBOARDING & COMPETENCY JOURNEY" (Care Indeed HHC).
-   NOTHING HAS BEEN REMOVED, SIMPLIFIED OR RESEQUENCED.
+   HR-TA-005 = Employee Orientation & Onboarding. NOTHING HAS BEEN REMOVED, SIMPLIFIED OR RESEQUENCED.
    ═══════════════════════════════════════════════════════════════ */
 
 import type { JourneyModule, JourneyRole } from '@/policy/journey/types/journey';
@@ -11,7 +11,7 @@ const ALL_CLINICAL: JourneyRole[] = ['DON', 'RN', 'LVN', 'PT', 'PTA', 'OT', 'COT
 
 /* ───────────────────────────────────────────────────────────────
    PHASE 1 — GENERAL AGENCY ORIENTATION (Days 1-5)
-   Source: HR-TA-005 § 6.2 + Section II of the master framework.
+   Source: HR-TA-005 (Employee Orientation & Onboarding) § 6.2 + Section II of the master framework.
    ───────────────────────────────────────────────────────────── */
 const GAO: JourneyModule[] = [
   { id: 'GAO-001', group: 'GAO', phase: 'GAO', title: 'Agency mission, vision, values', roles: 'ALL', policyRefs: ['EN-CM-001'], cmsRefs: [], method: 'None' },
@@ -45,14 +45,14 @@ const GAO: JourneyModule[] = [
     id: 'GAO-EXAM', group: 'GAO', phase: 'GAO',
     title: 'General Orientation Competency Quiz',
     roles: 'ALL',
-    policyRefs: ['HR-TA-005 Appendix D'], cmsRefs: [],
+    policyRefs: ['HR-TA-005'], cmsRefs: [],
     method: 'Quiz', passThreshold: 0.8,
     prerequisites: [
       'GAO-001','GAO-002','GAO-003','GAO-004','GAO-005','GAO-006','GAO-007','GAO-008','GAO-009','GAO-010',
       'GAO-011','GAO-012','GAO-013','GAO-014','GAO-015','GAO-016','GAO-017','GAO-018','GAO-019','GAO-020',
       'GAO-021','GAO-022','GAO-023','GAO-024','GAO-025','GAO-026','GAO-027',
     ],
-    evidenceAppendix: 'HRTA005_D',
+    evidenceAppendix: 'HRTA005_D',  // HR-TA-005 Appendix D - General Orientation Quiz (internal key preserved)
     supervisorSignature: true,
   },
 ];
@@ -273,7 +273,7 @@ const ANN: JourneyModule[] = [
 ];
 
 /* ───────────────────────────────────────────────────────────────
-   COMPETENCY / ANNUAL RE-EVAL — HR-TD-003 Appendix A & D
+   COMPETENCY / ANNUAL RE-EVAL — HR-TD-003 Appendix A & D (HR-TA-005 orients to competency per role)
    ───────────────────────────────────────────────────────────── */
 const COMP: JourneyModule[] = [
   {

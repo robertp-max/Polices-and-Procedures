@@ -1,0 +1,144 @@
+TRANSCRIPT 5 — EXTREME ACUITY
+Referral Source: Pediatric-to-Adult Transition Coordinator
+Date: 06/27/2025 | Time: 10:15 AM PST
+Call Duration: 52 minutes
+
+[CALL INITIATED — INBOUND]
+
+CI: Care Indeed Home Health, intake department. This is Vanessa.
+
+CALLER: Hi Vanessa, this is Dr. Amelia Westbrook, I'm the medical director of the Transition to Adulthood program at UCSF Benioff Children's Hospital. I've got a referral that's — honestly, it's one of the most complex patients I've ever managed in transition. I'm going to need a good chunk of your time.
+
+CI: I've got all morning, Dr. Westbrook. Let me set up a fresh form.
+
+CALLER: Thank you. The patient is Saoirse Brigid Callahan-Oduya. That first name is Irish — S-A-O-I-R-S-E, pronounced "SEER-sha." Middle name B-R-I-G-I-D. Last name C-A-L-L-A-H-A-N, hyphen, O-D-U-Y-A.
+
+CI: Date of birth?
+
+CALLER: February 2, 2004. She just turned 21 in February.
+
+CI: Twenty-one — so she's aging out of pediatric services?
+
+CALLER: Exactly. She's been followed at UCSF Children's since birth. She has cystic fibrosis — homozygous delta F508 — and she's been on the highly effective modulator therapy — elexacaftor/tezacaftor/ivacaftor, Trikafta — since she was 14. It was transformative for her. Her FEV1 went from 42% predicted to 71% predicted. She went from hospitalizations every two to three months to once a year. But she's complicated beyond the CF.
+
+CI: Tell me everything.
+
+CALLER: Okay. Here we go. She also has:
+
+CF-related diabetes (CFRD) — diagnosed at age 15. She's on insulin — glargine and lispro. Her most recent A1c was 8.2. She's not great about the FSBS monitoring because, in her words, "I'm tired of being poked."
+
+CF-related liver disease — focal biliary cirrhosis. Her liver function is borderline — AST/ALT run about 1.5 to 2 times normal. She's on ursodiol. She has mild portal hypertension with splenomegaly but no varices on her last endoscopy.
+
+Chronic Pseudomonas aeruginosa colonization — her lungs have been colonized with multi-drug resistant Pseudomonas since age 10. She does inhaled tobramycin alternating months and inhaled aztreonam the opposite months. She also does hypertonic saline and dornase alfa nebulizers daily, plus a full airway clearance regimen with a high-frequency chest wall oscillation vest — she has a Hill-Rom The Vest at home. She's supposed to do this twice a day for 30 minutes each session but compliance has been — well, she's 21.
+
+CI: Non-compliant?
+
+CALLER: She goes through phases. When she feels good, she doesn't see the point of doing three hours of treatments a day. When she gets sick, she does everything religiously for two weeks and then tapers off. She was admitted in April for a pulmonary exacerbation — FEV1 dropped to 55% — and she got two weeks of IV antibiotics. She's been better since but her baseline has shifted. She's now sitting around 63% predicted instead of the 71% she was at.
+
+Here's the other problem. She's got mental health issues that are severely impacting her CF care. She has major depressive disorder — diagnosed at 17, after a close friend with CF died. She has anxiety disorder, and she has a binge eating disorder that complicates her diabetes management. She went through a period of treatment non-adherence from age 18 to 20 — she stopped Trikafta for three months in 2023 because she said it made her feel "too normal" and she didn't know who she was without CF being the central part of her identity. Her psychologist described it as an identity crisis related to chronic illness. She restarted Trikafta and she's been adherent for the past year, but the psych team is watching closely.
+
+CI: That's a lot for a 21-year-old to carry. Living situation?
+
+CALLER: She lives with her mother, Siobhan Callahan, age 52 — Irish American, single mother, works as a nurse at Seton Medical Center, night shift. Dad is Chinedu Oduya, age 54 — Nigerian Irish, divorced from Siobhan since Saoirse was 9, lives in Dublin, Ireland. He's involved emotionally — they FaceTime every few days — but not physically present. He sends money when he can but it's inconsistent.
+
+Saoirse's younger brother Declan, age 18, also lives in the home. He's healthy, starting community college in the fall. He helps with some of the nebulizer cleaning and vest maintenance but he's got his own life.
+
+There's also a boyfriend — Kevin Park, age 23. He's around frequently. He's supportive but he doesn't have any medical training. He's the one who calls the ambulance when things go bad because Siobhan is at work. Kevin was there during the April exacerbation — he found Saoirse on the couch blue around the lips, SpO2 82% on her home pulse ox, and called 911.
+
+CI: That's a lifesaving boyfriend. Address?
+
+CALLER: 3350 Milagra Drive, Unit 2, Pacifica, CA 94044. Ground-floor apartment. No stairs. Two bedrooms — Saoirse and Declan share the apartment Monday through Friday while Siobhan sleeps during the day (she works nights). Siobhan has her own room.
+
+CI: Phone numbers?
+
+CALLER: Saoirse's cell: (650) 555-0466. Siobhan's cell: (650) 555-0467. Kevin: (650) 555-0889. Home: none — they don't have a landline.
+
+CI: Insurance?
+
+CALLER: This is complicated. She was on Siobhan's employer-based insurance through Seton until she turned 21. She's now transitioning to Medi-Cal — her application is in process. For right now, she's still covered under Blue Shield of California HMO through Seton Health — member ID BSC-HMO-441876522, group SHCN-3300. But this expires July 31st. After that, it should be Medi-Cal through Health Plan of San Mateo. Your billing team needs to be aware of this transition.
+
+She also has CCS (California Children's Services) for CF-related care — but CCS ends at age 21. So as of February 2, 2025, CCS stopped covering. HPSM Medi-Cal is supposed to pick up CF-related specialty care through the adult CCS Whole Child Model but the transition is messy and authorizations are delayed.
+
+CI: We'll flag that for billing. What's her current clinical status?
+
+CALLER: She was just seen in our transition clinic on June 20th. She's at her new post-exacerbation baseline:
+
+FEV1: 63% predicted
+SpO2: 93% on room air at rest; drops to 87-88% with activity (e.g., walking to bathroom, showering)
+Weight: 114 lbs, height 5'6" — BMI 18.4, underweight
+Chronic productive cough — green sputum daily, moderate volume
+Baseline crackles bilateral lower lobes
+She's on supplemental oxygen PRN — 2L NC with activity. She doesn't use it consistently because she thinks it makes her look sick. Her words: "I'm not walking around with a tube in my nose like a grandma."
+Last sputum culture (April 2025): MDR Pseudomonas (resistant to ceftazidime, piperacillin, ciprofloxacin; sensitive to tobramycin, aztreonam, colistin)
+Blood glucose: running 180-320 fasting; she admitted she hasn't been checking and her insulin dosing is "whenever I remember"
+PHQ-9: 16 (moderately severe depression)
+GAD-7: 13 (moderate anxiety)
+
+CI: She's self-managing poorly and she's declining. What precipitated the home health referral now?
+
+CALLER: Two things. First, she's falling through the cracks in the adult system. She was seen at UCSF Children's every two months by a multidisciplinary CF team — pulmonologist, nutritionist, social worker, psychologist, PT, pharmacist — all in one visit. Now that she's aging out, she's supposed to transition to the adult CF center at Stanford. But the Stanford appointment isn't until August 15th — that's almost two months away. In the meantime, she has no CF pulmonologist, no CF nutritionist, no CF social worker. I'm covering her from the pediatric side as a bridge but I can't keep doing that.
+
+Second — and this is the urgent part — she was seen in the ED on June 22nd for a hemoptysis event. She coughed up about 30 mL of bright red blood. CT angiography showed a bronchial artery aneurysm — small, 4 mm — that's being monitored. Interventional radiology is aware. She was observed for 24 hours and discharged. She's at risk for recurrent hemoptysis which could be massive and life-threatening. Her household needs to be trained on hemoptysis protocol — position patient on the side of the bleeding lung (if known — in her case, left lung is worse), call 911 immediately if coughing up more than a tablespoon of blood, do not suction, do not do chest physiotherapy during active bleeding.
+
+CI: Critical safety issue. We'll make that a first-visit priority.
+
+CALLER: Good. And her recent CT showed moderate bronchiectasis bilateral, worse on the left, with mucus plugging. Her airway clearance is clearly inadequate.
+
+CI: Let me get her full medication list.
+
+CALLER:
+
+One — Elexacaftor/tezacaftor/ivacaftor (Trikafta) — 2 orange tablets in the AM, 1 blue tablet in the PM, with fatty food. This medication costs $300,000 per year. Compliance is non-negotiable. If she stops it again, the lung disease will progress rapidly. Her modulator-related liver enzyme elevations need monitoring — LFTs Q3 months. Two — Insulin glargine (Lantus) 22 units SubQ at bedtime. Three — Insulin lispro (Humalog) per sliding scale before meals. She's currently carb-counting poorly — nutritional support is critical. Four — Tobramycin inhalation solution 300 mg BID — alternating months (ON month: Jan, Mar, May, Jul, Sep, Nov). She's currently in her OFF month (June) — she starts again July 1st. Five — Aztreonam inhalation (Cayston) 75 mg TID — alternating months (ON month: Feb, Apr, Jun, Aug, Oct, Dec). She's currently ON Cayston through June. Six — Dornase alfa (Pulmozyme) 2.5 mg nebulized daily — 30 min before airway clearance. Seven — Hypertonic saline 7% 4 mL nebulized BID — during airway clearance. Eight — Albuterol 2.5 mg nebulized — before hypertonic saline (pre-treatment for bronchospasm). Nine — Ursodiol (Actigall) 300 mg TID — CF liver disease. Ten — Pancrelipase (Creon) 36,000 units with meals, 24,000 units with snacks — pancreatic enzyme replacement. Eleven — Fat-soluble vitamins — ADEK (CF-specific multivitamin) — 2 tablets daily. Twelve — Vitamin D3 2,000 IU daily — deficiency. Thirteen — Calcium 600 mg BID — bone health (CF-related osteopenia). Fourteen — Fluoxetine (Prozac) 40 mg daily — depression/anxiety. Fifteen — Lorazepam 0.5 mg PRN (max TID) — acute anxiety/panic. She uses this maybe twice a week. No abuse pattern identified but monitor. Sixteen — Omeprazole 20 mg daily — GERD (very common in CF). Seventeen — Azithromycin 250 mg MWF — chronic anti-inflammatory (macrolide therapy for CF bronchiectasis). Eighteen — Oxygen 2L NC PRN with activity — she has a portable concentrator. Nineteen — Acetaminophen PRN — headaches, joint pain. Twenty — OTC Miralax daily — DIOS prophylaxis (distal intestinal obstruction syndrome — CF-specific GI complication).
+
+CI: Twenty medications plus the whole airway clearance regimen. Her daily treatment burden must be enormous.
+
+CALLER: It is. On a fully compliant day, she's spending approximately 3 to 4 hours on treatments. That's two 30-minute vest sessions with nebulizers, insulin and FSBS four times, Creon with every meal and snack, Trikafta twice, all the other pills. She's 21 years old and her entire day revolves around being sick. It's no wonder she's depressed.
+
+CI: Homebound?
+
+CALLER: After the hemoptysis event, yes. She desaturates with activity, she's deconditioned from the recent exacerbation and the ED visit, and she's been told to avoid vigorous activity until the bronchial artery aneurysm is reassessed in four weeks. She's not leaving home except for medical appointments.
+
+CI: Advance directives?
+
+CALLER: This is heavy. She turned 21 in February and she executed an Advance Health Care Directive that month. Her mother Siobhan is the agent. Her instructions are: she wants full treatment including ICU and intubation up to 14 days of mechanical ventilation. If she's on a ventilator for more than 14 days with no improvement, she wants a family meeting to discuss transition to comfort care. She told her psychologist: "I've seen too many of my CF friends die on vents for months. If the Trikafta stops working and my lungs are done, let me go. But give me two weeks to fight first."
+
+She does NOT have a POLST. She's Full Code with the 14-day vent clause.
+
+CI: That's remarkably thoughtful for a 21-year-old.
+
+CALLER: She's had a lot of practice thinking about death. Three of her close friends from CF camp died between ages 16 and 20. She spoke at two of their funerals.
+
+CI: What services are you ordering?
+
+CALLER:
+
+Skilled nursing 3x/week — vitals, lung sounds, SpO2, FSBS monitoring, insulin management, weight, nutritional assessment, airway clearance supervision and technique optimization, medication compliance assessment, hemoptysis surveillance and protocol review, wound assessment (she has a small area of skin breakdown at the vest contact point on her chest — 1 cm, superficial, from vest friction), depression/anxiety screening (PHQ-9 and GAD-7 biweekly), Trikafta adherence monitoring, lab coordination (LFTs, FSBS logs, sputum cultures).
+Physical therapy 2x/week — reconditioning, endurance training (within hemoptysis precautions — NO Valsalva, no heavy resistance), breathing exercises (diaphragmatic, pursed-lip), posture (CF kyphosis developing), fall prevention (she's had one fall in the last month — tripped over her nebulizer tubing).
+Occupational therapy 2x/week — energy conservation and pacing (critical for CF), daily routine restructuring to optimize treatment compliance, medication management aids, adaptive strategies for treatment burden reduction.
+Speech-language pathology — not needed; speech and swallow are intact.
+Medical social work 1x/week — depression support, adjustment to adult care transition, insurance navigation (Medi-Cal/CCS transition), peer support connections (CF Foundation, CF adult support groups), caregiver support for Siobhan (night-shift nurse and CF mom — she's exhausted), financial resources.
+Home health aide 3x/week — personal care assist on bad days (she's mostly independent but when she's symptomatic she can barely stand in the shower without desaturating), light housekeeping (maintaining a clean environment is important for CF — she's colonized with MDR Pseudomonas and needs rigorous nebulizer disinfection).
+Registered dietitian (if you have one or can coordinate) — biweekly. CF nutrition is highly specialized — she needs 120-150% of normal caloric intake. She's underweight and losing ground. Her binge eating disorder complicates this — she alternates between restricting (during depressive episodes) and bingeing (usually carb-heavy foods that spike her glucose). A CF-specific nutritional plan is needed.
+
+CI: We have an RD we can coordinate. This is a comprehensive plan. Start of care date?
+
+CALLER: As soon as possible — ideally Monday, June 30th. She starts her tobramycin inhaled cycle on July 1st and she needs supervision for the first few doses to make sure she's doing it correctly — she's been doing it wrong (cutting the treatment short because "it takes too long").
+
+CI: We'll get it scheduled. Dr. Westbrook, is there anything about her personality or approach I should brief the team on?
+
+CALLER: Yes. Saoirse is smart, funny, and defiant. She's survived CF for 21 years and she's used to being in charge of her own body. She will push back on anything she perceives as condescending or paternalistic. She hates when people talk to her like she's sick. She knows more about CF than most of your nurses will — she's been living it since birth. The approach that works is partnership, not authority. Ask her opinion. Let her teach YOU about CF. Make her the expert on her own body. Then guide her on the things she's struggling with — insulin, airway clearance, the depression. If your team tries to lecture her, she'll disengage immediately.
+
+She also has a dark sense of humor about her disease. She'll joke about death. She'll call her nebulizer her "iron lung." She named her chest vest "The Oppressor." This is her coping mechanism. Don't be alarmed by it. But also watch for when the humor shifts to genuine despair — that's when the depression takes over.
+
+CI: That's invaluable guidance. We'll match her with clinicians who can meet her on her level.
+
+CALLER: One more thing — her mother Siobhan is a nurse, as I mentioned. That's both an advantage and a complication. She'll understand everything medically, which is great. But she's also been her daughter's nurse for 21 years and she's struggling to let go. She micromanages Saoirse's care, which Saoirse resents. There's tension. Your MSW should be aware of this family dynamic. The goal of adult transition is for Saoirse to own her disease management — but she's not there yet, and Siobhan isn't ready to let her fail.
+
+CI: Thank you, Dr. Westbrook. This is one of the most thorough referrals I've ever taken.
+
+CALLER: She deserves the best. My number is (415) 555-2780. Fax (415) 555-2781. I'll send the transition packet today — it includes her entire CF history, the most recent PFTs, CT report, sputum culture sensitivities, the hemoptysis workup, her psych records with her consent, and the insulin management plan.
+
+CI: We'll watch for it. Thank you, Dr. Westbrook.
+
+[CALL ENDED — 11:07 AM]
+

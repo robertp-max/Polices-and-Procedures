@@ -3,7 +3,7 @@ import cors from 'cors';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { env } from './env.js';
+import { env, assertDriveEvidenceLock } from './env.js';
 import { log } from './logger.js';
 import { ApiError } from './errors.js';
 import { calendarRouter } from './routes/calendar.js';
@@ -51,6 +51,15 @@ app.use(
 // Brad document uploads carry a base64-encoded file in a JSON body — allow a
 // larger limit on ONLY this route (mounted before the global 4mb parser).
 app.use('/api/brad/upload', express.json({ limit: '32mb' }));
+
+// Call-recording transcription carries a base64 audio file — allow a larger
+// limit on ONLY this route (mounted before the global 4mb parser).
+app.use('/api/calendar/intake/transcribe', express.json({ limit: '64mb' }));
+
+// Generated packet HTML is a rich, multi-page, self-contained document with
+// embedded fonts + a per-page logo data URI, which routinely exceeds the 4mb
+// default. Allow a larger limit on ONLY this route (before the global parser).
+app.use('/api/calendar/intake/packet', express.json({ limit: '32mb' }));
 
 app.use(express.json({ limit: '4mb' })); // signature PNG payloads
 
@@ -145,6 +154,12 @@ const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   });
 };
 app.use(errorHandler);
+
+// Verify the LOCKED Google Drive evidence identity (service account, project,
+// shared drive, provider) BEFORE binding the port. Fail-closed on drift when the
+// key is present + evidence is enabled, so a wrong key/drive can never run.
+const driveLock = assertDriveEvidenceLock({ throwOnMismatch: true });
+log[driveLock.ok ? 'info' : 'warn']('drive.evidence.lock', { ok: driveLock.ok, enforced: driveLock.enforced, problems: driveLock.problems, ...driveLock.info });
 
 const server = app.listen(env.port, () => {
   // Start background anomaly scanner (no-op until events accumulate).

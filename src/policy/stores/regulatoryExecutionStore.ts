@@ -352,6 +352,7 @@ interface RegulatoryExecutionState {
     finalDocumentHash?: string;
     snapshotSha256?: string;
     auditEventRefs?: string[];
+    supersedesEvidenceId?: string;
     note?: string;
     localDataUrl?: string;
   }, actor?: string) => string;
@@ -1038,7 +1039,7 @@ export const useRegulatoryExecutionStore = create<RegulatoryExecutionState>()(
           uploadedAt: nowISO(),
           uploadedBy: actor,
           lockedAt: nowISO(),
-          supersedesEvidenceId: existingForKey?.id,
+          supersedesEvidenceId: doc.supersedesEvidenceId ?? existingForKey?.id,
           auditFrozen: isEventInstanceCertified(state, eventId),
         };
         if (previewForStash) stashDemoEvidenceDataUrl(id, previewForStash);
