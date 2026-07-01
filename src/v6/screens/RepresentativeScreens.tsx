@@ -10,6 +10,7 @@ import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/da
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
 import { buildFormContent, type FormField, type FormSection } from '@/policy/data/formsLibraryContent';
 import EvidenceStudio from '@/v6/screens/evidence/EvidenceStudio';
+import Defensible2Studio from '@/v6/screens/evidence/Defensible2Studio';
 import AIComplianceReviewScreen from './pageviews/AIComplianceReviewScreen';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import { getWorkflowDetail } from './pageviews/WorkflowsScreen';
@@ -1750,6 +1751,10 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <BoardScreen />;
       break;
     case 'defensible-2':
+      // DefenCIble = the rich Defensible2 studio (template→source→verify→generate,
+      // billing route, eCIgn). EvidenceStudio remains for the other evidence routes.
+      child = <Defensible2Studio />;
+      break;
     case 'evidence-center':
       child = <EvidenceStudio initialTab="studio" />;
       break;
