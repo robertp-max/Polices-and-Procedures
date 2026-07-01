@@ -1,7 +1,7 @@
 import { AlertTriangle, BarChart3, BookOpen, CalendarClock, CalendarRange, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, FileCheck2, FileText, FolderOpen, History, PanelRightOpen, ShieldCheck, Stethoscope, Upload, Users, type LucideIcon } from 'lucide-react';
-import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useState } from 'react';
+import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { buildBoardLanes, buildCalendarEvents, buildEventLanes, buildReportMetrics, buildSprintSummary, buildReportCards, buildReportTrendBars, buildEvidenceRows, buildAuditRows, FALLBACK_EVENT_LANES, getControlFromParams, getTasksForEvent } from '@/policy/ces/cesViewProjections';
 // Design cross-ref (Agent 19 background + Agent 19 read-only CES Data Seeds gap vs design subagent + Agent 09 read-only hygiene/validate gap): V3 seeds supply realistic ExecutionUnits for CES board/my-tasks/calendar/snapshots/projections.
 // Current: use build* or FALLBACK for exact design visual parity. See projections for seed-driven future and validators.
@@ -90,13 +90,6 @@ const operationsMetrics: readonly MetricTileData[] = [
   { label: 'Risk', value: 'Low', helper: 'Policy gated and monitored', tone: 'green' },
   { label: 'Due soon', value: '6', helper: 'Next 14 calendar days', tone: 'orange' },
   { label: 'Evidence', value: '92%', helper: 'Survey-ready completeness', tone: 'teal' },
-];
-
-const dashboardMetrics: readonly MetricTileData[] = [
-  { label: 'CES events', value: '30', helper: 'June compliance calendar', tone: 'teal' },
-  { label: 'Blocked units', value: '8', helper: 'Evidence or signature gaps', tone: 'orange' },
-  { label: 'Ready to certify', value: '11', helper: 'Awaiting final lock', tone: 'green' },
-  { label: 'Survey critical', value: '14', helper: 'Needs owner action', tone: 'orange' },
 ];
 
 const dashboardActions: readonly ActionRow[] = [
@@ -1697,7 +1690,7 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <ClinicianDetailScreen />;
       break;
     case 'dashboard':
-      child = <DashboardScreen />;
+      child = <DashboardScreen routeView={searchParams.get('view')} />;
       break;
     case 'ecign-workspace':
       child = <EcignWorkspaceScreen />;
@@ -1744,6 +1737,7 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       // Agent 21 read-only CES Integration/Routing gap vs design: BoardScreen renders <BoardLane lane={lane} /> (no onCardClick prop), so no navigation from cards. Design explicitly calls for future CTA links from board to /evidence / swimlane (and exposure from Calendar/Events). Routing is complete, but interactive cross-CES-view integration is a gap in current prototype. See routeRegistry Agent 21 comment.
       child = <BoardScreen />;
       break;
+    case 'defensible-2':
     case 'evidence-center':
       child = <EvidenceStudio initialTab="studio" />;
       break;
@@ -1868,44 +1862,105 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
   }
 
   const wrapped = child;
-  const [displayedPage, setDisplayedPage] = useState<{
-    content: ReactNode;
-    phase: 'fade-in' | 'fade-out';
-    routeKey: string;
+  const [transitionPages, setTransitionPages] = useState<{
+    current: { content: ReactNode; routeKey: string };
+    outgoing: { content: ReactNode; routeKey: string } | null;
+    phase: 'settled' | 'transitioning';
   }>({
-    content: wrapped,
-    phase: 'fade-in',
-    routeKey: routeTransitionKey,
+    current: { content: wrapped, routeKey: routeTransitionKey },
+    outgoing: null,
+    phase: 'settled',
   });
 
-  useEffect(() => {
-    if (displayedPage.routeKey === routeTransitionKey) return undefined;
+  useLayoutEffect(() => {
+    if (transitionPages.current.routeKey === routeTransitionKey) return undefined;
 
-    setDisplayedPage((current) => ({ ...current, phase: 'fade-out' }));
+    setTransitionPages((current) => ({
+      current: { content: wrapped, routeKey: routeTransitionKey },
+      outgoing: current.current,
+      phase: 'transitioning',
+    }));
+
+    return undefined;
+  }, [transitionPages.current.routeKey, routeTransitionKey]);
+
+  useEffect(() => {
+    if (transitionPages.phase !== 'transitioning') return undefined;
+
     const timer = window.setTimeout(() => {
-      setDisplayedPage({
-        content: wrapped,
-        phase: 'fade-in',
-        routeKey: routeTransitionKey,
-      });
-    }, 500);
+      setTransitionPages((current) =>
+        current.phase === 'transitioning' ? { ...current, outgoing: null, phase: 'settled' } : current,
+      );
+    }, 1500);
 
     return () => window.clearTimeout(timer);
-  }, [displayedPage.routeKey, routeTransitionKey]);
+  }, [transitionPages.phase, transitionPages.current.routeKey]);
+
+  useEffect(() => {
+    if (transitionPages.phase === 'settled') return undefined;
+
+    const frame = window.requestAnimationFrame(() => {
+      document.querySelectorAll<HTMLElement>('.v6-page-transition').forEach((transitionRoot) => {
+        const rootDuration = Math.round(1375 + Math.random() * 250);
+        const rootAcceleration = (0.58 + Math.random() * 0.16).toFixed(2);
+        const rootDeceleration = (0.26 + Math.random() * 0.16).toFixed(2);
+        transitionRoot.style.setProperty('--v6-page-transition-duration', `${rootDuration}ms`);
+        transitionRoot.style.setProperty('--v6-page-transition-easing', `cubic-bezier(${rootAcceleration}, 0, ${rootDeceleration}, 1)`);
+
+        const movingElements = transitionRoot.querySelectorAll<HTMLElement>(
+          [
+            'section',
+            'article',
+            'aside',
+            'nav',
+            '[data-v6-transition-element]',
+            'article :is(h1, h2, h3, h4, h5, h6, p, span, a, button, label, small, strong, em, li, dt, dd)',
+            'section :is(h1, h2, h3, h4, h5, h6, p, span, a, button, label, small, strong, em, li, dt, dd)',
+          ].join(', '),
+        );
+
+        movingElements.forEach((element) => {
+          const duration = Math.round(1375 + Math.random() * 250);
+          const acceleration = (0.58 + Math.random() * 0.16).toFixed(2);
+          const deceleration = (0.26 + Math.random() * 0.16).toFixed(2);
+          const inboundDistance = Math.round(96 + Math.random() * 8);
+          const outboundDistance = Math.round(96 + Math.random() * 8);
+          const verticalDrift = Math.round((Math.random() - 0.5) * 28);
+          element.style.setProperty('--v6-element-transition-duration', `${duration}ms`);
+          element.style.setProperty('--v6-element-transition-easing', `cubic-bezier(${acceleration}, 0, ${deceleration}, 1)`);
+          element.style.setProperty('--v6-slide-in-x', `${inboundDistance}%`);
+          element.style.setProperty('--v6-slide-out-x', `-${outboundDistance}%`);
+          element.style.setProperty('--v6-slide-y', `${verticalDrift}px`);
+        });
+      });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [transitionPages.phase, transitionPages.current.routeKey]);
 
   if (route.group === 'Auth') {
     return child;
   }
 
   const mainContent = (
-    <div
-      key={`${displayedPage.routeKey}-${displayedPage.phase}`}
-      className={cx(
-        'grid v6-page-transition',
-        displayedPage.phase === 'fade-out' ? 'v6-page-transition--fade-out' : 'v6-page-transition--fade-in',
+    <div className={cx('grid', transitionPages.phase === 'transitioning' && 'relative overflow-hidden')}>
+      {transitionPages.outgoing && (
+        <div
+          key={`${transitionPages.outgoing.routeKey}-out`}
+          className="v6-page-transition v6-page-transition--fade-out col-start-1 row-start-1"
+        >
+          {transitionPages.outgoing.content}
+        </div>
       )}
-    >
-      {displayedPage.content}
+      <div
+        key={`${transitionPages.current.routeKey}-${transitionPages.phase}`}
+        className={cx(
+          'grid col-start-1 row-start-1',
+          transitionPages.phase === 'transitioning' && 'v6-page-transition v6-page-transition--fade-in',
+        )}
+      >
+        {transitionPages.current.content}
+      </div>
     </div>
   );
 
@@ -2187,200 +2242,212 @@ function HorizontalBarSet({ items }: { items: readonly { label: string; value: n
   );
 }
 
-function DashboardScreen() {
+function DashboardScreen({ routeView }: { routeView?: string | null }) {
   const [activePanel, setActivePanel] = useState(0);
-  const [isInsightOpen, setIsInsightOpen] = useState(false);
   const panel = dashboardCarouselPanels[activePanel] ?? dashboardCarouselPanels[0];
+  const dashboardTabs = [
+    { id: 'overview', label: 'Command overview' },
+    { id: 'work-queue', label: 'Work queue' },
+    { id: 'readiness', label: 'Readiness mix' },
+    { id: 'signals', label: 'Signal review' },
+  ] as const;
+  const requestedDashboardTab = routeView;
+  const activeDashboardTab = dashboardTabs.some((tab) => tab.id === requestedDashboardTab)
+    ? requestedDashboardTab!
+    : 'overview';
 
   return (
-    <div className="v6-dashboard grid gap-2xl">
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
-        <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
-          <div className="mb-xl flex flex-col gap-md tablet-l:flex-row tablet-l:items-start tablet-l:justify-between">
-            <div>
-              <ToneTag tone="teal">CES dashboard</ToneTag>
-              <h1 className="mt-md text-3xl font-medium text-ink">CES command dashboard</h1>
-              <p className="mt-sm max-w-3xl text-sm font-light leading-relaxed text-muted">
-                Compliance calendar, evidence packets, workflow blockers, and survey-readiness signals are grouped here so CES page views stay focused.
-              </p>
-            </div>
-            <Button className="border-brand-teal bg-brand-teal text-on-brand hover:bg-brand-teal" size="sm" onClick={() => setIsInsightOpen(true)}>
-              Open insights
-            </Button>
-          </div>
-
-          <div className="grid gap-lg desktop:grid-cols-3">
-            {dashboardOverview.map((item) => (
-              <article className={cx('rounded-lg border p-lg shadow-rest', toneSurfaceClasses[item.tone])} key={item.label}>
-                <div className="flex items-start justify-between gap-md">
-                  <div>
-                    <div className="text-tag font-medium uppercase tracking-tag opacity-75">{item.label}</div>
-                    <div className="mt-sm text-3xl font-medium tracking-normal">{item.value}{item.label === 'Evidence closure' ? '%' : ''}</div>
-                    <div className="mt-xs text-xs font-light opacity-75">{item.detail}</div>
-                  </div>
-                  <DesignBadge tone={item.tone}>{item.tone === 'orange' ? 'watch' : 'steady'}</DesignBadge>
-                </div>
-                <div className="mt-lg">
-                  <MiniBarChart tone={item.tone} values={item.series} />
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <aside className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
-          <div className="mb-lg flex items-center justify-between gap-md">
-            <h2 className="text-h2 font-medium text-ink">Readiness mix</h2>
-            <DesignBadge tone="teal">live</DesignBadge>
-          </div>
-          <div className="grid gap-lg">
-            <DonutGauge label="Survey-ready evidence" tone="teal" value={84} />
-            <DonutGauge label="Signed packet readiness" tone="green" value={76} />
-            <DonutGauge label="Blocker burn-down" tone="orange" value={68} />
-          </div>
-        </aside>
-      </section>
-
-      <section className="grid gap-xl desktop:grid-cols-3">
-        <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
-          <div className="mb-lg flex items-center justify-between gap-md">
-            <h2 className="text-h2 font-medium text-ink">CES progression funnel</h2>
-            <DesignBadge tone="teal">30 events</DesignBadge>
-          </div>
-          <div className="grid gap-sm">
-            {cesFunnelStages.map((stage, index) => (
-              <div
-                className={cx('mx-auto rounded-md border px-md py-sm text-sm font-medium shadow-rest', toneSurfaceClasses[stage.tone])}
-                key={stage.label}
-                style={{ width: `${100 - index * 10}%` }}
-              >
-                <div className="flex items-center justify-between gap-md">
-                  <span>{stage.label}</span>
-                  <span>{stage.value}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
-          <div className="mb-lg flex items-center justify-between gap-md">
-            <h2 className="text-h2 font-medium text-ink">Owner load</h2>
-            <DesignBadge tone="orange">watch</DesignBadge>
-          </div>
-          <HorizontalBarSet items={cesOwnerLoad} />
-        </section>
-
-        <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
-          <div className="mb-lg flex items-center justify-between gap-md">
-            <h2 className="text-h2 font-medium text-ink">Cadence mix</h2>
-            <DesignBadge tone="green">balanced</DesignBadge>
-          </div>
-          <div className="grid grid-cols-2 gap-md">
-            {cesCadenceMix.map((item) => (
-              <div className={cx('rounded-lg border p-md shadow-rest', toneSurfaceClasses[item.tone])} key={item.label}>
-                <div className="text-tag font-medium uppercase tracking-tag opacity-75">{item.label}</div>
-                <div className="mt-sm text-2xl font-medium">{item.value}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-      </section>
-
-      <section className="grid gap-xl desktop:grid-cols-5">
-        <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest desktop:col-span-3">
-          <div className="mb-lg flex items-center justify-between gap-lg">
-            <div>
-              <h2 className="text-h2 font-medium text-brand-teal-deep">Dashboard work queue</h2>
-              <p className="mt-xs text-sm text-muted">Prioritized by owner, due date, evidence state, and operating risk.</p>
-            </div>
-            <DesignBadge tone="orange">
-              {dashboardActions.filter((row) => row.tone === 'orange').length} action items
-            </DesignBadge>
-          </div>
-          <ActionList rows={dashboardActions} />
-        </section>
-
-        <aside className="grid gap-lg desktop:col-span-2">
-          <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
-            <div className="mb-lg flex items-center justify-between gap-lg">
-              <h2 className="text-h2 font-medium text-brand-teal-deep">Signal carousel</h2>
-              <DesignBadge tone={panel.tone}>{activePanel + 1} of {dashboardCarouselPanels.length}</DesignBadge>
-            </div>
-            <div className={cx('rounded-lg border p-lg shadow-rest', toneSurfaceClasses[panel.tone])}>
-              <h3 className="text-lg font-medium text-ink">{panel.title}</h3>
-              <p className="mt-sm text-sm font-light leading-relaxed opacity-80">{panel.copy}</p>
-              <div className="mt-lg grid gap-sm">
-                {panel.items.map((item) => (
-                  <div className="flex items-center justify-between rounded-md bg-white/35 px-md py-sm text-xs font-medium shadow-glass-inset" key={item}>
-                    <span>{item}</span>
-                    <CheckCircle2 aria-hidden="true" className="h-icon-sm w-icon-sm" />
-                  </div>
+    <div className="v6-dashboard flex min-h-[calc(100vh-5rem)] items-center justify-center bg-transparent px-md py-24 text-[#1F1C1B] tablet:px-xl desktop:px-2xl">
+      <nav
+        aria-label="Dashboard navigation"
+        className="fixed left-[104px] right-0 top-5 z-[9999] overflow-x-auto border-b border-[#E2E8F0] bg-transparent [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        <div className="inline-flex min-w-max items-end gap-8">
+          {dashboardTabs.map((tab) => (
+            <Link
+              className={cx(
+                'shrink-0 border-b-4 px-0 pb-4 pt-1 text-[22px] font-semibold uppercase leading-none tracking-[0.1em] text-[#66748C] transition-all duration-base ease-standard hover:border-brand-teal hover:text-brand-teal-deep',
+                activeDashboardTab === tab.id ? 'border-brand-teal text-brand-teal-deep' : 'border-transparent',
+              )}
+              key={tab.id}
+              aria-current={activeDashboardTab === tab.id ? 'page' : undefined}
+              to={tab.id === 'overview' ? '/dashboard' : `/dashboard?view=${tab.id}`}
+            >
+              {tab.label}
+            </Link>
+          ))}
+        </div>
+      </nav>
+      <div className="mx-auto grid w-full max-w-[1200px] gap-xl">
+        <div className="grid gap-lg">
+          {activeDashboardTab === 'overview' && (
+            <div className="grid gap-lg">
+              <div className="grid gap-lg desktop:grid-cols-3">
+                {dashboardOverview.map((item) => (
+                  <article className="relative min-h-[170px] overflow-hidden rounded-[24px] bg-white p-lg pr-2xl shadow-[0_12px_32px_rgba(31,28,27,0.06)] transition-all duration-base hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(31,28,27,0.09)]" key={item.label}>
+                    <div
+                      className={cx(
+                        'absolute bottom-0 right-0 top-0 w-8',
+                        item.tone === 'orange' ? 'bg-brand-orange' : item.tone === 'green' ? 'bg-emerald-500' : 'bg-brand-teal'
+                      )}
+                    />
+                    <div className="flex items-start justify-between gap-md">
+                      <div>
+                        <div className="text-[11px] font-medium uppercase tracking-[0.1em] text-[#747470]">{item.label}</div>
+                        <div className="mt-sm text-3xl font-medium tracking-normal text-[#1F1C1B]">{item.value}{item.label === 'Evidence closure' ? '%' : ''}</div>
+                        <div className="mt-xs text-xs font-light text-[#747470]">{item.detail}</div>
+                      </div>
+                      <DesignBadge tone={item.tone}>{item.tone === 'orange' ? 'watch' : 'steady'}</DesignBadge>
+                    </div>
+                    <div className="mt-lg">
+                      <MiniBarChart tone={item.tone} values={item.series} />
+                    </div>
+                  </article>
                 ))}
               </div>
-            </div>
-            <div className="mt-md flex justify-center gap-sm">
-              {dashboardCarouselPanels.map((item, index) => (
-                <button
-                  aria-label={`Show ${item.title}`}
-                  className={cx(
-                    'h-2.5 rounded-full transition-all duration-base ease-standard',
-                    index === activePanel ? 'w-8 bg-brand-teal' : 'w-2.5 bg-brand-teal/25 hover:bg-brand-teal/50'
-                  )}
-                  key={item.title}
-                  onClick={() => setActivePanel(index)}
-                  type="button"
-                />
-              ))}
-            </div>
-          </section>
 
-          {dashboardCards.slice(0, 2).map((card) => (
-            <SurfaceCard card={card} key={card.title} />
-          ))}
-        </aside>
-      </section>
+              <div className="grid gap-lg desktop:grid-cols-2">
+                <section className="rounded-[24px] bg-white p-lg shadow-[0_10px_28px_rgba(31,28,27,0.05)]">
+                  <div className="mb-lg flex items-center justify-between gap-md">
+                    <h2 className="text-h2 font-medium text-[#1F1C1B]">CES progression funnel</h2>
+                    <DesignBadge tone="teal">30 events</DesignBadge>
+                  </div>
+                  <div className="grid gap-sm">
+                    {cesFunnelStages.map((stage, index) => (
+                      <div
+                        className={cx('mx-auto rounded-lg border px-md py-sm text-sm font-medium shadow-rest', toneSurfaceClasses[stage.tone])}
+                        key={stage.label}
+                        style={{ width: `${100 - index * 10}%` }}
+                      >
+                        <div className="flex items-center justify-between gap-md">
+                          <span>{stage.label}</span>
+                          <span>{stage.value}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
 
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,1fr)_minmax(360px,0.45fr)]">
-        <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
-          <div className="mb-lg flex items-center justify-between gap-md">
-            <h2 className="text-h2 font-medium text-ink">Blocker taxonomy</h2>
-            <DesignBadge tone="orange">8 blockers</DesignBadge>
-          </div>
-          <div className="grid gap-md tablet-l:grid-cols-4">
-            {cesBlockerTaxonomy.map(([label, value, tone]) => (
-              <div className={cx('rounded-lg border p-lg shadow-rest', toneSurfaceClasses[tone as Tone])} key={label}>
-                <div className="text-tag font-medium uppercase tracking-tag opacity-75">{label}</div>
-                <div className="mt-md text-3xl font-medium">{value}</div>
-                <p className="mt-xs text-xs font-light opacity-75">Requires human follow-up before lock.</p>
+                <section className="rounded-[24px] bg-white p-lg shadow-[0_10px_28px_rgba(31,28,27,0.05)]">
+                  <div className="mb-lg flex items-center justify-between gap-md">
+                    <h2 className="text-h2 font-medium text-[#1F1C1B]">Owner load</h2>
+                    <DesignBadge tone="orange">watch</DesignBadge>
+                  </div>
+                  <HorizontalBarSet items={cesOwnerLoad} />
+                </section>
               </div>
-            ))}
-          </div>
-        </section>
+            </div>
+          )}
 
-        {dashboardCards.slice(2).map((card) => (
-          <SurfaceCard card={card} key={card.title} />
-        ))}
-      </section>
-
-      <VeilModal eyebrow="CES dashboard" open={isInsightOpen} onClose={() => setIsInsightOpen(false)} title="CES dashboard detail">
-        <div className="grid gap-lg">
-          <p className="text-sm font-light leading-relaxed text-muted">
-            The dashboard owns CES-wide metrics. Calendar, Sprint Board, Event Board, Evidence, Audit Mode, and packet views stay focused on their work surfaces.
-          </p>
-          <MetricGrid className="v6-dashboard-metrics desktop:grid-cols-4" metrics={dashboardMetrics} />
-          <div className="grid gap-md tablet-l:grid-cols-3">
-            {dashboardOverview.map((item) => (
-              <div className={cx('rounded-lg border p-lg shadow-rest', toneSurfaceClasses[item.tone])} key={`modal-${item.label}`}>
-                <div className="text-sm font-medium">{item.label}</div>
-                <div className="mt-md">
-                  <MiniBarChart tone={item.tone} values={item.series} />
+          {activeDashboardTab === 'work-queue' && (
+            <div className="grid gap-lg">
+              <section className="rounded-[24px] bg-white p-lg shadow-[0_10px_28px_rgba(31,28,27,0.05)]">
+                <div className="mb-lg flex items-center justify-between gap-lg">
+                  <div>
+                    <h2 className="text-h2 font-medium text-brand-teal-deep">Dashboard work queue</h2>
+                    <p className="mt-xs text-sm text-[#747470]">Prioritized by owner, due date, evidence state, and operating risk.</p>
+                  </div>
+                  <DesignBadge tone="orange">
+                    {dashboardActions.filter((row) => row.tone === 'orange').length} action items
+                  </DesignBadge>
                 </div>
-              </div>
-            ))}
-          </div>
+                <ActionList rows={dashboardActions} />
+              </section>
+
+              <section className="rounded-[24px] bg-white p-lg shadow-[0_10px_28px_rgba(31,28,27,0.05)]">
+                <div className="mb-lg flex items-center justify-between gap-md">
+                  <h2 className="text-h2 font-medium text-[#1F1C1B]">Blocker taxonomy</h2>
+                  <DesignBadge tone="orange">8 blockers</DesignBadge>
+                </div>
+                <div className="grid gap-md tablet-l:grid-cols-4">
+                  {cesBlockerTaxonomy.map(([label, value, tone]) => (
+                    <div className={cx('rounded-[20px] border p-lg shadow-rest', toneSurfaceClasses[tone as Tone])} key={label}>
+                      <div className="text-tag font-medium uppercase tracking-tag opacity-75">{label}</div>
+                      <div className="mt-md text-3xl font-medium">{value}</div>
+                      <p className="mt-xs text-xs font-light opacity-75">Requires human follow-up before lock.</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+          )}
+
+          {activeDashboardTab === 'readiness' && (
+            <div className="grid gap-lg desktop:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+              <section className="rounded-[24px] bg-white p-lg shadow-[0_10px_28px_rgba(31,28,27,0.05)]">
+                <div className="mb-lg flex items-center justify-between gap-md">
+                  <h2 className="text-h2 font-medium text-[#1F1C1B]">Readiness mix</h2>
+                  <DesignBadge tone="teal">live</DesignBadge>
+                </div>
+                <div className="grid gap-lg">
+                  <DonutGauge label="Survey-ready evidence" tone="teal" value={84} />
+                  <DonutGauge label="Signed packet readiness" tone="green" value={76} />
+                  <DonutGauge label="Blocker burn-down" tone="orange" value={68} />
+                </div>
+              </section>
+
+              <section className="rounded-[24px] bg-white p-lg shadow-[0_10px_28px_rgba(31,28,27,0.05)]">
+                <div className="mb-lg flex items-center justify-between gap-md">
+                  <h2 className="text-h2 font-medium text-[#1F1C1B]">Cadence mix</h2>
+                  <DesignBadge tone="green">balanced</DesignBadge>
+                </div>
+                <div className="grid grid-cols-2 gap-md">
+                  {cesCadenceMix.map((item) => (
+                    <div className={cx('rounded-[20px] border p-lg shadow-rest', toneSurfaceClasses[item.tone])} key={item.label}>
+                      <div className="text-tag font-medium uppercase tracking-tag opacity-75">{item.label}</div>
+                      <div className="mt-sm text-3xl font-medium">{item.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+          )}
+
+          {activeDashboardTab === 'signals' && (
+            <div className="grid gap-lg desktop:grid-cols-[minmax(0,1fr)_minmax(320px,0.45fr)]">
+              <section className="rounded-[24px] bg-white p-lg shadow-[0_10px_28px_rgba(31,28,27,0.05)]">
+                <div className="mb-lg flex items-center justify-between gap-lg">
+                  <h2 className="text-h2 font-medium text-brand-teal-deep">Signal carousel</h2>
+                  <DesignBadge tone={panel.tone}>{activePanel + 1} of {dashboardCarouselPanels.length}</DesignBadge>
+                </div>
+                <div className={cx('rounded-[20px] border p-lg shadow-rest', toneSurfaceClasses[panel.tone])}>
+                  <h3 className="text-lg font-medium text-ink">{panel.title}</h3>
+                  <p className="mt-sm text-sm font-light leading-relaxed opacity-80">{panel.copy}</p>
+                  <div className="mt-lg grid gap-sm">
+                    {panel.items.map((item) => (
+                      <div className="flex items-center justify-between rounded-lg bg-white/45 px-md py-sm text-xs font-medium shadow-glass-inset" key={item}>
+                        <span>{item}</span>
+                        <CheckCircle2 aria-hidden="true" className="h-icon-sm w-icon-sm" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-md flex justify-center gap-sm">
+                  {dashboardCarouselPanels.map((item, index) => (
+                    <button
+                      aria-label={`Show ${item.title}`}
+                      className={cx(
+                        'h-2.5 rounded-full transition-all duration-base ease-standard',
+                        index === activePanel ? 'w-8 bg-brand-teal' : 'w-2.5 bg-brand-teal/25 hover:bg-brand-teal/50'
+                      )}
+                      key={item.title}
+                      onClick={() => setActivePanel(index)}
+                      type="button"
+                    />
+                  ))}
+                </div>
+              </section>
+
+              <aside className="grid gap-lg">
+                {dashboardCards.map((card) => (
+                  <SurfaceCard card={card} key={card.title} />
+                ))}
+              </aside>
+            </div>
+          )}
         </div>
-      </VeilModal>
+      </div>
+
     </div>
   );
 }
@@ -2758,6 +2825,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
   );
   const [activeEventKey, setActiveEventKey] = useState<string | null>(null);
   const [activeEventAnchor, setActiveEventAnchor] = useState<{ left: number; top: number; placement: 'left' | 'right' | 'left-sidebar' } | null>(null);
+  const eventPreviewCloseTimer = useRef<number | null>(null);
   const firstWeekday = isCesCalendar ? new Date(cesYear, activeCesMonth - 1, 1).getDay() : 0;
   const days = Array.from({ length: isCesCalendar ? getDaysInCalendarMonth(activeCesMonth) : 30 }, (_, index) => index + 1);
   const calendarCells: Array<number | null> = isCesCalendar
@@ -2813,16 +2881,47 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
     });
   };
 
+  const clearEventPreviewCloseTimer = () => {
+    if (eventPreviewCloseTimer.current === null) return;
+    window.clearTimeout(eventPreviewCloseTimer.current);
+    eventPreviewCloseTimer.current = null;
+  };
+
+  const closeEventPreview = (delay = 0) => {
+    clearEventPreviewCloseTimer();
+
+    if (delay > 0) {
+      eventPreviewCloseTimer.current = window.setTimeout(() => {
+        setActiveEventKey(null);
+        setActiveEventAnchor(null);
+        eventPreviewCloseTimer.current = null;
+      }, delay);
+      return;
+    }
+
+    setActiveEventKey(null);
+    setActiveEventAnchor(null);
+  };
+
+  const openEventPreview = (element: HTMLElement, event: CalendarEventData, isSidebar: boolean) => {
+    clearEventPreviewCloseTimer();
+    const key = getCalendarEventKey(event);
+    setActiveEventKey((currentKey) => currentKey === key ? currentKey : key);
+    positionEventCard(element, event, isSidebar);
+  };
+
   useEffect(() => {
     if (!isCesCalendar) return undefined;
 
     const dismissPreview = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setActiveEventKey(null);
+      if (event.key === 'Escape') closeEventPreview();
     };
 
     window.addEventListener('keydown', dismissPreview);
     return () => window.removeEventListener('keydown', dismissPreview);
   }, [isCesCalendar]);
+
+  useEffect(() => () => clearEventPreviewCloseTimer(), []);
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('redesign-calendar-swimlane', { detail: { open: Boolean(selectedEvent) } }));
@@ -2895,7 +2994,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
 
     if (keyboardEvent.key === 'Escape') {
       keyboardEvent.preventDefault();
-      setActiveEventKey(null);
+      closeEventPreview();
     }
   };
 
@@ -2913,7 +3012,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
             'relative rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset shadow-rest',
             isCesCalendar ? 'p-2xl' : 'p-xl',
           )}
-          onMouseLeave={isCesCalendar ? () => setActiveEventKey(null) : undefined}
+          onMouseLeave={isCesCalendar ? () => closeEventPreview() : undefined}
         >
           {!isCesCalendar && <div className={cx('flex flex-wrap items-center justify-between gap-lg', 'mb-xl')}>
             <div className="inline-flex rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs">
@@ -3068,29 +3167,14 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                                 aria-label={`${event.label}, ${activeMonthLabel} ${event.day}. Click to open event workspace/swimlane.`}
                                 className={cx(
                                   pillClasses,
-                                  'block min-w-0 max-w-full w-full overflow-hidden focus-visible:outline-none focus-visible:shadow-focus',
-                                  isHovered && (event.tone === 'orange' || event.tone === 'amber'
-                                    ? 'border border-brand-orange ring-1 ring-brand-orange'
-                                    : 'border border-brand-teal ring-1 ring-brand-teal')
+                                  'block min-w-0 max-w-full w-full overflow-hidden border border-transparent focus-visible:outline-none focus-visible:shadow-focus'
                                 )}
-                                onBlur={() => {
-                                  setActiveEventKey(null);
-                                  setActiveEventAnchor(null);
-                                }}
+                                onBlur={() => closeEventPreview(80)}
                                 onClick={() => openCalendarEvent(event)}
-                                onFocus={(e) => {
-                                  setActiveEventKey(key);
-                                  positionEventCard(e.currentTarget, event, false);
-                                }}
+                                onFocus={(e) => openEventPreview(e.currentTarget, event, false)}
                                 onKeyDown={(keyboardEvent) => handleEventKeyDown(keyboardEvent, event)}
-                                onMouseEnter={(e) => {
-                                  setActiveEventKey(key);
-                                  positionEventCard(e.currentTarget, event, false);
-                                }}
-                                onMouseLeave={() => {
-                                  setActiveEventKey(null);
-                                  setActiveEventAnchor(null);
-                                }}
+                                onMouseEnter={(e) => openEventPreview(e.currentTarget, event, false)}
+                                onMouseLeave={() => closeEventPreview(120)}
                                 type="button"
                               >
                                 {event.label}
@@ -3175,30 +3259,14 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
                     aria-label={`${event.label}, ${getCalendarMonthLabel(getEventMonth(event))} ${event.day}. Click to open event workspace/swimlane.`}
                     className={cx(
                       'rounded-lg border p-md text-left focus-visible:outline-none focus-visible:shadow-focus w-full',
-                      isHovered
-                        ? (event.tone === 'orange' || event.tone === 'amber'
-                          ? 'border-brand-orange ring-1 ring-brand-orange bg-surface-glass backdrop-blur-md shadow-glass-inset'
-                          : 'border-brand-teal ring-1 ring-brand-teal bg-surface-glass backdrop-blur-md shadow-glass-inset')
-                        : 'border-card bg-surface-glass backdrop-blur-md shadow-glass-inset'
+                      'border-card bg-surface-glass backdrop-blur-md shadow-glass-inset'
                     )}
-                    onBlur={() => {
-                      setActiveEventKey(null);
-                      setActiveEventAnchor(null);
-                    }}
+                    onBlur={() => closeEventPreview(80)}
                     onClick={() => openCalendarEvent(event)}
-                    onFocus={(e) => {
-                      setActiveEventKey(key);
-                      positionEventCard(e.currentTarget, event, true);
-                    }}
+                    onFocus={(e) => openEventPreview(e.currentTarget, event, true)}
                     onKeyDown={(keyboardEvent) => handleEventKeyDown(keyboardEvent, event)}
-                    onMouseEnter={(e) => {
-                      setActiveEventKey(key);
-                      positionEventCard(e.currentTarget, event, true);
-                    }}
-                    onMouseLeave={() => {
-                      setActiveEventKey(null);
-                      setActiveEventAnchor(null);
-                    }}
+                    onMouseEnter={(e) => openEventPreview(e.currentTarget, event, true)}
+                    onMouseLeave={() => closeEventPreview(120)}
                     type="button"
                   >
                     {cardContent}

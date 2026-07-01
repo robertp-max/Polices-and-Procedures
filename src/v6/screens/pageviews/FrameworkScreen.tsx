@@ -183,6 +183,58 @@ const alignmentCards: readonly (readonly [string, string, string, Tone])[] = [
   ['Title 22 refs', String(totalTitle22), 'State references with active stewardship rows', 'orange'],
 ];
 
+export type FrameworkTabKey = 'taxonomy' | 'mapping' | 'achc-survey' | 'achc-crosswalk' | 'hh-evidence-map';
+
+export function FrameworkTabs({
+  activeTab,
+  onFrameworkTabChange,
+}: {
+  activeTab: FrameworkTabKey;
+  onFrameworkTabChange?: (tab: 'taxonomy' | 'mapping') => void;
+}) {
+  const tabClass = (isActive: boolean) =>
+    cx(
+      'rounded-md px-lg py-sm font-heading text-xs font-medium uppercase tracking-wider transition-all duration-fast focus-visible:outline-none focus-visible:shadow-focus',
+      isActive
+        ? 'bg-brand-teal text-on-brand shadow-rest'
+        : 'text-brand-teal-deep hover:bg-surface-hover hover:text-brand-teal',
+    );
+
+  return (
+    <div className="flex justify-start">
+      <div className="flex flex-wrap gap-xs rounded-lg border border-hairline bg-surface-glass p-xs shadow-rest backdrop-blur-md">
+        {onFrameworkTabChange ? (
+          <button onClick={() => onFrameworkTabChange('taxonomy')} className={tabClass(activeTab === 'taxonomy')}>
+            Taxonomy Structure
+          </button>
+        ) : (
+          <Link to="/framework" className={tabClass(activeTab === 'taxonomy')}>
+            Taxonomy Structure
+          </Link>
+        )}
+        {onFrameworkTabChange ? (
+          <button onClick={() => onFrameworkTabChange('mapping')} className={tabClass(activeTab === 'mapping')}>
+            Standard Mapping Snapshot
+          </button>
+        ) : (
+          <Link to="/framework?tab=mapping" className={tabClass(activeTab === 'mapping')}>
+            Standard Mapping Snapshot
+          </Link>
+        )}
+        <Link to="/framework/achc-survey" className={tabClass(activeTab === 'achc-survey')}>
+          ACHC Survey Alignment
+        </Link>
+        <Link to="/framework/achc-survey/crosswalk" className={tabClass(activeTab === 'achc-crosswalk')}>
+          ACHC Crosswalk
+        </Link>
+        <Link to="/framework/hh-evidence-map" className={tabClass(activeTab === 'hh-evidence-map')}>
+          HH Tag Evidence Map
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export function FrameworkScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab: 'taxonomy' | 'mapping' = searchParams.get('tab') === 'mapping' ? 'mapping' : 'taxonomy';
@@ -208,32 +260,7 @@ export function FrameworkScreen() {
   return (
     <div className="grid gap-xl" data-hash-id="framework" data-route="/framework" data-template="framework">
       {/* Premium Segmented Tab Control */}
-      <div className="flex justify-start">
-        <div className="flex rounded-lg border border-hairline bg-surface-glass backdrop-blur-md p-xs gap-xs">
-          <button
-            onClick={() => setActiveTab('taxonomy')}
-            className={cx(
-              'px-lg py-sm text-xs font-heading font-medium uppercase tracking-wider rounded-md transition-all duration-fast',
-              activeTab === 'taxonomy'
-                ? 'bg-brand-teal text-on-brand shadow-rest'
-                : 'text-brand-teal-deep hover:bg-surface-hover hover:text-brand-teal'
-            )}
-          >
-            Taxonomy Structure
-          </button>
-          <button
-            onClick={() => setActiveTab('mapping')}
-            className={cx(
-              'px-lg py-sm text-xs font-heading font-medium uppercase tracking-wider rounded-md transition-all duration-fast',
-              activeTab === 'mapping'
-                ? 'bg-brand-teal text-on-brand shadow-rest'
-                : 'text-brand-teal-deep hover:bg-surface-hover hover:text-brand-teal'
-            )}
-          >
-            Standard Mapping Snapshot
-          </button>
-        </div>
-      </div>
+      <FrameworkTabs activeTab={activeTab} onFrameworkTabChange={setActiveTab} />
 
       <MetricGrid metrics={frameworkMetrics} />
 

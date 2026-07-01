@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { BadgeCheck, ClipboardCheck, KeyRound, LockKeyhole, ShieldCheck, Smartphone, UserCog } from 'lucide-react';
 import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Button, ToneBadge } from '../../primitives';
-import { PageHeader } from '../../shell';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
 
@@ -255,10 +254,7 @@ export function AdminUsersScreen() {
       data-route="/admin/users"
       data-template="matrix"
     >
-      <PageHeader
-        badge="Admin"
-        title="Users"
-      />
+      <div className="sr-only"><h1>Users</h1></div>
       <MetricGrid metrics={userMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">

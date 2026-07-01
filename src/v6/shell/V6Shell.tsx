@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
 import { Link, Outlet, matchPath, useLocation, useNavigate } from 'react-router-dom';
-import { Bot, Bookmark, ClipboardCheck, FileText, GitFork, GraduationCap, Heart, HelpCircle, Info, LayoutDashboard, MessageCircle, Menu, Settings, Share2, UserRound, X } from 'lucide-react';
+import { Bot, Bookmark, ClipboardCheck, FileText, GitFork, GraduationCap, Heart, HelpCircle, Info, LayoutDashboard, Menu, MessageCircle, Settings, Share2, UserRound, Users, X } from 'lucide-react';
 import { PersonalOpsPanel } from './PersonalOpsPanel';
 import Dock from './Dock';
 import { usePersonalOpsStore } from '../../policy/stores/personalOpsStore';
@@ -9,11 +9,9 @@ import { primaryNavItems, workspaceSubnavItems, type NavItem } from '../routing/
 import { V6_ROUTES } from '../routing/routeRegistry';
 import { cx } from '../utils/classNames';
 import { AnimatedCareIndeedLogo } from './AnimatedCareIndeedLogo';
-import { DefenCIbleWordmark } from '../components/DefenCIbleWordmark';
-import { getPolicyContent } from '@/policy/data/policyContentMap';
 import { GuidedTourRunner } from '../guided/GuidedTourRunner';
 import { useGuidedTourStore } from '../guided/guidedTourStore';
-import { ThreadComposer, ThreadDetailPage, ThreadsPage, useThreadStore } from '../../policy/help-center/threads';
+import { ThreadComposer, ThreadDetailPage, ThreadsPage } from '../../policy/help-center/threads';
 
 export function V6Shell() {
   const { pathname } = useLocation();
@@ -35,14 +33,12 @@ export function V6Shell() {
     /^\/print\/[^/]+\/?$/.test(pathname) ||
     /^\/library\/[^/]+\/print\/?$/.test(pathname) ||
     /^\/forms\/[^/]+\/print\/?$/.test(pathname);
-  const isChromeFreeRoute = isLessonPlayerRoute || isDocumentPrintRoute;
+  const isPersonalProfileRoute = pathname === '/personal/profile' || pathname.startsWith('/personal/profile/') || pathname.startsWith('/community/users');
+  const isChromeFreeRoute = isLessonPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute;
   // Keep the dock visible during a guided tour so its nav targets stay anchorable.
   const showDock = !isChromeFreeRoute && (!pathname.startsWith('/iadministrator') || bradLanding || tourActive);
   const shellSubnavItems = useMemo(() => getShellSubnavItems(pathname), [pathname]);
-  const policySectionNavItems = useMemo(() => getPolicySectionNavItems(pathname), [pathname]);
-  const hasShellSubnav = !isChromeFreeRoute && shellSubnavItems.length > 0;
-  const hasPolicySectionNav = !isChromeFreeRoute && policySectionNavItems.length > 0;
-
+  const showShellSubnav = !isChromeFreeRoute && shellSubnavItems.length > 0;
   const panelTop = '0px';
   const panelHeight = '100vh';
 
@@ -68,13 +64,14 @@ export function V6Shell() {
     onboarding: GraduationCap,
     'policy-lifecycle': FileText,
     'help-center': HelpCircle,
+    community: Users,
     admin: Settings,
   };
 
   const dockItems = useMemo(
     () =>
       primaryNavItems
-        .filter((item) => item.id !== 'help-center' && item.id !== 'admin')
+        .filter((item) => item.id !== 'brad' && item.id !== 'help-center' && item.id !== 'community' && item.id !== 'admin')
         .map((item) => {
           const Icon = navIcons[item.id] ?? HelpCircle;
           return {
@@ -93,7 +90,7 @@ export function V6Shell() {
   useEffect(() => { setNavOpen(false); }, [pathname]);
 
   useEffect(() => {
-    let timer: any;
+    let timer: number | undefined;
     let frame: number | undefined;
 
     if (isPersonalOpsOpen) {
@@ -157,53 +154,52 @@ export function V6Shell() {
     <div className={cx('flex h-screen overflow-hidden font-light text-ink', isLessonPlayerRoute ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset' : 'bg-canvas')}>
       {!isChromeFreeRoute && (
         <>
-          <header className={cx('fixed left-0 right-0 top-0 z-sticky px-3 tablet-p:px-6 v6-top-bar', hasPolicySectionNav ? 'h-28' : 'h-20')}>
-            <div className={cx('flex h-full min-w-0 justify-between', hasPolicySectionNav ? 'items-start py-3' : 'items-center')}>
-              <div className="min-w-0 flex-1">
-                <div className="grid max-w-full gap-1">
-                  <div className="inline-grid max-w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-4 rounded-full border border-hairline bg-transparent px-2 py-2 shadow-none">
-                    <div className="flex min-w-0 shrink-0 items-center justify-start">
-                      {showDock && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => setNavOpen(true)}
-                            aria-label="Open navigation"
-                            aria-expanded={navOpen}
-                            className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-hairline bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover laptop:hidden"
-                          >
-                            <Menu className="h-5 w-5" aria-hidden />
-                          </button>
-                          <Dock items={dockItems} className="hidden laptop:flex" />
-                        </>
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      {hasShellSubnav && <ShellSubnav items={shellSubnavItems} currentPath={pathname} />}
-                    </div>
-                  </div>
-                  {hasPolicySectionNav && <PolicySectionSubnav items={policySectionNavItems} />}
-                </div>
-              </div>
-              <div className="flex h-14 w-16 shrink-0 items-center justify-end">
-                <button
-                  type="button"
-                  data-tour-target="nav.profile"
-                  onClick={togglePersonalOps}
-                  aria-label="Open personal operations"
-                  className={cx(
-                    'group relative grid h-11 w-11 place-items-center rounded-full border border-transparent bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover',
-                    isPersonalOpsOpen && 'text-brand-teal'
-                  )}
-                >
-                  <UserRound className="absolute h-5 w-5 transition duration-500 ease-standard group-hover:scale-75 group-hover:opacity-0" aria-hidden />
-                  <span className="absolute text-sm font-medium opacity-0 transition duration-500 ease-standard group-hover:scale-100 group-hover:opacity-100">
-                    me :)
-                  </span>
-                </button>
-              </div>
-            </div>
-          </header>
+          {showDock && (
+            <button
+              type="button"
+              onClick={() => navigate('/iadministrator')}
+              aria-label="Open Brad"
+              className={cx(
+                'fixed left-5 top-5 z-popover hidden h-11 w-11 place-items-center rounded-full border border-transparent bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover laptop:grid',
+                activeNavItem === 'brad' && 'text-brand-teal',
+              )}
+            >
+              <AnimatedCareIndeedLogo active={bradActivityActive} className="h-9 w-9" />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setNavOpen(true)}
+            aria-label="Open navigation"
+            aria-expanded={navOpen}
+            className="fixed left-5 top-5 z-popover grid h-11 w-11 place-items-center rounded-full border border-hairline bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover laptop:hidden"
+          >
+            <Menu className="h-5 w-5" aria-hidden />
+          </button>
+          <button
+            type="button"
+            data-tour-target="nav.profile"
+            onClick={togglePersonalOps}
+            aria-label="Open personal operations"
+            className={cx(
+              'group fixed right-5 top-5 z-popover grid h-11 w-11 place-items-center rounded-full border border-transparent bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover',
+              isPersonalOpsOpen && 'text-brand-teal',
+            )}
+          >
+            <UserRound className="absolute h-5 w-5 transition duration-500 ease-standard group-hover:scale-75 group-hover:opacity-0" aria-hidden />
+            <span className="absolute text-sm font-medium opacity-0 transition duration-500 ease-standard group-hover:scale-100 group-hover:opacity-100">
+              me :)
+            </span>
+          </button>
+          {showDock && (
+            <Dock
+              items={dockItems}
+              className="fixed left-5 top-[140px] z-sticky hidden laptop:flex flex-col gap-[76px]"
+            />
+          )}
+          {showShellSubnav && (
+            <ShellSubnav items={shellSubnavItems} currentPath={pathname} />
+          )}
         </>
       )}
 
@@ -255,9 +251,9 @@ export function V6Shell() {
         <div className="flex h-full min-h-0 min-w-0 flex-1 flex-row">
           <main
             className={cx(
-              'min-h-0 flex-1 overflow-auto transition-[padding-right] duration-500 ease-standard',
+              'min-h-0 flex-1 overflow-y-auto overflow-x-hidden transition-[padding-right] duration-500 ease-standard',
               !isChromeFreeRoute && 'v6-main-scrollmask',
-              isChromeFreeRoute || pathname.startsWith('/iadministrator') ? 'p-0' : cx('px-lg pb-32 tablet-p:px-3xl', hasPolicySectionNav ? 'pt-28' : 'pt-20'),
+              isChromeFreeRoute || pathname.startsWith('/iadministrator') ? 'p-0' : 'pl-[calc(var(--space-lg)+10px)] pr-lg pb-32 pt-20 tablet-p:pl-[calc(var(--space-3xl)+50px)] tablet-p:pr-3xl',
               !isChromeFreeRoute && hasScrolledMain && 'v6-main-scrollmask--scrolled',
             )}
             id="main-content"
@@ -278,14 +274,16 @@ export function V6Shell() {
       {!isChromeFreeRoute && renderPersonalPanel && (
         <div
           className={cx(
-            'fixed right-0 z-modal w-[380px] overflow-visible transition-all duration-500 ease-standard',
+            'fixed right-0 z-modal w-full max-w-[380px] overflow-visible transition-all duration-500 ease-standard',
             personalPanelVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none'
           )}
           style={{ top: panelTop, height: panelHeight }}
         >
-          <PersonalOpsPanel onClose={() => {
-            if (isPersonalOpsOpen) togglePersonalOps();
-          }} />
+          <PersonalOpsPanel
+            onClose={() => {
+              if (isPersonalOpsOpen) togglePersonalOps();
+            }}
+          />
         </div>
       )}
 
@@ -293,6 +291,7 @@ export function V6Shell() {
         <FloatingActionRail
           renderFeedbackPanel={renderFeedbackPanel}
           feedbackPanelVisible={feedbackPanelVisible}
+          hidden={isPersonalOpsOpen || feedbackOpen}
           onFeedbackOpen={() => setFeedbackOpen(true)}
           onFeedbackClose={() => setFeedbackOpen(false)}
         />
@@ -321,11 +320,13 @@ export function V6Shell() {
 function FloatingActionRail({
   renderFeedbackPanel,
   feedbackPanelVisible,
+  hidden,
   onFeedbackOpen,
   onFeedbackClose,
 }: {
   renderFeedbackPanel: boolean;
   feedbackPanelVisible: boolean;
+  hidden: boolean;
   onFeedbackOpen: () => void;
   onFeedbackClose: () => void;
 }) {
@@ -337,8 +338,6 @@ function FloatingActionRail({
 
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const threads = useThreadStore((s) => s.threads);
-  const activeThreadCount = threads.filter((thread) => thread.status !== 'archived' && thread.status !== 'duplicate').length;
   const [threadMode, setThreadMode] = useState<'list' | 'new' | 'detail'>('list');
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [pageElements, setPageElements] = useState<PageElementContext[]>([]);
@@ -386,6 +385,11 @@ function FloatingActionRail({
     onFeedbackOpen();
   };
 
+  useEffect(() => {
+    window.addEventListener('v6:open-feedback', openFeedback);
+    return () => window.removeEventListener('v6:open-feedback', openFeedback);
+  });
+
   const openThread = (threadId: string) => {
     setSelectedThreadId(threadId);
     setThreadMode('detail');
@@ -398,23 +402,28 @@ function FloatingActionRail({
 
   return (
     <>
-      <div className="fixed right-5 top-1/2 z-popover flex -translate-y-1/2 flex-col items-center gap-4">
+      <div
+        aria-label="Right panel dock"
+        className={cx(
+          'fixed right-5 top-1/2 z-popover grid -translate-y-1/2 gap-3 transition duration-300 ease-standard',
+          hidden && 'pointer-events-none translate-x-8 opacity-0',
+        )}
+        aria-hidden={hidden ? 'true' : undefined}
+      >
         <button
           type="button"
           onClick={openFeedback}
           aria-label="Open feedback"
-          className="relative grid h-11 w-11 place-items-center rounded-full border border-hairline bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover"
+          title="Feedback"
+          className="grid h-11 w-11 place-items-center rounded-full border border-hairline bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover"
         >
           <MessageCircle className="h-5 w-5" aria-hidden />
-          <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-white px-1 text-[10px] font-medium text-muted shadow-rest">
-            {Math.min(activeThreadCount, 99)}
-          </span>
         </button>
         <button
           type="button"
           onClick={() => navigate('/help')}
-          data-tour-target="nav.help"
           aria-label="Open help center"
+          title="Help"
           className="grid h-11 w-11 place-items-center rounded-full border border-hairline bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover"
         >
           <HelpCircle className="h-5 w-5" aria-hidden />
@@ -422,6 +431,7 @@ function FloatingActionRail({
         <button
           type="button"
           aria-label="Share"
+          title="Share"
           className="grid h-11 w-11 place-items-center rounded-full border border-hairline bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover"
         >
           <Share2 className="h-5 w-5" aria-hidden />
@@ -429,6 +439,7 @@ function FloatingActionRail({
         <button
           type="button"
           aria-label="Information"
+          title="Info"
           className="grid h-11 w-11 place-items-center rounded-full border border-hairline bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover"
         >
           <Info className="h-5 w-5" aria-hidden />
@@ -548,27 +559,6 @@ function FloatingActionRail({
 
 type ShellSubnavItem = NavItem & { brand?: boolean };
 
-function cleanPolicySectionTitle(title: string): string {
-  return title.replace(/\\([.\-#|*_])/g, '$1').trim();
-}
-
-function getPolicySectionNavItems(pathname: string): ShellSubnavItem[] {
-  const match = /^\/library\/([^/]+)\/?$/.exec(pathname);
-  if (!match) return [];
-  const policyId = decodeURIComponent(match[1]);
-  const content = getPolicyContent(policyId);
-  if (!content) return [];
-  return [...content.sections]
-    .sort((a, b) => a.order - b.order)
-    .filter((section) => section.order !== 1 && section.level <= 2)
-    .map((section) => ({
-      id: `policy-section-${section.id}`,
-      label: cleanPolicySectionTitle(section.title),
-      to: `#section-${section.id}`,
-      hashIds: [],
-    }));
-}
-
 function getShellSubnavItems(pathname: string): ShellSubnavItem[] {
   const p = (pathname || '').split(/[?#]/)[0];
   const isCESGroup =
@@ -588,26 +578,21 @@ function getShellSubnavItems(pathname: string): ShellSubnavItem[] {
     p.startsWith('/policy-lifecycle') ||
     p === '/policy-approvals' ||
     p === '/pm/approvals';
-  const isOnboardingGroup = p.startsWith('/journey') || p.startsWith('/onboarding-v2');
-  const isSystemGroup = p.startsWith('/system-documentation') || p === '/hubstaff';
-  const isAdminGroup = p.startsWith('/admin/');
 
   if (isCESGroup) {
     const cesItemsById = new Map(workspaceSubnavItems.ces.map((item) => [item.id, item]));
     const orderedItems = [
-      cesItemsById.get('evidence-studio') ? { ...cesItemsById.get('evidence-studio')!, label: 'DefenCIble', brand: true } : undefined,
-      cesItemsById.get('ai-compliance-review'),
+      cesItemsById.get('defensible-2') ? { ...cesItemsById.get('defensible-2')!, label: 'DefenCIble', brand: true } : undefined,
       cesItemsById.get('ces-calendar'),
       cesItemsById.get('master-controls'),
       cesItemsById.get('audit-mode'),
+      cesItemsById.get('ai-compliance-review'),
       cesItemsById.get('ces-reports'),
     ];
     return orderedItems.filter((item): item is ShellSubnavItem => Boolean(item));
   }
+
   if (isTaxonomyGroup) return workspaceSubnavItems.taxonomy;
-  if (isOnboardingGroup) return workspaceSubnavItems.onboarding;
-  if (isSystemGroup) return workspaceSubnavItems['system-docs'];
-  if (isAdminGroup) return workspaceSubnavItems.admin;
   return [];
 }
 
@@ -625,52 +610,28 @@ function ShellSubnav({ items, currentPath }: { items: ShellSubnavItem[]; current
 
   return (
     <nav
-      className="flex min-w-0 flex-1 items-center justify-start gap-2 overflow-x-auto whitespace-nowrap pl-0 pr-sm text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       aria-label="Workspace subnav"
+      className="fixed left-[104px] right-0 top-5 z-[9999] overflow-x-auto border-b border-[#E2E8F0] bg-transparent [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      {safeItems.map((item) => {
-        const isActive = activeTo === item.to;
-        const className = cx(
-          'shrink-0 rounded-full border border-transparent bg-transparent px-3 py-2 text-brand-teal shadow-none backdrop-blur-none transition duration-300 ease-standard hover:text-brand-teal-deep',
-          isActive ? 'font-medium text-brand-teal-deep' : '',
-        );
-        return (
-          <Link
-            key={item.to}
-            to={item.to}
-            data-tour-target={item.id === 'evidence-studio' ? 'nav.evidence' : undefined}
-            aria-current={isActive ? 'page' : undefined}
-            className={className}
-          >
-            {item.brand ? (
-              <DefenCIbleWordmark glow />
-            ) : item.label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
-
-function PolicySectionSubnav({ items }: { items: ShellSubnavItem[] }) {
-  return (
-    <nav
-      aria-label="Policy section navigation"
-      className="flex min-w-0 items-center gap-xl overflow-x-auto whitespace-nowrap pl-[calc(4rem+1rem)] pr-sm text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-    >
-      {items.map((item, index) => (
-        <a
-          aria-current={index === 0 ? 'page' : undefined}
-          className={cx(
-            'shrink-0 border-b-2 px-xs pb-2 pt-1 font-medium transition duration-300 ease-standard hover:border-brand-teal hover:text-brand-teal',
-            index === 0 ? 'border-brand-teal text-brand-teal' : 'border-transparent text-secondary',
-          )}
-          href={item.to}
-          key={item.id}
-        >
-          {item.label}
-        </a>
-      ))}
+      <div className="inline-flex min-w-max items-end gap-8">
+        {safeItems.map((item) => {
+          const isActive = activeTo === item.to;
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              data-tour-target={item.id === 'defensible-2' ? 'nav.evidence' : undefined}
+              aria-current={isActive ? 'page' : undefined}
+              className={cx(
+                'shrink-0 border-b-4 px-0 pb-4 pt-1 text-[22px] font-semibold uppercase leading-none tracking-[0.1em] text-[#66748C] transition-all duration-base ease-standard hover:border-brand-teal hover:text-brand-teal-deep',
+                isActive ? 'border-brand-teal text-brand-teal-deep' : 'border-transparent',
+              )}
+            >
+              {item.label}
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }

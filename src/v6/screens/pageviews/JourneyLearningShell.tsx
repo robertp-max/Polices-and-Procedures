@@ -11,9 +11,7 @@ interface JourneyLearningShellProps {
 export function JourneyLearningShell({ children }: JourneyLearningShellProps) {
 
   return (
-    <div className="relative -m-xl min-h-[calc(100vh-var(--topbar-h))] overflow-hidden rounded-2xl bg-surface-glass text-ink shadow-glass-inset isolate">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(255,255,255,0.95),transparent_34%),radial-gradient(circle_at_100%_12%,rgba(0,121,125,0.11),transparent_32%),linear-gradient(135deg,rgba(247,254,255,0.92),rgba(255,255,255,0.74)_52%,rgba(250,248,248,0.86))]" />
-
+    <div className="relative -m-xl min-h-[calc(100vh-var(--topbar-h))] overflow-hidden bg-transparent text-ink isolate">
       <div className="relative z-base mx-lg mt-lg">
         <DemoOnlyBanner />
       </div>

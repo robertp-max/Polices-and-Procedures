@@ -270,6 +270,12 @@ ecignRouter.get('/instances', asyncH(async (_req, res) => {
   res.json(await store.listInstances());
 }));
 
+ecignRouter.get('/instances/:id/signatures', asyncH(async (req, res) => {
+  const i = await store.getInstance(req.params.id);
+  if (!i) throw new EcignError('NOT_FOUND', 'Instance not found', 404);
+  res.json(await store.listSignatures(req.params.id));
+}));
+
 ecignRouter.patch('/instances/:id/fields', asyncH(async (req, res) => {
   const cur = await store.getInstance(req.params.id);
   if (!cur) throw new EcignError('NOT_FOUND', 'Instance not found', 404);

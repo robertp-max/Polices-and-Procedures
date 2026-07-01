@@ -2,11 +2,12 @@ export { AdminGroupsScreen } from './AdminGroupsScreen';
 export { AdminPermissionsScreen } from './AdminPermissionsScreen';
 export { AdminRolesScreen } from './AdminRolesScreen';
 export { AdminUsersScreen } from './AdminUsersScreen';
+export { AdminCommunityProfilesScreen } from './AdminCommunityProfilesScreen';
 export { AdmissionPacketPreviewScreen } from './AdmissionPacketPreviewScreen';
 export { EcignWorkspaceScreen } from './EcignWorkspaceScreen';
 export { EventsBoardScreen } from './EventsBoardScreen';
 export { FormsLibraryScreen } from './FormsLibraryScreen';
-export { FrameworkScreen } from './FrameworkScreen';
+export { FrameworkScreen, FrameworkTabs, type FrameworkTabKey } from './FrameworkScreen';
 export { GenericReferenceScreen } from './GenericReferenceScreen';
 export { MasterControlsScreen } from './MasterControlsScreen';
 export { MyTasksScreen } from './MyTasksScreen';
@@ -38,5 +39,7 @@ export { LoginScreen } from './LoginScreen';
 export { MobileIncidentScreen } from './MobileIncidentScreen';
 export { NotFoundScreen } from './NotFoundScreen';
 export { Cms485AssessmentQuizPage } from './Cms485AssessmentQuizPage';
+export { PersonalProfileScreen } from './PersonalProfileScreen';
+export { CommunityScreen } from './CommunityScreen';
 
 

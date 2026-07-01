@@ -81,6 +81,31 @@ export const env = {
    *  per-event / admission folder structure. The service account must have write
    *  access to this folder. */
   packetOverrideFolderId: process.env.GOOGLE_DRIVE_PACKET_FOLDER_ID ?? '',
+  // 01_CES is LOCKED — no writes land there until a readiness date is provided.
+  // All packets go to the Event Packets folder instead. To unlock, set
+  // DRIVE_01_CES_READINESS_DATE to an ISO date (YYYY-MM-DD); 01_CES then opens
+  // on/after that date. Empty = locked indefinitely (default, until production).
+  drive01CesReadinessDate: process.env.DRIVE_01_CES_READINESS_DATE ?? '',
+  get drive01CesLocked(): boolean {
+    const d = this.drive01CesReadinessDate?.trim();
+    if (!d) return true; // no readiness date → locked
+    const ready = new Date(d);
+    return Number.isNaN(ready.getTime()) ? true : new Date() < ready;
+  },
+  // Local CSV fallback for the Drive manifest so the Evidence DRIVE tab lists
+  // the real folders even when live Google Drive isn't reachable (local dev).
+  // Defaults to the bundled export; override with an absolute path if needed.
+  manifestLocalCsv: (() => {
+    const raw = process.env.DRIVE_MANIFEST_LOCAL_CSV ?? 'server/data/drive-manifest.csv';
+    return path.isAbsolute(raw) ? raw : path.resolve(repoRoot, raw);
+  })(),
+  // Folder INDEX (one row per folder, with a real Folder ID even for container
+  // folders) — exported from the spreadsheet's "Evidence Manifest Queue" sheet.
+  // Preferred source for the DRIVE-tab root folder grid so every card deep-links.
+  manifestLocalFolderIndex: (() => {
+    const raw = process.env.DRIVE_MANIFEST_FOLDER_INDEX ?? 'server/data/drive-folder-index.csv';
+    return path.isAbsolute(raw) ? raw : path.resolve(repoRoot, raw);
+  })(),
 
   /** ───── CES metadata backend (NON-PHI metadata; NO file bytes) ─────
    * `file_local` (default) writes to .cache/ces-metadata for local/dev so the

@@ -1,5 +1,6 @@
 import CareIndeedOnboardingLMS from "./CareIndeedOnboardingLMS";
 import { JourneyLearningShell } from "./JourneyLearningShell";
+import { LearnerProvider } from '@/policy/journey/lib/learnerState';
 
 export function JourneyOverviewScreen() {
   return (
@@ -7,7 +8,9 @@ export function JourneyOverviewScreen() {
       title="My Learning"
       subtitle="Required compliance and clinical training."
     >
-      <CareIndeedOnboardingLMS />
+      <LearnerProvider>
+        <CareIndeedOnboardingLMS />
+      </LearnerProvider>
     </JourneyLearningShell>
   );
 }

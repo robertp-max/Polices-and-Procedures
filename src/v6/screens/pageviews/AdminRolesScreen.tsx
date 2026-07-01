@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ClipboardCheck, FileCheck2, LockKeyhole, ShieldCheck, UserCog } from 'lucide-react';
 import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
-import { PageHeader } from '../../shell';
 import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
@@ -203,10 +202,7 @@ export function AdminRolesScreen() {
       data-route="/admin/roles"
       data-template="matrix"
     >
-      <PageHeader
-        badge="Admin"
-        title="Roles"
-      />
+      <div className="sr-only"><h1>Roles</h1></div>
       <MetricGrid metrics={roleMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">

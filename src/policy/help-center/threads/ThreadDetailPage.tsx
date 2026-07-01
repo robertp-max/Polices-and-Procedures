@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { ArrowLeft, ThumbsUp, Globe, CheckCircle2, ShieldAlert, Bot } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, ThumbsUp, Globe, CheckCircle2, ShieldAlert, Bot, UserRound } from 'lucide-react';
 import { Badge, Button, Textarea } from '@/v6/primitives';
 import { cx } from '@/v6/utils/classNames';
 import { useThreadStore } from './threadStore';
 import { useThreadActor } from './useThreadActor';
+import { awardBadge } from '@/v6/utils/communityBadges';
 import { BradThreadReply } from './BradThreadReply';
 import { ThreadMergeBanner } from './ThreadMergeBanner';
 import { ThreadSourceBadge } from './ThreadSourceBadge';
@@ -14,7 +16,7 @@ import {
   statusToneClass,
   relativeTime,
 } from './threadView';
-import { PHI_WARNING_MESSAGE, type PhiScanResult } from './threadPhiGuard';
+import { PHI_FIELD_WARNING, PHI_WARNING_MESSAGE, scanForPhi, type PhiScanResult } from './threadPhiGuard';
 
 interface ThreadDetailPageProps {
   threadId: string;
@@ -24,6 +26,7 @@ interface ThreadDetailPageProps {
 }
 
 export function ThreadDetailPage({ threadId, onBack, onOpenThread, onOpenRoute }: ThreadDetailPageProps) {
+  const navigate = useNavigate();
   const actor = useThreadActor();
   const thread = useThreadStore(s => s.threads.find(t => t.id === threadId));
   const messages = useThreadStore(s => s.messages);
@@ -113,7 +116,18 @@ export function ThreadDetailPage({ threadId, onBack, onOpenThread, onOpenRoute }
           <span>{THREAD_CATEGORY_LABEL[thread.category]}</span>
           <ThreadSourceBadge source={thread.source} />
           <span aria-hidden="true">·</span>
-          <span>Started by {thread.createdByDisplayName ?? 'a teammate'} {relativeTime(thread.createdAt)}</span>
+          <button
+            type="button"
+            className="hover:underline hover:text-brand-teal inline-flex items-center gap-1"
+            onClick={() => {
+              const uid = thread.createdByUserId;
+              if (uid && uid !== 'brad' && !uid.startsWith('brad')) navigate(`/community/users/${uid}`);
+            }}
+            title={thread.createdByUserId ? 'View profile' : undefined}
+          >
+            Started by {thread.createdByDisplayName ?? 'a teammate'} {relativeTime(thread.createdAt)}
+            {thread.createdByUserId && <UserRound className="h-3 w-3" />}
+          </button>
           {thread.visibility === 'private_to_user' && <Badge size="sm">Private</Badge>}
         </div>
       </header>
@@ -150,15 +164,39 @@ export function ThreadDetailPage({ threadId, onBack, onOpenThread, onOpenRoute }
               )}
             >
               <div className="flex items-center justify-between text-xs text-muted">
-                <span className="font-medium text-ink">
+                <button
+                  type="button"
+                  className="font-medium text-ink inline-flex items-center gap-1 hover:underline hover:text-brand-teal"
+                  onClick={() => {
+                    const uid = m.authorUserId;
+                    if (uid && uid !== 'brad' && !uid.startsWith('brad')) navigate(`/community/users/${uid}`);
+                  }}
+                  title={m.authorUserId ? 'View profile' : undefined}
+                  disabled={!m.authorUserId}
+                >
                   {m.authorDisplayName ?? 'Teammate'}
                   {m.authorType === 'admin' && <Badge size="sm" className="ml-xs">Admin</Badge>}
-                </span>
+                  {m.authorUserId && <UserRound className="h-3 w-3" />}
+                </button>
                 <span>{relativeTime(m.createdAt)}</span>
               </div>
               {m.originLabel && <div className="mt-xs text-[10px] italic text-muted">{m.originLabel}</div>}
               <p className="mt-sm whitespace-pre-wrap text-sm text-secondary">{m.body}</p>
               {m.sanitized && <div className="mt-xs text-[10px] text-muted">Sanitized to remove possible PHI.</div>}
+              {m.authorUserId && m.authorUserId !== actor.userId && (
+                <button
+                  type="button"
+                  className="mt-2 text-xs text-brand-teal hover:underline"
+                  onClick={() => {
+                    if (m.authorUserId) {
+                      awardBadge(m.authorUserId, { label: 'Helpful Answer', source: 'thread_helpful', detail: 'Marked in thread' });
+                      alert('Thank you — Helpful Answer noted for the author.');
+                    }
+                  }}
+                >
+                  Mark as helpful
+                </button>
+              )}
               {m.id === thread.acceptedAnswerMessageId && (
                 <div className="mt-sm flex items-center gap-xs text-xs font-medium text-tone-green-text">
                   <CheckCircle2 aria-hidden="true" className="h-icon-sm w-icon-sm" /> Accepted answer
@@ -181,7 +219,10 @@ export function ThreadDetailPage({ threadId, onBack, onOpenThread, onOpenRoute }
       {thread.status !== 'duplicate' && (
         <section className="grid gap-sm rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg">
           <h4 className="text-sm font-medium text-ink">Reply</h4>
-          <Textarea rows={3} value={reply} onChange={e => setReply(e.target.value)} placeholder="Add to the discussion (no PHI)…" />
+          <div className="rounded-md border border-tone-amber-border bg-tone-amber-bg p-sm text-xs text-tone-amber-text">
+            {PHI_FIELD_WARNING}
+          </div>
+          <Textarea rows={3} value={reply} onChange={e => { const v = e.target.value; setReply(v); const s = scanForPhi(v); setPhi(s.hasPhi ? s : null); }} placeholder="Add to the discussion (no PHI)…" />
           {phi && (
             <div className="rounded-md border border-tone-red-border bg-tone-red-bg p-sm text-xs text-tone-red-text">
               <div className="flex items-center gap-xs font-medium">

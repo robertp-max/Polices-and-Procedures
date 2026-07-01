@@ -63,6 +63,8 @@ import { hasMedia, mediaAltText, mediaAssetPath } from "@/policy/journey/data/me
 import { hasNarrationAudio, narrationAssetPath } from "@/policy/journey/data/narrationManifest";
 import { getTermsForSection } from "@/policy/journey/data/advancedTraining/cms485Terminology";
 import { TRAINING_CARDS } from "@/policy/journey/data/advancedTraining/cms485SourceCards";
+import { isAdvancedModule, getAdvancedVariant } from "@/policy/journey/data/advancedTraining/advancedTrainingContract";
+import { AdvancedTrainingPlayer } from "@/policy/journey/components/advanced/AdvancedTrainingPlayer";
 import { Cms485AssessmentQuizPage } from "./Cms485AssessmentQuizPage";
 
 
@@ -1664,7 +1666,51 @@ export function ModulePlayerScreen() {
   const { currentEmployeeId, employees, attempts } = useJourneyStore();
   const employee = employees.find(e => e.id === currentEmployeeId);
   const rawModuleId = params.moduleId || (pathname.includes('/module/') ? pathname.split('/module/')[1]?.split('/')[0] : undefined);
-  const journeyMod = rawModuleId ? moduleById(rawModuleId) : null;
+  let journeyMod = rawModuleId ? moduleById(rawModuleId) : null;
+  if (!journeyMod && rawModuleId && isAdvancedModule(rawModuleId)) {
+    // stub for gating / checks so ADV modules are treated as valid in canonical path
+    const advTitle = getModuleDef(rawModuleId)?.title || rawModuleId;
+    journeyMod = { id: rawModuleId, roles: 'ALL', group: 'ADV' as any, phase: 'ANN' as any, title: advTitle } as any;
+  }
+
+  // HOIST useMemo here so it is ALWAYS called (P0-002 fix for hook order)
+  const element = useMemo(() => {
+    // Dispatch ADV modules to domain player for main module view (fixes runtime for RN-ADV)
+    if (params.moduleId && isAdvancedModule(params.moduleId)) {
+      const variant = getAdvancedVariant(params.moduleId) || 'plan_of_care';
+      const title = getModuleDef(params.moduleId)?.title || params.moduleId;
+      return <AdvancedTrainingPlayer moduleId={params.moduleId} moduleTitle={title} variant={variant} />;
+    }
+    if (pathname === "/journey/module/m0") {
+      return <Module0OrientationPage />;
+    }
+    if (pathname === "/journey/final") {
+      return <FinalAssessmentSplashPage />;
+    }
+    if (pathname === "/journey/final/quiz") {
+      return <FinalAssessmentQuizPage />;
+    }
+    if (pathname === "/journey/final/result") {
+      return <FinalResultPage />;
+    }
+    if (pathname.endsWith("/assessment")) {
+      return <ModuleAssessmentSplashPage />;
+    }
+    if (pathname.endsWith("/assessment/quiz")) {
+      return <ModuleAssessmentQuizPage />;
+    }
+    if (params.lessonId) {
+      return <LessonPlayerPage />;
+    }
+    if (params.moduleId) {
+      return <Module1OverviewPage />;
+    }
+    return (
+      <div className="bg-surface-glass border border-hairline rounded-xl p-6 text-secondary shadow-rest backdrop-blur-xl">
+        Route unrecognized in learning dispatcher.
+      </div>
+    );
+  }, [pathname, params]);
 
   // Early guards
   if (!employee) {
@@ -1679,8 +1725,8 @@ export function ModulePlayerScreen() {
     );
   }
 
-  if (rawModuleId && !journeyMod && !['m0'].includes(rawModuleId)) {
-    // Unknown module
+  if (rawModuleId && !journeyMod && !isAdvancedModule(rawModuleId) && !['m0'].includes(rawModuleId)) {
+    // Unknown module - bypass for RN-ADV modules (registered in adapter/courseModules)
     return (
       <section className="p-8">
         <div className="max-w-xl mx-auto bg-surface-glass border border-hairline rounded-xl p-6">
@@ -1713,38 +1759,7 @@ export function ModulePlayerScreen() {
     }
   }
 
-  // Determine content block based on URL
-  const element = useMemo(() => {
-    if (pathname === "/journey/module/m0") {
-      return <Module0OrientationPage />;
-    }
-    if (pathname === "/journey/final") {
-      return <FinalAssessmentSplashPage />;
-    }
-    if (pathname === "/journey/final/quiz") {
-      return <FinalAssessmentQuizPage />;
-    }
-    if (pathname === "/journey/final/result") {
-      return <FinalResultPage />;
-    }
-    if (pathname.endsWith("/assessment")) {
-      return <ModuleAssessmentSplashPage />;
-    }
-    if (pathname.endsWith("/assessment/quiz")) {
-      return <ModuleAssessmentQuizPage />;
-    }
-    if (params.lessonId) {
-      return <LessonPlayerPage />;
-    }
-    if (params.moduleId) {
-      return <Module1OverviewPage />;
-    }
-    return (
-      <div className="bg-surface-glass border border-hairline rounded-xl p-6 text-secondary shadow-rest backdrop-blur-xl">
-        Route unrecognized in learning dispatcher.
-      </div>
-    );
-  }, [pathname, params]);
+  // element hoisted above (see top of ModulePlayerScreen) for P0-002 hook order fix
 
   return (
     <section

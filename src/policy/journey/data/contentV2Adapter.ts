@@ -3,6 +3,8 @@ import { ALL_MODULES, type ModuleData, type LessonPage } from "./ACHC_Annual_Ass
 import { ALL_MODULES as onboardingModulesRaw } from "../../../v6/screens/pageviews/CareIndeedOnboardingLMS";
 import { cms485PlanOfCareModule } from "./advancedTraining/cms485PlanOfCare.data";
 import { qapiModule, qapiQuizzes } from "./advancedTraining/qapi.data";
+import { oasisE2SocModule } from "./advancedTraining/oasisE2Soc.data";
+import { documentationMattersModule } from "./advancedTraining/documentationMatters.data";
 
 function appModuleId(moduleId: string): string {
   // moduleId is e.g. "ACHC-ART-M01" -> "m1"
@@ -272,7 +274,7 @@ const orientationModule: ModuleDef = {
 // 2. Load all mapped modules
 const mappedACHCModules: ModuleDef[] = ALL_MODULES.map(toModuleDef);
 
-const onboardingModulesOnly = onboardingModulesRaw.filter(m => m.track !== "ANN" && m.id !== "cms-485" && m.id !== "qapi");
+const onboardingModulesOnly = onboardingModulesRaw.filter(m => m.track !== "ANN" && !["cms-485", "qapi", "oasis-e2-soc", "documentation-matters"].includes(m.id));
 const mappedOnboardingModules = onboardingModulesOnly.map(onboardingToModuleDef);
 
 export const courseModules: ModuleDef[] = [
@@ -281,6 +283,8 @@ export const courseModules: ModuleDef[] = [
   ...mappedACHCModules,
   cms485PlanOfCareModule,
   qapiModule,
+  oasisE2SocModule,
+  documentationMattersModule,
 ];
 
 export function getModuleDef(moduleId: string): ModuleDef | undefined {
@@ -327,6 +331,27 @@ export function getModuleAssessment(moduleId: string) {
         choices: q.options.map((o) => ({ id: o.id, label: o.label })),
         correct_id_internal: q.correctAnswerId,
       }))
+    };
+  }
+
+  if (moduleId.toLowerCase() === "oasis-e2-soc") {
+    return {
+      title: "OASIS-E2 SOC Coding Lab",
+      pass_percent: 80,
+      questions: [
+        { id: "gg0170", prompt: "GG0170 Mobility - select response supported by evidence", choices: [], correct_id_internal: "" },
+        { id: "m0300", prompt: "M0300 Wound item - code with rationale", choices: [], correct_id_internal: "" },
+      ],
+    };
+  }
+
+  if (moduleId.toLowerCase() === "documentation-matters") {
+    return {
+      title: "Documentation Defensibility Scenarios",
+      pass_percent: 80,
+      questions: [
+        { id: "def-1", prompt: "Select the defensible note and provide auditor conclusion", choices: [], correct_id_internal: "" },
+      ],
     };
   }
 

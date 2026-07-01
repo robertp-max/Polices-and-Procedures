@@ -14,6 +14,21 @@ const BUDGET_MS = Number(process.env.PDF_RENDER_TIMEOUT_MS || 12000);
 
 export function pdfRenderEnabled(): boolean { return ENABLED(); }
 
+/**
+ * Force a render regardless of the ENABLED gate — used by the explicit
+ * "render this packet to a faithful multi-page PDF" endpoint (admission
+ * form template → 63 pages). Still time-boxed; returns null on any failure.
+ */
+export async function htmlToPdfForced(html: string): Promise<Buffer | null> {
+  // A full 60-page admission packet + cold Chromium launch can exceed the default
+  // 12s budget, so give the explicit render path a longer ceiling.
+  const budget = Number(process.env.PDF_RENDER_TIMEOUT_MS || 60000);
+  return Promise.race([
+    renderOnce(html),
+    new Promise<null>((res) => setTimeout(() => { log.warn('pdf.render.timeout', { budgetMs: budget }); res(null); }, budget)),
+  ]);
+}
+
 export async function htmlToPdf(html: string): Promise<Buffer | null> {
   if (!ENABLED()) return null; // default: callers save HTML — save path never blocks on a browser
   return Promise.race([

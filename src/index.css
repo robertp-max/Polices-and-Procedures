@@ -1307,20 +1307,45 @@ th {
   box-shadow: var(--shadow-hover) !important;
 }
 
-/* V6 page route transition: 0.5s fade out, then 0.5s fade in. */
+/* V6 page route transition: 1.5s slide with .75s acceleration and .75s deceleration. */
 .v6-page-transition {
-  animation-duration: 500ms;
-  animation-fill-mode: both;
-  animation-timing-function: var(--ease-standard);
-  will-change: opacity;
+  animation-duration: var(--v6-page-transition-duration, 1500ms);
+  animation-fill-mode: none;
+  animation-timing-function: var(--v6-page-transition-easing, cubic-bezier(0.65, 0, 0.35, 1));
+  min-width: 100%;
 }
 
 .v6-page-transition--fade-in {
-  animation-name: v6-page-fade-in;
+  animation-name: v6-page-slide-in-from-right;
 }
 
 .v6-page-transition--fade-out {
-  animation-name: v6-page-fade-out;
+  animation-name: v6-page-slide-out-to-left;
+  animation-fill-mode: both;
+}
+
+.v6-page-transition--fade-in :is(
+  section,
+  article,
+  aside,
+  nav,
+  [data-v6-transition-element],
+  article :is(h1, h2, h3, h4, h5, h6, p, span, a, button, label, small, strong, em, li, dt, dd),
+  section :is(h1, h2, h3, h4, h5, h6, p, span, a, button, label, small, strong, em, li, dt, dd)
+) {
+  animation: v6-page-slide-in-from-right var(--v6-element-transition-duration, 1500ms) var(--v6-element-transition-easing, cubic-bezier(0.65, 0, 0.35, 1)) both;
+}
+
+.v6-page-transition--fade-out :is(
+  section,
+  article,
+  aside,
+  nav,
+  [data-v6-transition-element],
+  article :is(h1, h2, h3, h4, h5, h6, p, span, a, button, label, small, strong, em, li, dt, dd),
+  section :is(h1, h2, h3, h4, h5, h6, p, span, a, button, label, small, strong, em, li, dt, dd)
+) {
+  animation: v6-page-slide-out-to-left var(--v6-element-transition-duration, 1500ms) var(--v6-element-transition-easing, cubic-bezier(0.65, 0, 0.35, 1)) both;
 }
 
 .v6-overlay-transition {
@@ -1430,14 +1455,26 @@ th {
     backdrop-filter 500ms var(--ease-standard);
 }
 
-@keyframes v6-page-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@keyframes v6-page-slide-in-from-right {
+  from {
+    opacity: 1;
+    transform: translate3d(var(--v6-slide-in-x, 100%), var(--v6-slide-y, 0), 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-@keyframes v6-page-fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
+@keyframes v6-page-slide-out-to-left {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(var(--v6-slide-out-x, -100%), var(--v6-slide-y, 0), 0);
+  }
 }
 
 @keyframes v6-overlay-fade-in {

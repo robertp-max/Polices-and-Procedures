@@ -94,7 +94,7 @@ export const SIDEBAR_SECTIONS = [
     ],
   },
   { label: 'Calendar', hashIds: ['master-calendar', 'staffing-calendar'] },
-  { label: 'Evidence Center', hashIds: ['evidence-center'] },
+  { label: 'DefenCIble', hashIds: ['defensible-2'] },
   { label: 'Audit Mode', hashIds: ['audit-mode'] },
   {
     label: 'Onboarding & Training',
@@ -237,11 +237,12 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
     icon: PanelsTopLeft,
     title: 'Events Board',
   },
-  'evidence-center': {
+  'defensible-2': {
     description:
-      'Evidence repository for policies, forms, eCIgn certificates, source files, audit indexes, and retention state.',
+      'DefenCIble evidence packet studio for source selection, packet generation, preview, export, and Drive sync.',
     eyebrow: 'Compliance Execution (CES)',
     icon: FolderOpen,
+    title: 'DefenCIble',
   },
   'form-viewer': {
     description: 'Structured form renderer with sections, validation, signer requirements, and linked policy context.',

@@ -137,7 +137,20 @@ export async function findOrCreateFolder(name: string, parentId: string): Promis
  * Walk a sanitized segment path under the evidence root, creating missing
  * folders. Returns the leaf folder id.
  */
+/** Top-level folders that are LOCKED — no writes until a readiness date is set. */
+const LOCKED_ROOT_SEGMENTS = ['01_CES'];
+
 export async function ensureFolderPath(segments: string[], rootId = env.driveEvidenceRootFolderId): Promise<string> {
+  // 01_CES is locked until production: refuse to create/resolve any folder under
+  // it so nothing is written there. Packets are routed to Event Packets instead.
+  const top = segments.find((s) => s)?.trim();
+  if (env.drive01CesLocked && top && LOCKED_ROOT_SEGMENTS.includes(top)) {
+    throw new ApiError(
+      'validation_error',
+      `"${top}" is locked until production (no readiness date set). Set DRIVE_01_CES_READINESS_DATE to unlock; packets are filed to Event Packets meanwhile.`,
+      423,
+    );
+  }
   let parentId = rootId;
   for (const segment of segments) {
     if (!segment) continue;
@@ -258,6 +271,55 @@ export async function copyFile(input: {
       mimeType: res.data.mimeType ?? undefined,
       name: res.data.name ?? input.name,
     };
+  } catch (e) {
+    throw fromGoogleError(e);
+  }
+}
+
+/** Download a Drive file's raw bytes by File ID (e.g. the CSV manifest). */
+export async function downloadFileBytes(fileId: string): Promise<Buffer> {
+  const c = await getClient();
+  try {
+    const res = await c.files.get(
+      { fileId, alt: 'media', supportsAllDrives: true },
+      { responseType: 'arraybuffer' },
+    );
+    return Buffer.from(res.data as ArrayBuffer);
+  } catch (e) {
+    throw fromGoogleError(e);
+  }
+}
+
+/** Overwrite an existing Drive file's content by File ID (stable id/link). */
+export async function updateFileContent(fileId: string, mimeType: string, buffer: Buffer): Promise<void> {
+  const c = await getClient();
+  try {
+    await c.files.update({
+      fileId,
+      media: { mimeType, body: Readable.from(buffer) },
+      supportsAllDrives: true,
+    });
+    log.info('google.drive.content.updated', { fileId, bytes: buffer.length });
+  } catch (e) {
+    throw fromGoogleError(e);
+  }
+}
+
+/** Find a (non-folder) file by exact name under a parent folder. */
+export async function findFileByName(
+  name: string, parentId: string,
+): Promise<{ id: string; webViewLink?: string } | null> {
+  const c = await getClient();
+  const escaped = name.replace(/'/g, "\\'");
+  try {
+    const res = await c.files.list({
+      q: `name='${escaped}' and '${parentId}' in parents and trashed=false`,
+      fields: 'files(id,name,webViewLink)',
+      pageSize: 1,
+      ...driveScopeParams(),
+    });
+    const f = res.data.files?.[0];
+    return f?.id ? { id: f.id, webViewLink: f.webViewLink ?? undefined } : null;
   } catch (e) {
     throw fromGoogleError(e);
   }

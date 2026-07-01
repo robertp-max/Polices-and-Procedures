@@ -10,6 +10,7 @@ import {
 } from './googleCalendar.js';
 import { getRow } from './sync/eventStore.js';
 import { htmlToPdf } from './htmlToPdf.js';
+import { upsertPacketIntoManifest } from './manifest.js';
 
 /* ═══════════════════════════════════════════════════════════════
    Google Calendar + Drive evidence orchestration.
@@ -31,6 +32,8 @@ export type EvidenceCategory =
   | 'signed_artifact'
   | 'ecign_certificate'
   | 'final_package';
+
+const DEFENSIBLE_PACKET_FOLDER_ID = '1oWEQxrPWoy8bBIDG1a-5afQU9vEYWmU0';
 
 /** Stable, non-PHI subfolder names under each event folder. */
 export const EVIDENCE_SUBFOLDERS: Record<EvidenceCategory, string> = {
@@ -581,15 +584,28 @@ export interface SavePacketInput {
   packetId: string;
   title: string;
   html: string;
+  /** Pre-rendered PDF bytes (base64). When present, saved directly — no HTML→PDF render. */
+  pdfBase64?: string;
   eventDate?: string;
   domain?: string;
+  /** Manifest/audit context (best-effort; defaults applied when absent). */
+  packetType?: string;       // e.g. "QAPI Quarterly", "QAPI Monthly"
+  section?: string;          // Section / Root Folder, e.g. "QAPI"
+  workflowId?: string;
+  actor?: string;
 }
 export interface SavePacketResult {
   driveFileId: string;
   driveFolderId: string;
   driveFolderPath: string;
   driveFileUrl: string;
+  rawFileName: string;
+  fileType: string;
   replaced: boolean;
+  manifestSyncStatus: 'synced' | 'failed';
+  manifestSyncError?: string;
+  manifestLastSyncedAt?: string;
+  manifestAction?: 'updated' | 'appended';
 }
 
 /**
@@ -603,16 +619,14 @@ export async function savePacketToEvent(input: SavePacketInput): Promise<SavePac
     throw new ApiError('validation_error', 'Google Drive evidence is disabled.', 400);
   }
   if (!input.eventId) throw new ApiError('validation_error', 'eventId is required.', 400);
-  if (!input.html) throw new ApiError('validation_error', 'Packet html is required.', 400);
+  if (!input.html && !input.pdfBase64) throw new ApiError('validation_error', 'Packet html or pdfBase64 is required.', 400);
 
-  const segments = input.eventId === MOCK_EVENT_ID
-    ? [...MOCK_EVIDENCE_SEGMENTS, 'Packets']
-    : buildEvidenceFolderSegments({ eventId: input.eventId, domain: input.domain, eventDate: input.eventDate, category: 'overview' }).slice(0, 4).concat('Packets');
-
-  // TEMP override: send all packets to a single folder (easy cleanup) when set.
-  const folderId = env.packetOverrideFolderId || await ensureFolderPath(segments);
-  // Render to a real PDF when a browser is available; fall back to HTML otherwise.
-  const pdf = await htmlToPdf(input.html);
+  const folderId = DEFENSIBLE_PACKET_FOLDER_ID;
+  // Prefer pre-rendered PDF bytes (e.g. an AcroForm packet filled client-side) —
+  // saved directly with no headless browser. Otherwise render HTML→PDF when a
+  // browser is available; fall back to HTML otherwise.
+  const directPdf = input.pdfBase64 ? Buffer.from(input.pdfBase64, 'base64') : null;
+  const pdf = directPdf ?? await htmlToPdf(input.html);
   const safeName = sanitizeFileName(`${input.eventId}-packet.${pdf ? 'pdf' : 'html'}`);
   const res = await uploadOrReplaceFile({
     parentId: folderId, name: safeName,
@@ -620,12 +634,28 @@ export async function savePacketToEvent(input: SavePacketInput): Promise<SavePac
     buffer: pdf ?? Buffer.from(input.html, 'utf8'),
   });
   log.info('google.packet.saved', { eventId: input.eventId, packetId: input.packetId, fileId: res.fileId, replaced: res.replaced, format: pdf ? 'pdf' : 'html' });
+  const fileType = directPdf || pdf ? 'PDF' : 'HTML';
+  const driveLink = res.webViewLink ?? driveFileUrl(res.fileId);
+  const isAdmission = /^ADM-|patient-admission/i.test(`${input.packetId} ${input.eventId}`);
+  const section = input.section || (isAdmission ? 'Admission' : 'QAPI');
+  const fullFolderPath = 'Defensible Packets';
+  // PRIMARY REQUIREMENT: upsert the Drive CSV manifest on every packet generation.
+  const sync = await upsertPacketIntoManifest(
+    { section, fullFolderPath, folderId, displayName: input.title, rawFileName: safeName, fileType, fileId: res.fileId, driveLink, note: input.packetId },
+    { actor: input.actor || 'system', eventId: input.eventId, workflowId: input.workflowId, packetType: input.packetType || (isAdmission ? 'Patient Admission' : 'QAPI') },
+  );
   return {
     driveFileId: res.fileId,
     driveFolderId: folderId,
-    driveFolderPath: env.packetOverrideFolderId ? `(override folder ${folderId})` : segments.join('/'),
-    driveFileUrl: res.webViewLink ?? driveFileUrl(res.fileId),
+    driveFolderPath: fullFolderPath,
+    driveFileUrl: driveLink,
+    rawFileName: safeName,
+    fileType,
     replaced: res.replaced,
+    manifestSyncStatus: sync.status,
+    manifestSyncError: sync.error,
+    manifestLastSyncedAt: sync.syncedAt,
+    manifestAction: sync.action,
   };
 }
 
@@ -633,11 +663,14 @@ export async function savePacketToEvent(input: SavePacketInput): Promise<SavePac
 export const MOCK_PACKET_SEGMENTS = [...MOCK_EVIDENCE_SEGMENTS, 'Packets'];
 export const ADMISSION_PACKET_SEGMENTS = ['01_CES', 'Evidence', 'Admission', 'Packets'];
 
-/** Resolve (auto-create) the root folder id for a packet library. */
+/** Resolve (auto-create) the root folder id for a packet library. While 01_CES
+ * is locked (no readiness date), ALL packet libraries resolve to the single
+ * Event Packets folder so nothing is written under the locked 01_CES tree. */
 export async function resolvePacketLibraryRoot(kind: 'mock' | 'admission'): Promise<string> {
   if (!env.calendarEvidenceEnabled) {
     throw new ApiError('validation_error', 'Google Drive evidence is disabled.', 400);
   }
+  if (env.drive01CesLocked) return DEFENSIBLE_PACKET_FOLDER_ID; // Event Packets
   const segments = kind === 'admission' ? ADMISSION_PACKET_SEGMENTS : MOCK_PACKET_SEGMENTS;
   return ensureFolderPath(segments);
 }
@@ -647,6 +680,10 @@ export interface SaveAdmissionPacketInput {
   title: string;
   html: string;
   patientRef?: string;
+  pdfBase64?: string;
+  eventId?: string;
+  workflowId?: string;
+  actor?: string;
 }
 
 /**
@@ -658,11 +695,11 @@ export async function saveAdmissionPacket(input: SaveAdmissionPacketInput): Prom
     throw new ApiError('validation_error', 'Google Drive evidence is disabled.', 400);
   }
   if (!input.packetId) throw new ApiError('validation_error', 'packetId is required.', 400);
-  if (!input.html) throw new ApiError('validation_error', 'Packet html is required.', 400);
-  // TEMP override: send all packets to a single folder (easy cleanup) when set.
-  const folderId = env.packetOverrideFolderId || await ensureFolderPath(ADMISSION_PACKET_SEGMENTS);
-  // Render to a real PDF when a browser is available; fall back to HTML otherwise.
-  const pdf = await htmlToPdf(input.html);
+  if (!input.html && !input.pdfBase64) throw new ApiError('validation_error', 'Packet html or pdfBase64 is required.', 400);
+  const folderId = DEFENSIBLE_PACKET_FOLDER_ID;
+  // Prefer pre-rendered PDF bytes (AcroForm fill); else render HTML→PDF when possible.
+  const directPdf = input.pdfBase64 ? Buffer.from(input.pdfBase64, 'base64') : null;
+  const pdf = directPdf ?? await htmlToPdf(input.html);
   const safeName = sanitizeFileName(`${input.packetId}.${pdf ? 'pdf' : 'html'}`);
   const res = await uploadOrReplaceFile({
     parentId: folderId, name: safeName,
@@ -670,12 +707,25 @@ export async function saveAdmissionPacket(input: SaveAdmissionPacketInput): Prom
     buffer: pdf ?? Buffer.from(input.html, 'utf8'),
   });
   log.info('google.admission-packet.saved', { packetId: input.packetId, fileId: res.fileId, replaced: res.replaced, format: pdf ? 'pdf' : 'html' });
+  const fileType = pdf ? 'PDF' : 'HTML';
+  const driveLink = res.webViewLink ?? driveFileUrl(res.fileId);
+  const fullFolderPath = 'Defensible Packets';
+  const sync = await upsertPacketIntoManifest(
+    { section: 'Admission', fullFolderPath, folderId, displayName: input.title, rawFileName: safeName, fileType, fileId: res.fileId, driveLink, note: input.packetId },
+    { actor: input.actor || 'system', eventId: input.eventId || input.packetId, workflowId: input.workflowId, packetType: 'Patient Admission' },
+  );
   return {
     driveFileId: res.fileId,
     driveFolderId: folderId,
-    driveFolderPath: env.packetOverrideFolderId ? `(override folder ${folderId})` : ADMISSION_PACKET_SEGMENTS.join('/'),
-    driveFileUrl: res.webViewLink ?? driveFileUrl(res.fileId),
+    driveFolderPath: fullFolderPath,
+    driveFileUrl: driveLink,
+    rawFileName: safeName,
+    fileType,
     replaced: res.replaced,
+    manifestSyncStatus: sync.status,
+    manifestSyncError: sync.error,
+    manifestLastSyncedAt: sync.syncedAt,
+    manifestAction: sync.action,
   };
 }
 

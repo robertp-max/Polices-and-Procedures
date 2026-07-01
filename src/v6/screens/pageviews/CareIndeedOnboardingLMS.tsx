@@ -328,16 +328,19 @@ const TRACKS: Record<TrackId, TrackMeta> = {
   },
   ADV: {
     id: "ADV",
-    name: "Advanced Training",
+    name: "Advanced Training — RN Clinical",
     cmsBasis: "Specialized Compliance & Plan of Care",
     reportsTo: "Clinical Manager / DON",
     color: "#F97316",
     icon: "🎓",
-    moduleIds: ["cms-485", "qapi"],
-    completionGate: "Complete Plan of Care simulator final cases.",
-    description: "Advanced clinical and QAPI training including CMS-485 Plan of Care mastery and quality program leadership.",
+    moduleIds: ["cms-485", "qapi", "oasis-e2-soc", "documentation-matters"],
+    completionGate: "Complete all Advanced Training simulator cases and defensibility scenarios.",
+    description: "Advanced clinical and QAPI training including CMS-485 Plan of Care mastery, OASIS-E2 SOC coding, documentation defensibility, and quality program leadership.",
   },
 };
+
+// Note: ADV cards use enhanced JSX below for chips/mini visuals while preserving the core stats and titles from MODULE_MAP.
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION D: HELPER UTILITIES
@@ -3669,9 +3672,16 @@ const cms485OnboardingModule: TrainingModule = {
   track: "ADV",
   durationMinutes: 120,
   policyMapped: ["CL-PR-001"],
-  pages: new Array(35) as any,
-  exam: new Array(3) as any,
+  pages: [
+    { title: "Overview", content: "<h2>CMS-485 Plan of Care</h2><p>Foundation for compliant POC documentation.</p>", narration: "Overview of CMS-485 Plan of Care requirements." },
+    { title: "Orders & Goals", content: "<h2>Orders and Goals</h2><p>Specific, measurable, patient-centered.</p>", narration: "Building specific orders and measurable goals." },
+  ],
+  exam: [
+    { id: "cms485-q1", stem: "The CMS-485 is the:", options: ["Physician order form", "Home Health Certification and Plan of Care", "Billing invoice", "Discharge summary"], correctIndex: 1, rationale: "It is the Plan of Care document." },
+    { id: "cms485-q2", stem: "POC documentation should be:", options: ["Vague and general", "Specific and traceable", "Completed after discharge", "Optional for Medicare"], correctIndex: 1, rationale: "Must be specific and traceable for compliance and payment." },
+  ],
   passScore: 80,
+  regulatoryBasis: "42 CFR §484.60",
 };
 
 const qapiOnboardingModule: TrainingModule = {
@@ -3679,10 +3689,53 @@ const qapiOnboardingModule: TrainingModule = {
   title: "Quality Assessment and Performance Improvement (QAPI) Training",
   track: "ADV",
   durationMinutes: 180,
-  policyMapped: ["QA-PR-001"],
-  pages: new Array(35) as any,
-  exam: new Array(15) as any,
+  policyMapped: ["QA-PG-001"],
+  pages: [
+    { title: "QAPI Framework", content: "<h2>QAPI Program Structure</h2><p>Performance improvement and data-driven quality.</p>", narration: "Introduction to QAPI framework and requirements." },
+    { title: "PIP and RCA", content: "<h2>Performance Improvement Projects</h2><p>Identify, analyze, correct using RCA/CAPA.</p>", narration: "Using PIPs and root cause analysis." },
+  ],
+  exam: [
+    { id: "qapi-q1", stem: "QAPI stands for:", options: ["Quality and Performance Improvement", "Quality Assessment and Performance Improvement", "Quarterly Audit Program", "Quality Assurance Protocol"], correctIndex: 1, rationale: "Quality Assessment and Performance Improvement." },
+    { id: "qapi-q2", stem: "A key QAPI tool is:", options: ["RCA / CAPA", "Only financial audit", "Staff satisfaction survey only", "Marketing plan"], correctIndex: 0, rationale: "Root cause analysis and corrective action." },
+  ],
   passScore: 80,
+  regulatoryBasis: "42 CFR §484.65",
+};
+
+const oasisSocModule: TrainingModule = {
+  id: "oasis-e2-soc",
+  title: "OASIS-E2 Start of Care Assessment",
+  track: "ADV",
+  durationMinutes: 150,
+  policyMapped: ["CL-CP-001"],
+  pages: [
+    { title: "SOC Assessment", content: "<h2>OASIS-E2 SOC</h2><p>Accurate item coding at start of care.</p>", narration: "OASIS-E2 Start of Care assessment process." },
+    { title: "Item Coding", content: "<h2>Key Items</h2><p>GG, wounds, behaviors, medications.</p>", narration: "Accurate coding of functional and clinical items." },
+  ],
+  exam: [
+    { id: "oasis-q1", stem: "OASIS-E2 is used for:", options: ["Only billing", "Quality measurement and payment", "Physician orders", "HR records"], correctIndex: 1, rationale: "OASIS data drives quality reporting and case mix." },
+    { id: "oasis-q2", stem: "SOC stands for:", options: ["Start of Care", "Summary of Charges", "Service Outcome Check", "Survey of Compliance"], correctIndex: 0, rationale: "Start of Care." },
+  ],
+  passScore: 80,
+  regulatoryBasis: "OASIS-E2 CMS Guidance + 42 CFR 484",
+};
+
+const docMattersModule: TrainingModule = {
+  id: "documentation-matters",
+  title: "CMS Documentation Matters / Documentation Defensibility",
+  track: "ADV",
+  durationMinutes: 120,
+  policyMapped: ["CL-CD-001"],
+  pages: [
+    { title: "Defensible Notes", content: "<h2>Defensible Documentation</h2><p>Weak vs strong examples.</p>", narration: "Principles of defensibility in clinical notes." },
+    { title: "Surveyor Lens", content: "<h2>How Surveyors Review</h2><p>Timeline, consistency, specificity.</p>", narration: "Viewing documentation through the surveyor's lens." },
+  ],
+  exam: [
+    { id: "doc-q1", stem: "Defensible documentation is:", options: ["Vague and timely", "Specific, accurate, and traceable", "Copied from prior notes", "Completed days later"], correctIndex: 1, rationale: "Specific, accurate, traceable." },
+    { id: "doc-q2", stem: "A common documentation pitfall is:", options: ["Using teach-back", "Copy-paste without review", "Objective measurements", "Patient quotes"], correctIndex: 1, rationale: "Copy-paste without clinical review creates risk." },
+  ],
+  passScore: 80,
+  regulatoryBasis: "42 CFR §484.60 / CL-CP-001",
 };
 
 const ALL_MODULES: TrainingModule[] = [
@@ -3702,6 +3755,8 @@ const ALL_MODULES: TrainingModule[] = [
   ...mappedACHCAnnualModules, // Mapped ACHC Annual Curriculum
   cms485OnboardingModule,
   qapiOnboardingModule,
+  oasisSocModule,
+  docMattersModule,
 ];
 
 const MODULE_MAP: Record<string, TrainingModule> = {};
@@ -4049,13 +4104,20 @@ const ModuleList: React.FC<{
               <div>
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="text-xs uppercase tracking-widest text-muted">GAO-{String(idx+1).padStart(2,'0')}</div>
+                    <div className="text-xs uppercase tracking-widest text-muted">RN-ADV-{String(idx+1).padStart(2,'0')}</div>
                     <h3 className="text-h3 font-medium text-ink mt-1">{isAvailable ? mod.title : `Module ${mid}`}</h3>
                   </div>
                   {result?.passed && <span className="text-[10px] px-2 py-0.5 rounded bg-tone-green-bg text-tone-green-text">Passed</span>}
                 </div>
                 {isAvailable && (
-                  <p className="mt-3 text-xs text-muted">{mod.durationMinutes} min • {mod.pages.length} pages • {mod.exam.length} questions</p>
+                  <p className="mt-3 text-xs text-muted">{mod.durationMinutes} min • {(mod.pages?.length ?? 0)} pages • {(mod.exam?.length ?? 0)} questions</p>
+                )}
+                {track.id === "ADV" && (
+                  <div className="mt-2 text-[10px] text-muted space-x-1">
+                    <span>Role: Clinical</span> • <span>Policy: {mod.policyMapped?.[0] || '—'}</span>
+                    <span className="ml-2">Mapped narration ✓</span>
+                    <span>Evidence ✓</span>
+                  </div>
                 )}
               </div>
 
@@ -4073,6 +4135,14 @@ const ModuleList: React.FC<{
                   <div className="text-tag text-muted">Best Score</div>
                 </div>
               </div>
+              {track.id === "ADV" && (
+                <div className="text-[10px] mt-1 p-1 bg-white/50 rounded text-muted" style={{fontSize:'9px'}}>
+                  {mid === 'cms-485' && 'Assessment → Orders → Goals → Freq → Signature'}
+                  {mid === 'qapi' && 'KPI • PIP • RCA/CAPA • Committee'}
+                  {mid === 'oasis-e2-soc' && 'SOC Rail • Item Card • Evidence • Rationale'}
+                  {mid === 'documentation-matters' && 'Weak vs Defensible • Surveyor Lens • Timeline'}
+                </div>
+              )}
             </article>
           );
         })}
@@ -4115,7 +4185,9 @@ const ModulePlayer: React.FC<{
     );
   }
 
-  const totalPages = mod.pages.length;
+  const pagesSafe = mod.pages ?? [];
+  const examSafe = mod.exam ?? [];
+  const totalPages = pagesSafe.length;
   const pageProgress = pct(currentPage + 1, totalPages);
 
   const handleNarrate = () => {
@@ -4123,14 +4195,15 @@ const ModulePlayer: React.FC<{
       stopNarration();
       setIsNarrating(false);
     } else {
-      speakNarration(mod.pages[currentPage].narration);
+      const page = pagesSafe[currentPage] ?? { narration: 'No narration available.' };
+      speakNarration(page.narration);
       setIsNarrating(true);
     }
   };
 
   const handleStartExam = () => {
     setIsExamMode(true);
-    setExamAnswers(new Array(mod.exam.length).fill(null));
+    setExamAnswers(new Array(examSafe.length).fill(null));
     setExamSubmitted(false);
     stopNarration();
   };
@@ -4143,8 +4216,8 @@ const ModulePlayer: React.FC<{
   };
 
   const handleSubmitExam = () => {
-    const correct = mod.exam.reduce((acc, q, idx) => acc + (examAnswers[idx] === q.correctIndex ? 1 : 0), 0);
-    const score = pct(correct, mod.exam.length);
+    const correct = examSafe.reduce((acc, q, idx) => acc + (examAnswers[idx] === q.correctIndex ? 1 : 0), 0);
+    const score = pct(correct, examSafe.length);
     setExamScore(score);
     setExamSubmitted(true);
 
@@ -4178,11 +4251,11 @@ const ModulePlayer: React.FC<{
         <div style={{ ...styles.card, background: `linear-gradient(135deg, ${BRAND.primary}, ${BRAND.primaryLight})`, color: "white" }}>
           <h2 style={{ margin: 0 }}>📝 Final Exam — {mod.id}: {mod.title}</h2>
           <p style={{ margin: "4px 0 0 0", opacity: 0.9 }}>
-            {mod.exam.length} questions · {mod.passScore}% to pass
+            {examSafe.length} questions · {mod.passScore ?? 80}% to pass
           </p>
         </div>
 
-        {mod.exam.map((q, qIdx) => (
+        {examSafe.map((q, qIdx) => (
           <div key={q.id} style={{ ...styles.card }}>
             <p style={{ fontWeight: 600, marginBottom: "12px" }}>
               {qIdx + 1}. {q.stem}
@@ -4451,9 +4524,21 @@ const CareIndeedOnboardingLMS: React.FC = () => {
   };
 
   return (
-    <div style={{ color: BRAND.textPrimary }}>
+    <div style={{ color: BRAND.textPrimary, paddingTop: "72px" }}>
       {/* Category Tabs */}
-      <div style={{ display: "flex", borderBottom: `1px solid ${BRAND.border}`, marginBottom: "24px" }}>
+      <div
+        style={{
+          position: "fixed",
+          left: "104px",
+          right: 0,
+          top: "20px",
+          zIndex: 9999,
+          display: "flex",
+          borderBottom: `1px solid ${BRAND.border}`,
+          marginBottom: "24px",
+          background: "rgba(247, 251, 251, 0.96)",
+        }}
+      >
         <button
           type="button"
           onClick={() => handleTabChange('onboarding')}

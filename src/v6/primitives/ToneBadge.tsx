@@ -63,6 +63,8 @@ const iconBySemantic: Partial<Record<StatusIndicatorSemantic, LucideIcon>> = {
   uploaded: Upload,
   validated: CheckCircle2,
   warning: AlertTriangle,
+  required: AlertTriangle,
+  ok: CheckCircle2,
 };
 
 export function ToneBadge({ className, size = 'md', status, ...props }: ToneBadgeProps) {

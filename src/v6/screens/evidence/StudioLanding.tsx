@@ -106,10 +106,35 @@ export function StudioLanding() {
   // Drive copy (root-relative paths can't resolve in the headless renderer). A
   // tiny per-page logo (<5KB) + a richer cover logo (~25KB) keep the payload small.
   const logoDataUris = useRef<{ page: string; cover: string }>({ page: '', cover: '' });
-  const [packetSave, setPacketSave] = useState<{ status: 'idle' | 'saving' | 'saved' | 'error'; replaced?: boolean; url?: string; msg?: string }>({ status: 'idle' });
-  const doSavePacket = useCallback((p: { packetId?: string; eventId?: string; title?: string; html?: string }) => {
-    if (!p.eventId || !p.html) return;
+  const [packetSave, setPacketSave] = useState<{ status: 'idle' | 'saving' | 'saved' | 'error'; replaced?: boolean; url?: string; msg?: string; manifestStatus?: 'synced' | 'failed'; manifestError?: string }>({ status: 'idle' });
+  const lastPacketPayload = useRef<{ packetId?: string; eventId?: string; title?: string; html?: string; pdfBase64?: string } | null>(null);
+  const doSavePacket = useCallback((p: { packetId?: string; eventId?: string; title?: string; html?: string; pdfBase64?: string }) => {
+    if (!p.eventId || (!p.html && !p.pdfBase64)) return;
+    lastPacketPayload.current = p;
     const ev = events.find((e) => e.id === p.eventId);
+    // Pre-rendered PDF (e.g. an AcroForm admission packet filled client-side) —
+    // save the bytes directly; no HTML wrapping, no server-side browser render.
+    if (p.pdfBase64) {
+      const sig = p.eventId + ':pdf:' + p.pdfBase64.length;
+      if (sig === lastSavedSig.current) return;
+      lastSavedSig.current = sig;
+      setPacketSave({ status: 'saving' });
+      CalendarApi.savePacket({ eventId: p.eventId, packetId: p.packetId || p.eventId, title: p.title || p.eventId, html: '', pdfBase64: p.pdfBase64, eventDate: ev?.date, domain: ev?.domain })
+        .then((r) => {
+          setPacketSave({ status: 'saved', replaced: r.replaced, url: r.driveFileUrl, manifestStatus: r.manifestSyncStatus, manifestError: r.manifestSyncError });
+          if (r.driveFileUrl) {
+            try {
+              const map = JSON.parse(localStorage.getItem('ci-packet-drive-urls') || '{}') as Record<string, string>;
+              if (p.eventId) map[p.eventId] = r.driveFileUrl;
+              if (p.packetId) map[p.packetId] = r.driveFileUrl;
+              localStorage.setItem('ci-packet-drive-urls', JSON.stringify(map));
+            } catch { /* ignore */ }
+          }
+        })
+        .catch((e: unknown) => setPacketSave({ status: 'error', msg: e instanceof Error ? e.message : 'Drive save failed' }));
+      return;
+    }
+    if (!p.html) return;
     const doc = iframeRef.current?.contentDocument;
     const styles = doc ? Array.from(doc.querySelectorAll('style')).map((s) => s.outerHTML).join('\n') : '';
     // Inline both logos as data URIs so they render in the server PDF + Drive copy
@@ -150,13 +175,13 @@ export function StudioLanding() {
   // save each generated packet to Drive.
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
-      const d = e.data as { type?: string; eventId?: string; packetId?: string; title?: string; html?: string } | undefined;
+      const d = e.data as { type?: string; eventId?: string; packetId?: string; title?: string; html?: string; pdfBase64?: string } | undefined;
       if (d?.type === 'ci-event-selected' && typeof d.eventId === 'string') setEventId(d.eventId || eventId);
       else if (d?.type === 'ci-print-packet') {
         window.setTimeout(() => { try { iframeRef.current?.contentWindow?.postMessage({ type: 'ci-enable-download' }, '*'); } catch { /* ignore */ } }, 200);
-      } else if (d?.type === 'ci-packet-content' && d.eventId && d.html) {
+      } else if (d?.type === 'ci-packet-content' && d.eventId && (d.html || d.pdfBase64)) {
         if (saveTimer.current) clearTimeout(saveTimer.current);
-        const payload = { packetId: d.packetId, eventId: d.eventId, title: d.title, html: d.html };
+        const payload = { packetId: d.packetId, eventId: d.eventId, title: d.title, html: d.html, pdfBase64: d.pdfBase64 };
         saveTimer.current = window.setTimeout(() => doSavePacket(payload), 700);
       }
     };
@@ -295,10 +320,16 @@ export function StudioLanding() {
             Drive {driveReachable ? 'connected' : (driveHealth ? 'unavailable' : 'checking…')}
           </span>
           {packetSave.status === 'saving' && <span className="flex items-center gap-xs text-muted"><Loader2 className="h-3 w-3 animate-spin" /> Saving packet…</span>}
-          {packetSave.status === 'saved' && (
+          {packetSave.status === 'saved' && packetSave.manifestStatus !== 'failed' && (
             <span className="flex items-center gap-xs text-brand-teal-deep">
-              <CheckCircle2 className="h-3.5 w-3.5" /> Packet {packetSave.replaced ? 'updated' : 'saved'} to Drive
+              <CheckCircle2 className="h-3.5 w-3.5" /> Packet {packetSave.replaced ? 'updated' : 'saved'} to Drive{packetSave.manifestStatus === 'synced' ? ' + manifest' : ''}
               {packetSave.url && <a href={packetSave.url} target="_blank" rel="noreferrer" className="underline hover:text-brand-teal">view</a>}
+            </span>
+          )}
+          {packetSave.status === 'saved' && packetSave.manifestStatus === 'failed' && (
+            <span className="flex items-center gap-xs text-tone-orange-text" title={packetSave.manifestError}>
+              <XCircle className="h-3.5 w-3.5" /> Packet saved, but manifest sync FAILED — evidence not fully complete
+              <button type="button" onClick={() => { if (lastPacketPayload.current) doSavePacket(lastPacketPayload.current); }} className="underline hover:text-brand-teal">Retry sync</button>
             </span>
           )}
           {packetSave.status === 'error' && <span className="flex items-center gap-xs text-tone-orange-text" title={packetSave.msg}><XCircle className="h-3.5 w-3.5" /> Packet not saved to Drive</span>}

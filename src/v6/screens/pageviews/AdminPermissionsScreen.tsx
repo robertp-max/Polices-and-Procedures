@@ -1,7 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
 import { AlertTriangle, ClipboardCheck, FileCheck2, KeyRound, LockKeyhole, ShieldCheck, UserCog } from 'lucide-react';
 import { DataTable, MetricGrid, SurfaceCard, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
-import { PageHeader } from '../../shell';
 import { ToneBadge } from '../../primitives';
 import { cx } from '../../utils/classNames';
 
@@ -226,10 +225,7 @@ export function AdminPermissionsScreen() {
       data-route="/admin/permissions"
       data-template="matrix"
     >
-      <PageHeader
-        badge="Admin"
-        title="Permissions"
-      />
+      <div className="sr-only"><h1>Permissions</h1></div>
       <MetricGrid metrics={permissionMetrics} />
       <section className="grid gap-xl rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset/90 p-xl shadow-rest backdrop-blur-xl">
         <nav aria-label="Permission detail tabs" className="flex gap-xs overflow-x-auto rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs overflow-hidden shadow-rest">

@@ -22,6 +22,7 @@ export const REQUIRED_STATUS_CODES = [
   'validated',
   'promoted',
   'archived',
+  'required',
 ] as const;
 
 export const SECTION_17_STATUS_CODES = [
@@ -34,6 +35,7 @@ export const SECTION_17_STATUS_CODES = [
   'backlog',
   'info',
   'review',
+  'ok',
 ] as const;
 
 export type RequiredStatusCode = (typeof REQUIRED_STATUS_CODES)[number];
@@ -62,6 +64,7 @@ export type StatusIndicatorSemantic =
   | 'pending'
   | 'promoted'
   | 'ready'
+  | 'required'
   | 'returned'
   | 'review'
   | 'review-required'
@@ -71,7 +74,8 @@ export type StatusIndicatorSemantic =
   | 'upcoming'
   | 'uploaded'
   | 'validated'
-  | 'warning';
+  | 'warning'
+  | 'ok';
 
 export interface StatusIndicator {
   kind: StatusIndicatorKind;
@@ -130,6 +134,8 @@ export const STATUS_TONE = {
   backlog: entry('slate', 'Backlog', dot('backlog')),
   info: entry('blue', 'Info', icon('info')),
   review: entry('violet', 'In Review', icon('review')),
+  required: entry('orange', 'Required', icon('review-required')),
+  ok: entry('green', 'OK', icon('validated')),
 } satisfies Record<StatusCode, ToneEntry>;
 
 const STATUS_LOOKUP: Readonly<Partial<Record<string, ToneEntry>>> = STATUS_TONE;

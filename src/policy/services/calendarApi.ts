@@ -197,15 +197,39 @@ const AUTH_HEADER: Record<string, string> = (() => {
   return token ? { Authorization: `Bearer ${token}` } : ({} as Record<string, string>);
 })();
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      ...AUTH_HEADER,
-    },
-    body: body == null ? undefined : JSON.stringify(body),
-  });
+/** Hard ceiling so a hung server/Drive call can never block the UI forever. */
+const REQUEST_TIMEOUT_MS = 45_000;
+/** Longer ceiling for source extraction: server runs 3 sequential Brad reads
+ * (~90s each worst case = ~270s) plus PDF parse + overhead — 330s leaves margin. */
+const EXTRACT_TIMEOUT_MS = 330_000;
+
+async function request<T>(method: string, path: string, body?: unknown, timeoutMs = REQUEST_TIMEOUT_MS): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        ...AUTH_HEADER,
+      },
+      body: body == null ? undefined : JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } catch (e) {
+    const aborted = e instanceof DOMException && e.name === 'AbortError';
+    const err: CalendarApiError = {
+      code: aborted ? 'throttled' : 'network_error',
+      message: aborted
+        ? `Request timed out after ${Math.round(timeoutMs / 1000)}s (the API or Google Drive did not respond).`
+        : (e instanceof Error ? e.message : 'Network request failed'),
+      status: 0,
+    };
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
   if (res.status === 204) return undefined as T;
   const text = await res.text();
   const json = text ? safeJson(text) : null;
@@ -300,6 +324,40 @@ export const CalendarApi = {
     return request('POST', '/intake/packet', input);
   },
 
+  /** Render standalone packet HTML to a faithful multi-page Letter PDF (Playwright,
+   * server-side). Used for the admission form template so it paginates to its true
+   * page count instead of one on-screen block. Longer timeout — headless render. */
+  async renderPdf(html: string): Promise<{ pdfBase64?: string; byteSize?: number }> {
+    return request('POST', '/intake/render-pdf', { html }, EXTRACT_TIMEOUT_MS);
+  },
+
+  /** Render the full 63-page admission FORM template server-side from verified
+   * fields (Playwright, preferCSSPageSize). Returns the faithful multi-page PDF. */
+  async renderAdmission(fields: Record<string, string>): Promise<{ pdfBase64?: string; pageCount?: number; filled?: number }> {
+    return request('POST', '/intake/render-admission', { fields }, EXTRACT_TIMEOUT_MS);
+  },
+
+  /** Distinct Drive folders from the CSV manifest (source of truth for the Evidence Drive grid). */
+  async manifestFolders(): Promise<ManifestFoldersResponse> {
+    return request('GET', '/manifest/folders');
+  },
+
+  /** Read-only enriched manifest rows (files + folders) for CES Evidence Drive search. */
+  async manifestRows(): Promise<ManifestRowsResponse> {
+    return request('GET', '/manifest/rows');
+  },
+
+  /** Verification-first source extraction: PDF/text -> 3x-read field map (no invention).
+   * Uses a longer timeout — the server runs 3 sequential Brad reads. */
+  async extractSource(input: { fileName: string; mimeType: string; fileBase64: string; template: SourceTemplateKind }): Promise<SourceExtractionApiResult> {
+    return request('POST', '/intake/extract-source', input, EXTRACT_TIMEOUT_MS);
+  },
+  /** Convenience: extract directly from a File using a binary-safe base64 encode. */
+  async extractSourceFile(file: File, template: SourceTemplateKind): Promise<SourceExtractionApiResult> {
+    const fileBase64 = await fileToBase64(file);
+    return request('POST', '/intake/extract-source', { fileName: file.name, mimeType: file.type || 'application/octet-stream', fileBase64, template }, EXTRACT_TIMEOUT_MS);
+  },
+
   /**
    * Seed the Brad Training library from the real "2026 Brad Training" Drive
    * folder — URL/metadata only (no document bytes). Returns the immediate
@@ -346,6 +404,8 @@ export interface SavePacketInput {
   packetId: string;
   title: string;
   html: string;
+  /** Pre-rendered PDF bytes (base64). When present, the server saves them directly — no HTML→PDF render. */
+  pdfBase64?: string;
   eventDate?: string;
   domain?: string;
 }
@@ -354,7 +414,101 @@ export interface SavePacketResponse {
   driveFolderId: string;
   driveFolderPath: string;
   driveFileUrl: string;
+  rawFileName?: string;
+  fileType?: string;
   replaced: boolean;
+  /** Drive CSV manifest write-back status (see server/manifest.ts). */
+  manifestSyncStatus?: 'synced' | 'failed';
+  manifestSyncError?: string;
+  manifestLastSyncedAt?: string;
+  manifestAction?: 'updated' | 'appended';
+}
+
+export interface ManifestFolder {
+  section: string;
+  folderName: string;
+  fullFolderPath: string;
+  folderId: string;
+  folderUrl: string;
+  folderDepth: number;
+  count: number;
+  lastUpdated: string;
+}
+export interface ManifestFoldersResponse {
+  enabled: boolean;
+  folders: ManifestFolder[];
+  error?: string;
+}
+
+export interface ManifestSearchRow {
+  kind: 'file' | 'folder';
+  rawFileName: string;
+  displayName: string;
+  fullFolderPath: string;
+  parentFolderPath: string;
+  folderName: string;
+  folderId: string;
+  folderUrl: string;
+  fileType: string;
+  fileId: string;
+  driveLink: string;
+  lastUpdated: string;
+  notes: string;
+  eventId: string;
+  workflowId: string;
+  policyId: string;
+  formId: string;
+  packetName: string;
+  signerName: string;
+  createdBy: string;
+  evidenceStatus: string;
+}
+export interface ManifestRowsResponse {
+  enabled: boolean;
+  rows: ManifestSearchRow[];
+  rootFolderId: string;
+  error?: string;
+}
+
+export type SourceTemplateKind = 'admission' | 'qapi' | 'event' | 'generic';
+export interface ExtractionReconciledField {
+  key: string;
+  value: string | null;
+  confidence: number;     // 0..1
+  sourceSnippet: string;  // verbatim evidence from the source
+  agreement: number;      // how many of the 3 reads agreed
+  needsReview: boolean;
+  group?: string;         // review-UI section grouping
+  label?: string;         // human label from the extraction schema
+}
+export interface SourceMetadata {
+  sourceId: string;
+  fileName: string;
+  mimeType: string;
+  byteSize: number;
+  contentHash: string;
+  format: 'pdf' | 'text' | 'unknown';
+  pageCount?: number;
+  charCount?: number;
+  hasText?: boolean;
+  localPath: string;
+  extractionPath: string;
+  driveFileId: string | null;
+  driveUrl: string | null;
+  createdAtNote: string;
+}
+export interface SourceExtractionApiResult {
+  template: SourceTemplateKind;
+  metadata: SourceMetadata;
+  extraction: {
+    engine: 'brad' | 'unavailable';
+    passes: number;
+    fields: ExtractionReconciledField[];
+    missing: string[];
+    mapping: { key: string; sourceSnippet: string }[];
+    conflicts: { key: string; values: string[] }[];
+    validationSummary: string;
+  };
 }
 
 export interface BradTrainingFile {

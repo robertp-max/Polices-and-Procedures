@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { FolderOpen, Calendar, ClipboardCheck, Landmark, Stethoscope, ShieldCheck, AlertTriangle, Users, GraduationCap, Settings, FileStack } from 'lucide-react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { CalendarApi, type BradTrainingResponse, type ManifestFolder } from '@/policy/services/calendarApi';
 import StudioLanding from './StudioLanding';
+import { FolderOpen, Calendar, ClipboardCheck, Landmark, Stethoscope, ShieldCheck, AlertTriangle, Users, GraduationCap, Settings, FileStack } from 'lucide-react';
 
 /* ════════════════════════════════════════════════════════════════════════════
    Evidence Studio — DefenCIble UI (ported from the approved design
@@ -63,6 +64,8 @@ type DriveFolder = {
   icon: IconKey;
   pageDesc?: string;
   children?: DriveFolder[];
+  /** Real Google Drive folder URL — when set, the card opens Drive in a new tab. */
+  folderUrl?: string;
 };
 
 const ACCENTS: Record<AccentKey, { from: string; to: string }> = {
@@ -146,6 +149,28 @@ const DRIVE_TREE: DriveFolder[] = [
   },
 ];
 
+function accentForSection(section: string): AccentKey {
+  const s = (section || '').toLowerCase();
+  if (s.includes('admission')) return 'blue';
+  if (s.includes('qapi')) return 'teal';
+  if (s.includes('incident') || s.includes('adverse')) return 'orange';
+  if (s.includes('infection')) return 'green';
+  if (s.includes('govern') || s.includes('board')) return 'aqua';
+  if (s.includes('draft')) return 'purple';
+  return 'gold';
+}
+function iconForSection(section: string): IconKey {
+  const s = (section || '').toLowerCase();
+  if (s.includes('admission')) return 'admission';
+  if (s.includes('qapi')) return 'qapi';
+  if (s.includes('infection')) return 'infection';
+  if (s.includes('govern') || s.includes('board')) return 'governance';
+  if (s.includes('clinical')) return 'clinical';
+  if (s.includes('safety')) return 'safety';
+  if (s.includes('draft')) return 'draft';
+  return 'year';
+}
+
 function DriveCard({ folder, onOpen }: { folder: DriveFolder; onOpen: () => void }) {
   const a = ACCENTS[folder.accent];
   const Icon = ICONS[folder.icon];
@@ -177,13 +202,36 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
   const [activeTab, setActiveTab] = useState<string>(TAB_FROM_INITIAL[initialTab] ?? 'CREATE PACKET');
   const [folderPackets, setFolderPackets] = useState<Packet[]>([]);
   const [drivePath, setDrivePath] = useState<string[]>([]);
+  // Real Drive folders from the CSV manifest (source of truth). Loaded when the
+  // DRIVE tab opens; each folder opens its real Google Drive URL in a new tab.
+  const [realFolders, setRealFolders] = useState<ManifestFolder[]>([]);
+  const [foldersErr, setFoldersErr] = useState<string | null>(null);
+  useEffect(() => {
+    if (activeTab !== 'DRIVE') return;
+    let on = true;
+    CalendarApi.manifestFolders()
+      .then((r) => { if (on) { setRealFolders(r.folders || []); setFoldersErr(r.error ?? null); } })
+      .catch((e) => { if (on) { setRealFolders([]); setFoldersErr(e instanceof Error ? e.message : 'Manifest unavailable'); } });
+    return () => { on = false; };
+  }, [activeTab]);
+  const realTop: DriveFolder[] = realFolders.map((f) => ({
+    name: f.folderName || f.section || 'Folder',
+    subtitle: f.fullFolderPath || undefined,
+    meta: `${f.count} FILE${f.count === 1 ? '' : 'S'}${f.lastUpdated ? ' · ' + f.lastUpdated : ''}`,
+    accent: accentForSection(f.section),
+    icon: iconForSection(f.section),
+    folderUrl: f.folderUrl,
+  }));
   // Walk the drive path → current level items + node (for breadcrumb + page desc).
-  let driveLevel: DriveFolder[] = DRIVE_TREE;
+  // Top level uses REAL manifest folders when available (else the sample tree).
+  const rootLevel: DriveFolder[] = realTop.length > 0 ? realTop : DRIVE_TREE;
+  let driveLevel: DriveFolder[] = rootLevel;
   let driveNode: DriveFolder | null = null;
   for (const seg of drivePath) {
     driveNode = driveLevel.find((f) => f.name === seg) ?? null;
     driveLevel = driveNode?.children ?? [];
   }
+  const usingSample = realTop.length === 0;
 
   // --- STUDIO STATE ---
   const [step, setStep] = useState(1);
@@ -192,6 +240,40 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
   const [dataSource, setDataSource] = useState('');
   const [signers, setSigners] = useState<Signer[]>([]);
+
+  // --- DATA SOURCE (Step 3): real document upload + Google Drive folder picker ---
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [dataDocs, setDataDocs] = useState<{ name: string; source: 'upload' | 'drive'; id?: string }[]>([]);
+  const [folderModalOpen, setFolderModalOpen] = useState(false);
+  const [driveLoading, setDriveLoading] = useState(false);
+  const [driveErr, setDriveErr] = useState<string | null>(null);
+  const [driveData, setDriveData] = useState<BradTrainingResponse | null>(null);
+  const [driveTrail, setDriveTrail] = useState<{ id: string; name: string }[]>([]);
+  const onFilesChosen = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length) setDataDocs((prev) => [...prev, ...files.map((f) => ({ name: f.name, source: 'upload' as const }))]);
+    e.target.value = '';
+  };
+  const loadDrive = (folderId: string | undefined, trail: { id: string; name: string }[]) => {
+    setDriveLoading(true); setDriveErr(null); setDriveTrail(trail);
+    CalendarApi.bradTrainingDocs(folderId)
+      .then((d) => setDriveData(d))
+      .catch((err) => setDriveErr(err instanceof Error ? err.message : 'Google Drive is not reachable.'))
+      .finally(() => setDriveLoading(false));
+  };
+  const openFolderModal = () => { setFolderModalOpen(true); setDriveData(null); loadDrive(undefined, []); };
+  const addDriveFile = (f: { id: string; name: string }) => setDataDocs((prev) => prev.some((x) => x.id === f.id) ? prev : [...prev, { name: f.name, source: 'drive' as const, id: f.id }]);
+
+  // Studio "Set up Signing →" posts ci-open-signature-tracker; host switches to the
+  // Signature Tracker tab (fixes the Sign button that previously only toasted).
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      const d = e.data as { type?: string } | undefined;
+      if (d?.type === 'ci-open-signature-tracker') setActiveTab('SIGNATURE TRACKER');
+    };
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
 
   // --- EDIT PACKET STATE ---
   const [editPacketId, setEditPacketId] = useState('');
@@ -294,7 +376,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
   const navTabs = ['DRIVE', 'CREATE PACKET', 'EDIT PACKET', 'SIGNATURE TRACKER'];
 
   return (
-    <div className="min-h-screen p-6 md:p-10" style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #E0F2FE 100%)' }} data-hash-id="evidence-center" data-route="/evidence" data-template="evidence">
+    <div className="min-h-screen bg-transparent p-6 md:p-10" data-hash-id="evidence-center" data-route="/evidence" data-template="evidence">
       <style dangerouslySetInnerHTML={{ __html: `
         .ci-evidence-studio ::-webkit-scrollbar { display: none; }
         .ci-evidence-studio * { -ms-overflow-style: none; scrollbar-width: none; }
@@ -320,8 +402,8 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
 
         {/* ==================== DRIVE TAB ==================== */}
         {activeTab === 'DRIVE' && (
-          <div className="bg-white/95 backdrop-blur-sm rounded-[32px] p-8 shadow-xl border border-transparent animate-fade-in min-h-[500px]">
-            <div className="mb-6 pb-6 border-b border-gray-100">
+          <div className="animate-fade-in min-h-[500px]">
+            <div className="mb-6 pb-6">
               <h2 className="text-xl text-[#007C7A] mb-1">{driveNode ? driveNode.name : 'Evidence'}</h2>
               <p className="text-sm text-gray-500 font-light max-w-2xl">{driveNode?.pageDesc ?? 'Compliance evidence organized by area — open a folder to drill into years, events, and audit-ready documents.'}</p>
             </div>
@@ -337,10 +419,18 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
               ))}
             </div>
 
+            {drivePath.length === 0 && (
+              usingSample
+                ? <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-md py-sm text-xs text-amber-800">Showing <strong>sample</strong> folders — connect Google Drive{foldersErr ? ` (${foldersErr})` : ''} or set <code>DRIVE_MANIFEST_FILE_ID</code> to list the real evidence folders from the manifest.</div>
+                : <div className="mb-5 rounded-lg border border-tone-teal-border bg-tone-teal-bg px-md py-sm text-xs text-brand-teal-deep">Live from the Drive manifest — {realFolders.length} folder{realFolders.length === 1 ? '' : 's'}. Click a folder to open it in Google Drive.</div>
+            )}
             {driveLevel.length > 0 ? (
               <div className="flex flex-wrap gap-7">
                 {driveLevel.map((folder, idx) => (
-                  <DriveCard key={idx} folder={folder} onOpen={() => { if (folder.children) setDrivePath([...drivePath, folder.name]); }} />
+                  <DriveCard key={idx} folder={folder} onOpen={() => {
+                    if (folder.folderUrl) { window.open(folder.folderUrl, '_blank', 'noopener,noreferrer'); return; }
+                    if (folder.children) setDrivePath([...drivePath, folder.name]);
+                  }} />
                 ))}
               </div>
             ) : (
@@ -374,17 +464,17 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
           </div>
         )}
 
-        {/* ==================== CREATE PACKET TAB — real packet studio (upload + Drive folder picker + optimized logos) ==================== */}
+        {/* ==================== CREATE PACKET TAB — real studio (generates packet, uploads to Drive, exports file) ==================== */}
         {activeTab === 'CREATE PACKET' && (
           <div className="animate-fade-in">
             <StudioLanding />
           </div>
         )}
 
-        {/* Legacy mock preview flow — DISABLED (condition never matches a real tab). The real
-            generator (StudioLanding → /care_indeed_pdf_studio.html: upload, uploaded-docs,
-            Drive folder picker modal) renders above. Kept un-rendered; safe to delete later. */}
-        {activeTab === '__legacy_mock_disabled__' && (
+        {/* Prototype card flow — DISABLED (condition never matches a real tab). The real generator
+            (StudioLanding → /care_indeed_pdf_studio.html) above does real generation + Google Drive
+            upload + file export. Kept un-rendered so the rest of the file stays intact. */}
+        {activeTab === '__prototype_cards_disabled__' && (
           <div className="space-y-6">
 
             {/* STAGE 1: TEMPLATE */}
@@ -459,23 +549,102 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
               </div>
             )}
 
-            {/* STAGE 3: DATA SOURCE */}
+            {/* STAGE 3: DATA SOURCE — real upload + Google Drive folder picker */}
             {step === 3 && (
               <div className="bg-white/95 backdrop-blur-sm rounded-[32px] p-8 shadow-xl border border-transparent animate-fade-in">
                 <button type="button" onClick={() => setStep(2)} className="text-[11px] font-medium uppercase tracking-wider text-gray-400 mb-6 hover:text-[#007C7A] transition-colors">← Back</button>
                 <h2 className="text-sm tracking-widest text-gray-500 uppercase font-medium mb-6">2 • Select Data Source *</h2>
 
+                <input ref={fileInputRef} type="file" multiple className="hidden" onChange={onFilesChosen} aria-label="Upload documents" title="Upload documents" accept="image/*,application/pdf,.json,.csv,.tsv,.md,.txt" />
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {['Upload / Camera', 'Folders', 'Both (Merge)'].map((src) => (
-                    <button key={src} type="button"
-                      onClick={() => { setDataSource(src); setStep(4); }}
-                      className="p-8 border border-transparent shadow-md bg-white rounded-[24px] cursor-pointer hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 text-center"
-                    >
-                      <div className="font-medium text-gray-800 text-lg">{src}</div>
-                      {src.includes('Upload') && <div className="text-[10px] font-light uppercase tracking-widest text-gray-400 mt-3">Images, PDF, Data files</div>}
-                    </button>
-                  ))}
+                  <button type="button" onClick={() => { setDataSource('Upload / Camera'); fileInputRef.current?.click(); }}
+                    className="p-8 border border-transparent shadow-md bg-white rounded-[24px] cursor-pointer hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 text-center">
+                    <div className="font-medium text-gray-800 text-lg">Upload / Camera</div>
+                    <div className="text-[10px] font-light uppercase tracking-widest text-gray-400 mt-3">Images, PDF, Data files</div>
+                  </button>
+                  <button type="button" onClick={() => { setDataSource('Folders'); openFolderModal(); }}
+                    className="p-8 border border-transparent shadow-md bg-white rounded-[24px] cursor-pointer hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 text-center">
+                    <div className="font-medium text-gray-800 text-lg">Folders</div>
+                    <div className="text-[10px] font-light uppercase tracking-widest text-gray-400 mt-3">Browse Google Drive</div>
+                  </button>
+                  <button type="button" onClick={() => { setDataSource('Both (Merge)'); fileInputRef.current?.click(); }}
+                    className="p-8 border border-transparent shadow-md bg-white rounded-[24px] cursor-pointer hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 text-center">
+                    <div className="font-medium text-gray-800 text-lg">Both (Merge)</div>
+                    <div className="text-[10px] font-light uppercase tracking-widest text-gray-400 mt-3">Upload + Drive folder</div>
+                  </button>
                 </div>
+
+                {/* Uploaded Documents */}
+                {dataDocs.length > 0 && (
+                  <div className="mt-8">
+                    <h3 className="text-sm font-medium text-gray-800 mb-4">Uploaded Documents <span className="font-light text-gray-400">({dataDocs.length})</span></h3>
+                    <div className="space-y-2">
+                      {dataDocs.map((d, i) => (
+                        <div key={`${d.name}-${i}`} className="flex items-center justify-between gap-3 rounded-[14px] border border-gray-100 bg-gray-50 px-4 py-3">
+                          <div className="flex min-w-0 items-center gap-3">
+                            <DocIcon />
+                            <span className="truncate text-sm text-gray-800">{d.name}</span>
+                            <span className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-gray-400">{d.source === 'drive' ? 'Google Drive' : 'Upload'}</span>
+                          </div>
+                          <button type="button" aria-label="Remove document" title="Remove document" onClick={() => setDataDocs((prev) => prev.filter((_, j) => j !== i))} className="shrink-0 text-lg leading-none text-gray-400 hover:text-red-500">×</button>
+                        </div>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => setStep(4)} className="mt-6 rounded-full bg-[#007C7A] px-8 py-3 text-xs font-medium uppercase tracking-wider text-white shadow-md transition-all hover:shadow-lg">Continue →</button>
+                  </div>
+                )}
+
+                {/* Google Drive folder picker modal */}
+                {folderModalOpen && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6" onClick={() => setFolderModalOpen(false)}>
+                    <div className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-[24px] bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+                        <h3 className="text-sm font-medium uppercase tracking-widest text-[#007C7A]">Select from Google Drive</h3>
+                        <button type="button" aria-label="Close" title="Close" onClick={() => setFolderModalOpen(false)} className="text-xl leading-none text-gray-400 hover:text-gray-700">×</button>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 border-b border-gray-50 px-6 py-3 text-[11px] font-medium uppercase tracking-wider text-gray-400">
+                        <button type="button" onClick={() => loadDrive(undefined, [])} className="hover:text-[#007C7A]">Drive</button>
+                        {driveTrail.map((t, i) => (
+                          <span key={t.id} className="flex items-center gap-2">
+                            <span className="text-gray-300">/</span>
+                            <button type="button" onClick={() => loadDrive(t.id, driveTrail.slice(0, i + 1))} className="hover:text-[#007C7A]">{t.name}</button>
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex-1 overflow-y-auto px-6 py-4">
+                        {driveLoading ? (
+                          <div className="py-12 text-center text-sm font-light text-gray-400">Loading…</div>
+                        ) : driveErr ? (
+                          <div className="py-12 text-center text-sm font-light text-red-500">{driveErr}</div>
+                        ) : driveData && (driveData.folders.length > 0 || driveData.files.length > 0) ? (
+                          <div className="space-y-2">
+                            {driveData.folders.map((f) => (
+                              <button key={f.id} type="button" onClick={() => loadDrive(f.id, [...driveTrail, { id: f.id, name: f.name }])} className="flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left hover:bg-teal-50/60">
+                                <FolderOpen className="h-4 w-4 text-[#007C7A]" />
+                                <span className="text-sm text-gray-800">{f.name}</span>
+                              </button>
+                            ))}
+                            {driveData.files.map((f) => {
+                              const added = dataDocs.some((x) => x.id === f.id);
+                              return (
+                                <button key={f.id} type="button" onClick={() => addDriveFile({ id: f.id, name: f.name })} className="flex w-full items-center justify-between gap-3 rounded-[12px] px-3 py-2.5 text-left hover:bg-gray-50">
+                                  <span className="flex min-w-0 items-center gap-3"><DocIcon /><span className="truncate text-sm text-gray-800">{f.name}</span></span>
+                                  <span className={`shrink-0 text-[10px] font-medium uppercase tracking-wider ${added ? 'text-teal-600' : 'text-gray-400'}`}>{added ? '✓ Added' : 'Add'}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="py-12 text-center text-sm font-light text-gray-400">This folder is empty.</div>
+                        )}
+                      </div>
+                      <div className="flex justify-end border-t border-gray-100 px-6 py-4">
+                        <button type="button" onClick={() => setFolderModalOpen(false)} className="rounded-full bg-gray-100 px-6 py-2.5 text-xs font-medium uppercase tracking-wider text-gray-600 hover:bg-gray-200">Done</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -733,8 +902,8 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
 
         {/* ==================== SIGNATURE TRACKER TAB ==================== */}
         {activeTab === 'SIGNATURE TRACKER' && (
-          <div className="bg-white/95 backdrop-blur-sm rounded-[32px] p-8 shadow-xl border border-transparent animate-fade-in min-h-[500px]">
-            <div className="mb-10 pb-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div className="animate-fade-in min-h-[500px]">
+            <div className="mb-10 pb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
               <div>
                 <h2 className="text-xl text-[#007C7A] mb-1">Signature Tracker</h2>
                 <p className="text-xs text-gray-400 font-light">Monitor open documents pending signature. Tasks have a 15-day due date and 90-day expiration.</p>

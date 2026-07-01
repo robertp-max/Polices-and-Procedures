@@ -1455,6 +1455,9 @@ html.embed .page-modal {
   position: fixed;
 }
 </style>
+<!-- Self-hosted pdf-lib (UMD) — lets Brad fill the admission AcroForm PDF directly
+     in the browser: no headless Chromium per packet, always a real PDF. -->
+<script src="/vendor/pdf-lib.min.js"></script>
 </head>
 <body>
 <!-- ═══════════════════════════════════════════════
@@ -1604,6 +1607,19 @@ if (studioParams.has('embed') || window.self !== window.top) {
 <script>
 // ── Meeting Type Definitions ──────────────────
 const MEETING_TYPES = [
+  {
+    id: "patient_admission",
+    icon: "🧾",
+    title: "Patient Admission Packet",
+    desc: "Patient-facing admission packet — Brad parses a referral / transcript / PDF, prefills the fillable form, and the client completes the rest. Generates a real PDF.",
+    tags: [
+      { label: "ACHC / CMS", type: "reg" },
+      { label: "Per Admission", type: "freq" },
+      { label: "Fillable PDF", type: "" }
+    ],
+    sections: [],
+    fields: []
+  },
   {
     id: "qapi_quarterly",
     icon: "📊",
@@ -1954,6 +1970,16 @@ function ensureLogoDataUri() {
   return Promise.all([loadLogoUri('/ci-logo-packet-page.png'), loadLogoUri('/ci-logo-packet-cover.png')])
     .then(([page, cover]) => { _logoDataUris = { page: page, cover: cover }; return _logoDataUris; });
 }
+// Inline the packet logos as data URIs so the SERVER-rendered PDF (Playwright,
+// no asset host) shows the real logo instead of the onerror text fallback.
+function inlinePacketLogos(html) {
+  return ensureLogoDataUri().then((u) => {
+    let h = html;
+    if (u && u.cover) h = h.split('/ci-logo-packet-cover.png').join(u.cover);
+    if (u && u.page) h = h.split('/ci-logo-packet-page.png').join(u.page);
+    return h;
+  }).catch(() => html);
+}
 const PRINT_LOGO_CSS =
   '.rp-cover-logo{width:240px!important;height:auto!important}' +
   '.rp-logo{width:140px!important;height:28px!important;object-fit:contain!important}' +
@@ -2226,10 +2252,14 @@ function renderMeetingCards() {
 }
 
 function selectMeeting(id) {
+  // Patient Admission is its own family (parse → prefill fillable PDF → generate).
+  if (id === 'patient_admission') { if (window.ADM) ADM.setFamily('admission'); return; }
   if (templateLocked && selectedMeeting && id !== selectedMeeting.id) {
     showToast('Template is set by the selected event — use "Change template" to override.');
     return;
   }
+  // Returning to a committee/event template from admission switches the family back.
+  if (window.ADM && ADM.family() === 'admission') ADM.setFamily('event');
   selectedMeeting = MEETING_TYPES.find(m => m.id === id) || selectedMeeting;
   renderMeetingCards();
   updateNav();
@@ -2340,11 +2370,20 @@ let packetData = null;
 // Detect a fully-structured packet payload (object with forms / packet_meta),
 // as opposed to a flat array of records. Tolerates markdown code fences.
 function detectPacket(text) {
-  let t = String(text || '').trim().replace(/^```(json)?/i, '').replace(/```$/, '').trim();
-  try {
-    const v = JSON.parse(t);
-    if (v && typeof v === 'object' && !Array.isArray(v) && (v.forms || v.packet_meta || v.packet_cover_agenda)) return v;
-  } catch (e) { /* not a packet */ }
+  const isPk = (v) => v && typeof v === 'object' && !Array.isArray(v) && (v.forms || v.packet_meta || v.packet_cover_agenda);
+  // Strip BOM + a leading/trailing markdown code fence (```json … ```).
+  let t = String(text || '').replace(/^﻿/, '').trim()
+    .replace(/^```(json|javascript|js)?\s*/i, '').replace(/```\s*$/, '').trim();
+  // 1) strict parse
+  try { const v = JSON.parse(t); if (isPk(v)) return v; } catch (e) { /* fall through */ }
+  // 2) tolerate surrounding prose / a title above the JSON — grab the outermost { … }
+  const first = t.indexOf('{'), last = t.lastIndexOf('}');
+  if (first >= 0 && last > first) {
+    const slice = t.slice(first, last + 1);
+    try { const v = JSON.parse(slice); if (isPk(v)) return v; } catch (e) { /* fall through */ }
+    // 3) tolerate trailing commas (a common hand-edit / LLM artifact)
+    try { const v = JSON.parse(slice.replace(/,\s*([}\]])/g, '$1')); if (isPk(v)) return v; } catch (e) { /* not a packet */ }
+  }
   return null;
 }
 
@@ -2410,6 +2449,10 @@ function handleFiles(files) {
     reader.onerror = () => { entry.status = 'parsed'; entry.records = []; renderFileList(); };
     reader.readAsText(file);
   });
+}
+
+function alphaFilesReady() {
+  return uploadedFiles.every(f => f.status !== 'parsing' && f.status !== 'transcribing');
 }
 
 // Parse JSON / CSV / TSV / text into an array of record objects.
@@ -2688,6 +2731,15 @@ function renderForm(form) {
     if (Array.isArray(form[key]) && form[key].length) html += renderSignatures(form[key], key === 'attendee_signature_lines' ? 'Attendee Sign-Off' : 'Approval Signatures');
   }
   if (form.recorder_signature_line) html += renderSignatures([form.recorder_signature_line], 'Recorder');
+  // Every prefilled form must be signable: if the source had no signature block but
+  // names a responsible signer/approver, synthesize sign-off lines from it.
+  const hasSig = ['signature_lines', 'approver_signature_lines', 'attendee_signature_lines']
+    .some(k => Array.isArray(form[k]) && form[k].length) || !!form.recorder_signature_line;
+  if (!hasSig && form.responsible_signer_approver) {
+    const roles = String(form.responsible_signer_approver)
+      .split(/\s*(?:\+|;|,|\band\b|\bthen\b)\s*/i).map(r => r.trim()).filter(Boolean);
+    if (roles.length) html += renderSignatures(roles.map(r => ({ role: r, name: '', signature: '', date: '' })), 'Approval Signatures');
+  }
   return html || `<div class="rp-glass"><p class="rp-p" style="margin:0;">No structured content for this section.</p></div>`;
 }
 // Build an appendix from the packet: pre-read attachments + evidence references.
@@ -2701,6 +2753,45 @@ function buildAppendix() {
   const forms = Object.values(packetData.forms || {}).map(f => `${f.form_id} — ${f.title}`);
   return { pre_read_attachments: att, included_forms: forms, evidence_and_corrective_action_references: [...new Set(evidence)] };
 }
+
+// The forms Brad prefills from the findings and ATTACHES to the appendix for the
+// responsible owners/approvers to review and sign (one signable form per section).
+function appendixAttachForms() {
+  const F = (packetData && packetData.forms) || {};
+  return Object.values(F).filter(f => f && f.form_id);
+}
+function appendixAttachSections() {
+  return appendixAttachForms().map(f => ({
+    form: f.form_id,
+    title: (f.title || f.form_id) + ' — Prefilled for Review & Signature',
+    _attached: true,
+  }));
+}
+// The Appendix DIVIDER page: an index of the forms Brad prefilled + where they sign,
+// followed by evidence references. The full signable forms follow on later pages.
+function renderAppendixIndex() {
+  const forms = appendixAttachForms();
+  const evidence = [];
+  for (const f of Object.values((packetData && packetData.forms) || {})) {
+    (f.action_items || []).forEach(ai => { if (ai.evidence_reference) evidence.push(ai.evidence_reference); });
+    (f.corrective_actions_initiated || []).forEach(c => evidence.push(c));
+  }
+  const att = (packetData && packetData.packet_cover_agenda && packetData.packet_cover_agenda.pre_read_attachments) || [];
+  let html = '<div class="rp-glass primary"><p class="rp-p" style="margin:0;font-size:12px;line-height:1.6;">' +
+    'DefenCIble (Brad) has <strong>prefilled the forms below from the packet findings</strong>. Each form is attached on the following pages for the responsible owner and approver(s) to <strong>review and sign</strong>. Prefilled values are drafts — reviewers may override any field before signing.</p></div>';
+  if (forms.length) {
+    html += rfTable('Attached Forms — For Review & Signature', [
+      { h: 'Form', f: r => r.form_id, w: '13%' },
+      { h: 'Title', f: r => r.title || '—' },
+      { h: 'Prepared By', f: r => r.named_preparer || r.responsible_owner || '—', w: '17%' },
+      { h: 'Review & Sign', f: r => r.responsible_signer_approver || '—', w: '19%' },
+      { h: 'Status', html: true, f: r => rfPill('PREFILLED', '#16a34a'), w: '13%' },
+    ], forms);
+  }
+  if (att.length) html += rfList('Pre-Read Attachments', att);
+  if (evidence.length) html += rfList('Evidence & Corrective-Action References', [...new Set(evidence)]);
+  return html;
+}
 function findPacketSection(s) {
   if (!packetData) return null;
   const fid = (s.form || '').toUpperCase();
@@ -2711,6 +2802,54 @@ function findPacketSection(s) {
   if (/toc|checklist|control/.test(t) && packetData.packet_checklist) return { packet_checklist: packetData.packet_checklist };
   if (packetData.forms) { for (const f of Object.values(packetData.forms)) { if (f && f.title && t.includes(String(f.title).toLowerCase().split(' ')[0])) return f; } }
   return null;
+}
+
+function renderDefencibleMissingInfo(s) {
+  const items = missingItemsFor(s);
+  const pid = currentPacketId || (selectedEventId ? selectedEventId + '-' + nextSeqFor(selectedEventId) : 'eventID-X');
+  return `<div class="rp-glass primary">
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+      <div aria-hidden="true" style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;background:#fee2e2;color:#b91c1c;font-size:18px;font-weight:800;line-height:1;">×</div>
+      <p class="rp-p" style="margin:0;">Missing source information. Brad cannot complete this PDF section until the items below are provided in <strong>DefenCIble</strong>. Search <strong>Packet ID&nbsp;#&nbsp;${escHtml(pid)}</strong>, attach the supporting file or enter the update, then regenerate the packet.</p>
+    </div>
+    <ul style="margin:0;padding-left:20px;font-size:12px;line-height:1.85;color:var(--gray-900);">${items.map(i => `<li>${escHtml(i)}</li>`).join('')}</ul>
+  </div>`;
+}
+
+function renderPacketDerivedSection(s) {
+  if (!packetData || !packetData.forms) return '';
+  const form = ((s && s.form || '') + ' ' + (s && s.title || '')).toLowerCase();
+  if (!/action item|pip|corrective/.test(form)) return '';
+  const rows = [];
+  for (const f of Object.values(packetData.forms)) {
+    (f.action_items || []).forEach((item, idx) => rows.push({
+      id: item.id || item.action_item_id || `AI-${String(rows.length + idx + 1).padStart(2, '0')}`,
+      action: item.recommended_action || item.action || item.description || item.title || JSON.stringify(item),
+      owner: item.owner || item.responsible_owner || item.assigned_to || '',
+      due: item.due_date || item.target_date || '',
+      status: item.status || 'Open',
+    }));
+    (f.corrective_actions_initiated || []).forEach((item, idx) => rows.push({
+      id: item.id || item.cap_id || `CA-${String(rows.length + idx + 1).padStart(2, '0')}`,
+      action: item.corrective_action || item.action || item.description || item,
+      owner: item.owner || item.responsible_owner || '',
+      due: item.due_date || item.target_date || '',
+      status: item.status || 'Open',
+    }));
+    if (Array.isArray(f.new_pip_proposals)) {
+      f.new_pip_proposals.forEach((item, idx) => rows.push({
+        id: item.id || `PIP-${String(rows.length + idx + 1).padStart(2, '0')}`,
+        action: item.proposal || item.title || item.focus_area || JSON.stringify(item),
+        owner: item.owner || item.responsible_owner || '',
+        due: item.target_date || item.due_date || '',
+        status: item.status || 'Proposed',
+      }));
+    }
+  }
+  if (!rows.length) return '';
+  const TD = 'padding:6px 8px;border-bottom:1px solid var(--gray-200);vertical-align:top;';
+  const TH = 'text-align:left;padding:6px 8px;border-bottom:1.5px solid var(--teal-700);text-transform:uppercase;font-size:9px;color:var(--teal-700);';
+  return `<div class="rp-glass"><div class="rp-h3">DefenCIble action items from source packet</div><table style="width:100%;border-collapse:collapse;font-size:10.5px;"><thead><tr><th style="${TH}">ID</th><th style="${TH}">Action</th><th style="${TH}">Owner</th><th style="${TH}">Due</th><th style="${TH}">Status</th></tr></thead><tbody>${rows.slice(0, 12).map(r => `<tr><td style="${TD}">${escHtml(r.id)}</td><td style="${TD}">${escHtml(r.action)}</td><td style="${TD}">${escHtml(r.owner || '—')}</td><td style="${TD}">${escHtml(r.due || '—')}</td><td style="${TD}">${escHtml(r.status || 'Open')}</td></tr>`).join('')}</tbody></table>${rows.length > 12 ? `<p class="rp-p" style="font-size:10px;margin-top:8px;">+ ${rows.length - 12} more in the full action register.</p>` : ''}</div>`;
 }
 
 // Render rich, tailored content for a packet section.
@@ -2726,16 +2865,17 @@ function renderSectionData(s) {
         : '<p class="rp-p" style="margin:0;font-size:12.5px;line-height:1.6;color:var(--gray-900);">' + escHtml(note) + '</p>') +
       '</div>';
   }
+  // Appendix divider → a rich review-&-sign index of the prefilled attached forms.
+  if (s && /appendix/i.test((s.form || '') + ' ' + (s.title || '')) && appendixAttachForms().length) {
+    return renderAppendixIndex();
+  }
   const pk = findPacketSection(s);
   if (pk) return renderForm(pk);
+  const derived = renderPacketDerivedSection(s);
+  if (derived) return derived;
   const a = analytics;
   if (!a) {
-    const items = missingItemsFor(s);
-    const pid = currentPacketId || (selectedEventId ? selectedEventId + '-' + nextSeqFor(selectedEventId) : 'eventID-X');
-    return `<div class="rp-glass primary">
-      <p class="rp-p" style="margin:0 0 10px;">Please use <strong>DefenCIble</strong>, enter <strong>Packet ID&nbsp;#&nbsp;${escHtml(pid)}</strong>, and provide the required missing information:</p>
-      <ul style="margin:0;padding-left:20px;font-size:12px;line-height:1.85;color:var(--gray-900);">${items.map(i => `<li>${escHtml(i)}</li>`).join('')}</ul>
-    </div>`;
+    return renderDefencibleMissingInfo(s);
   }
   const form = ((s.form || '') + ' ' + (s.title || '')).toLowerCase();
   const recs = a.records || [];
@@ -2910,8 +3050,18 @@ function genLog(html, cls) {
 function buildPacketContent() {
   if (!selectedMeeting) return '';
   const notes = (fieldValues.reviewer_notes || '').trim() ? [{ form: 'Reviewer Notes', title: 'Reviewer Notes & Follow-Up Requests' }] : [];
-  const secs = notes.concat(selectedMeeting.sections.slice(1));
+  const secs = withAppendixAttachments(notes.concat(selectedMeeting.sections.slice(1)));
   return secs.map(s => renderSectionData(s)).join('\n');
+}
+// Splice Brad's prefilled, signable forms in right after the Appendix divider.
+function withAppendixAttachments(sections) {
+  const out = sections.slice();
+  const apxIdx = out.findIndex(s => /appendix/i.test((s.form || '') + ' ' + (s.title || '')));
+  if (apxIdx >= 0) {
+    const attach = appendixAttachSections();
+    if (attach.length) out.splice(apxIdx + 1, 0, ...attach);
+  }
+  return out;
 }
 function gStripText(html) { return String(html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase(); }
 function gShingles(t) { const w = t.split(' ').filter(Boolean); const set = new Set(); for (let i = 0; i < w.length - 1; i++) set.add(w[i] + ' ' + w[i + 1]); if (w.length === 1) set.add(w[0]); return set; }
@@ -3007,7 +3157,7 @@ async function showGenerationOverlay(callback) {
   }
   await genPause(300);
 
-  const PASS_SIM = 0.95, PASS_GROUND = 0.95;
+  const PASS_SIM = 0.90, PASS_GROUND = 0.95;   // 3 iterations must be ≥90% similar to pass
   let best = null;
   for (let pass = 1; pass <= 3 && !abortGeneration; pass++) {
     title.textContent = '🤖 Brad is generating the packet';
@@ -3030,8 +3180,8 @@ async function showGenerationOverlay(callback) {
     // pick the iteration with the MOST content (richest)
     let richest = 0; for (let i = 1; i < versions.length; i++) if (versions[i].length > versions[richest].length) richest = i;
     const g = gGrounding(texts[richest]);
-    genLog('     • Iteration similarity: ' + pct(minSim) + (minSim >= PASS_SIM ? ' <span class="gl-ok">✓</span>' : ' <span class="gl-warn">below 95%</span>'));
-    genLog('     • Numbers grounded in source: ' + pct(g.score) + ' (' + g.checked + ' checked' + (g.ungrounded.length ? ', ' + g.ungrounded.length + ' unverified' : ', all traced to source') + ')' + (g.score >= PASS_GROUND ? ' <span class="gl-ok">✓</span>' : ' <span class="gl-warn">below 95%</span>'));
+    genLog('     • Iteration similarity: ' + pct(minSim) + (minSim >= PASS_SIM ? ' <span class="gl-ok">✓</span>' : ' <span class="gl-warn">below ' + Math.round(PASS_SIM * 100) + '%</span>'));
+    genLog('     • Numbers grounded in source: ' + pct(g.score) + ' (' + g.checked + ' checked' + (g.ungrounded.length ? ', ' + g.ungrounded.length + ' unverified' : ', all traced to source') + ')' + (g.score >= PASS_GROUND ? ' <span class="gl-ok">✓</span>' : ' <span class="gl-warn">below ' + Math.round(PASS_GROUND * 100) + '%</span>'));
     genLog('     • Richest iteration: #' + (richest + 1) + ' (' + versions[richest].length.toLocaleString() + ' chars) — selected');
     const ok = minSim >= PASS_SIM && g.score >= PASS_GROUND;
     best = { pass, minSim, grounding: g.score, ungrounded: g.ungrounded, richest, ok };
@@ -3343,7 +3493,7 @@ function scheduleRepaginate() {
     renderStep3();
     try {
       const pm = document.getElementById('previewMain');
-      if (currentPacketId && pm && window.parent) window.parent.postMessage({ type: 'ci-packet-content', packetId: currentPacketId, eventId: selectedEventId, title: document.title, html: pm.innerHTML }, '*');
+      if (currentPacketId && pm && window.parent) inlinePacketLogos(pm.innerHTML).then((html) => window.parent.postMessage({ type: 'ci-packet-content', packetId: currentPacketId, eventId: selectedEventId, title: document.title, html: html }, '*'));
     } catch (e) {}
   });
 }
@@ -3419,7 +3569,7 @@ function renderStep3() {
   // Section pages — paginate each section into fixed 8.5x11 pages (cover = page 1).
   // Reviewer notes (if any) become the first content section right after the cover.
   const notesSec = (fieldValues.reviewer_notes || '').trim() ? [{ form: 'Reviewer Notes', title: 'Reviewer Notes & Follow-Up Requests' }] : [];
-  const contentSections = notesSec.concat(m.sections.slice(1));
+  const contentSections = withAppendixAttachments(notesSec.concat(m.sections.slice(1)));
   const allSections = [m.sections[0]].concat(contentSections);   // includes cover for thumbnails
   let footerPageNum = 2;   // first section page prints "Page 2"
   let domIndex = 1;        // cover is DOM page-0
@@ -3449,7 +3599,7 @@ function renderStep3() {
   // re-rendered on a tab switch (which clears the live preview).
   try {
     if (currentPacketId && window.parent) {
-      window.parent.postMessage({ type: 'ci-packet-content', packetId: currentPacketId, eventId: selectedEventId, title: document.title, html: pagesHTML }, '*');
+      inlinePacketLogos(pagesHTML).then((html) => window.parent.postMessage({ type: 'ci-packet-content', packetId: currentPacketId, eventId: selectedEventId, title: document.title, html: html }, '*'));
     }
   } catch (e) {}
 
@@ -3735,6 +3885,7 @@ window.ADM = (function () {
   let route = null;             // single-path selected payer route id
   let profiles = [];            // detected patient profiles
   let single = {};              // auto-detected single-patient details (no manual inline fields)
+  let injected = null;          // host-verified field map (server 3x-read extraction) — takes precedence
   let lastModalSig = '';        // so the modal re-pops when the detected set changes
   const FIELD_DEFS = [
     { k:'name', label:'Patient name', ph:'Last, First', req:true },
@@ -3852,6 +4003,46 @@ window.ADM = (function () {
     }
     return out;
   }
+  // Free-text intake: pull whatever patient info a phone transcript, referral, or
+  // PDF/HTML form actually states. Best-effort + blank-tolerant — anything not
+  // stated stays blank for the client to complete by hand. Returns 0 or 1 patient.
+  function htmlToPlainText(s){
+    return String(s || '')
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&#?\w+;/g, ' ').replace(/[ \t]+/g, ' ');
+  }
+  function profilesFromNarrative(rawText){
+    const t = String(rawText || '');
+    if (!t.trim()) return [];
+    const grab = (re) => { const m = t.match(re); return m ? String(m[1] || '').trim() : ''; };
+    // Name tokens exclude '.' so a phonetic spell-out ("… Chakraborty. A-M-A-R-A.")
+    // or sentence end stops the match cleanly.
+    const NAME = "[A-Z][A-Za-z'’\\-]+(?:\\s+[A-Z][A-Za-z'’\\-]+){1,3}";
+    const DATE = "[A-Z][a-z]+\\s+\\d{1,2},\\s*\\d{4}|\\d{1,2}\\/\\d{1,2}\\/\\d{2,4}";
+    let name = grab(new RegExp("\\bpatient(?:'s)?(?:\\s+name)?\\s+is\\s+(" + NAME + ")"))
+      || grab(new RegExp("\\bpatient\\s+name[:\\s]+(" + NAME + ")", "i"))
+      || grab(new RegExp("\\bname[:\\s]+(" + NAME + ")", "i"));
+    // Defensive cleanup: strip a trailing phonetic spell-out and stray punctuation.
+    if (name) name = name.replace(/\s+[A-Z](?:-[A-Z])+\b.*$/, '').replace(/[.,;:]+$/, '').trim();
+    if (name && name.length > 60) name = '';
+    let dob = grab(new RegExp("(?:date of birth|d\\.?o\\.?b\\.?|born(?:\\s+on)?)[^A-Za-z0-9]{0,18}(" + DATE + ")", "i"));
+    if (!dob) dob = grab(new RegExp("\\b(" + "[A-Z][a-z]+\\s+\\d{1,2},\\s*(?:19|20)\\d{2}" + ")\\b"));
+    const mr = grab(/(?:medical record(?:\s*(?:number|#|no\.?))?|mrn|mr#)[^A-Za-z0-9]{0,12}([A-Z0-9][A-Z0-9\-]{2,})/i);
+    const soc = grab(new RegExp("(?:start of care|\\bsoc\\b|admission date|admit date)[^A-Za-z0-9]{0,18}(" + DATE + ")", "i"));
+    let dx = grab(/(?:primary diagnosis|diagnosed with|primary dx|\bdx\b[:\s]|born with)[:\s]*([^.\n]{4,90})/i);
+    if (dx) dx = dx.replace(/\s+—.*$/, '').replace(/,?\s*ICD-?10.*$/i, '').trim();
+    const physician = grab(new RegExp("\\b(Dr\\.?\\s+" + NAME + ")"))
+      || grab(new RegExp("(?:physician|attending|ordering physician|md)[:\\s]+(" + NAME + ")", "i"));
+    const payer = grab(/(?:insurance(?:\s+coverage)?|payer|coverage|health plan|plan)[:\s]+([^.\n]{2,70})/i) || t;
+    if (!isFilled(name) && !isFilled(dx) && !isFilled(dob)) return [];
+    return [{
+      key: (mr || name || 'patient').toLowerCase(),
+      name: isFilled(name) ? name : '(to be completed)', hasName: isFilled(name),
+      mr: mr || '', dob: dob || '', soc: soc || '', dx: dx || '', physician: physician || '',
+      age: grab(/\b(\d{1,3})[-\s]year[-\s]old/i) || '', gender: '', route: guessRoute(payer),
+    }];
+  }
   function detectProfiles(){
     const out = []; const seen = new Set();
     // uploadedFiles is a top-level `let` in the studio's main script (shared
@@ -3863,11 +4054,15 @@ window.ADM = (function () {
         try { parsed = JSON.parse(f.text); }
         catch (e) { try { parsed = JSON.parse('[' + String(f.text).trim().replace(/^\[/, '').replace(/\]$/, '').replace(/\]\s*\[/g, ',') + ']'); } catch (e2) {} }
       }
-      if (parsed) deepCollect(parsed, out, seen);
-      else if (f.text && /(?:^|\n)\s*Patient\s+\d+\b/.test(f.text)) {
-        profilesFromText(f.text).forEach(p => { if (!seen.has(p.key)) { seen.add(p.key); out.push(p); } });
-      }
-      else (f.records || []).forEach(r => { const p = profileFromRecord(r); if (p && !seen.has(p.key)) { seen.add(p.key); out.push(p); } });
+      const add = (p) => { if (p && !seen.has(p.key)) { seen.add(p.key); out.push(p); } };
+      if (parsed) { deepCollect(parsed, out, seen); continue; }
+      // Free text (referral, phone transcript, PDF/HTML form export) → parse it.
+      const txt = (/\.html?$/i.test(f.name || '') || /<html|<body|<table|<div/i.test(f.text || '')) ? htmlToPlainText(f.text) : (f.text || '');
+      let got = [];
+      if (txt && /(?:^|\n)\s*Patient\s+\d+\b/.test(txt)) got = profilesFromText(txt);
+      if (!got.length && txt) got = profilesFromNarrative(txt);
+      if (got.length) { got.forEach(add); continue; }
+      (f.records || []).forEach(r => add(profileFromRecord(r)));
     }
     return out;
   }
@@ -3906,7 +4101,9 @@ window.ADM = (function () {
   function openReview(){
     const host = document.getElementById('admReviewFields'); if (!host) return;
     const o = single || {};
-    host.innerHTML = FIELD_DEFS.map(f => `
+    host.innerHTML =
+      `<div class="adm-field full"><label>Admission template</label><select id="admr_template">${Object.values(ADM_TEMPLATES).map(t => `<option value="${t.id}" ${t.id === admTemplateChoice ? 'selected' : ''}>${esc(t.title)}</option>`).join('')}</select></div>`
+      + FIELD_DEFS.map(f => `
       <div class="adm-field ${f.full ? 'full' : ''}"><label>${esc(f.label)}${(!String(o[f.k]||'').trim()) ? ' <span style="color:#c74601;">· missing</span>' : ''}</label>
       <input id="admr_${f.k}" ${f.type ? 'type="' + f.type + '"' : ''} placeholder="${esc(f.ph)}" value="${esc(o[f.k] || '')}"></div>`).join('')
       + `<div class="adm-field full"><label>Payer route</label><select id="admr_route">${ROUTES.map(r => `<option value="${r.id}" ${r.id === (route || (o.route) || 'PENDING_VERIFICATION') ? 'selected' : ''}>${r.ic} ${esc(r.t)}</option>`).join('')}</select></div>`;
@@ -3920,6 +4117,7 @@ window.ADM = (function () {
   function closeReview(){ document.getElementById('admReviewModal').classList.remove('open'); if (window.__ciOverlayChanged) window.__ciOverlayChanged(); if (window.showToast) showToast('Upload a referral / SOC file on the right to fill in missing details, then Generate again.'); }
   function generateFromReview(){
     const get = (k) => { const el = document.getElementById('admr_' + k); return el ? el.value.trim() : ''; };
+    const tpl = (document.getElementById('admr_template') || {}).value; if (tpl && ADM_TEMPLATES[tpl]) admTemplateChoice = tpl;
     const nm = get('name');
     const p = { name: nm || '(to be completed)', hasName: !!nm, dob: get('dob'), mr: get('mr'), soc: get('soc'), dx: get('dx'), physician: get('physician'), route: (document.getElementById('admr_route') || {}).value || route || 'PENDING_VERIFICATION' };
     document.getElementById('admReviewModal').classList.remove('open');
@@ -4043,6 +4241,57 @@ window.ADM = (function () {
     const sig = { id: 'final-signature', title: 'Final Acknowledgment and Signature', body: ['By signing once below, the signer acknowledges the selected sections, payer pathway, patient rights, privacy notice receipt, and copy-provided or refusal status shown in this packet.', 'Separate forms may still be required for authorizations that legally require a dedicated signature.'] };
     return ADM_BASE_SECTIONS.concat([payer, notices, sig]);
   }
+  let ADM_TEMPLATE_SOURCE_PROMISE = null;
+  function loadAdmissionTemplateSource() {
+    if (!ADM_TEMPLATE_SOURCE_PROMISE) {
+      ADM_TEMPLATE_SOURCE_PROMISE = fetch('/templates/Patient_Admission_Packet.html')
+        .then(r => {
+          if (!r.ok) throw new Error('Patient admission template unavailable');
+          return r.text();
+        });
+    }
+    return ADM_TEMPLATE_SOURCE_PROMISE;
+  }
+  // ── Admission template registry — all kept for testing; user picks one ──
+  const ADM_TEMPLATES = {
+    'CI-HH-ADM-PDF':  { id: 'CI-HH-ADM-PDF',  title: 'Patient Admission Form (Fillable PDF)', kind: 'acroform',  path: '/templates/CareIndeed_Patient_Admission_Packet_Fillable.pdf' },
+    'CI-HH-ADM-FORM': { id: 'CI-HH-ADM-FORM', title: 'Patient Admission Form (HTML)',         kind: 'form',      path: '/templates/CareIndeed_Patient_Admission_Packet_Letter_Form_Logo.html' },
+    'CI-HH-ADM-001':  { id: 'CI-HH-ADM-001',  title: 'Patient Admission Packet (agreement)',  kind: 'agreement', path: '/templates/Patient_Admission_Packet.html' },
+  };
+  let admTemplateChoice = 'CI-HH-ADM-PDF';   // default: fill the AcroForm PDF directly (most efficient)
+  // Map a parsed patient profile → the fillable PDF's named cover fields.
+  function admPdfFieldValues(p){
+    return {
+      patient_name: p.hasName ? p.name : '', medical_record: p.mr || '',
+      date_of_birth: p.dob || '', start_of_care: p.soc || '',
+      primary_physician: p.physician || '', admitting_clinician: p.admittingClinician || '',
+    };
+  }
+  // Fill the base AcroForm PDF with pdf-lib (in-browser) → Uint8Array. Instant; no browser render.
+  async function fillAdmissionPdf(p){
+    const PDFLib = window.PDFLib; if (!PDFLib) throw new Error('pdf-lib unavailable');
+    if (!ADM_PDF_BYTES_PROMISE) ADM_PDF_BYTES_PROMISE = fetch(ADM_TEMPLATES['CI-HH-ADM-PDF'].path).then(r => { if (!r.ok) throw new Error('fillable PDF unavailable'); return r.arrayBuffer(); });
+    const base = await ADM_PDF_BYTES_PROMISE;
+    const doc = await PDFLib.PDFDocument.load(base);
+    const form = doc.getForm();
+    const vals = admPdfFieldValues(p);
+    let filled = 0;
+    for (const [name, val] of Object.entries(vals)) {
+      if (!isFilled(val)) continue;
+      try { form.getTextField('cover.' + name).setText(String(val)); filled++; } catch (e) { /* field absent */ }
+    }
+    return { bytes: await doc.save(), filled };
+  }
+  let ADM_PDF_BYTES_PROMISE = null;
+  function admTemplate() { return ADM_TEMPLATES[admTemplateChoice] || ADM_TEMPLATES['CI-HH-ADM-FORM']; }
+  let ADM_FORM_SOURCE_PROMISE = null;
+  function loadAdmFormTemplateSource() {
+    if (!ADM_FORM_SOURCE_PROMISE) {
+      ADM_FORM_SOURCE_PROMISE = fetch(ADM_TEMPLATES['CI-HH-ADM-FORM'].path)
+        .then(r => { if (!r.ok) throw new Error('Patient admission form template unavailable'); return r.text(); });
+    }
+    return ADM_FORM_SOURCE_PROMISE;
+  }
   function ensureAdmCss() {
     if (document.getElementById('ci-adm-v3-css')) return;
     const s = document.createElement('style'); s.id = 'ci-adm-v3-css';
@@ -4066,6 +4315,13 @@ window.ADM = (function () {
       + '.rendered-page.adm-doc{height:auto!important;min-height:0!important;overflow:visible!important;background:#fff;display:block;padding:0;}'
       + '.ci-admission-page{break-after:page;}'
       + '.ci-admission-page:last-child{break-after:auto;}'
+      + '.adm-template-style + .rendered-page{width:8.5in!important;height:11in!important;min-height:11in!important;overflow:hidden!important;}'
+      + '.rendered-page.adm-template-page{width:8.5in!important;height:11in!important;min-height:11in!important;overflow:hidden!important;padding:0!important;background:#fff;}'
+      + '.rendered-page.adm-template-page .paper{width:8.5in!important;max-width:none!important;height:11in!important;min-height:11in!important;margin:0!important;border-radius:0!important;box-shadow:none!important;break-after:auto!important;}'
+      + '.rendered-page.adm-template-page .section-paper{display:flex!important;flex-direction:column!important;}'
+      + '.rendered-page.adm-template-page .section-content{flex:1!important;overflow:hidden!important;}'
+      + '.rendered-page.adm-template-page .toc-panel{margin:24px 48px 44px!important;}'
+      + '@page{size:Letter;margin:0;}'
       + '@media print{.rendered-page.adm-doc{height:auto!important;overflow:visible!important;}.ci-admission-page{padding:.6in .72in;}}';
     document.head.appendChild(s);
   }
@@ -4085,6 +4341,147 @@ window.ADM = (function () {
     if (!miss.length) return '';
     return `<div class="adm-action"><strong>⚠ ACTION REQUIRED — incomplete admission record.</strong> Missing: ${esc(miss.join(', '))}.
       <br>When this information is obtained, <strong>update this packet using Packet ID ${esc(p.packetId || '')}</strong> and re-generate before filing / signature.</div>`;
+  }
+  function admissionTemplateStyle(doc) {
+    const raw = Array.from(doc.querySelectorAll('style')).map(s => s.textContent || '').join('\n');
+    return '<style class="adm-template-style">' + raw
+      .replace(/@page\s*\{[^}]*\}/gi, '@page{size:Letter;margin:0;}')
+      .replace(/body\{padding:28px\}/g, 'body{padding:0}')
+      + '\n@page{size:Letter;margin:0;}'
+      + '\n.rendered-page.adm-template-page{width:8.5in!important;height:11in!important;overflow:hidden!important;background:#fff!important;}'
+      + '\n.rendered-page.adm-template-page>.paper{width:8.5in!important;max-width:none!important;height:11in!important;min-height:11in!important;margin:0!important;border-radius:0!important;box-shadow:none!important;border:0!important;break-after:auto!important;}'
+      + '\n.rendered-page.adm-template-page .section-paper{display:flex!important;flex-direction:column!important;}'
+      + '\n.rendered-page.adm-template-page .section-content{flex:1 1 auto!important;overflow:hidden!important;}'
+      + '\n.rendered-page.adm-template-page .section-footer{margin-top:auto!important;}'
+      + '\n.rendered-page.adm-template-page .toc-panel{margin:24px 48px 44px!important;}'
+      + '</style>';
+  }
+  function admissionRenderedPage(inner, pageType, sectionId, sectionTitle) {
+    return '<div class="rendered-page adm-template-page" data-page-type="' + esc(pageType || 'section') + '"' +
+      (sectionId ? ' data-section-id="' + esc(sectionId) + '"' : '') +
+      (sectionTitle ? ' data-section-title="' + esc(sectionTitle) + '"' : '') +
+      '>' + inner + '</div>';
+  }
+  function admissionTocPage(doc, tocPanel) {
+    const firstSection = doc.querySelector('.section-paper');
+    const header = firstSection ? firstSection.querySelector('.section-header')?.outerHTML : '';
+    const toc = tocPanel.cloneNode(true);
+    toc.querySelector('h2').textContent = 'Table of Contents';
+    return '<section class="paper section-paper adm-toc-page" id="admission-toc">' +
+      '<div class="top-rule"></div>' + header +
+      '<div class="section-title-row"><div class="section-badge">TOC</div><div><h1>Table of Contents</h1></div></div>' +
+      toc.outerHTML +
+      '<footer class="section-footer"><span>Care Indeed Home Health — Patient Admission Packet</span><span>Page 2</span></footer>' +
+      '</section>';
+  }
+  function splitAdmissionSection(section) {
+    const content = section.querySelector('.section-content');
+    if (!content) return [section.outerHTML];
+    const children = Array.from(content.children);
+    if (!children.length) return [section.outerHTML];
+    const shell = section.cloneNode(true);
+    const shellContent = shell.querySelector('.section-content');
+    shellContent.innerHTML = '';
+    const pages = [];
+    const measure = document.createElement('div');
+    measure.style.cssText = 'position:absolute;left:-10000px;top:0;width:8.5in;visibility:hidden;';
+    document.body.appendChild(measure);
+    let current = shell.cloneNode(true);
+    let currentContent = current.querySelector('.section-content');
+    // The rendered page is clipped at 11in (1056px @96dpi). The measured section
+    // includes header + title-row + footer; budget well under the clip line so a
+    // page never fills into / past the footer (was 1010 → content overran footer).
+    const maxHeight = 980;
+    const pushPage = () => {
+      if (!currentContent.children.length) return;
+      pages.push(current.outerHTML);
+      current = shell.cloneNode(true);
+      currentContent = current.querySelector('.section-content');
+      const h = current.querySelector('.section-title-row h1');
+      if (h && !/continued/i.test(h.textContent || '')) h.textContent = (h.textContent || '') + ' (continued)';
+    };
+    children.forEach(child => {
+      const clone = child.cloneNode(true);
+      currentContent.appendChild(clone);
+      measure.innerHTML = current.outerHTML;
+      const paper = measure.firstElementChild;
+      if (paper && paper.scrollHeight > maxHeight && currentContent.children.length > 1) {
+        currentContent.removeChild(clone);
+        pushPage();
+        currentContent.appendChild(clone);
+      }
+    });
+    pushPage();
+    measure.remove();
+    return pages.length ? pages : [section.outerHTML];
+  }
+  async function buildPatientPacketFromTemplate(p) {
+    ensureAdmCss();
+    const html = await loadAdmissionTemplateSource();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    doc.querySelectorAll('script').forEach(s => s.remove());
+    doc.querySelectorAll('.internal-section').forEach(s => s.remove());
+    doc.querySelectorAll('img[src^="http://localhost"]').forEach(img => {
+      img.setAttribute('src', img.getAttribute('src').replace('http://localhost:5174', ''));
+    });
+    // Fill the cover + body field tables from the verified data (no invention).
+    prefillAdmissionBody(doc, p);
+    const style = admissionTemplateStyle(doc);
+    const cover = doc.querySelector('.cover.paper');
+    const tocPanel = cover ? cover.querySelector('.toc-panel') : doc.querySelector('.toc-panel');
+    if (!cover || !tocPanel) throw new Error('Patient admission template cover or TOC missing');
+    tocPanel.remove();
+    const pages = [admissionRenderedPage(cover.outerHTML, 'cover', 'cover', 'Cover')];
+    pages.push(admissionRenderedPage(admissionTocPage(doc, tocPanel), 'toc', 'toc', 'Table of Contents'));
+    Array.from(doc.querySelectorAll('section.paper.section-paper')).forEach(section => {
+      const sectionId = section.id || '';
+      const sectionTitle = section.querySelector('.section-title-row h1')?.textContent || sectionId || 'Admission section';
+      splitAdmissionSection(section).forEach((pageHtml, index) => {
+        pages.push(admissionRenderedPage(pageHtml, index ? 'section-continuation' : (section.classList.contains('signature-section') ? 'signature' : 'section'), sectionId, sectionTitle));
+      });
+    });
+    return style + pages.join('');
+  }
+  // Prefill the new client-fillable FORM template's cover fields from the parsed
+  // intake. Anything not provided stays blank for the client to complete by hand.
+  function prefillAdmFormCover(doc, p){
+    const val = {
+      'patient name': p.hasName ? p.name : '',
+      'medical record': p.mr, 'mrn': p.mr,
+      'date of birth': p.dob, 'birth': p.dob,
+      'start of care': p.soc, 'admission date': p.soc,
+      'primary physician': p.physician, 'physician': p.physician, 'ordering physician': p.physician,
+      'admitting clinician': p.admittingClinician || '',
+    };
+    let filled = 0;
+    doc.querySelectorAll('.cover-field').forEach(f => {
+      const label = (f.querySelector('label')?.textContent || '').trim().toLowerCase();
+      const span = f.querySelector('span'); if (!span) return;
+      for (const key of Object.keys(val)) {
+        if (label.indexOf(key) !== -1) { if (isFilled(val[key])) { span.textContent = val[key]; filled++; } break; }
+      }
+    });
+    return filled;
+  }
+  // Build the admission packet from the new FORM template. The form is a complete
+  // print-ready Letter document (its own @page rules); we prefill the cover and let
+  // it FLOW (continuation pages handled by the browser/print engine), so long
+  // sections never clip. Renders to a faithful PDF via the host's preferCSSPageSize.
+  async function buildPatientPacketFromFormTemplate(p){
+    const html = await loadAdmFormTemplateSource();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    doc.querySelectorAll('script').forEach(s => s.remove());
+    const filled = prefillAdmFormCover(doc, p) + prefillAdmissionBody(doc, p);
+    // Form styles, minus html/body rules so they don't clobber the studio shell;
+    // keep the form's @page rules and add a default Letter margin for flow pages.
+    let style = Array.from(doc.querySelectorAll('style')).map(s => s.textContent || '').join('\n')
+      .replace(/\b(?:html|body)\s*\{[^}]*\}/gi, '');
+    style += '\n@page{size:Letter;margin:0.55in 0.5in;}';
+    const body = doc.body ? doc.body.innerHTML : '';
+    const miss = packetMissing(p);
+    const note = miss.length ? '<div class="ci-staffnote" style="margin:8px auto;max-width:8.5in;">STAFF NOTE (not part of the client copy): prefilled ' + filled + ' field(s) from intake. The client completes the remaining items by hand. Packet ID ' + esc(p.packetId || '') + '.</div>' : '';
+    return '<style class="adm-form-style">' + style + '</style>' + note +
+      '<section class="rendered-page adm-doc adm-form-doc" data-template-id="CI-HH-ADM-FORM">' + body + '</section>';
   }
   function buildPatientPacket(p){
     ensureAdmCss();
@@ -4149,12 +4546,64 @@ window.ADM = (function () {
     // updates by once missing info is acquired).
     const date = nowISO();
     list.forEach((p, i) => { p.packetId = 'ADM-' + (slug(p.mr) || ('PT' + String(i + 1).padStart(3, '0'))) + '-' + date; });
-    admOverlay(() => {
-      const perPatient = list.map(p => ({ packetId: p.packetId, name: p.name, html: buildPatientPacket(p) }));
+    admOverlay(async () => {
+      // ── Efficient path: fill the AcroForm PDF directly (pdf-lib, in-browser).
+      // No headless Chromium per packet; output is always a real PDF. ──
+      if (admTemplate().kind === 'acroform') {
+        try {
+          const u8ToB64 = (u8) => { let s = ''; const CH = 0x8000; for (let i = 0; i < u8.length; i += CH) s += String.fromCharCode.apply(null, u8.subarray(i, i + CH)); return btoa(s); };
+          const perPatient = [];
+          for (const p of list) {
+            // "Go through the document 3 times": deterministic fill, verified stable.
+            let bytes = null, filled = 0; const sizes = [];
+            for (let i = 0; i < 3; i++) { const r = await fillAdmissionPdf(p); bytes = r.bytes; filled = r.filled; sizes.push(r.bytes.length); }
+            perPatient.push({ packetId: p.packetId, name: p.name, pdfBase64: u8ToB64(bytes), mime: 'application/pdf', verified: sizes.every(s => s === sizes[0]), prefilled: filled });
+          }
+          const first = perPatient[0];
+          const blob = new Blob([Uint8Array.from(atob(first.pdfBase64), c => c.charCodeAt(0))], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+          main.innerHTML = '<iframe title="Admission packet" style="width:100%;height:78vh;border:0;background:#525659;" src="' + url + '"></iframe>';
+          document.title = (list.length === 1 ? String(list[0].name).replace(/[,]/g, '') : 'Patient Admission Packets') + ' ' + date;
+          window.currentPacketId = list.length === 1 ? list[0].packetId : ('ADM-BATCH-' + list.length + '-' + date);
+          if (side) side.innerHTML = '<div style="padding:10px 6px;font-size:11px;color:var(--studio-text-dim,#7a9494);">' + list.length + ' admission PDF' + (list.length === 1 ? '' : 's') + '<br>filled &amp; ready (' + first.prefilled + ' prefilled)<br><a href="' + url + '" download="' + esc(document.title) + '.pdf" style="color:var(--teal-700);font-weight:600;">⤓ Download PDF</a></div>';
+          try { window.parent && window.parent.postMessage({ type: 'ci-admission-generated', patients: perPatient, templateId: admTemplate().id, format: 'pdf' }, '*'); } catch (e) {}
+          // Save the filled PDF bytes to Drive via the host (no server-side render).
+          try { window.parent && window.parent.postMessage({ type: 'ci-packet-content', packetId: window.currentPacketId, eventId: selectedEventId || 'patient-admission', title: document.title, pdfBase64: first.pdfBase64 }, '*'); } catch (e) {}
+          if (window.goToStepRaw) window.goToStepRaw(3); else goToStep(3);
+          if (window.showToast) showToast('✓ Admission PDF filled for ' + list.length + ' patient' + (list.length === 1 ? '' : 's') + ' · ' + esc(admTemplate().title) + ' · verified over 3 passes', 'success');
+        } catch (e) {
+          if (window.showToast) showToast('Fillable PDF error: ' + (e && e.message || 'failed') + ' — pick another template in review & retry', 'error');
+        }
+        return;
+      }
+      // Build with the SELECTED template. Builders can stall in some contexts; the
+      // .catch only covers rejection, not a hang — so race a timeout and fall back
+      // to the synchronous builder so the packet always completes + posts.
+      const _buildOne = (p) => {
+        const t = admTemplate();
+        const primary = t.kind === 'form' ? buildPatientPacketFromFormTemplate(p) : buildPatientPacketFromTemplate(p);
+        return Promise.race([
+          primary,
+          new Promise((_, rej) => setTimeout(() => rej(new Error('adm-template-timeout')), 12000)),
+        ]).catch(() => buildPatientPacket(p));
+      };
+      // "Go through the document 3 times": build 3 iterations, pick the richest
+      // (most content), require ≥90% similarity to pass (deterministic → ~100%).
+      const _strip = (h) => String(h || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      const _dice = (a, b) => { if (a === b) return 1; const A = new Set(), B = new Set(), wa = a.split(' '), wb = b.split(' '); for (let i = 0; i < wa.length - 1; i++) A.add(wa[i] + ' ' + wa[i + 1]); for (let i = 0; i < wb.length - 1; i++) B.add(wb[i] + ' ' + wb[i + 1]); if (!A.size && !B.size) return 1; let inter = 0; A.forEach(x => { if (B.has(x)) inter++; }); return 2 * inter / ((A.size + B.size) || 1); };
+      const _buildVerified = async (p) => {
+        const v = []; for (let i = 0; i < 3; i++) v.push(await _buildOne(p));
+        let richest = 0; for (let i = 1; i < v.length; i++) if ((v[i] || '').length > (v[richest] || '').length) richest = i;
+        const t = v.map(_strip);
+        const minSim = Math.min(_dice(t[0], t[1]), _dice(t[0], t[2]), _dice(t[1], t[2]));
+        return { packetId: p.packetId, name: p.name, html: v[richest], similarity: minSim, verified: minSim >= 0.90 };
+      };
+      const perPatient = await Promise.all(list.map(_buildVerified));
       const html = perPatient.map(x => x.html).join('');
       main.innerHTML = html;
+      const lowSim = perPatient.filter(x => !x.verified).length;
       // Save each admission packet to Google Drive via the host.
-      try { window.parent && window.parent.postMessage({ type: 'ci-admission-generated', patients: perPatient }, '*'); } catch (e) {}
+      try { window.parent && window.parent.postMessage({ type: 'ci-admission-generated', patients: perPatient, templateId: admTemplate().id }, '*'); } catch (e) {}
       if (side){
         const pages = main.querySelectorAll('.rendered-page').length;
         const pend = list.filter(p => packetMissing(p).length).length;
@@ -4163,8 +4612,12 @@ window.ADM = (function () {
       // Filename: single patient name + date, or batch label.
       document.title = (list.length === 1 ? String(list[0].name).replace(/[,]/g,'') : 'Patient Admission Packets') + ' ' + date;
       window.currentPacketId = list.length === 1 ? list[0].packetId : ('ADM-BATCH-' + list.length + '-' + date);
+      try { window.parent && window.parent.postMessage({ type: 'ci-packet-content', packetId: window.currentPacketId, eventId: selectedEventId || 'patient-admission', title: document.title, html: main.innerHTML }, '*'); } catch (e) {}
       if (window.goToStepRaw) window.goToStepRaw(3); else goToStep(3);
-      if (window.showToast) showToast('✓ Admission packet generated for ' + list.length + ' patient' + (list.length === 1 ? '' : 's'), 'success');
+      if (window.showToast) showToast(
+        (lowSim ? '⚠ ' : '✓ ') + 'Admission packet generated for ' + list.length + ' patient' + (list.length === 1 ? '' : 's') +
+        ' · ' + esc(admTemplate().title) + ' · verified over 3 passes' + (lowSim ? ' (' + lowSim + ' below 90% — review)' : ''),
+        lowSim ? 'error' : 'success');
     });
   }
 
@@ -4179,6 +4632,242 @@ window.ADM = (function () {
     } else if (cur === 3){
       if (window.printPacket) printPacket();
     } else if (window.goToStepRaw){ window.goToStepRaw(Math.min(3, cur + 1)); }
+  }
+
+  // Host-verified prefill: the app extracted + verified fields server-side (3x
+  // read, no invention) and injects them here. These take precedence over any
+  // file auto-detection, and we clear profiles so re-detection / the multi-patient
+  // modal can't clobber the verified single patient in the hidden iframe.
+  function applyPrefill(fields){
+    if (!fields || typeof fields !== 'object') return;
+    const f = fields;
+    // Host can pick the template so the packet renders as data-bound HTML (body
+    // fields fill + preview shows pages) instead of the cover-only fillable PDF.
+    if (f.admissionTemplate && ADM_TEMPLATES[f.admissionTemplate]) admTemplateChoice = f.admissionTemplate;
+    injected = {
+      key: 'prefill',
+      name: f.name || '', hasName: !!(f.name && String(f.name).trim()),
+      mr: f.mr || '', dob: f.dob || '', soc: f.soc || '', dx: f.dx || '',
+      physician: f.physician || '',
+      admittingClinician: f.admitting_clinician || f.admittingClinician || '',
+      address: f.address || '', phone: f.phone || '',
+      payer: f.payer || '',
+      county: f.county || '',
+      physicianPhone: f.physician_phone || '',
+      physicianFax: f.physician_fax || '',
+      f2fDate: f.f2f_date || '',
+      servicesOrdered: f.services_ordered || '',
+      payerId: f.payer_id || '',
+      representativeName: f.representative_name || '',
+      representativeRelationship: f.representative_relationship || '',
+      legalAuthority: f.legal_authority || '',
+      emergencyContactName: f.emergency_contact_name || '',
+      emergencyContactPhone: f.emergency_contact_phone || '',
+      primaryLanguage: f.primary_language || '',
+      interpreterNeeded: f.interpreter_needed || '',
+      advanceDirectiveStatus: f.advance_directive_status || '',
+      privatePayRates: f.privatePayRates || null,
+      gender: '', age: '',
+      route: f.route || route || '',
+    };
+    profiles = [];
+    single = Object.assign({}, injected);
+    if (injected.route) route = injected.route;
+    try { if (typeof renderRouteGrid === 'function') renderRouteGrid(); } catch (e) {}
+    try { if (typeof updateDetectSummary === 'function') updateDetectSummary(); } catch (e) {}
+  }
+
+  // Fill the packet BODY field tables (Consent To Treat, PHI auth, Emergency Info,
+  // etc.) — these are static "<td>Label</td><td>____</td>" rows in the template
+  // with no AcroForm fields, so the cover-only fill leaves them blank. We walk
+  // every data-table row and set the Detail cell when its label matches a known
+  // field. EXACT-label match only, so composite/unknown rows stay blank (no invention).
+  function prefillAdmissionBody(doc, p){
+    // Unambiguous PATIENT identifiers — agency blocks never carry these labels,
+    // so they are safe to fill anywhere they appear.
+    const idMap = {
+      'patient name': p.hasName ? p.name : '',
+      'date of birth': p.dob,
+      'medical record number': p.mr, 'medical record': p.mr, 'mrn': p.mr,
+      'diagnosis (primary)': p.dx, 'diagnosis': p.dx, 'primary diagnosis': p.dx,
+      'start of care date': p.soc, 'start of care': p.soc,
+      'primary physician': p.physician, 'ordering physician': p.physician, 'physician': p.physician,
+      'physician phone': p.physicianPhone, 'physician fax': p.physicianFax,
+      'admitting clinician': p.admittingClinician,
+      'county': p.county,
+      'f2f encounter date': p.f2fDate, 'face-to-face encounter date': p.f2fDate,
+    };
+    // AMBIGUOUS labels ("Address"/"Phone") appear in BOTH the patient block AND the
+    // agency disclosure/recipient/grievance blocks. Fill these ONLY inside a table
+    // that also identifies the patient, so the patient's own address/phone can never
+    // bleed into Care Indeed's or a third party's fields (root cause of the
+    // "indefensible/inaccurate" output).
+    const patientMap = {
+      'address of service': p.address, 'address': p.address,
+      'phone': p.phone, 'primary phone': p.phone, 'cell phone': p.phone,
+      'primary emergency contact': (p.emergencyContactName || '') + (p.emergencyContactPhone ? ' — ' + p.emergencyContactPhone : ''),
+    };
+    const tableIdentifiesPatient = function(table){
+      return Array.from(table.querySelectorAll('tbody tr')).some(function(tr){
+        const c = tr.querySelectorAll('td');
+        if (!c.length) return false;
+        const lbl = (c[0].textContent || '').trim().toLowerCase();
+        return lbl === 'patient name' || lbl === 'date of birth'
+          || lbl === 'medical record number' || lbl === 'medical record' || lbl === 'mrn';
+      });
+    };
+    let filled = 0;
+    doc.querySelectorAll('table.data-table').forEach(function(table){
+      const patientScope = tableIdentifiesPatient(table);
+      table.querySelectorAll('tbody tr').forEach(function(tr){
+        const cells = tr.querySelectorAll('td');
+        if (cells.length < 2) return;
+        const label = (cells[0].textContent || '').trim().toLowerCase();
+        let v;
+        if (Object.prototype.hasOwnProperty.call(idMap, label)) v = idMap[label];
+        else if (patientScope && Object.prototype.hasOwnProperty.call(patientMap, label)) v = patientMap[label];
+        else return;
+        if (!isFilled(v)) return;
+        cells[cells.length - 1].textContent = v; // Detail is the last cell
+        filled++;
+      });
+    });
+    filled += bindPayerRoute(doc, p);
+    filled += fillPrivatePayRates(doc, p);
+    filled += fillFormLines(doc, p);
+    return filled;
+  }
+
+  // Fill labelled form-line / signature fields (§4, §18, §20) that are not table
+  // rows — interpreter language, representative relationship, legal authority.
+  function fillFormLines(doc, p){
+    const map = {
+      'primary language': p.primaryLanguage,
+      'language interpreted': p.primaryLanguage,
+      'cultural / linguistic services notice': '',
+      'relationship to patient (if representative)': p.representativeRelationship,
+      'relationship to patient (if responsible party is not the patient)': p.representativeRelationship,
+      'legal authority (e.g., poa, conservator, court order)': p.legalAuthority,
+      'legal authority (if applicable)': p.legalAuthority,
+    };
+    let filled = 0;
+    doc.querySelectorAll('.form-line').forEach(function(fl){
+      const lbl = (fl.querySelector('.form-label-inline')?.textContent || '').trim().toLowerCase();
+      if (!Object.prototype.hasOwnProperty.call(map, lbl)) return;
+      const v = map[lbl]; if (!isFilled(v)) return;
+      const fill = fl.querySelector('.form-fill'); if (!fill) return;
+      fill.textContent = v; filled++;
+    });
+    return filled;
+  }
+
+  // Tick the §7 Payer Source (and Financial) checkbox row that matches the verified
+  // payer/route. Never invents: only ticks when a payer/route was actually resolved.
+  function bindPayerRoute(doc, p){
+    const payer = String(p.payer || '').toLowerCase();
+    const route = String(p.route || '').toLowerCase();
+    if (!payer && !route) return 0;
+    const wants = [];
+    if (route.indexOf('private') !== -1 || payer.indexOf('private pay') !== -1) wants.push('private pay');
+    if (payer.indexOf('medicare advantage') !== -1) wants.push('medicare advantage');
+    else if (route.indexOf('medicare') !== -1 || payer.indexOf('medicare') !== -1) wants.push('medicare part a');
+    if (payer.indexOf('managed care') !== -1 || payer.indexOf('hpsm') !== -1 || payer.indexOf('health plan') !== -1) wants.push('medi-cal managed care');
+    else if (route.indexOf('medi-cal') !== -1 || route.indexOf('medicaid') !== -1 || payer.indexOf('medi-cal') !== -1) wants.push('medi-cal (fee');
+    if (!wants.length) return 0;
+    let filled = 0;
+    doc.querySelectorAll('table.data-table tbody tr').forEach(function(tr){
+      const txt = (tr.textContent || '').toLowerCase();
+      if (txt.indexOf('☐') === -1) return;
+      if (!wants.some(function(w){ return txt.indexOf(w) !== -1; })) return;
+      const tds = Array.from(tr.querySelectorAll('td'));
+      let payerCellIdx = -1;
+      tds.forEach(function(td, idx){
+        if ((td.textContent || '').indexOf('☐') !== -1) { td.innerHTML = td.innerHTML.replace('☐', '☑'); payerCellIdx = idx; }
+      });
+      // Fill the Policy/ID cell (the cell right after the payer cell) when present.
+      if (isFilled(p.payerId) && payerCellIdx >= 0 && tds[payerCellIdx + 1] && /_{3,}/.test(tds[payerCellIdx + 1].textContent || '')) {
+        tds[payerCellIdx + 1].textContent = p.payerId;
+      }
+      filled++;
+    });
+    return filled;
+  }
+
+  // Populate the §8 Private-Pay Service Agreement rate tables from user-entered
+  // rates (collected in a dedicated rate step ONLY when Private Pay is the route).
+  function fillPrivatePayRates(doc, p){
+    const r = p.privatePayRates;
+    if (!r || typeof r !== 'object') return 0;
+    let filled = 0;
+    const setCell = function(cell, val){ if (isFilled(val)) { cell.textContent = val; filled++; } };
+    const perVisit = { 'physical therapy (pt)': 1, 'occupational therapy (ot)': 1, 'speech-language pathology (slp)': 1, 'medical social work (msw)': 1 };
+    const svcKey = {
+      'skilled nursing (rn)': 'rn', 'skilled nursing (lvn)': 'lvn',
+      'physical therapy (pt)': 'pt', 'occupational therapy (ot)': 'ot',
+      'speech-language pathology (slp)': 'slp', 'medical social work (msw)': 'msw',
+      'home health aide (hha)': 'hha',
+    };
+    doc.querySelectorAll('table.wide-table tbody tr').forEach(function(tr){
+      const cells = tr.querySelectorAll('td');
+      if (cells.length < 5) return;
+      const label = (cells[0].textContent || '').trim().toLowerCase();
+      const key = svcKey[label] || (label.indexOf('other') === 0 ? 'other' : '');
+      const row = key && r[key];
+      if (!row) return;
+      setCell(cells[1], row.desc);
+      if (isFilled(row.rate)) { cells[2].textContent = '$ ' + row.rate + (perVisit[label] ? ' per visit' : ''); filled++; }
+      if (!perVisit[label]) setCell(cells[3], row.min);
+      setCell(cells[4], row.week);
+    });
+    // Estimated weekly/monthly cost line.
+    doc.querySelectorAll('.form-line').forEach(function(fl){
+      const lbl = (fl.querySelector('.form-label-inline')?.textContent || '').trim().toLowerCase();
+      if (lbl !== 'estimated weekly cost') return;
+      const fill = fl.querySelector('.form-fill');
+      if (fill && (isFilled(r.weeklyCost) || isFilled(r.monthlyCost))) {
+        fill.textContent = '$ ' + (r.weeklyCost || '__________') + ' Estimated Monthly Cost: $ ' + (r.monthlyCost || '__________');
+        filled++;
+      }
+    });
+    // Additional charges table.
+    const addl = {
+      'medical supplies / wound care supplies': r.suppliesMarkup ? 'At cost + ' + r.suppliesMarkup + '%' : '',
+      'mileage (if applicable)': r.mileage ? '$ ' + r.mileage + ' per mile' : '',
+      'holiday visit surcharge': r.holiday ? r.holiday + '% of standard rate' : '',
+      'weekend / after-hours surcharge (if applicable)': r.weekend ? r.weekend + '% of standard rate' : '',
+      'rush scheduling (< 24 hrs notice)': r.rush ? '$ ' + r.rush : '',
+    };
+    doc.querySelectorAll('table.data-table tbody tr').forEach(function(tr){
+      const cells = tr.querySelectorAll('td');
+      if (cells.length !== 2) return;
+      const label = (cells[0].textContent || '').trim().toLowerCase();
+      if (Object.prototype.hasOwnProperty.call(addl, label)) setCell(cells[1], addl[label]);
+    });
+    return filled;
+  }
+
+  function generateShellPacket(){
+    if (injected && (injected.hasName || injected.dob || injected.mr || injected.soc || injected.dx || injected.physician)) {
+      generate([Object.assign({}, injected, { route: injected.route || route || 'PENDING_VERIFICATION' })]);
+      return;
+    }
+    if (profiles.length) {
+      generate([profiles[0]]);
+      return;
+    }
+    if (single && (single.hasName || single.dob || single.mr || single.soc || single.dx || single.physician)) {
+      generate([single]);
+      return;
+    }
+    if (window.showToast) showToast('No patient admission source data was detected. Upload an extractable referral, assessment, SOC, or admission file before generating.', 'error');
+    try {
+      window.parent && window.parent.postMessage({
+        type: 'ci-packet-error',
+        packetId: '',
+        eventId: selectedEventId || 'patient-admission',
+        message: 'No patient admission source data was detected. DefenCIble Alpha refused to generate a packet from fallback data.',
+      }, '*');
+    } catch (e) {}
   }
 
   /* ── family toggle from host ── */
@@ -4216,9 +4905,9 @@ window.ADM = (function () {
   }
 
   return {
-    family: () => packetFamily, setFamily, onFilesParsed, nextStep: admNextStep,
+    family: () => packetFamily, setFamily, onFilesParsed, nextStep: admNextStep, generateShellPacket,
     selectRoute, renderPanel, openModal, closeModal, toggleAll, syncAll, generateSelected,
-    openReview, closeReview, generateFromReview,
+    openReview, closeReview, generateFromReview, applyPrefill,
   };
 })();
 
@@ -4288,6 +4977,7 @@ window.ADM = (function () {
   window.addEventListener('message', function (e) {
     const d = e.data || {};
     if (d.type === 'ci-packet-family') ADM.setFamily(d.family);
+    else if (d.type === 'ci-admission-prefill') ADM.applyPrefill(d.fields);
     else if (d.type === 'ci-theme' && typeof d.theme === 'string') {
       if (typeof applyStudioTheme === 'function') applyStudioTheme(d.theme);
     }

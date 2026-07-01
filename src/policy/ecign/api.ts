@@ -162,6 +162,8 @@ export const ecignApi = {
     }, mfaToken),
 
   getInstance: (id: string) => call<Record<string, unknown>>(`/ecign/instances/${id}`),
+  listInstances: () => call<Array<Record<string, unknown>>>('/ecign/instances'),
+  listSignatures: (id: string) => call<Array<Record<string, unknown>>>(`/ecign/instances/${id}/signatures`),
 
   patchFields: (id: string, field_values: Record<string, unknown>) =>
     call(`/ecign/instances/${id}/fields`, {

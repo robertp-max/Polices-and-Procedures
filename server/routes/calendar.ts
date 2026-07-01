@@ -31,7 +31,11 @@ import {
   type EvidenceCategory,
   type GoogleCalendarDriveEvidenceRef,
 } from '../googleEvidence.js';
+import { listManifestFolders, listManifestRows } from '../manifest.js';
+import { ingestSource, type PacketTemplateKind } from '../sourcePipeline.js';
 import { transcribeAudio } from '../transcription.js';
+import { htmlToPdfForced } from '../htmlToPdf.js';
+import { renderAdmissionPdf } from '../admissionPacketPdf.js';
 import { getCesMetadataStore, type CesEvidenceRef } from '../cesMetadataStore.js';
 import { store as ecignStore } from '../ecign/store.js';
 
@@ -279,15 +283,27 @@ calendarRouter.get('/evidence/health', asyncHandler(async (_req, res) => {
     res.json({ ok: false, enabled: false, provider: env.evidenceStorageProvider, drive: { reachable: false, error: 'disabled' } });
     return;
   }
-  const drive = await pingDrive();
-  res.status(drive.reachable ? 200 : 503).json({
-    ok: drive.reachable,
-    enabled: true,
-    provider: env.evidenceStorageProvider,
-    sharedDriveId: env.driveEvidenceSharedDriveId,
-    rootFolderId: env.driveEvidenceRootFolderId,
-    drive,
-  });
+  try {
+    const drive = await pingDrive();
+    res.status(drive.reachable ? 200 : 503).json({
+      ok: drive.reachable,
+      enabled: true,
+      provider: env.evidenceStorageProvider,
+      sharedDriveId: env.driveEvidenceSharedDriveId,
+      rootFolderId: env.driveEvidenceRootFolderId,
+      drive,
+    });
+  } catch (e: any) {
+    // Never let health check kill the response or cause 5xx proxy errors
+    res.status(200).json({
+      ok: false,
+      enabled: true,
+      provider: env.evidenceStorageProvider,
+      sharedDriveId: env.driveEvidenceSharedDriveId,
+      rootFolderId: env.driveEvidenceRootFolderId,
+      drive: { reachable: false, error: e?.message || 'health-check-failed' },
+    });
+  }
 }));
 
 /**
@@ -491,15 +507,21 @@ calendarRouter.post('/intake/packet', asyncHandler(async (req, res) => {
   const b = (req.body ?? {}) as Record<string, unknown>;
   const eventId = strOrEmpty(b.eventId);
   const html = strOrEmpty(b.html);
+  const pdfBase64 = strOrEmpty(b.pdfBase64);
   if (!eventId) throw new ApiError('validation_error', '`eventId` is required.', 400);
-  if (!html) throw new ApiError('validation_error', '`html` is required.', 400);
+  if (!html && !pdfBase64) throw new ApiError('validation_error', '`html` or `pdfBase64` is required.', 400);
   const result = await savePacketToEvent({
     eventId,
     packetId: strOrEmpty(b.packetId) || eventId,
     title: strOrEmpty(b.title) || eventId,
     html,
+    pdfBase64: pdfBase64 || undefined,
     eventDate: strOrUndef(b.eventDate),
     domain: strOrUndef(b.domain),
+    packetType: strOrUndef(b.packetType),
+    section: strOrUndef(b.section),
+    workflowId: strOrUndef(b.workflowId),
+    actor: strOrUndef(b.actor) || req.header('x-ces-actor') || 'system',
   });
   res.status(201).json(result);
 }));
@@ -573,6 +595,90 @@ calendarRouter.get('/intake/packet-library', asyncHandler(async (req, res) => {
 }));
 
 /**
+ * GET /api/calendar/manifest/folders
+ * Distinct Drive folders from the CSV manifest (source of truth) for the
+ * Evidence Drive folder grid. Each folder carries its real Folder URL.
+ */
+calendarRouter.get('/manifest/folders', asyncHandler(async (_req, res) => {
+  if (!env.calendarEvidenceEnabled) { res.json({ enabled: false, folders: [] }); return; }
+  try {
+    const folders = await listManifestFolders();
+    res.json({ enabled: true, folders });
+  } catch (e) {
+    res.status(200).json({ enabled: true, folders: [], error: e instanceof Error ? e.message : String(e) });
+  }
+}));
+
+/**
+ * GET /api/calendar/manifest/rows
+ * Read-only, enriched manifest rows (files + folders) for the CES Evidence Drive
+ * search/filter layer. The app searches ONLY this manifest (rooted at the CES
+ * Evidence Drive), never all of Google Drive. No Drive mutations occur here.
+ */
+calendarRouter.get('/manifest/rows', asyncHandler(async (_req, res) => {
+  if (!env.calendarEvidenceEnabled) { res.json({ enabled: false, rows: [], rootFolderId: env.driveEvidenceRootFolderId }); return; }
+  try {
+    const rows = await listManifestRows();
+    res.json({ enabled: true, rows, rootFolderId: env.driveEvidenceRootFolderId });
+  } catch (e) {
+    res.status(200).json({ enabled: true, rows: [], rootFolderId: env.driveEvidenceRootFolderId, error: e instanceof Error ? e.message : String(e) });
+  }
+}));
+
+/**
+ * POST /api/calendar/intake/extract-source
+ * Verification-first source ingest: extract a PDF/text source, read it 3x via
+ * Claude (no invention), map the selected template's fields, and persist the raw
+ * source + extraction sidecar with full source metadata. READ-ONLY w.r.t. Drive.
+ * Body: { fileName, mimeType, fileBase64, template }.
+ */
+calendarRouter.post('/intake/extract-source', asyncHandler(async (req, res) => {
+  const { fileName, mimeType, fileBase64, template } = (req.body ?? {}) as {
+    fileName?: string; mimeType?: string; fileBase64?: string; template?: string;
+  };
+  if (!fileBase64) throw new ApiError('validation_error', 'fileBase64 is required.', 400);
+  const bytes = Buffer.from(fileBase64, 'base64');
+  if (!bytes.length) throw new ApiError('validation_error', 'Decoded file is empty.', 400);
+  const kind: PacketTemplateKind = (['admission', 'qapi', 'event', 'generic'].includes(String(template))
+    ? String(template) : 'generic') as PacketTemplateKind;
+  const result = await ingestSource({
+    fileName: fileName || 'source', mimeType: mimeType || 'application/octet-stream',
+    bytes, template: kind, nowISO: new Date().toISOString(),
+  });
+  res.json(result);
+}));
+
+/**
+ * POST /api/calendar/intake/render-pdf
+ * Render a standalone HTML packet to a faithful multi-page Letter PDF via
+ * Playwright (preferCSSPageSize). Used for the admission FORM template so the
+ * packet paginates to its true page count (e.g. 63 pages) instead of a single
+ * on-screen block. Returns { pdfBase64 } or 503 if the renderer is unavailable.
+ * Body: { html }.
+ */
+calendarRouter.post('/intake/render-pdf', asyncHandler(async (req, res) => {
+  const { html } = (req.body ?? {}) as { html?: string };
+  if (!html || html.length < 40) throw new ApiError('validation_error', 'html is required.', 400);
+  const pdf = await htmlToPdfForced(html);
+  if (!pdf) throw new ApiError('validation_error', 'PDF renderer unavailable (Chromium/Playwright not installed or timed out).', 503);
+  res.json({ pdfBase64: pdf.toString('base64'), byteSize: pdf.length });
+}));
+
+/**
+ * POST /api/calendar/intake/render-admission
+ * Render the full 63-page admission FORM template server-side (Playwright,
+ * preferCSSPageSize), filling the cover + body from verified fields. This is the
+ * page-faithful admission packet path. Body: { fields }. Returns { pdfBase64,
+ * pageCount, filled } or 503 if the renderer is unavailable.
+ */
+calendarRouter.post('/intake/render-admission', asyncHandler(async (req, res) => {
+  const fields = ((req.body ?? {}) as { fields?: Record<string, string> }).fields ?? {};
+  const result = await renderAdmissionPdf(fields);
+  if (!result) throw new ApiError('validation_error', 'Admission PDF renderer unavailable (Chromium/Playwright not installed or timed out).', 503);
+  res.json(result);
+}));
+
+/**
  * POST /api/calendar/intake/admission-packet
  * Save a Patient Admission packet to the Admission Packets Drive folder.
  * Body: { packetId, title, html, patientRef? }. Fails closed if Drive is down.
@@ -588,13 +694,18 @@ calendarRouter.post('/intake/admission-packet', asyncHandler(async (req, res) =>
   const b = (req.body ?? {}) as Record<string, unknown>;
   const packetId = strOrEmpty(b.packetId);
   const html = strOrEmpty(b.html);
+  const pdfBase64 = strOrEmpty(b.pdfBase64);
   if (!packetId) throw new ApiError('validation_error', '`packetId` is required.', 400);
-  if (!html) throw new ApiError('validation_error', '`html` is required.', 400);
+  if (!html && !pdfBase64) throw new ApiError('validation_error', '`html` or `pdfBase64` is required.', 400);
   const result = await saveAdmissionPacket({
     packetId,
     title: strOrEmpty(b.title) || packetId,
     html,
+    pdfBase64: pdfBase64 || undefined,
     patientRef: strOrUndef(b.patientRef),
+    eventId: strOrUndef(b.eventId),
+    workflowId: strOrUndef(b.workflowId),
+    actor: strOrUndef(b.actor) || req.header('x-ces-actor') || 'system',
   });
   res.status(201).json(result);
 }));

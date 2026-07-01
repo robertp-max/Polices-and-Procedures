@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ClipboardCheck, FileCheck2, LockKeyhole, ShieldCheck, UserCog } from 'lucide-react';
 import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
-import { PageHeader } from '../../shell';
 import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
@@ -188,10 +187,7 @@ export function AdminGroupsScreen() {
       data-route="/admin/user-groups"
       data-template="matrix"
     >
-      <PageHeader
-        badge="Admin"
-        title="User Groups"
-      />
+      <div className="sr-only"><h1>User Groups</h1></div>
       <MetricGrid metrics={groupMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
