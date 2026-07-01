@@ -1,0 +1,5 @@
+# Shell scripts and git hooks MUST stay LF so bash can execute them on every
+# platform. Windows autocrlf would otherwise rewrite them to CRLF and break the
+# `#!/usr/bin/env bash` shebang — silently disabling the anti-wipe guardrail.
+*.sh            text eol=lf
+.githooks/**    text eol=lf
