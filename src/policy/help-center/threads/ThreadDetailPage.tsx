@@ -183,7 +183,7 @@ export function ThreadDetailPage({ threadId, onBack, onOpenThread, onOpenRoute }
               {m.originLabel && <div className="mt-xs text-[10px] italic text-muted">{m.originLabel}</div>}
               <p className="mt-sm whitespace-pre-wrap text-sm text-secondary">{m.body}</p>
               {m.sanitized && <div className="mt-xs text-[10px] text-muted">Sanitized to remove possible PHI.</div>}
-              {m.authorUserId && m.authorUserId !== actor.userId && (
+              {m.authorUserId && m.authorUserId !== actor.userId && (m.authorType === 'user' || m.authorType === 'admin') && (
                 <button
                   type="button"
                   className="mt-2 text-xs text-brand-teal hover:underline"

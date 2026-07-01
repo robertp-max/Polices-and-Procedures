@@ -6,6 +6,8 @@ node_modules
 **/node_modules
 dist
 .cache
+# Nested experimental git worktrees — never part of a build (huge bloat)
+.wtpreview
 
 # Version control
 .git

@@ -31,7 +31,7 @@ import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
 import { BoardLane, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
-import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, AdmissionPacketPreviewScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, UserGuideScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen } from './pageviews';
+import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, AdminCommunityProfilesScreen, AdmissionPacketPreviewScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, UserGuideScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen, PersonalProfileScreen, CommunityScreen } from './pageviews';
 import { achcSurveyRows } from '@/policy/data/achcSurveyProjection.generated';
 import { achcPrintCrosswalk } from '@/policy/data/achcPrintCrosswalk.generated';
 import { hhEvidenceRows } from '@/policy/data/achcHhEvidenceMap';
@@ -1665,6 +1665,9 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
     case 'admin-users':
       child = <AdminUsersScreen />;
       break;
+    case 'admin-community-profiles':
+      child = <AdminCommunityProfilesScreen />;
+      break;
     case 'achc-crosswalk':
       child = <AchcScreen mode="crosswalk" />;
       break;
@@ -1691,6 +1694,15 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       break;
     case 'dashboard':
       child = <DashboardScreen routeView={searchParams.get('view')} />;
+      break;
+    case 'personal-profile':
+      child = <PersonalProfileScreen />;
+      break;
+    case 'community':
+      child = <CommunityScreen />;
+      break;
+    case 'community-members':
+      child = <CommunityScreen />;
       break;
     case 'ecign-workspace':
       child = <EcignWorkspaceScreen />;

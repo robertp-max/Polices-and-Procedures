@@ -337,6 +337,30 @@ export function HelpCenterScreen() {
                 <h2 className="text-h2 font-medium text-ink">{currentArticle.title}</h2>
                 {currentArticle.subtitle && <p className="mt-xs text-base text-muted">{currentArticle.subtitle}</p>}
                 {currentArticle.overview && <p className="mt-md text-sm text-secondary">{currentArticle.overview}</p>}
+                {currentArticle.steps && currentArticle.steps.length > 0 && (
+                  <div className="mt-md">
+                    <div className="text-sm font-medium text-ink mb-xs">Steps</div>
+                    <ul className="list-decimal pl-5 text-sm text-secondary">
+                      {currentArticle.steps.map((s, i) => <li key={i}>{s.label}: {s.detail}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {currentArticle.commonMistakes && currentArticle.commonMistakes.length > 0 && (
+                  <div className="mt-md">
+                    <div className="text-sm font-medium text-ink mb-xs">Common Mistakes</div>
+                    <ul className="list-disc pl-5 text-sm text-secondary">
+                      {currentArticle.commonMistakes.map((m, i) => <li key={i}>{m}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {currentArticle.auditTips && currentArticle.auditTips.length > 0 && (
+                  <div className="mt-md">
+                    <div className="text-sm font-medium text-ink mb-xs">Audit Tips</div>
+                    <ul className="list-disc pl-5 text-sm text-secondary">
+                      {currentArticle.auditTips.map((t, i) => <li key={i}>{t}</li>)}
+                    </ul>
+                  </div>
+                )}
                 <div className="mt-lg text-sm text-secondary">Legacy article view. Browse by category for updated visual guides.</div>
                 <div className="mt-lg">
                   <ThreadPanel
