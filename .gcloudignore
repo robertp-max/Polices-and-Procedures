@@ -29,6 +29,10 @@ migrations
 Bin-(thrash)
 Project_Intelligence
 REVIEW_OUTPUTS
+# Generated scratch outputs (may contain PHI extractions/PDFs) — never upload
+output
+outputs
+**/mock_assessments
 **/screenshots
 **/uat-results
 **/uat-html-report
