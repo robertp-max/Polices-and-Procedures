@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "bash scripts/guardrail-block-destructive-git.sh",
+            "timeout": 15,
+            "statusMessage": "anti-wipe git guardrail"
+          }
+        ]
+      }
+    ]
+  }
+}

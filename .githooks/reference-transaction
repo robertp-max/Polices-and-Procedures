@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# =============================================================================
+# ANTI-WIPE GUARDRAIL (git-level, Layer 2)  —  reference-transaction hook
+# -----------------------------------------------------------------------------
+# Fires on EVERY git ref update, regardless of tool (Claude Code, a raw deploy
+# script, another terminal, an IDE). Vetoes the exact move that wiped this repo
+# 3 times: a NON-FAST-FORWARD rewind (e.g. `git reset --hard <older-commit>`),
+# a force-update, or a DELETION of a protected branch.
+#
+# Normal work is unaffected: commits fast-forward the branch (allowed), new
+# branches are creations (allowed), fetch updates refs/remotes/* (not protected).
+#
+# Activated via:  git config core.hooksPath .githooks
+# Override:       GUARDRAIL_ALLOW_DESTRUCTIVE_GIT=1
+# =============================================================================
+[ "${GUARDRAIL_ALLOW_DESTRUCTIVE_GIT:-}" = "1" ] && exit 0
+
+# Only veto while the transaction is being prepared (before it commits).
+[ "$1" = "prepared" ] || exit 0
+
+iszero() { case "$1" in ''|*[!0]*) return 1 ;; *) return 0 ;; esac; }
+
+is_protected() {
+  case "$1" in
+    refs/heads/main|refs/heads/def2-alpha-admission-pagination) return 0 ;;
+    refs/heads/checkpoint/*|refs/heads/safety/*|refs/heads/backup/*|refs/heads/evidence*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+while read -r old new ref; do
+  is_protected "$ref" || continue
+  if iszero "$new"; then
+    echo "GUARDRAIL: refusing to DELETE protected ref $ref. Override: GUARDRAIL_ALLOW_DESTRUCTIVE_GIT=1" >&2
+    exit 1
+  fi
+  iszero "$old" && continue   # branch creation is fine
+  if ! git merge-base --is-ancestor "$old" "$new" 2>/dev/null; then
+    echo "GUARDRAIL: refusing NON-FAST-FORWARD update of protected ref $ref" >&2
+    echo "  $old -> $new" >&2
+    echo "  This is the pattern that wiped the repo (e.g. 'git reset --hard <older>' or a force update)." >&2
+    echo "  If truly intended: export GUARDRAIL_ALLOW_DESTRUCTIVE_GIT=1  (then retry)." >&2
+    exit 1
+  fi
+done
+exit 0

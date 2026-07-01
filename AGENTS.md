@@ -3,6 +3,29 @@
 Read this before doing anything. It applies to **all** agents (Cursor, Grok,
 Claude Code, Copilot, etc.).
 
+## 🛑 #0 rule: NEVER wipe local work with git — this repo has been destroyed 3×
+
+Three separate "deployment" / "reconcile working tree" runs wiped the local
+working tree or rewound the branch — every time via a history-destroying git
+command. Recovery succeeded **only once**. These commands are now **hard-blocked
+by guardrails**; do not try to work around them.
+
+**BLOCKED commands (do not attempt — use the safe alternative):**
+- `git reset --hard`  → `git revert`, or `git stash`, or commit + safety branch first
+- `git clean -f` / `-fd` / `-fdx`  → `git stash --include-untracked`
+- `git checkout -f` / `git checkout -- .` / `git checkout .` / `git restore .`  → `git stash`
+- `git push --force` / `-f` / `--force-with-lease`  → push a new branch instead
+- `git branch -D`, `git reflog expire`, `git gc --prune=now`, `git switch --discard-changes`
+
+**Before ANY deploy/reconcile step:** commit the work, create `safety/<branch>-<date>`,
+and push to origin. **Never move a branch pointer backward.**
+
+**Enforcement (two layers):**
+- Claude Code PreToolUse hook → `scripts/guardrail-block-destructive-git.sh` (wired in `.claude/settings.json`)
+- Git hooks → `.githooks/reference-transaction` + `.githooks/pre-push` (activate once per clone: `git config core.hooksPath .githooks`)
+
+**Override only with explicit human approval:** `export GUARDRAIL_ALLOW_DESTRUCTIVE_GIT=1`.
+
 ## 🚫 #1 rule: never emit compiled `.js` into `src/`
 
 This is a **Vite + TypeScript** app with `"noEmit": true`. Vite resolves `.js`
