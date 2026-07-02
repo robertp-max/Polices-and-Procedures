@@ -876,6 +876,8 @@ function LessonPlayerPage() {
       return;
     }
     setState((s) => withLessonCompleted(s, moduleId, lessonId));
+    // P0-001 bridge for lesson complete
+    try { const j = useJourneyStore.getState(); j.recordLearnerCompletion(j.currentEmployeeId, moduleId, true); } catch {}
     navigate(`/journey/module/${moduleId}`);
   };
 

@@ -18,6 +18,7 @@ import { ReviewerToolsPanel } from '@/policy/journey/components/ReviewerToolsPan
 import { useJourneyStore } from '@/policy/journey/stores/journeyStore';
 import { APPENDIX_F_TEMPLATE } from '@/policy/journey/data/appendices';
 import type { AppendixFItem, SignatureRecord } from '@/policy/journey/types/journey';
+import { DemoOnlyBanner } from '@/policy/journey/components/DemoOnlyBanner';
 
 const LOGO_DARK = 'https://dovdry3t4njek.cloudfront.net/assets/ci-logo-gray-Dju7zS6k.png';
 const SIGNATURE_SRC = 'image_be8721.png'; // Vanessa Valerio's Signature
@@ -335,6 +336,7 @@ export function AppendixFScreen() {
       title="Certificate Gate"
       subtitle="Verify your recertification credentials, accumulated learning hours, and pass requirements to unlock your formal ACHC certificate preview."
     >
+      <DemoOnlyBanner />
       <div className="space-y-6">
         <ReviewerToolsPanel />
 
