@@ -364,7 +364,7 @@ function DocumentationTable({ rows }: { rows: readonly Record<string, string>[] 
 function MissingDocumentationPanel({ documentId, title, ownerRole }: { documentId: string; title: string; ownerRole: string }) {
   return (
     <section className="rounded-md border border-tone-orange-border bg-tone-orange-bg p-md text-tone-orange-text">
-      <h4 className="text-sm font-medium uppercase tracking-tag">Documentation Missing</h4>
+      <h4 className="text-sm font-medium uppercase tracking-tag">DOCUMENTATION MISSING</h4>
       <p className="mt-sm text-sm">This required document has metadata but no rendered documentation body.</p>
       <InfoGrid compact rows={[
         ['Recommended document ID', documentId],
@@ -559,35 +559,56 @@ function VerificationLogPanel({ control }: { control: MasterControlItem }) {
       <div className="flex flex-wrap items-center justify-between gap-md">
         <div>
           <h3 className="text-sm font-medium uppercase tracking-tag text-brand-teal">Verification / Sign-Off Log</h3>
-          <p className="mt-xs text-sm text-muted">Shows who checked the control, evidence reviewed, findings, deficiencies, next due date, signature status, and audit ID.</p>
+          <p className="mt-xs text-sm text-muted">Shows verifier name, role/title, verification period, evidence reviewed, findings, deficiencies, corrective action, next due date, signature/eCIgn status, and audit ID.</p>
         </div>
         <button type="button" className="rounded-md border border-brand-teal px-md py-sm text-xs font-medium uppercase tracking-tag text-brand-teal hover:bg-tone-teal-bg">
           Add Verification Entry
         </button>
       </div>
       <div className="mt-md grid gap-md">
-        {control.verificationLogs.map((log) => (
-          <article key={log.logId} className="rounded-md bg-white/70 p-md">
-            <div className="flex flex-wrap items-start justify-between gap-md">
-              <div>
-                <p className="text-xs uppercase tracking-tag text-brand-teal">{log.logId}</p>
-                <h4 className="mt-xs text-base font-medium text-ink">{log.performedByName} - {log.performedByRole}</h4>
-                <p className="mt-xs text-sm text-muted">{log.findingsSummary}</p>
+        {control.verificationLogs.map((log) => {
+          const correctiveActionRequired = log.deficienciesFound.some((item) => item.correctiveActionRequired);
+          return (
+            <article key={log.logId} className="rounded-md bg-white/70 p-md">
+              <div className="flex flex-wrap items-start justify-between gap-md">
+                <div>
+                  <p className="text-xs uppercase tracking-tag text-brand-teal">{log.logId}</p>
+                  <h4 className="mt-xs text-base font-medium text-ink">{log.performedByName} - {log.performedByRole}</h4>
+                  <p className="mt-xs text-sm text-muted">{log.findingsSummary}</p>
+                </div>
+                <ToneTag tone={log.signatureStatus === 'signed' ? 'teal' : 'orange'}>{log.signatureStatus}</ToneTag>
               </div>
-              <ToneTag tone={log.signatureStatus === 'signed' ? 'teal' : 'orange'}>{log.signatureStatus}</ToneTag>
-            </div>
-            <InfoGrid compact rows={[
-              ['Period', `${log.verificationPeriodStart} to ${log.verificationPeriodEnd}`],
-              ['Performed at', log.performedAt],
-              ['Method', log.verificationMethod],
-              ['Readiness', `${log.readinessBefore} -> ${log.readinessAfter}`],
-              ['Next due', log.nextDueDate],
-              ['Audit trail ID', log.auditTrailId],
-            ]} />
-            <ListPanel title="Evidence Reviewed" items={log.evidenceReviewed.map((item) => `${item.title}: ${item.status}${item.notes ? ` - ${item.notes}` : ''}`)} />
-            {log.deficienciesFound.length > 0 && <ListPanel title="Deficiencies" items={log.deficienciesFound.map((item) => `${item.severity}: ${item.description}`)} />}
-          </article>
-        ))}
+              <InfoGrid compact rows={[
+                ['Verifier name', log.performedByName],
+                ['Role / title', log.performedByRole],
+                ['Verification period', `${log.verificationPeriodStart} to ${log.verificationPeriodEnd}`],
+                ['Performed date/time', log.performedAt],
+                ['Evidence reviewed', `${log.evidenceReviewed.length} item(s)`],
+                ['Findings', log.findingsSummary],
+                ['Deficiencies', `${log.deficienciesFound.length} item(s)`],
+                ['Corrective action required', correctiveActionRequired ? 'Yes' : 'No'],
+                ['Next due date', log.nextDueDate],
+                ['Signature/eCIgn status', log.signatureStatus],
+                ['Signed by', log.signedByName ? `${log.signedByName} (${log.signedByRole ?? 'role not recorded'})` : 'No completed sign-off seeded'],
+                ['Signed date/time', log.signedAt ?? 'No completed sign-off seeded'],
+                ['Audit trail ID', log.auditTrailId],
+                ['Readiness', `${log.readinessBefore} -> ${log.readinessAfter}`],
+              ]} />
+              <ListPanel title="Evidence Reviewed" items={log.evidenceReviewed.map((item) => `${item.title}: ${item.status}${item.notes ? ` - ${item.notes}` : ''}`)} />
+              {log.deficienciesFound.length > 0 && (
+                <ListPanel
+                  title="Deficiencies"
+                  items={log.deficienciesFound.map((item) => {
+                    const action = item.correctiveActionRequired ? 'corrective action required' : 'no corrective action required';
+                    const due = item.dueDate ? `; due ${item.dueDate}` : '';
+                    const actionId = item.correctiveActionId ? `; action ${item.correctiveActionId}` : '';
+                    return `${item.severity}: ${item.description} (${action}${due}${actionId})`;
+                  })}
+                />
+              )}
+            </article>
+          );
+        })}
       </div>
     </section>
   );

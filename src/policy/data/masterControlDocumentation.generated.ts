@@ -396,6 +396,11 @@ const ctrl001Documentation: MasterControlDocumentationRecord[] = [
         heading: 'Surveyor Explanation',
         body: 'This document proves that the agency maintains a written patient/client rights notice as part of the admission packet. Completed and signed patient copies must be attached as runtime evidence only. Monthly sample audits validate that acknowledgments are complete and deficiencies are corrected.',
       },
+      {
+        sectionId: 'PBOR-TEMPLATE-NO-PHI',
+        heading: 'Template-only / no-PHI warning',
+        body: 'This seed record is template/control documentation only. Do not include completed patient packets, names, signatures, dates of birth, medical record numbers, addresses, phone numbers, or other PHI in this registry. Completed acknowledgments attach only as authorized runtime evidence.',
+      },
     ],
   },
   {

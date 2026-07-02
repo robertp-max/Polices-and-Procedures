@@ -131,6 +131,7 @@ describe('master control dossiers', () => {
     expect(screen.getByText('Patient / Client Rights')).toBeTruthy();
     expect(screen.getByText('Required Acknowledgment Evidence')).toBeTruthy();
     expect(screen.getByText('Runtime Evidence ID')).toBeTruthy();
+    expect(screen.getByText('Template-only / no-PHI warning')).toBeTruthy();
     fireEvent.click(screen.getByText('Documentation'));
     expect(screen.getByText('Template/control documentation only. Do not store PHI in seed data. Completed patient copies attach later as runtime evidence only.')).toBeTruthy();
   });
@@ -148,5 +149,26 @@ describe('master control dossiers', () => {
     fireEvent.click(screen.getByText('Advance Directive Information Notice'));
     expect(screen.getByText('Patient Choice Options')).toBeTruthy();
     expect(screen.getAllByText('Runtime Evidence Expectations').length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('renders verification and sign-off log support fields without fake completion', async () => {
+    render(<MasterControlsScreen />);
+    fireEvent.click(await screen.findByText('CTRL-001'));
+    await waitFor(() => expect(screen.getByRole('dialog', { name: /CTRL-001 control dossier/i })).toBeTruthy());
+    fireEvent.click(screen.getByText('Sign-Off'));
+
+    expect(screen.getByText('Verification / Sign-Off Log')).toBeTruthy();
+    expect(screen.getByText('Verifier name')).toBeTruthy();
+    expect(screen.getByText('Role / title')).toBeTruthy();
+    expect(screen.getByText('Verification period')).toBeTruthy();
+    expect(screen.getByText('Performed date/time')).toBeTruthy();
+    expect(screen.getByText('Evidence reviewed')).toBeTruthy();
+    expect(screen.getByText('Findings')).toBeTruthy();
+    expect(screen.getByText('Deficiencies')).toBeTruthy();
+    expect(screen.getByText('Corrective action required')).toBeTruthy();
+    expect(screen.getByText('Next due date')).toBeTruthy();
+    expect(screen.getByText('Signature/eCIgn status')).toBeTruthy();
+    expect(screen.getByText('Audit trail ID')).toBeTruthy();
+    expect(screen.getAllByText('No completed sign-off seeded').length).toBeGreaterThanOrEqual(1);
   });
 });
