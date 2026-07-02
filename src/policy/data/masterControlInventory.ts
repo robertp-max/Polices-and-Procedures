@@ -1,12 +1,27 @@
 import type {
   ControlRisk,
   ControlStatus,
+  MasterControlReadinessStatus,
   MasterControlCategory,
   MasterControlDataSource,
+  MasterControlDocumentationRecord,
   MasterControlItem,
+  MasterControlSourceStatus,
   MasterControlSourcePayload,
   MasterControlSourceRecord,
 } from '@/policy/types/masterControlInventory';
+import {
+  EXTRA_MASTER_CONTROL_SOURCE_RECORDS,
+  buildDefaultAuditTrail,
+  buildDefaultDocumentRefs,
+  buildDefaultEvidenceRequirements,
+  buildDefaultSignoffRequirements,
+  buildVerificationLogTemplates,
+  buildVerification,
+  getDossierOverride,
+  getDocumentationRecordForRef,
+  normalizeSourceStatus,
+} from './masterControlDocumentation.generated';
 
 export const MASTER_CONTROL_INVENTORY_SOURCE_PATH =
   '/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json';
@@ -60,20 +75,92 @@ function normalizeDataSource(ds: MasterControlDataSource): string | undefined {
   return `${source} | ${forms}`;
 }
 
+export function hasRequiredDocumentationBody(record: MasterControlDocumentationRecord | undefined): record is MasterControlDocumentationRecord {
+  return Boolean(record && record.body.length > 0 && record.body.every((section) => section.heading.trim() || section.body.trim()));
+}
+
+export function deriveReadinessStatus({
+  documentRefs,
+  documentationRecords,
+  evidenceRequirements,
+  signoffRequirements,
+  sourceStatus,
+}: Pick<MasterControlItem, 'documentRefs' | 'evidenceRequirements' | 'signoffRequirements'> & {
+  documentationRecords: readonly (MasterControlDocumentationRecord | undefined)[];
+  sourceStatus: MasterControlSourceStatus;
+}): MasterControlReadinessStatus {
+  const requiredDocumentRefs = documentRefs.filter((ref) => ref.required);
+  if (requiredDocumentRefs.length === 0 || evidenceRequirements.length === 0 || signoffRequirements.length === 0) {
+    return 'NOT_CONFIGURED';
+  }
+  if (
+    requiredDocumentRefs.some((ref) => {
+      const record = documentationRecords.find((doc) => doc?.documentId === ref.documentId);
+      return !hasRequiredDocumentationBody(record);
+    })
+  ) {
+    return 'DOCUMENTATION_MISSING';
+  }
+  if (sourceStatus === 'DEFICIENT') return 'BLOCKED';
+  if (sourceStatus === 'COMPLIANT') return 'NEEDS_ATTENTION';
+  return 'BLOCKED';
+}
+
 export function mapMasterControlRecord(source: MasterControlSourceRecord): MasterControlItem {
   const derivedNotes = normalizeDataSource(source.data_source);
+  const numericId = parseNumericId(source.id);
+  const riskTier = RISK_MAP[source.risk_level];
+  const sourceStatus = normalizeSourceStatus(source.status);
+  const override = getDossierOverride(source.id);
+  const documentRefs = override?.documentRefs ?? buildDefaultDocumentRefs(source);
+  const documentationRecords = documentRefs.map((ref) => getDocumentationRecordForRef(source, ref));
+  const evidenceRequirements = override?.evidenceRequirements ?? buildDefaultEvidenceRequirements(source, riskTier);
+  const signoffRequirements = override?.signoffRequirements ?? buildDefaultSignoffRequirements(source, riskTier);
+  const linkedWorkflowIds = override?.linkedWorkflowIds ?? [`WF-${source.id}`];
+  const requiredFormIds = override?.requiredFormIds ?? source.data_source.forms_logs.filter((entry) => /^[A-Z]{2}-FM-/.test(entry));
+  const readinessStatus = deriveReadinessStatus({
+    documentRefs,
+    documentationRecords,
+    evidenceRequirements,
+    signoffRequirements,
+    sourceStatus,
+  });
+
   return {
-    id: parseNumericId(source.id),
+    id: source.id,
+    numericId,
+    controlNumber: numericId,
+    name: source.control_name,
     controlName: source.control_name,
     description: source.description,
     category: source.category,
     domain: source.domain,
+    riskTier,
+    sourceStatus,
+    readinessStatus,
     sourcePolicyIds: source.source_policy_ids,
+    linkedWorkflowIds,
+    requiredFormIds,
+    documentRefs,
+    documentationRecords,
+    evidenceRequirements,
+    signoffRequirements,
+    verification: buildVerification(source, riskTier),
     regulatoryBasis: source.regulatory_basis,
     requiredOwner: source.required_owner,
     evidenceRequired: source.evidence_required,
     failureRisk: source.failure_risk,
-    riskLevel: RISK_MAP[source.risk_level],
+    surveyorPrompt: override?.surveyorPrompt ?? `Show current documentation, execution evidence, and sign-off proving ${source.control_name}.`,
+    operatorInstructions: override?.operatorInstructions ?? `Attach current evidence for ${source.id}, complete required owner sign-off, and escalate gaps to ${source.escalation_owner}.`,
+    modalSummary: override?.modalSummary ?? `${source.control_name} dossier with required source documents, evidence acceptance criteria, verification cadence, and accountable sign-off.`,
+    tags: override?.tags ?? [source.category, ...source.domain.split('/').map((part) => part.trim()).filter(Boolean)],
+    auditTrail: buildDefaultAuditTrail(source),
+    verificationLogs: buildVerificationLogTemplates(source),
+    dataSource: source.data_source,
+    systemModule: source.system_module,
+    triggerCondition: source.trigger_condition,
+    escalationOwner: source.escalation_owner,
+    riskLevel: riskTier,
     highRiskIfMissing: source.risk_level === 'H',
     status: STATUS_MAP[source.status] ?? 'unknown',
     notes: derivedNotes,
@@ -104,7 +191,7 @@ export async function loadMasterControlInventorySeed(): Promise<MasterControlIte
         continue;
       }
 
-      return payload.controls.map(mapMasterControlRecord);
+      return [...payload.controls, ...EXTRA_MASTER_CONTROL_SOURCE_RECORDS].map(mapMasterControlRecord);
     } catch (error) {
       console.error('[MasterControlInventory] Dataset fetch threw an error', {
         path,

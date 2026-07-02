@@ -19,6 +19,7 @@
     "test:threads": "vitest run src/policy/help-center/threads",
     "preview": "vite preview",
     "sync:master-control-inventory": "node scripts/syncMasterControlInventory.mjs",
+    "build:master-controls": "tsx scripts/buildMasterControls.ts",
     "ia:index": "tsx server/cli/build-index.ts",
     "ia:health": "node -e \"fetch('http://127.0.0.1:8787/api/ia/health').then(r=>r.json()).then(j=>console.log(JSON.stringify(j,null,2)))\"",
     "push-events": "tsx scripts/pushAllEvents.ts",
