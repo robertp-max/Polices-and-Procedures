@@ -191,6 +191,10 @@ export function buildVerificationLogTemplates(source: MasterControlSourceRecord)
             { evidenceId: 'MCEV-CTRL-001-002', title: 'Signed patient rights acknowledgment', status: 'missing', notes: 'Runtime evidence only.' },
             { evidenceId: 'MCEV-CTRL-001-001', title: 'NPP acknowledgment', status: 'missing', notes: 'Runtime evidence only.' },
             { evidenceId: 'MCEV-CTRL-001-001', title: 'Advance directive acknowledgment', status: 'missing', notes: 'Runtime evidence only.' },
+            { evidenceId: 'MCEV-CTRL-001-002', title: 'Photo authorization or refusal', status: 'missing', notes: 'Runtime evidence only.' },
+            { evidenceId: 'MCEV-CTRL-001-002', title: 'Personal funds authorization or refusal', status: 'missing', notes: 'Runtime evidence only.' },
+            { evidenceId: 'MCEV-CTRL-001-002', title: 'Vehicle use authorization or refusal', status: 'missing', notes: 'Runtime evidence only.' },
+            { evidenceId: 'MCEV-CTRL-001-002', title: 'Financial responsibility acknowledgment', status: 'missing', notes: 'Runtime evidence only.' },
             { evidenceId: 'MCEV-CTRL-001-003', title: 'Grievance/hotline notice acknowledgment', status: 'missing', notes: 'Runtime evidence only.' },
           ]
         : [{ evidenceId: `MCEV-${source.id}-001`, title: source.evidence_required, status: 'missing', notes: 'Runtime evidence only.' }],
@@ -206,6 +210,140 @@ export function buildVerificationLogTemplates(source: MasterControlSourceRecord)
       auditTrailId: `MCAUD-${source.id}-VERIFICATION-TEMPLATE`,
     },
   ];
+}
+
+const ctrl001AdmissionConsentRef: MasterControlDocumentRef = {
+  documentId: 'MCDOC-CTRL-001-ADMISSION-CONSENT',
+  title: 'Admission Consent / Agreement / Acknowledgment',
+  documentType: 'admission_packet',
+  sourceLocation: 'Admission packet consent, agreement, and acknowledgment section',
+  ownerRole: 'Clinical Manager',
+  required: true,
+  templateOnly: true,
+  evidenceUse: 'Proves the admission packet includes consent to receive services and patient or representative acknowledgment of agency terms.',
+};
+
+const ctrl001HipaaAcknowledgmentRef: MasterControlDocumentRef = {
+  documentId: 'MCDOC-CTRL-001-HIPAA-NPP-ACKNOWLEDGMENT',
+  title: 'HIPAA Notice of Privacy Practices Acknowledgment',
+  documentType: 'form',
+  sourceLocation: 'Admission packet HIPAA NPP acknowledgment section / HIPAA-NPP-Log',
+  ownerRole: 'Privacy Officer',
+  required: true,
+  templateOnly: true,
+  evidenceUse: 'Proves the patient or representative is asked to acknowledge receipt of the Notice of Privacy Practices or that refusal/attempt is documented.',
+};
+
+const ctrl001AdvanceDirectiveNoticeRef: MasterControlDocumentRef = {
+  documentId: 'MCDOC-CTRL-001-ADVANCE-DIRECTIVE-NOTICE',
+  title: 'Advance Directive Notice and Acknowledgment',
+  documentType: 'admission_packet',
+  sourceLocation: 'Admission packet advance directive notice and acknowledgment section',
+  ownerRole: 'Clinical Manager',
+  required: true,
+  templateOnly: true,
+  evidenceUse: 'Proves the admission packet informs patients of advance directive rights and records patient or representative acknowledgment.',
+};
+
+const ctrl001PhotoAuthorizationRef: MasterControlDocumentRef = {
+  documentId: 'MCDOC-CTRL-001-PHOTO-AUTHORIZATION',
+  title: 'Permission to Photograph for Care Purposes',
+  documentType: 'form',
+  sourceLocation: 'Admission packet permission to photograph section',
+  ownerRole: 'Clinical Manager',
+  required: true,
+  templateOnly: true,
+  evidenceUse: 'Proves the agency obtains authorization or refusal before taking patient photographs for permitted care purposes.',
+};
+
+const ctrl001PersonalFundsAuthorizationRef: MasterControlDocumentRef = {
+  documentId: 'MCDOC-CTRL-001-PERSONAL-FUNDS-AUTHORIZATION',
+  title: 'Personal Funds Authorization / Refusal',
+  documentType: 'form',
+  sourceLocation: 'Admission packet personal funds authorization/refusal section',
+  ownerRole: 'Clinical Manager',
+  required: true,
+  templateOnly: true,
+  evidenceUse: 'Proves the agency records whether staff may assist with or access patient personal funds when applicable.',
+};
+
+const ctrl001VehicleAuthorizationRef: MasterControlDocumentRef = {
+  documentId: 'MCDOC-CTRL-001-VEHICLE-AUTHORIZATION',
+  title: 'Vehicle Use Authorization / Refusal',
+  documentType: 'form',
+  sourceLocation: 'Admission packet vehicle use authorization/refusal section',
+  ownerRole: 'Clinical Manager',
+  required: true,
+  templateOnly: true,
+  evidenceUse: 'Proves the agency records whether patient vehicle use is authorized, refused, or not applicable before any staff use.',
+};
+
+const ctrl001FinancialResponsibilityRef: MasterControlDocumentRef = {
+  documentId: 'MCDOC-CTRL-001-FINANCIAL-RESPONSIBILITY',
+  title: 'Consumer Liability for Payment / Financial Responsibility Notice',
+  documentType: 'notice',
+  sourceLocation: 'Admission packet financial responsibility and selected payer route section',
+  ownerRole: 'Administrator / Billing',
+  required: true,
+  templateOnly: true,
+  evidenceUse: 'Proves the agency gives payment-route and patient financial responsibility notice before or during admission.',
+};
+
+const ctrl001Batch1DocumentRefs: MasterControlDocumentRef[] = [
+  ctrl001AdmissionConsentRef,
+  ctrl001HipaaAcknowledgmentRef,
+  ctrl001AdvanceDirectiveNoticeRef,
+  ctrl001PhotoAuthorizationRef,
+  ctrl001PersonalFundsAuthorizationRef,
+  ctrl001VehicleAuthorizationRef,
+  ctrl001FinancialResponsibilityRef,
+];
+
+function templateOnlyNoPhiSection(sectionId: string): MasterControlDocumentationRecord['body'][number] {
+  return {
+    sectionId,
+    heading: 'Template-only / no-PHI warning',
+    body: 'This is template/control documentation only. Do not store completed patient packets, patient names, signatures, dates of birth, medical record numbers, addresses, phone numbers, payer identifiers, photographs, vehicle identifiers, financial account information, or other PHI in seed data. Completed patient documents attach only as authorized runtime evidence.',
+  };
+}
+
+function buildCtrl001TemplateRecord({
+  ref,
+  body,
+  approverRole,
+  linkedPolicyIds,
+  requiredSignoffIds,
+  evidenceRequirementIds,
+  tags,
+}: {
+  ref: MasterControlDocumentRef;
+  body: MasterControlDocumentationRecord['body'];
+  approverRole: string;
+  linkedPolicyIds: string[];
+  requiredSignoffIds: string[];
+  evidenceRequirementIds: string[];
+  tags: string[];
+}): MasterControlDocumentationRecord {
+  return {
+    documentId: ref.documentId,
+    controlId: 'CTRL-001',
+    title: ref.title,
+    documentType: documentationTypeForRef(ref),
+    sourceLocation: ref.sourceLocation,
+    templateOnly: true,
+    version: 'Template controlled by admission packet source',
+    effectiveDate: 'Current controlled template',
+    nextReviewDate: 'Next annual admission packet review',
+    ownerRole: ref.ownerRole,
+    approverRole,
+    linkedPolicyIds,
+    linkedWorkflowIds: ['WF-CTRL-001'],
+    linkedControlIds: ['CTRL-001'],
+    body,
+    requiredSignoffIds,
+    evidenceRequirementIds,
+    tags: [...tags, 'admission-packet', 'template-only', 'no-phi'],
+  };
 }
 
 const ctrl001: DossierSeed = {
@@ -240,6 +378,7 @@ const ctrl001: DossierSeed = {
       templateOnly: true,
       evidenceUse: 'Proves admission notices include advance directive information.',
     },
+    ...ctrl001Batch1DocumentRefs,
   ],
   evidenceRequirements: [
     {
@@ -308,12 +447,329 @@ const ctrl001: DossierSeed = {
       requiredForReadiness: true,
       attestationText: 'I attest that the Patient Rights / Client Rights & Responsibilities notice, HIPAA NPP, and related admission notices are current, available, and aligned with applicable policy requirements.',
     },
+    {
+      signoffId: 'MCSO-CTRL-001-ADMIN-BILLING',
+      role: 'Administrator / Billing',
+      signerLabel: 'Annual financial responsibility notice attestation',
+      cadence: 'annual',
+      requiredForReadiness: true,
+      attestationText: 'I attest that admission packet financial responsibility notices are current, route-specific when required, and retained as template documentation while completed patient acknowledgments remain runtime evidence only.',
+    },
   ],
   modalSummary: 'Admission rights dossier linking non-PHI packet templates, runtime signed acknowledgments, monthly sampling, correction tracking, and owner sign-off.',
   surveyorPrompt: 'Show how the agency gives patients their rights notice, NPP, and admission consent, and how you know every admission was acknowledged.',
   operatorInstructions: 'Maintain template approvals here. Attach completed patient acknowledgments only as PHI-authorized runtime evidence, never as seed data.',
   tags: ['admission', 'patient-rights', 'hipaa', 'template-only'],
 };
+
+const ctrl001Batch1DocumentationRecords: MasterControlDocumentationRecord[] = [
+  buildCtrl001TemplateRecord({
+    ref: ctrl001AdmissionConsentRef,
+    approverRole: 'Administrator',
+    linkedPolicyIds: ['CL-PA-001', 'CL-PA-004', 'CO-HP-001'],
+    requiredSignoffIds: ['MCSO-CTRL-001-CLINICAL-MANAGER'],
+    evidenceRequirementIds: ['MCEV-CTRL-001-001', 'MCEV-CTRL-001-002', 'MCEV-CTRL-001-003'],
+    tags: ['admission-consent', 'acknowledgment'],
+    body: [
+      {
+        sectionId: 'ADMISSION-CONSENT-PURPOSE',
+        heading: 'Purpose',
+        body: 'Admission consent confirms that the patient or authorized representative received the required admission information, agreed to begin agency services, and understands the core terms of care before services proceed.',
+      },
+      {
+        sectionId: 'ADMISSION-CONSENT-REQUIRED-CONTENT',
+        heading: 'Required Content',
+        body: 'The controlled template must present the required admission agreement content in language the patient or representative can understand.',
+        bullets: [
+          'Agency name, contact information, and services being admitted.',
+          'Consent to receive home health services and participate in the plan of care.',
+          'Acknowledgment that required rights, privacy, advance directive, grievance, emergency, and financial notices were provided when applicable.',
+          'Right to ask questions, refuse services, or withdraw consent according to policy.',
+          'Expected patient or representative cooperation with scheduling, safe access to the home, and communication of changes in condition.',
+        ],
+      },
+      {
+        sectionId: 'ADMISSION-CONSENT-ACKNOWLEDGMENT',
+        heading: 'Patient/Representative Acknowledgment Requirement',
+        body: 'Completed admission consent must be signed and dated at runtime by the patient or authorized representative before or at initiation of services, unless a documented policy exception applies.',
+        bullets: [
+          'Capture signer role when the signer is an authorized representative.',
+          'Document interpreter or accommodation use when needed.',
+          'Route unsigned, incomplete, or delayed consent to the responsible clinical manager for correction.',
+        ],
+      },
+      {
+        sectionId: 'ADMISSION-CONSENT-RUNTIME-EVIDENCE',
+        heading: 'Runtime Evidence Expectations',
+        body: 'Acceptable runtime evidence includes the signed admission consent, EHR admission packet completion export, PHI-authorized completed packet link, and monthly sample audit result. Blank templates are not execution evidence.',
+      },
+      {
+        sectionId: 'ADMISSION-CONSENT-SURVEYOR',
+        heading: 'Surveyor Explanation',
+        body: 'This record proves that the agency maintains a controlled admission consent template. Survey proof of execution comes from authorized runtime signed acknowledgments and audit results, not from seeded patient documents.',
+      },
+      templateOnlyNoPhiSection('ADMISSION-CONSENT-TEMPLATE-NO-PHI'),
+    ],
+  }),
+  buildCtrl001TemplateRecord({
+    ref: ctrl001HipaaAcknowledgmentRef,
+    approverRole: 'Privacy Officer',
+    linkedPolicyIds: ['CO-HP-001', 'CO-HP-101'],
+    requiredSignoffIds: ['MCSO-CTRL-001-PRIVACY-OFFICER'],
+    evidenceRequirementIds: ['MCEV-CTRL-001-001', 'MCEV-CTRL-001-002', 'MCEV-CTRL-001-003'],
+    tags: ['hipaa', 'npp-acknowledgment'],
+    body: [
+      {
+        sectionId: 'HIPAA-NPP-ACK-PURPOSE',
+        heading: 'Purpose',
+        body: 'HIPAA NPP acknowledgment documents that the agency asks the patient or authorized representative to acknowledge receipt of the Notice of Privacy Practices at admission or by an approved delivery process.',
+      },
+      {
+        sectionId: 'HIPAA-NPP-ACK-REQUIRED-CONTENT',
+        heading: 'Required Content',
+        body: 'The controlled acknowledgment template must support clear documentation of NPP delivery and patient or representative response.',
+        bullets: [
+          'Current Notice of Privacy Practices version or source reference.',
+          'Delivery method, such as paper packet, electronic packet, mailed notice, or documented offer.',
+          'Acknowledgment, refusal, unable-to-obtain, or delayed acknowledgment option.',
+          'Staff documentation path for refusal or inability to obtain acknowledgment.',
+          'Privacy Officer ownership and annual currency review.',
+        ],
+      },
+      {
+        sectionId: 'HIPAA-NPP-ACK-ACKNOWLEDGMENT',
+        heading: 'Patient/Representative Acknowledgment Requirement',
+        body: 'The completed runtime record must show whether the patient or representative acknowledged receipt, refused to sign, or could not provide acknowledgment, with the staff attempt documented.',
+      },
+      {
+        sectionId: 'HIPAA-NPP-ACK-RUNTIME-EVIDENCE',
+        heading: 'Runtime Evidence Expectations',
+        body: 'Acceptable runtime evidence includes signed NPP acknowledgment, documented refusal or attempt, NPP delivery log, admission packet export, and sample audit results. No completed patient acknowledgment is seeded here.',
+      },
+      {
+        sectionId: 'HIPAA-NPP-ACK-SURVEYOR',
+        heading: 'Surveyor Explanation',
+        body: 'This record proves the agency maintains a controlled NPP acknowledgment mechanism. Surveyors should review runtime evidence to confirm delivery and acknowledgment attempts for actual admissions.',
+      },
+      templateOnlyNoPhiSection('HIPAA-NPP-ACK-TEMPLATE-NO-PHI'),
+    ],
+  }),
+  buildCtrl001TemplateRecord({
+    ref: ctrl001AdvanceDirectiveNoticeRef,
+    approverRole: 'Administrator',
+    linkedPolicyIds: ['CL-PA-001', 'CL-PA-004'],
+    requiredSignoffIds: ['MCSO-CTRL-001-CLINICAL-MANAGER'],
+    evidenceRequirementIds: ['MCEV-CTRL-001-001', 'MCEV-CTRL-001-002', 'MCEV-CTRL-001-003'],
+    tags: ['advance-directive', 'acknowledgment'],
+    body: [
+      {
+        sectionId: 'ADVANCE-DIRECTIVE-NOTICE-PURPOSE',
+        heading: 'Purpose',
+        body: 'Advance directive notice and acknowledgment confirms that the patient or authorized representative was informed of advance directive rights and that the patient choice was documented at admission.',
+      },
+      {
+        sectionId: 'ADVANCE-DIRECTIVE-NOTICE-REQUIRED-CONTENT',
+        heading: 'Required Content',
+        body: 'The controlled notice must present the required advance directive options without directing or pressuring the patient choice.',
+        bullets: [
+          'Patient has an existing advance directive.',
+          'Patient does not have an advance directive.',
+          'Patient requests additional information.',
+          'Patient declines discussion or cannot respond at admission.',
+          'Clinical escalation path when DNR, POLST, or other directive information is presented.',
+        ],
+      },
+      {
+        sectionId: 'ADVANCE-DIRECTIVE-NOTICE-ACKNOWLEDGMENT',
+        heading: 'Patient/Representative Acknowledgment Requirement',
+        body: 'The completed runtime record must capture that advance directive information was provided and must record the selected option, signer, signer role when applicable, and date.',
+      },
+      {
+        sectionId: 'ADVANCE-DIRECTIVE-NOTICE-RUNTIME-EVIDENCE',
+        heading: 'Runtime Evidence Expectations',
+        body: 'Acceptable runtime evidence includes signed advance directive acknowledgment, EHR admission packet export, PHI-authorized completed packet link, and audit results showing the acknowledgment was present.',
+      },
+      {
+        sectionId: 'ADVANCE-DIRECTIVE-NOTICE-SURVEYOR',
+        heading: 'Surveyor Explanation',
+        body: 'This record proves the agency maintains controlled advance directive notice language. Runtime evidence proves whether the notice was provided and acknowledged for actual admissions.',
+      },
+      templateOnlyNoPhiSection('ADVANCE-DIRECTIVE-NOTICE-TEMPLATE-NO-PHI'),
+    ],
+  }),
+  buildCtrl001TemplateRecord({
+    ref: ctrl001PhotoAuthorizationRef,
+    approverRole: 'Administrator / Privacy Officer',
+    linkedPolicyIds: ['CL-PA-001', 'CO-HP-001'],
+    requiredSignoffIds: ['MCSO-CTRL-001-CLINICAL-MANAGER', 'MCSO-CTRL-001-PRIVACY-OFFICER'],
+    evidenceRequirementIds: ['MCEV-CTRL-001-001', 'MCEV-CTRL-001-002', 'MCEV-CTRL-001-003'],
+    tags: ['photo-authorization', 'privacy'],
+    body: [
+      {
+        sectionId: 'PHOTO-AUTHORIZATION-PURPOSE',
+        heading: 'Purpose',
+        body: 'Permission to photograph documents whether the patient or authorized representative permits photographs for care-related purposes, such as wound documentation or clinical progress tracking, when clinically appropriate.',
+      },
+      {
+        sectionId: 'PHOTO-AUTHORIZATION-REQUIRED-CONTENT',
+        heading: 'Required Content',
+        body: 'The controlled template must limit photo use to permitted care purposes and must support either authorization, refusal, or not-applicable documentation.',
+        bullets: [
+          'Photo purpose limitation for care, treatment, documentation, or quality review as permitted by policy.',
+          'Authorization, refusal, revocation, or not-applicable selection.',
+          'Statement that photographs are protected health information when tied to patient care.',
+          'Storage and access route through approved clinical or evidence systems only.',
+          'Instruction that marketing or public use requires a separate authorization when applicable.',
+        ],
+      },
+      {
+        sectionId: 'PHOTO-AUTHORIZATION-ACKNOWLEDGMENT',
+        heading: 'Patient/Representative Acknowledgment Requirement',
+        body: 'The completed runtime record must capture patient or representative selection, signature when authorization is granted or refused, date, and any limitations documented by the patient.',
+      },
+      {
+        sectionId: 'PHOTO-AUTHORIZATION-RUNTIME-EVIDENCE',
+        heading: 'Runtime Evidence Expectations',
+        body: 'Acceptable runtime evidence includes signed photo authorization/refusal, clinical documentation showing authorized photo handling, audit result, or documented revocation. No patient photographs are stored in seed documentation.',
+      },
+      {
+        sectionId: 'PHOTO-AUTHORIZATION-SURVEYOR',
+        heading: 'Surveyor Explanation',
+        body: 'This record proves the agency maintains controlled photo authorization language. Surveyors should review runtime records to verify authorization or refusal before patient photographs are used as care evidence.',
+      },
+      templateOnlyNoPhiSection('PHOTO-AUTHORIZATION-TEMPLATE-NO-PHI'),
+    ],
+  }),
+  buildCtrl001TemplateRecord({
+    ref: ctrl001PersonalFundsAuthorizationRef,
+    approverRole: 'Administrator',
+    linkedPolicyIds: ['CL-PA-001', 'CL-PA-004'],
+    requiredSignoffIds: ['MCSO-CTRL-001-CLINICAL-MANAGER'],
+    evidenceRequirementIds: ['MCEV-CTRL-001-001', 'MCEV-CTRL-001-002', 'MCEV-CTRL-001-003'],
+    tags: ['personal-funds', 'authorization-refusal'],
+    body: [
+      {
+        sectionId: 'PERSONAL-FUNDS-PURPOSE',
+        heading: 'Purpose',
+        body: 'Personal funds authorization/refusal documents whether agency personnel may assist with patient funds or financial transactions when a care-related need is identified and permitted by policy.',
+      },
+      {
+        sectionId: 'PERSONAL-FUNDS-REQUIRED-CONTENT',
+        heading: 'Required Content',
+        body: 'The controlled template must clearly separate authorization, refusal, and not-applicable choices and must discourage unauthorized staff access to patient funds.',
+        bullets: [
+          'Authorization scope, if any, limited to the specific assistance permitted by policy.',
+          'Refusal or not-applicable option when staff will not handle funds.',
+          'Requirement for representative involvement when applicable.',
+          'Escalation path for suspected financial exploitation, coercion, or unsafe fund handling.',
+          'Prohibition against staff borrowing, accepting, or using patient funds outside approved policy.',
+        ],
+      },
+      {
+        sectionId: 'PERSONAL-FUNDS-ACKNOWLEDGMENT',
+        heading: 'Patient/Representative Acknowledgment Requirement',
+        body: 'The completed runtime record must capture patient or representative choice, signature when applicable, date, and any limitations or representative instructions.',
+      },
+      {
+        sectionId: 'PERSONAL-FUNDS-RUNTIME-EVIDENCE',
+        heading: 'Runtime Evidence Expectations',
+        body: 'Acceptable runtime evidence includes signed authorization/refusal, documented not-applicable selection, escalation note, and audit result. No account numbers, balances, or personal financial details are stored in seed data.',
+      },
+      {
+        sectionId: 'PERSONAL-FUNDS-SURVEYOR',
+        heading: 'Surveyor Explanation',
+        body: 'This record proves the agency maintains controlled personal funds authorization language. Runtime evidence proves whether staff involvement with funds was authorized, refused, or not applicable.',
+      },
+      templateOnlyNoPhiSection('PERSONAL-FUNDS-TEMPLATE-NO-PHI'),
+    ],
+  }),
+  buildCtrl001TemplateRecord({
+    ref: ctrl001VehicleAuthorizationRef,
+    approverRole: 'Administrator / Risk Manager',
+    linkedPolicyIds: ['CL-PA-001', 'RM-OS-004'],
+    requiredSignoffIds: ['MCSO-CTRL-001-CLINICAL-MANAGER'],
+    evidenceRequirementIds: ['MCEV-CTRL-001-001', 'MCEV-CTRL-001-002', 'MCEV-CTRL-001-003'],
+    tags: ['vehicle-authorization', 'risk'],
+    body: [
+      {
+        sectionId: 'VEHICLE-AUTHORIZATION-PURPOSE',
+        heading: 'Purpose',
+        body: 'Vehicle use authorization/refusal documents whether patient vehicle use by agency personnel is authorized, refused, or not applicable before any staff use occurs.',
+      },
+      {
+        sectionId: 'VEHICLE-AUTHORIZATION-REQUIRED-CONTENT',
+        heading: 'Required Content',
+        body: 'The controlled template must define the patient choice and risk controls for any patient vehicle use.',
+        bullets: [
+          'Authorization, refusal, or not-applicable selection.',
+          'Permitted purpose and limits of any vehicle use.',
+          'Instruction that authorization does not override agency driver, insurance, safety, or risk policies.',
+          'Escalation path for transportation-related safety concerns.',
+          'Revocation or change process when the patient or representative changes the decision.',
+        ],
+      },
+      {
+        sectionId: 'VEHICLE-AUTHORIZATION-ACKNOWLEDGMENT',
+        heading: 'Patient/Representative Acknowledgment Requirement',
+        body: 'The completed runtime record must capture patient or representative decision, signature when applicable, date, and any stated limitations. Staff may not treat a blank template as authorization.',
+      },
+      {
+        sectionId: 'VEHICLE-AUTHORIZATION-RUNTIME-EVIDENCE',
+        heading: 'Runtime Evidence Expectations',
+        body: 'Acceptable runtime evidence includes signed authorization/refusal, documented not-applicable selection, risk escalation note, and audit result. Vehicle identifiers or patient travel details are runtime evidence only.',
+      },
+      {
+        sectionId: 'VEHICLE-AUTHORIZATION-SURVEYOR',
+        heading: 'Surveyor Explanation',
+        body: 'This record proves the agency maintains a controlled vehicle use authorization template. Runtime evidence proves whether authorization existed before any patient vehicle use.',
+      },
+      templateOnlyNoPhiSection('VEHICLE-AUTHORIZATION-TEMPLATE-NO-PHI'),
+    ],
+  }),
+  buildCtrl001TemplateRecord({
+    ref: ctrl001FinancialResponsibilityRef,
+    approverRole: 'Administrator / Billing',
+    linkedPolicyIds: ['CL-PA-001', 'FN-BL-004', 'FN-BL-005'],
+    requiredSignoffIds: ['MCSO-CTRL-001-ADMIN-BILLING'],
+    evidenceRequirementIds: ['MCEV-CTRL-001-001', 'MCEV-CTRL-001-002', 'MCEV-CTRL-001-003'],
+    tags: ['financial-responsibility', 'payer-route'],
+    body: [
+      {
+        sectionId: 'FINANCIAL-RESPONSIBILITY-PURPOSE',
+        heading: 'Purpose',
+        body: 'Consumer liability for payment/financial responsibility notice documents that the patient or representative receives payment-route and potential patient responsibility information before or during admission.',
+      },
+      {
+        sectionId: 'FINANCIAL-RESPONSIBILITY-REQUIRED-CONTENT',
+        heading: 'Required Content',
+        body: 'The controlled template must support payer-route selection and clear notice of patient financial responsibility without storing patient-specific payer data in the registry.',
+        bullets: [
+          'Selected payment pathway or pending-verification status.',
+          'Notice that coverage, limitations, and patient responsibility depend on payer verification and applicable program rules.',
+          'Private-pay, insurance, Medicaid/Medi-Cal, Medicare Advantage, original Medicare, contract payer, or not-applicable route language when applicable.',
+          'Instruction that final payment responsibility is confirmed through runtime verification and authorized billing workflows.',
+          'Contact route for billing questions and financial counseling when applicable.',
+        ],
+      },
+      {
+        sectionId: 'FINANCIAL-RESPONSIBILITY-ACKNOWLEDGMENT',
+        heading: 'Patient/Representative Acknowledgment Requirement',
+        body: 'The completed runtime record must capture the patient or representative acknowledgment of the applicable financial responsibility notice, signer role when applicable, and date.',
+      },
+      {
+        sectionId: 'FINANCIAL-RESPONSIBILITY-RUNTIME-EVIDENCE',
+        heading: 'Runtime Evidence Expectations',
+        body: 'Acceptable runtime evidence includes signed financial responsibility notice, selected payer route record, eligibility/coverage verification output, PHI-authorized completed packet link, and sample audit result.',
+      },
+      {
+        sectionId: 'FINANCIAL-RESPONSIBILITY-SURVEYOR',
+        heading: 'Surveyor Explanation',
+        body: 'This record proves the agency maintains controlled financial responsibility notice language. Runtime evidence proves which payment route and acknowledgment applied to a specific admission.',
+      },
+      templateOnlyNoPhiSection('FINANCIAL-RESPONSIBILITY-TEMPLATE-NO-PHI'),
+    ],
+  }),
+];
 
 const ctrl001Documentation: MasterControlDocumentationRecord[] = [
   {
@@ -403,6 +859,7 @@ const ctrl001Documentation: MasterControlDocumentationRecord[] = [
       },
     ],
   },
+  ...ctrl001Batch1DocumentationRecords,
   {
     documentId: 'MCDOC-CTRL-001-HIPAA-NPP',
     controlId: 'CTRL-001',
@@ -499,13 +956,13 @@ export function getDocumentationRecordForRef(source: MasterControlSourceRecord, 
 
 export const MASTER_CONTROL_MISSING_DOCUMENTATION_ROWS: readonly MissingDocumentationReportRow[] = [
   { controlId: 'CTRL-001', controlName: 'Patient Rights Notice & Admission Consent Program', requiredDocumentationMissing: 'Created', recommendedDocumentId: 'MCDOC-CTRL-001-PATIENT-BILL-OF-RIGHTS', recommendedTitle: 'Patient Bill of Rights / Client Rights & Responsibilities', sourceCandidate: 'Admission Packet template', draftingPriority: 'created', ownerRole: 'Clinical Manager / Privacy Officer', needsClaudeDraft: false },
-  { controlId: 'CTRL-001', controlName: 'Patient Rights Notice & Admission Consent Program', requiredDocumentationMissing: 'Admission agreement body copy needs drafting', recommendedDocumentId: 'MCDOC-CTRL-001-ADMISSION-CONSENT', recommendedTitle: 'Admission Consent / Agreement / Acknowledgment', sourceCandidate: 'Admission Packet template', draftingPriority: 'high', ownerRole: 'Clinical Manager', needsClaudeDraft: true },
-  { controlId: 'CTRL-001', controlName: 'Patient Rights Notice & Admission Consent Program', requiredDocumentationMissing: 'NPP acknowledgment standalone body needs drafting', recommendedDocumentId: 'MCDOC-CTRL-001-HIPAA-NPP-ACKNOWLEDGMENT', recommendedTitle: 'Notice of Privacy Practices acknowledgment', sourceCandidate: 'Admission Packet template', draftingPriority: 'high', ownerRole: 'Privacy Officer', needsClaudeDraft: true },
-  { controlId: 'CTRL-001', controlName: 'Patient Rights Notice & Admission Consent Program', requiredDocumentationMissing: 'Advance directive standalone acknowledgment needs drafting', recommendedDocumentId: 'MCDOC-CTRL-001-ADVANCE-DIRECTIVE-NOTICE', recommendedTitle: 'Advance Directive information and acknowledgment', sourceCandidate: 'Admission Packet template', draftingPriority: 'high', ownerRole: 'Clinical Manager', needsClaudeDraft: true },
-  { controlId: 'CTRL-001', controlName: 'Patient Rights Notice & Admission Consent Program', requiredDocumentationMissing: 'Photo authorization copy needs drafting', recommendedDocumentId: 'MCDOC-CTRL-001-PHOTO-AUTHORIZATION', recommendedTitle: 'Permission to photograph for care purposes', sourceCandidate: 'Admission Packet template', draftingPriority: 'material', ownerRole: 'Clinical Manager', needsClaudeDraft: true },
-  { controlId: 'CTRL-001', controlName: 'Patient Rights Notice & Admission Consent Program', requiredDocumentationMissing: 'Personal funds authorization copy needs drafting', recommendedDocumentId: 'MCDOC-CTRL-001-PERSONAL-FUNDS-AUTHORIZATION', recommendedTitle: 'Authorization / refusal for access to personal funds', sourceCandidate: 'Admission Packet template', draftingPriority: 'material', ownerRole: 'Clinical Manager', needsClaudeDraft: true },
-  { controlId: 'CTRL-001', controlName: 'Patient Rights Notice & Admission Consent Program', requiredDocumentationMissing: 'Vehicle authorization copy needs drafting', recommendedDocumentId: 'MCDOC-CTRL-001-VEHICLE-AUTHORIZATION', recommendedTitle: 'Authorization / refusal for use of patient vehicle', sourceCandidate: 'Admission Packet template', draftingPriority: 'material', ownerRole: 'Clinical Manager', needsClaudeDraft: true },
-  { controlId: 'CTRL-001', controlName: 'Patient Rights Notice & Admission Consent Program', requiredDocumentationMissing: 'Financial responsibility notice needs drafting', recommendedDocumentId: 'MCDOC-CTRL-001-FINANCIAL-RESPONSIBILITY', recommendedTitle: 'Consumer liability for payment / charges / payer route notice', sourceCandidate: 'Admission Packet template', draftingPriority: 'high', ownerRole: 'Administrator / Billing', needsClaudeDraft: true },
+  { controlId: 'CTRL-001', controlName: 'Patient Rights Notice & Admission Consent Program', requiredDocumentationMissing: 'Created', recommendedDocumentId: 'MCDOC-CTRL-001-ADMISSION-CONSENT', recommendedTitle: 'Admission Consent / Agreement / Acknowledgment', sourceCandidate: 'Admission Packet template', draftingPriority: 'created', ownerRole: 'Clinical Manager', needsClaudeDraft: false },
+  { controlId: 'CTRL-001', controlName: 'Patient Rights Notice & Admission Consent Program', requiredDocumentationMissing: 'Created', recommendedDocumentId: 'MCDOC-CTRL-001-HIPAA-NPP-ACKNOWLEDGMENT', recommendedTitle: 'HIPAA Notice of Privacy Practices Acknowledgment', sourceCandidate: 'Admission Packet template', draftingPriority: 'created', ownerRole: 'Privacy Officer', needsClaudeDraft: false },
+  { controlId: 'CTRL-001', controlName: 'Patient Rights Notice & Admission Consent Program', requiredDocumentationMissing: 'Created', recommendedDocumentId: 'MCDOC-CTRL-001-ADVANCE-DIRECTIVE-NOTICE', recommendedTitle: 'Advance Directive Notice and Acknowledgment', sourceCandidate: 'Admission Packet template', draftingPriority: 'created', ownerRole: 'Clinical Manager', needsClaudeDraft: false },
+  { controlId: 'CTRL-001', controlName: 'Patient Rights Notice & Admission Consent Program', requiredDocumentationMissing: 'Created', recommendedDocumentId: 'MCDOC-CTRL-001-PHOTO-AUTHORIZATION', recommendedTitle: 'Permission to Photograph for Care Purposes', sourceCandidate: 'Admission Packet template', draftingPriority: 'created', ownerRole: 'Clinical Manager', needsClaudeDraft: false },
+  { controlId: 'CTRL-001', controlName: 'Patient Rights Notice & Admission Consent Program', requiredDocumentationMissing: 'Created', recommendedDocumentId: 'MCDOC-CTRL-001-PERSONAL-FUNDS-AUTHORIZATION', recommendedTitle: 'Personal Funds Authorization / Refusal', sourceCandidate: 'Admission Packet template', draftingPriority: 'created', ownerRole: 'Clinical Manager', needsClaudeDraft: false },
+  { controlId: 'CTRL-001', controlName: 'Patient Rights Notice & Admission Consent Program', requiredDocumentationMissing: 'Created', recommendedDocumentId: 'MCDOC-CTRL-001-VEHICLE-AUTHORIZATION', recommendedTitle: 'Vehicle Use Authorization / Refusal', sourceCandidate: 'Admission Packet template', draftingPriority: 'created', ownerRole: 'Clinical Manager', needsClaudeDraft: false },
+  { controlId: 'CTRL-001', controlName: 'Patient Rights Notice & Admission Consent Program', requiredDocumentationMissing: 'Created', recommendedDocumentId: 'MCDOC-CTRL-001-FINANCIAL-RESPONSIBILITY', recommendedTitle: 'Consumer Liability for Payment / Financial Responsibility Notice', sourceCandidate: 'Admission Packet template', draftingPriority: 'created', ownerRole: 'Administrator / Billing', needsClaudeDraft: false },
   ...[
     ['CTRL-002', 'MCDOC-CTRL-002-LANGUAGE-ACCESS-NOTICE', 'Interpreter / language access services notice'],
     ['CTRL-003', 'MCDOC-CTRL-003-GRIEVANCE-INTAKE-FORM', 'Patient complaint / grievance intake documentation'],
@@ -528,7 +985,7 @@ export const MASTER_CONTROL_MISSING_DOCUMENTATION_ROWS: readonly MissingDocument
   ].map(([controlId, recommendedDocumentId, recommendedTitle]) => ({
     controlId,
     controlName: 'See master control inventory',
-    requiredDocumentationMissing: 'Specific full document copy still needs drafting',
+    requiredDocumentationMissing: 'NEEDS_DRAFT',
     recommendedDocumentId,
     recommendedTitle,
     sourceCandidate: 'Master control dossier source documents',

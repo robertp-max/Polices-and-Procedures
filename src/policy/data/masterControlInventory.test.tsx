@@ -5,8 +5,27 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { MasterControlsScreen } from '@/v6/screens/pageviews/MasterControlsScreen';
-import { MASTER_CONTROL_MISSING_DOCUMENTATION_ROWS } from './masterControlDocumentation.generated';
+import { MASTER_CONTROL_DOCUMENTATION_RECORDS, MASTER_CONTROL_MISSING_DOCUMENTATION_ROWS } from './masterControlDocumentation.generated';
 import { deriveReadinessStatus, loadMasterControlInventorySeed } from './masterControlInventory';
+
+const CTRL001_BATCH1_DOCS = [
+  ['MCDOC-CTRL-001-ADMISSION-CONSENT', 'Admission Consent / Agreement / Acknowledgment', /Admission consent confirms that the patient or authorized representative/],
+  ['MCDOC-CTRL-001-HIPAA-NPP-ACKNOWLEDGMENT', 'HIPAA Notice of Privacy Practices Acknowledgment', /HIPAA NPP acknowledgment documents that the agency asks the patient/],
+  ['MCDOC-CTRL-001-ADVANCE-DIRECTIVE-NOTICE', 'Advance Directive Notice and Acknowledgment', /Advance directive notice and acknowledgment confirms/],
+  ['MCDOC-CTRL-001-PHOTO-AUTHORIZATION', 'Permission to Photograph for Care Purposes', /Permission to photograph documents whether the patient/],
+  ['MCDOC-CTRL-001-PERSONAL-FUNDS-AUTHORIZATION', 'Personal Funds Authorization / Refusal', /Personal funds authorization\/refusal documents/],
+  ['MCDOC-CTRL-001-VEHICLE-AUTHORIZATION', 'Vehicle Use Authorization / Refusal', /Vehicle use authorization\/refusal documents/],
+  ['MCDOC-CTRL-001-FINANCIAL-RESPONSIBILITY', 'Consumer Liability for Payment / Financial Responsibility Notice', /Consumer liability for payment\/financial responsibility notice documents/],
+] as const;
+
+const REQUIRED_BATCH1_SECTION_HEADINGS = [
+  'Purpose',
+  'Required Content',
+  'Patient/Representative Acknowledgment Requirement',
+  'Runtime Evidence Expectations',
+  'Surveyor Explanation',
+  'Template-only / no-PHI warning',
+] as const;
 
 describe('master control dossiers', () => {
   beforeAll(() => {
@@ -68,6 +87,28 @@ describe('master control dossiers', () => {
     expect(ctrl001?.documentationRecords.some((doc) => doc.documentId === 'MCDOC-CTRL-001-PATIENT-BILL-OF-RIGHTS' && doc.body.length > 0)).toBe(true);
   });
 
+  it('includes created Batch 1 CTRL-001 admission packet documentation records', async () => {
+    const controls = await loadMasterControlInventorySeed();
+    const ctrl001 = controls.find((control) => control.id === 'CTRL-001');
+    expect(ctrl001).toBeTruthy();
+    if (!ctrl001) return;
+
+    for (const [documentId, title] of CTRL001_BATCH1_DOCS) {
+      expect(ctrl001.documentRefs).toEqual(expect.arrayContaining([
+        expect.objectContaining({ documentId, title, required: true, templateOnly: true }),
+      ]));
+      const record = MASTER_CONTROL_DOCUMENTATION_RECORDS.find((entry) => entry.documentId === documentId);
+      expect(record).toEqual(expect.objectContaining({
+        documentId,
+        controlId: 'CTRL-001',
+        title,
+        templateOnly: true,
+      }));
+      expect(record?.body.map((section) => section.heading)).toEqual(REQUIRED_BATCH1_SECTION_HEADINGS);
+      expect(record?.body.every((section) => section.body.length > 0)).toBe(true);
+    }
+  });
+
   it('has documentation bodies and verification log required fields', async () => {
     const controls = await loadMasterControlInventorySeed();
     for (const control of controls) {
@@ -95,23 +136,46 @@ describe('master control dossiers', () => {
     expect(logs.flatMap((log) => log.evidenceReviewed).some((evidence) => evidence.status === 'accepted')).toBe(false);
   });
 
-  it('maintains the missing documentation report entries for created and missing CTRL-001 documents', () => {
-    expect(MASTER_CONTROL_MISSING_DOCUMENTATION_ROWS).toEqual(
-      expect.arrayContaining([
+  it('maintains the missing documentation report entries after Batch 1 drafting', () => {
+    const createdCtrl001Ids = [
+      'MCDOC-CTRL-001-PATIENT-BILL-OF-RIGHTS',
+      ...CTRL001_BATCH1_DOCS.map(([documentId]) => documentId),
+    ];
+
+    for (const documentId of createdCtrl001Ids) {
+      expect(MASTER_CONTROL_MISSING_DOCUMENTATION_ROWS).toEqual(expect.arrayContaining([
         expect.objectContaining({
-          recommendedDocumentId: 'MCDOC-CTRL-001-PATIENT-BILL-OF-RIGHTS',
+          recommendedDocumentId: documentId,
+          requiredDocumentationMissing: 'Created',
+          draftingPriority: 'created',
           needsClaudeDraft: false,
         }),
-        expect.objectContaining({
-          recommendedDocumentId: 'MCDOC-CTRL-001-HIPAA-NPP-ACKNOWLEDGMENT',
-          needsClaudeDraft: true,
-        }),
-        expect.objectContaining({
-          recommendedDocumentId: 'MCDOC-CTRL-001-ADVANCE-DIRECTIVE-NOTICE',
-          needsClaudeDraft: true,
-        }),
-      ]),
-    );
+      ]));
+    }
+
+    const unresolved = MASTER_CONTROL_MISSING_DOCUMENTATION_ROWS.filter((row) => row.needsClaudeDraft);
+    expect(unresolved.some((row) => row.controlId === 'CTRL-001')).toBe(false);
+    expect(unresolved.every((row) => row.requiredDocumentationMissing === 'NEEDS_DRAFT')).toBe(true);
+    expect(unresolved.map((row) => row.controlId)).toEqual([
+      'CTRL-002',
+      'CTRL-003',
+      'CTRL-004',
+      'CTRL-005',
+      'CTRL-015',
+      'CTRL-019',
+      'CTRL-105',
+      'CTRL-106',
+      'CTRL-107',
+      'CTRL-108',
+      'CTRL-109',
+      'CTRL-110',
+      'CTRL-111',
+      'CTRL-112',
+      'CTRL-113',
+      'CTRL-114',
+      'CTRL-115',
+      'CTRL-116',
+    ]);
   });
 
   it('includes CTRL-105 through CTRL-116', async () => {
@@ -149,6 +213,23 @@ describe('master control dossiers', () => {
     fireEvent.click(screen.getByText('Advance Directive Information Notice'));
     expect(screen.getByText('Patient Choice Options')).toBeTruthy();
     expect(screen.getAllByText('Runtime Evidence Expectations').length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('expands every Batch 1 CTRL-001 required-document card inline with body copy', async () => {
+    render(<MasterControlsScreen />);
+    fireEvent.click(await screen.findByText('CTRL-001'));
+    await waitFor(() => expect(screen.getByRole('dialog', { name: /CTRL-001 control dossier/i })).toBeTruthy());
+    fireEvent.click(screen.getByText('Required Documents'));
+
+    for (const [, title, bodyPattern] of CTRL001_BATCH1_DOCS) {
+      fireEvent.click(screen.getByText(title));
+      expect(screen.getByText(bodyPattern)).toBeTruthy();
+    }
+
+    expect(screen.queryByText('DOCUMENTATION MISSING')).toBeNull();
+    fireEvent.click(screen.getByText('Documentation'));
+    expect(screen.getByText('MCDOC-CTRL-001-ADMISSION-CONSENT')).toBeTruthy();
+    expect(screen.getByText('MCDOC-CTRL-001-FINANCIAL-RESPONSIBILITY')).toBeTruthy();
   });
 
   it('renders verification and sign-off log support fields without fake completion', async () => {

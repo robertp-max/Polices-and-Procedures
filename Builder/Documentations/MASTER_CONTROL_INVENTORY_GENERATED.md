@@ -4,7 +4,7 @@ Generated from runtime JSON plus dossier registry. Control count: 116.
 
 | Control ID | Name | Risk | Source Status | Owner | Documents | Evidence | Signoffs |
 |---|---|---:|---|---|---:|---:|---:|
-| CTRL-001 | Patient Rights Notice & Admission Consent Program | HIGH | UNKNOWN | Clinical Manager / Privacy Officer | 3 | 4 | 2 |
+| CTRL-001 | Patient Rights Notice & Admission Consent Program | HIGH | UNKNOWN | Clinical Manager / Privacy Officer | 10 | 4 | 3 |
 | CTRL-002 | Interpreter / Language Access Services | HIGH | UNKNOWN | Operations Director | 1 | 1 | 1 |
 | CTRL-003 | Patient Complaint / Grievance Intake Mechanism | HIGH | UNKNOWN | Clinical Manager / QAPI Lead | 1 | 1 | 1 |
 | CTRL-004 | State Home Health Hotline Notice | MATERIAL | UNKNOWN | Intake / Clinical Manager | 1 | 1 | 1 |
