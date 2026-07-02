@@ -26,7 +26,7 @@ export function OnboardingV2ActivateScreen() {
       data-route="/onboarding-v2/activate"
       data-template="detail"
     >
-      <div className="grid gap-lg desktop:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+      <div className="grid gap-lg desktop:grid-cols-1">
         <div className="grid content-start gap-md">
           <form className="grid gap-md rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
             <h3 className="flex items-center gap-sm border-b border-hairline pb-sm text-h3 font-medium text-ink">

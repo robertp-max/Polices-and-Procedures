@@ -215,7 +215,7 @@ export function EventsBoardScreen() {
       </section>
 
       {activeTab === 'board' ? (
-        <section className="grid gap-lg large:grid-cols-[minmax(0,1fr)_minmax(270px,320px)]">
+        <section className="grid gap-lg grid-cols-1">
           <div aria-label="Events board lanes" className="min-w-0 overflow-x-auto overflow-y-hidden pb-sm" role="region" tabIndex={0}>
             <div className="grid min-w-[920px] gap-sm tablet-l:grid-cols-2 desktop:min-w-0 desktop:grid-cols-4">
               {filteredLanes.map((lane) => (

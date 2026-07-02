@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
+import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from 'react';
 import { Link, Outlet, matchPath, useLocation, useNavigate } from 'react-router-dom';
-import { Bot, Bookmark, ClipboardCheck, FileText, GitFork, GraduationCap, Heart, HelpCircle, Info, LayoutDashboard, Menu, MessageCircle, Settings, Share2, UserRound, Users, X } from 'lucide-react';
+import { Bot, Bookmark, ClipboardCheck, FileText, GitFork, GraduationCap, Heart, HelpCircle, Info, LayoutDashboard, MessageCircle, Settings, Share2, UserRound, Users, X } from 'lucide-react';
 import { PersonalOpsPanel } from './PersonalOpsPanel';
-import Dock from './Dock';
 import { usePersonalOpsStore } from '../../policy/stores/personalOpsStore';
 import { useUiStore } from '../../policy/stores/uiStore';
 import { primaryNavItems, workspaceSubnavItems, type NavItem } from '../routing/navigationManifest';
@@ -34,11 +33,12 @@ export function V6Shell() {
     /^\/library\/[^/]+\/print\/?$/.test(pathname) ||
     /^\/forms\/[^/]+\/print\/?$/.test(pathname);
   const isPersonalProfileRoute = pathname === '/personal/profile' || pathname.startsWith('/personal/profile/') || pathname.startsWith('/community/users');
+  const isDashboardRoute = /(^|\/)dashboard(\/|$)/.test(pathname);
   const isChromeFreeRoute = isLessonPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute;
   // Keep the dock visible during a guided tour so its nav targets stay anchorable.
-  const showDock = !isChromeFreeRoute && (!pathname.startsWith('/iadministrator') || bradLanding || tourActive);
+  const showDock = !isChromeFreeRoute && !isDashboardRoute && (!pathname.startsWith('/iadministrator') || bradLanding || tourActive);
   const shellSubnavItems = useMemo(() => getShellSubnavItems(pathname), [pathname]);
-  const showShellSubnav = !isChromeFreeRoute && shellSubnavItems.length > 0;
+  const showShellSubnav = !isChromeFreeRoute && !isDashboardRoute && shellSubnavItems.length > 0;
   const panelTop = '0px';
   const panelHeight = '100vh';
 
@@ -70,8 +70,12 @@ export function V6Shell() {
 
   const dockItems = useMemo(
     () =>
-      primaryNavItems
+      [...primaryNavItems]
         .filter((item) => item.id !== 'brad' && item.id !== 'help-center' && item.id !== 'community' && item.id !== 'admin')
+        .sort((a, b) => {
+          const order = ['dashboard', 'ces', 'taxonomy', 'onboarding', 'brad'];
+          return order.indexOf(a.id) - order.indexOf(b.id);
+        })
         .map((item) => {
           const Icon = navIcons[item.id] ?? HelpCircle;
           return {
@@ -79,6 +83,7 @@ export function V6Shell() {
             label: item.label,
             onClick: () => navigate(item.to),
             isActive: activeNavItem === item.id,
+            colorClass: getLeftRadialColor(item.id),
             // Stable guided-tour anchors for nav targets.
             tourTarget: item.id === 'ces' ? 'nav.compliance' : item.id === 'help-center' ? 'nav.help' : undefined,
           };
@@ -151,16 +156,16 @@ export function V6Shell() {
   }, [feedbackOpen]);
 
   return (
-    <div className={cx('flex h-screen overflow-hidden font-light text-ink', isLessonPlayerRoute ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset' : 'bg-canvas')}>
+    <div className={cx('flex h-screen overflow-hidden font-light text-ink p-0 m-0 border-0', isDashboardRoute ? 'bg-[#F8F9FA]' : isLessonPlayerRoute ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset' : 'bg-canvas')}>
       {!isChromeFreeRoute && (
         <>
-          {showDock && (
+          {(showDock || isDashboardRoute) && (
             <button
               type="button"
               onClick={() => navigate('/iadministrator')}
               aria-label="Open Brad"
               className={cx(
-                'fixed left-5 top-5 z-popover hidden h-11 w-11 place-items-center rounded-full border border-transparent bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover laptop:grid',
+                'fixed left-5 top-5 z-popover hidden h-11 w-11 place-items-center rounded-full bg-transparent text-ink shadow-none transition duration-300 ease-standard hover:-translate-y-0.5 hover:text-brand-teal-deep laptop:grid',
                 activeNavItem === 'brad' && 'text-brand-teal',
               )}
             >
@@ -172,9 +177,9 @@ export function V6Shell() {
             onClick={() => setNavOpen(true)}
             aria-label="Open navigation"
             aria-expanded={navOpen}
-            className="fixed left-5 top-5 z-popover grid h-11 w-11 place-items-center rounded-full border border-hairline bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover laptop:hidden"
+            className="fixed left-5 top-5 z-popover grid h-11 w-11 place-items-center rounded-full bg-transparent text-ink shadow-none transition duration-300 ease-standard hover:-translate-y-0.5 hover:text-brand-teal-deep laptop:hidden"
           >
-            <Menu className="h-5 w-5" aria-hidden />
+            <ColoredHamburgerIcon />
           </button>
           <button
             type="button"
@@ -182,22 +187,14 @@ export function V6Shell() {
             onClick={togglePersonalOps}
             aria-label="Open personal operations"
             className={cx(
-              'group fixed right-5 top-5 z-popover grid h-11 w-11 place-items-center rounded-full border border-transparent bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover',
+              'group fixed right-5 top-5 z-popover grid h-11 w-11 place-items-center rounded-full bg-transparent text-ink shadow-none transition duration-300 ease-standard hover:-translate-y-0.5 hover:text-brand-teal-deep',
               isPersonalOpsOpen && 'text-brand-teal',
             )}
           >
-            <UserRound className="absolute h-5 w-5 transition duration-500 ease-standard group-hover:scale-75 group-hover:opacity-0" aria-hidden />
-            <span className="absolute text-sm font-medium opacity-0 transition duration-500 ease-standard group-hover:scale-100 group-hover:opacity-100">
-              me :)
-            </span>
+            <UserRound className="h-5 w-5" aria-hidden />
           </button>
-          {showDock && (
-            <Dock
-              items={dockItems}
-              className="fixed left-5 top-[140px] z-sticky hidden laptop:flex flex-col gap-[76px]"
-            />
-          )}
-          {showShellSubnav && (
+          {showDock && !isDashboardRoute && <LeftRadialDock items={dockItems} />}
+          {showShellSubnav && !isDashboardRoute && (
             <ShellSubnav items={shellSubnavItems} currentPath={pathname} />
           )}
         </>
@@ -251,10 +248,11 @@ export function V6Shell() {
         <div className="flex h-full min-h-0 min-w-0 flex-1 flex-row">
           <main
             className={cx(
-              'min-h-0 flex-1 overflow-y-auto overflow-x-hidden transition-[padding-right] duration-500 ease-standard',
-              !isChromeFreeRoute && 'v6-main-scrollmask',
-              isChromeFreeRoute || pathname.startsWith('/iadministrator') ? 'p-0' : 'pl-[calc(var(--space-lg)+10px)] pr-lg pb-32 pt-20 tablet-p:pl-[calc(var(--space-3xl)+50px)] tablet-p:pr-3xl',
-              !isChromeFreeRoute && hasScrolledMain && 'v6-main-scrollmask--scrolled',
+              !isDashboardRoute && 'min-h-0 flex-1 overflow-y-auto overflow-x-hidden',
+              'transition-[padding-right] duration-500 ease-standard',
+              !isChromeFreeRoute && !isDashboardRoute && 'v6-main-scrollmask',
+              (isDashboardRoute || isChromeFreeRoute || pathname.startsWith('/iadministrator')) ? 'p-0 overflow-hidden' : 'pl-[calc(var(--space-lg)+10px)] pr-lg pb-32 pt-20 tablet-p:pl-[calc(var(--space-3xl)+50px)] tablet-p:pr-3xl',
+              !isChromeFreeRoute && !isDashboardRoute && hasScrolledMain && 'v6-main-scrollmask--scrolled',
             )}
             id="main-content"
             ref={mainRef}
@@ -303,7 +301,7 @@ export function V6Shell() {
           onClick={() => navigate('/admin/user-groups')}
           aria-label="Open admin settings"
           className={cx(
-            'fixed bottom-5 right-5 z-popover grid h-11 w-11 place-items-center rounded-full border border-hairline bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover',
+            'fixed bottom-5 right-5 z-popover grid h-11 w-11 place-items-center rounded-full bg-transparent text-ink shadow-none transition duration-300 ease-standard hover:-translate-y-0.5 hover:text-brand-teal-deep',
             activeNavItem === 'admin' && 'text-brand-teal'
           )}
         >
@@ -314,6 +312,149 @@ export function V6Shell() {
       {/* Brad Guided Assistance - global, route-spanning gated tour overlay. */}
       <GuidedTourRunner />
     </div>
+  );
+}
+
+function ColoredHamburgerIcon() {
+  return (
+    <span className="flex h-5 w-6 flex-col items-stretch justify-center gap-1.5" aria-hidden="true">
+      <span className="h-0.5 rounded-full bg-[#00797d]" />
+      <span className="h-0.5 rounded-full bg-[#06a6ab]" />
+      <span className="h-0.5 rounded-full bg-[#49b65a]" />
+    </span>
+  );
+}
+
+function ColoredKebabIcon() {
+  return (
+    <span className="flex h-6 w-3 flex-col items-center justify-center gap-1.5" aria-hidden="true">
+      <span className="h-1.5 w-1.5 rounded-full bg-[#f97316]" />
+      <span className="h-1.5 w-1.5 rounded-full bg-[#facc15]" />
+      <span className="h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+    </span>
+  );
+}
+
+type RadialDockItem = {
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+  isActive?: boolean;
+  colorClass?: string;
+  tourTarget?: string;
+};
+
+function getLeftRadialColor(itemId: string) {
+  switch (itemId) {
+    case 'brad':
+      return 'bg-blue-400 text-white';
+    case 'dashboard':
+      return 'bg-green-400 text-white';
+    case 'ces':
+      return 'bg-emerald-500 text-white';
+    case 'taxonomy':
+      return 'bg-green-500 text-white';
+    case 'onboarding':
+      return 'bg-teal-600 text-white';
+    default:
+      return 'bg-blue-500 text-white';
+  }
+}
+
+function LeftRadialDock({ items }: { items: RadialDockItem[] }) {
+  const [open, setOpen] = useState(false);
+  const [rotation, setRotation] = useState(0);
+  const [isSnapping, setIsSnapping] = useState(false);
+  const totalAngle = 140;
+  const startAngle = -(totalAngle / 2);
+  const angleStep = items.length > 1 ? totalAngle / (items.length - 1) : 0;
+  const transitionClass = 'transition-all duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]';
+
+  const handleMouseEnter = () => {
+    if (open) return;
+    setIsSnapping(true);
+    setRotation(-1215);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsSnapping(false);
+        setOpen(true);
+        setRotation(0);
+      });
+    });
+  };
+
+  const handleMouseLeave = () => {
+    if (!open) return;
+    setOpen(false);
+    setRotation(1215);
+  };
+
+  return (
+    <>
+      <div
+        className={cx('fixed inset-0 z-[40] transition-all duration-500', open ? 'bg-slate-900/[0.33] backdrop-blur-sm opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none')}
+        onClick={handleMouseLeave}
+        aria-hidden="true"
+      />
+      <div
+        className="fixed left-6 top-1/2 z-[50] hidden -translate-y-1/2 laptop:block"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div className="relative flex h-14 w-14 items-center justify-center">
+          <div className={cx('absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-500', open ? 'h-[360px] w-[360px]' : 'h-14 w-14')} aria-hidden="true" />
+          <div className={cx('pointer-events-none absolute inset-0 flex items-center justify-center')}>
+            {items.map((item, index) => {
+              const angle = startAngle + index * angleStep;
+              const targetX = Math.cos(angle * Math.PI / 180) * 110;
+              const targetY = Math.sin(angle * Math.PI / 180) * 110;
+              const x = open ? targetX : 800;
+              const y = open ? targetY : 0;
+              const delay = index * 50;
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  data-tour-target={item.tourTarget}
+                  onClick={() => {
+                    (window as any).__v6TransitionSide = 'left';
+                    item.onClick();
+                    handleMouseLeave();
+                  }}
+                  aria-label={item.label}
+                  title={item.label}
+                  className={cx(
+                    'absolute flex h-12 w-12 items-center justify-center rounded-full shadow-lg hover:scale-110',
+                    !isSnapping && transitionClass,
+                    item.colorClass ?? 'bg-blue-500 text-white',
+                  )}
+                  style={{
+                    transform: `rotate(${rotation}deg) translate(${x}px, ${y}px) rotate(${-rotation}deg)`,
+                    opacity: open ? 1 : 0,
+                    pointerEvents: open ? 'auto' : 'none',
+                    transitionDelay: `${delay}ms`,
+                  }}
+                >
+                  {item.icon}
+                </button>
+              );
+            })}
+          </div>
+        <button
+          type="button"
+          aria-label="Open navigation"
+          aria-expanded={open}
+          onClick={() => open ? handleMouseLeave() : handleMouseEnter()}
+          className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white text-slate-800 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
+        >
+          <span className="absolute transition-all duration-300" style={{ opacity: open ? 0 : 1, transform: open ? 'rotate(-90deg) scale(0.5)' : 'rotate(0deg) scale(1)' }}>
+            <ColoredHamburgerIcon />
+          </span>
+          <X className="absolute h-6 w-6 text-slate-800 transition-all duration-300" style={{ opacity: open ? 1 : 0, transform: open ? 'rotate(0deg) scale(1)' : 'rotate(90deg) scale(0.5)' }} aria-hidden />
+        </button>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -342,6 +483,9 @@ function FloatingActionRail({
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [pageElements, setPageElements] = useState<PageElementContext[]>([]);
   const [selectedElement, setSelectedElement] = useState<PageElementContext | null>(null);
+  const [radialOpen, setRadialOpen] = useState(false);
+  const [radialRotation, setRadialRotation] = useState(0);
+  const [radialIsSnapping, setRadialIsSnapping] = useState(false);
 
   const scanCurrentPageElements = (): PageElementContext[] => {
     const main = document.getElementById('main-content');
@@ -399,50 +543,98 @@ function FloatingActionRail({
     onFeedbackClose();
     navigate(route);
   };
+  const rightActions = [
+    { label: 'Open feedback', title: 'Feedback', icon: <MessageCircle className="h-5 w-5" aria-hidden />, onClick: openFeedback, colorClass: 'bg-orange-500 text-white' },
+    { label: 'Open help center', title: 'Help', icon: <HelpCircle className="h-5 w-5" aria-hidden />, onClick: () => navigate('/help'), colorClass: 'bg-teal-500 text-white' },
+    { label: 'Share', title: 'Share', icon: <Share2 className="h-5 w-5" aria-hidden />, colorClass: 'bg-blue-500 text-white' },
+    { label: 'Information', title: 'Info', icon: <Info className="h-5 w-5" aria-hidden />, colorClass: 'bg-green-500 text-white' },
+  ];
+  const rightTotalAngle = 140;
+  const rightStartAngle = 180 - (rightTotalAngle / 2);
+  const rightAngleStep = rightActions.length > 1 ? rightTotalAngle / (rightActions.length - 1) : 0;
+  const radialTransitionClass = 'transition-all duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]';
+
+  const handleRadialMouseEnter = () => {
+    if (radialOpen) return;
+    setRadialIsSnapping(true);
+    setRadialRotation(-1215);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setRadialIsSnapping(false);
+        setRadialOpen(true);
+        setRadialRotation(0);
+      });
+    });
+  };
+
+  const handleRadialMouseLeave = () => {
+    if (!radialOpen) return;
+    setRadialOpen(false);
+    setRadialRotation(1215);
+  };
 
   return (
     <>
       <div
+        className={cx('fixed inset-0 z-[40] transition-all duration-500', radialOpen ? 'bg-slate-900/[0.33] backdrop-blur-sm opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none')}
+        onClick={handleRadialMouseLeave}
+        aria-hidden="true"
+      />
+      <div
         aria-label="Right panel dock"
         className={cx(
-          'fixed right-5 top-1/2 z-popover grid -translate-y-1/2 gap-3 transition duration-300 ease-standard',
-          hidden && 'pointer-events-none translate-x-8 opacity-0',
+          'fixed right-6 top-1/2 z-[50] flex h-14 w-14 -translate-y-1/2 items-center justify-center',
+          hidden && 'pointer-events-none opacity-0',
         )}
+        onMouseEnter={handleRadialMouseEnter}
+        onMouseLeave={handleRadialMouseLeave}
         aria-hidden={hidden ? 'true' : undefined}
       >
+        <div className={cx('absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-500', radialOpen ? 'h-[360px] w-[360px]' : 'h-14 w-14')} aria-hidden="true" />
+        <div className={cx('pointer-events-none absolute inset-0 flex items-center justify-center')}>
+          {rightActions.map((action, index) => {
+            const angle = rightStartAngle + index * rightAngleStep;
+            const targetX = Math.cos(angle * Math.PI / 180) * 110;
+            const targetY = Math.sin(angle * Math.PI / 180) * 110;
+            const x = radialOpen ? targetX : -800;
+            const y = radialOpen ? targetY : 0;
+            const delay = index * 50;
+            return (
+              <button
+                key={action.label}
+                type="button"
+                onClick={() => {
+                  (window as any).__v6TransitionSide = 'right';
+                  action.onClick?.();
+                  handleRadialMouseLeave();
+                }}
+                aria-label={action.label}
+                title={action.title}
+                className={cx('absolute flex h-12 w-12 items-center justify-center rounded-full shadow-lg hover:scale-110', !radialIsSnapping && radialTransitionClass, action.colorClass)}
+                style={{
+                  transform: `rotate(${radialRotation}deg) translate(${x}px, ${y}px) rotate(${-radialRotation}deg)`,
+                  opacity: radialOpen ? 1 : 0,
+                  pointerEvents: radialOpen ? 'auto' : 'none',
+                  transitionDelay: `${delay}ms`,
+                }}
+              >
+                {action.icon}
+              </button>
+            );
+          })}
+        </div>
         <button
           type="button"
-          onClick={openFeedback}
-          aria-label="Open feedback"
-          title="Feedback"
-          className="grid h-11 w-11 place-items-center rounded-full border border-hairline bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover"
+          onClick={() => radialOpen ? handleRadialMouseLeave() : handleRadialMouseEnter()}
+          aria-label="Open page actions"
+          aria-expanded={radialOpen}
+          title="Page actions"
+          className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white text-slate-800 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
         >
-          <MessageCircle className="h-5 w-5" aria-hidden />
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate('/help')}
-          aria-label="Open help center"
-          title="Help"
-          className="grid h-11 w-11 place-items-center rounded-full border border-hairline bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover"
-        >
-          <HelpCircle className="h-5 w-5" aria-hidden />
-        </button>
-        <button
-          type="button"
-          aria-label="Share"
-          title="Share"
-          className="grid h-11 w-11 place-items-center rounded-full border border-hairline bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover"
-        >
-          <Share2 className="h-5 w-5" aria-hidden />
-        </button>
-        <button
-          type="button"
-          aria-label="Information"
-          title="Info"
-          className="grid h-11 w-11 place-items-center rounded-full border border-hairline bg-white/65 text-ink shadow-rest backdrop-blur-[33px] transition duration-300 ease-standard hover:-translate-y-0.5 hover:bg-white/85 hover:text-brand-teal-deep hover:shadow-hover"
-        >
-          <Info className="h-5 w-5" aria-hidden />
+          <span className="absolute transition-all duration-300" style={{ opacity: radialOpen ? 0 : 1, transform: radialOpen ? 'rotate(-90deg) scale(0.5)' : 'rotate(0deg) scale(1)' }}>
+            <ColoredKebabIcon />
+          </span>
+          <X className="absolute h-6 w-6 text-slate-800 transition-all duration-300" style={{ opacity: radialOpen ? 1 : 0, transform: radialOpen ? 'rotate(0deg) scale(1)' : 'rotate(90deg) scale(0.5)' }} aria-hidden />
         </button>
       </div>
 
@@ -585,9 +777,6 @@ function getShellSubnavItems(pathname: string): ShellSubnavItem[] {
       cesItemsById.get('defensible-2') ? { ...cesItemsById.get('defensible-2')!, label: 'DefenCIble', brand: true } : undefined,
       cesItemsById.get('ces-calendar'),
       cesItemsById.get('master-controls'),
-      cesItemsById.get('audit-mode'),
-      cesItemsById.get('ai-compliance-review'),
-      cesItemsById.get('ces-reports'),
     ];
     return orderedItems.filter((item): item is ShellSubnavItem => Boolean(item));
   }
@@ -611,7 +800,7 @@ function ShellSubnav({ items, currentPath }: { items: ShellSubnavItem[]; current
   return (
     <nav
       aria-label="Workspace subnav"
-      className="fixed left-[104px] right-0 top-5 z-[9999] overflow-x-auto border-b border-[#E2E8F0] bg-transparent [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="fixed left-[104px] right-0 top-5 z-[9999] overflow-x-auto border-b-0 bg-transparent [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       <div className="inline-flex min-w-max items-end gap-8">
         {safeItems.map((item) => {

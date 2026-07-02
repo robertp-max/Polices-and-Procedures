@@ -205,7 +205,7 @@ export function AdminRolesScreen() {
       <div className="sr-only"><h1>Roles</h1></div>
       <MetricGrid metrics={roleMetrics} />
 
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
+      <section className="grid gap-xl desktop:grid-cols-1">
         <section className="grid content-start gap-lg" aria-label="Admin roles permission matrix">
           <DataTable columns={roleColumns} label="Admin roles permission matrix" rows={roleRows} />
 

@@ -550,7 +550,7 @@ export function JourneyAdminScreen() {
           {activeTab === 'overview' && (
             <div className="grid gap-xl">
               <MetricGrid metrics={journeyAdminMetrics} />
-              <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
+              <section className="grid gap-xl desktop:grid-cols-1">
                 <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="cohort-trend-title">
                   <div className="flex flex-wrap items-start justify-between gap-lg">
                     <div className="grid gap-xs">

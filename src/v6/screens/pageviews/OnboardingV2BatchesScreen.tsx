@@ -90,7 +90,7 @@ export function OnboardingV2BatchesScreen() {
     >
       <MetricGrid metrics={metrics} />
 
-      <section className="grid gap-lg desktop:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
+      <section className="grid gap-lg desktop:grid-cols-1">
         <div className="grid content-start gap-md">
           <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
             <div className="mb-md flex flex-wrap items-start justify-between gap-md">

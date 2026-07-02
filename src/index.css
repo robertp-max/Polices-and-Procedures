@@ -1,5 +1,9 @@
 @import "@fontsource/roboto/300.css";
 @import "@fontsource/roboto/500.css";
+@import "@fontsource/montserrat/400.css";
+@import "@fontsource/montserrat/500.css";
+@import "@fontsource/montserrat/600.css";
+@import "@fontsource/montserrat/700.css";
 
 @tailwind base;
 @tailwind components;
@@ -226,12 +230,12 @@
   --focus-ring: 0 0 0 2px #FFFFFF, 0 0 0 4px var(--focus-ring-color);
 
   /* Global Canvas Background */
-  --app-bg-radial-1: radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.95), transparent 40%);
-  --app-bg-radial-2: radial-gradient(circle at 100% 100%, rgba(6, 166, 171, 0.08), transparent 50%);
-  --app-bg-linear: linear-gradient(135deg, #F0FAFA 0%, #FFFFFF 50%, #E7F3F3 100%);
+  --app-bg-radial-1: linear-gradient(#FAFAFA, #FAFAFA);
+  --app-bg-radial-2: linear-gradient(#FAFAFA, #FAFAFA);
+  --app-bg-linear: linear-gradient(#FAFAFA, #FAFAFA);
 
   /* Brad Workspace default theme variables */
-  --brad-canvas: transparent;
+  --brad-canvas: #FAFAFA;
   --brad-grid: var(--border-strong);
   --brad-ink: #1C2422;
   --brad-muted: #6F7775;
@@ -245,8 +249,11 @@
 
 html {
   min-height: 100%;
-  background: var(--app-bg-radial-1), var(--app-bg-radial-2), var(--app-bg-linear);
-  background-attachment: fixed;
+  /* 4-dot square grid (.033px teal dots, 7.77px spacing) layered on main bg */
+  background-image: radial-gradient(circle, #00797D .033px, transparent .033px), var(--app-bg-radial-1), var(--app-bg-radial-2), var(--app-bg-linear);
+  background-size: 7.77px 7.77px, auto, auto, auto;
+  background-attachment: fixed, fixed, fixed, fixed;
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
   color: var(--text-primary);
   font-family: var(--font-family);
   font-size: var(--text-body);
@@ -265,8 +272,11 @@ body,
 
 body {
   margin: 0;
-  background: var(--app-bg-radial-1), var(--app-bg-radial-2), var(--app-bg-linear);
-  background-attachment: fixed;
+  /* 4-dot square grid (.033px teal dots, 7.77px spacing) layered on main bg */
+  background-image: radial-gradient(circle, #00797D .033px, transparent .033px), var(--app-bg-radial-1), var(--app-bg-radial-2), var(--app-bg-linear);
+  background-size: 7.77px 7.77px, auto, auto, auto;
+  background-attachment: fixed, fixed, fixed, fixed;
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
   color: var(--text-primary);
   font-family: var(--font-family);
   font-size: var(--text-body);
@@ -276,8 +286,12 @@ body {
 }
 
 .bg-canvas {
-  background-color: transparent !important;
-  background: transparent !important;
+  background-color: #FAFAFA !important;
+  /* 4-dot square grid (.033px teal dots, 7.77px spacing) on main app background */
+  background-image: radial-gradient(circle, #00797D .033px, transparent .033px) !important;
+  background-size: 7.77px 7.77px !important;
+  background-repeat: repeat !important;
+  background-position: 0 0;
 }
 
 .bg-surface {
@@ -305,16 +319,13 @@ body {
 }
 
 .v6-main-scrollmask {
-  --v6-main-mask-y: linear-gradient(to bottom, black 0, black calc(100% - 42px), transparent 100%);
-  --v6-main-mask-x: linear-gradient(to right, transparent 0, black 42px, black calc(100% - 42px), transparent 100%);
-  mask-composite: intersect;
-  mask-image: var(--v6-main-mask-y), var(--v6-main-mask-x);
-  -webkit-mask-composite: source-in;
-  -webkit-mask-image: var(--v6-main-mask-y), var(--v6-main-mask-x);
+  mask-image: none;
+  -webkit-mask-image: none;
 }
 
 .v6-main-scrollmask--scrolled {
-  --v6-main-mask-y: linear-gradient(to bottom, transparent 0, black 42px, black calc(100% - 42px), transparent 100%);
+  mask-image: none;
+  -webkit-mask-image: none;
 }
 
 .shadow-rest,
@@ -341,6 +352,25 @@ body {
   background: transparent;
   border: 0;
 }
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+.dashboard-card {
+  border: 0 !important;
+  border-color: transparent !important;
+  /* box-shadow intentionally left to the component's explicit shadow-[...] classes for exact 53px/25px design match */
+  outline: none;
+}
+
+/* Legacy dashboard drift keyframe (now RAF-driven in React; kept for compatibility if class re-added) */
 
 button,
 input,
@@ -527,6 +557,70 @@ th {
   animation: brad-spin-gradient 3.5s linear infinite;
 }
 
+.brad-composer-frame {
+  background: var(--brad-surface);
+}
+
+.brad-composer-light {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2000px;
+  height: 2000px;
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    transparent 0%,
+    transparent 15%,
+    #4285f4 35%,
+    #ea4335 55%,
+    #fbbc05 75%,
+    #34a853 95%,
+    transparent 100%
+  );
+  will-change: transform;
+}
+
+.brad-composer-glow {
+  opacity: 0.15;
+  filter: blur(13px);
+  transform: scale(1);
+}
+
+.group:hover .brad-composer-glow {
+  opacity: 0.25;
+  filter: blur(18px);
+}
+
+.brad-composer-glow--active {
+  opacity: 0.40;
+  filter: blur(27px);
+  transform: scale(1.05);
+}
+
+.brad-menu-grid {
+  transition-property: grid-template-rows, opacity !important;
+  transition-duration: 500ms !important;
+  transition-timing-function: ease-in-out !important;
+}
+
+.brad-menu-panel {
+  transition-property: opacity, transform !important;
+  transition-duration: 500ms !important;
+  transition-timing-function: ease-out !important;
+}
+
+.brad-hint {
+  transition-property: opacity !important;
+  transition-duration: 300ms !important;
+  transition-timing-function: ease-in-out !important;
+}
+
+.brad-composer-glow {
+  transition-property: opacity, filter, transform !important;
+  transition-duration: 1000ms !important;
+  transition-timing-function: ease-in-out !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .brad-rainbow-glow {
     animation: none;
@@ -535,6 +629,10 @@ th {
 .brad-grid-pattern {
   background-image: radial-gradient(#D9D6D5 1px, transparent 1px);
   background-size: 24px 24px;
+}
+
+:root[data-tod="noon"] .brad-workspace .brad-grid-pattern {
+  display: none;
 }
 
 /* Premium policy/form print and download surfaces. Mirrors Evidence Packet Studio pages. */
@@ -971,6 +1069,15 @@ th {
    Noon = original default (unchanged). Morning/Afternoon/Night are additive.
    The active theme is set on <html data-tod="..."> by timeOfDayTheme.ts. */
 
+:root[data-tod="noon"] {
+  --app-bg-radial-1: linear-gradient(#FAFAFA, #FAFAFA);
+  --app-bg-radial-2: linear-gradient(#FAFAFA, #FAFAFA);
+  --app-bg-linear: linear-gradient(#FAFAFA, #FAFAFA);
+  --brad-canvas: #FAFAFA;
+  --brad-surface: #FFFFFF;
+  --brad-surface-2: #FFFFFF;
+}
+
 :root[data-tod="morning"] {
   --app-bg-radial-1: radial-gradient(circle at 0% 0%, rgba(255, 180, 0, 0.35), transparent 45%);
   --app-bg-radial-2: radial-gradient(circle at 100% 12%, rgba(255, 100, 0, 0.20), transparent 40%);
@@ -1201,6 +1308,14 @@ th {
   color: rgba(244, 241, 255, 0.62) !important;
 }
 
+:root[data-tod="night"] .personal-ops-panel,
+:root[data-tod="night"] .personal-ops-panel__header {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
 /* ── Dock layout hook: no shared container around nav items ─────────────── */
 .v6-dock-glass {
   background-color: transparent !important;
@@ -1307,45 +1422,90 @@ th {
   box-shadow: var(--shadow-hover) !important;
 }
 
-/* V6 page route transition: 1.5s slide with .75s acceleration and .75s deceleration. */
-.v6-page-transition {
-  animation-duration: var(--v6-page-transition-duration, 1500ms);
-  animation-fill-mode: none;
-  animation-timing-function: var(--v6-page-transition-easing, cubic-bezier(0.65, 0, 0.35, 1));
+/* V6 visual reset: remove hard top/right/bottom/left borders from cards and app chrome. */
+#root :where(.border, .border-t, .border-r, .border-b, .border-l, .border-card, .border-hairline, .border-strong),
+#root :where([class*="border-"]) {
+  border-width: 0 !important;
+  border-color: transparent !important;
+}
+
+.dashboard-card,
+.dashboard-card:hover,
+.dashboard-card:focus,
+.dashboard-card:focus-visible,
+.v6-dashboard-shell,
+.v6-dashboard-shell * {
+  border-width: 0 !important;
+  border-color: transparent !important;
+}
+
+.dashboard-card,
+.dashboard-card:hover,
+.dashboard-card:focus,
+.dashboard-card:focus-visible {
+  /* shadows allowed per ModernDashboardCard spec (carousel/grid custom shadows); borders stay 0 */
+}
+
+/* v6-dashboard-shell nav keeps its own minimal treatment; dashboard cards use explicit shadows from component */
+.v6-dashboard-shell nav {
+  box-shadow: none !important;
+}
+
+/* V6 page route transition: circular paint wave copied from the radial reference. */
+.v6-page-transition-base {
   min-width: 100%;
+  transition: filter 1000ms ease, opacity 1000ms ease;
+  filter: blur(8px);
+  opacity: 0.4;
 }
 
-.v6-page-transition--fade-in {
-  animation-name: v6-page-slide-in-from-right;
+.v6-page-transition-reveal {
+  position: fixed;
+  inset: 0;
+  animation: v6-page-content-reveal 700ms cubic-bezier(0.22, 1, 0.36, 1) 260ms both;
+  height: 100vh;
+  min-width: 100%;
+  width: 100vw;
+  will-change: opacity, filter;
 }
 
-.v6-page-transition--fade-out {
-  animation-name: v6-page-slide-out-to-left;
-  animation-fill-mode: both;
+.v6-page-transition-wave {
+  position: fixed;
+  left: var(--v6-page-transition-origin-x, 52px);
+  top: var(--v6-page-transition-origin-y, 50%);
+  width: 300vmax;
+  height: 300vmax;
+  border-radius: 9999px;
+  background: var(--v6-page-transition-paint);
+  transform: translate(-50%, -50%) scale(0);
+  animation: v6-page-paint-disk 1000ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  z-index: 20;
+  will-change: transform;
 }
 
-.v6-page-transition--fade-in :is(
-  section,
-  article,
-  aside,
-  nav,
-  [data-v6-transition-element],
-  article :is(h1, h2, h3, h4, h5, h6, p, span, a, button, label, small, strong, em, li, dt, dd),
-  section :is(h1, h2, h3, h4, h5, h6, p, span, a, button, label, small, strong, em, li, dt, dd)
-) {
-  animation: v6-page-slide-in-from-right var(--v6-element-transition-duration, 1500ms) var(--v6-element-transition-easing, cubic-bezier(0.65, 0, 0.35, 1)) both;
+.v6-page-transition-reveal {
+  background: #f8f9fa;
+  z-index: 30;
 }
 
-.v6-page-transition--fade-out :is(
-  section,
-  article,
-  aside,
-  nav,
-  [data-v6-transition-element],
-  article :is(h1, h2, h3, h4, h5, h6, p, span, a, button, label, small, strong, em, li, dt, dd),
-  section :is(h1, h2, h3, h4, h5, h6, p, span, a, button, label, small, strong, em, li, dt, dd)
-) {
-  animation: v6-page-slide-out-to-left var(--v6-element-transition-duration, 1500ms) var(--v6-element-transition-easing, cubic-bezier(0.65, 0, 0.35, 1)) both;
+@keyframes v6-page-content-reveal {
+  from {
+    filter: blur(8px);
+    opacity: 0;
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+@keyframes v6-page-paint-disk {
+  from {
+    transform: translate(-50%, -50%) scale(0);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 .v6-overlay-transition {
@@ -1502,6 +1662,33 @@ th {
   to { transform: translate3d(0, 0, 0); }
 }
 
+/* Dashboard carousel drift + hide-scrollbar (exact fidelity from HTML prototype) */
+@keyframes dashboard-drift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-11550px); }
+}
+.animate-dashboard-drift {
+  animation-name: dashboard-drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.hide-scrollbar,
+#parallax-container,
+.v6-dashboard-shell {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar,
+#parallax-container::-webkit-scrollbar,
+.v6-dashboard-shell::-webkit-scrollbar {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .v6-page-transition,
   .v6-overlay-transition,
@@ -1511,5 +1698,25 @@ th {
   }
 }
 
+/* Final V6 border-only override. Keep surfaces intact; remove actual border strokes. */
+#root *,
+#root *::before,
+#root *::after {
+  border-top-width: 0 !important;
+  border-right-width: 0 !important;
+  border-bottom-width: 0 !important;
+  border-left-width: 0 !important;
+  border-color: transparent !important;
+  outline-width: 0 !important;
+}
 
-
+#root .v6-dashboard-shell nav,
+#root .v6-dashboard-shell nav *,
+#root .dashboard-card,
+#root .dashboard-card *,
+#root .dashboard-card::before,
+#root .dashboard-card::after {
+  border-width: 0 !important;
+  border-color: transparent !important;
+  /* box-shadow intentionally NOT forced to none here — ModernDashboardCard uses custom shadows */
+}

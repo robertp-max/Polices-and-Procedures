@@ -221,7 +221,7 @@ export default function WorkflowsScreen() {
         })}
       </div>
 
-      <section className="grid gap-lg desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
+      <section className="grid gap-lg desktop:grid-cols-1">
         <section aria-label="Workflows library matrix" className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest overflow-hidden">
           <DataTable
             columns={workflowColumns}

@@ -846,7 +846,7 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
 
   return (
     <div
-      className="min-h-screen p-4 md:p-10 bg-transparent font-roboto text-[#1F1C1B]"
+      className="min-h-screen overflow-hidden bg-transparent font-roboto text-[#1F1C1B]"
       data-hash-id="defensible-2"
       data-route="/evidence/defensible-2"
       data-template="evidence"
@@ -863,20 +863,19 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
         ::-webkit-scrollbar { display: none; }
         * { -ms-overflow-style: none; scrollbar-width: none; }
       `}} />
-      
-      <div className="max-w-[1200px] mx-auto">
-        
-        {/* PILL NAVIGATION - Elevated Shadow & Invisible Borders */}
-        <div className="mb-6 max-w-full overflow-x-auto">
-          <div className="grid w-[760px] grid-cols-4 rounded-full border-none bg-white/80 p-1 shadow-md backdrop-blur-md">
+
+      <div className="mx-auto max-w-[1280px] px-4 py-8 md:px-10 md:py-12">
+        <div className="mb-10 flex justify-center">
+          <div className="grid w-full max-w-[560px] grid-cols-4 rounded-full border border-white/80 bg-white/80 p-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.08)] backdrop-blur-md">
             {navTabs.map(tab => (
-              <button 
+              <button
                 key={tab}
+                type="button"
                 onClick={() => setActiveTab(tab)}
-                className={`min-h-[48px] px-4 py-3 text-[10px] md:text-xs font-montserrat font-medium tracking-[0.1em] uppercase whitespace-nowrap rounded-full transition-colors duration-150 ${
-                  activeTab === tab 
-                    ? 'bg-[#007970] text-white shadow-md' 
-                    : 'text-[#524D4B] hover:bg-[#EAE4E3]'
+                className={`min-h-[42px] rounded-full px-3 py-2 font-montserrat text-[10px] font-bold uppercase tracking-[0.12em] transition-all md:text-xs ${
+                  activeTab === tab
+                    ? 'bg-[#007970] text-white shadow-[0_8px_18px_rgba(0,121,112,0.22)]'
+                    : 'text-[#718096] hover:bg-[#F4F7F7] hover:text-[#1F1C1B]'
                 }`}
               >
                 {tab}
@@ -1379,6 +1378,8 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
           </div>
         )}
 
+        </div>
+
         {/* ==================================================== */}
         {/* DATA SOURCE MODALS */}
         {/* ==================================================== */}
@@ -1603,7 +1604,6 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
         {activeTab === 'CREATE PACKET' && studioSaveStatus === 'saving' && <GoogleUploadingOverlay />}
 
       </div>
-    </div>
   );
 }
 

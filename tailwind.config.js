@@ -7,6 +7,8 @@ export default {
   theme: {
     fontFamily: {
       sans: ["var(--font-family)"],
+      roboto: ["Roboto", "var(--font-family)", "system-ui", "sans-serif"],
+      montserrat: ["Montserrat", "var(--font-family)", "system-ui", "sans-serif"],
     },
     fontWeight: {
       light: "var(--weight-body)",

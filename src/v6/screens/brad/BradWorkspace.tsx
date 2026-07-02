@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Send, Loader2, CheckCircle2, XCircle, AlertTriangle, ShieldCheck, ShieldAlert,
@@ -95,8 +95,7 @@ export default function BradWorkspace() {
 
   const [objects, setObjects] = useState<GeneratedObject[]>([]);
   const [lastEventUpdate, setLastEventUpdate] = useState<EventMetaResult | null>(null);
-  const [showQuickActionsPanel, setShowQuickActionsPanel] = useState(false);
-  const [showGeneratedPanel, setShowGeneratedPanel] = useState(false);
+  const [openComposerMenu, setOpenComposerMenu] = useState<'quick' | 'work' | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const [approvals, setApprovals] = useState<ApprovalRequest[]>([]);
@@ -115,7 +114,15 @@ export default function BradWorkspace() {
 
   const transcriptEnd = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
+  const composerShellRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const animationRef = useRef<number | null>(null);
+  const lightActiveRef = useRef(false);
+  const targetRotationRef = useRef(0);
+  const currentRotationRef = useRef(0);
+  const prevComposerMenuRef = useRef<'quick' | 'work'>('quick');
+  const [composerFocused, setComposerFocused] = useState(false);
+  const [lightRotation, setLightRotation] = useState(0);
 
   const readB64 = (file: File) => new Promise<string>((resolve, reject) => {
     const r = new FileReader();
@@ -156,6 +163,24 @@ export default function BradWorkspace() {
   useEffect(() => { void loadIdentityScoped(); void refreshObjects(); }, [loadIdentityScoped, refreshObjects, identity]);
   useEffect(() => { void refreshApprovals(); }, [refreshApprovals]);
   useEffect(() => { transcriptEnd.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+  useEffect(() => {
+    if (openComposerMenu) prevComposerMenuRef.current = openComposerMenu;
+  }, [openComposerMenu]);
+  useEffect(() => {
+    const animate = () => {
+      if (!lightActiveRef.current) {
+        targetRotationRef.current += composerFocused ? 0.8 : 0.4;
+      }
+      const delta = ((targetRotationRef.current - currentRotationRef.current) % 360 + 540) % 360 - 180;
+      currentRotationRef.current += delta * (lightActiveRef.current ? 0.12 : 0.04);
+      setLightRotation(currentRotationRef.current);
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    animationRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (animationRef.current !== null) cancelAnimationFrame(animationRef.current);
+    };
+  }, [composerFocused]);
   useEffect(() => {
     const active = thinking || uploading || guidedSession !== null || messages.length > 0;
     setBradActivityActive(active);
@@ -310,12 +335,60 @@ export default function BradWorkspace() {
   }
 
   const quickActions = useMemo(() => getQuickActions(!!me?.isSuperAdmin), [me]);
+  const orderedQuickActions = useMemo(() => {
+    const order = [
+      'how-brad-works',
+      'public-research',
+      'form-485',
+      'report',
+      'policy-updates',
+      'pip',
+      'crosswalk',
+      'qapi-minutes',
+      'oasis-e2',
+      'event-packet',
+      'achc-standards',
+      'training-gaps',
+    ];
+    const rank = new Map(order.map((id, index) => [id, index]));
+    return [...quickActions].sort((a, b) => (rank.get(a.id) ?? 999) - (rank.get(b.id) ?? 999));
+  }, [quickActions]);
   const landing = messages.length === 0;
+  const welcomeName = me?.displayName || identity.displayName || 'Regular User';
+  const composerLightStyle = { transform: `translate(-50%, -50%) rotate(${lightRotation}deg)` };
+  const isQuickMenuRelative = openComposerMenu === 'quick' || (!openComposerMenu && prevComposerMenuRef.current === 'quick');
+  const isWorkMenuRelative = openComposerMenu === 'work' || (!openComposerMenu && prevComposerMenuRef.current === 'work');
+
+  function handleComposerMouseMove(e: MouseEvent<HTMLDivElement>) {
+    const rect = composerShellRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = e.clientX - (rect.left + rect.width / 2);
+    const y = e.clientY - (rect.top + rect.height / 2);
+    const insideZone = (x * x) / (400 * 400) + (y * y) / (200 * 200) <= 1;
+    lightActiveRef.current = insideZone;
+    if (insideZone) {
+      const mouseAngleDeg = (Math.atan2(y, x) * 180) / Math.PI;
+      targetRotationRef.current = mouseAngleDeg + 90 - 144;
+    }
+  }
 
   const composerInner = (
-    <div className="group relative w-full">
-      <div className={`absolute -inset-1.5 z-0 rounded-[32px] brad-rainbow-glow blur-xl transition-all duration-500 ${thinking ? 'opacity-100 blur-2xl' : 'opacity-60 group-focus-within:opacity-100'}`} aria-hidden />
-      <div className="relative z-10 flex flex-col overflow-hidden rounded-3xl border border-[var(--brad-border)] bg-[var(--brad-surface)] shadow-rest">
+    <div
+      ref={composerShellRef}
+      className="group relative w-full"
+      onMouseMove={handleComposerMouseMove}
+      onMouseLeave={() => { lightActiveRef.current = false; }}
+    >
+      <div className={`brad-composer-glow absolute inset-0 rounded-3xl pointer-events-none ${composerFocused || thinking || openComposerMenu ? 'brad-composer-glow--active' : ''}`} aria-hidden>
+        <div className="absolute inset-0 overflow-hidden rounded-3xl">
+          <div className="brad-composer-light" style={composerLightStyle} />
+        </div>
+      </div>
+      <div className="brad-composer-frame relative z-10 overflow-hidden rounded-3xl p-[1px] shadow-[0_15px_50px_-12px_rgba(0,0,0,0.1)]">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="brad-composer-light" style={composerLightStyle} />
+        </div>
+        <div className="relative z-10 flex flex-col overflow-hidden rounded-[calc(1.5rem-1px)] bg-[var(--brad-surface)]">
         <input ref={fileInputRef} type="file" multiple className="hidden" aria-label="Upload documents" title="Upload documents" onChange={(e) => void handleFiles(e.target.files)} />
         {attachments.length > 0 && (
           <div className="flex flex-wrap gap-1.5 px-4 pt-3">
@@ -332,95 +405,101 @@ export default function BradWorkspace() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(); } }}
+          onFocus={() => setComposerFocused(true)}
+          onBlur={() => setComposerFocused(false)}
           placeholder="Ask Brad to generate, analyze, or draft documents…"
           rows={landing ? 3 : 1}
           disabled={thinking}
           aria-label="Ask Brad"
-          className={`w-full resize-none bg-transparent font-light text-[var(--brad-ink)] outline-none placeholder:text-[var(--brad-muted)] disabled:opacity-60 ${landing ? 'min-h-[110px] p-6 text-lg' : 'px-5 py-3.5 text-base'}`}
+          className={`w-full resize-none bg-transparent font-light text-[var(--brad-ink)] outline-none placeholder:text-[var(--brad-muted)] disabled:opacity-60 ${landing ? 'min-h-[110px] p-[24px] pb-2 text-[18px]' : 'px-5 py-3.5 text-base'}`}
         />
-        <div className="flex items-center justify-between gap-2 px-4 pb-3 pt-1">
-          <div className="flex items-center gap-3 pl-1 flex-wrap">
-            <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} aria-label="Attach documents" title="Attach documents" className="text-[var(--brad-muted)] transition hover:text-brand-teal disabled:opacity-50">
-              {uploading ? <Loader2 aria-hidden className="h-5 w-5 animate-spin" /> : <Paperclip aria-hidden className="h-5 w-5" />}
-            </button>
-            <span className="mx-1 hidden h-4 w-px bg-[var(--brad-border)] sm:block" />
 
+        <div className={`brad-menu-grid grid ${openComposerMenu ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+          <div className="overflow-hidden">
+            <div className="relative border-y border-gray-100/80 bg-transparent p-6 pt-5">
+              <div className={`brad-menu-panel ${isQuickMenuRelative ? 'relative z-10' : 'absolute inset-x-6 top-5 pointer-events-none z-0'} ${openComposerMenu === 'quick' ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`}>
+                <h3 className="mb-4 text-[10px] font-bold uppercase tracking-wider text-orange-500">Quick Actions</h3>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                  {orderedQuickActions.map((a) => (
+                    <button
+                      key={a.id}
+                      type="button"
+                      onClick={() => { handleQuickAction(a); setOpenComposerMenu(null); }}
+                      disabled={thinking}
+                      className="group flex items-center gap-3 text-left disabled:opacity-50"
+                    >
+                      <a.Icon aria-hidden className="h-4 w-4 shrink-0 text-teal-600 transition-transform group-hover:scale-110" />
+                      <span className="truncate text-[13px] font-light text-gray-700 transition-colors group-hover:text-black">{a.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={`brad-menu-panel ${isWorkMenuRelative ? 'relative z-10' : 'absolute inset-x-6 top-5 pointer-events-none z-0'} ${openComposerMenu === 'work' ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`}>
+                <div className="mb-5 flex items-center justify-between">
+                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-orange-500">Generated Work</h3>
+                  <button type="button" onClick={() => setOpenComposerMenu(null)} className="text-[11px] font-light text-gray-400 transition-colors hover:text-gray-700">Close</button>
+                </div>
+                <div className="space-y-3">
+                  {objects.length === 0 ? (
+                    <p className="py-2 text-xs font-light text-gray-400">No generated work yet. Run a report or draft minutes.</p>
+                  ) : objects.map((o) => (
+                    <div key={o.metadata.object_id} className="group cursor-pointer">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <div className="text-sm font-light text-gray-900 transition-colors group-hover:text-blue-600">{objLabel(o.metadata.object_type)}</div>
+                          <div className="mt-1 text-[11px] font-light text-gray-400">{new Date(o.metadata.generated_at).toLocaleString()}</div>
+                          <button type="button" onClick={() => setExpanded(expanded === o.metadata.object_id ? null : o.metadata.object_id)} className="mt-2 text-xs font-light text-teal-600 hover:underline">
+                            {expanded === o.metadata.object_id ? 'Hide details' : 'View details'}
+                          </button>
+                        </div>
+                        <div className="rounded-md bg-teal-50 px-2 py-1 text-[11px] font-light text-teal-600">{o.metadata.write_status}</div>
+                      </div>
+                      {expanded === o.metadata.object_id && (
+                        <pre className="mt-2 max-h-[200px] overflow-auto whitespace-pre-wrap rounded-lg bg-gray-50 p-2 text-[10px] text-gray-700">{JSON.stringify(o.content, null, 2)}</pre>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 px-4 pb-4 pt-3">
+          <div className="flex flex-wrap items-center gap-4 pl-2 text-[var(--brad-muted)]">
+            <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} aria-label="Attach documents" title="Attach documents" className="flex items-center justify-center rounded-lg p-2 transition-colors hover:bg-black/5 hover:text-black disabled:opacity-50">
+              {uploading ? <Loader2 aria-hidden className="h-[20px] w-[20px] animate-spin" /> : <Paperclip aria-hidden className="h-[20px] w-[20px]" />}
+            </button>
+            <span className="h-[16px] w-px bg-gray-200" />
             <button
               type="button"
-              onClick={() => { setShowQuickActionsPanel(!showQuickActionsPanel); setShowGeneratedPanel(false); }}
-              className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium transition hover:border-brand-orange hover:text-brand-orange ${showQuickActionsPanel ? 'border-brand-orange text-brand-orange bg-surface-glass' : 'border-[var(--brad-border)] bg-[var(--brad-surface-2)] text-[var(--brad-ink)]'}`}
+              aria-label="Quick Actions"
+              title="Quick Actions"
+              onClick={() => setOpenComposerMenu((prev) => prev === 'quick' ? null : 'quick')}
+              className={`flex items-center justify-center rounded-lg p-2 transition-all ${openComposerMenu === 'quick' ? 'bg-orange-50 text-orange-500' : 'hover:bg-orange-50 hover:text-orange-500'}`}
             >
-              <Sparkles className="h-3.5 w-3.5" /> Quick Actions
+              <Sparkles className="h-[20px] w-[20px]" aria-hidden />
             </button>
-
             <button
               type="button"
-              onClick={() => { setShowGeneratedPanel(!showGeneratedPanel); setShowQuickActionsPanel(false); }}
-              className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium transition hover:border-brand-orange hover:text-brand-orange ${showGeneratedPanel ? 'border-brand-orange text-brand-orange bg-surface-glass' : 'border-[var(--brad-border)] bg-[var(--brad-surface-2)] text-[var(--brad-ink)]'}`}
+              aria-label="Generated Work"
+              title="Generated Work"
+              onClick={() => setOpenComposerMenu((prev) => prev === 'work' ? null : 'work')}
+              className={`flex items-center justify-center rounded-lg p-2 transition-all focus:outline-none ${openComposerMenu === 'work' ? 'bg-blue-50 text-blue-500' : 'hover:bg-blue-50 hover:text-blue-500'}`}
             >
-              <FolderClosed className="h-3.5 w-3.5" /> Generated Work {objects.length ? `(${objects.length})` : ''}
+              <FolderClosed className="h-[20px] w-[20px]" aria-hidden />
             </button>
-
-            <span className="mx-1 hidden h-4 w-px bg-[var(--brad-border)] sm:block" />
-            <span className="hidden items-center gap-1.5 text-[10px] font-medium uppercase tracking-widest text-[var(--brad-muted)] sm:flex">
-              <ShieldCheck className="h-3.5 w-3.5 text-brand-teal" aria-hidden /> Secure
-            </span>
           </div>
           <button
-            type="button" onClick={() => void send()} disabled={(!input.trim() && attachments.length === 0) || thinking} aria-label="Send to Brad"
-            className="inline-flex items-center gap-2 rounded-xl bg-brand-orange px-4 py-2.5 text-sm font-medium text-on-brand shadow-md transition hover:bg-brand-teal-deep disabled:cursor-not-allowed disabled:bg-[var(--brad-surface-2)] disabled:text-[var(--brad-muted)] disabled:shadow-none"
+            type="button" onClick={() => void send()} disabled={(!input.trim() && attachments.length === 0) || thinking} aria-label="Send to Brad" title="Run with Brad"
+            className="flex h-[40px] w-[40px] items-center justify-center rounded-xl bg-[#f97316] text-white shadow-md transition-transform hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-100"
           >
-            {thinking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Run with Brad
+            {thinking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="-ml-0.5 h-[18px] w-[18px]" />}
           </button>
         </div>
+        </div>
       </div>
-
-      {showQuickActionsPanel && (
-        <div className="absolute top-full left-0 right-0 z-30 mt-2 rounded-2xl border border-[var(--brad-border)] bg-[var(--brad-surface)] p-4 shadow-xl text-[var(--brad-ink)] max-h-[300px] overflow-y-auto">
-          <div className="text-xs font-semibold uppercase tracking-wider text-brand-orange mb-3 px-1">Quick Actions</div>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-            {quickActions.map((a) => (
-              <button
-                key={a.id} type="button" onClick={() => { handleQuickAction(a); setShowQuickActionsPanel(false); }} disabled={thinking}
-                className="flex items-center gap-2 rounded-xl border border-[var(--brad-border)] bg-[var(--brad-surface-2)] p-2.5 text-xs font-medium text-[var(--brad-ink)] transition hover:border-brand-teal hover:text-brand-teal disabled:opacity-50"
-              >
-                <a.Icon aria-hidden className="h-4 w-4 shrink-0 text-brand-teal" />
-                <span className="truncate">{a.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {showGeneratedPanel && (
-        <div className="absolute top-full left-0 right-0 z-30 mt-2 rounded-2xl border border-[var(--brad-border)] bg-[var(--brad-surface)] p-4 shadow-xl text-[var(--brad-ink)] max-h-[400px] overflow-y-auto">
-          <div className="flex items-center justify-between border-b border-[var(--brad-border)] pb-2 mb-3">
-            <div className="text-xs font-semibold uppercase tracking-wider text-brand-orange">Generated Work</div>
-            <button type="button" onClick={() => setShowGeneratedPanel(false)} className="text-xs text-[var(--brad-muted)] hover:text-brand-teal">Close</button>
-          </div>
-          <div className="space-y-2">
-            {objects.length === 0 ? (
-              <p className="py-4 text-center text-xs text-[var(--brad-muted)]">No generated work yet. Run a report or draft minutes.</p>
-            ) : objects.map((o) => (
-              <div key={o.metadata.object_id} className="rounded-xl border border-[var(--brad-border)] bg-[var(--brad-surface-2)] p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-medium text-[var(--brad-ink)]">{objLabel(o.metadata.object_type)}</span>
-                  <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${statusTone(o.metadata.write_status)}`}>{o.metadata.write_status}</span>
-                </div>
-                <div className="mt-1 text-[10px] text-[var(--brad-muted)]">
-                  {new Date(o.metadata.generated_at).toLocaleString()}
-                </div>
-                <button type="button" onClick={() => setExpanded(expanded === o.metadata.object_id ? null : o.metadata.object_id)} className="mt-2 text-xs text-brand-teal hover:underline">
-                  {expanded === o.metadata.object_id ? 'Hide details' : 'View details'}
-                </button>
-                {expanded === o.metadata.object_id && (
-                  <pre className="mt-2 max-h-[200px] overflow-auto whitespace-pre-wrap rounded-lg bg-[var(--brad-surface)] p-2 text-[10px] text-[var(--brad-ink)]">{JSON.stringify(o.content, null, 2)}</pre>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 
@@ -444,18 +523,18 @@ export default function BradWorkspace() {
       {/* ───────────────────────── LANDING (centered, decluttered) ───────────────────────── */}
       {landing && (
         <div className="relative z-10 flex flex-1 flex-col items-center justify-center py-xl">
-          <div className="w-full max-w-2xl text-center">
-            <div className="mb-xl flex justify-center">
-              <img src="/ci-logo-gray.png" alt="Care Indeed" className="logo-light h-auto w-[280px] object-contain desktop:w-[320px]" />
-              <img src="/ci-logo-white.png" alt="Care Indeed" className="logo-dark h-auto w-[280px] object-contain desktop:w-[320px]" />
-            </div>
-            <h1 className="text-4xl font-light tracking-tight text-[var(--brad-heading)] desktop:text-5xl">Welcome back</h1>
-            <p className="mx-auto mt-3 max-w-xl text-base text-[var(--brad-muted)]">Ask Brad about policies, workflows, evidence, QAPI, onboarding, and compliance execution.</p>
+          <div className="mb-10 text-center">
+            <h1 className="text-[48px] font-light leading-tight tracking-tight text-gray-800">
+              Welcome back, <span className="bg-gradient-to-r from-teal-500 to-blue-500 bg-clip-text font-semibold text-transparent">{welcomeName}</span>
+            </h1>
+            <p className="mt-[12px] text-[14px] font-medium tracking-wide text-gray-500">What would you like to build today?</p>
           </div>
 
-          <div className="mt-lg w-full max-w-2xl">
+          <div className="w-full max-w-[672px]">
             {composerInner}
-            <p className="mt-2 text-center text-xs text-[var(--brad-muted)]">Enter to send · Shift+Enter for a new line</p>
+            <p className="brad-hint mt-5 flex items-center justify-center gap-3 text-[13px] font-medium text-gray-800" style={{ opacity: openComposerMenu ? 0 : 1 }}>
+              Enter to send <span className="font-normal text-gray-400">Shift+Enter for a new line</span>
+            </p>
           </div>
         </div>
       )}

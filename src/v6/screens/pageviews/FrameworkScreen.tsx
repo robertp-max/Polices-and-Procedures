@@ -265,7 +265,7 @@ export function FrameworkScreen() {
       <MetricGrid metrics={frameworkMetrics} />
 
       {activeTab === 'taxonomy' ? (
-        <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
+        <section className="grid gap-xl desktop:grid-cols-1">
           <section className="grid content-start gap-lg">
             <div className="flex flex-wrap items-end justify-between gap-md">
               <div className="grid gap-xs">

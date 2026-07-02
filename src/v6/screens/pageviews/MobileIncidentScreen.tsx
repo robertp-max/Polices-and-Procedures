@@ -155,7 +155,7 @@ export function MobileIncidentScreen() {
       </div>
       <MetricGrid metrics={metrics} />
 
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,1fr)_340px]">
+      <section className="grid gap-xl desktop:grid-cols-1">
         <div className="grid content-start gap-lg">
           <section className="grid gap-lg tablet-l:grid-cols-3" aria-label="Incident status cards">
             {incidentCards.map((card) => (

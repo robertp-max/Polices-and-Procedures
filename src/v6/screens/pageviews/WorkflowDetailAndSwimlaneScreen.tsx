@@ -319,7 +319,7 @@ export function WorkflowDetailScreen({ workflowId: propId }: { workflowId?: stri
     <div className="grid gap-lg">
       <Link to="/workflows" className="text-sm font-medium text-brand-teal hover:underline">← Workflows</Link>
 
-      <div className="grid gap-lg desktop:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="grid gap-lg desktop:grid-cols-1">
         {/* Main glass card with tabs */}
         <div className={`${glass} overflow-hidden`}>
           {/* Header */}
@@ -360,7 +360,7 @@ export function WorkflowDetailScreen({ workflowId: propId }: { workflowId?: stri
           </div>
 
           {/* Tab body */}
-          <div className="grid gap-lg p-lg desktop:grid-cols-[minmax(0,1fr)_240px]">
+          <div className="grid gap-lg p-lg desktop:grid-cols-1">
             <div className="grid gap-lg">
               {tab === 'process' && (
                 <>

@@ -203,6 +203,11 @@ export function GuidedTourRunner() {
   const confirmAndAdvance = () => { markStepValidated(); next(); };
   const PAD = 10;
 
+  // Hide right-side panel (and all overlays) when no tour is active.
+  if (!active || !tour || !step) {
+    return <div className="pointer-events-none" aria-hidden="true" />;
+  }
+
   const segments: Rect[] = locked && rect
     ? [
         { top: 0, left: 0, width: window.innerWidth, height: Math.max(0, rect.top - PAD) },

@@ -236,7 +236,7 @@ export function OnboardingV2BatchScreen() {
       </div>
 
       {activeTab === 'overview' ? (
-        <section className="grid gap-lg desktop:grid-cols-[minmax(0,2.2fr)_minmax(280px,0.8fr)]">
+        <section className="grid gap-lg desktop:grid-cols-1">
           {/* Left Column: Gates & checklist */}
           <div className="grid content-start gap-md">
             <section className="grid gap-md tablet-p:grid-cols-2 tablet-l:grid-cols-5">

@@ -190,7 +190,7 @@ export function AdminGroupsScreen() {
       <div className="sr-only"><h1>User Groups</h1></div>
       <MetricGrid metrics={groupMetrics} />
 
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
+      <section className="grid gap-xl desktop:grid-cols-1">
         <section className="grid content-start gap-lg" aria-label="Admin user groups permission matrix">
           <DataTable columns={groupColumns} label="Admin user groups permission matrix" rows={groupRows} />
 

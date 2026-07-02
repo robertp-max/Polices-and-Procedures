@@ -253,7 +253,7 @@ export function GenericReferenceScreen() {
         </div>
       </section>
 
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
+      <section className="grid gap-xl desktop:grid-cols-1">
         <div className="grid content-start gap-lg">
           <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="reference-source-title">
             <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">

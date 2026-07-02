@@ -203,7 +203,7 @@ export function EvidenceFolderExplorer() {
         <p className="mt-sm text-xs text-muted">Year → Event → Documents. Folders are color-coded by event domain; documents file flat inside each event.</p>
       </div>
 
-      <div className={`grid gap-lg ${(selected || selectedDrive) ? 'desktop:grid-cols-[minmax(0,1fr)_minmax(360px,420px)]' : ''}`}>
+      <div className={`grid gap-lg ${(selected || selectedDrive) ? 'desktop:grid-cols-1' : ''}`}>
         {/* Folder / document canvas */}
         <div className="min-h-[420px] rounded-[32px] border border-transparent bg-white/95 p-8 shadow-xl backdrop-blur-sm">
           <div className="flex flex-wrap gap-sm">

@@ -463,7 +463,7 @@ export function BradEvidenceIntake() {
       )}
 
       {/* Two-column: actions + Brad panels */}
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,2fr)_minmax(340px,1fr)]">
+      <section className="grid gap-xl desktop:grid-cols-1">
         <div className="grid gap-lg">
           {/* F. Actions */}
           <section className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">

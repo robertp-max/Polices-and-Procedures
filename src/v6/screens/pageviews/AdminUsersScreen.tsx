@@ -257,7 +257,7 @@ export function AdminUsersScreen() {
       <div className="sr-only"><h1>Users</h1></div>
       <MetricGrid metrics={userMetrics} />
 
-      <section className="grid gap-xl desktop:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
+      <section className="grid gap-xl desktop:grid-cols-1">
         <section className="grid content-start gap-lg" aria-label="Admin users role and access assignment matrix">
           <DataTable 
             columns={userColumns} 
