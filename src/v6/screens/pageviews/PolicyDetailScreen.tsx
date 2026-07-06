@@ -6,6 +6,11 @@ import { getPolicyContent } from '@/policy/data/policyContentMap';
 import { getCorpusPolicy, DOMAIN_LABEL, type CorpusPolicy } from '@/policy/data/policyCorpus';
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
 import type { PolicyContent, PolicyContentSection } from '@/policy/types';
+import { CareIndeedCard } from '@/components/theme/CareIndeedCard';
+import { CareIndeedButton } from '@/components/theme/CareIndeedButton';
+import { CareIndeedTabs } from '@/components/theme/CareIndeedTabs';
+import { CareIndeedEyebrow } from '@/components/theme/CareIndeedEyebrow';
+import { CareIndeedDataBlock } from '@/components/theme/CareIndeedDataBlock';
 
 const routeMarker = {
   group: 'Taxonomy',
@@ -521,21 +526,22 @@ export function PolicyDetailScreen() {
       </button>
       <span className="text-xs text-gray-400 font-medium tracking-widest">{boundedIndex + 1} OF {totalCount}</span>
       {isLastCard ? (
-        <button
-          type="button"
+        <CareIndeedButton
+          variant="primary"
+          shape="pill"
           disabled
-          className="bg-[#F26C23] text-white px-6 py-2.5 rounded-full font-bold text-sm tracking-wide shadow-sm opacity-50 cursor-not-allowed"
         >
           FINISH
-        </button>
+        </CareIndeedButton>
       ) : (
-        <button
-          type="button"
+        <CareIndeedButton
+          variant="primary"
+          shape="pill"
           onClick={() => goTo(boundedIndex + 1)}
-          className="bg-[#F26C23] hover:bg-[#E05C15] text-white px-6 py-2.5 rounded-full font-bold text-sm tracking-wide shadow-sm transition-colors flex items-center gap-2"
+          className="flex items-center gap-2"
         >
           NEXT &rarr;
-        </button>
+        </CareIndeedButton>
       )}
     </div>
   );
@@ -590,7 +596,7 @@ export function PolicyDetailScreen() {
         )}
 
         {!isPrintRoute && (
-          <div id="overview">
+          <div id="overview" className="theme-ci-light-orange bg-canvas min-h-screen">
             <style>{`
               @keyframes pdFadeIn {
                 from { opacity: 0; transform: translateY(10px); }
@@ -603,20 +609,20 @@ export function PolicyDetailScreen() {
             `}</style>
 
             {/* Page header — kicker + title, Policy Library top right */}
-            <header className="sticky top-0 z-50 bg-[#FAFAFA]/95 backdrop-blur-sm pt-8 pb-4 px-6 md:px-12 lg:px-16 border-b border-gray-200">
+            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm pt-8 pb-4 px-6 md:px-12 lg:px-16 border-b border-ci-border">
               <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                   <div>
-                    <div className="text-[#0D7A75] text-xs font-bold tracking-widest uppercase mb-2">
+                    <CareIndeedEyebrow className="mb-2">
                       POLICY LIBRARY &bull; {headerId}
-                    </div>
-                    <h1 className="text-3xl md:text-4xl font-bold text-[#0B4E45] tracking-tight" id="policy-detail-title">
+                    </CareIndeedEyebrow>
+                    <h1 className="text-3xl md:text-4xl font-bold text-ci-teal-deep tracking-tight" id="policy-detail-title">
                       {cleanInline(headerTitle)}
                     </h1>
                   </div>
                   <Link
                     to="/library"
-                    className="shrink-0 self-start md:self-end text-[#0D7A75] text-sm font-medium hover:text-[#0B4E45] transition-colors px-4 py-2 border border-[#0D7A75]/30 rounded-full hover:bg-[#0D7A75]/5"
+                    className="shrink-0 self-start md:self-end text-xs font-bold uppercase tracking-wider text-ci-orange border border-ci-orange rounded-full px-5 py-2.5 transition-all hover:bg-ci-orange hover:text-white bg-white shadow-sm"
                   >
                     Policy Library
                   </Link>
@@ -625,47 +631,28 @@ export function PolicyDetailScreen() {
             </header>
 
             {/* Section nav — one-word labels + Appendices (opens the modal) */}
-            <div className="px-6 md:px-12 lg:px-16 bg-[#FAFAFA] border-b border-gray-200 shadow-sm sticky top-[108px] z-40">
+            <div className="px-6 md:px-12 lg:px-16 bg-canvas border-b border-ci-border sticky top-[108px] z-40">
               <div className="max-w-7xl mx-auto">
-                <nav
-                  aria-label="Policy sections"
-                  className="flex overflow-x-auto whitespace-nowrap space-x-8 text-sm font-medium text-gray-500 pt-4 relative scroll-smooth [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
-                >
-                  <button
-                    type="button"
-                    onClick={() => goTo(0)}
-                    className={cx(
-                      'pb-4 border-b-2 transition-colors',
-                      current.kind === 'overview'
-                        ? 'border-[#0D7A75] text-[#0B4E45] font-semibold'
-                        : 'border-transparent text-gray-500 hover:text-gray-900',
-                    )}
-                  >
-                    Header
-                  </button>
-                  {navGroups.map((g) => (
-                    <button
-                      key={g.top.id}
-                      type="button"
-                      onClick={() => goTo(firstCardIndexOf(g))}
-                      className={cx(
-                        'pb-4 border-b-2 transition-colors',
-                        currentGroup === g
-                          ? 'border-[#0D7A75] text-[#0B4E45] font-semibold'
-                          : 'border-transparent text-gray-500 hover:text-gray-900',
-                      )}
-                    >
-                      {shortNavLabel(g.top.title)}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => setAppendicesOpen(true)}
-                    className="pb-4 border-b-2 border-transparent text-gray-500 hover:text-gray-900 transition-colors"
-                  >
-                    Appendices
-                  </button>
-                </nav>
+                <CareIndeedTabs
+                  tabs={[
+                    { id: 'overview', label: 'Header' },
+                    ...navGroups.map((g) => ({ id: g.top.id, label: shortNavLabel(g.top.title) })),
+                    { id: 'appendices', label: 'Appendices' },
+                  ]}
+                  activeTabId={current.kind === 'overview' ? 'overview' : currentGroup?.top.id || ''}
+                  onChange={(id) => {
+                    if (id === 'overview') {
+                      goTo(0);
+                    } else if (id === 'appendices') {
+                      setAppendicesOpen(true);
+                    } else {
+                      const g = navGroups.find((group) => group.top.id === id);
+                      if (g) {
+                        goTo(firstCardIndexOf(g));
+                      }
+                    }
+                  }}
+                />
               </div>
             </div>
 
@@ -683,8 +670,8 @@ export function PolicyDetailScreen() {
                           className={cx(
                             'px-4 py-2 rounded-full text-xs cursor-pointer transition-colors',
                             idx === boundedIndex
-                              ? 'bg-[#EAF4F4] text-[#0B4E45] border border-[#B2D8D6] font-semibold shadow-sm'
-                              : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50',
+                              ? 'bg-ci-mint text-ci-teal-deep border border-ci-teal/30 font-semibold shadow-sm'
+                              : 'bg-white border border-ci-border text-gray-600 hover:bg-gray-50',
                           )}
                         >
                           {stripNumbering(card.section.title)}
@@ -693,7 +680,7 @@ export function PolicyDetailScreen() {
                     </div>
                   )}
                   {showSubNav && !subNavAsPills && (
-                    <div className="flex space-x-6 border-b border-gray-200 mb-6 px-2 text-sm overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+                    <div className="flex space-x-6 border-b border-ci-border mb-6 px-2 text-sm overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
                       {subNavItems.map(({ card, idx }) => card.kind === 'section' && (
                         <button
                           key={card.section.id}
@@ -702,8 +689,8 @@ export function PolicyDetailScreen() {
                           className={cx(
                             'pb-3 border-b-2 cursor-pointer transition-colors',
                             idx === boundedIndex
-                              ? 'border-[#0D7A75] text-[#0B4E45] font-semibold'
-                              : 'border-transparent text-gray-500 hover:text-gray-700',
+                              ? 'border-ci-teal-deep text-ci-teal-deep font-semibold'
+                              : 'border-transparent text-gray-500 hover:text-ci-teal',
                           )}
                         >
                           {stripNumbering(card.section.title)}
@@ -712,34 +699,23 @@ export function PolicyDetailScreen() {
                     </div>
                   )}
 
-                  <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-10">
+                  <CareIndeedCard variant="container" className="md:p-10">
                     {current.kind === 'overview' ? (
                       <>
                         <div className="flex justify-between items-center mb-8">
-                          <h2 className="text-2xl font-semibold text-[#0B4E45]">Policy Overview</h2>
-                          <span className="text-xs font-bold tracking-widest text-[#0D7A75] uppercase">SECTION 1</span>
+                          <h2 className="text-2xl font-semibold text-ci-teal-deep">Policy Overview</h2>
+                          <CareIndeedEyebrow>SECTION 1</CareIndeedEyebrow>
                         </div>
                         {overviewIntro && (
                           <p className="text-gray-600 leading-relaxed mb-8">{overviewIntro}</p>
                         )}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
                           {overviewCards.map((card) => (
-                            <div
+                            <CareIndeedDataBlock
                               key={card.label}
-                              className={cx(
-                                'rounded-xl p-5',
-                                card.highlight
-                                  ? 'border border-teal-100 bg-teal-50/30'
-                                  : 'border border-gray-100 bg-gray-50/50',
-                              )}
-                            >
-                              <h3 className="text-[#0D7A75] font-semibold text-sm mb-1">{card.label}</h3>
-                              <p className={cx('text-gray-700 text-sm', card.highlight && 'font-medium')}>
-                                {card.lines.map((line, i) => (
-                                  <span key={i}>{i > 0 && <br />}{line}</span>
-                                ))}
-                              </p>
-                            </div>
+                              label={card.label}
+                              value={card.lines.join(' • ')}
+                            />
                           ))}
                         </div>
                         {cardFooter}
@@ -747,31 +723,31 @@ export function PolicyDetailScreen() {
                     ) : (
                       <>
                         <div className="flex justify-between items-center mb-8">
-                          <h2 className="text-2xl font-semibold text-[#0B4E45]">{stripNumbering(current.section.title)}</h2>
-                          <span className="text-xs font-bold tracking-widest text-[#0D7A75] uppercase">
+                          <h2 className="text-2xl font-semibold text-ci-teal-deep">{stripNumbering(current.section.title)}</h2>
+                          <CareIndeedEyebrow>
                             SECTION {numberOf(current.section.title) ?? boundedIndex + 1}
-                          </span>
+                          </CareIndeedEyebrow>
                         </div>
                         <MarkdownBody body={current.section.body} />
                         {cardFooter}
                       </>
                     )}
-                  </section>
+                  </CareIndeedCard>
                 </div>
               </main>
             )}
 
             {!content && (
               <div className="px-6 md:px-12 lg:px-16 py-8">
-                <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
+                <CareIndeedCard variant="container" className="max-w-7xl mx-auto p-10 text-center">
                   <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-gray-50 text-gray-400">
                     <Info aria-hidden="true" className="h-6 w-6" />
                   </span>
-                  <h3 className="mt-4 text-2xl font-semibold text-[#0B4E45]">Policy content unavailable</h3>
+                  <h3 className="mt-4 text-2xl font-semibold text-ci-teal-deep">Policy content unavailable</h3>
                   <p className="mx-auto mt-2 max-w-xl text-sm text-gray-600">
                     No policy content is published for {headerId} in the policy content source.
                   </p>
-                </div>
+                </CareIndeedCard>
               </div>
             )}
           </div>
