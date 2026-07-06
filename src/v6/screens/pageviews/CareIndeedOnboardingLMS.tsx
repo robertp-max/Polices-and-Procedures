@@ -4765,7 +4765,7 @@ const CareIndeedOnboardingLMS: React.FC = () => {
   };
 
   return (
-    <div style={{ color: BRAND.textPrimary }}>
+    <div className="theme-ci-light-orange bg-canvas min-h-screen p-6 md:p-8" style={{ color: 'var(--text-primary)' }}>
       <CareIndeedLmsHeader activeCategory={activeCategory} onTabChange={handleTabChange} />
 
       {activeCategory === 'annual' && viewState.view === 'modules' && (
