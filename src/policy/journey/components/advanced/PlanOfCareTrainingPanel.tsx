@@ -19,6 +19,7 @@ import { hasNarrationAudio, narrationAssetPath } from '../../data/narrationManif
 import { cms485Cases, type CaseField, type ClinicalCase } from '../../data/advancedTraining/cms485PlanOfCareCases.data';
 import { getTermsForSection } from '../../data/advancedTraining/cms485Terminology';
 import { SECTIONS, TRAINING_CARDS, type TrainingCard } from '../../data/advancedTraining/cms485SourceCards';
+import { useNarrationGate, type NarrationGateState } from './useNarrationGate';
 
 interface Props {
   moduleId: string;
@@ -89,10 +90,12 @@ function SectionRail({
   activeSectionIndex,
   viewedCards,
   onSelectSection,
+  canNavigate,
 }: {
   activeSectionIndex: number;
   viewedCards: Set<number>;
   onSelectSection: (section: string) => void;
+  canNavigate: boolean;
 }) {
   return (
     <aside className="rounded-lg bg-surface-glass p-md shadow-rest">
@@ -112,9 +115,11 @@ function SectionRail({
               key={section}
               type="button"
               onClick={() => onSelectSection(section)}
+              disabled={!isActive && !canNavigate}
               className={cx(
                 'grid w-full grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-sm rounded-lg px-sm py-sm text-left transition duration-fast',
                 isActive ? 'bg-tone-teal-bg text-brand-teal-deep shadow-glass-inset' : 'bg-transparent text-secondary hover:bg-surface-hover',
+                !isActive && !canNavigate && 'cursor-not-allowed opacity-45',
               )}
             >
               <span className={cx('flex h-6 w-6 items-center justify-center rounded-md text-[10px]', isActive ? 'bg-brand-teal text-white' : 'bg-surface-glass text-muted')}>
@@ -137,6 +142,8 @@ function LessonPanel({
   card,
   cardIndex,
   challengeResult,
+  narrationGate,
+  narrationAudioSrc,
   onAnswerChallenge,
   onPrevious,
   onNext,
@@ -146,6 +153,8 @@ function LessonPanel({
   card: TrainingCard;
   cardIndex: number;
   challengeResult?: ChallengeResult;
+  narrationGate: NarrationGateState;
+  narrationAudioSrc: string | null;
   onAnswerChallenge: (index: number) => void;
   onPrevious: () => void;
   onNext: () => void;
@@ -154,7 +163,8 @@ function LessonPanel({
 }) {
   const deliveryLocation = appLocationForCard(cardIndex, 'delivery');
   const challengeLocation = appLocationForCard(cardIndex, 'challenge');
-  const audioAvailable = hasNarrationAudio(deliveryLocation);
+  const audioAvailable = Boolean(narrationAudioSrc);
+  const narrationReady = narrationGate.canProceed;
   const body = card.body?.length ? card.body : card.bullets;
 
   return (
@@ -169,7 +179,7 @@ function LessonPanel({
         </div>
         <div className="flex min-h-tap items-center gap-sm rounded-lg bg-surface-glass px-md py-sm text-xs text-muted shadow-glass-inset">
           <Headphones size={16} className="text-brand-teal" />
-          {audioAvailable ? 'Narration available' : 'Transcript available'}
+          {audioAvailable ? narrationGate.statusLabel : 'Narration missing'}
         </div>
       </div>
 
@@ -181,17 +191,46 @@ function LessonPanel({
         <p className="text-sm text-secondary">{card.objective}</p>
       </div>
 
-      {audioAvailable && (
-        <div className="mb-lg rounded-lg bg-surface-glass p-md shadow-glass-inset">
-          <div className="mb-sm flex items-center gap-sm text-xs font-medium text-brand-teal-deep">
-            <PlayCircle size={16} className="text-brand-orange" />
-            Narration
-          </div>
-          <audio key={deliveryLocation} controls preload="none" className="w-full" src={narrationAssetPath(deliveryLocation)}>
+      <div className="mb-lg rounded-lg bg-surface-glass p-md shadow-glass-inset">
+        <div className="mb-sm flex items-center gap-sm text-xs font-medium text-brand-teal-deep">
+          <PlayCircle size={16} className="text-brand-orange" />
+          Narration
+        </div>
+        {audioAvailable ? (
+          <audio
+            ref={narrationGate.audioRef}
+            key={deliveryLocation}
+            controls
+            preload="metadata"
+            className="w-full"
+            src={narrationAudioSrc ?? undefined}
+            onPlay={narrationGate.onPlay}
+            onPause={narrationGate.onPause}
+            onEnded={narrationGate.onEnded}
+            onError={narrationGate.onError}
+          >
             <track kind="captions" />
           </audio>
+        ) : (
+          <div className="rounded-lg bg-tone-orange-bg p-sm text-xs leading-xs text-tone-orange-text">
+            {narrationGate.missingNarrationReason}
+          </div>
+        )}
+        <div className="mt-sm flex flex-wrap items-center gap-sm">
+          <button
+            type="button"
+            onClick={narrationGate.playbackState === 'playing' ? narrationGate.pause : narrationGate.play}
+            disabled={!audioAvailable}
+            className="inline-flex min-h-tap items-center gap-sm rounded-lg bg-brand-teal px-md py-sm text-xs font-medium text-white shadow-pill-action transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {narrationGate.playbackState === 'playing' ? 'Pause Narration' : narrationReady ? 'Replay Narration' : 'Play Narration'}
+          </button>
+          <div className="min-w-[220px] flex-1 text-xs leading-xs text-secondary">
+            <div className="font-medium text-brand-teal-deep">{narrationGate.statusLabel}</div>
+            <div>{narrationGate.helperText}</div>
+          </div>
         </div>
-      )}
+      </div>
 
       <div className="grid gap-lg laptop:grid-cols-[minmax(0,1fr)_280px]">
         <div className="space-y-md">
@@ -243,6 +282,7 @@ function LessonPanel({
                 key={`${card.title}-${idx}`}
                 type="button"
                 onClick={() => onAnswerChallenge(idx)}
+                disabled={!narrationReady}
                 className={cx(
                   'grid min-h-tap grid-cols-[28px_minmax(0,1fr)_24px] items-start gap-sm rounded-lg px-md py-sm text-left text-xs transition duration-fast',
                   selected && isCorrect && 'bg-tone-green-bg text-tone-green-text shadow-glass-inset',
@@ -250,6 +290,7 @@ function LessonPanel({
                   !selected && answered && isCorrect && 'bg-tone-teal-bg text-brand-teal-deep shadow-glass-inset',
                   !selected && !answered && 'bg-surface-glass text-secondary hover:bg-surface-hover shadow-glass-inset',
                   !selected && answered && !isCorrect && 'bg-surface-glass text-muted shadow-glass-inset',
+                  !narrationReady && 'cursor-not-allowed opacity-45',
                 )}
               >
                 <span className="flex h-7 w-7 items-center justify-center rounded-md bg-white/60 text-[11px] font-medium">{optionLetters[idx] ?? idx + 1}</span>
@@ -274,7 +315,7 @@ function LessonPanel({
         <button
           type="button"
           onClick={onPrevious}
-          disabled={!canGoPrevious}
+          disabled={!narrationReady || !canGoPrevious}
           className="inline-flex min-h-tap items-center gap-sm rounded-lg bg-surface-glass px-md py-sm text-xs font-medium text-brand-teal shadow-glass-inset transition hover:bg-surface-hover disabled:opacity-40"
         >
           <ArrowLeft size={16} />
@@ -283,7 +324,7 @@ function LessonPanel({
         <button
           type="button"
           onClick={onNext}
-          disabled={!canGoNext}
+          disabled={!narrationReady || !canGoNext}
           className="inline-flex min-h-tap items-center gap-sm rounded-lg bg-brand-teal px-md py-sm text-xs font-medium text-white shadow-pill-action transition hover:opacity-90 disabled:opacity-40"
         >
           Next
@@ -629,6 +670,16 @@ export const PlanOfCareTrainingPanel: React.FC<Props> = ({ moduleId, onComplete,
 
   const activeCard = TRAINING_CARDS[activeCardIndex];
   const activeSectionIndex = sectionIndexForCard(activeCard);
+  const activeDeliveryLocation = appLocationForCard(activeCardIndex, 'delivery');
+  const activeNarrationAudioSrc = hasNarrationAudio(activeDeliveryLocation)
+    ? narrationAssetPath(activeDeliveryLocation)
+    : null;
+  const narrationGate = useNarrationGate({
+    gateKey: activeDeliveryLocation,
+    audioSrc: activeNarrationAudioSrc,
+    required: true,
+    missingNarrationReason: `Missing CMS-485 narration audio for ${activeDeliveryLocation}.`,
+  });
   const answeredChallenges = Object.keys(challengeResults).length;
   const correctChallenges = Object.values(challengeResults).filter((result) => result.correct).length;
   const challengeScore = answeredChallenges ? Math.round((correctChallenges / answeredChallenges) * 100) : 0;
@@ -641,6 +692,7 @@ export const PlanOfCareTrainingPanel: React.FC<Props> = ({ moduleId, onComplete,
 
   const selectCard = (index: number) => {
     const nextIndex = Math.min(Math.max(index, 0), TRAINING_CARDS.length - 1);
+    if (nextIndex !== activeCardIndex && !narrationGate.canProceed) return;
     setActiveCardIndex(nextIndex);
     setViewedCards((prev) => new Set(prev).add(nextIndex));
   };
@@ -711,8 +763,16 @@ export const PlanOfCareTrainingPanel: React.FC<Props> = ({ moduleId, onComplete,
               type="button"
               role="tab"
               aria-selected={mode === 'audit-lab'}
-              onClick={() => setMode('audit-lab')}
-              className={cx('inline-flex min-h-tap items-center gap-sm rounded-md px-md py-sm text-xs font-medium transition', mode === 'audit-lab' ? 'bg-brand-teal text-white shadow-pill-action' : 'text-brand-teal hover:bg-surface-hover')}
+              onClick={() => {
+                if (!narrationGate.canProceed) return;
+                setMode('audit-lab');
+              }}
+              disabled={mode === 'lessons' && !narrationGate.canProceed}
+              className={cx(
+                'inline-flex min-h-tap items-center gap-sm rounded-md px-md py-sm text-xs font-medium transition',
+                mode === 'audit-lab' ? 'bg-brand-teal text-white shadow-pill-action' : 'text-brand-teal hover:bg-surface-hover',
+                mode === 'lessons' && !narrationGate.canProceed && 'cursor-not-allowed opacity-40',
+              )}
             >
               <Microscope size={16} />
               Audit Lab
@@ -722,7 +782,8 @@ export const PlanOfCareTrainingPanel: React.FC<Props> = ({ moduleId, onComplete,
           <button
             type="button"
             onClick={recordCourseEvidence}
-            className="inline-flex min-h-tap items-center gap-sm rounded-lg bg-brand-orange px-md py-sm text-xs font-medium text-white shadow-pill-action transition hover:opacity-90"
+            disabled={!narrationGate.canProceed}
+            className="inline-flex min-h-tap items-center gap-sm rounded-lg bg-brand-orange px-md py-sm text-xs font-medium text-white shadow-pill-action transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ClipboardCheck size={16} />
             Record Lesson Evidence
@@ -732,12 +793,20 @@ export const PlanOfCareTrainingPanel: React.FC<Props> = ({ moduleId, onComplete,
 
       {mode === 'lessons' ? (
         <div className="grid gap-lg laptop:grid-cols-[280px_minmax(0,1fr)_300px]">
-          <SectionRail activeSectionIndex={activeSectionIndex} viewedCards={viewedCards} onSelectSection={selectSection} />
+          <SectionRail
+            activeSectionIndex={activeSectionIndex}
+            viewedCards={viewedCards}
+            onSelectSection={selectSection}
+            canNavigate={narrationGate.canProceed}
+          />
           <LessonPanel
             card={activeCard}
             cardIndex={activeCardIndex}
             challengeResult={challengeResults[activeCardIndex]}
+            narrationGate={narrationGate}
+            narrationAudioSrc={activeNarrationAudioSrc}
             onAnswerChallenge={(selectedIndex) => {
+              if (!narrationGate.canProceed) return;
               setChallengeResults((prev) => ({
                 ...prev,
                 [activeCardIndex]: { selectedIndex, correct: selectedIndex === 0 },

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   BookOpen,
   CheckCircle2,
@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { ModuleLesson } from '../../data/lessonModel';
 import { qapiModule, qapiQuizzes } from '../../data/advancedTraining/qapi.data';
+import { useNarrationGate } from './useNarrationGate';
 
 interface Props {
   moduleId: string;
@@ -28,7 +29,6 @@ interface Props {
 type PlayerMode = 'learn' | 'challenge' | 'assessment' | 'evidence';
 type QapiQuiz = (typeof qapiQuizzes)[number];
 type PresentationFocus = 'framework' | 'survey' | 'field' | 'terms';
-type NarrationState = 'idle' | 'playing' | 'paused' | 'complete' | 'error';
 
 const SECTION_TITLES = [
   'QAPI Regulatory Overview',
@@ -105,11 +105,8 @@ function buildCompletionArtifact(
 
 export function QapiTrainingPanel({ moduleId, onComplete, onEvidence }: Props) {
   const [mode, setMode] = useState<PlayerMode>('learn');
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [openSectionIndex, setOpenSectionIndex] = useState<number | null>(0);
   const [presentationFocus, setPresentationFocus] = useState<PresentationFocus>('framework');
-  const [narrationState, setNarrationState] = useState<NarrationState>('idle');
-  const [narrationCompleteByLesson, setNarrationCompleteByLesson] = useState<Record<string, boolean>>({});
   const [lessonClicks, setLessonClicks] = useState<Record<string, string[]>>({});
   const [activeLessonIndex, setActiveLessonIndex] = useState(0);
   const [lessonAnswers, setLessonAnswers] = useState<Record<string, string>>({});
@@ -137,7 +134,13 @@ export function QapiTrainingPanel({ moduleId, onComplete, onEvidence }: Props) {
   const assessmentReady = Object.keys(examAnswers).length === qapiQuizzes.length;
   const assessmentPassed = examSubmitted && assessmentScore.pct >= PASS_THRESHOLD;
   const narrationUrl = lessonAudioUrl(currentLesson);
-  const narrationComplete = Boolean(narrationCompleteByLesson[currentLesson.id]);
+  const narrationGate = useNarrationGate({
+    gateKey: currentLesson.id,
+    audioSrc: narrationUrl,
+    required: true,
+    missingNarrationReason: `Missing QAPI narration audio for lesson ${currentLesson.index}: ${narrationUrl}`,
+  });
+  const narrationComplete = narrationGate.narrationCompleted;
   const clickedForLesson = new Set(lessonClicks[currentLesson.id] ?? []);
   const reviewClickKeys = [
     ...(currentLesson.scenario ? ['review:scenario'] : []),
@@ -163,10 +166,8 @@ export function QapiTrainingPanel({ moduleId, onComplete, onEvidence }: Props) {
   }, []);
 
   useEffect(() => {
-    audioRef.current?.pause();
-    setNarrationState(narrationCompleteByLesson[currentLesson.id] ? 'complete' : 'idle');
     setPresentationFocus('framework');
-  }, [currentLesson.id, narrationCompleteByLesson]);
+  }, [currentLesson.id]);
 
   const markInteraction = (key: string) => {
     if (!narrationComplete) return;
@@ -196,27 +197,6 @@ export function QapiTrainingPanel({ moduleId, onComplete, onEvidence }: Props) {
       'review:terms-card': 'Open Key Terms.',
     };
     return labels[key] ?? 'Continue the guided clicks.';
-  };
-
-  const playNarration = async () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    try {
-      await audio.play();
-      setNarrationState('playing');
-    } catch {
-      setNarrationState('error');
-    }
-  };
-
-  const pauseNarration = () => {
-    audioRef.current?.pause();
-    setNarrationState(narrationComplete ? 'complete' : 'paused');
-  };
-
-  const completeNarration = () => {
-    setNarrationCompleteByLesson((prev) => ({ ...prev, [currentLesson.id]: true }));
-    setNarrationState('complete');
   };
 
   const openChallenge = () => {
@@ -343,42 +323,38 @@ export function QapiTrainingPanel({ moduleId, onComplete, onEvidence }: Props) {
               <div className="text-[10px] font-bold uppercase tracking-wider text-muted">Progress</div>
               <div className="text-xl font-medium text-brand-teal">{progressPct}%</div>
             </div>
-          </div>
-          <div className="mt-4 rounded-lg border border-tone-teal-border bg-tone-teal-bg p-4">
-            <audio
-              ref={audioRef}
-              key={narrationUrl}
-              src={narrationUrl}
-              controls
-              className="mb-3 w-full"
-              preload="metadata"
-              onPlay={() => setNarrationState('playing')}
-              onPause={() => {
-                if (!narrationComplete) setNarrationState('paused');
-              }}
-              onEnded={completeNarration}
-              onError={() => setNarrationState('error')}
-            />
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={narrationState === 'playing' ? pauseNarration : playNarration}
-                className="inline-flex items-center gap-2 rounded-lg bg-brand-teal px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-colors hover:bg-brand-teal-deep"
-              >
-                {narrationState === 'playing' ? 'Pause Narration' : narrationComplete ? 'Replay Narration' : 'Play Narration'}
-              </button>
-              <div className="min-w-[220px] flex-1">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-brand-teal">
-                  {narrationComplete ? 'Narration complete' : narrationState === 'playing' ? 'Narration playing' : 'Narration required'}
-                </div>
-                <p className="mt-1 text-sm leading-relaxed text-secondary">
-                  {narrationState === 'error'
-                    ? 'Audio playback was blocked or interrupted. Use the audio controls above, then finish the narration to unlock the lesson.'
-                    : narrationComplete
+            </div>
+            <div className="mt-4 rounded-lg border border-tone-teal-border bg-tone-teal-bg p-4">
+              <audio
+                ref={narrationGate.audioRef}
+                key={narrationUrl}
+                src={narrationUrl}
+                controls
+                className="mb-3 w-full"
+                preload="metadata"
+                onPlay={narrationGate.onPlay}
+                onPause={narrationGate.onPause}
+                onEnded={narrationGate.onEnded}
+                onError={narrationGate.onError}
+              />
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={narrationGate.playbackState === 'playing' ? narrationGate.pause : narrationGate.play}
+                  className="inline-flex items-center gap-2 rounded-lg bg-brand-teal px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-colors hover:bg-brand-teal-deep"
+                >
+                  {narrationGate.playbackState === 'playing' ? 'Pause Narration' : narrationComplete ? 'Replay Narration' : 'Play Narration'}
+                </button>
+                <div className="min-w-[220px] flex-1">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-brand-teal">
+                    {narrationGate.statusLabel}
+                  </div>
+                  <p className="mt-1 text-sm leading-relaxed text-secondary">
+                    {narrationComplete
                       ? `Next: ${nextInstruction}`
-                      : 'Clicks are locked until the lesson narration finishes.'}
-                </p>
-              </div>
+                      : narrationGate.helperText}
+                  </p>
+                </div>
               <div className="rounded-lg border border-hairline bg-white px-3 py-2 text-right">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-muted">Unlock path</div>
                 <div className="text-sm font-medium text-brand-teal-deep">

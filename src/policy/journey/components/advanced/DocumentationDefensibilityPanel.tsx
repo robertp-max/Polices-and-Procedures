@@ -9,6 +9,7 @@ import {
   FileSearch,
   FileText,
   GraduationCap,
+  PlayCircle,
   Search,
   ShieldCheck,
   type LucideIcon,
@@ -18,6 +19,11 @@ import { finalAssessment } from '../../data/advancedTraining/documentationMatter
 import { sandboxScenarios } from '../../data/advancedTraining/documentationMatters/sandboxContent';
 import { glossaryCategories, glossaryTerms } from '../../data/advancedTraining/documentationMatters/glossaryContent';
 import { referenceMaterials } from '../../data/advancedTraining/documentationMatters/referenceContent';
+import {
+  documentationMattersAudioPath,
+  hasDocumentationMattersAudio,
+} from '../../data/advancedTraining/documentationMattersAudio';
+import { useNarrationGate } from './useNarrationGate';
 
 interface Props {
   moduleId: string;
@@ -151,6 +157,20 @@ export const DocumentationDefensibilityPanel = ({ moduleId, onComplete, onEviden
   const selectedPracticeAnswer = currentPractice ? practiceAnswers[currentPractice.id] : undefined;
   const practiceCorrect = selectedPracticeAnswer === currentPractice?.correctOptionId;
   const assessmentComplete = assessmentItems.every((item) => Boolean(assessmentAnswers[item.id]));
+  const currentLessonNarrationKey = currentLesson
+    ? `documentation-matters.lesson.${currentLesson.id.toLowerCase()}.delivery`
+    : 'documentation-matters.lesson.none.delivery';
+  const currentLessonNarrationSrc =
+    currentLesson && hasDocumentationMattersAudio(currentLesson.id)
+      ? documentationMattersAudioPath(currentLesson.id)
+      : null;
+  const narrationGate = useNarrationGate({
+    gateKey: currentLessonNarrationKey,
+    audioSrc: currentLessonNarrationSrc,
+    required: activeTab === 'course' && Boolean(currentLesson),
+    missingNarrationReason: `Missing Documentation Matters narration audio for ${currentLessonNarrationKey}.`,
+  });
+  const canLeaveCurrentLesson = activeTab !== 'course' || narrationGate.canProceed;
 
   const filteredGlossaryTerms = glossaryTerms.filter((term) => {
     const matchesCategory = activeGlossaryCategory === 'All' || term.category === activeGlossaryCategory;
@@ -161,17 +181,20 @@ export const DocumentationDefensibilityPanel = ({ moduleId, onComplete, onEviden
   });
 
   const selectModule = (targetModuleId: string) => {
+    if (targetModuleId !== activeModuleId && !canLeaveCurrentLesson) return;
     const nextModule = trainingModules.find((module) => module.id === targetModuleId);
     setActiveModuleId(targetModuleId);
     setActiveLessonId(nextModule?.lessons[0]?.id ?? '');
   };
 
   const markLessonReviewed = () => {
+    if (!narrationGate.canProceed) return;
     if (!currentLessonKey) return;
     setReviewedLessons((current) => ({ ...current, [currentLessonKey]: true }));
   };
 
   const goToNextLesson = () => {
+    if (!narrationGate.canProceed) return;
     if (!currentLesson) return;
     const currentIndex = flatLessons.findIndex((item) => item.lesson.id === currentLesson.id);
     const next = flatLessons[currentIndex + 1];
@@ -268,11 +291,16 @@ export const DocumentationDefensibilityPanel = ({ moduleId, onComplete, onEviden
       >
         {tabs.map(({ key, label, sub, Icon }) => {
           const active = activeTab === key;
+          const locked = activeTab === 'course' && key !== 'course' && !narrationGate.canProceed;
           return (
             <button
               key={key}
               type="button"
-              onClick={() => setActiveTab(key)}
+              onClick={() => {
+                if (locked) return;
+                setActiveTab(key);
+              }}
+              disabled={locked}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -283,7 +311,8 @@ export const DocumentationDefensibilityPanel = ({ moduleId, onComplete, onEviden
                 background: active ? colors.tealSoft : '#F8FAFC',
                 color: active ? colors.tealDark : colors.muted,
                 boxShadow: active ? `inset 0 0 0 2px ${colors.teal}` : 'none',
-                cursor: 'pointer',
+                cursor: locked ? 'not-allowed' : 'pointer',
+                opacity: locked ? 0.45 : 1,
                 textAlign: 'left',
               }}
             >
@@ -317,18 +346,21 @@ export const DocumentationDefensibilityPanel = ({ moduleId, onComplete, onEviden
                 {trainingModules.map((module) => {
                   const done = module.lessons.every((lesson) => reviewedLessons[lesson.id]);
                   const active = module.id === currentModule?.id;
+                  const locked = !active && !canLeaveCurrentLesson;
                   return (
                     <button
                       key={module.id}
                       type="button"
                       onClick={() => selectModule(module.id)}
+                      disabled={locked}
                       style={{
                         ...statusTone(active, done),
                         width: '100%',
                         textAlign: 'left',
                         borderRadius: 8,
                         padding: 10,
-                        cursor: 'pointer',
+                        cursor: locked ? 'not-allowed' : 'pointer',
+                        opacity: locked ? 0.45 : 1,
                       }}
                     >
                       <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'center' }}>
@@ -384,6 +416,87 @@ export const DocumentationDefensibilityPanel = ({ moduleId, onComplete, onEviden
                         Reviewed
                       </span>
                     )}
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: 14,
+                      background: '#F8FAFC',
+                      borderRadius: 8,
+                      padding: 12,
+                      boxShadow: `inset 0 0 0 1px ${colors.line}`,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        color: colors.tealDark,
+                        fontSize: 12,
+                        fontWeight: 800,
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      <PlayCircle size={16} color={colors.orange} />
+                      Narration
+                    </div>
+                    {currentLessonNarrationSrc ? (
+                      <audio
+                        ref={narrationGate.audioRef}
+                        key={currentLessonNarrationKey}
+                        controls
+                        preload="metadata"
+                        src={currentLessonNarrationSrc}
+                        onPlay={narrationGate.onPlay}
+                        onPause={narrationGate.onPause}
+                        onEnded={narrationGate.onEnded}
+                        onError={narrationGate.onError}
+                        style={{ width: '100%', marginTop: 10 }}
+                      >
+                        <track kind="captions" />
+                      </audio>
+                    ) : (
+                      <div
+                        style={{
+                          marginTop: 10,
+                          background: colors.orangeSoft,
+                          color: '#7A2E0E',
+                          borderRadius: 8,
+                          padding: 10,
+                          fontSize: 13,
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        {narrationGate.missingNarrationReason}
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 10 }}>
+                      <button
+                        type="button"
+                        onClick={narrationGate.playbackState === 'playing' ? narrationGate.pause : narrationGate.play}
+                        disabled={!currentLessonNarrationSrc}
+                        style={{
+                          borderRadius: 8,
+                          padding: '9px 12px',
+                          background: colors.teal,
+                          color: colors.white,
+                          fontWeight: 800,
+                          cursor: currentLessonNarrationSrc ? 'pointer' : 'not-allowed',
+                          opacity: currentLessonNarrationSrc ? 1 : 0.45,
+                        }}
+                      >
+                        {narrationGate.playbackState === 'playing'
+                          ? 'Pause Narration'
+                          : narrationGate.canProceed
+                            ? 'Replay Narration'
+                            : 'Play Narration'}
+                      </button>
+                      <div style={{ minWidth: 220, flex: 1, fontSize: 13, color: colors.muted, lineHeight: 1.45 }}>
+                        <div style={{ color: colors.tealDark, fontWeight: 900 }}>{narrationGate.statusLabel}</div>
+                        <div>{narrationGate.helperText}</div>
+                      </div>
+                    </div>
                   </div>
 
                   <div
@@ -476,6 +589,7 @@ export const DocumentationDefensibilityPanel = ({ moduleId, onComplete, onEviden
                           key={lesson.id}
                           type="button"
                           onClick={() => setActiveLessonId(lesson.id)}
+                          disabled={lesson.id !== currentLesson.id && !narrationGate.canProceed}
                           title={lesson.title}
                           style={{
                             width: 36,
@@ -485,7 +599,9 @@ export const DocumentationDefensibilityPanel = ({ moduleId, onComplete, onEviden
                             color: lesson.id === currentLesson.id ? colors.white : colors.muted,
                             fontSize: 11,
                             fontWeight: 800,
-                            cursor: 'pointer',
+                            cursor:
+                              lesson.id !== currentLesson.id && !narrationGate.canProceed ? 'not-allowed' : 'pointer',
+                            opacity: lesson.id !== currentLesson.id && !narrationGate.canProceed ? 0.45 : 1,
                           }}
                         >
                           {lesson.id.split('-')[1]}
@@ -496,6 +612,7 @@ export const DocumentationDefensibilityPanel = ({ moduleId, onComplete, onEviden
                       <button
                         type="button"
                         onClick={markLessonReviewed}
+                        disabled={!narrationGate.canProceed}
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -505,7 +622,8 @@ export const DocumentationDefensibilityPanel = ({ moduleId, onComplete, onEviden
                           background: colors.tealSoft,
                           color: colors.tealDark,
                           fontWeight: 800,
-                          cursor: 'pointer',
+                          cursor: narrationGate.canProceed ? 'pointer' : 'not-allowed',
+                          opacity: narrationGate.canProceed ? 1 : 0.45,
                         }}
                       >
                         <CheckCircle2 size={16} />
@@ -514,6 +632,7 @@ export const DocumentationDefensibilityPanel = ({ moduleId, onComplete, onEviden
                       <button
                         type="button"
                         onClick={goToNextLesson}
+                        disabled={!narrationGate.canProceed}
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -523,7 +642,8 @@ export const DocumentationDefensibilityPanel = ({ moduleId, onComplete, onEviden
                           background: colors.teal,
                           color: colors.white,
                           fontWeight: 800,
-                          cursor: 'pointer',
+                          cursor: narrationGate.canProceed ? 'pointer' : 'not-allowed',
+                          opacity: narrationGate.canProceed ? 1 : 0.45,
                         }}
                       >
                         Next
