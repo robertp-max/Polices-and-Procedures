@@ -8,7 +8,7 @@ export interface CareIndeedButtonProps extends React.ButtonHTMLAttributes<HTMLBu
 
 export const CareIndeedButton: React.FC<CareIndeedButtonProps> = ({
   variant = 'primary',
-  shape = 'rounded',
+  shape = 'pill',
   children,
   className = '',
   disabled,
