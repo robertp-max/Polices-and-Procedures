@@ -4288,7 +4288,7 @@ function AchcScreen({ mode }: { mode: 'crosswalk' | 'survey' }) {
       <section className="grid gap-xl desktop:grid-cols-1">
         <section
           aria-label={isCrosswalk ? 'ACHC regulatory crosswalk matrix' : 'ACHC survey checklist matrix'}
-          className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest"
+          className="rounded-3xl border border-ci-border bg-white p-6 shadow-sm"
         >
           <DataTable
             columns={columns}
@@ -4351,18 +4351,18 @@ function HhEvidenceMapScreen() {
   return (
     <ScreenStack metrics={hhEvidenceMapMetrics}>
       <section className="grid gap-xl desktop:grid-cols-1">
-        <section className="grid gap-lg rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
+        <section className="grid gap-lg rounded-3xl border border-ci-border bg-white p-6 shadow-sm">
           <div className="flex flex-wrap items-end justify-between gap-md">
             <div className="grid gap-xs">
               <ToneTag tone="teal">Spreadsheet source</ToneTag>
-              <h2 className="text-h2 font-medium text-ink">HH tag evidence map</h2>
+              <h2 className="text-xl font-bold text-ci-teal-deep">HH tag evidence map</h2>
               <p className="max-w-content text-sm text-muted">
                 Source: src/policy/data/policy_hh_section_map.csv. Rows map HH standards to policy section anchors, confidence, match type, duplicate flags, and review posture.
               </p>
             </div>
             <input
               aria-label="Search HH evidence mappings"
-              className="min-w-[260px] rounded-md border border-card bg-surface-glass px-md py-sm text-sm text-ink placeholder:text-muted focus-visible:outline-none focus-visible:shadow-focus"
+              className="min-w-[260px] rounded-lg border border-ci-border bg-white px-4 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus-visible:outline-none focus-visible:shadow-focus"
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search HH tag, policy, section..."
               value={query}

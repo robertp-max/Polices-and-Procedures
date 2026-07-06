@@ -1,7 +1,8 @@
 import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
-import { toneSurfaceClasses } from './toneClasses';
 
+
+import { CareIndeedCard } from '@/components/theme/CareIndeedCard';
 
 export interface MetricTileData {
   helper: string;
@@ -16,20 +17,22 @@ export interface MetricTileProps {
 
 export function MetricTile({ metric }: MetricTileProps) {
   return (
-    <article className={cx(
-      'min-h-[106px] min-w-0 rounded-lg border p-lg shadow-rest transition duration-base ease-standard hover:translate-y-hover-lift hover:shadow-hover active:scale-press',
-      toneSurfaceClasses[metric.tone]
-    )}>
-      <div className="truncate text-tag font-medium uppercase tracking-tag opacity-75">
-        {metric.label}
+    <CareIndeedCard
+      variant="grid-outline"
+      className="min-h-[106px] min-w-0 p-5 flex flex-col justify-between transition-all duration-150 hover:shadow-sm"
+    >
+      <div>
+        <div className="truncate text-[10px] font-bold uppercase tracking-wider text-ci-teal opacity-90">
+          {metric.label}
+        </div>
+        <div className="mt-2 truncate text-2xl font-bold leading-none text-ci-teal-deep">
+          {metric.value}
+        </div>
       </div>
-      <div className="mt-sm truncate text-[28px] font-medium leading-none tracking-normal">
-        {metric.value}
-      </div>
-      <div className="mt-xs truncate text-xs font-light opacity-75">
+      <div className="mt-1 truncate text-xs text-gray-500">
         {metric.helper}
       </div>
-    </article>
+    </CareIndeedCard>
   );
 }
 

@@ -1,4 +1,5 @@
 import { Link, useSearchParams } from 'react-router-dom';
+import { CareIndeedCard } from '@/components/theme/CareIndeedCard';
 
 import { ArrowRight, BookOpen, ClipboardCheck, FileCheck2, Landmark, Layers3, Network, ShieldCheck, Workflow, type LucideIcon } from 'lucide-react';
 import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, type MetricTileData, type SurfaceCardData } from '../../components';
@@ -194,15 +195,15 @@ export function FrameworkTabs({
 }) {
   const tabClass = (isActive: boolean) =>
     cx(
-      'rounded-md px-lg py-sm font-heading text-xs font-medium uppercase tracking-wider transition-all duration-fast focus-visible:outline-none focus-visible:shadow-focus',
+      'py-3 border-b-4 text-xs font-bold uppercase tracking-wider transition-all duration-150 focus-visible:outline-none focus-visible:shadow-focus',
       isActive
-        ? 'bg-brand-teal text-on-brand shadow-rest'
-        : 'text-brand-teal-deep hover:bg-surface-hover hover:text-brand-teal',
+        ? 'border-ci-teal-deep text-ci-teal-deep font-bold'
+        : 'border-transparent text-gray-500 hover:text-ci-teal hover:border-gray-300',
     );
 
   return (
-    <div className="flex justify-start">
-      <div className="flex flex-wrap gap-xs rounded-lg border border-hairline bg-surface-glass p-xs shadow-rest backdrop-blur-md">
+    <div className="flex justify-start w-full border-b border-ci-border bg-transparent px-2 mb-6">
+      <div className="flex flex-wrap gap-x-6">
         {onFrameworkTabChange ? (
           <button onClick={() => onFrameworkTabChange('taxonomy')} className={tabClass(activeTab === 'taxonomy')}>
             Taxonomy Structure
@@ -269,7 +270,7 @@ export function FrameworkScreen() {
           <section className="grid content-start gap-lg">
             <div className="flex flex-wrap items-end justify-between gap-md">
               <div className="grid gap-xs">
-                <h2 className="text-h2 font-medium text-ink">Framework domains</h2>
+                <h2 className="text-xl font-bold text-ci-teal-deep">Framework domains</h2>
                 <p className="max-w-content text-sm text-muted">
                   Top-level taxonomy tiles show domain ownership, policy scope, ACHC anchor density, and survey-readiness signals.
                 </p>
@@ -299,34 +300,34 @@ export function FrameworkScreen() {
               <SurfaceCard card={card} key={card.title} />
             ))}
 
-            <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
-              <div className="mb-lg flex items-start justify-between gap-md">
+            <CareIndeedCard variant="container" className="p-6">
+              <div className="mb-4 flex items-start justify-between gap-md">
                 <div>
                   <ToneTag tone="orange">Authority context</ToneTag>
-                  <h2 className="mt-md text-h2 font-medium text-ink">ACHC / CMS / Title 22</h2>
+                  <h2 className="mt-2 text-lg font-bold text-ci-teal-deep">ACHC / CMS / Title 22</h2>
                 </div>
                 <ToneBadge size="sm" status="ready" />
               </div>
               <div className="grid gap-md">
                 {alignmentCards.map(([label, value, helper, tone]) => (
-                  <div className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg" key={label}>
+                  <CareIndeedCard variant="grid-outline" className="p-4" key={label}>
                     <div className="flex items-start justify-between gap-md">
                       <div>
-                        <p className="text-tag uppercase tracking-tag text-muted">{label}</p>
-                        <p className="mt-xs text-h2 text-ink">{value}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">{label}</p>
+                        <p className="mt-1 text-xl font-bold text-ci-teal-deep">{value}</p>
                       </div>
                       <ToneTag tone={tone}>{tone === 'orange' ? 'Review' : 'Mapped'}</ToneTag>
                     </div>
-                    <p className="mt-md text-sm text-secondary">{helper}</p>
-                  </div>
+                    <p className="mt-2 text-xs text-gray-500">{helper}</p>
+                  </CareIndeedCard>
                 ))}
               </div>
-            </section>
+            </CareIndeedCard>
           </aside>
         </section>
       ) : (
-        <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
-          <div className="mb-lg flex flex-wrap items-start justify-between gap-lg">
+        <CareIndeedCard variant="container" className="p-6">
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-lg">
             <div className="grid gap-xs">
               <h2 className="text-h2 font-medium text-ink">Standard mapping snapshot</h2>
               <p className="max-w-content text-sm text-muted">
@@ -406,7 +407,7 @@ export function FrameworkScreen() {
               </article>
             ))}
           </div>
-        </section>
+        </CareIndeedCard>
       )}
     </div>
   );
@@ -416,23 +417,24 @@ function DomainTile({ domain }: { domain: DomainTileData }) {
   const Icon = domain.icon;
 
   return (
-    <article
-      className="grid min-h-[270px] content-between gap-lg rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest transition duration-fast ease-standard hover:shadow-hover overflow-hidden"
+    <CareIndeedCard
+      variant="grid-outline"
+      className="grid min-h-[270px] content-between gap-lg p-5 overflow-hidden transition duration-150 hover:shadow-sm"
       role="listitem"
     >
       <div className="grid gap-md">
         <div className="flex items-start justify-between gap-md">
-          <span className={cx('grid h-tap w-tap place-items-center rounded-md', domainIconClasses[domain.tone])}>
-            <Icon aria-hidden="true" className="h-icon-md w-icon-md" />
+          <span className={cx('grid h-tap w-tap place-items-center rounded-lg bg-ci-mint/10 text-ci-teal', domainIconClasses[domain.tone])}>
+            <Icon aria-hidden="true" className="h-5 w-5" />
           </span>
           <ToneTag tone={domain.tone}>{domain.code}</ToneTag>
         </div>
         <div className="grid gap-xs">
           <div className="flex flex-wrap items-center justify-between gap-sm">
-            <h3 className="text-h3 font-light text-ink">{domain.title}</h3>
+            <h3 className="text-sm font-bold text-ci-teal-deep">{domain.title}</h3>
             <ToneBadge size="sm" status={domain.status} />
           </div>
-          <p className="text-sm text-muted">{domain.description}</p>
+          <p className="text-xs text-gray-500">{domain.description}</p>
         </div>
       </div>
 
@@ -444,22 +446,22 @@ function DomainTile({ domain }: { domain: DomainTileData }) {
         </div>
         <ProgressMeter label="Survey readiness" tone={domain.tone} value={domain.readiness} />
         <Link
-          className="inline-flex min-h-tap items-center justify-between gap-md rounded-md border border-card px-md text-left text-sm text-brand-teal transition duration-fast ease-standard hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus"
+          className="inline-flex min-h-tap items-center justify-between gap-md rounded-lg border border-ci-border bg-white px-4 py-2 text-left text-xs font-bold uppercase tracking-wider text-ci-teal transition duration-150 hover:bg-ci-mint/10 focus-visible:outline-none focus-visible:shadow-focus"
           to="/framework/achc-survey"
         >
           Inspect architecture
-          <ArrowRight aria-hidden="true" className="h-icon-sm w-icon-sm" />
+          <ArrowRight aria-hidden="true" className="h-4 w-4 text-ci-orange" />
         </Link>
       </div>
-    </article>
+    </CareIndeedCard>
   );
 }
 
 function DomainStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-sm overflow-hidden">
-      <p className="text-h3 text-ink">{value}</p>
-      <p className="mt-xs text-tag uppercase tracking-tag text-muted">{label}</p>
+    <div className="rounded-xl border border-ci-border bg-ci-mint/5 p-2 overflow-hidden text-center">
+      <p className="text-lg font-bold text-ci-teal-deep">{value}</p>
+      <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-ci-teal">{label}</p>
     </div>
   );
 }
