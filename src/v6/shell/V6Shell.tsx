@@ -163,7 +163,7 @@ export function V6Shell() {
   }, [feedbackOpen]);
 
   return (
-    <div className={cx('flex h-screen overflow-hidden font-light text-ink p-0 m-0 border-0', isDashboardRoute ? 'bg-[#F8F9FA]' : isLessonPlayerRoute ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset' : 'bg-canvas')}>
+    <div className={cx('theme-ci-light-orange flex h-screen overflow-hidden font-light text-ink p-0 m-0 border-0 bg-canvas', isLessonPlayerRoute ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset' : '')}>
       {!isChromeFreeRoute && (
         <>
           {(showDock || isDashboardRoute) && (
