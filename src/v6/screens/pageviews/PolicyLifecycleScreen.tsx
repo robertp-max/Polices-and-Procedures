@@ -101,48 +101,48 @@ export function PolicyLifecycleScreen() {
 
       <section className="grid gap-xl desktop:grid-cols-12">
         <div className="grid content-start gap-lg desktop:col-span-8">
-          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden shadow-rest">
-            <h3 className="text-h3 font-medium text-ink mb-lg">Domain Grouping Board</h3>
+          <div className="rounded-3xl border border-ci-border bg-white p-6 shadow-sm overflow-hidden">
+            <h3 className="text-lg font-bold text-ci-teal-deep mb-4">Domain Grouping Board</h3>
             <div className="flex flex-wrap gap-md items-center justify-between">
               {stages.map((stage, index) => (
                 <div className="flex items-center gap-md" key={stage.label}>
-                  <div className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden min-w-[120px] text-center shadow-rest flex flex-col items-center gap-xs">
-                    <span className="text-tag uppercase tracking-tag text-muted">{stage.label}</span>
-                    <span className="text-h2 font-medium text-ink mt-sm">{stage.count}</span>
+                  <div className="rounded-xl border border-ci-border bg-ci-mint/5 p-4 min-w-[120px] text-center flex flex-col items-center gap-xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">{stage.label}</span>
+                    <span className="text-xl font-bold text-ci-teal-deep mt-1">{stage.count}</span>
                     <ToneBadge size="sm" status={stage.status} />
                   </div>
                   {index < stages.length - 1 && (
-                    <ArrowRight aria-hidden="true" className="h-icon-sm w-icon-sm text-muted shrink-0 hidden tablet-p:block" />
+                    <ArrowRight aria-hidden="true" className="h-5 w-5 text-muted shrink-0 hidden tablet-p:block" />
                   )}
                 </div>
               ))}
             </div>
-            <div className="mt-md text-xs text-muted">State counts from usePolicyLifecycleStore (envelopes); owner/dues joined from corpus. All start DRAFT per lifecycleStore seed rule.</div>
-          </section>
+            <div className="mt-4 text-xs text-muted">State counts from usePolicyLifecycleStore (envelopes); owner/dues joined from corpus. All start DRAFT per lifecycleStore seed rule.</div>
+          </div>
 
-          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden shadow-rest">
-            <h3 className="text-h3 font-medium text-ink mb-md">Active Policies Checklist — Real Records (corpus + lifecycle)</h3>
-            <p className="text-sm text-secondary mb-md">
+          <div className="rounded-3xl border border-ci-border bg-white p-6 shadow-sm overflow-hidden">
+            <h3 className="text-lg font-bold text-ci-teal-deep mb-2">Active Policies Checklist — Real Records (corpus + lifecycle)</h3>
+            <p className="text-sm text-secondary mb-4">
               Showing live-mapped records (first 3 of {POLICY_CORPUS.length}). Virtualization placeholder retained for scale. Status/owner/due resolved correctly.
             </p>
             <div className="grid gap-sm text-sm">
               {sampleRecords.map(rec => (
-                <div key={rec.id} className="rounded border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-md flex flex-wrap gap-x-md gap-y-xs items-baseline">
-                  <span className="font-mono font-medium text-ink">{rec.id}</span>
-                  <span className="text-secondary">{rec.title}</span>
-                  <span className="text-tag uppercase px-2 py-0.5 rounded bg-tone-slate text-muted">{rec.state}</span>
-                  <span className="flex items-center gap-xs text-muted"><User className="h-icon-xs w-icon-xs" />{rec.owner}</span>
-                  <span className="flex items-center gap-xs text-muted"><Calendar className="h-icon-xs w-icon-xs" />Due: {rec.due}</span>
+                <div key={rec.id} className="rounded-xl border border-ci-border bg-white p-4 flex flex-wrap gap-x-md gap-y-xs items-baseline shadow-sm transition hover:shadow-md">
+                  <span className="font-mono font-bold text-ci-teal">{rec.id}</span>
+                  <span className="text-ci-teal-deep font-semibold">{rec.title}</span>
+                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-ci-mint/10 text-ci-teal">{rec.state}</span>
+                  <span className="flex items-center gap-xs text-gray-500"><User className="h-4 w-4" />{rec.owner}</span>
+                  <span className="flex items-center gap-xs text-gray-500"><Calendar className="h-4 w-4" />Due: {rec.due}</span>
                 </div>
               ))}
             </div>
-          </section>
+          </div>
         </div>
 
         <aside className="grid content-start gap-lg desktop:col-span-4" aria-label="Action items">
           <div className="grid gap-xs mb-sm">
-            <h3 className="text-h3 font-medium text-ink flex items-center gap-sm">
-              <BookOpen aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
+            <h3 className="text-lg font-bold text-ci-teal-deep flex items-center gap-sm">
+              <BookOpen aria-hidden="true" className="h-5 w-5 text-brand-teal" />
               Required Action Items
             </h3>
             <p className="text-sm text-muted">Staged lifecycle actions and alerts. (real policy refs)</p>

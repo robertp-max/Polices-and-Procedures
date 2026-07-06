@@ -202,13 +202,13 @@ export function FormsLibraryScreen() {
 
           <section className="grid gap-md tablet-l:grid-cols-3" aria-label="Signer and evidence metadata summary">
             {signerEvidencePanels.map((panel) => (
-              <article className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden" key={panel.label}>
-                <div className="mb-md flex flex-wrap items-center justify-between gap-sm">
-                  <h3 className="text-body font-light text-ink">{panel.label}</h3>
+              <div className="rounded-xl border border-ci-border bg-white p-4 shadow-sm overflow-hidden" key={panel.label}>
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-sm">
+                  <h3 className="text-sm font-bold text-ci-teal-deep">{panel.label}</h3>
                   <ToneBadge size="sm" status={panel.status} />
                 </div>
-                <p className="text-sm font-light text-muted">{panel.detail}</p>
-              </article>
+                <p className="text-xs text-gray-500 leading-normal">{panel.detail}</p>
+              </div>
             ))}
           </section>
         </div>
@@ -216,27 +216,27 @@ export function FormsLibraryScreen() {
         <aside className="grid content-start gap-lg desktop:col-span-2" aria-label="Forms library context cards">
           {rightRailCards.map((card) => (
             <SurfaceCard card={card} key={card.title}>
-              <dl className="grid gap-sm border-t border-hairline pt-md">
+              <dl className="grid gap-sm border-t border-ci-border pt-4">
                 {card.meta.map(([label, value]) => (
                   <div className="grid gap-xs" key={label}>
-                    <dt className="text-tag font-light uppercase tracking-tag text-brand-teal">{label}</dt>
-                    <dd className="text-sm font-light text-secondary">{value}</dd>
+                    <dt className="text-[10px] font-bold uppercase tracking-wider text-ci-teal">{label}</dt>
+                    <dd className="text-xs text-gray-700 leading-normal">{value}</dd>
                   </div>
                 ))}
               </dl>
             </SurfaceCard>
           ))}
 
-          <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="forms-quick-stats-heading">
-            <div className="mb-lg flex items-start gap-md">
-              <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-blue-bg text-tone-blue-text">
-                <ClipboardCheck aria-hidden="true" className="h-icon-md w-icon-md" />
+          <div className="rounded-3xl border border-ci-border bg-white p-6 shadow-sm overflow-hidden" aria-labelledby="forms-quick-stats-heading">
+            <div className="mb-4 flex items-start gap-md">
+              <span className="grid h-9 w-9 place-items-center rounded-lg bg-ci-mint/10 text-ci-teal">
+                <ClipboardCheck aria-hidden="true" className="h-5 w-5" />
               </span>
               <div className="grid gap-xs">
-                <h2 className="text-h2 font-medium text-ink" id="forms-quick-stats-heading">
+                <h2 className="text-lg font-bold text-ci-teal-deep" id="forms-quick-stats-heading">
                   Evidence metadata
                 </h2>
-                <p className="text-sm font-light text-muted">Signer, certificate, policy, and retention counts for the forms matrix.</p>
+                <p className="text-xs text-gray-500">Signer, certificate, policy, and retention counts for the forms matrix.</p>
               </div>
             </div>
             <div className="grid gap-sm">
@@ -244,17 +244,17 @@ export function FormsLibraryScreen() {
                 const Icon = stat.icon;
 
                 return (
-                  <div className="flex flex-wrap items-center justify-between gap-md rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md" key={stat.label}>
-                    <span className="inline-flex min-w-0 items-center gap-sm text-sm font-light text-secondary">
-                      <Icon aria-hidden="true" className="h-icon-sm w-icon-sm shrink-0 text-brand-teal" />
+                  <div className="flex flex-wrap items-center justify-between gap-md rounded-xl border border-ci-border bg-ci-mint/5 p-3" key={stat.label}>
+                    <span className="inline-flex min-w-0 items-center gap-2 text-xs font-semibold text-gray-700">
+                      <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-teal" />
                       {stat.label}
                     </span>
-                    <span className="text-body font-light text-ink">{stat.value}</span>
+                    <span className="text-sm font-bold text-ci-teal-deep">{stat.value}</span>
                   </div>
                 );
               })}
             </div>
-          </section>
+          </div>
         </aside>
       </section>
     </section>
