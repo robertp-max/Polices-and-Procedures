@@ -3,7 +3,6 @@ import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
 import { ProgressMeter } from './ProgressMeter';
 import { ToneTag } from './ToneTag';
-import { toneSurfaceClasses } from './toneClasses';
 
 export interface BoardCardData {
   chips: readonly string[];
@@ -37,29 +36,29 @@ export interface BoardLaneProps {
 
 export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
   return (
-    <section className="min-w-0 rounded-lg border border-hairline bg-surface-glass p-xs shadow-glass-inset backdrop-blur-md">
-      <header className="mb-xs flex items-start justify-between gap-xs px-xs pt-xs">
+    <section className="min-w-0 rounded-3xl border border-ci-border bg-ci-mint/5 p-4 shadow-sm">
+      <header className="mb-3 flex items-start justify-between gap-xs px-1">
         <div className="min-w-0">
-          <h2 className="truncate text-sm font-medium text-ink">{lane.title}</h2>
-          <p className="text-sm text-muted">{lane.count} active cards</p>
+          <h2 className="truncate text-sm font-bold text-ci-teal-deep">{lane.title}</h2>
+          <p className="text-xs text-gray-500">{lane.count} active cards</p>
         </div>
         <ToneTag tone={lane.tone}>{lane.count}</ToneTag>
       </header>
-      <div className="grid gap-xs">
+      <div className="grid gap-3">
         {lane.cards.map((card) => (
           <article
             className={cx(
-              'flex min-h-[132px] flex-col rounded-lg border border-hairline bg-surface-glass p-sm transition duration-fast ease-standard',
-              onCardClick && 'cursor-pointer hover:bg-surface-hover'
+              'flex min-h-[132px] flex-col rounded-2xl border border-ci-border bg-white p-4 shadow-sm hover:shadow-md transition duration-150',
+              onCardClick && 'cursor-pointer'
             )}
             key={card.id}
             onClick={onCardClick ? () => onCardClick(card) : undefined}
           >
-            <div className="mb-xs flex items-center justify-between gap-xs">
+            <div className="mb-2 flex items-center justify-between gap-xs">
               <ToneTag tone={card.tone}>{card.id}</ToneTag>
               <button
                 aria-label={`More actions for ${card.title}`}
-                className="rounded-sm p-xs text-brand-teal transition duration-fast ease-standard hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus"
+                className="rounded-lg p-1 text-brand-teal transition duration-150 hover:bg-ci-mint/10 focus-visible:outline-none focus-visible:shadow-focus"
                 type="button"
                 onClick={(e) => {
                   if (onCardClick) {
@@ -68,22 +67,19 @@ export function BoardLane({ lane, onCardClick }: BoardLaneProps) {
                   }
                 }}
               >
-                <MoreHorizontal aria-hidden="true" className="h-icon-sm w-icon-sm" />
+                <MoreHorizontal aria-hidden="true" className="h-4 w-4" />
               </button>
             </div>
-            <div className="flex flex-1 flex-col gap-xs">
-              <h3 className="line-clamp-2 text-sm font-light leading-sm text-ink">{card.title}</h3>
+            <div className="flex flex-1 flex-col gap-2">
+              <h3 className="line-clamp-2 text-xs font-bold leading-normal text-ci-teal-deep">{card.title}</h3>
               <div className="flex justify-between gap-sm text-xs">
-                <span className="min-w-0 truncate text-brand-teal">{card.owner}</span>
-                <span className="text-muted">{card.due}</span>
+                <span className="min-w-0 truncate text-xs font-semibold text-ci-teal">{card.owner}</span>
+                <span className="text-gray-400 text-xs">{card.due}</span>
               </div>
-              <div className="flex flex-wrap gap-xs overflow-hidden">
+              <div className="flex flex-wrap gap-1 overflow-hidden">
                 {card.chips.slice(0, 2).map((chip) => (
                   <span
-                    className={cx(
-                      'max-w-full truncate rounded-sm border px-sm py-xs text-tag uppercase tracking-tag',
-                      toneSurfaceClasses[card.tone],
-                    )}
+                    className="max-w-full truncate rounded-lg border border-ci-border bg-ci-mint/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-ci-teal"
                     key={`${card.id}-${chip}`}
                   >
                     {chip}
