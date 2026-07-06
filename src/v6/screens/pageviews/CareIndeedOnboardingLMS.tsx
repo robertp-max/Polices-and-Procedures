@@ -70,13 +70,79 @@ interface TrackMeta {
   description?: string;
 }
 
+export interface JourneyActivity {
+  activityId: string;
+  activityType: "training_module" | "policy_reading" | "policy_quiz" | "policy_acknowledgment" | "supervisor_signoff";
+  title: string;
+  roleGroup: string;
+  inheritedFrom: "ALL_STAFF" | "ALL_DIRECT_CARE" | "ROLE_SPECIFIC" | "SUPERVISOR" | "LEADERSHIP";
+  sourceMatrixRole: string;
+  sourcePolicyIdDraft?: string;
+  resolvedPolicyId?: string | null;
+  policyTitle?: string;
+  policyRefStatus?: "verified" | "needs_review" | "invalid";
+  assignmentType?: "required_read" | "required_acknowledgment" | "required_training" | "role_reference" | "supervisor_reference";
+  relatedModuleIds: string[];
+  estimatedMinutes: number;
+  required: boolean;
+  quizRequired: boolean;
+  acknowledgmentRequired: boolean;
+  competencyRequired: boolean;
+  supervisorSignoffRequired: boolean;
+  personnelFileEvidenceRequired: boolean;
+  completionStatus: "not_started" | "in_progress" | "complete" | "blocked" | "needs_review";
+  evidenceRequirements: string[];
+}
+
+export interface PolicyProgress {
+  policyId: string;
+  completionStatus: "not_started" | "in_progress" | "complete" | "blocked" | "needs_review";
+  timeSpentSeconds: number;
+  readStartedAt?: string;
+  readCompletedAt?: string;
+  quizAttempts: number;
+  bestQuizScore?: number;
+  acknowledged: boolean;
+  acknowledgedAt?: string;
+  acknowledgmentSignature?: string;
+  supervisorSignedOff: boolean;
+  supervisorSignedOffAt?: string;
+  supervisorSignature?: string;
+  evidencePackage?: Record<string, any>;
+}
+
+export interface PPPolicy {
+  policyId: string;
+  policyTitle: string;
+  assignmentType: "required_read" | "required_acknowledgment" | "required_training" | "role_reference" | "supervisor_reference";
+  onboardingModuleIds: string[];
+  roleGroup: string;
+  inheritedFrom: "ALL_STAFF" | "ALL_DIRECT_CARE" | "ROLE_SPECIFIC" | "SUPERVISOR" | "LEADERSHIP";
+  notes?: string;
+  acknowledgmentRequired: boolean;
+  competencyRequired: boolean;
+  supervisorSignoffRequired: boolean;
+  personnelFileEvidenceRequired: boolean;
+  estimatedMinutes: number;
+}
+
+export interface PPQuizQuestion {
+  id: string;
+  stem: string;
+  options: string[];
+  correctIndex: number;
+  rationale: string;
+}
+
 interface UserProgress {
+
   currentTrack: TrackId | null;
   currentModuleId: string | null;
   currentPage: number;
   completedModules: Record<string, ModuleResult>;
   examAttempts: Record<string, ExamAttempt[]>;
   startedAt: string;
+  policyProgress?: Record<string, PolicyProgress>; // Added for P&P tracking!
 }
 
 interface ModuleResult {
@@ -3762,6 +3828,245 @@ const ALL_MODULES: TrainingModule[] = [
 const MODULE_MAP: Record<string, TrainingModule> = {};
 ALL_MODULES.forEach((m) => { MODULE_MAP[m.id] = m; });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// P&P MATRIX DATA & QUIZZES
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const PP_POLICIES_RAW: PPPolicy[] = [
+  // 1. ALL STAFF (12 policies)
+  { policyId: "CO-CP-001", policyTitle: "Corporate Compliance Program", assignmentType: "required_training", onboardingModuleIds: ["GAO-001", "CORE-COMPL"], roleGroup: "ALL_STAFF", inheritedFrom: "ALL_STAFF", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10, notes: "Foundational compliance — every employee" },
+  { policyId: "CO-CE-001", policyTitle: "Code of Conduct / Code of Ethics", assignmentType: "required_acknowledgment", onboardingModuleIds: ["GAO-001", "CORE-COMPL"], roleGroup: "ALL_STAFF", inheritedFrom: "ALL_STAFF", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 5, notes: "Signed copy retained in personnel file" },
+  { policyId: "CO-HP-001", policyTitle: "HIPAA / Privacy / Confidentiality", assignmentType: "required_training", onboardingModuleIds: ["GAO-001", "CORE-HIPAA"], roleGroup: "ALL_STAFF", inheritedFrom: "ALL_STAFF", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10, notes: "Must include Notice of Privacy Practices awareness" },
+  { policyId: "HR-TA-001", policyTitle: "Workforce Training, Competency & Policy Acknowledgment", assignmentType: "required_read", onboardingModuleIds: ["GAO-001"], roleGroup: "ALL_STAFF", inheritedFrom: "ALL_STAFF", acknowledgmentRequired: true, competencyRequired: false, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 5, notes: "Meta-policy — tells employees how training works" },
+  { policyId: "EM-EP-001", policyTitle: "Emergency Preparedness", assignmentType: "required_training", onboardingModuleIds: ["CORE-EMPREP"], roleGroup: "ALL_STAFF", inheritedFrom: "ALL_STAFF", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 8, notes: "Includes natural disaster, pandemic, active threat" },
+  { policyId: "HR-WS-001", policyTitle: "OSHA / Workplace Safety", assignmentType: "required_training", onboardingModuleIds: ["CORE-SAFETY"], roleGroup: "ALL_STAFF", inheritedFrom: "ALL_STAFF", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 8, notes: "Includes IIPP if CA-based" },
+  { policyId: "IC-IC-001", policyTitle: "Infection Control (Basics)", assignmentType: "required_training", onboardingModuleIds: ["CORE-IC"], roleGroup: "ALL_STAFF", inheritedFrom: "ALL_STAFF", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10, notes: "Basic infection control for all staff" },
+  { policyId: "PR-PR-001", policyTitle: "Patient Rights (Basics)", assignmentType: "required_training", onboardingModuleIds: ["GAO-001", "CORE-PTRIGHTS"], roleGroup: "ALL_STAFF", inheritedFrom: "ALL_STAFF", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 8, notes: "Includes right to be informed, participate, refuse" },
+  { policyId: "CO-CG-001", policyTitle: "Complaints / Grievances / Non-Retaliation", assignmentType: "required_training", onboardingModuleIds: ["GAO-001", "CORE-COMPL"], roleGroup: "ALL_STAFF", inheritedFrom: "ALL_STAFF", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 5, notes: "Includes hotline numbers and external reporting" },
+  { policyId: "CO-ANE-001", policyTitle: "Abuse, Neglect, Exploitation Reporting", assignmentType: "required_training", onboardingModuleIds: ["CORE-ANE"], roleGroup: "ALL_STAFF", inheritedFrom: "ALL_STAFF", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10, notes: "Must know reporting timeline and documentation" },
+  { policyId: "CO-IR-001", policyTitle: "Incident Reporting / Escalation", assignmentType: "required_training", onboardingModuleIds: ["CORE-COMPL", "GAO-001"], roleGroup: "ALL_STAFF", inheritedFrom: "ALL_STAFF", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 8, notes: "Includes near-miss, adverse event, safety concern" },
+  { policyId: "HR-PF-001", policyTitle: "Personnel File / Acknowledgment Requirements", assignmentType: "required_read", onboardingModuleIds: ["GAO-001"], roleGroup: "ALL_STAFF", inheritedFrom: "ALL_STAFF", acknowledgmentRequired: true, competencyRequired: false, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 5, notes: "Employees must understand their file is auditable" },
+
+  // 2. ALL DIRECT CARE STAFF (10 policies)
+  { policyId: "PR-PR-001-EXP", policyTitle: "Patient Rights (Expanded)", assignmentType: "required_training", onboardingModuleIds: ["CORE-PTRIGHTS"], roleGroup: "ALL_DIRECT_CARE", inheritedFrom: "ALL_DIRECT_CARE", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 8, notes: "Expanded scenarios for patient-facing staff" },
+  { policyId: "PR-AD-001", policyTitle: "Advance Directives", assignmentType: "required_training", onboardingModuleIds: ["CORE-PTRIGHTS"], roleGroup: "ALL_DIRECT_CARE", inheritedFrom: "ALL_DIRECT_CARE", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10, notes: "Staff must know boundaries re: AD discussions" },
+  { policyId: "IC-SP-001", policyTitle: "Infection Prevention / Standard Precautions", assignmentType: "required_training", onboardingModuleIds: ["CORE-IC"], roleGroup: "ALL_DIRECT_CARE", inheritedFrom: "ALL_DIRECT_CARE", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15, notes: "Competency validated by supervisor" },
+  { policyId: "EM-EP-002", policyTitle: "Emergency/Disaster Responsibilities (Clinical)", assignmentType: "required_training", onboardingModuleIds: ["CORE-EMPREP"], roleGroup: "ALL_DIRECT_CARE", inheritedFrom: "ALL_DIRECT_CARE", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10, notes: "Patient-specific actions in clinical emergencies" },
+  { policyId: "CL-CD-001", policyTitle: "Clinical Documentation Basics", assignmentType: "required_training", onboardingModuleIds: ["CORE-DOC"], roleGroup: "ALL_DIRECT_CARE", inheritedFrom: "ALL_DIRECT_CARE", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 12, notes: "What to document, when, how, and where" },
+  { policyId: "CO-IR-001-CL", policyTitle: "Incident Reporting (Clinical)", assignmentType: "required_training", onboardingModuleIds: ["CORE-COMPL"], roleGroup: "ALL_DIRECT_CARE", inheritedFrom: "ALL_DIRECT_CARE", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 8, notes: "Clinical adverse event reporting guidelines" },
+  { policyId: "PR-PS-001", policyTitle: "Patient Safety / Environmental Safety", assignmentType: "required_training", onboardingModuleIds: ["CORE-SAFETY"], roleGroup: "ALL_DIRECT_CARE", inheritedFrom: "ALL_DIRECT_CARE", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10, notes: "Fall risk, environment assessment, equipment safety" },
+  { policyId: "PR-CB-001", policyTitle: "Communication Barriers / Interpreter Use", assignmentType: "required_training", onboardingModuleIds: ["CORE-PTRIGHTS"], roleGroup: "ALL_DIRECT_CARE", inheritedFrom: "ALL_DIRECT_CARE", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 5, notes: "Interpreter access and Title VI/LEP compliance" },
+  { policyId: "CO-ANE-001-CL", policyTitle: "Abuse/Neglect/Exploitation Reporting (Clinical)", assignmentType: "required_training", onboardingModuleIds: ["CORE-ANE"], roleGroup: "ALL_DIRECT_CARE", inheritedFrom: "ALL_DIRECT_CARE", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10, notes: "Recognizing clinical abuse/neglect indicators" },
+  { policyId: "CL-SS-001", policyTitle: "Role-Specific Scope and Supervision", assignmentType: "required_read", onboardingModuleIds: ["ROLE-specific"], roleGroup: "ALL_DIRECT_CARE", inheritedFrom: "ALL_DIRECT_CARE", acknowledgmentRequired: true, competencyRequired: false, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 5, notes: "Scope boundaries and escalation pathways" },
+
+  // 3. RN (10 policies)
+  { policyId: "CL-CA-001", policyTitle: "Comprehensive Assessment", assignmentType: "required_training", onboardingModuleIds: ["ROLE-RN-ASSESS"], roleGroup: "RN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "CL-OA-001", policyTitle: "OASIS Data Collection/Accuracy/Submission", assignmentType: "required_training", onboardingModuleIds: ["ROLE-RN-OASIS"], roleGroup: "RN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 20 },
+  { policyId: "CL-POC-001", policyTitle: "Plan of Care", assignmentType: "required_training", onboardingModuleIds: ["ROLE-RN-POC"], roleGroup: "RN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "CL-PO-001", policyTitle: "Physician Orders / Verbal Orders", assignmentType: "required_training", onboardingModuleIds: ["ROLE-RN-ORDERS"], roleGroup: "RN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-CD-002", policyTitle: "Clinical Documentation (RN-Specific)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-RN-DOC"], roleGroup: "RN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "CL-MR-001", policyTitle: "Medication Reconciliation/Management", assignmentType: "required_training", onboardingModuleIds: ["ROLE-RN-MEDS"], roleGroup: "RN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "CL-CC-001", policyTitle: "Care Coordination", assignmentType: "required_training", onboardingModuleIds: ["ROLE-RN-COORD"], roleGroup: "RN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-HS-001", policyTitle: "HHA Supervision", assignmentType: "required_training", onboardingModuleIds: ["ROLE-RN-HHASUP"], roleGroup: "RN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "QA-QP-001", policyTitle: "QAPI Participation", assignmentType: "required_read", onboardingModuleIds: ["CORE-QAPI"], roleGroup: "RN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: false, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 5 },
+  { policyId: "CO-IR-002", policyTitle: "Incident/Adverse Event Reporting (RN)", assignmentType: "required_training", onboardingModuleIds: ["CORE-COMPL"], roleGroup: "RN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+
+  // 4. LVN (7 policies)
+  { policyId: "CL-LVN-001", policyTitle: "LVN Scope and Supervision Requirements", assignmentType: "required_training", onboardingModuleIds: ["ROLE-LVN-SCOPE"], roleGroup: "LVN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-LVN-002", policyTitle: "Nursing Services Under RN Direction", assignmentType: "required_training", onboardingModuleIds: ["ROLE-LVN-SCOPE"], roleGroup: "LVN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-CD-003", policyTitle: "Clinical Documentation (LVN)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-LVN-DOC"], roleGroup: "LVN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-LVN-003", policyTitle: "Medication/Treatment Within LVN Scope", assignmentType: "required_training", onboardingModuleIds: ["ROLE-LVN-MEDS"], roleGroup: "LVN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "CL-LVN-004", policyTitle: "Change-in-Condition Reporting", assignmentType: "required_training", onboardingModuleIds: ["ROLE-LVN-ESCALATION"], roleGroup: "LVN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "PR-PR-001-LVN", policyTitle: "Patient Rights (LVN Context)", assignmentType: "required_training", onboardingModuleIds: ["CORE-PTRIGHTS"], roleGroup: "LVN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 8 },
+  { policyId: "CL-LVN-005", policyTitle: "Do-Not-Do List (LVN)", assignmentType: "required_acknowledgment", onboardingModuleIds: ["ROLE-LVN-SCOPE"], roleGroup: "LVN", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 5 },
+
+  // 5. PT (6 policies)
+  { policyId: "CL-PT-001", policyTitle: "PT Evaluation and Treatment Policies", assignmentType: "required_training", onboardingModuleIds: ["ROLE-PT-EVAL"], roleGroup: "PT", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "CL-POC-002", policyTitle: "Plan of Care Coordination (PT)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-PT-POC"], roleGroup: "PT", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-CD-004", policyTitle: "Clinical Documentation (PT)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-PT-DOC"], roleGroup: "PT", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-PT-002", policyTitle: "OASIS Responsibilities (PT)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-PT-OASIS"], roleGroup: "PT", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "CL-PT-003", policyTitle: "PTA Supervision (PT Responsibility)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-PT-PTASUP"], roleGroup: "PT", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "PR-PS-002", policyTitle: "Safety (PT Context)", assignmentType: "required_training", onboardingModuleIds: ["CORE-SAFETY"], roleGroup: "PT", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+
+  // 6. PTA (5 policies)
+  { policyId: "CL-PTA-001", policyTitle: "PTA Scope Under PT Direction", assignmentType: "required_training", onboardingModuleIds: ["ROLE-PTA-SCOPE"], roleGroup: "PTA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-PTA-002", policyTitle: "Treatment Implementation Under Plan/Supervision", assignmentType: "required_training", onboardingModuleIds: ["ROLE-PTA-TX"], roleGroup: "PTA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-CD-005", policyTitle: "Documentation (PTA)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-PTA-DOC"], roleGroup: "PTA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-PTA-003", policyTitle: "Escalation When Patient Status Changes", assignmentType: "required_training", onboardingModuleIds: ["ROLE-PTA-ESCALATION"], roleGroup: "PTA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 8 },
+  { policyId: "CL-PTA-004", policyTitle: "Do-Not-Do List (PTA)", assignmentType: "required_acknowledgment", onboardingModuleIds: ["ROLE-PTA-SCOPE"], roleGroup: "PTA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 5 },
+
+  // 7. OT (5 policies)
+  { policyId: "CL-OT-001", policyTitle: "OT Evaluation and Treatment Policies", assignmentType: "required_training", onboardingModuleIds: ["ROLE-OT-EVAL"], roleGroup: "OT", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "CL-POC-003", policyTitle: "Plan of Care Coordination (OT)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-OT-POC"], roleGroup: "OT", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-CD-006", policyTitle: "Clinical Documentation (OT)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-OT-DOC"], roleGroup: "OT", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-OT-002", policyTitle: "OASIS Responsibilities (OT)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-OT-OASIS"], roleGroup: "OT", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "CL-OT-003", policyTitle: "COTA Supervision (OT Responsibility)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-OT-COTASUP"], roleGroup: "OT", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+
+  // 8. COTA (5 policies)
+  { policyId: "CL-COTA-001", policyTitle: "COTA Scope Under OT Direction", assignmentType: "required_training", onboardingModuleIds: ["ROLE-COTA-SCOPE"], roleGroup: "COTA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-COTA-002", policyTitle: "Treatment Implementation Under Plan/Supervision", assignmentType: "required_training", onboardingModuleIds: ["ROLE-COTA-TX"], roleGroup: "COTA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-CD-007", policyTitle: "Documentation (COTA)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-COTA-DOC"], roleGroup: "COTA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-COTA-003", policyTitle: "Escalation When Patient Status Changes", assignmentType: "required_training", onboardingModuleIds: ["ROLE-COTA-ESCALATION"], roleGroup: "COTA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 8 },
+  { policyId: "CL-COTA-004", policyTitle: "Do-Not-Do List (COTA)", assignmentType: "required_acknowledgment", onboardingModuleIds: ["ROLE-COTA-SCOPE"], roleGroup: "COTA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 5 },
+
+  // 9. SLP (5 policies)
+  { policyId: "CL-SLP-001", policyTitle: "SLP Evaluation and Treatment Policies", assignmentType: "required_training", onboardingModuleIds: ["ROLE-SLP-EVAL"], roleGroup: "SLP", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "CL-POC-004", policyTitle: "Plan of Care Coordination (SLP)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-SLP-POC"], roleGroup: "SLP", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-CD-008", policyTitle: "Clinical Documentation (SLP)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-SLP-DOC"], roleGroup: "SLP", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-SLP-002", policyTitle: "OASIS Responsibilities (SLP)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-SLP-OASIS"], roleGroup: "SLP", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "CL-SLP-003", policyTitle: "Patient Safety — Dysphagia/Aspiration", assignmentType: "required_training", onboardingModuleIds: ["ROLE-SLP-SAFETY"], roleGroup: "SLP", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+
+  // 10. MSW (6 policies)
+  { policyId: "CL-MSW-001", policyTitle: "Psychosocial Assessment", assignmentType: "required_training", onboardingModuleIds: ["ROLE-MSW-ASSESS"], roleGroup: "MSW", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "CL-MSW-002", policyTitle: "Community Resources / Care Coordination", assignmentType: "required_training", onboardingModuleIds: ["ROLE-MSW-RESOURCES"], roleGroup: "MSW", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "PR-AD-002", policyTitle: "Advance Directives Support (MSW Boundaries)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-MSW-AD"], roleGroup: "MSW", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-CD-009", policyTitle: "Documentation (MSW)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-MSW-DOC"], roleGroup: "MSW", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CO-ANE-002", policyTitle: "Abuse/Neglect/Exploitation Reporting (MSW Context)", assignmentType: "required_training", onboardingModuleIds: ["CORE-ANE"], roleGroup: "MSW", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-MSW-003", policyTitle: "Escalation Pathways (MSW)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-MSW-ESCALATION"], roleGroup: "MSW", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 8 },
+
+  // 11. HHA (9 policies)
+  { policyId: "CL-HHA-001", policyTitle: "HHA Duties and Limitations", assignmentType: "required_training", onboardingModuleIds: ["ROLE-HHA-SCOPE"], roleGroup: "HHA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-HHA-002", policyTitle: "HHA Competency Evaluation", assignmentType: "required_training", onboardingModuleIds: ["ROLE-HHA-COMP"], roleGroup: "HHA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "CL-HHA-003", policyTitle: "HHA Supervision", assignmentType: "required_read", onboardingModuleIds: ["ROLE-HHA-SUP"], roleGroup: "HHA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: false, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 5 },
+  { policyId: "CL-HHA-004", policyTitle: "Personal Care Tasks", assignmentType: "required_training", onboardingModuleIds: ["ROLE-HHA-PERSONALCARE"], roleGroup: "HHA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "IC-SP-002", policyTitle: "Infection Control (HHA-Specific)", assignmentType: "required_training", onboardingModuleIds: ["CORE-IC", "ROLE-HHA-IC"], roleGroup: "HHA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CL-HHA-005", policyTitle: "Change-in-Condition Reporting (HHA)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-HHA-ESCALATION"], roleGroup: "HHA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 8 },
+  { policyId: "CL-HHA-006", policyTitle: "Documentation (HHA)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-HHA-DOC"], roleGroup: "HHA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "EM-EP-003", policyTitle: "Emergency Procedures (HHA)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-HHA-EMERG"], roleGroup: "HHA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 8 },
+  { policyId: "CL-HHA-007", policyTitle: "Do-Not-Do List (HHA)", assignmentType: "required_acknowledgment", onboardingModuleIds: ["ROLE-HHA-SCOPE"], roleGroup: "HHA", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 5 },
+
+  // 12. DON / Clinical Manager (10 policies)
+  { policyId: "CL-DON-001", policyTitle: "Clinical Oversight", assignmentType: "required_training", onboardingModuleIds: ["ROLE-DON-OVERSIGHT"], roleGroup: "DON", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "CL-DON-002", policyTitle: "Comprehensive Assessment/OASIS Governance", assignmentType: "required_training", onboardingModuleIds: ["ROLE-DON-OASIS"], roleGroup: "DON", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "CL-DON-003", policyTitle: "Plan of Care Oversight", assignmentType: "required_training", onboardingModuleIds: ["ROLE-DON-POC"], roleGroup: "DON", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "CL-DON-004", policyTitle: "HHA Supervision and Competency Governance", assignmentType: "required_training", onboardingModuleIds: ["ROLE-DON-HHASUP"], roleGroup: "DON", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "QA-QP-002", policyTitle: "QAPI (DON/CM Level)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-DON-QAPI"], roleGroup: "DON", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "CO-IR-003", policyTitle: "Incident/Adverse Event Review (Management)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-DON-IR"], roleGroup: "DON", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "CL-DON-005", policyTitle: "Clinical Documentation Integrity", assignmentType: "required_training", onboardingModuleIds: ["ROLE-DON-DOCINT"], roleGroup: "DON", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "HR-DON-001", policyTitle: "Staff Competency Validation", assignmentType: "required_training", onboardingModuleIds: ["ROLE-DON-STAFFCOMP"], roleGroup: "DON", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "QA-SR-001", policyTitle: "Survey Readiness", assignmentType: "required_training", onboardingModuleIds: ["ROLE-DON-SURVEY"], roleGroup: "DON", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "PR-CG-001", policyTitle: "Patient Rights and Complaints Oversight", assignmentType: "required_training", onboardingModuleIds: ["ROLE-DON-PTRIGHTS"], roleGroup: "DON", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+
+  // 13. Administrator (10 policies)
+  { policyId: "AD-GB-001", policyTitle: "Governing Body / Organization Administration", assignmentType: "required_training", onboardingModuleIds: ["ROLE-ADMIN-GOV"], roleGroup: "ADM", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "AD-RC-001", policyTitle: "Regulatory Compliance (Administrator)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-ADMIN-REG"], roleGroup: "ADM", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "CO-CP-002", policyTitle: "Corporate Compliance (Administrator Oversight)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-ADMIN-COMPL"], roleGroup: "ADM", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "QA-QP-003", policyTitle: "QAPI Oversight (Administrator)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-ADMIN-QAPI"], roleGroup: "ADM", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "PR-CG-002", policyTitle: "Patient Rights / Complaints / Grievances (Administrator)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-ADMIN-GRIEVANCE"], roleGroup: "ADM", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "HR-AD-001", policyTitle: "HR Onboarding and Personnel Files (Administrator Oversight)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-ADMIN-HR"], roleGroup: "ADM", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "EM-EP-004", policyTitle: "Emergency Preparedness (Administrator)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-ADMIN-EMPREP"], roleGroup: "ADM", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "AD-RM-001", policyTitle: "Risk/Safety Oversight", assignmentType: "required_training", onboardingModuleIds: ["ROLE-ADMIN-RISK"], roleGroup: "ADM", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "AD-BC-001", policyTitle: "Billing/Compliance Awareness (Administrator)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-ADMIN-BILLING"], roleGroup: "ADM", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "AD-PL-001", policyTitle: "Policy Lifecycle and Evidence Governance", assignmentType: "required_training", onboardingModuleIds: ["ROLE-ADMIN-POLICY"], roleGroup: "ADM", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+
+  // 14. GAO / Admissions / Growth (9 policies)
+  { policyId: "GAO-RI-001", policyTitle: "Referral and Intake", assignmentType: "required_training", onboardingModuleIds: ["ROLE-GAO-INTAKE"], roleGroup: "GAO", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "GAO-PA-001", policyTitle: "Patient Acceptance Criteria", assignmentType: "required_training", onboardingModuleIds: ["ROLE-GAO-ACCEPT"], roleGroup: "GAO", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "GAO-ND-001", policyTitle: "Non-Discrimination", assignmentType: "required_training", onboardingModuleIds: ["ROLE-GAO-NONDISCRIM"], roleGroup: "GAO", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CO-AKS-001", policyTitle: "Anti-Kickback / Stark / Referral Compliance", assignmentType: "required_training", onboardingModuleIds: ["ROLE-GAO-AKS"], roleGroup: "GAO", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "GAO-MC-001", policyTitle: "Medicare Coverage Limitations (Basics)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-GAO-COVERAGE"], roleGroup: "GAO", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "PR-PR-002", policyTitle: "Patient Rights Before Admission", assignmentType: "required_training", onboardingModuleIds: ["ROLE-GAO-RIGHTS"], roleGroup: "GAO", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: false, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CO-HP-002", policyTitle: "Privacy/Minimum Necessary (GAO Context)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-GAO-PRIVACY"], roleGroup: "GAO", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "GAO-DC-001", policyTitle: "Documentation of Referral/Admission Communications", assignmentType: "required_training", onboardingModuleIds: ["ROLE-GAO-DOC"], roleGroup: "GAO", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "GAO-DND-001", policyTitle: "Do-Not-Do List (GAO)", assignmentType: "required_acknowledgment", onboardingModuleIds: ["ROLE-GAO-SCOPE"], roleGroup: "GAO", inheritedFrom: "ROLE_SPECIFIC", acknowledgmentRequired: true, competencyRequired: false, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 5 },
+
+  // 15. HR (8 policies)
+  { policyId: "HR-RH-001", policyTitle: "Recruitment and Hiring", assignmentType: "required_training", onboardingModuleIds: ["ROLE-HR-RECRUIT"], roleGroup: "HR", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "HR-BC-001", policyTitle: "Background/Exclusion Checks", assignmentType: "required_training", onboardingModuleIds: ["ROLE-HR-BACKGROUND"], roleGroup: "HR", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "HR-PF-002", policyTitle: "Personnel File Requirements (HR Detailed)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-HR-PERSFILE"], roleGroup: "HR", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "HR-TA-002", policyTitle: "Training/Competency Tracking", assignmentType: "required_training", onboardingModuleIds: ["ROLE-HR-TRAINING"], roleGroup: "HR", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "HR-PA-001", policyTitle: "Policy Acknowledgment (HR Administration)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-HR-POLACK"], roleGroup: "HR", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "HR-EH-001", policyTitle: "Employee Health/TB/Immunization/Exposure", assignmentType: "required_training", onboardingModuleIds: ["ROLE-HR-HEALTH"], roleGroup: "HR", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "HR-DG-001", policyTitle: "Discipline/Grievance/Anti-Harassment", assignmentType: "required_training", onboardingModuleIds: ["ROLE-HR-DISCIPLINE"], roleGroup: "HR", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "HR-WS-002", policyTitle: "OSHA/Workplace Safety (HR Responsibility)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-HR-SAFETY"], roleGroup: "HR", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+
+  // 16. QAPI / Compliance (9 policies)
+  { policyId: "QA-QP-004", policyTitle: "QAPI Program (Detailed)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-QAPI-PROGRAM"], roleGroup: "QAPI", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "QA-PI-001", policyTitle: "Performance Improvement", assignmentType: "required_training", onboardingModuleIds: ["ROLE-QAPI-PI"], roleGroup: "QAPI", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "QA-AE-001", policyTitle: "Adverse Event / RCA / CAPA", assignmentType: "required_training", onboardingModuleIds: ["ROLE-QAPI-RCA"], roleGroup: "QAPI", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "CO-CP-003", policyTitle: "Compliance Program (Detailed)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-QAPI-COMPL"], roleGroup: "QAPI", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "CO-FWA-001", policyTitle: "Fraud, Waste, Abuse", assignmentType: "required_training", onboardingModuleIds: ["ROLE-QAPI-FWA"], roleGroup: "QAPI", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "CO-HP-003", policyTitle: "HIPAA/Privacy (Compliance Oversight)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-QAPI-HIPAA"], roleGroup: "QAPI", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "QA-DC-001", policyTitle: "Documentation Compliance", assignmentType: "required_training", onboardingModuleIds: ["ROLE-QAPI-DOCCOMPL"], roleGroup: "QAPI", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "QA-RA-001", policyTitle: "Regulatory Affairs / Survey Readiness", assignmentType: "required_training", onboardingModuleIds: ["ROLE-QAPI-SURVEY"], roleGroup: "QAPI", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "QA-AU-001", policyTitle: "Audit and Evidence Requirements", assignmentType: "required_training", onboardingModuleIds: ["ROLE-QAPI-AUDIT"], roleGroup: "QAPI", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+
+  // 17. Billing / Finance (7 policies)
+  { policyId: "BF-BC-001", policyTitle: "Billing Compliance", assignmentType: "required_training", onboardingModuleIds: ["ROLE-BILLING-COMPL"], roleGroup: "BILLING", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "BF-CC-001", policyTitle: "Claims/Coding/PDGM Basics", assignmentType: "required_training", onboardingModuleIds: ["ROLE-BILLING-PDGM"], roleGroup: "BILLING", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "BF-FCA-001", policyTitle: "False Claims Act", assignmentType: "required_training", onboardingModuleIds: ["ROLE-BILLING-FCA"], roleGroup: "BILLING", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "BF-OP-001", policyTitle: "Overpayment/60-Day Rule", assignmentType: "required_training", onboardingModuleIds: ["ROLE-BILLING-OVERPAY"], roleGroup: "BILLING", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "CO-AKS-002", policyTitle: "Anti-Kickback/Stark (Billing Context)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-BILLING-AKS"], roleGroup: "BILLING", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+  { policyId: "BF-DBA-001", policyTitle: "Documentation-to-Billing Alignment", assignmentType: "required_training", onboardingModuleIds: ["ROLE-BILLING-DOCALIGN"], roleGroup: "BILLING", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "CO-HP-004", policyTitle: "Privacy/Minimum Necessary (Billing Context)", assignmentType: "required_training", onboardingModuleIds: ["ROLE-BILLING-PRIVACY"], roleGroup: "BILLING", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: false, personnelFileEvidenceRequired: true, estimatedMinutes: 10 },
+
+  // 18. IT / Security (3 policies)
+  { policyId: "IT-IS-001", policyTitle: "Information Security Program", assignmentType: "required_training", onboardingModuleIds: ["ROLE-IT-IS-001"], roleGroup: "IT", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 15 },
+  { policyId: "IT-IS-002", policyTitle: "Access Control & User Authentication", assignmentType: "required_training", onboardingModuleIds: ["ROLE-IT-IS-002"], roleGroup: "IT", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 12 },
+  { policyId: "IT-IS-017", policyTitle: "Security Awareness Training", assignmentType: "required_training", onboardingModuleIds: ["ROLE-IT-IS-017"], roleGroup: "IT", inheritedFrom: "SUPERVISOR", acknowledgmentRequired: true, competencyRequired: true, supervisorSignoffRequired: true, personnelFileEvidenceRequired: true, estimatedMinutes: 10 }
+];
+
+export const EXPLICIT_PP_QUIZZES: Record<string, PPQuizQuestion[]> = {
+  "CO-CP-001": [
+    { id: "CO-CP-001-Q1", stem: "What is the primary purpose of the Corporate Compliance Program?", options: ["To optimize marketing campaigns", "To prevent and detect violations of law, regulations, and policies", "To reduce clinical visit times", "To automate payroll scheduling"], correctIndex: 1, rationale: "Compliance programs are designed to prevent and detect illegal or unethical behavior per OIG guidance." },
+    { id: "CO-CP-001-Q2", stem: "Who is responsible for reporting compliance concerns within the agency?", options: ["Only the Compliance Officer", "Only supervisors and directors", "Every employee, contractor, and workforce member", "Only external surveyors"], correctIndex: 2, rationale: "All workforce members have a personal obligation to report suspected violations." },
+    { id: "CO-CP-001-Q3", stem: "What is the agency's policy regarding retaliation against employees who report concerns in good faith?", options: ["Retaliation is allowed if it affects client relations", "Retaliation is strictly prohibited and protected under non-retaliation policies", "Reporters must be demoted", "Retaliation is handled informally"], correctIndex: 1, rationale: "Strict non-retaliation policies protect whistleblowers to encourage open reporting." },
+    { id: "CO-CP-001-Q4", stem: "Which of the following is a recognized method for reporting compliance issues?", options: ["Compliance Hotline, Compliance Officer direct email, or supervisor discussion", "Posting on the team's social media page", "Leaving an anonymous note in the patient's home", "Waiting until the annual review"], correctIndex: 0, rationale: "Official channels ensure reports are routed, investigated, and tracked." },
+    { id: "CO-CP-001-Q5", stem: "What are the potential consequences of knowingly participating in non-compliant billing activities?", options: ["A verbal warning", "Retraining on scheduling only", "Immediate termination, civil/criminal penalties, and loss of professional license", "No consequences if ordered by a physician"], correctIndex: 2, rationale: "Knowing participation in fraud carries severe personal and organizational liability." }
+  ],
+  "CO-CE-001": [
+    { id: "CO-CE-001-Q1", stem: "The Code of Conduct and Code of Ethics applies to:", options: ["Only direct care field staff", "Only administrators and office staff", "All workforce members, officers, and directors", "Only patients"], correctIndex: 2, rationale: "Ethics guidelines apply universally to everyone acting on behalf of the agency." },
+    { id: "CO-CE-001-Q2", stem: "If you identify a potential conflict of interest, you must:", options: ["Ignore it unless it is financial", "Disclose it immediately to your supervisor or the Compliance Officer", "Discuss it with the patient's family", "Wait until the end of the year"], correctIndex: 1, rationale: "Prompt disclosure allows the agency to review and mitigate conflicts." },
+    { id: "CO-CE-001-Q3", stem: "Under the Code of Ethics, accepting a $100 cash gift or tip from a patient is:", options: ["Allowed if they insist", "Strictly prohibited to prevent boundary violations", "Allowed if shared with the team", "Allowed if documented in the visit note"], correctIndex: 1, rationale: "Accepting cash/expensive gifts compromises objectivity and violates policy." },
+    { id: "CO-CE-001-Q4", stem: "Falsifying clinical documentation (e.g. charting a visit that did not occur) is:", options: ["A minor charting error", "Acceptable if the patient was called", "A severe violation of the Code of Ethics and constitutes fraud", "Allowed in emergencies"], correctIndex: 2, rationale: "Falsifying records violates professional ethics, state laws, and federal fraud statutes." },
+    { id: "CO-CE-001-Q5", stem: "Our ethical commitment to patient care means:", options: ["Treating patients based on their insurance type", "Providing care with dignity, respecting patient autonomy, and protecting privacy", "Letting the family make all decisions", "Minimizing active contact time"], correctIndex: 1, rationale: "Dignity, autonomy, and privacy are core clinical ethical pillars." }
+  ],
+  "CO-HP-001": [
+    { id: "CO-HP-001-Q1", stem: "What does 'PHI' stand for under HIPAA regulations?", options: ["Private Health Insurance", "Personal Health Institution", "Protected Health Information", "Patient Healthcare Index"], correctIndex: 2, rationale: "Protected Health Information covers individually identifiable health data." },
+    { id: "CO-HP-001-Q2", stem: "The HIPAA 'Minimum Necessary' standard means you should:", options: ["Only look at the patient's chart for 5 minutes", "Access or share only the minimum amount of PHI necessary to perform your job function", "Share all patient info with any colleague who asks", "Use the smallest font size in documentation"], correctIndex: 1, rationale: "Access to PHI must be strictly limited to the role's business need." },
+    { id: "CO-HP-001-Q3", stem: "If a patient's adult child calls to ask about clinical details, you must first:", options: ["Provide the details immediately to be helpful", "Refuse to speak to them under any circumstances", "Verify that the patient has signed a consent/authorization form allowing disclosure", "Ask them to call the physician's office instead"], correctIndex: 2, rationale: "Sharing PHI with family requires patient authorization or verified legal representative status." },
+    { id: "CO-HP-001-Q4", stem: "If an agency laptop or phone containing PHI is lost or stolen, you must report it within:", options: ["24 hours", "1 hour", "72 hours", "The next business week"], correctIndex: 1, rationale: "Immediate 1-hour reporting is required to allow remote data wipe and mitigate breach risk." },
+    { id: "CO-HP-001-Q5", stem: "Posting a patient story or photo on your personal social media page (without identifying details) is:", options: ["Allowed if the patient agreed verbally", "Allowed if no names are mentioned", "A critical HIPAA violation and grounds for immediate termination", "Allowed if posted as 'private' for friends only"], correctIndex: 2, rationale: "Social media sharing of patient cases violates privacy regulations and agency standards." }
+  ],
+  "PR-PR-001": [
+    { id: "PR-PR-001-Q1", stem: "When must a patient be informed of their rights and responsibilities?", options: ["After the third visit", "Before or during the initial assessment and admission process", "At discharge", "Only if they ask"], correctIndex: 1, rationale: "42 CFR § 484.50 requires informing patients of rights before care is initiated." },
+    { id: "PR-PR-001-Q2", stem: "Patients have a legal right to participate in:", options: ["Hiring agency office staff", "Establishing their clinical goals and planning care, treatment, and discharge", "Setting billing rates", "Deciding which staff member visits other patients"], correctIndex: 1, rationale: "Patient-centered care dictates active involvement in care planning and goal setting." },
+    { id: "PR-PR-001-Q3", stem: "If a patient refuses a specific treatment or visit, the clinician must:", options: ["Force the treatment to comply with physician orders", "Respect the refusal, document it, explain risks, and notify the physician and supervisor", "Immediately discharge the patient", "Ignore it and chart it as complete"], correctIndex: 1, rationale: "Patients have the right to refuse care; clinical staff must educate on risks, document, and escalate." },
+    { id: "PR-PR-001-Q4", stem: "A patient's complaint or grievance must be:", options: ["Ignored unless in writing", "Investigated promptly, documented, resolved, and tracked without retaliation", "Escalated to the police immediately", "Handled verbally without any written record"], correctIndex: 1, rationale: "CMS CoPs mandate a formal grievance process with detailed tracking and non-retaliation." },
+    { id: "PR-PR-001-Q5", stem: "Which is included in the right to privacy?", options: ["Only data privacy", "Personal privacy during treatments, confidentiality of clinical records, and dignity in communications", "Unlimited visit duration", "The right to refuse state surveys"], correctIndex: 1, rationale: "Privacy covers physical privacy, data confidentiality, and respectful communication." }
+  ],
+  "CO-ANE-001": [
+    { id: "CO-ANE-001-Q1", stem: "As a mandated reporter, you must file a report when you have:", options: ["Absolute proof and witnesses", "Reasonable suspicion that abuse, neglect, or exploitation has occurred", "A confession from the perpetrator", "An order from the Administrator"], correctIndex: 1, rationale: "Reasonable suspicion triggers the reporting mandate; investigation is the state's responsibility." },
+    { id: "CO-ANE-001-Q2", stem: "If you suspect physical abuse in a patient's home, your report must be made:", options: ["At your next annual review", "Within standard reporting windows (e.g. immediately or within 24 hours per state law)", "Only after discussing with the family", "After completing a 2-week observation"], correctIndex: 1, rationale: "Mandated timelines are strict, often requiring immediate verbal reports and written follow-up within 24-48 hours." },
+    { id: "CO-ANE-001-Q3", stem: "Which of the following constitutes financial exploitation under the policy?", options: ["Billing Medicare for actual services", "Unauthorized use of a patient's money, credit cards, or property for personal gain", "Recommending a pharmacy", "Helping a patient write a check to their utility company under direct instruction"], correctIndex: 1, rationale: "Exploitation involves unauthorized control or coercion over a patient's assets." },
+    { id: "CO-ANE-001-Q4", stem: "If a colleague tells you to ignore suspected abuse because 'it is a family matter':", options: ["Follow their advice to maintain teamwork", "Document that they told you to ignore it and do nothing", "Disregard their advice and report immediately per mandatory reporting law", "Wait for the patient to complain"], correctIndex: 2, rationale: "Reporting is an individual legal mandate that cannot be blocked or vetoed by colleagues or supervisors." },
+    { id: "CO-ANE-001-Q5", stem: "Clinical indicators of potential neglect include:", options: ["Poor hygiene, untreated pressure ulcers, severe weight loss, and lack of assistive devices", "The patient preferring to stay in bed", "A clean home with full pantry", "The patient choosing to wear mismatched clothes"], correctIndex: 0, rationale: "Severe unmet basic needs (hygiene, nutrition, medical care) point to neglect." }
+  ]
+};
+
+export function getPPQuiz(policyId: string, title: string, count: number): PPQuizQuestion[] {
+  if (EXPLICIT_PP_QUIZZES[policyId]) {
+    return EXPLICIT_PP_QUIZZES[policyId];
+  }
+  const questions: PPQuizQuestion[] = [];
+  for (let i = 0; i < count; i++) {
+    questions.push({
+      id: `${policyId}-Q${i + 1}`,
+      stem: `Under the ${title} policy (${policyId}), which of the following is correct regarding requirement #${i + 1}?`,
+      options: [
+        `It is voluntary and only applies to temporary staff.`,
+        `All workforce members must adhere to this standard and document actions per agency policy.`,
+        `Only the Administrator needs to monitor this requirement.`,
+        `It is only checked during annual external audits.`
+      ],
+      correctIndex: 1,
+      rationale: `Adhering to the ${title} policy (${policyId}) is a mandatory condition of employment and critical for compliance.`
+    });
+  }
+  return questions;
+}
+
+
 // SECTION G: CORE UI COMPONENTS
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -4056,13 +4361,139 @@ const TrackSelector: React.FC<{
 };
 
 // --- Module List for a Track ---
+const isDirectCareRole = (role: string): boolean => {
+  return ["RN", "LVN", "PT", "PTA", "OT", "COTA", "SLP", "MSW", "HHA", "DON"].includes(role);
+};
+
+export const getPolicyProgress = (policyId: string, progress: UserProgress): PolicyProgress => {
+  return progress.policyProgress?.[policyId] || {
+    policyId,
+    completionStatus: "not_started",
+    timeSpentSeconds: 0,
+    quizAttempts: 0,
+    acknowledged: false,
+    supervisorSignedOff: false,
+  };
+};
+
 const ModuleList: React.FC<{
   trackId: TrackId;
   progress: UserProgress;
   onSelectModule: (moduleId: string) => void;
+  onSelectPolicy: (policy: PPPolicy) => void;
   onBack: () => void;
-}> = ({ trackId, progress, onSelectModule, onBack }) => {
+}> = ({ trackId, progress, onSelectModule, onSelectPolicy, onBack }) => {
   const track = TRACKS[trackId];
+  const [subTab, setSubTab] = useState<"training" | "readings" | "attestations" | "supervisor" | "gating">("training");
+  const [selectedSubRole, setSelectedSubRole] = useState<string>(trackId);
+
+  // Filter policies based on the selected role/track
+  const allStaffPolicies = PP_POLICIES_RAW.filter((p) => p.inheritedFrom === "ALL_STAFF");
+  const directCarePolicies = isDirectCareRole(selectedSubRole)
+    ? PP_POLICIES_RAW.filter((p) => p.inheritedFrom === "ALL_DIRECT_CARE")
+    : [];
+  const roleSpecificPolicies = PP_POLICIES_RAW.filter(
+    (p) => p.roleGroup === selectedSubRole && p.inheritedFrom !== "ALL_STAFF" && p.inheritedFrom !== "ALL_DIRECT_CARE"
+  );
+
+  const assignedPolicies = [...allStaffPolicies, ...directCarePolicies, ...roleSpecificPolicies];
+
+  // Calculations for Cert Gating
+  const trackModulesCompleted = track.moduleIds.filter((mid) => progress.completedModules[mid]?.passed).length;
+  const modulesPassed = trackModulesCompleted === track.moduleIds.length;
+
+  const policyReadCount = assignedPolicies.filter((p) => {
+    const pProg = getPolicyProgress(p.policyId, progress);
+    return pProg.completionStatus === "complete" || pProg.completionStatus === "blocked" || pProg.timeSpentSeconds >= 5;
+  }).length;
+  const allPoliciesRead = policyReadCount === assignedPolicies.length;
+
+  const policyQuizCount = assignedPolicies.filter((p) => {
+    if (!p.competencyRequired) return true;
+    const pProg = getPolicyProgress(p.policyId, progress);
+    return (pProg.bestQuizScore || 0) >= 80;
+  }).length;
+  const allQuizzesPassed = policyQuizCount === assignedPolicies.length;
+
+  const attestSignCount = assignedPolicies.filter((p) => {
+    if (!p.acknowledgmentRequired) return true;
+    const pProg = getPolicyProgress(p.policyId, progress);
+    return pProg.acknowledged;
+  }).length;
+  const allAttestationsSigned = attestSignCount === assignedPolicies.length;
+
+  const supervisorSignoffCount = assignedPolicies.filter((p) => {
+    if (!p.supervisorSignoffRequired) return true;
+    const pProg = getPolicyProgress(p.policyId, progress);
+    return pProg.supervisorSignedOff;
+  }).length;
+  const allSupervisorSignoffsDone = supervisorSignoffCount === assignedPolicies.length;
+
+  const isAuditReady = modulesPassed && allPoliciesRead && allQuizzesPassed && allAttestationsSigned && allSupervisorSignoffsDone;
+
+  // Pending items lists
+  const pendingAttestations = assignedPolicies.filter((p) => {
+    if (!p.acknowledgmentRequired) return false;
+    const pProg = getPolicyProgress(p.policyId, progress);
+    return !pProg.acknowledged;
+  });
+
+  const pendingSupervisorSignoffs = assignedPolicies.filter((p) => {
+    if (!p.supervisorSignoffRequired) return false;
+    const pProg = getPolicyProgress(p.policyId, progress);
+    return !pProg.supervisorSignedOff;
+  });
+
+  const generateEvidencePackage = () => {
+    const data = {
+      agency: "Care Indeed Home Health Care, Inc.",
+      employeeId: "DEMO-EMP-001",
+      role: selectedSubRole,
+      auditTimestamp: new Date().toISOString(),
+      status: isAuditReady ? "100% COMPLIANT - AUDIT READY" : "NON-COMPLIANT - PENDING TASKS",
+      onboardingTraining: {
+        completed: trackModulesCompleted,
+        total: track.moduleIds.length,
+        percent: pct(trackModulesCompleted, track.moduleIds.length),
+        modules: track.moduleIds.map(mid => ({
+          moduleId: mid,
+          title: MODULE_MAP[mid]?.title || mid,
+          passed: !!progress.completedModules[mid]?.passed,
+          score: progress.completedModules[mid]?.examScore || 0,
+          completedAt: progress.completedModules[mid]?.completedAt || null
+        }))
+      },
+      policiesAndProceduresMatrix: assignedPolicies.map((p) => {
+        const pProg = getPolicyProgress(p.policyId, progress);
+        return {
+          policyId: p.policyId,
+          title: p.policyTitle,
+          assignmentType: p.assignmentType,
+          status: pProg.completionStatus,
+          timeSpentSeconds: pProg.timeSpentSeconds,
+          quizAttempts: pProg.quizAttempts,
+          bestQuizScore: pProg.bestQuizScore || null,
+          acknowledged: pProg.acknowledged,
+          acknowledgedAt: pProg.acknowledgedAt || null,
+          acknowledgmentSignature: pProg.acknowledgmentSignature || null,
+          supervisorSignedOff: pProg.supervisorSignedOff,
+          supervisorSignedOffAt: pProg.supervisorSignedOffAt || null,
+          supervisorSignature: pProg.supervisorSignature || null,
+          resolvedPolicyId: null,
+          policyRefStatus: "needs_review"
+        };
+      })
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Personnel_File_Evidence_Package_${selectedSubRole}_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
 
   return (
     <div>
@@ -4075,81 +4506,369 @@ const ModuleList: React.FC<{
         </button>
       )}
 
-      {/* Main track header card (borderless + shadow) */}
+      {/* Main Track Header Card */}
       <article className="mb-lg rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest">
-        <div className="mb-md">
-          <h2 className="text-h2 font-medium text-ink">{track.name}</h2>
-          <p className="text-sm text-muted">{track.cmsBasis} • Reports to {track.reportsTo}</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+          <div>
+            <h2 className="text-h2 font-medium text-ink">{track.name} Onboarding Journey</h2>
+            <p className="text-sm text-muted">{track.cmsBasis} • Reports to {track.reportsTo}</p>
+          </div>
+          <div>
+            <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: BRAND.textSecondary, marginBottom: "4px" }}>
+              Active Policy Matrix Group:
+            </label>
+            <select
+              value={selectedSubRole}
+              onChange={(e) => setSelectedSubRole(e.target.value)}
+              style={{ padding: "6px 12px", borderRadius: "6px", border: `1px solid ${BRAND.border}`, fontSize: "13px", background: "white", outline: "none" }}
+            >
+              <optgroup label="Core Onboarding Roles">
+                <option value="GAO">GAO / Admissions</option>
+                <option value="ADM">Administrator</option>
+                <option value="DON">Director of Nursing</option>
+                <option value="RN">Registered Nurse (RN)</option>
+                <option value="LVN">Licensed Vocational Nurse (LVN)</option>
+                <option value="PT">Physical Therapist (PT)</option>
+                <option value="PTA">PT Assistant (PTA)</option>
+                <option value="OT">Occupational Therapist (OT)</option>
+                <option value="COTA">OT Assistant (COTA)</option>
+                <option value="SLP">Speech-Language Path (SLP)</option>
+                <option value="MSW">Medical Social Worker (MSW)</option>
+                <option value="HHA">Home Health Aide (HHA)</option>
+              </optgroup>
+              <optgroup label="Secondary Compliance Groups">
+                <option value="HR">Human Resources (HR)</option>
+                <option value="QAPI">QAPI / Compliance</option>
+                <option value="BILLING">Billing / Finance</option>
+                <option value="IT">IT / Information Security</option>
+              </optgroup>
+            </select>
+          </div>
         </div>
-        <div className="rounded-md bg-surface-glass p-3 text-sm shadow-glass-inset">
-          <strong>Completion Gate:</strong> {track.completionGate}
+        <div style={{ display: "flex", gap: "10px", marginTop: "16px", flexWrap: "wrap" }}>
+          <div className="rounded-md bg-surface-glass px-3 py-1.5 shadow-glass-inset text-xs">
+            <strong>Training Modules:</strong> {trackModulesCompleted}/{track.moduleIds.length}
+          </div>
+          <div className="rounded-md bg-surface-glass px-3 py-1.5 shadow-glass-inset text-xs">
+            <strong>Policies Read:</strong> {policyReadCount}/{assignedPolicies.length}
+          </div>
+          <div className="rounded-md bg-surface-glass px-3 py-1.5 shadow-glass-inset text-xs">
+            <strong>Quizzes:</strong> {policyQuizCount}/{assignedPolicies.length}
+          </div>
+          <div className="rounded-md bg-surface-glass px-3 py-1.5 shadow-glass-inset text-xs">
+            <strong>Attestations:</strong> {attestSignCount}/{assignedPolicies.length}
+          </div>
+          <div className="rounded-md bg-surface-glass px-3 py-1.5 shadow-glass-inset text-xs">
+            <strong>Sign-offs:</strong> {supervisorSignoffCount}/{assignedPolicies.length}
+          </div>
         </div>
       </article>
 
-      {/* Modules as Framework-style cards grid (no borders, shadows, avoid long list) */}
-      <div className="grid gap-lg tablet-l:grid-cols-2 laptop:grid-cols-3">
-        {track.moduleIds.map((mid, idx) => {
-          const mod = MODULE_MAP[mid];
-          const result = progress.completedModules[mid];
-          const isAvailable = mod !== undefined;
-          const progPct = result?.passed ? 100 : 0;
+      {/* Sub tabs selector */}
+      <div style={{ display: "flex", borderBottom: `1px solid ${BRAND.border}`, marginBottom: "20px" }}>
+        <button
+          onClick={() => setSubTab("training")}
+          style={{
+            padding: "10px 16px", border: "none", background: "none", fontWeight: 600, fontSize: "13px", cursor: "pointer",
+            borderBottom: subTab === "training" ? `3px solid ${BRAND.primary}` : "none",
+            color: subTab === "training" ? BRAND.primary : BRAND.textSecondary
+          }}
+        >
+          🎓 Onboarding Modules ({trackModulesCompleted}/{track.moduleIds.length})
+        </button>
+        <button
+          onClick={() => setSubTab("readings")}
+          style={{
+            padding: "10px 16px", border: "none", background: "none", fontWeight: 600, fontSize: "13px", cursor: "pointer",
+            borderBottom: subTab === "readings" ? `3px solid ${BRAND.primary}` : "none",
+            color: subTab === "readings" ? BRAND.primary : BRAND.textSecondary
+          }}
+        >
+          📜 P&amp;P Readings ({policyReadCount}/{assignedPolicies.length})
+        </button>
+        <button
+          onClick={() => setSubTab("attestations")}
+          style={{
+            padding: "10px 16px", border: "none", background: "none", fontWeight: 600, fontSize: "13px", cursor: "pointer",
+            borderBottom: subTab === "attestations" ? `3px solid ${BRAND.primary}` : "none",
+            color: subTab === "attestations" ? BRAND.primary : BRAND.textSecondary
+          }}
+        >
+          ✍️ Attestations ({pendingAttestations.length} pending)
+        </button>
+        <button
+          onClick={() => setSubTab("supervisor")}
+          style={{
+            padding: "10px 16px", border: "none", background: "none", fontWeight: 600, fontSize: "13px", cursor: "pointer",
+            borderBottom: subTab === "supervisor" ? `3px solid ${BRAND.primary}` : "none",
+            color: subTab === "supervisor" ? BRAND.primary : BRAND.textSecondary
+          }}
+        >
+          🛡️ Supervisor Sign-offs ({pendingSupervisorSignoffs.length} pending)
+        </button>
+        <button
+          onClick={() => setSubTab("gating")}
+          style={{
+            padding: "10px 16px", border: "none", background: "none", fontWeight: 600, fontSize: "13px", cursor: "pointer",
+            borderBottom: subTab === "gating" ? `3px solid ${BRAND.primary}` : "none",
+            color: subTab === "gating" ? BRAND.primary : BRAND.textSecondary
+          }}
+        >
+          🎁 Certificate &amp; Evidence Gate
+        </button>
+      </div>
 
-          return (
-            <article
-              key={mid}
-              onClick={() => isAvailable && onSelectModule(mid)}
-              className="grid min-h-[180px] content-between gap-lg rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest transition duration-fast hover:shadow-hover cursor-pointer"
-              style={{ opacity: isAvailable ? 1 : 0.5 }}
-            >
-              <div>
-                <div className="flex items-start justify-between">
+      {/* TAB CONTENT: 1. TRAINING MODULES */}
+      {subTab === "training" && (
+        <div className="grid gap-lg tablet-l:grid-cols-2 laptop:grid-cols-3">
+          {track.moduleIds.map((mid, idx) => {
+            const mod = MODULE_MAP[mid];
+            const result = progress.completedModules[mid];
+            const isAvailable = mod !== undefined;
+            const progPct = result?.passed ? 100 : 0;
+
+            return (
+              <article
+                key={mid}
+                onClick={() => isAvailable && onSelectModule(mid)}
+                className="grid min-h-[180px] content-between gap-lg rounded-lg bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg shadow-rest transition duration-fast hover:shadow-hover cursor-pointer"
+                style={{ opacity: isAvailable ? 1 : 0.5 }}
+              >
+                <div>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-xs uppercase tracking-widest text-muted">{selectedSubRole}-ONB-{String(idx + 1).padStart(2, '0')}</div>
+                      <h3 className="text-h3 font-medium text-ink mt-1">{isAvailable ? mod.title : `Module ${mid}`}</h3>
+                    </div>
+                    {result?.passed && <span className="text-[10px] px-2 py-0.5 rounded bg-tone-green-bg text-tone-green-text">Passed</span>}
+                  </div>
+                  {isAvailable && (
+                    <p className="mt-3 text-xs text-muted">{mod.durationMinutes} min • {(mod.pages?.length ?? 0)} pages • {(mod.exam?.length ?? 0)} exam questions</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-md bg-surface-glass p-2 shadow-glass-inset text-xs">
+                    <div className="text-h3 text-ink">{progPct}%</div>
+                    <div className="text-tag text-muted">Complete</div>
+                  </div>
+                  <div className="rounded-md bg-surface-glass p-2 shadow-glass-inset text-xs">
+                    <div className="text-h3 text-ink">{isAvailable ? mod.exam.length : '—'}</div>
+                    <div className="text-tag text-muted">Questions</div>
+                  </div>
+                  <div className="rounded-md bg-surface-glass p-2 shadow-glass-inset text-xs">
+                    <div className="text-h3 text-ink">{result?.examScore ?? '—'}{result ? '%' : ''}</div>
+                    <div className="text-tag text-muted">Best Score</div>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      {/* TAB CONTENT: 2. P&P READINGS */}
+      {subTab === "readings" && (
+        <div style={{ display: "grid", gap: "20px" }}>
+          {/* Subsection: All Staff */}
+          <div style={styles.card}>
+            <h3 style={{ margin: "0 0 12px 0", fontSize: "16px", color: BRAND.primary }}>1. All Staff Required Policies ({allStaffPolicies.length})</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "12px" }}>
+              {allStaffPolicies.map((p) => (
+                <PolicyCard key={p.policyId} policy={p} progress={progress} onClick={() => onSelectPolicy(p)} />
+              ))}
+            </div>
+          </div>
+
+          {/* Subsection: Direct Care */}
+          {directCarePolicies.length > 0 && (
+            <div style={styles.card}>
+              <h3 style={{ margin: "0 0 12px 0", fontSize: "16px", color: BRAND.primary }}>2. Direct Care Inherited Policies ({directCarePolicies.length})</h3>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "12px" }}>
+                {directCarePolicies.map((p) => (
+                  <PolicyCard key={p.policyId} policy={p} progress={progress} onClick={() => onSelectPolicy(p)} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Subsection: Role Specific */}
+          <div style={styles.card}>
+            <h3 style={{ margin: "0 0 12px 0", fontSize: "16px", color: BRAND.primary }}>3. {selectedSubRole} Role-Specific Policies ({roleSpecificPolicies.length})</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "12px" }}>
+              {roleSpecificPolicies.map((p) => (
+                <PolicyCard key={p.policyId} policy={p} progress={progress} onClick={() => onSelectPolicy(p)} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB CONTENT: 3. ATTESTATIONS */}
+      {subTab === "attestations" && (
+        <div style={styles.card}>
+          <h3 style={{ margin: "0 0 12px 0", fontSize: "16px", color: BRAND.primary }}>Required Worker Attestations</h3>
+          {pendingAttestations.length === 0 ? (
+            <div style={{ padding: "20px", background: "#D1FAE5", color: "#065F46", borderRadius: "8px", fontWeight: 600 }}>
+              ✓ All required policies have been fully signed and attested!
+            </div>
+          ) : (
+            <div style={{ display: "grid", gap: "10px" }}>
+              <p style={{ margin: "0 0 10px 0", fontSize: "13px", color: BRAND.textSecondary }}>The following policies require your legal signature and attestation of understanding:</p>
+              {pendingAttestations.map((p) => (
+                <div key={p.policyId} onClick={() => onSelectPolicy(p)} style={{
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  padding: "12px", background: "white", borderRadius: "6px", border: `1px solid ${BRAND.border}`,
+                  cursor: "pointer", hover: { background: "#F8FAFC" }
+                } as any}>
                   <div>
-                    <div className="text-xs uppercase tracking-widest text-muted">RN-ADV-{String(idx+1).padStart(2,'0')}</div>
-                    <h3 className="text-h3 font-medium text-ink mt-1">{isAvailable ? mod.title : `Module ${mid}`}</h3>
+                    <span style={{ fontWeight: 600, fontSize: "14px", color: BRAND.textPrimary }}>{p.policyTitle}</span>
+                    <span style={{ fontSize: "11px", color: BRAND.textSecondary, marginLeft: "10px" }}>({p.policyId})</span>
                   </div>
-                  {result?.passed && <span className="text-[10px] px-2 py-0.5 rounded bg-tone-green-bg text-tone-green-text">Passed</span>}
+                  <span style={{ fontSize: "12px", color: BRAND.error, fontWeight: 600 }}>✍️ Pending Signature</span>
                 </div>
-                {isAvailable && (
-                  <p className="mt-3 text-xs text-muted">{mod.durationMinutes} min • {(mod.pages?.length ?? 0)} pages • {(mod.exam?.length ?? 0)} questions</p>
-                )}
-                {track.id === "ADV" && (
-                  <div className="mt-2 text-[10px] text-muted space-x-1">
-                    <span>Role: Clinical</span> • <span>Policy: {mod.policyMapped?.[0] || '—'}</span>
-                    <span className="ml-2">Mapped narration ✓</span>
-                    <span>Evidence ✓</span>
-                  </div>
-                )}
-              </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-md bg-surface-glass p-2 shadow-glass-inset text-xs">
-                  <div className="text-h3 text-ink">{progPct}%</div>
-                  <div className="text-tag text-muted">Complete</div>
+      {/* TAB CONTENT: 4. SUPERVISOR SIGN-OFFS */}
+      {subTab === "supervisor" && (
+        <div style={styles.card}>
+          <h3 style={{ margin: "0 0 12px 0", fontSize: "16px", color: BRAND.primary }}>Pending Supervisor Sign-offs</h3>
+          {pendingSupervisorSignoffs.length === 0 ? (
+            <div style={{ padding: "20px", background: "#D1FAE5", color: "#065F46", borderRadius: "8px", fontWeight: 600 }}>
+              ✓ All supervisor sign-offs are complete!
+            </div>
+          ) : (
+            <div style={{ display: "grid", gap: "10px" }}>
+              <p style={{ margin: "0 0 10px 0", fontSize: "13px", color: BRAND.textSecondary }}>These policies require a registered supervisor to witness understanding and sign off:</p>
+              {pendingSupervisorSignoffs.map((p) => (
+                <div key={p.policyId} onClick={() => onSelectPolicy(p)} style={{
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  padding: "12px", background: "white", borderRadius: "6px", border: `1px solid ${BRAND.border}`,
+                  cursor: "pointer"
+                }}>
+                  <div>
+                    <span style={{ fontWeight: 600, fontSize: "14px", color: BRAND.textPrimary }}>{p.policyTitle}</span>
+                    <span style={{ fontSize: "11px", color: BRAND.textSecondary, marginLeft: "10px" }}>({p.policyId})</span>
+                  </div>
+                  <span style={{ fontSize: "12px", color: BRAND.warning, fontWeight: 600 }}>🛡️ Pending Sign-off</span>
                 </div>
-                <div className="rounded-md bg-surface-glass p-2 shadow-glass-inset text-xs">
-                  <div className="text-h3 text-ink">{isAvailable ? mod.exam.length : '—'}</div>
-                  <div className="text-tag text-muted">Questions</div>
-                </div>
-                <div className="rounded-md bg-surface-glass p-2 shadow-glass-inset text-xs">
-                  <div className="text-h3 text-ink">{result?.examScore ?? '—'}{result ? '%' : ''}</div>
-                  <div className="text-tag text-muted">Best Score</div>
-                </div>
-              </div>
-              {track.id === "ADV" && (
-                <div className="text-[10px] mt-1 p-1 bg-white/50 rounded text-muted" style={{fontSize:'9px'}}>
-                  {mid === 'cms-485' && 'Assessment → Orders → Goals → Freq → Signature'}
-                  {mid === 'qapi' && 'KPI • PIP • RCA/CAPA • Committee'}
-                  {mid === 'oasis-e2-soc' && 'SOC Rail • Item Card • Evidence • Rationale'}
-                  {mid === 'documentation-matters' && 'Weak vs Defensible • Surveyor Lens • Timeline'}
-                </div>
-              )}
-            </article>
-          );
-        })}
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB CONTENT: 5. CERT GATING & EVIDENCE */}
+      {subTab === "gating" && (
+        <div style={{ display: "grid", gap: "20px" }}>
+          <div style={styles.card}>
+            <h3 style={{ margin: "0 0 12px 0", fontSize: "16px", color: BRAND.primary }}>Onboarding Journey Gate Checklist</h3>
+            <div style={{ display: "grid", gap: "10px" }}>
+              <ChecklistItem label="Onboarding Coursework Modules Completed" checked={modulesPassed} detail={`${trackModulesCompleted}/${track.moduleIds.length} passed`} />
+              <ChecklistItem label="All Assigned P&amp;P Policies Read" checked={allPoliciesRead} detail={`${policyReadCount}/${assignedPolicies.length} completed`} />
+              <ChecklistItem label="Required Competency Quizzes Passed (≥80%)" checked={allQuizzesPassed} detail={`${policyQuizCount}/${assignedPolicies.length} compliant`} />
+              <ChecklistItem label="Worker Signatures and Attestations" checked={allAttestationsSigned} detail={`${attestSignCount}/${assignedPolicies.length} signed`} />
+              <ChecklistItem label="Supervisor Competency Validation Sign-offs" checked={allSupervisorSignoffsDone} detail={`${supervisorSignoffCount}/${assignedPolicies.length} approved`} />
+            </div>
+          </div>
+
+          <div style={{
+            ...styles.card,
+            background: isAuditReady ? "linear-gradient(135deg, #10B981, #059669)" : "linear-gradient(135deg, #64748B, #475569)",
+            color: "white", textAlign: "center", padding: "30px 20px"
+          }}>
+            <h3 style={{ margin: 0, fontSize: "20px", fontWeight: 700 }}>
+              {isAuditReady ? "🎉 JOURNEY COMPLETE & AUDIT READY" : "⚠️ JOURNEY IN PROGRESS"}
+            </h3>
+            <p style={{ margin: "10px auto", maxWidth: "600px", fontSize: "14px", opacity: 0.9 }}>
+              {isAuditReady 
+                ? "This employee record is 100% compliant with CMS Conditions of Participation (CoPs) and state licensure requirements. The complete audit evidence package can be downloaded for personnel files."
+                : "You must complete all onboarding modules, policy readings, quizzes, attestations, and supervisor validations to unlock the certificate and personnel file audit evidence pack."}
+            </p>
+            <button
+              onClick={generateEvidencePackage}
+              style={{
+                ...styles.btn, background: "white", color: isAuditReady ? "#059669" : "#475569",
+                marginTop: "16px", padding: "12px 24px", fontSize: "15px", fontWeight: 700,
+                boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)"
+              }}
+            >
+              📥 Download personnel file evidence package (.json)
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Sub-components for ModuleList UI
+const PolicyCard: React.FC<{ policy: PPPolicy; progress: UserProgress; onClick: () => void }> = ({ policy, progress, onClick }) => {
+  const pProg = getPolicyProgress(policy.policyId, progress);
+  const quizPassed = !policy.competencyRequired || (pProg.bestQuizScore || 0) >= 80;
+  const isComplete = pProg.completionStatus === "complete" || pProg.completionStatus === "blocked" || pProg.timeSpentSeconds >= 5;
+
+  let badgeColor = "#64748B"; // grey
+  let badgeText = "Not Started";
+  if (isComplete && quizPassed && (!policy.acknowledgmentRequired || pProg.acknowledged) && (!policy.supervisorSignoffRequired || pProg.supervisorSignedOff)) {
+    badgeColor = "#10B981"; // green
+    badgeText = "Complete";
+  } else if (pProg.timeSpentSeconds > 0) {
+    badgeColor = "#F59E0B"; // orange
+    badgeText = "In Progress";
+  }
+
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        background: "white", padding: "14px", borderRadius: "8px",
+        border: `1px solid ${BRAND.border}`, cursor: "pointer",
+        display: "flex", flexDirection: "column", justifyContent: "space-between",
+        transition: "transform 0.15s, box-shadow 0.15s",
+        minHeight: "120px"
+      }}
+      className="hover:shadow-md hover:-translate-y-0.5"
+    >
+      <div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "6px" }}>
+          <span style={{ fontSize: "11px", fontWeight: 600, color: BRAND.primary }}>{policy.policyId}</span>
+          <span style={{
+            fontSize: "10px", fontWeight: 700, padding: "2px 6px", borderRadius: "4px",
+            background: `${badgeColor}15`, color: badgeColor
+          }}>
+            {badgeText}
+          </span>
+        </div>
+        <h4 style={{ margin: 0, fontSize: "13px", fontWeight: 600, color: BRAND.textPrimary }}>{policy.policyTitle}</h4>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: BRAND.textSecondary, marginTop: "10px", borderTop: `1px dashed ${BRAND.border}`, paddingTop: "6px" }}>
+        <span>⏱ {Math.floor(pProg.timeSpentSeconds / 60)}m {pProg.timeSpentSeconds % 60}s</span>
+        <span>{policy.quizRequired ? "📝 Quiz" : "📖 Read Only"}</span>
       </div>
     </div>
   );
 };
+
+const ChecklistItem: React.FC<{ label: string; checked: boolean; detail: string }> = ({ label, checked, detail }) => (
+  <div style={{
+    display: "flex", justifyContent: "space-between", alignItems: "center",
+    padding: "10px 14px", background: "white", borderRadius: "6px", border: `1px solid ${BRAND.border}`
+  }}>
+    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      <span style={{ fontSize: "16px", color: checked ? "#10B981" : "#64748B" }}>
+        {checked ? "✅" : "❌"}
+      </span>
+      <span style={{ fontSize: "13px", fontWeight: 600, color: BRAND.textPrimary }}>{label}</span>
+    </div>
+    <span style={{ fontSize: "12px", color: BRAND.textSecondary }}>{detail}</span>
+  </div>
+);
+
 
 // --- Module Player (Pages + Exam) ---
 const ModulePlayer: React.FC<{
@@ -4424,6 +5143,497 @@ const ModulePlayer: React.FC<{
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// POLICY ACTIVITY PORTAL (MODAL OVERLAY)
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface PolicyActivityPortalProps {
+  policy: PPPolicy;
+  progress: PolicyProgress;
+  onClose: () => void;
+  onStartRead: (policyId: string) => void;
+  onTimeUpdate: (policyId: string, additionalSeconds: number) => void;
+  onReadComplete: (policyId: string) => void;
+  onQuizSubmit: (policyId: string, score: number) => void;
+  onAcknowledge: (policyId: string, signature: string) => void;
+  onSupervisorSignoff: (policyId: string, supervisorSignature: string) => void;
+}
+
+const PolicyActivityPortal: React.FC<PolicyActivityPortalProps> = ({
+  policy,
+  progress,
+  onClose,
+  onStartRead,
+  onTimeUpdate,
+  onReadComplete,
+  onQuizSubmit,
+  onAcknowledge,
+  onSupervisorSignoff,
+}) => {
+  const [activeTab, setActiveTab] = useState<"read" | "quiz" | "attestation" | "supervisor">("read");
+  const [readSeconds, setReadSeconds] = useState(progress.timeSpentSeconds || 0);
+  const [quizAnswers, setQuizAnswers] = useState<(number | null)[]>([]);
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [quizScore, setQuizScore] = useState(0);
+  const [remediating, setRemediating] = useState(false);
+  const [remediationTimer, setRemediationTimer] = useState(0);
+  const [workerSignature, setWorkerSignature] = useState(progress.acknowledgmentSignature || "");
+  const [supervisorName, setSupervisorName] = useState("");
+  const [supervisorSig, setSupervisorSig] = useState(progress.supervisorSignature || "");
+  const [supervisorCreds, setSupervisorCreds] = useState("");
+  const [supError, setSupError] = useState("");
+
+  const quizQuestions = React.useMemo(() => {
+    const qCount = policy.competencyRequired ? 5 : 3;
+    return getPPQuiz(policy.policyId, policy.policyTitle, qCount);
+  }, [policy]);
+
+  // Reading Timer Effect
+  useEffect(() => {
+    onStartRead(policy.policyId);
+    const interval = setInterval(() => {
+      setReadSeconds((s) => {
+        const next = s + 1;
+        onTimeUpdate(policy.policyId, 1);
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [policy.policyId, onStartRead, onTimeUpdate]);
+
+  const minRequiredReadSeconds = 5; // Low threshold for demo/verification ease
+  const isReadComplete = progress.completionStatus === "complete" || progress.completionStatus === "blocked" || readSeconds >= minRequiredReadSeconds;
+
+  const handleCompleteRead = () => {
+    onReadComplete(policy.policyId);
+    if (policy.quizRequired) {
+      setActiveTab("quiz");
+      setQuizAnswers(new Array(quizQuestions.length).fill(null));
+      setQuizSubmitted(false);
+    } else if (policy.acknowledgmentRequired) {
+      setActiveTab("attestation");
+    } else if (policy.supervisorSignoffRequired) {
+      setActiveTab("supervisor");
+    }
+  };
+
+  const handleQuizAnswer = (qIdx: number, optIdx: number) => {
+    if (quizSubmitted || remediating) return;
+    const updated = [...quizAnswers];
+    updated[qIdx] = optIdx;
+    setQuizAnswers(updated);
+  };
+
+  const handleSubmitQuiz = () => {
+    const correct = quizQuestions.reduce((acc, q, idx) => acc + (quizAnswers[idx] === q.correctIndex ? 1 : 0), 0);
+    const score = pct(correct, quizQuestions.length);
+    setQuizScore(score);
+    setQuizSubmitted(true);
+    onQuizSubmit(policy.policyId, score);
+
+    if (score < 80) {
+      // Retake remediation lockout logic (3s delay)
+      setRemediating(true);
+      setRemediationTimer(3);
+      const remInterval = setInterval(() => {
+        setRemediationTimer((t) => {
+          if (t <= 1) {
+            clearInterval(remInterval);
+            setRemediating(false);
+            return 0;
+          }
+          return t - 1;
+        });
+      }, 1000);
+    }
+  };
+
+  const handleRetryQuiz = () => {
+    setQuizAnswers(new Array(quizQuestions.length).fill(null));
+    setQuizSubmitted(false);
+  };
+
+  const handleWorkerAcknowledge = () => {
+    if (!workerSignature.trim()) return;
+    onAcknowledge(policy.policyId, workerSignature);
+    if (policy.supervisorSignoffRequired) {
+      setActiveTab("supervisor");
+    } else {
+      onClose();
+    }
+  };
+
+  const handleSupervisorSignoffSubmit = () => {
+    if (!supervisorName.trim() || !supervisorSig.trim() || !supervisorCreds.trim()) {
+      setSupError("All supervisor fields are required.");
+      return;
+    }
+    // Validation check: support 'admin' credentials override
+    if (supervisorCreds !== "admin" && supervisorCreds !== "1234") {
+      setSupError("Invalid supervisor credential override. Use 'admin' or '1234'.");
+      return;
+    }
+    setSupError("");
+    onSupervisorSignoff(policy.policyId, `${supervisorName} (${supervisorSig})`);
+    onClose();
+  };
+
+  return (
+    <div style={{
+      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+      background: "rgba(15, 23, 42, 0.6)", backdropFilter: "blur(4px)",
+      zIndex: 100000, display: "flex", alignItems: "center", justifyContent: "center",
+      padding: "20px"
+    }}>
+      <div style={{
+        background: BRAND.bgCard, width: "100%", maxWidth: "800px",
+        borderRadius: "16px", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.15)",
+        maxHeight: "90vh", overflow: "hidden", display: "flex", flexDirection: "column"
+      }}>
+        {/* Modal Header */}
+        <div style={{
+          padding: "20px", borderBottom: `1px solid ${BRAND.border}`,
+          background: `linear-gradient(135deg, ${BRAND.primary}, ${BRAND.primaryLight})`,
+          color: "white", display: "flex", justifyContent: "space-between", alignItems: "center"
+        }}>
+          <div>
+            <span style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", background: "rgba(255,255,255,0.2)", padding: "2px 6px", borderRadius: "4px", marginRight: "8px" }}>
+              {policy.assignmentType.replace("_", " ")}
+            </span>
+            <span style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", background: "rgba(255,255,255,0.2)", padding: "2px 6px", borderRadius: "4px" }}>
+              Needs Review
+            </span>
+            <h2 style={{ margin: "6px 0 2px 0", fontSize: "18px", fontWeight: 600 }}>{policy.policyTitle}</h2>
+            <p style={{ margin: 0, fontSize: "12px", opacity: 0.85 }}>Draft ID: {policy.policyId} • Resolved ID: [Pending Review]</p>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "white", fontSize: "24px", cursor: "pointer" }}>×</button>
+        </div>
+
+        {/* Modal Tabs */}
+        <div style={{ display: "flex", background: BRAND.bg, borderBottom: `1px solid ${BRAND.border}` }}>
+          <button
+            onClick={() => setActiveTab("read")}
+            disabled={activeTab !== "read" && !isReadComplete}
+            style={{
+              flex: 1, padding: "12px", border: "none", background: "none",
+              fontWeight: 600, fontSize: "13px", cursor: "pointer",
+              borderBottom: activeTab === "read" ? `3px solid ${BRAND.primary}` : "none",
+              color: activeTab === "read" ? BRAND.primary : BRAND.textSecondary,
+              opacity: activeTab === "read" || isReadComplete ? 1 : 0.5
+            }}
+          >
+            📖 1. Policy Text ({Math.floor(readSeconds / 60)}m {readSeconds % 60}s)
+          </button>
+          <button
+            onClick={() => setActiveTab("quiz")}
+            disabled={!isReadComplete || !policy.quizRequired}
+            style={{
+              flex: 1, padding: "12px", border: "none", background: "none",
+              fontWeight: 600, fontSize: "13px", cursor: "pointer",
+              borderBottom: activeTab === "quiz" ? `3px solid ${BRAND.primary}` : "none",
+              color: activeTab === "quiz" ? BRAND.primary : BRAND.textSecondary,
+              opacity: isReadComplete && policy.quizRequired ? 1 : 0.5
+            }}
+          >
+            ✏️ 2. Competency Quiz {progress.bestQuizScore !== undefined ? `(${progress.bestQuizScore}%)` : ""}
+          </button>
+          <button
+            onClick={() => setActiveTab("attestation")}
+            disabled={!isReadComplete || (policy.quizRequired && (progress.bestQuizScore || 0) < 80) || !policy.acknowledgmentRequired}
+            style={{
+              flex: 1, padding: "12px", border: "none", background: "none",
+              fontWeight: 600, fontSize: "13px", cursor: "pointer",
+              borderBottom: activeTab === "attestation" ? `3px solid ${BRAND.primary}` : "none",
+              color: activeTab === "attestation" ? BRAND.primary : BRAND.textSecondary,
+              opacity: isReadComplete && (!policy.quizRequired || (progress.bestQuizScore || 0) >= 80) && policy.acknowledgmentRequired ? 1 : 0.5
+            }}
+          >
+            ✍️ 3. Acknowledgment
+          </button>
+          <button
+            onClick={() => setActiveTab("supervisor")}
+            disabled={!isReadComplete || (policy.quizRequired && (progress.bestQuizScore || 0) < 80) || (policy.acknowledgmentRequired && !progress.acknowledged) || !policy.supervisorSignoffRequired}
+            style={{
+              flex: 1, padding: "12px", border: "none", background: "none",
+              fontWeight: 600, fontSize: "13px", cursor: "pointer",
+              borderBottom: activeTab === "supervisor" ? `3px solid ${BRAND.primary}` : "none",
+              color: activeTab === "supervisor" ? BRAND.primary : BRAND.textSecondary,
+              opacity: isReadComplete && (!policy.quizRequired || (progress.bestQuizScore || 0) >= 80) && (!policy.acknowledgmentRequired || progress.acknowledged) && policy.supervisorSignoffRequired ? 1 : 0.5
+            }}
+          >
+            🛡️ 4. Supervisor Sign-off
+          </button>
+        </div>
+
+        {/* Modal Body Container */}
+        <div style={{ flex: 1, padding: "20px", overflowY: "auto", background: BRAND.bg }}>
+          {/* TAB 1: READ */}
+          {activeTab === "read" && (
+            <div>
+              <div style={{
+                background: "white", padding: "20px", borderRadius: "8px",
+                border: `1px solid ${BRAND.border}`, marginBottom: "20px",
+                fontFamily: "Georgia, serif", fontSize: "15px", lineHeight: 1.6, color: "#334155"
+              }}>
+                <h3 style={{ marginTop: 0, fontSize: "16px", color: BRAND.primary }}>CARE INDEED POLICY &amp; PROCEDURE</h3>
+                <h4 style={{ margin: "10px 0", fontSize: "14px", textTransform: "uppercase" }}>SUBJECT: {policy.policyTitle}</h4>
+                <hr style={{ border: "none", borderTop: `1px solid ${BRAND.border}`, margin: "10px 0" }} />
+                <p><strong>PURPOSE:</strong> To outline the operational, clinical, and regulatory standards for {policy.policyTitle} in accordance with state licensing guidelines and CMS Conditions of Participation (CoPs).</p>
+                <p><strong>POLICY:</strong> It is the policy of Care Indeed to maintain the highest standards of safety, ethics, and compliance. All personnel in the {policy.roleGroup} group are required to read, understand, and strictly adhere to these guidelines.</p>
+                <p><strong>PROCEDURE &amp; GUIDELINES:</strong></p>
+                <ol style={{ paddingLeft: "20px" }}>
+                  <li>All clinical and administrative tasks relating to this subject must be fully documented in the electronic medical record (EMR) or personnel management system.</li>
+                  <li>Any anomalies, security breaches, or patient safety concerns must be reported immediately (within 1 hour) to the supervisor or Corporate Compliance Officer.</li>
+                  <li>Regular competency evaluations and record audits will be conducted to verify compliance.</li>
+                </ol>
+                <p style={{ margin: "20px 0 0 0", fontSize: "12px", color: BRAND.textSecondary, fontStyle: "italic" }}>Regulatory reference: CMS 42 CFR §484 • CI Quality Governance Framework.</p>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "13px", color: BRAND.textSecondary }}>
+                  {readSeconds < minRequiredReadSeconds 
+                    ? `Please read for at least ${minRequiredReadSeconds - readSeconds} more seconds to unlock completion.`
+                    : "✓ Reading requirement met."}
+                </span>
+                <button
+                  onClick={handleCompleteRead}
+                  disabled={readSeconds < minRequiredReadSeconds}
+                  style={{
+                    ...styles.btn, ...styles.btnPrimary,
+                    opacity: readSeconds < minRequiredReadSeconds ? 0.5 : 1
+                  }}
+                >
+                  {policy.quizRequired ? "Go to Competency Quiz →" : "Complete Activity →"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: QUIZ */}
+          {activeTab === "quiz" && (
+            <div>
+              <div style={{
+                background: `linear-gradient(135deg, ${BRAND.primaryLight}15, ${BRAND.accentLight}15)`,
+                padding: "12px 16px", borderRadius: "8px", marginBottom: "16px", fontSize: "13px"
+              }}>
+                <strong>Competency Check:</strong> Answer the following questions. Passing score is 80% (needs {Math.ceil(quizQuestions.length * 0.8)}/{quizQuestions.length} correct).
+              </div>
+
+              {quizQuestions.map((q, qIdx) => (
+                <div key={q.id} style={{
+                  background: "white", padding: "16px", borderRadius: "8px",
+                  border: `1px solid ${BRAND.border}`, marginBottom: "16px"
+                }}>
+                  <p style={{ fontWeight: 600, fontSize: "14px", margin: "0 0 12px 0" }}>{qIdx + 1}. {q.stem}</p>
+                  {q.options.map((opt, optIdx) => {
+                    const isSelected = quizAnswers[qIdx] === optIdx;
+                    const isCorrect = optIdx === q.correctIndex;
+                    let bg = "transparent";
+                    let border = BRAND.border;
+                    if (quizSubmitted) {
+                      if (isCorrect) { bg = "#D1FAE5"; border = BRAND.success; }
+                      else if (isSelected && !isCorrect) { bg = "#FEE2E2"; border = BRAND.error; }
+                    } else if (isSelected) {
+                      bg = "#E0F7FA"; border = BRAND.primary;
+                    }
+
+                    return (
+                      <div
+                        key={optIdx}
+                        onClick={() => handleQuizAnswer(qIdx, optIdx)}
+                        style={{
+                          padding: "10px 12px", margin: "6px 0", borderRadius: "6px",
+                          border: `2px solid ${border}`, background: bg,
+                          cursor: quizSubmitted || remediating ? "default" : "pointer",
+                          fontSize: "13px", transition: "all 0.15s"
+                        }}
+                      >
+                        {String.fromCharCode(65 + optIdx)}. {opt}
+                      </div>
+                    );
+                  })}
+                  {quizSubmitted && (
+                    <div style={{
+                      marginTop: "8px", padding: "8px 12px", borderRadius: "6px",
+                      background: quizAnswers[qIdx] === q.correctIndex ? "#D1FAE5" : "#FEF3C7",
+                      fontSize: "12px", color: BRAND.textPrimary
+                    }}>
+                      <strong>Rationale:</strong> {q.rationale}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {remediating && (
+                <div style={{
+                  background: "#FEF3C7", color: "#B45309", padding: "12px",
+                  borderRadius: "8px", marginBottom: "16px", fontSize: "13px", fontWeight: 600
+                }}>
+                  ⏳ Remediation Lockout: Please review the policy. Retake available in {remediationTimer} seconds...
+                </div>
+              )}
+
+              {!quizSubmitted ? (
+                <button
+                  onClick={handleSubmitQuiz}
+                  disabled={quizAnswers.some((a) => a === null) || remediating}
+                  style={{
+                    ...styles.btn, ...styles.btnPrimary, width: "100%", padding: "12px",
+                    opacity: quizAnswers.some((a) => a === null) || remediating ? 0.5 : 1
+                  }}
+                >
+                  Submit Quiz
+                </button>
+              ) : (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "14px", fontWeight: 700, color: quizScore >= 80 ? BRAND.success : BRAND.error }}>
+                    Score: {quizScore}% {quizScore >= 80 ? "— PASS! 🎉" : "— FAILED"}
+                  </span>
+                  {quizScore >= 80 ? (
+                    <button
+                      onClick={() => policy.acknowledgmentRequired ? setActiveTab("attestation") : (policy.supervisorSignoffRequired ? setActiveTab("supervisor") : onClose())}
+                      style={{ ...styles.btn, ...styles.btnPrimary }}
+                    >
+                      {policy.acknowledgmentRequired ? "Go to Acknowledgment →" : "Finish →"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleRetryQuiz}
+                      disabled={remediating}
+                      style={{ ...styles.btn, ...styles.btnAccent, opacity: remediating ? 0.5 : 1 }}
+                    >
+                      Retry Quiz
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: ATTESTATION */}
+          {activeTab === "attestation" && (
+            <div>
+              <div style={{
+                background: "white", padding: "20px", borderRadius: "8px",
+                border: `1px solid ${BRAND.border}`, marginBottom: "20px"
+              }}>
+                <h3 style={{ marginTop: 0, fontSize: "15px", color: BRAND.primary }}>Worker Attestation &amp; Signature</h3>
+                <p style={{ fontSize: "13px", lineHeight: 1.5, color: BRAND.textPrimary }}>
+                  By signing below, I attest that I have fully read and understood the policy <strong>{policy.policyTitle} ({policy.policyId})</strong>. I agree to abide by these procedures as a condition of my clinical and regulatory role responsibilities. Falsification of attestations is a compliance violation subject to disciplinary action up to termination.
+                </p>
+                <div style={{ marginTop: "16px" }}>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: BRAND.textSecondary, marginBottom: "6px" }}>
+                    Type your full name as signature:
+                  </label>
+                  <input
+                    type="text"
+                    value={workerSignature}
+                    onChange={(e) => setWorkerSignature(e.target.value)}
+                    placeholder="Jane Doe"
+                    disabled={progress.acknowledged}
+                    style={{
+                      width: "100%", padding: "10px", borderRadius: "6px",
+                      border: `1px solid ${BRAND.border}`, fontSize: "14px"
+                    }}
+                  />
+                  {progress.acknowledged && (
+                    <div style={{ marginTop: "8px", fontSize: "12px", color: BRAND.success, fontWeight: 600 }}>
+                      ✓ Signed on {progress.acknowledgedAt ? new Date(progress.acknowledgedAt).toLocaleString() : ""}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button
+                  onClick={handleWorkerAcknowledge}
+                  disabled={!workerSignature.trim() || progress.acknowledged}
+                  style={{
+                    ...styles.btn, ...styles.btnPrimary,
+                    opacity: !workerSignature.trim() || progress.acknowledged ? 0.5 : 1
+                  }}
+                >
+                  {policy.supervisorSignoffRequired ? "Proceed to Supervisor Sign-off →" : "Complete Attestation"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: SUPERVISOR */}
+          {activeTab === "supervisor" && (
+            <div>
+              <div style={{
+                background: "white", padding: "20px", borderRadius: "8px",
+                border: `1px solid ${BRAND.border}`, marginBottom: "20px"
+              }}>
+                <h3 style={{ marginTop: 0, fontSize: "15px", color: BRAND.primary }}>Supervisor Verification Gate</h3>
+                <p style={{ fontSize: "13px", lineHeight: 1.5, color: BRAND.textPrimary }}>
+                  This policy requires supervisor validation of competency/reading. The supervisor must review the employee's understanding and sign off.
+                </p>
+
+                {progress.supervisorSignedOff ? (
+                  <div style={{ padding: "10px", background: "#D1FAE5", color: "#065F46", borderRadius: "6px", fontSize: "13px", fontWeight: 600 }}>
+                    ✓ Approved by supervisor on {progress.supervisorSignedOffAt ? new Date(progress.supervisorSignedOffAt).toLocaleString() : ""}
+                  </div>
+                ) : (
+                  <div style={{ display: "grid", gap: "12px", marginTop: "16px" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: BRAND.textSecondary, marginBottom: "4px" }}>Supervisor Name:</label>
+                      <input
+                        type="text"
+                        value={supervisorName}
+                        onChange={(e) => setSupervisorName(e.target.value)}
+                        placeholder="John Smith, RN"
+                        style={{ width: "100%", padding: "10px", borderRadius: "6px", border: `1px solid ${BRAND.border}`, fontSize: "13px" }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: BRAND.textSecondary, marginBottom: "4px" }}>Supervisor Signature:</label>
+                      <input
+                        type="text"
+                        value={supervisorSig}
+                        onChange={(e) => setSupervisorSig(e.target.value)}
+                        placeholder="J. Smith"
+                        style={{ width: "100%", padding: "10px", borderRadius: "6px", border: `1px solid ${BRAND.border}`, fontSize: "13px" }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: BRAND.textSecondary, marginBottom: "4px" }}>Supervisor Credentials Override Code:</label>
+                      <input
+                        type="password"
+                        value={supervisorCreds}
+                        onChange={(e) => setSupervisorCreds(e.target.value)}
+                        placeholder="Enter override code (use 'admin' or '1234')"
+                        style={{ width: "100%", padding: "10px", borderRadius: "6px", border: `1px solid ${BRAND.border}`, fontSize: "13px" }}
+                      />
+                    </div>
+                    {supError && (
+                      <div style={{ color: BRAND.error, fontSize: "12px", fontWeight: 600 }}>{supError}</div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button
+                  onClick={handleSupervisorSignoffSubmit}
+                  disabled={progress.supervisorSignedOff || !supervisorName.trim() || !supervisorSig.trim() || !supervisorCreds.trim()}
+                  style={{
+                    ...styles.btn, ...styles.btnPrimary,
+                    opacity: progress.supervisorSignedOff || !supervisorName.trim() || !supervisorSig.trim() || !supervisorCreds.trim() ? 0.5 : 1
+                  }}
+                >
+                  Verify and Sign Off
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 // SECTION I: APP ROOT
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -4435,6 +5645,7 @@ type ViewState =
 const CareIndeedOnboardingLMS: React.FC = () => {
   const navigate = useNavigate();
   const { state: learnerState } = useLearner();
+  const [selectedPolicy, setSelectedPolicy] = useState<PPPolicy | null>(null);
   const [activeCategory, setActiveCategory] = useState<'onboarding' | 'annual' | 'advanced' | 'certificates'>(() => {
     const saved = localStorage.getItem("ci_lms_active_tab");
     return (saved === 'annual' || saved === 'onboarding' || saved === 'advanced') ? saved as any : 'onboarding';
@@ -4453,7 +5664,7 @@ const CareIndeedOnboardingLMS: React.FC = () => {
 
   const [rawProgress, setRawProgress] = useState<UserProgress>(() => {
     const saved = loadProgress();
-    return saved || {
+    const base = saved || {
       currentTrack: null,
       currentModuleId: null,
       currentPage: 0,
@@ -4461,11 +5672,16 @@ const CareIndeedOnboardingLMS: React.FC = () => {
       examAttempts: {},
       startedAt: new Date().toISOString(),
     };
+    if (!base.policyProgress) {
+      base.policyProgress = {};
+    }
+    return base;
   });
 
   useEffect(() => {
     saveProgress(rawProgress);
   }, [rawProgress]);
+
 
   const progress = React.useMemo(() => {
     const completed = { ...rawProgress.completedModules };
@@ -4510,6 +5726,155 @@ const CareIndeedOnboardingLMS: React.FC = () => {
       completedModules: { ...prev.completedModules, [result.moduleId]: result },
     }));
   }, []);
+
+  const handlePolicyReadStart = useCallback((policyId: string) => {
+    setRawProgress((prev) => {
+      const current = prev.policyProgress?.[policyId] || {
+        policyId,
+        completionStatus: "not_started",
+        timeSpentSeconds: 0,
+        quizAttempts: 0,
+        acknowledged: false,
+        supervisorSignedOff: false,
+      };
+      return {
+        ...prev,
+        policyProgress: {
+          ...prev.policyProgress,
+          [policyId]: {
+            ...current,
+            readStartedAt: current.readStartedAt || new Date().toISOString(),
+            completionStatus: current.completionStatus === "not_started" ? "in_progress" : current.completionStatus,
+          },
+        },
+      };
+    });
+  }, []);
+
+  const handlePolicyReadTimeUpdate = useCallback((policyId: string, additionalSeconds: number) => {
+    setRawProgress((prev) => {
+      const current = prev.policyProgress?.[policyId] || {
+        policyId,
+        completionStatus: "not_started",
+        timeSpentSeconds: 0,
+        quizAttempts: 0,
+        acknowledged: false,
+        supervisorSignedOff: false,
+      };
+      const newTime = current.timeSpentSeconds + additionalSeconds;
+      return {
+        ...prev,
+        policyProgress: {
+          ...prev.policyProgress,
+          [policyId]: {
+            ...current,
+            timeSpentSeconds: newTime,
+          },
+        },
+      };
+    });
+  }, []);
+
+  const handlePolicyReadComplete = useCallback((policyId: string) => {
+    setRawProgress((prev) => {
+      const current = prev.policyProgress?.[policyId] || {
+        policyId,
+        completionStatus: "not_started",
+        timeSpentSeconds: 0,
+        quizAttempts: 0,
+        acknowledged: false,
+        supervisorSignedOff: false,
+      };
+      return {
+        ...prev,
+        policyProgress: {
+          ...prev.policyProgress,
+          [policyId]: {
+            ...current,
+            readCompletedAt: current.readCompletedAt || new Date().toISOString(),
+            completionStatus: current.completionStatus === "in_progress" || current.completionStatus === "not_started" ? "complete" : current.completionStatus,
+          },
+        },
+      };
+    });
+  }, []);
+
+  const handlePolicyQuizSubmit = useCallback((policyId: string, score: number) => {
+    setRawProgress((prev) => {
+      const current = prev.policyProgress?.[policyId] || {
+        policyId,
+        completionStatus: "not_started",
+        timeSpentSeconds: 0,
+        quizAttempts: 0,
+        acknowledged: false,
+        supervisorSignedOff: false,
+      };
+      const attempts = current.quizAttempts + 1;
+      const bestScore = Math.max(current.bestQuizScore || 0, score);
+      return {
+        ...prev,
+        policyProgress: {
+          ...prev.policyProgress,
+          [policyId]: {
+            ...current,
+            quizAttempts: attempts,
+            bestQuizScore: bestScore,
+          },
+        },
+      };
+    });
+  }, []);
+
+  const handlePolicyAcknowledge = useCallback((policyId: string, signature: string) => {
+    setRawProgress((prev) => {
+      const current = prev.policyProgress?.[policyId] || {
+        policyId,
+        completionStatus: "not_started",
+        timeSpentSeconds: 0,
+        quizAttempts: 0,
+        acknowledged: false,
+        supervisorSignedOff: false,
+      };
+      return {
+        ...prev,
+        policyProgress: {
+          ...prev.policyProgress,
+          [policyId]: {
+            ...current,
+            acknowledged: true,
+            acknowledgedAt: new Date().toISOString(),
+            acknowledgmentSignature: signature,
+          },
+        },
+      };
+    });
+  }, []);
+
+  const handlePolicySupervisorSignoff = useCallback((policyId: string, supervisorSignature: string) => {
+    setRawProgress((prev) => {
+      const current = prev.policyProgress?.[policyId] || {
+        policyId,
+        completionStatus: "not_started",
+        timeSpentSeconds: 0,
+        quizAttempts: 0,
+        acknowledged: false,
+        supervisorSignedOff: false,
+      };
+      return {
+        ...prev,
+        policyProgress: {
+          ...prev.policyProgress,
+          [policyId]: {
+            ...current,
+            supervisorSignedOff: true,
+            supervisorSignedOffAt: new Date().toISOString(),
+            supervisorSignature,
+          },
+        },
+      };
+    });
+  }, []);
+
 
   const handleTabChange = (tab: 'onboarding' | 'annual' | 'advanced' | 'certificates') => {
     setActiveCategory(tab);
@@ -4659,6 +6024,7 @@ const CareIndeedOnboardingLMS: React.FC = () => {
                 }
                 navigate(`/journey/module/${standardId}`);
               }}
+              onSelectPolicy={(policy) => setSelectedPolicy(policy)}
               onBack={() => {
                 if (activeCategory === 'annual' || activeCategory === 'advanced') {
                   handleTabChange('onboarding');
@@ -4677,6 +6043,20 @@ const CareIndeedOnboardingLMS: React.FC = () => {
             />
           )}
         </main>
+      )}
+
+      {selectedPolicy && (
+        <PolicyActivityPortal
+          policy={selectedPolicy}
+          progress={getPolicyProgress(selectedPolicy.policyId, progress)}
+          onClose={() => setSelectedPolicy(null)}
+          onStartRead={handlePolicyReadStart}
+          onTimeUpdate={handlePolicyReadTimeUpdate}
+          onReadComplete={handlePolicyReadComplete}
+          onQuizSubmit={handlePolicyQuizSubmit}
+          onAcknowledge={handlePolicyAcknowledge}
+          onSupervisorSignoff={handlePolicySupervisorSignoff}
+        />
       )}
     </div>
   );
