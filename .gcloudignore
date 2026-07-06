@@ -16,6 +16,9 @@ dist
 # Secrets / local env (NEVER upload)
 .env
 .env.*
+# ...but the PUBLIC build-time Vite config must ship (combined image build
+# needs VITE_AUTH_API_BASE_URL=/api/auth; contains no secrets)
+!.env.production
 **/*service-account*.json
 **/*credentials*.json
 **/*.private.json

@@ -4028,15 +4028,6 @@ const TrackSelector: React.FC<{
 
   return (
     <div>
-      <div className="rounded-lg bg-surface-glass p-6 shadow-rest">
-        <div className="flex items-center gap-3">
-          <div>
-            <h2 className="font-semibold text-xl tracking-tight text-ink">Role-Based Onboarding &amp; Competency Journey</h2>
-            <p className="text-sm text-muted mt-0.5">42 CFR Part 484 • CMS CoP Alignment • Survey-Ready • LMS-Trackable</p>
-          </div>
-        </div>
-      </div>
-
       {/* Badge Rewards Grid */}
       <div style={{ ...styles.card, padding: "20px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
@@ -4568,17 +4559,126 @@ const ModulePlayer: React.FC<{
 // SECTION I: APP ROOT
 // ─────────────────────────────────────────────────────────────────────────────
 
+type LmsCategory = 'onboarding' | 'annual' | 'advanced' | 'certificates';
+
 type ViewState =
   | { view: "tracks" }
   | { view: "modules"; trackId: TrackId }
   | { view: "player"; moduleId: string; trackId: TrackId };
 
+const LMS_CATEGORY_TABS: Array<{ id: LmsCategory; label: string; count?: string }> = [
+  { id: 'onboarding', label: 'Onboarding Training', count: '41' },
+  { id: 'annual', label: 'ACHC Training', count: '12' },
+  { id: 'advanced', label: 'Advanced Training', count: '1' },
+  { id: 'certificates', label: 'My Certificates' },
+];
+
+const isLmsCategory = (value: string | null): value is LmsCategory =>
+  value === 'onboarding' || value === 'annual' || value === 'advanced' || value === 'certificates';
+
+const CareIndeedLmsHeader: React.FC<{
+  activeCategory: LmsCategory;
+  onTabChange: (tab: LmsCategory) => void;
+}> = ({ activeCategory, onTabChange }) => (
+  <header
+    aria-label="Learning header"
+    style={{
+      position: "sticky",
+      top: "12px",
+      zIndex: 30,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "24px",
+      flexWrap: "wrap",
+      marginBottom: "24px",
+      padding: "20px 22px",
+      borderRadius: "8px",
+      background: "rgba(255, 255, 255, 0.88)",
+      border: `1px solid ${BRAND.border}`,
+      boxShadow: "0 18px 45px rgba(15, 23, 42, 0.08)",
+      backdropFilter: "blur(18px)",
+    }}
+  >
+    <div style={{ minWidth: "260px" }}>
+      <h1
+        style={{
+          margin: 0,
+          fontSize: "20px",
+          lineHeight: 1.2,
+          fontWeight: 650,
+          color: BRAND.textPrimary,
+        }}
+      >
+        Role-Based Onboarding &amp; Competency Journey
+      </h1>
+      <p style={{ margin: "6px 0 0 0", fontSize: "14px", color: BRAND.textLight }}>
+        42 CFR Part 484 • CMS CoP Alignment • Survey-Ready • LMS-Trackable
+      </p>
+    </div>
+
+    <nav
+      aria-label="Learning category navigation"
+      style={{
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "flex-end",
+        gap: "10px 28px",
+        flex: "1 1 520px",
+        flexWrap: "wrap",
+      }}
+    >
+      {LMS_CATEGORY_TABS.map((tab) => {
+        const isActive = activeCategory === tab.id;
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => onTabChange(tab.id)}
+            aria-current={isActive ? "page" : undefined}
+            style={{
+              padding: "0 0 10px 0",
+              fontSize: "14px",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              border: "none",
+              borderBottom: isActive ? `3px solid ${BRAND.primary}` : "3px solid transparent",
+              background: "transparent",
+              cursor: "pointer",
+              color: isActive ? BRAND.primary : BRAND.textSecondary,
+              outline: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {tab.label}
+            {tab.count && (
+              <span
+                style={{
+                  marginLeft: "6px",
+                  background: "#F1F5F9",
+                  padding: "2px 6px",
+                  borderRadius: "4px",
+                  fontSize: "10px",
+                  color: BRAND.textSecondary,
+                }}
+              >
+                {tab.count}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </nav>
+  </header>
+);
+
 const CareIndeedOnboardingLMS: React.FC = () => {
   const navigate = useNavigate();
   const { state: learnerState } = useLearner();
-  const [activeCategory, setActiveCategory] = useState<'onboarding' | 'annual' | 'advanced' | 'certificates'>(() => {
+  const [activeCategory, setActiveCategory] = useState<LmsCategory>(() => {
     const saved = localStorage.getItem("ci_lms_active_tab");
-    return (saved === 'annual' || saved === 'onboarding' || saved === 'advanced') ? saved as any : 'onboarding';
+    return isLmsCategory(saved) ? saved : 'onboarding';
   });
 
   const [viewState, setViewState] = useState<ViewState>(() => {
@@ -4652,113 +4752,21 @@ const CareIndeedOnboardingLMS: React.FC = () => {
     }));
   }, []);
 
-  const handleTabChange = (tab: 'onboarding' | 'annual' | 'advanced' | 'certificates') => {
+  const handleTabChange = (tab: LmsCategory) => {
     setActiveCategory(tab);
     localStorage.setItem("ci_lms_active_tab", tab);
     if (tab === 'onboarding') {
       setViewState({ view: "tracks" });
     } else if (tab === 'annual') {
       setViewState({ view: "modules", trackId: "ANN" });
-    } else {
+    } else if (tab === 'advanced') {
       setViewState({ view: "modules", trackId: "ADV" });
     }
   };
 
   return (
-    <div style={{ color: BRAND.textPrimary, paddingTop: "72px" }}>
-      {/* Category Tabs */}
-      <div
-        style={{
-          position: "fixed",
-          left: "104px",
-          right: 0,
-          top: "20px",
-          zIndex: 9999,
-          display: "flex",
-          borderBottom: `1px solid ${BRAND.border}`,
-          marginBottom: "24px",
-          background: "rgba(247, 251, 251, 0.96)",
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => handleTabChange('onboarding')}
-          style={{
-            marginRight: "32px",
-            paddingBottom: "12px",
-            fontSize: "14px",
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            border: "none",
-            background: "none",
-            cursor: "pointer",
-            borderBottom: activeCategory === 'onboarding' ? `2px solid ${BRAND.primary}` : "none",
-            color: activeCategory === 'onboarding' ? BRAND.primary : BRAND.textSecondary,
-            outline: "none",
-          }}
-        >
-          Onboarding Training <span style={{ marginLeft: "6px", background: "#F1F5F9", padding: "2px 6px", borderRadius: "4px", fontSize: "10px", color: BRAND.textSecondary }}>41</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => handleTabChange('annual')}
-          style={{
-            marginRight: "32px",
-            paddingBottom: "12px",
-            fontSize: "14px",
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            border: "none",
-            background: "none",
-            cursor: "pointer",
-            borderBottom: activeCategory === 'annual' ? `2px solid ${BRAND.primary}` : "none",
-            color: activeCategory === 'annual' ? BRAND.primary : BRAND.textSecondary,
-            outline: "none",
-          }}
-        >
-          ACHC Training <span style={{ marginLeft: "6px", background: "#F1F5F9", padding: "2px 6px", borderRadius: "4px", fontSize: "10px", color: BRAND.textSecondary }}>12</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => handleTabChange('advanced')}
-          style={{
-            paddingBottom: "12px",
-            fontSize: "14px",
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            border: "none",
-            background: "none",
-            cursor: "pointer",
-            borderBottom: activeCategory === 'advanced' ? `2px solid ${BRAND.primary}` : "none",
-            color: activeCategory === 'advanced' ? BRAND.primary : BRAND.textSecondary,
-            outline: "none",
-          }}
-        >
-          Advanced Training <span style={{ marginLeft: "6px", background: "#F1F5F9", padding: "2px 6px", borderRadius: "4px", fontSize: "10px", color: BRAND.textSecondary }}>1</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => handleTabChange('certificates')}
-          style={{
-            paddingBottom: "12px",
-            fontSize: "14px",
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            border: "none",
-            background: "none",
-            cursor: "pointer",
-            borderBottom: activeCategory === 'certificates' ? `2px solid ${BRAND.primary}` : "none",
-            color: activeCategory === 'certificates' ? BRAND.primary : BRAND.textSecondary,
-            outline: "none",
-          }}
-        >
-          My Certificates
-        </button>
-      </div>
+    <div style={{ color: BRAND.textPrimary }}>
+      <CareIndeedLmsHeader activeCategory={activeCategory} onTabChange={handleTabChange} />
 
       {activeCategory === 'annual' && viewState.view === 'modules' && (
         <div style={{ background: "#F0FAFA", padding: "16px 20px", borderRadius: "8px", marginBottom: "24px", fontSize: "14px", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>

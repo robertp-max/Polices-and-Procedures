@@ -1,48 +1,36 @@
 # syntax=docker/dockerfile:1
 #
-# Care Indeed Home Health V2 — web tier (Vite SPA) for Google Cloud Run.
+# Care Indeed HH V2 — COMBINED Cloud Run service (full app from `main`):
+#   - Vite SPA build (with the real Register/Login UI)  -> served as static
+#   - Express auth API (AWS Cognito + DynamoDB)         -> mounted at /api/auth
+# Same origin, so the browser registration flow runs without CORS.
 #
-# Multi-stage:
-#   1) build    — install deps from the lockfile and run the production Vite build.
-#   2) runtime  — distroless, non-root; serves ./dist via a zero-dependency Node
-#                 static server on PORT (default 8080), bound to 0.0.0.0.
-#
-# No secrets are baked into build args or image layers. Only public VITE_* config
-# (embedded by Vite at build time) ever reaches the bundle. See .dockerignore for
-# what is excluded from the build context (node_modules, .git, .env*, creds, etc.).
+# AWS credentials are NOT baked in — they are injected at runtime from Secret
+# Manager (scoped, non-root IAM user). Only public VITE_* config is embedded.
 
 # ---- 1) Build stage ----
 FROM node:22-bookworm-slim AS build
 WORKDIR /app
 ENV CI=true
-# NOTE: do NOT set NODE_ENV=production here. The build needs devDependencies
-# (typescript, vite, @vitejs/plugin-react, tailwind, ...); production mode would
-# make `npm ci` skip them and `tsc`/`vite` would be missing. `vite build` emits a
-# production bundle regardless of NODE_ENV.
-
-# Install dependencies first for better layer caching. npm ci == reproducible.
-# --include=dev is explicit/defensive so devDependencies install even if an
-# ambient NODE_ENV=production is inherited.
 COPY package.json package-lock.json ./
 RUN npm ci --include=dev
-
-# Copy the rest of the build context (filtered by .dockerignore) and build.
 COPY . .
-RUN npm run build \
-    && test -f dist/index.html
+# Production SPA build. VITE_AUTH_API_BASE_URL=/api/auth (same origin) comes from
+# the .env.production in the build context.
+RUN npm run build && test -f dist/index.html
 
-# ---- 2) Runtime stage (distroless, non-root) ----
-FROM gcr.io/distroless/nodejs22-debian12:nonroot AS runtime
+# ---- 2) Runtime stage (non-root) ----
+FROM node:22-bookworm-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8080
-
-# Only the built SPA and the static server reach the runtime image — no source,
-# no node_modules, no build tooling.
+# Runtime needs node_modules (incl. tsx to run the TS server), the built SPA,
+# the server source, and the (synthetic) allowlist under config/.
+COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
-COPY deploy/static-server.mjs ./static-server.mjs
-
+COPY --from=build /app/server ./server
+COPY --from=build /app/config ./config
+COPY --from=build /app/package.json ./package.json
+USER node
 EXPOSE 8080
-
-# The distroless nodejs image's entrypoint is `node`; pass the server script.
-CMD ["static-server.mjs"]
+CMD ["npx", "--no-install", "tsx", "server/cloudrun.ts"]

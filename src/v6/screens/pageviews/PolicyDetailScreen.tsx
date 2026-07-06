@@ -52,6 +52,46 @@ function cleanInline(text: string): string {
   return text.replace(/\\([.\-#|*_])/g, '$1').trim();
 }
 
+function isMarkdownStructuralLine(line: string): boolean {
+  return (
+    /^(#{1,6})\s+/.test(line) ||
+    /^[-*•]\s+/.test(line) ||
+    /^-{3,}$/.test(line) ||
+    /^\*{3,}$/.test(line) ||
+    isTableRow(line) ||
+    isTableSeparator(line)
+  );
+}
+
+function isPlainListIntro(line: string): boolean {
+  const cleaned = cleanInline(line);
+  if (!cleaned.endsWith(':')) return false;
+  return /(?:applies to|following|include|includes|including|requirements|responsibilities|consist of|consists of):$/i.test(cleaned);
+}
+
+function collectPlainListItems(lines: string[], introIndex: number): { items: string[]; lastIndex: number } | null {
+  if (!isPlainListIntro(lines[introIndex].trim())) return null;
+
+  const items: string[] = [];
+  let lastIndex = introIndex;
+  for (let j = introIndex + 1; j < lines.length; j += 1) {
+    const candidate = lines[j].trim();
+    if (
+      !candidate ||
+      isMarkdownStructuralLine(candidate) ||
+      candidate.endsWith(':') ||
+      /^This policy does not apply/i.test(candidate) ||
+      /^\d+(?:\\?\.\d+)*\\?\./.test(candidate)
+    ) {
+      break;
+    }
+    items.push(candidate);
+    lastIndex = j;
+  }
+
+  return items.length >= 2 ? { items, lastIndex } : null;
+}
+
 /** "6.2.1 — Legal Authority" → "Legal Authority"; "4. Policy Statement" → "Policy Statement". */
 function stripNumbering(title: string): string {
   return cleanInline(title).replace(/^\d+(?:\.\d+)*[.\s—–-]*\s*/, '').trim();
@@ -147,6 +187,16 @@ function parseMarkdown(body: string): MdBlock[] {
       continue;
     }
 
+    const plainList = collectPlainListItems(lines, i);
+    if (plainList) {
+      flushParagraph();
+      flushList();
+      blocks.push({ kind: 'paragraph', text: cleanInline(line) });
+      blocks.push({ kind: 'list', items: plainList.items.map(cleanInline) });
+      i = plainList.lastIndex;
+      continue;
+    }
+
     // Bullet list
     const bulletMatch = /^[-*•]\s+(.*)$/.exec(line);
     if (bulletMatch) {
@@ -164,6 +214,30 @@ function parseMarkdown(body: string): MdBlock[] {
   return blocks;
 }
 
+const PREMIUM_BULLETS_CSS = `
+  .premium-bullets {
+    list-style: none;
+    padding-left: 0;
+  }
+  .premium-bullets li {
+    position: relative;
+    padding-left: 2.25rem;
+    margin-bottom: 1rem;
+    line-height: 1.65;
+  }
+  .premium-bullets li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.4rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%230D7A75'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+`;
+
 function MarkdownBody({ body }: { body: string }) {
   // Trailing "---" separators end most section bodies in the source; the
   // reference design shows no rule at the bottom of a card.
@@ -174,6 +248,7 @@ function MarkdownBody({ body }: { body: string }) {
 
   return (
     <div className="space-y-4">
+      {blocks.some((block) => block.kind === 'list') && <style>{PREMIUM_BULLETS_CSS}</style>}
       {blocks.map((block, index) => {
         const key = `${block.kind}-${index}`;
         switch (block.kind) {
@@ -191,28 +266,10 @@ function MarkdownBody({ body }: { body: string }) {
           case 'rule':
             return <hr className="border-0 border-t border-gray-100 my-2" key={key} />;
           case 'list': {
-            // Long-phrase lists use the large check-circle rows from the
-            // reference Scope section; short-phrase lists use the compact
-            // checkmark rows from the reference Policy Statement sub-list.
-            const avgLen = block.items.reduce((s, i) => s + i.length, 0) / block.items.length;
-            const useSub = avgLen < 70;
-            const ulCls = useSub ? 'space-y-2 pl-6' : 'space-y-4';
-            const liCls = useSub
-              ? 'flex items-center gap-2 text-gray-600 text-sm md:text-base'
-              : 'flex items-start gap-3 text-gray-600 text-sm md:text-base';
-            const svgCls = useSub
-              ? 'w-4 h-4 text-[#0D7A75] flex-shrink-0'
-              : 'w-5 h-5 text-[#0D7A75] flex-shrink-0 mt-0.5';
-            const svgPath = useSub
-              ? 'M5 13l4 4L19 7'
-              : 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z';
             return (
-              <ul className={ulCls} key={key}>
+              <ul className="premium-bullets pl-2 text-sm text-gray-600" key={key}>
                 {block.items.map((item, itemIndex) => (
-                  <li className={liCls} key={`${key}-${itemIndex}`}>
-                    <svg className={svgCls} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={svgPath}></path></svg>
-                    <span>{item}</span>
-                  </li>
+                  <li key={`${key}-${itemIndex}`}>{item}</li>
                 ))}
               </ul>
             );

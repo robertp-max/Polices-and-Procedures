@@ -88,3 +88,6 @@ fresh-*.png
 # then copy dist/* into public/advanced-training/oasis-e2-soc/). Re-copy
 # the assets when deploying; too large to commit, same as media above.
 public/advanced-training/oasis-e2-soc/assets/*.wav
+
+# Real approved-users allowlist (PII) — image build copies it; never commit
+config/approved-users.csv

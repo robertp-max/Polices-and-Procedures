@@ -74,7 +74,7 @@ export const specimenPolicyContent: PolicyContent = {
     "title": "6.2 Core Responsibilities of the Governing Body",
     "level": 3,
     "order": 9,
-    "body": "The Governing Body of Care Indeed Home Health Care, Inc. shall fulfill the following responsibilities directly and shall not delegate ultimate accountability for any of these functions:",
+    "body": "The Governing Body of Care Indeed Home Health Care, Inc. shall fulfill the following responsibilities directly and shall not delegate ultimate accountability for any of these functions:\n\n- Strategic planning and resource allocation.\n- Approval of the annual operating budget and capital expenditures.\n- Appointment and evaluation of the Agency Administrator.\n- Establishment of policies, by-laws, and rules and regulations.",
     "scormChunkHint": "lesson"
   },
   {

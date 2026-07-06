@@ -1,46 +1,35 @@
-# Build-context exclusions for the Cloud Run web-tier image.
-# Goal: ship only what the Vite SPA build needs; never leak secrets or bloat.
+# Build-context exclusions for the combined Cloud Run image.
+# IMPORTANT: .env.production is intentionally NOT excluded — it carries only
+# public VITE_* config (VITE_AUTH_API_BASE_URL=/api/auth) needed at build time.
 
-# Dependencies & build outputs (rebuilt inside the image)
+.git
+.gitignore
 node_modules
 **/node_modules
 dist
 .cache
-# Nested experimental git worktrees — never part of a build (huge bloat)
-.wtpreview
 
-# Version control
-.git
-.gitignore
-
-# Secrets & local env (NEVER copy into the build context)
+# Secrets / local-only env (never ship)
 .env
-.env.*
+.env.local
+.env.*.local
 **/*service-account*.json
 **/*credentials*.json
 **/*.private.json
 server/credentials
 
-# server/ IS included — the combined image (Dockerfile.server) runs the Express
-# API from it. The web-tier Dockerfile ignores it anyway (its runtime copies
-# only dist). Secrets under server/credentials stay excluded (above).
+# Not needed for build or runtime of this service
 infra
 migrations
-
-# Editor / agent / CI metadata
 .vscode
 .cursor
 .agents
 .github
 
-# Heavy or irrelevant local content (mirrors .vercelignore)
+# Heavy / irrelevant local content
 Bin-(thrash)
 Project_Intelligence
 REVIEW_OUTPUTS
-# Generated scratch outputs (may contain PHI extractions/PDFs) — never copy
-output
-outputs
-**/mock_assessments
 **/screenshots
 **/uat-results
 **/uat-html-report
@@ -52,7 +41,7 @@ outputs
 *.mp4
 *.mp3
 
-# Scratch, logs, manifests, temp files
+# Scratch / logs
 *.log
 *.pid
 *.err
@@ -60,12 +49,3 @@ npm-run-*
 tmp_*
 tmp-*
 temp-*
-build*.log
-tsc-*.log
-dev-*.log
-*_MANIFEST.txt
-DELETE_LIST.txt
-
-# Docker / deploy meta (not needed inside the build)
-Dockerfile
-.dockerignore
