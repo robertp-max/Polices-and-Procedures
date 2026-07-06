@@ -30,6 +30,20 @@ export default {
         "brand-teal": "var(--brand-teal)",
         "brand-teal-deep": "var(--brand-teal-deep)",
         "brand-orange": "var(--brand-orange)",
+
+        /* Care Indeed Light Orange Theme (Gemini) tokens — see CARE_INDEED_LIGHT_ORANGE_THEME_SPEC.md */
+        /* Do not hardcode hexes in components. Use these. */
+        ci: {
+          "deep-teal": "var(--ci-deep-teal)",
+          "muted-teal": "var(--ci-muted-teal)",
+          "mint-tint": "var(--ci-mint-tint)",
+          orange: "var(--ci-orange)",
+          canvas: "var(--ci-canvas)",
+          white: "var(--ci-surface-white)",
+          "subdued-border": "var(--ci-subdued-border)",
+          "text-body": "var(--ci-text-body)",
+          "text-muted": "var(--ci-text-muted)",
+        },
         ecign: {
           navy: "var(--ecign-navy)",
           orange: "var(--ecign-orange)",

@@ -187,6 +187,43 @@ Arbitrary `box-shadow` in screens is banned.
 | **Sidebar** | `--surface-glass`, `--sidebar-w`/`--sidebar-collapsed`, `--border-hairline`, `--brand-teal` (active), `--surface-hover-teal`, `--motion-slow` (width), `--weight-title` (labels) |
 | **Topbar / PageHeader** | `--topbar-h`, `--text-display` (single `h1`, 500), `--text-body` (description, 300), `--space-*` |
 | **Button** | `--brand-teal`/`--text-on-brand` (primary), teal outline (secondary), ghost (tertiary); `--brand-orange` (attention only); `--radius-md`, `--control-h`, `--motion-fast`, `--press-scale`, `--focus-ring` |
+
+---
+
+## 15. Care Indeed Light Orange Theme Tokens (Gemini)
+
+**See primary source:** `CARE_INDEED_LIGHT_ORANGE_THEME_SPEC.md` (controlling for this branch and theme pilots).
+
+These tokens were added to support the exact visual system from the OASIS-E2 SOC and Policy Viewer screenshots. They are additive and namespaced under `ci-*` to avoid colliding with core V6 tokens during pilot implementation.
+
+### Brand (Light Orange palette)
+
+| Token | Value | Use (per spec) |
+|---|---|---|
+| `--ci-deep-teal` | `#0A4D44` | Primary headings, active tabs (thick underline), card titles |
+| `--ci-muted-teal` | `#2B7A71` | Eyebrow text, metadata labels, badge text |
+| `--ci-mint-tint` | `#EEF5F4` | Subtle card backgrounds, badges, highlight panels (e.g. estimated time) |
+| `--ci-orange` | `#F26E36` | Primary CTAs (filled), outline buttons, next/start actions |
+
+### Surfaces & Neutrals
+
+| Token | Value | Use (per spec) |
+|---|---|---|
+| `--ci-canvas` | `#F8FAFC` | App / page background (off-white) |
+| `--ci-surface-white` | `#FFFFFF` | Major content panels, cards (pure white) |
+| `--ci-subdued-border` | `#E5E7EB` | Grid card borders, outline button borders, soft separators |
+| `--ci-text-body` | `#374151` | Body text (dark slate) |
+| `--ci-text-muted` | `#6B7280` | Muted/inactive tab text, descriptions |
+
+**Component contracts reference (from spec):**
+- CareIndeedCard variants use white + ci-subdued-border + ci-mint-tint + shadows.
+- CareIndeedTabs: transparent + ci-deep-teal active underline/text vs muted gray.
+- CareIndeedButton: ci-orange primary vs outline.
+- CareIndeedDataBlock + CareIndeedEyebrow use ci-muted-teal labels + subtle ci-mint-tint / ci-canvas bg.
+
+**Implementation note:** Tokens live in `src/index.css` + exposed via `tailwind.config.js`. All future theme application (Policy Viewer pilot, OASIS landing) must route through these + the reusable CareIndeed* components. No direct hex literals.
+
+**Status:** Added as part of `feat(theme): add Care Indeed light orange tokens`.
 | **Input / Select** | `--surface-base`, `--border-card`, `--radius-md`, `--control-h`, `--text-body`, `--focus-ring` |
 | **Badge / ToneBadge** | tone `bg/border/text/dot`, `--text-tag` + `--tracking-tag` (weight 500), text+glyph |
 | **MetricTile** | `--text-display` (number via size, weight 300), `--text-xs` (label), tone border, `--shadow-rest` |

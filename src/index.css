@@ -20,6 +20,20 @@
   --ecign-navy: #1A3778;
   --ecign-orange: #F04B22;
 
+  /* === Care Indeed Light Orange Theme (Gemini) === */
+  /* Extracted precisely from OASIS-E2 Start of Care Assessment + Policy Viewer screenshots. */
+  /* Primary baselines for all token + component decisions. See CARE_INDEED_LIGHT_ORANGE_THEME_SPEC.md */
+  /* Usage: via Tailwind ci-* or var(--ci-*) in components. Never raw hex in UI code. */
+  --ci-deep-teal: #0A4D44;
+  --ci-muted-teal: #2B7A71;
+  --ci-mint-tint: #EEF5F4;
+  --ci-orange: #F26E36;
+  --ci-canvas: #F8FAFC;
+  --ci-surface-white: #FFFFFF;
+  --ci-subdued-border: #E5E7EB;
+  --ci-text-body: #374151;
+  --ci-text-muted: #6B7280;
+
   /* Surfaces */
   --surface-canvas: transparent;
   --surface-base: rgba(255, 255, 255, 0.777);
