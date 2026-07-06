@@ -220,19 +220,19 @@ export function PolicyApprovalsScreen() {
             return (
               <article
                 key={policy.id}
-                className="flex min-w-0 flex-col gap-4 rounded-3xl border border-ci-border bg-white p-5 shadow-sm hover:shadow-md transition overflow-hidden"
+                className="flex min-w-0 flex-col gap-4 rounded-3xl border border-card bg-white p-5 shadow-sm hover:shadow-md transition overflow-hidden"
               >
                 {/* Header: status + tier + domain + id */}
                 <div className="flex flex-wrap items-center gap-xs">
                   <ToneTag tone={STATE_TONE[state] ?? 'slate'}>{STATE_LABEL[state]}</ToneTag>
                   <ToneTag tone="slate">{policy.tier || 'Unclassified'}</ToneTag>
-                  <span className="ml-auto font-mono text-[10px] font-bold uppercase tracking-wider text-ci-teal">{policy.id}</span>
+                  <span className="ml-auto font-mono text-[10px] font-bold uppercase tracking-wider text-brand-teal">{policy.id}</span>
                 </div>
 
                 {/* Title + domain */}
                 <div className="grid gap-xs">
-                  <h2 className="text-sm font-bold leading-snug text-ci-teal-deep">{policy.title}</h2>
-                  <p className="inline-flex items-center gap-xs text-xs text-gray-500">
+                  <h2 className="text-sm font-bold leading-snug text-brand-teal-deep">{policy.title}</h2>
+                  <p className="inline-flex items-center gap-xs text-xs text-muted">
                     <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
                     {DOMAIN_LABEL[policy.domainCode] ?? policy.domainCode} · {policy.subdomainCode}
                   </p>
@@ -241,16 +241,16 @@ export function PolicyApprovalsScreen() {
                 {/* Meta grid */}
                 <dl className="grid gap-xs text-xs">
                   <div className="flex items-start justify-between gap-md">
-                    <dt className="flex items-center gap-1.5 text-gray-500 font-medium"><ShieldCheck className="h-3.5 w-3.5" /> Authority</dt>
-                    <dd className="text-right font-bold text-ci-teal-deep">{approvalAuthority(policy.tier)}</dd>
+                    <dt className="flex items-center gap-1.5 text-muted font-medium"><ShieldCheck className="h-3.5 w-3.5" /> Authority</dt>
+                    <dd className="text-right font-bold text-brand-teal-deep">{approvalAuthority(policy.tier)}</dd>
                   </div>
                   <div className="flex items-start justify-between gap-md">
-                    <dt className="flex items-center gap-1.5 text-gray-500 font-medium"><UserRound className="h-3.5 w-3.5" /> Owner</dt>
-                    <dd className="break-words text-right font-semibold text-gray-700">{policy.ownerSteward || 'Compliance Officer'}</dd>
+                    <dt className="flex items-center gap-1.5 text-muted font-medium"><UserRound className="h-3.5 w-3.5" /> Owner</dt>
+                    <dd className="break-words text-right font-semibold text-ink">{policy.ownerSteward || 'Compliance Officer'}</dd>
                   </div>
                   <div className="flex items-start justify-between gap-md">
-                    <dt className="flex items-center gap-1.5 text-gray-500 font-medium"><CalendarClock className="h-3.5 w-3.5" /> Last activity</dt>
-                    <dd className="text-right font-semibold text-gray-700">{formatDate(envelope?.lastTransition?.timestamp ?? envelope?.createdAt)}</dd>
+                    <dt className="flex items-center gap-1.5 text-muted font-medium"><CalendarClock className="h-3.5 w-3.5" /> Last activity</dt>
+                    <dd className="text-right font-semibold text-ink">{formatDate(envelope?.lastTransition?.timestamp ?? envelope?.createdAt)}</dd>
                   </div>
                 </dl>
 
@@ -259,7 +259,7 @@ export function PolicyApprovalsScreen() {
                   <ProgressMeter label="Approval readiness" tone={r.tone} value={r.percent} />
                   <p className="flex items-center gap-xs text-xs text-muted">
                     <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
-                    {r.blocking} step{r.blocking === 1 ? '' : 's'} to approval · Next: <span className="font-semibold text-gray-700">{r.nextAction}</span>
+                    {r.blocking} step{r.blocking === 1 ? '' : 's'} to approval · Next: <span className="font-semibold text-ink">{r.nextAction}</span>
                   </p>
                 </div>
 
@@ -267,13 +267,13 @@ export function PolicyApprovalsScreen() {
                 <div className="mt-auto flex flex-wrap gap-xs pt-xs">
                   <Link
                     to={`/policy-lifecycle/${policy.id}`}
-                    className="inline-flex min-h-tap flex-1 items-center justify-center gap-2 rounded-lg bg-ci-orange px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-ci-orange-hover focus:outline-none"
+                    className="inline-flex min-h-tap flex-1 items-center justify-center gap-2 rounded-lg bg-brand-orange px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition hover:hover:brightness-110 focus:outline-none"
                   >
                     <Clock3 className="h-4 w-4" /> Review
                   </Link>
                   <Link
                     to={`/library/${policy.id}`}
-                    className="inline-flex min-h-tap items-center justify-center gap-2 rounded-lg border border-ci-border bg-white px-3 py-2 text-xs font-bold uppercase tracking-wider text-ci-teal transition hover:bg-ci-mint/10 focus:outline-none"
+                    className="inline-flex min-h-tap items-center justify-center gap-2 rounded-lg border border-card bg-white px-3 py-2 text-xs font-bold uppercase tracking-wider text-brand-teal transition hover:bg-surface-hover focus:outline-none"
                     title="Open the policy record"
                   >
                     <GitCompare className="h-4 w-4" /> <span className="hidden tablet-p:inline">Compare</span>

@@ -149,16 +149,16 @@ export default function WorkflowsScreen() {
           const stepC = wf.steps?.length || 0;
           const formC = (wf.requiredForms || []).length;
           return (
-            <div key={row.workflowId} className="rounded-3xl border border-ci-border bg-white p-5 hover:shadow-md transition cursor-pointer overflow-hidden shadow-sm" onClick={() => {
+            <div key={row.workflowId} className="rounded-3xl border border-card bg-white p-5 hover:shadow-md transition cursor-pointer overflow-hidden shadow-sm" onClick={() => {
               openRealDetail(row);
             }}>
               <div className="flex items-center justify-between">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-ci-teal">{row.workflowId}</div>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-ci-mint/10 text-ci-teal font-bold">{row.status}</span>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-brand-teal">{row.workflowId}</div>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-surface-hover text-brand-teal font-bold">{row.status}</span>
               </div>
-              <div className="mt-2 text-sm font-bold text-ci-teal-deep">{row.title}</div>
-              <div className="mt-1 text-xs text-gray-500">{row.domain} • {row.frequency} • {row.risk} risk</div>
-              <div className="mt-3 text-[10px] font-medium text-gray-400">{stepC} steps • {formC} forms • {row.domainOwner}</div>
+              <div className="mt-2 text-sm font-bold text-brand-teal-deep">{row.title}</div>
+              <div className="mt-1 text-xs text-muted">{row.domain} • {row.frequency} • {row.risk} risk</div>
+              <div className="mt-3 text-[10px] font-medium text-disabled">{stepC} steps • {formC} forms • {row.domainOwner}</div>
             </div>
           );
         })}
@@ -166,8 +166,8 @@ export default function WorkflowsScreen() {
 
       <div className="flex flex-wrap items-end justify-between gap-md">
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-wider text-ci-teal">Workflow Library</div>
-          <div className="text-xl font-bold text-ci-teal-deep">Active workflows (generated records)</div>
+          <div className="text-[10px] font-bold uppercase tracking-wider text-brand-teal">Workflow Library</div>
+          <div className="text-xl font-bold text-brand-teal-deep">Active workflows (generated records)</div>
         </div>
         <div className="flex flex-wrap gap-sm">
           <input
@@ -175,7 +175,7 @@ export default function WorkflowsScreen() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search ID, title, domain..."
-            className="min-w-[220px] rounded-lg border border-ci-border bg-white px-4 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus-visible:outline-none focus-visible:shadow-focus"
+            className="min-w-[220px] rounded-lg border border-card bg-white px-4 py-2 text-sm text-ink placeholder:text-disabled focus-visible:outline-none focus-visible:shadow-focus"
             aria-label="Search workflows"
           />
         </div>
@@ -222,7 +222,7 @@ export default function WorkflowsScreen() {
       </div>
 
       <section className="grid gap-lg desktop:grid-cols-1">
-        <section aria-label="Workflows library matrix" className="rounded-3xl border border-ci-border bg-white p-6 shadow-sm overflow-hidden">
+        <section aria-label="Workflows library matrix" className="rounded-3xl border border-card bg-white p-6 shadow-sm overflow-hidden">
           <DataTable
             columns={workflowColumns}
             label="Workflows library matrix"

@@ -19,7 +19,7 @@ export const CareIndeedTabs: React.FC<CareIndeedTabsProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`flex space-x-8 border-b border-ci-border bg-transparent px-2 ${className}`}>
+    <div className={`flex space-x-8 border-b border-card bg-transparent px-2 ${className}`}>
       {tabs.map((tab) => {
         const isActive = tab.id === activeTabId;
         return (
@@ -29,8 +29,8 @@ export const CareIndeedTabs: React.FC<CareIndeedTabsProps> = ({
             onClick={() => onChange(tab.id)}
             className={`py-4 text-sm font-semibold transition-all duration-150 border-b-4 focus:outline-none ${
               isActive
-                ? 'border-ci-teal-deep text-ci-teal-deep'
-                : 'border-transparent text-gray-500 hover:text-ci-teal hover:border-gray-300'
+                ? 'border-brand-teal-deep text-brand-teal-deep'
+                : 'border-transparent text-muted hover:text-brand-teal hover:border-gray-300'
             }`}
           >
             {tab.label}

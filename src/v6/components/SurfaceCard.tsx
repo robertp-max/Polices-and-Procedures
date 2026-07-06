@@ -31,7 +31,7 @@ export function SurfaceCard({ card, children, className }: SurfaceCardProps) {
     >
       <div className="mb-4 flex min-h-tap items-start justify-between gap-md">
         {Icon ? (
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-ci-mint/10 text-ci-teal">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-hover text-brand-teal">
             <Icon aria-hidden="true" className="h-5 w-5" />
           </span>
         ) : (
@@ -41,8 +41,8 @@ export function SurfaceCard({ card, children, className }: SurfaceCardProps) {
       </div>
       <div className="grid gap-sm">
         <div className="grid gap-xs">
-          <h3 className="text-sm font-bold text-ci-teal-deep">{card.title}</h3>
-          <p className="text-xs text-gray-500 leading-normal">{card.body}</p>
+          <h3 className="text-sm font-bold text-brand-teal-deep">{card.title}</h3>
+          <p className="text-xs text-muted leading-normal">{card.body}</p>
         </div>
         {typeof card.progress === 'number' ? <ProgressMeter className="mt-2" tone={card.tone} value={card.progress} /> : null}
         {children}

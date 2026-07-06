@@ -16,9 +16,9 @@ export const CareIndeedCard: React.FC<CareIndeedCardProps> = ({
       case 'container':
         return 'bg-white rounded-3xl shadow-[0_18px_45px_rgba(13,122,117,0.04)] p-8 border-none';
       case 'grid-outline':
-        return 'bg-white rounded-xl border border-ci-border p-6 shadow-none';
+        return 'bg-white rounded-xl border border-card p-6 shadow-none';
       case 'grid-tinted':
-        return 'bg-ci-mint rounded-xl p-6 border-none shadow-none';
+        return 'bg-surface-hover rounded-xl p-6 border-none shadow-none';
       default:
         return 'bg-white rounded-3xl shadow-none p-6';
     }

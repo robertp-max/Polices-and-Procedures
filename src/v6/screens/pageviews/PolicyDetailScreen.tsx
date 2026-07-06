@@ -260,8 +260,8 @@ function MarkdownBody({ body }: { body: string }) {
           case 'heading': {
             const cls =
               block.level <= 2
-                ? 'text-base font-semibold text-gray-700 leading-relaxed'
-                : 'text-sm font-medium uppercase tracking-wide text-gray-500';
+                ? 'text-base font-semibold text-ink leading-relaxed'
+                : 'text-sm font-medium uppercase tracking-wide text-muted';
             return (
               <p className={cls} key={key}>
                 {block.text}
@@ -272,7 +272,7 @@ function MarkdownBody({ body }: { body: string }) {
             return <hr className="border-0 border-t border-gray-100 my-2" key={key} />;
           case 'list': {
             return (
-              <ul className="premium-bullets pl-2 text-sm text-gray-600" key={key}>
+              <ul className="premium-bullets pl-2 text-sm text-secondary" key={key}>
                 {block.items.map((item, itemIndex) => (
                   <li key={`${key}-${itemIndex}`}>{item}</li>
                 ))}
@@ -290,7 +290,7 @@ function MarkdownBody({ body }: { body: string }) {
                     <tr>
                       {block.header.map((cell, cellIndex) => (
                         <th
-                          className="pb-4 font-semibold text-gray-400 uppercase text-xs pr-4 last:pr-0"
+                          className="pb-4 font-semibold text-disabled uppercase text-xs pr-4 last:pr-0"
                           key={`${key}-h-${cellIndex}`}
                           scope="col"
                         >
@@ -299,7 +299,7 @@ function MarkdownBody({ body }: { body: string }) {
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 text-gray-600">
+                  <tbody className="divide-y divide-gray-100 text-secondary">
                     {block.rows.map((row, rowIndex) => (
                       <tr key={`${key}-r-${rowIndex}`}>
                         {row.map((cell, cellIndex) => (
@@ -320,7 +320,7 @@ function MarkdownBody({ body }: { body: string }) {
           case 'paragraph':
           default:
             return (
-              <p className="text-gray-600 leading-relaxed text-sm md:text-base" key={key}>
+              <p className="text-secondary leading-relaxed text-sm md:text-base" key={key}>
                 {block.text}
               </p>
             );
@@ -518,13 +518,13 @@ export function PolicyDetailScreen() {
         type="button"
         onClick={() => goTo(boundedIndex - 1)}
         className={cx(
-          'text-gray-500 hover:text-gray-900 text-sm font-medium px-4 py-2 transition-colors',
+          'text-muted hover:text-gray-900 text-sm font-medium px-4 py-2 transition-colors',
           boundedIndex === 0 && 'invisible',
         )}
       >
         &larr; Previous
       </button>
-      <span className="text-xs text-gray-400 font-medium tracking-widest">{boundedIndex + 1} OF {totalCount}</span>
+      <span className="text-xs text-disabled font-medium tracking-widest">{boundedIndex + 1} OF {totalCount}</span>
       {isLastCard ? (
         <CareIndeedButton
           variant="primary"
@@ -609,20 +609,20 @@ export function PolicyDetailScreen() {
             `}</style>
 
             {/* Page header — kicker + title, Policy Library top right */}
-            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm pt-8 pb-4 px-6 md:px-12 lg:px-16 border-b border-ci-border">
+            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm pt-8 pb-4 px-6 md:px-12 lg:px-16 border-b border-card">
               <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                   <div>
                     <CareIndeedEyebrow className="mb-2">
                       POLICY LIBRARY &bull; {headerId}
                     </CareIndeedEyebrow>
-                    <h1 className="text-3xl md:text-4xl font-bold text-ci-teal-deep tracking-tight" id="policy-detail-title">
+                    <h1 className="text-3xl md:text-4xl font-bold text-brand-teal-deep tracking-tight" id="policy-detail-title">
                       {cleanInline(headerTitle)}
                     </h1>
                   </div>
                   <Link
                     to="/library"
-                    className="shrink-0 self-start md:self-end text-xs font-bold uppercase tracking-wider text-ci-orange border border-ci-orange rounded-full px-5 py-2.5 transition-all hover:bg-ci-orange hover:text-white bg-white shadow-sm"
+                    className="shrink-0 self-start md:self-end text-xs font-bold uppercase tracking-wider text-brand-orange border border-brand-orange rounded-full px-5 py-2.5 transition-all hover:bg-brand-orange hover:text-white bg-white shadow-sm"
                   >
                     Policy Library
                   </Link>
@@ -631,7 +631,7 @@ export function PolicyDetailScreen() {
             </header>
 
             {/* Section nav — one-word labels + Appendices (opens the modal) */}
-            <div className="px-6 md:px-12 lg:px-16 bg-canvas border-b border-ci-border sticky top-[108px] z-40">
+            <div className="px-6 md:px-12 lg:px-16 bg-canvas border-b border-card sticky top-[108px] z-40">
               <div className="max-w-7xl mx-auto">
                 <CareIndeedTabs
                   tabs={[
@@ -670,8 +670,8 @@ export function PolicyDetailScreen() {
                           className={cx(
                             'px-4 py-2 rounded-full text-xs cursor-pointer transition-colors',
                             idx === boundedIndex
-                              ? 'bg-ci-mint text-ci-teal-deep border border-ci-teal/30 font-semibold shadow-sm'
-                              : 'bg-white border border-ci-border text-gray-600 hover:bg-gray-50',
+                              ? 'bg-surface-hover text-brand-teal-deep border border-brand-teal/30 font-semibold shadow-sm'
+                              : 'bg-white border border-card text-secondary hover:bg-gray-50',
                           )}
                         >
                           {stripNumbering(card.section.title)}
@@ -680,7 +680,7 @@ export function PolicyDetailScreen() {
                     </div>
                   )}
                   {showSubNav && !subNavAsPills && (
-                    <div className="flex space-x-6 border-b border-ci-border mb-6 px-2 text-sm overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+                    <div className="flex space-x-6 border-b border-card mb-6 px-2 text-sm overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
                       {subNavItems.map(({ card, idx }) => card.kind === 'section' && (
                         <button
                           key={card.section.id}
@@ -689,8 +689,8 @@ export function PolicyDetailScreen() {
                           className={cx(
                             'pb-3 border-b-2 cursor-pointer transition-colors',
                             idx === boundedIndex
-                              ? 'border-ci-teal-deep text-ci-teal-deep font-semibold'
-                              : 'border-transparent text-gray-500 hover:text-ci-teal',
+                              ? 'border-brand-teal-deep text-brand-teal-deep font-semibold'
+                              : 'border-transparent text-muted hover:text-brand-teal',
                           )}
                         >
                           {stripNumbering(card.section.title)}
@@ -703,11 +703,11 @@ export function PolicyDetailScreen() {
                     {current.kind === 'overview' ? (
                       <>
                         <div className="flex justify-between items-center mb-8">
-                          <h2 className="text-2xl font-semibold text-ci-teal-deep">Policy Overview</h2>
+                          <h2 className="text-2xl font-semibold text-brand-teal-deep">Policy Overview</h2>
                           <CareIndeedEyebrow>SECTION 1</CareIndeedEyebrow>
                         </div>
                         {overviewIntro && (
-                          <p className="text-gray-600 leading-relaxed mb-8">{overviewIntro}</p>
+                          <p className="text-secondary leading-relaxed mb-8">{overviewIntro}</p>
                         )}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
                           {overviewCards.map((card) => (
@@ -723,7 +723,7 @@ export function PolicyDetailScreen() {
                     ) : (
                       <>
                         <div className="flex justify-between items-center mb-8">
-                          <h2 className="text-2xl font-semibold text-ci-teal-deep">{stripNumbering(current.section.title)}</h2>
+                          <h2 className="text-2xl font-semibold text-brand-teal-deep">{stripNumbering(current.section.title)}</h2>
                           <CareIndeedEyebrow>
                             SECTION {numberOf(current.section.title) ?? boundedIndex + 1}
                           </CareIndeedEyebrow>
@@ -740,11 +740,11 @@ export function PolicyDetailScreen() {
             {!content && (
               <div className="px-6 md:px-12 lg:px-16 py-8">
                 <CareIndeedCard variant="container" className="max-w-7xl mx-auto p-10 text-center">
-                  <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-gray-50 text-gray-400">
+                  <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-gray-50 text-disabled">
                     <Info aria-hidden="true" className="h-6 w-6" />
                   </span>
-                  <h3 className="mt-4 text-2xl font-semibold text-ci-teal-deep">Policy content unavailable</h3>
-                  <p className="mx-auto mt-2 max-w-xl text-sm text-gray-600">
+                  <h3 className="mt-4 text-2xl font-semibold text-brand-teal-deep">Policy content unavailable</h3>
+                  <p className="mx-auto mt-2 max-w-xl text-sm text-secondary">
                     No policy content is published for {headerId} in the policy content source.
                   </p>
                 </CareIndeedCard>
@@ -792,7 +792,7 @@ export function PolicyDetailScreen() {
                 ) : (
                   <>
                     <h3 className="text-2xl font-semibold text-[#0B4E45]">Linked forms from the Forms Library</h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-secondary">
                       {linkedForms.length > 0
                         ? `${linkedForms.length} form${linkedForms.length === 1 ? '' : 's'} reference this policy. Select one to open the actual form.`
                         : 'No Forms Library records reference this policy.'}
@@ -804,7 +804,7 @@ export function PolicyDetailScreen() {
                 type="button"
                 aria-label="Close appendices"
                 onClick={() => { setAppendicesOpen(false); setOpenedForm(null); }}
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-gray-200 text-gray-500 hover:border-[#0D7A75] hover:text-[#0D7A75]"
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-gray-200 text-muted hover:border-[#0D7A75] hover:text-[#0D7A75]"
               >
                 <X aria-hidden="true" className="h-5 w-5" />
               </button>
@@ -827,16 +827,16 @@ export function PolicyDetailScreen() {
                     <div className="grid gap-xs">
                       <div className="flex flex-wrap items-center gap-sm">
                         <span className="text-xs font-bold tracking-widest text-[#0D7A75]">{form.id}</span>
-                        <span className="rounded-full border border-gray-200 px-2 py-[1px] text-[11px] text-gray-500">{form.type}</span>
+                        <span className="rounded-full border border-gray-200 px-2 py-[1px] text-[11px] text-muted">{form.type}</span>
                       </div>
                       <span className="text-sm font-medium text-[#0B4E45]">{form.name}</span>
-                      <span className="text-xs text-gray-600">{form.usage} • {form.frequency}</span>
+                      <span className="text-xs text-secondary">{form.usage} • {form.frequency}</span>
                     </div>
                     <span className="text-[#0D7A75] group-hover:translate-x-0.5 transition">→</span>
                   </button>
                 ))}
                 {linkedForms.length === 0 && (
-                  <p className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-600">
+                  <p className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-sm text-secondary">
                     No linked forms found for {headerId}.
                   </p>
                 )}

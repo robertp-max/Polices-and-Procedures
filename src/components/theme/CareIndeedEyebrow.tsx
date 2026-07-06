@@ -11,7 +11,7 @@ export const CareIndeedEyebrow: React.FC<CareIndeedEyebrowProps> = ({
 }) => {
   return (
     <span
-      className={`block text-[11px] font-bold uppercase tracking-widest text-ci-teal ${className}`}
+      className={`block text-[11px] font-bold uppercase tracking-widest text-brand-teal ${className}`}
       {...props}
     >
       {children}

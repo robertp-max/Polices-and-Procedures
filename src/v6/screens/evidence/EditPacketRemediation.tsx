@@ -75,7 +75,7 @@ export function EditPacketRemediation() {
     <section className="grid gap-6 animate-fade-in" data-hash-id="edit-packet" data-route="/evidence" data-template="evidence">
       {/* Packet ID entry */}
       <div className="rounded-[32px] border border-transparent bg-white/95 p-8 shadow-xl backdrop-blur-sm">
-        <div className="mb-2 text-[10px] font-medium uppercase tracking-widest text-gray-500">Packet ID</div>
+        <div className="mb-2 text-[10px] font-medium uppercase tracking-widest text-muted">Packet ID</div>
         <div className="mb-3 flex flex-col gap-4 md:flex-row md:items-center">
           <input
             value={packetId}
@@ -96,7 +96,7 @@ export function EditPacketRemediation() {
             <span className="flex items-center gap-1 text-xs text-orange-600"><AlertTriangle className="h-3.5 w-3.5" /> Expected format {'{eventId}-{number}'}.</span>
           )}
         </div>
-        <p className="text-xs font-light text-gray-400">Find the Packet ID on the cover page and every page footer of a generated packet. Loading it starts a remediation thread with Brad.</p>
+        <p className="text-xs font-light text-disabled">Find the Packet ID on the cover page and every page footer of a generated packet. Loading it starts a remediation thread with Brad.</p>
       </div>
 
       {/* Chat */}
@@ -107,7 +107,7 @@ export function EditPacketRemediation() {
 
         <div ref={scrollRef} className="mb-6 flex flex-1 flex-col justify-end overflow-y-auto rounded-[24px] border border-gray-100 bg-gray-50/50 p-6">
           {messages.length === 0 ? (
-            <div className="flex h-full min-h-[180px] flex-col items-center justify-center gap-2 text-center text-gray-400">
+            <div className="flex h-full min-h-[180px] flex-col items-center justify-center gap-2 text-center text-disabled">
               <Sparkles className="h-6 w-6 text-[#007C7A]/70" />
               <p className="text-sm font-light">{locked ? 'Describe a correction, feedback, or suggestion below.' : 'Load a packet ID to begin.'}</p>
             </div>
@@ -119,7 +119,7 @@ export function EditPacketRemediation() {
                   <div className={`max-w-[80%] rounded-[16px] p-4 text-sm font-light ${m.role === 'user' ? 'bg-[#007C7A] text-white' : 'border border-gray-200 bg-white text-gray-800 shadow-sm'}`}>
                     {m.role === 'user' && m.kind && <span className="mr-1 rounded-full bg-white/20 px-2 py-[1px] text-[10px] uppercase tracking-wider">{m.kind}</span>}
                     <span className="whitespace-pre-wrap">{m.text}</span>
-                    {m.synthetic && <span className="ml-1 align-middle text-[10px] uppercase tracking-wider text-gray-400">· synthetic</span>}
+                    {m.synthetic && <span className="ml-1 align-middle text-[10px] uppercase tracking-wider text-disabled">· synthetic</span>}
                     {m.refs && m.refs.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
                         {m.refs.map((r, j) => (
@@ -132,7 +132,7 @@ export function EditPacketRemediation() {
                   </div>
                 </div>
               ))}
-              {busy && <div className="flex items-center gap-2 text-sm font-light text-gray-400"><img src="/apple-icon.png" alt="Brad" className="h-6 w-6 rounded opacity-70" /><Loader2 className="h-4 w-4 animate-spin" /> Brad is reviewing…</div>}
+              {busy && <div className="flex items-center gap-2 text-sm font-light text-disabled"><img src="/apple-icon.png" alt="Brad" className="h-6 w-6 rounded opacity-70" /><Loader2 className="h-4 w-4 animate-spin" /> Brad is reviewing…</div>}
             </div>
           )}
         </div>
@@ -146,7 +146,7 @@ export function EditPacketRemediation() {
                 onClick={() => setKind(k.id)}
                 title={k.hint}
                 disabled={!locked}
-                className={`rounded-full border px-4 py-1.5 text-xs font-light transition-colors ${kind === k.id ? 'border-[#007C7A] bg-teal-50 text-[#007C7A]' : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100'} disabled:opacity-50`}
+                className={`rounded-full border px-4 py-1.5 text-xs font-light transition-colors ${kind === k.id ? 'border-[#007C7A] bg-teal-50 text-[#007C7A]' : 'border-gray-200 bg-gray-50 text-muted hover:bg-gray-100'} disabled:opacity-50`}
               >
                 {k.label}
               </button>

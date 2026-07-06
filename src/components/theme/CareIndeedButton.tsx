@@ -18,16 +18,16 @@ export const CareIndeedButton: React.FC<CareIndeedButtonProps> = ({
   
   const getVariantStyles = () => {
     if (disabled) {
-      return 'bg-gray-200 text-gray-400 border border-gray-200 cursor-not-allowed';
+      return 'bg-gray-200 text-disabled border border-gray-200 cursor-not-allowed';
     }
     
     switch (variant) {
       case 'primary':
-        return 'bg-ci-orange text-white hover:bg-opacity-95 shadow-[0_8px_20px_rgba(242,110,54,0.15)] border-none';
+        return 'bg-brand-orange text-white hover:bg-opacity-95 shadow-[0_8px_20px_rgba(242,110,54,0.15)] border-none';
       case 'outline':
-        return 'bg-white text-ci-orange border border-ci-orange hover:bg-ci-orange hover:text-white';
+        return 'bg-white text-brand-orange border border-brand-orange hover:bg-brand-orange hover:text-white';
       default:
-        return 'bg-ci-orange text-white';
+        return 'bg-brand-orange text-white';
     }
   };
 

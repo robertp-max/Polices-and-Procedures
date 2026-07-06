@@ -22,14 +22,14 @@ export function MetricTile({ metric }: MetricTileProps) {
       className="min-h-[106px] min-w-0 p-5 flex flex-col justify-between transition-all duration-150 hover:shadow-sm"
     >
       <div>
-        <div className="truncate text-[10px] font-bold uppercase tracking-wider text-ci-teal opacity-90">
+        <div className="truncate text-[10px] font-bold uppercase tracking-wider text-brand-teal opacity-90">
           {metric.label}
         </div>
-        <div className="mt-2 truncate text-2xl font-bold leading-none text-ci-teal-deep">
+        <div className="mt-2 truncate text-2xl font-bold leading-none text-brand-teal-deep">
           {metric.value}
         </div>
       </div>
-      <div className="mt-1 truncate text-xs text-gray-500">
+      <div className="mt-1 truncate text-xs text-muted">
         {metric.helper}
       </div>
     </CareIndeedCard>

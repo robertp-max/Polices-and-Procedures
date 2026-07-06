@@ -129,14 +129,14 @@ const BradGeneratingOverlay = () => (
         <OutlineStar className="h-[8%] w-[8%] left-[12%] top-[25%]" animClass="def2-anim-star-3" />
       </div>
       <h2 className="mb-2 text-lg font-bold tracking-tight text-gray-900">Brad is generating the packet</h2>
-      <p className="mb-8 text-[13px] font-medium text-gray-700">Brad is mapping content to packet sections...</p>
+      <p className="mb-8 text-[13px] font-medium text-ink">Brad is mapping content to packet sections...</p>
       <div className="w-full">
         <div className="relative mb-4 h-1 w-full overflow-hidden rounded-full bg-gray-200/50">
           <div className="def2-animate-progress absolute bottom-0 left-0 top-0 w-1/3 rounded-full bg-[#008080]" />
         </div>
         <div className="flex items-center justify-center gap-2 text-xs">
           <span className="font-semibold text-[#008080]">Step 2 of 5</span>
-          <span className="font-medium text-gray-600">Content Mapping</span>
+          <span className="font-medium text-secondary">Content Mapping</span>
         </div>
       </div>
     </div>
@@ -151,10 +151,10 @@ const GoogleUploadingOverlay = () => (
         <div className="absolute inset-0 rounded-full border-[6px] border-[#EAE4E3] border-t-[#007970] animate-spin" />
       </div>
       <h2 className="mb-2 text-lg font-bold tracking-tight text-gray-900">Uploading to Google Drive</h2>
-      <p className="mb-8 text-[13px] font-medium text-gray-700">Saving the generated packet and attaching the real document preview...</p>
+      <p className="mb-8 text-[13px] font-medium text-ink">Saving the generated packet and attaching the real document preview...</p>
       <div className="flex items-center justify-center gap-2 text-xs">
         <span className="font-semibold text-[#008080]">Step 4 of 5</span>
-        <span className="font-medium text-gray-600">Drive Sync</span>
+        <span className="font-medium text-secondary">Drive Sync</span>
       </div>
     </div>
   </div>

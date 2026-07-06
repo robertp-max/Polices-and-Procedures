@@ -11,13 +11,13 @@ export interface ProgressMeterProps {
 export function ProgressMeter({ className, label = 'Progress', tone = 'teal', value }: ProgressMeterProps) {
   const boundedValue = Math.max(0, Math.min(100, value));
   const isOrange = tone === 'orange' || tone === 'amber';
-  const barColor = isOrange ? 'bg-ci-orange' : 'bg-ci-teal';
+  const barColor = isOrange ? 'bg-brand-orange' : 'bg-ci-teal';
 
   return (
     <div className={cx('grid gap-xs', className)}>
-      <div className="flex items-center justify-between gap-sm text-[10px] font-bold uppercase tracking-wider text-gray-500">
+      <div className="flex items-center justify-between gap-sm text-[10px] font-bold uppercase tracking-wider text-muted">
         <span>{label}</span>
-        <span className="tabular-nums font-semibold text-ci-teal-deep">{boundedValue}%</span>
+        <span className="tabular-nums font-semibold text-brand-teal-deep">{boundedValue}%</span>
       </div>
       <div
         aria-label={label}

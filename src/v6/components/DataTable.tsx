@@ -17,13 +17,13 @@ export interface DataTableProps<Row extends Record<string, string>> {
 
 export function DataTable<Row extends Record<string, string>>({ columns, label, rows, onRowClick }: DataTableProps<Row>) {
   return (
-    <div className="overflow-hidden rounded-xl border border-ci-border bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-card bg-white shadow-sm">
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse text-left text-xs" aria-label={label}>
-          <thead className="bg-ci-mint/10 text-[10px] font-bold uppercase tracking-wider text-ci-teal-deep border-b border-ci-border">
+          <thead className="bg-surface-hover text-[10px] font-bold uppercase tracking-wider text-brand-teal-deep border-b border-card">
             <tr>
               {columns.map((column) => (
-                <th className="whitespace-nowrap px-4 py-3 font-bold text-ci-teal-deep" key={String(column.key)} scope="col">
+                <th className="whitespace-nowrap px-4 py-3 font-bold text-brand-teal-deep" key={String(column.key)} scope="col">
                   {column.label}
                 </th>
               ))}
@@ -33,7 +33,7 @@ export function DataTable<Row extends Record<string, string>>({ columns, label, 
             {rows.map((row, rowIndex) => (
               <tr
                 className={cx(
-                  'transition duration-150 hover:bg-ci-mint/5',
+                  'transition duration-150 hover:bg-surface-hover',
                   onRowClick && 'cursor-pointer',
                 )}
                 key={`${label}-${rowIndex}`}
@@ -48,9 +48,9 @@ export function DataTable<Row extends Record<string, string>>({ columns, label, 
                   return (
                     <td
                       className={cx(
-                        'border-b border-ci-border px-4 py-3 text-xs text-gray-700 leading-normal',
-                        isIdentityColumn && 'whitespace-nowrap font-bold text-ci-teal',
-                        isTitleColumn && 'font-bold text-ci-teal-deep',
+                        'border-b border-card px-4 py-3 text-xs text-ink leading-normal',
+                        isIdentityColumn && 'whitespace-nowrap font-bold text-brand-teal',
+                        isTitleColumn && 'font-bold text-brand-teal-deep',
                         column.status && 'whitespace-nowrap',
                       )}
                       key={String(column.key)}

@@ -429,7 +429,7 @@ export default function BradWorkspace() {
                       className="group flex items-center gap-3 text-left disabled:opacity-50"
                     >
                       <a.Icon aria-hidden className="h-4 w-4 shrink-0 text-teal-600 transition-transform group-hover:scale-110" />
-                      <span className="truncate text-[13px] font-light text-gray-700 transition-colors group-hover:text-black">{a.label}</span>
+                      <span className="truncate text-[13px] font-light text-ink transition-colors group-hover:text-black">{a.label}</span>
                     </button>
                   ))}
                 </div>
@@ -438,17 +438,17 @@ export default function BradWorkspace() {
               <div className={`brad-menu-panel ${isWorkMenuRelative ? 'relative z-10' : 'absolute inset-x-6 top-5 pointer-events-none z-0'} ${openComposerMenu === 'work' ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`}>
                 <div className="mb-5 flex items-center justify-between">
                   <h3 className="text-[10px] font-bold uppercase tracking-wider text-orange-500">Generated Work</h3>
-                  <button type="button" onClick={() => setOpenComposerMenu(null)} className="text-[11px] font-light text-gray-400 transition-colors hover:text-gray-700">Close</button>
+                  <button type="button" onClick={() => setOpenComposerMenu(null)} className="text-[11px] font-light text-disabled transition-colors hover:text-ink">Close</button>
                 </div>
                 <div className="space-y-3">
                   {objects.length === 0 ? (
-                    <p className="py-2 text-xs font-light text-gray-400">No generated work yet. Run a report or draft minutes.</p>
+                    <p className="py-2 text-xs font-light text-disabled">No generated work yet. Run a report or draft minutes.</p>
                   ) : objects.map((o) => (
                     <div key={o.metadata.object_id} className="group cursor-pointer">
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <div className="text-sm font-light text-gray-900 transition-colors group-hover:text-blue-600">{objLabel(o.metadata.object_type)}</div>
-                          <div className="mt-1 text-[11px] font-light text-gray-400">{new Date(o.metadata.generated_at).toLocaleString()}</div>
+                          <div className="mt-1 text-[11px] font-light text-disabled">{new Date(o.metadata.generated_at).toLocaleString()}</div>
                           <button type="button" onClick={() => setExpanded(expanded === o.metadata.object_id ? null : o.metadata.object_id)} className="mt-2 text-xs font-light text-teal-600 hover:underline">
                             {expanded === o.metadata.object_id ? 'Hide details' : 'View details'}
                           </button>
@@ -456,7 +456,7 @@ export default function BradWorkspace() {
                         <div className="rounded-md bg-teal-50 px-2 py-1 text-[11px] font-light text-teal-600">{o.metadata.write_status}</div>
                       </div>
                       {expanded === o.metadata.object_id && (
-                        <pre className="mt-2 max-h-[200px] overflow-auto whitespace-pre-wrap rounded-lg bg-gray-50 p-2 text-[10px] text-gray-700">{JSON.stringify(o.content, null, 2)}</pre>
+                        <pre className="mt-2 max-h-[200px] overflow-auto whitespace-pre-wrap rounded-lg bg-gray-50 p-2 text-[10px] text-ink">{JSON.stringify(o.content, null, 2)}</pre>
                       )}
                     </div>
                   ))}
@@ -527,13 +527,13 @@ export default function BradWorkspace() {
             <h1 className="text-[48px] font-light leading-tight tracking-tight text-gray-800">
               Welcome back, <span className="bg-gradient-to-r from-teal-500 to-blue-500 bg-clip-text font-semibold text-transparent">{welcomeName}</span>
             </h1>
-            <p className="mt-[12px] text-[14px] font-medium tracking-wide text-gray-500">What would you like to build today?</p>
+            <p className="mt-[12px] text-[14px] font-medium tracking-wide text-muted">What would you like to build today?</p>
           </div>
 
           <div className="w-full max-w-[672px]">
             {composerInner}
             <p className="brad-hint mt-5 flex items-center justify-center gap-3 text-[13px] font-medium text-gray-800" style={{ opacity: openComposerMenu ? 0 : 1 }}>
-              Enter to send <span className="font-normal text-gray-400">Shift+Enter for a new line</span>
+              Enter to send <span className="font-normal text-disabled">Shift+Enter for a new line</span>
             </p>
           </div>
         </div>

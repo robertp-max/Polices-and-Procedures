@@ -197,12 +197,12 @@ export function FrameworkTabs({
     cx(
       'py-3 border-b-4 text-xs font-bold uppercase tracking-wider transition-all duration-150 focus-visible:outline-none focus-visible:shadow-focus',
       isActive
-        ? 'border-ci-teal-deep text-ci-teal-deep font-bold'
-        : 'border-transparent text-gray-500 hover:text-ci-teal hover:border-gray-300',
+        ? 'border-brand-teal-deep text-brand-teal-deep font-bold'
+        : 'border-transparent text-muted hover:text-brand-teal hover:border-gray-300',
     );
 
   return (
-    <div className="flex justify-start w-full border-b border-ci-border bg-transparent px-2 mb-6">
+    <div className="flex justify-start w-full border-b border-card bg-transparent px-2 mb-6">
       <div className="flex flex-wrap gap-x-6">
         {onFrameworkTabChange ? (
           <button onClick={() => onFrameworkTabChange('taxonomy')} className={tabClass(activeTab === 'taxonomy')}>
@@ -270,7 +270,7 @@ export function FrameworkScreen() {
           <section className="grid content-start gap-lg">
             <div className="flex flex-wrap items-end justify-between gap-md">
               <div className="grid gap-xs">
-                <h2 className="text-xl font-bold text-ci-teal-deep">Framework domains</h2>
+                <h2 className="text-xl font-bold text-brand-teal-deep">Framework domains</h2>
                 <p className="max-w-content text-sm text-muted">
                   Top-level taxonomy tiles show domain ownership, policy scope, ACHC anchor density, and survey-readiness signals.
                 </p>
@@ -304,7 +304,7 @@ export function FrameworkScreen() {
               <div className="mb-4 flex items-start justify-between gap-md">
                 <div>
                   <ToneTag tone="orange">Authority context</ToneTag>
-                  <h2 className="mt-2 text-lg font-bold text-ci-teal-deep">ACHC / CMS / Title 22</h2>
+                  <h2 className="mt-2 text-lg font-bold text-brand-teal-deep">ACHC / CMS / Title 22</h2>
                 </div>
                 <ToneBadge size="sm" status="ready" />
               </div>
@@ -313,12 +313,12 @@ export function FrameworkScreen() {
                   <CareIndeedCard variant="grid-outline" className="p-4" key={label}>
                     <div className="flex items-start justify-between gap-md">
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">{label}</p>
-                        <p className="mt-1 text-xl font-bold text-ci-teal-deep">{value}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted">{label}</p>
+                        <p className="mt-1 text-xl font-bold text-brand-teal-deep">{value}</p>
                       </div>
                       <ToneTag tone={tone}>{tone === 'orange' ? 'Review' : 'Mapped'}</ToneTag>
                     </div>
-                    <p className="mt-2 text-xs text-gray-500">{helper}</p>
+                    <p className="mt-2 text-xs text-muted">{helper}</p>
                   </CareIndeedCard>
                 ))}
               </div>
@@ -424,17 +424,17 @@ function DomainTile({ domain }: { domain: DomainTileData }) {
     >
       <div className="grid gap-md">
         <div className="flex items-start justify-between gap-md">
-          <span className={cx('grid h-tap w-tap place-items-center rounded-lg bg-ci-mint/10 text-ci-teal', domainIconClasses[domain.tone])}>
+          <span className={cx('grid h-tap w-tap place-items-center rounded-lg bg-surface-hover text-brand-teal', domainIconClasses[domain.tone])}>
             <Icon aria-hidden="true" className="h-5 w-5" />
           </span>
           <ToneTag tone={domain.tone}>{domain.code}</ToneTag>
         </div>
         <div className="grid gap-xs">
           <div className="flex flex-wrap items-center justify-between gap-sm">
-            <h3 className="text-sm font-bold text-ci-teal-deep">{domain.title}</h3>
+            <h3 className="text-sm font-bold text-brand-teal-deep">{domain.title}</h3>
             <ToneBadge size="sm" status={domain.status} />
           </div>
-          <p className="text-xs text-gray-500">{domain.description}</p>
+          <p className="text-xs text-muted">{domain.description}</p>
         </div>
       </div>
 
@@ -446,11 +446,11 @@ function DomainTile({ domain }: { domain: DomainTileData }) {
         </div>
         <ProgressMeter label="Survey readiness" tone={domain.tone} value={domain.readiness} />
         <Link
-          className="inline-flex min-h-tap items-center justify-between gap-md rounded-lg border border-ci-border bg-white px-4 py-2 text-left text-xs font-bold uppercase tracking-wider text-ci-teal transition duration-150 hover:bg-ci-mint/10 focus-visible:outline-none focus-visible:shadow-focus"
+          className="inline-flex min-h-tap items-center justify-between gap-md rounded-lg border border-card bg-white px-4 py-2 text-left text-xs font-bold uppercase tracking-wider text-brand-teal transition duration-150 hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus"
           to="/framework/achc-survey"
         >
           Inspect architecture
-          <ArrowRight aria-hidden="true" className="h-4 w-4 text-ci-orange" />
+          <ArrowRight aria-hidden="true" className="h-4 w-4 text-brand-orange" />
         </Link>
       </div>
     </CareIndeedCard>
@@ -459,9 +459,9 @@ function DomainTile({ domain }: { domain: DomainTileData }) {
 
 function DomainStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-ci-border bg-ci-mint/5 p-2 overflow-hidden text-center">
-      <p className="text-lg font-bold text-ci-teal-deep">{value}</p>
-      <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-ci-teal">{label}</p>
+    <div className="rounded-xl border border-card bg-surface-hover p-2 overflow-hidden text-center">
+      <p className="text-lg font-bold text-brand-teal-deep">{value}</p>
+      <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-brand-teal">{label}</p>
     </div>
   );
 }

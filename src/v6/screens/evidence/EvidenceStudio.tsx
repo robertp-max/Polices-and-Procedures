@@ -195,7 +195,7 @@ function DriveCard({ folder, onOpen }: { folder: DriveFolder; onOpen: () => void
 
 // --- ICONS ---
 const DocIcon = () => (
-  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+  <svg className="w-5 h-5 text-disabled" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
 );
 
 export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: EvidenceStudioTab }) {
@@ -405,16 +405,16 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
           <div className="animate-fade-in min-h-[500px]">
             <div className="mb-6 pb-6">
               <h2 className="text-xl text-[#007C7A] mb-1">{driveNode ? driveNode.name : 'Evidence'}</h2>
-              <p className="text-sm text-gray-500 font-light max-w-2xl">{driveNode?.pageDesc ?? 'Compliance evidence organized by area — open a folder to drill into years, events, and audit-ready documents.'}</p>
+              <p className="text-sm text-muted font-light max-w-2xl">{driveNode?.pageDesc ?? 'Compliance evidence organized by area — open a folder to drill into years, events, and audit-ready documents.'}</p>
             </div>
 
             {/* Breadcrumb */}
-            <div className="mb-8 flex flex-wrap items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-gray-400">
+            <div className="mb-8 flex flex-wrap items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-disabled">
               <button type="button" onClick={() => setDrivePath([])} className="transition-colors hover:text-[#007C7A]">Evidence</button>
               {drivePath.map((seg, i) => (
                 <span key={i} className="flex items-center gap-2">
                   <span className="text-gray-300">/</span>
-                  <button type="button" onClick={() => setDrivePath(drivePath.slice(0, i + 1))} className={i === drivePath.length - 1 ? 'text-gray-700' : 'transition-colors hover:text-[#007C7A]'}>{seg}</button>
+                  <button type="button" onClick={() => setDrivePath(drivePath.slice(0, i + 1))} className={i === drivePath.length - 1 ? 'text-ink' : 'transition-colors hover:text-[#007C7A]'}>{seg}</button>
                 </span>
               ))}
             </div>
@@ -434,7 +434,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                 ))}
               </div>
             ) : (
-              <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-gray-200 text-sm font-light text-gray-400">
+              <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-gray-200 text-sm font-light text-disabled">
                 No packets generated for {driveNode?.name} yet.
               </div>
             )}
@@ -448,12 +448,12 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                       <div className="mt-1"><DocIcon /></div>
                       <div>
                         <h4 className="font-medium text-sm text-gray-900">{p.id}</h4>
-                        <p className="text-xs font-light text-gray-500 line-clamp-1">{p.template}</p>
+                        <p className="text-xs font-light text-muted line-clamp-1">{p.template}</p>
                         <div className="flex justify-between items-center mt-3">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider ${p.status.includes('Sent') ? 'bg-teal-100 text-teal-800' : 'bg-yellow-100 text-yellow-800'}`}>
                             {p.status}
                           </span>
-                          <span className="text-[10px] font-light text-gray-400">{p.date}</span>
+                          <span className="text-[10px] font-light text-disabled">{p.date}</span>
                         </div>
                       </div>
                     </div>
@@ -481,7 +481,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
             {step === 1 && (
               <div className="bg-white/95 backdrop-blur-sm rounded-[32px] p-8 shadow-xl border border-transparent animate-fade-in">
                 <div className="mb-8">
-                  <h2 className="text-sm tracking-widest text-gray-500 uppercase font-medium mb-6">Select a packet template</h2>
+                  <h2 className="text-sm tracking-widest text-muted uppercase font-medium mb-6">Select a packet template</h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -492,11 +492,11 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                     >
                       <div>
                         <h3 className="font-medium text-gray-800 text-lg mb-2 leading-tight">{t.name}</h3>
-                        <p className="font-light text-sm text-gray-500 line-clamp-3">{t.desc}</p>
+                        <p className="font-light text-sm text-muted line-clamp-3">{t.desc}</p>
                       </div>
                       <div className="flex flex-wrap gap-2 mt-4">
                         {t.tags.map((tag) => (
-                          <span key={tag} className="border border-gray-200 text-gray-500 px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider">
+                          <span key={tag} className="border border-gray-200 text-muted px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider">
                             {tag}
                           </span>
                         ))}
@@ -510,7 +510,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
             {/* STAGE 2: PAYER ROUTE OR EVENT */}
             {step === 2 && selectedTemplate && (
               <div className="bg-white/95 backdrop-blur-sm rounded-[32px] p-8 shadow-xl border border-transparent animate-fade-in">
-                <button type="button" onClick={() => resetStudio()} className="text-[11px] font-medium uppercase tracking-wider text-gray-400 mb-6 hover:text-[#007C7A] transition-colors">← Back to Templates</button>
+                <button type="button" onClick={() => resetStudio()} className="text-[11px] font-medium uppercase tracking-wider text-disabled mb-6 hover:text-[#007C7A] transition-colors">← Back to Templates</button>
 
                 {selectedTemplate.id === 'CI-HH-ADM-001' ? (
                   <>
@@ -523,9 +523,9 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                         >
                           <div className="flex justify-between items-start mb-2">
                             <h3 className="font-medium text-gray-800 text-base">{route.name}</h3>
-                            {route.badge && <span className="text-xs font-medium text-gray-500">{route.badge}</span>}
+                            {route.badge && <span className="text-xs font-medium text-muted">{route.badge}</span>}
                           </div>
-                          <p className="font-light text-sm text-gray-500">{route.desc}</p>
+                          <p className="font-light text-sm text-muted">{route.desc}</p>
                         </div>
                       ))}
                     </div>
@@ -540,7 +540,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                           className="bg-white rounded-[16px] border border-transparent shadow-md p-6 cursor-pointer hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300"
                         >
                           <h3 className="font-medium text-gray-800 text-base mb-1">{e.title}</h3>
-                          <p className="font-light text-xs text-gray-500 uppercase tracking-wider">{e.date} &nbsp;|&nbsp; {e.id}</p>
+                          <p className="font-light text-xs text-muted uppercase tracking-wider">{e.date} &nbsp;|&nbsp; {e.id}</p>
                         </div>
                       ))}
                     </div>
@@ -552,8 +552,8 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
             {/* STAGE 3: DATA SOURCE — real upload + Google Drive folder picker */}
             {step === 3 && (
               <div className="bg-white/95 backdrop-blur-sm rounded-[32px] p-8 shadow-xl border border-transparent animate-fade-in">
-                <button type="button" onClick={() => setStep(2)} className="text-[11px] font-medium uppercase tracking-wider text-gray-400 mb-6 hover:text-[#007C7A] transition-colors">← Back</button>
-                <h2 className="text-sm tracking-widest text-gray-500 uppercase font-medium mb-6">2 • Select Data Source *</h2>
+                <button type="button" onClick={() => setStep(2)} className="text-[11px] font-medium uppercase tracking-wider text-disabled mb-6 hover:text-[#007C7A] transition-colors">← Back</button>
+                <h2 className="text-sm tracking-widest text-muted uppercase font-medium mb-6">2 • Select Data Source *</h2>
 
                 <input ref={fileInputRef} type="file" multiple className="hidden" onChange={onFilesChosen} aria-label="Upload documents" title="Upload documents" accept="image/*,application/pdf,.json,.csv,.tsv,.md,.txt" />
 
@@ -561,33 +561,33 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                   <button type="button" onClick={() => { setDataSource('Upload / Camera'); fileInputRef.current?.click(); }}
                     className="p-8 border border-transparent shadow-md bg-white rounded-[24px] cursor-pointer hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 text-center">
                     <div className="font-medium text-gray-800 text-lg">Upload / Camera</div>
-                    <div className="text-[10px] font-light uppercase tracking-widest text-gray-400 mt-3">Images, PDF, Data files</div>
+                    <div className="text-[10px] font-light uppercase tracking-widest text-disabled mt-3">Images, PDF, Data files</div>
                   </button>
                   <button type="button" onClick={() => { setDataSource('Folders'); openFolderModal(); }}
                     className="p-8 border border-transparent shadow-md bg-white rounded-[24px] cursor-pointer hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 text-center">
                     <div className="font-medium text-gray-800 text-lg">Folders</div>
-                    <div className="text-[10px] font-light uppercase tracking-widest text-gray-400 mt-3">Browse Google Drive</div>
+                    <div className="text-[10px] font-light uppercase tracking-widest text-disabled mt-3">Browse Google Drive</div>
                   </button>
                   <button type="button" onClick={() => { setDataSource('Both (Merge)'); fileInputRef.current?.click(); }}
                     className="p-8 border border-transparent shadow-md bg-white rounded-[24px] cursor-pointer hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 text-center">
                     <div className="font-medium text-gray-800 text-lg">Both (Merge)</div>
-                    <div className="text-[10px] font-light uppercase tracking-widest text-gray-400 mt-3">Upload + Drive folder</div>
+                    <div className="text-[10px] font-light uppercase tracking-widest text-disabled mt-3">Upload + Drive folder</div>
                   </button>
                 </div>
 
                 {/* Uploaded Documents */}
                 {dataDocs.length > 0 && (
                   <div className="mt-8">
-                    <h3 className="text-sm font-medium text-gray-800 mb-4">Uploaded Documents <span className="font-light text-gray-400">({dataDocs.length})</span></h3>
+                    <h3 className="text-sm font-medium text-gray-800 mb-4">Uploaded Documents <span className="font-light text-disabled">({dataDocs.length})</span></h3>
                     <div className="space-y-2">
                       {dataDocs.map((d, i) => (
                         <div key={`${d.name}-${i}`} className="flex items-center justify-between gap-3 rounded-[14px] border border-gray-100 bg-gray-50 px-4 py-3">
                           <div className="flex min-w-0 items-center gap-3">
                             <DocIcon />
                             <span className="truncate text-sm text-gray-800">{d.name}</span>
-                            <span className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-gray-400">{d.source === 'drive' ? 'Google Drive' : 'Upload'}</span>
+                            <span className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-disabled">{d.source === 'drive' ? 'Google Drive' : 'Upload'}</span>
                           </div>
-                          <button type="button" aria-label="Remove document" title="Remove document" onClick={() => setDataDocs((prev) => prev.filter((_, j) => j !== i))} className="shrink-0 text-lg leading-none text-gray-400 hover:text-red-500">×</button>
+                          <button type="button" aria-label="Remove document" title="Remove document" onClick={() => setDataDocs((prev) => prev.filter((_, j) => j !== i))} className="shrink-0 text-lg leading-none text-disabled hover:text-red-500">×</button>
                         </div>
                       ))}
                     </div>
@@ -601,9 +601,9 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                     <div className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-[24px] bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
                         <h3 className="text-sm font-medium uppercase tracking-widest text-[#007C7A]">Select from Google Drive</h3>
-                        <button type="button" aria-label="Close" title="Close" onClick={() => setFolderModalOpen(false)} className="text-xl leading-none text-gray-400 hover:text-gray-700">×</button>
+                        <button type="button" aria-label="Close" title="Close" onClick={() => setFolderModalOpen(false)} className="text-xl leading-none text-disabled hover:text-ink">×</button>
                       </div>
-                      <div className="flex flex-wrap items-center gap-2 border-b border-gray-50 px-6 py-3 text-[11px] font-medium uppercase tracking-wider text-gray-400">
+                      <div className="flex flex-wrap items-center gap-2 border-b border-gray-50 px-6 py-3 text-[11px] font-medium uppercase tracking-wider text-disabled">
                         <button type="button" onClick={() => loadDrive(undefined, [])} className="hover:text-[#007C7A]">Drive</button>
                         {driveTrail.map((t, i) => (
                           <span key={t.id} className="flex items-center gap-2">
@@ -614,7 +614,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                       </div>
                       <div className="flex-1 overflow-y-auto px-6 py-4">
                         {driveLoading ? (
-                          <div className="py-12 text-center text-sm font-light text-gray-400">Loading…</div>
+                          <div className="py-12 text-center text-sm font-light text-disabled">Loading…</div>
                         ) : driveErr ? (
                           <div className="py-12 text-center text-sm font-light text-red-500">{driveErr}</div>
                         ) : driveData && (driveData.folders.length > 0 || driveData.files.length > 0) ? (
@@ -630,17 +630,17 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                               return (
                                 <button key={f.id} type="button" onClick={() => addDriveFile({ id: f.id, name: f.name })} className="flex w-full items-center justify-between gap-3 rounded-[12px] px-3 py-2.5 text-left hover:bg-gray-50">
                                   <span className="flex min-w-0 items-center gap-3"><DocIcon /><span className="truncate text-sm text-gray-800">{f.name}</span></span>
-                                  <span className={`shrink-0 text-[10px] font-medium uppercase tracking-wider ${added ? 'text-teal-600' : 'text-gray-400'}`}>{added ? '✓ Added' : 'Add'}</span>
+                                  <span className={`shrink-0 text-[10px] font-medium uppercase tracking-wider ${added ? 'text-teal-600' : 'text-disabled'}`}>{added ? '✓ Added' : 'Add'}</span>
                                 </button>
                               );
                             })}
                           </div>
                         ) : (
-                          <div className="py-12 text-center text-sm font-light text-gray-400">This folder is empty.</div>
+                          <div className="py-12 text-center text-sm font-light text-disabled">This folder is empty.</div>
                         )}
                       </div>
                       <div className="flex justify-end border-t border-gray-100 px-6 py-4">
-                        <button type="button" onClick={() => setFolderModalOpen(false)} className="rounded-full bg-gray-100 px-6 py-2.5 text-xs font-medium uppercase tracking-wider text-gray-600 hover:bg-gray-200">Done</button>
+                        <button type="button" onClick={() => setFolderModalOpen(false)} className="rounded-full bg-gray-100 px-6 py-2.5 text-xs font-medium uppercase tracking-wider text-secondary hover:bg-gray-200">Done</button>
                       </div>
                     </div>
                   </div>
@@ -651,15 +651,15 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
             {/* STAGE 4: VALIDATION */}
             {step === 4 && selectedTemplate && (
               <div className="bg-white/95 backdrop-blur-sm rounded-[32px] p-8 shadow-xl border border-transparent animate-fade-in">
-                <h2 className="text-sm tracking-widest text-gray-500 uppercase font-medium mb-6">Validation Check</h2>
+                <h2 className="text-sm tracking-widest text-muted uppercase font-medium mb-6">Validation Check</h2>
 
                 <div className="bg-white border border-gray-200 rounded-[24px] p-6 mb-8 shadow-sm">
                   <h3 className="text-gray-800 font-medium mb-2 flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
                     Reviewing Data Payload
                   </h3>
-                  <p className="font-light text-sm text-gray-600 mb-4">The defensibility engine is checking all constraints for {selectedTemplate.name}.</p>
-                  <ul className="list-disc pl-5 text-sm font-light text-gray-500 space-y-2">
+                  <p className="font-light text-sm text-secondary mb-4">The defensibility engine is checking all constraints for {selectedTemplate.name}.</p>
+                  <ul className="list-disc pl-5 text-sm font-light text-muted space-y-2">
                     <li>Demographic variables verified.</li>
                     <li>Clause logic mapped for {selectedPayerRoute ? selectedPayerRoute.name : 'Standard Event'}.</li>
                     {dataSource && <li>Data source linked: {dataSource}.</li>}
@@ -667,7 +667,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                 </div>
 
                 <div className="flex gap-4">
-                  <button type="button" onClick={() => setStep(3)} className="px-8 py-3 text-xs font-medium uppercase tracking-wider text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
+                  <button type="button" onClick={() => setStep(3)} className="px-8 py-3 text-xs font-medium uppercase tracking-wider text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
                     Back
                   </button>
                   <button type="button" onClick={() => setStep(5)} className="px-8 py-3 text-xs font-medium uppercase tracking-wider text-white bg-[#007C7A] rounded-full shadow-md hover:shadow-lg transition-all">
@@ -683,7 +683,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                 <div className="flex justify-between items-center mb-8">
                   <h2 className="text-sm tracking-widest text-[#007C7A] uppercase font-medium">Step 3 • Preview & Export</h2>
                   <div className="flex gap-4">
-                    <button type="button" onClick={() => setStep(4)} className="px-6 py-2 border border-gray-300 rounded-full text-xs font-medium text-gray-600 hover:bg-white transition-colors">← Back</button>
+                    <button type="button" onClick={() => setStep(4)} className="px-6 py-2 border border-gray-300 rounded-full text-xs font-medium text-secondary hover:bg-white transition-colors">← Back</button>
                     <button type="button" onClick={() => setStep(6)} className="px-6 py-2 bg-[#007C7A] text-white rounded-full text-xs font-medium shadow-md hover:shadow-lg transition-all">Set up Signing →</button>
                   </div>
                 </div>
@@ -698,7 +698,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                       {pageNum === 1 && (
                         <div className="bg-teal-50/50 p-4 rounded-lg w-full">
                           <div className="font-medium text-xs text-teal-800 mb-2">DETAILS</div>
-                          <div className="font-light text-[10px] text-gray-500 space-y-2">
+                          <div className="font-light text-[10px] text-muted space-y-2">
                             <p>DATE: {new Date().toLocaleDateString()}</p>
                             <p>CONTEXT: {selectedEvent ? selectedEvent.title : 'Initial Admission'}</p>
                             <p>STATUS: Generated &amp; Defensible</p>
@@ -716,7 +716,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                         </div>
                       )}
 
-                      <div className="absolute bottom-4 left-6 text-[8px] font-light text-gray-400">Page {pageNum}</div>
+                      <div className="absolute bottom-4 left-6 text-[8px] font-light text-disabled">Page {pageNum}</div>
                     </div>
                   ))}
                 </div>
@@ -737,7 +737,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                     <div key={i} className="flex justify-between items-center p-4 rounded-[16px] bg-white border border-transparent shadow-md hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
                       <div>
                         <p className="font-medium text-gray-800 text-sm">{s.name}</p>
-                        <p className="font-light text-xs text-gray-500 mt-1">{s.role}</p>
+                        <p className="font-light text-xs text-muted mt-1">{s.role}</p>
                       </div>
                       <div className="flex items-center gap-1 text-orange-600">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -769,14 +769,14 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
               <div className="bg-white/95 backdrop-blur-sm rounded-[32px] p-8 shadow-xl border border-transparent animate-fade-in flex flex-col md:flex-row gap-8 items-start">
 
                 <div className="w-full md:w-1/3 bg-[#F8FAFC] rounded-[24px] p-6 shadow-sm border border-gray-100">
-                  <div className="text-[10px] font-medium text-gray-500 uppercase tracking-widest mb-2">PACKET ID</div>
+                  <div className="text-[10px] font-medium text-muted uppercase tracking-widest mb-2">PACKET ID</div>
                   <div className="flex gap-2 items-center mb-4">
                     <span className="px-4 py-2 bg-white rounded-lg text-sm font-medium border border-gray-200 text-gray-800">PKT_2026_{Math.floor(Math.random() * 1000)}</span>
                     <button type="button" className="bg-[#007C7A] text-white p-2 rounded-lg shadow hover:bg-teal-800 transition-colors">
                       <DocIcon />
                     </button>
                   </div>
-                  <div className="font-light text-[10px] text-gray-400 mt-4 leading-relaxed">
+                  <div className="font-light text-[10px] text-disabled mt-4 leading-relaxed">
                     Packet bound to: {selectedEvent ? selectedEvent.title : 'Admission'}<br />
                     Generated: {new Date().toLocaleDateString()}
                   </div>
@@ -787,13 +787,13 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                     <svg className="w-6 h-6 text-[#007C7A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     Thank you — your packet is ready.
                   </h3>
-                  <p className="font-light text-sm text-gray-600 mb-6">
+                  <p className="font-light text-sm text-secondary mb-6">
                     Please use this as your formal documentation. Please go over this packet and use the Evidence Studio if you have any corrections.
                   </p>
 
                   <div className="bg-gray-50 rounded-[16px] p-5 mb-8">
                     <p className="font-medium text-xs text-gray-800 mb-3">Signature tasks have been scheduled for these individuals:</p>
-                    <ul className="list-disc pl-5 font-light text-xs text-gray-600 space-y-1">
+                    <ul className="list-disc pl-5 font-light text-xs text-secondary space-y-1">
                       {signers.map((s, i) => (
                         <li key={i}>{s.name} — {s.role}</li>
                       ))}
@@ -822,7 +822,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
           <div className="space-y-6 animate-fade-in">
 
             <div className="bg-white/95 backdrop-blur-sm rounded-[32px] p-8 shadow-xl border border-transparent">
-              <div className="text-[10px] font-medium text-gray-500 uppercase tracking-widest mb-2">PACKET ID</div>
+              <div className="text-[10px] font-medium text-muted uppercase tracking-widest mb-2">PACKET ID</div>
               <div className="flex flex-col md:flex-row gap-4 md:items-center mb-3">
                 <input
                   type="text"
@@ -838,7 +838,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                   <DocIcon /> Load packet
                 </button>
               </div>
-              <p className="font-light text-xs text-gray-400">Find the Packet ID on the cover page and every page footer of a generated packet. Loading it starts a remediation thread with Brad.</p>
+              <p className="font-light text-xs text-disabled">Find the Packet ID on the cover page and every page footer of a generated packet. Loading it starts a remediation thread with Brad.</p>
             </div>
 
             <div className="bg-white/95 backdrop-blur-sm rounded-[32px] p-8 shadow-xl border border-transparent min-h-[500px] flex flex-col">
@@ -849,7 +849,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
 
               <div className="flex-1 bg-gray-50/50 rounded-[24px] border border-gray-100 p-6 flex flex-col justify-end mb-6 overflow-y-auto">
                 {!isPacketLoaded ? (
-                  <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                  <div className="flex flex-col items-center justify-center h-full text-disabled">
                     <img src="/apple-icon.png" alt="Brad" className="w-8 h-8 opacity-50 mb-4" />
                     <p className="text-sm font-light">Load a packet ID to begin.</p>
                   </div>
@@ -872,7 +872,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
               <div>
                 <div className="flex gap-2 mb-4">
                   {['Correction', 'Feedback', 'Suggestion'].map((tag) => (
-                    <button key={tag} type="button" className="px-4 py-1.5 rounded-full bg-gray-50 border border-gray-200 text-xs font-light text-gray-500 hover:bg-gray-100 transition-colors">{tag}</button>
+                    <button key={tag} type="button" className="px-4 py-1.5 rounded-full bg-gray-50 border border-gray-200 text-xs font-light text-muted hover:bg-gray-100 transition-colors">{tag}</button>
                   ))}
                 </div>
                 <div className="flex flex-col md:flex-row gap-4">
@@ -906,7 +906,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
             <div className="mb-10 pb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
               <div>
                 <h2 className="text-xl text-[#007C7A] mb-1">Signature Tracker</h2>
-                <p className="text-xs text-gray-400 font-light">Monitor open documents pending signature. Tasks have a 15-day due date and 90-day expiration.</p>
+                <p className="text-xs text-disabled font-light">Monitor open documents pending signature. Tasks have a 15-day due date and 90-day expiration.</p>
               </div>
               <div className="flex gap-2">
                 <span className="px-3 py-1 bg-yellow-50 text-yellow-700 rounded text-xs font-medium border border-yellow-100">3 Pending</span>
@@ -928,23 +928,23 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                         <span className="text-[10px] font-medium uppercase tracking-wider text-[#007C7A]">{open ? '▲ Hide signers' : '▼ View signers'}</span>
                       </div>
                       <p className="text-sm font-medium text-gray-800">{sig.template}</p>
-                      <p className="text-xs font-light text-gray-500 mt-1">Context: {sig.event}</p>
+                      <p className="text-xs font-light text-muted mt-1">Context: {sig.event}</p>
                       <div className="mt-4 flex items-center gap-2">
                         <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                        <span className="text-xs font-medium text-gray-700">Waiting on: <span className="font-light text-gray-500">{sig.signers}</span></span>
+                        <span className="text-xs font-medium text-ink">Waiting on: <span className="font-light text-muted">{sig.signers}</span></span>
                       </div>
                     </div>
 
                     <div className="flex flex-row md:flex-col gap-4 md:gap-2 md:items-end bg-gray-50 p-4 rounded-[16px] shrink-0 border border-gray-100" onClick={(e) => e.stopPropagation()}>
                       <div className="text-left md:text-right">
-                        <div className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-1">DUE DATE (15 DAYS)</div>
+                        <div className="text-[10px] font-medium text-disabled uppercase tracking-widest mb-1">DUE DATE (15 DAYS)</div>
                         <div className="text-sm font-medium text-gray-900">{sig.due}</div>
                       </div>
                       <div className="hidden md:block w-full h-px bg-gray-200"></div>
                       <div className="w-px h-8 bg-gray-200 md:hidden"></div>
                       <div className="text-left md:text-right">
-                        <div className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-1">EXPIRES (90 DAYS)</div>
-                        <div className="text-sm font-medium text-gray-500">{sig.expires}</div>
+                        <div className="text-[10px] font-medium text-disabled uppercase tracking-widest mb-1">EXPIRES (90 DAYS)</div>
+                        <div className="text-sm font-medium text-muted">{sig.expires}</div>
                       </div>
                       <button type="button" className="hidden md:block mt-2 text-xs font-medium text-[#007C7A] hover:underline">Send Reminder</button>
                     </div>
@@ -952,13 +952,13 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
 
                   {open && (
                     <div className="border-t border-gray-100 bg-gray-50/60 px-6 py-5">
-                      <div className="mb-3 text-[10px] font-medium uppercase tracking-widest text-gray-400">Signer roster · {signedCount} of {sig.roster.length} signed</div>
+                      <div className="mb-3 text-[10px] font-medium uppercase tracking-widest text-disabled">Signer roster · {signedCount} of {sig.roster.length} signed</div>
                       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                         {sig.roster.map((r, j) => (
                           <div key={j} className="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-4 py-3">
                             <div>
                               <p className="text-sm font-medium text-gray-800">{r.name}</p>
-                              <p className="text-[11px] font-light text-gray-500">{r.role}</p>
+                              <p className="text-[11px] font-light text-muted">{r.role}</p>
                             </div>
                             {r.signed ? (
                               <span className="flex items-center gap-1 text-[11px] font-medium text-teal-700">
