@@ -261,6 +261,38 @@
   --brad-user-text: #FFFFFF;
 }
 
+.theme-ci-light-orange {
+  --surface-canvas: var(--ci-canvas);
+  --surface-base: var(--ci-surface-white);
+  --surface-glass: var(--ci-surface-white);
+  --surface-hover-teal: var(--ci-mint-tint);
+
+  --brand-teal: var(--ci-muted-teal);
+  --brand-teal-deep: var(--ci-deep-teal);
+  --brand-orange: var(--ci-orange);
+
+  --text-primary: var(--ci-text-body);
+  --text-secondary: var(--ci-text-body);
+  --text-muted: var(--ci-text-muted);
+
+  --border-hairline: var(--ci-subdued-border);
+  --border-card: var(--ci-subdued-border);
+  --border-strong: var(--ci-subdued-border);
+
+  --background: var(--ci-canvas);
+  --foreground: var(--ci-text-body);
+  --card: var(--ci-surface-white);
+  --card-foreground: var(--ci-text-body);
+  --popover: var(--ci-surface-white);
+  --popover-foreground: var(--ci-text-body);
+
+  --secondary: var(--ci-mint-tint);
+  --secondary-foreground: var(--ci-deep-teal);
+
+  --border: var(--ci-subdued-border);
+  --input: var(--ci-subdued-border);
+}
+
 html {
   min-height: 100%;
   background-color: #FAFAFA;
