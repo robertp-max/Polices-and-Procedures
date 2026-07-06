@@ -15,7 +15,7 @@ const ALL_CLINICAL: JourneyRole[] = ['DON', 'RN', 'LVN', 'PT', 'PTA', 'OT', 'COT
    ───────────────────────────────────────────────────────────── */
 const GAO: JourneyModule[] = [
   { id: 'GAO-001', group: 'GAO', phase: 'GAO', title: 'Agency mission, vision, values', roles: 'ALL', policyRefs: ['EN-CM-001'], cmsRefs: [], method: 'None' },
-  { id: 'GAO-002', group: 'GAO', phase: 'GAO', title: 'Organizational structure & reporting', roles: 'ALL', policyRefs: ['GV-OG-001'], cmsRefs: [], method: 'None' },
+  { id: 'GAO-002', group: 'GAO', phase: 'GAO', title: 'Organizational structure & reporting', roles: 'ALL', policyRefs: ['GV-OG-001'], cmsRefs: ['42 CFR 484.105(c)'], method: 'None' },
   { id: 'GAO-003', group: 'GAO', phase: 'GAO', title: 'Scope of services', roles: 'ALL', policyRefs: ['GV-OG-003'], cmsRefs: [], method: 'None' },
   { id: 'GAO-004', group: 'GAO', phase: 'GAO', title: 'Corporate compliance program', roles: 'ALL', policyRefs: ['CO-CP-001', 'CO-CP-004'], cmsRefs: [], method: 'Quiz', passThreshold: 0.8 },
   { id: 'GAO-005', group: 'GAO', phase: 'GAO', title: 'Compliance hotline & reporting', roles: 'ALL', policyRefs: ['CO-CP-006'], cmsRefs: [], method: 'Quiz', passThreshold: 0.8 },

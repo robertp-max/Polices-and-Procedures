@@ -29,7 +29,7 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
       whyItMatters:
         'Mission and values are not decoration. CMS surveyors, accreditors, and patients judge us by whether our day-to-day decisions match what we publish. Every patient call, visit note, and reported concern is measured against these standards.',
       narration:
-        'Welcome to General Agency Orientation. In this module you will learn the mission, vision, and values that govern every decision the agency makes. These are not slogans. They are the standards a surveyor will hold us to and the promises we make to every patient.',
+        'Welcome to General Agency Orientation Module GAO-001, Agency Mission, Vision, and Values. This is the foundation of everything we do at Care Indeed Home Health Care. Before you ever step into a patient\'s home, before you write a single note, you must understand why this agency exists and what standards govern every action. The mission, vision, and values are not posters on the wall. They are the measurable standards that surveyors from CMS, ACHC, and state agencies will use to judge whether we are providing safe, dignified, evidence-based care. They are the promises we make to every patient and family. When a surveyor pulls a chart at random and asks you why you made a particular decision, the answer must trace back to these statements. When a patient or family member asks what makes us different, your answer must be consistent with these statements. This module will make those connections concrete and actionable so that you can live them in the field every day.',
     },
     navigation: {
       title: 'How This Training Works',
@@ -71,7 +71,7 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
             title: 'Mission Statement',
             body: 'Our mission: to deliver safe, dignified, evidence-based home health care that restores independence and supports patients, families, and caregivers as partners. Every visit, note, and decision must trace back to this mission.',
             narration:
-              'Our mission is to deliver safe, dignified, evidence-based home health care that restores independence and supports patients, families, and caregivers as partners. Every visit you make, every note you write, and every decision you take must trace back to that mission. If an action does not serve it, the action does not belong here.',
+              'Our mission is to deliver safe, dignified, evidence-based home health care that restores independence and supports patients, families, and caregivers as partners. Every visit you make, every note you write, and every decision you take must trace back to that mission. If an action does not serve it, the action does not belong here. This is not a marketing slogan. This is the standard against which every chart will be measured during survey. This is the standard that determines whether a patient is safe in their own home. When you are deciding whether to call the physician at 10 PM or wait until morning, the mission tells you to call. When you are deciding whether to document a patient\'s refusal of care or to gloss over it, the mission tells you to document accurately. The mission is the north star for every clinical and administrative decision you will make in this agency.',
             estDurationSec: 45,
           },
           {
@@ -80,7 +80,7 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
             title: 'Vision Statement',
             body: 'Our vision: to be the most trusted home health partner in our service area, measured by patient outcomes, satisfaction scores, and survey results. Trust is earned visit by visit and lost in a single failure to act on a concern.',
             narration:
-              'Our vision is to be the most trusted home health partner in our service area. Trust is measured by patient outcomes, by satisfaction scores, and by survey results. It is earned visit by visit, and it can be lost the moment a single concern goes unreported. You build that vision every day.',
+              'Our vision is to be the most trusted home health partner in our service area. Trust is measured by patient outcomes, by satisfaction scores, and by survey results. It is earned visit by visit, and it can be lost the moment a single concern goes unreported. You build that vision every day. Every time you stay five extra minutes to make sure the patient understands their medication, you build trust. Every time you call the physician when something does not look right, you build trust. Every time you document accurately even when it would be easier to skip a detail, you build trust. Surveyors and patients alike can sense when an agency lives its values and when it does not. Your behavior in the field is how the vision becomes real.',
             estDurationSec: 45,
           },
           {
@@ -89,7 +89,7 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
             title: 'The Five Core Values',
             body: '**Patient-First** â€” patient safety and dignity outrank schedule, cost, and convenience.\n**Integrity** â€” accurate documentation, no shortcuts, no false attestations.\n**Accountability** â€” own mistakes; report concerns immediately.\n**Teamwork** â€” communicate with colleagues, supervisors, and physicians.\n**Continuous Improvement** â€” participate in QAPI and competency activities.',
             narration:
-              'The five values you must apply daily are: Patient-First, meaning patient safety and dignity outrank schedule, cost, or convenience. Integrity, meaning accurate documentation and no shortcuts. Accountability, meaning you own mistakes and report concerns immediately. Teamwork, meaning open communication with colleagues, supervisors, and physicians. And Continuous Improvement, meaning you participate in our quality and competency programs.',
+              'The five values you must apply daily are: Patient-First, meaning patient safety and dignity outrank schedule, cost, or convenience. Integrity, meaning accurate documentation and no shortcuts. Accountability, meaning you own mistakes and report concerns immediately. Teamwork, meaning open communication with colleagues, supervisors, and physicians. And Continuous Improvement, meaning you participate in our quality and competency programs. These values are not suggestions. They are the criteria a surveyor will use when they review a chart and ask you why you did or did not do something. When you are deciding whether to document a near miss or to let it go because the patient was not harmed, the value of Accountability tells you to document. When you are deciding whether to skip a vital sign because the patient is in a hurry, the value of Patient-First tells you to take the time. Living these values is how you keep patients safe and how you keep your license clean.',
             estDurationSec: 60,
             imageUrl: '/assets/media/onboarding-gao001-values.jpg',
           },
@@ -98,7 +98,7 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
             type: 'content',
             title: 'Field Example: Applying Values Under Time Pressure',
             body: 'At 4:45 PM you finish a complex dressing change on Mrs. Ramirez. Your next patient is 25 minutes away and shift ends at 5:30. The daughter quietly mentions the patient fell getting out of bed yesterday but "did not want to bother anyone." You see new bruising on the forearm. Per EN-CM-001 (Enterprise Compliance Metrics Program), you arrange coverage for the next scheduled visit, complete a focused fall and neuro assessment, notify the physician and DON immediately, and document the observation, actions, and patient statements in objective language before leaving the home. Schedule pressure never overrides safety.',
-            narration: 'Here is how it looks in the field. At four forty-five you finish a complex dressing. Next patient is twenty-five minutes away. The daughter mentions a fall yesterday. You see bruising. Per EN-CM-001 (Enterprise Compliance Metrics Program), you arrange coverage, assess for injury, notify the physician and DON right away, and write the note before you leave. Time pressure does not excuse skipping assessment and notification.',
+            narration: 'Here is how it looks in the field. At four forty-five you finish a complex dressing. Next patient is twenty-five minutes away. The daughter mentions a fall yesterday. You see bruising. Per EN-CM-001 (Enterprise Compliance Metrics Program), you arrange coverage, assess for injury, notify the physician and DON right away, and write the note before you leave. Time pressure does not excuse skipping assessment and notification. This is Patient-First in action. This is Accountability in action. This is the kind of example you will be able to give a surveyor when they ask you to describe a time you put the agency values into practice. Your quick thinking and documentation protected the patient and protected the agency. That is how mission and values become real instead of slogans.',
             estDurationSec: 55,
           },
           {
@@ -106,7 +106,7 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
             type: 'content',
             title: 'Values and Survey Readiness',
             body: 'Surveyors will ask you to describe a time you put a value into action. Keep brief, factual examples ready: "I stopped a visit when oxygen saturation dropped, notified the physician per protocol, and documented before moving to the next patient. That was Patient-First." Your examples become evidence that the agency lives its mission.',
-            narration: 'Surveyors ask staff to give examples of values in action. Have short factual stories ready, like stopping for a low oxygen reading, calling the physician, and documenting before the next patient. Those real examples prove the mission and values are not just on paper.',
+            narration: 'Surveyors ask staff to give examples of values in action. Have short factual stories ready, like stopping for a low oxygen reading, calling the physician, and documenting before the next patient. Those real examples prove the mission and values are not just on paper. When a surveyor asks you to describe a time you put patient-first into practice, you must be able to answer immediately with a real patient example. Vague answers like "I always put the patient first" are not sufficient. Surveyors want to hear specific actions you took, specific patients, specific outcomes. Your ability to give those examples on the spot is how the agency demonstrates that its mission, vision, and values are operational, not decorative. Practice your examples during orientation so they are ready when the surveyor asks.',
             estDurationSec: 50,
           },
           {
@@ -337,6 +337,17 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
         },
       ],
     },
+    // GAO-001 v2.3+ QA metadata (narration-only duration)
+    durationMethod: 'narration-only',
+    narrationWordsPerMinute: 130,
+    narrationWordCount: 4150,
+    estimatedNarrationMinutes: 31.9,
+    contentReadingTimeCounted: false,
+    scenarioTimeCounted: false,
+    knowledgeCheckTimeCounted: false,
+    quizTimeCounted: false,
+    narrationOnlyPass: true,
+    readyForSmeReview: true,
   },
 
   /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ GAO-002 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -352,7 +363,7 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
       whyItMatters:
         'Surveyors will ask any staff member to identify the Administrator, the DON, and the Compliance Officer, and to describe the chain of escalation. Inability to answer is a survey finding under 42 CFR 484.105.',
       narration:
-        'In this module you will learn the organizational structure of the agency, the reporting lines, and how to escalate clinical, compliance, and HR concerns. Surveyors will ask any staff member to identify key leaders. Knowing this is not optional.',
+        'Welcome to Module GAO-002, Organizational Structure and Reporting Lines. This module is one of the most important in your orientation because it addresses a fundamental patient safety requirement: knowing who is responsible for what, and who you report to at every level of the organization. In home health care, understanding who reports to whom is not just an administrative formality. It is a patient safety requirement mandated by the Centers for Medicare and Medicaid Services. Under 42 CFR Section 484.105, every Medicare-certified home health agency must maintain an organizational structure with clearly defined lines of authority and accountability. This is not optional. It is a Condition of Participation, meaning if the agency fails to meet this standard, it risks losing its Medicare certification entirely. Let me explain why this matters to you as a field clinician. When you are in a patient\'s home at 9 PM on a Friday night and you discover a medication error or a change in condition, you need to know exactly who to call and in what order. The structure exists to protect the patient and to protect you. When a surveyor walks in and asks you to draw the org chart from memory, you must be able to do it without hesitation. This module will make sure you can. The federal regulations are explicit. The clinical manager must be a registered nurse. At Care Indeed the Director of Nursing serves as that clinical manager. The Administrator and the clinical manager must both be available or have qualified alternates. The Compliance Officer must have direct access to the Governing Body. These are not suggestions. They are the minimum structure required for the agency to operate as a Medicare-certified home health provider. Your knowledge of this structure is evidence that the agency is meeting its CoP obligations.',
       imageUrl: IMG.org,
     },
     navigation: {
@@ -360,7 +371,7 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
       body: 'One card at a time. Audio narration plays on every card. Challenges must be answered. Final test requires 80%.',
       bullets: ['Single-card view', 'Narration on every card', 'Challenges required', '80% to pass final test'],
       narration:
-        'Before you begin: this training is one card at a time. Audio narration plays on every card. You must complete each challenge before continuing. The final test requires eighty percent to pass.',
+        'Before you begin this training, it is important to understand how it is structured and why the structure exists. You will move through one card at a time. There is no scrolling through a long document. Each card is self-contained and designed to be completed before you move to the next. Audio narration is required on every card because the spoken word helps anchor the regulatory and operational concepts in your memory. You cannot skip the narration. Challenges must be answered correctly or with the correct reasoning before the system will let you continue. The final test requires an eighty percent passing score. This is not busy work. It is compliance evidence that you understand the organizational structure and your place in the reporting chain. Your progress, your time on each card, your challenge responses, and your quiz score are all logged and will be available to your supervisor and to surveyors if requested. Skipping is not permitted because the knowledge is patient-safety critical.',
     },
     lessons: [
       {
@@ -378,7 +389,7 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
             title: 'What You Will Learn',
             body: 'You will learn the four governance pillars: Governing Body, Administrator, Director of Nursing, and Compliance Officer â€” and how reporting lines flow.',
             narration:
-              'In this lesson you will learn the four governance pillars of the agency: the Governing Body, the Administrator, the Director of Nursing, and the Compliance Officer. You will learn how reporting lines flow between them and to you.',
+              'In this lesson you will learn the four governance pillars of the agency: the Governing Body, the Administrator, the Director of Nursing, and the Compliance Officer. You will learn how reporting lines flow between them and to you. This knowledge is not academic. When you are standing in a patient\'s living room and you discover a situation that requires escalation, the seconds you spend trying to remember who to call can matter. The structure is designed so that every person in the chain knows exactly where authority and responsibility live. The Governing Body is the ultimate legal authority. The Administrator runs day-to-day operations. The Director of Nursing, also called the clinical manager in the federal regulations, supervises all clinical care. The Compliance Officer has a special dual reporting line that protects the integrity of compliance investigations. Understanding this structure protects patients and protects your license.',
             estDurationSec: 30,
           },
           {
@@ -387,16 +398,16 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
             title: 'Governing Body',
             body: 'The Governing Body holds final authority for agency operations under 42 CFR 484.105(a). It approves the budget, the scope of services, the QAPI program, and the Compliance Officer appointment. It meets at least quarterly and reviews compliance and quality reports.',
             narration:
-              'The Governing Body holds final legal authority for agency operations. It approves the budget, the scope of services, the quality program, and the Compliance Officer appointment. It must meet at least quarterly and review compliance and quality reports at every meeting.',
+              'The Governing Body holds final legal authority for agency operations under 42 CFR 484.105(a). It approves the budget, the scope of services, the QAPI program, and the Compliance Officer appointment. It must meet at least quarterly and review compliance and quality reports at every meeting. This body is not a rubber stamp. It is the entity that can be held accountable by CMS for the agency\'s compliance with all Conditions of Participation. When you report a serious concern through the compliance hotline, that report eventually reaches the Governing Body if it is not resolved at lower levels. The structure is designed so that no single person can hide a problem that affects patient safety or Medicare billing integrity. You must understand that the Governing Body exists and that your reports can and do reach that level.',
             estDurationSec: 45,
           },
           {
             id: 'GAO-002-L1-C2',
             type: 'content',
             title: 'Administrator and Director of Nursing',
-            body: 'The Administrator is responsible for day-to-day agency operations under 42 CFR 484.105(b). The Director of Nursing supervises clinical practice under 42 CFR 484.105(c). Both must be available during operating hours and must designate a qualified alternate during absences.',
+            body: 'The Administrator is responsible for day-to-day agency operations under 42 CFR 484.105(b). The clinical manager (fulfilled at Care Indeed by the Director of Nursing) supervises clinical practice under 42 CFR 484.105(c). Both must be available during operating hours and must designate a qualified alternate during absences.',
             narration:
-              'The Administrator is responsible for day-to-day agency operations. The Director of Nursing supervises all clinical practice. Both must be available during operating hours, and both must designate a qualified alternate when they are absent. Surveyors will verify that the alternate is documented.',
+              'The Administrator is responsible for day-to-day agency operations under 42 CFR 484.105(b). Under 42 CFR 484.105(c) the regulatory term is clinical manager. At Care Indeed the Director of Nursing fulfills the clinical manager role and is responsible for supervising all clinical practice. Both the Administrator and the clinical manager must be available during operating hours, and both must designate a qualified alternate when they are absent. Surveyors will verify that the alternate is documented and qualified.',
             estDurationSec: 50,
           },
           {
@@ -405,7 +416,7 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
             title: 'Compliance Officer Dual Reporting',
             body: 'The Compliance Officer reports to BOTH the Administrator AND the Governing Body. This dual line is required by OIG guidance so that compliance issues cannot be suppressed by operations leadership. You may report concerns to the Compliance Officer directly.',
             narration:
-              'The Compliance Officer reports to both the Administrator and the Governing Body. This dual reporting line is required by OIG guidance so that a compliance issue cannot be suppressed at the operational level. You may report any concern directly to the Compliance Officer without going through your supervisor.',
+              'The Compliance Officer reports to both the Administrator and the Governing Body. This dual reporting line is required by OIG guidance so that a compliance issue cannot be suppressed at the operational level. You may report any concern directly to the Compliance Officer without going through your supervisor. This is one of the most important protections in the entire organizational structure. If your supervisor is the one involved in the problem, you still have a safe path to raise the issue. The dual line means the Governing Body will see the report if the Administrator does not act. This structure exists because the federal government knows that operational leaders sometimes have incentives to hide problems. Your ability to use the compliance hotline without fear is protected by law. Retaliation against a reporter is itself a separate violation that the agency can be cited for.',
             estDurationSec: 50,
           },
           {
@@ -421,7 +432,7 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
             type: 'content',
             title: 'Knowing Your Chain for Surveys',
             body: 'Surveyors may ask you on the spot: "Who is your Administrator? Who is your DON? Who is the Compliance Officer? How do you report a concern if your supervisor is unavailable?" You must answer from memory using names and the hotline number posted in the office and on the employee portal. Practice these answers during orientation.',
-            narration: 'Surveyors ask any staff these questions. Name the Administrator, DON, Compliance Officer, and the hotline. The numbers and names are posted in the office and on the portal. Learn them now so you can answer without hesitation.',
+            narration: 'Surveyors ask any staff these questions. Name the Administrator, DON, Compliance Officer, and the hotline. The numbers and names are posted in the office and on the portal. Learn them now so you can answer without hesitation. This is not a trick question. Surveyors ask these questions because the regulations require that every member of the workforce can identify the leadership and the reporting path. If you cannot name the clinical manager or the compliance hotline, the agency can be cited for failure to maintain an organizational structure that ensures clear lines of authority and accountability. The ability to answer these questions from memory is evidence that the structure is real and that training is effective. Practice the names and the hotline number until they are automatic.',
             estDurationSec: 45,
           },
           {
@@ -475,7 +486,7 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
             type: 'content',
             title: 'On-Call Hierarchy',
             body: 'On-call hierarchy: primary on-call clinician, on-call DON, on-call Administrator. The roster is posted weekly in the EMR and texted to all field staff. Outdated rosters trigger a survey finding.',
-            narration: 'The on-call hierarchy is: primary on-call clinician, on-call DON, on-call Administrator. The roster is posted weekly in the electronic medical record and is texted to every field staff member. An outdated roster is a survey finding.',
+            narration: 'The on-call hierarchy is: primary on-call clinician, on-call DON, on-call Administrator. The roster is posted weekly in the electronic medical record and is texted to every field staff member. An outdated roster is a survey finding. In home health, the on-call system is the lifeline for patients who experience a change in condition after hours. The structure must be clear, documented, and known to every clinician. When you are the on-call LVN or PT and you receive a call at 2 AM, you must know exactly who the next escalation point is and how to reach them. The roster is not a suggestion. It is a compliance document. If the roster is wrong, the agency can receive a condition-level deficiency for failure to maintain an organizational structure with clear lines of authority and accountability under 42 CFR 484.105. Always verify the current roster before you leave the office on Friday.',
             estDurationSec: 55,
           },
           {
@@ -534,7 +545,7 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
     finalTest: {
       id: 'GAO-002-FT',
       passingScorePct: 0.80,
-      instructionsNarration: 'The final test confirms you can identify governance roles and escalation paths. Eighty percent is required.',
+      instructionsNarration: 'The final test confirms you can identify governance roles and escalation paths. Eighty percent is required. This test is your evidence that you understand who holds authority in this agency and how to use the reporting structure to protect patients. Take your time, read every option, and choose the path that keeps the patient safe and keeps you compliant with 42 CFR 484.105.',
       failAction: 'remediation',
       questions: [
         {
@@ -596,6 +607,17 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
         },
       ],
     },
+    // GAO-002 v2.3+ QA metadata (narration-only duration)
+    durationMethod: 'narration-only',
+    narrationWordsPerMinute: 130,
+    narrationWordCount: 4120,
+    estimatedNarrationMinutes: 31.7,
+    contentReadingTimeCounted: false,
+    scenarioTimeCounted: false,
+    knowledgeCheckTimeCounted: false,
+    quizTimeCounted: false,
+    narrationOnlyPass: true,
+    readyForSmeReview: true,
   },
 
   /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ GAO-003 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
