@@ -11,21 +11,18 @@ export const MEDIA_ASSET_BASE = "/assets/media";
 export function mediaAssetPath(appLocation: string): string {
   const loc = appLocation.trim();
 
-  // Map for first onboarding lesson images (GAO-001)
-  if (loc.includes('GAO-001') || loc.includes('gao001')) {
-    if (loc.includes('mission') || loc.includes('l1')) {
-      return `${MEDIA_ASSET_BASE}/onboarding-gao001-mission-noon.png`;
-    }
-    if (loc.includes('vision') || loc.includes('l2')) {
-      return `${MEDIA_ASSET_BASE}/onboarding-gao001-vision.jpg`;
-    }
-    return `${MEDIA_ASSET_BASE}/onboarding-gao001-values.jpg`;
-  }
-
   // Noon mode app screenshots
   if (loc.includes('noon-brad')) return `${MEDIA_ASSET_BASE}/noon-brad-workspace.png`;
   if (loc.includes('noon-dashboard')) return `${MEDIA_ASSET_BASE}/noon-dashboard.png`;
   if (loc.includes('noon-packet')) return `${MEDIA_ASSET_BASE}/noon-packet-studio.png`;
+
+  // CMS-485 advanced training lesson images (lesson 1 foundation uses dedicated cohesive visual)
+  if (loc.includes('cms-485') || loc.includes('cms485')) {
+    if (loc.includes('l1') || loc.includes('.l1.')) {
+      return `${MEDIA_ASSET_BASE}/cms485-foundation.jpg`;
+    }
+    // Future: add l2+ when images produced. Fall through to placeholder for now.
+  }
 
   const safe = loc.replace(/[^a-z0-9._-]/gi, "-").toLowerCase();
   return `${MEDIA_ASSET_BASE}/${safe}.jpg`;
@@ -42,26 +39,24 @@ export const availableMedia: ReadonlySet<string> = new Set<string>([
   '/assets/media/documentation.jpg',
   '/assets/media/compliance-hotline.jpg',
   '/assets/media/safety-home-visit.jpg',
-  '/assets/media/onboarding-gao001-mission.jpg',
-  '/assets/media/onboarding-gao001-vision.jpg',
-  '/assets/media/onboarding-gao001-values.jpg',
   '/assets/media/noon-brad-workspace.png',
   '/assets/media/noon-dashboard.png',
   '/assets/media/noon-packet-studio.png',
-  // First lesson (GAO-001) app locations for media player
-  'GAO-001.lesson.l1.overview',
-  'GAO-001.lesson.l1.delivery',
-  'GAO-001.lesson.l2.overview',
-  'GAO-001.lesson.l2.delivery',
+  '/assets/media/cms485-foundation.jpg',
+  // CMS-485 Lesson 1 (Foundation) app locations
+  'cms-485.lesson.l1.s1.overview',
+  'cms-485.lesson.l1.s1.delivery',
+  'cms-485.lesson.l1.s1.challenge',
+  'cms-485.lesson.l1.s1.debrief',
 ]);
 
 export function hasMedia(appLocation: string): boolean {
-  // Broaden for first lesson (GAO-001) to guarantee the generated images show in the media player
-  if (appLocation && appLocation.includes('GAO-001')) {
-    return true;
-  }
   // Support noon mode app screenshots
   if (appLocation && (appLocation.includes('noon') || appLocation.includes('brad') || appLocation.includes('dashboard') || appLocation.includes('packet'))) {
+    return true;
+  }
+  // CMS-485 lesson 1 (foundation) - new cohesive image added for lesson1
+  if (appLocation && (appLocation.includes('cms-485') || appLocation.includes('cms485')) && (appLocation.includes('l1') || appLocation.includes('.l1.'))) {
     return true;
   }
   return availableMedia.has(appLocation);

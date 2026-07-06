@@ -31,7 +31,7 @@ export type JourneyPhase =
   | 'ANN'         // Ongoing  — Annual mandatory training
   | 'DRILL';      // Ongoing  — Emergency preparedness exercises
 
-export type ModuleGroup = 'GAO' | 'ROLE' | 'ANN' | 'COMP' | 'DRILL';
+export type ModuleGroup = 'GAO' | 'ROLE' | 'ANN' | 'COMP' | 'DRILL' | 'ADV';
 
 export type CompetencyMethod =
   | 'None'

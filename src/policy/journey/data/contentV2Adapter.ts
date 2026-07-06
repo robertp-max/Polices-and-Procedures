@@ -1,10 +1,26 @@
 import type { ModuleDef, ModuleLesson } from "./lessonModel";
 import { ALL_MODULES, type ModuleData, type LessonPage } from "./ACHC_Annual_Assembled";
+import { ALL_MODULES as canonicalJourneyModules } from "./modules";
+import type { JourneyModule } from "../types/journey";
 import { ALL_MODULES as onboardingModulesRaw } from "../../../v6/screens/pageviews/CareIndeedOnboardingLMS";
 import { cms485PlanOfCareModule } from "./advancedTraining/cms485PlanOfCare.data";
 import { qapiModule, qapiQuizzes } from "./advancedTraining/qapi.data";
 import { oasisE2SocModule } from "./advancedTraining/oasisE2Soc.data";
 import { documentationMattersModule } from "./advancedTraining/documentationMatters.data";
+import { finalAssessment as documentationMattersFinalAssessment } from "./advancedTraining/documentationMatters/quizContent";
+
+type AssessmentChoice = { id: string; label: string };
+type ModuleAssessmentQuestion = {
+  id: string;
+  prompt: string;
+  choices: AssessmentChoice[];
+  correct_id_internal: string;
+};
+type ModuleAssessment = {
+  title: string;
+  pass_percent: number;
+  questions: ModuleAssessmentQuestion[];
+};
 
 function appModuleId(moduleId: string): string {
   // moduleId is e.g. "ACHC-ART-M01" -> "m1"
@@ -28,34 +44,7 @@ function mapPageToLesson(page: LessonPage, index: number): ModuleLesson {
   const cards: any[] = [];
   const lessonId = `l${index}`;
 
-  // Card 1: Overview
-  cards.push({
-    module_id: page.moduleId,
-    lesson_id: `L${String(index).padStart(2, "0")}`,
-    card_id: `${page.pageId}_OVERVIEW`,
-    card_type: "overview",
-    app: { location: `${page.moduleId}.lesson.l${index}.overview` },
-    display_title: page.title,
-    learner_facing_content: page.contentHtml.replace(/<[^>]*>/g, ""), // text version
-    learning_goal: page.title,
-    cna_practice_example: page.challenge?.documentationPrompt || page.challenge?.teachingPoint || "Follow care plans and report status.",
-    why_it_matters: [
-      page.media.mediaInstruction || "Protects patient safety and dignity.",
-      "Ensures compliance with care regulations.",
-      "Demonstrates clinical safety principles."
-    ],
-    key_terms: [],
-    completion_condition: "Learner views this card and continues.",
-    narration_script: page.narrationText,
-    transcript_text: page.narrationText,
-    estimated_narration_seconds: Math.max(15, Math.round((page.narrationText.split(/\s+/).length / 140) * 60)),
-    media_prompt_placeholder: {
-      app_location: `${page.moduleId}.lesson.l${index}.overview`,
-      scene_title: page.media.imagePrompt,
-    }
-  });
-
-  // Card 2: Delivery
+  // Keep only the 2nd card (Delivery) — removed the "1 of 2" Overview card for all lessons
   cards.push({
     module_id: page.moduleId,
     lesson_id: `L${String(index).padStart(2, "0")}`,
@@ -76,7 +65,7 @@ function mapPageToLesson(page: LessonPage, index: number): ModuleLesson {
     }
   });
 
-  // Card 3 & 4: Challenge & Debrief (if challenge exists)
+  // Challenge & Debrief (if challenge exists) — now following the single kept delivery card
   if (page.challenge) {
     const correctOpt = page.challenge.options.find(o => o.isBestPractice) || page.challenge.options[0];
     cards.push({
@@ -183,33 +172,7 @@ function onboardingToModuleDef(mod: any): ModuleDef {
       const lessonId = `l${index}`;
       const cards: any[] = [];
 
-      // Card 1: Overview
-      cards.push({
-        module_id: mod.id,
-        lesson_id: `L${String(index).padStart(2, "0")}`,
-        card_id: `${mod.id}_L${index}_OVERVIEW`,
-        card_type: "overview",
-        app: { location: `${mod.id}.lesson.l${index}.overview` },
-        display_title: page.title,
-        learner_facing_content: page.content.replace(/<[^>]*>/g, ""), // text version
-        learning_goal: page.title,
-        cna_practice_example: "Follow care plans and report status.",
-        why_it_matters: [
-          "Protects patient safety and dignity.",
-          "Ensures compliance with care regulations.",
-        ],
-        key_terms: [],
-        completion_condition: "Learner views this card and continues.",
-        narration_script: page.narration,
-        transcript_text: page.narration,
-        estimated_narration_seconds: Math.max(15, Math.round((page.narration.split(/\s+/).length / 140) * 60)),
-        media_prompt_placeholder: {
-          app_location: `${mod.id}.lesson.l${index}.overview`,
-          scene_title: page.imageAlt || page.title,
-        }
-      });
-
-      // Card 2: Delivery
+      // Keep only the 2nd card (Delivery) per lesson — removed the "1 of 2" Overview card
       cards.push({
         module_id: mod.id,
         lesson_id: `L${String(index).padStart(2, "0")}`,
@@ -250,6 +213,196 @@ function onboardingToModuleDef(mod: any): ModuleDef {
   };
 }
 
+function rolesLabel(mod: JourneyModule): string {
+  return mod.roles === "ALL" ? "All roles" : mod.roles.join(", ");
+}
+
+function methodLabel(method: string): string {
+  return method.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+
+function canonicalRefs(mod: JourneyModule): string {
+  const refs = [...mod.policyRefs, ...mod.cmsRefs];
+  return refs.length ? refs.join("; ") : "Agency competency standard";
+}
+
+function catalogAssessmentQuestions(mod: JourneyModule) {
+  const method = methodLabel(mod.method);
+  const refs = canonicalRefs(mod);
+  const evidence = mod.evidenceAppendix || "the LMS completion record";
+  const supervision = mod.supervisorSignature ? "Supervisor signature is required." : "No supervisor signature is required unless assigned by policy.";
+  return [
+    {
+      id: `${mod.id}-Q1`,
+      prompt: `${mod.id} is assigned to which role group?`,
+      choices: [
+        { id: "A", label: rolesLabel(mod) },
+        { id: "B", label: "Billing only" },
+        { id: "C", label: "Vendors only" },
+        { id: "D", label: "No assigned role" },
+      ],
+      correct_id_internal: "A",
+    },
+    {
+      id: `${mod.id}-Q2`,
+      prompt: `What is the required competency method for ${mod.id}?`,
+      choices: [
+        { id: "A", label: "Informal verbal acknowledgement only" },
+        { id: "B", label: method },
+        { id: "C", label: "No completion evidence" },
+        { id: "D", label: "Optional self-study only" },
+      ],
+      correct_id_internal: "B",
+    },
+    {
+      id: `${mod.id}-Q3`,
+      prompt: `Which source supports this module?`,
+      choices: [
+        { id: "A", label: refs },
+        { id: "B", label: "Marketing copy" },
+        { id: "C", label: "Unmapped placeholder" },
+        { id: "D", label: "External news article" },
+      ],
+      correct_id_internal: "A",
+    },
+    {
+      id: `${mod.id}-Q4`,
+      prompt: "What evidence trail is expected after completion?",
+      choices: [
+        { id: "A", label: `Completion evidence tied to ${evidence}` },
+        { id: "B", label: "No evidence is retained" },
+        { id: "C", label: "A verbal statement with no date" },
+        { id: "D", label: "A patient chart entry" },
+      ],
+      correct_id_internal: "A",
+    },
+    {
+      id: `${mod.id}-Q5`,
+      prompt: "How should staff treat this requirement in the onboarding journey?",
+      choices: [
+        { id: "A", label: "Complete it according to the assigned method and retain evidence" },
+        { id: "B", label: "Skip it if the module feels familiar" },
+        { id: "C", label: "Complete it only after independent practice starts" },
+        { id: "D", label: supervision },
+      ],
+      correct_id_internal: "A",
+    },
+  ];
+}
+
+function catalogToModuleDef(mod: JourneyModule): ModuleDef {
+  const method = methodLabel(mod.method);
+  const refs = canonicalRefs(mod);
+  const evidenceLine = mod.evidenceAppendix
+    ? `Evidence appendix: ${mod.evidenceAppendix}.`
+    : "Evidence: LMS completion record.";
+  const supervisionLine = mod.supervisorSignature
+    ? "Supervisor/preceptor signature is required."
+    : "Supervisor signature is not required unless assigned by policy.";
+  const visitLine = mod.supervisedVisitsRequired
+    ? `Minimum supervised satisfactory visits: ${mod.supervisedVisitsRequired}.`
+    : "";
+  const quarterLine = mod.annualQuarter ? `Annual quarter: ${mod.annualQuarter}.` : "";
+  const html = `
+<h2>${mod.id}: ${mod.title}</h2>
+<p>This module is rendered from the canonical Role-Based Onboarding & Competency Journey catalog.</p>
+<div style="background:#E3F2FD;padding:16px;border-radius:8px;margin:16px 0;">
+  <h3>Requirement</h3>
+  <ul>
+    <li><strong>Assigned roles:</strong> ${rolesLabel(mod)}</li>
+    <li><strong>Phase:</strong> ${mod.phase}</li>
+    <li><strong>Competency method:</strong> ${method}</li>
+    <li><strong>Source refs:</strong> ${refs}</li>
+  </ul>
+</div>
+<div style="background:#FFF3E0;padding:12px;border-radius:8px;margin:12px 0;">
+  <strong>Evidence:</strong> ${evidenceLine} ${supervisionLine} ${visitLine} ${quarterLine}
+</div>`.trim();
+  const narration = `${mod.title}. This requirement applies to ${rolesLabel(mod)}. The competency method is ${method}. Source references are ${refs}. ${evidenceLine} ${supervisionLine} ${visitLine} ${quarterLine}`.trim();
+  const lesson: ModuleLesson = {
+    id: "l1",
+    index: 1,
+    title: mod.title,
+    estMinutes: Math.max(3, Math.round((mod.durationMinutes ?? 30) / 10)),
+    learningGoal: mod.title,
+    scenario: narration.slice(0, 200),
+    keyConcept: html,
+    whyItMatters: [refs],
+    practiceExample: method,
+    commonMistake: "Completing training without retaining the required evidence trail.",
+    keyTerms: [
+      { term: "Competency Method", definition: method },
+      { term: "Evidence", definition: evidenceLine },
+    ],
+    transcript: narration,
+    summary: narration,
+    cards: [{
+      module_id: mod.id,
+      lesson_id: "L01",
+      card_id: `${mod.id}_L1_DELIVERY`,
+      card_type: "delivery",
+      app: { location: `${mod.id}.lesson.l1.delivery` },
+      display_title: mod.title,
+      learner_facing_content: html,
+      cna_practice_example: "",
+      key_terms: [],
+      completion_condition: "Learner reviews the canonical requirement and continues.",
+      narration_script: narration,
+      transcript_text: narration,
+      estimated_narration_seconds: Math.max(20, Math.round((narration.split(/\s+/).length / 140) * 60)),
+      media_prompt_placeholder: {
+        app_location: `${mod.id}.lesson.l1.delivery`,
+        scene_title: `${mod.title} competency evidence review`,
+      },
+    }],
+  };
+
+  return {
+    id: mod.id,
+    code: mod.id,
+    title: mod.title,
+    shortTitle: mod.title,
+    time: `${mod.durationMinutes ?? 30} min`,
+    summary: `${method} - ${refs}`,
+    kind: "lesson",
+    status: "ready",
+    countsTowardTheory: false,
+    learningObjectives: [
+      `Complete ${mod.title}`,
+      `Demonstrate competency using ${method}`,
+      `Retain evidence for ${refs}`,
+    ],
+    policyRefs: mod.policyRefs,
+    lessons: [lesson],
+  };
+}
+
+const authoredOnboardingById = new Map<string, any>(
+  onboardingModulesRaw.map((m: any) => [m.id.toLowerCase(), m]),
+);
+
+function withCanonicalJourneyMetadata(def: ModuleDef, mod: JourneyModule): ModuleDef {
+  const method = methodLabel(mod.method);
+  const refs = canonicalRefs(mod);
+  return {
+    ...def,
+    title: mod.title,
+    shortTitle: mod.title,
+    policyRefs: mod.policyRefs,
+    reviewerNote: `Rendered from authored V2 LMS content; framework metadata from ${mod.id}.`,
+    learningObjectives: Array.from(new Set([
+      ...def.learningObjectives,
+      `Demonstrate competency using ${method}`,
+      `Retain evidence for ${refs}`,
+    ])),
+  };
+}
+
+function canonicalJourneyToModuleDef(mod: JourneyModule): ModuleDef {
+  const authored = authoredOnboardingById.get(mod.id.toLowerCase());
+  return authored ? withCanonicalJourneyMetadata(onboardingToModuleDef(authored), mod) : catalogToModuleDef(mod);
+}
+
 // 1. Prepend dynamic Orientation Module (M00 / m0)
 const orientationModule: ModuleDef = {
   id: "m0",
@@ -274,12 +427,13 @@ const orientationModule: ModuleDef = {
 // 2. Load all mapped modules
 const mappedACHCModules: ModuleDef[] = ALL_MODULES.map(toModuleDef);
 
-const onboardingModulesOnly = onboardingModulesRaw.filter(m => m.track !== "ANN" && !["cms-485", "qapi", "oasis-e2-soc", "documentation-matters"].includes(m.id));
-const mappedOnboardingModules = onboardingModulesOnly.map(onboardingToModuleDef);
+const mappedCanonicalOnboardingModules = canonicalJourneyModules
+  .filter((m) => m.group !== "ANN" && m.group !== "ADV")
+  .map(canonicalJourneyToModuleDef);
 
 export const courseModules: ModuleDef[] = [
   orientationModule,
-  ...mappedOnboardingModules,
+  ...mappedCanonicalOnboardingModules,
   ...mappedACHCModules,
   cms485PlanOfCareModule,
   qapiModule,
@@ -308,7 +462,7 @@ export function getGeneratedLesson(moduleId: string, lessonId: string) {
   return mod?.lessons.find((l) => l.id === lessonId);
 }
 
-export function getModuleAssessment(moduleId: string) {
+export function getModuleAssessment(moduleId: string): ModuleAssessment | undefined {
   if (moduleId.toLowerCase() === "cms-485") {
     return {
       title: "CMS-485 Plan of Care Clinical Audit Lab",
@@ -347,17 +501,19 @@ export function getModuleAssessment(moduleId: string) {
 
   if (moduleId.toLowerCase() === "documentation-matters") {
     return {
-      title: "Documentation Defensibility Scenarios",
+      title: "CMS Documentation Matters Final Assessment",
       pass_percent: 80,
-      questions: [
-        { id: "def-1", prompt: "Select the defensible note and provide auditor conclusion", choices: [], correct_id_internal: "" },
-      ],
+      questions: documentationMattersFinalAssessment.slice(0, 13).map((question) => ({
+        id: question.id,
+        prompt: question.stem,
+        choices: question.options.map((option) => ({ id: option.id, label: option.text })),
+        correct_id_internal: question.correctOptionId,
+      })),
     };
   }
 
-  // Try to find in onboarding modules first
-  const onboardingMod = onboardingModulesRaw.filter(m => m.track !== "ANN").find(m => m.id.toLowerCase() === moduleId.toLowerCase());
-  if (onboardingMod) {
+  const onboardingMod = authoredOnboardingById.get(moduleId.toLowerCase());
+  if (onboardingMod?.exam?.length) {
     return {
       title: onboardingMod.title,
       pass_percent: onboardingMod.passScore || 80,
@@ -370,6 +526,14 @@ export function getModuleAssessment(moduleId: string) {
     };
   }
 
+  const canonicalMod = canonicalJourneyModules.find(m => m.id.toLowerCase() === moduleId.toLowerCase());
+  if (canonicalMod) {
+    return {
+      title: canonicalMod.title,
+      pass_percent: Math.round((canonicalMod.passThreshold ?? 0.8) * 100),
+      questions: catalogAssessmentQuestions(canonicalMod),
+    };
+  }
 
   // Otherwise check ACHC
   const canonical = canonicalModuleId(moduleId);

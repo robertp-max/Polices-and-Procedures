@@ -60,7 +60,7 @@ function runClaude(system: string, user: string, timeoutMs = 120_000): Promise<s
 }
 
 /** Pull the first JSON object/array out of a model response (handles ```json fences). */
-function parseJsonLoose<T>(text: string): T | null {
+export function parseJsonLoose<T>(text: string): T | null {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
   const body = fenced ? fenced[1] : text;
   const start = body.search(/[[{]/);

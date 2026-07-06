@@ -1,0 +1,36 @@
+Help Center Beautification QA Report (Text)
+==========================================
+
+Date: 2026-06-29
+Mode: BEAUTIFICATION QA — visual polish pass (non-Journey only)
+
+Routes Inspected:
+- /help
+- /help/category/brad-ai, forms, policies, qapi-reports, troubleshooting, getting-started, admission-packets, evidence-center
+- Full articles: brad-how-brad-works, find-and-complete-forms, qapi-dashboard-and-packets, common-issues-and-fixes
+
+Pre-fix Issues:
+- Unbalanced card heights
+- Weak empty category placeholder
+- Brand-teal back links
+- Broken hero image paths (/public/ and missing media files)
+
+Fixes:
+- Fixed logomark and missing image paths to valid assets
+- Added min-heights to cards for balance
+- Improved placeholder text
+- Switched back links to text-teal-700 (calm)
+- Confirmed neutral slate-200 everywhere on cards/articles
+
+Remaining:
+- Minor sidebar glass effects (design system)
+- Zero-article categories use good placeholder now
+- Some hero images are generic but load
+
+Commands:
+- npx tsc -b --noEmit : PASS
+- npm run build : PASS
+
+Recommendation: Pass
+
+Files changed: src/policy/data/visualHelpArticles.ts , src/v6/screens/pageviews/HelpCenterScreen.tsx

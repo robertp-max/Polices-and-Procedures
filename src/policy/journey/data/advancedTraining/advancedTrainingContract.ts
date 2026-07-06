@@ -49,7 +49,8 @@ export const ADVANCED_MODULE_IDS = ['RN-ADV-01', 'RN-ADV-02', 'RN-ADV-03', 'RN-A
 
 export function isAdvancedModule(moduleId: string): boolean {
   const lower = moduleId.toLowerCase();
-  return ADVANCED_MODULE_IDS.includes(moduleId as any) || ['RN-ADV-01', 'RN-ADV-02', 'RN-ADV-03', 'RN-ADV-04', 'cms-485', 'qapi'].includes(lower);
+  return ADVANCED_MODULE_IDS.includes(moduleId as any)
+    || ['rn-adv-01', 'rn-adv-02', 'rn-adv-03', 'rn-adv-04', 'cms-485', 'qapi', 'oasis-e2-soc', 'documentation-matters', 'gao-01', 'gao-02', 'gao-03', 'gao-04'].includes(lower);
 }
 
 export function getAdvancedVariant(moduleId: string): AdvancedTrainingVariant | null {

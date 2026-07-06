@@ -1,0 +1,29 @@
+UAT Execution completed (FINAL NON-JOURNEY FOCUS)
+
+Date: 2026-06-29
+
+Primary focus: Help Center implementation + UAT (non-Journey only)
+
+Journey/LMS: Explicitly OUT OF SCOPE per prompt. All A19/A20 and /journey/* marked Deferred / Known Incomplete / Out of Current Release Scope. NOT counted for Go/No-Go.
+
+Actions performed:
+- Audited and fixed Help Center for neutral borders (replaced border-card/hairline → border-slate-200 in HelpCenterScreen)
+- Verified no step # in article views
+- Confirmed category cards use calm icons + neutral slate-200
+- Main /help hides legacy dump, shows categories + prompt
+- Category views + preview cards + full articles: compliant
+- Legacy Brad contracts preserved (HELP_ARTICLES untouched)
+- Google Drive logo verified at public/assets/media/googledrive_logo.png → /assets/media/googledrive_logo.png
+- tsc -b --noEmit: PASS
+- npm run build: PASS
+- Generated required reports in outputs/UAT_2026-06-29/
+
+Outputs created/updated:
+- NON_JOURNEY_UAT_SUMMARY.md / .txt
+- HELP_CENTER_UAT_REPORT.md / .txt
+- DEFECT_LOG_NON_JOURNEY.csv
+- GO_NO_GO_NON_JOURNEY.md
+
+Recommendation (ex Journey): GO
+
+All guardrails followed. No Journey, no signin, no broad changes.

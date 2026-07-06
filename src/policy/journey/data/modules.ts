@@ -328,6 +328,61 @@ const ACHC_ART: JourneyModule[] = [
   { id: 'ACHC-ART-M12', group: 'ANN', phase: 'ANN', annualQuarter: 'Q4', title: 'Medical Device Act', roles: ALL_FIELD_WORKERS, policyRefs: ['RM-MD-001'], cmsRefs: ['21 CFR 803', 'FDA MDR'], method: 'Quiz', passThreshold: 0.8, durationMinutes: 45 },
 ];
 
+const ADV: JourneyModule[] = [
+  {
+    id: 'cms-485',
+    group: 'ADV',
+    phase: 'ANN',
+    title: 'CMS-485 Plan of Care and Compliance Integration',
+    roles: ['RN', 'DON'],
+    policyRefs: ['CL-CP-001'],
+    cmsRefs: ['42 CFR 484.60'],
+    method: 'CaseStudy',
+    passThreshold: 0.8,
+    evidenceAppendix: 'NONE',
+    durationMinutes: 120,
+  },
+  {
+    id: 'qapi',
+    group: 'ADV',
+    phase: 'ANN',
+    title: 'Quality Assessment and Performance Improvement Training',
+    roles: ['RN', 'DON'],
+    policyRefs: ['QA-PG-001'],
+    cmsRefs: ['42 CFR 484.65'],
+    method: 'Quiz',
+    passThreshold: 0.8,
+    evidenceAppendix: 'NONE',
+    durationMinutes: 180,
+  },
+  {
+    id: 'oasis-e2-soc',
+    group: 'ADV',
+    phase: 'ANN',
+    title: 'OASIS-E2 Start of Care Assessment',
+    roles: ['RN', 'DON', 'PT', 'OT', 'SLP'],
+    policyRefs: ['CL-OA-001', 'CL-OA-006'],
+    cmsRefs: ['OASIS-E2 CMS Guidance', '42 CFR 484'],
+    method: 'CodingExercise',
+    passThreshold: 0.8,
+    evidenceAppendix: 'NONE',
+    durationMinutes: 150,
+  },
+  {
+    id: 'documentation-matters',
+    group: 'ADV',
+    phase: 'ANN',
+    title: 'CMS Documentation Matters / Documentation Defensibility',
+    roles: ALL_CLINICAL,
+    policyRefs: ['CL-CD-001'],
+    cmsRefs: ['42 CFR 484.60'],
+    method: 'CaseStudy',
+    passThreshold: 0.8,
+    evidenceAppendix: 'NONE',
+    durationMinutes: 120,
+  },
+];
+
 export const ALL_MODULES: JourneyModule[] = [
   ...GAO,
   ...ADM, ...DON, ...RN, ...LVN,
@@ -335,6 +390,7 @@ export const ALL_MODULES: JourneyModule[] = [
   ...SLP, ...MSW, ...HHA,
   ...ANN, ...COMP,
   ...ACHC_ART,
+  ...ADV,
 ];
 
 export { ACHC_ART };

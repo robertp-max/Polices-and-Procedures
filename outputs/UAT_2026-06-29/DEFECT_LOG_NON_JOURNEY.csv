@@ -1,0 +1,5 @@
+Defect ID,Found By,Test ID,Title,Severity,Route,Status,Notes,Release Impact
+JRN-NARR-001,Previous, A19, Narration manifest docs vs assets (Journey),High,/journey/*,DEFERRED,Out of scope per explicit rule. Journey excluded entirely.,Not counted
+HELP-001,This pass,Help Center borders,Low,/help/*,FIXED,Changed remaining border-card/hairline to border-slate-200 in HelpCenterScreen for neutral.,None
+HELP-002,This pass,Step numbers,Low,/help/*,FIXED,Removed in template prior. Confirmed clean.,None
+, , , , , , ,No other non-Journey P0/P1 defects found in Help Center / Brad-help scope after fixes and verification., 

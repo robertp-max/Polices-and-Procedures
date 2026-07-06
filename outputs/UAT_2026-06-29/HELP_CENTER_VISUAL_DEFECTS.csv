@@ -1,0 +1,7 @@
+Defect ID,Route/Component,Description,Severity,Status,Notes
+VIS-001,/help category cards,Inconsistent card heights due to content length,Low,FIXED,Added min-h-[140px]
+VIS-002,Category views,Empty category placeholder looked plain,Low,FIXED,Polished text and layout
+VIS-003,Header back links,Used brand-teal instead of calm shade,Low,FIXED,Changed to text-teal-700
+VIS-004,Visual article heroes,Invalid /public/ paths and missing image files (would 404),Medium,FIXED,Updated to valid existing assets
+VIS-005,Preview cards,No min-height leading to visual imbalance,Low,FIXED,Added min-h-[120px]
+, ,No other visual defects found after pass, , , 

@@ -1,0 +1,16 @@
+src/v6/screens/RepresentativeScreens.tsx(2637,29): error TS2448: Block-scoped variable 'resetCardVisuals' used before its declaration.
+src/v6/screens/RepresentativeScreens.tsx(2637,29): error TS2454: Variable 'resetCardVisuals' is used before being assigned.
+src/v6/screens/RepresentativeScreens.tsx(2638,32): error TS2448: Block-scoped variable 'replayCardAnimation' used before its declaration.
+src/v6/screens/RepresentativeScreens.tsx(2638,32): error TS2454: Variable 'replayCardAnimation' is used before being assigned.
+src/v6/screens/RepresentativeScreens.tsx(2641,42): error TS2554: Expected 1 arguments, but got 3.
+src/v6/screens/RepresentativeScreens.tsx(2642,42): error TS2554: Expected 1 arguments, but got 3.
+src/v6/screens/RepresentativeScreens.tsx(2653,60): error TS2554: Expected 1 arguments, but got 4.
+src/v6/screens/RepresentativeScreens.tsx(2654,60): error TS2554: Expected 1 arguments, but got 3.
+src/v6/screens/RepresentativeScreens.tsx(2657,13): error TS2345: Argument of type '() => (() => void | 0 | null) | undefined' is not assignable to parameter of type 'EffectCallback'.
+  Type '(() => void | 0 | null) | undefined' is not assignable to type 'void | Destructor'.
+    Type '() => void | 0 | null' is not assignable to type 'void | Destructor'.
+      Type '() => void | 0 | null' is not assignable to type 'Destructor'.
+        Type 'void | 0 | null' is not assignable to type 'void | { [UNDEFINED_VOID_ONLY]: never; }'.
+          Type 'null' is not assignable to type 'void | { [UNDEFINED_VOID_ONLY]: never; }'.
+
+TSC_EXIT=2

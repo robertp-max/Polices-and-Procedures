@@ -195,6 +195,22 @@ function recordsFromJson(value: unknown): { records: ParsedRecordCell[]; headers
   return { records, headers };
 }
 
+/**
+ * Recover the largest valid JSON value from text that may carry leading/trailing
+ * prose around an embedded JSON blob (mirrors server/sourceExtraction.ts's
+ * parseJsonLoose). Shrinks the candidate slice from the end until it parses.
+ */
+function parseJsonLoose(text: string): unknown | null {
+  const start = text.search(/[[{]/);
+  if (start < 0) return null;
+  for (let end = text.length; end > start; end--) {
+    const slice = text.slice(start, end);
+    if (!/[\]}]\s*$/.test(slice)) continue;
+    try { return JSON.parse(slice); } catch { /* keep shrinking */ }
+  }
+  return null;
+}
+
 /** Markdown: emit one record per list item / table row under a heading. */
 function recordsFromMarkdown(text: string): ParsedRecordCell[] {
   const lines = text.split(/\r?\n/);
@@ -235,7 +251,31 @@ export function parseSourceFile(input: ParseInput): ParsedFile {
         if (records.length === 0) return { format, parseStatus: 'empty', records: [], columnHeaders: [], note: 'JSON contained no record objects.' };
         return { format, parseStatus: 'parsed', records, columnHeaders: [...headers] };
       } catch (e) {
-        return { format, parseStatus: 'failed', records: [], columnHeaders: [], note: `Invalid JSON: ${(e as Error).message}` };
+        // Strict JSON.parse failed (e.g. a document mixing prose with an
+        // embedded JSON blob). Do NOT drop the source: recover the largest
+        // embedded JSON value if one exists, and always keep a plain-text
+        // fallback record so the raw content stays reviewable — never
+        // silently return empty fields when source text exists.
+        const parseError = (e as Error).message;
+        const textRecord: ParsedRecordCell = { pointer: 'page:1', fields: { text: input.text.slice(0, 8000) }, text: input.text };
+        const recovered = parseJsonLoose(input.text);
+        if (recovered != null) {
+          const { records, headers } = recordsFromJson(recovered);
+          return {
+            format,
+            parseStatus: 'parsed',
+            records: [...records, textRecord],
+            columnHeaders: [...headers],
+            note: `Invalid JSON (${parseError}). Recovered a partial JSON value from the source and kept the full text as a fallback record — verify extracted fields manually.`,
+          };
+        }
+        return {
+          format,
+          parseStatus: 'parsed',
+          records: [textRecord],
+          columnHeaders: [],
+          note: `Invalid JSON (${parseError}). Fell back to plain-text parsing so source content is not lost — no source evidence was structured, verify manually.`,
+        };
       }
     }
     case 'csv':

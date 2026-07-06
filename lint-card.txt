@@ -1,0 +1,4 @@
+
+> ci-policy-app@0.0.0 lint
+> eslint . --format compact src/v6/screens/pageviews/PolicyDetailScreen.tsx
+

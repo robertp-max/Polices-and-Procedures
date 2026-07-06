@@ -1,0 +1,2793 @@
+Care Indeed Home Health — Q1/Q2 2026 "Catastrophic Season" Dataset
+I'll build this as a brutal, survey-jeopardy-level dataset. This is Set 3 — the nightmare scenario layered on top of your existing Sets 1 and 2. Let me draft this comprehensively.
+
+DATASET 3: "THE WORST SEASON" — Q1/Q2 2026
+{
+  "dataset_meta": {
+    "dataset_id": "CIHH-SET3-2026-Q1Q2-CATASTROPHIC",
+    "agency_name": "Care Indeed Home Health",
+    "reporting_period": "2026-01-01 to 2026-06-30",
+    "dataset_type": "catastrophic_mock_data",
+    "severity_profile": "survey_jeopardy_immediate_action",
+    "generated_date": "2026-06-30",
+    "total_patients": 40,
+    "total_clinicians": 20,
+    "deaths_in_period": 4,
+    "abuse_allegations": 3,
+    "substantiated_abuse": 2,
+    "complaints_filed_with_state": 6,
+    "claims_denials": 14,
+    "sentinel_events": 5,
+    "condition_level_deficiencies_probable": 8,
+    "immediate_jeopardy_indicators": 3
+  },
+
+  "clinicians": [
+    {
+      "clinicianId": "MOCK-CLIN-S3-001",
+      "firstName": "Brenda",
+      "lastName": "Vickers",
+      "role": "RN_Case_Manager",
+      "licenseNumber": "MOCK-RN-S3-001",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2023-06-15",
+      "caseloadCount": 24,
+      "maxRecommendedCaseload": 12,
+      "status": "active_under_investigation",
+      "performanceFlags": [
+        "caseload_200pct_over_recommended",
+        "documentation_late_average_6.2_days",
+        "3_patient_deaths_on_caseload_in_6_months",
+        "medication_errors_linked_to_5_patients",
+        "oasis_accuracy_rate_62pct",
+        "supervisor_complaints_from_4_hhas",
+        "missed_critical_lab_notifications_7_instances",
+        "failed_to_report_abuse_suspected_incident",
+        "no_supervisory_visits_for_6_hhas_assigned"
+      ],
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S3-001-A",
+          "startDate": "2026-02-15",
+          "issue": "Systematic documentation failure and missed critical lab escalations",
+          "status": "failed",
+          "failureDate": "2026-04-15",
+          "outcome": "Continued employment due to staffing shortage — DON override"
+        }
+      ],
+      "disciplinaryActions": [
+        {"date": "2026-03-10", "type": "written_warning", "reason": "Failed to report critical INR of 6.8 for patient MOCK-PT-S3-008"},
+        {"date": "2026-04-20", "type": "final_written_warning", "reason": "Patient MOCK-PT-S3-012 death — documentation showed 11-day gap in visits before death"},
+        {"date": "2026-05-15", "type": "suspension_3_days", "reason": "Failed to report suspected abuse of patient MOCK-PT-S3-022"}
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-002",
+      "firstName": "Derek",
+      "lastName": "Holloway",
+      "role": "RN_Case_Manager",
+      "licenseNumber": "MOCK-RN-S3-002",
+      "licenseState": "CA",
+      "licenseStatus": "expired_2026-03-31",
+      "licenseExpirationDate": "2026-03-31",
+      "licenseRenewalDate": null,
+      "hireDate": "2024-01-10",
+      "caseloadCount": 18,
+      "maxRecommendedCaseload": 12,
+      "status": "terminated_2026-05-20",
+      "terminationReason": "Practicing on expired license for 51 days — discovered during internal audit May 20. 147 visits performed on expired license.",
+      "performanceFlags": [
+        "EXPIRED_LICENSE_PRACTICING_51_DAYS",
+        "147_visits_on_expired_license",
+        "license_expiration_not_caught_by_HR",
+        "caseload_150pct_over_recommended",
+        "2_patient_deaths_on_caseload",
+        "falsified_visit_time_documentation_3_instances",
+        "oasis_accuracy_rate_58pct",
+        "medication_reconciliation_not_performed_14_patients",
+        "physician_notification_failures_9_instances"
+      ],
+      "disciplinaryActions": [
+        {"date": "2026-05-20", "type": "immediate_termination", "reason": "Expired license — 147 visits performed. Falsified documentation. Reported to CA BRN."}
+      ],
+      "reportedToBoard": true,
+      "boardReportDate": "2026-05-22",
+      "boardReferenceNumber": "MOCK-BRN-REF-2026-S3-001"
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-003",
+      "firstName": "Patricia",
+      "lastName": "Langford",
+      "role": "LVN",
+      "licenseNumber": "MOCK-LVN-S3-003",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2024-08-01",
+      "caseloadCount": 16,
+      "maxRecommendedCaseload": 10,
+      "status": "active_on_pip",
+      "performanceFlags": [
+        "performing_assessments_beyond_LVN_scope",
+        "completed_5_SOC_OASIS_assessments_illegally",
+        "medication_administration_errors_4_instances",
+        "insulin_dose_calculation_error_caused_hospitalization",
+        "wound_care_technique_failed_competency_check",
+        "documentation_late_average_4_days",
+        "failed_to_follow_physician_orders_3_instances"
+      ],
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S3-003-A",
+          "startDate": "2026-04-01",
+          "issue": "Scope of practice violations and medication errors",
+          "status": "active",
+          "outcome": "Pending — 60-day review due June 1"
+        }
+      ],
+      "scopeViolations": [
+        {"date": "2026-01-15", "description": "Completed OASIS-E1 SOC assessment for MOCK-PT-S3-003 — LVN cannot perform comprehensive assessment", "discovered": "2026-03-20"},
+        {"date": "2026-02-08", "description": "Completed OASIS-E1 SOC assessment for MOCK-PT-S3-011", "discovered": "2026-03-20"},
+        {"date": "2026-02-22", "description": "Completed OASIS-E1 SOC assessment for MOCK-PT-S3-018", "discovered": "2026-03-20"},
+        {"date": "2026-03-10", "description": "Completed OASIS-E1 SOC assessment for MOCK-PT-S3-025", "discovered": "2026-03-20"},
+        {"date": "2026-04-05", "description": "Completed OASIS-E1 SOC assessment for MOCK-PT-S3-033", "discovered": "2026-04-12"}
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-004",
+      "firstName": "Marcus",
+      "lastName": "Trent",
+      "role": "PT",
+      "licenseNumber": "MOCK-PT-LIC-S3-004",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2022-11-01",
+      "caseloadCount": 22,
+      "maxRecommendedCaseload": 14,
+      "status": "terminated_2026-06-10",
+      "terminationReason": "Substantiated patient abuse — rough handling causing bruising on two patients. Reported to CDPH and PT licensing board.",
+      "performanceFlags": [
+        "SUBSTANTIATED_PHYSICAL_ABUSE_2_PATIENTS",
+        "patient_MOCK-PT-S3-006_bruising_bilateral_arms",
+        "patient_MOCK-PT-S3-019_bruising_torso_grab_marks",
+        "3_prior_patient_complaints_of_rough_handling",
+        "utilization_outlier_20pct_above_peers",
+        "functional_scoring_inflated_upcoding_pattern",
+        "therapy_goals_not_measurable_systemic",
+        "reported_to_CDPH_and_licensing_board"
+      ],
+      "abuseInvestigation": {
+        "allegationDate": "2026-05-28",
+        "investigationStartDate": "2026-05-28",
+        "investigationCompletedDate": "2026-06-08",
+        "finding": "SUBSTANTIATED",
+        "reportedToCDPH": true,
+        "cdphReportDate": "2026-05-28",
+        "cdphCaseNumber": "MOCK-CDPH-2026-S3-001",
+        "reportedToLicensingBoard": true,
+        "boardReportDate": "2026-06-10",
+        "reportedToLocalLE": true,
+        "leReportDate": "2026-05-29",
+        "leCaseNumber": "MOCK-PD-2026-S3-4421",
+        "patientsAffected": ["MOCK-PT-S3-006", "MOCK-PT-S3-019"],
+        "investigatorNotes": "Two patients presented with unexplained bruising consistent with forceful gripping. Both patients (one with dementia, one with aphasia) had limited ability to self-report. Family member of PT-S3-006 photographed bruising and reported. PT-S3-019 bruising discovered during RN assessment. PT Trent denied allegations but witness statement from HHA corroborated rough handling during transfers."
+      }
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-005",
+      "firstName": "Janet",
+      "lastName": "Cromwell",
+      "role": "RN_Case_Manager",
+      "licenseNumber": "MOCK-RN-S3-005",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2025-03-01",
+      "caseloadCount": 14,
+      "maxRecommendedCaseload": 12,
+      "status": "active",
+      "performanceFlags": [
+        "documentation_generally_compliant",
+        "2_medication_reconciliation_misses",
+        "1_late_physician_notification"
+      ],
+      "pipHistory": [],
+      "notes": "Relatively competent but stretched. Only clinician on Set 3 roster without major flags. Inherited multiple patients from terminated clinicians mid-quarter."
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-006",
+      "firstName": "Wayne",
+      "lastName": "Blackwell",
+      "role": "PTA",
+      "licenseNumber": "MOCK-PTA-S3-006",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2025-01-15",
+      "caseloadCount": 18,
+      "maxRecommendedCaseload": 12,
+      "status": "terminated_2026-04-30",
+      "terminationReason": "Falsified visit documentation — GPS data showed clinician was not at patient homes during documented visit times. 23 visits confirmed falsified.",
+      "performanceFlags": [
+        "FALSIFIED_23_VISITS_GPS_VERIFIED",
+        "performed_PT_evaluations_beyond_PTA_scope_4_instances",
+        "billing_submitted_for_falsified_visits_fraud",
+        "patients_went_without_therapy_services",
+        "reported_to_licensing_board"
+      ],
+      "fraudDetails": {
+        "falsifiedVisitCount": 23,
+        "dateRange": "2026-02-01 to 2026-04-15",
+        "discoveryMethod": "GPS audit triggered by patient complaint — daughter stated therapist never showed but EMR showed completed visit",
+        "billingImpact": "$8,740 billed for services not rendered",
+        "reportedToOIG": true,
+        "oigReportDate": "2026-05-05",
+        "selfDisclosureProtocol": "Initiated voluntary self-disclosure to OIG per compliance officer recommendation",
+        "affectedPatients": ["MOCK-PT-S3-002", "MOCK-PT-S3-009", "MOCK-PT-S3-014", "MOCK-PT-S3-021", "MOCK-PT-S3-029", "MOCK-PT-S3-035"]
+      }
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-007",
+      "firstName": "Gloria",
+      "lastName": "Simms",
+      "role": "OT",
+      "licenseNumber": "MOCK-OT-S3-007",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2024-06-01",
+      "caseloadCount": 15,
+      "maxRecommendedCaseload": 12,
+      "status": "active_on_pip",
+      "performanceFlags": [
+        "CPR_certification_expired_4_months",
+        "reassessments_overdue_6_patients",
+        "functional_scoring_inflated_pattern",
+        "DME_recommendations_not_followed_through",
+        "home_safety_assessments_incomplete_template_only",
+        "documentation_late_average_5_days"
+      ],
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S3-007-A",
+          "startDate": "2026-03-15",
+          "issue": "Overdue reassessments and incomplete safety assessments",
+          "status": "active_not_improving"
+        }
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-008",
+      "firstName": "Roberto",
+      "lastName": "Fuentes",
+      "role": "SLP",
+      "licenseNumber": "MOCK-SLP-S3-008",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2025-07-01",
+      "caseloadCount": 10,
+      "maxRecommendedCaseload": 10,
+      "status": "active",
+      "performanceFlags": [
+        "swallow_study_recommendations_not_communicated_to_hha_3_patients",
+        "diet_texture_modifications_not_in_care_plan_2_patients",
+        "1_aspiration_event_linked_to_communication_gap",
+        "documentation_generally_timely"
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-009",
+      "firstName": "Tamara",
+      "lastName": "Voss",
+      "role": "MSW",
+      "licenseNumber": "MOCK-MSW-S3-009",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2025-09-01",
+      "caseloadCount": 12,
+      "maxRecommendedCaseload": 15,
+      "status": "active",
+      "performanceFlags": [
+        "caregiver_burnout_assessments_delayed_average_2_weeks",
+        "hospice_referral_conversations_not_initiated_despite_indicators_4_patients",
+        "suicide_risk_screening_not_performed_3_patients_with_severe_depression",
+        "APS_report_filed_late_by_5_days_for_abuse_case"
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-010",
+      "firstName": "Carl",
+      "lastName": "Riggins",
+      "role": "HHA",
+      "licenseNumber": "MOCK-HHA-S3-010",
+      "licenseState": "CA",
+      "licenseStatus": "certified",
+      "hireDate": "2024-04-01",
+      "caseloadCount": 8,
+      "status": "terminated_2026-06-05",
+      "terminationReason": "Substantiated financial abuse — stole $2,400 from patient MOCK-PT-S3-015. Patient's daughter discovered missing cash and checks. Reported to APS and local PD.",
+      "performanceFlags": [
+        "SUBSTANTIATED_FINANCIAL_ABUSE",
+        "theft_from_patient_2400_dollars",
+        "performing_tasks_outside_care_plan",
+        "no_supervisory_visit_in_4_months",
+        "reported_to_APS_and_law_enforcement"
+      ],
+      "abuseInvestigation": {
+        "allegationDate": "2026-05-20",
+        "allegationType": "financial_abuse_theft",
+        "investigationCompletedDate": "2026-06-03",
+        "finding": "SUBSTANTIATED",
+        "reportedToAPS": true,
+        "apsReportDate": "2026-05-20",
+        "apsCaseNumber": "MOCK-APS-2026-S3-001",
+        "reportedToLocalLE": true,
+        "leReportDate": "2026-05-21",
+        "leCaseNumber": "MOCK-PD-2026-S3-5587",
+        "reportedToCDPH": true,
+        "amountStolen": 2400,
+        "investigatorNotes": "Patient's daughter discovered $1,800 cash missing from bedside drawer and $600 in forged checks. HHA Riggins was the only non-family member with access. Bank confirmed checks deposited to account linked to Riggins. Background check at hire was clean. Supervisory visit records show no RN supervisory visit for HHA Riggins since February 2026."
+      }
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-011",
+      "firstName": "Denise",
+      "lastName": "Hargrove",
+      "role": "HHA",
+      "licenseNumber": "MOCK-HHA-S3-011",
+      "licenseState": "CA",
+      "licenseStatus": "certified",
+      "hireDate": "2025-02-01",
+      "caseloadCount": 7,
+      "status": "active_restricted",
+      "performanceFlags": [
+        "allegation_of_neglect_under_investigation",
+        "patient_MOCK-PT-S3-027_found_in_soiled_bed_4_hours",
+        "patient_stated_HHA_was_on_phone_entire_visit",
+        "3_patient_complaints_of_inattentiveness",
+        "performing_wound_observation_beyond_scope",
+        "no_supervisory_visit_in_5_months"
+      ],
+      "abuseInvestigation": {
+        "allegationDate": "2026-06-12",
+        "allegationType": "neglect",
+        "investigationStatus": "in_progress",
+        "reportedToAPS": true,
+        "apsReportDate": "2026-06-12",
+        "apsCaseNumber": "MOCK-APS-2026-S3-002"
+      }
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-012",
+      "firstName": "Kevin",
+      "lastName": "Marsh",
+      "role": "RN_PRN",
+      "licenseNumber": "MOCK-RN-S3-012",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2025-11-01",
+      "caseloadCount": 6,
+      "status": "active",
+      "performanceFlags": [
+        "orientation_incomplete_started_seeing_patients_without_completing_EMR_training",
+        "unfamiliar_with_agency_policies",
+        "medication_reconciliation_process_unknown",
+        "3_documentation_errors_in_first_month",
+        "assigned_high_acuity_patients_inappropriately"
+      ],
+      "notes": "PRN nurse brought on during staffing crisis after Holloway termination. Inadequately oriented."
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-013",
+      "firstName": "Sandra",
+      "lastName": "Whitfield",
+      "role": "LVN",
+      "licenseNumber": "MOCK-LVN-S3-013",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2024-10-15",
+      "caseloadCount": 14,
+      "maxRecommendedCaseload": 10,
+      "status": "active_on_pip",
+      "performanceFlags": [
+        "insulin_administration_errors_3_patients",
+        "wound_care_infection_control_technique_failed",
+        "TB_screening_expired",
+        "medication_administration_beyond_LVN_scope_IV_push_2_instances",
+        "documentation_incomplete_pattern"
+      ],
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S3-013-A",
+          "startDate": "2026-05-01",
+          "issue": "Medication administration errors and scope violations",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-014",
+      "firstName": "Anthony",
+      "lastName": "Drake",
+      "role": "PT",
+      "licenseNumber": "MOCK-PT-LIC-S3-014",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2023-08-01",
+      "caseloadCount": 16,
+      "maxRecommendedCaseload": 14,
+      "status": "active",
+      "performanceFlags": [
+        "utilization_slightly_above_peers",
+        "2_falls_during_therapy_sessions",
+        "fall_risk_assessments_not_updated_post_fall",
+        "therapy_discharge_planning_delayed_3_patients"
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-015",
+      "firstName": "Michelle",
+      "lastName": "Torres",
+      "role": "HHA",
+      "licenseNumber": "MOCK-HHA-S3-015",
+      "licenseState": "CA",
+      "licenseStatus": "certified",
+      "hireDate": "2023-03-15",
+      "caseloadCount": 9,
+      "status": "active",
+      "performanceFlags": [
+        "generally_compliant",
+        "1_late_arrival_complaint",
+        "good_patient_rapport",
+        "competency_current"
+      ],
+      "notes": "One of few HHAs without major flags. Reliable."
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-016",
+      "firstName": "James",
+      "lastName": "Okonkwo",
+      "role": "RN_Case_Manager",
+      "licenseNumber": "MOCK-RN-S3-016",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2025-06-01",
+      "caseloadCount": 19,
+      "maxRecommendedCaseload": 12,
+      "status": "active_under_review",
+      "performanceFlags": [
+        "caseload_158pct_over_recommended",
+        "inherited_terminated_clinician_patients",
+        "documentation_declining_since_caseload_increase",
+        "2_missed_supervisory_visits",
+        "1_patient_death_on_caseload_documentation_gaps",
+        "medication_reconciliation_completion_rate_71pct",
+        "burnout_indicators_requested_FMLA_information"
+      ],
+      "notes": "Was a solid performer until inheriting 7 patients from Holloway's terminated caseload. Quality has deteriorated rapidly under volume pressure."
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-017",
+      "firstName": "Lori",
+      "lastName": "Sinclair",
+      "role": "HHA",
+      "licenseNumber": "MOCK-HHA-S3-017",
+      "licenseState": "CA",
+      "licenseStatus": "certified",
+      "hireDate": "2024-09-01",
+      "caseloadCount": 8,
+      "status": "active",
+      "performanceFlags": [
+        "performing_tasks_outside_care_plan_2_instances",
+        "no_supervisory_visit_in_3_months",
+        "patient_complaint_about_personal_phone_use",
+        "competency_check_overdue"
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-018",
+      "firstName": "Raymond",
+      "lastName": "Burke",
+      "role": "PT",
+      "licenseNumber": "MOCK-PT-LIC-S3-018",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2025-04-01",
+      "caseloadCount": 14,
+      "maxRecommendedCaseload": 14,
+      "status": "active",
+      "performanceFlags": [
+        "documentation_compliant",
+        "1_utilization_question_on_audit",
+        "generally_competent"
+      ],
+      "notes": "Adequate performer."
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-019",
+      "firstName": "Angela",
+      "lastName": "Prescott",
+      "role": "RN_Supervisor",
+      "licenseNumber": "MOCK-RN-S3-019",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2022-05-01",
+      "status": "active_under_review",
+      "performanceFlags": [
+        "HHA_supervisory_visits_delinquent_14_of_20_HHAs",
+        "competency_evaluations_overdue_9_HHAs",
+        "failed_to_identify_expired_license_for_Holloway",
+        "failed_to_identify_scope_violations_for_Langford",
+        "abuse_reporting_delayed_Trent_case_by_48_hours",
+        "no_documentation_of_supervisory_oversight_activities_Q1",
+        "HR_compliance_tracking_system_not_maintained"
+      ],
+      "notes": "RN Supervisor responsible for HHA oversight, license tracking, and clinical supervision. Systemic failures across all areas of responsibility."
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S3-020",
+      "firstName": "Victor",
+      "lastName": "Nguyen",
+      "role": "HHA",
+      "licenseNumber": "MOCK-HHA-S3-020",
+      "licenseState": "CA",
+      "licenseStatus": "expired_2026-05-01",
+      "hireDate": "2024-12-01",
+      "caseloadCount": 6,
+      "status": "suspended_pending_renewal",
+      "performanceFlags": [
+        "HHA_certification_expired_not_caught_for_6_weeks",
+        "32_visits_on_expired_certification",
+        "supervisor_prescott_failed_to_track",
+        "patient_care_tasks_performed_without_valid_cert"
+      ]
+    }
+  ],
+
+  "patients": [
+    {
+      "clientId": "MOCK-PT-S3-001",
+      "firstName": "Virgil",
+      "lastName": "Crowe",
+      "dob": "1936-02-18",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-001",
+      "address": "10 Raven Court, Faketown, CA 90100",
+      "phone": "555-8101",
+      "emergencyContact": {"name": "Donna Crowe", "relationship": "Daughter", "phone": "555-8601"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3001"},
+      "secondaryPayer": {"payerId": "MOCK-PAY-MCAID-100", "payerName": "Mock Medicaid", "policyNumber": "MOCK-MCAID-S3001"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "ST", "MSW", "HHA"],
+      "admissionStatus": "DECEASED",
+      "socDate": "2026-01-08",
+      "certPeriodStart": "2026-01-08",
+      "certPeriodEnd": "2026-03-09",
+      "recertDate": "2026-03-10",
+      "recertPeriodEnd": "2026-05-08",
+      "dateOfDeath": "2026-04-22",
+      "causeOfDeath": "Sepsis secondary to stage 4 sacral pressure injury — infection progressed over 6 weeks under agency care",
+      "deathCircumstances": "Patient developed sacral pressure injury under agency care that progressed from Stage 2 to Stage 4 over 8 weeks. Wound infection identified April 8 — culture showed MRSA. Patient hospitalized April 15 with sepsis. Died April 22. Family filed formal complaint with CDPH alleging inadequate wound care, missed assessments, and failure to escalate wound deterioration. DON investigation found: wound measurements missing for 3 consecutive weeks, wound care protocol not followed, RN Vickers (primary) had 11-day gap in visits prior to hospitalization, no physician notification of wound status change for 17 days.",
+      "primaryDiagnoses": ["CHF_class_IV", "COPD_severe", "diabetes_type2_uncontrolled", "sacral_pressure_injury_stage4", "cognitive_impairment_severe", "MRSA"],
+      "clinicalComplexity": "EXTREME",
+      "assignedClinicians": ["MOCK-CLIN-S3-001", "MOCK-CLIN-S3-004", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-008", "MOCK-CLIN-S3-009", "MOCK-CLIN-S3-010"],
+      "hospitalizationHistory": [
+        {"date": "2026-02-12", "reason": "CHF_exacerbation", "facility": "Mock General Hospital", "lengthOfStay": 5, "returnDate": "2026-02-17"},
+        {"date": "2026-04-15", "reason": "sepsis_MRSA_wound_infection", "facility": "Mock General Hospital", "lengthOfStay": 7, "returnDate": null, "outcome": "died_in_hospital"}
+      ],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-001",
+          "date": "2026-01-22",
+          "category": "fall",
+          "severity": "moderate",
+          "description": "Patient fell from wheelchair during HHA transfer. Bruise to left hip. X-ray negative.",
+          "reportedBy": "MOCK-CLIN-S3-010",
+          "rcaCompleted": true,
+          "rcaFindings": "HHA did not lock wheelchair brakes. Transfer technique incorrect."
+        },
+        {
+          "incidentId": "INC-S3-002",
+          "date": "2026-02-28",
+          "category": "wound_deterioration",
+          "severity": "major",
+          "description": "Sacral wound progressed from Stage 2 to Stage 3. RN Vickers documented wound but did not change care plan or notify physician.",
+          "reportedBy": "Chart audit — not reported by clinician",
+          "rcaCompleted": true,
+          "rcaFindings": "RN failed to escalate wound staging change. No physician notification. Wound care protocol not updated. 3 consecutive weeks without wound measurements documented."
+        },
+        {
+          "incidentId": "INC-S3-003",
+          "date": "2026-03-20",
+          "category": "wound_deterioration",
+          "severity": "sentinel",
+          "description": "Sacral wound now Stage 4 with exposed bone. MRSA culture positive. Patient septic. Hospitalized April 15. Died April 22.",
+          "reportedBy": "MOCK-CLIN-S3-005 (covering for Vickers)",
+          "rcaCompleted": true,
+          "rcaFindings": "Systemic failure: overloaded RN, no wound care specialist consultation, no physician escalation for 17 days, HHA not trained on pressure injury prevention, turning schedule not implemented, nutrition not addressed. Contributing: Vickers had 11-day visit gap (March 9–20) — documented as 'patient unavailable' but patient was homebound."
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S3-001",
+          "claimNumber": "MOCK-CLM-S3-001",
+          "dateOfService": "2026-03-10 to 2026-04-15",
+          "denialDate": "2026-05-20",
+          "denialReason": "Medical necessity not established — OASIS assessment performed by expired-license clinician (Holloway). Entire certification period claim denied.",
+          "amountDenied": 14200,
+          "appealStatus": "appeal_filed",
+          "appealDate": "2026-06-01"
+        }
+      ],
+      "complaints": [
+        {
+          "complaintId": "CMPL-S3-001",
+          "dateField": "2026-04-25",
+          "filedBy": "Donna Crowe (daughter)",
+          "filedWith": "CDPH",
+          "category": "inadequate_care_leading_to_death",
+          "description": "Daughter alleges agency failed to properly care for father's pressure injury, missed visits, failed to notify physician of deterioration, and father died of sepsis from infected wound that developed under agency care.",
+          "cdphCaseNumber": "MOCK-CDPH-2026-S3-002",
+          "investigationStatus": "active",
+          "agencyResponseDue": "2026-05-10"
+        }
+      ],
+      "messyFlags": [
+        "PATIENT_DEATH_UNDER_AGENCY_CARE",
+        "wound_developed_and_progressed_to_stage4_under_care",
+        "sepsis_death_from_agency_acquired_wound_infection",
+        "CDPH_complaint_active_investigation",
+        "sentinel_event",
+        "11_day_visit_gap_before_hospitalization",
+        "physician_not_notified_17_days",
+        "wound_measurements_missing_3_weeks",
+        "MRSA_infection_control_failure",
+        "HHA_theft_from_this_patient_by_Riggins",
+        "expired_license_clinician_performed_recert_OASIS",
+        "immediate_jeopardy_indicator"
+      ],
+      "qapiRequired": true,
+      "sentinelEvent": true,
+      "immediateActionRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-002",
+      "firstName": "Lucille",
+      "lastName": "Pemberton",
+      "dob": "1939-06-30",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-002",
+      "address": "22 Hawthorn Lane, Testburg, CA 90101",
+      "phone": "555-8102",
+      "emergencyContact": {"name": "James Pemberton", "relationship": "Son", "phone": "555-8602"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3002"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-01-15",
+      "primaryDiagnoses": ["post_surgical_bilateral_knee_replacement", "diabetes_type2_uncontrolled", "morbid_obesity_BMI_44", "DVT_history"],
+      "clinicalComplexity": "HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-002", "MOCK-CLIN-S3-006", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-017"],
+      "hospitalizationHistory": [
+        {"date": "2026-03-08", "reason": "DVT_left_leg", "facility": "Mock Surgical Center", "lengthOfStay": 4, "returnDate": "2026-03-12"}
+      ],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-004",
+          "date": "2026-02-15",
+          "category": "missed_therapy",
+          "severity": "moderate",
+          "description": "PTA Blackwell documented completed PT session on 2/15 but GPS data confirms he was at home. Patient received no therapy this visit. 1 of 23 falsified visits confirmed for this patient.",
+          "reportedBy": "Internal audit",
+          "rcaCompleted": true
+        },
+        {
+          "incidentId": "INC-S3-005",
+          "date": "2026-03-02",
+          "category": "medication_error",
+          "severity": "moderate",
+          "description": "RN Holloway (expired license at time of visit) failed to reconcile post-hospitalization medications. Patient was taking both Warfarin and new Eliquis — dual anticoagulation for 9 days until discovered by daughter's pharmacist.",
+          "reportedBy": "Patient's daughter",
+          "rcaCompleted": true,
+          "rcaFindings": "RN did not perform medication reconciliation post-hospital discharge. Expired license clinician performing complex care. No pharmacy coordination."
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S3-002",
+          "claimNumber": "MOCK-CLM-S3-002",
+          "dateOfService": "2026-02-01 to 2026-04-15",
+          "denialDate": "2026-05-30",
+          "denialReason": "Services billed for 4 PTA visits confirmed as falsified (Blackwell fraud). Full therapy episode denied.",
+          "amountDenied": 6800,
+          "appealStatus": "no_appeal_fraud_confirmed"
+        },
+        {
+          "denialId": "DENY-S3-003",
+          "claimNumber": "MOCK-CLM-S3-003",
+          "dateOfService": "2026-04-01 to 2026-05-31",
+          "denialDate": "2026-06-15",
+          "denialReason": "OASIS assessment performed by expired-license RN (Holloway). Certification period invalid.",
+          "amountDenied": 11500,
+          "appealStatus": "appeal_filed"
+        }
+      ],
+      "messyFlags": [
+        "falsified_therapy_visits_by_Blackwell",
+        "dual_anticoagulation_9_days_near_fatal",
+        "expired_license_rn_performed_assessment_and_care",
+        "2_claims_denied_total_18300",
+        "DVT_hospitalization_potentially_preventable",
+        "medication_reconciliation_systemic_failure",
+        "HHA_no_supervisory_visit_3_months"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-003",
+      "firstName": "Clarence",
+      "lastName": "Dunmore",
+      "dob": "1941-10-05",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-003",
+      "address": "35 Elm Ridge Rd, Mockdale, CA 90102",
+      "phone": "555-8103",
+      "emergencyContact": {"name": "Susan Dunmore", "relationship": "Wife", "phone": "555-8603"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MA-100", "payerName": "Mock Medicare Advantage", "policyNumber": "MOCK-MA-S3003"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT", "MSW"],
+      "admissionStatus": "DECEASED",
+      "socDate": "2026-02-01",
+      "dateOfDeath": "2026-05-15",
+      "causeOfDeath": "Cardiac arrest at home — CHF exacerbation. Daily weight monitoring not performed for 2 weeks prior. 8-pound weight gain undetected. No physician notification.",
+      "deathCircumstances": "Patient with CHF Class IV on daily weight monitoring protocol. RN Okonkwo (inherited from terminated Holloway) documented daily weights via telehealth but patient's scale was broken — weights were estimated. 8-pound weight gain over 12 days not detected. Patient found unresponsive by wife on May 15 at 6:40 AM. EMS called — pronounced dead at scene. Coroner ruled cardiac arrest secondary to acute CHF decompensation. Family filed complaint stating agency knew scale was broken and did nothing.",
+      "primaryDiagnoses": ["CHF_class_IV", "diabetes_type2", "CKD_stage4", "afib", "depression_major"],
+      "clinicalComplexity": "EXTREME",
+      "assignedClinicians": ["MOCK-CLIN-S3-002", "MOCK-CLIN-S3-016", "MOCK-CLIN-S3-018", "MOCK-CLIN-S3-009"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-006",
+          "date": "2026-04-28",
+          "category": "equipment_failure_unaddressed",
+          "severity": "major",
+          "description": "Patient's digital scale not functioning. RN Okonkwo documented that patient reported weights verbally but these were estimates. No replacement scale ordered. No physician notified that accurate weights were unavailable.",
+          "reportedBy": "Discovered post-mortem during chart review",
+          "rcaCompleted": true,
+          "rcaFindings": "Broken scale documented in visit notes but not acted upon. No equipment request submitted. No standing order for weight variance protocol activated. RN had 19 patients — stated he forgot to follow up."
+        },
+        {
+          "incidentId": "INC-S3-007",
+          "date": "2026-05-15",
+          "category": "patient_death",
+          "severity": "sentinel",
+          "description": "Patient found deceased at home by wife. Cardiac arrest secondary to CHF decompensation. 8-pound weight gain over 12 days undetected due to broken scale and estimated weights.",
+          "reportedBy": "Wife (Susan Dunmore) — called agency after EMS pronounced",
+          "rcaCompleted": true,
+          "rcaFindings": "SENTINEL EVENT. Failure chain: broken scale → estimated weights → 8lb gain undetected → no diuretic adjustment → CHF decompensation → cardiac arrest. Contributing: RN overloaded (19 patients), inherited patient after Holloway termination, no clinical transition plan, no supervisory oversight during transition."
+        }
+      ],
+      "complaints": [
+        {
+          "complaintId": "CMPL-S3-002",
+          "dateField": "2026-05-18",
+          "filedBy": "Susan Dunmore (wife)",
+          "filedWith": "CDPH_and_CMS_hotline",
+          "category": "negligence_leading_to_death",
+          "description": "Wife alleges agency knew patient's scale was broken, used estimated weights for 2 weeks, failed to detect dangerous weight gain, and husband died because nobody acted. Also alleges prior RN (Holloway) was unlicensed.",
+          "cdphCaseNumber": "MOCK-CDPH-2026-S3-003",
+          "cmsHotlineNumber": "MOCK-CMS-2026-S3-001",
+          "investigationStatus": "active"
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S3-004",
+          "dateOfService": "2026-04-01 to 2026-05-15",
+          "denialReason": "SOC and recert OASIS performed by expired-license RN Holloway. Entire episode denied. Medicare Advantage plan requesting full repayment.",
+          "amountDenied": 18900,
+          "appealStatus": "appeal_denied_final"
+        }
+      ],
+      "messyFlags": [
+        "PATIENT_DEATH_PREVENTABLE",
+        "sentinel_event_CHF_death",
+        "broken_scale_unaddressed_12_days",
+        "estimated_weights_documented_as_actual",
+        "8lb_weight_gain_undetected",
+        "CDPH_and_CMS_complaint_active",
+        "expired_license_rn_Holloway_performed_SOC_and_recert",
+        "claim_denied_18900_no_appeal_remaining",
+        "immediate_jeopardy_indicator",
+        "clinician_overload_contributed_to_death",
+        "no_clinical_transition_plan_after_termination"
+      ],
+      "qapiRequired": true,
+      "sentinelEvent": true,
+      "immediateActionRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-004",
+      "firstName": "Mavis",
+      "lastName": "Hightower",
+      "dob": "1933-04-12",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-004",
+      "address": "48 Sycamore Blvd, Synthcity, CA 90103",
+      "phone": "555-8104",
+      "emergencyContact": {"name": "Richard Hightower", "relationship": "Son", "phone": "555-8604"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3004"},
+      "secondaryPayer": {"payerId": "MOCK-PAY-MCAID-100", "payerName": "Mock Medicaid", "policyNumber": "MOCK-MCAID-S3004"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "ST", "MSW", "HHA"],
+      "admissionStatus": "DECEASED",
+      "socDate": "2026-01-10",
+      "dateOfDeath": "2026-06-08",
+      "causeOfDeath": "Aspiration pneumonia — patient on thickened liquid diet but HHA provided regular thin liquids. Patient aspirated, developed pneumonia, died 6 days later in hospital.",
+      "deathCircumstances": "93-year-old patient with severe dysphagia on honey-thick liquid diet and pureed solids per SLP evaluation. HHA Sinclair (MOCK-CLIN-S3-017) gave patient regular water and thin soup on June 2 — stated she 'didn't know about the thick liquid thing.' SLP dietary texture modifications were in EMR but NOT on HHA care plan. Patient aspirated June 2, developed respiratory distress. Hospitalized June 3. Developed aspiration pneumonia. Died June 8. Son filed complaint and retained attorney.",
+      "primaryDiagnoses": ["dementia_severe_Alzheimers", "dysphagia_severe", "CHF_class_III", "diabetes_type2", "osteoporosis_severe", "urinary_incontinence"],
+      "clinicalComplexity": "EXTREME",
+      "assignedClinicians": ["MOCK-CLIN-S3-001", "MOCK-CLIN-S3-014", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-008", "MOCK-CLIN-S3-009", "MOCK-CLIN-S3-017"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-008",
+          "date": "2026-03-15",
+          "category": "near_miss_aspiration",
+          "severity": "moderate",
+          "description": "Patient coughed severely during meal — HHA had given regular crackers instead of pureed food. No aspiration event confirmed but significant choking episode.",
+          "reportedBy": "MOCK-CLIN-S3-017",
+          "rcaCompleted": false,
+          "rcaFindings": null,
+          "notes": "RCA never completed. Near-miss not escalated. HHA not re-educated on diet texture."
+        },
+        {
+          "incidentId": "INC-S3-009",
+          "date": "2026-06-02",
+          "category": "aspiration_event",
+          "severity": "sentinel",
+          "description": "HHA Sinclair provided thin liquids (regular water, thin soup) to patient on honey-thick liquid diet. Patient aspirated. Hospitalized June 3. Aspiration pneumonia. Died June 8.",
+          "reportedBy": "Hospital notified agency",
+          "rcaCompleted": true,
+          "rcaFindings": "SENTINEL EVENT. SLP evaluation (Feb 10) documented honey-thick liquids and pureed diet. SLP Roberto Fuentes documented in EMR but dietary modification NOT added to HHA care plan by case manager RN Vickers. HHA Sinclair was never educated on diet texture. Prior near-miss March 15 was not investigated or corrected. No supervisory visit for HHA Sinclair in 5 months. Direct causal chain: communication failure → uneducated HHA → aspiration → death."
+        }
+      ],
+      "complaints": [
+        {
+          "complaintId": "CMPL-S3-003",
+          "dateField": "2026-06-10",
+          "filedBy": "Richard Hightower (son) via attorney",
+          "filedWith": "CDPH_APS_and_civil_suit",
+          "category": "negligence_leading_to_death",
+          "description": "Son's attorney filed complaint alleging: agency knew patient needed thickened liquids, HHA was never trained on diet, prior near-miss was ignored, mother died because HHA gave her thin liquids. Civil lawsuit for wrongful death filed June 15.",
+          "cdphCaseNumber": "MOCK-CDPH-2026-S3-004",
+          "civilSuitFiled": true,
+          "civilSuitDate": "2026-06-15",
+          "civilSuitCaseNumber": "MOCK-CV-2026-S3-001",
+          "investigationStatus": "active"
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S3-005",
+          "dateOfService": "2026-04-01 to 2026-06-08",
+          "denialReason": "Coordination of care failure documented. SLP recommendations not implemented in care plan. Payer denying final episode.",
+          "amountDenied": 12600,
+          "appealStatus": "appeal_filed"
+        }
+      ],
+      "messyFlags": [
+        "PATIENT_DEATH_ASPIRATION_DIRECTLY_CAUSED_BY_AGENCY_FAILURE",
+        "sentinel_event",
+        "SLP_diet_not_on_HHA_care_plan",
+        "HHA_never_educated_on_diet_texture",
+        "prior_near_miss_not_investigated",
+        "no_HHA_supervisory_visit_5_months",
+        "CDPH_complaint_active",
+        "CIVIL_LAWSUIT_WRONGFUL_DEATH",
+        "immediate_jeopardy_indicator",
+        "communication_failure_SLP_to_RN_to_HHA",
+        "RN_Vickers_failed_to_update_care_plan",
+        "SLP_Fuentes_did_not_verify_care_plan_updated"
+      ],
+      "qapiRequired": true,
+      "sentinelEvent": true,
+      "immediateActionRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-005",
+      "firstName": "Howard",
+      "lastName": "Mercer",
+      "dob": "1943-09-08",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-005",
+      "address": "61 Birch Hollow Ct, Fabricton, CA 90104",
+      "phone": "555-8105",
+      "emergencyContact": {"name": "Karen Mercer", "relationship": "Wife", "phone": "555-8605"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3005"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-01-20",
+      "primaryDiagnoses": ["COPD_Gold_IV", "CHF_class_III", "diabetes_type2_uncontrolled", "depression_severe", "chronic_pain_opioid_therapy"],
+      "clinicalComplexity": "VERY_HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-001", "MOCK-CLIN-S3-004", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-015"],
+      "hospitalizationHistory": [
+        {"date": "2026-02-20", "reason": "COPD_exacerbation", "facility": "Mock Regional Medical Center", "lengthOfStay": 6, "returnDate": "2026-02-26"},
+        {"date": "2026-04-18", "reason": "CHF_exacerbation_pulmonary_edema", "facility": "Mock Regional Medical Center", "lengthOfStay": 8, "returnDate": "2026-04-26"},
+        {"date": "2026-06-10", "reason": "opioid_overdose_accidental", "facility": "Mock General Hospital", "lengthOfStay": 3, "returnDate": "2026-06-13"}
+      ],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-010",
+          "date": "2026-03-15",
+          "category": "medication_error",
+          "severity": "major",
+          "description": "Patient was taking OxyContin 20mg BID + Oxycodone 10mg PRN. New physician order changed to OxyContin 10mg BID. RN Vickers did not update medication list or educate patient. Patient continued 20mg dose for 3 weeks.",
+          "reportedBy": "Discovered during post-hospitalization medication reconciliation",
+          "rcaCompleted": true
+        },
+        {
+          "incidentId": "INC-S3-011",
+          "date": "2026-06-08",
+          "category": "medication_overdose",
+          "severity": "sentinel",
+          "description": "Patient took double dose of Oxycodone 10mg PRN (20mg total) along with regular OxyContin. Found obtunded by wife. Narcan administered by EMS. Hospitalized for monitoring. Survived.",
+          "reportedBy": "Wife called 911",
+          "rcaCompleted": true,
+          "rcaFindings": "Opioid management inadequate. No pill count protocol. No lockbox. Pain management plan not updated in 4 months. Patient had cognitive changes making self-administration unsafe. No discussion of naloxone prescription for home. RN documentation showed last opioid assessment 3 months prior."
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S3-006",
+          "dateOfService": "2026-04-26 to 2026-06-08",
+          "denialReason": "Readmission within 30 days — payer flagged as potentially preventable. Opioid management deficiency documented.",
+          "amountDenied": 8200,
+          "appealStatus": "appeal_filed"
+        }
+      ],
+      "messyFlags": [
+        "3_hospitalizations_in_6_months",
+        "accidental_opioid_overdose_sentinel_event",
+        "opioid_management_systematic_failure",
+        "medication_reconciliation_not_done_post_hospitalization",
+        "opioid_dose_change_not_communicated_to_patient",
+        "no_naloxone_prescribed_for_home",
+        "no_opioid_assessment_in_3_months",
+        "pain_plan_not_updated_4_months",
+        "hospice_evaluation_not_initiated_despite_indicators",
+        "claim_denied_8200"
+      ],
+      "qapiRequired": true,
+      "sentinelEvent": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-006",
+      "firstName": "Dorothy",
+      "lastName": "Whitmore",
+      "dob": "1937-11-22",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-006",
+      "address": "74 Cedar Park Dr, Pseudoshire, CA 90105",
+      "phone": "555-8106",
+      "emergencyContact": {"name": "Linda Whitmore-Chen", "relationship": "Daughter", "phone": "555-8606"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3006"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "MSW", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-02-05",
+      "primaryDiagnoses": ["dementia_moderate_Alzheimers", "hip_fracture_ORIF", "osteoporosis_severe", "diabetes_type2"],
+      "clinicalComplexity": "VERY_HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-005", "MOCK-CLIN-S3-004", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-009", "MOCK-CLIN-S3-015"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-012",
+          "date": "2026-04-15",
+          "category": "PHYSICAL_ABUSE_BY_CLINICIAN",
+          "severity": "sentinel",
+          "description": "Patient presented with bilateral arm bruising (4 distinct grab marks on each upper arm) after PT visit by Marcus Trent (MOCK-CLIN-S3-004). Patient has dementia and could not clearly verbalize what happened but became agitated and cried when asked about 'the man who exercises with her.' Daughter photographed bruising and reported to agency.",
+          "reportedBy": "Linda Whitmore-Chen (daughter)",
+          "rcaCompleted": true,
+          "rcaFindings": "Bruising pattern consistent with forceful gripping during standing transfers. PT Trent had 3 prior complaints of rough handling from other patients. Agency failed to investigate prior complaints. Patient has dementia — limited ability to self-report. HHA Torres (MOCK-CLIN-S3-015) witnessed Trent being 'very forceful' during previous session but was not asked about it until investigation.",
+          "reportedToAPS": true,
+          "reportedToCDPH": true,
+          "reportedToLE": true
+        },
+        {
+          "incidentId": "INC-S3-013",
+          "date": "2026-05-10",
+          "category": "fall",
+          "severity": "moderate",
+          "description": "Patient fell in hallway. Fractured left wrist. OT Simms had not completed home safety reassessment due since March.",
+          "reportedBy": "MOCK-CLIN-S3-015",
+          "rcaCompleted": true
+        }
+      ],
+      "complaints": [
+        {
+          "complaintId": "CMPL-S3-004",
+          "dateField": "2026-04-16",
+          "filedBy": "Linda Whitmore-Chen (daughter)",
+          "filedWith": "Agency_APS_CDPH",
+          "category": "physical_abuse_by_therapist",
+          "description": "Daughter reported grab-mark bruising on mother's arms after PT visit. Demanded PT never return. Filed reports with APS and CDPH.",
+          "cdphCaseNumber": "MOCK-CDPH-2026-S3-001",
+          "apsReportDate": "2026-04-16",
+          "investigationStatus": "substantiated"
+        }
+      ],
+      "messyFlags": [
+        "PHYSICAL_ABUSE_BY_PT_SUBSTANTIATED",
+        "vulnerable_adult_dementia_unable_to_self_report",
+        "3_prior_complaints_about_same_PT_not_investigated",
+        "APS_CDPH_LE_all_involved",
+        "fall_with_fracture_home_safety_assessment_overdue",
+        "sentinel_event",
+        "condition_level_deficiency_indicator"
+      ],
+      "qapiRequired": true,
+      "sentinelEvent": true,
+      "immediateActionRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-007",
+      "firstName": "Franklin",
+      "lastName": "Graves",
+      "dob": "1945-03-14",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-007",
+      "address": "87 Maple Creek Way, Shamsworth, CA 90106",
+      "phone": "555-8107",
+      "emergencyContact": {"name": "Carol Graves", "relationship": "Wife", "phone": "555-8607"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3007"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-03-01",
+      "primaryDiagnoses": ["CHF_class_III", "afib", "CKD_stage4", "diabetes_type2", "gout"],
+      "clinicalComplexity": "HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-002", "MOCK-CLIN-S3-018", "MOCK-CLIN-S3-010"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-014",
+          "date": "2026-04-02",
+          "category": "critical_lab_not_reported",
+          "severity": "major",
+          "description": "Lab results showed potassium 6.8 mEq/L (critical high). RN Holloway (expired license) documented lab receipt but did NOT notify physician. Patient remained on potassium-sparing diuretic for 5 additional days. Eventually hospitalized with cardiac arrhythmia.",
+          "reportedBy": "Hospital notified agency of critical potassium on admission",
+          "rcaCompleted": true,
+          "rcaFindings": "RN Holloway received lab results via fax on April 2. Documented in chart notes but no physician call. No critical value protocol activated. Contributing: expired license, no oversight, overloaded caseload."
+        },
+        {
+          "incidentId": "INC-S3-015",
+          "date": "2026-05-25",
+          "category": "financial_abuse_by_HHA",
+          "severity": "sentinel",
+          "description": "HHA Riggins (MOCK-CLIN-S3-010) stole $600 via forged check from patient's checkbook. Patient's wife discovered check made out to Riggins deposited at local bank. Part of broader theft pattern — Riggins also stole from PT-S3-001 and PT-S3-015.",
+          "reportedBy": "Carol Graves (wife)",
+          "rcaCompleted": true,
+          "reportedToAPS": true,
+          "reportedToLE": true
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S3-007",
+          "dateOfService": "2026-03-01 to 2026-04-30",
+          "denialReason": "SOC OASIS performed by expired-license RN. Episode denied.",
+          "amountDenied": 9400,
+          "appealStatus": "appeal_filed"
+        }
+      ],
+      "messyFlags": [
+        "critical_potassium_6.8_not_reported",
+        "cardiac_arrhythmia_hospitalization_preventable",
+        "expired_license_rn_performed_care",
+        "financial_abuse_by_HHA",
+        "HHA_no_supervisory_visit_4_months",
+        "claim_denied_9400",
+        "condition_level_deficiency_indicator"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-008",
+      "firstName": "Arlene",
+      "lastName": "Prescott",
+      "dob": "1940-07-19",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-008",
+      "address": "100 Willow Gate Ln, Bogusfield, CA 90107",
+      "phone": "555-8108",
+      "emergencyContact": {"name": "Thomas Prescott", "relationship": "Husband", "phone": "555-8608"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3008"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-01-25",
+      "primaryDiagnoses": ["diabetes_type1_brittle", "peripheral_neuropathy_severe", "wound_bilateral_feet_stage2", "CKD_stage4", "retinopathy"],
+      "clinicalComplexity": "VERY_HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-001", "MOCK-CLIN-S3-014", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-011"],
+      "hospitalizationHistory": [
+        {"date": "2026-03-05", "reason": "DKA_hypoglycemia_severe", "facility": "Mock General Hospital", "lengthOfStay": 5, "returnDate": "2026-03-10"},
+        {"date": "2026-05-20", "reason": "cellulitis_left_foot_progressing_to_osteomyelitis", "facility": "Mock University Hospital", "lengthOfStay": 14, "returnDate": "2026-06-03", "notes": "Left 4th toe amputated during hospitalization"}
+      ],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-016",
+          "date": "2026-02-15",
+          "category": "medication_error",
+          "severity": "major",
+          "description": "LVN Langford (MOCK-CLIN-S3-003) calculated insulin dose incorrectly — administered 30 units Humalog instead of 15 units. Patient's BG dropped to 38. EMS called. Glucose administered IV. Patient stabilized but hospitalized for monitoring.",
+          "reportedBy": "MOCK-CLIN-S3-003",
+          "rcaCompleted": true,
+          "rcaFindings": "LVN misread sliding scale. Did not verify dose with RN before administration. Insulin pen markings were faded. No double-check protocol in place. LVN Langford had no documented competency check for insulin administration."
+        },
+        {
+          "incidentId": "INC-S3-017",
+          "date": "2026-04-10",
+          "category": "wound_deterioration",
+          "severity": "major",
+          "description": "Left foot wound progressed from Stage 1 to Stage 2 with purulent drainage. Culture positive for Pseudomonas. Wound measurements not documented for 4 weeks prior. Foot care protocol not followed — no offloading device ordered.",
+          "reportedBy": "MOCK-CLIN-S3-005 (covering visit)",
+          "rcaCompleted": true,
+          "rcaFindings": "Primary RN Vickers missed 3 scheduled wound care visits. Wound measurements missing from chart for 4 weeks. No offloading device despite diabetic foot protocol requirement. No vascular surgery referral despite PVD history. Eventually progressed to osteomyelitis requiring toe amputation."
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S3-008",
+          "dateOfService": "2026-03-10 to 2026-05-20",
+          "denialReason": "Readmission within 30 days. Documentation shows wound care protocol not followed. Payer alleges substandard care contributed to readmission.",
+          "amountDenied": 15300,
+          "appealStatus": "appeal_filed"
+        }
+      ],
+      "messyFlags": [
+        "insulin_dose_error_by_LVN_hospitalization",
+        "LVN_no_insulin_competency_verification",
+        "wound_progressed_to_osteomyelitis_under_care",
+        "toe_amputation_potentially_preventable",
+        "wound_measurements_missing_4_weeks",
+        "3_missed_wound_care_visits_by_RN",
+        "no_vascular_surgery_referral",
+        "HHA_alleged_neglect_patient",
+        "claim_denied_15300",
+        "condition_level_deficiency_indicator"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-009",
+      "firstName": "Eugene",
+      "lastName": "Bartlett",
+      "dob": "1947-12-01",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-009",
+      "address": "113 Oak Terrace, Testdale, CA 90108",
+      "phone": "555-8109",
+      "emergencyContact": {"name": "Nancy Bartlett", "relationship": "Wife", "phone": "555-8609"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3009"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT"],
+      "admissionStatus": "active",
+      "socDate": "2026-02-10",
+      "primaryDiagnoses": ["post_surgical_total_hip_replacement", "diabetes_type2", "hypertension"],
+      "clinicalComplexity": "MODERATE",
+      "assignedClinicians": ["MOCK-CLIN-S3-005", "MOCK-CLIN-S3-006"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-018",
+          "date": "2026-03-01",
+          "category": "falsified_visit",
+          "severity": "major",
+          "description": "PTA Blackwell documented completed PT session but GPS confirms he was not at patient's home. 3 of 23 confirmed falsified visits were for this patient.",
+          "reportedBy": "Internal audit"
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S3-009",
+          "dateOfService": "2026-02-10 to 2026-04-10",
+          "denialReason": "Therapy visits falsified by PTA Blackwell. Full therapy claim denied.",
+          "amountDenied": 4200,
+          "appealStatus": "no_appeal_fraud_confirmed"
+        }
+      ],
+      "messyFlags": [
+        "falsified_therapy_visits",
+        "patient_received_no_therapy_on_3_documented_visits",
+        "claim_denied_fraud_4200",
+        "OIG_self_disclosure"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-010",
+      "firstName": "Bernice",
+      "lastName": "Caldwell",
+      "dob": "1938-01-25",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-010",
+      "address": "126 Pine Bluff Rd, Falseburg, CA 90109",
+      "phone": "555-8110",
+      "emergencyContact": {"name": "Dorothy Caldwell-Ortiz", "relationship": "Daughter", "phone": "555-8610"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3010"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "ST", "MSW", "HHA"],
+      "admissionStatus": "DECEASED",
+      "socDate": "2026-01-05",
+      "dateOfDeath": "2026-03-28",
+      "causeOfDeath": "Massive hemorrhagic stroke. INR was 8.2 on Warfarin — last INR check was 6 weeks prior despite weekly monitoring protocol. RN never drew labs.",
+      "deathCircumstances": "88-year-old patient on Warfarin for mechanical heart valve with weekly INR monitoring protocol. RN Holloway (expired license from March 31 onward, but this occurred before expiration) documented INR draws for Feb 15 and March 1, but lab had NO record of receiving specimens. Lab confirmed no INR drawn since January 28. On March 27, patient developed severe headache, confusion, left-sided weakness. EMS transported. CT showed massive right-hemisphere hemorrhagic stroke. INR was 8.2 at hospital. Patient died March 28. Holloway later admitted he 'forgot' to draw the labs and documented fake values.",
+      "primaryDiagnoses": ["afib_chronic", "mechanical_heart_valve_aortic", "CHF_class_III", "dementia_moderate", "diabetes_type2"],
+      "clinicalComplexity": "EXTREME",
+      "assignedClinicians": ["MOCK-CLIN-S3-002", "MOCK-CLIN-S3-014", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-008", "MOCK-CLIN-S3-009", "MOCK-CLIN-S3-011"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-019",
+          "date": "2026-03-28",
+          "category": "patient_death_falsified_labs",
+          "severity": "sentinel",
+          "description": "Patient died of hemorrhagic stroke with INR 8.2. RN Holloway documented fake INR values for 8 weeks. Lab confirmed no specimens received since January 28. Holloway admitted to fabrication.",
+          "reportedBy": "Hospital lab discrepancy triggered investigation",
+          "rcaCompleted": true,
+          "rcaFindings": "SENTINEL EVENT — CRIMINAL REFERRAL LEVEL. RN Holloway falsified laboratory results in medical record for 8 weeks. Patient's INR was unmonitored during this period. INR reached critical level (8.2) causing fatal hemorrhagic stroke. This constitutes potential manslaughter. Reported to CA BRN, CDPH, and district attorney's office. Agency failed to verify lab results were actually drawn — no reconciliation process between visit documentation and lab receipt."
+        }
+      ],
+      "complaints": [
+        {
+          "complaintId": "CMPL-S3-005",
+          "dateField": "2026-04-02",
+          "filedBy": "Dorothy Caldwell-Ortiz (daughter)",
+          "filedWith": "CDPH_DA_Office_CMS",
+          "category": "falsified_records_leading_to_death",
+          "description": "Daughter filed complaints with CDPH, District Attorney, and CMS alleging RN falsified lab results for 2 months and her mother died because of it. Demanding criminal prosecution.",
+          "cdphCaseNumber": "MOCK-CDPH-2026-S3-005",
+          "daCaseNumber": "MOCK-DA-2026-S3-001",
+          "investigationStatus": "active_criminal_referral"
+        }
+      ],
+      "messyFlags": [
+        "PATIENT_DEATH_CAUSED_BY_FALSIFIED_LABS",
+        "RN_HOLLOWAY_FABRICATED_INR_VALUES_8_WEEKS",
+        "INR_8.2_FATAL_HEMORRHAGIC_STROKE",
+        "CRIMINAL_REFERRAL_TO_DA",
+        "sentinel_event",
+        "CDPH_CMS_active_investigation",
+        "no_lab_result_verification_process",
+        "immediate_jeopardy_indicator",
+        "condition_level_deficiency",
+        "survey_jeopardy"
+      ],
+      "qapiRequired": true,
+      "sentinelEvent": true,
+      "immediateActionRequired": true,
+      "criminalReferral": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-011",
+      "firstName": "Margaret",
+      "lastName": "Thorne",
+      "dob": "1942-08-15",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-011",
+      "address": "139 Ash Grove Blvd, Faketown, CA 90100",
+      "phone": "555-8111",
+      "emergencyContact": {"name": "Robert Thorne", "relationship": "Son", "phone": "555-8611"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3011"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-01-12",
+      "primaryDiagnoses": ["post_surgical_spinal_fusion_L4L5", "chronic_pain_opioid_therapy", "diabetes_type2", "obesity_BMI_38"],
+      "clinicalComplexity": "HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-003", "MOCK-CLIN-S3-018", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-017"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-020",
+          "date": "2026-01-15",
+          "category": "scope_violation",
+          "severity": "major",
+          "description": "LVN Langford performed SOC OASIS comprehensive assessment — beyond LVN scope. Discovered during audit March 20. Assessment invalid — entire certification period documentation deficient.",
+          "reportedBy": "Internal chart audit"
+        },
+        {
+          "incidentId": "INC-S3-021",
+          "date": "2026-04-18",
+          "category": "fall_during_therapy",
+          "severity": "moderate",
+          "description": "Patient fell during PT session with Drake (MOCK-CLIN-S3-014). Landed on surgical site. Severe pain. X-ray showed hardware intact but significant soft tissue swelling.",
+          "reportedBy": "MOCK-CLIN-S3-014"
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S3-010",
+          "dateOfService": "2026-01-12 to 2026-03-12",
+          "denialReason": "SOC OASIS assessment performed by LVN (scope violation) — invalid assessment. Entire episode denied.",
+          "amountDenied": 11800,
+          "appealStatus": "appeal_filed"
+        }
+      ],
+      "messyFlags": [
+        "LVN_performed_SOC_OASIS_scope_violation",
+        "entire_episode_claim_denied_11800",
+        "fall_during_therapy_on_surgical_site",
+        "pain_management_inadequate",
+        "opioid_monitoring_gaps",
+        "HHA_no_supervisory_visit"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-012",
+      "firstName": "Leonard",
+      "lastName": "Finch",
+      "dob": "1944-05-30",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-012",
+      "address": "152 Granite Hill Rd, Testburg, CA 90101",
+      "phone": "555-8112",
+      "emergencyContact": {"name": "Patricia Finch", "relationship": "Wife", "phone": "555-8612"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3012"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT", "MSW"],
+      "admissionStatus": "active",
+      "socDate": "2026-02-20",
+      "primaryDiagnoses": ["COPD_Gold_IV", "lung_cancer_stage_IV", "chronic_pain", "depression_severe", "cachexia"],
+      "clinicalComplexity": "VERY_HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-001", "MOCK-CLIN-S3-018", "MOCK-CLIN-S3-009"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-022",
+          "date": "2026-05-01",
+          "category": "hospice_not_initiated",
+          "severity": "major",
+          "description": "Patient lost 22 lbs in 3 months (18% body weight). PPS score declining. Multiple hospitalizations. Palliative care discussion documented but hospice referral never initiated despite meeting criteria. MSW Voss noted 'patient may benefit from hospice' in March notes but no action taken. Patient and wife unaware hospice is an option.",
+          "reportedBy": "Chart audit and family interview",
+          "rcaCompleted": true,
+          "rcaFindings": "MSW documented hospice eligibility indicators in March but RN case manager (Vickers) did not initiate conversation or referral. No interdisciplinary conference held to discuss goals of care. Patient continued receiving aggressive curative-oriented care plan. Wife stated 'nobody ever mentioned hospice to us.'"
+        }
+      ],
+      "messyFlags": [
+        "hospice_referral_not_initiated_despite_clear_indicators",
+        "22lb_weight_loss_18pct_not_escalated",
+        "goals_of_care_conversation_never_held",
+        "curative_care_plan_for_stage_IV_cancer",
+        "MSW_documented_but_RN_did_not_act",
+        "pain_management_inadequate_for_terminal_patient",
+        "depression_severe_suicide_screen_not_done"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-013",
+      "firstName": "Irene",
+      "lastName": "Blackwood",
+      "dob": "1935-09-11",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-013",
+      "address": "165 Copper Lane, Mockdale, CA 90102",
+      "phone": "555-8113",
+      "emergencyContact": {"name": "David Blackwood", "relationship": "Son", "phone": "555-8613"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3013"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "MSW", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-01-18",
+      "primaryDiagnoses": ["wound_stage3_sacrum", "CHF_class_III", "diabetes_type2_uncontrolled", "depression_major", "PVD_severe"],
+      "clinicalComplexity": "VERY_HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-016", "MOCK-CLIN-S3-004", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-009", "MOCK-CLIN-S3-020"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-023",
+          "date": "2026-04-08",
+          "category": "wound_infection",
+          "severity": "major",
+          "description": "Sacral wound culture positive for MRSA. Wound progressed from Stage 2 to Stage 3 under care. Wound care documentation inconsistent — measurements in different formats, photos not taken per protocol.",
+          "reportedBy": "MOCK-CLIN-S3-016"
+        },
+        {
+          "incidentId": "INC-S3-024",
+          "date": "2026-05-30",
+          "category": "HHA_expired_cert",
+          "severity": "moderate",
+          "description": "HHA Nguyen (MOCK-CLIN-S3-020) discovered to have expired certification effective May 1. Performed 32 visits on expired cert including for this patient. Supervisor Prescott failed to track renewal.",
+          "reportedBy": "Internal audit"
+        }
+      ],
+      "messyFlags": [
+        "wound_infection_MRSA_progressed_under_care",
+        "wound_documentation_inconsistent",
+        "HHA_expired_certification_providing_care",
+        "supervisor_failed_to_track_cert_renewal",
+        "depression_severe_not_adequately_addressed",
+        "suicide_screening_not_done"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-014",
+      "firstName": "Walter",
+      "lastName": "Pennington",
+      "dob": "1946-02-28",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-014",
+      "address": "178 Silver Oak Dr, Synthcity, CA 90103",
+      "phone": "555-8114",
+      "emergencyContact": {"name": "Marie Pennington", "relationship": "Wife", "phone": "555-8614"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MA-100", "payerName": "Mock Medicare Advantage", "policyNumber": "MOCK-MA-S3014"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT"],
+      "admissionStatus": "active",
+      "socDate": "2026-03-15",
+      "primaryDiagnoses": ["post_surgical_CABG", "CHF_class_III", "diabetes_type2", "afib"],
+      "clinicalComplexity": "HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-002", "MOCK-CLIN-S3-006"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-025",
+          "date": "2026-04-01",
+          "category": "falsified_visit",
+          "severity": "major",
+          "description": "PTA Blackwell documented 5 completed PT sessions for this patient during March-April. GPS audit confirmed 4 were falsified. Patient received only 1 actual therapy visit in 6 weeks.",
+          "reportedBy": "Internal audit after Blackwell termination"
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S3-011",
+          "dateOfService": "2026-03-15 to 2026-04-30",
+          "denialReason": "Falsified therapy visits (Blackwell). Also: SOC performed by Holloway on expired license (visit date April 1, license expired March 31).",
+          "amountDenied": 7600,
+          "appealStatus": "no_appeal_fraud_confirmed"
+        }
+      ],
+      "messyFlags": [
+        "falsified_4_of_5_therapy_visits",
+        "patient_received_1_therapy_visit_in_6_weeks_post_CABG",
+        "expired_license_RN_performed_assessment",
+        "claim_denied_fraud_7600",
+        "post_surgical_cardiac_patient_without_therapy",
+        "cardiac_rehab_goals_never_assessed"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-015",
+      "firstName": "Ruby",
+      "lastName": "Stratton",
+      "dob": "1932-11-17",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-015",
+      "address": "191 Jade Valley Way, Fabricton, CA 90104",
+      "phone": "555-8115",
+      "emergencyContact": {"name": "Elizabeth Stratton-Hayes", "relationship": "Daughter", "phone": "555-8615"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3015"},
+      "secondaryPayer": {"payerId": "MOCK-PAY-MCAID-100", "payerName": "Mock Medicaid", "policyNumber": "MOCK-MCAID-S3015"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "OT", "MSW", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-01-08",
+      "primaryDiagnoses": ["dementia_severe_vascular", "CHF_class_II", "osteoporosis_severe", "urinary_incontinence", "falls_recurrent"],
+      "clinicalComplexity": "HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-005", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-009", "MOCK-CLIN-S3-010"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-026",
+          "date": "2026-04-15",
+          "category": "financial_abuse_by_HHA",
+          "severity": "sentinel",
+          "description": "HHA Riggins (MOCK-CLIN-S3-010) stole $1,800 cash from patient's bedside drawer over multiple visits. Patient has severe dementia and cannot self-report. Daughter discovered during visit when she counted cash she had left for household expenses.",
+          "reportedBy": "Elizabeth Stratton-Hayes (daughter)",
+          "rcaCompleted": true,
+          "reportedToAPS": true,
+          "reportedToLE": true,
+          "rcaFindings": "Vulnerable adult with severe dementia exploited financially. HHA had unsupervised access to patient's home and belongings. No RN supervisory visit for HHA Riggins in 4 months. No financial safeguarding assessment ever performed despite dementia diagnosis. Agency policy requires supervisory visit every 14 days — systemic failure."
+        },
+        {
+          "incidentId": "INC-S3-027",
+          "date": "2026-02-22",
+          "category": "fall",
+          "severity": "moderate",
+          "description": "Patient fell from bed at night. Hip contusion. X-ray showed no fracture but significant bruising. Bed rails not in place despite care plan order.",
+          "reportedBy": "MOCK-CLIN-S3-005"
+        },
+        {
+          "incidentId": "INC-S3-028",
+          "date": "2026-05-08",
+          "category": "wandering_elopement",
+          "severity": "major",
+          "description": "Patient with severe dementia found outside home by neighbor at 2 AM. Door alarm was not functioning. HHA had documented checking alarm during prior visit — alarm battery was dead.",
+          "reportedBy": "Neighbor called 911, then daughter",
+          "rcaCompleted": true
+        }
+      ],
+      "complaints": [
+        {
+          "complaintId": "CMPL-S3-006",
+          "dateField": "2026-04-18",
+          "filedBy": "Elizabeth Stratton-Hayes (daughter)",
+          "filedWith": "Agency_APS_CDPH",
+          "category": "financial_abuse_and_inadequate_supervision",
+          "description": "Daughter filed complaint about theft and also inadequate supervision of HHA, wandering incident, and failure to ensure dementia safety protocols. Requesting full investigation.",
+          "cdphCaseNumber": "MOCK-CDPH-2026-S3-006",
+          "investigationStatus": "active"
+        }
+      ],
+      "messyFlags": [
+        "FINANCIAL_ABUSE_1800_STOLEN_FROM_DEMENTIA_PATIENT",
+        "vulnerable_adult_exploitation",
+        "HHA_no_supervisory_visit_4_months",
+        "wandering_elopement_door_alarm_nonfunctional",
+        "fall_bed_rails_not_in_place",
+        "dementia_safety_protocols_not_followed",
+        "APS_CDPH_investigation_active",
+        "no_financial_safeguarding_assessment",
+        "condition_level_deficiency_indicator"
+      ],
+      "qapiRequired": true,
+      "sentinelEvent": true,
+      "immediateActionRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-016",
+      "firstName": "Clifton",
+      "lastName": "Monroe",
+      "dob": "1948-06-14",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-016",
+      "address": "204 Bronze Meadow Ln, Pseudoshire, CA 90105",
+      "phone": "555-8116",
+      "emergencyContact": {"name": "Janet Monroe", "relationship": "Wife", "phone": "555-8616"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3016"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT", "OT"],
+      "admissionStatus": "active",
+      "socDate": "2026-04-01",
+      "primaryDiagnoses": ["CVA_ischemic_left_MCA", "right_hemiparesis", "dysphagia_moderate", "afib", "hypertension"],
+      "clinicalComplexity": "HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-016", "MOCK-CLIN-S3-018", "MOCK-CLIN-S3-007"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-029",
+          "date": "2026-05-12",
+          "category": "aspiration_near_miss",
+          "severity": "moderate",
+          "description": "Patient choked on food during HHA-prepared meal. SLP had recommended mechanical soft diet — HHA gave regular texture food. Diet modifications not on HHA care plan (same pattern as PT-S3-004 death).",
+          "reportedBy": "MOCK-CLIN-S3-016",
+          "rcaCompleted": true,
+          "rcaFindings": "SAME ROOT CAUSE as fatal aspiration PT-S3-004. SLP dietary recommendations not communicated to HHA care plan. Despite corrective action from PT-S3-004 case, process breakdown persists."
+        }
+      ],
+      "messyFlags": [
+        "aspiration_near_miss_SAME_ROOT_CAUSE_AS_DEATH_PT-S3-004",
+        "corrective_action_from_prior_death_not_effective",
+        "diet_modifications_not_on_HHA_care_plan_REPEAT",
+        "systemic_communication_failure_SLP_to_HHA",
+        "condition_level_deficiency_indicator"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-017",
+      "firstName": "Gladys",
+      "lastName": "Rutherford",
+      "dob": "1940-03-08",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-017",
+      "address": "217 Sapphire Ridge Ct, Shamsworth, CA 90106",
+      "phone": "555-8117",
+      "emergencyContact": {"name": "William Rutherford", "relationship": "Husband", "phone": "555-8617"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3017"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "MSW", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-02-15",
+      "primaryDiagnoses": ["wound_stage3_bilateral_legs", "diabetes_uncontrolled_A1c_11.5", "PVD_severe", "CHF_class_III", "depression_severe"],
+      "clinicalComplexity": "VERY_HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-001", "MOCK-CLIN-S3-014", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-009", "MOCK-CLIN-S3-011"],
+      "hospitalizationHistory": [
+        {"date": "2026-03-22", "reason": "cellulitis_right_leg_sepsis", "facility": "Mock General Hospital", "lengthOfStay": 10, "returnDate": "2026-04-01"},
+        {"date": "2026-05-15", "reason": "DKA_A1c_11.5", "facility": "Mock General Hospital", "lengthOfStay": 4, "returnDate": "2026-05-19"}
+      ],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-030",
+          "date": "2026-03-18",
+          "category": "wound_deterioration",
+          "severity": "major",
+          "description": "Right leg wound progressed to cellulitis with erythema tracking up calf. RN Vickers documented wound 'stable' at last visit 5 days prior when wound photos show clear deterioration. Hospitalized for IV antibiotics.",
+          "reportedBy": "Hospital admission notification"
+        },
+        {
+          "incidentId": "INC-S3-031",
+          "date": "2026-06-12",
+          "category": "neglect_allegation",
+          "severity": "major",
+          "description": "HHA Hargrove (MOCK-CLIN-S3-011) visited patient. Patient's husband returned home to find wife in soiled bed linens, patient stated HHA sat on phone the whole visit. Patient had been in soiled bed for estimated 4 hours.",
+          "reportedBy": "William Rutherford (husband)",
+          "reportedToAPS": true
+        }
+      ],
+      "messyFlags": [
+        "wound_cellulitis_sepsis_under_care",
+        "RN_documented_wound_stable_when_deteriorating",
+        "2_hospitalizations",
+        "DKA_A1c_11.5_diabetes_management_failure",
+        "HHA_neglect_allegation_under_investigation",
+        "APS_report_filed",
+        "depression_severe_suicide_screen_not_done",
+        "medication_reconciliation_not_done_post_hospitalization"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-018",
+      "firstName": "Arthur",
+      "lastName": "Prescott",
+      "dob": "1943-12-20",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-018",
+      "address": "230 Amber Falls Blvd, Bogusfield, CA 90107",
+      "phone": "555-8118",
+      "emergencyContact": {"name": "Ruth Prescott", "relationship": "Wife", "phone": "555-8618"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3018"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-01-28",
+      "primaryDiagnoses": ["CHF_class_IV", "COPD_Gold_III", "diabetes_type2", "obesity_BMI_40", "sleep_apnea"],
+      "clinicalComplexity": "VERY_HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-003", "MOCK-CLIN-S3-018", "MOCK-CLIN-S3-015"],
+      "hospitalizationHistory": [
+        {"date": "2026-03-08", "reason": "CHF_exacerbation_fluid_overload", "facility": "Mock Regional Medical Center", "lengthOfStay": 6, "returnDate": "2026-03-14"},
+        {"date": "2026-05-22", "reason": "respiratory_failure_COPD", "facility": "Mock Regional Medical Center", "lengthOfStay": 9, "returnDate": "2026-05-31"}
+      ],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-032",
+          "date": "2026-02-22",
+          "category": "scope_violation",
+          "severity": "major",
+          "description": "LVN Langford performed OASIS SOC comprehensive assessment — beyond scope. Also initiated IV Lasix push during an emergency — IV push is beyond LVN scope in CA.",
+          "reportedBy": "Discovered in chart audit"
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S3-012",
+          "dateOfService": "2026-01-28 to 2026-03-28",
+          "denialReason": "SOC OASIS performed by LVN (Langford) — scope violation. Episode denied.",
+          "amountDenied": 10400,
+          "appealStatus": "appeal_filed"
+        }
+      ],
+      "messyFlags": [
+        "LVN_performed_SOC_OASIS_scope_violation",
+        "LVN_performed_IV_push_beyond_scope",
+        "2_hospitalizations_in_5_months",
+        "claim_denied_10400",
+        "daily_weight_monitoring_inconsistent",
+        "CPAP_compliance_not_monitored"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-019",
+      "firstName": "Edith",
+      "lastName": "Carmichael",
+      "dob": "1936-04-25",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-019",
+      "address": "243 Obsidian Park Rd, Testdale, CA 90108",
+      "phone": "555-8119",
+      "emergencyContact": {"name": "George Carmichael", "relationship": "Son", "phone": "555-8619"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3019"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "MSW"],
+      "admissionStatus": "active",
+      "socDate": "2026-03-01",
+      "primaryDiagnoses": ["dementia_moderate_Lewy_Body", "Parkinsons_disease", "falls_recurrent", "depression", "orthostatic_hypotension"],
+      "clinicalComplexity": "VERY_HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-016", "MOCK-CLIN-S3-004", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-009"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-033",
+          "date": "2026-05-01",
+          "category": "PHYSICAL_ABUSE_BY_CLINICIAN",
+          "severity": "sentinel",
+          "description": "Patient had unexplained bruising on torso — pattern consistent with grab/squeeze marks. Discovered during RN Okonkwo's assessment. Patient has Lewy Body dementia and expressive aphasia — stated 'he hurt me' pointing to PT area of the home. PT Trent (MOCK-CLIN-S3-004) had visited the day prior. This was the second abuse allegation against Trent (first was PT-S3-006).",
+          "reportedBy": "MOCK-CLIN-S3-016",
+          "rcaCompleted": true,
+          "reportedToAPS": true,
+          "reportedToCDPH": true,
+          "reportedToLE": true,
+          "rcaFindings": "Second patient with bruising pattern after PT Trent visit. Patient stated 'he hurt me.' Combined with PT-S3-006 findings, pattern of abuse established. Trent terminated and reported. Agency failed to act on 3 prior complaints about Trent's rough handling over 12 months."
+        }
+      ],
+      "messyFlags": [
+        "PHYSICAL_ABUSE_BY_PT_SECOND_VICTIM",
+        "vulnerable_adult_dementia_aphasia",
+        "agency_failed_to_act_on_prior_complaints_about_abuser",
+        "pattern_of_abuse_established",
+        "APS_CDPH_LE_all_involved",
+        "sentinel_event",
+        "condition_level_deficiency_indicator"
+      ],
+      "qapiRequired": true,
+      "sentinelEvent": true,
+      "immediateActionRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-020",
+      "firstName": "Norman",
+      "lastName": "Whitfield",
+      "dob": "1950-08-03",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-020",
+      "address": "256 Quartz Hill Ct, Falseburg, CA 90109",
+      "phone": "555-8120",
+      "emergencyContact": {"name": "Barbara Whitfield", "relationship": "Wife", "phone": "555-8620"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3020"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT"],
+      "admissionStatus": "discharged",
+      "socDate": "2026-03-10",
+      "dischargeDate": "2026-05-15",
+      "primaryDiagnoses": ["post_surgical_total_knee_replacement", "hypertension", "diabetes_controlled"],
+      "clinicalComplexity": "MODERATE",
+      "assignedClinicians": ["MOCK-CLIN-S3-005", "MOCK-CLIN-S3-018"],
+      "incidentHistory": [],
+      "messyFlags": [],
+      "qapiRequired": false,
+      "notes": "Clean case — successful discharge. Included to show not 100% of patients had issues."
+    },
+    {
+      "clientId": "MOCK-PT-S3-021",
+      "firstName": "Hazel",
+      "lastName": "Drummond",
+      "dob": "1939-07-12",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-021",
+      "address": "269 Ruby Creek Blvd, Faketown, CA 90100",
+      "phone": "555-8121",
+      "emergencyContact": {"name": "Mark Drummond", "relationship": "Son", "phone": "555-8621"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3021"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-02-01",
+      "primaryDiagnoses": ["wound_stage2_bilateral_heels", "diabetes_type2_uncontrolled", "PVD", "CHF_class_II", "neuropathy_severe"],
+      "clinicalComplexity": "HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-002", "MOCK-CLIN-S3-006", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-017"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-034",
+          "date": "2026-03-15",
+          "category": "falsified_visit",
+          "severity": "major",
+          "description": "PTA Blackwell documented 2 completed PT visits that were falsified per GPS audit. Patient's wound offloading equipment was never evaluated as documented.",
+          "reportedBy": "Internal audit"
+        },
+        {
+          "incidentId": "INC-S3-035",
+          "date": "2026-05-05",
+          "category": "wound_deterioration",
+          "severity": "moderate",
+          "description": "Right heel wound progressed from Stage 1 to Stage 2. Left heel wound unchanged. Offloading device never ordered despite 3 months of wound care.",
+          "reportedBy": "MOCK-CLIN-S3-016"
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S3-013",
+          "dateOfService": "2026-02-01 to 2026-04-02",
+          "denialReason": "Combined: expired-license RN performed SOC + falsified therapy visits. Episode denied.",
+          "amountDenied": 13200,
+          "appealStatus": "appeal_filed"
+        }
+      ],
+      "messyFlags": [
+        "falsified_therapy_visits",
+        "expired_license_rn_performed_SOC",
+        "wound_deterioration_under_care",
+        "offloading_device_never_ordered_3_months",
+        "claim_denied_13200",
+        "HHA_no_supervisory_visit"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-022",
+      "firstName": "Virgil",
+      "lastName": "Townsend",
+      "dob": "1942-10-30",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-022",
+      "address": "282 Emerald Way, Testburg, CA 90101",
+      "phone": "555-8122",
+      "emergencyContact": {"name": "Jennifer Townsend-Hall", "relationship": "Daughter", "phone": "555-8622"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3022"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT", "MSW", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-01-15",
+      "primaryDiagnoses": ["dementia_severe_Alzheimers", "diabetes_type2", "CHF_class_II", "incontinence", "malnutrition"],
+      "clinicalComplexity": "HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-001", "MOCK-CLIN-S3-018", "MOCK-CLIN-S3-009", "MOCK-CLIN-S3-015"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-036",
+          "date": "2026-04-20",
+          "category": "suspected_caregiver_abuse_unreported",
+          "severity": "sentinel",
+          "description": "HHA Torres (MOCK-CLIN-S3-015) observed unexplained bruising on patient's back and buttocks inconsistent with falls. Patient's live-in nephew (informal caregiver) became hostile when HHA asked about marks. HHA reported to RN Vickers (MOCK-CLIN-S3-001). Vickers documented in chart notes but DID NOT report to APS or DON. Discovered 3 weeks later during chart review by DON. APS report finally filed May 12 — 22 days after initial observation.",
+          "reportedBy": "DON discovered during chart review — RN Vickers failed to report",
+          "reportedToAPS": true,
+          "apsReportDate": "2026-05-12",
+          "apsReportDelayDays": 22,
+          "rcaCompleted": true,
+          "rcaFindings": "RN Vickers documented HHA's report of suspected abuse but failed to follow mandatory reporting protocol. California law requires immediate APS reporting. 22-day delay constitutes failure to report. Vickers stated she 'wasn't sure it was abuse.' Patient has severe dementia — extremely vulnerable. Nephew remains in home. Additional incidents may have occurred during reporting delay."
+        }
+      ],
+      "complaints": [
+        {
+          "complaintId": "CMPL-S3-007",
+          "dateField": "2026-05-18",
+          "filedBy": "Jennifer Townsend-Hall (daughter, lives out of state)",
+          "filedWith": "APS_CDPH",
+          "category": "caregiver_abuse_and_agency_failure_to_report",
+          "description": "Daughter discovered abuse situation during visit. Furious that agency knew for 3 weeks and didn't report. Filed complaints against nephew (abuse) and agency (failure to report). Nephew arrested May 20.",
+          "cdphCaseNumber": "MOCK-CDPH-2026-S3-007",
+          "investigationStatus": "active"
+        }
+      ],
+      "messyFlags": [
+        "SUSPECTED_CAREGIVER_ABUSE_UNREPORTED_22_DAYS",
+        "RN_Vickers_FAILED_mandatory_reporting",
+        "vulnerable_adult_severe_dementia",
+        "nephew_caregiver_arrested",
+        "agency_failed_mandatory_reporter_obligation",
+        "CDPH_complaint_active",
+        "condition_level_deficiency",
+        "malnutrition_not_adequately_addressed",
+        "diabetes_management_poor"
+      ],
+      "qapiRequired": true,
+      "sentinelEvent": true,
+      "immediateActionRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-023",
+      "firstName": "Dolores",
+      "lastName": "Kincaid",
+      "dob": "1937-01-05",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-023",
+      "address": "295 Topaz Bluff Rd, Mockdale, CA 90102",
+      "phone": "555-8123",
+      "emergencyContact": {"name": "Steven Kincaid", "relationship": "Son", "phone": "555-8623"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3023"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "MSW"],
+      "admissionStatus": "active",
+      "socDate": "2026-03-20",
+      "primaryDiagnoses": ["CHF_class_III", "COPD_Gold_III", "diabetes_type2", "depression_severe_with_suicidal_ideation", "chronic_pain"],
+      "clinicalComplexity": "VERY_HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-016", "MOCK-CLIN-S3-014", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-009"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-037",
+          "date": "2026-04-15",
+          "category": "suicide_risk_not_escalated",
+          "severity": "major",
+          "description": "Patient expressed suicidal ideation to MSW Voss: 'I don't want to live like this anymore. I've been thinking about my husband's gun.' MSW documented in notes. MSW stated she would 'follow up next week.' NO SAME-DAY SAFETY PLAN. No 988 referral. No physician notification. No weapons assessment. MSW did not return for 10 days. Discovered by RN Okonkwo who saw MSW notes and escalated immediately.",
+          "reportedBy": "MOCK-CLIN-S3-016 (discovered in chart)",
+          "rcaCompleted": true,
+          "rcaFindings": "Patient expressed active suicidal ideation with access to lethal means (husband's firearm). MSW did not follow agency suicide risk protocol: no same-day safety plan, no weapons assessment, no 988 referral, no physician notification, no care plan update. 10-day gap before follow-up. Patient was at imminent risk. RN Okonkwo discovered and escalated — safety plan created, husband's gun removed, psychiatry referral made. No harm occurred but extreme near-miss."
+        }
+      ],
+      "messyFlags": [
+        "ACTIVE_SUICIDAL_IDEATION_NOT_ESCALATED",
+        "access_to_lethal_means_firearm",
+        "MSW_failed_suicide_risk_protocol",
+        "10_day_gap_after_suicidal_ideation_disclosure",
+        "no_safety_plan_created",
+        "no_weapons_assessment",
+        "no_988_referral",
+        "extreme_near_miss",
+        "condition_level_deficiency_indicator"
+      ],
+      "qapiRequired": true,
+      "immediateActionRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-024",
+      "firstName": "Reginald",
+      "lastName": "Fowler",
+      "dob": "1945-11-28",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-024",
+      "address": "308 Agate Valley Dr, Synthcity, CA 90103",
+      "phone": "555-8124",
+      "emergencyContact": {"name": "Diane Fowler", "relationship": "Wife", "phone": "555-8624"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3024"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT"],
+      "admissionStatus": "active",
+      "socDate": "2026-04-15",
+      "primaryDiagnoses": ["post_surgical_CABG", "diabetes_type2", "CHF_class_II", "depression"],
+      "clinicalComplexity": "HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-012", "MOCK-CLIN-S3-018"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-038",
+          "date": "2026-05-02",
+          "category": "medication_error",
+          "severity": "moderate",
+          "description": "PRN nurse Marsh (MOCK-CLIN-S3-012) — incompletely oriented — performed medication reconciliation but missed that patient was on two different beta-blockers (Metoprolol from hospital + Atenolol from prior PCP). Patient was on dual beta-blocker therapy for 12 days. HR dropped to 42. Hospitalized briefly.",
+          "reportedBy": "Hospital notification",
+          "rcaCompleted": true,
+          "rcaFindings": "PRN nurse had not completed medication reconciliation training module. Was seeing complex patients within 3 days of hire due to staffing crisis. Orientation checklist shows EMR training incomplete. Agency placed patient safety at risk by deploying inadequately trained staff."
+        }
+      ],
+      "messyFlags": [
+        "dual_beta_blocker_medication_error",
+        "PRN_nurse_inadequately_oriented",
+        "staffing_crisis_led_to_unsafe_patient_assignment",
+        "HR_42_required_hospitalization",
+        "medication_reconciliation_failure"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-025",
+      "firstName": "Mabel",
+      "lastName": "Crawford",
+      "dob": "1934-05-19",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-025",
+      "address": "321 Pearl Ridge Ln, Fabricton, CA 90104",
+      "phone": "555-8125",
+      "emergencyContact": {"name": "Carol Crawford-Jones", "relationship": "Daughter", "phone": "555-8625"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3025"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "MSW", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-01-22",
+      "primaryDiagnoses": ["wound_stage4_sacrum", "ESRD_on_dialysis", "CHF_class_IV", "diabetes_type1", "dementia_moderate"],
+      "clinicalComplexity": "EXTREME",
+      "assignedClinicians": ["MOCK-CLIN-S3-003", "MOCK-CLIN-S3-014", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-009", "MOCK-CLIN-S3-011"],
+      "hospitalizationHistory": [
+        {"date": "2026-02-15", "reason": "sepsis_wound_infection", "facility": "Mock General Hospital", "lengthOfStay": 12, "returnDate": "2026-02-27"},
+        {"date": "2026-04-10", "reason": "dialysis_access_infection", "facility": "Mock General Hospital", "lengthOfStay": 8, "returnDate": "2026-04-18"},
+        {"date": "2026-06-01", "reason": "CHF_decompensation_fluid_overload", "facility": "Mock Regional Medical Center", "lengthOfStay": 6, "returnDate": "2026-06-07"}
+      ],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-039",
+          "date": "2026-03-10",
+          "category": "scope_violation",
+          "severity": "major",
+          "description": "LVN Langford performed OASIS SOC comprehensive assessment — 4th instance of scope violation discovered in audit.",
+          "reportedBy": "Internal chart audit"
+        },
+        {
+          "incidentId": "INC-S3-040",
+          "date": "2026-05-15",
+          "category": "dialysis_coordination_failure",
+          "severity": "major",
+          "description": "Dialysis access site (fistula) showing signs of infection — redness, warmth, purulent drainage. LVN Langford documented 'access site clean and intact.' Dialysis center called agency 3 days later when patient arrived with infected fistula. Required hospitalization.",
+          "reportedBy": "Dialysis center notification"
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S3-014",
+          "dateOfService": "2026-01-22 to 2026-03-22",
+          "denialReason": "SOC OASIS performed by LVN — scope violation. Episode denied.",
+          "amountDenied": 16800,
+          "appealStatus": "appeal_filed"
+        }
+      ],
+      "messyFlags": [
+        "LVN_performed_SOC_OASIS_scope_violation",
+        "dialysis_access_infection_not_identified",
+        "LVN_documented_access_site_normal_when_infected",
+        "3_hospitalizations_in_5_months",
+        "wound_stage4_no_improvement",
+        "claim_denied_16800",
+        "EXTREME_acuity_patient_managed_by_LVN",
+        "HHA_alleged_neglect",
+        "dementia_care_plan_missing"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-026",
+      "firstName": "Chester",
+      "lastName": "Baldwin",
+      "dob": "1949-03-15",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-026",
+      "address": "334 Garnet Hollow Way, Pseudoshire, CA 90105",
+      "phone": "555-8126",
+      "emergencyContact": {"name": "Lisa Baldwin", "relationship": "Wife", "phone": "555-8626"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3026"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT"],
+      "admissionStatus": "discharged",
+      "socDate": "2026-04-01",
+      "dischargeDate": "2026-06-01",
+      "primaryDiagnoses": ["post_surgical_hip_replacement", "hypertension"],
+      "clinicalComplexity": "LOW",
+      "assignedClinicians": ["MOCK-CLIN-S3-005", "MOCK-CLIN-S3-018"],
+      "incidentHistory": [],
+      "messyFlags": [],
+      "qapiRequired": false,
+      "notes": "Clean case — routine discharge."
+    },
+    {
+      "clientId": "MOCK-PT-S3-027",
+      "firstName": "Alma",
+      "lastName": "Fitzpatrick",
+      "dob": "1935-08-22",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-027",
+      "address": "347 Cobalt Ridge Dr, Shamsworth, CA 90106",
+      "phone": "555-8127",
+      "emergencyContact": {"name": "Peter Fitzpatrick", "relationship": "Son", "phone": "555-8627"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3027"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "OT", "MSW", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-02-10",
+      "primaryDiagnoses": ["dementia_moderate_Alzheimers", "CHF_class_II", "osteoporosis", "incontinence", "depression"],
+      "clinicalComplexity": "HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-016", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-009", "MOCK-CLIN-S3-011"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-041",
+          "date": "2026-06-10",
+          "category": "neglect_allegation",
+          "severity": "major",
+          "description": "This is the primary patient in the HHA Hargrove (MOCK-CLIN-S3-011) neglect allegation. Son visited and found mother in soiled bed, dehydrated, TV off, HHA Hargrove on personal phone in living room. Patient had been in soiled condition for estimated 4+ hours. Son photographed condition and filed APS report.",
+          "reportedBy": "Peter Fitzpatrick (son)",
+          "reportedToAPS": true,
+          "reportedToCDPH": true,
+          "apsReportDate": "2026-06-10",
+          "rcaCompleted": false,
+          "rcaStatus": "in_progress"
+        }
+      ],
+      "complaints": [
+        {
+          "complaintId": "CMPL-S3-008",
+          "dateField": "2026-06-12",
+          "filedBy": "Peter Fitzpatrick (son)",
+          "filedWith": "Agency_APS_CDPH",
+          "category": "neglect_by_HHA",
+          "description": "Son found mother neglected during HHA visit. Filed with APS and CDPH. Demands HHA never return and threatens to involve media if agency doesn't take immediate action.",
+          "cdphCaseNumber": "MOCK-CDPH-2026-S3-008",
+          "investigationStatus": "in_progress"
+        }
+      ],
+      "messyFlags": [
+        "HHA_NEGLECT_ALLEGATION",
+        "patient_found_soiled_dehydrated",
+        "HHA_on_phone_during_care_visit",
+        "APS_CDPH_report_filed",
+        "HHA_no_supervisory_visit_5_months",
+        "dementia_patient_vulnerable",
+        "depression_not_addressed"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-028",
+      "firstName": "Harvey",
+      "lastName": "Lockwood",
+      "dob": "1947-09-18",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-028",
+      "address": "360 Titanium Court, Bogusfield, CA 90107",
+      "phone": "555-8128",
+      "emergencyContact": {"name": "Sharon Lockwood", "relationship": "Wife", "phone": "555-8628"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3028"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT", "OT"],
+      "admissionStatus": "active",
+      "socDate": "2026-03-15",
+      "primaryDiagnoses": ["Parkinsons_disease_advanced", "falls_recurrent", "orthostatic_hypotension", "depression", "constipation_severe"],
+      "clinicalComplexity": "HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-005", "MOCK-CLIN-S3-014", "MOCK-CLIN-S3-007"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-042",
+          "date": "2026-04-25",
+          "category": "fall_during_therapy",
+          "severity": "moderate",
+          "description": "Patient fell during PT session with Drake (MOCK-CLIN-S3-014) while practicing standing transfers. Patient's knees buckled — PT did not have gait belt on. Landed on left knee. Bruising and swelling. X-ray negative.",
+          "reportedBy": "MOCK-CLIN-S3-014"
+        },
+        {
+          "incidentId": "INC-S3-043",
+          "date": "2026-06-02",
+          "category": "fall",
+          "severity": "major",
+          "description": "Patient fell at home — found on bathroom floor by wife. Subdural hematoma suspected. CT confirmed small subdural. Hospitalized for monitoring. Fall risk interventions had not been updated after April fall.",
+          "reportedBy": "Wife called 911",
+          "rcaCompleted": true,
+          "rcaFindings": "Fall risk assessment not updated after April fall. Home safety recommendations (grab bars, non-slip mats) from OT never implemented — OT Simms had overdue reassessments. Orthostatic hypotension management inadequate — BP checks not done at each visit per protocol."
+        }
+      ],
+      "messyFlags": [
+        "2_falls_1_subdural_hematoma",
+        "fall_during_PT_no_gait_belt",
+        "fall_risk_assessment_not_updated_after_fall",
+        "OT_safety_recommendations_not_implemented",
+        "OT_reassessment_overdue",
+        "orthostatic_hypotension_management_inadequate",
+        "depression_not_in_care_plan"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-029",
+      "firstName": "Phyllis",
+      "lastName": "Harrington",
+      "dob": "1941-02-14",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-029",
+      "address": "373 Iron Crest Blvd, Testdale, CA 90108",
+      "phone": "555-8129",
+      "emergencyContact": {"name": "Charles Harrington", "relationship": "Husband", "phone": "555-8629"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3029"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-02-20",
+      "primaryDiagnoses": ["wound_surgical_mastectomy", "lymphedema_severe", "diabetes_type2", "depression", "anxiety"],
+      "clinicalComplexity": "HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-002", "MOCK-CLIN-S3-006", "MOCK-CLIN-S3-015"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-044",
+          "date": "2026-03-20",
+          "category": "falsified_visit",
+          "severity": "moderate",
+          "description": "PTA Blackwell documented 2 completed PT sessions for this patient confirmed as falsified per GPS. Lymphedema management exercises not performed.",
+          "reportedBy": "Internal audit"
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S3-015",
+          "dateOfService": "2026-02-20 to 2026-04-20",
+          "denialReason": "SOC by expired-license RN + falsified therapy visits. Episode denied.",
+          "amountDenied": 8900,
+          "appealStatus": "no_appeal"
+        }
+      ],
+      "messyFlags": [
+        "falsified_therapy_visits",
+        "expired_license_rn_performed_SOC",
+        "lymphedema_management_not_performed",
+        "claim_denied_8900",
+        "depression_anxiety_not_adequately_addressed",
+        "surgical_wound_monitoring_gaps"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-030",
+      "firstName": "Bernard",
+      "lastName": "Sinclair",
+      "dob": "1948-07-05",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-030",
+      "address": "386 Crystal Meadow Way, Falseburg, CA 90109",
+      "phone": "555-8130",
+      "emergencyContact": {"name": "Mary Sinclair", "relationship": "Wife", "phone": "555-8630"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3030"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT"],
+      "admissionStatus": "discharged",
+      "socDate": "2026-05-01",
+      "dischargeDate": "2026-06-20",
+      "primaryDiagnoses": ["post_surgical_knee_replacement", "hypertension", "diabetes_controlled"],
+      "clinicalComplexity": "LOW",
+      "assignedClinicians": ["MOCK-CLIN-S3-005", "MOCK-CLIN-S3-018"],
+      "incidentHistory": [],
+      "messyFlags": [],
+      "qapiRequired": false,
+      "notes": "Clean case — routine discharge."
+    },
+    {
+      "clientId": "MOCK-PT-S3-031",
+      "firstName": "Lorraine",
+      "lastName": "Whitworth",
+      "dob": "1936-12-09",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-031",
+      "address": "399 Onyx Park Ct, Faketown, CA 90100",
+      "phone": "555-8131",
+      "emergencyContact": {"name": "Kevin Whitworth", "relationship": "Son", "phone": "555-8631"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3031"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "ST", "MSW", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-01-10",
+      "primaryDiagnoses": ["CVA_hemorrhagic", "right_hemiplegia", "aphasia_global", "dysphagia_severe", "seizure_disorder", "diabetes_type2"],
+      "clinicalComplexity": "EXTREME",
+      "assignedClinicians": ["MOCK-CLIN-S3-001", "MOCK-CLIN-S3-014", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-008", "MOCK-CLIN-S3-009", "MOCK-CLIN-S3-015"],
+      "hospitalizationHistory": [
+        {"date": "2026-02-28", "reason": "seizure_status_epilepticus", "facility": "Mock University Hospital", "lengthOfStay": 7, "returnDate": "2026-03-07"},
+        {"date": "2026-05-05", "reason": "aspiration_pneumonia", "facility": "Mock University Hospital", "lengthOfStay": 10, "returnDate": "2026-05-15"}
+      ],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-045",
+          "date": "2026-04-20",
+          "category": "seizure_unwitnessed",
+          "severity": "major",
+          "description": "Patient found post-ictal by HHA. Bit tongue, incontinent. Seizure medication (Keppra) level was subtherapeutic — RN Vickers had not ordered level check in 2 months despite protocol requiring monthly monitoring.",
+          "reportedBy": "MOCK-CLIN-S3-015"
+        },
+        {
+          "incidentId": "INC-S3-046",
+          "date": "2026-05-02",
+          "category": "aspiration",
+          "severity": "major",
+          "description": "Patient aspirated during oral care. SLP had recommended NPO with PEG tube feeds only — but oral care protocol did not specify aspiration precautions positioning. Patient developed aspiration pneumonia.",
+          "reportedBy": "Hospital notification"
+        }
+      ],
+      "messyFlags": [
+        "seizure_med_level_not_monitored_per_protocol",
+        "subtherapeutic_Keppra_led_to_seizure",
+        "aspiration_during_oral_care_NPO_patient",
+        "2_hospitalizations",
+        "SLP_NPO_protocol_not_communicated_to_all_disciplines",
+        "aphasia_limits_self_reporting",
+        "extreme_acuity_6_service_lines",
+        "RN_Vickers_overloaded_multiple_lapses_on_this_patient"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-032",
+      "firstName": "Gordon",
+      "lastName": "Ashworth",
+      "dob": "1944-04-17",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-032",
+      "address": "412 Slate Canyon Rd, Testburg, CA 90101",
+      "phone": "555-8132",
+      "emergencyContact": {"name": "Helen Ashworth", "relationship": "Wife", "phone": "555-8632"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3032"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT", "MSW"],
+      "admissionStatus": "active",
+      "socDate": "2026-04-20",
+      "primaryDiagnoses": ["CHF_class_III", "COPD_Gold_III", "diabetes_type2", "depression", "falls_history"],
+      "clinicalComplexity": "HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-016", "MOCK-CLIN-S3-018", "MOCK-CLIN-S3-009"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-047",
+          "date": "2026-05-28",
+          "category": "fall",
+          "severity": "moderate",
+          "description": "Patient fell on front porch. Fractured right wrist. Had been complaining of dizziness for 2 weeks — RN Okonkwo documented dizziness but did not assess orthostatic BPs or notify physician. Patient's Carvedilol dose had recently been increased.",
+          "reportedBy": "Wife called agency"
+        }
+      ],
+      "messyFlags": [
+        "fall_with_fracture",
+        "dizziness_not_assessed_2_weeks",
+        "orthostatic_BPs_not_checked",
+        "medication_side_effect_not_evaluated",
+        "RN_overloaded_documentation_declining",
+        "depression_not_in_care_plan"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-033",
+      "firstName": "Evelyn",
+      "lastName": "Thornberry",
+      "dob": "1938-10-03",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-033",
+      "address": "425 Jasper Falls Blvd, Mockdale, CA 90102",
+      "phone": "555-8133",
+      "emergencyContact": {"name": "Nancy Thornberry-Wells", "relationship": "Daughter", "phone": "555-8633"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3033"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-02-28",
+      "primaryDiagnoses": ["wound_stage3_right_heel", "diabetes_uncontrolled_A1c_10.8", "PVD_severe", "CHF_class_II", "obesity_BMI_39"],
+      "clinicalComplexity": "VERY_HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-003", "MOCK-CLIN-S3-014", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-020"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-048",
+          "date": "2026-04-05",
+          "category": "scope_violation",
+          "severity": "major",
+          "description": "LVN Langford performed 5th SOC OASIS comprehensive assessment. Discovered in audit April 12. This patient's entire episode documentation is invalid.",
+          "reportedBy": "Internal chart audit"
+        },
+        {
+          "incidentId": "INC-S3-049",
+          "date": "2026-05-20",
+          "category": "wound_deterioration",
+          "severity": "major",
+          "description": "Right heel wound progressed to visible tendon exposure. Vascular surgery referral finally made — had been indicated for 8 weeks per wound care protocol but never ordered.",
+          "reportedBy": "MOCK-CLIN-S3-005 (covering)"
+        }
+      ],
+      "messyFlags": [
+        "LVN_performed_SOC_OASIS_5th_violation",
+        "wound_progressed_to_tendon_exposure",
+        "vascular_surgery_referral_delayed_8_weeks",
+        "HHA_expired_cert_providing_care",
+        "diabetes_A1c_10.8_management_failure",
+        "amputation_risk_escalating"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-034",
+      "firstName": "Raymond",
+      "lastName": "Blackstone",
+      "dob": "1946-01-22",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-034",
+      "address": "438 Marble Canyon Dr, Synthcity, CA 90103",
+      "phone": "555-8134",
+      "emergencyContact": {"name": "Patricia Blackstone", "relationship": "Wife", "phone": "555-8634"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3034"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT"],
+      "admissionStatus": "active",
+      "socDate": "2026-05-10",
+      "primaryDiagnoses": ["post_surgical_lumbar_laminectomy", "diabetes_type2", "hypertension", "depression"],
+      "clinicalComplexity": "MODERATE",
+      "assignedClinicians": ["MOCK-CLIN-S3-012", "MOCK-CLIN-S3-018"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-050",
+          "date": "2026-05-25",
+          "category": "documentation_error",
+          "severity": "minor",
+          "description": "PRN nurse Marsh (MOCK-CLIN-S3-012) documented wrong patient's vitals in this patient's chart. Discovered during QA review. Corrected with late entry.",
+          "reportedBy": "QA review"
+        }
+      ],
+      "messyFlags": [
+        "wrong_patient_vitals_documented",
+        "PRN_nurse_inadequately_oriented",
+        "depression_screening_not_done"
+      ],
+      "qapiRequired": false
+    },
+    {
+      "clientId": "MOCK-PT-S3-035",
+      "firstName": "Irma",
+      "lastName": "Fairbanks",
+      "dob": "1939-06-28",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-035",
+      "address": "451 Copper Summit Rd, Fabricton, CA 90104",
+      "phone": "555-8135",
+      "emergencyContact": {"name": "Donald Fairbanks", "relationship": "Husband", "phone": "555-8635"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3035"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-03-05",
+      "primaryDiagnoses": ["CHF_class_III", "diabetes_type2_uncontrolled", "wound_venous_bilateral_legs", "depression_severe", "PVD"],
+      "clinicalComplexity": "VERY_HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-002", "MOCK-CLIN-S3-006", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-017"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-051",
+          "date": "2026-04-10",
+          "category": "falsified_visit",
+          "severity": "moderate",
+          "description": "PTA Blackwell documented 3 completed therapy visits that were falsified per GPS audit. Compression therapy for venous wounds never applied as documented.",
+          "reportedBy": "Internal audit"
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S3-016",
+          "dateOfService": "2026-03-05 to 2026-05-05",
+          "denialReason": "Expired-license RN performed SOC + falsified therapy. Episode denied.",
+          "amountDenied": 9700,
+          "appealStatus": "no_appeal"
+        }
+      ],
+      "messyFlags": [
+        "falsified_therapy_3_visits",
+        "compression_therapy_never_applied_despite_documentation",
+        "expired_license_rn_SOC",
+        "claim_denied_9700",
+        "wound_not_improving_compression_never_done",
+        "depression_severe_not_addressed",
+        "HHA_no_supervisory_visit"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-036",
+      "firstName": "Wallace",
+      "lastName": "Greenfield",
+      "dob": "1950-11-12",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-036",
+      "address": "464 Beryl Way, Pseudoshire, CA 90105",
+      "phone": "555-8136",
+      "emergencyContact": {"name": "Joan Greenfield", "relationship": "Wife", "phone": "555-8636"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3036"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing"],
+      "admissionStatus": "active",
+      "socDate": "2026-06-01",
+      "primaryDiagnoses": ["diabetes_type2", "hypertension", "obesity"],
+      "clinicalComplexity": "LOW",
+      "assignedClinicians": ["MOCK-CLIN-S3-005"],
+      "incidentHistory": [],
+      "messyFlags": [],
+      "qapiRequired": false,
+      "notes": "New admission, clean, low complexity."
+    },
+    {
+      "clientId": "MOCK-PT-S3-037",
+      "firstName": "Beatrice",
+      "lastName": "Morrison",
+      "dob": "1933-03-30",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-037",
+      "address": "477 Zinc Valley Ct, Shamsworth, CA 90106",
+      "phone": "555-8137",
+      "emergencyContact": {"name": "Thomas Morrison", "relationship": "Son", "phone": "555-8637"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3037"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "ST", "MSW", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-01-15",
+      "primaryDiagnoses": ["wound_stage4_sacrum_and_bilateral_heels", "CHF_class_IV", "COPD_severe", "diabetes_type1_uncontrolled", "cognitive_impairment_severe", "MRSA_active", "catheter_foley"],
+      "clinicalComplexity": "EXTREME",
+      "assignedClinicians": ["MOCK-CLIN-S3-001", "MOCK-CLIN-S3-014", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-008", "MOCK-CLIN-S3-009", "MOCK-CLIN-S3-010"],
+      "hospitalizationHistory": [
+        {"date": "2026-02-05", "reason": "sepsis_wound_MRSA", "facility": "Mock General Hospital", "lengthOfStay": 14, "returnDate": "2026-02-19"},
+        {"date": "2026-03-28", "reason": "CHF_exacerbation", "facility": "Mock Regional Medical Center", "lengthOfStay": 7, "returnDate": "2026-04-04"},
+        {"date": "2026-05-10", "reason": "CAUTI_sepsis", "facility": "Mock General Hospital", "lengthOfStay": 10, "returnDate": "2026-05-20"},
+        {"date": "2026-06-15", "reason": "DKA_and_wound_sepsis", "facility": "Mock General Hospital", "lengthOfStay": null, "notes": "Currently hospitalized as of dataset generation. Prognosis poor."}
+      ],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-052",
+          "date": "2026-02-01",
+          "category": "wound_infection",
+          "severity": "sentinel",
+          "description": "All 3 wounds (sacrum + bilateral heels) infected with MRSA. Wound care protocol not followed — dressing changes documented as completed but wound photos show unchanged dressings with dates written on them.",
+          "reportedBy": "Hospital wound care specialist"
+        },
+        {
+          "incidentId": "INC-S3-053",
+          "date": "2026-04-20",
+          "category": "CAUTI",
+          "severity": "major",
+          "description": "Catheter-associated UTI — Foley catheter not changed per protocol (should be monthly). Last documented change was 2 months prior. Catheter care documentation missing for 6 visits.",
+          "reportedBy": "MOCK-CLIN-S3-001"
+        },
+        {
+          "incidentId": "INC-S3-054",
+          "date": "2026-05-25",
+          "category": "financial_abuse_by_HHA",
+          "severity": "major",
+          "description": "HHA Riggins also stole from this patient — $600 cash discovered missing. Part of Riggins theft pattern. Son reported.",
+          "reportedBy": "Thomas Morrison (son)",
+          "reportedToAPS": true,
+          "reportedToLE": true
+        }
+      ],
+      "messyFlags": [
+        "WORST_CASE_PATIENT_EXTREME_ACUITY",
+        "4_hospitalizations_in_6_months",
+        "MRSA_wound_infections_all_3_wounds",
+        "wound_dressings_not_changed_documented_as_changed",
+        "CAUTI_catheter_not_changed_per_protocol",
+        "catheter_care_documentation_missing",
+        "financial_abuse_by_HHA_Riggins",
+        "DKA_insulin_management_failure",
+        "RN_Vickers_overloaded_catastrophic_failures",
+        "HHA_Riggins_no_supervision_4_months",
+        "cognitive_impairment_unable_to_self_report",
+        "oasis_grossly_inaccurate",
+        "currently_hospitalized_prognosis_poor",
+        "survey_jeopardy",
+        "condition_level_deficiency_indicator"
+      ],
+      "qapiRequired": true,
+      "sentinelEvent": true,
+      "immediateActionRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-038",
+      "firstName": "Doris",
+      "lastName": "Pemberton-Clarke",
+      "dob": "1942-05-08",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-038",
+      "address": "490 Flint Hollow Dr, Bogusfield, CA 90107",
+      "phone": "555-8138",
+      "emergencyContact": {"name": "Alan Clarke", "relationship": "Husband", "phone": "555-8638"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MA-100", "payerName": "Mock Medicare Advantage", "policyNumber": "MOCK-MA-S3038"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT", "OT"],
+      "admissionStatus": "active",
+      "socDate": "2026-04-10",
+      "primaryDiagnoses": ["post_surgical_bilateral_knee_replacement", "obesity_BMI_41", "diabetes_type2", "venous_insufficiency"],
+      "clinicalComplexity": "HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S3-016", "MOCK-CLIN-S3-018", "MOCK-CLIN-S3-007"],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-055",
+          "date": "2026-05-15",
+          "category": "wound_complication",
+          "severity": "moderate",
+          "description": "Right knee surgical incision dehisced. Patient was bearing full weight on day 10 post-op — PT had not verified weight-bearing restrictions with surgeon.",
+          "reportedBy": "MOCK-CLIN-S3-016"
+        }
+      ],
+      "messyFlags": [
+        "wound_dehiscence_weight_bearing_violation",
+        "PT_did_not_verify_weight_bearing_restrictions",
+        "surgical_wound_complication_potentially_preventable",
+        "diabetes_management_poor"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S3-039",
+      "firstName": "Cecil",
+      "lastName": "Hartwell",
+      "dob": "1947-08-20",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S3-039",
+      "address": "503 Tungsten Park Rd, Testdale, CA 90108",
+      "phone": "555-8139",
+      "emergencyContact": {"name": "Martha Hartwell", "relationship": "Wife", "phone": "555-8639"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3039"},
+      "attendingPhysician": {"name": "Dr. Samuel Hawthorn", "npi": "MOCK-NPI-S3-001", "phone": "555-7101"},
+      "serviceLines": ["skilled_nursing", "PT"],
+      "admissionStatus": "discharged",
+      "socDate": "2026-03-20",
+      "dischargeDate": "2026-05-20",
+      "primaryDiagnoses": ["post_surgical_hip_replacement", "hypertension"],
+      "clinicalComplexity": "LOW",
+      "assignedClinicians": ["MOCK-CLIN-S3-005", "MOCK-CLIN-S3-018"],
+      "incidentHistory": [],
+      "messyFlags": [],
+      "qapiRequired": false,
+      "notes": "Clean case — routine discharge."
+    },
+    {
+      "clientId": "MOCK-PT-S3-040",
+      "firstName": "Vivian",
+      "lastName": "Coldwell",
+      "dob": "1934-12-25",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S3-040",
+      "address": "516 Nickel Bluff Ln, Falseburg, CA 90109",
+      "phone": "555-8140",
+      "emergencyContact": {"name": "Roger Coldwell", "relationship": "Son", "phone": "555-8640"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S3040"},
+      "secondaryPayer": {"payerId": "MOCK-PAY-MCAID-100", "payerName": "Mock Medicaid", "policyNumber": "MOCK-MCAID-S3040"},
+      "attendingPhysician": {"name": "Dr. Linda Fairchild", "npi": "MOCK-NPI-S3-002", "phone": "555-7102"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "MSW", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-01-20",
+      "primaryDiagnoses": ["dementia_severe_mixed", "CHF_class_III", "wound_stage3_coccyx", "diabetes_type2_uncontrolled", "falls_recurrent", "depression_severe", "MRSA_history"],
+      "clinicalComplexity": "EXTREME",
+      "assignedClinicians": ["MOCK-CLIN-S3-013", "MOCK-CLIN-S3-014", "MOCK-CLIN-S3-007", "MOCK-CLIN-S3-009", "MOCK-CLIN-S3-020"],
+      "hospitalizationHistory": [
+        {"date": "2026-03-10", "reason": "wound_sepsis_MRSA", "facility": "Mock General Hospital", "lengthOfStay": 12, "returnDate": "2026-03-22"},
+        {"date": "2026-05-28", "reason": "fall_hip_fracture", "facility": "Mock Surgical Center", "lengthOfStay": 8, "returnDate": "2026-06-05"}
+      ],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S3-056",
+          "date": "2026-03-05",
+          "category": "insulin_error",
+          "severity": "major",
+          "description": "LVN Whitfield (MOCK-CLIN-S3-013) administered 25 units of Lantus instead of 15 units. Patient became hypoglycemic (BG 45). Treated with glucose gel. Physician notified.",
+          "reportedBy": "MOCK-CLIN-S3-013"
+        },
+        {
+          "incidentId": "INC-S3-057",
+          "date": "2026-05-25",
+          "category": "fall_with_fracture",
+          "severity": "sentinel",
+          "description": "Patient fell at home — fractured right hip. Had 4 prior falls this admission. Fall risk assessment was 'very high' but interventions were minimal — no bed alarm, no non-slip socks, no PT reassessment after 3rd fall.",
+          "reportedBy": "Son called 911"
+        },
+        {
+          "incidentId": "INC-S3-058",
+          "date": "2026-06-15",
+          "category": "expired_cert_HHA",
+          "severity": "moderate",
+          "description": "HHA Nguyen (MOCK-CLIN-S3-020) provided care on expired certification. Part of broader expired-cert pattern.",
+          "reportedBy": "Internal audit"
+        }
+      ],
+      "messyFlags": [
+        "EXTREME_acuity_with_EXTREME_failures",
+        "insulin_dose_error_by_LVN",
+        "5_falls_including_hip_fracture",
+        "fall_interventions_inadequate_despite_very_high_risk",
+        "wound_sepsis_MRSA_under_care",
+        "2_hospitalizations",
+        "HHA_expired_cert_providing_care",
+        "depression_severe_not_addressed",
+        "suicide_screening_not_done",
+        "dementia_wandering_risk_not_assessed",
+        "oasis_inaccurate",
+        "condition_level_deficiency_indicator"
+      ],
+      "qapiRequired": true,
+      "sentinelEvent": true
+    }
+  ],
+
+  "claims_denial_summary": {
+    "total_denials": 14,
+    "total_amount_denied": 179800,
+    "denial_breakdown": [
+      {"reason": "Expired license RN — invalid OASIS/certification", "count": 6, "amount": 84400},
+      {"reason": "Falsified therapy visits — fraud", "count": 4, "amount": 29600},
+      {"reason": "LVN scope violation — invalid SOC OASIS", "count": 3, "amount": 39000},
+      {"reason": "Substandard care / preventable readmission", "count": 2, "amount": 23500},
+      {"reason": "Coordination of care failure", "count": 1, "amount": 12600}
+    ],
+    "appeal_status": {
+      "appeals_filed": 8,
+      "no_appeal_fraud": 4,
+      "appeal_denied_final": 1,
+      "pending": 7
+    },
+    "oig_self_disclosure": {
+      "filed": true,
+      "date": "2026-05-05",
+      "related_to": "PTA Blackwell falsified visits — $8,740 in fraudulent billing",
+      "estimated_total_exposure": "$29,600 in falsified therapy + potential treble damages"
+    },
+    "financial_impact_estimate": {
+      "denials_confirmed": 179800,
+      "potential_recoupment_risk": 250000,
+      "civil_lawsuit_exposure": "Unknown — wrongful death suit filed",
+      "oig_penalty_risk": "Up to $88,800 (treble damages on fraud)",
+      "total_estimated_financial_exposure": "$500,000+"
+    }
+  },
+
+  "complaints_regulatory_summary": {
+    "total_complaints_filed": 8,
+    "complaints_to_CDPH": 8,
+    "complaints_to_CMS": 1,
+    "complaints_to_APS": 5,
+    "criminal_referrals": 2,
+    "civil_lawsuits_filed": 1,
+    "active_investigations": 7,
+    "complaint_detail": [
+      {"id": "CMPL-S3-001", "type": "Death — wound neglect", "filed_with": "CDPH", "status": "active"},
+      {"id": "CMPL-S3-002", "type": "Death — CHF/broken scale", "filed_with": "CDPH + CMS", "status": "active"},
+      {"id": "CMPL-S3-003", "type": "Death — aspiration/HHA diet error", "filed_with": "CDPH + civil suit", "status": "active"},
+      {"id": "CMPL-S3-004", "type": "Physical abuse by PT", "filed_with": "APS + CDPH + LE", "status": "substantiated"},
+      {"id": "CMPL-S3-005", "type": "Death — falsified labs/INR", "filed_with": "CDPH + DA", "status": "active_criminal"},
+      {"id": "CMPL-S3-006", "type": "Financial abuse + inadequate supervision", "filed_with": "APS + CDPH", "status": "active"},
+      {"id": "CMPL-S3-007", "type": "Caregiver abuse + failure to report", "filed_with": "APS + CDPH", "status": "active"},
+      {"id": "CMPL-S3-008", "type": "HHA neglect", "filed_with": "APS + CDPH", "status": "in_progress"}
+    ]
+  },
+
+  "sentinel_event_summary": {
+    "total_sentinel_events": 9,
+    "deaths": 4,
+    "substantiated_abuse": 2,
+    "financial_exploitation": 1,
+    "near_fatal_events": 2,
+    "events": [
+      {"patient": "MOCK-PT-S3-001", "event": "Death — sepsis from agency-acquired Stage 4 wound", "severity": "death"},
+      {"patient": "MOCK-PT-S3-003", "event": "Death — CHF decompensation, broken scale, estimated weights", "severity": "death"},
+      {"patient": "MOCK-PT-S3-004", "event": "Death — aspiration from thin liquids given by untrained HHA", "severity": "death"},
+      {"patient": "MOCK-PT-S3-010", "event": "Death — hemorrhagic stroke from falsified INR values", "severity": "death_criminal"},
+      {"patient": "MOCK-PT-S3-005", "event": "Accidental opioid overdose — survived", "severity": "near_fatal"},
+      {"patient": "MOCK-PT-S3-006", "event": "Physical abuse by PT — substantiated", "severity": "abuse"},
+      {"patient": "MOCK-PT-S3-019", "event": "Physical abuse by PT — 2nd victim", "severity": "abuse"},
+      {"patient": "MOCK-PT-S3-015", "event": "Financial abuse by HHA — $1,800 stolen", "severity": "exploitation"},
+      {"patient": "MOCK-PT-S3-022", "event": "Caregiver abuse — agency failed to report for 22 days", "severity": "failure_to_report"}
+    ]
+  },
+
+  "systemic_failure_analysis": {
+    "root_cause_themes": [
+      {
+        "theme": "Staffing Crisis / Unsafe Caseloads",
+        "description": "5 of 7 RNs/LVNs had caseloads 40-100% above recommended limits. One RN (Vickers) had 24 patients — double the safe maximum. Overloaded clinicians cut corners on documentation, monitoring, and escalation.",
+        "patients_affected": "All high-acuity patients",
+        "deaths_contributed": 3
+      },
+      {
+        "theme": "Credential Monitoring Failure",
+        "description": "RN Holloway practiced on expired license for 51 days (147 visits). HHA Nguyen expired cert for 6 weeks (32 visits). LVN Langford performed 5 SOC OASIS assessments beyond scope. RN Supervisor Prescott failed to track any of these.",
+        "patients_affected": 20,
+        "claims_denied": "$123,400"
+      },
+      {
+        "theme": "Supervisory Oversight Collapse",
+        "description": "14 of 20 HHAs had delinquent supervisory visits. Some HHAs went 4-5 months without any RN supervision. This enabled abuse (Riggins theft), neglect (Hargrove), and untrained care (Sinclair diet error).",
+        "patients_affected": 14,
+        "deaths_contributed": 1
+      },
+      {
+        "theme": "Care Plan Communication Breakdown",
+        "description": "SLP dietary modifications not communicated to HHA care plans (caused 1 death, 1 near-miss). Physician orders not updated in EMR. Medication changes not communicated to patients.",
+        "patients_affected": 8,
+        "deaths_contributed": 1
+      },
+      {
+        "theme": "Fraud and Falsification",
+        "description": "PTA Blackwell falsified 23 visits. RN Holloway falsified INR lab values for 8 weeks (caused 1 death). Both reported to licensing boards and OIG.",
+        "patients_affected": 7,
+        "deaths_contributed": 1,
+        "financial_fraud_amount": "$8,740"
+      },
+      {
+        "theme": "Mandatory Reporting Failures",
+        "description": "RN Vickers failed to report suspected caregiver abuse for 22 days. MSW Voss filed APS report 5 days late. Prior complaints about abusive PT not investigated for 12 months.",
+        "patients_affected": 4
+      },
+      {
+        "theme": "Medication Management Systemic Failure",
+        "description": "Medication reconciliation not performed post-hospitalization repeatedly. Insulin dose errors by multiple clinicians. Opioid management inadequate. Critical lab values not reported.",
+        "patients_affected": 12,
+        "deaths_contributed": 1
+      }
+    ],
+    "immediate_jeopardy_indicators": [
+      "4 patient deaths in 6 months with agency contributing factors",
+      "Substantiated physical abuse by clinician — 2 victims",
+      "Financial exploitation of vulnerable adults — 3 patients",
+      "Falsified medical records leading to death",
+      "Criminal referral to District Attorney",
+      "Active CDPH investigations — 8 open cases",
+      "CMS hotline complaint filed",
+      "Wrongful death civil lawsuit filed"
+    ],
+    "estimated_survey_outcome": "IMMEDIATE JEOPARDY with Condition-Level Deficiencies. Agency faces potential termination from Medicare program if systemic corrections not demonstrated within 23-day timeframe."
+  }
+}
+📊 Dataset 3 Summary Dashboard
+
+
+Category	Count
+Patients	40 (4 deceased, 4 discharged clean, 32 active with issues)
+Clinicians	20 (3 terminated, 2 suspended/restricted, 4 on PIP, 11 active)
+Deaths	4 (all with agency contributing factors)
+Sentinel Events	9
+Substantiated Abuse	2 (physical) + 1 (financial)
+Neglect Allegations	2 (1 under investigation)
+Falsified Documentation	RN falsified labs (death), PTA falsified 23 visits
+Expired License Violations	2 clinicians, 179+ visits
+LVN Scope Violations	5 SOC OASIS assessments
+Claims Denied	14 denials totaling $179,800
+CDPH Complaints	8 active
+Criminal Referrals	2 (DA + Board)
+Civil Lawsuits	1 wrongful death
+OIG Self-Disclosure	1 (fraud)
+Estimated Financial Exposure	$500,000+

@@ -2614,13 +2614,13 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
 
   const cards = getCardsForTab(activeTab);
 
-  // Compute func for initShuffledMetrics (called on tab-switch auto-revert to carousel)
-  const computeShuffledCards = (): ModernCardData[] => {
-    const allCards = dashboardTabs.flatMap((tab) => getCardsForTab(tab.id));
-    // 3.3x more actual data cards (multiplier 33 instead of 10)
-    const expanded = Array.from({ length: 33 }, () => allCards).flat();
-    // keepCount = floor * 0.33  (results in ~3.3x more real cards appearing)
-    const keepCount = Math.max(1, Math.floor(expanded.length * 0.33));
+  // Compute func for initCarouselCards (called on tab-switch auto-revert to carousel)
+  // Carousel shows NO MORE THAN 7 cards at any given time (per spec).
+  // Drifts right-to-left (x -= speed in RAF) until a tab is clicked (switches to grid view).
+  const computeCarouselCards = (): ModernCardData[] => {
+    // Use exactly the 7 cards from overview for the carousel (each tab has 7; carousel caps at 7).
+    const baseCards = getCardsForTab('overview');
+    const kept = [...baseCards]; // exactly 7
 
     const sizes = [
       { w: 320, h: 320, chartType: 'normal' as const },
@@ -2630,35 +2630,29 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
       { w: 580, h: 580, chartType: 'featured' as const },
     ];
 
-    // deterministic shuffle (sin) for exact repro across runs (vs random in HTML equiv)
-    const sorted = [...expanded]
-      .map((card, index) => ({ card, sortKey: Math.sin((index + 1) * 999) }))
-      .sort((a, b) => a.sortKey - b.sortKey)
-      .slice(0, keepCount);
-
     const VIRTUAL_WIDTH = 6500 * 1.777;
     const numTracks = 7;
     const trackSpacing = (95 - (-25)) / (numTracks - 1);
 
-    // assign to shuffledAllMetrics (React equiv) -- EXACT virtual/offset/tracks/speeds per dashboard_redesign.html
-    const shuffledAllMetrics: ModernCardData[] = sorted.map(({ card }, index) => {
-      const layer = (index % 3) + 1;
+    // assign positions/speeds for drifting carousel (right-to-left movement)
+    const carouselCards: ModernCardData[] = kept.map((card, index) => {
+      const randomSize = sizes[Math.floor(Math.random() * sizes.length)];
+      const layer = Math.floor(Math.random() * 3) + 1;
       const verticalTrack = index % numTracks;
       const topPercent = -25 + (verticalTrack * trackSpacing);
 
-      // speeds: base=0.8*(1-0.777), layer2 *=1.0777, layer3*1.777
+      // speeds per design (no extra global 3.3x; prototype uses base values directly)
       const baseSpeed = 0.8 * (1 - 0.777);
       let cSpeed = baseSpeed;
-      if (layer === 2) cSpeed *= 1.0777;
-      else if (layer === 3) cSpeed *= 1.777;
+      if (layer === 2) cSpeed = baseSpeed * 1.0777;
+      else if (layer === 3) cSpeed = (baseSpeed * 1.0777) * 1.777;
 
-      const baseSpacing = VIRTUAL_WIDTH / Math.max(1, sorted.length);
-      // cX calc
+      const baseSpacing = VIRTUAL_WIDTH / Math.max(1, kept.length);
       const cX = index * baseSpacing - 1500;
 
       return {
         ...card,
-        carouselSize: sizes[index % sizes.length],
+        carouselSize: randomSize,
         cTop: topPercent,
         cZ: layer * 10,
         cSpeed,
@@ -2666,39 +2660,17 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
       } as ModernCardData;
     });
 
-    // increase speed 3.3x for all
-    shuffledAllMetrics.forEach(card => { card.cSpeed = (card.cSpeed ?? 0) * 3.3; });
-
-    // random 7.77 cards with *additional* 3.33x speed
-    // random 3.33 cards with *7.77% faster (1.0777x)
-    const numSuperFast = Math.round(7.77);
-    const numSlightFaster = Math.round(3.33);
-    const idxs = Array.from({ length: shuffledAllMetrics.length }, (_, i) => i);
-    for (let i = idxs.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [idxs[i], idxs[j]] = [idxs[j], idxs[i]];
-    }
-    for (let i = 0; i < numSuperFast && i < idxs.length; i++) {
-      const card = shuffledAllMetrics[idxs[i] ?? -1];
-      if (card) card.cSpeed = (card.cSpeed ?? 0) * 3.33;
-    }
-    for (let i = numSuperFast; i < numSuperFast + numSlightFaster && i < idxs.length; i++) {
-      const card = shuffledAllMetrics[idxs[i] ?? -1];
-      if (card) card.cSpeed = (card.cSpeed ?? 0) * 1.0777;  // 7.77% faster
-    }
-
-    return shuffledAllMetrics;
+    return carouselCards;
   };
 
-  const [shuffledCards, setShuffledCards] = useState<ModernCardData[]>(() => computeShuffledCards());
+  const [carouselCards, setCarouselCards] = useState<ModernCardData[]>(() => computeCarouselCards());
 
-  const initShuffledMetrics = () => {
-    setShuffledCards(computeShuffledCards());
+  const initCarouselCards = () => {
+    setCarouselCards(computeCarouselCards());
   };
 
   const revertTimerRef = useRef<number | null>(null);
   const rafIdRef = useRef<number | null>(null);
-  const animatedSetRef = useRef<Set<number>>(new Set());
   const isDownRef = useRef(false);
   const isHoverRef = useRef(false);
   const lastMouseRef = useRef(0);
@@ -2711,7 +2683,7 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
     revertTimerRef.current = window.setTimeout(() => {
       navigate('/dashboard', { replace: true });
       setViewMode('carousel');
-      initShuffledMetrics();
+      initCarouselCards();
     }, 33000);
   };
 
@@ -2733,22 +2705,26 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
   }, [requestedDashboardTab]);
 
   const gridCards = [...cards]
-    .sort((a, b) => a.status.localeCompare(b.status)); // full set for tab (HTML grid renders all 7 per tab; 33% only for the dense carousel cloud)
+    .sort((a, b) => a.status.localeCompare(b.status)); // full set for tab (grid renders all per tab; carousel uses exactly the 7 overview cards drifting)
 
   const parallaxRef = useRef<HTMLDivElement>(null);
 
   // === EXACT RAF + Drag using startParallaxScroll + initDragInteraction ===
+  // Auto-drifts (x -= speed) whenever not dragging and not hovering the canvas (per dashboard_redesign.html)
   function startParallaxScroll() {
     const cont = parallaxRef.current; if (!cont) return;
     const tick = () => {
       if (viewMode !== 'carousel') return;
       const els = Array.from(cont.querySelectorAll<HTMLElement>('.dashboard-card'));
       let dD = 0;
-      if (isDownRef.current) { dD = currentMouseRef.current - lastMouseRef.current; lastMouseRef.current = currentMouseRef.current; }
+      if (isDownRef.current) {
+        dD = currentMouseRef.current - lastMouseRef.current;
+        lastMouseRef.current = currentMouseRef.current;
+      }
       const VW = 6500 * 1.777;
-      els.forEach((el, i) => {
+      els.forEach((el) => {
         let x = parseFloat(el.getAttribute('data-x') || el.getAttribute('data-initial-x') || '0');
-        const spd = parseFloat(el.getAttribute('data-speed') || '0.589'); // base * 3.3x overall
+        const spd = parseFloat(el.getAttribute('data-speed') || '0');
         if (isDownRef.current) {
           x += dD * (spd * 0.8);
         } else if (!isHoverRef.current) {
@@ -2756,10 +2732,23 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
         }
         if (x < -1500) x = VW - 1500;
         if (x > VW - 1500) x = -1500;
-        el.setAttribute('data-x', String(x)); el.style.transform = `translateX(${x}px)`;
-        const r = el.getBoundingClientRect(); const trig = window.innerWidth * 0.75;
-        if (r.left < trig && r.right > 0) { if (!animatedSetRef.current.has(i)) { animatedSetRef.current.add(i); el.setAttribute('data-animated', 'true'); /* replay via internal Animated IO on hover/enter */ ; } }
-        else if (r.left > window.innerWidth || r.right < 0) { if (animatedSetRef.current.has(i)) { animatedSetRef.current.delete(i); el.setAttribute('data-animated', 'false'); /* reset via internal */ ; } }
+        el.setAttribute('data-x', String(x));
+        el.style.transform = `translateX(${x}px)`;
+
+        // Trigger per-card chart replay when card enters view (matches prototype behavior)
+        const r = el.getBoundingClientRect();
+        const triggerPoint = window.innerWidth * 0.75;
+        const animated = el.getAttribute('data-animated') === 'true';
+        if (r.left < triggerPoint && r.right > 0) {
+          if (!animated) {
+            el.setAttribute('data-animated', 'true');
+            // Bump replay via data attr or parent will handle on next render/hover if needed
+          }
+        } else if (r.left > window.innerWidth || r.right < 0) {
+          if (animated) {
+            el.setAttribute('data-animated', 'false');
+          }
+        }
       });
       rafIdRef.current = requestAnimationFrame(tick);
     };
@@ -2770,7 +2759,7 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
   function initDragInteraction(container: HTMLElement): () => void {
     const md = (e: MouseEvent) => { isDownRef.current = true; container.classList.add('cursor-grabbing'); container.classList.remove('cursor-grab'); lastMouseRef.current = e.pageX; currentMouseRef.current = e.pageX; };
     const mu = () => { isDownRef.current = false; container.classList.remove('cursor-grabbing'); container.classList.add('cursor-grab'); };
-    const ml = () => { isDownRef.current = false; container.classList.remove('cursor-grabbing'); container.classList.add('cursor-grab'); };
+    const ml = () => { isDownRef.current = false; isHoverRef.current = false; container.classList.remove('cursor-grabbing'); container.classList.add('cursor-grab'); };
     const me = () => { isHoverRef.current = true; };
     const mm = (e: MouseEvent) => { if (!isDownRef.current) return; e.preventDefault(); currentMouseRef.current = e.pageX; };
     const mmW = (e: MouseEvent) => { if (isDownRef.current) currentMouseRef.current = e.pageX; };
@@ -2844,7 +2833,7 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
           </div>
         ) : (
           <div id="parallax-container" ref={parallaxRef} className="relative w-full h-full overflow-visible cursor-grab bg-transparent">
-            {shuffledCards.map((c, i) => (
+            {carouselCards.map((c, i) => (
               <ModernDashboardCard key={`${c.title}-${i}`} card={c} index={i} mode="carousel" onNavigate={navigate} />
             ))}
           </div>
@@ -4667,6 +4656,19 @@ function PremiumFormSection({
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {section.layout === 'image' && section.image && (
+        <div className="ci-premium-image-block my-2">
+          <img
+            src={section.image.src}
+            alt={section.image.alt || section.title}
+            className="max-w-full h-auto border border-card rounded"
+          />
+          {section.image.caption && (
+            <p className="ci-premium-section-desc mt-1 text-xs italic">{section.image.caption}</p>
+          )}
         </div>
       )}
 

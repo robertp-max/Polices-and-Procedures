@@ -183,6 +183,19 @@ function SectionView({ section, si, values, setField }: {
         </div>
       )}
 
+      {section.layout === 'image' && section.image && (
+        <div className="my-1">
+          <img
+            src={section.image.src}
+            alt={section.image.alt || section.title}
+            className="max-w-full h-auto rounded border border-card"
+          />
+          {section.image.caption && (
+            <p className="text-xs text-muted mt-1 italic">{section.image.caption}</p>
+          )}
+        </div>
+      )}
+
       {section.layout === 'signature' && (
         <p className="text-[11px] text-muted">Signature is captured through eCIgn — use “Sign with eCIgn” below.</p>
       )}

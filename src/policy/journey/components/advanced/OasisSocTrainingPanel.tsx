@@ -1,87 +1,90 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { useJourneyStore } from '../../stores/journeyStore';
 
 interface Props {
   moduleId: string;
   onComplete?: (score: number, passed: boolean, artifact?: any) => void;
 }
 
+/** Static bundle of the full CI-ION OASIS-E2 SOC simulator (built from
+ *  CI-ION_OASIS-E2_SOC and copied into public/). `theme=journey` switches the
+ *  simulator to the Journey light/teal look with no CI-ION branding. It
+ *  reports progress to this host via postMessage — see handleMessage. */
+const SIMULATOR_URL = '/advanced-training/oasis-e2-soc/index.html?theme=journey';
+const SIMULATOR_MESSAGE_SOURCE = 'ci-ion-oasis-e2-soc';
+
+interface SimulatorMessage {
+  source: string;
+  type: 'section-complete' | 'course-complete';
+  sectionId?: string;
+  score: number | null;
+  passed: boolean | null;
+  completedSections?: string[];
+  sectionScores?: Record<string, { raw: number; passed: boolean }>;
+}
+
 /**
- * GAO-03: oasis_lab variant
- * SOC timepoint rail + item coding with evidence anchors + rationale
+ * GAO-03: oasis_lab variant — full OASIS-E2 SOC simulator, rendered
+ * full-bleed in the Journey theme, with completion bridged into the
+ * Journey evidence/store contract.
  */
 export const OasisSocTrainingPanel: React.FC<Props> = ({ moduleId, onComplete }) => {
-  const [selectedItem, setSelectedItem] = useState('GG0170');
-  const [response, setResponse] = useState('');
-  const [rationale, setRationale] = useState('');
-  const [evidenceLinked, setEvidenceLinked] = useState(false);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+  const store = useJourneyStore();
+  const storeRef = useRef(store);
+  storeRef.current = store;
 
-  const items = ['B0200 Hearing', 'GG0170 Mobility', 'M0300 Wound', 'J0510 Pain', 'N0415 Meds'];
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      const data = event.data as SimulatorMessage | undefined;
+      if (!data || data.source !== SIMULATOR_MESSAGE_SOURCE) return;
+      if (data.type !== 'course-complete') return;
 
-  const submitCoding = () => {
-    const score = response && rationale && evidenceLinked ? 87 : 55;
-    const passed = score >= 80;
-    const artifact = {
-      policy_id: "CL-CP-001",
-      workflow_id: "wf-rn-adv-03-oasis",
-      event_id: "evt-rn-adv-03-complete",
-      module_id: moduleId,
-      learner_id: "demo-learner",
-      timestamp: new Date().toISOString(),
-      assessment_score: score,
-      completion_artifact_type: "oasis-item-coding",
-      noPhi: true,
-      type: 'oasis-item-coding',
-      item: selectedItem,
-      response,
-      rationale,
-      evidenceLinked,
-      score,
-      moduleId,
-      policyId: "CL-CP-001",
-      workflowId: "wf-rn-adv-03-oasis",
-      eventId: "evt-rn-adv-03-complete",
-      learnerId: "demo-learner",
-      artifactType: "oasis-item-coding",
+      const score = data.score ?? 0;
+      const passed = data.passed ?? score >= 80;
+      // Persist to the Journey store directly — this panel is self-contained
+      // and no longer relies on the shared AdvancedTrainingPlayer wrapper.
+      try {
+        const s = storeRef.current;
+        s.recordLearnerCompletion(s.currentEmployeeId, moduleId, passed, score, 'OASIS-E2 SOC simulator completed');
+      } catch {
+        // non-fatal in demo
+      }
+      onCompleteRef.current?.(score, passed, {
+        policy_id: 'CL-CP-001',
+        workflow_id: 'wf-rn-adv-03-oasis',
+        event_id: 'evt-rn-adv-03-complete',
+        module_id: moduleId,
+        learner_id: 'demo-learner',
+        timestamp: new Date().toISOString(),
+        assessment_score: score,
+        completion_artifact_type: 'oasis-soc-simulator',
+        noPhi: true,
+        type: 'oasis-soc-simulator',
+        simulator: 'OASIS-E2 SOC',
+        completedSections: data.completedSections ?? [],
+        sectionScores: data.sectionScores ?? {},
+        score,
+        moduleId,
+        policyId: 'CL-CP-001',
+        workflowId: 'wf-rn-adv-03-oasis',
+        eventId: 'evt-rn-adv-03-complete',
+        learnerId: 'demo-learner',
+        artifactType: 'oasis-soc-simulator',
+      });
     };
-    if (onComplete) onComplete(score, passed, artifact);
-  };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [moduleId]);
 
   return (
-    <div>
-      <div style={{ background: '#007970', color: 'white', display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 11, marginBottom: 8 }}>RN-ADV-03 • OASIS-E2 SOC</div>
-
-      {/* Timepoint rail */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
-        {['SOC', 'ROC', 'Recert', 'DC'].map((t, i) => (
-          <div key={i} style={{ padding: '2px 8px', background: i === 0 ? '#007970' : '#e5e7eb', color: i === 0 ? 'white' : '#334155', borderRadius: 4, fontSize: 11 }}>{t}</div>
-        ))}
-      </div>
-
-      <div style={{ display: 'flex', gap: 12 }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>Item Coding Lab</div>
-          {items.map(it => (
-            <button key={it} onClick={() => setSelectedItem(it)} style={{ display: 'block', width: '100%', textAlign: 'left', margin: '2px 0', padding: 4, background: selectedItem === it ? '#e0f2f1' : 'white', border: '1px solid #cbd5e1', borderRadius: 4 }}>
-              {it}
-            </button>
-          ))}
-        </div>
-
-        <div style={{ flex: 2 }}>
-          <div>Data source / Observation / Response / Rationale</div>
-          <select value={response} onChange={e => setResponse(e.target.value)} style={{ width: '100%', margin: '6px 0' }}>
-            <option value="">Select response (GG0170 example: 02 - Substantial/max assist)</option>
-            <option value="02">02 - Substantial/max assist</option>
-            <option value="03">03 - Partial/moderate assist</option>
-            <option value="04">04 - Supervision or touching assist</option>
-          </select>
-          <textarea placeholder="Rationale + clinical evidence link" value={rationale} onChange={e => setRationale(e.target.value)} style={{ width: '100%', height: 60 }} />
-          <button onClick={() => setEvidenceLinked(true)} style={{ fontSize: 12 }}>Link Evidence Anchor</button>
-          {evidenceLinked && <span style={{ color: '#007970' }}> ✓ Evidence linked</span>}
-          <button onClick={submitCoding} style={{ marginTop: 8, background: '#C74600', color: 'white', padding: '4px 12px', borderRadius: 4 }}>Submit Coding + Rationale</button>
-        </div>
-      </div>
-      <div style={{ fontSize: 11, color: '#64748b' }}>Error-risk badge + guidance drawer would appear here. RN-only finalization enforced upstream.</div>
-    </div>
+    <iframe
+      src={SIMULATOR_URL}
+      title="OASIS-E2 Start of Care Assessment"
+      allow="autoplay; fullscreen"
+      style={{ display: 'block', width: '100%', height: '100%', border: 'none', background: 'transparent' }}
+    />
   );
 };

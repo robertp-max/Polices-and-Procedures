@@ -1,0 +1,41 @@
+[0m[0m
+[0m[4mc:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\src\policy\help-center\threads\ThreadCard.tsx[24m[0m
+[0m  [2m102:78[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m106:41[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mc:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\src\v6\screens\pageviews\AdminCommunityProfilesScreen.tsx[24m[0m
+[0m   [2m52:39[22m  [31merror[39m    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render        [2mreact-hooks/rules-of-hooks[22m[0m
+[0m   [2m55:24[22m  [31merror[39m    React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render         [2mreact-hooks/rules-of-hooks[22m[0m
+[0m   [2m55:60[22m  [33mwarning[39m  React Hook useMemo has an unnecessary dependency: 'refreshKey'. Either exclude it or remove the dependency array                   [2mreact-hooks/exhaustive-deps[22m[0m
+[0m   [2m56:22[22m  [31merror[39m    React Hook "useThreadStore" is called conditionally. React Hooks must be called in the exact same order in every component render  [2mreact-hooks/rules-of-hooks[22m[0m
+[0m   [2m58:39[22m  [31merror[39m    React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render         [2mreact-hooks/rules-of-hooks[22m[0m
+[0m   [2m83:24[22m  [31merror[39m    React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render         [2mreact-hooks/rules-of-hooks[22m[0m
+[0m   [2m84:21[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m86:62[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m87:22[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m92:6[22m   [33mwarning[39m  React Hook useMemo has an unnecessary dependency: 'refreshKey'. Either exclude it or remove the dependency array                   [2mreact-hooks/exhaustive-deps[22m[0m
+[0m  [2m129:31[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m131:25[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m149:74[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m153:45[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m191:35[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                           [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mc:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\src\v6\screens\pageviews\CommunityScreen.tsx[24m[0m
+[0m   [2m41:9[22m   [33mwarning[39m  The 'viewer' conditional could make the dependencies of useMemo Hook (at line 66) change on every render. To fix this, wrap the initialization of 'viewer' in its own useMemo() Hook  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m   [2m73:70[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                              [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m199:55[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                              [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m343:25[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                              [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m348:27[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                              [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m348:84[22m  [31merror[39m    Unexpected any. Specify a different type                                                                                                                                              [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mc:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\src\v6\screens\pageviews\PersonalProfileScreen.tsx[24m[0m
+[0m  [2m247:69[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m522:87[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m575:44[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m582:81[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mc:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\src\v6\shell\PersonalOpsPanel.tsx[24m[0m
+[0m  [2m95:61[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[31m[1m✖ 28 problems (25 errors, 3 warnings)[22m[39m[0m
+[0m[31m[1m[22m[39m[0m

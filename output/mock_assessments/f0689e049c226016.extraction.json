@@ -1,0 +1,382 @@
+{
+  "template": "admission",
+  "metadata": {
+    "sourceId": "f0689e049c226016",
+    "fileName": "phone-transcript-07-transcript-7-this-can-t-be-real-complexity.txt",
+    "mimeType": "text/plain",
+    "byteSize": 21785,
+    "contentHash": "f0689e049c226016cc3e006fbbaf9e0f9277428c8be286fb4abac2f2cc3f1d2f",
+    "format": "text",
+    "charCount": 21391,
+    "hasText": true,
+    "localPath": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2\\output\\sources\\f0689e049c226016\\phone-transcript-07-transcript-7-this-can-t-be-real-complexity.txt",
+    "extractionPath": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2\\output\\mock_assessments\\f0689e049c226016.extraction.json",
+    "driveFileId": null,
+    "driveUrl": null,
+    "createdAtNote": "2026-07-01T22:05:34.729Z"
+  },
+  "extraction": {
+    "engine": "brad",
+    "passes": 3,
+    "fields": [
+      {
+        "key": "patient_name",
+        "value": "Amara Blessing Eze-Chakraborty",
+        "confidence": 1,
+        "sourceSnippet": "The patient is Amara Blessing Eze-Chakraborty. A-M-A-R-A. Middle name B-L-E-S-S-I-N-G. Last name E-Z-E, hyphen, C-H-A-K-R-A-B-O-R-T-Y. She goes by Amara.",
+        "agreement": 1,
+        "needsReview": true,
+        "group": "Patient",
+        "label": "Patient full legal name"
+      },
+      {
+        "key": "date_of_birth",
+        "value": "August 22, 2005",
+        "confidence": 1,
+        "sourceSnippet": "August 22, 2005. She's 19. She'll turn 20 in August.",
+        "agreement": 2,
+        "needsReview": false,
+        "group": "Patient",
+        "label": "Patient date of birth"
+      },
+      {
+        "key": "medical_record",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Patient",
+        "label": "Medical record number (MRN)"
+      },
+      {
+        "key": "address",
+        "value": "2880 Middlefield Road, Unit 7, Palo Alto, CA 94306",
+        "confidence": 1,
+        "sourceSnippet": "2880 Middlefield Road, Unit 7, Palo Alto, CA 94306. Ground-floor condominium. ADA-accessible.",
+        "agreement": 2,
+        "needsReview": false,
+        "group": "Patient",
+        "label": "Patient address / address of service"
+      },
+      {
+        "key": "phone",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Patient",
+        "label": "Patient phone"
+      },
+      {
+        "key": "county",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Patient",
+        "label": "County of residence"
+      },
+      {
+        "key": "start_of_care",
+        "value": "July 2, 2025 (Wednesday) — SOC same day as discharge",
+        "confidence": 0.85,
+        "sourceSnippet": "We're targeting Wednesday, July 2nd. SOC should be same day",
+        "agreement": 1,
+        "needsReview": true,
+        "group": "Admission / Physician",
+        "label": "Start of care date"
+      },
+      {
+        "key": "primary_physician",
+        "value": "Dr. Catherine Hargrove, palliative care physician, Lucile Packard Children's Hospital at Stanford (ordering/managing physician on referral)",
+        "confidence": 0.55,
+        "sourceSnippet": "this is Dr. Catherine Hargrove, I'm the palliative care physician at Lucile Packard Children's Hospital at Stanford.",
+        "agreement": 1,
+        "needsReview": true,
+        "group": "Admission / Physician",
+        "label": "Primary / ordering physician"
+      },
+      {
+        "key": "physician_phone",
+        "value": "(650) 555-1740",
+        "confidence": 0.9,
+        "sourceSnippet": "My number is (650) 555-1740, fax (650) 555-1741.",
+        "agreement": 2,
+        "needsReview": false,
+        "group": "Admission / Physician",
+        "label": "Physician phone"
+      },
+      {
+        "key": "physician_fax",
+        "value": "(650) 555-1741",
+        "confidence": 0.9,
+        "sourceSnippet": "My number is (650) 555-1740, fax (650) 555-1741.",
+        "agreement": 2,
+        "needsReview": false,
+        "group": "Admission / Physician",
+        "label": "Physician fax"
+      },
+      {
+        "key": "admitting_clinician",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Admission / Physician",
+        "label": "Admitting clinician"
+      },
+      {
+        "key": "f2f_date",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Admission / Physician",
+        "label": "Face-to-face encounter date"
+      },
+      {
+        "key": "diagnosis",
+        "value": "Short bowel syndrome (approx. 30 cm functional small bowel) with intestinal failure-associated liver disease (IFALD); TPN-dependent; listed UNOS Status 1 for multi-visceral transplant",
+        "confidence": 0.9,
+        "sourceSnippet": "She developed short bowel syndrome — she has approximately 30 centimeters of functional small bowel. She's been on TPN since infancy. She's now in intestinal failure-associated liver disease (IFALD)",
+        "agreement": 1,
+        "needsReview": true,
+        "group": "Diagnosis / Clinical",
+        "label": "Primary diagnosis"
+      },
+      {
+        "key": "services_ordered",
+        "value": "Skilled nursing daily x2 weeks then 5x/week; Physical therapy 3x/week; Occupational therapy 2x/week; Medical social work weekly; Home health aide daily; Registered dietitian biweekly",
+        "confidence": 0.95,
+        "sourceSnippet": "Skilled nursing daily for the first two weeks ... Then 5x/week ongoing. Physical therapy 3x/week ... Occupational therapy 2x/week ... Medical social work weekly ... Home health aide daily ... Registered dietitian biweekly",
+        "agreement": 2,
+        "needsReview": false,
+        "group": "Services Ordered",
+        "label": "Services ordered (disciplines and frequency)"
+      },
+      {
+        "key": "payer",
+        "value": "Medi-Cal through Health Plan of San Mateo (HPSM); CCS (California Children's Services) via CCS Whole Child Model through HPSM",
+        "confidence": 0.95,
+        "sourceSnippet": "Medi-Cal through Health Plan of San Mateo — HPSM-90547722H.",
+        "agreement": 1,
+        "needsReview": true,
+        "group": "Payer / Billing Route",
+        "label": "Payer / insurance"
+      },
+      {
+        "key": "payer_id",
+        "value": "HPSM-90547722H",
+        "confidence": 0.95,
+        "sourceSnippet": "Medi-Cal through Health Plan of San Mateo — HPSM-90547722H.",
+        "agreement": 2,
+        "needsReview": false,
+        "group": "Payer / Billing Route",
+        "label": "Policy / member / plan ID number"
+      },
+      {
+        "key": "representative_name",
+        "value": "Dr. Adaeze Eze (mother; primary medical decision-maker since birth)",
+        "confidence": 0.55,
+        "sourceSnippet": "she has been the primary medical decision-maker since birth.",
+        "agreement": 1,
+        "needsReview": true,
+        "group": "Representative / Legal Authority",
+        "label": "Authorized representative / conservator name"
+      },
+      {
+        "key": "representative_relationship",
+        "value": "Mother",
+        "confidence": 0.7,
+        "sourceSnippet": "Her mother is Dr. Adaeze Eze, age 48.",
+        "agreement": 2,
+        "needsReview": false,
+        "group": "Representative / Legal Authority",
+        "label": "Relationship to patient"
+      },
+      {
+        "key": "legal_authority",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Representative / Legal Authority",
+        "label": "Legal authority (POA, conservator, court order)"
+      },
+      {
+        "key": "emergency_contact_name",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Emergency Preparedness",
+        "label": "Primary emergency contact name"
+      },
+      {
+        "key": "emergency_contact_phone",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Emergency Preparedness",
+        "label": "Primary emergency contact phone"
+      },
+      {
+        "key": "primary_language",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Interpreter / Language",
+        "label": "Primary language"
+      },
+      {
+        "key": "interpreter_needed",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Interpreter / Language",
+        "label": "Interpreter needed (yes/no + language)"
+      },
+      {
+        "key": "advance_directive_status",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Advance Directives",
+        "label": "Advance directive status (AHCD / POLST / DNR)"
+      }
+    ],
+    "missing": [
+      "patient_name",
+      "medical_record",
+      "phone",
+      "county",
+      "start_of_care",
+      "primary_physician",
+      "admitting_clinician",
+      "f2f_date",
+      "diagnosis",
+      "payer",
+      "representative_name",
+      "legal_authority",
+      "emergency_contact_name",
+      "emergency_contact_phone",
+      "primary_language",
+      "interpreter_needed",
+      "advance_directive_status"
+    ],
+    "mapping": [
+      {
+        "key": "patient_name",
+        "sourceSnippet": "The patient is Amara Blessing Eze-Chakraborty. A-M-A-R-A. Middle name B-L-E-S-S-I-N-G. Last name E-Z-E, hyphen, C-H-A-K-R-A-B-O-R-T-Y. She goes by Amara."
+      },
+      {
+        "key": "date_of_birth",
+        "sourceSnippet": "August 22, 2005. She's 19. She'll turn 20 in August."
+      },
+      {
+        "key": "address",
+        "sourceSnippet": "2880 Middlefield Road, Unit 7, Palo Alto, CA 94306. Ground-floor condominium. ADA-accessible."
+      },
+      {
+        "key": "start_of_care",
+        "sourceSnippet": "We're targeting Wednesday, July 2nd. SOC should be same day"
+      },
+      {
+        "key": "primary_physician",
+        "sourceSnippet": "this is Dr. Catherine Hargrove, I'm the palliative care physician at Lucile Packard Children's Hospital at Stanford."
+      },
+      {
+        "key": "physician_phone",
+        "sourceSnippet": "My number is (650) 555-1740, fax (650) 555-1741."
+      },
+      {
+        "key": "physician_fax",
+        "sourceSnippet": "My number is (650) 555-1740, fax (650) 555-1741."
+      },
+      {
+        "key": "diagnosis",
+        "sourceSnippet": "She developed short bowel syndrome — she has approximately 30 centimeters of functional small bowel. She's been on TPN since infancy. She's now in intestinal failure-associated liver disease (IFALD)"
+      },
+      {
+        "key": "services_ordered",
+        "sourceSnippet": "Skilled nursing daily for the first two weeks ... Then 5x/week ongoing. Physical therapy 3x/week ... Occupational therapy 2x/week ... Medical social work weekly ... Home health aide daily ... Registered dietitian biweekly"
+      },
+      {
+        "key": "payer",
+        "sourceSnippet": "Medi-Cal through Health Plan of San Mateo — HPSM-90547722H."
+      },
+      {
+        "key": "payer_id",
+        "sourceSnippet": "Medi-Cal through Health Plan of San Mateo — HPSM-90547722H."
+      },
+      {
+        "key": "representative_name",
+        "sourceSnippet": "she has been the primary medical decision-maker since birth."
+      },
+      {
+        "key": "representative_relationship",
+        "sourceSnippet": "Her mother is Dr. Adaeze Eze, age 48."
+      }
+    ],
+    "conflicts": [
+      {
+        "key": "patient_name",
+        "values": [
+          "Amara Blessing Eze-Chakraborty",
+          "Amara Blessing Eze-Chakraborty (goes by \"Amara\")"
+        ]
+      },
+      {
+        "key": "start_of_care",
+        "values": [
+          "July 2, 2025 (Wednesday) — SOC same day as discharge",
+          "July 2, 2025 (targeted discharge; SOC same day)"
+        ]
+      },
+      {
+        "key": "primary_physician",
+        "values": [
+          "Dr. Catherine Hargrove, palliative care physician, Lucile Packard Children's Hospital at Stanford (ordering/managing physician on referral)",
+          "Dr. Catherine Hargrove (palliative care physician, Lucile Packard Children's Hospital at Stanford)"
+        ]
+      },
+      {
+        "key": "diagnosis",
+        "values": [
+          "Short bowel syndrome (approx. 30 cm functional small bowel) with intestinal failure-associated liver disease (IFALD); TPN-dependent; listed UNOS Status 1 for multi-visceral transplant",
+          "Short bowel syndrome (approx. 30 cm functional small bowel), TPN-dependent, with intestinal failure-associated liver disease (IFALD); on transplant list for multi-visceral transplant"
+        ]
+      },
+      {
+        "key": "payer",
+        "values": [
+          "Medi-Cal through Health Plan of San Mateo (HPSM); CCS (California Children's Services) via CCS Whole Child Model through HPSM",
+          "Medi-Cal through Health Plan of San Mateo (HPSM); CCS (California Children's Services) transitioning to CCS Whole Child Model via HPSM; Stanford transplant financial coordinator for transplant-specific authorizations"
+        ]
+      },
+      {
+        "key": "representative_name",
+        "values": [
+          "Dr. Adaeze Eze (mother; primary medical decision-maker since birth)",
+          "Dr. Adaeze Eze (mother)"
+        ]
+      }
+    ],
+    "validationSummary": "7/24 fields filled with majority agreement across 3 reads; 17 need review; 6 conflicts."
+  }
+}

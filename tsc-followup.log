@@ -1,0 +1,13 @@
+src/v6/screens/pageviews/AdminCommunityProfilesScreen.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/v6/screens/pageviews/AdminCommunityProfilesScreen.tsx(3,1): error TS6192: All imports in import declaration are unused.
+src/v6/screens/pageviews/AdminCommunityProfilesScreen.tsx(4,34): error TS6133: 'ToneTag' is declared but its value is never read.
+src/v6/screens/pageviews/AdminCommunityProfilesScreen.tsx(5,18): error TS6133: 'ToneBadge' is declared but its value is never read.
+src/v6/screens/pageviews/AdminCommunityProfilesScreen.tsx(6,1): error TS6133: 'Tone' is declared but its value is never read.
+src/v6/screens/pageviews/AdminCommunityProfilesScreen.tsx(12,8): error TS6133: 'BasicUserProfile' is declared but its value is never read.
+src/v6/screens/pageviews/AdminCommunityProfilesScreen.tsx(58,7): error TS2322: Type '(row: CommunityProfileRow) => Element' is not assignable to type '(row: CommunityProfileRow) => string'.
+  Type 'Element' is not assignable to type 'string'.
+src/v6/screens/pageviews/AdminCommunityProfilesScreen.tsx(72,7): error TS2322: Type '(row: CommunityProfileRow) => Element' is not assignable to type '(row: CommunityProfileRow) => string'.
+  Type 'Element' is not assignable to type 'string'.
+src/v6/screens/pageviews/AdminCommunityProfilesScreen.tsx(76,13): error TS2322: Type '"ghost"' is not assignable to type 'ButtonVariant | undefined'.
+src/v6/screens/pageviews/AdminCommunityProfilesScreen.tsx(133,11): error TS2353: Object literal may only specify known properties, and 'meta' does not exist in type 'SurfaceCardData'.
+src/v6/screens/pageviews/PersonalProfileScreen.tsx(10,3): error TS6133: 'getProfileVisibility' is declared but its value is never read.

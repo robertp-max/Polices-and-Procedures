@@ -1,0 +1,17 @@
+src/v6/screens/RepresentativeScreens.tsx(5,65): error TS2300: Duplicate identifier 'buildReportMetrics'.
+src/v6/screens/RepresentativeScreens.tsx(5,85): error TS2300: Duplicate identifier 'buildSprintSummary'.
+src/v6/screens/RepresentativeScreens.tsx(14,10): error TS2300: Duplicate identifier 'buildSprintSummary'.
+src/v6/screens/RepresentativeScreens.tsx(14,30): error TS2300: Duplicate identifier 'buildReportMetrics'.
+src/v6/screens/RepresentativeScreens.tsx(100,7): error TS6133: 'dashboardActions' is declared but its value is never read.
+src/v6/screens/RepresentativeScreens.tsx(143,7): error TS6133: 'dashboardCards' is declared but its value is never read.
+src/v6/screens/RepresentativeScreens.tsx(2135,10): error TS6133: 'ActionList' is declared but its value is never read.
+src/v6/screens/RepresentativeScreens.tsx(2249,10): error TS6133: 'Funnel' is declared but its value is never read.
+src/v6/screens/RepresentativeScreens.tsx(2276,9): error TS6133: 'pub' is declared but its value is never read.
+src/v6/screens/RepresentativeScreens.tsx(2367,36): error TS2339: Property 'total' does not exist on type 'readonly MetricTileData[] | CesSprintSummary'.
+  Property 'total' does not exist on type 'readonly MetricTileData[]'.
+src/v6/screens/RepresentativeScreens.tsx(2367,62): error TS2339: Property 'completed' does not exist on type 'readonly MetricTileData[] | CesSprintSummary'.
+  Property 'completed' does not exist on type 'readonly MetricTileData[]'.
+src/v6/screens/RepresentativeScreens.tsx(2367,77): error TS2339: Property 'readyToCertify' does not exist on type 'readonly MetricTileData[] | CesSprintSummary'.
+  Property 'readyToCertify' does not exist on type 'readonly MetricTileData[]'.
+src/v6/screens/RepresentativeScreens.tsx(2367,110): error TS2339: Property 'blocked' does not exist on type 'readonly MetricTileData[] | CesSprintSummary'.
+  Property 'blocked' does not exist on type 'readonly MetricTileData[]'.

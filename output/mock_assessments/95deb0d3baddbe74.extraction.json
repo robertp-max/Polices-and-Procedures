@@ -1,0 +1,118 @@
+{
+  "template": "admission",
+  "metadata": {
+    "sourceId": "95deb0d3baddbe74",
+    "fileName": "mock_assessment.pdf",
+    "mimeType": "application/pdf",
+    "byteSize": 651368,
+    "contentHash": "95deb0d3baddbe74742ef506606c4b5d2f9fa2b57fc5d0e47ed47857b0b8f05f",
+    "format": "pdf",
+    "pageCount": 63,
+    "charCount": 146190,
+    "hasText": true,
+    "localPath": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2\\output\\sources\\95deb0d3baddbe74\\mock_assessment.pdf",
+    "extractionPath": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2\\output\\mock_assessments\\95deb0d3baddbe74.extraction.json",
+    "driveFileId": null,
+    "driveUrl": null,
+    "createdAtNote": "2026-06-30T21:00:00Z"
+  },
+  "extraction": {
+    "engine": "unavailable",
+    "passes": 0,
+    "fields": [
+      {
+        "key": "patient_name",
+        "value": "Clement Obadiah Nwachukwu",
+        "confidence": 0.5,
+        "sourceSnippet": "(pre-filled form field)",
+        "agreement": 0,
+        "needsReview": false
+      },
+      {
+        "key": "medical_record",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      },
+      {
+        "key": "date_of_birth",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      },
+      {
+        "key": "start_of_care",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      },
+      {
+        "key": "primary_physician",
+        "value": "Dr. Oluwafemi Adeyemi",
+        "confidence": 0.5,
+        "sourceSnippet": "(pre-filled form field)",
+        "agreement": 0,
+        "needsReview": false
+      },
+      {
+        "key": "admitting_clinician",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      },
+      {
+        "key": "payer",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      },
+      {
+        "key": "diagnosis",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      },
+      {
+        "key": "address",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      },
+      {
+        "key": "phone",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      }
+    ],
+    "missing": [
+      "medical_record",
+      "date_of_birth",
+      "start_of_care",
+      "admitting_clinician",
+      "payer",
+      "diagnosis",
+      "address",
+      "phone"
+    ],
+    "mapping": [],
+    "conflicts": [],
+    "validationSummary": "Claude CLI unavailable (set BRAD_PROVIDER=claude). Only pre-filled form fields were used; nothing was invented."
+  }
+}

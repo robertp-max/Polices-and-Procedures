@@ -1,0 +1,174 @@
+TRANSCRIPT 7 — "THIS CAN'T BE REAL" COMPLEXITY
+Referral Source: Three-Way Conference Call — Transplant Coordinator + Palliative Care MD + County CCS Coordinator
+Date: 06/30/2025 | Time: 08:00 AM PST
+Call Duration: 1 hour 14 minutes
+
+[CALL INITIATED — CONFERENCE CALL]
+
+CI: Care Indeed Home Health, this is Vanessa, intake department.
+
+CALLER 1: Good morning Vanessa, this is Dr. Catherine Hargrove, I'm the palliative care physician at Lucile Packard Children's Hospital at Stanford. I have two other people on the line.
+
+CALLER 2: Hi, this is Rosario Vega, I'm the CCS care coordinator for San Mateo County through HPSM.
+
+CALLER 3: And this is Jason Nakamura, transplant coordinator for the pediatric multi-organ transplant team at Lucile Packard.
+
+CI: Good morning, all three of you. This must be quite a patient if there are three of you on the call.
+
+CALLER 1: It is. This is going to take a while. The patient is a young woman who is — I'll just say it — the most medically complex person I've personally managed in twenty years of palliative care. We've been trying to transition her home for three weeks and agencies keep declining because of the complexity. We're hoping you'll say yes.
+
+CI: I'm listening. Let's go through it.
+
+CALLER 1: The patient is Amara Blessing Eze-Chakraborty. A-M-A-R-A. Middle name B-L-E-S-S-I-N-G. Last name E-Z-E, hyphen, C-H-A-K-R-A-B-O-R-T-Y. She goes by Amara.
+
+CI: Date of birth?
+
+CALLER 1: August 22, 2005. She's 19. She'll turn 20 in August.
+
+CI: Nineteen.
+
+CALLER 1: Nineteen. And she's been in the hospital — not counting readmissions — for approximately 340 of the last 730 days. That's nearly half her last two years.
+
+CI: What's her primary diagnosis?
+
+CALLER 1: She was born with intestinal atresia — multiple segments — and had extensive neonatal bowel surgery. She developed short bowel syndrome — she has approximately 30 centimeters of functional small bowel. She's been on TPN since infancy. She's now in intestinal failure-associated liver disease (IFALD) — her liver is failing from nineteen years of TPN. She's on the transplant list for a multi-visceral transplant — that's liver, small bowel, stomach, and pancreas — at Stanford. She's listed as UNOS Status 1 — highest priority.
+
+CI: Multi-visceral transplant. That's — that's one of the most complex transplants that exists.
+
+CALLER 3: It is. There are only a handful of programs in the country that do it. We do about four to six a year. The wait time is unpredictable — it depends on a size-matched deceased donor. She's petite — 4'11", 82 pounds — so the donor pool is small. She could get a call tomorrow or it could be months.
+
+CI: And she's coming home to wait?
+
+CALLER 1: She's been in the hospital since May 18th with a septic episode from a central line infection — that's her fifteenth CLABSI in her lifetime. The line was pulled, she was treated with 6 weeks of IV antibiotics through a temporary femoral line, and a new Broviac catheter was placed in her left subclavian on June 20th. She's finished antibiotics. She's stable. And she wants to go home. She told me yesterday: "I want to see my room. I want to sleep in my bed. I want to pet my dog. If I have to die, I want to die at home, not here."
+
+CI: Is she dying?
+
+CALLER 1: She's — she's in a gray zone. Without the transplant, her liver will fail within the next 6 to 12 months. Her MELD-Na is 24. Her bilirubin is 8.4 and climbing. She's jaundiced. She has refractory ascites — she's getting paracentesis every two weeks, draining 3 to 4 liters each time. She has hepatic encephalopathy — mild, managed with lactulose and rifaximin, but she has episodes of confusion, particularly at night. She has coagulopathy — INR 2.1 without anticoagulants, just from liver failure. She has portal hypertension with grade 2 esophageal varices that were banded last month.
+
+But — and this is critical — she is on the transplant list and she is expected to get a transplant. This is not hospice. This is a bridge-to-transplant situation. She needs to be kept alive, medically optimized, and ready to go to the OR within hours of a donor call. That means she needs to be in the best possible condition at home, with a team that can manage her and get her to Stanford fast when the call comes.
+
+CI: Understood. This is high-acuity bridge-to-transplant home care. Tell me everything.
+
+CALLER 1: Here are all her active problems:
+
+Short bowel syndrome — 30 cm functional SB. TPN-dependent since birth. She cannot absorb enough nutrition enterally to survive. She does eat small amounts by mouth for pleasure — pudding, ice chips, small bites of soft food — but it's not nutritive. Most of what she eats orally comes out through her ileostomy.
+
+Ileostomy — she has a loop ileostomy, created at age 2 after a bowel perforation. It's high-output — 800 to 1200 mL per day. This is a massive source of fluid and electrolyte loss. She requires aggressive IV fluid and electrolyte replacement through her central line.
+
+TPN — custom formula, provided by Coram/CVS Specialty Infusion. Runs 16 hours per day via the Broviac (4 PM to 8 AM). Contains dextrose, amino acids, lipids (SMOFlipid — she's allergic to standard Intralipid), electrolytes, vitamins, trace elements. Cycled — she's disconnected during the day so she can be mobile.
+
+Intestinal failure-associated liver disease (IFALD) — progressive cirrhosis from chronic TPN. MELD-Na 24. Bilirubin 8.4. Albumin 2.1. INR 2.1. Thrombocytopenia (platelets 62K). Ascites requiring paracentesis. Varices (banded). Hepatic encephalopathy (mild).
+
+Central venous access — new left subclavian Broviac, single-lumen, placed 06/20/2025. She has had 26 central lines in her lifetime. Her venous access is severely depleted. Both internal jugulars are thrombosed. Right subclavian is thrombosed. Both femoral veins have been used and have some flow but are not great options. If this Broviac fails, there are very limited options for replacement. This line is precious. CLABSI prevention is literally life-or-death.
+
+CLABSI history — 15 central line infections in 19 years. She's colonized with VRE and has had prior infections with ESBL E. coli, Pseudomonas, and Candida parapsilosis (the fungemia nearly killed her at age 14). She's on ethanol lock therapy — 70% ethanol instilled into the Broviac for 2 hours daily as a CLABSI prevention strategy. Your nurses will need to be trained on this — it's not common.
+
+CI: We've done ethanol locks before, but not routinely. We'll need to review the protocol. Continue.
+
+CALLER 1:
+
+Renal — CKD stage 4, GFR 18. Combination of chronic dehydration (ileostomy losses), TPN-related nephrotoxicity, and hepatorenal physiology. Not on dialysis yet. Nephrology is watching. If GFR drops below 15, they'll consider adding kidneys to the transplant organ list.
+
+Hematology — chronic anemia (Hgb 7.8 — she gets packed RBC transfusions approximately every 3 to 4 weeks). She has multiple red cell antibodies from prior transfusions — anti-Kell, anti-Duffy-a, anti-Jk-b — which makes cross-matching extremely difficult. She must receive antigen-negative, crossmatch-compatible blood and the blood bank needs at least 48 hours notice to find compatible units. She also has the coagulopathy from liver failure — FFP and vitamin K supplementation as needed.
+
+Immune — she's functionally immunocompromised from malnutrition, liver failure, and chronic illness. She's had 30+ hospitalizations for infections in her lifetime.
+
+Bones — severe osteoporosis from chronic TPN, malnutrition, and liver disease. DEXA T-score -4.1 at lumbar spine. She fractured her left wrist from a minor bump against a doorframe six months ago. She is at extreme fracture risk. Handle with care — literally.
+
+GI (beyond SBS) — she has d-lactic acidosis episodes — she gets confused, ataxic, and slurred — triggered by carbohydrate fermentation in her residual bowel. These episodes look like strokes or intoxication. They are managed by withholding enteral carbs and giving IV bicarbonate. Your team needs to know what this looks like so they don't call a stroke code.
+
+Psych — adjustment disorder with mixed anxiety and depressed mood. She also has medical PTSD — she has flashbacks to procedures (she's had hundreds of procedures, many as a young child). She becomes extremely anxious with new providers, new needles, and anyone touching her line. She's had panic attacks during line dressing changes. She's on escitalopram and hydroxyzine PRN. She sees a psychologist weekly via telehealth. She also has a therapy dog — a trained medical alert dog named "Hope" — a Golden Retriever who is certified and accompanies her everywhere. Hope alerts to d-lactic acidosis episodes (detects behavioral change before clinical signs) and provides emotional support during procedures. Hope must be accommodated by your staff — she is not a pet, she is a medical device.
+
+CI: Hope comes to appointments and is present during care. Got it.
+
+CALLER 1: And one more thing. She's 19 years old. She's brilliant — she's taking online college courses at San Jose State, studying bioethics. She wants to be a patient advocate. She writes a blog about living with intestinal failure that has 14,000 followers. She's been on panels at medical conferences — she spoke at the North American Society for Pediatric Gastroenterology's annual meeting last year. She knows more about SBS, TPN, and central line care than most nurses. She's been managing her own TPN hookup and disconnect since age 15. She does her own ileostomy care. She does her own ethanol locks (with supervision). She is the expert on her own body and she expects to be treated that way.
+
+CI: So she's a highly informed, autonomous, medically complex 19-year-old who happens to have the medical problems of a critically ill 70-year-old.
+
+CALLER 1: That's exactly it. And here's the family situation.
+
+Her mother is Dr. Adaeze Eze, age 48. She's a physician — family medicine — and she practices at a community clinic in East Palo Alto. She's Nigerian American. She is a fierce advocate for her daughter and she has been the primary medical decision-maker since birth. She understands everything medically but she's also exhausted. She's been a single parent to a critically ill child while running a medical practice. She doesn't sleep well. She has her own health issues — hypertension, anxiety — and she's on FMLA from work right now.
+
+Her father is Dr. Sanjay Chakraborty, age 50. He's a cardiologist in Palo Alto. He and Adaeze were never married — they co-parent. He's involved, supportive, and provides financial support, but he has a separate family (wife + two children). He sees Amara weekly and is available by phone for medical consultations. He understands the cardiac implications of her care.
+
+Her maternal grandmother, Chioma Eze, age 73, lives with Adaeze and Amara. She speaks English and Igbo. She is physically healthy but emotionally devastated — she has been the daytime caregiver when Adaeze is at work. She cooks traditional Nigerian food for Amara (which Amara can eat only tiny amounts of, but she loves the taste and smell).
+
+CI: Address?
+
+CALLER 2: This is Rosario, I'll give you the address. 2880 Middlefield Road, Unit 7, Palo Alto, CA 94306. Ground-floor condominium. ADA-accessible. Three bedrooms. Amara has her own room with an attached bathroom. It's set up like a mini-hospital room — IV pole, pump, supplies organized in bins, hand sanitizer stations, the whole thing. Mom has done an incredible job making it functional.
+
+CI: Insurance?
+
+CALLER 2: This is the complicated part. She has:
+
+Medi-Cal through Health Plan of San Mateo — HPSM-90547722H.
+CCS (California Children's Services) for GI/liver disease — CCS is being transitioned to the CCS Whole Child Model through HPSM. She ages out of CCS at 21 — that's August 22, 2025. We have less than two months to complete the transition to adult services. I'm working on it but it's a mess. Some of her specialty authorizations are still running through legacy CCS, some are through HPSM directly. The TPN is authorized through HPSM DME. The Coram infusion services are authorized separately. It's a puzzle.
+Stanford transplant has their own financial coordinator who manages transplant-specific authorizations.
+
+I'll be the ongoing CCS/HPSM care coordinator for this case. My direct line is (650) 555-0744. I'll work with your billing team on all authorizations.
+
+CI: Thank you, Rosario. That's incredibly helpful. Let me get the medications.
+
+CALLER 1: I'll go through them.
+
+One — TPN (custom formula) — IV via Broviac, 16 hrs/day (4 PM–8 AM), Coram pharmacy. Two — SMOFlipid (lipid emulsion) — in TPN, 3x/week. She's allergic to standard Intralipid (soy-based; she has a soy allergy with anaphylaxis history). SMOFlipid is fish oil–based — tolerated. Three — Normal saline 1000 mL — IV via Broviac, daily during daytime (separate from TPN) for volume replacement. Four — Potassium chloride 40 mEq — IV in NS bag daily. Five — Magnesium sulfate 2 g — IV, 3x/week. Six — Calcium gluconate 1 g — IV, 2x/week. Seven — Ethanol lock 70% — Broviac, 2-hour dwell daily (CLABSI prevention). Per Stanford ID protocol. Eight — Ursodiol 300 mg TID — PO — liver. Nine — Lactulose 15 mL BID — PO — hepatic encephalopathy; titrate to 2-3 soft stools/day. Ten — Rifaximin 550 mg BID — PO — hepatic encephalopathy. Eleven — Spironolactone 50 mg daily — PO — ascites. Twelve — Furosemide 20 mg daily — PO — ascites. Thirteen — Nadolol 20 mg daily — PO — portal hypertension, variceal prophylaxis. Monitor HR — she runs bradycardic at baseline (resting HR 52-58). Fourteen — Vitamin K 5 mg — PO, 3x/week — coagulopathy. Fifteen — Loperamide 2 mg QID — PO — reduce ileostomy output. Sixteen — Cholestyramine 4 g BID — PO — bile acid binder (between other meds — timing critical). Seventeen — Omeprazole 20 mg BID — PO — GI protection. Eighteen — Ondansetron 4 mg Q8H PRN — PO/SL — nausea. Nineteen — Escitalopram 10 mg daily — PO — depression/anxiety. Twenty — Hydroxyzine 25 mg PRN (max TID) — PO — anxiety, procedure anxiety. Twenty-one — Multivitamin IV — in TPN. Twenty-two — Trace elements IV — in TPN. Twenty-three — Zinc sulfate 220 mg daily — PO — wound healing, ileostomy losses. Twenty-four — Selenium 200 mcg daily — PO — deficiency. Twenty-five — Vitamin D3 50,000 IU weekly — PO — deficiency. Twenty-six — Calcium carbonate 500 mg TID — PO — bone health, phosphorus binder. Twenty-seven — Iron sucrose 200 mg IV — weekly (via Broviac on non-TPN hours) — anemia. Twenty-eight — Erythropoietin 10,000 units SubQ — weekly — anemia. Twenty-nine — Sodium bicarbonate 650 mg TID — PO — metabolic acidosis (renal + d-lactic acidosis prophylaxis). Thirty — Acetaminophen PRN — PO — pain. Max 2g/day — liver disease. NO NSAIDs. Thirty-one — Melatonin 3 mg HS — PO — sleep. Thirty-two — Dronabinol (Marinol) 2.5 mg BID — PO — appetite stimulation, nausea. Schedule III controlled substance. Thirty-three — Emergency kit: Octreotide 100 mcg SubQ — for GI bleeding emergency (variceal bleed or d-lactic acidosis with GI component). Available at bedside — do not administer without calling transplant team first unless patient is actively exsanguinating.
+
+CI: Thirty-three medications. Six IV medications plus TPN. One controlled substance. An ethanol lock protocol. An emergency octreotide kit. This patient is essentially a portable ICU.
+
+CALLER 1: She is. And she manages most of it herself, with her mother and grandmother backing her up. But she's been declining — the liver failure is progressing — and the family is stretched thin. That's why we need you.
+
+CALLER 3: I need to address the transplant logistics. When we get a donor offer and Amara is the match, here's what happens:
+
+I call Amara's phone AND her mother's phone simultaneously.
+The family has 4 hours to get to Stanford. Palo Alto to Stanford is 10 minutes by car. So time is not the issue — medical readiness is.
+Before transplant: she needs to be infection-free (no active CLABSI, no active anything), hemodynamically stable, and have current labs on file (within 48-72 hours).
+Your agency's role: (a) ensure she's medically stable at all times; (b) draw weekly labs — CMP, CBC with diff, LFTs, coag panel, ammonia, lactate, TPN-related levels — and fax to us; (c) report any infection signs immediately to our 24-hour transplant line (650) 555-1675; (d) if she develops an active infection, we may need to temporarily inactivate her on the transplant list, which means she'd lose her Status 1 until the infection clears.
+
+CI: So CLABSI prevention is not just important for her health — it literally determines whether she can get the transplant that will save her life.
+
+CALLER 3: Exactly. Every CLABSI risks killing her directly (sepsis in a cirrhotic patient) and indirectly (being taken off the list during the window when a donor organ might become available).
+
+CI: What about her home environment and safety?
+
+CALLER 1: The home is well-set-up. Dr. Eze has been doing this for 19 years. But there are concerns:
+
+Infection control — with grandmother, the therapy dog, and visitors, the risk of introducing pathogens is real. Strict hand hygiene. No sick visitors. Hope is bathed regularly and up to date on vaccines.
+Osteoporosis — she's fragile. No rough handling. Careful transfers. She uses a wheelchair for longer distances and walks short distances independently — but slowly, fatigued, with a shuffling gait (deconditioning + ascites discomfort). Fall risk is moderate.
+Ileostomy — she manages this herself. High output → dehydration risk. Monitor I&O. If output exceeds 1500 mL/day → call us.
+Ascites — she gets a scheduled paracentesis every 2 weeks at Stanford. If she develops acute abdominal distension with pain, respiratory compromise, or fever → call transplant and consider emergent para.
+Hepatic encephalopathy — baseline mild; grandmother monitors. If confusion worsens, slurred speech, asterixis, sleep-wake reversal → check ammonia level → call us.
+D-lactic acidosis — rare but happens. Signs: sudden confusion, ataxia, slurred speech (mimics stroke or intoxication). Hope the dog will alert. Check d-lactate level if available; otherwise, hold enteral intake, give IV bicarbonate per protocol, call us.
+Variceal bleeding — she's at risk. If hematemesis, melena, or hematochezia → call 911. Do NOT wait. Have the octreotide kit ready but call first.
+Psychiatric — she has good days and terrible days. The good days, she's working on her blog, FaceTiming friends, doing her college courses. The terrible days, she lies in bed and tells her mother she doesn't want to do this anymore. She's never made a suicide attempt and she denies active SI — she says "I don't want to die. I just don't want to live like this." Her therapist sees her weekly. But your team should be aware.
+
+CI: Services needed?
+
+CALLER 1:
+
+Skilled nursing daily for the first two weeks (IV meds, TPN monitoring, ethanol lock, Broviac care, labs, ileostomy assessment, ascites assessment, vitals, weight, mental status, hepatic encephalopathy screening, infection surveillance, CLABSI prevention, medication management, caregiver support). Then 5x/week ongoing.
+Physical therapy 3x/week — gentle reconditioning. NO impact. NO resistance with weights (fracture risk). Pool therapy would be ideal but not feasible with the Broviac. Chair exercises, gentle ambulation, breathing exercises, balance.
+Occupational therapy 2x/week — energy conservation (she fatigues severely), ADL optimization, assistive devices, school accommodation strategies (she's doing college from bed), ileostomy optimization.
+Medical social work weekly — ongoing adjustment, CCS/insurance transition support (coordinate with Rosario), community resources, family support, grief/anticipatory grief (this family lives in constant awareness that Amara may die).
+Home health aide daily — personal care assist, light housekeeping (infection control–level cleanliness), meal support (she eats tiny amounts; presentation matters for appetite), ileostomy emptying assist on bad days.
+Registered dietitian biweekly — TPN optimization, enteral intake maximization (even small amounts matter), electrolyte management, d-lactic acidosis dietary prevention.
+
+CALLER 2: And from the CCS/HPSM side — I'll be submitting the authorizations today. I need your agency's NPI and Medi-Cal provider number for the auth requests. Can you email those to me? My email is rosario.vega@hpsm.org.
+
+CI: Absolutely. I'll send them within the hour.
+
+CALLER 1: Vanessa — will you take her?
+
+CI: We'll take her. When is she discharging?
+
+CALLER 1: We're targeting Wednesday, July 2nd. SOC should be same day — she'll need her evening TPN hookup, her ethanol lock, and her IV fluids and meds managed from day one.
+
+CALLER 3: I'll send the transplant emergency protocol and the weekly lab schedule to your agency today. My direct line is (650) 555-1678, fax (650) 555-1679.
+
+CALLER 1: My number is (650) 555-1740, fax (650) 555-1741. I'll send the full discharge packet with all 19 years of relevant history. It's — it's thick.
+
+CI: We'll be ready. Thank you all — Dr. Hargrove, Rosario, Jason. We'll take care of Amara.
+
+CALLER 1: Thank you. She deserves to be home.
+
+[CALL ENDED — 09:14 AM]
+

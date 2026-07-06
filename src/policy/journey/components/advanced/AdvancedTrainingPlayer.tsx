@@ -28,6 +28,7 @@ export const AdvancedTrainingPlayer: React.FC<AdvancedTrainingPlayerProps> = ({
   const showNoPhi = true; // no-PHI banner always visible for ADV
 
   const store = useJourneyStore();
+  const variantLabel = String(variant).replace('_', ' ').toUpperCase();
 
   // Shared header with teal branding, progress, score
   const headerStyle: React.CSSProperties = {
@@ -116,12 +117,47 @@ export const AdvancedTrainingPlayer: React.FC<AdvancedTrainingPlayerProps> = ({
     }
   };
 
+  if (variant === 'plan_of_care') {
+    return (
+      <div style={{ height: '100%', minHeight: 720, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+        <PlanOfCareTrainingPanel moduleId={moduleId} onComplete={handleDomainComplete} onEvidence={onEvidence} />
+      </div>
+    );
+  }
+
+  if (variant === 'qapi_board') {
+    return (
+      <div style={{ height: '100%', minHeight: 720, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <QapiTrainingPanel moduleId={moduleId} onComplete={handleDomainComplete} onEvidence={onEvidence} />
+      </div>
+    );
+  }
+
+  if (variant === 'documentation_lab') {
+    return (
+      <div style={{ height: '100%', minHeight: 720, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <DocumentationDefensibilityPanel moduleId={moduleId} onComplete={handleDomainComplete} onEvidence={onEvidence} />
+      </div>
+    );
+  }
+
+  // oasis_lab embeds the full OASIS-E2 SOC simulator, which brings its own
+  // shell (workflow stepper, panels, evidence) themed to match Journey —
+  // render it edge-to-edge with no player chrome at all.
+  if (variant === 'oasis_lab') {
+    return (
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <OasisSocTrainingPanel moduleId={moduleId} onComplete={handleDomainComplete} />
+      </div>
+    );
+  }
+
   return (
     <div style={{ border: '1px solid #e5e7eb', borderRadius: 16, overflow: 'hidden', background: 'white', height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Shared Header */}
       <div style={headerStyle}>
         <div>
-          <div style={{ fontSize: 12, opacity: 0.85 }}>ADVANCED TRAINING • {variant.replace('_', ' ').toUpperCase()}</div>
+          <div style={{ fontSize: 12, opacity: 0.85 }}>ADVANCED TRAINING • {variantLabel}</div>
           <div style={{ fontWeight: 700, fontSize: 18 }}>{moduleTitle}</div>
         </div>
         <div style={{ textAlign: 'right' }}>

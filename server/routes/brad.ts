@@ -9,6 +9,7 @@ import { superAdminAudit } from '../ia/brad/superadminAudit.js';
 import { planCloudChangeSet } from '../ia/brad/cloudChangeSets.js';
 import { getDemoSnapshot, listDemoEventIds } from '../ia/brad/demoSnapshot.js';
 import { getUploadStore } from '../ia/brad/uploads.js';
+import { resolveBradSnapshot } from '../ia/brad/uploadSnapshotBridge.js';
 import type { BradObjectType, CloudChangeOp, SuperAdminPermission } from '../ia/brad/types.js';
 import {
   builderGenerateOtp, builderCreatePermission, builderCreateRole, builderMassAddDryRun,
@@ -109,7 +110,7 @@ export function createBradRouter(): Router {
   router.post('/report', asyncH(async (req, res) => {
     const actor = requireActor(req);
     const kind = (req.body?.kind ?? 'event-readiness') as 'event-readiness' | 'qapi-packet';
-    const snapshot = getDemoSnapshot(req.body?.eventId);
+    const snapshot = resolveBradSnapshot(req.body?.eventId);
     const object = kind === 'qapi-packet'
       ? svc.runQapiPacketReport(snapshot, actor)
       : svc.runEventReadinessReport(snapshot, actor);
@@ -120,7 +121,7 @@ export function createBradRouter(): Router {
   router.post('/event-packet', asyncH(async (req, res) => {
     const actor = requireActor(req);
     const kind = (req.body?.kind ?? 'general') as 'general' | 'qapi';
-    const snapshot = getDemoSnapshot(req.body?.eventId);
+    const snapshot = resolveBradSnapshot(req.body?.eventId);
     const out = svc.generateEventPacket(snapshot, actor, kind);
     res.json(out);
   }));
@@ -128,7 +129,7 @@ export function createBradRouter(): Router {
   // Generate a QAPI minutes DRAFT (+ append-only event metadata).
   router.post('/qapi-minutes', asyncH(async (req, res) => {
     const actor = requireActor(req);
-    const snapshot = getDemoSnapshot(req.body?.eventId);
+    const snapshot = resolveBradSnapshot(req.body?.eventId);
     const out = svc.generateQapiMinutesDraft(snapshot, actor);
     res.json(out);
   }));

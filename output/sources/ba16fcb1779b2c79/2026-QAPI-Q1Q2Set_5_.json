@@ -1,0 +1,1875 @@
+🔥🔥🔥 Care Indeed Home Health — Q1/Q2 2026 "CATASTROPHIC MELTDOWN" Dataset (Set 4)
+The Paradox: Beautiful Paperwork, Broken Operations
+This is the agency that writes immaculate PIPs, textbook corrective actions, and pristine governance reports — while patients are being harmed, staff are stealing, clinicians are no-showing, and the entire operation is collapsing in real-time. Every form is perfect. Every outcome is a disaster.
+
+{
+  "dataset_meta": {
+    "dataset_id": "CIHH-SET4-2026-Q1Q2-MELTDOWN",
+    "agency_name": "Care Indeed Home Health",
+    "reporting_period": "2026-01-01 to 2026-06-30",
+    "dataset_type": "catastrophic_pristine_documentation_terrible_operations",
+    "severity_profile": "immediate_jeopardy_medicare_termination_track",
+    "generated_date": "2026-06-30",
+    "total_patients": 90,
+    "total_clinicians": 30,
+    "total_soc_admissions": 30,
+    "deaths_in_period": 9,
+    "abuse_allegations": 11,
+    "substantiated_abuse": 7,
+    "neglect_allegations": 8,
+    "substantiated_neglect": 5,
+    "financial_exploitation_cases": 6,
+    "total_theft_amount": 18750,
+    "complaints_filed_total": 34,
+    "complaints_to_CDPH": 28,
+    "complaints_to_CMS_hotline": 6,
+    "complaints_to_APS": 19,
+    "criminal_referrals": 5,
+    "civil_lawsuits_filed": 4,
+    "missed_visits_total": 187,
+    "no_call_no_show_events": 42,
+    "claims_denials_total": 38,
+    "claims_denied_amount_total": 487600,
+    "sentinel_events": 16,
+    "condition_level_deficiencies_probable": 22,
+    "immediate_jeopardy_indicators": 11,
+    "pips_written": 18,
+    "pips_pristine_documentation": 18,
+    "pips_with_actual_improvement": 0,
+    "corrective_actions_documented": 47,
+    "corrective_actions_actually_implemented": 3,
+    "disciplinary_actions_documented": 31,
+    "disciplinary_actions_actually_enforced": 8
+  },
+
+  "operational_paradox_summary": "Care Indeed Home Health maintains a QAPI binder that would impress any surveyor on paper. Every PIP has SMART goals, root cause analyses with fishbone diagrams, intervention timelines, responsible parties, and remeasurement schedules. Every corrective action has a clear narrative, evidence requirements, and follow-up dates. Every disciplinary action has progressive discipline documentation, employee acknowledgment lines, and union notification where applicable. The problem: almost none of it is actually happening. The DON signs off on corrective actions that were never implemented. PIPs show 'interventions deployed' that exist only on paper. Clinicians sign disciplinary acknowledgments and continue the same behavior. The agency has created a Potemkin village of compliance — pristine documentation masking operational collapse.",
+
+  "clinicians": [
+    {
+      "clinicianId": "MOCK-CLIN-S4-001",
+      "firstName": "Brenda",
+      "lastName": "Calloway",
+      "role": "RN_Case_Manager",
+      "licenseNumber": "MOCK-RN-S4-001",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2022-03-15",
+      "caseloadCount": 28,
+      "maxRecommendedCaseload": 12,
+      "status": "active_under_investigation",
+      "performanceFlags": [
+        "caseload_233pct_over_max",
+        "5_patient_deaths_on_caseload_in_6_months",
+        "documentation_late_average_8.4_days",
+        "medication_errors_linked_to_9_patients",
+        "oasis_accuracy_rate_51pct",
+        "missed_critical_lab_notifications_14_instances",
+        "failed_to_report_abuse_3_separate_incidents",
+        "no_supervisory_visits_for_11_hhas",
+        "physician_notification_failures_22_instances",
+        "patient_complaints_against_clinician_7"
+      ],
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S4-001-A",
+          "startDate": "2025-10-01",
+          "issue": "Documentation timeliness and OASIS accuracy",
+          "status": "failed_Q4_2025",
+          "documentation_quality": "PRISTINE — PIP form includes detailed root cause analysis identifying 'competing priorities due to caseload volume,' SMART goals for 95% documentation within 48 hours, weekly supervisor check-ins, EMR template modifications, and 30/60/90-day milestones with remeasurement criteria. Fishbone diagram identifies 6 contributing factors. Intervention matrix cross-references each factor to specific remediation.",
+          "actual_outcome": "Zero improvement. Caseload increased from 22 to 28 during PIP period. Supervisor check-ins occurred twice in 90 days. EMR templates were never modified. Documentation timeliness worsened from 5.2 to 8.4 days average."
+        },
+        {
+          "pipId": "PIP-CLIN-S4-001-B",
+          "startDate": "2026-01-15",
+          "issue": "Critical lab value escalation and physician notification protocol",
+          "status": "active_no_improvement",
+          "documentation_quality": "PRISTINE — Comprehensive PIP with baseline data showing 14 missed critical lab escalations in Q4. Includes decision tree for critical value response, competency validation checklist, mock scenarios for training, and weekly audit commitment. Written in textbook QAPI language with proper CMS CoP citations.",
+          "actual_outcome": "14 additional missed critical lab escalations in Q1-Q2 2026. Training sessions documented as completed — 3 of 5 nurses interviewed stated no training occurred. Decision tree laminated cards documented as distributed — none found in clinician bags during spot check."
+        }
+      ],
+      "disciplinaryActions": [
+        {
+          "date": "2025-11-01",
+          "type": "verbal_warning",
+          "reason": "Late documentation pattern",
+          "documentation_quality": "PRISTINE — Verbal warning memo includes specific dates, chart numbers, regulatory citations, and clear expectations. Employee signature obtained. Filed in HR record. Copy to employee.",
+          "actual_enforcement": "None. No follow-up. Same behavior continued."
+        },
+        {
+          "date": "2026-01-20",
+          "type": "written_warning",
+          "reason": "Failed PIP-001-A. Continued documentation deficiencies.",
+          "documentation_quality": "PRISTINE — Written warning includes PIP failure summary, specific deficiency examples with dates, progressive discipline citation, 30-day performance expectation, and consequences for continued non-compliance. Manager signature, employee signature, HR witness signature all obtained.",
+          "actual_enforcement": "None. No 30-day follow-up occurred. Caseload increased by 6 patients the same week."
+        },
+        {
+          "date": "2026-03-15",
+          "type": "final_written_warning",
+          "reason": "Failure to report suspected abuse of patient MOCK-PT-S4-031. Failure to escalate critical INR of 7.1 for patient MOCK-PT-S4-008.",
+          "documentation_quality": "PRISTINE — Final warning is 3 pages, includes detailed timeline of failures, regulatory requirements (mandatory reporter obligations, critical value protocols), prior progressive discipline history, and explicit statement that next occurrence results in termination. Signed by DON, HR Director, and employee. Copy to file.",
+          "actual_enforcement": "Calloway still employed and still carrying 28 patients. Two additional abuse reporting failures occurred after this warning (April and May). No termination initiated due to 'staffing crisis.'"
+        },
+        {
+          "date": "2026-05-20",
+          "type": "suspension_5_days",
+          "reason": "Patient MOCK-PT-S4-015 death — 14-day visit gap. Failed to report suspected neglect by HHA for patient MOCK-PT-S4-044.",
+          "documentation_quality": "PRISTINE — Suspension memo includes mortality review summary, timeline of missed visits, patient outcome, staff interview notes, regulatory citation for supervisory responsibility, return-to-work conditions including mandatory re-orientation.",
+          "actual_enforcement": "Calloway served 3 of 5 suspension days before being called back due to staffing emergency. Re-orientation documented as completed — Calloway states she signed papers but received no actual training. Patients reassigned during suspension were not reassigned — they received no visits for 3 days."
+        }
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-002",
+      "firstName": "Derek",
+      "lastName": "Fontaine",
+      "role": "RN_Case_Manager",
+      "licenseNumber": "MOCK-RN-S4-002",
+      "licenseState": "CA",
+      "licenseStatus": "expired_2026-02-28",
+      "licenseExpirationDate": "2026-02-28",
+      "hireDate": "2023-09-01",
+      "caseloadCount": 22,
+      "status": "terminated_2026-05-15",
+      "terminationReason": "Practiced on expired license for 76 days. 214 visits on expired license. Falsified 3 sets of laboratory values. Two patient deaths on caseload with contributing negligence.",
+      "totalVisitsOnExpiredLicense": 214,
+      "performanceFlags": [
+        "EXPIRED_LICENSE_76_DAYS_214_VISITS",
+        "FALSIFIED_LAB_VALUES_3_PATIENTS",
+        "2_patient_deaths_contributing_negligence",
+        "caseload_183pct_over_max",
+        "medication_reconciliation_not_performed_18_patients",
+        "oasis_accuracy_rate_44pct",
+        "no_call_no_show_6_instances_before_termination",
+        "patient_complaints_5",
+        "falsified_visit_times_8_instances"
+      ],
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S4-002-A",
+          "startDate": "2025-12-01",
+          "issue": "OASIS accuracy and medication reconciliation completion",
+          "status": "failed",
+          "documentation_quality": "PRISTINE — PIP includes inter-rater reliability testing protocol, OASIS accuracy audit tool with 15 data points per chart, medication reconciliation compliance checklist, bi-weekly supervisory review schedule, and competency remediation plan with specific OASIS-E1 training modules assigned.",
+          "actual_outcome": "OASIS accuracy declined from 52% to 44%. Medication reconciliation rate dropped from 60% to 38%. Bi-weekly reviews occurred once. Training modules were never accessed (LMS login records confirm). PIP documentation was filed complete with 'satisfactory progress' notes written by supervisor who never conducted the reviews."
+        }
+      ],
+      "disciplinaryActions": [
+        {
+          "date": "2026-01-10",
+          "type": "written_warning",
+          "reason": "Failed PIP-002-A. OASIS accuracy and medication reconciliation.",
+          "documentation_quality": "PRISTINE",
+          "actual_enforcement": "None. Fontaine continued same practice patterns."
+        },
+        {
+          "date": "2026-03-20",
+          "type": "final_written_warning",
+          "reason": "6 no-call-no-show instances. Patients left without care.",
+          "documentation_quality": "PRISTINE — Includes attendance log, patient impact statements, scheduling records, progressive discipline history, and explicit termination notice language.",
+          "actual_enforcement": "No termination despite 'next occurrence = termination' language. Staffing shortage cited."
+        },
+        {
+          "date": "2026-05-15",
+          "type": "immediate_termination",
+          "reason": "Expired license discovered (76 days). Falsified lab values for 3 patients. 2 patient deaths with contributing factors.",
+          "documentation_quality": "PRISTINE — Termination package includes: license verification documentation, falsified lab evidence comparison (agency records vs. lab confirmations), mortality review summaries, BRN report filing, law enforcement referral, compliance self-disclosure documentation, patient notification plan for all 22 patients affected.",
+          "actual_enforcement": "FINALLY ENFORCED. Reported to CA BRN and DA's office. However: patient transition plan documented but not executed — 22 patients went without assigned RN for 9 days. 3 high-acuity patients received zero visits during transition."
+        }
+      ],
+      "reportedToBoard": true,
+      "reportedToDA": true,
+      "criminalChargesPending": true
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-003",
+      "firstName": "Patricia",
+      "lastName": "Osgood",
+      "role": "LVN",
+      "licenseNumber": "MOCK-LVN-S4-003",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2024-05-01",
+      "caseloadCount": 20,
+      "maxRecommendedCaseload": 10,
+      "status": "active_on_pip",
+      "performanceFlags": [
+        "performing_SOC_OASIS_beyond_scope_9_patients",
+        "IV_medication_administration_beyond_scope_5_instances",
+        "insulin_dose_errors_6_patients",
+        "wound_care_competency_failed_twice",
+        "documentation_late_average_5_days",
+        "patient_complaints_3",
+        "no_call_no_show_4_instances"
+      ],
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S4-003-A",
+          "startDate": "2026-02-01",
+          "issue": "Scope of practice violations and medication administration errors",
+          "status": "active_no_improvement",
+          "documentation_quality": "PRISTINE — Comprehensive scope-of-practice remediation plan including: CA BPC citations for LVN scope limitations, competency validation checklist for permitted LVN functions, supervised practice protocol for insulin administration, wound care re-training schedule with return demonstration requirements, weekly chart audit by supervising RN, and written attestation of scope understanding.",
+          "actual_outcome": "LVN continued performing SOC OASIS assessments after PIP initiation — 4 more instances in March-April. IV push medications administered twice more. Supervising RN (Calloway) was supposed to conduct weekly audits but conducted zero. Wound care re-training documented as completed but wound care nurse states she never met with Osgood."
+        }
+      ],
+      "scopeViolations": [
+        {"date": "2026-01-08", "patient": "MOCK-PT-S4-061", "violation": "Performed SOC OASIS comprehensive assessment"},
+        {"date": "2026-01-15", "patient": "MOCK-PT-S4-064", "violation": "Performed SOC OASIS comprehensive assessment"},
+        {"date": "2026-01-22", "patient": "MOCK-PT-S4-067", "violation": "Performed SOC OASIS comprehensive assessment"},
+        {"date": "2026-02-05", "patient": "MOCK-PT-S4-070", "violation": "Performed SOC OASIS comprehensive assessment"},
+        {"date": "2026-02-12", "patient": "MOCK-PT-S4-073", "violation": "Performed SOC OASIS comprehensive assessment"},
+        {"date": "2026-03-01", "patient": "MOCK-PT-S4-076", "violation": "Performed SOC OASIS + administered IV Solu-Medrol push"},
+        {"date": "2026-03-15", "patient": "MOCK-PT-S4-079", "violation": "Performed SOC OASIS comprehensive assessment"},
+        {"date": "2026-04-02", "patient": "MOCK-PT-S4-082", "violation": "Performed SOC OASIS + IV Lasix push"},
+        {"date": "2026-04-18", "patient": "MOCK-PT-S4-085", "violation": "Performed SOC OASIS comprehensive assessment"}
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-004",
+      "firstName": "Marcus",
+      "lastName": "Deveraux",
+      "role": "PT",
+      "licenseNumber": "MOCK-PT-LIC-S4-004",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2021-11-01",
+      "caseloadCount": 26,
+      "status": "terminated_2026-04-28",
+      "terminationReason": "Substantiated physical abuse of 4 patients. Pattern of rough handling, forceful transfers, and verbal intimidation of cognitively impaired patients.",
+      "performanceFlags": [
+        "SUBSTANTIATED_PHYSICAL_ABUSE_4_PATIENTS",
+        "VERBAL_ABUSE_INTIMIDATION_3_PATIENTS",
+        "7_prior_complaints_of_rough_handling_over_18_months_never_investigated",
+        "utilization_outlier_35pct_above_peers",
+        "functional_scoring_inflated_systemic_upcoding",
+        "therapy_goals_not_measurable",
+        "2_falls_during_therapy_sessions_with_injury",
+        "reported_to_CDPH_PTBC_LE"
+      ],
+      "abuseInvestigations": [
+        {
+          "allegationDate": "2026-03-15",
+          "patients": ["MOCK-PT-S4-009", "MOCK-PT-S4-022", "MOCK-PT-S4-038", "MOCK-PT-S4-051"],
+          "finding": "SUBSTANTIATED_ALL_4",
+          "details": "Patient S4-009: bilateral arm bruising (grab marks), dementia patient. Patient S4-022: bruising on torso and upper arms, patient with aphasia stated 'the exercise man hurts.' Patient S4-038: witnessed by HHA — PT yanked patient from wheelchair causing patient to cry out in pain, told patient 'stop being a baby.' Patient S4-051: patient's wife observed PT forcefully bending patient's knee past pain tolerance, patient screaming, PT said 'you need to push through it.' Wife recorded audio on phone.",
+          "priorComplaints": [
+            {"date": "2024-10-15", "complaint": "Patient family reported PT was 'too rough' during transfers", "action_taken": "Verbal counseling documented. No investigation.", "documentation_quality": "PRISTINE counseling memo"},
+            {"date": "2024-12-08", "complaint": "Patient stated PT 'grabbed her too hard'", "action_taken": "Discussed with PT. Documented. No investigation.", "documentation_quality": "PRISTINE discussion note"},
+            {"date": "2025-02-20", "complaint": "HHA witnessed rough transfer technique", "action_taken": "In-service on safe transfer techniques scheduled and documented as completed", "documentation_quality": "PRISTINE in-service sign-in sheet. However, PT Deveraux's signature appears forged — handwriting analysis inconsistent."},
+            {"date": "2025-05-10", "complaint": "Patient refused PT visits — stated she was afraid", "action_taken": "Patient reassigned to different PT. No investigation of why patient was afraid.", "documentation_quality": "PRISTINE reassignment documentation"},
+            {"date": "2025-08-14", "complaint": "Family reported bruising after PT visit", "action_taken": "DON 'looked into it' — documented as 'bruising likely from anticoagulant therapy.' No photos taken. No body map completed.", "documentation_quality": "PRISTINE memo attributing bruising to medical cause without clinical assessment"},
+            {"date": "2025-11-02", "complaint": "Two patients complained of pain during therapy beyond normal", "action_taken": "PT counseled on pain management during therapy. Documented.", "documentation_quality": "PRISTINE counseling documentation"},
+            {"date": "2026-01-18", "complaint": "HHA reported PT was 'very forceful and impatient' with dementia patient", "action_taken": "DON planned to observe therapy session — observation never occurred.", "documentation_quality": "PRISTINE plan documented. No follow-through."}
+          ],
+          "reportedToAPS": true,
+          "reportedToCDPH": true,
+          "reportedToLE": true,
+          "reportedToPTBoard": true,
+          "criminalChargesFiled": true,
+          "chargeDetails": "4 counts elder abuse (CA Penal Code 368). Arraignment scheduled July 2026."
+        }
+      ],
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S4-004-A",
+          "startDate": "2025-12-01",
+          "issue": "Patient handling technique and communication during therapy sessions",
+          "documentation_quality": "PRISTINE — Beautiful PIP including safe patient handling competency validation, communication skills workshop, supervised therapy sessions for 30 days, patient satisfaction surveying, and monthly body-mechanics observation. Written as if it were a graduate-level quality improvement project.",
+          "actual_outcome": "Supervised sessions occurred twice (of 20 required). Patient satisfaction surveys were never distributed. Body-mechanics observation never occurred. PT continued abusing patients. PIP existed only on paper."
+        }
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-005",
+      "firstName": "Janet",
+      "lastName": "Morales",
+      "role": "RN_Case_Manager",
+      "licenseNumber": "MOCK-RN-S4-005",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2024-11-01",
+      "caseloadCount": 16,
+      "maxRecommendedCaseload": 12,
+      "status": "active",
+      "performanceFlags": [
+        "most_competent_rn_on_staff",
+        "inherited_15_patients_from_terminated_clinicians",
+        "documentation_compliant_when_caseload_manageable",
+        "now_declining_under_volume_pressure",
+        "3_missed_supervisory_visits_since_caseload_increase",
+        "burnout_indicators_requested_FMLA",
+        "medication_reconciliation_rate_dropped_from_94pct_to_72pct"
+      ],
+      "notes": "Morales is the agency's best nurse. She is drowning. She was competent at 12 patients. She now has 16 and climbing. Her quality metrics are declining weekly. She has requested FMLA for stress. The agency cannot afford to lose her but is destroying her by overloading her."
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-006",
+      "firstName": "Wayne",
+      "lastName": "Prescott",
+      "role": "PTA",
+      "licenseNumber": "MOCK-PTA-S4-006",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2024-07-01",
+      "caseloadCount": 20,
+      "status": "terminated_2026-03-30",
+      "terminationReason": "Falsified 41 visits. GPS data showed clinician at home, gym, or grocery store during documented visit times. $15,580 billed for services not rendered.",
+      "performanceFlags": [
+        "FALSIFIED_41_VISITS_GPS_VERIFIED",
+        "performed_PT_evaluations_beyond_PTA_scope_8_instances",
+        "billing_fraud_15580",
+        "patients_went_without_therapy",
+        "3_patients_experienced_functional_decline_due_to_missed_therapy",
+        "reported_to_licensing_board_and_OIG"
+      ],
+      "fraudDetails": {
+        "falsifiedVisitCount": 41,
+        "dateRange": "2025-11-01 to 2026-03-15",
+        "billingImpact": 15580,
+        "patientsAffected": ["MOCK-PT-S4-002", "MOCK-PT-S4-007", "MOCK-PT-S4-014", "MOCK-PT-S4-021", "MOCK-PT-S4-028", "MOCK-PT-S4-035", "MOCK-PT-S4-042", "MOCK-PT-S4-049", "MOCK-PT-S4-056", "MOCK-PT-S4-063", "MOCK-PT-S4-070"],
+        "reportedToOIG": true,
+        "selfDisclosureProtocol": "Filed",
+        "estimatedTrebleDamageExposure": 46740
+      },
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S4-006-A",
+          "startDate": "2026-01-15",
+          "issue": "Visit timeliness and documentation completion (before fraud discovered)",
+          "documentation_quality": "PRISTINE — PIP addresses 'scheduling challenges' and 'documentation backlog.' Includes GPS-verified visit confirmation protocol (ironic — this is what eventually caught the fraud), real-time documentation requirements, and patient satisfaction follow-up calls.",
+          "actual_outcome": "PIP itself triggered the GPS audit that uncovered the fraud. The beautifully documented PIP led to the discovery that the clinician was a serial fraudster."
+        }
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-007",
+      "firstName": "Gloria",
+      "lastName": "Chen",
+      "role": "OT",
+      "licenseNumber": "MOCK-OT-S4-007",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2023-12-01",
+      "caseloadCount": 18,
+      "maxRecommendedCaseload": 12,
+      "status": "active_on_pip",
+      "performanceFlags": [
+        "CPR_certification_expired_7_months",
+        "reassessments_overdue_11_patients",
+        "home_safety_assessments_copy_paste_identical_across_patients",
+        "DME_recommendations_never_followed_through",
+        "functional_scoring_inflated",
+        "documentation_late_average_7_days",
+        "no_call_no_show_5_instances",
+        "patient_complaints_4"
+      ],
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S4-007-A",
+          "startDate": "2026-03-01",
+          "issue": "Overdue reassessments, copy-paste documentation, and CPR recertification",
+          "documentation_quality": "PRISTINE — PIP identifies systemic copy-paste documentation as a patient safety concern. Includes individualized documentation audit criteria, side-by-side comparison of identical assessments across different patients as evidence, CPR recertification deadline, home safety assessment rubric requiring patient-specific observations, and bi-weekly chart review schedule.",
+          "actual_outcome": "CPR still not renewed (now 7 months expired). Copy-paste documentation continues — auditor found 6 patients with identical word-for-word home safety assessments including same furniture descriptions for different homes. Bi-weekly reviews: 1 of 8 completed. 11 reassessments still overdue."
+        }
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-008",
+      "firstName": "Roberto",
+      "lastName": "Vega",
+      "role": "SLP",
+      "licenseNumber": "MOCK-SLP-S4-008",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2025-04-01",
+      "caseloadCount": 12,
+      "status": "active_under_review",
+      "performanceFlags": [
+        "diet_texture_modifications_not_communicated_to_HHA_care_plan_8_patients",
+        "swallow_study_recommendations_not_in_EMR_properly_5_patients",
+        "2_aspiration_events_linked_to_communication_gap",
+        "1_aspiration_death_contributing_factor",
+        "NPO_status_not_communicated_to_all_disciplines_3_patients",
+        "documentation_generally_timely_but_clinically_incomplete"
+      ],
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S4-008-A",
+          "startDate": "2026-04-15",
+          "issue": "Interdisciplinary communication of diet texture modifications and swallow precautions",
+          "documentation_quality": "PRISTINE — Beautiful PIP including: communication verification checklist (SLP must verify diet orders are in care plan, HHA plan, and patient/family education materials within 24 hours of evaluation), EMR documentation standard for swallow study results, interdisciplinary communication log, and post-implementation audit schedule. Includes reference to 2 aspiration events as evidence of systemic gap.",
+          "actual_outcome": "After PIP initiated, one additional aspiration near-miss occurred (May 28) — same root cause. SLP documented evaluation results correctly but verification step not performed. HHA care plan still not updated. PIP corrective action exists only on paper."
+        }
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-009",
+      "firstName": "Tamara",
+      "lastName": "Winters",
+      "role": "MSW",
+      "licenseNumber": "MOCK-MSW-S4-009",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2025-06-01",
+      "caseloadCount": 18,
+      "maxRecommendedCaseload": 15,
+      "status": "active_on_pip",
+      "performanceFlags": [
+        "suicide_risk_screening_not_performed_8_patients_with_severe_depression",
+        "active_suicidal_ideation_not_escalated_2_instances",
+        "hospice_referral_conversations_not_initiated_7_patients_meeting_criteria",
+        "caregiver_burnout_assessments_delayed_average_3_weeks",
+        "APS_reports_filed_late_4_instances_average_delay_9_days",
+        "goals_of_care_conversations_documented_but_not_held_per_patient_interviews",
+        "no_call_no_show_3_instances"
+      ],
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S4-009-A",
+          "startDate": "2026-03-15",
+          "issue": "Suicide risk screening compliance and mandatory reporting timeliness",
+          "documentation_quality": "PRISTINE — Textbook PIP. Includes: PHQ-9 and Columbia Suicide Severity Rating Scale implementation plan, suicide risk response protocol flowchart, mandatory reporter training completion requirements, APS reporting timeline compliance metrics, and weekly supervision notes template. References California WIC §15630 mandatory reporting requirements. Beautiful formatting with tables and appendices.",
+          "actual_outcome": "2 additional instances of suicidal ideation not escalated after PIP start. PHQ-9 not administered for 5 patients. APS report filed 12 days late in May. Weekly supervision: documented as occurring but MSW states she meets with supervisor 'maybe once a month.' Goals of care conversations documented in chart as completed — 3 patients interviewed stated no such conversation occurred."
+        }
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-010",
+      "firstName": "Carl",
+      "lastName": "Jennings",
+      "role": "HHA",
+      "licenseNumber": "MOCK-HHA-S4-010",
+      "licenseStatus": "certified",
+      "hireDate": "2024-02-01",
+      "caseloadCount": 10,
+      "status": "terminated_2026-05-10",
+      "terminationReason": "Substantiated financial abuse — stole $6,200 from 3 patients over 4 months. Forged checks, stole cash, used patient's credit card for online purchases.",
+      "performanceFlags": [
+        "SUBSTANTIATED_FINANCIAL_ABUSE_3_PATIENTS",
+        "theft_total_6200",
+        "forged_checks_2100",
+        "credit_card_fraud_1800",
+        "cash_theft_2300",
+        "performing_tasks_outside_care_plan",
+        "no_supervisory_visit_in_6_months",
+        "no_call_no_show_7_instances",
+        "reported_to_APS_LE_CDPH"
+      ],
+      "theftDetails": [
+        {
+          "patient": "MOCK-PT-S4-015",
+          "amountStolen": 2800,
+          "method": "Cash theft from bedside ($1,200) + forged check ($1,600)",
+          "discoveryDate": "2026-04-22",
+          "reportedBy": "Patient's daughter found forged check on bank statement"
+        },
+        {
+          "patient": "MOCK-PT-S4-032",
+          "amountStolen": 1800,
+          "method": "Used patient's credit card for Amazon purchases — had photographed card during visit",
+          "discoveryDate": "2026-05-01",
+          "reportedBy": "Patient's son found unfamiliar Amazon charges"
+        },
+        {
+          "patient": "MOCK-PT-S4-058",
+          "amountStolen": 1600,
+          "method": "Cash theft from purse ($900) + forged check ($700)",
+          "discoveryDate": "2026-05-08",
+          "reportedBy": "Patient reported missing money — RN escalated"
+        }
+      ],
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S4-010-A",
+          "startDate": "2026-01-10",
+          "issue": "No-call-no-show attendance pattern",
+          "documentation_quality": "PRISTINE — Attendance improvement plan includes: root cause discussion notes (HHA cited 'transportation issues'), transportation assistance resources provided, call-in procedure re-education, attendance expectation acknowledgment, progressive discipline timeline, and 90-day monitoring period.",
+          "actual_outcome": "HHA continued no-call-no-show pattern (4 more instances). During the 90-day 'monitoring period,' HHA was also stealing from patients. No supervisory visit was conducted that might have detected the theft pattern. PIP focused on attendance while HHA was committing financial crimes."
+        }
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-011",
+      "firstName": "Denise",
+      "lastName": "Hampton",
+      "role": "HHA",
+      "licenseNumber": "MOCK-HHA-S4-011",
+      "licenseStatus": "certified",
+      "hireDate": "2024-08-01",
+      "caseloadCount": 9,
+      "status": "terminated_2026-06-15",
+      "terminationReason": "Substantiated neglect — 3 patients found in deplorable conditions during HHA visits. One patient developed pressure injury attributed to neglect.",
+      "performanceFlags": [
+        "SUBSTANTIATED_NEGLECT_3_PATIENTS",
+        "patient_S4-027_found_soiled_dehydrated_6_hours",
+        "patient_S4-044_skin_breakdown_from_unchanged_brief",
+        "patient_S4-060_medication_not_administered_as_assigned",
+        "on_personal_phone_during_visits_per_5_family_reports",
+        "sleeping_during_visit_per_ring_camera_footage",
+        "no_supervisory_visit_in_7_months",
+        "no_call_no_show_8_instances",
+        "reported_to_APS_CDPH"
+      ],
+      "neglectDetails": [
+        {
+          "patient": "MOCK-PT-S4-027",
+          "incidentDate": "2026-04-10",
+          "description": "Patient with severe dementia found in soiled bed, dehydrated, and crying by son who arrived unexpectedly. HHA Hampton was in living room on FaceTime. Patient had been in soiled condition for estimated 6 hours based on condition of linens. Son photographed scene and filed APS report.",
+          "outcome": "Patient developed UTI and skin irritation. Son removed mother from agency services. Filed complaint with CDPH."
+        },
+        {
+          "patient": "MOCK-PT-S4-044",
+          "incidentDate": "2026-05-15",
+          "description": "Patient with paraplegia developed Stage 2 pressure injury on buttocks. Turning schedule required every 2 hours during HHA visits. Ring camera in adjacent room showed HHA sleeping on couch for 3 of 4-hour visit. Patient was not turned.",
+          "outcome": "Pressure injury progressed to Stage 3 within 2 weeks. Family obtained Ring camera footage and provided to agency and APS."
+        },
+        {
+          "patient": "MOCK-PT-S4-060",
+          "incidentDate": "2026-06-01",
+          "description": "HHA assigned to administer oral medications per medication aide protocol. Patient's pillbox showed medications not given for 3 consecutive visits. Patient's chronic pain and diabetes went unmanaged for 6 days.",
+          "outcome": "Patient's blood glucose reached 420. ER visit required. Family filed complaint."
+        }
+      ],
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S4-011-A",
+          "startDate": "2026-02-15",
+          "issue": "Attendance, punctuality, and task completion during visits",
+          "documentation_quality": "PRISTINE — Beautifully formatted PIP including: time and attendance tracking sheet, visit task checklist with patient-specific duties, professional conduct expectations (no personal phone use during visits), patient/family satisfaction survey protocol, 14-day supervisory visit schedule, and progressive discipline timeline.",
+          "actual_outcome": "14-day supervisory visits: 0 of 8 completed. Task checklist distributed but not used. Phone use continued. Attendance worsened. While on this PIP for attendance, HHA was actively neglecting patients. Nobody checked."
+        }
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-012",
+      "firstName": "Kevin",
+      "lastName": "Sato",
+      "role": "RN_PRN",
+      "licenseNumber": "MOCK-RN-S4-012",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2026-02-01",
+      "caseloadCount": 8,
+      "status": "active",
+      "performanceFlags": [
+        "orientation_incomplete_3_of_8_modules_finished",
+        "EMR_training_not_completed",
+        "medication_reconciliation_process_unknown",
+        "assigned_high_acuity_patients_day_3_of_employment",
+        "3_documentation_errors_wrong_patient_charts",
+        "2_medication_errors_first_month",
+        "no_supervisor_assigned"
+      ],
+      "notes": "PRN nurse hired during staffing crisis. Started seeing patients before orientation complete. No preceptor assigned. Making errors consistent with lack of training, not lack of competence."
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-013",
+      "firstName": "Sandra",
+      "lastName": "O'Brien",
+      "role": "LVN",
+      "licenseNumber": "MOCK-LVN-S4-013",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2024-06-15",
+      "caseloadCount": 18,
+      "maxRecommendedCaseload": 10,
+      "status": "active_on_pip",
+      "performanceFlags": [
+        "insulin_administration_errors_5_patients",
+        "wound_care_sterile_technique_failed_3_competency_checks",
+        "TB_screening_expired_4_months",
+        "hepatitis_B_vaccination_series_incomplete",
+        "IV_push_beyond_scope_3_instances",
+        "catheter_insertion_beyond_scope_2_instances",
+        "documentation_incomplete_systemic",
+        "no_call_no_show_6_instances"
+      ],
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S4-013-A",
+          "startDate": "2026-04-01",
+          "issue": "Scope violations, medication errors, and infection control compliance",
+          "documentation_quality": "PRISTINE — Multi-faceted PIP addressing: scope of practice re-education with written exam, insulin administration competency validation with simulation, wound care sterile technique re-training with observed return demonstration, TB screening and HepB compliance deadlines, and documentation accuracy audit. Includes regulatory citations (CA BPC §2859 LVN scope) and evidence matrix.",
+          "actual_outcome": "TB still expired. HepB still incomplete. Scope violations continued (2 more IV pushes, 1 catheter insertion). Insulin errors: 2 more. Wound care re-training documented as completed — wound care nurse states O'Brien attended but failed return demonstration and was allowed to continue practicing anyway."
+        }
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-014",
+      "firstName": "Anthony",
+      "lastName": "Park",
+      "role": "PT",
+      "licenseNumber": "MOCK-PT-LIC-S4-014",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2023-05-01",
+      "caseloadCount": 20,
+      "maxRecommendedCaseload": 14,
+      "status": "active",
+      "performanceFlags": [
+        "falls_during_therapy_4_instances_2_with_injury",
+        "gait_belt_not_used_documented_in_3_incidents",
+        "fall_risk_assessments_not_updated_post_fall",
+        "weight_bearing_restrictions_not_verified_with_surgeon_3_patients",
+        "therapy_discharge_planning_delayed_6_patients",
+        "utilization_15pct_above_peers",
+        "no_call_no_show_3_instances"
+      ],
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S4-014-A",
+          "startDate": "2026-05-01",
+          "issue": "Patient falls during therapy and safe handling practices",
+          "documentation_quality": "PRISTINE — PIP includes: safe patient handling competency validation, gait belt use audit protocol, fall during therapy incident review process, post-fall reassessment requirements, surgeon communication checklist for weight-bearing verification, and supervised therapy observations (10 sessions).",
+          "actual_outcome": "Supervised observations: 2 of 10 completed. Fall during therapy on May 28 (5th instance) — gait belt not used again. Surgeon communication checklist created but not used — another patient put on full weight bearing 2 weeks too early."
+        }
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-015",
+      "firstName": "Michelle",
+      "lastName": "Torres",
+      "role": "HHA",
+      "licenseNumber": "MOCK-HHA-S4-015",
+      "licenseStatus": "certified",
+      "hireDate": "2023-01-15",
+      "caseloadCount": 10,
+      "status": "active",
+      "performanceFlags": [
+        "generally_compliant_one_of_few_reliable_HHAs",
+        "reported_abuse_by_PT_Deveraux",
+        "reported_suspected_caregiver_abuse",
+        "competency_current",
+        "2_complaints_about_late_arrival_related_to_scheduling",
+        "overworked_covering_for_terminated_HHAs"
+      ],
+      "notes": "Torres is a whistleblower who reported the PT abuse. She is one of 3 reliable HHAs on staff. She is now covering for 4 terminated/suspended HHAs and stretched to breaking."
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-016",
+      "firstName": "James",
+      "lastName": "Whitfield",
+      "role": "RN_Case_Manager",
+      "licenseNumber": "MOCK-RN-S4-016",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2025-03-01",
+      "caseloadCount": 24,
+      "maxRecommendedCaseload": 12,
+      "status": "active_deteriorating",
+      "performanceFlags": [
+        "caseload_200pct_over_max",
+        "inherited_22_patients_from_terminated_clinicians",
+        "was_good_performer_before_overload",
+        "documentation_declining_from_98pct_to_61pct_timely",
+        "3_patient_deaths_on_caseload_since_overload",
+        "medication_reconciliation_rate_dropped_to_55pct",
+        "supervisory_visits_zero_since_caseload_increase",
+        "stated_to_DON_I_cannot_safely_care_for_these_patients",
+        "formal_unsafe_staffing_complaint_filed_with_HR"
+      ],
+      "unsafeStaffingComplaint": {
+        "dateField": "2026-04-20",
+        "complaint": "I am writing to formally document that I cannot safely care for 24 patients. I have informed my supervisor, the DON, and the Administrator that patient safety is at risk. I have requested caseload reduction and been told 'there's nobody else.' I am documenting this complaint to protect my license and my patients.",
+        "agencyResponse": "DON acknowledged complaint in writing. No caseload reduction occurred. DON's response: 'We understand your concerns and are actively recruiting. In the interim, please prioritize your highest acuity patients.'",
+        "responseDocumentationQuality": "PRISTINE — DON's response is empathetic, acknowledges the concern, references recruitment efforts, and provides clinical prioritization guidance. It is a model of professional administrative response. It also does absolutely nothing to solve the problem."
+      }
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-017",
+      "firstName": "Lori",
+      "lastName": "Blackburn",
+      "role": "HHA",
+      "licenseNumber": "MOCK-HHA-S4-017",
+      "licenseStatus": "certified",
+      "hireDate": "2025-01-15",
+      "caseloadCount": 8,
+      "status": "terminated_2026-04-15",
+      "terminationReason": "Substantiated financial abuse — stole $4,350 from 2 patients. Used one patient's debit card at ATM. Stole jewelry from another patient.",
+      "performanceFlags": [
+        "SUBSTANTIATED_FINANCIAL_ABUSE_2_PATIENTS",
+        "ATM_withdrawal_patient_debit_card_3200",
+        "jewelry_theft_estimated_1150",
+        "no_supervisory_visit_5_months",
+        "no_call_no_show_5_instances",
+        "reported_to_APS_LE_CDPH"
+      ],
+      "theftDetails": [
+        {
+          "patient": "MOCK-PT-S4-041",
+          "amountStolen": 3200,
+          "method": "HHA observed patient's PIN during medication reminder that required unlocking phone. Used same PIN on debit card. Made 6 ATM withdrawals over 3 weeks.",
+          "discoveryDate": "2026-03-28"
+        },
+        {
+          "patient": "MOCK-PT-S4-055",
+          "amountStolen": 1150,
+          "method": "Stole gold necklace, pearl earrings, and wedding band from jewelry box during patient's nap. Patient has moderate dementia — family discovered items missing during visit.",
+          "discoveryDate": "2026-04-10"
+        }
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-018",
+      "firstName": "Raymond",
+      "lastName": "Gupta",
+      "role": "PT",
+      "licenseNumber": "MOCK-PT-LIC-S4-018",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2025-08-01",
+      "caseloadCount": 16,
+      "maxRecommendedCaseload": 14,
+      "status": "active",
+      "performanceFlags": [
+        "documentation_generally_compliant",
+        "2_utilization_questions_on_audit",
+        "1_fall_during_therapy_no_injury",
+        "overworked_covering_for_terminated_PTs"
+      ],
+      "notes": "Adequate performer under pressure. Covering for Deveraux and Prescott terminations."
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-019",
+      "firstName": "Angela",
+      "lastName": "Crawford",
+      "role": "RN_Supervisor",
+      "licenseNumber": "MOCK-RN-S4-019",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2021-08-01",
+      "status": "active_under_review",
+      "performanceFlags": [
+        "HHA_supervisory_visits_delinquent_22_of_24_HHAs",
+        "competency_evaluations_overdue_18_HHAs",
+        "failed_to_identify_expired_licenses_2_clinicians",
+        "failed_to_identify_scope_violations_LVN_9_instances",
+        "abuse_reporting_delayed_multiple_instances",
+        "supervisory_documentation_exists_for_visits_that_never_occurred",
+        "falsified_supervisory_visit_documentation_suspected_8_instances",
+        "HR_compliance_tracking_system_not_maintained"
+      ],
+      "pipHistory": [
+        {
+          "pipId": "PIP-CLIN-S4-019-A",
+          "startDate": "2026-04-01",
+          "issue": "Systemic failure of supervisory oversight including HHA supervision, license tracking, and competency evaluation",
+          "documentation_quality": "PRISTINE — Most comprehensive PIP in the agency. 8 pages. Includes: HHA supervisory visit schedule (every 14 days per CoP), license/certification tracking system implementation plan, competency evaluation calendar, supervisory documentation audit protocol, and bi-weekly accountability meetings with DON. Includes a Gantt chart for implementation timeline.",
+          "actual_outcome": "Crawford conducted 3 supervisory visits in 60 days (of 48 required). License tracking spreadsheet created but not updated. Competency evaluations: 2 of 18 completed. Suspected falsified documentation investigation ongoing — 8 supervisory visit notes exist for dates when Crawford was documented as off-duty per timekeeping system. DON has not addressed the falsification concern."
+        }
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-020",
+      "firstName": "Victor",
+      "lastName": "Reeves",
+      "role": "HHA",
+      "licenseNumber": "MOCK-HHA-S4-020",
+      "licenseStatus": "expired_2026-04-15",
+      "hireDate": "2024-10-01",
+      "caseloadCount": 7,
+      "status": "suspended_pending_renewal",
+      "performanceFlags": [
+        "certification_expired_not_caught_10_weeks",
+        "48_visits_on_expired_certification",
+        "supervisor_Crawford_failed_to_track",
+        "no_call_no_show_4_instances"
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-021",
+      "firstName": "Rhonda",
+      "lastName": "Fisher",
+      "role": "HHA",
+      "licenseNumber": "MOCK-HHA-S4-021",
+      "licenseStatus": "certified",
+      "hireDate": "2025-05-01",
+      "caseloadCount": 8,
+      "status": "active_restricted",
+      "performanceFlags": [
+        "allegation_of_verbal_abuse_under_investigation",
+        "patient_S4-073_reported_HHA_yelled_and_called_her_stupid",
+        "patient_S4-080_reported_HHA_threatened_to_leave_if_patient_didnt_cooperate",
+        "4_patient_complaints_of_rude_behavior",
+        "performing_wound_observation_beyond_scope",
+        "no_supervisory_visit_6_months",
+        "no_call_no_show_3_instances"
+      ],
+      "abuseInvestigation": {
+        "allegationDate": "2026-05-25",
+        "allegationType": "verbal_abuse_intimidation",
+        "investigationStatus": "in_progress",
+        "reportedToAPS": true,
+        "finding_preliminary": "corroborated_by_2_patients"
+      }
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-022",
+      "firstName": "Thomas",
+      "lastName": "Brennan",
+      "role": "RN_Case_Manager",
+      "licenseNumber": "MOCK-RN-S4-022",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2026-03-01",
+      "caseloadCount": 14,
+      "status": "active",
+      "performanceFlags": [
+        "new_hire_3_months",
+        "orientation_rushed_completed_in_3_days_instead_of_2_weeks",
+        "assigned_14_patients_in_first_week",
+        "medication_errors_3_in_first_month",
+        "OASIS_accuracy_62pct",
+        "unfamiliar_with_agency_specific_protocols",
+        "making_errors_consistent_with_inadequate_orientation"
+      ],
+      "notes": "Hired to replace Fontaine. Competent nurse being set up to fail by inadequate orientation and immediate heavy caseload."
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-023",
+      "firstName": "Diana",
+      "lastName": "Morrison",
+      "role": "HHA",
+      "licenseNumber": "MOCK-HHA-S4-023",
+      "licenseStatus": "certified",
+      "hireDate": "2024-03-01",
+      "caseloadCount": 9,
+      "status": "terminated_2026-06-20",
+      "terminationReason": "Substantiated theft — stole $3,400 from 2 patients. Stole prescription medications (opioids) from 1 patient.",
+      "performanceFlags": [
+        "SUBSTANTIATED_FINANCIAL_ABUSE_2_PATIENTS",
+        "PRESCRIPTION_MEDICATION_THEFT_OPIOIDS",
+        "cash_theft_2200",
+        "check_forgery_1200",
+        "oxycodone_theft_30_tablets",
+        "no_supervisory_visit_4_months",
+        "no_call_no_show_6_instances",
+        "reported_to_APS_LE_CDPH_DEA"
+      ],
+      "theftDetails": [
+        {
+          "patient": "MOCK-PT-S4-068",
+          "amountStolen": 2200,
+          "method": "Cash theft from wallet during bathing assistance",
+          "discoveryDate": "2026-06-05"
+        },
+        {
+          "patient": "MOCK-PT-S4-075",
+          "amountStolen": 1200,
+          "method": "Forged check from patient's checkbook",
+          "discoveryDate": "2026-06-12"
+        },
+        {
+          "patient": "MOCK-PT-S4-082",
+          "type": "medication_theft",
+          "medications_stolen": "Oxycodone 10mg — 30 tablets from patient's medication supply",
+          "discoveryDate": "2026-06-18",
+          "reportedToDEA": true
+        }
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-024",
+      "firstName": "Maria",
+      "lastName": "Santos",
+      "role": "LVN",
+      "licenseNumber": "MOCK-LVN-S4-024",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2025-10-01",
+      "caseloadCount": 14,
+      "maxRecommendedCaseload": 10,
+      "status": "active",
+      "performanceFlags": [
+        "competent_LVN_staying_within_scope",
+        "overloaded_but_managing",
+        "documentation_timely",
+        "2_medication_errors_related_to_volume",
+        "reported_concerns_about_staffing_to_DON"
+      ],
+      "notes": "Good clinician under too much pressure. Following scope appropriately unlike peers."
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-025",
+      "firstName": "Gregory",
+      "lastName": "Hoffman",
+      "role": "HHA",
+      "licenseNumber": "MOCK-HHA-S4-025",
+      "licenseStatus": "certified",
+      "hireDate": "2025-07-01",
+      "caseloadCount": 8,
+      "status": "active",
+      "performanceFlags": [
+        "generally_reliable",
+        "1_patient_complaint_late_arrival",
+        "competency_current",
+        "covering_extra_patients_from_terminations"
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-026",
+      "firstName": "Stephanie",
+      "lastName": "Walsh",
+      "role": "OT",
+      "licenseNumber": "MOCK-OT-S4-026",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2026-01-15",
+      "caseloadCount": 14,
+      "maxRecommendedCaseload": 12,
+      "status": "active",
+      "performanceFlags": [
+        "new_hire_adequate_orientation",
+        "documentation_timely",
+        "2_reassessments_overdue",
+        "home_safety_assessments_thorough",
+        "covering_for_Chen_deficiencies"
+      ],
+      "notes": "New OT hired to supplement Chen. Performing adequately."
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-027",
+      "firstName": "Brian",
+      "lastName": "Nakamura",
+      "role": "PT",
+      "licenseNumber": "MOCK-PT-LIC-S4-027",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2026-05-01",
+      "caseloadCount": 10,
+      "status": "active",
+      "performanceFlags": [
+        "new_hire_replacing_terminated_PTs",
+        "orientation_adequate",
+        "documentation_compliant",
+        "building_caseload"
+      ],
+      "notes": "New PT hired after Deveraux termination. Clean so far."
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-028",
+      "firstName": "Rebecca",
+      "lastName": "Thornton",
+      "role": "HHA",
+      "licenseNumber": "MOCK-HHA-S4-028",
+      "licenseStatus": "certified",
+      "hireDate": "2024-11-01",
+      "caseloadCount": 9,
+      "status": "active_under_review",
+      "performanceFlags": [
+        "suspected_substance_abuse_on_duty",
+        "patient_S4-036_reported_HHA_smelled_of_alcohol",
+        "patient_S4-048_family_reported_HHA_appeared_impaired",
+        "no_call_no_show_9_instances_highest_in_agency",
+        "performing_tasks_outside_care_plan",
+        "no_supervisory_visit_5_months"
+      ],
+      "notes": "Substance abuse concern but no drug test administered. Agency policy requires reasonable-suspicion testing but HR states testing was 'scheduled' 3 times and never occurred."
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-029",
+      "firstName": "Christine",
+      "lastName": "Delgado",
+      "role": "HHA",
+      "licenseNumber": "MOCK-HHA-S4-029",
+      "licenseStatus": "certified",
+      "hireDate": "2025-09-01",
+      "caseloadCount": 8,
+      "status": "active",
+      "performanceFlags": [
+        "generally_reliable",
+        "competency_current",
+        "1_late_arrival_issue",
+        "good_patient_rapport"
+      ]
+    },
+    {
+      "clinicianId": "MOCK-CLIN-S4-030",
+      "firstName": "Alan",
+      "lastName": "Fitzgerald",
+      "role": "RN_DON",
+      "licenseNumber": "MOCK-RN-S4-030",
+      "licenseState": "CA",
+      "licenseStatus": "active",
+      "hireDate": "2020-06-01",
+      "status": "active",
+      "role_detail": "Director of Nursing — responsible for all clinical operations, QAPI oversight, and compliance",
+      "performanceFlags": [
+        "WRITES_PRISTINE_DOCUMENTATION",
+        "QAPI_binder_is_textbook_perfect",
+        "PIP_documentation_would_impress_any_surveyor",
+        "corrective_action_plans_are_beautifully_formatted",
+        "meeting_minutes_are_comprehensive",
+        "governance_reports_are_detailed",
+        "ZERO_FOLLOW_THROUGH_ON_ANY_OF_IT",
+        "signs_off_on_corrective_actions_never_implemented",
+        "approves_PIPs_never_monitored",
+        "documents_supervisory_oversight_that_doesnt_occur",
+        "aware_of_staffing_crisis_and_documenting_it_beautifully_while_doing_nothing",
+        "9_patient_deaths_under_watch",
+        "7_substantiated_abuse_cases",
+        "6_financial_exploitation_cases",
+        "42_no_call_no_shows",
+        "187_missed_visits",
+        "38_claims_denials_487600",
+        "responded_to_unsafe_staffing_complaint_with_pristine_memo_and_no_action"
+      ],
+      "notes": "DON Fitzgerald is the embodiment of the agency's paradox. He can write a corrective action plan that reads like a CMS best-practice guide. His QAPI documentation is museum-quality. His root cause analyses are graduate-level. And none of it translates into actual operational improvement. He writes beautiful plans and files them. He documents problems exquisitely and doesn't solve them. He is either complicit in the operational failure or so disconnected from operations that his documentation is performative rather than functional. Either interpretation is devastating for the agency."
+    }
+  ],
+
+  "patients_summary": {
+    "total_patients": 90,
+    "patients_detailed_below": 30,
+    "patients_in_summary_table": 60,
+    "acuity_distribution": {
+      "extreme": 18,
+      "very_high": 25,
+      "high": 27,
+      "moderate": 12,
+      "low": 8
+    },
+    "status_distribution": {
+      "active_with_issues": 58,
+      "active_clean": 8,
+      "deceased": 9,
+      "discharged_clean": 8,
+      "discharged_with_issues": 3,
+      "hospitalized_current": 4
+    }
+  },
+
+  "patients_detailed": [
+    {
+      "clientId": "MOCK-PT-S4-001",
+      "firstName": "Virgil",
+      "lastName": "Ashford",
+      "dob": "1934-03-22",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S4-001",
+      "address": "10 Ironclad Way, Faketown, CA 90100",
+      "phone": "555-4101",
+      "emergencyContact": {"name": "Donna Ashford", "relationship": "Daughter", "phone": "555-4601"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S4001"},
+      "secondaryPayer": {"payerId": "MOCK-PAY-MCAID-100", "payerName": "Mock Medicaid", "policyNumber": "MOCK-MCAID-S4001"},
+      "attendingPhysician": {"name": "Dr. Evelyn Hartwell", "npi": "MOCK-NPI-S4-001", "phone": "555-4701"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "ST", "MSW", "HHA"],
+      "admissionStatus": "DECEASED",
+      "socDate": "2025-12-15",
+      "dateOfDeath": "2026-03-18",
+      "causeOfDeath": "Sepsis secondary to Stage 4 sacral pressure injury with MRSA. Wound developed and progressed entirely under agency care over 14 weeks.",
+      "deathCircumstances": "92-year-old male admitted for CHF management. Had intact skin at SOC. Developed sacral redness (Stage 1) by Week 3 — documented by LVN but not escalated. Stage 2 by Week 6 — RN Calloway documented but did not update care plan, order specialty mattress, or notify physician. Stage 3 by Week 10 — still no physician notification, no wound care specialist consultation. Stage 4 with tunneling and MRSA by Week 13. Hospitalized March 12. Sepsis. Died March 18. Family discovered through medical records that wound was documented for 10 weeks before physician was told. Family retained attorney. Filed with CDPH, CMS hotline, and civil court.",
+      "primaryDiagnoses": ["CHF_class_IV", "COPD_severe", "diabetes_type2_uncontrolled", "sacral_pressure_injury_stage4_agency_acquired", "MRSA", "cognitive_impairment_severe"],
+      "clinicalComplexity": "EXTREME",
+      "assignedClinicians": ["MOCK-CLIN-S4-001", "MOCK-CLIN-S4-004", "MOCK-CLIN-S4-007", "MOCK-CLIN-S4-008", "MOCK-CLIN-S4-009", "MOCK-CLIN-S4-010"],
+      "hospitalizationHistory": [
+        {"date": "2026-01-28", "reason": "CHF_exacerbation", "facility": "Mock General Hospital", "lengthOfStay": 5, "returnDate": "2026-02-02"},
+        {"date": "2026-03-12", "reason": "sepsis_MRSA_wound", "facility": "Mock General Hospital", "lengthOfStay": 6, "outcome": "died_in_hospital"}
+      ],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S4-001",
+          "date": "2026-01-05",
+          "category": "wound_development",
+          "severity": "moderate",
+          "description": "Stage 1 sacral pressure area identified by LVN Osgood. Documented in visit note. Not escalated to RN or physician. No care plan update. No turning schedule initiated. No specialty mattress ordered.",
+          "rcaCompleted": true,
+          "rcaDocumentationQuality": "PRISTINE — 4-page RCA with fishbone diagram identifying 8 contributing factors including staffing, communication, equipment ordering process, and clinician education. Includes timeline, evidence matrix, and corrective action plan with 12 specific interventions.",
+          "rcaActualImplementation": "0 of 12 interventions implemented."
+        },
+        {
+          "incidentId": "INC-S4-002",
+          "date": "2026-02-15",
+          "category": "wound_deterioration",
+          "severity": "major",
+          "description": "Wound now Stage 3. RN Calloway documented wound but noted 'wound care per POC' — no POC update had occurred. Wound measurements inconsistent (different measurement methods used). No physician notification. No wound care specialist referral.",
+          "rcaCompleted": true,
+          "rcaDocumentationQuality": "PRISTINE"
+        },
+        {
+          "incidentId": "INC-S4-003",
+          "date": "2026-03-05",
+          "category": "wound_deterioration_sentinel",
+          "severity": "sentinel",
+          "description": "Wound Stage 4 with MRSA. Patient septic. Hospitalized. Died 6 days later. Agency did not notify physician of wound until Stage 4.",
+          "rcaCompleted": true,
+          "rcaDocumentationQuality": "PRISTINE — Agency's most thorough RCA. 7 pages. Includes: complete wound timeline from SOC to death, photo evidence, documentation audit trail, clinician interviews, system failure analysis, regulatory citation review, and 18-point corrective action plan. The RCA itself would earn an A+ in any healthcare quality course.",
+          "rcaActualImplementation": "2 of 18 corrective actions partially implemented. Specialty mattress ordering process was streamlined (1 action). Wound care documentation template was updated in EMR (1 action). Remaining 16 actions including physician notification protocol, wound care specialist consultation criteria, and staff education — not implemented."
+        }
+      ],
+      "complaints": [
+        {
+          "complaintId": "CMPL-S4-001",
+          "dateField": "2026-03-22",
+          "filedBy": "Donna Ashford (daughter) via attorney Marks & Associates",
+          "filedWith": "CDPH_CMS_hotline_civil_court",
+          "category": "negligence_leading_to_death",
+          "description": "Attorney filed: (1) CDPH complaint alleging systematic neglect leading to preventable death; (2) CMS hotline complaint; (3) Civil wrongful death lawsuit. Attorney obtained complete medical record showing 10-week gap between wound identification and physician notification.",
+          "cdphCaseNumber": "MOCK-CDPH-2026-S4-001",
+          "cmsHotlineNumber": "MOCK-CMS-HOT-2026-S4-001",
+          "civilSuitCaseNumber": "MOCK-CV-2026-S4-001",
+          "civilSuitDamagesSought": 2500000
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S4-001",
+          "dateOfService": "2025-12-15 to 2026-03-12",
+          "denialReason": "OASIS SOC performed by LVN (scope violation). Entire episode denied. Additionally: substandard care documented — wound progressed from intact to Stage 4 death under agency care.",
+          "amountDenied": 22400,
+          "appealStatus": "appeal_filed"
+        }
+      ],
+      "missedVisits": [
+        {"date": "2026-02-06", "type": "SN", "reason": "RN_Calloway_no_call_no_show", "patientNotified": false, "rescheduled": false},
+        {"date": "2026-02-20", "type": "SN", "reason": "RN_Calloway_called_off", "patientNotified": true, "rescheduled": false, "days_until_next_visit": 8},
+        {"date": "2026-03-02", "type": "PT", "reason": "PT_Deveraux_no_show", "patientNotified": false, "rescheduled": false},
+        {"date": "2026-03-06", "type": "HHA", "reason": "HHA_Jennings_no_call_no_show", "patientNotified": false, "rescheduled": false}
+      ],
+      "messyFlags": [
+        "PATIENT_DEATH_AGENCY_ACQUIRED_WOUND_INTACT_TO_STAGE4_TO_DEATH",
+        "wound_not_reported_to_physician_for_10_weeks",
+        "CDPH_CMS_complaint_active",
+        "CIVIL_LAWSUIT_2.5_MILLION",
+        "sentinel_event",
+        "LVN_performed_SOC_scope_violation",
+        "claim_denied_22400",
+        "4_missed_visits_in_final_month",
+        "RN_HHA_both_stole_from_this_patient",
+        "HHA_Jennings_theft_from_this_patient",
+        "immediate_jeopardy",
+        "pristine_RCA_zero_implementation"
+      ],
+      "qapiRequired": true,
+      "sentinelEvent": true,
+      "immediateActionRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S4-002",
+      "firstName": "Lucille",
+      "lastName": "Bancroft",
+      "dob": "1938-07-15",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S4-002",
+      "address": "23 Hawthorn Blvd, Testburg, CA 90101",
+      "phone": "555-4102",
+      "emergencyContact": {"name": "James Bancroft", "relationship": "Son", "phone": "555-4602"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S4002"},
+      "attendingPhysician": {"name": "Dr. Marcus Thornfield", "npi": "MOCK-NPI-S4-002", "phone": "555-4702"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "HHA"],
+      "admissionStatus": "active",
+      "socDate": "2026-01-10",
+      "primaryDiagnoses": ["post_surgical_bilateral_knee_replacement", "diabetes_type2_uncontrolled", "morbid_obesity_BMI_46", "DVT_history", "depression"],
+      "clinicalComplexity": "HIGH",
+      "assignedClinicians": ["MOCK-CLIN-S4-002", "MOCK-CLIN-S4-006", "MOCK-CLIN-S4-007", "MOCK-CLIN-S4-028"],
+      "hospitalizationHistory": [
+        {"date": "2026-02-18", "reason": "DVT_bilateral_legs", "facility": "Mock Surgical Center", "lengthOfStay": 5, "returnDate": "2026-02-23"},
+        {"date": "2026-05-05", "reason": "wound_dehiscence_right_knee_infection", "facility": "Mock Surgical Center", "lengthOfStay": 8, "returnDate": "2026-05-13"}
+      ],
+      "incidentHistory": [
+        {
+          "incidentId": "INC-S4-004",
+          "date": "2026-01-25",
+          "category": "falsified_therapy",
+          "severity": "major",
+          "description": "PTA Prescott documented 6 completed PT sessions for this patient. GPS audit confirms 5 were falsified. Patient received 1 actual therapy visit in first 6 weeks post bilateral knee replacement.",
+          "rcaCompleted": true,
+          "rcaDocumentationQuality": "PRISTINE — RCA traces fraud timeline, identifies GPS evidence, documents patient impact (reduced ROM, delayed functional recovery), and outlines 8 corrective actions including GPS verification policy and patient callback protocol.",
+          "rcaActualImplementation": "GPS verification policy written but IT has not enabled the tracking module. Patient callback protocol: 0 callbacks performed."
+        },
+        {
+          "incidentId": "INC-S4-005",
+          "date": "2026-03-10",
+          "category": "medication_error",
+          "severity": "major",
+          "description": "RN Fontaine (expired license) failed to reconcile medications post-DVT hospitalization. Patient was on both Warfarin AND Eliquis simultaneously for 14 days. INR reached 5.8. Near-fatal bleeding event — blood in stool for 3 days before detected at next visit.",
+          "reportedBy": "MOCK-CLIN-S4-005 covering visit"
+        },
+        {
+          "incidentId": "INC-S4-006",
+          "date": "2026-04-20",
+          "category": "HHA_suspected_impairment",
+          "severity": "moderate",
+          "description": "Patient's son reported HHA Thornton (MOCK-CLIN-S4-028) appeared impaired during visit — unsteady gait, slurred speech, smell of alcohol. Son asked HHA to leave. Reported to agency.",
+          "reportedBy": "James Bancroft (son)",
+          "agencyResponse": "Documented complaint. Scheduled reasonable-suspicion drug test. Test never administered — HHA called off 3 consecutive scheduled test dates. Still active.",
+          "responseDocumentationQuality": "PRISTINE — Incident report complete. Drug testing protocol followed on paper. Follow-up scheduled. Memo to HR. Everything documented. Nothing actually done."
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S4-002",
+          "dateOfService": "2026-01-10 to 2026-03-12",
+          "denialReason": "5 falsified PTA visits. Full therapy episode denied.",
+          "amountDenied": 8900
+        },
+        {
+          "denialId": "DENY-S4-003",
+          "dateOfService": "2026-03-12 to 2026-05-05",
+          "denialReason": "Recert OASIS performed by expired-license RN Fontaine. Episode denied.",
+          "amountDenied": 14200
+        }
+      ],
+      "missedVisits": [
+        {"date": "2026-01-18", "type": "PT", "reason": "PTA_Prescott_falsified_never_came"},
+        {"date": "2026-01-25", "type": "PT", "reason": "PTA_Prescott_falsified_never_came"},
+        {"date": "2026-02-01", "type": "PT", "reason": "PTA_Prescott_falsified_never_came"},
+        {"date": "2026-02-08", "type": "PT", "reason": "PTA_Prescott_falsified_never_came"},
+        {"date": "2026-02-15", "type": "PT", "reason": "PTA_Prescott_falsified_never_came"},
+        {"date": "2026-03-15", "type": "SN", "reason": "RN_Fontaine_no_call_no_show"},
+        {"date": "2026-04-22", "type": "HHA", "reason": "HHA_Thornton_no_call_no_show"},
+        {"date": "2026-05-01", "type": "HHA", "reason": "HHA_Thornton_no_call_no_show"}
+      ],
+      "messyFlags": [
+        "5_falsified_therapy_visits_post_bilateral_knee",
+        "1_actual_PT_visit_in_6_weeks_post_surgical",
+        "dual_anticoagulation_14_days_near_fatal",
+        "expired_license_rn_performed_care",
+        "HHA_suspected_impairment_drug_test_never_given",
+        "2_claims_denied_23100",
+        "DVT_hospitalization_potentially_preventable",
+        "8_missed_visits_total",
+        "functional_decline_from_missed_therapy"
+      ],
+      "qapiRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S4-003",
+      "firstName": "Clarence",
+      "lastName": "Whitmore",
+      "dob": "1940-11-08",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S4-003",
+      "address": "36 Elm Park Dr, Mockdale, CA 90102",
+      "phone": "555-4103",
+      "emergencyContact": {"name": "Susan Whitmore", "relationship": "Wife", "phone": "555-4603"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MA-100", "payerName": "Mock Medicare Advantage", "policyNumber": "MOCK-MA-S4003"},
+      "attendingPhysician": {"name": "Dr. Evelyn Hartwell", "npi": "MOCK-NPI-S4-001", "phone": "555-4701"},
+      "serviceLines": ["skilled_nursing", "PT", "MSW"],
+      "admissionStatus": "DECEASED",
+      "socDate": "2026-01-20",
+      "dateOfDeath": "2026-04-28",
+      "causeOfDeath": "Cardiac arrest at home. CHF Class IV patient on daily weight monitoring. Scale broken for 3 weeks — weights estimated. 12-pound weight gain undetected. Diuretics not adjusted. Found unresponsive by wife at 5:15 AM.",
+      "deathCircumstances": "Identical failure pattern to previous dataset but worse. Patient's digital scale broke March 28. RN Whitfield (MOCK-CLIN-S4-016) documented broken scale and noted 'will order replacement.' Replacement never ordered. For 3 weeks, RN documented patient-reported weights that were later determined to be inaccurate (patient was cognitively impaired and guessing). 12-pound weight gain over 21 days went undetected. No physician notification of broken scale. No alternative weighing plan. Patient found deceased April 28. Coroner: acute decompensated CHF. Family discovered through medical records that agency knew scale was broken for 3 weeks. RN Whitfield had formally complained to DON about unsafe caseload — DON acknowledged but did not reduce caseload.",
+      "primaryDiagnoses": ["CHF_class_IV", "diabetes_type2", "CKD_stage4", "afib", "depression_severe", "cognitive_impairment_mild"],
+      "clinicalComplexity": "EXTREME",
+      "assignedClinicians": ["MOCK-CLIN-S4-016", "MOCK-CLIN-S4-018", "MOCK-CLIN-S4-009"],
+      "complaints": [
+        {
+          "complaintId": "CMPL-S4-002",
+          "dateField": "2026-05-02",
+          "filedBy": "Susan Whitmore (wife) via Legal Aid attorney",
+          "filedWith": "CDPH_CMS_hotline_civil_court",
+          "category": "negligence_leading_to_death_unsafe_staffing",
+          "description": "Wife's attorney obtained RN Whitfield's unsafe staffing complaint and DON's response. Lawsuit alleges: agency knew RN was overloaded, RN formally complained, agency did nothing, patient died because overloaded RN couldn't manage care. This case uniquely includes the agency's own documentation of knowing the staffing was unsafe.",
+          "cdphCaseNumber": "MOCK-CDPH-2026-S4-002",
+          "civilSuitCaseNumber": "MOCK-CV-2026-S4-002",
+          "civilSuitDamagesSought": 3000000,
+          "keyEvidence": "RN's formal unsafe staffing complaint + DON's pristine but empty response"
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S4-004",
+          "dateOfService": "2026-01-20 to 2026-04-28",
+          "denialReason": "Medicare Advantage plan reviewed case post-mortem. Denied entire episode citing substandard care. Requesting full repayment of prior episode.",
+          "amountDenied": 24800,
+          "appealStatus": "appeal_denied_final"
+        }
+      ],
+      "missedVisits": [
+        {"date": "2026-04-10", "type": "SN", "reason": "RN_Whitfield_called_off_overwhelmed"},
+        {"date": "2026-04-17", "type": "SN", "reason": "no_coverage_available"},
+        {"date": "2026-04-24", "type": "SN", "reason": "RN_Whitfield_documentation_backlog_rescheduled_never_rescheduled"}
+      ],
+      "messyFlags": [
+        "PATIENT_DEATH_BROKEN_SCALE_3_WEEKS",
+        "12lb_weight_gain_undetected_21_days",
+        "RN_HAD_FILED_UNSAFE_STAFFING_COMPLAINT",
+        "DON_ACKNOWLEDGED_AND_DID_NOTHING",
+        "agency_own_documentation_proves_they_knew",
+        "CIVIL_LAWSUIT_3_MILLION_with_smoking_gun_evidence",
+        "CDPH_CMS_active",
+        "sentinel_event",
+        "claim_denied_24800_no_appeal",
+        "3_missed_visits_in_final_3_weeks",
+        "immediate_jeopardy"
+      ],
+      "qapiRequired": true,
+      "sentinelEvent": true
+    },
+    {
+      "clientId": "MOCK-PT-S4-004",
+      "firstName": "Mavis",
+      "lastName": "Thornberry",
+      "dob": "1932-05-30",
+      "gender": "F",
+      "mrn": "MOCK-MRN-S4-004",
+      "address": "49 Sycamore Creek Ct, Synthcity, CA 90103",
+      "phone": "555-4104",
+      "emergencyContact": {"name": "Richard Thornberry", "relationship": "Son", "phone": "555-4604"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S4004"},
+      "attendingPhysician": {"name": "Dr. Marcus Thornfield", "npi": "MOCK-NPI-S4-002", "phone": "555-4702"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "ST", "MSW", "HHA"],
+      "admissionStatus": "DECEASED",
+      "socDate": "2025-12-10",
+      "dateOfDeath": "2026-05-22",
+      "causeOfDeath": "Aspiration pneumonia. Patient on PEG tube feeds and NPO status. HHA provided thin liquids (water, juice) over multiple visits. Patient aspirated. Hospitalized. Developed aspiration pneumonia. Sepsis. Died.",
+      "deathCircumstances": "94-year-old with severe dysphagia. SLP evaluation January 15 documented NPO — PEG tube feeds only, no oral intake. SLP Vega documented evaluation in EMR. Care plan was NOT updated by case manager RN Calloway. HHA care plan did NOT include NPO/PEG information. HHA Hampton (MOCK-CLIN-S4-011) gave patient thin liquids on multiple visits — stated 'the patient asked for water.' Prior near-miss aspiration documented March 20 — patient coughed severely after HHA gave juice. Near-miss documented but NOT investigated or corrected. No education provided to HHA. May 18: patient aspirated thin liquids provided by HHA. Hospitalized May 19. Aspiration pneumonia with sepsis. Died May 22. Son retained attorney — discovered SLP evaluation was 4 months before death and care plan was never updated. Also discovered prior near-miss was not investigated.",
+      "primaryDiagnoses": ["dementia_severe_Alzheimers", "dysphagia_severe_NPO", "PEG_tube", "CHF_class_III", "diabetes_type2", "osteoporosis_severe"],
+      "clinicalComplexity": "EXTREME",
+      "assignedClinicians": ["MOCK-CLIN-S4-001", "MOCK-CLIN-S4-014", "MOCK-CLIN-S4-007", "MOCK-CLIN-S4-008", "MOCK-CLIN-S4-009", "MOCK-CLIN-S4-011"],
+      "complaints": [
+        {
+          "complaintId": "CMPL-S4-003",
+          "dateField": "2026-05-25",
+          "filedBy": "Richard Thornberry (son) via attorney",
+          "filedWith": "CDPH_APS_civil_court",
+          "category": "negligence_and_neglect_leading_to_death",
+          "description": "Attorney alleges: SLP identified NPO status 4 months before death. RN never updated care plan. HHA never trained on NPO. Prior near-miss not investigated. HHA was providing thin liquids that killed patient. Also: HHA Hampton was already under investigation for neglect of other patients — agency continued to assign her to this vulnerable patient.",
+          "cdphCaseNumber": "MOCK-CDPH-2026-S4-003",
+          "civilSuitCaseNumber": "MOCK-CV-2026-S4-003",
+          "civilSuitDamagesSought": 3500000
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S4-005",
+          "dateOfService": "2026-03-01 to 2026-05-22",
+          "denialReason": "Care plan did not reflect SLP dietary recommendations. NPO status not communicated. Patient died of aspiration. Entire final episode denied.",
+          "amountDenied": 18600
+        }
+      ],
+      "messyFlags": [
+        "PATIENT_DEATH_NPO_PATIENT_GIVEN_THIN_LIQUIDS_BY_HHA",
+        "SLP_evaluation_4_months_before_death_never_in_care_plan",
+        "HHA_never_educated_on_NPO_PEG_status",
+        "prior_near_miss_not_investigated",
+        "HHA_Hampton_already_under_neglect_investigation_assigned_to_this_patient",
+        "CIVIL_LAWSUIT_3.5_MILLION",
+        "CDPH_APS_active",
+        "sentinel_event",
+        "RN_Calloway_failed_to_update_care_plan",
+        "SLP_Vega_failed_to_verify_care_plan_updated",
+        "immediate_jeopardy",
+        "SAME_ROOT_CAUSE_AS_PRIOR_DATASET_DEATH_NOT_CORRECTED"
+      ],
+      "qapiRequired": true,
+      "sentinelEvent": true
+    },
+    {
+      "clientId": "MOCK-PT-S4-005",
+      "firstName": "Howard",
+      "lastName": "Pemberton",
+      "dob": "1942-09-14",
+      "gender": "M",
+      "mrn": "MOCK-MRN-S4-005",
+      "address": "62 Birch Valley Rd, Fabricton, CA 90104",
+      "phone": "555-4105",
+      "emergencyContact": {"name": "Karen Pemberton", "relationship": "Wife", "phone": "555-4605"},
+      "primaryPayer": {"payerId": "MOCK-PAY-MC-100", "payerName": "Mock Medicare A", "policyNumber": "MOCK-MCA-S4005"},
+      "attendingPhysician": {"name": "Dr. Evelyn Hartwell", "npi": "MOCK-NPI-S4-001", "phone": "555-4701"},
+      "serviceLines": ["skilled_nursing", "PT", "OT", "HHA"],
+      "admissionStatus": "DECEASED",
+      "socDate": "2026-01-08",
+      "dateOfDeath": "2026-06-10",
+      "causeOfDeath": "Hemorrhagic stroke. INR was 9.4 on Warfarin. RN Fontaine falsified INR lab values for 10 weeks. Actual labs were never drawn. Patient's anticoagulation was completely unmonitored.",
+      "deathCircumstances": "84-year-old on Warfarin for mechanical aortic valve with weekly INR monitoring. RN Fontaine documented INR values of 2.1, 2.3, 2.0, 2.2, 1.9, 2.4, 2.1, 2.3, 2.0, 2.2 for 10 consecutive weeks. Lab had NO record of any specimens. Fontaine fabricated all values. Patient developed severe headache and left-sided weakness June 8. CT: massive right-hemisphere hemorrhagic stroke. INR was 9.4. Patient died June 10. Wife discovered fabrication when hospital asked for prior lab results and agency's records didn't match. DA criminal investigation active. This is the SECOND patient death from Fontaine's falsified labs (first was S4-010 below).",
+      "primaryDiagnoses": ["mechanical_aortic_valve", "afib_chronic", "CHF_class_III", "diabetes_type2", "CKD_stage3"],
+      "clinicalComplexity": "EXTREME",
+      "assignedClinicians": ["MOCK-CLIN-S4-002", "MOCK-CLIN-S4-014", "MOCK-CLIN-S4-007", "MOCK-CLIN-S4-015"],
+      "complaints": [
+        {
+          "complaintId": "CMPL-S4-004",
+          "dateField": "2026-06-15",
+          "filedBy": "Karen Pemberton (wife) via DA Victim Advocate",
+          "filedWith": "CDPH_DA_CMS_civil_court",
+          "category": "falsified_records_homicide_investigation",
+          "description": "DA's office now investigating Fontaine for 2 counts involuntary manslaughter (S4-005 and S4-010). Agency investigation for failure to have lab verification system. Civil wrongful death filed.",
+          "daCaseNumber": "MOCK-DA-2026-S4-002",
+          "civilSuitCaseNumber": "MOCK-CV-2026-S4-004",
+          "civilSuitDamagesSought": 4000000
+        }
+      ],
+      "claimsDenials": [
+        {
+          "denialId": "DENY-S4-006",
+          "dateOfService": "2026-01-08 to 2026-06-10",
+          "denialReason": "Clinician performed care on expired license. Lab values falsified. Entire period denied.",
+          "amountDenied": 28400,
+          "appealStatus": "no_appeal"
+        }
+      ],
+      "missedVisits": [
+        {"date": "2026-03-20", "type": "SN", "reason": "Fontaine_no_call_no_show"},
+        {"date": "2026-04-03", "type": "SN", "reason": "Fontaine_no_call_no_show"},
+        {"date": "2026-04-17", "type": "SN", "reason": "Fontaine_called_off"},
+        {"date": "2026-05-22", "type": "SN", "reason": "post_termination_no_coverage_5_days"},
+        {"date": "2026-05-29", "type": "SN", "reason": "post_termination_no_coverage"}
+      ],
+      "messyFlags": [
+        "PATIENT_DEATH_FALSIFIED_INR_10_WEEKS",
+        "INR_9.4_FATAL_HEMORRHAGIC_STROKE",
+        "SECOND_DEATH_FROM_FONTAINE_FALSIFIED_LABS",
+        "DA_INVOLUNTARY_MANSLAUGHTER_INVESTIGATION",
+        "CIVIL_LAWSUIT_4_MILLION",
+        "expired_license_rn",
+        "no_lab_verification_system",
+        "claim_denied_28400",
+        "5_missed_visits",
+        "5_day_gap_no_RN_coverage_post_termination",
+        "immediate_jeopardy",
+        "sentinel_event"
+      ],
+      "qapiRequired": true,
+      "sentinelEvent": true,
+      "criminalReferral": true
+    }
+  ],
+
+  "patients_detailed_continued": [
+    {
+      "clientId": "MOCK-PT-S4-006", "firstName": "Dorothy", "lastName": "Whitfield", "status": "active", "acuity": "VERY_HIGH",
+      "dx": ["dementia_moderate", "hip_fracture_ORIF", "osteoporosis_severe", "diabetes_type2"],
+      "keyIncidents": ["Physical abuse by PT Deveraux — bilateral arm grab marks, dementia patient unable to self-report", "Fall with wrist fracture — OT home safety overdue"],
+      "complaints": ["CMPL-S4-005: Daughter filed APS + CDPH for physical abuse by PT"],
+      "denials": ["DENY-S4-007: $12,800 — OASIS by LVN"], "missedVisits": 6, "sentinelEvent": true
+    },
+    {
+      "clientId": "MOCK-PT-S4-007", "firstName": "Franklin", "lastName": "Graves", "status": "active", "acuity": "HIGH",
+      "dx": ["CHF_III", "afib", "CKD_stage4", "diabetes_type2"],
+      "keyIncidents": ["Critical potassium 7.2 not reported by Fontaine (expired license) — hospitalized with cardiac arrhythmia", "HHA Jennings stole $800 forged check"],
+      "complaints": ["CMPL-S4-006: Wife filed APS for financial abuse"],
+      "denials": ["DENY-S4-008: $11,600 — expired license"], "missedVisits": 4
+    },
+    {
+      "clientId": "MOCK-PT-S4-008", "firstName": "Arlene", "lastName": "Crawford", "status": "active", "acuity": "VERY_HIGH",
+      "dx": ["diabetes_type1_brittle", "neuropathy_severe", "wound_bilateral_feet", "CKD_stage4"],
+      "keyIncidents": ["LVN Osgood insulin 30u instead of 15u — BG 32, ER visit", "Wound progressed to osteomyelitis — 2 toes amputated", "Wound measurements missing 6 weeks"],
+      "denials": ["DENY-S4-009: $16,200 — readmission + substandard care"], "missedVisits": 5
+    },
+    {
+      "clientId": "MOCK-PT-S4-009", "firstName": "Dorothy", "lastName": "Mercer", "status": "active", "acuity": "VERY_HIGH",
+      "dx": ["dementia_moderate", "Parkinsons", "falls_recurrent"],
+      "keyIncidents": ["PHYSICAL ABUSE by PT Deveraux — bruising torso, grab marks upper arms. Patient stated 'the exercise man hurts.' 2nd victim.", "4 falls including hip fracture"],
+      "complaints": ["CMPL-S4-007: Son filed APS + CDPH + LE"], "sentinelEvent": true, "missedVisits": 3
+    },
+    {
+      "clientId": "MOCK-PT-S4-010", "firstName": "Bernice", "lastName": "Caldwell", "status": "DECEASED", "acuity": "EXTREME",
+      "dob": "1936-01-20", "dateOfDeath": "2026-02-28",
+      "causeOfDeath": "Hemorrhagic stroke — INR 8.8. Fontaine falsified labs 6 weeks. FIRST death from Fontaine's falsification pattern.",
+      "dx": ["afib", "mechanical_mitral_valve", "CHF_III", "dementia_moderate"],
+      "complaints": ["CMPL-S4-008: Daughter filed CDPH + DA. Criminal investigation active."],
+      "denials": ["DENY-S4-010: $19,200 — expired license + falsified labs"],
+      "criminalReferral": true, "sentinelEvent": true, "missedVisits": 3
+    },
+    {
+      "clientId": "MOCK-PT-S4-011", "firstName": "Margaret", "lastName": "Thorne", "status": "active", "acuity": "HIGH",
+      "dx": ["post_surgical_spinal_fusion", "chronic_pain_opioid", "diabetes", "obesity"],
+      "keyIncidents": ["LVN Osgood performed SOC OASIS — scope violation", "Fall during PT — landed on surgical site"],
+      "denials": ["DENY-S4-011: $13,400 — LVN scope violation"], "missedVisits": 4
+    },
+    {
+      "clientId": "MOCK-PT-S4-012", "firstName": "Leonard", "lastName": "Finch", "status": "DECEASED", "acuity": "VERY_HIGH",
+      "dob": "1943-06-15", "dateOfDeath": "2026-06-18",
+      "causeOfDeath": "Stage IV lung cancer. Hospice never offered despite 5 months of declining status. Patient died in ER after 911 call. Wife stated 'nobody ever told us about hospice.'",
+      "dx": ["COPD_Gold_IV", "lung_cancer_stage_IV", "cachexia", "depression_severe"],
+      "keyIncidents": ["Hospice referral not initiated despite meeting ALL criteria for 5 months", "25lb weight loss (21%) not escalated", "MSW documented 'hospice discussion' that patient's family says never happened"],
+      "complaints": ["CMPL-S4-009: Wife filed CDPH — 'they let him suffer'"],
+      "missedVisits": 7
+    },
+    {
+      "clientId": "MOCK-PT-S4-013", "firstName": "Irene", "lastName": "Blackwood", "status": "active", "acuity": "VERY_HIGH",
+      "dx": ["wound_stage3_sacrum", "CHF_III", "diabetes_uncontrolled", "MRSA", "depression"],
+      "keyIncidents": ["MRSA wound infection progressed under care", "HHA expired cert providing care (Reeves)", "Suicide screening not done despite severe depression"],
+      "missedVisits": 5
+    },
+    {
+      "clientId": "MOCK-PT-S4-014", "firstName": "Walter", "lastName": "Pennington", "status": "active", "acuity": "HIGH",
+      "dx": ["post_CABG", "CHF_III", "diabetes", "afib"],
+      "keyIncidents": ["PTA Prescott falsified 6 visits — patient got 0 therapy post-CABG for 4 weeks", "Fontaine (expired license) performed recert OASIS"],
+      "denials": ["DENY-S4-012: $9,800 — falsified therapy + expired license"], "missedVisits": 8
+    },
+    {
+      "clientId": "MOCK-PT-S4-015", "firstName": "Ruby", "lastName": "Stratton", "status": "DECEASED", "acuity": "EXTREME",
+      "dob": "1931-12-05", "dateOfDeath": "2026-05-15",
+      "causeOfDeath": "Found deceased at home. No nursing visit for 14 days prior. Patient had CHF IV, was insulin-dependent, and lived alone. Last visit documented by RN Calloway was May 1 — next scheduled May 8 was a no-call-no-show. No one checked on patient for 14 days.",
+      "dx": ["CHF_IV", "diabetes_type1", "CKD_stage4", "lives_alone", "cognitive_impairment"],
+      "keyIncidents": ["14-DAY VISIT GAP — patient found deceased by Meals on Wheels driver May 15", "RN Calloway no-call-no-show May 8", "No coverage arranged", "No welfare check performed", "HHA Jennings stole $2,800 from this patient (she was his victim — discovered post-mortem)"],
+      "complaints": ["CMPL-S4-010: Adult Protective Services initiated investigation. CDPH notified. Daughter (lives out of state) filed civil suit after learning mother was found deceased with no agency contact for 2 weeks AND had been robbed by her HHA."],
+      "denials": ["DENY-S4-013: $21,600 — entire episode"], "civilSuitDamagesSought": 2000000,
+      "sentinelEvent": true, "immediateActionRequired": true
+    },
+    {
+      "clientId": "MOCK-PT-S4-016", "firstName": "Clifton", "lastName": "Monroe", "status": "active", "acuity": "HIGH",
+      "dx": ["CVA_ischemic", "hemiparesis", "dysphagia_moderate", "afib"],
+      "keyIncidents": ["Aspiration near-miss — SLP diet not on HHA care plan (SAME ROOT CAUSE as S4-004 death, which was SAME as prior dataset death)", "Corrective action from S4-004 death documented as implemented — THIS INCIDENT PROVES IT WAS NOT"],
+      "complaints": ["CMPL-S4-011: Family filed CDPH — 'same thing that killed the other lady almost killed my husband'"],
+      "missedVisits": 4,
+      "messyFlags": ["SAME_ROOT_CAUSE_3RD_TIME_CORRECTIVE_ACTION_PROVEN_NOT_IMPLEMENTED"]
+    },
+    {
+      "clientId": "MOCK-PT-S4-017", "firstName": "Gladys", "lastName": "Rutherford", "status": "active", "acuity": "VERY_HIGH",
+      "dx": ["wound_stage3_bilateral", "diabetes_A1c_12.1", "PVD_severe", "CHF_III", "depression_severe"],
+      "keyIncidents": ["Wound cellulitis → sepsis → hospitalization", "HHA Hampton neglect — found in soiled bed", "APS report for neglect"],
+      "complaints": ["CMPL-S4-012: Husband filed APS + CDPH for HHA neglect"], "missedVisits": 6
+    },
+    {
+      "clientId": "MOCK-PT-S4-018", "firstName": "Arthur", "lastName": "Prescott", "status": "active", "acuity": "VERY_HIGH",
+      "dx": ["CHF_IV", "COPD_Gold_III", "diabetes", "obesity"],
+      "keyIncidents": ["LVN Osgood SOC OASIS scope violation + IV Lasix push beyond scope", "2 hospitalizations in 5 months"],
+      "denials": ["DENY-S4-014: $12,200 — LVN scope violation"], "missedVisits": 5
+    },
+    {
+      "clientId": "MOCK-PT-S4-019", "firstName": "Edith", "lastName": "Carmichael", "status": "active", "acuity": "VERY_HIGH",
+      "dx": ["dementia_Lewy_Body", "Parkinsons", "falls_recurrent"],
+      "keyIncidents": ["PHYSICAL ABUSE by PT Deveraux — torso bruising, patient said 'he hurt me.' 3rd victim.", "Audio recording by family of Deveraux yelling at patient"],
+      "complaints": ["CMPL-S4-013: Family filed APS + CDPH + LE. Provided audio recording."],
+      "sentinelEvent": true, "missedVisits": 4
+    },
+    {
+      "clientId": "MOCK-PT-S4-020", "firstName": "Norman", "lastName": "Whitfield", "status": "discharged_clean", "acuity": "MODERATE",
+      "dx": ["post_surgical_knee", "hypertension"], "missedVisits": 0, "qapiRequired": false
+    },
+    {
+      "clientId": "MOCK-PT-S4-021", "firstName": "Hazel", "lastName": "Drummond", "status": "active", "acuity": "HIGH",
+      "dx": ["wound_bilateral_heels", "diabetes_uncontrolled", "PVD", "CHF_II"],
+      "keyIncidents": ["PTA Prescott falsified 3 visits", "Wound offloading device never ordered 4 months", "Fontaine expired license performed care"],
+      "denials": ["DENY-S4-015: $15,400 — fraud + expired license"], "missedVisits": 7
+    },
+    {
+      "clientId": "MOCK-PT-S4-022", "firstName": "Virgil", "lastName": "Townsend", "status": "active", "acuity": "HIGH",
+      "dx": ["dementia_severe", "diabetes", "CHF_II", "malnutrition"],
+      "keyIncidents": ["PHYSICAL ABUSE by PT Deveraux — 4th victim. Bruising pattern on arms.", "Suspected caregiver (nephew) abuse — RN Calloway knew for 4 weeks and didn't report to APS. APS report finally filed 28 days late.", "Nephew arrested."],
+      "complaints": ["CMPL-S4-014: Daughter filed APS + CDPH — abuse by PT AND unreported caregiver abuse", "CMPL-S4-015: DA pursuing charges against nephew + mandatory reporter investigation of Calloway"],
+      "sentinelEvent": true, "missedVisits": 5
+    },
+    {
+      "clientId": "MOCK-PT-S4-023", "firstName": "Dolores", "lastName": "Kincaid", "status": "active", "acuity": "VERY_HIGH",
+      "dx": ["CHF_III", "COPD_III", "depression_severe_with_SI", "chronic_pain"],
+      "keyIncidents": ["ACTIVE SUICIDAL IDEATION with plan (husband's gun) disclosed to MSW Winters. MSW did not escalate for 12 days. No safety plan. No weapons assessment. No 988 referral. MSW documented 'will follow up' — did not return for 12 days.", "Second SI disclosure to RN — RN escalated immediately. Gun removed by police. Patient safe."],
+      "complaints": ["CMPL-S4-016: Husband filed CDPH after learning MSW sat on suicide disclosure for 12 days"],
+      "messyFlags": ["ACTIVE_SI_WITH_LETHAL_MEANS_NOT_ESCALATED_12_DAYS"],
+      "sentinelEvent": true, "missedVisits": 3
+    },
+    {
+      "clientId": "MOCK-PT-S4-024", "firstName": "Reginald", "lastName": "Fowler", "status": "active", "acuity": "HIGH",
+      "dx": ["post_CABG", "diabetes", "CHF_II", "depression"],
+      "keyIncidents": ["PRN nurse Sato (incomplete orientation) — dual beta-blocker error, HR 38, hospitalized", "Staffing crisis → inadequately trained nurse → medication error"],
+      "missedVisits": 3
+    },
+    {
+      "clientId": "MOCK-PT-S4-025", "firstName": "Mabel", "lastName": "Crawford", "status": "active", "acuity": "EXTREME",
+      "dx": ["wound_stage4_sacrum", "ESRD_dialysis", "CHF_IV", "diabetes_type1", "dementia_moderate"],
+      "keyIncidents": ["LVN Osgood SOC OASIS (scope violation)", "Dialysis access infected — LVN documented 'access site clean' when purulent", "3 hospitalizations in 5 months"],
+      "denials": ["DENY-S4-016: $19,800 — LVN scope"], "missedVisits": 6
+    }
+  ],
+
+  "patients_summary_table_S4_026_through_S4_090": [
+    {"clientId": "MOCK-PT-S4-026", "name": "Chester Baldwin", "acuity": "LOW", "status": "discharged_clean", "missedVisits": 0, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-027", "name": "Alma Fitzpatrick", "acuity": "HIGH", "status": "active", "keyIssues": ["HHA Hampton neglect — soiled 6hrs", "APS complaint", "dementia_vulnerable"], "missedVisits": 4, "complaints": 1},
+    {"clientId": "MOCK-PT-S4-028", "name": "Harvey Lockwood", "acuity": "HIGH", "status": "active", "keyIssues": ["2 falls including subdural", "PT no gait belt", "OT overdue reassessment"], "missedVisits": 3},
+    {"clientId": "MOCK-PT-S4-029", "name": "Phyllis Harrington", "acuity": "HIGH", "status": "active", "keyIssues": ["PTA falsified visits", "Fontaine expired license", "lymphedema untreated"], "denials": 10200, "missedVisits": 5},
+    {"clientId": "MOCK-PT-S4-030", "name": "Bernard Sinclair", "acuity": "LOW", "status": "discharged_clean", "missedVisits": 0, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-031", "name": "Lorraine Whitworth", "acuity": "EXTREME", "status": "active", "keyIssues": ["CVA_hemorrhagic", "seizure_unmonitored", "aspiration_NPO", "6_service_lines_coordination_failure", "2_hospitalizations"], "missedVisits": 8},
+    {"clientId": "MOCK-PT-S4-032", "name": "Gordon Ashworth", "acuity": "HIGH", "status": "active", "keyIssues": ["HHA Jennings credit card fraud $1,800", "fall_with_fracture", "dizziness not assessed"], "complaints": 1, "missedVisits": 4},
+    {"clientId": "MOCK-PT-S4-033", "name": "Evelyn Thornberry", "acuity": "VERY_HIGH", "status": "active", "keyIssues": ["LVN scope SOC OASIS", "wound_tendon_exposure", "vascular_referral_delayed_10_weeks"], "denials": 14600, "missedVisits": 5},
+    {"clientId": "MOCK-PT-S4-034", "name": "Raymond Blackstone", "acuity": "MODERATE", "status": "active", "keyIssues": ["PRN nurse wrong patient vitals in chart"], "missedVisits": 2},
+    {"clientId": "MOCK-PT-S4-035", "name": "Irma Fairbanks", "acuity": "VERY_HIGH", "status": "active", "keyIssues": ["PTA falsified 4 visits", "wound_compression_never_done", "Fontaine expired license", "depression_severe"], "denials": 11800, "missedVisits": 7},
+    {"clientId": "MOCK-PT-S4-036", "name": "Wallace Greenfield", "acuity": "LOW", "status": "active_clean", "missedVisits": 1, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-037", "name": "Beatrice Morrison", "acuity": "EXTREME", "status": "hospitalized_current", "keyIssues": ["wound_stage4_all_3_sites_MRSA", "4_hospitalizations", "CAUTI", "catheter_not_changed", "HHA_Jennings_theft", "currently_hospitalized_prognosis_grave"], "missedVisits": 9},
+    {"clientId": "MOCK-PT-S4-038", "name": "Doris Clarke", "acuity": "VERY_HIGH", "status": "active", "keyIssues": ["PT Deveraux WITNESSED ABUSE — HHA Torres saw PT yank patient from wheelchair, patient screamed. PT told patient 'stop being a baby.' Torres reported. 5th abuse victim."], "complaints": 1, "sentinelEvent": true, "missedVisits": 3},
+    {"clientId": "MOCK-PT-S4-039", "name": "Cecil Hartwell", "acuity": "LOW", "status": "discharged_clean", "missedVisits": 0, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-040", "name": "Vivian Coldwell", "acuity": "EXTREME", "status": "active", "keyIssues": ["insulin_error_LVN", "5_falls_hip_fracture", "wound_sepsis_MRSA", "HHA_expired_cert", "depression_SI_not_screened"], "missedVisits": 7, "sentinelEvent": true},
+    {"clientId": "MOCK-PT-S4-041", "name": "Percival Lockwood", "acuity": "HIGH", "status": "active", "keyIssues": ["HHA Blackburn ATM theft $3,200 using patient's PIN", "5_months_no_supervisor"], "complaints": 1, "missedVisits": 4},
+    {"clientId": "MOCK-PT-S4-042", "name": "Sylvia Brightwell", "acuity": "HIGH", "status": "active", "keyIssues": ["PTA Prescott falsified 3 visits", "3_falls_not_all_reported", "anxiety_crisis_not_escalated"], "missedVisits": 5},
+    {"clientId": "MOCK-PT-S4-043", "name": "Harvey Thornton", "acuity": "MODERATE", "status": "active_clean", "missedVisits": 1, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-044", "name": "Cordelia Ashbloom", "acuity": "VERY_HIGH", "status": "active", "keyIssues": ["HHA Hampton neglect — Ring camera showed sleeping during visit", "Stage 2 pressure injury from not being turned", "skin breakdown attributed to neglect"], "complaints": 2, "missedVisits": 6},
+    {"clientId": "MOCK-PT-S4-045", "name": "Gilbert Frostmere", "acuity": "MODERATE", "status": "active_clean", "missedVisits": 1, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-046", "name": "Wanda Ironhollow", "acuity": "VERY_HIGH", "status": "active", "keyIssues": ["6_service_lines_no_coordination", "wound_CAUTI", "fall_injury", "documentation_gaps_all_disciplines"], "missedVisits": 8},
+    {"clientId": "MOCK-PT-S4-047", "name": "Clarence Duskhollow", "acuity": "LOW", "status": "discharged_clean", "missedVisits": 0, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-048", "name": "Minerva Stormvale", "acuity": "HIGH", "status": "active", "keyIssues": ["HHA Thornton appeared impaired — family reported", "wound_compression_not_documented", "depression_not_screened"], "missedVisits": 4},
+    {"clientId": "MOCK-PT-S4-049", "name": "Barnaby Nightridge", "acuity": "HIGH", "status": "active", "keyIssues": ["PTA Prescott falsified 2 visits", "cardiac_rehab_not_started"], "denials": 6400, "missedVisits": 3},
+    {"clientId": "MOCK-PT-S4-050", "name": "Lavinia Goldcrest", "acuity": "EXTREME", "status": "active", "keyIssues": ["4_falls_including_subdural", "dementia_behavioral_plan_missing", "wound_deteriorated", "wandering_2_incidents", "HHA_no_supervision"], "missedVisits": 9},
+    {"clientId": "MOCK-PT-S4-051", "name": "Oscar Thunderwell", "acuity": "VERY_HIGH", "status": "active", "keyIssues": ["PT Deveraux ABUSE — wife recorded audio of PT forcefully bending knee past pain tolerance, patient screaming. 6th victim.", "Wife provided recording to police."], "complaints": 1, "sentinelEvent": true, "missedVisits": 3},
+    {"clientId": "MOCK-PT-S4-052", "name": "Eunice Moonwhisper", "acuity": "MODERATE", "status": "active_clean", "missedVisits": 1, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-053", "name": "Reginald Darkstone", "acuity": "HIGH", "status": "active", "keyIssues": ["INR_monitoring_gap_4_weeks", "fall_not_reported", "HHA_supervision_overdue_6_months"], "missedVisits": 4},
+    {"clientId": "MOCK-PT-S4-054", "name": "Hazel Brightstone", "acuity": "MODERATE", "status": "active_clean", "missedVisits": 0, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-055", "name": "Wilbur Ashenmere", "acuity": "VERY_HIGH", "status": "active", "keyIssues": ["HHA Blackburn jewelry theft $1,150", "dialysis_access_wound_infected", "3_hospitalizations"], "complaints": 1, "missedVisits": 5},
+    {"clientId": "MOCK-PT-S4-056", "name": "Agatha Coldburn", "acuity": "HIGH", "status": "active", "keyIssues": ["PTA Prescott falsified 2 visits", "substance_abuse_not_in_assessment", "depression_crisis"], "denials": 5800, "missedVisits": 4},
+    {"clientId": "MOCK-PT-S4-057", "name": "Herbert Nightvale", "acuity": "LOW", "status": "discharged_clean", "missedVisits": 0, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-058", "name": "Blanche Ironmist", "acuity": "HIGH", "status": "active", "keyIssues": ["HHA Jennings cash theft $900 + forged check $700", "wound_documentation_gap", "mental_health_crisis"], "complaints": 1, "missedVisits": 5},
+    {"clientId": "MOCK-PT-S4-059", "name": "Horace Sunvalley", "acuity": "MODERATE", "status": "active_clean", "missedVisits": 1, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-060", "name": "Myrtle Stormcrest", "acuity": "VERY_HIGH", "status": "active", "keyIssues": ["HHA Hampton neglect — medications not given 3 visits", "BG 420 ER visit", "chronic pain unmanaged 6 days"], "complaints": 1, "missedVisits": 6},
+    {"clientId": "MOCK-PT-S4-061", "name": "Arthur Dawnhaven", "acuity": "HIGH", "status": "active", "keyIssues": ["LVN Osgood SOC scope violation", "cardiac_monitoring_gaps", "depression_not_in_poc"], "denials": 11200, "missedVisits": 3},
+    {"clientId": "MOCK-PT-S4-062", "name": "Isabelle Frostbloom", "acuity": "MODERATE", "status": "active_clean", "missedVisits": 0, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-063", "name": "Seymour Ashwald", "acuity": "HIGH", "status": "active", "keyIssues": ["PTA Prescott falsified 2 visits", "wound_compression_not_done", "documentation_5_days_late"], "denials": 7200, "missedVisits": 4},
+    {"clientId": "MOCK-PT-S4-064", "name": "Phoebe Moonstone", "acuity": "HIGH", "status": "active", "keyIssues": ["LVN Osgood SOC scope violation"], "denials": 10800, "missedVisits": 2},
+    {"clientId": "MOCK-PT-S4-065", "name": "Bartholomew Grimwald", "acuity": "EXTREME", "status": "active", "keyIssues": ["Fontaine expired license", "4_hospitalizations", "wound_infections_recurrent", "insulin_errors"], "denials": 18600, "missedVisits": 7},
+    {"clientId": "MOCK-PT-S4-066", "name": "Ethel Starwhisper", "acuity": "HIGH", "status": "active", "keyIssues": ["3_falls_not_escalated", "SI_screening_missing", "OASIS_inaccurate"], "missedVisits": 4},
+    {"clientId": "MOCK-PT-S4-067", "name": "Conrad Nightwell", "acuity": "HIGH", "status": "active", "keyIssues": ["LVN Osgood SOC scope violation"], "denials": 9600, "missedVisits": 2},
+    {"clientId": "MOCK-PT-S4-068", "name": "Millicent Darkpine", "acuity": "HIGH", "status": "active", "keyIssues": ["HHA Morrison cash theft $2,200", "MRSA_not_documented", "wound_tracking_incomplete"], "complaints": 1, "missedVisits": 4},
+    {"clientId": "MOCK-PT-S4-069", "name": "Ralph Thundermere", "acuity": "LOW", "status": "discharged_clean", "missedVisits": 0, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-070", "name": "Octavia Brightforge", "acuity": "EXTREME", "status": "active", "keyIssues": ["LVN Osgood SOC scope violation", "wound_stage4_gangrene_risk", "6_service_lines_failure", "3_hospitalizations", "HHA_verbal_abuse_Fisher"], "denials": 16200, "missedVisits": 9, "complaints": 1},
+    {"clientId": "MOCK-PT-S4-071", "name": "Ferdinand Ashvale", "acuity": "HIGH", "status": "active", "keyIssues": ["Fontaine expired license", "INR_gaps", "fall_not_escalated"], "denials": 8800, "missedVisits": 4},
+    {"clientId": "MOCK-PT-S4-072", "name": "Josephine Moonshadow", "acuity": "MODERATE", "status": "active_clean", "missedVisits": 1, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-073", "name": "Ignatius Coldpeak", "acuity": "HIGH", "status": "active", "keyIssues": ["LVN Osgood SOC scope violation", "HHA Fisher verbal abuse — called patient 'stupid'", "ostomy_teaching_incomplete"], "denials": 10400, "complaints": 1, "missedVisits": 4},
+    {"clientId": "MOCK-PT-S4-074", "name": "Hilda Stormwhisper", "acuity": "MODERATE", "status": "active_clean", "missedVisits": 0, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-075", "name": "Cedric Nighthollow", "acuity": "VERY_HIGH", "status": "active", "keyIssues": ["HHA Morrison forged check $1,200", "dialysis_coordination_failure", "wound_worsened", "3_hospitalizations"], "complaints": 1, "missedVisits": 6},
+    {"clientId": "MOCK-PT-S4-076", "name": "Gladys Ironwhisper", "acuity": "HIGH", "status": "active", "keyIssues": ["LVN Osgood SOC + IV push scope violations", "falls_not_escalated"], "denials": 12600, "missedVisits": 4},
+    {"clientId": "MOCK-PT-S4-077", "name": "Walter Dawnridge", "acuity": "LOW", "status": "discharged_clean", "missedVisits": 0, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-078", "name": "Constance Ashfire", "acuity": "HIGH", "status": "active", "keyIssues": ["wound_no_improvement_10_weeks", "SI_screening_missing", "HHA_supervision_none"], "missedVisits": 5},
+    {"clientId": "MOCK-PT-S4-079", "name": "Elmer Thornveil", "acuity": "HIGH", "status": "active", "keyIssues": ["LVN Osgood SOC scope violation"], "denials": 8200, "missedVisits": 2},
+    {"clientId": "MOCK-PT-S4-080", "name": "Cordelia Stormfire", "acuity": "EXTREME", "status": "hospitalized_current", "keyIssues": ["ABSOLUTE_WORST_CASE", "6_hospitalizations", "wound_necrotic", "sepsis_4x", "MRSA_uncontrolled", "ventilator", "OASIS_grossly_inaccurate", "HHA_Fisher_verbal_abuse_threatening", "medication_errors_7"], "missedVisits": 11, "complaints": 2},
+    {"clientId": "MOCK-PT-S4-081", "name": "DECEASED_Rufus_Blackwell", "acuity": "EXTREME", "status": "DECEASED", "dateOfDeath": "2026-04-12", "causeOfDeath": "Opioid overdose — accidental. Oxycodone 10mg PRN taken with OxyContin 20mg (dose had been changed to 10mg 3 weeks prior — RN never educated patient). No naloxone in home. No opioid safety plan. Found by wife.", "complaints": 1, "denials": 14200, "sentinelEvent": true, "missedVisits": 5},
+    {"clientId": "MOCK-PT-S4-082", "name": "Agnes Nightforge", "acuity": "EXTREME", "status": "active", "keyIssues": ["LVN Osgood SOC + IV push scope violations", "HHA Morrison opioid theft (30 Oxycodone tablets)", "wound_deteriorated", "renal_labs_not_monitored", "medication_errors_multiple"], "denials": 15400, "complaints": 1, "missedVisits": 7},
+    {"clientId": "MOCK-PT-S4-083", "name": "DECEASED_Florence_Graystone", "acuity": "EXTREME", "status": "DECEASED", "dateOfDeath": "2026-03-08", "causeOfDeath": "Sepsis from infected Stage 3 wound. Wound culture showed MRSA. Wound care visits missed 3 consecutive weeks (RN Calloway no-shows). No coverage arranged. By the time another nurse visited, wound was grossly infected.", "complaints": 2, "denials": 17800, "sentinelEvent": true, "missedVisits": 8},
+    {"clientId": "MOCK-PT-S4-084", "name": "Hilda Moonvale", "acuity": "MODERATE", "status": "active_clean", "missedVisits": 0, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-085", "name": "Cedric Thornberry", "acuity": "HIGH", "status": "active", "keyIssues": ["LVN Osgood SOC scope violation (9th instance)", "insulin_errors", "wound_care_competency_failed"], "denials": 11400, "missedVisits": 3},
+    {"clientId": "MOCK-PT-S4-086", "name": "DECEASED_Ethel_Coldspring", "acuity": "EXTREME", "status": "DECEASED", "dateOfDeath": "2026-06-25", "causeOfDeath": "Fall with hip fracture → surgical repair → post-op PE → death. Had 6 falls in agency care. Fall risk 'very high' but interventions were copy-paste from OT Chen — identical to 4 other patients' plans. No individualized fall prevention.", "complaints": 1, "denials": 13600, "sentinelEvent": true, "missedVisits": 6},
+    {"clientId": "MOCK-PT-S4-087", "name": "Walter Ashenmoor", "acuity": "LOW", "status": "discharged_with_issues", "keyIssues": ["discharge_summary_late_12_days", "OASIS_discharge_by_PRN_with_incomplete_orientation"], "missedVisits": 2},
+    {"clientId": "MOCK-PT-S4-088", "name": "Constance Dawnfire", "acuity": "HIGH", "status": "active", "keyIssues": ["wound_no_improvement", "compression_not_documented", "SI_screening_missing", "HHA_supervision_none"], "missedVisits": 4},
+    {"clientId": "MOCK-PT-S4-089", "name": "Elmer Brighthollow", "acuity": "MODERATE", "status": "active_clean", "missedVisits": 1, "qapiRequired": false},
+    {"clientId": "MOCK-PT-S4-090", "name": "DECEASED_Cordelia_Nightfire", "acuity": "EXTREME", "status": "DECEASED", "dateOfDeath": "2026-06-28", "causeOfDeath": "Multi-organ failure. Wound Stage 4 with MRSA sepsis. CAUTI. DKA. Patient had highest complexity in census. Assigned to RN Calloway (28 patients). Received less than 50% of scheduled visits. Multiple no-call-no-shows. Family was calling agency daily in final 2 weeks begging for visits. Phone logs show 14 calls from family — 3 were returned.", "complaints": 2, "denials": 26200, "sentinelEvent": true, "missedVisits": 14, "civilSuitFiled": true, "civilSuitDamages": 5000000}
+  ],
+
+  "soc_admissions_30": {
+    "total_new_admissions_Q1Q2": 30,
+    "soc_performed_by_RN": 12,
+    "soc_performed_by_LVN_scope_violation": 9,
+    "soc_performed_by_expired_license_RN": 6,
+    "soc_performed_by_PRN_incomplete_orientation": 3,
+    "valid_soc_assessments": 12,
+    "invalid_soc_assessments": 18,
+    "episodes_denied_due_to_invalid_soc": 15,
+    "total_denied_from_invalid_soc": 196400,
+    "soc_list": [
+      {"socDate": "2026-01-05", "patient": "MOCK-PT-S4-061", "performedBy": "MOCK-CLIN-S4-003 (LVN)", "valid": false, "denialAmount": 11200},
+      {"socDate": "2026-01-08", "patient": "MOCK-PT-S4-001", "performedBy": "MOCK-CLIN-S4-003 (LVN)", "valid": false, "denialAmount": 22400},
+      {"socDate": "2026-01-10", "patient": "MOCK-PT-S4-002", "performedBy": "MOCK-CLIN-S4-002 (RN-active)", "valid": true},
+      {"socDate": "2026-01-12", "patient": "MOCK-PT-S4-062", "performedBy": "MOCK-CLIN-S4-005 (RN)", "valid": true},
+      {"socDate": "2026-01-15", "patient": "MOCK-PT-S4-064", "performedBy": "MOCK-CLIN-S4-003 (LVN)", "valid": false, "denialAmount": 10800},
+      {"socDate": "2026-01-20", "patient": "MOCK-PT-S4-003", "performedBy": "MOCK-CLIN-S4-016 (RN)", "valid": true},
+      {"socDate": "2026-01-22", "patient": "MOCK-PT-S4-067", "performedBy": "MOCK-CLIN-S4-003 (LVN)", "valid": false, "denialAmount": 9600},
+      {"socDate": "2026-01-28", "patient": "MOCK-PT-S4-018", "performedBy": "MOCK-CLIN-S4-003 (LVN)", "valid": false, "denialAmount": 12200},
+      {"socDate": "2026-02-01", "patient": "MOCK-PT-S4-021", "performedBy": "MOCK-CLIN-S4-002 (RN-expired 2/28)", "valid": true, "notes": "License was active at SOC date"},
+      {"socDate": "2026-02-05", "patient": "MOCK-PT-S4-070", "performedBy": "MOCK-CLIN-S4-003 (LVN)", "valid": false, "denialAmount": 16200},
+      {"socDate": "2026-02-10", "patient": "MOCK-PT-S4-027", "performedBy": "MOCK-CLIN-S4-001 (RN)", "valid": true},
+      {"socDate": "2026-02-12", "patient": "MOCK-PT-S4-073", "performedBy": "MOCK-CLIN-S4-003 (LVN)", "valid": false, "denialAmount": 10400},
+      {"socDate": "2026-02-20", "patient": "MOCK-PT-S4-013", "performedBy": "MOCK-CLIN-S4-016 (RN)", "valid": true},
+      {"socDate": "2026-03-01", "patient": "MOCK-PT-S4-076", "performedBy": "MOCK-CLIN-S4-003 (LVN)", "valid": false, "denialAmount": 12600},
+      {"socDate": "2026-03-05", "patient": "MOCK-PT-S4-033", "performedBy": "MOCK-CLIN-S4-002 (RN-EXPIRED)", "valid": false, "denialAmount": 14600},
+      {"socDate": "2026-03-10", "patient": "MOCK-PT-S4-020", "performedBy": "MOCK-CLIN-S4-005 (RN)", "valid": true},
+      {"socDate": "2026-03-15", "patient": "MOCK-PT-S4-079", "performedBy": "MOCK-CLIN-S4-003 (LVN)", "valid": false, "denialAmount": 8200},
+      {"socDate": "2026-03-20", "patient": "MOCK-PT-S4-023", "performedBy": "MOCK-CLIN-S4-002 (RN-EXPIRED)", "valid": false, "denialAmount": 11400},
+      {"socDate": "2026-03-25", "patient": "MOCK-PT-S4-035", "performedBy": "MOCK-CLIN-S4-002 (RN-EXPIRED)", "valid": false, "denialAmount": 11800},
+      {"socDate": "2026-04-01", "patient": "MOCK-PT-S4-036", "performedBy": "MOCK-CLIN-S4-005 (RN)", "valid": true},
+      {"socDate": "2026-04-02", "patient": "MOCK-PT-S4-082", "performedBy": "MOCK-CLIN-S4-003 (LVN)", "valid": false, "denialAmount": 15400},
+      {"socDate": "2026-04-10", "patient": "MOCK-PT-S4-038", "performedBy": "MOCK-CLIN-S4-001 (RN)", "valid": true},
+      {"socDate": "2026-04-15", "patient": "MOCK-PT-S4-024", "performedBy": "MOCK-CLIN-S4-002 (RN-EXPIRED)", "valid": false, "denialAmount": 9200},
+      {"socDate": "2026-04-18", "patient": "MOCK-PT-S4-085", "performedBy": "MOCK-CLIN-S4-003 (LVN)", "valid": false, "denialAmount": 11400},
+      {"socDate": "2026-05-01", "patient": "MOCK-PT-S4-043", "performedBy": "MOCK-CLIN-S4-012 (PRN-incomplete)", "valid": false, "notes": "PRN nurse with incomplete orientation"},
+      {"socDate": "2026-05-10", "patient": "MOCK-PT-S4-034", "performedBy": "MOCK-CLIN-S4-012 (PRN-incomplete)", "valid": false},
+      {"socDate": "2026-05-15", "patient": "MOCK-PT-S4-048", "performedBy": "MOCK-CLIN-S4-022 (RN-new)", "valid": true, "notes": "Properly licensed new hire"},
+      {"socDate": "2026-05-20", "patient": "MOCK-PT-S4-052", "performedBy": "MOCK-CLIN-S4-005 (RN)", "valid": true},
+      {"socDate": "2026-06-01", "patient": "MOCK-PT-S4-059", "performedBy": "MOCK-CLIN-S4-022 (RN-new)", "valid": true},
+      {"socDate": "2026-06-10", "patient": "MOCK-PT-S4-054", "performedBy": "MOCK-CLIN-S4-012 (PRN-incomplete)", "valid": false}
+    ]
+  },
+
+  "missed_visit_and_ncns_summary": {
+    "total_missed_visits": 187,
+    "total_no_call_no_show": 42,
+    "missed_by_discipline": {
+      "SN_RN_LVN": 68,
+      "PT_PTA": 52,
+      "OT": 18,
+      "HHA": 38,
+      "MSW": 8,
+      "SLP": 3
+    },
+    "ncns_by_clinician": [
+      {"clinician": "MOCK-CLIN-S4-028 (HHA Thornton)", "ncns_count": 9},
+      {"clinician": "MOCK-CLIN-S4-011 (HHA Hampton)", "ncns_count": 8},
+      {"clinician": "MOCK-CLIN-S4-010 (HHA Jennings)", "ncns_count": 7},
+      {"clinician": "MOCK-CLIN-S4-002 (RN Fontaine)", "ncns_count": 6},
+      {"clinician": "MOCK-CLIN-S4-013 (LVN O'Brien)", "ncns_count": 6},
+      {"clinician": "MOCK-CLIN-S4-023 (HHA Morrison)", "ncns_count": 6}
+    ],
+    "patients_with_visit_gaps_over_7_days": 22,
+    "patients_with_visit_gaps_over_14_days": 4,
+    "patients_who_died_during_visit_gap": 2,
+    "corrective_action_plan": {
+      "documentation_quality": "PRISTINE — Agency developed a 12-page 'Missed Visit and Staffing Contingency Protocol' including: missed visit tracking dashboard, auto-escalation triggers (3+ missed visits = supervisor notification, 5+ = DON notification, 7+ = administrator notification), backup staffing matrix, patient welfare check protocol for gaps >48 hours, and root cause trend analysis.",
+      "actual_implementation": "Dashboard was built but nobody monitors it. Auto-escalation triggers were never configured in the scheduling system. Backup staffing matrix is empty — there is no backup staff. Welfare check protocol: not performed for any of the 22 patients with 7+ day gaps. 2 patients died during visit gaps."
+    }
+  },
+
+  "claims_denial_summary": {
+    "total_denials": 38,
+    "total_amount_denied": 487600,
+    "denial_breakdown": [
+      {"reason": "LVN scope violation — invalid SOC OASIS", "count": 9, "amount": 131200},
+      {"reason": "Expired license RN — invalid assessment/care", "count": 8, "amount": 118400},
+      {"reason": "Falsified therapy visits — fraud", "count": 8, "amount": 65600},
+      {"reason": "Substandard care / preventable death / readmission", "count": 7, "amount": 104200},
+      {"reason": "Care plan communication failure", "count": 3, "amount": 38400},
+      {"reason": "PRN nurse incomplete orientation — invalid SOC", "count": 3, "amount": 29800}
+    ],
+    "financial_impact": {
+      "confirmed_denials": 487600,
+      "potential_recoupment_prior_episodes": 180000,
+      "civil_lawsuit_exposure_4_suits": "Approximately $12,500,000 in combined demanded damages",
+      "oig_fraud_penalty_treble_damages": 46740,
+      "criminal_restitution_potential": "Unknown — DA prosecution active",
+      "total_estimated_financial_exposure": "$13,500,000+"
+    }
+  },
+
+  "complaints_regulatory_summary": {
+    "total_complaints_filed": 34,
+    "by_source": {
+      "families_patients": 24,
+      "staff_whistleblower": 3,
+      "hospital_discharge_planners": 2,
+      "anonymous": 3,
+      "ombudsman": 2
+    },
+    "by_filing_entity": {
+      "CDPH": 28,
+      "APS": 19,
+      "CMS_hotline": 6,
+      "local_law_enforcement": 8,
+      "DA_office": 3,
+      "DEA": 1,
+      "licensing_boards": 4,
+      "OIG": 1,
+      "civil_court": 4
+    },
+    "by_category": {
+      "negligence_leading_to_death": 7,
+      "physical_abuse_by_clinician": 4,
+      "financial_abuse_theft": 5,
+      "neglect_by_HHA": 4,
+      "verbal_abuse_intimidation": 3,
+      "failure_to_report_abuse": 2,
+      "falsified_records": 2,
+      "unsafe_staffing": 2,
+      "medication_errors": 2,
+      "failure_to_communicate_dietary_restrictions": 2,
+      "caregiver_abuse_unreported": 1
+    },
+    "complaint_response_documentation_quality": "PRISTINE — Every complaint has a formal response within 24 hours. Each response includes: acknowledgment of receipt, assigned investigator, investigation timeline, interim safety measures (documented but not always implemented), family communication log, and resolution summary. The complaint files are immaculate. The complaint responses read like a case study in best-practice complaint management. Multiple complaints describe the same root causes that have been 'corrected' via previous pristine corrective action plans that were never actually implemented."
+  },
+
+  "DON_pristine_documentation_showcase": {
+    "description": "Below are examples of the DON's immaculate documentation that exists in parallel to the operational catastrophe.",
+    "examples": [
+      {
+        "document": "Q1 2026 QAPI Governance Report",
+        "quality": "9/10 — Formatted perfectly with executive summary, indicator dashboard, PIP status, incident trends, and governing body recommendations. Uses proper QAPI terminology. Includes data visualization.",
+        "reality_gap": "Report states 'All corrective actions from Q4 are on track' when 0 of 12 have been implemented. States 'Staffing levels are being monitored' while 5 RNs have 20+ patients each. States 'Abuse reporting protocols have been reinforced' while 3 unreported abuse cases were active during the reporting period."
+      },
+      {
+        "document": "PIP-2026-001: Medication Reconciliation Improvement",
+        "quality": "10/10 — Textbook PIP. Problem statement with baseline data, fishbone RCA, SMART goals, intervention matrix, responsible parties, timeline, remeasurement schedule, and closure criteria. Could be published as a QAPI training example.",
+        "reality_gap": "Medication reconciliation rate went from 71% to 55% during the PIP period. Not a single intervention was actually implemented. The clinician responsible for leading the PIP (Calloway) has 28 patients and cannot complete her own medication reconciliations, let alone lead an improvement project."
+      },
+      {
+        "document": "Corrective Action Plan: Diet Texture Communication (post-aspiration death S4-004)",
+        "quality": "10/10 — Comprehensive 6-page CAP including: root cause timeline, system failure analysis, 14 corrective actions, implementation owners, deadlines, verification methods, and sustainability measures.",
+        "reality_gap": "SAME ROOT CAUSE caused a near-miss 6 weeks later (S4-016). The CAP existed only on paper. When surveyor asks 'what did you do after this patient died?' the agency can produce a beautiful corrective action plan. When surveyor asks 'did it work?' the answer is another patient nearly died from the identical failure."
+      }
+    ]
+  },
+
+  "systemic_failure_analysis": {
+    "the_paradox": "Care Indeed Home Health has invested more effort into documenting their failures than correcting them. The agency has created a comprehensive QAPI infrastructure that functions as a performance art piece rather than a quality improvement system. Every PIP, corrective action, disciplinary memo, and governance report is crafted with care and precision. The DON's documentation skills are genuinely impressive. But documentation without implementation is worse than no documentation at all — because it creates a false sense of compliance while patients continue to be harmed. The agency can produce a binder full of evidence that they 'identified the problem' and 'took corrective action.' What they cannot produce is evidence that any of those corrective actions actually changed anything. The same root causes appear quarter after quarter. The same clinicians continue the same behaviors despite progressive discipline. The same patients are harmed by the same systemic failures. The paper trail is pristine. The patient outcomes are catastrophic.",
+
+    "root_cause_themes": [
+      {
+        "theme": "Documentation as Substitute for Action",
+        "description": "The agency has confused documentation with implementation. PIPs are written but not executed. Corrective actions are planned but not completed. Disciplinary memos are signed but not enforced. The act of documenting has become the end goal rather than the means to improvement.",
+        "evidence": "18 PIPs written, 0 with actual improvement. 47 corrective actions documented, 3 partially implemented. 31 disciplinary actions documented, 8 enforced.",
+        "patients_affected": "All 90"
+      },
+      {
+        "theme": "Catastrophic Staffing Failure",
+        "description": "6 clinicians terminated in 6 months (2 RNs, 1 PT, 3 HHAs). Remaining staff absorbed impossible caseloads. Agency continued accepting new admissions despite inability to staff current census. DON documented awareness of crisis and did nothing operational to address it.",
+        "evidence": "5 RNs/LVNs with 20+ caseloads (max recommended: 10-12). RN formally filed unsafe staffing complaint — received pristine written response and no caseload reduction. 187 missed visits. 42 no-call-no-shows. 2 patients died during visit gaps.",
+        "deaths_contributed": 5
+      },
+      {
+        "theme": "Supervisory Oversight Collapse (Beautifully Documented)",
+        "description": "RN Supervisor Crawford failed to perform 91% of required HHA supervisory visits. License/certification tracking system not maintained. Competency evaluations 75% overdue. Evidence suggests 8 supervisory visit notes may be falsified. All of this occurred despite a pristine supervisory oversight plan on file.",
+        "evidence": "22 of 24 HHAs delinquent on supervisory visits. 3 expired licenses/certifications not caught. 9 LVN scope violations not identified. Abuse, theft, and neglect by HHAs went undetected for months.",
+        "deaths_contributed": 1
+      },
+      {
+        "theme": "Abuse and Exploitation Pattern",
+        "description": "7 substantiated abuse cases (4 physical, 3 financial). 5 neglect allegations (3 substantiated). 3 verbal abuse allegations. Agency had prior warning signs for every abuser — prior complaints were documented with pristine counseling memos but never investigated.",
+        "evidence": "PT Deveraux: 7 prior complaints over 18 months — all documented, none investigated. HHA Jennings: on attendance PIP while stealing from patients. HHA Hampton: on task completion PIP while neglecting patients. HHA Blackburn: no supervisory visit for 5 months while stealing.",
+        "patients_affected": 16
+      },
+      {
+        "theme": "Fraud and Falsification",
+        "description": "PTA Prescott falsified 41 visits ($15,580). RN Fontaine falsified lab values for 3 patients (2 died). RN Supervisor Crawford suspected of falsifying 8 supervisory visit notes. DON signs off on corrective actions known to be unimplemented.",
+        "deaths_caused": 2,
+        "financial_fraud": 15580
+      },
+      {
+        "theme": "Identical Root Causes Recurring Despite Pristine Corrective Actions",
+        "description": "The most damning evidence: the same root cause (SLP diet modifications not communicated to HHA care plan) caused an aspiration death in a prior quarter, was addressed with a textbook-perfect corrective action plan, and then caused ANOTHER aspiration death AND a near-miss in this period. The corrective action plan was never implemented. This pattern repeats across multiple failure categories.",
+        "recurring_failures": [
+          "Diet texture communication → death → CAP → no implementation → death again → CAP → no implementation → near-miss",
+          "Broken scale/estimated weights → death → CAP → no implementation → death again",
+          "Medication reconciliation post-hospitalization → errors → PIP → no improvement → more errors",
+          "HHA supervisory visits → delinquent → CAP → no implementation → still delinquent → abuse/theft/neglect undetected"
+        ]
+      }
+    ],
+
+    "estimated_survey_outcome": "IMMEDIATE JEOPARDY — CONDITION-LEVEL DEFICIENCIES across multiple CoPs. Agency faces 23-day termination track from Medicare program. Surveyor will find the paradox: every required document exists in pristine condition, yet outcomes are catastrophic. This is actually WORSE for the agency than having no documentation — because it proves the agency knew about the problems, documented them beautifully, and failed to act. The documentation itself becomes evidence of willful negligence.",
+
+    "immediate_jeopardy_triggers": [
+      "9 patient deaths in 6 months with agency contributing factors",
+      "2 deaths from falsified laboratory values (criminal investigation active)",
+      "2 deaths from aspiration — identical root cause not corrected between deaths",
+      "1 death from 14-day visit gap — no welfare check performed",
+      "7 substantiated abuse/exploitation cases",
+      "Clinician practiced on expired license for 76 days (214 visits)",
+      "LVN performed 9 SOC OASIS assessments beyond scope",
+      "41 falsified therapy visits — OIG self-disclosure filed",
+      "Active suicidal ideation with lethal means not escalated for 12 days",
+      "RN formally documented unsafe staffing — agency acknowledged and took no action",
+      "Corrective actions from prior deaths proven not implemented when same failures recurred"
+    ]
+  }
+}
+📊 DATASET 4 — FINAL SUMMARY DASHBOARD
+
+
+Category	Set 3	Set 4	Multiplier
+Patients	40	90	2.25x
+Clinicians	20	30	1.5x
+SOC Admissions	—	30 (18 invalid)	New
+Deaths	4	9	2.25x
+Substantiated Abuse	3	7	2.3x
+Neglect Allegations	2	8 (5 substantiated)	4x
+Financial Theft	$2,400	$18,750	7.8x
+Theft Victims	3	7 patients	2.3x
+Total Complaints	8	34	4.25x
+CDPH Complaints	8	28	3.5x
+CMS Hotline	1	6	6x
+APS Reports	5	19	3.8x
+Criminal Referrals	2	5	2.5x
+Civil Lawsuits	1	4 ($12.5M total)	4x
+Missed Visits	—	187	New
+No-Call-No-Show	—	42	New
+Claims Denied	$179,800	$487,600	2.7x
+Sentinel Events	9	16	1.8x
+PIPs Written	—	18 (all pristine)	New
+PIPs with Improvement	—	0	💀
+Corrective Actions	—	47 documented / 3 implemented	New
+Total Financial Exposure	$500K+	$13.5M+	27x
+The paradox is the dataset's defining feature: every piece of paper is perfect. Every patient outcome is a disaster. Let me know if you want me to save this to your CMS or generate QAPI forms against it.

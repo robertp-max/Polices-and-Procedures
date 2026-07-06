@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from 'react';
 import { Link, Outlet, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import { Bot, Bookmark, ClipboardCheck, FileText, GitFork, GraduationCap, Heart, HelpCircle, Info, LayoutDashboard, MessageCircle, Settings, Share2, UserRound, Users, X } from 'lucide-react';
 import { PersonalOpsPanel } from './PersonalOpsPanel';
@@ -34,11 +34,18 @@ export function V6Shell() {
     /^\/forms\/[^/]+\/print\/?$/.test(pathname);
   const isPersonalProfileRoute = pathname === '/personal/profile' || pathname.startsWith('/personal/profile/') || pathname.startsWith('/community/users');
   const isDashboardRoute = /(^|\/)dashboard(\/|$)/.test(pathname);
-  const isChromeFreeRoute = isLessonPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute;
+  // ?embed=1 renders the route content with no shell chrome — used when a
+  // screen embeds another route in an iframe (e.g. policy appendices modal
+  // showing an actual form workspace).
+  const isEmbedRequest = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === '1';
+  const isPolicyDetailRoute = pathname.startsWith('/library/') && !pathname.includes('/print');
+  const isChromeFreeRoute = isLessonPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute || isEmbedRequest || isPolicyDetailRoute;
   // Keep the dock visible during a guided tour so its nav targets stay anchorable.
   const showDock = !isChromeFreeRoute && !isDashboardRoute && (!pathname.startsWith('/iadministrator') || bradLanding || tourActive);
   const shellSubnavItems = useMemo(() => getShellSubnavItems(pathname), [pathname]);
   const showShellSubnav = !isChromeFreeRoute && !isDashboardRoute && shellSubnavItems.length > 0;
+  // Policy detail gets zero shell padding (for clean header flush to top) but keeps scroll.
+  const suppressShellPadding = isDashboardRoute || isLessonPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute || isEmbedRequest || pathname.startsWith('/iadministrator') || isPolicyDetailRoute;
   const panelTop = '0px';
   const panelHeight = '100vh';
 
@@ -83,7 +90,7 @@ export function V6Shell() {
             label: item.label,
             onClick: () => navigate(item.to),
             isActive: activeNavItem === item.id,
-            colorClass: getLeftRadialColor(item.id),
+            colorStyle: getLeftRadialColor(item.id),
             // Stable guided-tour anchors for nav targets.
             tourTarget: item.id === 'ces' ? 'nav.compliance' : item.id === 'help-center' ? 'nav.help' : undefined,
           };
@@ -251,7 +258,7 @@ export function V6Shell() {
               !isDashboardRoute && 'min-h-0 flex-1 overflow-y-auto overflow-x-hidden',
               'transition-[padding-right] duration-500 ease-standard',
               !isChromeFreeRoute && !isDashboardRoute && 'v6-main-scrollmask',
-              (isDashboardRoute || isChromeFreeRoute || pathname.startsWith('/iadministrator')) ? 'p-0 overflow-hidden' : 'pl-[calc(var(--space-lg)+10px)] pr-lg pb-32 pt-20 tablet-p:pl-[calc(var(--space-3xl)+50px)] tablet-p:pr-3xl',
+              suppressShellPadding ? 'p-0' : 'pl-[calc(var(--space-lg)+10px)] pr-lg pb-32 pt-20 tablet-p:pl-[calc(var(--space-3xl)+50px)] tablet-p:pr-3xl',
               !isChromeFreeRoute && !isDashboardRoute && hasScrolledMain && 'v6-main-scrollmask--scrolled',
             )}
             id="main-content"
@@ -317,20 +324,20 @@ export function V6Shell() {
 
 function ColoredHamburgerIcon() {
   return (
-    <span className="flex h-5 w-6 flex-col items-stretch justify-center gap-1.5" aria-hidden="true">
-      <span className="h-0.5 rounded-full bg-[#00797d]" />
-      <span className="h-0.5 rounded-full bg-[#06a6ab]" />
-      <span className="h-0.5 rounded-full bg-[#49b65a]" />
+    <span className="flex h-5 w-5 flex-col items-center justify-center gap-[3px]" aria-hidden="true">
+      <span className="block h-[2px] w-5 rounded-full" style={{ backgroundColor: 'var(--brand-orange)' }} />
+      <span className="block h-[2px] w-5 rounded-full" style={{ backgroundColor: 'var(--brand-orange)' }} />
+      <span className="block h-[2px] w-5 rounded-full" style={{ backgroundColor: 'var(--ecign-orange)' }} />
     </span>
   );
 }
 
 function ColoredKebabIcon() {
   return (
-    <span className="flex h-6 w-3 flex-col items-center justify-center gap-1.5" aria-hidden="true">
-      <span className="h-1.5 w-1.5 rounded-full bg-[#f97316]" />
-      <span className="h-1.5 w-1.5 rounded-full bg-[#facc15]" />
-      <span className="h-1.5 w-1.5 rounded-full bg-[#2563eb]" />
+    <span className="flex h-5 w-5 flex-col items-center justify-center gap-[2px]" aria-hidden="true">
+      <span className="block h-[5px] w-[5px] rounded-full" style={{ backgroundColor: 'var(--text-secondary)' }} />
+      <span className="block h-[5px] w-[5px] rounded-full" style={{ backgroundColor: 'var(--text-secondary)' }} />
+      <span className="block h-[5px] w-[5px] rounded-full" style={{ backgroundColor: 'var(--text-secondary)' }} />
     </span>
   );
 }
@@ -340,53 +347,42 @@ type RadialDockItem = {
   label: string;
   onClick: () => void;
   isActive?: boolean;
-  colorClass?: string;
+  colorStyle?: CSSProperties;
   tourTarget?: string;
 };
 
 function getLeftRadialColor(itemId: string) {
   switch (itemId) {
-    case 'brad':
-      return 'bg-blue-400 text-white';
     case 'dashboard':
-      return 'bg-green-400 text-white';
+      return { backgroundColor: 'var(--brand-teal)' };
     case 'ces':
-      return 'bg-emerald-500 text-white';
+      return { backgroundColor: '#06A6AB' };
     case 'taxonomy':
-      return 'bg-green-500 text-white';
+      return { backgroundColor: '#7FE7EA' };
     case 'onboarding':
-      return 'bg-teal-600 text-white';
+      return { backgroundColor: 'color-mix(in srgb, var(--brand-orange) 68%, white)' };
+    case 'brad':
+      return { backgroundColor: 'var(--brand-teal)' };
     default:
-      return 'bg-blue-500 text-white';
+      return { backgroundColor: 'var(--brand-teal)' };
   }
 }
 
 function LeftRadialDock({ items }: { items: RadialDockItem[] }) {
   const [open, setOpen] = useState(false);
-  const [rotation, setRotation] = useState(0);
-  const [isSnapping, setIsSnapping] = useState(false);
   const totalAngle = 140;
   const startAngle = -(totalAngle / 2);
   const angleStep = items.length > 1 ? totalAngle / (items.length - 1) : 0;
-  const transitionClass = 'transition-all duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]';
+  const transitionClass = 'transition-all duration-300 ease-out';
 
   const handleMouseEnter = () => {
     if (open) return;
-    setIsSnapping(true);
-    setRotation(-1215);
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setIsSnapping(false);
-        setOpen(true);
-        setRotation(0);
-      });
-    });
+    setOpen(true);
   };
 
   const handleMouseLeave = () => {
     if (!open) return;
     setOpen(false);
-    setRotation(1215);
   };
 
   return (
@@ -401,15 +397,13 @@ function LeftRadialDock({ items }: { items: RadialDockItem[] }) {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="relative flex h-14 w-14 items-center justify-center">
-          <div className={cx('absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-500', open ? 'h-[360px] w-[360px]' : 'h-14 w-14')} aria-hidden="true" />
+        <div className="relative flex h-11 w-11 items-center justify-center">
+          <div className={cx('absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-500', open ? 'h-[360px] w-[360px]' : 'h-11 w-11')} aria-hidden="true" />
           <div className={cx('pointer-events-none absolute inset-0 flex items-center justify-center')}>
             {items.map((item, index) => {
               const angle = startAngle + index * angleStep;
               const targetX = Math.cos(angle * Math.PI / 180) * 110;
               const targetY = Math.sin(angle * Math.PI / 180) * 110;
-              const x = open ? targetX : 800;
-              const y = open ? targetY : 0;
               const delay = index * 50;
               return (
                 <button
@@ -417,22 +411,22 @@ function LeftRadialDock({ items }: { items: RadialDockItem[] }) {
                   type="button"
                   data-tour-target={item.tourTarget}
                   onClick={() => {
-                    (window as any).__v6TransitionSide = 'left';
+                    (window as Window & { __v6TransitionSide?: string }).__v6TransitionSide = 'left';
                     item.onClick();
                     handleMouseLeave();
                   }}
                   aria-label={item.label}
                   title={item.label}
                   className={cx(
-                    'absolute flex h-12 w-12 items-center justify-center rounded-full shadow-lg hover:scale-110',
-                    !isSnapping && transitionClass,
-                    item.colorClass ?? 'bg-blue-500 text-white',
+                    'absolute flex h-11 w-11 items-center justify-center rounded-full text-white shadow-lg hover:scale-110',
+                    transitionClass,
                   )}
                   style={{
-                    transform: `rotate(${rotation}deg) translate(${x}px, ${y}px) rotate(${-rotation}deg)`,
+                    transform: open ? `translate(${targetX}px, ${targetY}px)` : `translate(0px, 0px) scale(0)`,
                     opacity: open ? 1 : 0,
                     pointerEvents: open ? 'auto' : 'none',
                     transitionDelay: `${delay}ms`,
+                    ...item.colorStyle,
                   }}
                 >
                   {item.icon}
@@ -445,12 +439,12 @@ function LeftRadialDock({ items }: { items: RadialDockItem[] }) {
           aria-label="Open navigation"
           aria-expanded={open}
           onClick={() => open ? handleMouseLeave() : handleMouseEnter()}
-          className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white text-slate-800 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
+          className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-800 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
         >
           <span className="absolute transition-all duration-300" style={{ opacity: open ? 0 : 1, transform: open ? 'rotate(-90deg) scale(0.5)' : 'rotate(0deg) scale(1)' }}>
             <ColoredHamburgerIcon />
           </span>
-          <X className="absolute h-6 w-6 text-slate-800 transition-all duration-300" style={{ opacity: open ? 1 : 0, transform: open ? 'rotate(0deg) scale(1)' : 'rotate(90deg) scale(0.5)' }} aria-hidden />
+          <X className="absolute h-5 w-5 text-slate-800 transition-all duration-300" style={{ opacity: open ? 1 : 0, transform: open ? 'rotate(0deg) scale(1)' : 'rotate(90deg) scale(0.5)' }} aria-hidden />
         </button>
         </div>
       </div>
@@ -484,8 +478,6 @@ function FloatingActionRail({
   const [pageElements, setPageElements] = useState<PageElementContext[]>([]);
   const [selectedElement, setSelectedElement] = useState<PageElementContext | null>(null);
   const [radialOpen, setRadialOpen] = useState(false);
-  const [radialRotation, setRadialRotation] = useState(0);
-  const [radialIsSnapping, setRadialIsSnapping] = useState(false);
 
   const scanCurrentPageElements = (): PageElementContext[] => {
     const main = document.getElementById('main-content');
@@ -544,33 +536,24 @@ function FloatingActionRail({
     navigate(route);
   };
   const rightActions = [
-    { label: 'Open feedback', title: 'Feedback', icon: <MessageCircle className="h-5 w-5" aria-hidden />, onClick: openFeedback, colorClass: 'bg-orange-500 text-white' },
-    { label: 'Open help center', title: 'Help', icon: <HelpCircle className="h-5 w-5" aria-hidden />, onClick: () => navigate('/help'), colorClass: 'bg-teal-500 text-white' },
-    { label: 'Share', title: 'Share', icon: <Share2 className="h-5 w-5" aria-hidden />, colorClass: 'bg-blue-500 text-white' },
-    { label: 'Information', title: 'Info', icon: <Info className="h-5 w-5" aria-hidden />, colorClass: 'bg-green-500 text-white' },
+    { label: 'Open feedback', title: 'Feedback', icon: <MessageCircle className="h-5 w-5" aria-hidden />, onClick: openFeedback, colorStyle: { backgroundColor: 'var(--text-secondary)' } },
+    { label: 'Open help center', title: 'Help', icon: <HelpCircle className="h-5 w-5" aria-hidden />, onClick: () => navigate('/help'), colorStyle: { backgroundColor: 'var(--text-secondary)' } },
+    { label: 'Share', title: 'Share', icon: <Share2 className="h-5 w-5" aria-hidden />, colorStyle: { backgroundColor: 'var(--text-secondary)' } },
+    { label: 'Information', title: 'Info', icon: <Info className="h-5 w-5" aria-hidden />, colorStyle: { backgroundColor: 'var(--text-secondary)' } },
   ];
   const rightTotalAngle = 140;
   const rightStartAngle = 180 - (rightTotalAngle / 2);
   const rightAngleStep = rightActions.length > 1 ? rightTotalAngle / (rightActions.length - 1) : 0;
-  const radialTransitionClass = 'transition-all duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]';
+  const radialTransitionClass = 'transition-all duration-300 ease-out';
 
   const handleRadialMouseEnter = () => {
     if (radialOpen) return;
-    setRadialIsSnapping(true);
-    setRadialRotation(-1215);
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setRadialIsSnapping(false);
-        setRadialOpen(true);
-        setRadialRotation(0);
-      });
-    });
+    setRadialOpen(true);
   };
 
   const handleRadialMouseLeave = () => {
     if (!radialOpen) return;
     setRadialOpen(false);
-    setRadialRotation(1215);
   };
 
   return (
@@ -583,39 +566,38 @@ function FloatingActionRail({
       <div
         aria-label="Right panel dock"
         className={cx(
-          'fixed right-6 top-1/2 z-[50] flex h-14 w-14 -translate-y-1/2 items-center justify-center',
+          'fixed right-6 top-1/2 z-[50] flex h-11 w-11 -translate-y-1/2 items-center justify-center',
           hidden && 'pointer-events-none opacity-0',
         )}
         onMouseEnter={handleRadialMouseEnter}
         onMouseLeave={handleRadialMouseLeave}
         aria-hidden={hidden ? 'true' : undefined}
       >
-        <div className={cx('absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-500', radialOpen ? 'h-[360px] w-[360px]' : 'h-14 w-14')} aria-hidden="true" />
+        <div className={cx('absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-500', radialOpen ? 'h-[360px] w-[360px]' : 'h-11 w-11')} aria-hidden="true" />
         <div className={cx('pointer-events-none absolute inset-0 flex items-center justify-center')}>
           {rightActions.map((action, index) => {
             const angle = rightStartAngle + index * rightAngleStep;
             const targetX = Math.cos(angle * Math.PI / 180) * 110;
             const targetY = Math.sin(angle * Math.PI / 180) * 110;
-            const x = radialOpen ? targetX : -800;
-            const y = radialOpen ? targetY : 0;
             const delay = index * 50;
             return (
               <button
                 key={action.label}
                 type="button"
                 onClick={() => {
-                  (window as any).__v6TransitionSide = 'right';
+                  (window as Window & { __v6TransitionSide?: string }).__v6TransitionSide = 'right';
                   action.onClick?.();
                   handleRadialMouseLeave();
                 }}
                 aria-label={action.label}
                 title={action.title}
-                className={cx('absolute flex h-12 w-12 items-center justify-center rounded-full shadow-lg hover:scale-110', !radialIsSnapping && radialTransitionClass, action.colorClass)}
+                className={cx('absolute flex h-11 w-11 items-center justify-center rounded-full text-white shadow-lg hover:scale-110', radialTransitionClass)}
                 style={{
-                  transform: `rotate(${radialRotation}deg) translate(${x}px, ${y}px) rotate(${-radialRotation}deg)`,
+                  transform: radialOpen ? `translate(${targetX}px, ${targetY}px)` : `translate(0px, 0px) scale(0)`,
                   opacity: radialOpen ? 1 : 0,
                   pointerEvents: radialOpen ? 'auto' : 'none',
                   transitionDelay: `${delay}ms`,
+                  ...action.colorStyle,
                 }}
               >
                 {action.icon}
@@ -629,12 +611,12 @@ function FloatingActionRail({
           aria-label="Open page actions"
           aria-expanded={radialOpen}
           title="Page actions"
-          className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white text-slate-800 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
+          className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-800 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
         >
           <span className="absolute transition-all duration-300" style={{ opacity: radialOpen ? 0 : 1, transform: radialOpen ? 'rotate(-90deg) scale(0.5)' : 'rotate(0deg) scale(1)' }}>
             <ColoredKebabIcon />
           </span>
-          <X className="absolute h-6 w-6 text-slate-800 transition-all duration-300" style={{ opacity: radialOpen ? 1 : 0, transform: radialOpen ? 'rotate(0deg) scale(1)' : 'rotate(90deg) scale(0.5)' }} aria-hidden />
+          <X className="absolute h-5 w-5 text-slate-800 transition-all duration-300" style={{ opacity: radialOpen ? 1 : 0, transform: radialOpen ? 'rotate(0deg) scale(1)' : 'rotate(90deg) scale(0.5)' }} aria-hidden />
         </button>
       </div>
 
@@ -780,6 +762,11 @@ function getShellSubnavItems(pathname: string): ShellSubnavItem[] {
     ];
     return orderedItems.filter((item): item is ShellSubnavItem => Boolean(item));
   }
+
+  // Policy detail viewer (/library/:policyId) is a focused reading surface —
+  // its own in-page section navigation replaces the taxonomy subnav. The
+  // /library list page keeps the subnav.
+  if (/^\/library\/[^/]+/.test(p)) return [];
 
   if (isTaxonomyGroup) return workspaceSubnavItems.taxonomy;
   return [];

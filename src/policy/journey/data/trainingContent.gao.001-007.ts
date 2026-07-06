@@ -5,7 +5,6 @@
 import type { ModuleTraining } from './trainingContent.types';
 
 const IMG = {
-  mission: '/assets/media/onboarding-gao001-mission-noon.png',
   org: '/assets/media/gao-mission-values.jpg',
   scope: '/assets/media/patient-rights.jpg',
   compliance: '/assets/media/abuse-reporting.jpg',
@@ -31,7 +30,6 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
         'Mission and values are not decoration. CMS surveyors, accreditors, and patients judge us by whether our day-to-day decisions match what we publish. Every patient call, visit note, and reported concern is measured against these standards.',
       narration:
         'Welcome to General Agency Orientation. In this module you will learn the mission, vision, and values that govern every decision the agency makes. These are not slogans. They are the standards a surveyor will hold us to and the promises we make to every patient.',
-      imageUrl: '/assets/media/onboarding-gao001-mission-noon.png',
     },
     navigation: {
       title: 'How This Training Works',

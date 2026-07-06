@@ -82,3 +82,9 @@ build*.log
 temp-*
 current-*.png
 fresh-*.png
+
+# CI-ION OASIS-E2 SOC simulator narration audio (~950MB of WAVs).
+# Built from C:\AI\Git\training\CI-ION\CI-ION_OASIS-E2_SOC (npm run build,
+# then copy dist/* into public/advanced-training/oasis-e2-soc/). Re-copy
+# the assets when deploying; too large to commit, same as media above.
+public/advanced-training/oasis-e2-soc/assets/*.wav

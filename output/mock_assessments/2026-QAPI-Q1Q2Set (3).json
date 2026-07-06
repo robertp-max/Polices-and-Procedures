@@ -1,0 +1,1213 @@
+{
+  "packet_meta": {
+    "packet_id": "QAPI-PKT-2026-Q2",
+    "event_id": "qapi_meeting-20260507-08",
+    "workflow_id": "QA-WF-03",
+    "quarter": "Q2-2026",
+    "reporting_period": "2026-04-01 to 2026-06-30",
+    "meeting_date": "2026-05-07",
+    "meeting_location": "Main Conference Room / Zoom Hybrid",
+    "packet_status": "filled_mock",
+    "generated_date": "2026-06-22",
+    "due_window": {
+      "start": "2026-06-10",
+      "end": "2026-06-21"
+    },
+    "governing_body_meeting_target": "2026-06-18",
+    "agency_name": "Care Indeed Home Health",
+    "accreditation_body": "ACHC"
+  },
+
+  "packet_cover_agenda": {
+    "section_id": "PKT-COVER",
+    "title": "Q2 2026 QAPI Committee Meeting — Agenda & Pre-Read Packet",
+    "meeting_date": "2026-05-07",
+    "meeting_time": "10:00 AM – 12:00 PM PST",
+    "location": "Main Conference Room / Zoom Hybrid",
+    "call_to_order_by": "Dakota Director, DON",
+    "attendees_expected": [
+      "Dakota Director — Director of Nursing (Chair)",
+      "Riley RN — Clinical Manager",
+      "Bailey Billing — Accounting / Finance",
+      "Cameron Compliance — Compliance Officer",
+      "Morgan MD — Medical Director",
+      "Avery Admin — Administrator",
+      "Jordan SW — Social Worker Representative"
+    ],
+    "agenda_items": [
+      {
+        "item_number": 1,
+        "description": "Call to Order & Roll Call",
+        "presenter": "Dakota Director",
+        "time_allotted_minutes": 5
+      },
+      {
+        "item_number": 2,
+        "description": "Approval of Prior Meeting Minutes (QA-FM-024 — Q1)",
+        "presenter": "Dakota Director",
+        "time_allotted_minutes": 5,
+        "reference_form": "QA-FM-024"
+      },
+      {
+        "item_number": 3,
+        "description": "Review Action Item Tracker (QA-FM-022)",
+        "presenter": "Bailey Billing",
+        "time_allotted_minutes": 10,
+        "reference_form": "QA-FM-022"
+      },
+      {
+        "item_number": 4,
+        "description": "Q2 QAPI Data Dashboard Review — 3 Months of KPIs (QA-FM-020)",
+        "presenter": "Riley RN",
+        "time_allotted_minutes": 15,
+        "reference_form": "QA-FM-020"
+      },
+      {
+        "item_number": 5,
+        "description": "Adverse Events / Incident Report Log & RCA Summary (QA-FM-026)",
+        "presenter": "Cameron Compliance",
+        "time_allotted_minutes": 15,
+        "reference_form": "QA-FM-026"
+      },
+      {
+        "item_number": 6,
+        "description": "Active PIP Status — Q2 Remeasurement (QA-FM-021)",
+        "presenter": "Dakota Director",
+        "time_allotted_minutes": 15,
+        "reference_form": "QA-FM-021"
+      },
+      {
+        "item_number": 7,
+        "description": "Infection Control Surveillance / Line List (QA-FM-027)",
+        "presenter": "Cameron Compliance",
+        "time_allotted_minutes": 10,
+        "reference_form": "QA-FM-027"
+      },
+      {
+        "item_number": 8,
+        "description": "Patient Complaints Summary (embedded in QA-FM-023)",
+        "presenter": "Dakota Director",
+        "time_allotted_minutes": 10,
+        "reference_form": "QA-FM-023"
+      },
+      {
+        "item_number": 9,
+        "description": "Chart Audit Summary (QA-FM-025)",
+        "presenter": "Riley RN",
+        "time_allotted_minutes": 10,
+        "reference_form": "QA-FM-025"
+      },
+      {
+        "item_number": 10,
+        "description": "Quarterly QAPI Governance Report (QA-FM-023)",
+        "presenter": "Dakota Director",
+        "time_allotted_minutes": 10,
+        "reference_form": "QA-FM-023"
+      },
+      {
+        "item_number": 11,
+        "description": "New PIP Proposals / CAPAs — Medication Reconciliation PIP",
+        "presenter": "Dakota Director / Riley RN",
+        "time_allotted_minutes": 10
+      },
+      {
+        "item_number": 12,
+        "description": "Governing Body Report Preview (QA-FM-023)",
+        "presenter": "Dakota Director",
+        "time_allotted_minutes": 5,
+        "reference_form": "QA-FM-023"
+      },
+      {
+        "item_number": 13,
+        "description": "Open Discussion / New Business",
+        "presenter": "All",
+        "time_allotted_minutes": 10
+      },
+      {
+        "item_number": 14,
+        "description": "Next Meeting Date (Aug 6, 2026) & Adjournment",
+        "presenter": "Dakota Director",
+        "time_allotted_minutes": 5
+      }
+    ],
+    "pre_read_attachments": [
+      "QA-FM-020 — Q2 Data Dashboard",
+      "QA-FM-021 — Annual PIP Form Q2 Remeasurement",
+      "QA-FM-022 — Action Item Log",
+      "QA-FM-023 — Quarterly Governance Report (incl. Patient Complaints)",
+      "QA-FM-024 — Q1 Meeting Minutes (prior quarter)",
+      "QA-FM-025 — Chart Audit Summary",
+      "QA-FM-026 — Incident Report Log Q2",
+      "QA-FM-027 — Infection Control Log Q2"
+    ]
+  },
+
+  "forms": {
+
+    "QA-FM-020": {
+      "form_id": "QA-FM-020",
+      "title": "Q2 QAPI Data Dashboard",
+      "description": "Three months of quality indicator KPIs with quarterly trends and target vs. actual",
+      "responsible_owner": "Clinical Manager",
+      "named_preparer": "Riley RN",
+      "responsible_signer_approver": "DON + Administrator",
+      "reporting_period": "2026-04-01 to 2026-06-30",
+      "dashboard_kpis": [
+        {
+          "indicator_id": "KPI-001",
+          "indicator_name": "Nursing Assessment within 48 hrs of SOC",
+          "target_pct": 95,
+          "apr_actual": 91,
+          "may_actual": 93,
+          "jun_actual": 96,
+          "q2_average": 93.3,
+          "q1_comparison": 88,
+          "trend": "improving",
+          "meets_target": false
+        },
+        {
+          "indicator_id": "KPI-002",
+          "indicator_name": "Medication Reconciliation Completion Rate",
+          "target_pct": 98,
+          "apr_actual": 85,
+          "may_actual": 87,
+          "jun_actual": 89,
+          "q2_average": 87,
+          "q1_comparison": 82,
+          "trend": "improving_below_target",
+          "meets_target": false
+        },
+        {
+          "indicator_id": "KPI-003",
+          "indicator_name": "Plan of Care Signed within 5 Days",
+          "target_pct": 95,
+          "apr_actual": 94,
+          "may_actual": 96,
+          "jun_actual": 97,
+          "q2_average": 95.7,
+          "q1_comparison": 92,
+          "trend": "improving",
+          "meets_target": true
+        },
+        {
+          "indicator_id": "KPI-004",
+          "indicator_name": "Missed Visit Rate",
+          "target_pct": 2,
+          "apr_actual": 3.1,
+          "may_actual": 2.8,
+          "jun_actual": 2.5,
+          "q2_average": 2.8,
+          "q1_comparison": 3.5,
+          "trend": "improving_below_target",
+          "meets_target": false
+        },
+        {
+          "indicator_id": "KPI-005",
+          "indicator_name": "Patient Satisfaction Score",
+          "target_pct": 90,
+          "apr_actual": 91,
+          "may_actual": 89,
+          "jun_actual": 92,
+          "q2_average": 90.7,
+          "q1_comparison": 88,
+          "trend": "stable_at_target",
+          "meets_target": true
+        },
+        {
+          "indicator_id": "KPI-006",
+          "indicator_name": "Infection Rate (per 1,000 patient days)",
+          "target_pct": 1.5,
+          "apr_actual": 1.2,
+          "may_actual": 1.8,
+          "jun_actual": 1.4,
+          "q2_average": 1.47,
+          "q1_comparison": 1.6,
+          "trend": "improving",
+          "meets_target": true
+        },
+        {
+          "indicator_id": "KPI-007",
+          "indicator_name": "Falls with Injury Rate",
+          "target_pct": 1.0,
+          "apr_actual": 0.8,
+          "may_actual": 1.2,
+          "jun_actual": 0.9,
+          "q2_average": 0.97,
+          "q1_comparison": 1.1,
+          "trend": "improving",
+          "meets_target": true
+        },
+        {
+          "indicator_id": "KPI-008",
+          "indicator_name": "ED Utilization Rate",
+          "target_pct": 10,
+          "apr_actual": 12,
+          "may_actual": 11,
+          "jun_actual": 9,
+          "q2_average": 10.7,
+          "q1_comparison": 13,
+          "trend": "improving",
+          "meets_target": false
+        },
+        {
+          "indicator_id": "KPI-009",
+          "indicator_name": "Hospitalization Rate",
+          "target_pct": 8,
+          "apr_actual": 7,
+          "may_actual": 6,
+          "jun_actual": 7,
+          "q2_average": 6.7,
+          "q1_comparison": 9,
+          "trend": "improving",
+          "meets_target": true
+        },
+        {
+          "indicator_id": "KPI-010",
+          "indicator_name": "Timely Discharge Summary Completion",
+          "target_pct": 95,
+          "apr_actual": 90,
+          "may_actual": 93,
+          "jun_actual": 95,
+          "q2_average": 92.7,
+          "q1_comparison": 87,
+          "trend": "improving",
+          "meets_target": false
+        }
+      ],
+      "narrative_summary": "Q2 showed meaningful improvement across 8 of 10 indicators vs. Q1. Nursing assessment timeliness rose from 88% to 93.3% (approaching 95% target). Medication reconciliation remains the largest gap at 87% vs. 98% target — a new PIP is recommended. Plan of Care signing, Patient Satisfaction, Infection Rate, Falls, and Hospitalization Rate all met or exceeded targets. ED utilization and Missed Visit Rate continued improving but remain slightly above threshold. Overall trajectory is positive.",
+      "signature_lines": [
+        { "role": "Clinical Manager / Preparer", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Director of Nursing (DON)", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Administrator", "name": "_________________________", "signature": "_______________", "date": "____/____/______" }
+      ]
+    },
+
+    "QA-FM-021": {
+      "form_id": "QA-FM-021",
+      "title": "Annual PIP Form — Q2 Remeasurement",
+      "description": "Active Performance Improvement Project status with Q2 remeasurement data",
+      "responsible_owner": "Director of Nursing",
+      "named_preparer": "Dakota Director",
+      "responsible_signer_approver": "DON + Administrator",
+      "pips": [
+        {
+          "pip_id": "PIP-2026-001",
+          "pip_title": "Timely Nursing Assessment within 48 Hours of SOC",
+          "care_commitment_alignment": "C1 — Clinical Excellence",
+          "problem_statement": "Q4 2025 baseline audit showed 82% of comprehensive nursing assessments were completed within 48 hours of admission, below the 95% target.",
+          "baseline_metric": "82% (Q4 2025)",
+          "baseline_period": "Q4 2025",
+          "target_metric": "≥95%",
+          "q1_remeasurement": "88%",
+          "q2_remeasurement": "93.3%",
+          "status": "on_track",
+          "root_cause_summary": "Scheduling gaps on weekends; no SN available within 24 hrs for Friday admissions. Documentation template not auto-triggering 48-hr alert.",
+          "interventions": [
+            "Weekend SN on-call coverage expanded",
+            "AlayaCare 48-hr assessment alert configured",
+            "Weekly SOC compliance huddle added to Clinical Manager workflow",
+            "Retrospective chart audit of all Friday/Saturday admissions"
+          ],
+          "next_steps": "Continue monitoring. If Q3 sustains ≥95%, prepare closure summary for Q4.",
+          "owner": "Riley RN — Clinical Manager",
+          "target_completion_date": "2026-09-30"
+        },
+        {
+          "pip_id": "PIP-2026-002",
+          "pip_title": "Reduce Emergency Department Utilization",
+          "care_commitment_alignment": "C3 — Patient Safety",
+          "problem_statement": "ED utilization rate was 15% in Q3 2025, significantly above the 10% target. Contributing factors include lack of after-hours triage protocols and delayed symptom escalation by HHAs.",
+          "baseline_metric": "15% (Q3 2025)",
+          "baseline_period": "Q3 2025",
+          "target_metric": "≤10%",
+          "q1_remeasurement": "13%",
+          "q2_remeasurement": "10.7%",
+          "status": "on_track",
+          "root_cause_summary": "HHA staff lacked structured triage decision tree. After-hours phone triage staffed by non-clinical personnel. Patients defaulting to 911 calls.",
+          "interventions": [
+            "After-hours RN triage line established",
+            "HHA triage decision tree laminated card distributed",
+            "Monthly HHA in-service on when to call RN vs. 911",
+            "Post-ED-visit root cause review for each occurrence"
+          ],
+          "next_steps": "Q2 average 10.7% — close to target. Continue interventions. June reached 9%. Anticipate closure if Q3 sustains ≤10%.",
+          "owner": "Dakota Director — DON",
+          "target_completion_date": "2026-09-30"
+        }
+      ],
+      "new_pip_proposals": [
+        {
+          "proposed_title": "Medication Reconciliation Completion Rate Improvement",
+          "justification": "Q2 average 87% vs. 98% target — largest KPI gap. Two medication-related incidents in Q2 linked to incomplete reconciliation. ACHC CoP requires medication management process.",
+          "proposed_owner": "Riley RN — Clinical Manager",
+          "proposed_start_date": "2026-07-01"
+        }
+      ],
+      "narrative_summary": "Both active PIPs show strong improvement trajectories. PIP-001 (Nursing Assessment) rose from 82% baseline to 93.3% — 1.7pp from target. PIP-002 (ED Utilization) dropped from 15% to 10.7%, with June hitting 9%. A new PIP for Medication Reconciliation is proposed given persistent gap and safety implications. Committee recommends approval.",
+      "signature_lines": [
+        { "role": "Director of Nursing / Preparer", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "DON (Approver)", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Administrator (Approver)", "name": "_________________________", "signature": "_______________", "date": "____/____/______" }
+      ]
+    },
+
+    "QA-FM-022": {
+      "form_id": "QA-FM-022",
+      "title": "QAPI Action Item Log",
+      "description": "Tracking log for all QAPI action items with owners, deadlines, and status",
+      "responsible_owner": "Accounting",
+      "named_preparer": "Bailey Billing",
+      "responsible_signer_approver": "DON + Administrator",
+      "action_items": [
+        {
+          "item_id": "AI-2026-Q1-001",
+          "originating_meeting_date": "2026-02-04",
+          "description": "Configure AlayaCare 48-hr nursing assessment alert for all new admissions",
+          "assigned_owner": "Riley RN",
+          "due_date": "2026-03-15",
+          "status": "completed",
+          "completion_date": "2026-03-10",
+          "evidence_reference": "AlayaCare config screenshot; IT change log #CHG-4412",
+          "notes": "Alert live since March 10. Confirmed triggering correctly."
+        },
+        {
+          "item_id": "AI-2026-Q1-002",
+          "originating_meeting_date": "2026-02-04",
+          "description": "Establish after-hours RN triage line with documented protocol",
+          "assigned_owner": "Dakota Director",
+          "due_date": "2026-03-31",
+          "status": "completed",
+          "completion_date": "2026-03-28",
+          "evidence_reference": "Triage protocol QA-SOP-018; Phone system config; Staff roster",
+          "notes": "Line operational since March 28. Monthly call volume being tracked."
+        },
+        {
+          "item_id": "AI-2026-Q1-003",
+          "originating_meeting_date": "2026-02-04",
+          "description": "Develop HHA triage decision tree laminated card",
+          "assigned_owner": "Cameron Compliance",
+          "due_date": "2026-04-15",
+          "status": "completed",
+          "completion_date": "2026-04-12",
+          "evidence_reference": "Decision tree document v2.1; Distribution log signed by 18/20 HHAs",
+          "notes": "2 HHAs on leave — will sign upon return."
+        },
+        {
+          "item_id": "AI-2026-Q1-004",
+          "originating_meeting_date": "2026-02-04",
+          "description": "Conduct TB screening audit for all clinical staff — ensure compliance",
+          "assigned_owner": "Cameron Compliance",
+          "due_date": "2026-04-30",
+          "status": "completed",
+          "completion_date": "2026-04-22",
+          "evidence_reference": "TB audit spreadsheet; 3 staff referred for renewal",
+          "notes": "3 renewals completed by May 5."
+        },
+        {
+          "item_id": "AI-2026-Q1-005",
+          "originating_meeting_date": "2026-02-04",
+          "description": "Update incident report form to include medication reconciliation check field",
+          "assigned_owner": "Cameron Compliance",
+          "due_date": "2026-04-30",
+          "status": "in-progress",
+          "completion_date": null,
+          "evidence_reference": "Draft form v3 under DON review",
+          "notes": "Form updated; pending final DON approval. Expected complete by May 15."
+        },
+        {
+          "item_id": "AI-2026-Q2-001",
+          "originating_meeting_date": "2026-05-07",
+          "description": "Initiate Medication Reconciliation PIP — complete problem statement and baseline data collection",
+          "assigned_owner": "Riley RN",
+          "due_date": "2026-07-15",
+          "status": "open",
+          "completion_date": null,
+          "evidence_reference": null,
+          "notes": "New action item from Q2 meeting. PIP-2026-003 to be opened."
+        },
+        {
+          "item_id": "AI-2026-Q2-002",
+          "originating_meeting_date": "2026-05-07",
+          "description": "Complete missed-visit root cause analysis for April–May spike cases",
+          "assigned_owner": "Dakota Director",
+          "due_date": "2026-06-15",
+          "status": "open",
+          "completion_date": null,
+          "evidence_reference": null,
+          "notes": "5 missed visits identified with scheduling pattern — investigate staffing gaps."
+        },
+        {
+          "item_id": "AI-2026-Q2-003",
+          "originating_meeting_date": "2026-05-07",
+          "description": "Schedule hand hygiene competency re-assessment for all field staff",
+          "assigned_owner": "Cameron Compliance",
+          "due_date": "2026-07-31",
+          "status": "open",
+          "completion_date": null,
+          "evidence_reference": null,
+          "notes": "May infection spike (1.8/1000) warrants competency revalidation."
+        }
+      ],
+      "summary_counts": {
+        "total_open": 3,
+        "total_in_progress": 1,
+        "total_completed_this_quarter": 4,
+        "total_overdue": 0,
+        "total_deferred": 0
+      },
+      "signature_lines": [
+        { "role": "Accounting / Preparer", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "DON (Approver)", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Administrator (Approver)", "name": "_________________________", "signature": "_______________", "date": "____/____/______" }
+      ]
+    },
+
+    "QA-FM-023": {
+      "form_id": "QA-FM-023",
+      "title": "Quarterly QAPI Governance Report",
+      "description": "Executive governance summary for Governing Body review — includes patient complaints summary",
+      "responsible_owner": "Director of Nursing",
+      "named_preparer": "Dakota Director",
+      "responsible_signer_approver": "DON + Administrator; then GV/Admin final review",
+      "reporting_period": "Q2 2026 (Apr–Jun)",
+      "executive_summary": "The Q2 2026 QAPI program demonstrates sustained improvement across the majority of quality indicators. 6 of 10 KPIs met or exceeded targets, with 4 trending positively but not yet at goal. Both active PIPs are on track for Q3 closure. A new PIP targeting medication reconciliation is proposed given a persistent 11-point gap and two related incidents. Infection control had a transient May spike (1.8/1000) that resolved in June (1.4/1000). Patient complaints decreased 25% vs. Q1. The Governing Body is asked to approve the new PIP and ratify the Q2 QAPI report.",
+      "committee_membership": {
+        "chair": "Dakota Director — DON",
+        "members": [
+          "Riley RN — Clinical Manager",
+          "Bailey Billing — Accounting",
+          "Cameron Compliance — Compliance Officer",
+          "Morgan MD — Medical Director",
+          "Avery Admin — Administrator",
+          "Jordan SW — Social Worker"
+        ],
+        "meeting_attendance_rate_q2": "100% (all members present at May 7 meeting)"
+      },
+      "quality_indicator_summary": {
+        "indicators_meeting_target": 6,
+        "indicators_below_target": 4,
+        "indicators_trending_down": 0,
+        "narrative": "All 10 indicators improved vs. Q1. POC signing (95.7%), Patient Satisfaction (90.7%), Infection Rate (1.47), Falls (0.97), and Hospitalization (6.7%) exceeded targets. Medication Reconciliation (87% vs. 98%), Missed Visits (2.8% vs. 2.0%), ED Utilization (10.7% vs. 10%), and Discharge Summary (92.7% vs. 95%) improved but remain below threshold."
+      },
+      "pip_summary": {
+        "total_active_pips": 2,
+        "pips_on_track": 2,
+        "pips_at_risk": 0,
+        "pips_completed_this_quarter": 0,
+        "new_pips_proposed": 1,
+        "narrative": "PIP-001 (Nursing Assessment) at 93.3% vs. 95% target — approaching closure. PIP-002 (ED Utilization) at 10.7% vs. 10% target — June hit 9%. New PIP proposed: Medication Reconciliation Completion Rate. Committee unanimously recommends approval."
+      },
+      "adverse_event_summary": {
+        "total_incidents_q2": 14,
+        "rca_completed": 12,
+        "rca_pending": 2,
+        "sentinel_events": 0,
+        "narrative": "14 incidents reported in Q2 (down from 18 in Q1). Categories: 4 falls (1 with minor injury), 3 medication errors (2 linked to incomplete reconciliation), 2 infections, 2 missed visits, 2 complaints, 1 ED visit. No sentinel events. Two RCAs pending for June medication incidents — expected completion by June 30."
+      },
+      "patient_complaints_summary": {
+        "total_complaints_q2": 6,
+        "resolved": 5,
+        "pending": 1,
+        "categories": [
+          { "category": "Scheduling / Timeliness", "count": 2 },
+          { "category": "Communication", "count": 2 },
+          { "category": "Caregiver Skill Concern", "count": 1 },
+          { "category": "Billing Inquiry", "count": 1 }
+        ],
+        "trends_vs_q1": "Decreased from 8 complaints in Q1 to 6 in Q2 (25% reduction). Scheduling complaints decreased 50% following after-hours triage implementation.",
+        "narrative": "Complaint volume trending down. One pending complaint (billing) under review with payer. No repeat complainants. Patient satisfaction survey corroborates improvement."
+      },
+      "infection_control_summary": {
+        "total_infections_q2": 5,
+        "types": [
+          { "type": "UTI", "count": 2 },
+          { "type": "Wound Infection", "count": 2 },
+          { "type": "Respiratory", "count": 1 }
+        ],
+        "rate_per_1000_patient_days": 1.47,
+        "trend_vs_q1": "Improved from 1.6/1000 in Q1 to 1.47/1000 in Q2. May spike (1.8) was transient — two concurrent wound infections in patients with diabetes.",
+        "narrative": "Infection rate within target (≤1.5). May spike investigated — both wound infections involved patients with uncontrolled diabetes and home wound care. Hand hygiene re-education scheduled for Q3."
+      },
+      "regulatory_update": "ACHC accreditation cycle current. No state survey anticipated until Q4 2026. CMS Conditions of Participation review completed — no changes affecting current operations. OASIS-E1 data submission current.",
+      "governing_body_recommendations": [
+        "Approve new PIP-2026-003: Medication Reconciliation Completion Rate",
+        "Ratify Q2 2026 QAPI report and meeting minutes",
+        "Authorize hand hygiene competency re-assessment for all field staff in Q3",
+        "Acknowledge sustained improvement trajectory — no escalation triggers met"
+      ],
+      "signature_lines": [
+        { "role": "Director of Nursing / Preparer", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "DON (Approver)", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Administrator (Approver)", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Governing Body Chair (Final Review)", "name": "_________________________", "signature": "_______________", "date": "____/____/______" }
+      ]
+    },
+
+    "QA-FM-024": {
+      "form_id": "QA-FM-024",
+      "title": "QAPI Meeting Minutes",
+      "description": "Official minutes of the Q2 QAPI Committee meeting",
+      "responsible_owner": "Director of Nursing",
+      "named_preparer": "Dakota Director",
+      "responsible_signer_approver": "DON + Administrator",
+      "meeting_date": "2026-05-07",
+      "meeting_time_start": "10:00 AM PST",
+      "meeting_time_end": "11:52 AM PST",
+      "location": "Main Conference Room / Zoom Hybrid",
+      "attendees": [
+        { "name": "Dakota Director", "role": "DON / Chair", "present": true, "signature": "_______________", "date_signed": "____/____/______" },
+        { "name": "Riley RN", "role": "Clinical Manager", "present": true, "signature": "_______________", "date_signed": "____/____/______" },
+        { "name": "Bailey Billing", "role": "Accounting", "present": true, "signature": "_______________", "date_signed": "____/____/______" },
+        { "name": "Cameron Compliance", "role": "Compliance Officer", "present": true, "signature": "_______________", "date_signed": "____/____/______" },
+        { "name": "Morgan MD", "role": "Medical Director", "present": true, "signature": "_______________", "date_signed": "____/____/______" },
+        { "name": "Avery Admin", "role": "Administrator", "present": true, "signature": "_______________", "date_signed": "____/____/______" },
+        { "name": "Jordan SW", "role": "Social Worker", "present": true, "signature": "_______________", "date_signed": "____/____/______" }
+      ],
+      "prior_minutes_approval": {
+        "q1_minutes_reviewed": true,
+        "approved": true,
+        "amendments": "None. Q1 minutes approved as written."
+      },
+      "discussion_items": [
+        {
+          "agenda_item_number": 3,
+          "topic": "Action Item Tracker Review (QA-FM-022)",
+          "discussion_summary": "Bailey Billing presented the action item log. 4 of 5 Q1 items completed on time. Item AI-2026-Q1-005 (incident form update) is in-progress — form v3 under DON review, expected May 15.",
+          "decisions_made": "Committee accepted status. No escalation needed.",
+          "action_items_generated": []
+        },
+        {
+          "agenda_item_number": 4,
+          "topic": "Q2 Data Dashboard Review (QA-FM-020)",
+          "discussion_summary": "Riley RN presented 3-month KPI dashboard. Highlighted improvements in 8 of 10 indicators. Nursing assessment at 93.3% (from 88% Q1). Medication reconciliation flagged as persistent gap at 87%. Discussion of contributing factors — complex medication profiles, incomplete transfer documentation from referring facilities.",
+          "decisions_made": "Committee recommends new PIP for medication reconciliation. Riley to lead baseline data collection.",
+          "action_items_generated": ["AI-2026-Q2-001"]
+        },
+        {
+          "agenda_item_number": 5,
+          "topic": "Incident Report Log & RCA Summary (QA-FM-026)",
+          "discussion_summary": "Cameron Compliance reported 14 incidents in Q2 (down from 18 in Q1). Two medication errors linked to incomplete reconciliation reinforced PIP proposal. 4 falls (1 minor injury), no sentinel events. Two June RCAs pending.",
+          "decisions_made": "RCAs to be completed by June 30. Falls risk assessment protocol to be reviewed in Q3.",
+          "action_items_generated": []
+        },
+        {
+          "agenda_item_number": 6,
+          "topic": "Active PIP Status — Q2 Remeasurement (QA-FM-021)",
+          "discussion_summary": "Dakota Director reviewed both PIPs. PIP-001 (Nursing Assessment) at 93.3% — strong trajectory. PIP-002 (ED Utilization) at 10.7% with June at 9%. Both recommended for continued monitoring with anticipated Q3 closure if sustained.",
+          "decisions_made": "Continue both PIPs. Prepare closure criteria documentation if Q3 data sustains targets.",
+          "action_items_generated": []
+        },
+        {
+          "agenda_item_number": 7,
+          "topic": "Infection Control Surveillance (QA-FM-027)",
+          "discussion_summary": "Cameron reported 5 infections in Q2. Rate 1.47/1000 (within 1.5 target). May spike of 1.8 attributed to two concurrent wound infections in diabetic patients. June returned to 1.4. Hand hygiene compliance noted at 94% — recommend re-assessment.",
+          "decisions_made": "Schedule hand hygiene competency re-assessment for all field staff Q3.",
+          "action_items_generated": ["AI-2026-Q2-003"]
+        },
+        {
+          "agenda_item_number": 8,
+          "topic": "Patient Complaints Summary (QA-FM-023)",
+          "discussion_summary": "6 complaints in Q2, down from 8 in Q1 (25% reduction). Scheduling complaints halved after triage line implementation. One billing complaint pending payer resolution.",
+          "decisions_made": "No additional action needed. Continue monitoring.",
+          "action_items_generated": []
+        },
+        {
+          "agenda_item_number": 9,
+          "topic": "Chart Audit Summary (QA-FM-025)",
+          "discussion_summary": "Riley RN reported on 45 chart audits. Overall compliance 91.8%. Weakest area: medication reconciliation documentation (82%) and discharge summary timeliness (88%). Strongest: POC completion (97%) and assessment timeliness (94%).",
+          "decisions_made": "Medication reconciliation findings support new PIP. Discharge summary improvement to be monitored.",
+          "action_items_generated": []
+        },
+        {
+          "agenda_item_number": 10,
+          "topic": "Missed Visit Root Cause",
+          "discussion_summary": "5 missed visits in April-May showed a pattern of Friday afternoon cancellations by patients followed by no-reschedule. Staffing on Fridays was also thinnest.",
+          "decisions_made": "Dakota to complete formal RCA by June 15.",
+          "action_items_generated": ["AI-2026-Q2-002"]
+        },
+        {
+          "agenda_item_number": 11,
+          "topic": "New PIP Proposal — Medication Reconciliation",
+          "discussion_summary": "Dakota presented proposal for PIP-2026-003. Baseline 87%, target 98%. Two medication incidents directly correlated. Committee discussed scope, methodology, and resource requirements.",
+          "decisions_made": "MOTION: Approve PIP-2026-003 Medication Reconciliation. Moved by Morgan MD, seconded by Riley RN. APPROVED unanimously.",
+          "action_items_generated": ["AI-2026-Q2-001"]
+        }
+      ],
+      "motions": [
+        {
+          "motion_description": "Approve Q1 2026 QAPI Meeting Minutes as written",
+          "moved_by": "Morgan MD",
+          "seconded_by": "Cameron Compliance",
+          "vote_result": "Approved unanimously (7-0)"
+        },
+        {
+          "motion_description": "Approve new PIP-2026-003: Medication Reconciliation Completion Rate",
+          "moved_by": "Morgan MD",
+          "seconded_by": "Riley RN",
+          "vote_result": "Approved unanimously (7-0)"
+        },
+        {
+          "motion_description": "Approve Q2 QAPI Governance Report for Governing Body submission",
+          "moved_by": "Avery Admin",
+          "seconded_by": "Jordan SW",
+          "vote_result": "Approved unanimously (7-0)"
+        }
+      ],
+      "next_meeting_date": "2026-08-06",
+      "adjournment_time": "11:52 AM PST",
+      "recorder_signature_line": { "role": "Recorder / DON", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+      "approver_signature_lines": [
+        { "role": "DON (Approver)", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Administrator (Approver)", "name": "_________________________", "signature": "_______________", "date": "____/____/______" }
+      ],
+      "attendee_signature_lines": [
+        { "role": "DON / Chair", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Clinical Manager", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Accounting", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Compliance Officer", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Medical Director", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Administrator", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Social Worker", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Additional Attendee", "name": "_________________________", "signature": "_______________", "date": "____/____/______" }
+      ]
+    },
+
+    "QA-FM-025": {
+      "form_id": "QA-FM-025",
+      "title": "Chart Audit Summary",
+      "description": "Quarterly chart audit results from clinical record reviews",
+      "responsible_owner": "Clinical Manager",
+      "named_preparer": "Riley RN",
+      "responsible_signer_approver": "DON + Administrator",
+      "audit_period": "Q2 2026 (Apr–Jun)",
+      "total_charts_audited": 45,
+      "audit_methodology": "Systematic random sample — 10% of active census per month. Audits performed using standardized Chart Audit Tool (QA-FM-025-T). Clinical Manager reviewed; DON validated 20% sample.",
+      "audit_criteria": [
+        {
+          "criteria_id": "CA-001",
+          "criteria_description": "Comprehensive Nursing Assessment within 48 hrs of SOC",
+          "total_reviewed": 45,
+          "compliant": 42,
+          "non_compliant": 3,
+          "compliance_rate_pct": 93.3,
+          "target_pct": 95,
+          "meets_target": false
+        },
+        {
+          "criteria_id": "CA-002",
+          "criteria_description": "Plan of Care signed by physician within 5 calendar days",
+          "total_reviewed": 45,
+          "compliant": 44,
+          "non_compliant": 1,
+          "compliance_rate_pct": 97.8,
+          "target_pct": 95,
+          "meets_target": true
+        },
+        {
+          "criteria_id": "CA-003",
+          "criteria_description": "Medication Reconciliation completed and documented",
+          "total_reviewed": 45,
+          "compliant": 37,
+          "non_compliant": 8,
+          "compliance_rate_pct": 82.2,
+          "target_pct": 98,
+          "meets_target": false
+        },
+        {
+          "criteria_id": "CA-004",
+          "criteria_description": "Visit notes completed within 24 hrs of visit",
+          "total_reviewed": 45,
+          "compliant": 41,
+          "non_compliant": 4,
+          "compliance_rate_pct": 91.1,
+          "target_pct": 95,
+          "meets_target": false
+        },
+        {
+          "criteria_id": "CA-005",
+          "criteria_description": "Patient/caregiver education documented per visit",
+          "total_reviewed": 45,
+          "compliant": 43,
+          "non_compliant": 2,
+          "compliance_rate_pct": 95.6,
+          "target_pct": 90,
+          "meets_target": true
+        },
+        {
+          "criteria_id": "CA-006",
+          "criteria_description": "Fall risk assessment completed at SOC and recert",
+          "total_reviewed": 45,
+          "compliant": 44,
+          "non_compliant": 1,
+          "compliance_rate_pct": 97.8,
+          "target_pct": 95,
+          "meets_target": true
+        },
+        {
+          "criteria_id": "CA-007",
+          "criteria_description": "Infection risk screening documented",
+          "total_reviewed": 45,
+          "compliant": 42,
+          "non_compliant": 3,
+          "compliance_rate_pct": 93.3,
+          "target_pct": 95,
+          "meets_target": false
+        },
+        {
+          "criteria_id": "CA-008",
+          "criteria_description": "Discharge summary completed within 5 days of discharge",
+          "total_reviewed": 18,
+          "compliant": 16,
+          "non_compliant": 2,
+          "compliance_rate_pct": 88.9,
+          "target_pct": 95,
+          "meets_target": false
+        },
+        {
+          "criteria_id": "CA-009",
+          "criteria_description": "OASIS assessment accuracy (validated fields)",
+          "total_reviewed": 45,
+          "compliant": 43,
+          "non_compliant": 2,
+          "compliance_rate_pct": 95.6,
+          "target_pct": 95,
+          "meets_target": true
+        },
+        {
+          "criteria_id": "CA-010",
+          "criteria_description": "Supervisory visit documentation (HHA) per regulatory requirement",
+          "total_reviewed": 22,
+          "compliant": 21,
+          "non_compliant": 1,
+          "compliance_rate_pct": 95.5,
+          "target_pct": 100,
+          "meets_target": false
+        }
+      ],
+      "common_deficiencies": [
+        "Medication reconciliation incomplete — missing reconciliation of PRN and OTC medications (8 charts)",
+        "Visit notes late by >24 hrs — 4 charts, 3 from same clinician (Friday visits documented Monday)",
+        "Nursing assessment delayed >48 hrs — 3 charts, all Friday admissions",
+        "Infection risk screening not updated at recertification — 3 charts",
+        "Discharge summaries late — 2 of 18 discharged patients (both complex cases with pending physician orders)"
+      ],
+      "corrective_actions_initiated": [
+        "Individual coaching for clinician with repeat late documentation (3 occurrences)",
+        "Medication reconciliation in-service scheduled for July — all SN and LVN staff",
+        "Friday admission workflow updated to include same-day assessment assignment",
+        "Infection risk screening added to recertification checklist template"
+      ],
+      "trend_vs_q1": "Overall compliance improved from 88.4% (Q1) to 91.8% (Q2). POC signing improved significantly. Medication reconciliation remains weakest area and worsened slightly from Q1 (84% → 82.2%) — supports PIP recommendation.",
+      "narrative_summary": "45 charts audited across Q2. Overall compliance 91.8%, improved from Q1. 5 of 10 criteria met target. Medication reconciliation is the clear outlier at 82.2% — this finding directly supports the committee's recommendation for PIP-2026-003. Late documentation concentrated in one clinician receiving individual coaching. Friday admission pattern continues to affect assessment timeliness.",
+      "signature_lines": [
+        { "role": "Clinical Manager / Preparer", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "DON (Approver)", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Administrator (Approver)", "name": "_________________________", "signature": "_______________", "date": "____/____/______" }
+      ]
+    },
+
+    "QA-FM-026": {
+      "form_id": "QA-FM-026",
+      "title": "Incident Report Log Q2",
+      "description": "Log of all incidents and adverse events with RCA summary",
+      "responsible_owner": "Compliance Officer",
+      "named_preparer": "Cameron Compliance",
+      "responsible_signer_approver": "DON + Administrator",
+      "reporting_period": "Q2 2026 (Apr–Jun)",
+      "incidents": [
+        {
+          "incident_id": "INC-2026-Q2-001",
+          "date_of_incident": "2026-04-03",
+          "date_reported": "2026-04-03",
+          "client_id": "MOCK-PT-Q2-0012",
+          "category": "fall",
+          "severity": "minor",
+          "description": "Patient slipped on wet bathroom floor during HHA-assisted ambulation. No injury. Patient refused ER visit.",
+          "immediate_action_taken": "VS assessed, physician notified, incident report completed, fall risk reassessment performed.",
+          "rca_completed": true,
+          "rca_findings": "Bathroom mat not in place. HHA did not perform pre-ambulation safety check.",
+          "corrective_action": "Fall prevention in-service for assigned HHA. Bathroom safety checklist added to care plan.",
+          "status": "closed",
+          "reported_by": "HHA-Torres",
+          "follow_up_date": "2026-04-10"
+        },
+        {
+          "incident_id": "INC-2026-Q2-002",
+          "date_of_incident": "2026-04-08",
+          "date_reported": "2026-04-08",
+          "client_id": "MOCK-PT-Q2-0025",
+          "category": "medication_error",
+          "severity": "moderate",
+          "description": "Patient took double dose of Metoprolol — medication list not reconciled after hospital discharge. BP dropped to 88/52.",
+          "immediate_action_taken": "RN performed emergency visit. VS monitored x2 hrs. Physician called — held next dose. No ER transfer needed.",
+          "rca_completed": true,
+          "rca_findings": "Hospital discharge med list not reconciled with home med list within 24 hrs of readmission to home health. RN did not verify medications at first post-hospital visit.",
+          "corrective_action": "Immediate medication reconciliation. Process change: mandatory med reconciliation within 24 hrs of any hospital/facility discharge. Clinician education completed.",
+          "status": "closed",
+          "reported_by": "RN-Martinez",
+          "follow_up_date": "2026-04-15"
+        },
+        {
+          "incident_id": "INC-2026-Q2-003",
+          "date_of_incident": "2026-04-14",
+          "date_reported": "2026-04-14",
+          "client_id": "MOCK-PT-Q2-0008",
+          "category": "missed_visit",
+          "severity": "minor",
+          "description": "Scheduled PT visit missed — therapist called in sick, no backup assigned. Patient contacted and rescheduled for next day.",
+          "immediate_action_taken": "Patient called same day. Visit rescheduled for April 15. Supervisor notified.",
+          "rca_completed": true,
+          "rca_findings": "No backup PT on call for same-day coverage. Scheduling system did not auto-flag uncovered visit.",
+          "corrective_action": "PT backup on-call rotation established. AlayaCare alert configured for uncovered visits.",
+          "status": "closed",
+          "reported_by": "Scheduling-Kim",
+          "follow_up_date": "2026-04-21"
+        },
+        {
+          "incident_id": "INC-2026-Q2-004",
+          "date_of_incident": "2026-04-22",
+          "date_reported": "2026-04-22",
+          "client_id": "MOCK-PT-Q2-0031",
+          "category": "fall",
+          "severity": "near_miss",
+          "description": "Patient nearly fell transferring from wheelchair to bed. Grab bar loose. No contact with floor.",
+          "immediate_action_taken": "Grab bar tightened. Home safety reassessment performed. PT consulted for transfer training.",
+          "rca_completed": true,
+          "rca_findings": "Grab bar installation not verified during initial home safety assessment.",
+          "corrective_action": "Home safety assessment checklist updated to include DME/fixture verification.",
+          "status": "closed",
+          "reported_by": "HHA-Johnson",
+          "follow_up_date": "2026-04-29"
+        },
+        {
+          "incident_id": "INC-2026-Q2-005",
+          "date_of_incident": "2026-05-02",
+          "date_reported": "2026-05-02",
+          "client_id": "MOCK-PT-Q2-0019",
+          "category": "complaint",
+          "severity": "minor",
+          "description": "Patient's daughter complained caregiver arrived 45 minutes late for scheduled visit. Felt communication was poor.",
+          "immediate_action_taken": "Supervisor called family to apologize. Scheduling adjusted. Caregiver counseled.",
+          "rca_completed": true,
+          "rca_findings": "Caregiver's prior visit ran over. No notification sent to next patient.",
+          "corrective_action": "Running-late notification protocol implemented — caregiver must notify office if >15 min behind.",
+          "status": "closed",
+          "reported_by": "Intake-Williams",
+          "follow_up_date": "2026-05-09"
+        },
+        {
+          "incident_id": "INC-2026-Q2-006",
+          "date_of_incident": "2026-05-06",
+          "date_reported": "2026-05-06",
+          "client_id": "MOCK-PT-Q2-0042",
+          "category": "infection",
+          "severity": "moderate",
+          "description": "Wound infection identified at surgical site (knee replacement). Culture positive for Staph aureus (MSSA). Wound care initiated.",
+          "immediate_action_taken": "Physician notified. Wound culture obtained. Oral antibiotics started. Wound care frequency increased to daily.",
+          "rca_completed": true,
+          "rca_findings": "Patient's wound care technique at home was suboptimal between visits. Caregiver education incomplete.",
+          "corrective_action": "Enhanced wound care education for patient and family. Wound care competency validated for assigned SN.",
+          "status": "closed",
+          "reported_by": "RN-Chen",
+          "follow_up_date": "2026-05-20"
+        },
+        {
+          "incident_id": "INC-2026-Q2-007",
+          "date_of_incident": "2026-05-11",
+          "date_reported": "2026-05-11",
+          "client_id": "MOCK-PT-Q2-0055",
+          "category": "fall",
+          "severity": "moderate",
+          "description": "Patient fell in kitchen while unattended. Bruise to left hip. X-ray negative for fracture.",
+          "immediate_action_taken": "RN emergency visit. VS stable. Physician notified. X-ray ordered — negative. Ice applied. Fall risk plan updated.",
+          "rca_completed": true,
+          "rca_findings": "Patient ambulated without walker against care plan instructions. Fall risk reassessment showed non-compliance with assistive device.",
+          "corrective_action": "Patient and family re-educated on fall prevention. Occupational therapy consulted for home modification assessment.",
+          "status": "closed",
+          "reported_by": "RN-Martinez",
+          "follow_up_date": "2026-05-18"
+        },
+        {
+          "incident_id": "INC-2026-Q2-008",
+          "date_of_incident": "2026-05-15",
+          "date_reported": "2026-05-15",
+          "client_id": "MOCK-PT-Q2-0038",
+          "category": "medication_error",
+          "severity": "minor",
+          "description": "Patient taking discontinued medication (Lisinopril) — physician changed to Losartan 2 weeks prior but home med list not updated.",
+          "immediate_action_taken": "Medication reconciliation performed. Lisinopril removed from med box. Education provided.",
+          "rca_completed": true,
+          "rca_findings": "Physician order received but medication list in EMR not updated by processing staff. Patient continued filling old prescription.",
+          "corrective_action": "EMR medication update workflow reviewed. Pharmacy notification process added for discontinued meds.",
+          "status": "closed",
+          "reported_by": "RN-Chen",
+          "follow_up_date": "2026-05-22"
+        },
+        {
+          "incident_id": "INC-2026-Q2-009",
+          "date_of_incident": "2026-05-19",
+          "date_reported": "2026-05-19",
+          "client_id": "MOCK-PT-Q2-0047",
+          "category": "infection",
+          "severity": "minor",
+          "description": "UTI diagnosed — patient with indwelling catheter. Urine culture positive for E. coli. Antibiotics initiated.",
+          "immediate_action_taken": "Physician notified. UA/culture obtained. Cipro started. Catheter care education reinforced.",
+          "rca_completed": true,
+          "rca_findings": "Catheter care frequency below recommended standard. Patient not performing self-care correctly between nursing visits.",
+          "corrective_action": "Catheter care education plan updated. Visit frequency temporarily increased. Caregiver trained on catheter care assistance.",
+          "status": "closed",
+          "reported_by": "RN-Park",
+          "follow_up_date": "2026-05-26"
+        },
+        {
+          "incident_id": "INC-2026-Q2-010",
+          "date_of_incident": "2026-05-22",
+          "date_reported": "2026-05-22",
+          "client_id": "MOCK-PT-Q2-0003",
+          "category": "ED_visit",
+          "severity": "moderate",
+          "description": "Patient presented to ED for chest pain. Evaluated — cardiac workup negative. Discharged home same day with follow-up.",
+          "immediate_action_taken": "Post-ED RN visit within 24 hrs. Medication review. Physician follow-up scheduled.",
+          "rca_completed": true,
+          "rca_findings": "Patient called 911 directly — did not use after-hours triage line. Anxiety-related chest pain pattern noted.",
+          "corrective_action": "Triage line number re-posted at patient's home. Anxiety management discussed. Physician notified of pattern.",
+          "status": "closed",
+          "reported_by": "RN-Martinez",
+          "follow_up_date": "2026-05-29"
+        },
+        {
+          "incident_id": "INC-2026-Q2-011",
+          "date_of_incident": "2026-05-28",
+          "date_reported": "2026-05-28",
+          "client_id": "MOCK-PT-Q2-0014",
+          "category": "missed_visit",
+          "severity": "minor",
+          "description": "Patient cancelled Friday PM SN visit; no reschedule occurred. Discovered during Monday chart review.",
+          "immediate_action_taken": "Patient contacted Monday AM. Visit rescheduled. No clinical impact identified.",
+          "rca_completed": true,
+          "rca_findings": "Patient-initiated cancellation not flagged in scheduling system for mandatory reschedule.",
+          "corrective_action": "AlayaCare cancellation workflow updated to require reschedule or supervisor override.",
+          "status": "closed",
+          "reported_by": "Scheduling-Kim",
+          "follow_up_date": "2026-06-04"
+        },
+        {
+          "incident_id": "INC-2026-Q2-012",
+          "date_of_incident": "2026-06-04",
+          "date_reported": "2026-06-04",
+          "client_id": "MOCK-PT-Q2-0021",
+          "category": "fall",
+          "severity": "near_miss",
+          "description": "Patient tripped on oxygen tubing while walking to bathroom. Caught self on doorframe. No injury.",
+          "immediate_action_taken": "Oxygen tubing rerouted. Home safety reassessment. Patient education on tubing management.",
+          "rca_completed": true,
+          "rca_findings": "Oxygen tubing not properly secured along baseboard. Home safety assessment had noted this but correction not verified.",
+          "corrective_action": "Tubing management added to home safety verification checklist. Follow-up verification required within 48 hrs of initial assessment.",
+          "status": "closed",
+          "reported_by": "HHA-Torres",
+          "follow_up_date": "2026-06-11"
+        },
+        {
+          "incident_id": "INC-2026-Q2-013",
+          "date_of_incident": "2026-06-12",
+          "date_reported": "2026-06-12",
+          "client_id": "MOCK-PT-Q2-0036",
+          "category": "medication_error",
+          "severity": "moderate",
+          "description": "Patient received wrong insulin dose — drew 15 units instead of 5 units of Humalog. Blood glucose dropped to 58. Treated with glucose tabs.",
+          "immediate_action_taken": "RN emergency visit. BG monitored q15min x1hr. Physician notified. Patient stable. Insulin pen reviewed.",
+          "rca_completed": false,
+          "rca_findings": null,
+          "corrective_action": "Preliminary: insulin administration re-education. RCA in progress — expected completion June 25.",
+          "status": "under_investigation",
+          "reported_by": "RN-Park",
+          "follow_up_date": "2026-06-25"
+        },
+        {
+          "incident_id": "INC-2026-Q2-014",
+          "date_of_incident": "2026-06-18",
+          "date_reported": "2026-06-18",
+          "client_id": "MOCK-PT-Q2-0050",
+          "category": "complaint",
+          "severity": "minor",
+          "description": "Patient complained about billing statement — charges for visit not covered by insurance. Patient confused about co-pay responsibility.",
+          "immediate_action_taken": "Billing department contacted patient. Explanation of benefits reviewed. No billing error found.",
+          "rca_completed": false,
+          "rca_findings": null,
+          "corrective_action": "Pending — billing team reviewing patient education materials for clarity. Expected resolution June 30.",
+          "status": "open",
+          "reported_by": "Billing-Adams",
+          "follow_up_date": "2026-06-30"
+        }
+      ],
+      "summary_counts": {
+        "total_incidents": 14,
+        "by_category": {
+          "fall": 4,
+          "medication_error": 3,
+          "infection": 2,
+          "missed_visit": 2,
+          "complaint": 2,
+          "ED_visit": 1
+        },
+        "by_severity": {
+          "near_miss": 2,
+          "minor": 7,
+          "moderate": 5,
+          "major": 0,
+          "sentinel": 0
+        },
+        "rca_completed_count": 12,
+        "rca_pending_count": 2,
+        "sentinel_events": 0,
+        "trend_vs_q1": "Decreased from 18 incidents in Q1 to 14 in Q2 (22% reduction). Falls decreased from 6 to 4. Medication errors stable at 3. No sentinel events either quarter."
+      },
+      "narrative_summary": "14 incidents in Q2 — 22% reduction from Q1. No sentinel events. Falls continue to decrease with safety interventions. Three medication errors — two directly linked to incomplete medication reconciliation (supporting new PIP). Two RCAs remain open for June incidents. Overall incident severity profile improved with more near-misses captured (good reporting culture indicator).",
+      "signature_lines": [
+        { "role": "Compliance Officer / Preparer", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "DON (Approver)", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Administrator (Approver)", "name": "_________________________", "signature": "_______________", "date": "____/____/______" }
+      ]
+    },
+
+    "QA-FM-027": {
+      "form_id": "QA-FM-027",
+      "title": "Infection Control Log Q2",
+      "description": "Infection surveillance line list and control measures",
+      "responsible_owner": "Compliance Officer",
+      "named_preparer": "Cameron Compliance",
+      "responsible_signer_approver": "DON + Administrator",
+      "reporting_period": "Q2 2026 (Apr–Jun)",
+      "infections": [
+        {
+          "infection_id": "INF-2026-Q2-001",
+          "date_onset": "2026-04-10",
+          "date_reported": "2026-04-12",
+          "client_id": "MOCK-PT-Q2-0016",
+          "infection_type": "UTI",
+          "organism": "E. coli",
+          "site": "Urinary tract",
+          "healthcare_associated": false,
+          "community_acquired": true,
+          "culture_obtained": true,
+          "antibiotic_started": true,
+          "antibiotic_name": "Nitrofurantoin",
+          "outcome": "resolved",
+          "reported_to_state": false,
+          "notes": "Community-acquired UTI in female patient age 78. Resolved with 7-day antibiotic course. No recurrence."
+        },
+        {
+          "infection_id": "INF-2026-Q2-002",
+          "date_onset": "2026-05-03",
+          "date_reported": "2026-05-06",
+          "client_id": "MOCK-PT-Q2-0042",
+          "infection_type": "wound_infection",
+          "organism": "Staphylococcus aureus (MSSA)",
+          "site": "Left knee — surgical site",
+          "healthcare_associated": true,
+          "community_acquired": false,
+          "culture_obtained": true,
+          "antibiotic_started": true,
+          "antibiotic_name": "Cephalexin",
+          "outcome": "resolved",
+          "reported_to_state": false,
+          "notes": "Post-TKR surgical site infection. Patient with diabetes (A1c 8.2). Wound care intensified. Resolved after 14-day antibiotic course and daily wound care. Also logged as INC-2026-Q2-006."
+        },
+        {
+          "infection_id": "INF-2026-Q2-003",
+          "date_onset": "2026-05-12",
+          "date_reported": "2026-05-12",
+          "client_id": "MOCK-PT-Q2-0033",
+          "infection_type": "wound_infection",
+          "organism": "Pseudomonas aeruginosa",
+          "site": "Right lower leg — venous stasis ulcer",
+          "healthcare_associated": true,
+          "community_acquired": false,
+          "culture_obtained": true,
+          "antibiotic_started": true,
+          "antibiotic_name": "Ciprofloxacin",
+          "outcome": "resolved",
+          "reported_to_state": false,
+          "notes": "Chronic wound with secondary infection. Patient with history of PVD. Wound care protocol adjusted. Culture-guided antibiotic therapy. Resolved in 21 days."
+        },
+        {
+          "infection_id": "INF-2026-Q2-004",
+          "date_onset": "2026-05-19",
+          "date_reported": "2026-05-19",
+          "client_id": "MOCK-PT-Q2-0047",
+          "infection_type": "UTI",
+          "organism": "E. coli",
+          "site": "Urinary tract (catheter-associated)",
+          "healthcare_associated": true,
+          "community_acquired": false,
+          "culture_obtained": true,
+          "antibiotic_started": true,
+          "antibiotic_name": "Ciprofloxacin",
+          "outcome": "resolved",
+          "reported_to_state": false,
+          "notes": "CAUTI in patient with indwelling Foley. Catheter care education reinforced. Visit frequency increased. Also logged as INC-2026-Q2-009. Resolved."
+        },
+        {
+          "infection_id": "INF-2026-Q2-005",
+          "date_onset": "2026-06-08",
+          "date_reported": "2026-06-10",
+          "client_id": "MOCK-PT-Q2-0009",
+          "infection_type": "respiratory",
+          "organism": "Influenza A (rapid test positive)",
+          "site": "Upper respiratory",
+          "healthcare_associated": false,
+          "community_acquired": true,
+          "culture_obtained": false,
+          "antibiotic_started": false,
+          "antibiotic_name": "N/A — Oseltamivir (antiviral) prescribed",
+          "outcome": "resolved",
+          "reported_to_state": false,
+          "notes": "Community-acquired influenza in 82-year-old. Tamiflu started within 48 hrs of symptom onset. Resolved in 10 days. No secondary bacterial infection."
+        }
+      ],
+      "surveillance_summary": {
+        "total_infections_q2": 5,
+        "rate_per_1000_patient_days": 1.47,
+        "by_type": {
+          "UTI": 2,
+          "wound_infection": 2,
+          "respiratory": 1
+        },
+        "healthcare_associated_count": 3,
+        "community_acquired_count": 2,
+        "trend_vs_q1": "Q2 rate 1.47/1000 patient days vs. Q1 rate 1.6/1000 — 8% improvement. May spike (1.8) was transient due to two concurrent wound infections.",
+        "hand_hygiene_compliance_rate": 94,
+        "ppe_compliance_rate": 97
+      },
+      "control_measures": [
+        "Hand hygiene competency re-assessment scheduled for all field staff — Q3 2026",
+        "Wound care protocol updated for patients with diabetes (enhanced frequency and technique verification)",
+        "Catheter care education materials revised and redistributed",
+        "Influenza vaccination status verified for all active patients (92% vaccinated)",
+        "PPE supply chain verified — no shortages reported"
+      ],
+      "outbreak_events": [],
+      "narrative_summary": "5 infections in Q2 — rate 1.47/1000 patient days (within ≤1.5 target). No outbreaks. Three healthcare-associated infections: 2 wound infections in patients with comorbidities (diabetes, PVD) and 1 CAUTI. May spike was situational, not systemic. Hand hygiene compliance at 94% (below 95% goal) — re-assessment planned. PPE compliance strong at 97%. All infections resolved with appropriate treatment. No COVID or MRSA cases.",
+      "signature_lines": [
+        { "role": "Compliance Officer / Preparer", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "DON (Approver)", "name": "_________________________", "signature": "_______________", "date": "____/____/______" },
+        { "role": "Administrator (Approver)", "name": "_________________________", "signature": "_______________", "date": "____/____/______" }
+      ]
+    }
+  },
+
+  "packet_checklist": {
+    "pre_read_distributed_5_business_days_prior": true,
+    "prior_meeting_minutes_attached": true,
+    "action_item_tracker_current": true,
+    "three_months_dashboards_included": true,
+    "adverse_events_rca_summary_included": true,
+    "active_pip_status_included": true,
+    "infection_line_list_included": true,
+    "patient_complaints_summary_included": true,
+    "chart_audit_summary_included": true,
+    "governing_body_report_included": true,
+    "all_signature_lines_present": true,
+    "packet_locked_for_distribution": false
+  }
+}

@@ -4,7 +4,6 @@ import { useLearner } from "@/policy/journey/lib/learnerState";
 import { appCopy, contentV2 } from "@/policy/journey/data/contentV2Adapter";
 import { JourneyLearningShell } from "./JourneyLearningShell";
 import { ReviewerToolsPanel } from "@/policy/journey/components/ReviewerToolsPanel";
-import { DemoOnlyBanner } from "@/policy/journey/components/DemoOnlyBanner";
 import { useJourneyStore } from "@/policy/journey/stores/journeyStore";
 import type { SupervisedVisit, SignatureRecord } from "@/policy/journey/types/journey";
 import { modulesForRole } from "@/policy/journey/data/modules";
@@ -109,7 +108,6 @@ export function SupervisorScreen() {
       title="Clinical Hub"
       subtitle="Access supplementary nursing guides, return demonstrations, and de-identified charting practices. This section is entirely optional and does not affect required course hours."
     >
-      <DemoOnlyBanner />
       <div className="space-y-6">
         {/* Reviewer Tools */}
         <ReviewerToolsPanel />

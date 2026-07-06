@@ -1,0 +1,12 @@
+
+> ci-policy-app@0.0.0 lint
+> eslint . --format compact src/v6/screens/RepresentativeScreens.tsx ; echo LINT_DONE $? ; type lint-specific.log
+
+
+Oops! Something went wrong! :(
+
+ESLint: 9.39.4
+
+No files matching the pattern ";" were found.
+Please check for typing mistakes in the pattern.
+

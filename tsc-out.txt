@@ -1,0 +1,4 @@
+src/v6/screens/pageviews/PersonalProfileScreen.tsx(55,18): error TS2304: Cannot find name 'cx'.
+src/v6/shell/PersonalOpsPanel.tsx(3,112): error TS6133: 'UserRound' is declared but its value is never read.
+src/v6/shell/PersonalStandaloneLayout.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/v6/shell/PersonalStandaloneLayout.tsx(1,17): error TS1484: 'PropsWithChildren' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.

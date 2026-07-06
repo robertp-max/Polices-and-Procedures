@@ -1,0 +1,293 @@
+{
+  "template": "admission",
+  "metadata": {
+    "sourceId": "ba16fcb1779b2c79",
+    "fileName": "2026-QAPI-Q1Q2Set(5).json",
+    "mimeType": "application/json",
+    "byteSize": 128129,
+    "contentHash": "ba16fcb1779b2c790bb4c4b49e98ff2a8af1e06197d7db34e3878adc6e3595ef",
+    "format": "text",
+    "charCount": 127767,
+    "hasText": true,
+    "localPath": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2\\output\\sources\\ba16fcb1779b2c79\\2026-QAPI-Q1Q2Set_5_.json",
+    "extractionPath": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2\\output\\mock_assessments\\ba16fcb1779b2c79.extraction.json",
+    "driveFileId": null,
+    "driveUrl": null,
+    "createdAtNote": "2026-07-02T19:50:36.592Z"
+  },
+  "extraction": {
+    "engine": "brad",
+    "passes": 3,
+    "fields": [
+      {
+        "key": "patient_name",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Patient",
+        "label": "Patient full legal name"
+      },
+      {
+        "key": "date_of_birth",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Patient",
+        "label": "Patient date of birth"
+      },
+      {
+        "key": "medical_record",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Patient",
+        "label": "Medical record number (MRN)"
+      },
+      {
+        "key": "address",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Patient",
+        "label": "Patient address / address of service"
+      },
+      {
+        "key": "phone",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Patient",
+        "label": "Patient phone"
+      },
+      {
+        "key": "county",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Patient",
+        "label": "County of residence"
+      },
+      {
+        "key": "start_of_care",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Admission / Physician",
+        "label": "Start of care date"
+      },
+      {
+        "key": "primary_physician",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Admission / Physician",
+        "label": "Primary / ordering physician"
+      },
+      {
+        "key": "physician_phone",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Admission / Physician",
+        "label": "Physician phone"
+      },
+      {
+        "key": "physician_fax",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Admission / Physician",
+        "label": "Physician fax"
+      },
+      {
+        "key": "admitting_clinician",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Admission / Physician",
+        "label": "Admitting clinician"
+      },
+      {
+        "key": "f2f_date",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Admission / Physician",
+        "label": "Face-to-face encounter date"
+      },
+      {
+        "key": "diagnosis",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Diagnosis / Clinical",
+        "label": "Primary diagnosis"
+      },
+      {
+        "key": "services_ordered",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Services Ordered",
+        "label": "Services ordered (disciplines and frequency)"
+      },
+      {
+        "key": "payer",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Payer / Billing Route",
+        "label": "Payer / insurance"
+      },
+      {
+        "key": "payer_id",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Payer / Billing Route",
+        "label": "Policy / member / plan ID number"
+      },
+      {
+        "key": "representative_name",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Representative / Legal Authority",
+        "label": "Authorized representative / conservator name"
+      },
+      {
+        "key": "representative_relationship",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Representative / Legal Authority",
+        "label": "Relationship to patient"
+      },
+      {
+        "key": "legal_authority",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Representative / Legal Authority",
+        "label": "Legal authority (POA, conservator, court order)"
+      },
+      {
+        "key": "emergency_contact_name",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Emergency Preparedness",
+        "label": "Primary emergency contact name"
+      },
+      {
+        "key": "emergency_contact_phone",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Emergency Preparedness",
+        "label": "Primary emergency contact phone"
+      },
+      {
+        "key": "primary_language",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Interpreter / Language",
+        "label": "Primary language"
+      },
+      {
+        "key": "interpreter_needed",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Interpreter / Language",
+        "label": "Interpreter needed (yes/no + language)"
+      },
+      {
+        "key": "advance_directive_status",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Advance Directives",
+        "label": "Advance directive status (AHCD / POLST / DNR)"
+      }
+    ],
+    "missing": [
+      "patient_name",
+      "date_of_birth",
+      "medical_record",
+      "address",
+      "phone",
+      "county",
+      "start_of_care",
+      "primary_physician",
+      "physician_phone",
+      "physician_fax",
+      "admitting_clinician",
+      "f2f_date",
+      "diagnosis",
+      "services_ordered",
+      "payer",
+      "payer_id",
+      "representative_name",
+      "representative_relationship",
+      "legal_authority",
+      "emergency_contact_name",
+      "emergency_contact_phone",
+      "primary_language",
+      "interpreter_needed",
+      "advance_directive_status"
+    ],
+    "mapping": [],
+    "conflicts": [],
+    "validationSummary": "0/24 fields filled with majority agreement across 3 reads; 24 need review; 0 conflicts."
+  }
+}

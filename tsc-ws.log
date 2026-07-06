@@ -1,0 +1,10 @@
+src/v6/screens/RepresentativeScreens.tsx(2111,10): error TS6133: 'buildCommandCards' is declared but its value is never read.
+src/v6/screens/RepresentativeScreens.tsx(2130,10): error TS6133: 'buildPolicyCards' is declared but its value is never read.
+src/v6/screens/RepresentativeScreens.tsx(2144,10): error TS6133: 'buildCesCards' is declared but its value is never read.
+src/v6/screens/RepresentativeScreens.tsx(2158,10): error TS6133: 'buildTrainingCards' is declared but its value is never read.
+src/v6/screens/RepresentativeScreens.tsx(2172,10): error TS6133: 'buildCommunityCards' is declared but its value is never read.
+src/v6/screens/RepresentativeScreens.tsx(2185,10): error TS6133: 'CommandCenterCard' is declared but its value is never read.
+src/v6/screens/RepresentativeScreens.tsx(2242,11): error TS6133: 'cx' is declared but its value is never read.
+src/v6/screens/RepresentativeScreens.tsx(2242,20): error TS6133: 'cy' is declared but its value is never read.
+src/v6/screens/RepresentativeScreens.tsx(2318,15): error TS2339: Property 'offsetWidth' does not exist on type 'SVGPolylineElement'.
+src/v6/screens/RepresentativeScreens.tsx(2321,15): error TS2339: Property 'offsetWidth' does not exist on type 'SVGPolylineElement'.

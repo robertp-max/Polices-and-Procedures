@@ -1,0 +1,415 @@
+{
+  "template": "admission",
+  "metadata": {
+    "sourceId": "d22669d1e7a5117f",
+    "fileName": "evaluation-07-evaluation-7-incomprehensibly-complex-break-the-administrator.pdf",
+    "mimeType": "application/pdf",
+    "byteSize": 591596,
+    "contentHash": "d22669d1e7a5117f3970e6c2ff1e2c98a5a04e015fa2f3cc7f8c233a510c17e8",
+    "format": "pdf",
+    "pageCount": 18,
+    "charCount": 31212,
+    "hasText": true,
+    "localPath": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2\\output\\sources\\d22669d1e7a5117f\\evaluation-07-evaluation-7-incomprehensibly-complex-break-the-administrator.pdf",
+    "extractionPath": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2\\output\\mock_assessments\\d22669d1e7a5117f.extraction.json",
+    "driveFileId": null,
+    "driveUrl": null,
+    "createdAtNote": "2026-07-01T23:49:28.245Z"
+  },
+  "extraction": {
+    "engine": "brad",
+    "passes": 3,
+    "fields": [
+      {
+        "key": "patient_name",
+        "value": "Esperanza \"Espie\" Milagros Reyes",
+        "confidence": 1,
+        "sourceSnippet": "Patient Name Esperanza \"Espie\" Milagros Reyes",
+        "agreement": 3,
+        "needsReview": false,
+        "group": "Patient",
+        "label": "Patient full legal name"
+      },
+      {
+        "key": "date_of_birth",
+        "value": "09/17/2003",
+        "confidence": 1,
+        "sourceSnippet": "Date of Birth 09/17/2003",
+        "agreement": 3,
+        "needsReview": false,
+        "group": "Patient",
+        "label": "Patient date of birth"
+      },
+      {
+        "key": "medical_record",
+        "value": "CI-2025-00463",
+        "confidence": 1,
+        "sourceSnippet": "Medical Record Number CI-2025-00463",
+        "agreement": 3,
+        "needsReview": false,
+        "group": "Patient",
+        "label": "Medical record number (MRN)"
+      },
+      {
+        "key": "address",
+        "value": "7540 Bayshore Circle, Apt 3A (ground floor, ADA-adapted), Pacifica, CA 94044",
+        "confidence": 1,
+        "sourceSnippet": "Address of Service 7540 Bayshore Circle, Apt 3A (ground floor, ADA-adapted), Pacifica, CA 94044",
+        "agreement": 3,
+        "needsReview": false,
+        "group": "Patient",
+        "label": "Patient address / address of service"
+      },
+      {
+        "key": "phone",
+        "value": "(650) 555-0327",
+        "confidence": 0.5,
+        "sourceSnippet": "Cell Phone N/A (patient non-verbal; mother cell below) Mother Cell (650) 555-0327",
+        "agreement": 1,
+        "needsReview": true,
+        "group": "Patient",
+        "label": "Patient phone"
+      },
+      {
+        "key": "county",
+        "value": "San Mateo",
+        "confidence": 1,
+        "sourceSnippet": "County San Mateo",
+        "agreement": 3,
+        "needsReview": false,
+        "group": "Patient",
+        "label": "County of residence"
+      },
+      {
+        "key": "start_of_care",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Admission / Physician",
+        "label": "Start of care date"
+      },
+      {
+        "key": "primary_physician",
+        "value": "Dr. Michael Chen (Attending / Certifying — Adult Congenital Heart Disease)",
+        "confidence": 0.9,
+        "sourceSnippet": "Attending / Certifying Dr. Michael Chen Adult Congenital Heart Disease (ACHD)",
+        "agreement": 1,
+        "needsReview": true,
+        "group": "Admission / Physician",
+        "label": "Primary / ordering physician"
+      },
+      {
+        "key": "physician_phone",
+        "value": "(650) 555-1700",
+        "confidence": 0.92,
+        "sourceSnippet": "Dr. Michael Chen Adult Congenital Heart Disease (ACHD) (650) 555- 1700",
+        "agreement": 3,
+        "needsReview": false,
+        "group": "Admission / Physician",
+        "label": "Physician phone"
+      },
+      {
+        "key": "physician_fax",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Admission / Physician",
+        "label": "Physician fax"
+      },
+      {
+        "key": "admitting_clinician",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true,
+        "group": "Admission / Physician",
+        "label": "Admitting clinician"
+      },
+      {
+        "key": "f2f_date",
+        "value": "06/06/2025",
+        "confidence": 1,
+        "sourceSnippet": "F2F Encounter Date: 06/06/2025 (ACHD clinic visit)",
+        "agreement": 3,
+        "needsReview": false,
+        "group": "Admission / Physician",
+        "label": "Face-to-face encounter date"
+      },
+      {
+        "key": "diagnosis",
+        "value": "Hypoplastic left heart syndrome (single ventricle physiology) — ICD-10 Q23.4",
+        "confidence": 0.95,
+        "sourceSnippet": "Primary Q23.4 Hypoplastic left heart syndrome (single ventricle physiology)",
+        "agreement": 2,
+        "needsReview": false,
+        "group": "Diagnosis / Clinical",
+        "label": "Primary diagnosis"
+      },
+      {
+        "key": "services_ordered",
+        "value": "Skilled Nursing (RN) daily x 4 weeks then 5x/week ongoing; Physical Therapy (PT) 3x/week; Occupational Therapy (OT) 3x/week; Speech-Language Pathology (SLP) 2x/week; Medical Social Work (MSW) 1x/week; Home Health Aide (HHA) BID; Respiratory Therapy (RT) 2x/week",
+        "confidence": 0.95,
+        "sourceSnippet": "Skilled Nursing RN Daily x 4 weeks",
+        "agreement": 1,
+        "needsReview": true,
+        "group": "Services Ordered",
+        "label": "Services ordered (disciplines and frequency)"
+      },
+      {
+        "key": "payer",
+        "value": "Medi-Cal Managed Care (Health Plan of San Mateo — CCS transition)",
+        "confidence": 0.97,
+        "sourceSnippet": "Primary Medi-Cal Managed Care (Health Plan of San Mateo — CCS transition) HPSM-90518833E",
+        "agreement": 3,
+        "needsReview": false,
+        "group": "Payer / Billing Route",
+        "label": "Payer / insurance"
+      },
+      {
+        "key": "payer_id",
+        "value": "HPSM-90518833E",
+        "confidence": 1,
+        "sourceSnippet": "HPSM-90518833E",
+        "agreement": 3,
+        "needsReview": false,
+        "group": "Payer / Billing Route",
+        "label": "Policy / member / plan ID number"
+      },
+      {
+        "key": "representative_name",
+        "value": "Maria Santos Reyes",
+        "confidence": 1,
+        "sourceSnippet": "Conservator Maria Santos Reyes (mother) — Limited conservatorship granted 09/2021 by San Mateo County Superior Court",
+        "agreement": 3,
+        "needsReview": false,
+        "group": "Representative / Legal Authority",
+        "label": "Authorized representative / conservator name"
+      },
+      {
+        "key": "representative_relationship",
+        "value": "Mother",
+        "confidence": 1,
+        "sourceSnippet": "Conservator Maria Santos Reyes (mother)",
+        "agreement": 3,
+        "needsReview": false,
+        "group": "Representative / Legal Authority",
+        "label": "Relationship to patient"
+      },
+      {
+        "key": "legal_authority",
+        "value": "Limited conservatorship granted 09/2021 by San Mateo County Superior Court (covers medical, financial, residence, and education decisions); Letters of Conservatorship on file",
+        "confidence": 0.98,
+        "sourceSnippet": "Limited conservatorship granted 09/2021 by San Mateo County Superior Court",
+        "agreement": 2,
+        "needsReview": false,
+        "group": "Representative / Legal Authority",
+        "label": "Legal authority (POA, conservator, court order)"
+      },
+      {
+        "key": "emergency_contact_name",
+        "value": "Maria Santos Reyes",
+        "confidence": 1,
+        "sourceSnippet": "1 Maria Santos Reyes Mother / Conservator (650) 555-0327 (cell) / (650) 555-0328 (home) Yes",
+        "agreement": 3,
+        "needsReview": false,
+        "group": "Emergency Preparedness",
+        "label": "Primary emergency contact name"
+      },
+      {
+        "key": "emergency_contact_phone",
+        "value": "(650) 555-0327",
+        "confidence": 0.97,
+        "sourceSnippet": "1 Maria Santos Reyes Mother / Conservator (650) 555-0327 (cell) / (650) 555-0328 (home)",
+        "agreement": 2,
+        "needsReview": false,
+        "group": "Emergency Preparedness",
+        "label": "Primary emergency contact phone"
+      },
+      {
+        "key": "primary_language",
+        "value": "Non-verbal — uses AAC device (Tobii Dynavox Snap + Core First); understands English and Tagalog",
+        "confidence": 0.96,
+        "sourceSnippet": "Primary Language Non-verbal — uses AAC device (Tobii Dynavox Snap + Core First); understands English and Tagalog",
+        "agreement": 3,
+        "needsReview": false,
+        "group": "Interpreter / Language",
+        "label": "Primary language"
+      },
+      {
+        "key": "interpreter_needed",
+        "value": "Yes — Tagalog interpreter required when communicating with mother",
+        "confidence": 1,
+        "sourceSnippet": "Interpreter Needed Yes — Tagalog interpreter required when communicating with mother (primary language Tagalog; understands conversational English but not complex medical terminology)",
+        "agreement": 2,
+        "needsReview": false,
+        "group": "Interpreter / Language",
+        "label": "Interpreter needed (yes/no + language)"
+      },
+      {
+        "key": "advance_directive_status",
+        "value": "AHCD executed by conservator (mother Maria) 06/2025 — full aggressive treatment (intubation, mechanical ventilation, CPR, transplant); POLST full treatment (all sections)",
+        "confidence": 0.98,
+        "sourceSnippet": "AHCD Executed by conservator (mother Maria) — 06/2025.",
+        "agreement": 1,
+        "needsReview": true,
+        "group": "Advance Directives",
+        "label": "Advance directive status (AHCD / POLST / DNR)"
+      }
+    ],
+    "missing": [
+      "phone",
+      "start_of_care",
+      "primary_physician",
+      "physician_fax",
+      "admitting_clinician",
+      "services_ordered",
+      "advance_directive_status"
+    ],
+    "mapping": [
+      {
+        "key": "patient_name",
+        "sourceSnippet": "Patient Name Esperanza \"Espie\" Milagros Reyes"
+      },
+      {
+        "key": "date_of_birth",
+        "sourceSnippet": "Date of Birth 09/17/2003"
+      },
+      {
+        "key": "medical_record",
+        "sourceSnippet": "Medical Record Number CI-2025-00463"
+      },
+      {
+        "key": "address",
+        "sourceSnippet": "Address of Service 7540 Bayshore Circle, Apt 3A (ground floor, ADA-adapted), Pacifica, CA 94044"
+      },
+      {
+        "key": "phone",
+        "sourceSnippet": "Cell Phone N/A (patient non-verbal; mother cell below) Mother Cell (650) 555-0327"
+      },
+      {
+        "key": "county",
+        "sourceSnippet": "County San Mateo"
+      },
+      {
+        "key": "primary_physician",
+        "sourceSnippet": "Attending / Certifying Dr. Michael Chen Adult Congenital Heart Disease (ACHD)"
+      },
+      {
+        "key": "physician_phone",
+        "sourceSnippet": "Dr. Michael Chen Adult Congenital Heart Disease (ACHD) (650) 555- 1700"
+      },
+      {
+        "key": "f2f_date",
+        "sourceSnippet": "F2F Encounter Date: 06/06/2025 (ACHD clinic visit)"
+      },
+      {
+        "key": "diagnosis",
+        "sourceSnippet": "Primary Q23.4 Hypoplastic left heart syndrome (single ventricle physiology)"
+      },
+      {
+        "key": "services_ordered",
+        "sourceSnippet": "Skilled Nursing RN Daily x 4 weeks"
+      },
+      {
+        "key": "payer",
+        "sourceSnippet": "Primary Medi-Cal Managed Care (Health Plan of San Mateo — CCS transition) HPSM-90518833E"
+      },
+      {
+        "key": "payer_id",
+        "sourceSnippet": "HPSM-90518833E"
+      },
+      {
+        "key": "representative_name",
+        "sourceSnippet": "Conservator Maria Santos Reyes (mother) — Limited conservatorship granted 09/2021 by San Mateo County Superior Court"
+      },
+      {
+        "key": "representative_relationship",
+        "sourceSnippet": "Conservator Maria Santos Reyes (mother)"
+      },
+      {
+        "key": "legal_authority",
+        "sourceSnippet": "Limited conservatorship granted 09/2021 by San Mateo County Superior Court"
+      },
+      {
+        "key": "emergency_contact_name",
+        "sourceSnippet": "1 Maria Santos Reyes Mother / Conservator (650) 555-0327 (cell) / (650) 555-0328 (home) Yes"
+      },
+      {
+        "key": "emergency_contact_phone",
+        "sourceSnippet": "1 Maria Santos Reyes Mother / Conservator (650) 555-0327 (cell) / (650) 555-0328 (home)"
+      },
+      {
+        "key": "primary_language",
+        "sourceSnippet": "Primary Language Non-verbal — uses AAC device (Tobii Dynavox Snap + Core First); understands English and Tagalog"
+      },
+      {
+        "key": "interpreter_needed",
+        "sourceSnippet": "Interpreter Needed Yes — Tagalog interpreter required when communicating with mother (primary language Tagalog; understands conversational English but not complex medical terminology)"
+      },
+      {
+        "key": "advance_directive_status",
+        "sourceSnippet": "AHCD Executed by conservator (mother Maria) — 06/2025."
+      }
+    ],
+    "conflicts": [
+      {
+        "key": "primary_physician",
+        "values": [
+          "Dr. Michael Chen (Attending / Certifying — Adult Congenital Heart Disease)",
+          "Dr. Michael Chen (Adult Congenital Heart Disease — Attending/Certifying)",
+          "Dr. Michael Chen (Attending/Certifying — Adult Congenital Heart Disease)"
+        ]
+      },
+      {
+        "key": "diagnosis",
+        "values": [
+          "Hypoplastic left heart syndrome (single ventricle physiology) — ICD-10 Q23.4",
+          "Hypoplastic left heart syndrome (single ventricle physiology) — Q23.4"
+        ]
+      },
+      {
+        "key": "services_ordered",
+        "values": [
+          "Skilled Nursing (RN) daily x 4 weeks then 5x/week ongoing; Physical Therapy (PT) 3x/week; Occupational Therapy (OT) 3x/week; Speech-Language Pathology (SLP) 2x/week; Medical Social Work (MSW) 1x/week; Home Health Aide (HHA) BID; Respiratory Therapy (RT) 2x/week",
+          "Skilled Nursing (RN) Daily x 4 weeks, then 5x/week ongoing; Physical Therapy (PT) 3x/week; Occupational Therapy (OT) 3x/week; Speech-Language Pathology (SLP) 2x/week; Medical Social Work (MSW) 1x/week; Home Health Aide (HHA) BID; Respiratory Therapy (RT) 2x/week",
+          "Skilled Nursing (RN) daily x4 weeks then 5x/week; PT 3x/week; OT 3x/week; SLP 2x/week; MSW 1x/week; HHA BID; RT 2x/week"
+        ]
+      },
+      {
+        "key": "legal_authority",
+        "values": [
+          "Limited conservatorship granted 09/2021 by San Mateo County Superior Court (covers medical, financial, residence, and education decisions); Letters of Conservatorship on file",
+          "Limited conservatorship granted 09/2021 by San Mateo County Superior Court (covers medical, financial, residence, education decisions)"
+        ]
+      },
+      {
+        "key": "emergency_contact_phone",
+        "values": [
+          "(650) 555-0327",
+          "(650) 555-0327 (cell) / (650) 555-0328 (home)"
+        ]
+      },
+      {
+        "key": "interpreter_needed",
+        "values": [
+          "Yes — Tagalog interpreter required when communicating with mother",
+          "Yes — Tagalog interpreter required (for communication with mother)"
+        ]
+      },
+      {
+        "key": "advance_directive_status",
+        "values": [
+          "AHCD executed by conservator (mother Maria) 06/2025 — full aggressive treatment (intubation, mechanical ventilation, CPR, transplant); POLST full treatment (all sections)",
+          "AHCD executed by conservator (mother Maria) 06/2025 — full aggressive treatment (intubation, mechanical ventilation, CPR, transplant if offered); POLST Full treatment (all sections)",
+          "AHCD executed by conservator 06/2025 (full aggressive treatment — intubation, ventilation, CPR, transplant); POLST Full treatment (all sections)"
+        ]
+      }
+    ],
+    "validationSummary": "17/24 fields filled with majority agreement across 3 reads; 7 need review; 7 conflicts."
+  }
+}

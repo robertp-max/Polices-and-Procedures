@@ -1,0 +1,9 @@
+[0m[0m
+[0m[4mc:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\src\v6\screens\pageviews\PolicyDetailScreen.tsx[24m[0m
+[0m  [2m284:9[22m   [33mwarning[39m  The 'sections' conditional could make the dependencies of useMemo Hook (at line 320) change on every render. To fix this, wrap the initialization of 'sections' in its own useMemo() Hook  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m  [2m284:9[22m   [33mwarning[39m  The 'sections' conditional could make the dependencies of useMemo Hook (at line 336) change on every render. To fix this, wrap the initialization of 'sections' in its own useMemo() Hook  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m  [2m702:29[22m  [31merror[39m    'meta' is never reassigned. Use 'const' instead                                                                                                                                            [2mprefer-const[22m[0m
+[0m[0m
+[0m[31m[1m✖ 3 problems (1 error, 2 warnings)[22m[39m[0m
+[0m[31m[1m[22m[39m[31m[1m  1 error and 0 warnings potentially fixable with the `--fix` option.[22m[39m[0m
+[0m[31m[1m[22m[39m[0m

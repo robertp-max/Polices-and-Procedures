@@ -1,0 +1,60 @@
+
+> ci-policy-app@0.0.0 prebuild
+> node scripts/cleanEmittedJs.mjs && node scripts/syncMasterControlInventory.mjs
+
+[sync-master-control-inventory] Source: public\data\MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+[sync-master-control-inventory] Copied to public\Builder\Documentations\MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+[sync-master-control-inventory] Copied to public\Documentations\MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+[sync-master-control-inventory] Copied to public\MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+
+> ci-policy-app@0.0.0 build
+> tsc -b && vite build
+
+[36mvite v8.0.2 [32mbuilding client environment for production...[36m[39m
+[2Ktransforming...[32m✓[39m 2027 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[0m[32mindex.html                                            [39m[2m[1m     0.90 kB[0m[0m[2m │ gzip:     0.51 kB[0m
+[2mdist/[0m[2massets/[0m[32mroboto-vietnamese-300-normal-INUupD3o.woff     [39m[2m[1m     6.39 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-vietnamese-500-normal-D380IkQ8.woff     [39m[2m[1m     6.41 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-greek-300-normal-C_Dgaih9.woff          [39m[2m[1m     7.67 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-greek-500-normal-oCqhoyfc.woff          [39m[2m[1m     7.71 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-vietnamese-300-normal-BPvXm_f1.woff2    [39m[2m[1m     8.37 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-vietnamese-500-normal-B3ncpOoB.woff2    [39m[2m[1m     8.54 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-symbols-500-normal-F7c8nfcH.woff        [39m[2m[1m     8.95 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-symbols-300-normal-BCnjhQd_.woff        [39m[2m[1m     9.05 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-greek-300-normal-DJEM9B4Z.woff2         [39m[2m[1m     9.50 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-greek-500-normal-C9AnhcmC.woff2         [39m[2m[1m     9.61 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-cyrillic-300-normal-DEFNdjk5.woff       [39m[2m[1m    10.58 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-symbols-300-normal-DDU7avhj.woff2       [39m[2m[1m    10.70 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-cyrillic-500-normal-CBKMylY4.woff       [39m[2m[1m    10.73 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-symbols-500-normal-B_CZKVJS.woff2       [39m[2m[1m    10.83 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-cyrillic-300-normal-DzUz0kzv.woff2      [39m[2m[1m    12.26 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-cyrillic-500-normal-CLao9AfR.woff2      [39m[2m[1m    12.35 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-latin-ext-500-normal-Cyc0AKLz.woff      [39m[2m[1m    14.38 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-latin-ext-300-normal-CTCCHkZF.woff      [39m[2m[1m    14.45 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-latin-ext-300-normal-B90pq-BC.woff2     [39m[2m[1m    15.01 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-latin-ext-500-normal-pMCM9Ixg.woff2     [39m[2m[1m    15.16 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-cyrillic-ext-300-normal-D7ank4TF.woff   [39m[2m[1m    16.34 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-cyrillic-ext-500-normal-DqF2hftb.woff   [39m[2m[1m    16.47 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-cyrillic-ext-300-normal-DIxttMbC.woff2  [39m[2m[1m    17.49 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-cyrillic-ext-500-normal-BWC_xYeb.woff2  [39m[2m[1m    17.59 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-math-500-normal-C-7mKPO3.woff           [39m[2m[1m    19.30 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-math-300-normal-Ds0YpBw2.woff           [39m[2m[1m    19.41 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-math-300-normal-5dF_7mZP.woff2          [39m[2m[1m    20.09 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-math-500-normal-C4NU9gLX.woff2          [39m[2m[1m    20.30 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-latin-500-normal-DQZyH_nt.woff          [39m[2m[1m    21.92 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-latin-300-normal-CCzlftfr.woff2         [39m[2m[1m    22.07 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-latin-300-normal-BARJ-h6h.woff          [39m[2m[1m    22.08 kB[0m[0m
+[2mdist/[0m[2massets/[0m[32mroboto-latin-500-normal-7RbcRiD8.woff2         [39m[2m[1m    22.20 kB[0m[0m
+[2mdist/[0m[2massets/[0m[35mindex-Bf19Ff0B.css                             [39m[2m[1m   135.27 kB[0m[0m[2m │ gzip:    32.61 kB[0m
+[2mdist/[0m[2massets/[0m[36mindex-O8w-z_7k.js                              [39m[33m[1m13,276.08 kB[0m[39m[2m │ gzip: 2,859.34 kB[0m
+
+[33m[33m[PLUGIN_TIMINGS] Warning:[0m Your build spent significant time in plugin `vite:css`. See https://rolldown.rs/options/checks#plugintimings for more details.
+[39m
+[33m[plugin builtin:vite-reporter] [33m[1m
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[0m[33m[39m
+[32m✓ built in 4.55s[39m

@@ -1,0 +1,20 @@
+NON_JOURNEY_UAT_SUMMARY (Text)
+================================
+
+Date: 2026-06-29
+
+Scope:
+- Included: Help Center and related non-journey (Brad contracts, assets)
+- EXCLUDED (Deferred): All Journey/LMS (A19/A20, /journey/* etc). Not counted vs Go/No-Go.
+
+Commands:
+- tsc -b --noEmit: PASS
+- npm run build: PASS
+
+Help Center: Passes all listed requirements (cards, categories, previews, articles, legacy/Brad, logo).
+
+See HELP_CENTER_UAT_REPORT for details.
+
+Remaining non-Journey defects: None critical.
+
+Go/No-Go (ex Journey): GO

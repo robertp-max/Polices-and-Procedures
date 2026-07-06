@@ -1,0 +1,26 @@
+
+> ci-policy-app@0.0.0 lint
+> eslint . --format compact
+
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\.wtpreview\evidence\src\policy\data\achcSurveyProjection.generated.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\.wtpreview\evidence\src\policy\data\workflows.generated.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\.wtpreview\evidence\src\policy\data\allPoliciesContent.generated.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\.wtpreview\gemini\src\policy\data\achcSurveyProjection.generated.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\.wtpreview\gemini\src\policy\data\workflows.generated.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\.wtpreview\gemini\src\policy\journey\data\advancedTraining\qapi.data.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\.wtpreview\gemini\src\policy\journey\data\ACHC_Annual_Assembled.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\.wtpreview\gemini\src\policy\data\allPoliciesContent.generated.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\.wtpreview\gemini\src\policy\journey\data\contentV2.generated.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\.wtpreview\preiframe\src\policy\data\achcSurveyProjection.generated.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\.wtpreview\preiframe\src\policy\data\workflows.generated.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\.wtpreview\preiframe\src\policy\journey\data\ACHC_Annual_Assembled.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\.wtpreview\preiframe\src\policy\journey\data\advancedTraining\qapi.data.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\.wtpreview\preiframe\src\policy\data\allPoliciesContent.generated.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\.wtpreview\preiframe\src\policy\journey\data\contentV2.generated.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\src\policy\data\achcSurveyProjection.generated.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\src\policy\data\workflows.generated.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\src\policy\journey\data\advancedTraining\qapi.data.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\src\policy\journey\data\ACHC_Annual_Assembled.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\src\policy\data\allPoliciesContent.generated.ts as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\src\policy\journey\data\contentV2.generated.ts as it exceeds the max of 500KB.
+The compact formatter is no longer part of core ESLint. Install it manually with `npm install -D eslint-formatter-compact`

@@ -1,0 +1,119 @@
+{
+  "template": "admission",
+  "metadata": {
+    "sourceId": "a135c1809a1fd754",
+    "fileName": "t.txt",
+    "mimeType": "text/plain",
+    "byteSize": 55,
+    "contentHash": "a135c1809a1fd754ab1209258ce23ed3ab8a7b3b33adf01780d9c9842ba668a2",
+    "format": "text",
+    "charCount": 55,
+    "hasText": true,
+    "localPath": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2\\output\\sources\\a135c1809a1fd754\\t.txt",
+    "extractionPath": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2\\output\\mock_assessments\\a135c1809a1fd754.extraction.json",
+    "driveFileId": null,
+    "driveUrl": null,
+    "createdAtNote": "2026-06-30T22:08:31.981Z"
+  },
+  "extraction": {
+    "engine": "unavailable",
+    "passes": 0,
+    "fields": [
+      {
+        "key": "patient_name",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      },
+      {
+        "key": "medical_record",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      },
+      {
+        "key": "date_of_birth",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      },
+      {
+        "key": "start_of_care",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      },
+      {
+        "key": "primary_physician",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      },
+      {
+        "key": "admitting_clinician",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      },
+      {
+        "key": "payer",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      },
+      {
+        "key": "diagnosis",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      },
+      {
+        "key": "address",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      },
+      {
+        "key": "phone",
+        "value": null,
+        "confidence": 0,
+        "sourceSnippet": "",
+        "agreement": 0,
+        "needsReview": true
+      }
+    ],
+    "missing": [
+      "patient_name",
+      "medical_record",
+      "date_of_birth",
+      "start_of_care",
+      "primary_physician",
+      "admitting_clinician",
+      "payer",
+      "diagnosis",
+      "address",
+      "phone"
+    ],
+    "mapping": [],
+    "conflicts": [],
+    "validationSummary": "Brad’s automated reading is offline. Only pre-filled form fields were used; nothing was invented."
+  }
+}

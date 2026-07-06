@@ -1,0 +1,2 @@
+src/v6/screens/RepresentativeScreens.tsx(81,11): error TS6196: 'ActionRow' is declared but never used.
+src/v6/screens/RepresentativeScreens.tsx(2051,10): error TS6133: 'DesignBadge' is declared but its value is never read.

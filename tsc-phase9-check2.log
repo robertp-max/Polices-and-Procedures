@@ -1,0 +1,5 @@
+src/policy/help-center/threads/ThreadDetailPage.tsx(186,69): error TS2367: This comparison appears to be unintentional because the types '"user" | "admin"' and '"brad"' have no overlap.
+src/v6/screens/pageviews/CareIndeedOnboardingLMS.tsx(3680,7): error TS2739: Type '{ id: string; title: string; track: "ADV"; durationMinutes: number; policyMapped: string[]; pages: never[]; regulatoryBasis: string; }' is missing the following properties from type 'TrainingModule': exam, passScore
+src/v6/shell/PersonalOpsPanel.tsx(94,17): error TS6133: 'isAdmin' is declared but its value is never read.
+src/v6/shell/PersonalOpsPanel.tsx(97,17): error TS6133: 'vis' is declared but its value is never read.
+src/v6/utils/communityBadges.ts(17,22): error TS6133: 'sanitizePhi' is declared but its value is never read.

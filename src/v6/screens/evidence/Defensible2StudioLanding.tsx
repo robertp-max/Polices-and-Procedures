@@ -9,6 +9,8 @@ import {
   parseSourceFile, sanitizeFileName, type EvidenceSourceRecord, type SourceSystem,
 } from '@/policy/evidence/intake';
 import { applyDriveOutcome, persistCanonicalEvidence } from '@/policy/evidence/intake/intakeService';
+import type { ParsedFile } from '@/policy/evidence/intake/fileParsing';
+import { deriveQapiBundle, type QapiDerivedBundle } from '@/policy/brad/intake/adapters/qapiIntakeAdapter';
 import {
   generatePacket as generateAlphaPacket,
   getSignatureRequirements,
@@ -16,6 +18,7 @@ import {
 type AlphaPacketPreview,
 type AdmissionStudioFields,
 } from './alpha/defensibleAlphaDriver';
+import { generateQapiPacketPreview } from './alpha/qapiPacketDriver';
 
 type AlphaSignatureRequirement = {
   name?: string;
@@ -195,6 +198,14 @@ const ADMISSION_SOURCE_HINT_RE = /\b(patient\s+admission|admission\s+packet|star
 const QAPI_SOURCE_HINT_RE = /\b(qapi|quality\s+assurance|performance\s+improvement|committee|minutes|infection\s+log|incident\s+log|complaints?|pip|kpi|dashboard)\b/i;
 
 function inferSourceIntent(name: string, text?: string): 'admission' | 'qapi' | '' {
+  // The filename is the strongest, least ambiguous signal — check it alone first
+  // so one generic content word (e.g. "OASIS" mentioned in passing inside a QAPI
+  // PIP narrative) can't override an explicit "qapi"/"admission" in the file's
+  // own name. Verified against the real 2026-QAPI-Q1Q2Set(5).json mock, whose
+  // clinician PIP text ("...OASIS accuracy...") previously flipped this to
+  // 'admission' before the content scan ever reached the QAPI keywords below.
+  if (/qapi/i.test(name || '')) return 'qapi';
+  if (/admission/i.test(name || '')) return 'admission';
   const haystack = `${name || ''}\n${(text || '').slice(0, 4000)}`;
   if (ADMISSION_SOURCE_HINT_RE.test(haystack)) return 'admission';
   if (QAPI_SOURCE_HINT_RE.test(haystack)) return 'qapi';
@@ -385,6 +396,11 @@ export function Defensible2StudioLanding() {
   const [selectedTemplateTitle, setSelectedTemplateTitle] = useState('');
   const [selectedSourceMode, setSelectedSourceMode] = useState('');
   const [sourceIntent, setSourceIntent] = useState<'admission' | 'qapi' | ''>('');
+  // Brad-derived QAPI review bundle (Phase 5/6/7/8 mandated-event intake) — parsed
+  // once at source-confirm, re-derived when the picked event's date changes so the
+  // interim/final date window stays correct. Null for non-QAPI templates.
+  const [qapiSourceParsed, setQapiSourceParsed] = useState<ParsedFile | null>(null);
+  const [qapiDerivedBundle, setQapiDerivedBundle] = useState<QapiDerivedBundle | null>(null);
   // Empty until Brad's suggestion or the user's Step-2 choice fills it — a truthy
   // default (e.g. 'PENDING_VERIFICATION') previously masked Brad's identified route
   // on the review screen. The final route is written on Step-2 confirmation.
@@ -452,6 +468,13 @@ export function Defensible2StudioLanding() {
   const driveReachable = !!driveHealth?.drive?.reachable;
 
   const selectedEvent = useMemo(() => events.find((e) => e.id === eventId), [events, eventId]);
+  // Re-derive the QAPI bundle when the picked event changes (source is confirmed
+  // before the event is finalized in the grid below) so the interim/final date
+  // window reflects the actual selected event, not the default at confirm-time.
+  useEffect(() => {
+    if (!qapiSourceParsed) return;
+    setQapiDerivedBundle(deriveQapiBundle(qapiSourceParsed, selectedEvent?.date || new Date().toISOString().slice(0, 10)));
+  }, [selectedEvent?.date, qapiSourceParsed]);
   const eventMatchesSelectedTemplate = useCallback((event: (typeof events)[number]) => {
     const title = `${event.title || ''} ${event.id || ''} ${event.eventSubType || ''} ${event.category || ''}`.toLowerCase();
     const domain = String(event.domain || '').toLowerCase();
@@ -593,10 +616,31 @@ export function Defensible2StudioLanding() {
       }
       setFlowStep('review');
     } else {
+      const qapi = sourceIntent === 'qapi' || /qapi/i.test(selectedTemplateTitle);
+      if (qapi) {
+        const primary = alphaSourceFilesRef.current[0];
+        if (primary) {
+          setExtracting(true);
+          try {
+            const { text, headBytes } = await readText(primary);
+            const parsed = parseSourceFile({ fileName: primary.name, mimeType: primary.type, text, headBytes, byteLength: primary.size });
+            setQapiSourceParsed(parsed);
+            setQapiDerivedBundle(deriveQapiBundle(parsed, selectedEvent?.date || new Date().toISOString().slice(0, 10)));
+            setExtractionError(null);
+          } catch (e) {
+            setQapiSourceParsed(null);
+            setQapiDerivedBundle(null);
+            setExtractionError(e instanceof Error ? e.message : 'Could not read the QAPI source.');
+            triggerToast('Brad could not parse the QAPI source — review fields manually before compiling.');
+          } finally {
+            setExtracting(false);
+          }
+        }
+      }
       setFlowStep('event');
     }
     triggerToast(`${label} selected.`);
-  }, [selectedDriveFolder, selectedTemplateTitle, sourceIntent, sourceModal, triggerToast]);
+  }, [selectedDriveFolder, selectedEvent?.date, selectedTemplateTitle, sourceIntent, sourceModal, triggerToast]);
 
   const startCompilePacket = useCallback(async () => {
     if (sourceIntent === 'admission' && !isPatientAdmissionTemplate(selectedTemplateTitle)) {
@@ -606,7 +650,7 @@ export function Defensible2StudioLanding() {
       triggerToast('Assessment/admission source detected. Choose the billing route before generating.');
       return;
     }
-    if (!isPatientAdmissionTemplate(selectedTemplateTitle) && alphaSourceFilesRef.current.length > 0 && sourceParseSummary.parsed === 0) {
+    if (!isPatientAdmissionTemplate(selectedTemplateTitle) && !qapiDerivedBundle && alphaSourceFilesRef.current.length > 0 && sourceParseSummary.parsed === 0) {
       setAlphaError('DefenCIble could not extract usable QAPI/event data from the attached source files. Upload JSON/CSV/TXT/MD source data or switch to Patient Admission for assessment/referral documents.');
       setFlowStep('alphaError');
       triggerToast('No usable QAPI/event source data was extracted.');
@@ -643,7 +687,18 @@ export function Defensible2StudioLanding() {
     const clearCompileTimers = () => { window.clearTimeout(driveTimer); window.clearTimeout(failsafe); };
     compileTimersRef.current = [driveTimer, failsafe];
     try {
-      const preview = await generateAlphaPacket({
+      // QAPI with a confirmed Brad-derived bundle bypasses the legacy Alpha iframe
+      // studio entirely (same precedent as admission's server-side render) — the
+      // reviewed bundle drives packet content directly, never a blank/shell packet.
+      const preview = qapiDerivedBundle && qapiSourceParsed && !isPatientAdmissionTemplate(selectedTemplateTitle)
+        ? await generateQapiPacketPreview({
+            parsed: qapiSourceParsed,
+            bundle: qapiDerivedBundle,
+            eventId,
+            eventTitle: selectedEvent?.title || selectedTemplateTitle,
+            eventDateISO: selectedEvent?.date || new Date().toISOString().slice(0, 10),
+          })
+        : await generateAlphaPacket({
         templateId: selectedTemplateTitle,
         templateTitle: selectedTemplateTitle,
         eventId,
@@ -675,7 +730,7 @@ export function Defensible2StudioLanding() {
       setAlphaPreview(null);
       setFlowStep('alphaError');
     }
-  }, [eventId, selectedBillingRoute, selectedEvent?.title, selectedSourceMode, selectedTemplateTitle, sourceIntent, sourceParseSummary.parsed, verifiedFields, triggerToast]);
+  }, [eventId, qapiDerivedBundle, qapiSourceParsed, selectedBillingRoute, selectedEvent?.date, selectedEvent?.title, selectedSourceMode, selectedTemplateTitle, sourceIntent, sourceParseSummary.parsed, verifiedFields, triggerToast]);
 
   const printOrDownloadPacket = useCallback(() => {
     if (alphaPreview?.pdfUrl || alphaPreview?.driveUrl) {
@@ -1201,6 +1256,53 @@ export function Defensible2StudioLanding() {
                   : ' (Brad’s identified route, confirmed). Only this route appears in the packet.'}
               </p>
             )}
+            {!isPatientAdmissionTemplate(selectedTemplateTitle) && qapiDerivedBundle && (() => {
+              const bundle = qapiDerivedBundle;
+              const metricGroups: Array<[string, Record<string, { value: unknown; confidence: string; needsReview: boolean; note?: string }>]> = [
+                ['Census / Population', bundle.censusPopulation],
+                ['High-Risk Rollup', bundle.highRiskRollup],
+                ['Adverse Events', bundle.adverseEvents],
+                ['Chart Audit / Documentation Integrity', bundle.chartAuditDocumentationIntegrity],
+                ['Infection Control', bundle.infectionControl],
+              ];
+              return (
+                <div className="mx-auto mt-6 max-w-2xl rounded-[22px] border border-[#EAE4E3] bg-[#FAFBF8] p-5 text-left">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-montserrat text-xs font-bold uppercase tracking-widest text-[#007970]">Brad's QAPI Review — {bundle.sourceMode === 'clinical_dump' ? 'high-confidence source' : bundle.sourceMode === 'none' ? 'no parseable content' : 'heuristic — needs review'}</h3>
+                  </div>
+                  <p className="mt-2 font-roboto text-xs leading-5 text-[#524D4B]">{bundle.overallNote}</p>
+                  <div className="mt-4 max-h-[360px] space-y-4 overflow-y-auto pr-1">
+                    {metricGroups.map(([title, metrics]) => (
+                      <div key={title}>
+                        <h4 className="font-montserrat text-[10px] font-bold uppercase tracking-wide text-[#1F1C1B]">{title}</h4>
+                        <div className="mt-1 grid gap-1.5">
+                          {Object.entries(metrics).map(([key, m]) => (
+                            <div key={key} className="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-1.5 font-roboto text-xs">
+                              <span className="text-[#524D4B]">{key}</span>
+                              <span className="flex items-center gap-1.5">
+                                <strong className="text-[#1F1C1B]">{Array.isArray(m.value) ? m.value.join(', ') : m.value == null ? '—' : String(m.value)}</strong>
+                                <span className={`rounded px-1.5 py-0.5 text-[9px] font-medium uppercase ${m.confidence === 'high' ? 'bg-[#E6F6EC] text-[#008540]' : m.confidence === 'low' ? 'bg-[#FFF4E5] text-[#B45309]' : 'bg-[#F1EEED] text-[#747470]'}`}>{m.confidence}</span>
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    {bundle.pipCorrectiveAction.length > 0 && (
+                      <div>
+                        <h4 className="font-montserrat text-[10px] font-bold uppercase tracking-wide text-[#1F1C1B]">PIP / Corrective Action Candidates ({bundle.pipCorrectiveAction.length})</h4>
+                        <div className="mt-1 grid gap-1.5">
+                          {bundle.pipCorrectiveAction.slice(0, 5).map((p, i) => (
+                            <div key={i} className="rounded-lg bg-white px-3 py-1.5 font-roboto text-xs text-[#524D4B]">{p.trigger} — {p.issueSummary.slice(0, 100)}</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-3 font-roboto text-[11px] italic text-[#A8A29E]">Fields marked "none"/"low" confidence have no confirmed source evidence — verify manually before relying on the generated packet.</p>
+                </div>
+              );
+            })()}
             <button type="button" onClick={startCompilePacket} className="mt-8 rounded-full bg-[#C74601] px-10 py-4 font-montserrat text-xs font-medium uppercase tracking-wider text-white shadow-md transition-all hover:bg-[#421700] hover:shadow-lg">
               Compile Packet
             </button>

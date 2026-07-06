@@ -1,0 +1,1 @@
+NO_VIOLATIONS: zero *.js shadowing .ts/.tsx siblings under src/

@@ -1,0 +1,9 @@
+src/policy/help-center/threads/ThreadDetailPage.tsx(186,69): error TS2367: This comparison appears to be unintentional because the types '"user" | "admin"' and '"brad"' have no overlap.
+src/policy/journey/components/advanced/AdvancedTrainingPlayer.tsx(28,21): error TS6133: 'setShowNoPhi' is declared but its value is never read.
+src/policy/journey/components/advanced/DocumentationDefensibilityPanel.tsx(12,68): error TS6133: 'moduleId' is declared but its value is never read.
+src/policy/journey/components/advanced/PlanOfCareTrainingPanel.tsx(16,60): error TS6133: 'moduleId' is declared but its value is never read.
+src/v6/screens/pageviews/CareIndeedOnboardingLMS.tsx(344,7): error TS6133: 'ADVANCED_TRAINING_CARDS' is declared but its value is never read.
+src/v6/screens/pageviews/CareIndeedOnboardingLMS.tsx(3741,7): error TS2739: Type '{ id: string; title: string; track: "ADV"; durationMinutes: number; policyMapped: string[]; pages: never[]; regulatoryBasis: string; }' is missing the following properties from type 'TrainingModule': exam, passScore
+src/v6/screens/pageviews/CareIndeedOnboardingLMS.tsx(3751,7): error TS2739: Type '{ id: string; title: string; track: "ADV"; durationMinutes: number; policyMapped: string[]; pages: never[]; regulatoryBasis: string; }' is missing the following properties from type 'TrainingModule': exam, passScore
+src/v6/screens/pageviews/CareIndeedOnboardingLMS.tsx(3761,7): error TS2739: Type '{ id: string; title: string; track: "ADV"; durationMinutes: number; policyMapped: string[]; pages: never[]; regulatoryBasis: string; }' is missing the following properties from type 'TrainingModule': exam, passScore
+src/v6/utils/communityBadges.ts(17,22): error TS6133: 'sanitizePhi' is declared but its value is never read.

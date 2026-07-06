@@ -1,13 +1,11 @@
-import { CheckCircle2, FileText, Info, Link2, ListChecks } from 'lucide-react';
-import { useEffect } from 'react';
-import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
-import { ToneBadge } from '../../primitives';
-import { ToneTag } from '../../components';
+import { Info, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { cx } from '../../utils/classNames';
 import { getPolicyContent } from '@/policy/data/policyContentMap';
 import { getCorpusPolicy, DOMAIN_LABEL, type CorpusPolicy } from '@/policy/data/policyCorpus';
+import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
 import type { PolicyContent, PolicyContentSection } from '@/policy/types';
-import { openPolicyPrintRoute } from '@/policy/utils/openPolicyPrintRoute';
 
 const routeMarker = {
   group: 'Taxonomy',
@@ -52,6 +50,39 @@ function splitTableRow(line: string): string[] {
 /** Strip leading numbering escapes (`1\.` → `1.`) and surrounding whitespace. */
 function cleanInline(text: string): string {
   return text.replace(/\\([.\-#|*_])/g, '$1').trim();
+}
+
+/** "6.2.1 — Legal Authority" → "Legal Authority"; "4. Policy Statement" → "Policy Statement". */
+function stripNumbering(title: string): string {
+  return cleanInline(title).replace(/^\d+(?:\.\d+)*[.\s—–-]*\s*/, '').trim();
+}
+
+/** Document numbering from the section title itself: "6.2.1 — …" → "6.2.1". */
+function numberOf(title: string): string | null {
+  const m = cleanInline(title).match(/^(\d+(?:\.\d+)*)/);
+  return m ? m[1] : null;
+}
+
+/** Heading-only separator sections ("---" or empty bodies) are not cards. */
+function isSeparatorSection(s: PolicyContentSection): boolean {
+  const b = (s.body || '').trim();
+  return b === '' || b === '---';
+}
+
+/** One-word nav label per the reference design ("4. Policy Statement" → "Statement"). */
+function shortNavLabel(title: string): string {
+  const t = stripNumbering(title).toLowerCase();
+  if (t.includes('documentation')) return 'Documentation';
+  if (t.includes('training') || t.includes('acknowledgment')) return 'Training';
+  if (t.includes('version') || t.includes('control')) return 'Control';
+  if (t.includes('statement')) return 'Statement';
+  if (t.includes('consideration') || t.includes('compliance')) return 'Considerations';
+  if (t.includes('reference')) return 'References';
+  if (t.includes('procedure')) return 'Procedures';
+  if (t.includes('definition')) return 'Definitions';
+  if (t.includes('scope')) return 'Scope';
+  if (t.includes('purpose')) return 'Purpose';
+  return stripNumbering(title).split(/\s+/)[0] || title;
 }
 
 function parseMarkdown(body: string): MdBlock[] {
@@ -134,19 +165,23 @@ function parseMarkdown(body: string): MdBlock[] {
 }
 
 function MarkdownBody({ body }: { body: string }) {
-  const blocks = parseMarkdown(body);
+  // Trailing "---" separators end most section bodies in the source; the
+  // reference design shows no rule at the bottom of a card.
+  const blocks = parseMarkdown(body).filter(
+    (b, i, all) => !(b.kind === 'rule' && i === all.length - 1),
+  );
   if (!blocks.length) return null;
 
   return (
-    <div className="grid gap-md">
+    <div className="space-y-4">
       {blocks.map((block, index) => {
         const key = `${block.kind}-${index}`;
         switch (block.kind) {
           case 'heading': {
             const cls =
               block.level <= 2
-                ? 'text-h3 font-medium text-ink'
-                : 'text-sm font-medium uppercase tracking-tag text-secondary';
+                ? 'text-base font-semibold text-gray-700 leading-relaxed'
+                : 'text-sm font-medium uppercase tracking-wide text-gray-500';
             return (
               <p className={cls} key={key}>
                 {block.text}
@@ -154,27 +189,46 @@ function MarkdownBody({ body }: { body: string }) {
             );
           }
           case 'rule':
-            return <hr className="border-0 border-t border-hairline" key={key} />;
-          case 'list':
+            return <hr className="border-0 border-t border-gray-100 my-2" key={key} />;
+          case 'list': {
+            // Long-phrase lists use the large check-circle rows from the
+            // reference Scope section; short-phrase lists use the compact
+            // checkmark rows from the reference Policy Statement sub-list.
+            const avgLen = block.items.reduce((s, i) => s + i.length, 0) / block.items.length;
+            const useSub = avgLen < 70;
+            const ulCls = useSub ? 'space-y-2 pl-6' : 'space-y-4';
+            const liCls = useSub
+              ? 'flex items-center gap-2 text-gray-600 text-sm md:text-base'
+              : 'flex items-start gap-3 text-gray-600 text-sm md:text-base';
+            const svgCls = useSub
+              ? 'w-4 h-4 text-[#0D7A75] flex-shrink-0'
+              : 'w-5 h-5 text-[#0D7A75] flex-shrink-0 mt-0.5';
+            const svgPath = useSub
+              ? 'M5 13l4 4L19 7'
+              : 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z';
             return (
-              <ul className="grid gap-sm" key={key}>
+              <ul className={ulCls} key={key}>
                 {block.items.map((item, itemIndex) => (
-                  <li className="flex gap-sm text-body text-secondary" key={`${key}-${itemIndex}`}>
-                    <CheckCircle2 aria-hidden="true" className="mt-xs h-icon-xs w-icon-xs shrink-0 text-brand-teal" />
+                  <li className={liCls} key={`${key}-${itemIndex}`}>
+                    <svg className={svgCls} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={svgPath}></path></svg>
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
             );
-          case 'table':
+          }
+          case 'table': {
+            const isCompact = block.header.length >= 5;
+            const tableText = isCompact ? 'text-xs' : 'text-sm';
+            const cellPy = isCompact ? 'py-4' : 'py-5';
             return (
-              <div className="overflow-x-auto rounded-md border border-card" key={key}>
-                <table className="w-full border-collapse text-sm">
+              <div className="overflow-x-auto" key={key}>
+                <table className={`w-full ${tableText} text-left`}>
                   <thead>
-                    <tr className="bg-surface-glass backdrop-blur-md shadow-glass-inset">
+                    <tr>
                       {block.header.map((cell, cellIndex) => (
                         <th
-                          className="border-b border-hairline px-md py-sm text-left text-tag uppercase tracking-tag text-muted"
+                          className="pb-4 font-semibold text-gray-400 uppercase text-xs pr-4 last:pr-0"
                           key={`${key}-h-${cellIndex}`}
                           scope="col"
                         >
@@ -183,12 +237,12 @@ function MarkdownBody({ body }: { body: string }) {
                       ))}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-gray-100 text-gray-600">
                     {block.rows.map((row, rowIndex) => (
-                      <tr className="align-top" key={`${key}-r-${rowIndex}`}>
+                      <tr key={`${key}-r-${rowIndex}`}>
                         {row.map((cell, cellIndex) => (
                           <td
-                            className="border-b border-hairline px-md py-sm text-secondary"
+                            className={`${cellPy} align-top pr-4 last:pr-0`}
                             key={`${key}-r-${rowIndex}-c-${cellIndex}`}
                           >
                             {cell || '—'}
@@ -200,10 +254,11 @@ function MarkdownBody({ body }: { body: string }) {
                 </table>
               </div>
             );
+          }
           case 'paragraph':
           default:
             return (
-              <p className="whitespace-pre-line text-body text-secondary" key={key}>
+              <p className="text-gray-600 leading-relaxed text-sm md:text-base" key={key}>
                 {block.text}
               </p>
             );
@@ -213,49 +268,28 @@ function MarkdownBody({ body }: { body: string }) {
   );
 }
 
-// ─── Section navigation ──────────────────────────────────────────────────
-function buildAnchor(section: PolicyContentSection): string {
-  return `section-${section.id}`;
+// ─── Section model ─────────────────────────────────────────────────────────
+// Sections group into top-level entries (level 2) with their sub-sections
+// (level ≥ 3). One card shows at a time. Section numbers come from the
+// document's own titles ("6.2.1 — …"); the flat "N OF TOTAL" counter walks
+// the document order, counting the Policy Overview as 1 and appendix
+// sub-sections at the end (which render via the Appendices modal, not cards).
+
+interface SectionGroup {
+  top: PolicyContentSection;
+  children: PolicyContentSection[];
+  isAppendices: boolean;
 }
 
-// ─── Source-unavailable panel ──────────────────────────────────────────────
-// The corpus + content sources do not carry per-policy linked forms, lifecycle
-// progress, evidence ledgers, or readiness scores. Rather than fabricate them,
-// we keep a tasteful shell that states the data is not in the policy content
-// source. (Header metadata such as status/version lives inside the rendered
-// "Policy Header" section as real content.)
-function SourceUnavailable({
-  title,
-  description,
-  icon: Icon = Info,
-}: {
-  title: string;
-  description: string;
-  icon?: typeof Info;
-}) {
-  return (
-    <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden shadow-rest" aria-label={title}>
-      <div className="mb-md flex items-center gap-sm">
-        <span className="grid h-tap w-tap place-items-center rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset text-muted">
-          <Icon aria-hidden="true" className="h-icon-sm w-icon-sm" />
-        </span>
-        <h2 className="text-h2 font-medium text-ink">{title}</h2>
-      </div>
-      <div className="rounded-md border border-dashed border-card bg-surface-glass backdrop-blur-md shadow-glass-inset/60 p-lg">
-        <ToneTag tone="slate">Not in policy content source</ToneTag>
-        <p className="mt-sm text-sm text-secondary">{description}</p>
-      </div>
-    </section>
-  );
-}
+type FlatCard =
+  | { kind: 'overview' }
+  | { kind: 'section'; section: PolicyContentSection; group: SectionGroup };
 
 export function PolicyDetailScreen() {
   const params = useParams<{ policyId?: string }>();
   const policyId = params.policyId?.trim() || DEFAULT_POLICY_ID;
-  const location = useLocation();
   const [searchParams] = useSearchParams();
   // Reference / print view only — never pulls CES execution state, stores, or V3 seeds.
-  // Matches V1 detail semantics: corpus metadata + rendered content sections + regulatory refs from source.
   const isPrintRoute = typeof window !== 'undefined' && (
     window.location.pathname.endsWith('/print') ||
     window.location.pathname.startsWith('/print/') ||
@@ -276,18 +310,118 @@ export function PolicyDetailScreen() {
     ['Steward (corpus metadata)', corpus?.ownerSteward ?? '—'],
   ];
 
-  const sections = content ? [...content.sections].sort((a, b) => a.order - b.order) : [];
-  const backState = location.state as { policyBackLabel?: string; policyBackTo?: string } | null;
-  const backTo = backState?.policyBackTo || '/library';
-  const backLabel = backState?.policyBackLabel || 'Policies';
+  const sections = useMemo(
+    () => (content ? [...content.sections].sort((a, b) => a.order - b.order) : []),
+    [content],
+  );
+
+  // The "1. Policy Header" section's field/value table feeds the Policy
+  // Overview card (Section 1) and is not rendered as its own card.
+  const headerSection = useMemo(
+    () => sections.find((s) => /^policy\s*header$/i.test(stripNumbering(s.title))) ?? null,
+    [sections],
+  );
+
+  const groups = useMemo(() => {
+    const out: SectionGroup[] = [];
+    for (const s of sections) {
+      if (s.level <= 1) continue; // document title block
+      if (headerSection && s.id === headerSection.id) continue;
+      if (s.level === 2) {
+        out.push({ top: s, children: [], isAppendices: /appendices/i.test(stripNumbering(s.title)) });
+      } else if (out.length) {
+        out[out.length - 1].children.push(s);
+      }
+    }
+    return out;
+  }, [sections, headerSection]);
+
+  const navGroups = useMemo(() => groups.filter((g) => !g.isAppendices), [groups]);
+  const appendixGroup = useMemo(() => groups.find((g) => g.isAppendices) ?? null, [groups]);
+
+  const flatCards = useMemo(() => {
+    const cards: FlatCard[] = [{ kind: 'overview' }];
+    for (const g of navGroups) {
+      if (!isSeparatorSection(g.top)) cards.push({ kind: 'section', section: g.top, group: g });
+      for (const c of g.children) {
+        if (!isSeparatorSection(c)) cards.push({ kind: 'section', section: c, group: g });
+      }
+    }
+    return cards;
+  }, [navGroups]);
+
+  // Appendix sub-sections count toward the document total (they live in the
+  // Appendices modal, so the last card ends with a disabled FINISH).
+  const totalCount =
+    flatCards.length + (appendixGroup ? appendixGroup.children.filter((c) => !isSeparatorSection(c)).length : 0);
+
+  const [flatIndex, setFlatIndex] = useState(0);
+  useEffect(() => { setFlatIndex(0); }, [policyId]);
+  const boundedIndex = Math.min(flatIndex, Math.max(0, flatCards.length - 1));
+  const current: FlatCard = flatCards[boundedIndex] ?? { kind: 'overview' };
+  const currentGroup = current.kind === 'section' ? current.group : null;
+  const isLastCard = boundedIndex === flatCards.length - 1;
+
+  const firstCardIndexOf = (g: SectionGroup) =>
+    flatCards.findIndex((c) => c.kind === 'section' && c.group === g);
+
+  // Policy Overview metadata — parsed from the Policy Header field/value table.
+  const headerKV = useMemo(() => {
+    const map = new Map<string, string>();
+    if (!headerSection) return map;
+    const table = parseMarkdown(headerSection.body).find((b) => b.kind === 'table');
+    if (table && table.kind === 'table') {
+      for (const row of table.rows) {
+        if (row[0] && row[1]) map.set(row[0].trim().toLowerCase(), cleanInline(row[1]));
+      }
+    }
+    return map;
+  }, [headerSection]);
+  const kv = (key: string) => headerKV.get(key) ?? null;
+
+  // Overview intro — the Purpose paragraph, trimmed at the regulation cite.
+  const overviewIntro = useMemo(() => {
+    const purpose = navGroups.find((g) => /purpose/i.test(stripNumbering(g.top.title)));
+    const firstPara = (purpose?.top.body ?? '').split(/\n\s*\n/)[0]?.trim() ?? '';
+    if (!firstPara) return null;
+    const cut = firstPara.indexOf(' — Condition');
+    return cleanInline(cut > 0 ? `${firstPara.slice(0, cut)}.` : firstPara);
+  }, [navGroups]);
+
+  const version = kv('version')?.replace(/^v/i, '') ?? null;
+  const overviewCards: { label: string; lines: string[]; highlight?: boolean }[] = [
+    { label: 'Domain & Subdomain', lines: [kv('domain'), kv('subdomain')].filter(Boolean) as string[] },
+    { label: 'Status & Version', lines: [kv('status'), version ? `Version ${version}` : null].filter(Boolean) as string[] },
+    { label: 'Review Cycle', lines: [kv('review cycle'), kv('next review date') ? `Next: ${kv('next review date')}` : null].filter(Boolean) as string[] },
+    { label: 'Access Tier', lines: [kv('access tier')].filter(Boolean) as string[] },
+    { label: 'Policy Owner / Steward', lines: [kv('policy owner / steward')].filter(Boolean) as string[] },
+    { label: 'Effective Date', lines: [kv('effective date')].filter(Boolean) as string[], highlight: true },
+  ].filter((c) => c.lines.length > 0);
+
+  const [appendicesOpen, setAppendicesOpen] = useState(false);
+  // A selected appendix opens the ACTUAL form workspace (/forms/:id?embed=1)
+  // inside the modal.
+  const [openedForm, setOpenedForm] = useState<FormRecord | null>(null);
+
+  // Appendices — the ACTUAL forms linked to this policy in the Forms Library.
+  const linkedForms: FormRecord[] = useMemo(
+    () => FORMS_DATASET.filter((f) => f.policies.includes(policyId)),
+    [policyId],
+  );
+
+  // Close the appendices modal on Escape.
+  useEffect(() => {
+    if (!appendicesOpen) return undefined;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setAppendicesOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [appendicesOpen]);
 
   // Auto-name the saved PDF "{policy name} {YYYY-MM-DD}" (document.title is the
   // browser's default Save-as filename) and auto-trigger print on dedicated
   // print routes. Restores the prior title on cleanup.
   useEffect(() => {
     if (!isPrintRoute || typeof window === 'undefined') return undefined;
-    // Force the NOON (default) theme so morning/afternoon/night palettes never
-    // bleed into a printed policy.
     const el = document.documentElement;
     const prevTod = el.getAttribute('data-tod');
     el.setAttribute('data-tod', 'noon');
@@ -304,6 +438,51 @@ export function PolicyDetailScreen() {
     };
   }, [isPrintRoute, headerTitle]);
 
+  const goTo = (idx: number) => setFlatIndex(Math.max(0, Math.min(flatCards.length - 1, idx)));
+
+  // Sub-navigation items for the active group (Procedures → pills;
+  // Considerations / References → underline tabs), exactly per the reference.
+  const subNavItems = currentGroup
+    ? flatCards
+        .map((c, idx) => ({ card: c, idx }))
+        .filter((e) => e.card.kind === 'section' && e.card.group === currentGroup)
+    : [];
+  const showSubNav = subNavItems.length > 1;
+  const subNavAsPills = currentGroup ? /procedure/i.test(stripNumbering(currentGroup.top.title)) : false;
+
+  const cardFooter = (
+    <div className="flex justify-between items-center mt-12 pt-6 border-t border-gray-100">
+      <button
+        type="button"
+        onClick={() => goTo(boundedIndex - 1)}
+        className={cx(
+          'text-gray-500 hover:text-gray-900 text-sm font-medium px-4 py-2 transition-colors',
+          boundedIndex === 0 && 'invisible',
+        )}
+      >
+        &larr; Previous
+      </button>
+      <span className="text-xs text-gray-400 font-medium tracking-widest">{boundedIndex + 1} OF {totalCount}</span>
+      {isLastCard ? (
+        <button
+          type="button"
+          disabled
+          className="bg-[#F26C23] text-white px-6 py-2.5 rounded-full font-bold text-sm tracking-wide shadow-sm opacity-50 cursor-not-allowed"
+        >
+          FINISH
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => goTo(boundedIndex + 1)}
+          className="bg-[#F26C23] hover:bg-[#E05C15] text-white px-6 py-2.5 rounded-full font-bold text-sm tracking-wide shadow-sm transition-colors flex items-center gap-2"
+        >
+          NEXT &rarr;
+        </button>
+      )}
+    </div>
+  );
+
   return (
     <section
       aria-labelledby="policy-detail-title"
@@ -313,8 +492,9 @@ export function PolicyDetailScreen() {
       data-template={routeMarker.template}
     >
       <article className={cx(
-        'relative isolate grid gap-xl overflow-visible rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest backdrop-blur-xl',
-        isPrintRoute && 'ci-premium-print-document ci-premium-policy-document bg-white text-[#1F1C1B]'
+        'relative isolate overflow-visible',
+        !isPrintRoute && 'p-0',
+        isPrintRoute && 'rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset overflow-hidden shadow-rest backdrop-blur-xl ci-premium-print-document ci-premium-policy-document bg-white text-[#1F1C1B]'
       )}>
         {isPrintRoute && (
           <>
@@ -337,134 +517,301 @@ export function PolicyDetailScreen() {
               </div>
               <p className="ci-premium-printed-on">Printed {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
             </section>
+            {sections
+              .filter((s) => s.level > 1 && !isSeparatorSection(s))
+              .map((s) => (
+                <section className="ci-premium-section" key={s.id}>
+                  <h3>{cleanInline(s.title)}</h3>
+                  <MarkdownBody body={s.body} />
+                </section>
+              ))}
+            <footer className="ci-premium-footer">
+              <span>Care Indeed Home Health Care, Inc.</span>
+              <span>{headerId} · Corporate Policy Document</span>
+            </footer>
           </>
         )}
-        <section className="grid scroll-mt-28 gap-xl" id="overview">
-          {!isPrintRoute && <div className="grid gap-lg rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset/80 p-xl">
-            <div className="flex flex-wrap items-start justify-between gap-lg border-b border-hairline pb-lg">
-              <div className="grid gap-sm">
-                <Link
-                  className="w-fit text-xs font-medium uppercase tracking-tag text-brand-teal transition hover:text-brand-teal-deep"
-                  to={backTo}
-                >
-                  &larr; Back to {backLabel}
-                </Link>
-                <div className="flex flex-wrap items-center gap-sm">
-                  <ToneTag tone="teal">Policy ID: {headerId}</ToneTag>
-                </div>
-                <h2 className="text-[28px] font-medium leading-tight text-ink" id="policy-detail-title">
-                  {cleanInline(headerTitle)}
-                </h2>
-                {!corpus && (
-                  <p className="max-w-measure text-sm text-secondary">
-                    No corpus record found for this policy ID. Header metadata is limited to the policy content source.
-                  </p>
-                )}
-              </div>
-              <div className="flex flex-wrap items-center gap-sm">
-                <ToneBadge size="sm" status="info" />
-                <button
-                  type="button"
-                  onClick={() => openPolicyPrintRoute(`/print/${encodeURIComponent(policyId)}`)}
-                  className="text-xs px-3 py-1 rounded border border-hairline hover:bg-surface-glass hover:backdrop-blur-md"
-                >
-                  Print / Download
-                </button>
-              </div>
-            </div>
 
-            <dl className="grid gap-lg tablet:grid-cols-2 desktop:grid-cols-4">
-              {headerFields.map(([label, value]) => (
-                <div className="min-h-row rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset/80 p-md" key={label}>
-                  <dt className="text-tag uppercase tracking-tag text-muted">{label}</dt>
-                  <dd className={cx('mt-xs text-sm font-medium text-ink', label === 'Tier' && 'text-brand-orange')}>{value}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>}
+        {!isPrintRoute && (
+          <div id="overview">
+            <style>{`
+              @keyframes pdFadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+              }
+              @keyframes pdSectionIn {
+                from { opacity: 0; transform: translateX(28px); }
+                to { opacity: 1; transform: translateX(0); }
+              }
+            `}</style>
 
-          {content ? (
-            <div className="grid gap-lg">
-              {sections.map((section, index) => {
-                // Match V1 print fidelity: keep ALL section headings (document
-                // structure); drop only the order-1 title block and level-1
-                // separator ("---") sections. The body renders when present.
-                const _b = (section.body || '').trim();
-                if (section.order === 1 || (section.level === 1 && (_b === '' || _b === '---'))) return null;
-                // Heading-only section (body is a "---" separator): render a clean
-                // structural heading, not an empty card (V1 print parity).
-                if (_b === '' || _b === '---') {
-                  return (
-                    <div key={section.id} id={buildAnchor(section)} className={cx('scroll-mt-28', isPrintRoute && 'ci-premium-section')}>
-                      <h3 className={cx('font-medium text-ink', section.level <= 2 ? 'text-h2' : 'text-h3')}>{cleanInline(section.title)}</h3>
+            {/* Page header — kicker + title, Policy Library top right */}
+            <header className="sticky top-0 z-50 bg-[#FAFAFA]/95 backdrop-blur-sm pt-8 pb-4 px-6 md:px-12 lg:px-16 border-b border-gray-200">
+              <div className="max-w-7xl mx-auto">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                  <div>
+                    <div className="text-[#0D7A75] text-xs font-bold tracking-widest uppercase mb-2">
+                      POLICY LIBRARY &bull; {headerId}
                     </div>
-                  );
-                }
-                return (
-                <section
-                  className={cx(
-                    'scroll-mt-28 rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden shadow-rest backdrop-blur-md',
-                    isPrintRoute && 'ci-premium-section'
-                  )}
-                  id={buildAnchor(section)}
-                  key={section.id}
-                >
-                  <div className="mb-md flex flex-wrap items-start justify-between gap-md">
-                    <div className="flex items-center gap-sm">
-                      <span className="grid h-tap w-tap place-items-center rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal">
-                        <FileText aria-hidden="true" className="h-icon-sm w-icon-sm" />
-                      </span>
-                      <div>
-                        <p className="text-tag uppercase tracking-tag text-muted">Section {index + 1}</p>
-                        <h3 className={cx('font-medium text-ink', section.level <= 2 ? 'text-h2' : 'text-h3')}>
-                          {cleanInline(section.title)}
-                        </h3>
-                      </div>
-                    </div>
+                    <h1 className="text-3xl md:text-4xl font-bold text-[#0B4E45] tracking-tight" id="policy-detail-title">
+                      {cleanInline(headerTitle)}
+                    </h1>
                   </div>
-                  <MarkdownBody body={section.body} />
-                </section>
-                );
-              })}
+                  <Link
+                    to="/library"
+                    className="shrink-0 self-start md:self-end text-[#0D7A75] text-sm font-medium hover:text-[#0B4E45] transition-colors px-4 py-2 border border-[#0D7A75]/30 rounded-full hover:bg-[#0D7A75]/5"
+                  >
+                    Policy Library
+                  </Link>
+                </div>
+              </div>
+            </header>
+
+            {/* Section nav — one-word labels + Appendices (opens the modal) */}
+            <div className="px-6 md:px-12 lg:px-16 bg-[#FAFAFA] border-b border-gray-200 shadow-sm sticky top-[108px] z-40">
+              <div className="max-w-7xl mx-auto">
+                <nav
+                  aria-label="Policy sections"
+                  className="flex overflow-x-auto whitespace-nowrap space-x-8 text-sm font-medium text-gray-500 pt-4 relative scroll-smooth [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+                >
+                  <button
+                    type="button"
+                    onClick={() => goTo(0)}
+                    className={cx(
+                      'pb-4 border-b-2 transition-colors',
+                      current.kind === 'overview'
+                        ? 'border-[#0D7A75] text-[#0B4E45] font-semibold'
+                        : 'border-transparent text-gray-500 hover:text-gray-900',
+                    )}
+                  >
+                    Header
+                  </button>
+                  {navGroups.map((g) => (
+                    <button
+                      key={g.top.id}
+                      type="button"
+                      onClick={() => goTo(firstCardIndexOf(g))}
+                      className={cx(
+                        'pb-4 border-b-2 transition-colors',
+                        currentGroup === g
+                          ? 'border-[#0D7A75] text-[#0B4E45] font-semibold'
+                          : 'border-transparent text-gray-500 hover:text-gray-900',
+                      )}
+                    >
+                      {shortNavLabel(g.top.title)}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setAppendicesOpen(true)}
+                    className="pb-4 border-b-2 border-transparent text-gray-500 hover:text-gray-900 transition-colors"
+                  >
+                    Appendices
+                  </button>
+                </nav>
+              </div>
             </div>
-          ) : (
-            <div className="rounded-lg border border-dashed border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl text-center shadow-rest backdrop-blur-md">
-              <span className="mx-auto grid h-tap w-tap place-items-center rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset text-muted">
-                <Info aria-hidden="true" className="h-icon-md w-icon-md" />
-              </span>
-              <h3 className="mt-md text-h2 font-medium text-ink">Policy content unavailable</h3>
-              <p className="mx-auto mt-sm max-w-measure text-sm text-secondary">
-                No policy content is published for {headerId} in the policy content source. The corpus header above
-                reflects the available metadata.
-              </p>
-            </div>
-          )}
-        </section>
-        {isPrintRoute && (
-          <footer className="ci-premium-footer">
-            <span>Care Indeed Home Health Care, Inc.</span>
-            <span>{headerId} · Corporate Policy Document</span>
-          </footer>
+
+            {/* One section card at a time */}
+            {content && (
+              <main className="px-6 md:px-12 lg:px-16 py-8">
+                <div className="max-w-7xl mx-auto" key={boundedIndex} style={{ animation: 'pdFadeIn 0.3s ease-in-out' }}>
+                  {showSubNav && subNavAsPills && (
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {subNavItems.map(({ card, idx }) => card.kind === 'section' && (
+                        <button
+                          key={card.section.id}
+                          type="button"
+                          onClick={() => goTo(idx)}
+                          className={cx(
+                            'px-4 py-2 rounded-full text-xs cursor-pointer transition-colors',
+                            idx === boundedIndex
+                              ? 'bg-[#EAF4F4] text-[#0B4E45] border border-[#B2D8D6] font-semibold shadow-sm'
+                              : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50',
+                          )}
+                        >
+                          {stripNumbering(card.section.title)}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {showSubNav && !subNavAsPills && (
+                    <div className="flex space-x-6 border-b border-gray-200 mb-6 px-2 text-sm overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+                      {subNavItems.map(({ card, idx }) => card.kind === 'section' && (
+                        <button
+                          key={card.section.id}
+                          type="button"
+                          onClick={() => goTo(idx)}
+                          className={cx(
+                            'pb-3 border-b-2 cursor-pointer transition-colors',
+                            idx === boundedIndex
+                              ? 'border-[#0D7A75] text-[#0B4E45] font-semibold'
+                              : 'border-transparent text-gray-500 hover:text-gray-700',
+                          )}
+                        >
+                          {stripNumbering(card.section.title)}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-10">
+                    {current.kind === 'overview' ? (
+                      <>
+                        <div className="flex justify-between items-center mb-8">
+                          <h2 className="text-2xl font-semibold text-[#0B4E45]">Policy Overview</h2>
+                          <span className="text-xs font-bold tracking-widest text-[#0D7A75] uppercase">SECTION 1</span>
+                        </div>
+                        {overviewIntro && (
+                          <p className="text-gray-600 leading-relaxed mb-8">{overviewIntro}</p>
+                        )}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+                          {overviewCards.map((card) => (
+                            <div
+                              key={card.label}
+                              className={cx(
+                                'rounded-xl p-5',
+                                card.highlight
+                                  ? 'border border-teal-100 bg-teal-50/30'
+                                  : 'border border-gray-100 bg-gray-50/50',
+                              )}
+                            >
+                              <h3 className="text-[#0D7A75] font-semibold text-sm mb-1">{card.label}</h3>
+                              <p className={cx('text-gray-700 text-sm', card.highlight && 'font-medium')}>
+                                {card.lines.map((line, i) => (
+                                  <span key={i}>{i > 0 && <br />}{line}</span>
+                                ))}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                        {cardFooter}
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex justify-between items-center mb-8">
+                          <h2 className="text-2xl font-semibold text-[#0B4E45]">{stripNumbering(current.section.title)}</h2>
+                          <span className="text-xs font-bold tracking-widest text-[#0D7A75] uppercase">
+                            SECTION {numberOf(current.section.title) ?? boundedIndex + 1}
+                          </span>
+                        </div>
+                        <MarkdownBody body={current.section.body} />
+                        {cardFooter}
+                      </>
+                    )}
+                  </section>
+                </div>
+              </main>
+            )}
+
+            {!content && (
+              <div className="px-6 md:px-12 lg:px-16 py-8">
+                <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
+                  <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-gray-50 text-gray-400">
+                    <Info aria-hidden="true" className="h-6 w-6" />
+                  </span>
+                  <h3 className="mt-4 text-2xl font-semibold text-[#0B4E45]">Policy content unavailable</h3>
+                  <p className="mx-auto mt-2 max-w-xl text-sm text-gray-600">
+                    No policy content is published for {headerId} in the policy content source.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </article>
 
-      {!isPrintRoute && <section className="grid gap-xl desktop:grid-cols-2" aria-label="Related policy data">
-        <SourceUnavailable
-          icon={Link2}
-          title="Linked Forms"
-          description="Forms connected to this policy are not part of the policy content source. Form linkage is managed in the Forms Library and is not available from the policy detail content."
-        />
-        <SourceUnavailable
-          icon={ListChecks}
-          title="Lifecycle & Evidence"
-          description="Lifecycle progress and evidence records are not carried in the policy content source. Status, version, and review dates appear as real content within the Policy Header section above."
-        />
-      </section>}
-
-      {!isPrintRoute && <SourceUnavailable
-        title="Readiness & Compliance Mapping"
-        description="Survey-readiness scoring and standard-to-section mapping are not present in the policy content source and are not fabricated here. Regulatory references appear as real content within the policy's References section."
-      />}
+      {/* Appendices modal — the ACTUAL forms from the Forms Library */}
+      {appendicesOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Appendices — forms linked to ${headerId}`}
+          className="fixed inset-0 z-50 flex items-center justify-center p-lg"
+        >
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => { setAppendicesOpen(false); setOpenedForm(null); }}
+          />
+          <div
+            className={cx(
+              'relative flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm',
+              openedForm ? 'h-[92vh] w-full max-w-5xl' : 'max-h-[82vh] w-full max-w-3xl'
+            )}
+            style={{ animation: 'pdSectionIn 260ms cubic-bezier(0.2, 0, 0, 1)' }}
+          >
+            <div className="flex items-start justify-between gap-md border-b border-gray-200 p-8 pb-6">
+              <div className="grid gap-xs">
+                <span className="w-fit rounded-full border border-[#0D7A75]/25 bg-[#0D7A75]/5 px-3 py-1 text-xs font-bold tracking-widest uppercase text-[#0D7A75]">
+                  Appendices • {headerId}
+                </span>
+                {openedForm ? (
+                  <>
+                    <h3 className="text-2xl font-semibold text-[#0B4E45]">{openedForm.id} — {openedForm.name}</h3>
+                    <button
+                      type="button"
+                      onClick={() => setOpenedForm(null)}
+                      className="w-fit text-sm text-[#0D7A75] hover:text-[#0B4E45]"
+                    >
+                      &larr; Back to all appendices
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-2xl font-semibold text-[#0B4E45]">Linked forms from the Forms Library</h3>
+                    <p className="text-sm text-gray-600">
+                      {linkedForms.length > 0
+                        ? `${linkedForms.length} form${linkedForms.length === 1 ? '' : 's'} reference this policy. Select one to open the actual form.`
+                        : 'No Forms Library records reference this policy.'}
+                    </p>
+                  </>
+                )}
+              </div>
+              <button
+                type="button"
+                aria-label="Close appendices"
+                onClick={() => { setAppendicesOpen(false); setOpenedForm(null); }}
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-gray-200 text-gray-500 hover:border-[#0D7A75] hover:text-[#0D7A75]"
+              >
+                <X aria-hidden="true" className="h-5 w-5" />
+              </button>
+            </div>
+            {openedForm ? (
+              <iframe
+                src={`/forms/${encodeURIComponent(openedForm.id)}?embed=1`}
+                title={`${openedForm.id} — ${openedForm.name}`}
+                className="w-full flex-1 border-0 bg-white"
+              />
+            ) : (
+              <div className="grid gap-sm overflow-y-auto p-8 pt-6">
+                {linkedForms.map((form) => (
+                  <button
+                    key={form.id}
+                    type="button"
+                    onClick={() => setOpenedForm(form)}
+                    className="group flex items-center justify-between gap-md rounded-xl border border-gray-100 bg-white p-6 text-left transition hover:border-[#0D7A75]/40 hover:bg-[#0D7A75]/5"
+                  >
+                    <div className="grid gap-xs">
+                      <div className="flex flex-wrap items-center gap-sm">
+                        <span className="text-xs font-bold tracking-widest text-[#0D7A75]">{form.id}</span>
+                        <span className="rounded-full border border-gray-200 px-2 py-[1px] text-[11px] text-gray-500">{form.type}</span>
+                      </div>
+                      <span className="text-sm font-medium text-[#0B4E45]">{form.name}</span>
+                      <span className="text-xs text-gray-600">{form.usage} • {form.frequency}</span>
+                    </div>
+                    <span className="text-[#0D7A75] group-hover:translate-x-0.5 transition">→</span>
+                  </button>
+                ))}
+                {linkedForms.length === 0 && (
+                  <p className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-600">
+                    No linked forms found for {headerId}.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

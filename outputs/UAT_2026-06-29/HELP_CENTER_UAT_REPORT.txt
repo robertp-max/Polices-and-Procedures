@@ -1,0 +1,40 @@
+Help Center UAT Report (Text Version)
+=====================================
+
+Date: 2026-06-29
+Scope: Non-Journey only. Help Center (/help, categories, articles)
+Excluded: All Journey/LMS (A19/A20, /journey/*, narrationManifest.ts, etc.) — Deferred / Known Incomplete / Out of Current Release Scope. NOT counted against Go/No-Go.
+
+Build & Verification
+- npx tsc -b --noEmit: PASS (exit 0)
+- npm run build: PASS (exit 0)
+
+Main /help Page
+- Only category cards + prompt. No legacy dump.
+- Calm grid, lucide icons, neutral slate-200 borders.
+- Calm icon shades only on icon bgs.
+- Clean hover, responsive.
+
+Category Behavior
+- Navigates to /help/category/:id
+- Matching icon + tint header.
+- Preview cards pop cleanly.
+- Good placeholders for empty.
+
+Preview Cards & Full Articles
+- Neutral borders.
+- No step # circles/badges.
+- Plain steps.
+- Legacy preserved for Brad.
+
+Google Drive Logo
+- EXISTS at public/assets/media/googledrive_logo.png
+- URL /assets/media/googledrive_logo.png verified.
+
+Visual Pass
+- Inspected structure for /help, category/brad-ai, forms, qapi, troubleshooting, articles.
+- Fixes: neutral borders enforced in HelpCenterScreen.
+
+Conclusion
+Help Center passes requirements.
+Journey excluded.

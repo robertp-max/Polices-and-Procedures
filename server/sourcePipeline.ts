@@ -64,12 +64,41 @@ export const TEMPLATE_FIELD_SPECS: Record<PacketTemplateKind, FieldSpec[]> = {
     // Advance Directives
     { key: 'advance_directive_status', label: 'Advance directive status (AHCD / POLST / DNR)', group: 'Advance Directives' },
   ],
+  // Grouped per the Brad mandated-event QAPI intake sections (Meeting Details /
+  // Census / High-Risk Rollup / Adverse Events / PIP / Chart Audit / Infection
+  // Control / Medication Safety — see src/policy/brad/intake/adapters/
+  // qapiIntakeAdapter.ts). This widens what Brad's 3x-read looks for beyond the
+  // 5 original stub fields; the adapter's deterministic ClinicalDump/heuristic
+  // paths still run independently and do not depend on these exact keys.
   qapi: [
-    { key: 'event_title', label: 'QAPI event / meeting title' },
-    { key: 'event_date', label: 'Meeting date' },
-    { key: 'attendees', label: 'Committee attendees' },
-    { key: 'kpis', label: 'KPIs / metrics reviewed' },
-    { key: 'pips', label: 'Performance improvement projects' },
+    { key: 'event_title', label: 'QAPI event / meeting title', group: 'Meeting Details' },
+    { key: 'event_date', label: 'Meeting date', group: 'Meeting Details' },
+    { key: 'meeting_location', label: 'Meeting location', group: 'Meeting Details' },
+    { key: 'chair', label: 'Committee chair', group: 'Meeting Details' },
+    { key: 'attendees', label: 'Committee attendees / roster', group: 'Meeting Details' },
+    { key: 'quorum_status', label: 'Quorum status', group: 'Meeting Details' },
+    { key: 'active_census', label: 'Active census count', group: 'Census / Population' },
+    { key: 'discharged_count', label: 'Discharged count this period', group: 'Census / Population' },
+    { key: 'admissions_count', label: 'Admissions during period', group: 'Census / Population' },
+    { key: 'recert_count', label: 'Recertification count', group: 'Census / Population' },
+    { key: 'high_acuity_count', label: 'High-acuity patient count', group: 'Census / Population' },
+    { key: 'high_risk_flags', label: 'High-risk flags (fall/infection/wound/anticoagulant/oxygen/catheter/cognitive/polypharmacy)', group: 'High-Risk Rollup' },
+    { key: 'overloaded_clinician_count', label: 'Overloaded clinician assignment count', group: 'High-Risk Rollup' },
+    { key: 'clinician_pip_or_license_flags', label: 'Clinician PIP / expired license / pending termination flags', group: 'High-Risk Rollup' },
+    { key: 'hospitalizations', label: 'Hospitalizations total', group: 'Adverse Events' },
+    { key: 'falls_total', label: 'Falls total / falls with injury / unreported falls', group: 'Adverse Events' },
+    { key: 'infections_total', label: 'Infections total (wound / CAUTI / UTI)', group: 'Adverse Events' },
+    { key: 'medication_events', label: 'Medication events total / unreported', group: 'Adverse Events' },
+    { key: 'critical_lab_events', label: 'Critical lab events / physician-notification failures', group: 'Adverse Events' },
+    { key: 'kpis', label: 'KPIs / quality indicators reviewed', group: 'QAPI Dashboard' },
+    { key: 'pips', label: 'Performance improvement projects (PIPs) — trigger, status, remeasurement', group: 'PIP / Corrective Action' },
+    { key: 'corrective_actions', label: 'Corrective actions required / owner / due date', group: 'PIP / Corrective Action' },
+    { key: 'late_documentation', label: 'Late documentation / missing recert / unsigned orders', group: 'Chart Audit' },
+    { key: 'oasis_concerns', label: 'OASIS concerns / med reconciliation missing / POC not updated', group: 'Chart Audit' },
+    { key: 'hha_supervision_gap', label: 'HHA supervision gap', group: 'Chart Audit' },
+    { key: 'infection_line_list', label: 'Infection line list / culture obtained / reported / escalation status', group: 'Infection Control' },
+    { key: 'medication_safety_gaps', label: 'Medication safety gaps (critical INR/lab, insulin error, physician notified)', group: 'Medication Safety' },
+    { key: 'complaints', label: 'Patient complaints summary', group: 'Complaints' },
   ],
   event: [
     { key: 'event_title', label: 'Event title' },

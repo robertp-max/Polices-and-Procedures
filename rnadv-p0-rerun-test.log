@@ -1,0 +1,726 @@
+
+> ci-policy-app@0.0.0 test
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv3.2.6 [39m[90mc:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2[39m
+
+▶ eCIgn Path B — Phase 2 runtime specs (all reference-implemented; live integration deferred)
+  [32m✔ is fully reference-implemented at the contract level [90m(4.1402ms)[39m[39m
+[32m✔ eCIgn Path B — Phase 2 runtime specs (all reference-implemented; live integration deferred) [90m(4.7648ms)[39m[39m
+▶ toCanonicalRoleKey
+  [32m✔ folds admin-family labels and keys to a single canonical key [90m(3.7938ms)[39m[39m
+  [32m✔ keeps distinct roles distinct via their own slug [90m(0.1334ms)[39m[39m
+  [32m✔ returns empty for unresolvable input [90m(0.0781ms)[39m[39m
+[32m✔ toCanonicalRoleKey [90m(4.7914ms)[39m[39m
+▶ rolesMatchForLock
+  [32m✔ treats super_admin key and Administrator label as the same authority [90m(0.0937ms)[39m[39m
+  [32m✔ blocks a genuine change between two known, different authorities [90m(0.063ms)[39m[39m
+  [32m✔ does not block when either side is unresolvable [90m(0.0515ms)[39m[39m
+[32m✔ rolesMatchForLock [90m(0.3105ms)[39m[39m
+▶ resolveCanonicalSignedPackages
+  [32m✔ returns exactly one canonical match after finalize [90m(4.1984ms)[39m[39m
+  [32m✔ accepts signed_form_instance and kind=signed_package shapes [90m(0.5748ms)[39m[39m
+  [32m✔ ignores superseded artifacts and the HHC session-only mirror (non-CES) [90m(0.12ms)[39m[39m
+  [32m✔ does not match a different form instance [90m(0.099ms)[39m[39m
+  [32m✔ de-duplicates the same artifact found across event aliases [90m(0.1202ms)[39m[39m
+  [32m✔ canonical artifact with no Drive metadata requires pre-finalize evidenceHealth + publish (blocks until Drive config healthy) [90m(0.1334ms)[39m[39m
+  [32m✔ successful Drive upload persists metadata onto the same artifact (no duplicate created) [90m(0.1743ms)[39m[39m
+  [32m✔ artifact with existing driveFileId does not re-upload (idempotent) [90m(0.0903ms)[39m[39m
+  [32m✔ artifact without driveFileId is returned by resolver but pre-finalize health + finalDriveSuccess gate blocks (exact "Evidence finalization blocked" error) [90m(0.0945ms)[39m[39m
+[32m✔ resolveCanonicalSignedPackages [90m(6.5047ms)[39m[39m
+▶ Path B retention — classification & evidence validity
+  [32m✔ only a locked chain is complete/retained; everything else expires [90m(4.0726ms)[39m[39m
+  [32m✔ only a locked chain is valid evidence ("incomplete = as good as not signed") [90m(0.1143ms)[39m[39m
+[32m✔ Path B retention — classification & evidence validity [90m(4.8676ms)[39m[39m
+▶ Path B retention — 90-day inactivity clock (default + configurable)
+  [32m✔ default expiry is 90 days from last activity [90m(0.2563ms)[39m[39m
+  [32m✔ expiry window is configurable per policy [90m(0.1115ms)[39m[39m
+  [32m✔ is expired only at/after the expiry instant (now is injected) [90m(0.1036ms)[39m[39m
+  [32m✔ a new signature resets the inactivity clock [90m(0.0928ms)[39m[39m
+[32m✔ Path B retention — 90-day inactivity clock (default + configurable) [90m(0.7175ms)[39m[39m
+▶ Path B retention — eligibility gate
+  [32m✔ locked → indefinite retention, no expiry [90m(0.2975ms)[39m[39m
+  [32m✔ locked must not carry an expiry/incomplete state [90m(0.2077ms)[39m[39m
+  [32m✔ non-locked cannot be marked indefinitely retained [90m(0.1523ms)[39m[39m
+  [32m✔ non-locked must carry an expiry, consistent with the clock [90m(0.175ms)[39m[39m
+[32m✔ Path B retention — eligibility gate [90m(1.0012ms)[39m[39m
+▶ Path B retention — archive is not valid evidence
+  [32m✔ an archived/expired incomplete chain can never be flagged valid evidence [90m(0.1683ms)[39m[39m
+[32m✔ Path B retention — archive is not valid evidence [90m(0.3179ms)[39m[39m
+▶ policy corpus seed integrity
+  [32m✔ is non-empty with unique, well-formed, domain-readable ids [90m(5.1274ms)[39m[39m
+  [32m✔ every policy carries a non-empty title [90m(0.1611ms)[39m[39m
+  [32m✔ lifecycle seed resolves to the canonical corpus [90m(0.1123ms)[39m[39m
+  [32m✔ getCorpusPolicy resolves real records and titles/owners for sample ids (supports reference resolution) [90m(0.1383ms)[39m[39m
+[32m✔ policy corpus seed integrity [90m(6.4103ms)[39m[39m
+[90mstderr[2m | src/policy/ces/cesMasterControlAudit.test.ts
+[22m[39m[MasterControlInventory] Dataset fetch threw an error {
+  path: [32m'/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+  error: TypeError: Failed to parse URL from /data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+  [90m    at node:internal/deps/undici/undici:16416:13[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+      at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:19[90m)[39m
+      at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+      at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:34:39[90m)[39m
+  [90m    at Test.run (node:internal/test_runner/test:1113:7)[39m
+  [90m    at Suite.processPendingSubtests (node:internal/test_runner/test:788:7)[39m {
+    [cause]: TypeError: Invalid URL: /data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL-impl.js:20:13[90m)[39m
+        at Object.exports.setup [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:54:12[90m)[39m
+        at new URL [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:115:22[90m)[39m
+    [90m    at new Request (node:internal/deps/undici/undici:10971:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:11891:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:16414:10)[39m
+    [90m    at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)[39m
+        at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:25[90m)[39m
+        at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:22[90m)[39m
+        at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:34:45[90m)[39m
+  }
+}
+
+ [32m✓[39m src/policy/help-center/threads/threadPhiGuard.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/policy/help-center/threads/threadMerge.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/policy/help-center/threads/threadView.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/policy/admission/admissionSignerModel.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+[90mstderr[2m | src/policy/ces/cesMasterControlAudit.test.ts
+[22m[39m[MasterControlInventory] Dataset fetch threw an error {
+  path: [32m'/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+  error: TypeError: Failed to parse URL from /Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+  [90m    at node:internal/deps/undici/undici:16416:13[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+      at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:19[90m)[39m
+      at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+      at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:34:39[90m)[39m
+  [90m    at Test.run (node:internal/test_runner/test:1113:7)[39m
+  [90m    at Suite.processPendingSubtests (node:internal/test_runner/test:788:7)[39m {
+    [cause]: TypeError: Invalid URL: /Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL-impl.js:20:13[90m)[39m
+        at Object.exports.setup [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:54:12[90m)[39m
+        at new URL [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:115:22[90m)[39m
+    [90m    at new Request (node:internal/deps/undici/undici:10971:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:11891:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:16414:10)[39m
+    [90m    at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)[39m
+        at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:25[90m)[39m
+    [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+        at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+  }
+}
+
+[90mstderr[2m | src/policy/ces/cesMasterControlAudit.test.ts
+[22m[39m[MasterControlInventory] Dataset fetch threw an error {
+  path: [32m'/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+  error: TypeError: Failed to parse URL from /Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+  [90m    at node:internal/deps/undici/undici:16416:13[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+      at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:19[90m)[39m
+      at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+      at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:34:39[90m)[39m
+  [90m    at Test.run (node:internal/test_runner/test:1113:7)[39m
+  [90m    at Suite.processPendingSubtests (node:internal/test_runner/test:788:7)[39m {
+    [cause]: TypeError: Invalid URL: /Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL-impl.js:20:13[90m)[39m
+        at Object.exports.setup [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:54:12[90m)[39m
+        at new URL [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:115:22[90m)[39m
+    [90m    at new Request (node:internal/deps/undici/undici:10971:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:11891:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:16414:10)[39m
+    [90m    at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)[39m
+        at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:25[90m)[39m
+    [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+        at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+  }
+}
+
+▶ CES one-pass Master Control Audit projection
+  [32m✔ provides fallback rows matching visual parity expectations (7 rows, MC- ids) with taxonomy and policy mappings [90m(4.5299ms)[39m[39m
+  [32m✔ buildCesControlAuditView returns a well-shaped CesControlAuditView [90m(7.3764ms)[39m[39m
+  [32m✔ metrics derive reasonable high/material/low counts from rows [90m(1.7162ms)[39m[39m
+  [32m✔ validateCesControlAuditView passes for valid views and rejects invalids [90m(2.0194ms)[39m[39m
+  [32m✔ uses real 104-control inventory (when seed load succeeds) with full taxonomy + control-to-policy mappings in rows [90m(1.5627ms)[39m[39m
+[32m✔ CES one-pass Master Control Audit projection [90m(18.1927ms)[39m[39m
+[90mstderr[2m | src/policy/ces/cesMasterControlAudit.test.ts
+[22m[39m[MasterControlInventory] Dataset fetch threw an error {
+  path: [32m'/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+  error: TypeError: Failed to parse URL from /MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+  [90m    at node:internal/deps/undici/undici:16416:13[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+      at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:19[90m)[39m
+      at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+      at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:34:39[90m)[39m
+  [90m    at Test.run (node:internal/test_runner/test:1113:7)[39m
+  [90m    at Suite.processPendingSubtests (node:internal/test_runner/test:788:7)[39m {
+    [cause]: TypeError: Invalid URL: /MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL-impl.js:20:13[90m)[39m
+        at Object.exports.setup [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:54:12[90m)[39m
+        at new URL [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:115:22[90m)[39m
+    [90m    at new Request (node:internal/deps/undici/undici:10971:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:11891:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:16414:10)[39m
+    [90m    at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)[39m
+        at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:25[90m)[39m
+    [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+        at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+  }
+}
+[MasterControlInventory] Exhausted dataset fetch paths {
+  attemptedPaths: [
+    [32m'/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+    [32m'/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+    [32m'/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+    [32m'/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m
+  ]
+}
+
+ [32m✓[39m src/policy/admission/patientAdmissionPacket.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+[90mstderr[2m | src/policy/ces/cesMasterControlAudit.test.ts
+[22m[39m[MasterControlInventory] Dataset fetch threw an error {
+  path: [32m'/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+  error: TypeError: Failed to parse URL from /data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+  [90m    at node:internal/deps/undici/undici:16416:13[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+      at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:19[90m)[39m
+      at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+      at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:45:18[90m)[39m
+  [90m    at Test.run (node:internal/test_runner/test:1113:7)[39m
+  [90m    at Suite.processPendingSubtests (node:internal/test_runner/test:788:7)[39m {
+    [cause]: TypeError: Invalid URL: /data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL-impl.js:20:13[90m)[39m
+        at Object.exports.setup [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:54:12[90m)[39m
+        at new URL [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:115:22[90m)[39m
+    [90m    at new Request (node:internal/deps/undici/undici:10971:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:11891:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:16414:10)[39m
+    [90m    at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)[39m
+        at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:25[90m)[39m
+        at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:22[90m)[39m
+        at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:45:24[90m)[39m
+  }
+}
+
+[90mstderr[2m | src/policy/ces/cesMasterControlAudit.test.ts
+[22m[39m[MasterControlInventory] Dataset fetch threw an error {
+  path: [32m'/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+  error: TypeError: Failed to parse URL from /Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+  [90m    at node:internal/deps/undici/undici:16416:13[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+      at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:19[90m)[39m
+      at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+      at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:45:18[90m)[39m
+  [90m    at Test.run (node:internal/test_runner/test:1113:7)[39m
+  [90m    at Suite.processPendingSubtests (node:internal/test_runner/test:788:7)[39m {
+    [cause]: TypeError: Invalid URL: /Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL-impl.js:20:13[90m)[39m
+        at Object.exports.setup [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:54:12[90m)[39m
+        at new URL [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:115:22[90m)[39m
+    [90m    at new Request (node:internal/deps/undici/undici:10971:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:11891:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:16414:10)[39m
+    [90m    at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)[39m
+        at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:25[90m)[39m
+    [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+        at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+  }
+}
+
+[90mstderr[2m | src/policy/ces/cesMasterControlAudit.test.ts
+[22m[39m[MasterControlInventory] Dataset fetch threw an error {
+  path: [32m'/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+  error: TypeError: Failed to parse URL from /Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+  [90m    at node:internal/deps/undici/undici:16416:13[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+      at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:19[90m)[39m
+      at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+      at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:45:18[90m)[39m
+  [90m    at Test.run (node:internal/test_runner/test:1113:7)[39m
+  [90m    at Suite.processPendingSubtests (node:internal/test_runner/test:788:7)[39m {
+    [cause]: TypeError: Invalid URL: /Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL-impl.js:20:13[90m)[39m
+        at Object.exports.setup [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:54:12[90m)[39m
+        at new URL [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:115:22[90m)[39m
+    [90m    at new Request (node:internal/deps/undici/undici:10971:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:11891:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:16414:10)[39m
+    [90m    at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)[39m
+        at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:25[90m)[39m
+    [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+        at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+  }
+}
+
+[90mstderr[2m | src/policy/ces/cesMasterControlAudit.test.ts
+[22m[39m[MasterControlInventory] Dataset fetch threw an error {
+  path: [32m'/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+  error: TypeError: Failed to parse URL from /MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+  [90m    at node:internal/deps/undici/undici:16416:13[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+      at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:19[90m)[39m
+      at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+      at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:45:18[90m)[39m
+  [90m    at Test.run (node:internal/test_runner/test:1113:7)[39m
+  [90m    at Suite.processPendingSubtests (node:internal/test_runner/test:788:7)[39m {
+    [cause]: TypeError: Invalid URL: /MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL-impl.js:20:13[90m)[39m
+        at Object.exports.setup [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:54:12[90m)[39m
+        at new URL [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:115:22[90m)[39m
+    [90m    at new Request (node:internal/deps/undici/undici:10971:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:11891:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:16414:10)[39m
+    [90m    at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)[39m
+        at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:25[90m)[39m
+    [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+        at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+  }
+}
+[MasterControlInventory] Exhausted dataset fetch paths {
+  attemptedPaths: [
+    [32m'/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+    [32m'/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+    [32m'/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+    [32m'/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m
+  ]
+}
+
+[90mstderr[2m | src/policy/ces/cesMasterControlAudit.test.ts
+[22m[39m[MasterControlInventory] Dataset fetch threw an error {
+  path: [32m'/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+  error: TypeError: Failed to parse URL from /data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+  [90m    at node:internal/deps/undici/undici:16416:13[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+      at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:19[90m)[39m
+      at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+      at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:51:18[90m)[39m
+  [90m    at Test.run (node:internal/test_runner/test:1113:7)[39m
+  [90m    at Suite.processPendingSubtests (node:internal/test_runner/test:788:7)[39m {
+    [cause]: TypeError: Invalid URL: /data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL-impl.js:20:13[90m)[39m
+        at Object.exports.setup [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:54:12[90m)[39m
+        at new URL [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:115:22[90m)[39m
+    [90m    at new Request (node:internal/deps/undici/undici:10971:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:11891:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:16414:10)[39m
+    [90m    at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)[39m
+        at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:25[90m)[39m
+        at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:22[90m)[39m
+        at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:51:24[90m)[39m
+  }
+}
+
+[90mstderr[2m | src/policy/ces/cesMasterControlAudit.test.ts
+[22m[39m[MasterControlInventory] Dataset fetch threw an error {
+  path: [32m'/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+  error: TypeError: Failed to parse URL from /Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+  [90m    at node:internal/deps/undici/undici:16416:13[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+      at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:19[90m)[39m
+      at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+      at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:51:18[90m)[39m
+  [90m    at Test.run (node:internal/test_runner/test:1113:7)[39m
+  [90m    at Suite.processPendingSubtests (node:internal/test_runner/test:788:7)[39m {
+    [cause]: TypeError: Invalid URL: /Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL-impl.js:20:13[90m)[39m
+        at Object.exports.setup [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:54:12[90m)[39m
+        at new URL [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:115:22[90m)[39m
+    [90m    at new Request (node:internal/deps/undici/undici:10971:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:11891:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:16414:10)[39m
+    [90m    at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)[39m
+        at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:25[90m)[39m
+    [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+        at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+  }
+}
+
+[90mstderr[2m | src/policy/ces/cesMasterControlAudit.test.ts
+[22m[39m[MasterControlInventory] Dataset fetch threw an error {
+  path: [32m'/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+  error: TypeError: Failed to parse URL from /Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+  [90m    at node:internal/deps/undici/undici:16416:13[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+      at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:19[90m)[39m
+      at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+      at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:51:18[90m)[39m
+  [90m    at Test.run (node:internal/test_runner/test:1113:7)[39m
+  [90m    at Suite.processPendingSubtests (node:internal/test_runner/test:788:7)[39m {
+    [cause]: TypeError: Invalid URL: /Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL-impl.js:20:13[90m)[39m
+        at Object.exports.setup [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:54:12[90m)[39m
+        at new URL [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:115:22[90m)[39m
+    [90m    at new Request (node:internal/deps/undici/undici:10971:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:11891:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:16414:10)[39m
+    [90m    at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)[39m
+        at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:25[90m)[39m
+    [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+        at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+  }
+}
+
+ [32m✓[39m src/policy/help-center/threads/threadTopicKey.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+[90mstderr[2m | src/policy/ces/cesMasterControlAudit.test.ts
+[22m[39m[MasterControlInventory] Dataset fetch threw an error {
+  path: [32m'/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+  error: TypeError: Failed to parse URL from /MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+  [90m    at node:internal/deps/undici/undici:16416:13[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+      at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:19[90m)[39m
+      at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+      at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:51:18[90m)[39m
+  [90m    at Test.run (node:internal/test_runner/test:1113:7)[39m
+  [90m    at Suite.processPendingSubtests (node:internal/test_runner/test:788:7)[39m {
+    [cause]: TypeError: Invalid URL: /MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL-impl.js:20:13[90m)[39m
+        at Object.exports.setup [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:54:12[90m)[39m
+        at new URL [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:115:22[90m)[39m
+    [90m    at new Request (node:internal/deps/undici/undici:10971:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:11891:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:16414:10)[39m
+    [90m    at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)[39m
+        at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:25[90m)[39m
+    [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+        at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+  }
+}
+[MasterControlInventory] Exhausted dataset fetch paths {
+  attemptedPaths: [
+    [32m'/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+    [32m'/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+    [32m'/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+    [32m'/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m
+  ]
+}
+
+[90mstderr[2m | src/policy/ces/cesMasterControlAudit.test.ts
+[22m[39m[MasterControlInventory] Dataset fetch threw an error {
+  path: [32m'/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+  error: TypeError: Failed to parse URL from /data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+  [90m    at node:internal/deps/undici/undici:16416:13[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+      at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:19[90m)[39m
+      at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+      at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:61:39[90m)[39m
+  [90m    at Test.run (node:internal/test_runner/test:1113:7)[39m
+  [90m    at Suite.processPendingSubtests (node:internal/test_runner/test:788:7)[39m {
+    [cause]: TypeError: Invalid URL: /data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL-impl.js:20:13[90m)[39m
+        at Object.exports.setup [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:54:12[90m)[39m
+        at new URL [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:115:22[90m)[39m
+    [90m    at new Request (node:internal/deps/undici/undici:10971:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:11891:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:16414:10)[39m
+    [90m    at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)[39m
+        at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:25[90m)[39m
+        at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:22[90m)[39m
+        at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:61:45[90m)[39m
+  }
+}
+
+[90mstderr[2m | src/policy/ces/cesMasterControlAudit.test.ts
+[22m[39m[MasterControlInventory] Dataset fetch threw an error {
+  path: [32m'/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+  error: TypeError: Failed to parse URL from /Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+  [90m    at node:internal/deps/undici/undici:16416:13[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+      at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:19[90m)[39m
+      at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+      at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:61:39[90m)[39m
+  [90m    at Test.run (node:internal/test_runner/test:1113:7)[39m
+  [90m    at Suite.processPendingSubtests (node:internal/test_runner/test:788:7)[39m {
+    [cause]: TypeError: Invalid URL: /Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL-impl.js:20:13[90m)[39m
+        at Object.exports.setup [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:54:12[90m)[39m
+        at new URL [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:115:22[90m)[39m
+    [90m    at new Request (node:internal/deps/undici/undici:10971:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:11891:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:16414:10)[39m
+    [90m    at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)[39m
+        at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:25[90m)[39m
+    [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+        at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+  }
+}
+
+[90mstderr[2m | src/policy/ces/cesMasterControlAudit.test.ts
+[22m[39m[MasterControlInventory] Dataset fetch threw an error {
+  path: [32m'/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+  error: TypeError: Failed to parse URL from /Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+  [90m    at node:internal/deps/undici/undici:16416:13[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+      at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:19[90m)[39m
+      at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+      at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:61:39[90m)[39m
+  [90m    at Test.run (node:internal/test_runner/test:1113:7)[39m
+  [90m    at Suite.processPendingSubtests (node:internal/test_runner/test:788:7)[39m {
+    [cause]: TypeError: Invalid URL: /Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL-impl.js:20:13[90m)[39m
+        at Object.exports.setup [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:54:12[90m)[39m
+        at new URL [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:115:22[90m)[39m
+    [90m    at new Request (node:internal/deps/undici/undici:10971:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:11891:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:16414:10)[39m
+    [90m    at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)[39m
+        at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:25[90m)[39m
+    [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+        at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+  }
+}
+
+[90mstderr[2m | src/policy/ces/cesMasterControlAudit.test.ts
+[22m[39m[MasterControlInventory] Dataset fetch threw an error {
+  path: [32m'/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+  error: TypeError: Failed to parse URL from /MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+  [90m    at node:internal/deps/undici/undici:16416:13[39m
+  [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+      at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:19[90m)[39m
+      at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+      at TestContext.<anonymous> [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.test.ts:61:39[90m)[39m
+  [90m    at Test.run (node:internal/test_runner/test:1113:7)[39m
+  [90m    at Suite.processPendingSubtests (node:internal/test_runner/test:788:7)[39m {
+    [cause]: TypeError: Invalid URL: /MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL-impl.js:20:13[90m)[39m
+        at Object.exports.setup [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:54:12[90m)[39m
+        at new URL [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39mnode_modules\[4mjsdom[24m\node_modules\[4mwhatwg-url[24m\lib\URL.js:115:22[90m)[39m
+    [90m    at new Request (node:internal/deps/undici/undici:10971:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:11891:25)[39m
+    [90m    at fetch (node:internal/deps/undici/undici:16414:10)[39m
+    [90m    at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)[39m
+        at loadMasterControlInventorySeed [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\data\masterControlInventory.ts:91:25[90m)[39m
+    [90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+        at buildCesControlAuditView [90m(c:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2\[39msrc\policy\ces\cesMasterControlAudit.ts:68:16[90m)[39m
+  }
+}
+[MasterControlInventory] Exhausted dataset fetch paths {
+  attemptedPaths: [
+    [32m'/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+    [32m'/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+    [32m'/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m,
+    [32m'/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'[39m
+  ]
+}
+
+ [32m✓[39m src/policy/help-center/threads/bradThread.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/policy/help-center/threads/threadStore.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+▶ Phase 2-live A — sandbox config (default off, no secrets)
+  [32m✔ empty env → disabled, fake mode, no credential, no folder [90m(4.9014ms)[39m[39m
+  [32m✔ enable flag flips mode to live-sandbox; credential stored as presence only [90m(0.1674ms)[39m[39m
+  [32m✔ redactConfig emits booleans/mode only — no secret material [90m(0.1083ms)[39m[39m
+[32m✔ Phase 2-live A — sandbox config (default off, no secrets) [90m(5.983ms)[39m[39m
+▶ Phase 2-live A — live readiness gate (Gate B)
+  [32m✔ disabled config is not ready [90m(0.5047ms)[39m[39m
+  [32m✔ enabled but missing folder/credentials is not ready [90m(0.1904ms)[39m[39m
+  [32m✔ fully configured live sandbox is ready [90m(0.0882ms)[39m[39m
+[32m✔ Phase 2-live A — live readiness gate (Gate B) [90m(0.966ms)[39m[39m
+▶ Phase 2-live A — gated selector (fake default, live not wired)
+  [32m✔ default (fake) returns a functional fake publisher [90m(0.3127ms)[39m[39m
+  [32m✔ live mode that is NOT ready throws LiveSandboxNotReadyError with issues [90m(0.3537ms)[39m[39m
+  [32m✔ live mode that IS ready still throws LiveAdapterNotImplementedError (no Google wiring in subphase A) [90m(0.1369ms)[39m[39m
+[32m✔ Phase 2-live A — gated selector (fake default, live not wired) [90m(0.9638ms)[39m[39m
+▶ eCIgn Path B Phase 1 — canonical artifact identity
+  [32m✔ 1. accepts only the actual Care Indeed form PDF as canonical signable artifact [90m(4.5177ms)[39m[39m
+  [32m✔ 2. rejects markdown/html/text/generic-template artifact kinds [90m(0.25ms)[39m[39m
+[32m✔ eCIgn Path B Phase 1 — canonical artifact identity [90m(5.5217ms)[39m[39m
+▶ eCIgn Path B Phase 1 — presented vs signed distinction
+  [32m✔ 3. presented and signed require different version IDs [90m(0.2759ms)[39m[39m
+  [32m✔ 4. signed version must reference the exact presentedArtifactVersionId [90m(0.0946ms)[39m[39m
+  [32m✔ 5. subsequent signed version must reference the prior signed chain tip [90m(0.1616ms)[39m[39m
+  [32m✔ 6. first signed version still preserves its presentation-snapshot link [90m(0.065ms)[39m[39m
+  [32m✔ 27. presented version cannot contain signed-only fields [90m(0.2629ms)[39m[39m
+  [32m✔ 28. signed version cannot omit signer/sequence/immutableAt [90m(0.3171ms)[39m[39m
+  [32m✔ 29. previous-version chain cannot point to itself [90m(0.1291ms)[39m[39m
+[32m✔ eCIgn Path B Phase 1 — presented vs signed distinction [90m(1.5995ms)[39m[39m
+▶ eCIgn Path B Phase 1 — hashes, byte length, sequence
+  [32m✔ 7. sha256 format is strict and byteLength must be positive [90m(0.1707ms)[39m[39m
+  [32m✔ 8. signatureSequence is 1-based, strictly increasing, gap-free, unique [90m(0.1121ms)[39m[39m
+  [32m✔ 9. sequence zero and duplicate sequence values are rejected [90m(0.1066ms)[39m[39m
+  [32m✔ 10. formInstanceId cannot change after the first signature [90m(0.0643ms)[39m[39m
+  [32m✔ 11. stale chain-tip input is rejected by pure contract validation [90m(0.0522ms)[39m[39m
+[32m✔ eCIgn Path B Phase 1 — hashes, byte length, sequence [90m(0.6255ms)[39m[39m
+▶ eCIgn Path B Phase 1 — tiers, permissions, self-approval
+  [32m✔ 12. required signer tier cannot be skipped [90m(0.0875ms)[39m[39m
+  [32m✔ 13. lower permission tier cannot satisfy a higher required tier [90m(0.097ms)[39m[39m
+  [32m✔ 14. self-approval is rejected when the hierarchy snapshot forbids it [90m(0.0845ms)[39m[39m
+[32m✔ eCIgn Path B Phase 1 — tiers, permissions, self-approval [90m(0.3372ms)[39m[39m
+▶ eCIgn Path B Phase 1 — lock eligibility & replica parity
+  [32m✔ 15. locked is rejected without canonical persistence metadata [90m(0.1866ms)[39m[39m
+  [32m✔ 16. locked is rejected without Drive parity [90m(0.0886ms)[39m[39m
+  [32m✔ 17. locked is rejected without Evidence Center parity [90m(0.0736ms)[39m[39m
+  [32m✔ 18. locked is rejected without metadata/audit completion [90m(0.0707ms)[39m[39m
+  [32m✔ 19. Drive/Evidence links alone do not satisfy parity [90m(0.0817ms)[39m[39m
+  [32m✔ 20. replica sha mismatch produces mismatch / recovery-required eligibility [90m(0.0677ms)[39m[39m
+  [32m✔ 21. canonical locator cannot be a public Drive URL [90m(0.1226ms)[39m[39m
+[32m✔ eCIgn Path B Phase 1 — lock eligibility & replica parity [90m(0.8341ms)[39m[39m
+▶ eCIgn Path B Phase 1 — audit, retention, idempotency, lock terminality
+  [32m✔ 22. audit envelope rejects arbitrary/free-text/PHI-shaped properties [90m(0.43ms)[39m[39m
+  [32m✔ 23. audit envelope excludes signature image / form bytes [90m(0.0981ms)[39m[39m
+  [32m✔ 24. retention policy is required and cannot be a hardcoded-duration substitute [90m(0.2052ms)[39m[39m
+  [32m✔ 25. idempotency keys are required per write operation [90m(0.0807ms)[39m[39m
+  [32m✔ 26. failure/retry contract preserves the same artifactVersionId [90m(0.0524ms)[39m[39m
+  [32m✔ 30. locked is terminal except an append-only approved disposition record [90m(0.0661ms)[39m[39m
+[32m✔ eCIgn Path B Phase 1 — audit, retention, idempotency, lock terminality [90m(1.0414ms)[39m[39m
+▶ Phase 2-live B — Drive sandbox publisher (fake client)
+  [32m✔ uploads only to the approved sandbox folder with a TRAINING-labeled name [90m(4.8327ms)[39m[39m
+  [32m✔ verifies sha256 parity on read-back [90m(0.8465ms)[39m[39m
+  [32m✔ corrupted upload → mismatch + recovery required [90m(0.1876ms)[39m[39m
+  [32m✔ upload failure / permission denial → failed parity (never claims success) [90m(0.1743ms)[39m[39m
+  [32m✔ publish is idempotent per version (no duplicate upload) [90m(0.0977ms)[39m[39m
+  [32m✔ constructor rejects an empty sandbox folder id [90m(0.1607ms)[39m[39m
+  [32m✔ buildSandboxUploadResult captures the audit-friendly fields [90m(0.1998ms)[39m[39m
+[32m✔ Phase 2-live B — Drive sandbox publisher (fake client) [90m(7.4797ms)[39m[39m
+▶ Phase 2-live B — live selector (Gate B)
+  [32m✔ not-ready config throws LiveSandboxNotReadyError [90m(0.4087ms)[39m[39m
+  [32m✔ fake-mode config (default) is not live → throws [90m(0.1136ms)[39m[39m
+  [32m✔ ready config + injected client returns a Drive sandbox publisher (no upload yet) [90m(0.1553ms)[39m[39m
+[32m✔ Phase 2-live B — live selector (Gate B) [90m(0.8201ms)[39m[39m
+▶ Phase 2A — canonical write-once store
+  [32m✔ putOnce stores bytes with a recomputable sha256 + non-public canonical locator [90m(5.3065ms)[39m[39m
+  [32m✔ enforces write-once: a second putOnce for the same id throws overwrite_forbidden [90m(0.4612ms)[39m[39m
+  [32m✔ rejects empty bytes [90m(0.1262ms)[39m[39m
+  [32m✔ throws not_found for unknown ids [90m(0.2324ms)[39m[39m
+  [32m✔ recompute-on-read equals the recorded sha (server-side integrity) [90m(0.1365ms)[39m[39m
+  [32m✔ returns byte COPIES so external mutation cannot tamper the stored artifact [90m(0.0859ms)[39m[39m
+[32m✔ Phase 2A — canonical write-once store [90m(7.1447ms)[39m[39m
+▶ Phase 2A — byte-freeze (presented)
+  [32m✔ freezes presented PDF bytes into a contract-valid PresentedArtifactVersion [90m(0.3288ms)[39m[39m
+  [32m✔ rejects non-PDF bytes but PRESERVES a defective-but-real PDF [90m(0.1835ms)[39m[39m
+  [32m✔ is idempotent on identical re-freeze and rejects changed bytes for the same id [90m(0.1628ms)[39m[39m
+[32m✔ Phase 2A — byte-freeze (presented) [90m(0.8859ms)[39m[39m
+▶ Phase 2A — byte-freeze (signed) + integrity
+  [32m✔ signs only after the presentation is frozen, producing a contract-valid SignedArtifactVersion [90m(0.3802ms)[39m[39m
+  [32m✔ verifyStoredIntegrity is true for the recorded sha and false for a mismatched claim [90m(0.2085ms)[39m[39m
+[32m✔ Phase 2A — byte-freeze (signed) + integrity [90m(0.6771ms)[39m[39m
+ [32m✓[39m src/policy/qapi/qapi.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+▶ ACHC annual field worker training calculations
+  [31m✖ grades submitted quiz answers against correct answers and 80% standard [90m(3.7339ms)[39m[39m
+  [32m✔ reports assigned M01-M12 with no activity as 0% and not_started [90m(6.8737ms)[39m[39m
+  [32m✔ keeps lessons-viewed-only activity in progress and not complete [90m(0.8114ms)[39m[39m
+  [32m✔ does not complete a module when score is below threshold [90m(0.3886ms)[39m[39m
+  [32m✔ preserves failed attempts and allows a later passing attempt to satisfy the module [90m(0.3898ms)[39m[39m
+  [32m✔ does not mark the bundle compliant when certificate evidence is missing [90m(9.4301ms)[39m[39m
+  [32m✔ does not mark the bundle compliant when post-test artifact is missing [90m(3.4692ms)[39m[39m
+  [32m✔ marks the bundle compliant only when all M01-M12 pass with certificate and post-test evidence [90m(3.9152ms)[39m[39m
+  [32m✔ calculates annual due date from completed_at and flags overdue records [90m(0.4529ms)[39m[39m
+  [32m✔ dashboard-style totals match raw employee/module records exactly [90m(2.5348ms)[39m[39m
+[31m✖ ACHC annual field worker training calculations [90m(33.3823ms)[39m[39m
+▶ Phase 2 ref — signature application (new immutable version, source not re-rendered)
+  [32m✔ applies a signature producing a new signed version; presented source is untouched [90m(5.1156ms)[39m[39m
+  [32m✔ chains multiple signers (S1 then S2 over S1) keeping every prior version intact [90m(0.3424ms)[39m[39m
+[32m✔ Phase 2 ref — signature application (new immutable version, source not re-rendered) [90m(6.145ms)[39m[39m
+▶ Phase 2 ref — restart/reconstruction from durable journal
+  [32m✔ rebuilds the store from its journal with bytes/hashes intact [90m(0.2564ms)[39m[39m
+  [32m✔ still enforces write-once after reconstruction [90m(0.3248ms)[39m[39m
+[32m✔ Phase 2 ref — restart/reconstruction from durable journal [90m(0.686ms)[39m[39m
+▶ Phase 2 ref — survey packet export
+  [32m✔ exports real signed artifacts + audit for a COMPLETE (locked) packet [90m(0.403ms)[39m[39m
+  [32m✔ refuses to export artifacts for an INCOMPLETE packet ("as good as not signed") [90m(0.1477ms)[39m[39m
+[32m✔ Phase 2 ref — survey packet export [90m(0.6643ms)[39m[39m
+▶ Phase 2B — replica parity (independent sha recompute)
+  [32m✔ Drive parity is verified when replica bytes hash equal to canonical [90m(4.6079ms)[39m[39m
+  [32m✔ Evidence Center parity is verified the same way [90m(0.2102ms)[39m[39m
+  [32m✔ a corrupted replica yields mismatch + recovery-required (not verified) [90m(0.1304ms)[39m[39m
+  [32m✔ a link/id ALONE never satisfies parity [90m(0.0839ms)[39m[39m
+[32m✔ Phase 2B — replica parity (independent sha recompute) [90m(5.912ms)[39m[39m
+▶ Phase 2B — failure & idempotent recovery
+  [32m✔ publish failure → failed parity; recover + retry → verified; idempotent ref [90m(0.3703ms)[39m[39m
+  [32m✔ permission denial surfaces permission_denied without claiming parity [90m(0.1444ms)[39m[39m
+[32m✔ Phase 2B — failure & idempotent recovery [90m(0.6751ms)[39m[39m
+▶ Phase 2B — lock-eligibility assembly
+  [32m✔ all verified + complete → lockable [90m(0.4719ms)[39m[39m
+  [32m✔ blocks lock when Drive parity is not verified [90m(0.2392ms)[39m[39m
+[32m✔ Phase 2B — lock-eligibility assembly [90m(0.8683ms)[39m[39m
+▶ Phase 2B — eager replication + multi-signer byte lineage
+  [32m✔ eager replication of a freshly-frozen version verifies on both replicas [90m(0.7033ms)[39m[39m
+  [32m✔ A->B->C lineage preserves every prior signed version retrievably [90m(0.3268ms)[39m[39m
+[32m✔ Phase 2B — eager replication + multi-signer byte lineage [90m(1.1486ms)[39m[39m
+[90mstdout[2m | src/policy/ces/cesViewProjections.test.ts
+[22m[39m[CES] Dev helper ready: window.triggerCESCalendarSwimlaneProcess() to manually attach swimlanes to generated events
+
+▶ CES one-pass View Projections (board / events / tasks / calendar / evidence / audit / report)
+  [32m✔ FALLBACK_BOARD_LANES is non-empty with correct shape and design counts [90m(4.7388ms)[39m[39m
+  [32m✔ buildBoardLanes returns non-empty lanes with shape matching BoardLaneData [90m(0.8407ms)[39m[39m
+  [32m✔ buildBoardLanes seed-driven path yields counts derived from units [90m(0.3159ms)[39m[39m
+  [32m✔ FALLBACK_EVENT_LANES non-empty, 4 columns, correct shape [90m(0.0832ms)[39m[39m
+  [32m✔ buildEventLanes returns shape and non-empty [90m(0.3269ms)[39m[39m
+  [32m✔ FALLBACK_TASK_LANES non-empty 4 lanes + shape [90m(0.0966ms)[39m[39m
+  [32m✔ buildTaskLanes non-empty + fallback covered [90m(0.3216ms)[39m[39m
+  [32m✔ FALLBACK_CES_CALENDAR_EVENTS non-empty with required fields [90m(0.0861ms)[39m[39m
+  [32m✔ buildCalendarEvents shape + seed driven [90m(30.7065ms)[39m[39m
+  [32m✔ buildCalendarEvents uses real dates from V3 seed dueDate (not synthetic fake days) [90m(0.3155ms)[39m[39m
+  [32m✔ build* cards use real seed data fields (domain/awaiting/meta/missing) not only FALLBACK [90m(0.4124ms)[39m[39m
+  [32m✔ buildCalendarEvents projects events from regulatory + units, correct owners/status [90m(0.2468ms)[39m[39m
+  [32m✔ FALLBACK_EVIDENCE_ROWS + buildEvidenceRows shape and non-empty [90m(0.1909ms)[39m[39m
+  [32m✔ FALLBACK_AUDIT_ROWS + buildAuditRows [90m(0.1273ms)[39m[39m
+  [32m✔ FALLBACK_REPORT_METRICS + buildReportMetrics shape/counts [90m(0.1826ms)[39m[39m
+  [32m✔ build* fallback when empty seed input returns FALLBACK content [90m(0.0526ms)[39m[39m
+  [32m✔ seed counts are internally consistent (non-negative) [90m(0.2162ms)[39m[39m
+  [32m✔ getControlFromParams extracts control or ref (Phase 2 deep link) [90m(0.2901ms)[39m[39m
+  [32m✔ getBucketFromParams extracts bucket for events-board (Phase 2 deep link) [90m(0.0956ms)[39m[39m
+  [32m✔ buildSprintSummary returns non-negative counts; empty seed -> design-parity fallback [90m(0.1307ms)[39m[39m
+  [31m✖ buildReportCards + buildReportTrendBars use real V3 seed or FALLBACK; produce correct shapes [90m(0.1194ms)[39m[39m
+[31m✖ CES one-pass View Projections (board / events / tasks / calendar / evidence / audit / report) [90m(40.9294ms)[39m[39m
+ [32m✓[39m src/policy/evidence/signerDirectory.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Suites 14 [49m[22m[31m⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/policy/ces/cesMasterControlAudit.test.ts[2m [ src/policy/ces/cesMasterControlAudit.test.ts ][22m
+[31m[1mError[22m: No test suite found in file c:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2/src/policy/ces/cesMasterControlAudit.test.ts[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/14]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/policy/ces/cesViewProjections.test.ts[2m [ src/policy/ces/cesViewProjections.test.ts ][22m
+[31m[1mError[22m: No test suite found in file c:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2/src/policy/ces/cesViewProjections.test.ts[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/14]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/policy/ecign/resolveCanonicalSignedPackage.test.ts[2m [ src/policy/ecign/resolveCanonicalSignedPackage.test.ts ][22m
+[31m[1mError[22m: No test suite found in file c:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2/src/policy/ecign/resolveCanonicalSignedPackage.test.ts[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/14]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/policy/ecign/roleKey.test.ts[2m [ src/policy/ecign/roleKey.test.ts ][22m
+[31m[1mError[22m: No test suite found in file c:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2/src/policy/ecign/roleKey.test.ts[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/14]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/policy/data/policyCorpusSeedIntegrity.test.ts[2m [ src/policy/data/policyCorpusSeedIntegrity.test.ts ][22m
+[31m[1mError[22m: No test suite found in file c:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2/src/policy/data/policyCorpusSeedIntegrity.test.ts[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/14]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/policy/ecign/pathB/contracts.test.ts[2m [ src/policy/ecign/pathB/contracts.test.ts ][22m
+[31m[1mError[22m: No test suite found in file c:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2/src/policy/ecign/pathB/contracts.test.ts[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/14]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/policy/ecign/pathB/retentionLifecycle.test.ts[2m [ src/policy/ecign/pathB/retentionLifecycle.test.ts ][22m
+[31m[1mError[22m: No test suite found in file c:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2/src/policy/ecign/pathB/retentionLifecycle.test.ts[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/14]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/policy/ecign/pathB/runtimeReference.test.ts[2m [ src/policy/ecign/pathB/runtimeReference.test.ts ][22m
+[31m[1mError[22m: No test suite found in file c:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2/src/policy/ecign/pathB/runtimeReference.test.ts[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/14]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/policy/ecign/pathB/runtimeSpecs.todo.test.ts[2m [ src/policy/ecign/pathB/runtimeSpecs.todo.test.ts ][22m
+[31m[1mError[22m: No test suite found in file c:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2/src/policy/ecign/pathB/runtimeSpecs.todo.test.ts[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/14]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/policy/journey/utils/achcTrainingCalculations.test.ts[2m [ src/policy/journey/utils/achcTrainingCalculations.test.ts ][22m
+[31m[1mError[22m: No test suite found in file c:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2/src/policy/journey/utils/achcTrainingCalculations.test.ts[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/14]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/policy/ecign/pathB/live/adapterConfigFlag.test.ts[2m [ src/policy/ecign/pathB/live/adapterConfigFlag.test.ts ][22m
+[31m[1mError[22m: No test suite found in file c:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2/src/policy/ecign/pathB/live/adapterConfigFlag.test.ts[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/14]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/policy/ecign/pathB/live/driveSandboxPublisher.test.ts[2m [ src/policy/ecign/pathB/live/driveSandboxPublisher.test.ts ][22m
+[31m[1mError[22m: No test suite found in file c:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2/src/policy/ecign/pathB/live/driveSandboxPublisher.test.ts[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/14]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/policy/ecign/pathB/replicas/parityAndLock.test.ts[2m [ src/policy/ecign/pathB/replicas/parityAndLock.test.ts ][22m
+[31m[1mError[22m: No test suite found in file c:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2/src/policy/ecign/pathB/replicas/parityAndLock.test.ts[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/14]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/policy/ecign/pathB/storage/storageAndFreeze.test.ts[2m [ src/policy/ecign/pathB/storage/storageAndFreeze.test.ts ][22m
+[31m[1mError[22m: No test suite found in file c:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2/src/policy/ecign/pathB/storage/storageAndFreeze.test.ts[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/14]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m14 failed[39m[22m[2m | [22m[1m[32m10 passed[39m[22m[90m (24)[39m
+[2m      Tests [22m [1m[32m121 passed[39m[22m[90m (121)[39m
+[2m   Start at [22m 12:20:18
+[2m   Duration [22m 2.25s[2m (transform 2.49s, setup 0ms, collect 5.82s, tests 48ms, environment 24.20s, prepare 3.19s)[22m
+

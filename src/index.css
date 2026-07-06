@@ -249,11 +249,11 @@
 
 html {
   min-height: 100%;
-  /* 4-dot square grid (.033px teal dots, 7.77px spacing) layered on main bg */
-  background-image: radial-gradient(circle, #00797D .033px, transparent .033px), var(--app-bg-radial-1), var(--app-bg-radial-2), var(--app-bg-linear);
-  background-size: 7.77px 7.77px, auto, auto, auto;
-  background-attachment: fixed, fixed, fixed, fixed;
-  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+  background-color: #FAFAFA;
+  background-image: var(--app-bg-radial-1), var(--app-bg-radial-2), var(--app-bg-linear);
+  background-size: auto, auto, auto;
+  background-attachment: fixed, fixed, fixed;
+  background-repeat: no-repeat, no-repeat, no-repeat;
   color: var(--text-primary);
   font-family: var(--font-family);
   font-size: var(--text-body);
@@ -272,11 +272,11 @@ body,
 
 body {
   margin: 0;
-  /* 4-dot square grid (.033px teal dots, 7.77px spacing) layered on main bg */
-  background-image: radial-gradient(circle, #00797D .033px, transparent .033px), var(--app-bg-radial-1), var(--app-bg-radial-2), var(--app-bg-linear);
-  background-size: 7.77px 7.77px, auto, auto, auto;
-  background-attachment: fixed, fixed, fixed, fixed;
-  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+  background-color: #FAFAFA;
+  background-image: var(--app-bg-radial-1), var(--app-bg-radial-2), var(--app-bg-linear);
+  background-size: auto, auto, auto;
+  background-attachment: fixed, fixed, fixed;
+  background-repeat: no-repeat, no-repeat, no-repeat;
   color: var(--text-primary);
   font-family: var(--font-family);
   font-size: var(--text-body);
@@ -287,10 +287,9 @@ body {
 
 .bg-canvas {
   background-color: #FAFAFA !important;
-  /* 4-dot square grid (.033px teal dots, 7.77px spacing) on main app background */
-  background-image: radial-gradient(circle, #00797D .033px, transparent .033px) !important;
-  background-size: 7.77px 7.77px !important;
-  background-repeat: repeat !important;
+  background-image: none !important;
+  background-size: auto !important;
+  background-repeat: no-repeat !important;
   background-position: 0 0;
 }
 
@@ -627,8 +626,8 @@ th {
   }
 }
 .brad-grid-pattern {
-  background-image: radial-gradient(#D9D6D5 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-image: none;
+  background-size: auto;
 }
 
 :root[data-tod="noon"] .brad-workspace .brad-grid-pattern {
@@ -1267,7 +1266,7 @@ th {
   /* Inherit --brad-* variables defined in theme roots */
 }
 .brad-workspace .brad-grid-pattern {
-  background-image: radial-gradient(var(--brad-grid) 1px, transparent 1px);
+  background-image: none;
 }
 
 .personal-ops-panel,

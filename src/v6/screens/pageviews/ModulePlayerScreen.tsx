@@ -1,9 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
 import { useJourneyStore } from "@/policy/journey/stores/journeyStore";
-import { canStartModule } from "@/policy/journey/utils/gating";
 import { moduleById } from "@/policy/journey/data/modules";
-import { DemoOnlyBanner } from "@/policy/journey/components/DemoOnlyBanner";
 import {
   ArrowLeft,
   Check,
@@ -14,13 +12,11 @@ import {
   AlertTriangle,
   BookOpenCheck,
   ListChecks,
-  Lock,
   Play,
   Repeat,
   Target,
   Volume2,
   VolumeX,
-  FileText,
   Pause,
   ChevronDown,
   Sparkles,
@@ -32,15 +28,11 @@ import {
   Square,
   Eye,
   Search,
-  Unlock,
   BookOpen,
 } from "lucide-react";
 
 import { useLearner } from "@/policy/journey/lib/learnerState";
-import {
-  isLessonComplete,
-  isModuleComplete,
-} from "@/policy/journey/lib/moduleProgress";
+import { isLessonComplete } from "@/policy/journey/lib/moduleProgress";
 import { useUiState, formatHoursAndMins } from "@/policy/journey/lib/uiState";
 import { useActiveTime, ACTIVE_TIME } from "@/policy/journey/lib/activeTime";
 import {
@@ -65,6 +57,8 @@ import { getTermsForSection } from "@/policy/journey/data/advancedTraining/cms48
 import { TRAINING_CARDS } from "@/policy/journey/data/advancedTraining/cms485SourceCards";
 import { isAdvancedModule, getAdvancedVariant } from "@/policy/journey/data/advancedTraining/advancedTrainingContract";
 import { AdvancedTrainingPlayer } from "@/policy/journey/components/advanced/AdvancedTrainingPlayer";
+import { OasisSocTrainingPanel } from "@/policy/journey/components/advanced/OasisSocTrainingPanel";
+import { isOasisSocModule, OASIS_SOC_MODULE_TITLE } from "@/policy/journey/components/advanced/oasisSocModule";
 import { Cms485AssessmentQuizPage } from "./Cms485AssessmentQuizPage";
 
 
@@ -83,13 +77,32 @@ function BackLink({ to, children }: { to: string; children: React.ReactNode }) {
   );
 }
 
-function MediaSlot({ appLocation, sceneTitle }: { appLocation: string; sceneTitle?: string }) {
+function MediaSlot({ appLocation, sceneTitle, className = '' }: { appLocation: string; sceneTitle?: string; className?: string }) {
   const ready = hasMedia(appLocation);
   const alt = mediaAltText(sceneTitle);
+  const isFullHeight = className.includes('h-full');
+  const assetPath = mediaAssetPath(appLocation);
+  const isVideo = /\.(mp4|webm|mov)$/i.test(assetPath);
   if (ready) {
+    const wrapperBase = isFullHeight
+      ? `w-full h-full min-h-full overflow-hidden ${className}`
+      : `w-full aspect-video bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline rounded-lg overflow-hidden shadow-sm mb-4 ${className}`;
     return (
-      <div className="w-full aspect-video bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline rounded-lg overflow-hidden shadow-sm mb-4">
-        <img src={mediaAssetPath(appLocation)} alt={alt} className="w-full h-full object-cover" />
+      <div className={wrapperBase}>
+        {isVideo ? (
+          <video
+            src={assetPath}
+            aria-label={alt}
+            className="block h-full w-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+            controls
+          />
+        ) : (
+          <img src={assetPath} alt={alt} className="block w-full h-full object-cover" />
+        )}
       </div>
     );
   }
@@ -97,157 +110,107 @@ function MediaSlot({ appLocation, sceneTitle }: { appLocation: string; sceneTitl
     <div
       role="img"
       aria-label={alt}
-      className="w-full aspect-video rounded-lg relative overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-tone-teal-bg to-tone-slate-bg border border-tone-teal-border/40"
+      className={`w-full ${isFullHeight ? 'h-full' : 'aspect-video'} ${isFullHeight ? '' : 'rounded-lg border border-tone-teal-border/40'} relative overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-tone-teal-bg to-tone-slate-bg ${className}`}
     >
-      <div className="absolute top-3 left-3 bg-surface-glass backdrop-blur-md shadow-glass-inset border border-tone-orange-border/30 rounded px-2 py-0.5 text-[9px] font-mono text-brand-orange uppercase tracking-wider">
+      <div className={`absolute top-3 left-3 bg-surface-glass backdrop-blur-md shadow-glass-inset border border-tone-orange-border/30 rounded px-2 py-0.5 ${isFullHeight ? 'text-xs' : 'text-[9px]'} font-mono text-brand-orange uppercase tracking-wider`}>
         Visual Aid Pending
       </div>
-      <div className="w-16 h-16 rounded-full border border-tone-teal-border/30 bg-surface-glass backdrop-blur-md shadow-glass-inset flex items-center justify-center text-brand-teal shadow-sm">
-        <ImageIcon size={28} />
-      </div>
-      {sceneTitle && (
-        <div className="text-[10px] font-mono text-secondary uppercase mt-3 tracking-widest px-6 text-center max-w-md leading-relaxed">
-          {sceneTitle}
+      {isFullHeight ? (
+        <div className="w-full h-full flex items-center justify-center bg-surface-glass border border-tone-teal-border/30 rounded-xl">
+          <div className="text-center">
+            <ImageIcon size={120} className="mx-auto text-brand-teal" />
+            {sceneTitle && (
+              <div className="mt-4 text-xl font-mono text-secondary uppercase tracking-widest">
+                {sceneTitle}
+              </div>
+            )}
+          </div>
         </div>
+      ) : (
+        <>
+          <div className="w-16 h-16 rounded-full border border-tone-teal-border/30 bg-surface-glass backdrop-blur-md shadow-glass-inset flex items-center justify-center text-brand-teal shadow-sm">
+            <ImageIcon size={28} />
+          </div>
+          {sceneTitle && (
+            <div className="text-[10px] font-mono text-secondary uppercase mt-3 tracking-widest px-6 text-center max-w-md leading-relaxed">
+              {sceneTitle}
+            </div>
+          )}
+        </>
       )}
-      <div className="absolute bottom-2 right-3 text-[8px] font-mono text-muted uppercase tracking-wider">
+      <div className={`absolute bottom-2 right-3 ${isFullHeight ? 'text-[10px]' : 'text-[8px]'} font-mono text-muted uppercase tracking-wider`}>
         Training Visual Placeholder · No PHI
       </div>
     </div>
   );
 }
 
-function NarrationPlayer({
-  appLocation,
-  transcript,
-  label = "Lesson Narration",
-  estSeconds,
-}: {
-  appLocation: string;
-  transcript: string;
-  label?: string;
-  estSeconds?: number;
-}) {
-  const audioReady = hasNarrationAudio(appLocation);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [playing, setPlaying] = useState(false);
-  const [showTranscript, setShowTranscript] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
+function isCareIndeedOnboardingModule(moduleId?: string): boolean {
+  if (!moduleId) return false;
+  const id = moduleId.toUpperCase();
+  if (id.startsWith("ACHC-ART-") || isAdvancedModule(moduleId) || isOasisSocModule(moduleId)) return false;
+  // Support CAO-xxx (CareIndeed Onboarding modules) + standard role prefixes
+  if (id.startsWith("CAO-")) return true;
+  return /^(GAO|ADM|DON|RN|LVN|PT|PTA|OT|COTA|SLP|MSW|HHA)-/.test(id);
+}
 
-  const speechSupported = typeof window !== "undefined" && "speechSynthesis" in window;
+const onboardingDotBg = {
+  backgroundColor: "#FAFBF8",
+} as React.CSSProperties;
 
-  useEffect(() => {
-    return () => {
-      if (speechSupported) window.speechSynthesis.cancel();
-    };
-  }, [appLocation, speechSupported]);
+const onboardingValueCards = [
+  { title: "Integrity", icon: ShieldCheck, tone: "teal", body: "Do the right thing even when no one is watching. Document truthfully. Report honestly." },
+  { title: "Compassion", icon: HeartPulse, tone: "orange", body: "Treat every patient as you would your own family member. Respect their dignity always." },
+  { title: "Excellence", icon: Sparkles, tone: "teal", body: "Never settle for \"good enough\". Pursue continuous improvement in every task." },
+  { title: "Teamwork", icon: UserCheck, tone: "orange", body: "Home health is interdisciplinary. Communicate, coordinate, collaborate." },
+  { title: "Accountability", icon: CheckSquare, tone: "teal", body: "Own your responsibilities. Follow through on commitments. Accept feedback." },
+  { title: "Compliance", icon: ShieldAlert, tone: "orange", body: "Regulatory adherence protects patients. Never cut corners on safety or documentation." },
+];
 
-  const toggleAudio = () => {
-    const el = audioRef.current;
-    if (!el) return;
-    if (el.paused) {
-      void el.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
-    } else {
-      el.pause();
-      setPlaying(false);
-    }
-  };
-
-  const toggleSpeech = () => {
-    if (!speechSupported) return;
-    if (speaking) {
-      window.speechSynthesis.cancel();
-      setSpeaking(false);
-      return;
-    }
-    window.speechSynthesis.cancel();
-    setTimeout(() => {
-      const utter = new SpeechSynthesisUtterance(transcript);
-      utter.rate = 0.95;
-      utter.onend = () => setSpeaking(false);
-      utter.onerror = (e) => {
-        console.error("SpeechSynthesis error:", e);
-        setSpeaking(false);
-      };
-      setSpeaking(true);
-      window.speechSynthesis.speak(utter);
-    }, 50);
-  };
-
+function OnboardingCoreValuesContent() {
   return (
-    <div className="px-6 py-4 bg-surface-glass backdrop-blur-md shadow-glass-inset border-t border-hairline rounded-b-xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          {audioReady ? (
-            <button
-              onClick={toggleAudio}
-              className="w-10 h-10 rounded-full bg-surface-glass backdrop-blur-md shadow-glass-inset border border-tone-teal-border/40 flex items-center justify-center text-brand-teal hover:bg-surface-hover transition-colors shrink-0 shadow-sm"
-              aria-label={playing ? "Pause narration" : "Play narration"}
-            >
-              {playing ? <Pause size={16} className="fill-current" /> : <Play size={16} className="fill-current ml-0.5" />}
-            </button>
-          ) : (
-            <div
-              className="w-10 h-10 rounded-full bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline flex items-center justify-center text-muted shrink-0 shadow-sm"
-              title="Narration audio asset pending approval"
-              aria-disabled
-            >
-              <Play size={16} className="ml-0.5 text-muted" />
-            </div>
-          )}
-          <div>
-            <span className="text-xs font-semibold text-brand-teal-deep block">{label}</span>
-            <span className="text-[10px] text-secondary font-mono block">
-              {audioReady
-                ? playing
-                  ? "Playing approved audio"
-                  : "Approved audio ready"
-                : `Audio asset pending${estSeconds ? ` · ${estSeconds}s clip` : ""}`}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {!audioReady && speechSupported && !appLocation.startsWith("cms-485") && (
-            <button
-              onClick={toggleSpeech}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all ${
-                speaking
-                  ? "bg-tone-teal-bg text-brand-teal border-tone-teal-border font-bold shadow-sm"
-                  : "bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline text-secondary hover:bg-surface-hover"
-              }`}
-              title="Browser preview only — not approved production audio"
-            >
-              {speaking ? <VolumeX size={12} /> : <Volume2 size={12} />} {speaking ? "Stop Preview" : "Browser Preview"}
-            </button>
-          )}
-          <button
-            onClick={() => setShowTranscript((t) => !t)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all ${
-              showTranscript
-                ? "bg-tone-teal-bg text-brand-teal border-tone-teal-border font-bold shadow-sm"
-                : "bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline text-secondary hover:bg-surface-hover"
-            }`}
-          >
-            <FileText size={12} /> Transcript
-          </button>
-        </div>
-      </div>
-
-      {audioReady && <audio ref={audioRef} src={narrationAssetPath(appLocation)} onEnded={() => setPlaying(false)} preload="none" />}
-
-      {!audioReady && (
-        <p className="text-[10px] text-muted font-mono mt-2">
-          Narration audio is not yet authorized for production. The transcript below is the accessible source of record.
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-[28px] font-medium text-[#1F1C1B] leading-tight">Our Core Values</h1>
+        <p className="mt-2 text-sm text-[#524C4B] font-light leading-relaxed">
+          These values are not wall decorations. They are behavioral expectations that shape how you interact with patients, families, physicians, and each other.
         </p>
-      )}
-
-      {showTranscript && (
-        <div className="mt-3 px-4 py-3 bg-surface-glass backdrop-blur-md shadow-glass-inset text-secondary text-xs italic leading-relaxed border border-hairline rounded-lg whitespace-pre-line shadow-sm">
-          {transcript}
-        </div>
-      )}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {onboardingValueCards.map((value) => {
+          const Icon = value.icon;
+          const isOrange = value.tone === "orange";
+          return (
+            <div
+              key={value.title}
+              className="bg-white border border-[#E5E4E3] rounded-[12px] p-5 hover:border-[#007970] hover:shadow-[0_4px_20px_rgba(0,65,66,0.05)] transition-all group"
+            >
+              <div className="flex items-center gap-3 mb-3 text-[#007970] font-semibold text-sm">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isOrange ? "bg-[#FFF0E5] text-[#C74601] group-hover:bg-[#FFFAF7] group-hover:text-[#C74601]" : "bg-[#E5FEFF] text-[#007970] group-hover:bg-[#FFF0E5] group-hover:text-[#C74601]"}`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                {value.title}
+              </div>
+              <p className="text-xs text-[#524C4B] font-light leading-relaxed">{value.body}</p>
+            </div>
+          );
+        })}
+      </div>
     </div>
+  );
+}
+
+function OnboardingLessonHtml({ card }: { card: any }) {
+  const title = String(card?.display_title || "");
+  const html = String(card?.learner_facing_content || "");
+  if (/core values/i.test(title) || /Our Core Values/i.test(html)) {
+    return <OnboardingCoreValuesContent />;
+  }
+  return (
+    <div
+      className="space-y-4 text-[13px] leading-relaxed text-[#524C4B] [&_h2]:text-[22px] [&_h2]:font-bold [&_h2]:leading-tight [&_h2]:text-[#004142] [&_h3]:mt-4 [&_h3]:text-[15px] [&_h3]:font-bold [&_h3]:text-[#004142] [&_p]:my-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1.5 [&_strong]:font-bold [&_strong]:text-[#1F1C1B] [&_table]:my-4 [&_table]:w-full [&_table]:border-collapse [&_td]:border-b [&_td]:border-[#E5E4E3] [&_td]:p-2 [&_th]:p-2"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
   );
 }
 
@@ -568,7 +531,7 @@ function ModuleRemediationPanel({
           </button>
         </div>
         {!ready && (
-          <p className="text-[11px] text-muted font-mono text-left">Confirm each readiness item to unlock the retry.</p>
+          <p className="text-[11px] text-muted font-mono text-left">Confirm each readiness item to retry.</p>
         )}
       </div>
     </div>
@@ -660,7 +623,7 @@ function Module0OrientationPage() {
             onClick={() => navigate("/journey")}
             className="bg-brand-orange hover:bg-brand-orange/95 text-white font-bold py-2.5 px-6 rounded-lg uppercase tracking-wider transition-colors shadow-pill-action disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Confirm &amp; Unlock Module 1
+            Confirm &amp; Continue
           </button>
         </div>
       </div>
@@ -677,10 +640,126 @@ function Module1OverviewPage() {
   const { moduleId = "m1" } = useParams();
   const { state } = useLearner();
   const module = getModuleDef(moduleId);
-  const moduleDone = module ? isModuleComplete(state, module.id) : false;
   const moduleExam = moduleAssessmentPassed(state, moduleId);
 
   if (!module) return null;
+
+  if (isCareIndeedOnboardingModule(module.id)) {
+    const cleanObjectives = module.learningObjectives.filter((obj: string) => !/using None|Retain evidence for EN-CM-001/i.test(obj));
+    const objectiveItems = [
+      ...cleanObjectives,
+      ...module.lessons.slice(0, Math.max(0, 4 - cleanObjectives.length)).map((item: any) => item.title),
+    ].slice(0, 6);
+    const completedLessons = module.lessons.filter((item: any) => isLessonComplete(state, module.id, item.id)).length;
+    const progressPct = module.lessons.length ? Math.round((completedLessons / module.lessons.length) * 100) : 0;
+
+    return (
+      <div className="min-h-[calc(100vh-var(--topbar-h)-2rem)] px-4 py-8 md:px-8" style={onboardingDotBg}>
+        <div className="mx-auto max-w-5xl space-y-5">
+          <BackLink to="/journey">Back to Modules</BackLink>
+
+          <section className="rounded-[22px] border border-[#E5E4E3] bg-white p-6 shadow-[0_24px_70px_rgba(31,28,27,0.10)] md:p-8">
+            <div className="flex flex-col gap-4 border-b border-[#E5E4E3] pb-5 md:flex-row md:items-start md:justify-between">
+              <div className="min-w-0">
+                <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#C74601]">
+                  {module.code} - {module.time.toUpperCase()} Theory
+                </div>
+                <h1 className="mt-2 text-3xl font-bold leading-tight text-[#004142] md:text-4xl">
+                  {module.shortTitle}
+                </h1>
+                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#524C4B]">
+                  {module.summary}
+                </p>
+              </div>
+              <span className={`inline-flex w-fit items-center gap-2 rounded-full px-4 py-2 text-xs font-bold ${
+                moduleExam ? "bg-[#E8F7EF] text-[#15803D]" : "bg-[#FFF0E5] text-[#C74601]"
+              }`}>
+                <span className={`h-2 w-2 rounded-full ${moduleExam ? "bg-[#15803D]" : "bg-[#C74601]"}`} />
+                {moduleExam ? "Assessment Passed" : "Not Attempted"}
+              </span>
+            </div>
+
+            <div className="grid gap-5 py-6 lg:grid-cols-[1fr_260px]">
+              <div>
+                <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-[#007970]">Lesson Objectives</h2>
+                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {objectiveItems.map((obj: string) => (
+                    <div key={obj} className="rounded-lg border border-[#E5E4E3] bg-[#FAFBF8] px-4 py-3 text-xs leading-relaxed text-[#524C4B]">
+                      {obj}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-xl border border-[#C4F4F5] bg-[#E5FEFF] p-4">
+                <div className="flex items-center justify-between text-xs font-bold uppercase tracking-[0.16em] text-[#007970]">
+                  Progress <span>{progressPct}%</span>
+                </div>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
+                  <div className="h-full rounded-full bg-[#007970]" style={{ width: `${progressPct}%` }} />
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-2 text-center">
+                  <div className="rounded-lg bg-white p-3">
+                    <div className="text-xl font-bold text-[#004142]">{completedLessons}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-[#747470]">Done</div>
+                  </div>
+                  <div className="rounded-lg bg-white p-3">
+                    <div className="text-xl font-bold text-[#004142]">{module.lessons.length}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-[#747470]">Lessons</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-[#007970]">Course Component Lessons</h2>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {module.lessons.map((item: any) => {
+                  const complete = isLessonComplete(state, module.id, item.id);
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => navigate(`/journey/module/${module.id}/lesson/${item.id}`)}
+                      className="group min-h-[124px] rounded-xl border border-[#E5E4E3] bg-white p-4 text-left shadow-[0_10px_28px_rgba(31,28,27,0.06)] transition hover:-translate-y-0.5 hover:border-[#C4F4F5] hover:shadow-[0_16px_40px_rgba(0,121,112,0.10)]"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#C74601]">Lesson {item.index}</div>
+                          <h3 className="mt-1 text-sm font-bold leading-snug text-[#004142] group-hover:text-[#007970]">{item.title}</h3>
+                        </div>
+                        <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${complete ? "bg-[#E8F7EF] text-[#15803D]" : "bg-[#FFF0E5] text-[#C74601]"}`}>
+                          {complete ? "Done" : "Play"}
+                        </span>
+                      </div>
+                      <div className="mt-4 text-[11px] text-[#747470]">{item.estMinutes} min - narrated theory</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-7 flex flex-col items-stretch gap-3 border-t border-[#E5E4E3] pt-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-xs font-medium text-[#747470]">Module assessment available after theory review.</div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <button
+                  onClick={() => navigate(`/journey/module/${module.id}/assessment`)}
+                  className="rounded-lg bg-[#C74601] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[0_10px_24px_rgba(199,70,1,0.20)] transition hover:bg-[#A63A01]"
+                >
+                  Start Module Knowledge Check
+                </button>
+                <button
+                  onClick={() => navigate(`/journey/module/${module.id}/lesson/${module.lessons[0]?.id ?? "l1"}`)}
+                  className="rounded-lg border border-[#007970] bg-white px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#007970] transition hover:bg-[#E5FEFF]"
+                >
+                  Start / Review Theory
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl ml-0 mr-auto space-y-6">
@@ -753,28 +832,32 @@ function Module1OverviewPage() {
 
         <div className="pt-6 flex flex-col sm:flex-row items-center gap-4 justify-between">
           <div className="text-xs text-muted font-medium">
-            {moduleDone ? "All lessons complete. Continue to the module assessment." : "Complete each lesson to unlock the module assessment."}
+            Module assessment available.
           </div>
           <div className="flex gap-3 w-full sm:w-auto">
-            {moduleDone && (
-              <button
-                onClick={() => navigate(`/journey/module/${module.id}/assessment`)}
-                className="w-full sm:w-auto bg-brand-orange hover:bg-brand-orange/95 text-white font-bold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action"
-              >
-                Start {appCopy.moduleAssessment.title}
-              </button>
-            )}
+            <button
+              onClick={() => navigate(`/journey/module/${module.id}/assessment`)}
+              className="w-full sm:w-auto bg-brand-orange hover:bg-brand-orange/95 text-white font-bold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action"
+            >
+              Start {appCopy.moduleAssessment.title}
+            </button>
             <button
               onClick={() => navigate(`/journey/module/${module.id}/lesson/${module.lessons[0]?.id ?? "l1"}`)}
               className="w-full sm:w-auto bg-surface-glass backdrop-blur-md shadow-glass-inset hover:bg-surface-hover text-brand-teal font-bold px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action"
             >
-              {moduleDone ? "Review Theory" : "Start Theory"}
+              Start / Review Theory
             </button>
           </div>
         </div>
       </div>
     </div>
   );
+}
+
+function formatMmSs(totalSecs: number): string {
+  const m = Math.floor(totalSecs / 60);
+  const s = Math.floor(totalSecs % 60);
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
 /* ==========================================================================
@@ -799,7 +882,7 @@ function buildStepLabels(cards: readonly { card_type?: string; internal_challeng
 function LessonPlayerPage() {
   const navigate = useNavigate();
   const { moduleId = "m1", lessonId = "l1" } = useParams();
-  const { setState } = useLearner();
+  const { state: learnerState, setState } = useLearner();
   const { demoSeconds, reviewerOpen } = useUiState();
   const lesson = getGeneratedLesson(moduleId, lessonId);
   const cards = useMemo(() => lesson?.cards ?? [], [lesson]);
@@ -810,6 +893,11 @@ function LessonPlayerPage() {
   const [submitted, setSubmitted] = useState(false);
   const [openedOptions, setOpenedOptions] = useState<string[]>([]);
   const [acknowledgedTerms, setAcknowledgedTerms] = useState<Set<number>>(new Set());
+  const [narrationPlaying, setNarrationPlaying] = useState(false);
+  const narrationAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [narrationSpeaking, setNarrationSpeaking] = useState(false);
+  const [activeTab, setActiveTab] = useState<'content' | 'narration'>('content');
+  const speechSupported = typeof window !== "undefined" && "speechSynthesis" in window;
 
   useEffect(() => {
     setAcknowledgedTerms(new Set());
@@ -817,7 +905,45 @@ function LessonPlayerPage() {
     setSubmitted(false);
     setOpenedOptions([]);
     setCurrentIdx(0);
+    setNarrationPlaying(false);
+    setNarrationSpeaking(false);
   }, [moduleId, lessonId]);
+
+  useEffect(() => {
+    return () => {
+      if (speechSupported) window.speechSynthesis.cancel();
+    };
+  }, [speechSupported]);
+
+  const toggleNarrationAudio = () => {
+    const el = narrationAudioRef.current;
+    if (!el) return;
+    if (el.paused) {
+      void el.play().then(() => setNarrationPlaying(true)).catch(() => setNarrationPlaying(false));
+    } else {
+      el.pause();
+      setNarrationPlaying(false);
+    }
+  };
+
+  const toggleNarrationSpeech = () => {
+    if (!speechSupported) return;
+    if (narrationSpeaking) {
+      window.speechSynthesis.cancel();
+      setNarrationSpeaking(false);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    setTimeout(() => {
+      const text = currentCard.transcript_text || currentCard.narration_script || '';
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 0.95;
+      utter.onend = () => setNarrationSpeaking(false);
+      utter.onerror = () => setNarrationSpeaking(false);
+      setNarrationSpeaking(true);
+      window.speechSynthesis.speak(utter);
+    }, 50);
+  };
 
   const { lessonSeconds, idleWarning, resume, meetsLessonMinimum } = useActiveTime(moduleId, lessonId);
 
@@ -833,10 +959,18 @@ function LessonPlayerPage() {
     );
   }
 
+  // Lesson flow: previous / next lesson for connected experience
+  const moduleDef = getModuleDef(moduleId);
+  const allLessons = moduleDef?.lessons ?? [];
+  const currentLessonIdx = allLessons.findIndex((l: any) => l.id === lessonId);
+  const prevLesson = currentLessonIdx > 0 ? allLessons[currentLessonIdx - 1] : null;
+  const nextLesson = currentLessonIdx < allLessons.length - 1 ? allLessons[currentLessonIdx + 1] : null;
+
   const currentCard = cards[currentIdx];
   const isChallengeCard = Boolean(currentCard.internal_challenge);
   const isDebriefCard = currentCard.card_type === "debrief";
   const isLast = currentIdx === cards.length - 1;
+  const narrationAudioReady = hasNarrationAudio(currentCard.app.location);
 
   const isCms485 = moduleId === "cms-485";
   const terms = getTermsForSection(lesson.title);
@@ -861,14 +995,17 @@ function LessonPlayerPage() {
 
   const continueLabel = useMemo(() => {
     if (!isCms485) {
-      return isLast ? "Complete Theory Lesson" : isDebriefCard ? remediation?.continueLabel ?? "Continue" : "Continue";
+      if (isLast) {
+        return nextLesson ? "Next Lesson" : "Complete Theory Lesson";
+      }
+      return isDebriefCard ? remediation?.continueLabel ?? "Continue" : "Continue";
     }
     if (currentCard.card_type === "overview") return "Next: Terminology";
     if (currentCard.card_type === "delivery") return "Proceed to Challenge";
     if (isChallengeCard) return "Continue";
     if (isDebriefCard) return "Complete Theory Lesson";
     return "Continue";
-  }, [isCms485, currentCard, isLast, isDebriefCard, isChallengeCard, remediation]);
+  }, [isCms485, currentCard, isLast, isDebriefCard, isChallengeCard, remediation, nextLesson]);
 
   const handleNext = () => {
     if (currentIdx < cards.length - 1) {
@@ -878,13 +1015,200 @@ function LessonPlayerPage() {
     setState((s) => withLessonCompleted(s, moduleId, lessonId));
     // P0-001 bridge for lesson complete
     try { const j = useJourneyStore.getState(); j.recordLearnerCompletion(j.currentEmployeeId, moduleId, true); } catch {}
-    navigate(`/journey/module/${moduleId}`);
+    if (nextLesson) {
+      navigate(`/journey/module/${moduleId}/lesson/${nextLesson.id}`);
+    } else {
+      navigate(`/journey/module/${moduleId}`);
+    }
   };
 
   const challengeChoices = (challenge?.choices ?? []) as { id: string; label: string }[];
 
+  if (isCareIndeedOnboardingModule(moduleId)) {
+    const currentLessonNumber = currentLessonIdx >= 0 ? currentLessonIdx + 1 : 1;
+    const totalNarrationSeconds = currentCard.estimated_narration_seconds ?? Math.max(30, lesson.estMinutes * 60);
+    const mediaTitle = currentCard.media_prompt_placeholder?.scene_title || currentCard.display_title || lesson.title;
+    const canMovePrevious = currentIdx > 0 || Boolean(prevLesson);
+
+    return (
+      <div className="fixed inset-0 z-[9998] flex flex-col text-[#1F1C1B]" style={onboardingDotBg}>
+        {idleWarning && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-md rounded-2xl border border-[#E5E4E3] bg-white p-6 text-center shadow-2xl">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-[#FFF0E5] text-[#C74601]">
+                <Clock size={23} />
+              </div>
+              <h3 className="mt-4 text-lg font-bold text-[#004142]">Are you still studying?</h3>
+              <p className="mt-2 text-sm leading-relaxed text-[#524C4B]">
+                Active study time paused due to inactivity. Resume to continue tracking this lesson.
+              </p>
+              <button
+                onClick={resume}
+                className="mt-5 w-full rounded-lg bg-[#C74601] px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white"
+              >
+                Resume Learning
+              </button>
+            </div>
+          </div>
+        )}
+
+        <header className="shrink-0 border-b border-[#E5E4E3] bg-white/96 px-4 py-3 shadow-[0_8px_28px_rgba(31,28,27,0.05)] md:px-6">
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1 overflow-x-auto">
+              <div className="flex min-w-max items-center gap-2">
+                {allLessons.map((lessonItem: any, index: number) => {
+                  const active = lessonItem.id === lessonId;
+                  const complete = isLessonComplete(learnerState, moduleId, lessonItem.id);
+                  return (
+                    <button
+                      key={lessonItem.id}
+                      type="button"
+                      onClick={() => navigate(`/journey/module/${moduleId}/lesson/${lessonItem.id}`)}
+                      className={`inline-flex max-w-[220px] items-center gap-2 rounded-full border px-3 py-2 text-[11px] font-bold transition ${
+                        active
+                          ? "border-[#007970] bg-[#007970] text-white shadow-[0_8px_18px_rgba(0,121,112,0.18)]"
+                          : "border-[#E5E4E3] bg-white text-[#524C4B] hover:border-[#C4F4F5] hover:text-[#007970]"
+                      }`}
+                      title={lessonItem.title}
+                    >
+                      <span className={`h-2 w-2 shrink-0 rounded-full ${active ? "bg-[#FA7A33]" : complete ? "bg-[#007970]" : "bg-[#C9C6C5]"}`} />
+                      <span className="truncate">{index + 1}. {lessonItem.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <button
+              onClick={() => navigate(`/journey/module/${moduleId}`)}
+              className="shrink-0 rounded-full border border-[#E5E4E3] bg-white px-4 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-[#C74601] transition hover:bg-[#FFF0E5]"
+            >
+              Save &amp; Exit
+            </button>
+          </div>
+        </header>
+
+        <main className="grid min-h-0 flex-1 grid-cols-1 gap-[20px] p-0 lg:grid-cols-[420px_minmax(0,1fr)] lg:p-0">
+          <aside className="flex min-h-0 flex-col rounded-[22px] border border-[#E5E4E3] bg-white p-[20px] shadow-[0_18px_50px_rgba(31,28,27,0.08)]">
+            <div className="mb-4 flex border-b border-[#E5E4E3]">
+              <button
+                type="button"
+                onClick={() => setActiveTab("content")}
+                className={`border-b-2 px-4 pb-3 text-xs font-bold uppercase tracking-[0.14em] ${activeTab === "content" ? "border-[#007970] text-[#007970]" : "border-transparent text-[#747470]"}`}
+              >
+                Content
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("narration")}
+                className={`border-b-2 px-4 pb-3 text-xs font-bold uppercase tracking-[0.14em] ${activeTab === "narration" ? "border-[#007970] text-[#007970]" : "border-transparent text-[#747470]"}`}
+              >
+                Narration
+              </button>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-auto pr-1">
+              {activeTab === "content" ? (
+                <OnboardingLessonHtml card={currentCard} />
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#C74601]">Narration Script</div>
+                    <h2 className="mt-1 text-xl font-bold text-[#004142]">{currentCard.display_title}</h2>
+                  </div>
+                  <p className="whitespace-pre-line text-sm leading-7 text-[#524C4B]">
+                    {currentCard.narration_script || currentCard.transcript_text || "No narration text available."}
+                  </p>
+                </div>
+              )}
+            </div>
+          </aside>
+
+          <section className="h-full rounded-[24px] border border-[#E5E4E3] bg-white p-[20px] shadow-[0_18px_50px_rgba(31,28,27,0.08)] lg:min-h-0">
+            <div className="h-full w-full flex flex-col rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8] overflow-hidden">
+              {hasMedia(currentCard.app.location) ? (
+                <MediaSlot
+                  appLocation={currentCard.app.location}
+                  sceneTitle={mediaTitle}
+                  className="h-full"
+                />
+              ) : (
+                <>
+                  {/* Main visual stage - polished placeholder matching brand spec */}
+                  <div className="flex-1 flex items-center justify-center w-full p-6">
+                    <div className="text-center z-10 flex flex-col items-center">
+                      {/* Custom image-placeholder icon (styled to match provided LMS player HTML) */}
+                      <svg className="w-20 h-20 text-[#007970] mb-6" fill="currentColor" viewBox="0 0 24 24" stroke="none">
+                        <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3ZM5 5H19V19H5V5Z" fill="currentColor"/>
+                        <path d="M8.5 11.5C9.88071 11.5 11 10.3807 11 9C11 7.61929 9.88071 6.5 8.5 6.5C7.11929 6.5 6 7.61929 6 9C6 10.3807 7.11929 11.5 8.5 11.5Z" fill="currentColor"/>
+                        <path d="M5.5 18L10.5 12L13 14.5L16 11L18.5 14V18H5.5Z" fill="currentColor"/>
+                      </svg>
+                      <h2 className="text-xl font-semibold tracking-[0.08em] text-[#007970] uppercase">{mediaTitle}</h2>
+                    </div>
+                  </div>
+
+                  {/* Subtle footer label inside stage */}
+                  <div className="bg-[#E5FEFF] w-full py-2.5 text-center border-t border-[#C4F4F5]">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#747470]">
+                      Training Visual • No PHI
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
+        </main>
+
+        <footer className="shrink-0 border-t border-[#E5E4E3] bg-white px-4 py-4 shadow-[0_-8px_28px_rgba(31,28,27,0.05)] md:px-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <button
+              onClick={() => {
+                if (currentIdx > 0) {
+                  setCurrentIdx((idx) => Math.max(0, idx - 1));
+                } else if (prevLesson) {
+                  navigate(`/journey/module/${moduleId}/lesson/${prevLesson.id}`);
+                }
+              }}
+              disabled={!canMovePrevious}
+              className="rounded-lg border border-[#E5E4E3] bg-white px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#524C4B] transition hover:bg-[#FAFBF8] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Previous Lesson
+            </button>
+
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={narrationAudioReady ? toggleNarrationAudio : toggleNarrationSpeech}
+                disabled={!narrationAudioReady && !speechSupported}
+                className={`grid h-11 w-11 place-items-center rounded-full border text-white shadow-[0_10px_24px_rgba(0,121,112,0.18)] transition disabled:opacity-40 ${
+                  narrationPlaying || narrationSpeaking ? "border-[#004142] bg-[#004142]" : "border-[#007970] bg-[#007970]"
+                }`}
+                aria-label={narrationPlaying || narrationSpeaking ? "Pause narration" : "Play narration"}
+              >
+                {narrationPlaying || narrationSpeaking ? <Pause size={16} className="fill-current" /> : <Play size={16} className="ml-0.5 fill-current" />}
+              </button>
+              <div className="rounded-full border border-[#E5E4E3] bg-[#FAFBF8] px-4 py-2 text-xs font-bold text-[#524C4B]">
+                {formatMmSs(lessonSeconds)} / {formatMmSs(totalNarrationSeconds)}
+              </div>
+              <div className="hidden text-[11px] font-bold uppercase tracking-[0.14em] text-[#747470] sm:block">
+                Lesson {currentLessonNumber} of {allLessons.length}
+              </div>
+            </div>
+
+            <button
+              onClick={handleNext}
+              className="rounded-lg bg-[#C74601] px-6 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[0_10px_24px_rgba(199,70,1,0.20)] transition hover:bg-[#A63A01]"
+            >
+              {nextLesson || currentIdx < cards.length - 1 ? "Next Lesson" : "Complete Theory"} →
+            </button>
+          </div>
+        </footer>
+
+        <audio ref={narrationAudioRef} src={narrationAssetPath(currentCard.app.location)} onEnded={() => setNarrationPlaying(false)} preload="none" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="h-full">
       {/* Idle warning overlay */}
       {idleWarning && (
         <div className="fixed inset-0 bg-black/55 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-fade-in">
@@ -906,53 +1230,62 @@ function LessonPlayerPage() {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-hairline">
-        <button
-          onClick={() => navigate(`/journey/module/${moduleId}`)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-brand-teal hover:text-brand-teal-deep transition-colors"
-        >
-          <ArrowLeft size={14} /> Close Lesson Player
-        </button>
-        <div className="flex items-center gap-4 text-xs font-mono text-secondary">
-          <span className="flex items-center gap-1"><Clock size={12} className="text-brand-orange" /> Lesson Session: {lesson.estMinutes}m</span>
-          <span>•</span>
-          <span className="flex items-center gap-1 text-brand-teal">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-teal" /> Active study time: {formatHoursAndMins(lessonSeconds)}
-          </span>
-          <span>•</span>
-          <span className="flex items-center gap-1 text-brand-orange">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-orange" /> Cumulative clock (demo): {formatHoursAndMins(demoSeconds)}
-          </span>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between p-3 rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset overflow-x-auto shadow-sm">
-        {cards.map((card: any, idx: number) => (
-          <div key={card.app.location} className="flex items-center gap-3 shrink-0 mx-2">
-            <div className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-mono font-bold ${
-              currentIdx === idx
-                ? "bg-brand-orange border-brand-orange text-white"
-                : currentIdx > idx
-                ? "bg-tone-teal-bg text-brand-teal border-tone-teal-border"
-                : "bg-surface-glass backdrop-blur-md shadow-glass-inset border-hairline text-muted"
-            }`}>
-              {currentIdx > idx ? <Check size={10} /> : idx + 1}
+      <div className="border border-hairline bg-surface-glass rounded-xl overflow-hidden flex flex-col shadow-rest backdrop-blur-xl isolate h-full w-full">
+        {/* Invisible dock: lesson flow (centered) + Quit Lesson top right. No extra rows or "Learn" text. */}
+        <div className="relative px-2 py-0.5 bg-transparent text-[10px] font-mono">
+          <div className="flex items-center justify-center">
+            <div className="flex items-center gap-1 overflow-x-auto">
+              {allLessons.map((lessonItem: any, index: number) => {
+                const isActive = lessonItem.id === lessonId;
+                return (
+                  <div
+                    key={lessonItem.id}
+                    onClick={() => navigate(`/journey/module/${moduleId}/lesson/${lessonItem.id}`)}
+                    className={`px-1.5 py-0.5 rounded border cursor-pointer flex-shrink-0 text-[9px] ${isActive ? 'bg-brand-orange text-white border-brand-orange font-bold' : 'bg-white border-hairline hover:bg-gray-100'}`}
+                  >
+                    {lessonItem.title ? lessonItem.title.substring(0, 10) + (lessonItem.title.length > 10 ? '..' : '') : `L${index + 1}`}
+                  </div>
+                );
+              })}
             </div>
-            <span className={`text-[11px] font-semibold uppercase tracking-wider ${currentIdx === idx ? "text-brand-orange" : "text-muted"}`}>
-              {stepLabels[idx]}
-            </span>
-            {idx < cards.length - 1 && <div className="w-6 h-px bg-hairline" />}
           </div>
-        ))}
-      </div>
 
-      <div className="border border-hairline bg-surface-glass rounded-xl overflow-hidden flex flex-col min-h-[500px] shadow-rest backdrop-blur-xl isolate">
-        <div className="p-6 md:p-8 flex-1 space-y-6">
-          <div>
+          {/* Quit Lesson on top right */}
+          <button
+            onClick={() => navigate(`/journey/module/${moduleId}`)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-semibold uppercase tracking-wider text-red-600 hover:text-red-700 px-1 py-0.5 rounded transition-colors"
+            title="Quit Lesson"
+          >
+            Quit Lesson
+          </button>
+        </div>
+
+        <div className="p-2 md:p-3 flex flex-col flex-1 space-y-1 pt-1">
+          {/* Timers + Close kept invisible (zero space) */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-hairline text-xs font-mono text-secondary opacity-0 p-0 m-0 h-0 overflow-hidden border-none">
+            <button
+              onClick={() => navigate(`/journey/module/${moduleId}`)}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-brand-teal hover:text-brand-teal-deep transition-colors self-start"
+            >
+              <ArrowLeft size={14} /> Close Lesson Player
+            </button>
+            <div className="flex items-center gap-4 text-xs font-mono text-secondary">
+              <span className="flex items-center gap-1"><Clock size={12} className="text-brand-orange" /> Lesson Session: {lesson.estMinutes}m</span>
+              <span>•</span>
+              <span className="flex items-center gap-1 text-brand-teal">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-teal" /> Active study time: {formatHoursAndMins(lessonSeconds)}
+              </span>
+              <span>•</span>
+              <span className="flex items-center gap-1 text-brand-orange">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-orange" /> Cumulative clock (demo): {formatHoursAndMins(demoSeconds)}
+              </span>
+            </div>
+          </div>
+
+          <div className="opacity-0 p-0 m-0 h-0 overflow-hidden">
             <span className="text-[10px] font-bold uppercase tracking-widest font-mono text-muted">
               {stepLabels[currentIdx]} · Step {currentIdx + 1} of {cards.length}
             </span>
-            <h2 className="text-2xl font-bold tracking-tight mt-1 text-brand-teal-deep">{currentCard.display_title}</h2>
             {reviewerOpen && (
               <p className="text-[11px] font-mono mt-1 text-muted">
                 {currentCard.module_id} · {currentCard.lesson_id} · {currentCard.card_id} · {currentCard.app.location}
@@ -960,9 +1293,27 @@ function LessonPlayerPage() {
             )}
           </div>
 
-          <MediaSlot appLocation={currentCard.app.location} sceneTitle={currentCard.media_prompt_placeholder.scene_title} />
-
-          {isCms485 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-[400px,1fr] xl:grid-cols-[440px,1fr] grid-rows-[1fr] gap-2 w-full flex-1 min-h-0 h-full">
+            <div className="border border-[#E5E4E3] bg-white rounded-xl p-[20px] shadow-md text-xs flex flex-col overflow-hidden h-full">
+              {/* Content / Narration tabs */}
+              <div className="flex mb-2 border-b border-hairline">
+                <button
+                  onClick={() => setActiveTab('content')}
+                  className={`px-3 py-1 text-xs font-semibold ${activeTab === 'content' ? 'border-b-2 border-brand-teal text-brand-teal' : 'text-muted'}`}
+                >
+                  Content
+                </button>
+                <button
+                  onClick={() => setActiveTab('narration')}
+                  className={`px-3 py-1 text-xs font-semibold ${activeTab === 'narration' ? 'border-b-2 border-brand-teal text-brand-teal' : 'text-muted'}`}
+                >
+                  Narration
+                </button>
+              </div>
+              <div className="flex-1 min-h-0 overflow-auto text-[10px] leading-tight">
+                {activeTab === 'content' ? (
+                  <>
+                    {isCms485 ? (
             <>
               {currentCard.card_type === "overview" && (() => {
                 const bullets = currentCard.learner_facing_content.split("\n").filter(Boolean);
@@ -1118,7 +1469,7 @@ function LessonPlayerPage() {
                   )}
                   {submitted && (
                     <p className="text-[11px] font-mono text-brand-teal font-bold flex items-center gap-1.5">
-                      <Unlock size={12} /> Response submitted. Click "Continue" to review the explanation.
+                      <CheckCircle2 size={12} /> Response submitted. Click "Continue" to review the explanation.
                     </p>
                   )}
                 </div>
@@ -1134,7 +1485,7 @@ function LessonPlayerPage() {
                   />
                   {!debriefReadDone && (
                     <p className="text-[11px] font-mono text-brand-orange font-bold">
-                      Review the safest response{selectedAnswer && selectedAnswer !== remediation.safestId ? " and your own choice" : ""} in the option review to unlock lesson completion.
+                      Review the safest response{selectedAnswer && selectedAnswer !== remediation.safestId ? " and your own choice" : ""} in the option review to complete the lesson.
                     </p>
                   )}
                 </>
@@ -1159,21 +1510,18 @@ function LessonPlayerPage() {
 
               {currentCard.card_type === "delivery" && (
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <h4 className="text-xs uppercase font-bold font-mono tracking-wider text-brand-teal-deep">Lesson Content</h4>
-                    {currentCard.learner_facing_content.includes("<") && currentCard.learner_facing_content.includes(">") ? (
-                      <div
-                        className="text-xs leading-relaxed text-secondary space-y-2"
-                        dangerouslySetInnerHTML={{ __html: currentCard.learner_facing_content }}
-                      />
-                    ) : (
-                      <p className="text-xs leading-relaxed whitespace-pre-line text-secondary">{currentCard.learner_facing_content}</p>
-                    )}
-                  </div>
+                  {currentCard.learner_facing_content.includes("<") && currentCard.learner_facing_content.includes(">") ? (
+                    <div
+                      className="text-xs leading-relaxed text-secondary space-y-2 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:text-brand-teal-deep [&_h3]:text-sm [&_h3]:font-bold [&_h3]:text-brand-teal-deep [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mt-1 [&_strong]:text-brand-teal-deep"
+                      dangerouslySetInnerHTML={{ __html: currentCard.learner_facing_content }}
+                    />
+                  ) : (
+                    <p className="text-xs leading-relaxed whitespace-pre-line text-secondary">{currentCard.learner_facing_content}</p>
+                  )}
                   {currentCard.cna_practice_example && (
                     <div className="p-3 border border-tone-orange-border/30 bg-tone-orange-bg/10 rounded-lg">
                       <p className="text-[11px] leading-relaxed text-secondary">
-                        <strong>CNA practice example:</strong> {currentCard.cna_practice_example}
+                        <strong>Practice example:</strong> {currentCard.cna_practice_example}
                       </p>
                     </div>
                   )}
@@ -1229,7 +1577,7 @@ function LessonPlayerPage() {
                   />
                   {!debriefReadDone && (
                     <p className="text-[11px] font-mono text-brand-orange font-bold">
-                      Review the safest response{selectedAnswer && selectedAnswer !== remediation.safestId ? " and your own choice" : ""} in the option review to unlock lesson completion.
+                      Review the safest response{selectedAnswer && selectedAnswer !== remediation.safestId ? " and your own choice" : ""} in the option review to complete the lesson.
                     </p>
                   )}
                 </>
@@ -1247,23 +1595,58 @@ function LessonPlayerPage() {
               ))}
             </div>
           )}
+                  </>
+                ) : (
+                  <div className="whitespace-pre-line text-secondary">
+                    {currentCard.narration_script || currentCard.transcript_text || 'No narration text available.'}
+                  </div>
+                )}
+            </div>
+            </div>
+            <div className="h-full shadow-md overflow-hidden rounded-xl p-[20px]">
+              <MediaSlot
+                appLocation={currentCard.app.location}
+                sceneTitle={currentCard.media_prompt_placeholder?.scene_title}
+                className="h-full w-full !mb-0"
+              />
+            </div>
+          </div>
         </div>
-
-        <NarrationPlayer
-          appLocation={currentCard.app.location}
-          transcript={isDebriefCard && remediation ? remediation.transcript : currentCard.transcript_text}
-          label={isDebriefCard ? "Challenge Debrief Narration" : "Lesson Narration"}
-          estSeconds={currentCard.estimated_narration_seconds}
-        />
 
         <div className="px-6 py-4 border-t border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset flex items-center justify-between rounded-b-xl">
           <button
-            onClick={() => setCurrentIdx((idx) => Math.max(0, idx - 1))}
-            disabled={currentIdx === 0}
+            onClick={() => {
+              if (currentIdx > 0) {
+                setCurrentIdx((idx) => Math.max(0, idx - 1));
+              } else if (prevLesson) {
+                navigate(`/journey/module/${moduleId}/lesson/${prevLesson.id}`);
+              }
+            }}
+            disabled={currentIdx === 0 && !prevLesson}
             className="px-4 py-2 text-xs font-semibold disabled:opacity-35 disabled:cursor-not-allowed uppercase tracking-wider transition-colors text-secondary hover:text-brand-teal-deep"
           >
-            &larr; Previous Card
+            &larr; {currentIdx > 0 ? "Previous Card" : "Previous Lesson"}
           </button>
+
+          {/* Narration controls between prev and next (only relevant for narration) */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleNarrationAudio}
+              className="w-8 h-8 rounded-full bg-surface-glass backdrop-blur-md shadow-glass-inset border border-tone-teal-border/40 flex items-center justify-center text-brand-teal hover:bg-surface-hover transition-colors text-xs"
+              aria-label={narrationPlaying ? "Pause" : "Play"}
+            >
+              {narrationPlaying ? <Pause size={12} className="fill-current" /> : <Play size={12} className="fill-current ml-0.5" />}
+            </button>
+            {!narrationAudioReady && speechSupported && (
+              <button
+                onClick={toggleNarrationSpeech}
+                className={`inline-flex items-center gap-1 px-2 py-1 rounded border text-[9px] font-mono transition-all ${narrationSpeaking ? "bg-tone-teal-bg text-brand-teal border-tone-teal-border" : "bg-surface-glass border-hairline text-secondary hover:bg-surface-hover"}`}
+                title="Browser preview"
+              >
+                {narrationSpeaking ? <VolumeX size={10} /> : <Volume2 size={10} />} Preview
+              </button>
+            )}
+          </div>
 
           {!isLast || meetsLessonMinimum ? (
             <button
@@ -1271,7 +1654,7 @@ function LessonPlayerPage() {
               disabled={!canContinue}
               className="bg-brand-orange hover:bg-brand-orange/95 text-white border border-brand-orange font-bold px-6 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
             >
-              {isTerminologyCard && !allTermsAcked && <Lock size={12} />}
+              {isTerminologyCard && !allTermsAcked && <AlertTriangle size={12} />}
               {continueLabel} &rarr;
             </button>
           ) : (
@@ -1280,6 +1663,9 @@ function LessonPlayerPage() {
             </div>
           )}
         </div>
+
+        {/* Hidden audio for narration controls */}
+        <audio ref={narrationAudioRef} src={narrationAssetPath(currentCard.app.location)} onEnded={() => setNarrationPlaying(false)} preload="none" />
       </div>
     </div>
   );
@@ -1441,7 +1827,7 @@ function ModuleAssessmentQuizPage() {
           <p className="text-xs text-secondary mt-1">
             {moduleId === "cms-485" || moduleId === "qapi"
               ? "Your progress is saved."
-              : "The course-wide Final Assessment gate is now available on the Modules page."}
+              : "The final assessment is now available on the Modules page."}
           </p>
         </div>
         <div className="bg-surface-glass backdrop-blur-md shadow-glass-inset p-4 rounded-lg border border-hairline max-w-sm font-mono text-xs text-secondary flex justify-between shadow-sm">
@@ -1546,7 +1932,7 @@ function FinalAssessmentQuizPage() {
 }
 
 /* ==========================================================================
-   PAGE: FINAL EXAM RESULT / GRADEOUT / REMEDIATION GATES
+   PAGE: FINAL EXAM RESULT / GRADEOUT / REMEDIATION
    ========================================================================== */
 
 function FinalResultPage() {
@@ -1580,7 +1966,7 @@ function FinalResultPage() {
                 onClick={() => navigate("/journey/appendix-f")}
                 className="bg-brand-orange hover:bg-brand-orange/95 text-white font-bold px-6 py-3 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-pill-action"
               >
-                Proceed to Certificate Gate &rarr;
+                Proceed to Certificate &rarr;
               </button>
             </div>
           </>
@@ -1590,7 +1976,7 @@ function FinalResultPage() {
               <AlertTriangle size={32} />
             </div>
             <div>
-              <span className="text-[10px] uppercase font-bold text-brand-orange font-mono tracking-widest bg-tone-orange-bg px-2.5 py-0.5 rounded border border-tone-orange-border">Requires Remediation</span>
+              <span className="text-[10px] uppercase font-bold text-brand-orange font-mono tracking-widest bg-tone-orange-bg px-2.5 py-0.5 rounded border border-tone-orange-border">Review Needed</span>
               <h1 className="text-3xl font-bold text-brand-teal-deep mt-3">{appCopy.final.fail_title}</h1>
               <p className="text-xs text-secondary mt-2 max-w-md leading-relaxed">{remediation.overview}</p>
             </div>
@@ -1631,7 +2017,7 @@ function FinalResultPage() {
             </div>
 
             <div className="bg-surface-glass backdrop-blur-md shadow-glass-inset border border-hairline p-3 rounded-lg text-left max-w-xl ml-0 mr-auto flex items-start gap-2 shadow-sm">
-              <Lock size={12} className="text-muted shrink-0 mt-0.5" />
+              <AlertTriangle size={12} className="text-muted shrink-0 mt-0.5" />
               <p className="text-[10px] text-muted leading-relaxed font-mono">{remediation.retryInstructions}</p>
             </div>
 
@@ -1664,11 +2050,12 @@ export function ModulePlayerScreen() {
   const { pathname } = useLocation();
   const params = useParams<{ moduleId?: string; lessonId?: string }>();
 
-  // P0-002 + P0-008 guard: use journeyStore as source of truth for employee + clearance
-  const { currentEmployeeId, employees, attempts } = useJourneyStore();
-  const employee = employees.find(e => e.id === currentEmployeeId);
+  // Gating removed - always proceed (no employee/GAO/Appendix F blocks)
   const rawModuleId = params.moduleId || (pathname.includes('/module/') ? pathname.split('/module/')[1]?.split('/')[0] : undefined);
   let journeyMod = rawModuleId ? moduleById(rawModuleId) : null;
+  if (!journeyMod && rawModuleId && isOasisSocModule(rawModuleId)) {
+    journeyMod = { id: rawModuleId, roles: 'ALL', group: 'ADV' as any, phase: 'ANN' as any, title: OASIS_SOC_MODULE_TITLE } as any;
+  }
   if (!journeyMod && rawModuleId && isAdvancedModule(rawModuleId)) {
     // stub for gating / checks so ADV modules are treated as valid in canonical path
     const advTitle = getModuleDef(rawModuleId)?.title || rawModuleId;
@@ -1678,6 +2065,11 @@ export function ModulePlayerScreen() {
   // HOIST useMemo here so it is ALWAYS called (P0-002 fix for hook order)
   const element = useMemo(() => {
     // Dispatch ADV modules to domain player for main module view (fixes runtime for RN-ADV)
+    // OASIS-E2 SOC renders its own self-contained panel — resolved FIRST and
+    // independently of the shared advanced-training contract (see oasisSocModule.ts).
+    if (isOasisSocModule(params.moduleId)) {
+      return <OasisSocTrainingPanel moduleId={params.moduleId!} />;
+    }
     if (params.moduleId && isAdvancedModule(params.moduleId)) {
       const variant = getAdvancedVariant(params.moduleId) || 'plan_of_care';
       const title = getModuleDef(params.moduleId)?.title || params.moduleId;
@@ -1714,20 +2106,7 @@ export function ModulePlayerScreen() {
     );
   }, [pathname, params]);
 
-  // Early guards
-  if (!employee) {
-    return (
-      <section className="p-8">
-        <div className="max-w-xl mx-auto bg-surface-glass border border-hairline rounded-xl p-6">
-          <h2 className="text-xl font-bold">Select an employee to continue</h2>
-          <p className="mt-2 text-sm text-secondary">No active onboarding subject is selected. Go to the Journey overview or Admin to choose an employee (e.g. Maria Santos, RN).</p>
-          <Link to="/journey" className="mt-4 inline-block text-brand-teal underline">Back to Journey overview</Link>
-        </div>
-      </section>
-    );
-  }
-
-  if (rawModuleId && !journeyMod && !isAdvancedModule(rawModuleId) && !['m0'].includes(rawModuleId)) {
+  if (rawModuleId && !journeyMod && !isOasisSocModule(rawModuleId) && !isAdvancedModule(rawModuleId) && !['m0'].includes(rawModuleId)) {
     // Unknown module - bypass for RN-ADV modules (registered in adapter/courseModules)
     return (
       <section className="p-8">
@@ -1740,25 +2119,21 @@ export function ModulePlayerScreen() {
     );
   }
 
-  // Hard gate using existing canStartModule for non-orientation modules
-  const isOrientation = rawModuleId === 'm0' || pathname === '/journey/module/m0';
-  if (!isOrientation && journeyMod && employee) {
-    const decision = canStartModule(employee, journeyMod, attempts);
-    if (!decision.unlocked) {
-      return (
-        <section className="p-8">
-          <div className="max-w-xl mx-auto bg-surface-glass border border-amber-500/50 rounded-xl p-6">
-            <h2 className="font-bold text-lg">Blocked — cannot start this module</h2>
-            <p className="mt-2 text-sm">{decision.reason}</p>
-            <div className="mt-4 flex gap-3">
-              <Link to="/journey/appendix-f" className="text-brand-teal underline">Complete Appendix F</Link>
-              <Link to="/journey" className="text-brand-teal underline">Back to overview</Link>
-            </div>
-            <p className="mt-3 text-[10px] text-muted font-mono">Current employee: {employee.name} ({employee.role})</p>
-          </div>
-        </section>
-      );
-    }
+  // Gating removed per request (no more idiotic module start blocks for GAO/Appendix F/etc.)
+
+  // The OASIS-E2 SOC simulator IS the page: cover the full viewport, above
+  // the topbar and floating shell controls, so only the workspace is visible.
+  if (isOasisSocModule(params.moduleId)) {
+    return (
+      <section
+        aria-label="OASIS-E2 SOC simulator"
+        className="fixed inset-0 z-[9999] overflow-hidden bg-white"
+        data-hash-id="module-player"
+        data-route="/journey/module/:moduleId"
+      >
+        {element}
+      </section>
+    );
   }
 
   // element hoisted above (see top of ModulePlayerScreen) for P0-002 hook order fix
@@ -1766,17 +2141,15 @@ export function ModulePlayerScreen() {
   return (
     <section
       aria-label="Onboarding course player"
-      className="relative -m-xl min-h-[calc(100vh-var(--topbar-h))] bg-[linear-gradient(135deg,rgba(247,254,255,0.98),rgba(255,255,255,0.94)_48%,rgba(250,248,248,0.96))] px-lg py-lg text-ink"
+      className="relative -m-xl min-h-[calc(100vh-var(--topbar-h))] bg-[linear-gradient(135deg,rgba(247,254,255,0.98),rgba(255,255,255,0.94)_48%,rgba(250,248,248,0.96))] px-0 py-lg text-ink"
       data-hash-id="module-player"
       data-route="/journey/module/:moduleId"
       data-template="module-player"
     >
-      <div className="mr-auto max-w-[1320px] p-2 md:p-6">
-        <DemoOnlyBanner />
-        {element}
-        <p className="text-left text-tag text-muted mt-8">
-          No PHI. Demo training data only. Required theory modules do not access patient medical records.
-        </p>
+      <div className="w-full p-0 md:p-0 flex flex-col h-full" style={{ minHeight: 'calc(100vh - var(--topbar-h) - 2rem)' }}>
+        <div className="flex-1">
+          {element}
+        </div>
       </div>
     </section>
   );

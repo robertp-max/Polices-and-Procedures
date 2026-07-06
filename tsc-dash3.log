@@ -1,0 +1,5 @@
+src/v6/screens/RepresentativeScreens.tsx(1,61): error TS6133: 'CalendarRange' is declared but its value is never read.
+src/v6/screens/RepresentativeScreens.tsx(81,11): error TS6196: 'ActionRow' is declared but never used.
+src/v6/screens/RepresentativeScreens.tsx(2047,10): error TS6133: 'DesignBadge' is declared but its value is never read.
+src/v6/screens/RepresentativeScreens.tsx(3902,29): error TS2304: Cannot find name 'operationsMetrics'.
+src/v6/screens/RepresentativeScreens.tsx(3953,47): error TS2304: Cannot find name 'operationsMetrics'.

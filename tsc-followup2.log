@@ -1,0 +1,1 @@
+src/v6/screens/pageviews/AdminCommunityProfilesScreen.tsx(125,9): error TS2741: Property 'tone' is missing in type '{ title: string; body: string; }' but required in type 'SurfaceCardData'.

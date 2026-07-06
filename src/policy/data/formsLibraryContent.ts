@@ -46,7 +46,8 @@ export type SectionLayout =
   | 'attestation'// intro + numbered acknowledgments + signature
   | 'narrative'  // long textarea block
   | 'matrix'     // row × column matrix
-  | 'signature'; // standalone signature block
+  | 'signature'  // standalone signature block
+  | 'image';     // attached visual (e.g. official org chart image for GV-FM-003)
 
 export interface FormSection {
   title: string;
@@ -68,6 +69,12 @@ export interface FormSection {
    * (e.g. competency validation, corrective action items).
    */
   sectionAck?: boolean;
+  /** For layout: 'image' — attached visual asset (PNG/JPG etc) */
+  image?: {
+    src: string;   // e.g. '/assets/media/...' (served from public/)
+    alt?: string;
+    caption?: string;
+  };
 }
 
 export interface SignatureBlock {
@@ -134,6 +141,12 @@ const checklist = (title: string, items: string[]): FormSection => ({
   title,
   layout: 'checklist',
   items,
+});
+
+const imageBlock = (title: string, src: string, alt?: string, caption?: string): FormSection => ({
+  title,
+  layout: 'image',
+  image: { src, alt: alt || title, caption },
 });
 
 // ────────────────────────────────────────────────────────────────
@@ -500,18 +513,10 @@ export const FORM_OVERRIDES: Record<string, FormOverride> = {
     rows: 12,
   },
   'GV-FM-003': {
-    p: 'Official agency organizational chart establishing reporting relationships from the Governing Body through senior clinical and administrative leadership as required by 42 CFR § 484.105.',
-    i: 'Updated within 7 calendar days of any reorganization or leadership change. Posted in the Administrator\'s office and included in every surveyor packet.',
-    fields: [
-      { label: 'Organizational Chart Version', type: 'text', required: true, col: 2 },
-      { label: 'Effective Date', type: 'date', required: true, col: 2 },
-      { label: 'Governing Body Chair', type: 'text', col: 2 },
-      { label: 'Administrator', type: 'text', col: 2 },
-      { label: 'Clinical Manager / DON', type: 'text', col: 2 },
-      { label: 'Compliance Officer', type: 'text', col: 2 },
-      { label: 'Reporting Lines Narrative', type: 'textarea', col: 4 },
-    ],
+    p: 'Official agency organizational chart (visual) establishing reporting relationships from the Governing Body through senior clinical and administrative leadership as required by 42 CFR § 484.105. The authoritative chart is the attached image below.',
+    i: 'Updated within 7 calendar days of any reorganization or leadership change. Posted in the Administrator\'s office and included in every surveyor packet. The attached image is the current official chart (replaces prior text worksheet).',
     signers: ['Administrator', 'Governing Body Chair'],
+    // NOTE: no 'fields' — the main content section uses the attached org chart image (see buildFormContent special case)
   },
   'GV-FM-004': {
     p: 'Standardized agenda template for all Governing Body meetings ensuring coverage of statutory topics (QAPI report, compliance report, clinical outcomes, finances, risk, administrator report).',
@@ -849,7 +854,17 @@ export function buildFormContent(rec: FormRecord): FormContent {
   // Identification block for all forms
   sections.push(identityBlock());
 
-  switch (rec.type.toLowerCase()) {
+  // GV-FM-003 (Official Agency Organizational Chart) uses attached image for its main content section
+  // instead of the generic worksheet grid. The provided screenshot is the authoritative visual.
+  if (rec.id === 'GV-FM-003') {
+    sections.push(imageBlock(
+      'Section 2 — Official Agency Organizational Chart',
+      '/assets/media/GV-FM-003-Official-Agency-Organizational-Chart.png',
+      'Official Agency Organizational Chart',
+      'Current approved visual org chart. Update within 7 days of leadership or structural changes.'
+    ));
+  } else {
+    switch (rec.type.toLowerCase()) {
     case 'log':
     case 'tracking tool':
     case 'matrix': {
@@ -961,6 +976,7 @@ export function buildFormContent(rec: FormRecord): FormContent {
         ],
       });
     }
+  }
   }
 
   if (o?.extra) sections.push(...o.extra);
