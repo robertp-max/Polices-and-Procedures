@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AlertCircle, ChevronRight, FolderOpen, HelpCircle, Info, KeyRound, LogOut, MessageCircle, PenLine, BadgeCheck, ListChecks, Share2, SunMoon, Users, X } from 'lucide-react';
+import { AlertCircle, ChevronRight, FolderOpen, HelpCircle, Info, KeyRound, LogOut, MessageCircle, PenLine, BadgeCheck, ListChecks, Share2, Users, X } from 'lucide-react';
 import { ToneTag } from '../components';
-import { cycleTheme, getTheme, TOD_LABEL } from '../theme/timeOfDayTheme';
 import { useAuth } from '@/auth/AuthProvider';
 import { getUserBadges, getCommendations, type CommunityCommendation } from '../utils/communityBadges';
 import { useThreadStore } from '../../policy/help-center/threads';
@@ -14,7 +12,6 @@ export function PersonalOpsPanel({ onClose }: { onClose?: () => void }) {
   const displayName = user?.name || user?.email || 'Demo User';
   const role = user?.role || 'Member';
   const initials = (displayName.match(/\b\w/g) || []).join('').slice(0, 2).toUpperCase() || 'ME';
-  const [themeLabel, setThemeLabel] = useState(() => TOD_LABEL[getTheme()]);
   const threads = useThreadStore((s) => s.threads);
   const activeThreadCount = threads.filter((thread) => thread.status !== 'archived' && thread.status !== 'duplicate').length;
   const focusItems = [
@@ -43,15 +40,6 @@ export function PersonalOpsPanel({ onClose }: { onClose?: () => void }) {
             <h3 className="mt-xs text-xl font-medium text-brand-teal-deep">Today's Focus</h3>
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setThemeLabel(TOD_LABEL[cycleTheme()])}
-              aria-label={`Theme: ${themeLabel} — change`}
-              title={`Theme: ${themeLabel}`}
-              className="grid h-11 w-11 place-items-center rounded-full text-brand-teal transition-colors hover:bg-tone-teal-bg focus-visible:outline-none focus-visible:shadow-focus"
-            >
-              <SunMoon aria-hidden="true" className="h-icon-sm w-icon-sm" />
-            </button>
             <button
               type="button"
               onClick={() => navigate('/login')}

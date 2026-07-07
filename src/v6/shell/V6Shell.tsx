@@ -4,13 +4,28 @@ import { Bot, Bookmark, ClipboardCheck, FileText, GitFork, GraduationCap, Heart,
 import { PersonalOpsPanel } from './PersonalOpsPanel';
 import { usePersonalOpsStore } from '../../policy/stores/personalOpsStore';
 import { useUiStore } from '../../policy/stores/uiStore';
-import { primaryNavItems, workspaceSubnavItems, type NavItem } from '../routing/navigationManifest';
+import {
+  primaryNavBarItems,
+  primaryNavItems,
+} from '../routing/navigationManifest';
 import { V6_ROUTES } from '../routing/routeRegistry';
 import { cx } from '../utils/classNames';
 import { AnimatedCareIndeedLogo } from './AnimatedCareIndeedLogo';
 import { GuidedTourRunner } from '../guided/GuidedTourRunner';
 import { useGuidedTourStore } from '../guided/guidedTourStore';
 import { ThreadComposer, ThreadDetailPage, ThreadsPage } from '../../policy/help-center/threads';
+
+const NAV_ICONS: Record<string, ComponentType<{ className?: string; 'aria-hidden'?: boolean }>> = {
+  brad: Bot,
+  dashboard: LayoutDashboard,
+  ces: ClipboardCheck,
+  taxonomy: GitFork,
+  onboarding: GraduationCap,
+  'policy-lifecycle': FileText,
+  'help-center': HelpCircle,
+  community: Users,
+  admin: Settings,
+};
 
 export function V6Shell() {
   const { pathname } = useLocation();
@@ -42,8 +57,6 @@ export function V6Shell() {
   const isChromeFreeRoute = isLessonPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute || isEmbedRequest || isPolicyDetailRoute;
   // Keep the dock visible during a guided tour so its nav targets stay anchorable.
   const showDock = !isChromeFreeRoute && !isDashboardRoute && (!pathname.startsWith('/iadministrator') || bradLanding || tourActive);
-  const shellSubnavItems = useMemo(() => getShellSubnavItems(pathname), [pathname]);
-  const showShellSubnav = !isChromeFreeRoute && !isDashboardRoute && shellSubnavItems.length > 0;
   // Policy detail gets zero shell padding (for clean header flush to top) but keeps scroll.
   const suppressShellPadding = isDashboardRoute || isLessonPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute || isEmbedRequest || pathname.startsWith('/iadministrator') || isPolicyDetailRoute;
   const panelTop = '0px';
@@ -63,39 +76,25 @@ export function V6Shell() {
     return null;
   }, [pathname]);
 
-  const navIcons: Record<string, ComponentType<{ className?: string; 'aria-hidden'?: boolean }>> = {
-    brad: Bot,
-    dashboard: LayoutDashboard,
-    ces: ClipboardCheck,
-    taxonomy: GitFork,
-    onboarding: GraduationCap,
-    'policy-lifecycle': FileText,
-    'help-center': HelpCircle,
-    community: Users,
-    admin: Settings,
-  };
-
   const dockItems = useMemo(
     () =>
-      [...primaryNavItems]
-        .filter((item) => item.id !== 'brad' && item.id !== 'help-center' && item.id !== 'community' && item.id !== 'admin')
+      [...primaryNavBarItems]
         .sort((a, b) => {
-          const order = ['dashboard', 'ces', 'taxonomy', 'onboarding', 'brad'];
+          const order = ['dashboard', 'ces', 'taxonomy', 'onboarding'];
           return order.indexOf(a.id) - order.indexOf(b.id);
         })
         .map((item) => {
-          const Icon = navIcons[item.id] ?? HelpCircle;
+          const Icon = NAV_ICONS[item.id] ?? HelpCircle;
           return {
-            icon: item.id === 'brad' ? <AnimatedCareIndeedLogo active={bradActivityActive} className="h-9 w-9" /> : <Icon className="h-5 w-5" aria-hidden />,
+            icon: <Icon className="h-5 w-5" aria-hidden />,
             label: item.label,
             onClick: () => navigate(item.to),
             isActive: activeNavItem === item.id,
             colorStyle: getLeftRadialColor(item.id),
-            // Stable guided-tour anchors for nav targets.
-            tourTarget: item.id === 'ces' ? 'nav.compliance' : item.id === 'help-center' ? 'nav.help' : undefined,
+            tourTarget: item.id === 'ces' ? 'nav.compliance' : undefined,
           };
         }),
-    [activeNavItem, bradActivityActive, navigate],
+    [activeNavItem, navigate],
   );
 
   // Close the nav drawer whenever the route changes.
@@ -200,9 +199,8 @@ export function V6Shell() {
           >
             <UserRound className="h-5 w-5" aria-hidden />
           </button>
-          {showDock && !isDashboardRoute && <LeftRadialDock items={dockItems} />}
-          {showShellSubnav && !isDashboardRoute && (
-            <ShellSubnav items={shellSubnavItems} currentPath={pathname} />
+          {(showDock || isDashboardRoute) && (
+            <LeftRadialDock items={dockItems} />
           )}
         </>
       )}
@@ -230,7 +228,7 @@ export function V6Shell() {
           </div>
           <nav className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto" aria-label="Primary navigation">
             {primaryNavItems.map((item) => {
-              const Icon = navIcons[item.id] ?? HelpCircle;
+              const Icon = NAV_ICONS[item.id] ?? HelpCircle;
               const isActive = activeNavItem === item.id;
               return (
                 <Link
@@ -258,7 +256,12 @@ export function V6Shell() {
               !isDashboardRoute && 'min-h-0 flex-1 overflow-y-auto overflow-x-hidden',
               'transition-[padding-right] duration-500 ease-standard',
               !isChromeFreeRoute && !isDashboardRoute && 'v6-main-scrollmask',
-              suppressShellPadding ? 'p-0' : 'pl-[calc(var(--space-lg)+10px)] pr-lg pb-32 pt-20 tablet-p:pl-[calc(var(--space-3xl)+50px)] tablet-p:pr-3xl',
+              suppressShellPadding
+                ? 'p-0'
+                : cx(
+                  'pl-[calc(var(--space-lg)+10px)] pr-lg pb-32 tablet-p:pl-[calc(var(--space-3xl)+50px)] tablet-p:pr-3xl',
+                  'pt-6',
+                ),
               !isChromeFreeRoute && !isDashboardRoute && hasScrolledMain && 'v6-main-scrollmask--scrolled',
             )}
             id="main-content"
@@ -351,7 +354,7 @@ type RadialDockItem = {
   tourTarget?: string;
 };
 
-function getLeftRadialColor(itemId: string) {
+function getLeftRadialColor(itemId: string): CSSProperties {
   switch (itemId) {
     case 'dashboard':
       return { backgroundColor: 'var(--brand-teal)' };
@@ -361,8 +364,6 @@ function getLeftRadialColor(itemId: string) {
       return { backgroundColor: '#7FE7EA' };
     case 'onboarding':
       return { backgroundColor: 'color-mix(in srgb, var(--brand-orange) 68%, white)' };
-    case 'brad':
-      return { backgroundColor: 'var(--brand-teal)' };
     default:
       return { backgroundColor: 'var(--brand-teal)' };
   }
@@ -411,7 +412,6 @@ function LeftRadialDock({ items }: { items: RadialDockItem[] }) {
                   type="button"
                   data-tour-target={item.tourTarget}
                   onClick={() => {
-                    (window as Window & { __v6TransitionSide?: string }).__v6TransitionSide = 'left';
                     item.onClick();
                     handleMouseLeave();
                   }}
@@ -420,6 +420,7 @@ function LeftRadialDock({ items }: { items: RadialDockItem[] }) {
                   className={cx(
                     'absolute flex h-11 w-11 items-center justify-center rounded-full text-white shadow-lg hover:scale-110',
                     transitionClass,
+                    item.isActive && 'ring-2 ring-white ring-offset-2 ring-offset-transparent',
                   )}
                   style={{
                     transform: open ? `translate(${targetX}px, ${targetY}px)` : `translate(0px, 0px) scale(0)`,
@@ -434,18 +435,21 @@ function LeftRadialDock({ items }: { items: RadialDockItem[] }) {
               );
             })}
           </div>
-        <button
-          type="button"
-          aria-label="Open navigation"
-          aria-expanded={open}
-          onClick={() => open ? handleMouseLeave() : handleMouseEnter()}
-          className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-800 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
-        >
-          <span className="absolute transition-all duration-300" style={{ opacity: open ? 0 : 1, transform: open ? 'rotate(-90deg) scale(0.5)' : 'rotate(0deg) scale(1)' }}>
-            <ColoredHamburgerIcon />
-          </span>
-          <X className="absolute h-5 w-5 text-slate-800 transition-all duration-300" style={{ opacity: open ? 1 : 0, transform: open ? 'rotate(0deg) scale(1)' : 'rotate(90deg) scale(0.5)' }} aria-hidden />
-        </button>
+          <button
+            type="button"
+            aria-label="Open navigation"
+            aria-expanded={open}
+            onClick={() => open ? handleMouseLeave() : handleMouseEnter()}
+            className={cx(
+              'relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-800 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl',
+              open && 'pointer-events-none scale-0 opacity-0',
+            )}
+          >
+            <span className="absolute transition-all duration-300" style={{ opacity: open ? 0 : 1, transform: open ? 'rotate(-90deg) scale(0.5)' : 'rotate(0deg) scale(1)' }}>
+              <ColoredHamburgerIcon />
+            </span>
+            <X className="absolute h-5 w-5 text-slate-800 transition-all duration-300" style={{ opacity: open ? 1 : 0, transform: open ? 'rotate(0deg) scale(1)' : 'rotate(90deg) scale(0.5)' }} aria-hidden />
+          </button>
         </div>
       </div>
     </>
@@ -535,11 +539,12 @@ function FloatingActionRail({
     onFeedbackClose();
     navigate(route);
   };
+  const rightActionStyle: CSSProperties = { backgroundColor: '#F1F5F9', color: '#94A3B8' };
   const rightActions = [
-    { label: 'Open feedback', title: 'Feedback', icon: <MessageCircle className="h-5 w-5" aria-hidden />, onClick: openFeedback, colorStyle: { backgroundColor: 'var(--text-secondary)' } },
-    { label: 'Open help center', title: 'Help', icon: <HelpCircle className="h-5 w-5" aria-hidden />, onClick: () => navigate('/help'), colorStyle: { backgroundColor: 'var(--text-secondary)' } },
-    { label: 'Share', title: 'Share', icon: <Share2 className="h-5 w-5" aria-hidden />, colorStyle: { backgroundColor: 'var(--text-secondary)' } },
-    { label: 'Information', title: 'Info', icon: <Info className="h-5 w-5" aria-hidden />, colorStyle: { backgroundColor: 'var(--text-secondary)' } },
+    { label: 'Open feedback', title: 'Feedback', icon: <MessageCircle className="h-5 w-5" aria-hidden />, onClick: openFeedback, colorStyle: rightActionStyle },
+    { label: 'Open help center', title: 'Help', icon: <HelpCircle className="h-5 w-5" aria-hidden />, onClick: () => navigate('/help'), colorStyle: rightActionStyle },
+    { label: 'Share', title: 'Share', icon: <Share2 className="h-5 w-5" aria-hidden />, colorStyle: rightActionStyle },
+    { label: 'Information', title: 'Info', icon: <Info className="h-5 w-5" aria-hidden />, colorStyle: rightActionStyle },
   ];
   const rightTotalAngle = 140;
   const rightStartAngle = 180 - (rightTotalAngle / 2);
@@ -585,13 +590,12 @@ function FloatingActionRail({
                 key={action.label}
                 type="button"
                 onClick={() => {
-                  (window as Window & { __v6TransitionSide?: string }).__v6TransitionSide = 'right';
                   action.onClick?.();
                   handleRadialMouseLeave();
                 }}
                 aria-label={action.label}
                 title={action.title}
-                className={cx('absolute flex h-11 w-11 items-center justify-center rounded-full text-white shadow-lg hover:scale-110', radialTransitionClass)}
+                className={cx('absolute flex h-11 w-11 items-center justify-center rounded-full shadow-lg hover:scale-110', radialTransitionClass)}
                 style={{
                   transform: radialOpen ? `translate(${targetX}px, ${targetY}px)` : `translate(0px, 0px) scale(0)`,
                   opacity: radialOpen ? 1 : 0,
@@ -611,7 +615,10 @@ function FloatingActionRail({
           aria-label="Open page actions"
           aria-expanded={radialOpen}
           title="Page actions"
-          className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-800 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
+          className={cx(
+            'relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-800 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl',
+            radialOpen && 'pointer-events-none scale-0 opacity-0',
+          )}
         >
           <span className="absolute transition-all duration-300" style={{ opacity: radialOpen ? 0 : 1, transform: radialOpen ? 'rotate(-90deg) scale(0.5)' : 'rotate(0deg) scale(1)' }}>
             <ColoredKebabIcon />
@@ -728,86 +735,5 @@ function FloatingActionRail({
         </aside>
       )}
     </>
-  );
-}
-
-type ShellSubnavItem = NavItem & { brand?: boolean };
-
-function getShellSubnavItems(pathname: string): ShellSubnavItem[] {
-  const p = (pathname || '').split(/[?#]/)[0];
-  const isCESGroup =
-    p.startsWith('/ces/') ||
-    p.startsWith('/events/') ||
-    p === '/audit' ||
-    p === '/evidence' ||
-    p.startsWith('/evidence/') ||
-    p.startsWith('/compliance/');
-  const isTaxonomyGroup =
-    p.startsWith('/framework') ||
-    p.startsWith('/library') ||
-    p.startsWith('/forms') ||
-    p.startsWith('/taxonomy') ||
-    p.startsWith('/achc') ||
-    p.startsWith('/workflows') ||
-    p.startsWith('/policy-lifecycle') ||
-    p === '/policy-approvals' ||
-    p === '/pm/approvals';
-
-  if (isCESGroup) {
-    const cesItemsById = new Map(workspaceSubnavItems.ces.map((item) => [item.id, item]));
-    const orderedItems = [
-      cesItemsById.get('defensible-2') ? { ...cesItemsById.get('defensible-2')!, label: 'DefenCIble', brand: true } : undefined,
-      cesItemsById.get('ces-calendar'),
-      cesItemsById.get('master-controls'),
-    ];
-    return orderedItems.filter((item): item is ShellSubnavItem => Boolean(item));
-  }
-
-  // Policy detail viewer (/library/:policyId) is a focused reading surface —
-  // its own in-page section navigation replaces the taxonomy subnav. The
-  // /library list page keeps the subnav.
-  if (/^\/library\/[^/]+/.test(p)) return [];
-
-  if (isTaxonomyGroup) return workspaceSubnavItems.taxonomy;
-  return [];
-}
-
-function ShellSubnav({ items, currentPath }: { items: ShellSubnavItem[]; currentPath: string }) {
-  const p = (currentPath || '').split(/[?#]/)[0];
-  const safeItems = items.filter((item): item is ShellSubnavItem => Boolean(item?.to));
-  const activeTo = safeItems.reduce((best, item) => {
-    const to = item.to;
-    const matches = item.matchPaths
-      ? item.matchPaths.some((match) => matchPath({ path: match, end: false }, p))
-      : p === to || p.startsWith(`${to}/`);
-    if (!matches) return best;
-    return !best || to.length > best.length ? to : best;
-  }, null as string | null);
-
-  return (
-    <nav
-      aria-label="Workspace subnav"
-      className="fixed left-[104px] right-0 top-5 z-[9999] overflow-x-auto border-b-0 bg-transparent [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-    >
-      <div className="inline-flex min-w-max items-end gap-8">
-        {safeItems.map((item) => {
-          const isActive = activeTo === item.to;
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              data-tour-target={item.id === 'defensible-2' ? 'nav.evidence' : undefined}
-              aria-current={isActive ? 'page' : undefined}
-              className={cx(
-                'shrink-0 border-b-4 px-0 pb-4 pt-1 text-[22px] font-semibold uppercase leading-none tracking-[0.1em] text-[#66748C] transition-all duration-base ease-standard hover:border-brand-teal hover:text-brand-teal-deep',
-                isActive ? 'border-brand-teal text-brand-teal-deep' : 'border-transparent',
-              )}
-            >
-              {item.label}
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
   );
 }

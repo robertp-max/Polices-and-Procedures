@@ -388,12 +388,12 @@ export function AdminUsersScreen() {
         </section>
 
         <aside className="grid content-start gap-lg" aria-label="Admin users security panels">
-          <nav aria-label="User admin tabs" className="flex gap-xs overflow-x-auto rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset/90 p-xs shadow-rest backdrop-blur-xl">
+          <nav aria-label="User admin tabs" className="flex gap-xs overflow-x-auto rounded-full border border-card bg-white p-xs shadow-sm">
             {userPanelTabs.map((tab) => (
               <button
                 aria-selected={activePanel === tab.id}
                 className={cx(
-                  'min-h-tap shrink-0 rounded-md px-md text-sm font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
+                  'min-h-tap shrink-0 rounded-full px-md py-1.5 text-sm font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
                   activePanel === tab.id
                     ? 'bg-brand-teal text-on-brand shadow-rest'
                     : 'text-secondary hover:bg-surface-hover hover:text-brand-teal',

@@ -34,6 +34,16 @@
   --ci-text-body: #374151;
   --ci-text-muted: #6B7280;
 
+  /* Spec exact match variables */
+  --ci-bg-canvas: #F8FAFC;
+  --ci-surface-mint: #EEF5F4;
+  --ci-text-teal-dark: #0A4D44;
+  --ci-text-teal-accent: #197463;
+  --ci-text-slate: #374151;
+  --ci-brand-orange: #F26E36;
+  --ci-border-subdued: #E5E7EB;
+  --ci-border-mint: #C6E2DC;
+
   /* Surfaces */
   --surface-canvas: transparent;
   --surface-base: rgba(255, 255, 255, 0.777);
@@ -265,6 +275,7 @@
   --surface-canvas: var(--ci-canvas);
   --surface-base: var(--ci-surface-white);
   --surface-glass: var(--ci-surface-white);
+  --surface-hover: var(--ci-mint-tint);
   --surface-hover-teal: var(--ci-mint-tint);
 
   --brand-teal: var(--ci-muted-teal);
@@ -1496,7 +1507,7 @@ th {
   box-shadow: none !important;
 }
 
-/* V6 page route transition: circular paint wave copied from the radial reference. */
+/* V6 page route transition: soft content reveal only. */
 .v6-page-transition-base {
   min-width: 100%;
   transition: filter 1000ms ease, opacity 1000ms ease;
@@ -1514,20 +1525,6 @@ th {
   will-change: opacity, filter;
 }
 
-.v6-page-transition-wave {
-  position: fixed;
-  left: var(--v6-page-transition-origin-x, 52px);
-  top: var(--v6-page-transition-origin-y, 50%);
-  width: 300vmax;
-  height: 300vmax;
-  border-radius: 9999px;
-  background: var(--v6-page-transition-paint);
-  transform: translate(-50%, -50%) scale(0);
-  animation: v6-page-paint-disk 1000ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  z-index: 20;
-  will-change: transform;
-}
-
 .v6-page-transition-reveal {
   background: #f8f9fa;
   z-index: 30;
@@ -1541,15 +1538,6 @@ th {
   to {
     filter: blur(0);
     opacity: 1;
-  }
-}
-
-@keyframes v6-page-paint-disk {
-  from {
-    transform: translate(-50%, -50%) scale(0);
-  }
-  to {
-    transform: translate(-50%, -50%) scale(1);
   }
 }
 
@@ -1707,16 +1695,10 @@ th {
   to { transform: translate3d(0, 0, 0); }
 }
 
-/* Dashboard carousel drift + hide-scrollbar (exact fidelity from HTML prototype) */
-@keyframes dashboard-drift {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-11550px); }
-}
+/* Dashboard carousel drift retired: dashboard now renders a static centered workspace. */
 .animate-dashboard-drift {
-  animation-name: dashboard-drift;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  will-change: transform;
+  animation: none !important;
+  will-change: auto;
   backface-visibility: hidden;
 }
 

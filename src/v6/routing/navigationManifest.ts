@@ -16,7 +16,7 @@ export const primaryNavItems: NavItem[] = [
   // Routes still resolve by direct URL; they are just removed from the nav.
   { id: 'ces', label: 'Compliance', to: '/evidence', hashIds: ['defensible-2', 'ces-calendar', 'ces-board', 'master-controls', 'audit-mode', 'evidence-intake', 'evidence-packet-studio', 'ces-reports'] },
   { id: 'taxonomy', label: 'Policies', to: '/framework', hashIds: ['taxonomy', 'framework', 'achc-survey', 'achc-crosswalk', 'hh-evidence-map', 'policy-library', 'forms-library', 'workflows', 'workflow-detail', 'workflow-swimlane', 'policy-lifecycle', 'policy-lifecycle-detail', 'policy-approvals', 'pm-approvals'] },
-  { id: 'onboarding', label: 'Training', to: '/journey', hashIds: ['journey-overview', 'journey-new-hire', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'] },
+  { id: 'onboarding', label: 'Training', to: '/journey?tab=home', hashIds: ['journey-overview', 'journey-new-hire', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'] },
   // 'Evidence' and 'Hubstaff' hidden from the sidebar per request. Routes still resolve by URL.
   { id: 'help-center', label: 'Help', to: '/help', hashIds: ['help-center'] },
   { id: 'community', label: 'Community', to: '/community', hashIds: ['community', 'community-members'] },
@@ -25,6 +25,9 @@ export const primaryNavItems: NavItem[] = [
   { id: 'admin', label: 'Admin', to: '/admin/user-groups', hashIds: ['admin-groups', 'admin-roles', 'admin-permissions', 'admin-users', 'admin-community-profiles'] },
 ];
 
+export const chromeOnlyPrimaryNavItemIds = new Set(['brad', 'help-center', 'community', 'admin']);
+export const primaryNavBarItems = primaryNavItems.filter((item) => !chromeOnlyPrimaryNavItemIds.has(item.id));
+
 // Workspace subnavs shown inside the workspace content area (top of page), not in main sidebar
 export const workspaceSubnavItems: Record<string, NavItem[]> = {
   ces: [
@@ -32,8 +35,13 @@ export const workspaceSubnavItems: Record<string, NavItem[]> = {
     // Sprint Board + Events Board hidden from the CES subnav per request (routes still resolve by URL).
     { id: 'master-controls', label: 'Master Controls', to: '/compliance/master-controls', hashIds: ['master-controls'] },
     { id: 'audit-mode', label: 'Audit Mode', to: '/audit', hashIds: ['audit-mode'] },
-    { id: 'defensible-2', label: 'DefenCIble', to: '/evidence', hashIds: ['defensible-2'] },
-    { id: 'evidence-intake', label: 'Brad Intake', to: '/evidence/intake', hashIds: ['evidence-intake'] },
+    {
+      id: 'defensible-2',
+      label: 'DefenCIble',
+      to: '/evidence',
+      hashIds: ['defensible-2', 'evidence-center', 'evidence-intake', 'evidence-packet-studio', 'admission-packet-preview'],
+      matchPaths: ['/evidence', '/evidence/intake', '/evidence/packet-studio', '/evidence/defensible-2', '/evidence/admission-packet-preview'],
+    },
     { id: 'ai-compliance-review', label: 'AI Review', to: '/compliance/review', hashIds: ['ai-compliance-review'] },
     { id: 'ces-reports', label: 'Reports', to: '/ces/reports', hashIds: ['ces-reports'] },
   ],
@@ -44,12 +52,9 @@ export const workspaceSubnavItems: Record<string, NavItem[]> = {
     { id: 'forms-library', label: 'Forms', to: '/forms', hashIds: ['forms-library'], matchPaths: ['/forms', '/forms/:formId', '/forms/:formId/print', '/forms/:formId/esign'] },
     { id: 'workflows-library', label: 'Workflows', to: '/workflows', hashIds: ['workflows'], matchPaths: ['/workflows', '/workflows/:workflowId', '/workflows/:workflowId/swimlane'] },
     { id: 'policy-approvals', label: 'Policy Approval', to: '/policy-approvals', hashIds: ['policy-approvals', 'pm-approvals'], matchPaths: ['/policy-approvals', '/pm/approvals'] },
-    { id: 'achc-survey', label: 'ACHC Survey Alignment', to: '/framework/achc-survey', hashIds: ['achc-survey'], matchPaths: ['/framework/achc-survey'] },
-    { id: 'achc-crosswalk', label: 'ACHC Crosswalk', to: '/framework/achc-survey/crosswalk', hashIds: ['achc-crosswalk'], matchPaths: ['/framework/achc-survey/crosswalk'] },
-    { id: 'hh-evidence-map', label: 'HH Tag Evidence Map', to: '/framework/hh-evidence-map', hashIds: ['hh-evidence-map'], matchPaths: ['/framework/hh-evidence-map'] },
   ],
   onboarding: [
-    { id: 'journey-overview', label: 'Journey', to: '/journey', hashIds: ['journey-overview'] },
+    { id: 'journey-overview', label: 'Journey', to: '/journey?tab=home', hashIds: ['journey-overview'] },
   ],
   'system-docs': [
     { id: 'exec-overview', label: 'Executive Overview', to: '/system-documentation/executive-overview', hashIds: ['system-docs'] },
@@ -82,8 +87,12 @@ export const WORKSPACE_SUBNAV: Record<string, NavItem[]> = {
     { id: 'workflows', label: 'Workflows', to: '/workflows', hashIds: ['workflows'] },
     { id: 'master-controls', label: 'Master Controls', to: '/compliance/master-controls', hashIds: ['master-controls'] },
     { id: 'audit-mode', label: 'Audit Mode', to: '/audit', hashIds: ['audit-mode'] },
-    { id: 'defensible-2', label: 'DefenCIble', to: '/evidence', hashIds: ['defensible-2'] },
-    { id: 'evidence-intake', label: 'Brad Intake', to: '/evidence/intake', hashIds: ['evidence-intake'] },
+    {
+      id: 'defensible-2',
+      label: 'DefenCIble',
+      to: '/evidence',
+      hashIds: ['defensible-2', 'evidence-center', 'evidence-intake', 'evidence-packet-studio', 'admission-packet-preview'],
+    },
     { id: 'ai-compliance-review', label: 'AI Review', to: '/compliance/review', hashIds: ['ai-compliance-review'] },
     { id: 'ces-reports', label: 'Reports', to: '/ces/reports', hashIds: ['ces-reports'] },
   ],
@@ -94,9 +103,6 @@ export const WORKSPACE_SUBNAV: Record<string, NavItem[]> = {
     { id: 'forms-library', label: 'Forms', to: '/forms', hashIds: ['forms-library'] },
     { id: 'workflows-library', label: 'Workflows', to: '/workflows', hashIds: ['workflows'] },
     { id: 'policy-approvals', label: 'Policy Approval', to: '/policy-approvals', hashIds: ['policy-approvals', 'pm-approvals'] },
-    { id: 'achc-survey', label: 'ACHC Survey Alignment', to: '/framework/achc-survey', hashIds: ['achc-survey'] },
-    { id: 'achc-crosswalk', label: 'ACHC Crosswalk', to: '/framework/achc-survey/crosswalk', hashIds: ['achc-crosswalk'] },
-    { id: 'hh-evidence-map', label: 'HH Tag Evidence Map', to: '/framework/hh-evidence-map', hashIds: ['hh-evidence-map'] },
   ],
   // Add more for other workspaces as needed
 };

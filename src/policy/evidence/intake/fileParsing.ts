@@ -98,6 +98,7 @@ export function detectFormat(fileName: string, mimeType?: string, headBytes?: Ui
   if (mime === 'application/pdf') return 'pdf';
   if (mime.includes('wordprocessingml') || mime === 'application/msword') return 'docx';
   if (mime.includes('markdown')) return 'markdown';
+  if (mime.startsWith('text/')) return byExt === 'unknown' ? 'txt' : byExt;
   return byExt;
 }
 

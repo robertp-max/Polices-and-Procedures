@@ -14,13 +14,13 @@ export const CareIndeedCard: React.FC<CareIndeedCardProps> = ({
   const getVariantStyles = () => {
     switch (variant) {
       case 'container':
-        return 'bg-white rounded-3xl shadow-[0_18px_45px_rgba(13,122,117,0.04)] p-8 border-none';
+        return 'bg-white rounded-3xl p-8 border-none shadow-none';
       case 'grid-outline':
-        return 'bg-white rounded-xl border border-card p-6 shadow-none';
+        return 'bg-[var(--ci-surface-white)] rounded-xl border border-[var(--ci-border-subdued)] p-6 shadow-none';
       case 'grid-tinted':
-        return 'bg-surface-hover rounded-xl p-6 border-none shadow-none';
+        return 'bg-[var(--ci-surface-mint)] border border-[var(--ci-border-mint)] rounded-xl p-6 shadow-none';
       default:
-        return 'bg-white rounded-3xl shadow-none p-6';
+        return 'bg-[var(--ci-surface-white)] rounded-xl border border-[var(--ci-border-subdued)] p-6 shadow-none';
     }
   };
 

@@ -370,6 +370,17 @@ export const CalendarApi = {
     return request('GET', `/intake/brad-training${q}`);
   },
 
+  /** Browse any permitted Drive folder for explicit source selection. */
+  async driveFolderChildren(folderId?: string): Promise<DriveBrowseResponse> {
+    const q = folderId ? `?folderId=${encodeURIComponent(folderId)}` : '';
+    return request('GET', `/intake/drive-folder${q}`);
+  },
+
+  /** Download the exact Drive file selected by the user for source extraction. */
+  async driveSourceFile(fileId: string): Promise<DriveSourceFileResponse> {
+    return request('GET', `/intake/drive-source/${encodeURIComponent(fileId)}`, undefined, EXTRACT_TIMEOUT_MS);
+  },
+
   /**
    * Browse a packet library Drive folder live (URL/metadata only): the Mock
    * Event Packets folder (01_CES/Evidence/Mock/Packets) or the Patient
@@ -531,6 +542,20 @@ export interface BradTrainingResponse {
   folderUrl: string | null;
   folders: BradTrainingFolderRef[];
   files: BradTrainingFile[];
+}
+
+export type DriveBrowseFolderRef = BradTrainingFolderRef;
+export type DriveBrowseFile = BradTrainingFile;
+export type DriveBrowseResponse = BradTrainingResponse;
+
+export interface DriveSourceFileResponse {
+  fileId: string;
+  name: string;
+  mimeType: string;
+  webViewLink?: string;
+  byteSize: number;
+  fileBase64: string;
+  exported: boolean;
 }
 
 export interface IntakeUploadEvidenceInput {

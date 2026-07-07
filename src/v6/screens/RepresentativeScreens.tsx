@@ -1,4 +1,4 @@
-import { AlertTriangle, BarChart3, BookOpen, CalendarClock, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, FileCheck2, FileText, FolderOpen, History, PanelRightOpen, ShieldCheck, Stethoscope, Upload, Users, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, ArrowRight, BarChart3, BookOpen, CalendarClock, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, FileCheck2, FileText, FolderOpen, History, PanelRightOpen, Search, ShieldCheck, Stethoscope, Upload, Users, type LucideIcon } from 'lucide-react';
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -33,6 +33,14 @@ import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
 import { BoardLane, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
 import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, AdminCommunityProfilesScreen, AdmissionPacketPreviewScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, UserGuideScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen, PersonalProfileScreen, CommunityScreen } from './pageviews';
+import {
+  PolicyMetricsGrid,
+  PolicyPanel,
+  PolicySegmentTabs,
+  PolicySignalCard,
+  PolicyWorkspaceShell,
+  type PolicyWorkspaceTab,
+} from './pageviews/PolicyWorkspace';
 import { achcSurveyRows } from '@/policy/data/achcSurveyProjection.generated';
 import { achcPrintCrosswalk } from '@/policy/data/achcPrintCrosswalk.generated';
 import { hhEvidenceRows } from '@/policy/data/achcHhEvidenceMap';
@@ -41,12 +49,6 @@ import { UiStateProvider } from '@/policy/journey/lib/uiState';
 
 type RouteLike = V6RouteDefinition;
 type BasicRow = Record<string, string>;
-type V6PageTransitionOrigin = {
-  side: 'left' | 'right';
-  recordedAt: number;
-  x: number;
-  y: number;
-};
 
 const displayAcronyms: Record<string, string> = {
   capa: 'CAPA',
@@ -107,15 +109,6 @@ const policyMetrics: readonly MetricTileData[] = [
   { label: 'Framework Policies', value: String(POLICY_CORPUS.length), helper: 'Canonical corpus', tone: 'teal' },
   { label: 'Review Cycle', value: 'Annual', helper: 'Default policy cadence', tone: 'orange' },
   { label: 'Domains Mapped', value: String(LIFECYCLE_DOMAIN_ORDER.length), helper: 'Framework taxonomy', tone: 'teal' },
-];
-
-const tableColumns: readonly DataTableColumn<BasicRow>[] = [
-  { key: 'id', label: 'Policy ID' },
-  { key: 'title', label: 'Policy Title' },
-  { key: 'domain', label: 'Domain' },
-  { key: 'subdomain', label: 'Subdomain' },
-  { key: 'tier', label: 'Tier' },
-  { key: 'steward', label: 'Steward' },
 ];
 
 const clinicianMetrics: readonly MetricTileData[] = [
@@ -1573,7 +1566,10 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const overlay = searchParams.get('v6-overlay');
-  const routeTransitionKey = `${location.pathname}${location.search}:${route.hashId}`;
+  const routeTransitionSearchParams = new URLSearchParams(location.search);
+  if (route.hashId === 'journey-overview') routeTransitionSearchParams.delete('tab');
+  const routeTransitionSearch = routeTransitionSearchParams.toString();
+  const routeTransitionKey = `${location.pathname}${routeTransitionSearch ? `?${routeTransitionSearch}` : ''}:${route.hashId}`;
 
   let child: ReactNode = null;
   switch (route.hashId) {
@@ -1832,63 +1828,19 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
     current: { content: ReactNode; routeKey: string };
     outgoing: { content: ReactNode; routeKey: string } | null;
     phase: 'settled' | 'transitioning';
-    origin: V6PageTransitionOrigin;
   }>({
     current: { content: wrapped, routeKey: routeTransitionKey },
     outgoing: null,
     phase: 'settled',
-    origin: { side: 'left', recordedAt: 0, x: 52, y: typeof window === 'undefined' ? 0 : window.innerHeight / 2 },
   });
-
-  useEffect(() => {
-    const recordTransitionOrigin = (event: PointerEvent) => {
-      if (!event.isPrimary || event.button !== 0) return;
-      (window as any).__v6TransitionOrigin = {
-        side: event.clientX > window.innerWidth / 2 ? 'right' : 'left',
-        recordedAt: performance.now(),
-        x: event.clientX,
-        y: event.clientY,
-      } satisfies V6PageTransitionOrigin;
-    };
-
-    window.addEventListener('pointerdown', recordTransitionOrigin, { capture: true, passive: true });
-
-    return () => window.removeEventListener('pointerdown', recordTransitionOrigin, { capture: true });
-  }, []);
 
   useLayoutEffect(() => {
     if (transitionPages.current.routeKey === routeTransitionKey) return undefined;
 
-    const fallbackSide = (window as any).__v6TransitionSide === 'right' ? 'right' : 'left';
-    const fallbackOrigin = {
-      side: fallbackSide,
-      recordedAt: performance.now(),
-      x: fallbackSide === 'left' ? 52 : window.innerWidth - 52,
-      y: window.innerHeight / 2,
-    } satisfies V6PageTransitionOrigin;
-    const storedOrigin = (window as any).__v6TransitionOrigin as Partial<V6PageTransitionOrigin> | undefined;
-    const transitionOrigin = (
-      typeof storedOrigin?.x === 'number' &&
-      typeof storedOrigin?.y === 'number' &&
-      typeof storedOrigin?.recordedAt === 'number' &&
-      performance.now() - storedOrigin.recordedAt < 1500 &&
-      (storedOrigin.side === 'left' || storedOrigin.side === 'right')
-    )
-      ? {
-          side: storedOrigin.side,
-          recordedAt: storedOrigin.recordedAt,
-          x: Math.max(0, Math.min(window.innerWidth, storedOrigin.x)),
-          y: Math.max(0, Math.min(window.innerHeight, storedOrigin.y)),
-        }
-      : fallbackOrigin;
-
-    (window as any).__v6TransitionOrigin = undefined;
-    (window as any).__v6TransitionSide = undefined;
     setTransitionPages((current) => ({
       current: { content: wrapped, routeKey: routeTransitionKey },
       outgoing: current.current,
       phase: 'transitioning',
-      origin: transitionOrigin,
     }));
 
     return undefined;
@@ -1910,22 +1862,9 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
     return child;
   }
 
-  const transitionOrigin = `${transitionPages.origin.x}px ${transitionPages.origin.y}px`;
-  const transitionOriginX = `${transitionPages.origin.x}px`;
-  const transitionOriginY = `${transitionPages.origin.y}px`;
-  const transitionPaint = transitionPages.origin.side === 'left'
-    ? 'radial-gradient(circle, rgba(45, 212, 191, 0.96) 0%, rgba(20, 184, 166, 0.9) 54%, rgba(13, 148, 136, 0.62) 70%, rgba(15, 118, 110, 0.26) 84%, rgba(15, 118, 110, 0) 100%)'
-    : 'radial-gradient(circle, rgba(251, 146, 60, 0.96) 0%, rgba(249, 115, 22, 0.9) 54%, rgba(234, 88, 12, 0.62) 70%, rgba(194, 65, 12, 0.26) 84%, rgba(194, 65, 12, 0) 100%)';
-
   const mainContent = (
     <div
       className={cx('grid', transitionPages.phase === 'transitioning' && 'relative overflow-hidden')}
-      style={{
-        '--v6-page-transition-origin': transitionOrigin,
-        '--v6-page-transition-origin-x': transitionOriginX,
-        '--v6-page-transition-origin-y': transitionOriginY,
-        '--v6-page-transition-paint': transitionPaint,
-      } as CSSProperties}
     >
       {transitionPages.outgoing && (
         <div
@@ -1934,12 +1873,6 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
         >
           {transitionPages.outgoing.content}
         </div>
-      )}
-      {transitionPages.phase === 'transitioning' && (
-        <div
-          className="v6-page-transition-wave pointer-events-none col-start-1 row-start-1"
-          aria-hidden="true"
-        />
       )}
       <div
         key={`${transitionPages.current.routeKey}-${transitionPages.phase}`}
@@ -2556,10 +2489,7 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
     { id: 'community', label: 'COMMUNITY' },
   ] as const;
 
-  const [viewMode, setViewMode] = useState<'carousel' | 'grid'>(requestedDashboardTab ? 'grid' : 'carousel');
-  const [activeTab, setActiveTab] = useState<string>(() =>
-    dashboardTabs.some((tab) => tab.id === requestedDashboardTab) ? requestedDashboardTab! : 'overview'
-  );
+  const activeTab = dashboardTabs.some((tab) => tab.id === requestedDashboardTab) ? requestedDashboardTab! : 'overview';
 
   // Exact dashboardData + getCardsForTab from HTML (titles/status/chart/footer match per tab exactly)
   const dashboardData: Record<string, ModernCardData[]> = {
@@ -2614,230 +2544,43 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
 
   const cards = getCardsForTab(activeTab);
 
-  // Compute func for initCarouselCards (called on tab-switch auto-revert to carousel)
-  // Carousel shows NO MORE THAN 7 cards at any given time (per spec).
-  // Drifts right-to-left (x -= speed in RAF) until a tab is clicked (switches to grid view).
-  const computeCarouselCards = (): ModernCardData[] => {
-    // Use exactly the 7 cards from overview for the carousel (each tab has 7; carousel caps at 7).
-    const baseCards = getCardsForTab('overview');
-    const kept = [...baseCards]; // exactly 7
-
-    const sizes = [
-      { w: 320, h: 320, chartType: 'normal' as const },
-      { w: 420, h: 420, chartType: 'featured' as const },
-      { w: 560, h: 320, chartType: 'wide' as const },
-      { w: 320, h: 560, chartType: 'featured' as const },
-      { w: 580, h: 580, chartType: 'featured' as const },
-    ];
-
-    const VIRTUAL_WIDTH = 6500 * 1.777;
-    const numTracks = 7;
-    const trackSpacing = (95 - (-25)) / (numTracks - 1);
-
-    // assign positions/speeds for drifting carousel (right-to-left movement)
-    const carouselCards: ModernCardData[] = kept.map((card, index) => {
-      const randomSize = sizes[Math.floor(Math.random() * sizes.length)];
-      const layer = Math.floor(Math.random() * 3) + 1;
-      const verticalTrack = index % numTracks;
-      const topPercent = -25 + (verticalTrack * trackSpacing);
-
-      // speeds per design (no extra global 3.3x; prototype uses base values directly)
-      const baseSpeed = 0.8 * (1 - 0.777);
-      let cSpeed = baseSpeed;
-      if (layer === 2) cSpeed = baseSpeed * 1.0777;
-      else if (layer === 3) cSpeed = (baseSpeed * 1.0777) * 1.777;
-
-      const baseSpacing = VIRTUAL_WIDTH / Math.max(1, kept.length);
-      const cX = index * baseSpacing - 1500;
-
-      return {
-        ...card,
-        carouselSize: randomSize,
-        cTop: topPercent,
-        cZ: layer * 10,
-        cSpeed,
-        cX,
-      } as ModernCardData;
-    });
-
-    return carouselCards;
-  };
-
-  const [carouselCards, setCarouselCards] = useState<ModernCardData[]>(() => computeCarouselCards());
-
-  const initCarouselCards = () => {
-    setCarouselCards(computeCarouselCards());
-  };
-
-  const revertTimerRef = useRef<number | null>(null);
-  const rafIdRef = useRef<number | null>(null);
-  const isDownRef = useRef(false);
-  const isHoverRef = useRef(false);
-  const lastMouseRef = useRef(0);
-  const currentMouseRef = useRef(0);
-
-  const scheduleAutoRevert = () => {
-    if (revertTimerRef.current != null) {
-      window.clearTimeout(revertTimerRef.current);
-    }
-    revertTimerRef.current = window.setTimeout(() => {
-      navigate('/dashboard', { replace: true });
-      setViewMode('carousel');
-      initCarouselCards();
-    }, 33000);
-  };
-
-  useEffect(() => {
-    if (requestedDashboardTab && dashboardTabs.some((tab) => tab.id === requestedDashboardTab)) {
-      setActiveTab(requestedDashboardTab);
-      setViewMode('grid');
-      scheduleAutoRevert();
-    } else if (!requestedDashboardTab) {
-      setViewMode('carousel');
-    }
-    return () => {
-      if (revertTimerRef.current != null) {
-        window.clearTimeout(revertTimerRef.current);
-        revertTimerRef.current = null;
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [requestedDashboardTab]);
-
   const gridCards = [...cards]
-    .sort((a, b) => a.status.localeCompare(b.status)); // full set for tab (grid renders all per tab; carousel uses exactly the 7 overview cards drifting)
-
-  const parallaxRef = useRef<HTMLDivElement>(null);
-
-  // === EXACT RAF + Drag using startParallaxScroll + initDragInteraction ===
-  // Auto-drifts (x -= speed) whenever not dragging and not hovering the canvas (per dashboard_redesign.html)
-  function startParallaxScroll() {
-    const cont = parallaxRef.current; if (!cont) return;
-    const tick = () => {
-      if (viewMode !== 'carousel') return;
-      const els = Array.from(cont.querySelectorAll<HTMLElement>('.dashboard-card'));
-      let dD = 0;
-      if (isDownRef.current) {
-        dD = currentMouseRef.current - lastMouseRef.current;
-        lastMouseRef.current = currentMouseRef.current;
-      }
-      const VW = 6500 * 1.777;
-      els.forEach((el) => {
-        let x = parseFloat(el.getAttribute('data-x') || el.getAttribute('data-initial-x') || '0');
-        const spd = parseFloat(el.getAttribute('data-speed') || '0');
-        if (isDownRef.current) {
-          x += dD * (spd * 0.8);
-        } else if (!isHoverRef.current) {
-          x -= spd;
-        }
-        if (x < -1500) x = VW - 1500;
-        if (x > VW - 1500) x = -1500;
-        el.setAttribute('data-x', String(x));
-        el.style.transform = `translateX(${x}px)`;
-
-        // Trigger per-card chart replay when card enters view (matches prototype behavior)
-        const r = el.getBoundingClientRect();
-        const triggerPoint = window.innerWidth * 0.75;
-        const animated = el.getAttribute('data-animated') === 'true';
-        if (r.left < triggerPoint && r.right > 0) {
-          if (!animated) {
-            el.setAttribute('data-animated', 'true');
-            // Bump replay via data attr or parent will handle on next render/hover if needed
-          }
-        } else if (r.left > window.innerWidth || r.right < 0) {
-          if (animated) {
-            el.setAttribute('data-animated', 'false');
-          }
-        }
-      });
-      rafIdRef.current = requestAnimationFrame(tick);
-    };
-    if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
-    rafIdRef.current = requestAnimationFrame(tick);
-  }
-
-  function initDragInteraction(container: HTMLElement): () => void {
-    const md = (e: MouseEvent) => { isDownRef.current = true; container.classList.add('cursor-grabbing'); container.classList.remove('cursor-grab'); lastMouseRef.current = e.pageX; currentMouseRef.current = e.pageX; };
-    const mu = () => { isDownRef.current = false; container.classList.remove('cursor-grabbing'); container.classList.add('cursor-grab'); };
-    const ml = () => { isDownRef.current = false; isHoverRef.current = false; container.classList.remove('cursor-grabbing'); container.classList.add('cursor-grab'); };
-    const me = () => { isHoverRef.current = true; };
-    const mm = (e: MouseEvent) => { if (!isDownRef.current) return; e.preventDefault(); currentMouseRef.current = e.pageX; };
-    const mmW = (e: MouseEvent) => { if (isDownRef.current) currentMouseRef.current = e.pageX; };
-    container.addEventListener('mousedown', md);
-    container.addEventListener('mouseup', mu);
-    container.addEventListener('mouseleave', ml);
-    container.addEventListener('mouseenter', me);
-    container.addEventListener('mousemove', mm);
-    window.addEventListener('mousemove', mmW);
-    window.addEventListener('mouseup', mu);
-    return () => {
-      container.removeEventListener('mousedown', md);
-      container.removeEventListener('mouseup', mu);
-      container.removeEventListener('mouseleave', ml);
-      container.removeEventListener('mouseenter', me);
-      container.removeEventListener('mousemove', mm);
-      window.removeEventListener('mousemove', mmW);
-      window.removeEventListener('mouseup', mu);
-    };
-  }
-
-  useEffect(() => {
-    if (viewMode !== 'carousel') { if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current); return; }
-    const cont = parallaxRef.current; if (!cont) return;
-    Array.from(cont.querySelectorAll<HTMLElement>('.dashboard-card')).forEach(el => { if (!el.getAttribute('data-x')) { const ix = el.getAttribute('data-initial-x') || '0'; el.setAttribute('data-x', ix); el.style.transform = `translateX(${ix}px)`; } });
-    startParallaxScroll();
-    const cl = initDragInteraction(cont);
-    (cont as any).__cl = cl;
-    return () => { if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current); if ((cont as any).__cl) (cont as any).__cl(); };
-  }, [viewMode]);
+    .sort((a, b) => a.status.localeCompare(b.status));
 
   // EXACT structure matching dashboard_redesign.html: absolute full bleed, header absolute floating overlay, canvas absolute inset-0.
   // Shell chrome-free ensures no outer borders/paddings/docks.
   return (
     <div className="fixed inset-0 z-0 bg-[#F8F9FA] text-neutral-600 font-roboto antialiased h-screen w-screen overflow-hidden pointer-events-auto">
-      {/* Navigation Layer (Absolute Floating Overlay) - EXACT per spec from dashboard_redesign.html */}
-      <div className="absolute top-0 w-full z-50 px-6 sm:px-12 pt-6 lg:pt-8">
-        <nav className="mx-auto max-w-[1600px] flex w-full gap-1.5 bg-white/90 backdrop-blur-md p-1.5 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-0" role="tablist" aria-label="Dashboard sections">
-          {dashboardTabs.map((tab) => {
-            const isActive = viewMode === 'grid' && activeTab === tab.id;
-            const cls = `flex-1 py-3.5 px-6 rounded-full text-[11px] md:text-xs font-bold font-montserrat tracking-widest uppercase border-0 text-center transition-all duration-300 ${isActive ? 'bg-white text-[#C74601]' : 'bg-transparent text-[#747470]/70 hover:bg-[#FAFBF8]/70 hover:text-[#52404B]'}`;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => {
-                  setActiveTab(tab.id);
-                  setViewMode('grid');
-                  scheduleAutoRevert();
-                }}
-                className={cls}
-                role="tab"
-                aria-selected={isActive}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </nav>
-      </div>
-
       {/* Canvas Layer (True Full Screen Edge-to-Edge) */}
       <main id="dashboard-content" className="absolute inset-0 w-full h-full overflow-hidden">
-        {viewMode === 'grid' ? (
-          <div className="w-full h-full overflow-y-auto px-6 hide-scrollbar flex justify-center pb-12 pt-32">
-            <div className="grid grid-cols-4 gap-6 w-full max-w-[1200px] auto-rows-[minmax(0,1fr)]">
+        <div className="flex h-full w-full items-center justify-center overflow-y-auto px-[clamp(88px,8vw,180px)] py-[clamp(48px,6vh,80px)] hide-scrollbar">
+          <div className="flex w-full max-w-[1480px] items-start justify-center gap-8">
+            <nav className="flex w-[164px] shrink-0 flex-col gap-2 rounded-[24px] bg-white/88 p-2 shadow-[0_16px_50px_rgba(31,28,27,0.06)] backdrop-blur-md" role="tablist" aria-label="Dashboard sections">
+              {dashboardTabs.map((tab) => {
+                const isActive = activeTab === tab.id;
+                const target = tab.id === 'overview' ? '/dashboard' : `/dashboard?view=${tab.id}`;
+                const cls = `min-h-[42px] rounded-[18px] px-4 text-left text-[11px] font-bold font-montserrat tracking-[0.18em] uppercase transition-all duration-300 ${isActive ? 'bg-white text-[#C74601] shadow-[0_8px_24px_rgba(31,28,27,0.06)]' : 'bg-transparent text-[#747470]/70 hover:bg-[#FAFBF8]/80 hover:text-[#52404B]'}`;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => navigate(target, { replace: true })}
+                    className={cls}
+                    role="tab"
+                    aria-selected={isActive}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </nav>
+            <div className="grid h-[min(84vh,900px)] min-h-[660px] w-full max-w-[1200px] grid-cols-4 auto-rows-[minmax(0,1fr)] gap-6">
               {gridCards.map((c, i) => (
                 <ModernDashboardCard key={`${activeTab}-${c.title}`} card={c} index={i} mode="grid" onNavigate={navigate} />
               ))}
             </div>
           </div>
-        ) : (
-          <div id="parallax-container" ref={parallaxRef} className="relative w-full h-full overflow-visible cursor-grab bg-transparent">
-            {carouselCards.map((c, i) => (
-              <ModernDashboardCard key={`${c.title}-${i}`} card={c} index={i} mode="carousel" onNavigate={navigate} />
-            ))}
-          </div>
-        )}
+        </div>
       </main>
     </div>
   );
@@ -2963,44 +2706,189 @@ function ClinicianDetailScreen() {
 function PolicyMatrixScreen() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [domain, setDomain] = useState('ALL');
+  const [tier, setTier] = useState('ALL');
 
-  const filteredRows = !search.trim()
-    ? policyRowsBase
-    : policyRowsBase.filter((r) =>
-        r.id.toLowerCase().includes(search.toLowerCase()) ||
-        r.title.toLowerCase().includes(search.toLowerCase()) ||
-        r.domain.toLowerCase().includes(search.toLowerCase())
+  const domainOptions = useMemo(
+    () => Array.from(new Set(policyRowsBase.map((row) => row.domain))).sort(),
+    [],
+  );
+  const tierOptions = useMemo(
+    () => Array.from(new Set(policyRowsBase.map((row) => row.tier))).sort(),
+    [],
+  );
+
+  const filteredRows = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return policyRowsBase.filter((row) => {
+      if (domain !== 'ALL' && row.domain !== domain) return false;
+      if (tier !== 'ALL' && row.tier !== tier) return false;
+      if (!query) return true;
+      return (
+        row.id.toLowerCase().includes(query) ||
+        row.title.toLowerCase().includes(query) ||
+        row.domain.toLowerCase().includes(query) ||
+        row.subdomain.toLowerCase().includes(query) ||
+        row.steward.toLowerCase().includes(query)
       );
+    });
+  }, [domain, search, tier]);
 
   const handleRowClick = (row: BasicRow) => {
     const id = row.id;
     if (id) navigate(`/library/${encodeURIComponent(id)}`, { state: { policyBackLabel: 'Policies', policyBackTo: '/library' } });
   };
+  const visibleRows = filteredRows.slice(0, 60);
+  const hiddenCount = filteredRows.length - visibleRows.length;
 
   return (
-    <ScreenStack metrics={policyMetrics}>
-      <section className="grid gap-xl desktop:grid-cols-1">
-        <section aria-label="Policy library matrix" className="rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
-          <div className="mb-md flex items-center gap-md">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search ID, title, or domain…"
-              className="min-w-[240px] flex-1 rounded-md border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset px-md py-sm text-sm placeholder:text-muted focus-visible:outline-none focus-visible:shadow-focus"
-              aria-label="Search policy library"
-            />
-            <span className="text-xs text-muted">{filteredRows.length} of {policyRowsBase.length}</span>
+    <div className="min-h-screen bg-[#FAFBF8] px-6 pb-16 pt-4 font-roboto text-[#52404B] md:px-12" data-hash-id="policy-library" data-route="/library">
+      <main className="mx-auto flex w-full max-w-[1400px] flex-col">
+        <section className="mb-8 rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:px-12 md:py-10">
+          <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
+            <div className="max-w-3xl">
+              <p className="mb-3 font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#F06923]">Policy Registry</p>
+              <h1 className="font-montserrat text-3xl font-bold leading-tight tracking-tight text-[#007970] md:text-5xl">Policy Library</h1>
+              <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#747470]">
+                Search and open the canonical policy corpus without the old dense table wall.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => navigate('/framework')}
+                className="inline-flex items-center justify-center gap-2 rounded-[12px] border-[1.5px] border-[#007970] bg-white px-6 py-3 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#007970] transition-all hover:bg-[#F7FEFF]"
+              >
+                <FolderOpen className="h-4 w-4" aria-hidden />
+                Taxonomy
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/policy-approvals')}
+                className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#F06923] px-6 py-3 font-montserrat text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_0_25px_6px_rgba(240,105,35,0.28)]"
+              >
+                <ShieldCheck className="h-4 w-4" aria-hidden />
+                Approvals
+              </button>
+            </div>
           </div>
-          <DataTable columns={tableColumns} label="Policy library matrix" rows={filteredRows} onRowClick={handleRowClick} />
         </section>
-        <aside className="grid gap-lg">
-          {policyCards.map((card) => (
-            <SurfaceCard card={card} key={card.title} />
+
+        <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
+          {policyMetrics.map((metric) => (
+            <div key={metric.label} className="rounded-[24px] border border-[#E5E4E3] bg-white p-7 shadow-sm">
+              <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470]">{metric.label}</p>
+              <p className="mt-3 font-montserrat text-4xl font-bold text-[#F06923]">{metric.value}</p>
+              <p className="mt-3 text-sm text-[#747470]">{metric.helper}</p>
+            </div>
           ))}
-        </aside>
-      </section>
-    </ScreenStack>
+        </div>
+
+        <section className="rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:p-10" aria-label="Policy library">
+          <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Policies</h2>
+              <p className="mt-2 text-sm text-[#747470]">{filteredRows.length} of {policyRowsBase.length} records</p>
+            </div>
+            <div className="flex flex-col gap-3 lg:flex-row">
+              <label className="flex min-h-11 min-w-[260px] items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 text-sm text-[#747470]">
+                <Search className="h-4 w-4 shrink-0" aria-hidden />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search ID, title, owner..."
+                  className="w-full bg-transparent py-3 text-[#52404B] outline-none placeholder:text-[#9A9A96]"
+                  aria-label="Search policy library"
+                />
+              </label>
+              <select
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                aria-label="Filter by domain"
+                className="min-h-11 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470] outline-none focus:border-[#007970]"
+              >
+                <option value="ALL">All domains</option>
+                {domainOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+              </select>
+              <select
+                value={tier}
+                onChange={(e) => setTier(e.target.value)}
+                aria-label="Filter by tier"
+                className="min-h-11 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470] outline-none focus:border-[#007970]"
+              >
+                <option value="ALL">All tiers</option>
+                {tierOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {visibleRows.length ? (
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {visibleRows.map((row) => (
+                <button
+                  key={row.id}
+                  type="button"
+                  onClick={() => handleRowClick(row)}
+                  className="group flex min-h-[238px] flex-col justify-between rounded-[24px] border border-[#E5E4E3] bg-white p-6 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#007970] hover:shadow-md focus-visible:outline-none focus-visible:shadow-focus"
+                >
+                  <span>
+                    <span className="mb-4 flex items-start justify-between gap-4">
+                      <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{row.id}</span>
+                      <ToneTag tone="teal">{row.tier}</ToneTag>
+                    </span>
+                    <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] transition-colors group-hover:text-[#F06923]">
+                      {row.title}
+                    </span>
+                    <span className="mt-3 block text-sm leading-relaxed text-[#747470]">{row.domain} - {row.subdomain}</span>
+                  </span>
+                  <span className="mt-6 flex items-center justify-between gap-4 border-t border-[#E5E4E3] pt-4">
+                    <span className="min-w-0 text-xs font-medium leading-relaxed text-[#747470]">{row.steward}</span>
+                    <ArrowRight className="h-4 w-4 shrink-0 text-[#F06923]" aria-hidden />
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="flex min-h-[220px] flex-col items-center justify-center rounded-[24px] border border-dashed border-[#E5E4E3] bg-[#FAFBF8] p-8 text-center">
+              <Search className="mb-3 h-6 w-6 text-[#747470]" aria-hidden />
+              <p className="font-montserrat text-sm font-bold text-[#007970]">No matching policies</p>
+              <p className="mt-2 max-w-sm text-sm text-[#747470]">Try a different policy ID, title, domain, or owner.</p>
+            </div>
+          )}
+
+          {hiddenCount > 0 ? (
+            <p className="mt-8 text-center text-sm text-[#747470]">
+              Showing first 60 matches. Use search or filters to narrow the list.
+            </p>
+          ) : null}
+        </section>
+
+        <section className="mt-8 grid gap-5 xl:grid-cols-3">
+          {policyCards.map((card) => {
+            const Icon = card.icon ?? FileText;
+            const progress = card.progress ?? 0;
+            return (
+              <article key={card.title} className="flex min-h-[192px] flex-col justify-between rounded-[24px] border border-[#E5E4E3] bg-white p-7 shadow-sm">
+                <div>
+                  <div className="mb-4 flex items-center justify-between">
+                    <span className="grid h-10 w-10 place-items-center rounded-[14px] bg-[#E5FEFF] text-[#007970]">
+                      <Icon className="h-5 w-5" aria-hidden />
+                    </span>
+                    <ToneBadge size="sm" status={card.status} />
+                  </div>
+                  <h3 className="font-montserrat text-base font-bold text-[#007970]">{card.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[#747470]">{card.body}</p>
+                </div>
+                <div className="mt-5">
+                  <ProgressMeter label="Coverage" tone={card.tone} value={progress} />
+                </div>
+              </article>
+            );
+          })}
+        </section>
+      </main>
+    </div>
   );
 }
 
@@ -4262,6 +4150,7 @@ function ArtifactViewerScreen() {
 
 function AchcScreen({ mode }: { mode: 'crosswalk' | 'survey' }) {
   const navigate = useNavigate();
+  const [view, setView] = useState<'cards' | 'matrix' | 'signals'>('cards');
   const isCrosswalk = mode === 'crosswalk';
   const rows = isCrosswalk ? crosswalkRows : achcRows;
 
@@ -4283,43 +4172,98 @@ function AchcScreen({ mode }: { mode: 'crosswalk' | 'survey' }) {
         { key: 'status', label: 'Support', status: true },
       ];
 
+  const openRow = (row: BasicRow) => {
+    const polId = (row.owner || row.id || '').toString();
+    if (polId && polId !== '—') {
+      navigate(`/library/${encodeURIComponent(polId)}`, {
+        state: {
+          policyBackLabel: isCrosswalk ? 'ACHC Crosswalk' : 'ACHC Survey Alignment',
+          policyBackTo: isCrosswalk ? '/framework/achc-survey/crosswalk' : '/framework/achc-survey',
+        },
+      });
+    }
+  };
+  const tabs: readonly PolicyWorkspaceTab<typeof view>[] = [
+    { id: 'cards', label: 'Cards', tone: 'teal' },
+    { id: 'matrix', label: 'Matrix', tone: 'orange' },
+    { id: 'signals', label: 'Signals', tone: 'green' },
+  ];
+
   return (
-    <ScreenStack metrics={achcMetrics}>
-      <section className="grid gap-xl desktop:grid-cols-1">
-        <section
-          aria-label={isCrosswalk ? 'ACHC regulatory crosswalk matrix' : 'ACHC survey checklist matrix'}
-          className="rounded-3xl border border-card bg-white p-6 shadow-sm"
+    <PolicyWorkspaceShell
+      activeTab={view}
+      dataHashId={isCrosswalk ? 'achc-crosswalk' : 'achc-survey'}
+      dataRoute={isCrosswalk ? '/framework/achc-survey/crosswalk' : '/framework/achc-survey'}
+      description={isCrosswalk ? 'ACHC standards, policy corridors, CMS and Title 22 anchors, and evidence notes grouped into scannable cards.' : 'Survey-readiness support is grouped into cards first, with the full checklist kept one tab away.'}
+      eyebrow={isCrosswalk ? 'Regulatory Crosswalk' : 'Survey Alignment'}
+      onTabChange={setView}
+      tabs={tabs}
+      title={isCrosswalk ? 'ACHC Crosswalk' : 'ACHC Survey Alignment'}
+      actions={[
+        { icon: ShieldCheck, label: isCrosswalk ? 'Survey View' : 'Crosswalk', to: isCrosswalk ? '/framework/achc-survey' : '/framework/achc-survey/crosswalk' },
+        { icon: FileText, label: 'Policies', to: '/library', variant: 'secondary' },
+      ]}
+    >
+      <PolicyMetricsGrid metrics={achcMetrics} />
+
+      {view === 'cards' ? (
+        <PolicyPanel
+          title={isCrosswalk ? 'Crosswalk Cards' : 'Survey Support Cards'}
+          description={`${rows.length} mapped records are shown as cards so reviewers can scan support before opening the full matrix.`}
+        >
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {rows.slice(0, 42).map((row, rowIndex) => (
+              <button
+                key={`${row.id}-${row.owner}-${rowIndex}`}
+                type="button"
+                onClick={() => openRow(row)}
+                className="group flex min-h-[220px] flex-col justify-between rounded-[24px] border border-[#E5E4E3] bg-white p-6 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#007970] hover:shadow-md focus-visible:outline-none focus-visible:shadow-focus"
+              >
+                <span>
+                  <span className="mb-4 flex items-start justify-between gap-4">
+                    <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{row.id}</span>
+                    <ToneTag tone="teal">{row.status}</ToneTag>
+                  </span>
+                  <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] group-hover:text-[#F06923]">{row.title}</span>
+                  <span className="mt-3 block text-sm leading-relaxed text-[#747470]">{row.owner}</span>
+                </span>
+                <span className="mt-6 border-t border-[#E5E4E3] pt-4 text-xs leading-relaxed text-[#747470]">
+                  {isCrosswalk ? `${row.cmsTitle22 || 'No CMS / Title 22 anchor'} - ${row.evidence || 'Evidence pending'}` : 'Open supporting policy detail'}
+                </span>
+              </button>
+            ))}
+          </div>
+        </PolicyPanel>
+      ) : null}
+
+      {view === 'matrix' ? (
+        <PolicyPanel
+          title={isCrosswalk ? 'ACHC Regulatory Crosswalk Matrix' : 'ACHC Survey Checklist Matrix'}
+          description="The full table stays available for audit review, export checks, and detailed policy comparisons."
         >
           <DataTable
             columns={columns}
             label={isCrosswalk ? 'ACHC regulatory crosswalk' : 'ACHC survey checklist'}
             rows={rows}
-            onRowClick={(row) => {
-              // Parity with V1: clicking ACHC row opens policy library or detail for the supporting policy
-              const polId = (row.owner || row.id || '').toString();
-              if (polId && polId !== '—') {
-                navigate(`/library/${encodeURIComponent(polId)}`, {
-                  state: {
-                    policyBackLabel: isCrosswalk ? 'ACHC Crosswalk' : 'ACHC Survey Alignment',
-                    policyBackTo: isCrosswalk ? '/framework/achc-survey/crosswalk' : '/framework/achc-survey',
-                  },
-                });
-              }
-            }}
+            onRowClick={openRow}
           />
-        </section>
-        <aside className="grid gap-lg">
+        </PolicyPanel>
+      ) : null}
+
+      {view === 'signals' ? (
+        <section className="grid gap-5 xl:grid-cols-3">
           {achcCards.map((card) => (
-            <SurfaceCard card={card} key={card.title} />
+            <PolicySignalCard card={card} key={card.title} />
           ))}
-        </aside>
-      </section>
-    </ScreenStack>
+        </section>
+      ) : null}
+    </PolicyWorkspaceShell>
   );
 }
 
 function HhEvidenceMapScreen() {
   const navigate = useNavigate();
+  const [view, setView] = useState<'cards' | 'matrix' | 'signals'>('cards');
   const [query, setQuery] = useState('');
   const [confidence, setConfidence] = useState('ALL');
   const [status, setStatus] = useState('ALL');
@@ -4347,57 +4291,111 @@ function HhEvidenceMapScreen() {
     { key: 'confidence', label: 'Confidence' },
     { key: 'status', label: 'Review state', status: true },
   ];
+  const openRow = (row: BasicRow) => {
+    navigate(`/library/${encodeURIComponent(row.owner)}`, { state: { policyBackLabel: 'HH Tag Evidence Map', policyBackTo: '/framework/hh-evidence-map' } });
+  };
+  const tabs: readonly PolicyWorkspaceTab<typeof view>[] = [
+    { id: 'cards', label: 'Cards', tone: 'teal' },
+    { id: 'matrix', label: 'Matrix', tone: 'orange' },
+    { id: 'signals', label: 'Signals', tone: 'green' },
+  ];
 
   return (
-    <ScreenStack metrics={hhEvidenceMapMetrics}>
-      <section className="grid gap-xl desktop:grid-cols-1">
-        <section className="grid gap-lg rounded-3xl border border-card bg-white p-6 shadow-sm">
-          <div className="flex flex-wrap items-end justify-between gap-md">
-            <div className="grid gap-xs">
-              <ToneTag tone="teal">Spreadsheet source</ToneTag>
-              <h2 className="text-xl font-bold text-brand-teal-deep">HH tag evidence map</h2>
-              <p className="max-w-content text-sm text-muted">
-                Source: src/policy/data/policy_hh_section_map.csv. Rows map HH standards to policy section anchors, confidence, match type, duplicate flags, and review posture.
-              </p>
-            </div>
+    <PolicyWorkspaceShell
+      activeTab={view}
+      dataHashId="hh-evidence-map"
+      dataRoute="/framework/hh-evidence-map"
+      description="HH standards map to policy anchors, confidence, match type, duplicate flags, and review posture from the hardening spreadsheet."
+      eyebrow="Evidence Map"
+      onTabChange={setView}
+      tabs={tabs}
+      title="HH Tag Evidence Map"
+      actions={[
+        { icon: ShieldCheck, label: 'ACHC Survey', to: '/framework/achc-survey' },
+        { icon: FileText, label: 'Policies', to: '/library', variant: 'secondary' },
+      ]}
+    >
+      <PolicyMetricsGrid metrics={hhEvidenceMapMetrics} />
+
+      <PolicyPanel
+        title="Evidence Filters"
+        description={`Source: src/policy/data/policy_hh_section_map.csv. ${filteredRows.length} mappings match the active filters.`}
+        actions={
+          <label className="flex min-h-11 min-w-[260px] items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 text-sm text-[#747470]">
+            <Search className="h-4 w-4 shrink-0" aria-hidden />
             <input
               aria-label="Search HH evidence mappings"
-              className="min-w-[260px] rounded-lg border border-card bg-white px-4 py-2 text-sm text-ink placeholder:text-disabled focus-visible:outline-none focus-visible:shadow-focus"
+              className="w-full bg-transparent py-3 text-[#52404B] outline-none placeholder:text-[#9A9A96]"
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search HH tag, policy, section..."
               value={query}
             />
-          </div>
+          </label>
+        }
+      >
+        <div className="grid gap-4">
+          <PolicySegmentTabs
+            active={confidence}
+            onChange={setConfidence}
+            tabs={['ALL', 'HIGH', 'MEDIUM', 'LOW'].map((value) => ({ id: value, label: value === 'ALL' ? 'All Confidence' : value }))}
+          />
+          <PolicySegmentTabs
+            active={status}
+            onChange={setStatus}
+            tabs={['ALL', 'validated', 'ready', 'review-required'].map((value) => ({ id: value, label: value === 'ALL' ? 'All States' : value }))}
+          />
+        </div>
+      </PolicyPanel>
 
-          <div className="flex flex-wrap gap-sm" aria-label="HH evidence map filters">
-            {['ALL', 'HIGH', 'MEDIUM', 'LOW'].map((value) => (
-              <Button key={value} selected={confidence === value} size="sm" variant={confidence === value ? 'secondary' : 'tertiary'} onClick={() => setConfidence(value)}>
-                {value === 'ALL' ? 'All Confidence' : value}
-              </Button>
-            ))}
-            {['ALL', 'validated', 'ready', 'review-required'].map((value) => (
-              <Button key={value} selected={status === value} size="sm" variant={status === value ? 'secondary' : 'tertiary'} onClick={() => setStatus(value)}>
-                {value === 'ALL' ? 'All States' : value}
-              </Button>
-            ))}
-          </div>
-
+      {view === 'cards' ? (
+        <PolicyPanel title="Evidence Cards" description="Cards expose the policy anchor and confidence before opening the supporting policy.">
           {filteredRows.length ? (
-            <DataTable
-              columns={columns}
-              label="HH tag evidence map"
-              rows={filteredRows}
-              onRowClick={(row) => navigate(`/library/${encodeURIComponent(row.owner)}`, { state: { policyBackLabel: 'HH Tag Evidence Map', policyBackTo: '/framework/hh-evidence-map' } })}
-            />
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {filteredRows.slice(0, 42).map((row, rowIndex) => (
+                <button
+                  key={`${row.id}-${row.owner}-${row.sectionAnchor}-${rowIndex}`}
+                  type="button"
+                  onClick={() => openRow(row)}
+                  className="group flex min-h-[230px] flex-col justify-between rounded-[24px] border border-[#E5E4E3] bg-white p-6 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#007970] hover:shadow-md focus-visible:outline-none focus-visible:shadow-focus"
+                >
+                  <span>
+                    <span className="mb-4 flex items-start justify-between gap-4">
+                      <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{row.id}</span>
+                      <ToneTag tone={row.confidence === 'HIGH' ? 'green' : row.confidence === 'MEDIUM' ? 'amber' : 'orange'}>{row.confidence}</ToneTag>
+                    </span>
+                    <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] group-hover:text-[#F06923]">{row.title}</span>
+                    <span className="mt-3 block text-sm leading-relaxed text-[#747470]">{row.owner} - {row.sectionAnchor}</span>
+                  </span>
+                  <span className="mt-6 flex items-center justify-between gap-4 border-t border-[#E5E4E3] pt-4">
+                    <span className="min-w-0 text-xs leading-relaxed text-[#747470]">{row.evidence}</span>
+                    <ToneBadge size="sm" status={row.status} />
+                  </span>
+                </button>
+              ))}
+            </div>
           ) : (
-            <div className="rounded-lg border border-dashed border-card bg-surface-glass p-xl text-sm text-muted">
-              No HH evidence mappings match the current filters. Source checked: src/policy/data/policy_hh_section_map.csv.
+            <div className="rounded-[24px] border border-dashed border-[#E5E4E3] bg-[#FAFBF8] p-8 text-sm text-[#747470]">
+              No HH evidence mappings match the current filters.
             </div>
           )}
-        </section>
+        </PolicyPanel>
+      ) : null}
 
-        <aside className="grid content-start gap-lg">
-          <SurfaceCard
+      {view === 'matrix' ? (
+        <PolicyPanel title="HH Evidence Matrix" description="The full source-backed table remains available for detailed hardening review.">
+          {filteredRows.length ? (
+            <DataTable columns={columns} label="HH tag evidence map" rows={filteredRows} onRowClick={openRow} />
+          ) : (
+            <div className="rounded-[24px] border border-dashed border-[#E5E4E3] bg-[#FAFBF8] p-8 text-sm text-[#747470]">
+              No HH evidence mappings match the current filters.
+            </div>
+          )}
+        </PolicyPanel>
+      ) : null}
+
+      {view === 'signals' ? (
+        <section className="grid content-start gap-5 xl:grid-cols-3">
+          <PolicySignalCard
             card={{
               body: `Duplicate HH/policy pairs: ${hhDuplicateKeys.size}. Reference/header-only candidates: ${hhReferenceOnlyRows.length}. Missing source content rows: ${hhMissingContentRows.length}.`,
               icon: AlertTriangle,
@@ -4407,7 +4405,7 @@ function HhEvidenceMapScreen() {
               tone: hhDuplicateKeys.size || hhReferenceOnlyRows.length || hhMissingContentRows.length ? 'orange' : 'green',
             }}
           />
-          <SurfaceCard
+          <PolicySignalCard
             card={{
               body: 'Evidence code legend: P = Policy, D = Document, I = Interview, O = Observation, S = Survey. HH anchors come from the hardening spreadsheet, not static sample rows.',
               icon: BookOpen,
@@ -4417,7 +4415,7 @@ function HhEvidenceMapScreen() {
               tone: 'teal',
             }}
           />
-          <SurfaceCard
+          <PolicySignalCard
             card={{
               body: 'Click any row to open the supporting policy detail. Rows marked review-required need SME review, a stronger section anchor, or source-content repair.',
               icon: ShieldCheck,
@@ -4427,9 +4425,9 @@ function HhEvidenceMapScreen() {
               tone: 'teal',
             }}
           />
-        </aside>
-      </section>
-    </ScreenStack>
+        </section>
+      ) : null}
+    </PolicyWorkspaceShell>
   );
 }
 

@@ -1,8 +1,18 @@
-import { Archive, ClipboardCheck, ClipboardList, FileCheck2, Link2, PenLine, ShieldCheck, Users } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Archive, ClipboardCheck, ClipboardList, FileCheck2, Link2, PenLine, Search, ShieldCheck, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
-import { DataTable, MetricGrid, SurfaceCard, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
-import { Badge, ToneBadge } from '../../primitives';
+import { DataTable, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { ToneBadge } from '../../primitives';
+import {
+  PolicyMetricsGrid,
+  PolicyPanel,
+  PolicySegmentTabs,
+  PolicySignalCard,
+  PolicyTinyStat,
+  PolicyWorkspaceShell,
+  type PolicyWorkspaceTab,
+} from './PolicyWorkspace';
 
 interface FormLibraryRow extends Record<string, string> {
   domain: string;
@@ -178,86 +188,165 @@ const quickStats = [
 
 export function FormsLibraryScreen() {
   const navigate = useNavigate();
+  const [view, setView] = useState<'library' | 'matrix' | 'evidence'>('library');
+  const [query, setQuery] = useState('');
+  const [domain, setDomain] = useState('ALL');
+
+  const domainOptions = useMemo(() => Array.from(new Set(formRows.map((row) => row.domain))).sort(), []);
+  const filteredRows = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return formRows.filter((row) => {
+      if (domain !== 'ALL' && row.domain !== domain) return false;
+      if (!q) return true;
+      return (
+        row.formId.toLowerCase().includes(q) ||
+        row.title.toLowerCase().includes(q) ||
+        row.domain.toLowerCase().includes(q) ||
+        row.type.toLowerCase().includes(q) ||
+        row.linkedPolicies.toLowerCase().includes(q)
+      );
+    });
+  }, [domain, query]);
+
   const handleRowClick = (row: FormLibraryRow) => {
     const id = row.formId;
     if (id) navigate(`/forms/${encodeURIComponent(id)}`);
   };
+
+  const tabs: readonly PolicyWorkspaceTab<typeof view>[] = [
+    { id: 'library', label: 'Library', tone: 'teal' },
+    { id: 'matrix', label: 'Matrix', tone: 'orange' },
+    { id: 'evidence', label: 'Evidence', tone: 'green' },
+  ];
+
+  const visibleRows = filteredRows.slice(0, 36);
+  const hiddenCount = filteredRows.length - visibleRows.length;
+
   return (
-    <section className="grid gap-xl" data-hash-id="forms-library" data-route="/forms">
-      <MetricGrid metrics={formsMetrics} />
+    <PolicyWorkspaceShell
+      activeTab={view}
+      dataHashId="forms-library"
+      dataRoute="/forms"
+      description="Browse approved forms as cards first, with the full matrix tucked behind its own tab for audit and bulk review work."
+      eyebrow="Forms Registry"
+      onTabChange={setView}
+      tabs={tabs}
+      title="Forms Library"
+      actions={[
+        { icon: ShieldCheck, label: 'Policies', to: '/library', variant: 'secondary' },
+        { icon: ClipboardCheck, label: 'Approvals', to: '/policy-approvals' },
+      ]}
+    >
+      <PolicyMetricsGrid metrics={formsMetrics} />
 
-      <section className="grid gap-xl desktop:grid-cols-5" aria-label="Forms library matrix and evidence readiness">
-        <div className="grid content-start gap-lg desktop:col-span-3">
-
-
-          <div className="flex flex-wrap gap-sm" aria-label="Forms classification filters">
-            {classificationFilters.map((filter) => (
-              <Badge key={filter.label} variant="count">
-                {filter.label}: {filter.value}
-              </Badge>
+      {view === 'library' ? (
+        <PolicyPanel
+          title="Form Cards"
+          description={`${filteredRows.length} of ${formRows.length} records. Use search and domain filters to keep the view light.`}
+          actions={
+            <>
+              <label className="flex min-h-11 min-w-[260px] items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 text-sm text-[#747470]">
+                <Search className="h-4 w-4 shrink-0" aria-hidden />
+                <input
+                  aria-label="Search forms"
+                  className="w-full bg-transparent py-3 text-[#52404B] outline-none placeholder:text-[#9A9A96]"
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search ID, title, policy..."
+                  value={query}
+                />
+              </label>
+              <select
+                aria-label="Filter forms by domain"
+                className="min-h-11 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470] outline-none focus:border-[#007970]"
+                onChange={(event) => setDomain(event.target.value)}
+                value={domain}
+              >
+                <option value="ALL">All domains</option>
+                {domainOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+              </select>
+            </>
+          }
+        >
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {visibleRows.map((row) => (
+              <button
+                key={row.formId}
+                type="button"
+                onClick={() => handleRowClick(row)}
+                className="group flex min-h-[230px] flex-col justify-between rounded-[24px] border border-[#E5E4E3] bg-white p-6 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#007970] hover:shadow-md focus-visible:outline-none focus-visible:shadow-focus"
+              >
+                <span>
+                  <span className="mb-4 flex items-start justify-between gap-4">
+                    <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{row.formId}</span>
+                    <ToneTag tone="teal">{row.status}</ToneTag>
+                  </span>
+                  <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] transition-colors group-hover:text-[#F06923]">
+                    {row.title}
+                  </span>
+                  <span className="mt-3 block text-sm leading-relaxed text-[#747470]">{row.domain} - {row.type}</span>
+                </span>
+                <span className="mt-6 flex items-center justify-between gap-4 border-t border-[#E5E4E3] pt-4">
+                  <span className="min-w-0 text-xs font-medium leading-relaxed text-[#747470]">{row.linkedPolicies}</span>
+                  <ToneBadge size="sm" status={row.evidence} />
+                </span>
+              </button>
             ))}
           </div>
+          {hiddenCount > 0 ? <p className="mt-8 text-center text-sm text-[#747470]">Showing first 36 matches. Search or filter to narrow the list.</p> : null}
+        </PolicyPanel>
+      ) : null}
 
-          <DataTable columns={formColumns} label="Forms library matrix" rows={formRows} onRowClick={handleRowClick} />
+      {view === 'matrix' ? (
+        <PolicyPanel
+          title="Forms Matrix"
+          description="Full table remains available for audit, export, and side-by-side review workflows."
+          actions={<PolicySegmentTabs active="matrix" onChange={() => undefined} tabs={[{ id: 'matrix', label: 'Full Matrix' }]} />}
+        >
+          <DataTable columns={formColumns} label="Forms library matrix" rows={filteredRows} onRowClick={handleRowClick} />
+        </PolicyPanel>
+      ) : null}
 
-          <section className="grid gap-md tablet-l:grid-cols-3" aria-label="Signer and evidence metadata summary">
-            {signerEvidencePanels.map((panel) => (
-              <div className="rounded-xl border border-card bg-white p-4 shadow-sm overflow-hidden" key={panel.label}>
-                <div className="mb-2 flex flex-wrap items-center justify-between gap-sm">
-                  <h3 className="text-sm font-bold text-brand-teal-deep">{panel.label}</h3>
-                  <ToneBadge size="sm" status={panel.status} />
-                </div>
-                <p className="text-xs text-muted leading-normal">{panel.detail}</p>
-              </div>
+      {view === 'evidence' ? (
+        <div className="grid gap-8">
+          <section className="grid gap-5 xl:grid-cols-3" aria-label="Forms library context cards">
+            {rightRailCards.map((card) => (
+              <PolicySignalCard card={card} key={card.title} label="Readiness" />
             ))}
           </section>
-        </div>
 
-        <aside className="grid content-start gap-lg desktop:col-span-2" aria-label="Forms library context cards">
-          {rightRailCards.map((card) => (
-            <SurfaceCard card={card} key={card.title}>
-              <dl className="grid gap-sm border-t border-card pt-4">
-                {card.meta.map(([label, value]) => (
-                  <div className="grid gap-xs" key={label}>
-                    <dt className="text-[10px] font-bold uppercase tracking-wider text-brand-teal">{label}</dt>
-                    <dd className="text-xs text-ink leading-normal">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </SurfaceCard>
-          ))}
-
-          <div className="rounded-3xl border border-card bg-white p-6 shadow-sm overflow-hidden" aria-labelledby="forms-quick-stats-heading">
-            <div className="mb-4 flex items-start gap-md">
-              <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-hover text-brand-teal">
-                <ClipboardCheck aria-hidden="true" className="h-5 w-5" />
-              </span>
-              <div className="grid gap-xs">
-                <h2 className="text-lg font-bold text-brand-teal-deep" id="forms-quick-stats-heading">
-                  Evidence metadata
-                </h2>
-                <p className="text-xs text-muted">Signer, certificate, policy, and retention counts for the forms matrix.</p>
-              </div>
-            </div>
-            <div className="grid gap-sm">
+          <PolicyPanel title="Evidence Metadata" description="Signer, certificate, policy, and retention counts for the forms matrix.">
+            <div className="grid gap-4 md:grid-cols-4">
               {quickStats.map((stat) => {
                 const Icon = stat.icon;
-
                 return (
-                  <div className="flex flex-wrap items-center justify-between gap-md rounded-xl border border-card bg-surface-hover p-3" key={stat.label}>
-                    <span className="inline-flex min-w-0 items-center gap-2 text-xs font-semibold text-ink">
-                      <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-brand-teal" />
-                      {stat.label}
-                    </span>
-                    <span className="text-sm font-bold text-brand-teal-deep">{stat.value}</span>
-                  </div>
+                  <article key={stat.label} className="rounded-[20px] border border-[#E5E4E3] bg-[#FAFBF8] p-5">
+                    <Icon aria-hidden="true" className="h-5 w-5 text-[#007970]" />
+                    <p className="mt-4 font-montserrat text-2xl font-bold text-[#F06923]">{stat.value}</p>
+                    <p className="mt-2 text-xs font-bold uppercase tracking-wider text-[#747470]">{stat.label}</p>
+                  </article>
                 );
               })}
             </div>
-          </div>
-        </aside>
-      </section>
-    </section>
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {signerEvidencePanels.map((panel) => (
+                <article className="rounded-[20px] border border-[#E5E4E3] bg-white p-5 shadow-sm" key={panel.label}>
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <h3 className="font-montserrat text-sm font-bold text-[#007970]">{panel.label}</h3>
+                    <ToneBadge size="sm" status={panel.status} />
+                  </div>
+                  <p className="text-sm leading-relaxed text-[#747470]">{panel.detail}</p>
+                </article>
+              ))}
+            </div>
+            <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-5">
+              {classificationFilters.map((filter) => (
+                <PolicyTinyStat key={filter.label} label={filter.label} value={filter.value} />
+              ))}
+            </div>
+          </PolicyPanel>
+        </div>
+      ) : null}
+    </PolicyWorkspaceShell>
   );
 }
 

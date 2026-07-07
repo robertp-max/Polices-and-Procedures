@@ -1,0 +1,107 @@
+> **NOTE (2026-07-06):** All findings in this report have been applied to the scene files in `../scenes/`. Retained as the audit trail.
+
+Given the scope, I'll produce the audit deliverable directly as markdown text (this is analysis output, not a report file being written to disk per instructions).
+
+## 1. CONCEPT COVERAGE TABLE
+
+| Original Concept (Page/Source) | Now Carried By (Scene/Node/Segment) | Status |
+|---|---|---|
+| Medicare-certified, ACHC-accredited status (P1) | S1 monitor-email node-unlock + Field Notes | COVERED |
+| 42 CFR Part 484 (COPs) framing (P1) | S1 monitor-email + Reference Notes | COVERED |
+| Every employee (clinical/non-clinical) shares compliance responsibility (P1) | S1 monitor-email node-unlock | COVERED |
+| "What You Will Learn" 7-area list (P1) | S1 checklist node (rewritten to 9 items — superset) | COVERED |
+| "Why This Module Matters" — surveyor verifies understanding; personnel-file evidence (P1) | S1 Field Notes checklist ("record of orientation completed... not a policy sign-off") | PARTIAL — the *surveyor-verification* rationale ("CMS surveyor/ACHC reviewer verifies staff understanding... translation to care decisions") is dropped; only the personnel-file-record half survives |
+| Mission statement verbatim (P2) | S2 scene-start ("mission statement loaded" on phone) + Q01 quiz | PARTIAL — the phone shows "mission statement loaded" but the storyboard never quotes the full verbatim mission sentence anywhere in Scene 2 narration/Field Notes; five phrases are taught individually, but the *combined verbatim statement* a learner must recognize for Q01 is never displayed/spoken as one sentence |
+| Patient-Centered → §484.60 (P2) | S2 node-unlock + Reference Notes | COVERED |
+| Evidence-Based (P2) | S2 node-unlock + Field Notes | COVERED |
+| Promote Independence (P2) | S2 node-unlock + Field Notes | COVERED |
+| Dignity & Quality of Life → home as sacred space (P2) | S2 node-unlock + Reference Notes (§484.50) | COVERED |
+| Regulatory Integrity (P2) | S2 node-unlock + Field Notes | COVERED |
+| Mission table row 1 — patient refusal → respect autonomy, educate, document (P2) | S7 (respect-refusal, explain-risk, document-response nodes) | COVERED — moved to Scene 7, taught in full |
+| Mission table row 2 — out-of-scope family request → decline, escalate (P2) | S2 patient-centered node scenario; S8 Chen branch | COVERED |
+| Mission table row 3 — unsafe condition → report same day (P2) | S2 dignity node scenario; S5 guest-in-home | COVERED |
+| Mission table row 4 — "close enough" documentation not compliant (P2) | S2 regulatory-integrity node; S4 documentation-pressure node | COVERED |
+| Mission table row 5 — "when in doubt, report" (P2) | S2 regulatory-integrity Reference Note; S6/S8/S9 | COVERED (per framework's required 4-touch spaced re-exposure) |
+| Clinical Excellence pillar — OASIS coding, benchmarks (P3) | S3 pillar node + Field Notes | COVERED |
+| Workforce Development pillar (P3) | Renamed "Workforce Growth" in S3 — reconciliation table documents this as authorized rename | COVERED, with a flagged **naming conflict**: Learning Framework Section 1 still lists "Workforce Development"/"Regulatory Leadership" for Scene 3; storyboard substitutes different pillar names (Workforce Growth, Continuous Improvement) and drops Community Trust's original mapping. Content-wise the *behaviors* are covered, but "Regulatory Leadership" as a named pillar/concept **disappears entirely** |
+| Regulatory Leadership pillar — "survey-ready every day" (P3) | **MISSING as a named pillar** — replaced by "Continuous Improvement" in S3; survey-readiness-every-day language is not attached to any S3 node | MISSING — see Quiz Alignment Q03 below; this is the single largest structural gap in the coverage set |
+| Community Trust pillar (P3) | S3 pillar node (heart icon) + Field Notes | COVERED |
+| Six core values: Integrity, Compassion, Excellence, Teamwork, Accountability, Compliance (P4) | S4 four nodes only map to Integrity, Compassion(reframed), Teamwork, Accountability | PARTIAL — **Excellence and Compliance as standalone named/tested values are missing from Scene 4's 4 nodes.** Excellence is referenced only inside the Missing-Supply node's feedback text ("Excellence backs this up...") as a secondary mention, never its own gated node with a value-identification phase. Compliance is not represented as a distinct value at all in Scene 4 (the bruising node was explicitly *reassigned away* from Compliance to Compassion) |
+| PT→RN→MSW teamwork example (P4) | S4 "Chart on the Counter" uses PT/RN discrepancy only; MSW never appears | PARTIAL — MSW leg of the three-way example is dropped; framework Section 1 explicitly requires "Recall the PT→RN→MSW teamwork coordination example," and only PT→RN survives |
+| Integrity — never falsify/backdate/sign for work not done (P4) | S4 Coffee Table node + Field Notes | COVERED |
+| Guest in the home (P5) | S5 guest-in-home node | COVERED (reframed as workplace-logistics, not rights — deliberate, documented) |
+| Practice autonomously / escalate when unsure (P5) | S5 field-autonomy node | COVERED |
+| Documentation is your defense / sole record (P5) | S5 documentation-defense node (§484.110) | COVERED |
+| Patient's environment is workplace (pets, family, clutter, hazards) (P5) | S5 patient-environment node | COVERED |
+| Interdisciplinary coordination harder (P5) | S5 remote-escalation node | COVERED |
+| Subject to federal oversight / unannounced survey (P6) | S6 employee-duties-sort, oversight-exposure card | COVERED |
+| Personnel file completeness — full enumerated list (P6) | S6 personnel-file-completeness card | COVERED |
+| Must report concerns — abuse/neglect/exploitation/unsafe/fraud (P6) | S6 mandatory-reporting-sequence node | COVERED |
+| Must maintain competency (P6) | S6 competency-maintenance card | COVERED |
+| Must protect PHI — HIPAA/CMIA (P6) | S6 PHI-protection card | COVERED |
+| Checkpoint 1 — surveyor mission question (P7) | S9 readiness pin (self-check, ungraded) | PARTIAL — original was a graded-feel MCQ retrieval checkpoint; S9's version is a single reveal-toggle with no distractor options, so the retrieval-under-light-pressure design intent (framework's explicit description of Scene 7 in the *original* framework doc — now relabeled Scene 9 territory) is diluted to passive recall |
+| Checkpoint 2 — notice something concerning (P7) | S2 dignity node scenario; S9 reporting pin recap | COVERED (distributed) |
+| Checkpoint 3 — documentation is sole record TRUE statement (P7) | S5 documentation-defense node; S9 hh-diff pin | COVERED (distributed) |
+| Scenario 1 — Torres bruising, full narrative (P8) | S8 Branch 2 (unnamed composite patient) + S6 primer + S9 recap | COVERED, but **character identity discontinuity**: original Torres scenario is split across S4 (primer, Okafor visit), S6 (protocol teaching, no named patient), S8 (graded, deliberately un-named "older patient" per continuity flag), S9 (recap, explicitly flagged as unverified/placeholder pending cross-check). A learner following the story arc will experience 3-4 different patients/settings for what was one continuous scenario in the source — **narrative fragmentation risk**, not a content-loss risk |
+| Scenario 2 — Chen daughter off-scope request (P8) | S8 Branch 1 (Chen) | COVERED |
+| 5 sample surveyor questions verbatim (P9) | S9 readiness pin Field Notes — only paraphrased summary, not 5 discrete questions | PARTIAL — Field Notes says "Surveyors can ask any staff member about the mission, reporting, or documentation" (3 topics named, collapsed) rather than the original 5 distinct questions (mission; report a safety concern; orientation training; out-of-scope handling; documentation responsibilities). Out-of-scope-handling and orientation-training-received are not distinctly named |
+| "How to Answer" — honest, own words, "I'd check with supervisor" (P9) | S9 readiness pin | COVERED |
+| Onboarding attestation callout (P9) | Deliberately removed/replaced throughout — S1, S2, S9 all substitute "personnel file record of training" language | COVERED (by design substitution, consistent with forbidden-wording guardrail) |
+| Remediation protocol — 80%/3 days/3 attempts (P9) | S9 readiness pin, narration and Field Notes | COVERED |
+
+## 2. QUIZ ALIGNMENT
+
+| Q# | Tests | Now Taught At | Status |
+|---|---|---|---|
+| Q01 | Full mission statement recall (verbatim phrasing match) | S2 — five phrases taught individually; no scene ever states/displays the combined verbatim mission sentence | **WEAK** — a learner who only experienced Scene 2 has never seen the single sentence Q01's correct option quotes verbatim; they've internalized the concepts but not the sentence-recognition target. Q01 is a straight recall-the-exact-wording MCQ against content that's now taught exclusively in disaggregated, paraphrased form. |
+| Q02 | Surveyor Q&A approach ("answer honestly, own words") | S9 readiness pin | OK |
+| Q03 | "Which vision pillar states survey-ready every day?" → answer is Regulatory Leadership | S3 no longer has a "Regulatory Leadership" pillar; it was replaced by "Continuous Improvement," and the "survey-ready every day" phrase is not attached to any S3 node at all | **UNTAUGHT** — this is a hard break. The correct answer option to Q03 ("Regulatory Leadership") no longer exists as a taught concept anywhere in the 9-scene storyboard. S3's own QA Risks section flags this ("Q03 must be rewritten... do not ship with Q03 pointing at a retired node") but the storyboard as submitted has not actually fixed it — it's a documented TODO, not a resolved fix. Per audit rules this counts as UNTAUGHT until Q03 is rewritten or Regulatory Leadership is restored. |
+| Q04 | "When in doubt, report" — notice something concerning, unsure if serious | S2 (table/Reference Note) + S6 (sequence) + S8 (applied) + S9 (recap) | OK — this is the framework's flagship spaced-re-exposure example; well over-satisfied |
+| Q05 | Documentation as sole legal record | S5 documentation-defense node | OK |
+| Q06 | Family member off-scope request → decline, cite scope, refer to own physician | S8 Chen branch (correct answer wording matches almost exactly) | OK |
+| Q07 | Values are behavioral/evaluative, referenced in performance reviews/incident investigations/survey findings, apply to ALL employees | S4 scene-start framing implies this but no node states it explicitly; framework's own action item said this needed an explicit node-unlock line | **WEAK** — S4's Field Notes/narration describe values being *applied* in scenarios but never states the Q07 stem's actual tested proposition (values = behavioral expectations referenced in reviews/investigations/survey findings, apply to all staff not just clinical). The line does appear in S9's Core Values Recap Field Note ("not slogans — they are behavioral expectations that show up in your performance reviews, in incident investigations, and in survey findings"), so it is taught, but only in the Scene 9 cumulative recap, not at Scene 4 where the framework specifically flagged it needed reinforcing. This is a positional weakness, not a total gap — mark WEAK, not UNTAUGHT. |
+| Q08 | Home health autonomy + documentation weight vs. facility care | S5 field-autonomy + documentation-defense nodes | OK |
+| Q09 | Remediation protocol numbers (80%, 3 days, 3 attempts) | S9 readiness pin | OK |
+| Q10 | "Regulatory integrity" meaning — woven into every visit/note, not siloed, not just penalty-avoidance | S2 regulatory-integrity node | OK |
+
+## 3. NARRATION COMPLETENESS
+
+Per-scene tier check — does narration carry full instructional completeness (the framework's mandated 90-100% coverage tier), or does it read as compressed summary?
+
+- **Scene 1**: Node-unlock narration for the checklist is fuller than the source (expands to 9 items, names each). No completeness issue.
+- **Scene 2**: Narration is drafted at full explanatory density per phrase (dialogue format carries the citation numbers, e.g., "484.60" spoken aloud) — meets the bar. However, **the combined verbatim mission sentence itself is never spoken or displayed** in any tier (scene-start says "mission statement loaded" without quoting it). This is a completeness gap specific to the recognition target Q01 needs, not a general summarization problem.
+- **Scene 3**: Narration is full and concept-complete for the 4 pillars *as renamed*, but by construction it cannot carry "Regulatory Leadership / survey-ready every day" because that pillar was cut. This isn't a summarization defect — it's a content-substitution defect (see Gap List #1).
+- **Scene 4**: Fully drafted, not templated, per node-unlock and incorrect-feedback. No completeness issue on the four nodes it has — but Excellence and Compliance get no dedicated node-unlock narration segment of their own (Excellence is a clause inside another node's feedback; Compliance doesn't appear at all).
+- **Scene 5**: Full narration density maintained per node; the "Guest in the Home" node is deliberately rewritten to avoid dignity/rights vocabulary (by design, to protect the §484.50/§484.110 citation boundary) — this is a correct, intentional narrowing, not an unintentional compression.
+- **Scene 6**: Full narration for all 10 compound-node segments (4 duty cards + 6 sequence steps), including the mandated sentence spoken in full. No completeness issue.
+- **Scene 7**: Full narration for all 5 nodes plus feedback branches. No completeness issue.
+- **Scene 8**: Full narration for both branches including feedback. No completeness issue.
+- **Scene 9**: This is the one scene that **reads as summary rather than full instruction by design** — it is explicitly a cumulative recap tier ("retrieval cues... not re-displaying full text"), which is correct per the Learning Framework Section 5 rule ("Scene 9 as cumulative retrieval, not new content"). Flagging this only because the audit asks to be strict: the **Survey Readiness & Remediation** Field Note collapses the original 5 distinct surveyor questions into 3 named topics — that specific compression goes a step further than "recap of what was already fully taught elsewhere," because the 5-question list was never fully taught elsewhere in the 9-scene set either (see coverage table). Everywhere else, Scene 9's summarization is safe because the full version lives upstream in Scenes 2–8; this one item is summary-of-a-summary.
+
+**Net verdict**: Only Scene 9 is a designed recap tier (acceptable). No other scene structurally under-narrates relative to the framework's 90–100% coverage rule for the *content that scene chose to include* — the completeness problems that exist (Q01's verbatim sentence, Regulatory Leadership pillar, Excellence/Compliance/MSW) are content-selection gaps, not narration-density/summarization defects.
+
+## 4. PRIORITIZED GAP LIST
+
+1. **[CRITICAL] Q03 answer no longer exists — "Regulatory Leadership" pillar cut from Scene 3.**
+   Fix: In Scene 3, either (a) restore a fourth pillar named "Regulatory Leadership" carrying "survey-ready every day" language in place of "Continuous Improvement," or (b) keep "Continuous Improvement" but add its content as a fifth node/sub-point and rewrite Q03's stem+options to test "Continuous Improvement = better on purpose, quarter over quarter" instead. Add a dedicated node-unlock narration line stating "survey-ready every single day, not periodically" verbatim if (a) is chosen — this exact phrase must exist in some Scene 3 (or Scene 9 recap) node-unlock segment, since it is the literal quiz-tested phrase. Do not ship with the storyboard's own self-flagged QA Risk item ("do not ship with Q03 pointing at a retired node") left unresolved.
+
+2. **[HIGH] Excellence and Compliance are not taught as standalone core values in Scene 4.**
+   Fix: Scene 4 currently has exactly 4 nodes (Integrity, Compassion, Teamwork, Accountability) against a source/framework requirement of 6 values with dedicated field vignettes. Add two more Scene-4 nodes (or split into a Scene 4a/4b sub-stage per the pacing rule's "cap at 6, split into sub-stages if more" guidance) — one testing Excellence with its own value-identification phase (currently only a clause inside the Missing-Supply feedback text) and one testing Compliance directly (currently entirely absent since the bruising node was reassigned to Compassion). Node-unlock narration for each must explicitly name the value and give it its own two-phase judgment gate, per the pattern already used for the other four.
+
+3. **[HIGH] Q01's verbatim mission sentence is never spoken/displayed anywhere in the 9-scene storyboard.**
+   Fix: In Scene 2's scene-start or a new short intro beat, have the supervisor's phone screen literally display (and node-unlock narration literally read) the full mission sentence once, verbatim, before the five-phrase breakdown begins — e.g., append to the Scene 2 scene-start segment: display "Care Indeed Mission: To provide patient-centered, evidence-based home health services that promote independence, dignity, and quality of life — delivered by a team of dedicated professionals committed to clinical excellence and regulatory integrity" as an on-screen card with the narrator reading it once before Dana/the supervisor "taps through five phrases." Without this, Q01 is a memorization question with no memorization exposure.
+
+4. **[MEDIUM] PT→RN→MSW three-way teamwork example is reduced to PT→RN only.**
+   Fix: In Scene 4's "Chart on the Counter" node, add one clause to the Field Note and node-unlock narration extending the discrepancy resolution to include looping in the medical social worker where psychosocial factors are relevant (e.g., "Alex contacts the PT the same day — and where the discrepancy touches on how Mr. Okafor is coping at home, the RN loops in the medical social worker too"), restoring the explicit PT→RN→MSW chain the Learning Framework Section 1 names as a required recall item.
+
+5. **[MEDIUM] Q07's tested proposition (values = evaluative, apply to all employees, referenced in reviews/investigations/survey findings) is only stated in Scene 9's recap, not at Scene 4 where the Quiz Alignment Map explicitly instructed it to be added.**
+   Fix: Add one explicit node-unlock or scene-start line in Scene 4 — before the four (or six, per Gap #2) vignette nodes begin — stating verbatim-close to: "These aren't slogans. They're behavioral expectations, and every employee — clinical or not — gets evaluated against them: in performance reviews, in incident investigations, and in survey findings." This currently exists only in Scene 9's Core Values Recap Field Note, which is too late in the sequence to satisfy the Quiz Alignment Map's instruction to strengthen the *node-unlocked* tier specifically (Scene 9 is a recap tier, not a first-teaching tier).
+
+6. **[LOW] The 5 discrete verbatim surveyor sample questions (Page 9) are collapsed to 3 named topics in Scene 9's Readiness pin.**
+   Fix: Expand the Readiness pin's Field Notes/narration to name all five: (1) agency mission, (2) how to report a patient-safety concern, (3) what training was received during orientation, (4) how to handle an out-of-scope request, (5) documentation responsibilities — items 3 and 4 currently have no distinct mention anywhere in the 9-scene set's Scene 9 copy. This is low-severity since none of the 10 quiz questions test the count/identity of the 5 questions specifically (only Q02 tests the *how-to-answer* rule, which is covered) — but it is a traceable content loss from the original inventory.
+
+7. **[LOW] Narrative identity fragmentation across the Torres-equivalent bruising scenario (Scene 4 primer uses "Mr. Okafor"; Scene 6 uses no name; Scene 8 explicitly uses an unnamed "older patient" composite; Scene 9 explicitly flags names as unverified placeholders).**
+   Fix: Not a coverage gap (the compliance content is fully and correctly taught at each stage), but a continuity defect worth fixing before ship: pick one named composite patient and one named family member/caregiver, confirm it in a single canonical scenario-cast document, and thread that same name through Scenes 4 (primer), 6 (protocol teaching reference), 8 (graded application), and 9 (recap) so the "spaced re-exposure across scenes" pedagogy (Learning Framework Section 6) reads as one continuous story rather than three or four unrelated incidents. Scene 9's own author-inserted editorial note already flags this as unresolved pending cross-check — this gap list entry formalizes it as a pre-ship blocker for narrative coherence, not for compliance-content coverage.
+
+8. **[LOW] Page 1's "surveyor/reviewer verifies staff understanding and translation to care decisions" rationale is dropped from Scene 1, leaving only the personnel-file-record half of "Why This Module Matters."**
+   Fix: Add one clause to Scene 1's monitor-email node-unlock narration or Field Notes, e.g., "...and during a survey, a CMS or ACHC reviewer may ask any employee to explain what the mission means in their own words — not to recite it, but to show it shapes real decisions." This restores the original's dual rationale (survey-visible understanding + personnel-file evidence) rather than personnel-file evidence alone.

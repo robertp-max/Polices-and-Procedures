@@ -1,10 +1,19 @@
-import { BookOpen, AlertTriangle, FileText, ArrowRight, User, Calendar } from 'lucide-react';
-import { MetricGrid, SurfaceCard, type MetricTileData, type SurfaceCardData } from '../../components';
+import { useMemo, useState } from 'react';
+import { AlertTriangle, Calendar, FileText, GitCompare, User } from 'lucide-react';
+import { ToneTag, type MetricTileData, type SurfaceCardData } from '../../components';
 import { ToneBadge } from '../../primitives';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/data/policyCorpus';
 /* loadLifecycleSeed removed (unused post real store wiring) */
 import { usePolicyLifecycleStore } from '@/policy/lifecycle';
 import { STATE_ORDER, STATE_LABEL, type LifecycleState } from '@/policy/lifecycle/types';
+import {
+  PolicyMetricsGrid,
+  PolicyPanel,
+  PolicySignalCard,
+  PolicyTinyStat,
+  PolicyWorkspaceShell,
+  type PolicyWorkspaceTab,
+} from './PolicyWorkspace';
 
 // Real per-domain policy counts, in canonical framework display order.
 const domainGroups = LIFECYCLE_DOMAIN_ORDER.map((domainCode) => ({
@@ -34,12 +43,27 @@ function computeDerivedDue(createdAt?: string): string {
 }
 
 export function PolicyLifecycleScreen() {
-  // Real data from store (fixed: was ignoring envelopes)
-  const countsByState = usePolicyLifecycleStore((s) => s.countsByState());
-  const getEnvelope = usePolicyLifecycleStore((s) => s.getEnvelope);
+  const [view, setView] = useState<'overview' | 'records' | 'actions'>('overview');
+  // Subscribe to the stable envelope map, then derive counts locally.
+  // Calling countsByState() in the selector returns a new object each render,
+  // which trips React's external-store snapshot guard.
+  const envelopes = usePolicyLifecycleStore((s) => s.envelopes);
+  const countsByState = useMemo(() => {
+    const counts: Record<LifecycleState, number> = {
+      DRAFT: 0,
+      REVIEW: 0,
+      APPROVED: 0,
+      PUBLISHED: 0,
+      ARCHIVED: 0,
+    };
+    Object.values(envelopes).forEach((envelope) => {
+      counts[envelope.state] += 1;
+    });
+    return counts;
+  }, [envelopes]);
 
   // Build stages from LIVE store counts (not forced seed hack)
-  const stateCounts: Record<LifecycleState, number> = { ...countsByState } as any;
+  const stateCounts: Record<LifecycleState, number> = { ...countsByState };
   // ensure all keys
   STATE_ORDER.forEach(st => { if (stateCounts[st] == null) stateCounts[st] = 0; });
 
@@ -57,7 +81,7 @@ export function PolicyLifecycleScreen() {
   // const due1 = ...
 
   const sample2 = POLICY_CORPUS.find(p => p.domainCode === 'HR') || POLICY_CORPUS[5];
-  const env2 = getEnvelope(sample2.id);
+  const env2 = envelopes[sample2.id];
   const owner2 = sample2.ownerSteward;
   const due2 = computeDerivedDue(env2?.createdAt);
 
@@ -82,76 +106,114 @@ export function PolicyLifecycleScreen() {
 
   // Show a few real policy lifecycle records (id + title + state + owner + due) for verification
   const sampleRecords = POLICY_CORPUS.slice(0, 3).map(p => {
-    const e = getEnvelope(p.id);
+    const e = envelopes[p.id];
     const st = e?.state ?? 'DRAFT';
     const ow = p.ownerSteward;
     const du = computeDerivedDue(e?.createdAt);
     return { id: p.id, title: p.title, state: st, owner: ow, due: du };
   });
 
-  return (
-    <section
-      className="grid gap-xl"
-      data-group="System"
-      data-hash-id="policy-lifecycle"
-      data-route="/policy-lifecycle"
-      data-template="lifecycle"
-    >
-      <MetricGrid metrics={metrics} />
+  const tabs: readonly PolicyWorkspaceTab<typeof view>[] = [
+    { id: 'overview', label: 'Overview', tone: 'teal' },
+    { id: 'records', label: 'Records', tone: 'orange' },
+    { id: 'actions', label: 'Actions', tone: 'green' },
+  ];
 
-      <section className="grid gap-xl desktop:grid-cols-12">
-        <div className="grid content-start gap-lg desktop:col-span-8">
-          <div className="rounded-3xl border border-card bg-white p-6 shadow-sm overflow-hidden">
-            <h3 className="text-lg font-bold text-brand-teal-deep mb-4">Domain Grouping Board</h3>
-            <div className="flex flex-wrap gap-md items-center justify-between">
-              {stages.map((stage, index) => (
-                <div className="flex items-center gap-md" key={stage.label}>
-                  <div className="rounded-xl border border-card bg-surface-hover p-4 min-w-[120px] text-center flex flex-col items-center gap-xs">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted">{stage.label}</span>
-                    <span className="text-xl font-bold text-brand-teal-deep mt-1">{stage.count}</span>
+  return (
+    <PolicyWorkspaceShell
+      activeTab={view}
+      dataHashId="policy-lifecycle"
+      dataRoute="/policy-lifecycle"
+      description="Track policy states, review cadence, domain coverage, and required actions without exposing the full checklist on first load."
+      eyebrow="Lifecycle Control"
+      onTabChange={setView}
+      tabs={tabs}
+      title="Policy Lifecycle"
+      actions={[
+        { icon: GitCompare, label: 'Approval Queue', to: '/policy-approvals' },
+        { icon: FileText, label: 'Policy Library', to: '/library', variant: 'secondary' },
+      ]}
+    >
+      <PolicyMetricsGrid metrics={metrics} />
+
+      {view === 'overview' ? (
+        <div className="grid gap-8">
+          <PolicyPanel
+            title="Lifecycle Pipeline"
+            description="Live state counts from lifecycle envelopes, with owners and review dates joined from the canonical policy corpus."
+          >
+            <div className="grid gap-4 md:grid-cols-5">
+              {stages.map((stage) => (
+                <article key={stage.label} className="rounded-[20px] border border-[#E5E4E3] bg-[#FAFBF8] p-5 text-center">
+                  <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470]">{stage.label}</p>
+                  <p className="mt-3 font-montserrat text-3xl font-bold text-[#007970]">{stage.count}</p>
+                  <div className="mt-3 flex justify-center">
                     <ToneBadge size="sm" status={stage.status} />
                   </div>
-                  {index < stages.length - 1 && (
-                    <ArrowRight aria-hidden="true" className="h-5 w-5 text-muted shrink-0 hidden tablet-p:block" />
-                  )}
-                </div>
+                </article>
               ))}
             </div>
-            <div className="mt-4 text-xs text-muted">State counts from usePolicyLifecycleStore (envelopes); owner/dues joined from corpus. All start DRAFT per lifecycleStore seed rule.</div>
-          </div>
+          </PolicyPanel>
 
-          <div className="rounded-3xl border border-card bg-white p-6 shadow-sm overflow-hidden">
-            <h3 className="text-lg font-bold text-brand-teal-deep mb-2">Active Policies Checklist — Real Records (corpus + lifecycle)</h3>
-            <p className="text-sm text-secondary mb-4">
-              Showing live-mapped records (first 3 of {POLICY_CORPUS.length}). Virtualization placeholder retained for scale. Status/owner/due resolved correctly.
-            </p>
-            <div className="grid gap-sm text-sm">
-              {sampleRecords.map(rec => (
-                <div key={rec.id} className="rounded-xl border border-card bg-white p-4 flex flex-wrap gap-x-md gap-y-xs items-baseline shadow-sm transition hover:shadow-md">
-                  <span className="font-mono font-bold text-brand-teal">{rec.id}</span>
-                  <span className="text-brand-teal-deep font-semibold">{rec.title}</span>
-                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-surface-hover text-brand-teal">{rec.state}</span>
-                  <span className="flex items-center gap-xs text-muted"><User className="h-4 w-4" />{rec.owner}</span>
-                  <span className="flex items-center gap-xs text-muted"><Calendar className="h-4 w-4" />Due: {rec.due}</span>
-                </div>
+          <PolicyPanel title="Domain Coverage" description="Domains are collapsed into cards so the page keeps the Training/Journey scan pattern.">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+              {domainGroups.map((group) => (
+                <article key={group.code} className="rounded-[20px] border border-[#E5E4E3] bg-white p-5 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#F06923]">{group.code}</p>
+                      <h3 className="mt-2 font-montserrat text-sm font-bold text-[#007970]">{group.label}</h3>
+                    </div>
+                    <ToneTag tone="teal">{group.count}</ToneTag>
+                  </div>
+                  <p className="mt-4 text-xs leading-relaxed text-[#747470]">Policies mapped to lifecycle ownership and annual review cadence.</p>
+                </article>
               ))}
             </div>
-          </div>
+          </PolicyPanel>
         </div>
+      ) : null}
 
-        <aside className="grid content-start gap-lg desktop:col-span-4" aria-label="Action items">
-          <div className="grid gap-xs mb-sm">
-            <h3 className="text-lg font-bold text-brand-teal-deep flex items-center gap-sm">
-              <BookOpen aria-hidden="true" className="h-5 w-5 text-brand-teal" />
-              Required Action Items
-            </h3>
-            <p className="text-sm text-muted">Staged lifecycle actions and alerts. (real policy refs)</p>
+      {view === 'records' ? (
+        <PolicyPanel
+          title="Active Policy Records"
+          description={`Showing a compact live sample from ${POLICY_CORPUS.length} corpus records. Open approvals or the policy library for the full queue.`}
+        >
+          <div className="grid gap-4">
+            {sampleRecords.map((rec) => (
+              <article key={rec.id} className="rounded-[20px] border border-[#E5E4E3] bg-white p-5 shadow-sm">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{rec.id}</p>
+                    <h3 className="mt-2 font-montserrat text-lg font-semibold text-[#007970]">{rec.title}</h3>
+                  </div>
+                  <ToneTag tone="teal">{rec.state}</ToneTag>
+                </div>
+                <div className="mt-5 grid gap-3 text-sm text-[#747470] md:grid-cols-2">
+                  <span className="flex items-center gap-2"><User className="h-4 w-4 text-[#007970]" aria-hidden />{rec.owner}</span>
+                  <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-[#007970]" aria-hidden />Due: {rec.due}</span>
+                </div>
+              </article>
+            ))}
           </div>
+        </PolicyPanel>
+      ) : null}
+
+      {view === 'actions' ? (
+        <div className="grid gap-5 xl:grid-cols-3">
           {actionCards.map((card) => (
-            <SurfaceCard card={card} key={card.title} />
+            <PolicySignalCard card={card} key={card.title} />
           ))}
-        </aside>
-      </section>
-    </section>
+          <article className="rounded-[24px] border border-[#E5E4E3] bg-white p-7 shadow-sm">
+            <h3 className="font-montserrat text-base font-bold text-[#007970]">Review Summary</h3>
+            <p className="mt-2 text-sm leading-relaxed text-[#747470]">A short summary keeps the action tab light while still exposing state counts.</p>
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <PolicyTinyStat label="Draft" tone="amber" value={String(stateCounts.DRAFT)} />
+              <PolicyTinyStat label="Review" tone="orange" value={String(stateCounts.REVIEW)} />
+            </div>
+          </article>
+        </div>
+      ) : null}
+    </PolicyWorkspaceShell>
   );
 }

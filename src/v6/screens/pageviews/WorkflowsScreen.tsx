@@ -1,13 +1,21 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GitBranch, Landmark, Workflow } from 'lucide-react';
-import { DataTable, MetricGrid, SurfaceCard, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { ClipboardList, FileText, GitBranch, Landmark, Search, Workflow } from 'lucide-react';
+import { DataTable, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { cx } from '../../utils/classNames';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import {
   resolveWorkflowPolicyRefs,
 } from '@/policy/workflows/utils/resolveWorkflowPolicyRefs';
 import { resolveFormTitle } from '@/policy/data/formIdAliases';
+import {
+  PolicyMetricsGrid,
+  PolicyPanel,
+  PolicySegmentTabs,
+  PolicySignalCard,
+  PolicyWorkspaceShell,
+  type PolicyWorkspaceTab,
+} from './PolicyWorkspace';
 
 
 
@@ -104,32 +112,27 @@ const allRisks = Array.from(new Set(workflowRows.map((r) => r.risk)));
 
 export default function WorkflowsScreen() {
   const navigate = useNavigate();
+  const [view, setView] = useState<'library' | 'matrix' | 'signals'>('library');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDomains, setActiveDomains] = useState<readonly string[]>([...allDomains]);
   const [activeRisks, setActiveRisks] = useState<readonly string[]>([...allRisks]);
 
-  const filteredRows = workflowRows.filter((row) => {
-    const q = searchQuery.trim().toLowerCase();
-    const matchesSearch =
-      !q ||
-      row.workflowId.toLowerCase().includes(q) ||
-      row.title.toLowerCase().includes(q) ||
-      row.domain.toLowerCase().includes(q) ||
-      row.domainOwner.toLowerCase().includes(q);
-    const matchesDomain = activeDomains.includes(row.domain);
-    const matchesRisk = activeRisks.includes(row.risk);
-    return matchesSearch && matchesDomain && matchesRisk;
-  });
+  const filteredRows = useMemo(() => workflowRows.filter((row) => {
+      const q = searchQuery.trim().toLowerCase();
+      const matchesSearch =
+        !q ||
+        row.workflowId.toLowerCase().includes(q) ||
+        row.title.toLowerCase().includes(q) ||
+        row.domain.toLowerCase().includes(q) ||
+        row.domainOwner.toLowerCase().includes(q);
+      const matchesDomain = activeDomains.includes(row.domain);
+      const matchesRisk = activeRisks.includes(row.risk);
+      return matchesSearch && matchesDomain && matchesRisk;
+    }), [activeDomains, activeRisks, searchQuery]);
 
   function toggleDomain(domain: string) {
     setActiveDomains((curr) =>
       curr.includes(domain) ? curr.filter((d) => d !== domain) : [...curr, domain]
-    );
-  }
-
-  function toggleRisk(risk: string) {
-    setActiveRisks((curr) =>
-      curr.includes(risk) ? curr.filter((r) => r !== risk) : [...curr, risk]
     );
   }
 
@@ -138,110 +141,131 @@ export default function WorkflowsScreen() {
     navigate(`/workflows/${encodeURIComponent(row.workflowId)}`);
   }
 
+  const tabs: readonly PolicyWorkspaceTab<typeof view>[] = [
+    { id: 'library', label: 'Library', tone: 'teal' },
+    { id: 'matrix', label: 'Matrix', tone: 'orange' },
+    { id: 'signals', label: 'Signals', tone: 'green' },
+  ];
+  const visibleRows = filteredRows.slice(0, 36);
+  const hiddenCount = filteredRows.length - visibleRows.length;
+
   return (
-    <section className="grid gap-xl" data-hash-id="workflows" data-route="/workflows" data-template="matrix">
-      <MetricGrid metrics={workflowMetrics} />
+    <PolicyWorkspaceShell
+      activeTab={view}
+      dataHashId="workflows"
+      dataRoute="/workflows"
+      description="Generated workflow records open as scannable cards first, with the full matrix and swimlane signals tucked into focused tabs."
+      eyebrow="Workflow Library"
+      onTabChange={setView}
+      tabs={tabs}
+      title="Workflows"
+      actions={[
+        { icon: FileText, label: 'Policies', to: '/library', variant: 'secondary' },
+        { icon: ClipboardList, label: 'Forms', to: '/forms' },
+      ]}
+    >
+      <PolicyMetricsGrid metrics={workflowMetrics} />
 
-      {/* Real generated workflow library preview (from WORKFLOWS). Click opens reference detail. */}
-      <div className="grid gap-md grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {workflowRows.slice(0, 6).map((row) => {
-          const wf: any = WORKFLOWS[row.workflowId] || {};
-          const stepC = wf.steps?.length || 0;
-          const formC = (wf.requiredForms || []).length;
-          return (
-            <div key={row.workflowId} className="rounded-3xl border border-card bg-white p-5 hover:shadow-md transition cursor-pointer overflow-hidden shadow-sm" onClick={() => {
-              openRealDetail(row);
-            }}>
-              <div className="flex items-center justify-between">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-brand-teal">{row.workflowId}</div>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-surface-hover text-brand-teal font-bold">{row.status}</span>
-              </div>
-              <div className="mt-2 text-sm font-bold text-brand-teal-deep">{row.title}</div>
-              <div className="mt-1 text-xs text-muted">{row.domain} • {row.frequency} • {row.risk} risk</div>
-              <div className="mt-3 text-[10px] font-medium text-disabled">{stepC} steps • {formC} forms • {row.domainOwner}</div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="flex flex-wrap items-end justify-between gap-md">
-        <div>
-          <div className="text-[10px] font-bold uppercase tracking-wider text-brand-teal">Workflow Library</div>
-          <div className="text-xl font-bold text-brand-teal-deep">Active workflows (generated records)</div>
-        </div>
-        <div className="flex flex-wrap gap-sm">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search ID, title, domain..."
-            className="min-w-[220px] rounded-lg border border-card bg-white px-4 py-2 text-sm text-ink placeholder:text-disabled focus-visible:outline-none focus-visible:shadow-focus"
-            aria-label="Search workflows"
+      <PolicyPanel
+        title="Filters"
+        description={`${filteredRows.length} workflow records match the active search, domain, and risk filters.`}
+        actions={
+          <label className="flex min-h-11 min-w-[260px] items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 text-sm text-[#747470]">
+            <Search className="h-4 w-4 shrink-0" aria-hidden />
+            <input
+              aria-label="Search workflows"
+              className="w-full bg-transparent py-3 text-[#52404B] outline-none placeholder:text-[#9A9A96]"
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search ID, title, domain..."
+              type="text"
+              value={searchQuery}
+            />
+          </label>
+        }
+      >
+        <div className="grid gap-4">
+          <div className="flex flex-wrap gap-2" aria-label="Workflow domain filters">
+            {allDomains.map((domain) => {
+              const on = activeDomains.includes(domain);
+              return (
+                <button
+                  key={domain}
+                  type="button"
+                  onClick={() => toggleDomain(domain)}
+                  className={cx(
+                    'rounded-[10px] border px-3 py-2 font-montserrat text-[9px] font-bold uppercase tracking-wider transition',
+                    on ? 'border-[#007970] bg-[#007970] text-white' : 'border-[#E5E4E3] bg-white text-[#747470] hover:bg-[#F7FEFF] hover:text-[#007970]',
+                  )}
+                >
+                  {domain}
+                </button>
+              );
+            })}
+          </div>
+          <PolicySegmentTabs
+            active={activeRisks.length === allRisks.length ? 'ALL' : activeRisks[0] ?? 'ALL'}
+            onChange={(value) => {
+              if (value === 'ALL') setActiveRisks([...allRisks]);
+              else setActiveRisks([value]);
+            }}
+            tabs={[{ id: 'ALL', label: 'All Risk' }, ...allRisks.map((risk) => ({ id: risk, label: risk }))]}
           />
         </div>
-      </div>
+      </PolicyPanel>
 
-      <div className="flex flex-wrap gap-sm" aria-label="Domain and risk filters">
-        <span className="text-tag uppercase tracking-tag text-muted self-center mr-xs">Domain:</span>
-        {allDomains.map((domain) => {
-          const on = activeDomains.includes(domain);
-          return (
-            <button
-              key={domain}
-              type="button"
-              onClick={() => toggleDomain(domain)}
-              className={cx(
-                'rounded-sm border px-md py-xs text-tag uppercase tracking-tag transition',
-                on
-                  ? 'border-brand-teal bg-brand-teal text-on-brand'
-                  : 'border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal hover:bg-surface-glass hover:backdrop-blur-md'
-              )}
-            >
-              {domain}
-            </button>
-          );
-        })}
-        <span className="text-tag uppercase tracking-tag text-muted self-center ml-md mr-xs">Risk:</span>
-        {allRisks.map((risk) => {
-          const on = activeRisks.includes(risk);
-          const toneClass = risk === 'High' ? 'border-tone-orange-border text-tone-orange-text' : risk === 'Medium' ? 'border-tone-amber-border text-tone-amber-text' : 'border-tone-green-border text-tone-green-text';
-          return (
-            <button
-              key={risk}
-              type="button"
-              onClick={() => toggleRisk(risk)}
-              className={cx(
-                'rounded-sm border px-md py-xs text-tag uppercase tracking-tag transition',
-                on ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset border-brand-teal text-brand-teal' : `bg-surface-glass backdrop-blur-md shadow-glass-inset ${toneClass} opacity-70 hover:opacity-100`
-              )}
-            >
-              {risk}
-            </button>
-          );
-        })}
-      </div>
+      {view === 'library' ? (
+        <PolicyPanel title="Workflow Cards" description="Cards show the generated record essentials; open any card for detail and swimlane access.">
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {visibleRows.map((row) => {
+              const wf: any = WORKFLOWS[row.workflowId] || {};
+              const stepC = wf.steps?.length || 0;
+              const formC = (wf.requiredForms || []).length;
+              return (
+                <button
+                  key={row.workflowId}
+                  type="button"
+                  onClick={() => openRealDetail(row)}
+                  className="group flex min-h-[220px] flex-col justify-between rounded-[24px] border border-[#E5E4E3] bg-white p-6 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#007970] hover:shadow-md focus-visible:outline-none focus-visible:shadow-focus"
+                >
+                  <span>
+                    <span className="mb-4 flex items-start justify-between gap-4">
+                      <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{row.workflowId}</span>
+                      <ToneTag tone={row.risk === 'High' ? 'orange' : 'teal'}>{row.risk}</ToneTag>
+                    </span>
+                    <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] group-hover:text-[#F06923]">{row.title}</span>
+                    <span className="mt-3 block text-sm leading-relaxed text-[#747470]">{row.domain} - {row.frequency}</span>
+                  </span>
+                  <span className="mt-6 border-t border-[#E5E4E3] pt-4 text-xs font-medium leading-relaxed text-[#747470]">
+                    {stepC} steps - {formC} forms - {row.domainOwner}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          {filteredRows.length === 0 ? <p className="mt-6 text-sm text-[#747470]">No workflows match current filters.</p> : null}
+          {hiddenCount > 0 ? <p className="mt-8 text-center text-sm text-[#747470]">Showing first 36 matches. Search or filter to narrow the list.</p> : null}
+        </PolicyPanel>
+      ) : null}
 
-      <section className="grid gap-lg desktop:grid-cols-1">
-        <section aria-label="Workflows library matrix" className="rounded-3xl border border-card bg-white p-6 shadow-sm overflow-hidden">
+      {view === 'matrix' ? (
+        <PolicyPanel title="Workflow Matrix" description="The generated table is still here for bulk review, audit comparison, and QA passes.">
           <DataTable
             columns={workflowColumns}
             label="Workflows library matrix"
             rows={filteredRows}
-            onRowClick={(row) => {
-              openRealDetail(row);
-            }}
+            onRowClick={(row) => openRealDetail(row)}
           />
-          {filteredRows.length === 0 && (
-            <div className="p-md text-sm text-muted">No workflows match current filters.</div>
-          )}
-        </section>
+          {filteredRows.length === 0 ? <div className="p-md text-sm text-muted">No workflows match current filters.</div> : null}
+        </PolicyPanel>
+      ) : null}
 
-        <aside className="grid content-start gap-lg" aria-label="Workflow swimlane cards">
+      {view === 'signals' ? (
+        <section className="grid gap-5 xl:grid-cols-3" aria-label="Workflow swimlane cards">
           {workflowCards.map((card) => (
-            <SurfaceCard card={card} key={card.title} />
+            <PolicySignalCard card={card} key={card.title} />
           ))}
-        </aside>
-      </section>
-    </section>
+        </section>
+      ) : null}
+    </PolicyWorkspaceShell>
   );
 }

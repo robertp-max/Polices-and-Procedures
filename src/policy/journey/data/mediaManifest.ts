@@ -24,6 +24,12 @@ export function mediaAssetPath(appLocation: string): string {
     // Future: add l2+ when images produced. Fall through to placeholder for now.
   }
 
+  // GAO-001 attached images (from manifest recommendations)
+  if (loc.includes('gao-001') || loc.includes('core-values') || loc.includes('scene-04')) {
+    // Recommended visual anchor per GAO-001_manifest: scene-04-values/v2.png
+    return '/GAO-001/scene-04-values/v2.png';
+  }
+
   const safe = loc.replace(/[^a-z0-9._-]/gi, "-").toLowerCase();
   return `${MEDIA_ASSET_BASE}/${safe}.jpg`;
 }
@@ -48,6 +54,9 @@ export const availableMedia: ReadonlySet<string> = new Set<string>([
   'cms-485.lesson.l1.s1.delivery',
   'cms-485.lesson.l1.s1.challenge',
   'cms-485.lesson.l1.s1.debrief',
+  // GAO-001 generated visuals (attached from manifest)
+  'gao-001.core-values',
+  'gao-001.scene-04',
 ]);
 
 export function hasMedia(appLocation: string): boolean {
@@ -57,6 +66,10 @@ export function hasMedia(appLocation: string): boolean {
   }
   // CMS-485 lesson 1 (foundation) - new cohesive image added for lesson1
   if (appLocation && (appLocation.includes('cms-485') || appLocation.includes('cms485')) && (appLocation.includes('l1') || appLocation.includes('.l1.'))) {
+    return true;
+  }
+  // GAO-001 Core Values interactive scene visuals (page 4)
+  if (appLocation && (appLocation.includes('gao-001') || appLocation.includes('core-values') || appLocation.includes('scene-04'))) {
     return true;
   }
   return availableMedia.has(appLocation);

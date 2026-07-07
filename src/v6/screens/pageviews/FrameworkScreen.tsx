@@ -1,9 +1,8 @@
 import { Link, useSearchParams } from 'react-router-dom';
-import { CareIndeedCard } from '@/components/theme/CareIndeedCard';
 
 import { ArrowRight, BookOpen, ClipboardCheck, FileCheck2, Landmark, Layers3, Network, ShieldCheck, Workflow, type LucideIcon } from 'lucide-react';
-import { MetricGrid, ProgressMeter, SurfaceCard, ToneTag, type MetricTileData, type SurfaceCardData } from '../../components';
-import { Button, ToneBadge } from '../../primitives';
+import { ProgressMeter, ToneTag, type MetricTileData, type SurfaceCardData } from '../../components';
+import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/data/policyCorpus';
@@ -184,6 +183,8 @@ const alignmentCards: readonly (readonly [string, string, string, Tone])[] = [
   ['Title 22 refs', String(totalTitle22), 'State references with active stewardship rows', 'orange'],
 ];
 
+import { useNavigate } from 'react-router-dom';
+
 export type FrameworkTabKey = 'taxonomy' | 'mapping' | 'achc-survey' | 'achc-crosswalk' | 'hh-evidence-map';
 
 export function FrameworkTabs({
@@ -193,46 +194,48 @@ export function FrameworkTabs({
   activeTab: FrameworkTabKey;
   onFrameworkTabChange?: (tab: 'taxonomy' | 'mapping') => void;
 }) {
-  const tabClass = (isActive: boolean) =>
-    cx(
-      'py-3 border-b-4 text-xs font-bold uppercase tracking-wider transition-all duration-150 focus-visible:outline-none focus-visible:shadow-focus',
-      isActive
-        ? 'border-brand-teal-deep text-brand-teal-deep font-bold'
-        : 'border-transparent text-muted hover:text-brand-teal hover:border-gray-300',
-    );
+  const navigate = useNavigate();
+
+  const tabs = [
+    { id: 'taxonomy', label: 'Taxonomy Structure', path: '/framework' },
+    { id: 'mapping', label: 'Standard Mapping Snapshot', path: '/framework?tab=mapping' },
+    { id: 'achc-survey', label: 'ACHC Survey Alignment', path: '/framework/achc-survey' },
+    { id: 'achc-crosswalk', label: 'ACHC Crosswalk', path: '/framework/achc-survey/crosswalk' },
+    { id: 'hh-evidence-map', label: 'HH Tag Evidence Map', path: '/framework/hh-evidence-map' },
+  ];
 
   return (
-    <div className="flex justify-start w-full border-b border-card bg-transparent px-2 mb-6">
-      <div className="flex flex-wrap gap-x-6">
-        {onFrameworkTabChange ? (
-          <button onClick={() => onFrameworkTabChange('taxonomy')} className={tabClass(activeTab === 'taxonomy')}>
-            Taxonomy Structure
+    <nav aria-label="Policy architecture sections" className="flex max-w-full items-end -space-x-2 font-montserrat md:-space-x-3">
+      {tabs.map((tab) => {
+        const isActive = tab.id === activeTab;
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => {
+              const id = tab.id;
+              if (onFrameworkTabChange && (id === 'taxonomy' || id === 'mapping')) {
+                onFrameworkTabChange(id as 'taxonomy' | 'mapping');
+              } else {
+                const nextTab = tabs.find(t => t.id === id);
+                if (nextTab) navigate(nextTab.path);
+              }
+            }}
+            style={{
+              backgroundColor: isActive ? 'rgba(209, 234, 230, 0.777)' : 'rgba(230, 244, 241, 0.45)',
+              borderRadius: '10px 10px 0 0',
+            }}
+            className={cx(
+              'relative flex items-center justify-center border-0 px-4 text-[9px] font-bold uppercase tracking-wider shadow-[-2px_-1px_5px_rgba(82,64,75,0.06)] outline-none backdrop-blur-[6px] transition-all duration-300 hover:shadow-[-2px_-1px_7px_rgba(82,64,75,0.1)] md:px-6 md:text-[10px]',
+              isActive ? 'z-30 h-8 translate-y-px text-[#007970]' : 'z-10 h-[26px] text-[#007970]/70 hover:h-7',
+            )}
+            aria-current={isActive ? 'page' : undefined}
+          >
+            {tab.label}
           </button>
-        ) : (
-          <Link to="/framework" className={tabClass(activeTab === 'taxonomy')}>
-            Taxonomy Structure
-          </Link>
-        )}
-        {onFrameworkTabChange ? (
-          <button onClick={() => onFrameworkTabChange('mapping')} className={tabClass(activeTab === 'mapping')}>
-            Standard Mapping Snapshot
-          </button>
-        ) : (
-          <Link to="/framework?tab=mapping" className={tabClass(activeTab === 'mapping')}>
-            Standard Mapping Snapshot
-          </Link>
-        )}
-        <Link to="/framework/achc-survey" className={tabClass(activeTab === 'achc-survey')}>
-          ACHC Survey Alignment
-        </Link>
-        <Link to="/framework/achc-survey/crosswalk" className={tabClass(activeTab === 'achc-crosswalk')}>
-          ACHC Crosswalk
-        </Link>
-        <Link to="/framework/hh-evidence-map" className={tabClass(activeTab === 'hh-evidence-map')}>
-          HH Tag Evidence Map
-        </Link>
-      </div>
-    </div>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -258,158 +261,286 @@ export function FrameworkScreen() {
   };
   
 
+  const sortedDomains = viewMode === 'heat'
+    ? [...frameworkDomains].sort((a, b) => a.readiness - b.readiness)
+    : frameworkDomains;
+
   return (
-    <div className="grid gap-xl" data-hash-id="framework" data-route="/framework" data-template="framework">
-      {/* Premium Segmented Tab Control */}
-      <FrameworkTabs activeTab={activeTab} onFrameworkTabChange={setActiveTab} />
+    <div
+      className="min-h-screen bg-[#FAFBF8] px-6 pb-16 pt-4 font-roboto text-[#52404B] md:px-12"
+      data-hash-id="framework"
+      data-route="/framework"
+      data-template="framework"
+    >
+      <main className="mx-auto flex w-full max-w-[1400px] flex-col">
+        <div className="relative z-20 flex justify-start">
+          <FrameworkTabs activeTab={activeTab} onFrameworkTabChange={setActiveTab} />
+        </div>
 
-      <MetricGrid metrics={frameworkMetrics} />
-
-      {activeTab === 'taxonomy' ? (
-        <section className="grid gap-xl desktop:grid-cols-1">
-          <section className="grid content-start gap-lg">
-            <div className="flex flex-wrap items-end justify-between gap-md">
-              <div className="grid gap-xs">
-                <h2 className="text-xl font-bold text-brand-teal-deep">Framework domains</h2>
-                <p className="max-w-content text-sm text-muted">
-                  Top-level taxonomy tiles show domain ownership, policy scope, ACHC anchor density, and survey-readiness signals.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-sm" aria-label="Framework view modes">
-                <Button selected={viewMode === 'grid'} size="sm" variant={viewMode === 'grid' ? 'secondary' : 'tertiary'} onClick={() => setViewMode('grid')}>
-                  Grid
-                </Button>
-                <Button selected={viewMode === 'tree'} size="sm" variant={viewMode === 'tree' ? 'secondary' : 'tertiary'} onClick={() => setViewMode('tree')}>
-                  Tree
-                </Button>
-                <Button selected={viewMode === 'heat'} size="sm" variant={viewMode === 'heat' ? 'secondary' : 'tertiary'} onClick={() => setViewMode('heat')}>
-                  Heat
-                </Button>
-              </div>
+        <section className="mb-8 rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:px-12 md:py-10">
+          <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
+            <div className="max-w-3xl">
+              <p className="mb-3 font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#F06923]">Policy Architecture</p>
+              <h1 className="font-montserrat text-3xl font-bold leading-tight tracking-tight text-[#007970] md:text-5xl">
+                Policies & Procedures
+              </h1>
+              <p className="mt-4 max-w-2xl font-roboto text-base leading-relaxed text-[#747470]">
+                A decluttered view of the agency taxonomy, policy corpus, ACHC anchors, and lifecycle signals using live framework data.
+              </p>
             </div>
-
-            <div className="grid gap-lg tablet-l:grid-cols-2 laptop:grid-cols-3" role="list">
-              {frameworkDomains.map((domain) => (
-                <DomainTile domain={domain} key={domain.code} />
-              ))}
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link
+                to="/library"
+                className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#F06923] px-6 py-3 font-montserrat text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_0_25px_6px_rgba(240,105,35,0.28)]"
+              >
+                <BookOpen className="h-4 w-4" aria-hidden />
+                Open Policies
+              </Link>
+              <Link
+                to="/policy-lifecycle"
+                className="inline-flex items-center justify-center gap-2 rounded-[12px] border-[1.5px] border-[#007970] bg-white px-6 py-3 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#007970] transition-all hover:bg-[#F7FEFF]"
+              >
+                <Workflow className="h-4 w-4" aria-hidden />
+                Lifecycle
+              </Link>
             </div>
-          </section>
+          </div>
+        </section>
 
-          <aside className="grid content-start gap-lg">
-            {contextCards.map((card) => (
-              <SurfaceCard card={card} key={card.title} />
-            ))}
+        <div className="mb-8 grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          {frameworkMetrics.map((metric) => (
+            <FrameworkMetricCard key={metric.label} metric={metric} />
+          ))}
+        </div>
 
-            <CareIndeedCard variant="container" className="p-6">
-              <div className="mb-4 flex items-start justify-between gap-md">
+        {activeTab === 'taxonomy' ? (
+          <div className="space-y-8 pb-12">
+            <section className="rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:p-10">
+              <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                  <ToneTag tone="orange">Authority context</ToneTag>
-                  <h2 className="mt-2 text-lg font-bold text-brand-teal-deep">ACHC / CMS / Title 22</h2>
+                  <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Framework Domains</h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#747470]">
+                    Domain ownership, policy scope, ACHC anchor density, and survey-readiness signals.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2" aria-label="Framework view modes">
+                  {[
+                    ['grid', 'Grid'],
+                    ['tree', 'Hierarchy'],
+                    ['heat', 'Readiness'],
+                  ].map(([id, label]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setViewMode(id as 'grid' | 'tree' | 'heat')}
+                      className={cx(
+                        'rounded-[10px] px-4 py-2 font-montserrat text-[10px] font-bold uppercase tracking-wider transition-all',
+                        viewMode === id
+                          ? 'bg-[#007970] text-white shadow-sm'
+                          : 'border border-[#E5E4E3] bg-white text-[#747470] hover:bg-[#F7FEFF] hover:text-[#007970]',
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {viewMode === 'tree' ? (
+                <div className="space-y-5">
+                  <FrameworkLayerSection
+                    accent="red"
+                    label="Layer 1"
+                    title="Regulatory Board"
+                    items={['Title 22', '42 CFR Part 484', 'CMS State Ops', 'HIPAA', 'OSHA', 'OIG']}
+                  />
+                  <FrameworkLayerSection
+                    accent="teal"
+                    label="Layer 2"
+                    title="Strategic Domains"
+                    items={frameworkDomains.map((domain) => `${domain.code} - ${domain.title}`)}
+                  />
+                  <FrameworkLayerSection
+                    accent="orange"
+                    label="Layer 3"
+                    title="Policy Stewardship"
+                    items={['Named owners', 'Review cycle', 'Approval authority', 'Attestation records', 'Evidence anchors']}
+                  />
+                </div>
+              ) : (
+                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3" role="list">
+                  {sortedDomains.map((domain) => (
+                    <DomainTile domain={domain} key={domain.code} />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="grid gap-5 xl:grid-cols-3">
+              {contextCards.map((card) => (
+                <PolicySignalCard card={card} key={card.title} />
+              ))}
+            </section>
+
+            <section className="rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:p-10">
+              <div className="mb-6 flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#F06923]">Authority Context</p>
+                  <h2 className="mt-2 font-montserrat text-2xl font-semibold tracking-tight text-[#007970]">ACHC / CMS / Title 22</h2>
                 </div>
                 <ToneBadge size="sm" status="ready" />
               </div>
-              <div className="grid gap-md">
+              <div className="grid gap-4 md:grid-cols-3">
                 {alignmentCards.map(([label, value, helper, tone]) => (
-                  <CareIndeedCard variant="grid-outline" className="p-4" key={label}>
-                    <div className="flex items-start justify-between gap-md">
+                  <div className="rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8] p-5" key={label}>
+                    <div className="flex items-start justify-between gap-4">
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted">{label}</p>
-                        <p className="mt-1 text-xl font-bold text-brand-teal-deep">{value}</p>
+                        <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470]">{label}</p>
+                        <p className="mt-2 font-montserrat text-3xl font-bold text-[#007970]">{value}</p>
                       </div>
                       <ToneTag tone={tone}>{tone === 'orange' ? 'Review' : 'Mapped'}</ToneTag>
                     </div>
-                    <p className="mt-2 text-xs text-muted">{helper}</p>
-                  </CareIndeedCard>
+                    <p className="mt-3 text-xs leading-relaxed text-[#747470]">{helper}</p>
+                  </div>
                 ))}
               </div>
-            </CareIndeedCard>
-          </aside>
-        </section>
-      ) : (
-        <CareIndeedCard variant="container" className="p-6">
-          <div className="mb-4 flex flex-wrap items-start justify-between gap-lg">
-            <div className="grid gap-xs">
-              <h2 className="text-h2 font-medium text-ink">Standard mapping snapshot</h2>
-              <p className="max-w-content text-sm text-muted">
-                Representative rows connect ACHC standards to CMS Conditions of Participation, Title 22 references, policy IDs, forms,
-                and evidence methods.
-              </p>
+            </section>
+          </div>
+        ) : (
+          <section className="rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:p-10">
+            <div className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Standard Mapping Snapshot</h2>
+                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#747470]">
+                  Representative rows connect ACHC standards to CMS Conditions of Participation, Title 22 references, policy IDs, forms, and evidence methods.
+                </p>
+              </div>
+              <Link
+                className="inline-flex w-fit items-center gap-2 rounded-[12px] bg-[#F06923] px-6 py-3 font-montserrat text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:-translate-y-0.5"
+                to="/framework/achc-survey/crosswalk"
+              >
+                Open Crosswalk
+                <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              </Link>
             </div>
-            <Link
-              className="inline-flex items-center gap-sm rounded-md border border-brand-orange bg-brand-orange px-md py-xs text-sm text-on-brand hover:bg-brand-orange focus-visible:outline-none focus-visible:shadow-focus"
-              to="/framework/achc-survey/crosswalk"
-            >
-              Open crosswalk
-              <ArrowRight aria-hidden="true" className="h-icon-sm w-icon-sm" />
-            </Link>
-          </div>
 
-          <div className="hidden overflow-x-auto laptop:block">
-            <table className="min-w-full border-collapse text-left text-xs" aria-label="Framework standard mapping snapshot">
-              <thead className="bg-surface-glass backdrop-blur-md shadow-glass-inset text-tag uppercase tracking-tag text-muted">
-                <tr>
-                  <th className="border-b border-card px-lg py-md font-light" scope="col">
-                    ACHC
-                  </th>
-                  <th className="border-b border-card px-lg py-md font-light" scope="col">
-                    Standard focus
-                  </th>
-                  <th className="border-b border-card px-lg py-md font-light" scope="col">
-                    CMS / Title 22
-                  </th>
-                  <th className="border-b border-card px-lg py-md font-light" scope="col">
-                    Policy / Form
-                  </th>
-                  <th className="border-b border-card px-lg py-md font-light" scope="col">
-                    Evidence
-                  </th>
-                  <th className="border-b border-card px-lg py-md font-light" scope="col">
-                    Support
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {mappingRows.map((row) => (
-                  <tr className="transition duration-fast ease-standard hover:bg-surface-hover" key={row.achc}>
-                    <td className="border-b border-hairline px-lg py-md">
-                      <ToneTag tone={row.tone}>{row.achc}</ToneTag>
-                    </td>
-                    <td className="border-b border-hairline px-lg py-md text-secondary">{row.standard}</td>
-                    <td className="border-b border-hairline px-lg py-md text-muted">{row.cmsTitle22}</td>
-                    <td className="border-b border-hairline px-lg py-md text-secondary">
-                      <span className="text-brand-teal">{row.policy}</span>
-                      <span className="block text-muted">{row.forms}</span>
-                    </td>
-                    <td className="border-b border-hairline px-lg py-md text-muted">{row.evidence}</td>
-                    <td className="border-b border-hairline px-lg py-md">
-                      <ToneBadge size="sm" status={row.status} />
-                    </td>
+            <div className="hidden overflow-x-auto rounded-[18px] border border-[#E5E4E3] laptop:block">
+              <table className="min-w-full border-collapse text-left text-xs" aria-label="Framework standard mapping snapshot">
+                <thead className="bg-[#FAFBF8] font-montserrat text-[9px] uppercase tracking-widest text-[#747470]">
+                  <tr>
+                    <th className="border-b border-[#E5E4E3] px-5 py-4 font-bold" scope="col">ACHC</th>
+                    <th className="border-b border-[#E5E4E3] px-5 py-4 font-bold" scope="col">Standard focus</th>
+                    <th className="border-b border-[#E5E4E3] px-5 py-4 font-bold" scope="col">CMS / Title 22</th>
+                    <th className="border-b border-[#E5E4E3] px-5 py-4 font-bold" scope="col">Policy / Form</th>
+                    <th className="border-b border-[#E5E4E3] px-5 py-4 font-bold" scope="col">Evidence</th>
+                    <th className="border-b border-[#E5E4E3] px-5 py-4 font-bold" scope="col">Support</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {mappingRows.map((row) => (
+                    <tr className="transition hover:bg-[#F7FEFF]" key={row.achc}>
+                      <td className="border-b border-[#F1F1EF] px-5 py-4"><ToneTag tone={row.tone}>{row.achc}</ToneTag></td>
+                      <td className="border-b border-[#F1F1EF] px-5 py-4 font-semibold text-[#52404B]">{row.standard}</td>
+                      <td className="border-b border-[#F1F1EF] px-5 py-4 text-[#747470]">{row.cmsTitle22}</td>
+                      <td className="border-b border-[#F1F1EF] px-5 py-4 text-[#52404B]">
+                        <span className="font-mono font-bold text-[#007970]">{row.policy}</span>
+                        <span className="block text-[#747470]">{row.forms}</span>
+                      </td>
+                      <td className="border-b border-[#F1F1EF] px-5 py-4 text-[#747470]">{row.evidence}</td>
+                      <td className="border-b border-[#F1F1EF] px-5 py-4"><ToneBadge size="sm" status={row.status} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-          <div className="grid gap-md laptop:hidden">
-            {mappingRows.map((row) => (
-              <article className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg" key={row.achc}>
-                <div className="mb-md flex flex-wrap items-start justify-between gap-sm">
-                  <ToneTag tone={row.tone}>{row.achc}</ToneTag>
-                  <ToneBadge size="sm" status={row.status} />
-                </div>
-                <h3 className="text-body font-light text-ink">{row.standard}</h3>
-                <p className="mt-sm text-sm text-muted">{row.cmsTitle22}</p>
-                <div className="mt-md grid gap-sm text-sm text-secondary">
-                  <span>{row.policy}</span>
-                  <span>{row.forms}</span>
-                  <span>{row.evidence}</span>
-                </div>
-              </article>
-            ))}
-          </div>
-        </CareIndeedCard>
-      )}
+            <div className="grid gap-4 laptop:hidden">
+              {mappingRows.map((row) => (
+                <article className="rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8] p-5" key={row.achc}>
+                  <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                    <ToneTag tone={row.tone}>{row.achc}</ToneTag>
+                    <ToneBadge size="sm" status={row.status} />
+                  </div>
+                  <h3 className="font-montserrat text-sm font-bold text-[#007970]">{row.standard}</h3>
+                  <p className="mt-2 text-sm text-[#747470]">{row.cmsTitle22}</p>
+                  <div className="mt-4 grid gap-2 text-sm text-[#52404B]">
+                    <span>{row.policy}</span>
+                    <span>{row.forms}</span>
+                    <span>{row.evidence}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+      </main>
     </div>
+  );
+}
+
+function FrameworkMetricCard({ metric }: { metric: MetricTileData }) {
+  return (
+    <div className="group flex min-h-[154px] flex-col justify-center rounded-[24px] border border-[#E5E4E3] bg-white p-7 shadow-sm transition-colors hover:border-[#007970]">
+      <span className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470]">{metric.label}</span>
+      <span className="mt-3 font-montserrat text-4xl font-bold text-[#F06923] transition-transform duration-300 group-hover:scale-[1.03]">{metric.value}</span>
+      <span className="mt-3 text-sm leading-relaxed text-[#747470]">{metric.helper}</span>
+    </div>
+  );
+}
+
+function FrameworkLayerSection({
+  accent,
+  label,
+  title,
+  items,
+}: {
+  accent: 'orange' | 'red' | 'teal';
+  label: string;
+  title: string;
+  items: readonly string[];
+}) {
+  const accentClass = {
+    orange: 'border-[#F06923] text-[#F06923] bg-[#FFF0E5]',
+    red: 'border-red-400 text-red-500 bg-red-50',
+    teal: 'border-[#007970] text-[#007970] bg-[#E5FEFF]',
+  }[accent];
+
+  return (
+    <div className={cx('border-l-4 pl-5', accent === 'orange' ? 'border-l-[#F06923]' : accent === 'red' ? 'border-l-red-400' : 'border-l-[#007970]')}>
+      <div className="mb-4 flex items-center gap-3">
+        <span className={cx('rounded-md border px-2 py-1 font-montserrat text-[9px] font-bold uppercase tracking-widest', accentClass)}>{label}</span>
+        <h3 className="font-montserrat text-xs font-bold uppercase tracking-wider text-[#52404B]">{title}</h3>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {items.map((item) => (
+          <span key={item} className="rounded-[10px] border border-[#E5E4E3] bg-white px-3 py-2 font-montserrat text-[10px] font-bold uppercase tracking-wide text-[#52404B] shadow-sm">
+            {item}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PolicySignalCard({ card }: { card: SurfaceCardData }) {
+  const Icon = card.icon ?? FileCheck2;
+  const progress = card.progress ?? 0;
+  return (
+    <article className="flex min-h-[210px] flex-col justify-between rounded-[24px] border border-[#E5E4E3] bg-white p-7 shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#007970] hover:shadow-md">
+      <div>
+        <div className="mb-4 flex items-center justify-between">
+          <span className="grid h-10 w-10 place-items-center rounded-[14px] bg-[#E5FEFF] text-[#007970]">
+            <Icon className="h-5 w-5" aria-hidden />
+          </span>
+          <ToneBadge size="sm" status={card.status} />
+        </div>
+        <h3 className="font-montserrat text-base font-bold text-[#007970]">{card.title}</h3>
+        <p className="mt-2 text-sm leading-relaxed text-[#747470]">{card.body}</p>
+      </div>
+      <div className="mt-6">
+        <ProgressMeter label="Signal strength" tone={card.tone} value={progress} />
+      </div>
+    </article>
   );
 }
 
@@ -417,24 +548,23 @@ function DomainTile({ domain }: { domain: DomainTileData }) {
   const Icon = domain.icon;
 
   return (
-    <CareIndeedCard
-      variant="grid-outline"
-      className="grid min-h-[270px] content-between gap-lg p-5 overflow-hidden transition duration-150 hover:shadow-sm"
+    <article
+      className="grid min-h-[286px] content-between gap-6 overflow-hidden rounded-[24px] border border-[#E5E4E3] bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#007970] hover:shadow-md"
       role="listitem"
     >
       <div className="grid gap-md">
         <div className="flex items-start justify-between gap-md">
-          <span className={cx('grid h-tap w-tap place-items-center rounded-lg bg-surface-hover text-brand-teal', domainIconClasses[domain.tone])}>
+          <span className={cx('grid h-11 w-11 place-items-center rounded-[14px] bg-[#FAFBF8] text-[#007970]', domainIconClasses[domain.tone])}>
             <Icon aria-hidden="true" className="h-5 w-5" />
           </span>
           <ToneTag tone={domain.tone}>{domain.code}</ToneTag>
         </div>
         <div className="grid gap-xs">
           <div className="flex flex-wrap items-center justify-between gap-sm">
-            <h3 className="text-sm font-bold text-brand-teal-deep">{domain.title}</h3>
+            <h3 className="font-montserrat text-base font-bold text-[#007970]">{domain.title}</h3>
             <ToneBadge size="sm" status={domain.status} />
           </div>
-          <p className="text-xs text-muted">{domain.description}</p>
+          <p className="text-sm leading-relaxed text-[#747470]">{domain.description}</p>
         </div>
       </div>
 
@@ -446,22 +576,22 @@ function DomainTile({ domain }: { domain: DomainTileData }) {
         </div>
         <ProgressMeter label="Survey readiness" tone={domain.tone} value={domain.readiness} />
         <Link
-          className="inline-flex min-h-tap items-center justify-between gap-md rounded-lg border border-card bg-white px-4 py-2 text-left text-xs font-bold uppercase tracking-wider text-brand-teal transition duration-150 hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus"
+          className="inline-flex min-h-tap items-center justify-between gap-md rounded-[12px] border border-[#E5E4E3] bg-white px-4 py-3 text-left font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#007970] transition hover:bg-[#F7FEFF] focus-visible:outline-none focus-visible:shadow-focus"
           to="/framework/achc-survey"
         >
           Inspect architecture
           <ArrowRight aria-hidden="true" className="h-4 w-4 text-brand-orange" />
         </Link>
       </div>
-    </CareIndeedCard>
+    </article>
   );
 }
 
 function DomainStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-card bg-surface-hover p-2 overflow-hidden text-center">
-      <p className="text-lg font-bold text-brand-teal-deep">{value}</p>
-      <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-brand-teal">{label}</p>
+    <div className="overflow-hidden rounded-[14px] border border-[#E5E4E3] bg-[#FAFBF8] p-3 text-center">
+      <p className="font-montserrat text-xl font-bold text-[#007970]">{value}</p>
+      <p className="mt-1 font-montserrat text-[8px] font-bold uppercase tracking-wider text-[#747470]">{label}</p>
     </div>
   );
 }

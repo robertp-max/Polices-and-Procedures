@@ -11,7 +11,7 @@ export const CareIndeedBadge: React.FC<CareIndeedBadgeProps> = ({
 }) => {
   return (
     <span
-      className={`inline-flex items-center px-3 py-1 rounded-full bg-surface-hover border border-brand-teal/20 text-brand-teal text-[11px] font-bold uppercase tracking-wider ${className}`}
+      className={`inline-flex items-center px-4 py-1.5 rounded-full bg-[var(--ci-surface-mint)] border border-[var(--ci-border-mint)] text-[var(--ci-text-teal-accent)] text-[12px] font-semibold uppercase tracking-widest ${className}`}
       {...props}
     >
       {children}

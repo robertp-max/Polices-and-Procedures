@@ -228,12 +228,12 @@ export function AdminPermissionsScreen() {
       <div className="sr-only"><h1>Permissions</h1></div>
       <MetricGrid metrics={permissionMetrics} />
       <section className="grid gap-xl rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset/90 p-xl shadow-rest backdrop-blur-xl">
-        <nav aria-label="Permission detail tabs" className="flex gap-xs overflow-x-auto rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs overflow-hidden shadow-rest">
+        <nav aria-label="Permission management tabs" className="flex gap-xs overflow-x-auto rounded-full border border-card bg-white p-xs shadow-sm">
           {permissionTabs.map((tab) => (
             <button
               aria-selected={activeTab === tab.id}
               className={cx(
-                'min-h-tap shrink-0 rounded-md px-md text-sm font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
+                'min-h-tap shrink-0 rounded-full px-md py-1.5 text-sm font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
                 activeTab === tab.id
                   ? 'bg-brand-teal text-on-brand shadow-rest'
                   : 'text-secondary hover:bg-surface-hover hover:text-brand-teal',

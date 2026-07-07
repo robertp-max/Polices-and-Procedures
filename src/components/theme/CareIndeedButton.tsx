@@ -3,18 +3,20 @@ import React from 'react';
 export interface CareIndeedButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'outline';
   shape?: 'rounded' | 'pill';
+  leftIcon?: React.ReactNode;
   children: React.ReactNode;
 }
 
 export const CareIndeedButton: React.FC<CareIndeedButtonProps> = ({
   variant = 'primary',
-  shape = 'pill',
+  shape = 'rounded',
+  leftIcon,
   children,
   className = '',
   disabled,
   ...props
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center font-semibold text-sm tracking-wider uppercase transition-all duration-150 active:scale-[0.98] select-none';
+  const baseStyles = 'inline-flex items-center justify-center font-semibold text-[14px] tracking-wider uppercase transition-all duration-150 active:scale-[0.98] select-none';
   
   const getVariantStyles = () => {
     if (disabled) {
@@ -23,22 +25,22 @@ export const CareIndeedButton: React.FC<CareIndeedButtonProps> = ({
     
     switch (variant) {
       case 'primary':
-        return 'bg-brand-orange text-white hover:bg-opacity-95 shadow-[0_8px_20px_rgba(242,110,54,0.15)] border-none';
+        return 'bg-[var(--ci-brand-orange)] text-white hover:bg-opacity-95 shadow-[0_4px_14px_rgba(242,110,54,0.35)] border-none';
       case 'outline':
-        return 'bg-white text-brand-orange border border-brand-orange hover:bg-brand-orange hover:text-white';
+        return 'bg-white text-[var(--ci-brand-orange)] border border-[var(--ci-brand-orange)] hover:bg-[var(--ci-brand-orange)] hover:text-white shadow-none';
       default:
-        return 'bg-brand-orange text-white';
+        return 'bg-[var(--ci-brand-orange)] text-white';
     }
   };
 
   const getShapeStyles = () => {
     switch (shape) {
       case 'rounded':
-        return 'rounded-lg px-6 py-3';
+        return 'rounded-xl px-8 py-3.5';
       case 'pill':
-        return 'rounded-full px-8 py-3';
+        return 'rounded-full px-8 py-3.5';
       default:
-        return 'rounded-lg px-6 py-3';
+        return 'rounded-xl px-8 py-3.5';
     }
   };
 
@@ -48,6 +50,7 @@ export const CareIndeedButton: React.FC<CareIndeedButtonProps> = ({
       disabled={disabled}
       {...props}
     >
+      {leftIcon && <span className="mr-2 inline-flex items-center">{leftIcon}</span>}
       {children}
     </button>
   );

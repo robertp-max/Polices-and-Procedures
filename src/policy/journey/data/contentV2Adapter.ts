@@ -442,7 +442,19 @@ export const courseModules: ModuleDef[] = [
 ];
 
 export function getModuleDef(moduleId: string): ModuleDef | undefined {
-  return courseModules.find((m) => m.id === moduleId);
+  const direct = courseModules.find((m) => m.id === moduleId);
+  if (direct) return direct;
+
+  const canonical = canonicalModuleId(moduleId);
+  const achcAliasId = appModuleId(canonical);
+  const achcModule = courseModules.find((m) => m.id === achcAliasId);
+  if (!achcModule || canonical === achcAliasId) return achcModule;
+
+  return {
+    ...achcModule,
+    id: canonical,
+    code: canonical.replace("ACHC-ART-", ""),
+  };
 }
 
 export function getLessonDef(moduleId: string, lessonId: string) {

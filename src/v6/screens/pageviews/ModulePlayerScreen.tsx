@@ -60,7 +60,9 @@ import { AdvancedTrainingPlayer } from "@/policy/journey/components/advanced/Adv
 import { OasisSocTrainingPanel } from "@/policy/journey/components/advanced/OasisSocTrainingPanel";
 import { isOasisSocModule, OASIS_SOC_MODULE_TITLE } from "@/policy/journey/components/advanced/oasisSocModule";
 import { Cms485AssessmentQuizPage } from "./Cms485AssessmentQuizPage";
-
+import CoreValuesInteractiveViewer from "@/policy/journey/components/CoreValuesInteractiveViewer";
+import GAO001Scene01WelcomeDesk from "@/policy/journey/components/GAO001Scene01WelcomeDesk";
+import GAO002OrgStructureViewer from "@/policy/journey/components/GAO002OrgStructureViewer";
 
 /* ==========================================================================
    SHARED PRIMITIVE COMPONENTS (Light Mode adapted)
@@ -153,6 +155,26 @@ function isCareIndeedOnboardingModule(moduleId?: string): boolean {
   if (id.startsWith("CAO-")) return true;
   return /^(GAO|ADM|DON|RN|LVN|PT|PTA|OT|COTA|SLP|MSW|HHA)-/.test(id);
 }
+
+function isCoreValuesLesson(card: any): boolean {
+  if (!card) return false;
+  const title = String(card?.display_title || card?.title || "").toLowerCase();
+  const html = String(card?.learner_facing_content || "");
+  return /core value/i.test(title) || /our core values/i.test(html) || title.includes("core values");
+}
+
+function isGAO001WelcomeScene(card: any): boolean {
+  if (!card) return false;
+  const title = String(card?.display_title || card?.title || "").toLowerCase();
+  return title.includes("welcome to care indeed") || title.includes("first day");
+}
+
+function isGAO002Interactive(moduleId?: string): boolean {
+  // Exact match 'GAO-002' per Integration & Shell spec
+  return moduleId === 'GAO-002';
+}
+
+const isGAO002FullWorkspace = (moduleId?: string) => isGAO002Interactive(moduleId);
 
 const onboardingDotBg = {
   backgroundColor: "#FAFBF8",
@@ -642,7 +664,17 @@ function Module1OverviewPage() {
   const module = getModuleDef(moduleId);
   const moduleExam = moduleAssessmentPassed(state, moduleId);
 
-  if (!module) return null;
+  if (!module) {
+    return (
+      <section className="p-8">
+        <div className="max-w-xl rounded-xl border border-hairline bg-surface-glass p-6 shadow-rest backdrop-blur-xl">
+          <h2 className="text-xl font-bold text-brand-teal-deep">Module content unavailable</h2>
+          <p className="mt-2 text-sm text-secondary">Module "{moduleId}" does not have playable training content yet.</p>
+          <Link to="/journey?tab=achc" className="mt-4 inline-block text-brand-teal underline">Return to ACHC annual training</Link>
+        </div>
+      </section>
+    );
+  }
 
   if (isCareIndeedOnboardingModule(module.id)) {
     const cleanObjectives = module.learningObjectives.filter((obj: string) => !/using None|Retain evidence for EN-CM-001/i.test(obj));
@@ -652,11 +684,12 @@ function Module1OverviewPage() {
     ].slice(0, 6);
     const completedLessons = module.lessons.filter((item: any) => isLessonComplete(state, module.id, item.id)).length;
     const progressPct = module.lessons.length ? Math.round((completedLessons / module.lessons.length) * 100) : 0;
+    const moduleListRoute = module.id.startsWith('GAO-') ? '/journey?tab=onboarding&path=gao' : '/journey?tab=onboarding';
 
     return (
       <div className="min-h-[calc(100vh-var(--topbar-h)-2rem)] px-4 py-8 md:px-8" style={onboardingDotBg}>
         <div className="mx-auto max-w-5xl space-y-5">
-          <BackLink to="/journey">Back to Modules</BackLink>
+          <BackLink to={moduleListRoute}>Back to Modules</BackLink>
 
           <section className="rounded-[22px] border border-[#E5E4E3] bg-white p-6 shadow-[0_24px_70px_rgba(31,28,27,0.10)] md:p-8">
             <div className="flex flex-col gap-4 border-b border-[#E5E4E3] pb-5 md:flex-row md:items-start md:justify-between">
@@ -1087,8 +1120,8 @@ function LessonPlayerPage() {
           </div>
         </header>
 
-        <main className="grid min-h-0 flex-1 grid-cols-1 gap-[20px] p-0 lg:grid-cols-[420px_minmax(0,1fr)] lg:p-0">
-          <aside className="flex min-h-0 flex-col rounded-[22px] border border-[#E5E4E3] bg-white p-[20px] shadow-[0_18px_50px_rgba(31,28,27,0.08)]">
+        <main className={`grid min-h-0 flex-1 grid-cols-1 gap-[20px] p-0 ${isGAO002FullWorkspace(moduleId) ? 'lg:grid-cols-1' : 'lg:grid-cols-[420px_minmax(0,1fr)]'} lg:p-0`}>
+          <aside className={`flex min-h-0 flex-col rounded-[22px] border border-[#E5E4E3] bg-white p-[20px] shadow-[0_18px_50px_rgba(31,28,27,0.08)] ${isGAO002FullWorkspace(moduleId) ? 'hidden' : ''}`}>
             <div className="mb-4 flex border-b border-[#E5E4E3]">
               <button
                 type="button"
@@ -1107,7 +1140,23 @@ function LessonPlayerPage() {
             </div>
 
             <div className="min-h-0 flex-1 overflow-auto pr-1">
-              {activeTab === "content" ? (
+              {isGAO002Interactive(moduleId) ? (
+                // Shell preserved: adapt sidebar for interactive GAO-002 (high-level instead of per-card)
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#C74601]">INTERACTIVE SCENE ACTIVE</div>
+                    <h2 className="mt-1 text-lg font-bold text-[#004142]">Organizational Structure &amp; Reporting</h2>
+                  </div>
+                  <div className="text-[#524C4B] leading-relaxed">
+                    Explore the 3 scenes using the premium workspace on the right. Use the scene stepper and Prev/Next to navigate. Unlocks and decisions drive progress. Narration and key facts are embedded in the interactive.
+                  </div>
+                  <div className="pt-2 text-xs text-[#747470] border-t border-[#E5E4E3]">
+                    L1: Governing Body, Administrator, DON, Compliance Officer (dual line) + escalation challenge.<br />
+                    L2: On-call roster, coverage alternates, field escalation.<br />
+                    Complete all scenes to reach “Reporting Lines Practice Complete”.
+                  </div>
+                </div>
+              ) : activeTab === "content" ? (
                 <OnboardingLessonHtml card={currentCard} />
               ) : (
                 <div className="space-y-4">
@@ -1125,7 +1174,41 @@ function LessonPlayerPage() {
 
           <section className="h-full rounded-[24px] border border-[#E5E4E3] bg-white p-[20px] shadow-[0_18px_50px_rgba(31,28,27,0.08)] lg:min-h-0">
             <div className="h-full w-full flex flex-col rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8] overflow-hidden">
-              {hasMedia(currentCard.app.location) ? (
+              {isCoreValuesLesson(currentCard) ? (
+                <CoreValuesInteractiveViewer 
+                  onComplete={() => {
+                    console.info('[GAO Core Values] Interactive scene completed');
+                  }} 
+                />
+              ) : isGAO001WelcomeScene(currentCard) ? (
+                <GAO001Scene01WelcomeDesk 
+                  onComplete={() => {
+                    console.info('[GAO-001 Scene 1] visual_scene_completed');
+                  }} 
+                />
+              ) : isGAO002Interactive(moduleId) ? (
+                <GAO002OrgStructureViewer 
+                  onComplete={() => {
+                    // Safely mark GAO-002 lessons complete using withLessonCompleted (module-level progress).
+                    // Safe completion wording: "Reporting Lines Practice Complete"
+                    console.info('[GAO-002] Reporting Lines Practice Complete');
+                    try {
+                      if (moduleId) {
+                        setState((s) => withLessonCompleted(s, moduleId, 'GAO-002-L1'));
+                        setState((s) => withLessonCompleted(s, moduleId, 'GAO-002-L2'));
+                      }
+                      // Record module completion (journey flow)
+                      try { 
+                        const j = useJourneyStore.getState(); 
+                        j.recordLearnerCompletion(j.currentEmployeeId, 'GAO-002', true); 
+                      } catch {}
+                    } catch (e) { 
+                      // non-fatal: log + allow parent flow
+                      console.info('[GAO-002] onComplete: lessons marked (or fallback to parent flow)');
+                    }
+                  }} 
+                />
+              ) : hasMedia(currentCard.app.location) ? (
                 <MediaSlot
                   appLocation={currentCard.app.location}
                   sceneTitle={mediaTitle}
@@ -2061,6 +2144,12 @@ export function ModulePlayerScreen() {
     const advTitle = getModuleDef(rawModuleId)?.title || rawModuleId;
     journeyMod = { id: rawModuleId, roles: 'ALL', group: 'ADV' as any, phase: 'ANN' as any, title: advTitle } as any;
   }
+  if (!journeyMod && rawModuleId) {
+    const playableModule = getModuleDef(rawModuleId);
+    if (playableModule) {
+      journeyMod = { id: playableModule.id, roles: 'ALL', group: 'ANN' as any, phase: 'ANN' as any, title: playableModule.title } as any;
+    }
+  }
 
   // HOIST useMemo here so it is ALWAYS called (P0-002 fix for hook order)
   const element = useMemo(() => {
@@ -2070,7 +2159,7 @@ export function ModulePlayerScreen() {
     if (isOasisSocModule(params.moduleId)) {
       return <OasisSocTrainingPanel moduleId={params.moduleId!} />;
     }
-    if (params.moduleId && isAdvancedModule(params.moduleId)) {
+    if (params.moduleId && isAdvancedModule(params.moduleId) && !isGAO002Interactive(params.moduleId)) {
       const variant = getAdvancedVariant(params.moduleId) || 'plan_of_care';
       const title = getModuleDef(params.moduleId)?.title || params.moduleId;
       return <AdvancedTrainingPlayer moduleId={params.moduleId} moduleTitle={title} variant={variant} />;
@@ -2106,7 +2195,7 @@ export function ModulePlayerScreen() {
     );
   }, [pathname, params]);
 
-  if (rawModuleId && !journeyMod && !isOasisSocModule(rawModuleId) && !isAdvancedModule(rawModuleId) && !['m0'].includes(rawModuleId)) {
+  if (rawModuleId && !journeyMod && !isOasisSocModule(rawModuleId) && !isAdvancedModule(rawModuleId) && !isGAO002Interactive(rawModuleId) && !['m0'].includes(rawModuleId)) {
     // Unknown module - bypass for RN-ADV modules (registered in adapter/courseModules)
     return (
       <section className="p-8">

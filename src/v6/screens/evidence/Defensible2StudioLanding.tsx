@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Camera, CheckCircle2, CloudUpload, XCircle } from 'lucide-react';
+import { Camera, CheckCircle2, CloudUpload, FileText, XCircle } from 'lucide-react';
 import { REGULATORY_EVENTS } from '@/policy/data/regulatoryEvents';
 import { MANDATED_EVENTS_EXPANDED } from '@/policy/data/mandatedEventsExpanded';
-import { CalendarApi, type EvidenceHealthResponse, type ManifestFolder, type SourceExtractionApiResult } from '@/policy/services/calendarApi';
+import {
+  CalendarApi,
+  type DriveBrowseFile,
+  type DriveBrowseResponse,
+  type EvidenceHealthResponse,
+  type ManifestFolder,
+  type SourceExtractionApiResult,
+} from '@/policy/services/calendarApi';
 import {
   buildEvidenceIdentityScope, buildIdempotencyKey, detectFormat, extractRecordFromCell,
   parseSourceFile, sanitizeFileName, type EvidenceSourceRecord, type SourceSystem,
@@ -234,6 +241,13 @@ function b64(s: string): string {
   return btoa(bin);
 }
 
+function fileFromBase64(name: string, mimeType: string, fileBase64: string): File {
+  const binary = atob(fileBase64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return new File([bytes], name || 'drive-source.txt', { type: mimeType || 'application/octet-stream' });
+}
+
 const GOOGLE_DRIVE_LOGO = '/assets/media/googledrive_logo.png';
 const CARE_INDEED_LOGO = 'https://careindeed.com/apple-icon.png?2e01fae8dd8e47f4';
 const ACCEPTED_SOURCE_FILES = '.json,.csv,.tsv,.md,.markdown,.txt,.xlsx,.xls,.pdf,.docx,application/pdf';
@@ -411,18 +425,48 @@ export function Defensible2StudioLanding() {
   const [billingConfirmation, setBillingConfirmation] = useState<BillingRouteConfirmation | null>(null);
   const [sourceModal, setSourceModal] = useState<'' | 'upload' | 'drive' | 'merge'>('');
   const [selectedDriveFolder, setSelectedDriveFolder] = useState('');
+  const [selectedDriveFile, setSelectedDriveFile] = useState<DriveBrowseFile | null>(null);
+  const [driveTrail, setDriveTrail] = useState<Array<{ id: string; name: string }>>([]);
+  const [driveBrowser, setDriveBrowser] = useState<DriveBrowseResponse | null>(null);
+  const [driveBrowserLoading, setDriveBrowserLoading] = useState(false);
+  const [driveBrowserErr, setDriveBrowserErr] = useState<string | null>(null);
+  const [driveSourceDownloading, setDriveSourceDownloading] = useState(false);
   // Real Drive folders from the manifest (source of truth) for the "Select from
   // Google Drive" picker. Loaded when the drive/merge modal opens.
   const [driveFolders, setDriveFolders] = useState<ManifestFolder[]>([]);
   const [driveFoldersErr, setDriveFoldersErr] = useState<string | null>(null);
+  const loadDriveFolder = useCallback((folderId: string, trail: Array<{ id: string; name: string }>) => {
+    if (!folderId) return;
+    setDriveTrail(trail);
+    setSelectedDriveFolder(trail[trail.length - 1]?.name || '');
+    setSelectedDriveFile(null);
+    setDriveBrowserLoading(true);
+    setDriveBrowserErr(null);
+    CalendarApi.driveFolderChildren(folderId)
+      .then((r) => setDriveBrowser(r))
+      .catch((e) => {
+        setDriveBrowser(null);
+        setDriveBrowserErr(e instanceof Error ? e.message : 'Google Drive folder is unavailable.');
+      })
+      .finally(() => setDriveBrowserLoading(false));
+  }, []);
+  const resetDriveBrowser = useCallback(() => {
+    setDriveTrail([]);
+    setDriveBrowser(null);
+    setDriveBrowserErr(null);
+    setDriveBrowserLoading(false);
+    setSelectedDriveFile(null);
+  }, []);
   useEffect(() => {
     if (sourceModal !== 'drive' && sourceModal !== 'merge') return;
     let on = true;
+    resetDriveBrowser();
+    setSelectedDriveFolder('');
     CalendarApi.manifestFolders()
       .then((r) => { if (on) { setDriveFolders(r.folders || []); setDriveFoldersErr(r.error ?? null); } })
       .catch((e) => { if (on) { setDriveFolders([]); setDriveFoldersErr(e instanceof Error ? e.message : 'Manifest unavailable'); } });
     return () => { on = false; };
-  }, [sourceModal]);
+  }, [resetDriveBrowser, sourceModal]);
   const [compileStage, setCompileStage] = useState<'idle' | 'brad' | 'drive'>('idle');
   const [previewPage, setPreviewPage] = useState(0);
   const [zoomPage, setZoomPage] = useState<number | null>(null); // full-screen page viewer index
@@ -584,63 +628,6 @@ export function Defensible2StudioLanding() {
     else if (mode === 'Google Drive') setSourceModal('drive');
     else setSourceModal('merge');
   }, [triggerToast]);
-
-  const confirmSourceSelection = useCallback(async () => {
-    const label = sourceModal === 'drive' ? `Google Drive${selectedDriveFolder ? ` · ${selectedDriveFolder}` : ''}` : sourceModal === 'merge' ? 'Both (Merge)' : 'Upload / Camera';
-    setSelectedSourceMode(label);
-    setSourceModal('');
-    setAttachmentsConfirmed(true);
-    const admission = sourceIntent === 'admission' || isPatientAdmissionTemplate(selectedTemplateTitle);
-    if (admission) {
-      setSelectedTemplateTitle('Patient Admission Packet');
-      setEventId('patient-admission');
-      // Brad's 3x read runs NOW (only after Confirm) — the reading modal appears,
-      // then we land on the review step with the extracted fields.
-      const primary = alphaSourceFilesRef.current.find((f) => /\.pdf$/i.test(f.name) || f.type === 'application/pdf') || alphaSourceFilesRef.current[0];
-      if (primary) {
-        setExtracting(true);
-        try {
-          const ex = await CalendarApi.extractSourceFile(primary, 'admission');
-          setExtraction(ex);
-          setVerifiedFields(seedVerifiedFields(ex));
-          setExtractionError(null);
-        } catch (e) {
-          setExtraction(null);
-          setVerifiedFields({});
-          const msg = e && typeof e === 'object' && 'message' in e ? String((e as { message?: unknown }).message ?? '') : '';
-          setExtractionError(msg || 'Could not reach Brad’s reader.');
-          triggerToast('Couldn’t reach Brad’s reader — check the API server, or fill fields manually.');
-        } finally {
-          setExtracting(false);
-        }
-      }
-      setFlowStep('review');
-    } else {
-      const qapi = sourceIntent === 'qapi' || /qapi/i.test(selectedTemplateTitle);
-      if (qapi) {
-        const primary = alphaSourceFilesRef.current[0];
-        if (primary) {
-          setExtracting(true);
-          try {
-            const { text, headBytes } = await readText(primary);
-            const parsed = parseSourceFile({ fileName: primary.name, mimeType: primary.type, text, headBytes, byteLength: primary.size });
-            setQapiSourceParsed(parsed);
-            setQapiDerivedBundle(deriveQapiBundle(parsed, selectedEvent?.date || new Date().toISOString().slice(0, 10)));
-            setExtractionError(null);
-          } catch (e) {
-            setQapiSourceParsed(null);
-            setQapiDerivedBundle(null);
-            setExtractionError(e instanceof Error ? e.message : 'Could not read the QAPI source.');
-            triggerToast('Brad could not parse the QAPI source — review fields manually before compiling.');
-          } finally {
-            setExtracting(false);
-          }
-        }
-      }
-      setFlowStep('event');
-    }
-    triggerToast(`${label} selected.`);
-  }, [selectedDriveFolder, selectedEvent?.date, selectedTemplateTitle, sourceIntent, sourceModal, triggerToast]);
 
   const startCompilePacket = useCallback(async () => {
     if (sourceIntent === 'admission' && !isPatientAdmissionTemplate(selectedTemplateTitle)) {
@@ -856,6 +843,111 @@ export function Defensible2StudioLanding() {
       ? `${files.length} file${files.length === 1 ? '' : 's'} attached. Patient admission source detected.`
       : `${files.length} file${files.length === 1 ? '' : 's'} attached for packet binding.`);
   }, [selectedEvent, eventId, driveReachable, sourceIntent, selectedTemplateTitle, attachmentsConfirmed, triggerToast]);
+
+  const confirmSourceSelection = useCallback(async () => {
+    const needsDriveFile = sourceModal === 'drive';
+    const needsAnySource = sourceModal === 'upload' || sourceModal === 'merge';
+    if (needsDriveFile && !selectedDriveFile) {
+      triggerToast('Select a Drive document to continue.');
+      return;
+    }
+    if (needsAnySource && !selectedDriveFile && alphaSourceFilesRef.current.length === 0 && attachedFiles.length === 0) {
+      triggerToast('Attach or select a source document to continue.');
+      return;
+    }
+
+    let driveIntent: 'admission' | 'qapi' | '' = '';
+    let driveLabel = selectedDriveFile?.name || selectedDriveFolder;
+    if (selectedDriveFile) {
+      setDriveSourceDownloading(true);
+      try {
+        const source = await CalendarApi.driveSourceFile(selectedDriveFile.id);
+        const file = fileFromBase64(source.name, source.mimeType, source.fileBase64);
+        const { text } = await readText(file);
+        driveIntent = inferSourceIntent(file.name, text);
+        driveLabel = source.name || driveLabel;
+        await handleFiles([file]);
+      } catch (e) {
+        const msg = e && typeof e === 'object' && 'message' in e ? String((e as { message?: unknown }).message ?? '') : '';
+        triggerToast(msg || 'Could not download the selected Drive document.');
+        setDriveSourceDownloading(false);
+        return;
+      } finally {
+        setDriveSourceDownloading(false);
+      }
+    }
+
+    const label = sourceModal === 'drive'
+      ? `Google Drive · ${driveLabel || 'selected document'}`
+      : sourceModal === 'merge'
+        ? `Both (Merge)${driveLabel ? ` · ${driveLabel}` : ''}`
+        : 'Upload / Camera';
+    const effectiveIntent = driveIntent || sourceIntent;
+    const effectiveTemplateTitle = effectiveIntent === 'admission' ? 'Patient Admission Packet' : selectedTemplateTitle;
+    setSelectedSourceMode(label);
+    setSourceModal('');
+    setAttachmentsConfirmed(true);
+    const admission = effectiveIntent === 'admission' || isPatientAdmissionTemplate(effectiveTemplateTitle);
+    if (admission) {
+      setSelectedTemplateTitle('Patient Admission Packet');
+      setEventId('patient-admission');
+      // Brad's 3x read runs NOW (only after Confirm) — the reading modal appears,
+      // then we land on the review step with the extracted fields.
+      const primary = alphaSourceFilesRef.current.find((f) => /\.pdf$/i.test(f.name) || f.type === 'application/pdf') || alphaSourceFilesRef.current[0];
+      if (primary) {
+        setExtracting(true);
+        try {
+          const ex = await CalendarApi.extractSourceFile(primary, 'admission');
+          setExtraction(ex);
+          setVerifiedFields(seedVerifiedFields(ex));
+          setExtractionError(null);
+        } catch (e) {
+          setExtraction(null);
+          setVerifiedFields({});
+          const msg = e && typeof e === 'object' && 'message' in e ? String((e as { message?: unknown }).message ?? '') : '';
+          setExtractionError(msg || 'Could not reach Brad’s reader.');
+          triggerToast('Couldn’t reach Brad’s reader — check the API server, or fill fields manually.');
+        } finally {
+          setExtracting(false);
+        }
+      }
+      setFlowStep('review');
+    } else {
+      const qapi = effectiveIntent === 'qapi' || /qapi/i.test(effectiveTemplateTitle);
+      if (qapi) {
+        const primary = alphaSourceFilesRef.current[0];
+        if (primary) {
+          setExtracting(true);
+          try {
+            const { text, headBytes } = await readText(primary);
+            const parsed = parseSourceFile({ fileName: primary.name, mimeType: primary.type, text, headBytes, byteLength: primary.size });
+            setQapiSourceParsed(parsed);
+            setQapiDerivedBundle(deriveQapiBundle(parsed, selectedEvent?.date || new Date().toISOString().slice(0, 10)));
+            setExtractionError(null);
+          } catch (e) {
+            setQapiSourceParsed(null);
+            setQapiDerivedBundle(null);
+            setExtractionError(e instanceof Error ? e.message : 'Could not read the QAPI source.');
+            triggerToast('Brad could not parse the QAPI source — review fields manually before compiling.');
+          } finally {
+            setExtracting(false);
+          }
+        }
+      }
+      setFlowStep('event');
+    }
+    triggerToast(`${label} selected.`);
+  }, [
+    handleFiles,
+    attachedFiles.length,
+    selectedDriveFile,
+    selectedDriveFolder,
+    selectedEvent?.date,
+    selectedTemplateTitle,
+    sourceIntent,
+    sourceModal,
+    triggerToast,
+  ]);
 
   const openCamera = useCallback(async () => {
     setCameraError(null);
@@ -1529,40 +1621,130 @@ export function Defensible2StudioLanding() {
             )}
 
             {sourceModal === 'drive' && (() => {
-              const SAMPLE: Array<[string, string]> = [
-                ['2026 QAPI Reviews', '#FACC15'], ['Admissions 2026', '#3B82F6'], ['Incident Reports', '#FACC15'],
-                ['Governing Board', '#2DD4BF'], ['Mock Event Packets', '#FB923C'], ['Draft Evidence Packets', '#A855F7'],
-              ];
               const PALETTE = ['#FACC15', '#3B82F6', '#2DD4BF', '#FB923C', '#A855F7', '#22C55E'];
-              const usingSample = driveFolders.length === 0;
-              const items: Array<{ name: string; color: string; sub?: string; url?: string }> = usingSample
-                ? SAMPLE.map(([name, color]) => ({ name, color }))
-                : driveFolders.map((f, i) => ({ name: f.folderName || f.section || 'Folder', color: PALETTE[i % PALETTE.length], sub: `${f.count} file${f.count === 1 ? '' : 's'}`, url: f.folderUrl }));
+              const topFolders = driveFolders.map((f, i) => ({
+                id: f.folderId,
+                name: f.folderName || f.section || 'Folder',
+                color: PALETTE[i % PALETTE.length],
+                sub: `${f.count} file${f.count === 1 ? '' : 's'}`,
+                url: f.folderUrl,
+              }));
+              const showTopFolders = driveTrail.length === 0 && !driveBrowser;
               const openFolder = (url?: string) => { if (url) window.open(url, '_blank', 'noopener,noreferrer'); };
               return (
                 <>
-                  {usingSample
-                    ? <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">Showing <strong>sample</strong> folders — connect Google Drive{driveFoldersErr ? ` (${driveFoldersErr})` : ''} to list the real evidence folders.</div>
-                    : <div className="mb-6 rounded-lg border border-[#B6E8E2] bg-[#E5FEFF] px-4 py-2 text-xs text-[#007970]">Live from the Drive manifest — {driveFolders.length} folder{driveFolders.length === 1 ? '' : 's'}. Click to select; “Open in Drive” to upload files there.</div>}
-                  <div className="grid gap-8 md:grid-cols-4">
-                    {items.map(({ name, color, sub, url }) => (
-                      <div
-                        key={name}
-                        className={`flex min-h-[180px] flex-col items-center rounded-[22px] bg-white p-6 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg ${selectedDriveFolder === name ? 'ring-2 ring-[#007970]' : ''}`}
-                      >
-                        <button type="button" onClick={() => setSelectedDriveFolder(name)} className="flex flex-1 flex-col items-center">
-                          <span className="mx-auto mb-6 block h-16 w-24 rounded-[10px] border-[6px]" style={{ borderColor: color }} />
-                          <span className="block whitespace-pre-line font-montserrat text-base font-medium leading-5 text-[#1F1C1B]">{name.replace(' ', '\n')}</span>
-                          {sub ? <span className="mt-2 block font-roboto text-xs text-[#747470]">{sub}</span> : null}
-                        </button>
-                        {url && (
-                          <button type="button" onClick={() => openFolder(url)} className="mt-3 rounded-full border border-[#B6E8E2] px-3 py-1 font-roboto text-xs font-medium text-[#007970] hover:bg-[#E5FEFF]">
-                            Open in Drive ↗
-                          </button>
-                        )}
+                  {showTopFolders ? (
+                    topFolders.length > 0 ? (
+                      <div className="mb-6 rounded-lg border border-[#B6E8E2] bg-[#E5FEFF] px-4 py-2 text-xs text-[#007970]">
+                        Live from Drive — open a folder, then choose the document Brad should read.
                       </div>
-                    ))}
-                  </div>
+                    ) : (
+                      <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
+                        Drive folders are not available{driveFoldersErr ? ` (${driveFoldersErr})` : ''}.
+                      </div>
+                    )
+                  ) : (
+                    <div className="mb-6 flex flex-wrap items-center gap-2 rounded-lg border border-[#EAE4E3] bg-[#FAFBF8] px-4 py-3 text-xs text-[#524D4B]">
+                      <button type="button" onClick={resetDriveBrowser} className="font-montserrat font-semibold text-[#007970] hover:underline">Drive</button>
+                      {driveTrail.map((crumb, idx) => (
+                        <span key={crumb.id} className="flex items-center gap-2">
+                          <span className="text-[#C7C2C0]">/</span>
+                          <button
+                            type="button"
+                            onClick={() => loadDriveFolder(crumb.id, driveTrail.slice(0, idx + 1))}
+                            className="font-montserrat font-semibold text-[#007970] hover:underline"
+                          >
+                            {crumb.name}
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {showTopFolders ? (
+                    <div className="grid gap-8 md:grid-cols-4">
+                      {topFolders.map(({ id, name, color, sub, url }) => (
+                        <div
+                          key={id || name}
+                          className={`flex min-h-[180px] flex-col items-center rounded-[22px] bg-white p-6 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg ${selectedDriveFolder === name ? 'ring-2 ring-[#007970]' : ''}`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => id ? loadDriveFolder(id, [{ id, name }]) : setSelectedDriveFolder(name)}
+                            className="flex flex-1 flex-col items-center"
+                          >
+                            <span className="mx-auto mb-6 block h-16 w-24 rounded-[10px] border-[6px]" style={{ borderColor: color }} />
+                            <span className="block whitespace-pre-line font-montserrat text-base font-medium leading-5 text-[#1F1C1B]">{name.replace(' ', '\n')}</span>
+                            {sub ? <span className="mt-2 block font-roboto text-xs text-[#747470]">{sub}</span> : null}
+                          </button>
+                          {url && (
+                            <button type="button" onClick={() => openFolder(url)} className="mt-3 rounded-full border border-[#B6E8E2] px-3 py-1 font-roboto text-xs font-medium text-[#007970] hover:bg-[#E5FEFF]">
+                              Open in Drive
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="max-h-[42vh] overflow-y-auto rounded-[22px] border border-[#EAE4E3] bg-white p-3 shadow-inner">
+                      {driveBrowserLoading ? (
+                        <div className="py-12 text-center font-roboto text-sm text-[#747470]">Loading Drive folder...</div>
+                      ) : driveBrowserErr ? (
+                        <div className="py-12 text-center font-roboto text-sm text-[#D70101]">{driveBrowserErr}</div>
+                      ) : driveBrowser && (driveBrowser.folders.length > 0 || driveBrowser.files.length > 0) ? (
+                        <div className="space-y-2">
+                          {driveBrowser.folders.map((folder) => (
+                            <button
+                              key={folder.id}
+                              type="button"
+                              onClick={() => loadDriveFolder(folder.id, [...driveTrail, { id: folder.id, name: folder.name }])}
+                              className="flex w-full items-center gap-3 rounded-[14px] px-4 py-3 text-left transition-colors hover:bg-[#E5FEFF]"
+                            >
+                              <span className="h-8 w-10 rounded-[8px] border-[4px] border-[#007970]" />
+                              <span className="min-w-0 flex-1 truncate font-roboto text-sm text-[#1F1C1B]">{folder.name}</span>
+                              <span className="font-montserrat text-[10px] font-semibold uppercase tracking-wider text-[#007970]">Open</span>
+                            </button>
+                          ))}
+                          {driveBrowser.files.map((file) => {
+                            const selected = selectedDriveFile?.id === file.id;
+                            return (
+                              <button
+                                key={file.id}
+                                type="button"
+                                onClick={() => setSelectedDriveFile(file)}
+                                className={`flex w-full items-center gap-3 rounded-[14px] px-4 py-3 text-left transition-colors ${selected ? 'bg-[#E5FEFF] ring-2 ring-[#007970]' : 'hover:bg-[#FAFBF8]'}`}
+                              >
+                                <FileText className="h-5 w-5 text-[#747470]" />
+                                <span className="min-w-0 flex-1">
+                                  <span className="block truncate font-roboto text-sm text-[#1F1C1B]">{file.name}</span>
+                                  <span className="block truncate font-roboto text-[10px] uppercase tracking-wider text-[#747470]">{file.mimeType}</span>
+                                </span>
+                                <span className={`font-montserrat text-[10px] font-semibold uppercase tracking-wider ${selected ? 'text-[#007970]' : 'text-[#747470]'}`}>
+                                  {selected ? 'Selected' : 'Select'}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="py-12 text-center font-roboto text-sm text-[#747470]">This Drive folder is empty.</div>
+                      )}
+                    </div>
+                  )}
+
+                  {selectedDriveFile && (
+                    <div className="mt-5 flex flex-col gap-3 rounded-[18px] border border-[#B6E8E2] bg-[#E5FEFF] px-5 py-4 md:flex-row md:items-center md:justify-between">
+                      <div className="min-w-0">
+                        <p className="font-montserrat text-sm font-medium text-[#1F1C1B]">Selected document</p>
+                        <p className="truncate font-roboto text-sm text-[#007970]">{selectedDriveFile.name}</p>
+                      </div>
+                      {selectedDriveFile.webViewLink && (
+                        <button type="button" onClick={() => window.open(selectedDriveFile.webViewLink, '_blank', 'noopener,noreferrer')} className="rounded-full border border-[#B6E8E2] bg-white px-4 py-2 font-roboto text-xs font-medium text-[#007970] hover:bg-[#FAFBF8]">
+                          Preview in Drive
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </>
               );
             })()}
@@ -1572,8 +1754,8 @@ export function Defensible2StudioLanding() {
                 <button type="button" onClick={() => setSourceModal('drive')} className="mb-5 flex w-full items-center gap-6 rounded-[22px] bg-white p-6 text-left shadow-md transition-all hover:-translate-y-1 hover:shadow-lg">
                   <img src={GOOGLE_DRIVE_LOGO} alt="" className="h-11 w-11 object-contain" />
                   <span className="flex-1">
-                    <strong className="block font-montserrat text-xl font-medium text-[#1F1C1B]">Select Google Drive Folder</strong>
-                    <span className="mt-1 block font-roboto text-sm text-[#747470]">{selectedDriveFolder || 'Click to browse your Drive'}</span>
+                    <strong className="block font-montserrat text-xl font-medium text-[#1F1C1B]">Select Google Drive Document</strong>
+                    <span className="mt-1 block font-roboto text-sm text-[#747470]">{selectedDriveFile?.name || selectedDriveFolder || 'Click to browse your Drive'}</span>
                   </span>
                   <span className="font-montserrat text-sm font-bold uppercase tracking-wider text-[#007970]">Browse</span>
                 </button>
@@ -1593,10 +1775,20 @@ export function Defensible2StudioLanding() {
               <button
                 type="button"
                 onClick={confirmSourceSelection}
-                disabled={extracting}
-                className={`rounded-full px-10 py-3 font-montserrat text-xs font-medium uppercase tracking-wider text-white shadow-md ${extracting ? 'cursor-not-allowed bg-[#C9A38F]' : 'bg-[#C74601] hover:bg-[#421700]'}`}
+                disabled={
+                  extracting
+                  || driveSourceDownloading
+                  || (sourceModal === 'drive' && !selectedDriveFile)
+                  || (sourceModal === 'upload' && alphaSourceFilesRef.current.length === 0 && attachedFiles.length === 0)
+                  || (sourceModal === 'merge' && !selectedDriveFile && alphaSourceFilesRef.current.length === 0 && attachedFiles.length === 0)
+                }
+                className={`rounded-full px-10 py-3 font-montserrat text-xs font-medium uppercase tracking-wider text-white shadow-md ${
+                  extracting || driveSourceDownloading
+                    ? 'cursor-not-allowed bg-[#C9A38F]'
+                    : 'bg-[#C74601] hover:bg-[#421700] disabled:cursor-not-allowed disabled:bg-[#C9A38F]'
+                }`}
               >
-                {extracting ? 'Brad is reading…' : 'Confirm Selection'}
+                {driveSourceDownloading ? 'Loading Drive file...' : extracting ? 'Brad is reading...' : 'Confirm Selection'}
               </button>
             </div>
           </div>

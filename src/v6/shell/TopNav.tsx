@@ -1,48 +1,76 @@
 import { useMemo } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { primaryNavItems, workspaceSubnavItems } from '../routing/navigationManifest';
+import { Link, matchPath, useLocation } from 'react-router-dom';
+import {
+  chromeOnlyPrimaryNavItemIds,
+  primaryNavItems,
+  workspaceSubnavItems,
+} from '../routing/navigationManifest';
 import { cx } from '../utils/classNames';
+import { V6_ROUTES } from '../routing/routeRegistry';
+
+const navPath = (to: string) => to.split('?')[0] || to;
 
 export function TopNav() {
   const { pathname } = useLocation();
 
   const activePrimaryItem = useMemo(() => {
-    return primaryNavItems.find(item => {
-      if (item.matchPaths?.some(match => pathname.startsWith(match.replace(/:\w+/g, '')))) return true;
-      if (pathname === item.to || pathname.startsWith(`${item.to}/`)) return true;
-      return false;
-    });
+    for (const item of primaryNavItems) {
+      const itemPath = navPath(item.to);
+      const hashMatch = item.hashIds?.some((hashId: string) =>
+        V6_ROUTES.some((route) =>
+          route.hashId === hashId && matchPath({ path: route.path, end: !route.path.endsWith('/*') }, pathname)
+        )
+      );
+      const routeMatch = item.matchPaths?.some((match) => matchPath({ path: match, end: false }, pathname));
+      const exactOrPrefix = pathname === itemPath || pathname.startsWith(`${itemPath}/`);
+      if (hashMatch || routeMatch || exactOrPrefix) return item;
+    }
+    return null;
   }, [pathname]);
 
-  const activeGroupId = activePrimaryItem?.id;
+  const activeGroupId =
+    activePrimaryItem && !chromeOnlyPrimaryNavItemIds.has(activePrimaryItem.id)
+      ? activePrimaryItem.id
+      : null;
 
   const subnavItems = useMemo(() => {
     if (!activeGroupId) return [];
-    if (activeGroupId === 'ces' || activeGroupId === 'dashboard') {
-      return workspaceSubnavItems.ces || [];
-    }
+    if (activeGroupId === 'ces') return workspaceSubnavItems.ces || [];
     if (activeGroupId === 'taxonomy') return workspaceSubnavItems.taxonomy || [];
     if (activeGroupId === 'onboarding') return workspaceSubnavItems.onboarding || [];
-    if (activeGroupId === 'admin') return workspaceSubnavItems.admin || [];
     return [];
   }, [activeGroupId]);
 
-  const showSubnav = subnavItems.length > 0;
+  const showSubnav = subnavItems.length > 1;
+  const isSubnavItemActive = (item: (typeof subnavItems)[number]) => {
+    const itemPath = navPath(item.to);
+    const hashMatch = item.hashIds?.some((hashId: string) =>
+      V6_ROUTES.some((route) =>
+        route.hashId === hashId && matchPath({ path: route.path, end: !route.path.endsWith('/*') }, pathname)
+      )
+    );
+    const routeMatch = item.matchPaths?.some((match) => matchPath({ path: match, end: false }, pathname));
+    const exactOrPrefix = pathname === itemPath || (itemPath !== '/' && pathname.startsWith(`${itemPath}/`));
+    return Boolean(hashMatch || routeMatch || exactOrPrefix);
+  };
+
+  if (!showSubnav) return null;
 
   return (
-    <div className="flex flex-col w-full bg-transparent z-50 shrink-0">
-      {/* Top Primary Nav Bar */}
-      <nav className="w-full flex justify-center py-6">
-        <div className="flex items-center rounded-full bg-white shadow-sm px-8 py-3 gap-12">
-          {primaryNavItems.map(item => {
-            const isActive = activePrimaryItem?.id === item.id;
+    <div className="fixed left-0 right-0 top-6 flex flex-col w-full bg-transparent z-50 shrink-0 pointer-events-none [&_nav]:pointer-events-auto">
+      <nav className="w-full flex justify-center mb-6">
+        <div className="flex items-center rounded-full bg-white shadow-sm p-1 gap-2">
+          {subnavItems.map(item => {
+            const isActive = isSubnavItemActive(item);
             return (
               <Link
                 key={item.id}
                 to={item.to}
                 className={cx(
-                  'text-sm tracking-widest uppercase transition duration-300',
-                  isActive ? 'text-brand-teal font-semibold' : 'text-slate-400 hover:text-brand-teal'
+                  'px-6 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-300',
+                  isActive
+                    ? 'bg-brand-teal text-white shadow-md'
+                    : 'text-slate-500 hover:bg-slate-100 hover:text-brand-teal'
                 )}
               >
                 {item.label}
@@ -51,32 +79,6 @@ export function TopNav() {
           })}
         </div>
       </nav>
-
-      {/* Secondary Nav Pills */}
-      {showSubnav && (
-        <nav className="w-full flex justify-center mt-2 mb-6">
-          <div className="flex items-center rounded-full bg-white shadow-sm p-1 gap-2">
-            {subnavItems.map(item => {
-              // Basic active check for subnav
-              const isActive = pathname === item.to || (item.to !== '/' && pathname.startsWith(item.to));
-              return (
-                <Link
-                  key={item.id}
-                  to={item.to}
-                  className={cx(
-                    'px-6 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-300',
-                    isActive 
-                      ? 'bg-brand-teal text-white shadow-md' 
-                      : 'text-slate-500 hover:bg-slate-100 hover:text-brand-teal'
-                  )}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-      )}
     </div>
   );
 }

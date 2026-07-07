@@ -7,10 +7,17 @@ import {
 import { DOMAIN_LABEL, LIFECYCLE_DOMAIN_ORDER, POLICY_CORPUS } from '@/policy/data/policyCorpus';
 import { usePolicyLifecycleStore } from '@/policy/lifecycle';
 import { STATE_LABEL, type LifecycleState } from '@/policy/lifecycle/types';
-import { ProgressMeter, ToneTag } from '../../components';
+import { ProgressMeter, ToneTag, type MetricTileData } from '../../components';
 import { Button } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import {
+  PolicyMetricsGrid,
+  PolicyPanel,
+  PolicyTinyStat,
+  PolicyWorkspaceShell,
+  type PolicyWorkspaceTab,
+} from './PolicyWorkspace';
 
 /* ════════════════════════════════════════════════════════════════
    Policy Approval Queue — a balanced operational worklist.
@@ -70,6 +77,7 @@ const MAX_VISIBLE = 30;
 export function PolicyApprovalsScreen() {
   const envelopes = usePolicyLifecycleStore((state) => state.envelopes);
 
+  const [view, setView] = useState<'queue' | 'summary'>('queue');
   const [status, setStatus] = useState<StatusFilter>('ALL');
   const [domain, setDomain] = useState<string>('ALL');
   const [tier, setTier] = useState<string>('ALL');
@@ -115,204 +123,212 @@ export function PolicyApprovalsScreen() {
     { id: 'DRAFT', label: 'Draft', count: counts.DRAFT, tone: 'amber' },
     { id: 'REVIEW', label: 'In review', count: counts.REVIEW, tone: 'orange' },
   ];
+  const tabs: readonly PolicyWorkspaceTab<typeof view>[] = [
+    { id: 'queue', label: 'Queue', tone: 'teal' },
+    { id: 'summary', label: 'Summary', tone: 'green' },
+  ];
+  const approvalMetrics = [
+    { label: 'Open approvals', value: String(rows.length), helper: 'Draft and review policies', tone: 'teal' },
+    { label: 'Draft', value: String(counts.DRAFT), helper: 'Ready to submit for review', tone: 'amber' },
+    { label: 'In review', value: String(counts.REVIEW), helper: 'Awaiting authority sign-off', tone: 'orange' },
+    { label: 'Published', value: String(counts.PUBLISHED), helper: 'Already live in the corpus', tone: 'green' },
+  ] satisfies readonly MetricTileData[];
 
   return (
-    <section
-      className="grid gap-lg"
-      data-group="Taxonomy"
-      data-hash-id="policy-approvals"
-      data-route="/policy-approvals"
-      data-template="board"
+    <PolicyWorkspaceShell
+      activeTab={view}
+      dataHashId="policy-approvals"
+      dataRoute="/policy-approvals"
+      description="Review draft and in-review policies as a focused queue, with governance context separated from the working list."
+      eyebrow="Approval Control"
+      onTabChange={setView}
+      tabs={tabs}
+      title="Policy Approvals"
+      actions={[
+        { icon: FileText, label: 'Lifecycle', to: '/policy-lifecycle', variant: 'secondary' },
+        { icon: ShieldCheck, label: 'Policy Library', to: '/library' },
+      ]}
     >
-      {/* ── Compact app toolbar (replaces the old hero slab) ── */}
-      <div className="grid gap-md rounded-lg border border-hairline bg-surface-glass p-md shadow-rest backdrop-blur-md">
-        <div className="flex flex-wrap items-center gap-sm">
-          <span className="flex items-center gap-sm">
-            <ShieldCheck className="h-icon-sm w-icon-sm text-brand-teal" aria-hidden="true" />
-            <h1 className="text-h3 font-medium text-ink">Policy Approvals</h1>
-          </span>
-          {/* Status filter chips with live counts */}
-          <div className="flex flex-wrap items-center gap-xs" role="group" aria-label="Filter by lifecycle status">
-            {statusChips.map((chip) => {
-              const active = status === chip.id;
-              return (
-                <button
-                  key={chip.id}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => setStatus(chip.id)}
-                  className={cx(
-                    'inline-flex min-h-tap items-center gap-xs rounded-full border px-md text-sm font-medium transition duration-fast ease-standard',
-                    active
-                      ? 'border-brand-teal bg-tone-teal-bg text-brand-teal-deep shadow-rest'
-                      : 'border-hairline bg-surface text-secondary hover:bg-surface-hover',
-                  )}
-                >
-                  {chip.label}
-                  <span className="rounded-full bg-surface-glass px-xs text-xs tabular-nums text-muted">{chip.count}</span>
-                </button>
-              );
-            })}
-          </div>
-          {/* Read-only context stats */}
-          <span className="ml-auto hidden items-center gap-md text-xs text-muted tablet-l:flex">
-            <span className="inline-flex items-center gap-xs"><CheckCircle2 className="h-3.5 w-3.5 text-tone-green-text" /> {counts.APPROVED} approved</span>
-            <span className="inline-flex items-center gap-xs"><FileText className="h-3.5 w-3.5 text-tone-blue-text" /> {counts.PUBLISHED} published</span>
-          </span>
-          <Link
-            to="/policy-lifecycle"
-            className="inline-flex min-h-tap items-center justify-center gap-sm rounded-md border border-brand-teal bg-surface-glass px-md text-sm font-light text-brand-teal shadow-glass-inset backdrop-blur-md transition duration-fast ease-standard hover:bg-surface-hover"
-          >
-            <FileText className="h-4 w-4" /> Open Policy Lifecycle
-          </Link>
-        </div>
+      <PolicyMetricsGrid metrics={approvalMetrics} />
 
-        {/* Filters + search row — search owns its own line on mobile; selects split the row below */}
-        <div className="flex flex-wrap items-center gap-sm">
-          <label className="flex min-h-tap w-full min-w-0 items-center gap-xs rounded-md border border-hairline bg-surface px-sm text-sm text-secondary tablet-l:max-w-xs tablet-l:flex-1">
-            <Search className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search policy ID, title, owner…"
-              aria-label="Search policy approvals"
-              className="w-full min-w-0 bg-transparent py-sm text-ink outline-none placeholder:text-muted"
-            />
-          </label>
-          <label className="flex min-w-0 flex-1 items-center gap-xs text-xs text-muted tablet-l:flex-none">
-            <span className="sr-only tablet-l:not-sr-only">Domain</span>
-            <select
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-              aria-label="Filter by domain"
-              className="min-h-tap w-full min-w-0 rounded-md border border-hairline bg-surface px-sm text-sm text-ink outline-none focus:border-brand-teal tablet-l:w-auto"
+      {view === 'queue' ? (
+        <PolicyPanel
+          title="Approval Queue"
+          description={`${filtered.length} policy records match the active status, domain, tier, and search filters.`}
+          actions={
+            <Link
+              to="/policy-lifecycle"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[12px] border border-[#007970] bg-white px-4 py-2 font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#007970] transition hover:bg-[#F7FEFF]"
             >
-              <option value="ALL">All domains</option>
-              {domainOptions.map((code) => <option key={code} value={code}>{DOMAIN_LABEL[code] ?? code}</option>)}
-            </select>
-          </label>
-          <label className="flex min-w-0 flex-1 items-center gap-xs text-xs text-muted tablet-l:flex-none">
-            <span className="sr-only tablet-l:not-sr-only">Tier</span>
-            <select
-              value={tier}
-              onChange={(e) => setTier(e.target.value)}
-              aria-label="Filter by tier"
-              className="min-h-tap w-full min-w-0 rounded-md border border-hairline bg-surface px-sm text-sm text-ink outline-none focus:border-brand-teal tablet-l:w-auto"
-            >
-              <option value="ALL">All tiers</option>
-              {tierOptions.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </label>
-        </div>
-      </div>
+              <FileText className="h-4 w-4" /> Open Lifecycle
+            </Link>
+          }
+        >
+          <div className="mb-6 grid gap-4">
+            <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by lifecycle status">
+              {statusChips.map((chip) => {
+                const active = status === chip.id;
+                return (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setStatus(chip.id)}
+                    className={cx(
+                      'inline-flex min-h-11 items-center gap-2 rounded-[12px] border px-4 font-montserrat text-[10px] font-bold uppercase tracking-wider transition',
+                      active
+                        ? 'border-[#007970] bg-[#007970] text-white'
+                        : 'border-[#E5E4E3] bg-white text-[#747470] hover:bg-[#F7FEFF] hover:text-[#007970]',
+                    )}
+                  >
+                    {chip.label}
+                    <span className="rounded-full bg-white/70 px-2 text-xs tabular-nums text-[#52404B]">{chip.count}</span>
+                  </button>
+                );
+              })}
+            </div>
 
-      {/* ── Approval card grid (balanced, multi-column, information-dense) ── */}
-      {visible.length === 0 ? (
-        <div className="flex min-h-[200px] flex-col items-center justify-center gap-sm rounded-lg border border-dashed border-hairline bg-surface-glass p-xl text-center">
-          <ListChecks className="h-6 w-6 text-muted" aria-hidden="true" />
-          <p className="text-sm font-medium text-ink">No policies match these filters.</p>
-          <p className="text-xs text-muted">Adjust the status, domain, or tier filters — or clear the search — to see open approvals.</p>
-        </div>
-      ) : (
-        <div className="grid gap-md tablet-l:grid-cols-2 desktop:grid-cols-3">
-          {visible.map(({ policy, envelope, state }) => {
-            const r = readiness(state, !!envelope);
-            return (
-              <article
-                key={policy.id}
-                className="flex min-w-0 flex-col gap-4 rounded-3xl border border-card bg-white p-5 shadow-sm hover:shadow-md transition overflow-hidden"
+            <div className="flex flex-wrap items-center gap-3">
+              <label className="flex min-h-11 w-full min-w-[260px] items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 text-sm text-[#747470] tablet-l:max-w-xs">
+                <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search policy ID, title, owner..."
+                  aria-label="Search policy approvals"
+                  className="w-full bg-transparent py-3 text-[#52404B] outline-none placeholder:text-[#9A9A96]"
+                />
+              </label>
+              <select
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                aria-label="Filter by domain"
+                className="min-h-11 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470] outline-none focus:border-[#007970]"
               >
-                {/* Header: status + tier + domain + id */}
-                <div className="flex flex-wrap items-center gap-xs">
-                  <ToneTag tone={STATE_TONE[state] ?? 'slate'}>{STATE_LABEL[state]}</ToneTag>
-                  <ToneTag tone="slate">{policy.tier || 'Unclassified'}</ToneTag>
-                  <span className="ml-auto font-mono text-[10px] font-bold uppercase tracking-wider text-brand-teal">{policy.id}</span>
-                </div>
+                <option value="ALL">All domains</option>
+                {domainOptions.map((code) => <option key={code} value={code}>{DOMAIN_LABEL[code] ?? code}</option>)}
+              </select>
+              <select
+                value={tier}
+                onChange={(e) => setTier(e.target.value)}
+                aria-label="Filter by tier"
+                className="min-h-11 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470] outline-none focus:border-[#007970]"
+              >
+                <option value="ALL">All tiers</option>
+                {tierOptions.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+          </div>
 
-                {/* Title + domain */}
-                <div className="grid gap-xs">
-                  <h2 className="text-sm font-bold leading-snug text-brand-teal-deep">{policy.title}</h2>
-                  <p className="inline-flex items-center gap-xs text-xs text-muted">
-                    <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
-                    {DOMAIN_LABEL[policy.domainCode] ?? policy.domainCode} · {policy.subdomainCode}
-                  </p>
-                </div>
-
-                {/* Meta grid */}
-                <dl className="grid gap-xs text-xs">
-                  <div className="flex items-start justify-between gap-md">
-                    <dt className="flex items-center gap-1.5 text-muted font-medium"><ShieldCheck className="h-3.5 w-3.5" /> Authority</dt>
-                    <dd className="text-right font-bold text-brand-teal-deep">{approvalAuthority(policy.tier)}</dd>
-                  </div>
-                  <div className="flex items-start justify-between gap-md">
-                    <dt className="flex items-center gap-1.5 text-muted font-medium"><UserRound className="h-3.5 w-3.5" /> Owner</dt>
-                    <dd className="break-words text-right font-semibold text-ink">{policy.ownerSteward || 'Compliance Officer'}</dd>
-                  </div>
-                  <div className="flex items-start justify-between gap-md">
-                    <dt className="flex items-center gap-1.5 text-muted font-medium"><CalendarClock className="h-3.5 w-3.5" /> Last activity</dt>
-                    <dd className="text-right font-semibold text-ink">{formatDate(envelope?.lastTransition?.timestamp ?? envelope?.createdAt)}</dd>
-                  </div>
-                </dl>
-
-                {/* Readiness */}
-                <div className="grid gap-xs">
-                  <ProgressMeter label="Approval readiness" tone={r.tone} value={r.percent} />
-                  <p className="flex items-center gap-xs text-xs text-muted">
-                    <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
-                    {r.blocking} step{r.blocking === 1 ? '' : 's'} to approval · Next: <span className="font-semibold text-ink">{r.nextAction}</span>
-                  </p>
-                </div>
-
-                {/* Actions — adjacent to the content they act on */}
-                <div className="mt-auto flex flex-wrap gap-xs pt-xs">
-                  <Link
-                    to={`/policy-lifecycle/${policy.id}`}
-                    className="inline-flex min-h-tap flex-1 items-center justify-center gap-2 rounded-lg bg-brand-orange px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition hover:hover:brightness-110 focus:outline-none"
+          {visible.length === 0 ? (
+            <div className="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-[24px] border border-dashed border-[#E5E4E3] bg-[#FAFBF8] p-8 text-center">
+              <ListChecks className="h-6 w-6 text-[#747470]" aria-hidden="true" />
+              <p className="font-montserrat text-sm font-bold text-[#007970]">No policies match these filters.</p>
+              <p className="text-sm text-[#747470]">Adjust the status, domain, or tier filters to see open approvals.</p>
+            </div>
+          ) : (
+            <div className="grid gap-5 tablet-l:grid-cols-2 desktop:grid-cols-3">
+              {visible.map(({ policy, envelope, state }) => {
+                const r = readiness(state, !!envelope);
+                return (
+                  <article
+                    key={policy.id}
+                    className="flex min-w-0 flex-col gap-4 rounded-[24px] border border-[#E5E4E3] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#007970] hover:shadow-md"
                   >
-                    <Clock3 className="h-4 w-4" /> Review
-                  </Link>
-                  <Link
-                    to={`/library/${policy.id}`}
-                    className="inline-flex min-h-tap items-center justify-center gap-2 rounded-lg border border-card bg-white px-3 py-2 text-xs font-bold uppercase tracking-wider text-brand-teal transition hover:bg-surface-hover focus:outline-none"
-                    title="Open the policy record"
-                  >
-                    <GitCompare className="h-4 w-4" /> <span className="hidden tablet-p:inline">Compare</span>
-                  </Link>
-                  <Button
-                    variant="tertiary"
-                    size="sm"
-                    disabled
-                    title="Requesting changes routes through the signed lifecycle workflow on the policy record."
-                  >
-                    <PencilLine className="h-4 w-4" /> <span className="hidden tablet-p:inline">Request changes</span>
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    disabled
-                    title="Approval requires the signed authority workflow — open Review to route it."
-                  >
-                    <ShieldCheck className="h-4 w-4" /> Approve
-                  </Button>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      )}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <ToneTag tone={STATE_TONE[state] ?? 'slate'}>{STATE_LABEL[state]}</ToneTag>
+                      <ToneTag tone="slate">{policy.tier || 'Unclassified'}</ToneTag>
+                      <span className="ml-auto font-mono text-[10px] font-bold uppercase tracking-wider text-[#F06923]">{policy.id}</span>
+                    </div>
 
-      {truncated > 0 && (
-        <p className="flex items-center justify-center gap-xs rounded-lg border border-hairline bg-surface-glass px-md py-sm text-xs text-muted">
-          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-          Showing {visible.length} of {filtered.length}. Refine the status, domain, or tier filters to narrow the queue.
-        </p>
-      )}
+                    <div className="grid gap-2">
+                      <h2 className="font-montserrat text-base font-bold leading-snug text-[#007970]">{policy.title}</h2>
+                      <p className="inline-flex items-center gap-2 text-xs text-[#747470]">
+                        <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
+                        {DOMAIN_LABEL[policy.domainCode] ?? policy.domainCode} - {policy.subdomainCode}
+                      </p>
+                    </div>
 
-      {/* Slim governance footer (compact, not a slab) */}
-      <div className="flex flex-wrap items-center gap-md rounded-lg border border-hairline bg-surface-glass px-md py-sm text-xs text-secondary shadow-glass-inset">
-        <span className="inline-flex items-center gap-xs"><ShieldCheck className="h-3.5 w-3.5 text-brand-teal" /> Required-tier policies route to Governing Body approval.</span>
-        <span className="inline-flex items-center gap-xs"><CheckCircle2 className="h-3.5 w-3.5 text-brand-teal" /> Human approval remains required before publication.</span>
-      </div>
-    </section>
+                    <dl className="grid gap-2 text-xs">
+                      <div className="flex items-start justify-between gap-4">
+                        <dt className="flex items-center gap-1.5 font-medium text-[#747470]"><ShieldCheck className="h-3.5 w-3.5" /> Authority</dt>
+                        <dd className="text-right font-bold text-[#007970]">{approvalAuthority(policy.tier)}</dd>
+                      </div>
+                      <div className="flex items-start justify-between gap-4">
+                        <dt className="flex items-center gap-1.5 font-medium text-[#747470]"><UserRound className="h-3.5 w-3.5" /> Owner</dt>
+                        <dd className="break-words text-right font-semibold text-[#52404B]">{policy.ownerSteward || 'Compliance Officer'}</dd>
+                      </div>
+                      <div className="flex items-start justify-between gap-4">
+                        <dt className="flex items-center gap-1.5 font-medium text-[#747470]"><CalendarClock className="h-3.5 w-3.5" /> Last activity</dt>
+                        <dd className="text-right font-semibold text-[#52404B]">{formatDate(envelope?.lastTransition?.timestamp ?? envelope?.createdAt)}</dd>
+                      </div>
+                    </dl>
+
+                    <div className="grid gap-2">
+                      <ProgressMeter label="Approval readiness" tone={r.tone} value={r.percent} />
+                      <p className="flex items-center gap-2 text-xs text-[#747470]">
+                        <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
+                        {r.blocking} step{r.blocking === 1 ? '' : 's'} to approval - Next: <span className="font-semibold text-[#52404B]">{r.nextAction}</span>
+                      </p>
+                    </div>
+
+                    <div className="mt-auto flex flex-wrap gap-2 pt-2">
+                      <Link
+                        to={`/policy-lifecycle/${policy.id}`}
+                        className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#F06923] px-4 py-2 font-montserrat text-[10px] font-bold uppercase tracking-wider text-white transition hover:brightness-110 focus:outline-none"
+                      >
+                        <Clock3 className="h-4 w-4" /> Review
+                      </Link>
+                      <Link
+                        to={`/library/${policy.id}`}
+                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-white px-3 py-2 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#007970] transition hover:bg-[#F7FEFF] focus:outline-none"
+                        title="Open the policy record"
+                      >
+                        <GitCompare className="h-4 w-4" /> <span className="hidden tablet-p:inline">Compare</span>
+                      </Link>
+                      <Button variant="tertiary" size="sm" disabled title="Requesting changes routes through the signed lifecycle workflow on the policy record.">
+                        <PencilLine className="h-4 w-4" /> <span className="hidden tablet-p:inline">Request changes</span>
+                      </Button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+
+          {truncated > 0 ? (
+            <p className="mt-8 flex items-center justify-center gap-2 text-sm text-[#747470]">
+              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+              Showing {visible.length} of {filtered.length}. Refine filters to narrow the queue.
+            </p>
+          ) : null}
+        </PolicyPanel>
+      ) : null}
+
+      {view === 'summary' ? (
+        <PolicyPanel title="Governance Summary" description="Read-only context for approval authority, publication posture, and the required human review gate.">
+          <div className="grid gap-4 md:grid-cols-4">
+            <PolicyTinyStat label="Approved" tone="green" value={String(counts.APPROVED)} />
+            <PolicyTinyStat label="Published" tone="blue" value={String(counts.PUBLISHED)} />
+            <PolicyTinyStat label="Draft" tone="amber" value={String(counts.DRAFT)} />
+            <PolicyTinyStat label="Review" tone="orange" value={String(counts.REVIEW)} />
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <article className="rounded-[20px] border border-[#E5E4E3] bg-[#FAFBF8] p-5">
+              <h3 className="font-montserrat text-sm font-bold text-[#007970]">Authority Routing</h3>
+              <p className="mt-2 text-sm leading-relaxed text-[#747470]">Required-tier policies route to Governing Body approval. Other policies route to administrator or compliance officer review.</p>
+            </article>
+            <article className="rounded-[20px] border border-[#E5E4E3] bg-[#FAFBF8] p-5">
+              <h3 className="font-montserrat text-sm font-bold text-[#007970]">Publication Gate</h3>
+              <p className="mt-2 text-sm leading-relaxed text-[#747470]">Human approval remains required before publication. Disabled actions keep this prototype honest until signed lifecycle routing is connected.</p>
+            </article>
+          </div>
+          <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-[#747470]">
+            <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-[#007970]" /> Required-tier policies route to Governing Body approval.</span>
+            <span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#007970]" /> Human approval remains required before publication.</span>
+          </div>
+        </PolicyPanel>
+      ) : null}
+    </PolicyWorkspaceShell>
   );
 }

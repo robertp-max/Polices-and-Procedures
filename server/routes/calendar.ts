@@ -18,7 +18,7 @@ import { listRows, getRow } from '../sync/eventStore.js';
 import { tailAudit } from '../sync/auditLog.js';
 import { tailNotifications } from '../sync/bradNotifier.js';
 import { env } from '../env.js';
-import { pingDrive, ensureFolderPath, listFolderChildren, driveFolderUrl } from '../googleDrive.js';
+import { pingDrive, ensureFolderPath, listFolderChildren, driveFolderUrl, downloadSourceFile } from '../googleDrive.js';
 import {
   uploadEventEvidence,
   uploadIntakeEvidence,
@@ -554,6 +554,48 @@ calendarRouter.get('/intake/brad-training', asyncHandler(async (req, res) => {
     folderUrl: driveFolderUrl(folderId),
     folders,
     files,
+  });
+}));
+
+/**
+ * GET /api/calendar/intake/drive-folder?folderId=
+ * Generic read-only Drive folder browser for explicit source selection. Returns
+ * immediate children only; file bytes are not read until /drive-source/:fileId.
+ */
+calendarRouter.get('/intake/drive-folder', asyncHandler(async (req, res) => {
+  if (!env.calendarEvidenceEnabled) {
+    res.json({ enabled: false, rootId: null, folderId: null, folderUrl: null, folders: [], files: [] });
+    return;
+  }
+  const folderId = strOrEmpty(req.query.folderId) || env.driveEvidenceRootFolderId;
+  const { folders, files } = await listFolderChildren(folderId);
+  res.json({
+    enabled: true,
+    rootId: env.driveEvidenceRootFolderId,
+    folderId,
+    folderUrl: driveFolderUrl(folderId),
+    folders,
+    files,
+  });
+}));
+
+/**
+ * GET /api/calendar/intake/drive-source/:fileId
+ * Download the exact Drive file selected by the user for source extraction.
+ * Native Google files are exported to parseable source formats server-side.
+ */
+calendarRouter.get('/intake/drive-source/:fileId', asyncHandler(async (req, res) => {
+  if (!env.calendarEvidenceEnabled) {
+    throw new ApiError('validation_error', 'Google Drive evidence is disabled.', 400);
+  }
+  const fileId = strOrEmpty(req.params.fileId);
+  if (!fileId) throw new ApiError('validation_error', '`fileId` is required.', 400);
+  const source = await downloadSourceFile(fileId);
+  const { buffer, ...meta } = source;
+  res.json({
+    ...meta,
+    byteSize: buffer.length,
+    fileBase64: buffer.toString('base64'),
   });
 }));
 

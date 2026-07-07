@@ -21,6 +21,7 @@ export const REQUIRED_STATUS_CODES = [
   'uploaded',
   'validated',
   'promoted',
+  'published',
   'archived',
   'required',
 ] as const;
@@ -124,6 +125,7 @@ export const STATUS_TONE = {
   uploaded: entry('blue', 'Uploaded', icon('uploaded')),
   validated: entry('green', 'Validated', icon('validated')),
   promoted: entry('violet', 'Promoted', icon('promoted')),
+  published: entry('green', 'Published', icon('approved')),
   archived: entry('slate', 'Archived', icon('archived')),
   ready: entry('teal', 'Ready', dot('ready')),
   attention: entry('orange', 'Needs Attention', icon('attention')),

@@ -25,6 +25,9 @@ const DRIVE_FOLDER_MIME = 'application/vnd.google-apps.folder';
 const SCOPES = [
   'https://www.googleapis.com/auth/drive.file',
   'https://www.googleapis.com/auth/drive.metadata.readonly',
+  // Required for the explicit "select source from Drive" flow: the service
+  // account reads only the file the user picked, then hands it to source ingest.
+  'https://www.googleapis.com/auth/drive.readonly',
 ];
 
 let _client: drive_v3.Drive | null = null;
@@ -167,6 +170,39 @@ export interface DriveUploadResult {
   name?: string;
 }
 
+export interface DriveSourceFile {
+  fileId: string;
+  name: string;
+  mimeType: string;
+  webViewLink?: string;
+  buffer: Buffer;
+  exported: boolean;
+}
+
+const DRIVE_SOURCE_MAX_BYTES = 32 * 1024 * 1024;
+const GOOGLE_APP_MIME_PREFIX = 'application/vnd.google-apps.';
+const GOOGLE_APP_EXPORTS: Record<string, { mimeType: string; ext: string }> = {
+  'application/vnd.google-apps.document': { mimeType: 'text/plain', ext: 'txt' },
+  'application/vnd.google-apps.spreadsheet': { mimeType: 'text/csv', ext: 'csv' },
+  'application/vnd.google-apps.presentation': { mimeType: 'text/plain', ext: 'txt' },
+  'application/vnd.google-apps.drawing': { mimeType: 'application/pdf', ext: 'pdf' },
+};
+
+function ensureExtension(name: string, ext: string): string {
+  const safeName = name || 'drive-source';
+  return /\.[A-Za-z0-9]{1,8}$/.test(safeName) ? safeName : `${safeName}.${ext}`;
+}
+
+function assertDownloadSize(buffer: Buffer, name: string): void {
+  if (buffer.length > DRIVE_SOURCE_MAX_BYTES) {
+    throw new ApiError(
+      'validation_error',
+      `Drive source "${name}" is ${Math.round(buffer.length / (1024 * 1024))} MB; the source intake limit is 32 MB.`,
+      413,
+    );
+  }
+}
+
 /** Upload a file (from a Buffer) into a Drive folder. */
 export async function uploadFile(input: {
   parentId: string;
@@ -286,6 +322,67 @@ export async function downloadFileBytes(fileId: string): Promise<Buffer> {
     );
     return Buffer.from(res.data as ArrayBuffer);
   } catch (e) {
+    throw fromGoogleError(e);
+  }
+}
+
+/** Download a selected Drive source as bytes, exporting native Google files. */
+export async function downloadSourceFile(fileId: string): Promise<DriveSourceFile> {
+  const c = await getClient();
+  try {
+    const meta = await c.files.get({
+      fileId,
+      fields: 'id,name,mimeType,size,webViewLink',
+      supportsAllDrives: true,
+    });
+    const id = meta.data.id || fileId;
+    const name = meta.data.name || id;
+    const mimeType = meta.data.mimeType || 'application/octet-stream';
+    if (mimeType === DRIVE_FOLDER_MIME) {
+      throw new ApiError('validation_error', 'Select a Drive document or file, not a folder.', 400);
+    }
+    const reportedSize = meta.data.size ? Number(meta.data.size) : 0;
+    if (reportedSize > DRIVE_SOURCE_MAX_BYTES) {
+      throw new ApiError(
+        'validation_error',
+        `Drive source "${name}" is ${Math.round(reportedSize / (1024 * 1024))} MB; the source intake limit is 32 MB.`,
+        413,
+      );
+    }
+
+    const googleExport = GOOGLE_APP_EXPORTS[mimeType] || (mimeType.startsWith(GOOGLE_APP_MIME_PREFIX)
+      ? { mimeType: 'application/pdf', ext: 'pdf' }
+      : null);
+    if (googleExport) {
+      const exported = await c.files.export(
+        { fileId: id, mimeType: googleExport.mimeType },
+        { responseType: 'arraybuffer' },
+      );
+      const buffer = Buffer.from(exported.data as ArrayBuffer);
+      const exportName = ensureExtension(name, googleExport.ext);
+      assertDownloadSize(buffer, exportName);
+      return {
+        fileId: id,
+        name: exportName,
+        mimeType: googleExport.mimeType,
+        webViewLink: meta.data.webViewLink ?? driveFileUrl(id),
+        buffer,
+        exported: true,
+      };
+    }
+
+    const buffer = await downloadFileBytes(id);
+    assertDownloadSize(buffer, name);
+    return {
+      fileId: id,
+      name,
+      mimeType,
+      webViewLink: meta.data.webViewLink ?? driveFileUrl(id),
+      buffer,
+      exported: false,
+    };
+  } catch (e) {
+    if (e instanceof ApiError) throw e;
     throw fromGoogleError(e);
   }
 }
