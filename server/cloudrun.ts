@@ -4,6 +4,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
 import { authRouter } from './routes/auth.js';
+import { identityMiddleware } from './identity/middleware.js';
+import { createBradRouter } from './routes/brad.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Care Indeed HH V2 — combined Cloud Run entry (same-origin).
@@ -38,11 +40,27 @@ app.use(cors(allowedOrigin ? { origin: allowedOrigin, credentials: false } : { o
 // Health endpoint (note: the literal /healthz is shadowed by Google Front End).
 app.get('/_health', (_req: Request, res: Response) => { res.type('text/plain').send('ok'); });
 
+// Brad document uploads carry a base64-encoded file in a JSON body — allow a
+// larger limit on that route only (must be registered before the 2mb parser).
+app.use('/api/brad/upload', express.json({ limit: '32mb' }));
+
 // Parse JSON for the API only (keeps static asset serving lean).
 app.use('/api', express.json({ limit: '2mb' }));
 
+// Identity / session context (header-based) — must run before any router that
+// reads req.session / req.actor (Brad's guarded endpoints fail closed without it).
+app.use('/api', identityMiddleware);
+
 // Canonical auth API — AWS Cognito + DynamoDB.
 app.use('/api/auth', authRouter);
+
+// Brad assistant + Super Admin guarded-action layer. Wrapped so an optional-
+// integration failure can never take down auth/SPA serving.
+try {
+  app.use('/api/brad', createBradRouter());
+} catch (err) {
+  console.error(JSON.stringify({ event: 'cloudrun.brad_mount_failed', message: (err as Error)?.message }));
+}
 
 // Any other /api path → clean JSON 404 (must not fall through to the SPA).
 app.use('/api', (_req: Request, res: Response) => {
