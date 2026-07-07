@@ -22,7 +22,10 @@ import {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const FORM_TEMPLATE = path.join(REPO_ROOT, 'public', 'templates', 'CareIndeed_Patient_Admission_Packet_Letter_Form_Logo.html');
+// The template ships in public/ (dev checkout) but the Cloud Run image only
+// carries dist/ (Vite copies public/* into dist/), so resolve either location.
+const FORM_TEMPLATE_CANDIDATES = ['public', 'dist'].map((dir) =>
+  path.join(REPO_ROOT, dir, 'templates', 'CareIndeed_Patient_Admission_Packet_Letter_Form_Logo.html'));
 const BUDGET_MS = Number(process.env.PDF_RENDER_TIMEOUT_MS || 60000);
 
 export type AdmissionFields = Record<string, string | undefined | null>;
@@ -40,8 +43,9 @@ export async function renderAdmissionPdf(fields: AdmissionFields): Promise<{ pdf
 async function renderOnce(fields: AdmissionFields): Promise<{ pdfBase64: string; pageCount: number; filled: number } | null> {
   let browser: import('playwright').Browser | null = null;
   try {
-    if (!fs.existsSync(FORM_TEMPLATE)) { log.warn('admission.pdf.template.missing', { path: FORM_TEMPLATE }); return null; }
-    const html = fs.readFileSync(FORM_TEMPLATE, 'utf8');
+    const formTemplate = FORM_TEMPLATE_CANDIDATES.find((p) => fs.existsSync(p));
+    if (!formTemplate) { log.warn('admission.pdf.template.missing', { path: FORM_TEMPLATE_CANDIDATES.join(' | ') }); return null; }
+    const html = fs.readFileSync(formTemplate, 'utf8');
     const { chromium } = await import('playwright');
     browser = await chromium.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'], timeout: 15000 });
     const page = await browser.newPage();
