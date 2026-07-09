@@ -23,18 +23,29 @@ import {
   mergeSetupAssignment,
   normalizeSetupAssignment,
 } from './userSetupAssignments';
+import {
+  type UserSetupAuditEntry,
+  type UserSetupAuditInput,
+  appendToUserSetupAudit,
+  loadUserSetupAuditFromStorage,
+} from './userSetupAudit';
 
 /**
  * Persist key remains `ci.identityRegistry.v1` (same localStorage key as before).
  * Internal payload `version` is bumped 1 → 2 to include `setupAssignments`.
  * v1 blobs without setupAssignments are migrated on load (seed map filled, then
  * any persisted setupAssignments overlaid). Demo/local-only — no backend.
+ *
+ * Phase 2E audit log is stored separately (`ci.identitySetupAudit.v1`) and is
+ * **Demo audit trail — not tamper-evident** (client-editable localStorage).
  */
 const STORAGE_KEY = 'ci.identityRegistry.v1';
 const REGISTRY_VERSION = 2 as const;
 const PROTECTED_USER_IDS = new Set(['demo-user-careindeed']);
 const SUPER_ADMIN_GROUP_ID = 'grp-super-admin';
 const PRIVILEGED_GROUP_IDS = new Set(['grp-super-admin', 'grp-admin', 'grp-system', 'grp-user-access-admin']);
+/** Default actor when a mutation has no session-bound identity (demo only). */
+const DEMO_AUDIT_ACTOR_USER_ID = 'demo-user-careindeed';
 
 export interface AddUserPayload {
   name: string;
@@ -79,6 +90,11 @@ export interface UserAssignmentsState {
   users: User[];
   assignments: RoleAssignment[];
   setupAssignments: Record<string, UserSetupAssignment>;
+  /**
+   * Demo audit trail — not tamper-evident.
+   * Append-only in app code; still editable via localStorage.
+   */
+  auditLog: UserSetupAuditEntry[];
 
   getUserById: (userId: string) => User | undefined;
   getActiveAssignmentsForUser: (userId: string, atIso?: string) => RoleAssignment[];
@@ -86,11 +102,15 @@ export interface UserAssignmentsState {
 
   getSetupAssignment: (userId: string) => UserSetupAssignment | undefined;
   getAllSetupAssignments: () => UserSetupAssignment[];
-  setSetupAssignment: (userId: string, patch: UserSetupFieldsPayload) => CrudResult;
+  setSetupAssignment: (userId: string, patch: UserSetupFieldsPayload, actorUserId?: string) => CrudResult;
+
+  /** Append a setup/journey audit entry (used by journeyStore and identity CRUD). */
+  appendAudit: (input: UserSetupAuditInput) => UserSetupAuditEntry;
+  getRecentAudit: (limit?: number) => UserSetupAuditEntry[];
 
   hydrateRegistry: (snapshot: IdentityRegistrySnapshot) => void;
   upsertAuthenticatedUser: (authUser: AuthDemoUser | null, nowIso?: string) => User | null;
-  addUser: (payload: AddUserPayload) => CrudResult;
+  addUser: (payload: AddUserPayload, actorUserId?: string) => CrudResult;
   editUser: (userId: string, currentUserId: string, payload: EditUserPayload) => CrudResult;
   deleteUser: (userId: string, currentUserId: string) => CrudResult;
 }
@@ -323,6 +343,21 @@ function setAndPersist(
   set(snapshot);
 }
 
+function summarizeSetupPatch(patch: UserSetupFieldsPayload): string {
+  const keys = Object.keys(patch).filter(k => (patch as Record<string, unknown>)[k] !== undefined);
+  return keys.length ? `fields: ${keys.join(', ')}` : 'empty patch';
+}
+
+function createAndPushAudit(
+  get: () => UserAssignmentsState,
+  set: (partial: Partial<Pick<UserAssignmentsState, 'auditLog'>>) => void,
+  input: UserSetupAuditInput,
+): UserSetupAuditEntry {
+  const next = appendToUserSetupAudit(get().auditLog, input);
+  set({ auditLog: next });
+  return next[next.length - 1]!;
+}
+
 export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) => {
   const initial = initialRegistry();
   saveRegistry(initial);
@@ -331,6 +366,8 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
     users: initial.users,
     assignments: initial.assignments,
     setupAssignments: initial.setupAssignments,
+    // Demo audit trail — not tamper-evident
+    auditLog: loadUserSetupAuditFromStorage(),
 
     getUserById(userId) {
       const normalized = normalizeUserEmail(userId);
@@ -367,7 +404,18 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
       return Object.values(get().setupAssignments).map(a => normalizeSetupAssignment(a));
     },
 
-    setSetupAssignment(userId, patch) {
+    appendAudit(input) {
+      const entry = createAndPushAudit(get, set, input);
+      return entry;
+    },
+
+    getRecentAudit(limit = 50) {
+      const log = get().auditLog;
+      if (limit <= 0) return [];
+      return log.slice(-limit).reverse();
+    },
+
+    setSetupAssignment(userId, patch, actorUserId = DEMO_AUDIT_ACTOR_USER_ID) {
       const { users, assignments, setupAssignments } = get();
       if (!users.some(u => u.id === userId)) {
         return { ok: false, error: 'User not found.' };
@@ -381,6 +429,13 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
         users,
         assignments,
         setupAssignments: nextSetup,
+      });
+      createAndPushAudit(get, set, {
+        actorUserId,
+        action: 'setSetupAssignment',
+        targetUserId: userId,
+        detail: summarizeSetupPatch(patch),
+        createdAt: now,
       });
       return { ok: true };
     },
@@ -482,7 +537,7 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
       return nextUser;
     },
 
-    addUser(payload) {
+    addUser(payload, actorUserId = DEMO_AUDIT_ACTOR_USER_ID) {
       const { users, assignments, setupAssignments } = get();
 
       if (!payload.name.trim()) return { ok: false, error: 'Full name is required.' };
@@ -532,10 +587,17 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
         assignments: [...assignments, newAssignment],
         setupAssignments: { ...setupAssignments, [userId]: newSetup },
       }));
+      createAndPushAudit(get, set, {
+        actorUserId,
+        action: 'addUser',
+        targetUserId: userId,
+        detail: `Created ${email} in group ${payload.groupId}`,
+        createdAt: now,
+      });
       return { ok: true };
     },
 
-    editUser(userId, _currentUserId, payload) {
+    editUser(userId, currentUserId, payload) {
       const { users, assignments, setupAssignments } = get();
 
       const user = users.find(u => u.id === userId);
@@ -612,6 +674,19 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
         assignments: updatedAssignments,
         setupAssignments: nextSetup,
       }));
+      createAndPushAudit(get, set, {
+        actorUserId: currentUserId || DEMO_AUDIT_ACTOR_USER_ID,
+        action: 'editUser',
+        targetUserId: userId,
+        detail: [
+          payload.name !== undefined ? 'name' : null,
+          payload.email !== undefined ? 'email' : null,
+          payload.groupId !== undefined ? `group=${payload.groupId}` : null,
+          payload.status !== undefined ? `status=${payload.status}` : null,
+          payload.setup !== undefined ? summarizeSetupPatch(payload.setup) : null,
+        ].filter(Boolean).join('; ') || 'edit',
+        createdAt: now,
+      });
       return { ok: true };
     },
 
@@ -657,6 +732,14 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
         assignments: updatedAssignments,
         setupAssignments: nextSetup,
       }));
+      // Soft-delete / deactivate — logged as deleteUser for action parity with store API
+      createAndPushAudit(get, set, {
+        actorUserId: currentUserId || DEMO_AUDIT_ACTOR_USER_ID,
+        action: 'deleteUser',
+        targetUserId: userId,
+        detail: 'Soft-deactivated (status=suspended, setup.active=false)',
+        createdAt: now,
+      });
       return { ok: true };
     },
   };
@@ -695,6 +778,18 @@ export function setLiveSetupAssignment(userId: string, patch: UserSetupFieldsPay
 }
 
 /**
+ * Append to the demo user-setup audit log (identity + journey callers).
+ * **Demo audit trail — not tamper-evident.**
+ */
+export function appendUserSetupAudit(input: UserSetupAuditInput): UserSetupAuditEntry {
+  return useUserAssignmentsStore.getState().appendAudit(input);
+}
+
+export function getRecentUserSetupAudit(limit?: number): UserSetupAuditEntry[] {
+  return useUserAssignmentsStore.getState().getRecentAudit(limit);
+}
+
+/**
  * Demo/local-only: re-seed the in-memory store from DEMO_USERS + current localStorage.
  * Used by unit tests (and never as a production API). Clears nothing from disk unless
  * the caller cleared localStorage first.
@@ -705,8 +800,13 @@ export function rehydrateIdentityRegistryFromStorage(): void {
     users: snap.users,
     assignments: snap.assignments,
     setupAssignments: snap.setupAssignments,
+    auditLog: loadUserSetupAuditFromStorage(),
   });
   saveRegistry(snap);
 }
 
-export { STORAGE_KEY as IDENTITY_REGISTRY_STORAGE_KEY, REGISTRY_VERSION as IDENTITY_REGISTRY_VERSION };
+export {
+  STORAGE_KEY as IDENTITY_REGISTRY_STORAGE_KEY,
+  REGISTRY_VERSION as IDENTITY_REGISTRY_VERSION,
+  DEMO_AUDIT_ACTOR_USER_ID,
+};

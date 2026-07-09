@@ -2,7 +2,6 @@ export * from './types';
 export * from './catalog';
 export * from './featureAccess';
 export * from './useFeatureAccess';
-export * from './FeatureGate';
-export * from './PermissionGate';
-export * from './FeatureRouteGuard';
-export * from './RolloutPhaseBadge';
+// Phase 2E: FeatureGate / PermissionGate / FeatureRouteGuard / RolloutPhaseBadge
+// were re-exported but never shipped. Removed so the barrel type-checks.
+// Prefer canViewFeature / useFeatureAccess until real gate components land.

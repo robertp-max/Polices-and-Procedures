@@ -8,6 +8,7 @@ import { DEMO_USERS } from './demoUsers';
 import {
   IDENTITY_REGISTRY_STORAGE_KEY,
   IDENTITY_REGISTRY_VERSION,
+  appendUserSetupAudit,
   rehydrateIdentityRegistryFromStorage,
   useUserAssignmentsStore,
 } from './userAssignmentsStore';
@@ -160,6 +161,108 @@ describe('userAssignmentsStore — create / edit / deactivate', () => {
     });
     expect(result.ok).toBe(false);
     expect(result.error).toMatch(/careindeed/i);
+  });
+});
+
+describe('userAssignmentsStore — Phase 2E demo audit trail', () => {
+  /**
+   * Demo audit trail — not tamper-evident.
+   * Field name discipline: always `createdAt` (never `at`).
+   */
+  it('addUser / editUser / deleteUser / setSetupAssignment each append one audit entry with createdAt', () => {
+    const store = useUserAssignmentsStore.getState();
+    const before = store.auditLog.length;
+
+    const add = store.addUser({
+      name: 'Audit Clinician',
+      email: 'audit.clinician@careindeed.com',
+      groupId: 'grp-clinician-rn',
+      status: 'pending',
+      setup: { role: 'RN', supervisorId: 'usr-director' },
+    });
+    expect(add.ok).toBe(true);
+
+    const created = useUserAssignmentsStore
+      .getState()
+      .users.find(u => u.email === 'audit.clinician@careindeed.com');
+    expect(created).toBeDefined();
+
+    const edit = useUserAssignmentsStore.getState().editUser(created!.id, 'demo-user-careindeed', {
+      name: 'Audit Clinician Edited',
+      setup: { firstDay: '2026-07-01' },
+    });
+    expect(edit.ok).toBe(true);
+
+    const setup = useUserAssignmentsStore.getState().setSetupAssignment(created!.id, {
+      discipline: 'RN — Audit lane',
+    }, 'demo-user-careindeed');
+    expect(setup.ok).toBe(true);
+
+    const del = useUserAssignmentsStore.getState().deleteUser(created!.id, 'demo-user-careindeed');
+    expect(del.ok).toBe(true);
+
+    const log = useUserAssignmentsStore.getState().auditLog;
+    expect(log.length).toBe(before + 4);
+
+    const lastFour = log.slice(-4);
+    expect(lastFour.map(e => e.action)).toEqual([
+      'addUser',
+      'editUser',
+      'setSetupAssignment',
+      'deleteUser',
+    ]);
+
+    for (const entry of lastFour) {
+      expect(entry.createdAt, `missing createdAt on ${entry.action}`).toBeTruthy();
+      expect(typeof entry.createdAt).toBe('string');
+      expect(entry.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+      // onboarding-v2 bug regression guard: consumers must not use `at`
+      expect('at' in entry).toBe(false);
+      expect(entry.actorUserId).toBeTruthy();
+      expect(entry.targetUserId).toBe(created!.id);
+    }
+  });
+
+  it('failed mutations do not append audit entries', () => {
+    const before = useUserAssignmentsStore.getState().auditLog.length;
+    const result = useUserAssignmentsStore.getState().addUser({
+      name: 'Bad',
+      email: 'not-careindeed@example.com',
+      groupId: 'grp-clinician-rn',
+      status: 'pending',
+    });
+    expect(result.ok).toBe(false);
+    expect(useUserAssignmentsStore.getState().auditLog.length).toBe(before);
+  });
+
+  it('persists audit entries across rehydrate (localStorage) and exposes createdAt on getRecentAudit', () => {
+    useUserAssignmentsStore.getState().addUser({
+      name: 'Persist Audit',
+      email: 'persist.audit@careindeed.com',
+      groupId: 'grp-pending-user',
+      status: 'pending',
+    });
+
+    rehydrateIdentityRegistryFromStorage();
+    const recent = useUserAssignmentsStore.getState().getRecentAudit(10);
+    expect(recent.length).toBeGreaterThan(0);
+    const addEntry = recent.find(e => e.action === 'addUser' && e.detail?.includes('persist.audit'));
+    expect(addEntry).toBeDefined();
+    expect(addEntry!.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(Object.prototype.hasOwnProperty.call(addEntry, 'createdAt')).toBe(true);
+  });
+
+  it('appendAudit free function is available for journey callers', () => {
+    const before = useUserAssignmentsStore.getState().auditLog.length;
+    const entry = appendUserSetupAudit({
+      actorUserId: 'journey-actor',
+      action: 'supervisedVisitSave',
+      targetUserId: 'EMP-1001',
+      detail: 'test visit',
+    });
+    expect(entry.action).toBe('supervisedVisitSave');
+    expect(entry.createdAt).toBeTruthy();
+    expect(useUserAssignmentsStore.getState().auditLog.length).toBe(before + 1);
   });
 });
 

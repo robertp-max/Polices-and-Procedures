@@ -9,6 +9,7 @@ import {
   UserCog,
   UserPlus,
 } from 'lucide-react';
+import { useAuth } from '@/auth/AuthProvider';
 import type { JourneyRole } from '@/policy/journey/types/journey';
 import type { User } from '@/policy/security/identity/types';
 import { USER_GROUPS, USER_GROUP_BY_ID } from '@/policy/security/identity/userGroups';
@@ -17,6 +18,8 @@ import {
   buildOnboardingTrackForRole,
   type UserSetupFieldsPayload,
 } from '@/policy/security/identity/userSetupAssignments';
+import { USER_SETUP_AUDIT_DEMO_LABEL } from '@/policy/security/identity/userSetupAudit';
+import { DEMO_IMPERSONATION_LABEL } from '@/policy/journey/components/DemoImpersonationBar';
 import {
   DataTable,
   MetricGrid,
@@ -28,14 +31,17 @@ import {
 } from '../../components';
 import { Button, FormField, Input, Select, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
+import { canManageAdminUsers } from '../../utils/adminRoleHelper';
 import { cx } from '../../utils/classNames';
 import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabInactiveClass } from './workspaceTabChrome';
 
 /**
  * Demo actor for edit/delete authorization checks in the identity store.
- * Phase 2B is localStorage-only — no real auth session is required here.
+ * Phase 2B/2E is localStorage-only — no real auth session is required here.
  * `demo-user-careindeed` is the protected Super Admin seed (cannot self-delete /
  * is the stable demo operator id used in Phase 2A unit tests).
+ *
+ * Actor context below is labeled: **Demo impersonation — not a real session**.
  */
 const DEMO_ACTOR_USER_ID = 'demo-user-careindeed';
 
@@ -242,9 +248,12 @@ const userPanelTabs = [
 type UserPanelTabId = (typeof userPanelTabs)[number]['id'];
 
 export function AdminUsersScreen() {
+  const { user: authUser } = useAuth();
   const users = useUserAssignmentsStore(s => s.users);
   const assignments = useUserAssignmentsStore(s => s.assignments);
   const setupAssignments = useUserAssignmentsStore(s => s.setupAssignments);
+  const auditLog = useUserAssignmentsStore(s => s.auditLog);
+  const getRecentAudit = useUserAssignmentsStore(s => s.getRecentAudit);
   const addUser = useUserAssignmentsStore(s => s.addUser);
   const editUser = useUserAssignmentsStore(s => s.editUser);
   const deleteUser = useUserAssignmentsStore(s => s.deleteUser);
@@ -256,6 +265,8 @@ export function AdminUsersScreen() {
   const [editForm, setEditForm] = useState<EditFormState | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
+
+  const recentAudit = useMemo(() => getRecentAudit(40), [auditLog, getRecentAudit]);
 
   const userById = useMemo(() => new Map(users.map(u => [u.id, u])), [users]);
 
@@ -600,6 +611,30 @@ export function AdminUsersScreen() {
 
   const fieldClass = 'grid gap-md tablet-l:grid-cols-2';
 
+  // Soft demo gate — AuthProvider always returns Administrator until Phase 2F.
+  // Placed after all hooks to satisfy rules-of-hooks.
+  if (!canManageAdminUsers(authUser)) {
+    return (
+      <section
+        className="grid gap-xl"
+        data-group="Admin"
+        data-hash-id="admin-users"
+        data-route="/admin/users"
+        data-template="matrix"
+      >
+        <div className="rounded-2xl border border-hairline bg-white p-8 text-center">
+          <h1 className="text-xl font-medium text-ink mb-2">Access denied</h1>
+          <p className="text-sm text-muted">
+            Only administrators can manage the demo user directory.
+          </p>
+          <p className="text-xs text-muted mt-4">
+            Demo gate via role string — not a production security boundary (Phase 2F).
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section
       className="grid gap-xl"
@@ -618,7 +653,27 @@ export function AdminUsersScreen() {
         {' '}
         Roster, roles, supervisors, and onboarding tracks persist in{' '}
         <code className="text-xs">ci.identityRegistry.v1</code> until Phase 2F (real IdP).
-        Actor for edit/delete: <code className="text-xs">{DEMO_ACTOR_USER_ID}</code>.
+      </div>
+
+      <div
+        className="rounded-lg border border-amber-300/70 bg-amber-50/90 px-lg py-md text-xs text-amber-950"
+        role="region"
+        aria-label={DEMO_IMPERSONATION_LABEL}
+      >
+        <div className="font-bold uppercase tracking-wider text-[10px] text-amber-800">
+          {DEMO_IMPERSONATION_LABEL}
+        </div>
+        <p className="mt-1 text-[11px] text-amber-900/90">
+          Actor context for edit/delete:{' '}
+          <code className="text-[11px]">{DEMO_ACTOR_USER_ID}</code>
+          {authUser?.role ? (
+            <span>
+              {' '}
+              · auth role <strong>{authUser.role}</strong>
+            </span>
+          ) : null}
+          . Mutations also write to the demo audit log ({USER_SETUP_AUDIT_DEMO_LABEL.toLowerCase()}).
+        </p>
       </div>
 
       <MetricGrid metrics={metrics} />
@@ -1147,24 +1202,31 @@ export function AdminUsersScreen() {
           {activePanel === 'audit' && (
             <SurfaceCard
               card={{
-                body: 'Demo audit view — mutations write to localStorage identity registry. Production audit chain and IdP linkage land in Phase 2E/2F.',
+                // Demo audit trail — not tamper-evident (client localStorage only).
+                body: `${USER_SETUP_AUDIT_DEMO_LABEL}. Mutations append to ci.identitySetupAudit.v1. Production IdP-bound chain is Phase 2F.`,
                 icon: BadgeCheck,
-                progress: 40,
-                status: 'ready',
+                progress: Math.min(100, recentAudit.length * 5),
+                status: recentAudit.length ? 'ready' : 'pending',
                 title: 'Audit evidence (demo)',
                 tone: 'teal',
               }}
             >
               <div className="grid gap-sm border-t border-hairline pt-md">
+                <div className="rounded-md border border-amber-300/60 bg-amber-50/80 px-sm py-xs text-[11px] text-amber-950">
+                  <strong>{USER_SETUP_AUDIT_DEMO_LABEL}</strong>
+                  {' — '}
+                  editable via browser storage; not a compliance system of record.
+                </div>
                 {(
                   [
                     ['Registry key', 'ci.identityRegistry.v1', 'locked'],
+                    ['Audit key', 'ci.identitySetupAudit.v1', 'ready'],
                     ['Users persisted', `${users.length} records`, 'validated'],
-                    ['Setup rows', `${Object.keys(setupAssignments).length} assignments`, 'ready'],
+                    ['Audit entries', `${auditLog.length} total`, recentAudit.length ? 'certified' : 'pending'],
                     ['Actor (demo)', DEMO_ACTOR_USER_ID, 'certified'],
                   ] as const
                 ).map(([label, value, status]) => (
-                  <div className="flex flex-wrap items-center justify-between gap-sm" key={value}>
+                  <div className="flex flex-wrap items-center justify-between gap-sm" key={`${label}-${value}`}>
                     <div className="flex min-w-0 items-center gap-sm">
                       <KeyRound aria-hidden="true" className="h-icon-sm w-icon-sm shrink-0 text-brand-teal" />
                       <div className="min-w-0">
@@ -1175,6 +1237,44 @@ export function AdminUsersScreen() {
                     <ToneBadge size="sm" status={status} />
                   </div>
                 ))}
+
+                <div className="mt-sm border-t border-hairline pt-md">
+                  <p className="mb-sm text-tag uppercase tracking-tag text-muted">
+                    Recent entries (newest first)
+                  </p>
+                  {recentAudit.length === 0 && (
+                    <p className="text-xs text-muted">
+                      No audit events yet. Create, edit, or deactivate a user to populate this list.
+                    </p>
+                  )}
+                  <ul className="grid max-h-80 gap-sm overflow-y-auto">
+                    {recentAudit.map((entry) => (
+                      <li
+                        key={entry.id}
+                        className="rounded-md border border-hairline bg-surface-glass px-sm py-xs"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-xs">
+                          <span className="text-xs font-medium text-ink">{entry.action}</span>
+                          <time className="text-[10px] text-muted" dateTime={entry.createdAt}>
+                            {entry.createdAt}
+                          </time>
+                        </div>
+                        <p className="mt-xs text-[11px] text-secondary">
+                          actor <code className="text-[10px]">{entry.actorUserId}</code>
+                          {entry.targetUserId ? (
+                            <>
+                              {' → '}
+                              <code className="text-[10px]">{entry.targetUserId}</code>
+                            </>
+                          ) : null}
+                        </p>
+                        {entry.detail ? (
+                          <p className="mt-xs text-[11px] text-muted">{entry.detail}</p>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </SurfaceCard>
           )}

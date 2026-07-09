@@ -25,6 +25,8 @@ import { SEED_EMPLOYEES } from '@/policy/journey/data/employees';
 import { evaluateEscalations } from '@/policy/journey/utils/escalation';
 import { scormTimeToSeconds } from '@/policy/journey/scorm/ScormRuntime';
 import { createAchcCompletionEvidence, isAchcModuleId } from '@/policy/journey/utils/achcTrainingCalculations';
+// Phase 2E: demo user-setup audit (client-side only — not tamper-evident)
+import { appendUserSetupAudit } from '@/policy/security/identity/userAssignmentsStore';
 
 interface JourneyState {
   currentEmployeeId: string;
@@ -128,6 +130,13 @@ export const useJourneyStore = create<JourneyState>()(
           };
         });
         get().recomputeEscalations();
+        // Demo audit trail — not tamper-evident
+        appendUserSetupAudit({
+          actorUserId: sig.name || sig.role || 'unknown-signer',
+          action: 'appendixFSign',
+          targetUserId: employeeId,
+          detail: `Appendix F signed as ${sig.role}`,
+        });
         return { ok: true, message: 'Appendix F signed. Employee cleared to begin orientation.' };
       },
 
@@ -325,6 +334,13 @@ export const useJourneyStore = create<JourneyState>()(
           createdAt: nowIso(),
         };
         set(s => ({ supervisedVisits: [row, ...s.supervisedVisits] }));
+        // Demo audit trail — not tamper-evident
+        appendUserSetupAudit({
+          actorUserId: v.supervisorId || 'unknown-supervisor',
+          action: 'supervisedVisitSave',
+          targetUserId: v.employeeId,
+          detail: `Supervised visit ${row.id}`,
+        });
         return row;
       },
 
@@ -350,17 +366,33 @@ export const useJourneyStore = create<JourneyState>()(
         get().recomputeEscalations();
       },
 
-      acknowledgeEscalation(id) {
+      acknowledgeEscalation(id, actor = 'unknown') {
+        const esc = get().escalations.find(e => e.id === id);
         set(s => ({
           escalations: s.escalations.map(e => (e.id === id ? { ...e, status: 'Acknowledged' } : e)),
         }));
+        // Demo audit trail — not tamper-evident
+        appendUserSetupAudit({
+          actorUserId: actor,
+          action: 'acknowledgeEscalation',
+          targetUserId: esc?.employeeId,
+          detail: `Escalation ${id}${esc?.type ? ` (${esc.type})` : ''}`,
+        });
       },
       resolveEscalation(id, actor) {
+        const esc = get().escalations.find(e => e.id === id);
         set(s => ({
           escalations: s.escalations.map(e =>
             e.id === id ? { ...e, status: 'Resolved', resolvedAt: nowIso(), resolvedBy: actor } : e,
           ),
         }));
+        // Demo audit trail — not tamper-evident
+        appendUserSetupAudit({
+          actorUserId: actor,
+          action: 'resolveEscalation',
+          targetUserId: esc?.employeeId,
+          detail: `Escalation ${id}${esc?.type ? ` (${esc.type})` : ''}`,
+        });
       },
 
       recomputeEscalations() {
