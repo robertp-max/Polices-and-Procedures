@@ -5,6 +5,7 @@ import { CesEvidenceSearch } from './CesEvidenceSearch';
 import { CalendarApi } from '../../../policy/services/calendarApi';
 import { ecignApi } from '../../../policy/ecign/api';
 import { getEcignSignerIdentity } from '../../../policy/ecign/signerIdentity';
+import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabInactiveClass } from '@/components/theme/workspaceTabChrome';
 
 // Color-code the real Drive folders by name so the grid keeps its event-domain palette.
 const FOLDER_PALETTE = ['text-[#FACC15]', 'text-[#3B82F6]', 'text-[#2DD4BF]', 'text-[#FB923C]', 'text-[#A855F7]', 'text-[#22C55E]', 'text-[#EC4899]'];
@@ -15,6 +16,17 @@ const colorForFolder = (name, idx) => {
   if (n.includes('event packet')) return 'text-[#2DD4BF]';
   if (n.includes('brad') || n.includes('training')) return 'text-[#A855F7]';
   return FOLDER_PALETTE[idx % FOLDER_PALETTE.length];
+};
+
+const driveFolderIdFromUrl = (url) => {
+  if (!url) return '';
+  const folderMatch = String(url).match(/\/folders\/([^/?#]+)/);
+  if (folderMatch?.[1]) return decodeURIComponent(folderMatch[1]);
+  try {
+    return new URL(url).searchParams.get('id') || '';
+  } catch {
+    return '';
+  }
 };
 
 // --- MOCK DATA ---
@@ -622,9 +634,13 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
   const [compilePhase, setCompilePhase] = useState('idle');
   const [zoomPage, setZoomPage] = useState(null);
   // Real Drive folders from the manifest (source of truth). Loaded when the DRIVE
-  // tab opens; each folder card opens its real Google Drive URL in a new tab.
+  // tab opens; each folder card browses inside the app using its Drive folder ID.
   const [realFolders, setRealFolders] = useState([]);
   const [foldersErr, setFoldersErr] = useState(null);
+  const [driveBrowser, setDriveBrowser] = useState(null);
+  const [driveBrowserLoading, setDriveBrowserLoading] = useState(false);
+  const [driveBrowserErr, setDriveBrowserErr] = useState(null);
+  const [driveBrowserTrail, setDriveBrowserTrail] = useState([]);
   useEffect(() => {
     if (activeTab !== 'DRIVE') return;
     let on = true;
@@ -633,6 +649,25 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
       .catch((e) => { if (on) { setRealFolders([]); setFoldersErr(e instanceof Error ? e.message : 'Manifest unavailable'); } });
     return () => { on = false; };
   }, [activeTab]);
+  const loadDriveFolderInApp = useCallback((folderId, name, trail = driveBrowserTrail) => {
+    if (!folderId) return;
+    const nextTrail = [...trail, { id: folderId, name }];
+    setDriveBrowserTrail(nextTrail);
+    setDriveBrowserLoading(true);
+    setDriveBrowserErr(null);
+    CalendarApi.driveFolderChildren(folderId)
+      .then((data) => setDriveBrowser(data))
+      .catch((e) => {
+        setDriveBrowser(null);
+        setDriveBrowserErr(e instanceof Error ? e.message : 'Google Drive folder is unavailable.');
+      })
+      .finally(() => setDriveBrowserLoading(false));
+  }, [driveBrowserTrail]);
+  const resetDriveBrowser = useCallback(() => {
+    setDriveBrowser(null);
+    setDriveBrowserTrail([]);
+    setDriveBrowserErr(null);
+  }, []);
 
   const handleStudioGeneratingChange = useCallback((active) => {
     setStudioGenerating(active);
@@ -865,17 +900,15 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
       `}} />
 
       <div className="mx-auto max-w-[1280px] px-4 py-8 md:px-10 md:py-12">
-        <div className="mb-10 flex justify-center">
-          <div className="grid w-full max-w-[560px] grid-cols-4 rounded-full border border-white/80 bg-white/80 p-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.08)] backdrop-blur-md">
+        <div className="mb-10 flex max-w-full items-stretch overflow-x-auto font-montserrat">
+          <div className="flex max-w-full items-stretch overflow-x-auto">
             {navTabs.map(tab => (
               <button
                 key={tab}
                 type="button"
                 onClick={() => setActiveTab(tab)}
-                className={`min-h-[42px] rounded-full px-3 py-2 font-montserrat text-[10px] font-bold uppercase tracking-[0.12em] transition-all md:text-xs ${
-                  activeTab === tab
-                    ? 'bg-[#007970] text-white shadow-[0_8px_18px_rgba(0,121,112,0.22)]'
-                    : 'text-[#718096] hover:bg-[#F4F7F7] hover:text-[#1F1C1B]'
+                className={`${workspaceCompactTabClass} whitespace-nowrap ${
+                  activeTab === tab ? workspaceTabActiveClass : workspaceTabInactiveClass
                 }`}
               >
                 {tab}
@@ -897,30 +930,83 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
               </div>
             </div>
 
-            <CesEvidenceSearch />
+            <CesEvidenceSearch onOpenFolder={(folderId, folderName) => loadDriveFolderInApp(folderId, folderName, [])} />
 
             {(() => {
               const usingSample = !realFolders || realFolders.length === 0;
               const cards = usingSample
-                ? MOCK_FOLDERS.map((f) => ({ name: f.name, subtext: f.subtext, color: f.color, audit: f.audit, sync: f.sync, url: null }))
+                ? MOCK_FOLDERS.map((f) => ({ name: f.name, subtext: f.subtext, color: f.color, audit: f.audit, sync: f.sync, id: null, url: null, kind: 'sample' }))
                 : realFolders.map((f, idx) => ({
                     name: f.folderName || f.section || 'Folder',
                     subtext: `${f.count} FILE${f.count === 1 ? '' : 'S'}`,
                     color: colorForFolder(f.folderName, idx),
                     audit: 'Live from Drive',
-                    sync: f.folderUrl ? 'Click to open' : 'No link',
+                    sync: f.folderId ? 'Click to browse' : (f.folderUrl ? 'Open in Drive' : 'No link'),
+                    id: f.folderId || driveFolderIdFromUrl(f.folderUrl) || null,
                     url: f.folderUrl || null,
+                    kind: 'folder',
                   }));
+              const browserCards = driveBrowser
+                ? [
+                    ...driveBrowser.folders.map((f, idx) => ({
+                      name: f.name,
+                      subtext: 'FOLDER',
+                      color: colorForFolder(f.name, idx),
+                      audit: 'Live from Drive',
+                      sync: 'Click to browse',
+                      id: f.id,
+                      url: null,
+                      kind: 'folder',
+                    })),
+                    ...driveBrowser.files.map((f, idx) => ({
+                      name: f.name,
+                      subtext: 'FILE',
+                      color: colorForFolder(f.name, idx + driveBrowser.folders.length),
+                      audit: 'Drive preview',
+                      sync: 'Click to preview',
+                      id: null,
+                      url: f.webViewLink,
+                      kind: 'file',
+                    })),
+                  ]
+                : [];
+              const visibleCards = driveBrowser ? browserCards : cards;
               return (
                 <>
                   {usingSample
                     ? <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">Showing <strong>sample</strong> folders — connect Google Drive{foldersErr ? ` (${foldersErr})` : ''} or set <code>DRIVE_MANIFEST_FILE_ID</code> to list the real evidence folders.</div>
-                    : <div className="mb-6 rounded-lg border border-[#B6E8E2] bg-[#E5FEFF] px-4 py-2 text-xs text-[#007970]">Live from the Drive manifest — {realFolders.length} folder{realFolders.length === 1 ? '' : 's'}. Click a folder to open it in Google Drive.</div>}
+                    : <div className="mb-6 rounded-lg border border-[#B6E8E2] bg-[#E5FEFF] px-4 py-2 text-xs text-[#007970]">Live from the Drive manifest — {realFolders.length} folder{realFolders.length === 1 ? '' : 's'}. Click a folder to browse it inside the app.</div>}
+                  {driveBrowserTrail.length > 0 && (
+                    <div className="mb-6 flex flex-wrap items-center gap-2 rounded-lg border border-[#EAE4E3] bg-white px-4 py-3 text-xs text-[#524D4B]">
+                      <button type="button" onClick={resetDriveBrowser} className="font-montserrat font-semibold text-[#007970] hover:underline">Evidence Drive</button>
+                      {driveBrowserTrail.map((crumb, i) => (
+                        <span key={crumb.id} className="flex items-center gap-2">
+                          <span className="text-[#C7C2C0]">/</span>
+                          <button
+                            type="button"
+                            onClick={() => loadDriveFolderInApp(crumb.id, crumb.name, driveBrowserTrail.slice(0, i))}
+                            className="font-montserrat font-semibold text-[#007970] hover:underline"
+                          >
+                            {crumb.name}
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {driveBrowserLoading ? (
+                    <div className="py-12 text-center font-roboto text-sm text-[#747470]">Loading Google Drive folder...</div>
+                  ) : driveBrowserErr ? (
+                    <div className="mb-6 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{driveBrowserErr}</div>
+                  ) : null}
                   <div className="flex flex-wrap gap-6 md:gap-14 pt-4 justify-start">
-                    {cards.map((folder, idx) => (
+                    {visibleCards.map((folder, idx) => (
                       <div
                         key={idx}
-                        onClick={() => { if (folder.url) window.open(folder.url, '_blank', 'noopener,noreferrer'); }}
+                        onClick={() => {
+                          if (folder.kind === 'file' && folder.url) { window.open(folder.url, '_blank', 'noopener,noreferrer'); return; }
+                          if (folder.id) { loadDriveFolderInApp(folder.id, folder.name, driveBrowserTrail); return; }
+                          if (folder.url) window.open(folder.url, '_blank', 'noopener,noreferrer');
+                        }}
                         className="flex flex-col items-center w-36 cursor-pointer group bg-white rounded-[20px] p-4 hover:shadow-lg transition-all border border-transparent hover:border-[#EAE4E3]"
                       >
                         <FolderIcon className={`w-28 h-20 md:w-32 md:h-24 ${folder.color} group-hover:scale-105 transition-transform drop-shadow-md`} />

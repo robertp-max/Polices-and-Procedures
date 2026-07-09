@@ -1,7 +1,7 @@
-import { AlertTriangle, ArrowRight, BarChart3, BookOpen, CalendarClock, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, FileCheck2, FileText, FolderOpen, History, PanelRightOpen, Search, ShieldCheck, Stethoscope, Upload, Users, type LucideIcon } from 'lucide-react';
-import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Activity, AlertTriangle, ArrowRight, BarChart3, BookOpen, CalendarClock, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, Clock, Crosshair, FileCheck2, FileText, Filter, FolderOpen, History, Layers, MoreHorizontal, PanelRightOpen, PenTool, Plus, Search, ShieldAlert, ShieldCheck, Stethoscope, TrendingDown, TrendingUp, Upload, Users, type LucideIcon } from 'lucide-react';
+import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { buildBoardLanes, buildCalendarEvents, buildEventLanes, buildReportMetrics, buildSprintSummary, buildReportCards, buildReportTrendBars, buildEvidenceRows, buildAuditRows, FALLBACK_EVENT_LANES, getControlFromParams, getTasksForEvent } from '@/policy/ces/cesViewProjections';
 // Design cross-ref (Agent 19 background + Agent 19 read-only CES Data Seeds gap vs design subagent + Agent 09 read-only hygiene/validate gap): V3 seeds supply realistic ExecutionUnits for CES board/my-tasks/calendar/snapshots/projections.
 // Current: use build* or FALLBACK for exact design visual parity. See projections for seed-driven future and validators.
@@ -10,7 +10,7 @@ import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/da
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
 import { buildFormContent, type FormField, type FormSection } from '@/policy/data/formsLibraryContent';
 import EvidenceStudio from '@/v6/screens/evidence/EvidenceStudio';
-import Defensible2Studio from '@/v6/screens/evidence/Defensible2Studio';
+import BradEvidenceIntake from '@/v6/screens/evidence/BradEvidenceIntake';
 import AIComplianceReviewScreen from './pageviews/AIComplianceReviewScreen';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import { getWorkflowDetail } from './pageviews/WorkflowsScreen';
@@ -32,7 +32,11 @@ import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
 import { BoardLane, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
-import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, AdminCommunityProfilesScreen, AdmissionPacketPreviewScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, UserGuideScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen, PersonalProfileScreen, CommunityScreen } from './pageviews';
+import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, AdminCommunityProfilesScreen, AdmissionPacketPreviewScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyAreaNav, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, UserGuideScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen, PersonalProfileScreen, CommunityScreen, ComplianceHomeScreen } from './pageviews';
+import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabClass, workspaceTabInactiveClass, workspaceTabNavClass } from './pageviews/workspaceTabChrome';
+import { StaticCardWatermark } from './pageviews/StaticCardWatermark';
+
+import GAO001V11Viewer from '@/policy/journey/components/gao001-v1-1/GAO001V11Viewer';
 import {
   PolicyMetricsGrid,
   PolicyPanel,
@@ -44,8 +48,11 @@ import {
 import { achcSurveyRows } from '@/policy/data/achcSurveyProjection.generated';
 import { achcPrintCrosswalk } from '@/policy/data/achcPrintCrosswalk.generated';
 import { hhEvidenceRows } from '@/policy/data/achcHhEvidenceMap';
+import { ALL_MODULES } from '@/policy/journey/data/modules';
+import { useThreadStore } from '@/policy/help-center/threads';
 import { LearnerProvider } from '@/policy/journey/lib/learnerState';
 import { UiStateProvider } from '@/policy/journey/lib/uiState';
+import { listCommunityUsers } from '../utils/communityProfileAdapter';
 
 type RouteLike = V6RouteDefinition;
 type BasicRow = Record<string, string>;
@@ -109,6 +116,96 @@ const policyMetrics: readonly MetricTileData[] = [
   { label: 'Framework Policies', value: String(POLICY_CORPUS.length), helper: 'Canonical corpus', tone: 'teal' },
   { label: 'Review Cycle', value: 'Annual', helper: 'Default policy cadence', tone: 'orange' },
   { label: 'Domains Mapped', value: String(LIFECYCLE_DOMAIN_ORDER.length), helper: 'Framework taxonomy', tone: 'teal' },
+];
+
+const policySubdomainCount = new Set(POLICY_CORPUS.map((policy) => `${policy.domainCode}-${policy.subdomainCode}`)).size;
+const linkedFormsCount = FORMS_DATASET.filter((form) => form.policies.length > 0).length;
+const workflowCount = Object.keys(WORKFLOWS).length;
+
+const policyHomeStats: readonly { icon: LucideIcon; label: string; value: string }[] = [
+  { icon: BookOpen, label: 'Active policies', value: String(POLICY_CORPUS.length) },
+  { icon: Layers, label: 'Policy domains', value: String(LIFECYCLE_DOMAIN_ORDER.length) },
+  { icon: FolderOpen, label: 'Subdomains', value: String(policySubdomainCount) },
+  { icon: ShieldCheck, label: 'HH mappings', value: String(hhEvidenceRows.length) },
+  { icon: ClipboardList, label: 'Forms linked', value: String(linkedFormsCount) },
+  { icon: Activity, label: 'Workflows connected', value: String(workflowCount) },
+];
+
+const policyWorkspaceCards: readonly {
+  body: string;
+  category: string;
+  icon: LucideIcon;
+  status: string;
+  title: string;
+  to: string;
+  tone: 'blue' | 'orange' | 'teal';
+}[] = [
+  {
+    body: 'Search, review, print, and open active agency policies by domain, owner, access tier, review cycle, and survey context.',
+    category: 'Policies',
+    icon: BookOpen,
+    status: 'Active',
+    title: 'Policy Library',
+    to: '/library/policies',
+    tone: 'teal',
+  },
+  {
+    body: 'Trace forms connected to policy obligations, including attestation tools, audit templates, HR records, and clinical forms.',
+    category: 'Forms',
+    icon: ClipboardList,
+    status: `${linkedFormsCount} linked`,
+    title: 'Linked Forms',
+    to: '/forms',
+    tone: 'orange',
+  },
+  {
+    body: 'Review policy-driven workflows, required forms, owner roles, deadlines, escalation logic, and evidence-producing steps.',
+    category: 'Workflows',
+    icon: Activity,
+    status: `${workflowCount} workflows`,
+    title: 'Policy-Driven Workflows',
+    to: '/workflows',
+    tone: 'teal',
+  },
+  {
+    body: 'Navigate domains, subdomains, policy tiers, owners, status, review cycles, access tiers, and regulatory tags.',
+    category: 'Taxonomy',
+    icon: Layers,
+    status: 'Current',
+    title: 'Enterprise Policy Taxonomy',
+    to: '/framework',
+    tone: 'blue',
+  },
+  {
+    body: 'Connect policies to ACHC standards, CMS Conditions of Participation, Title 22 references, and HH evidence expectations.',
+    category: 'ACHC',
+    icon: ShieldCheck,
+    status: 'Mapped',
+    title: 'ACHC Crosswalk & Standards Matrix',
+    to: '/framework/achc-survey',
+    tone: 'teal',
+  },
+  {
+    body: 'Monitor drafts, annual reviews, approval readiness, publication status, owner accountability, and readiness gaps.',
+    category: 'Lifecycle',
+    icon: History,
+    status: 'Monitoring',
+    title: 'Policy Review & Approval',
+    to: '/policy-lifecycle',
+    tone: 'orange',
+  },
+];
+
+const policyQuickActions: readonly { icon: LucideIcon; label: string; to: string }[] = [
+  { icon: BookOpen, label: 'Open Policy Library', to: '/library/policies' },
+  { icon: Search, label: 'Search by Policy ID', to: '/library/policies' },
+  { icon: FileText, label: 'View Forms by Policy', to: '/forms' },
+  { icon: Activity, label: 'View Workflows by Policy', to: '/workflows' },
+  { icon: Layers, label: 'Open Taxonomy', to: '/framework' },
+  { icon: CheckCircle2, label: 'View ACHC Crosswalk', to: '/framework/achc-survey/crosswalk' },
+  { icon: AlertTriangle, label: 'Review Policy Gaps', to: '/policy-lifecycle' },
+  { icon: FileCheck2, label: 'Open Standards Matrix', to: '/framework/achc-survey?view=matrix' },
+  { icon: PanelRightOpen, label: 'Ask Brad About a Policy', to: '/iadministrator' },
 ];
 
 const clinicianMetrics: readonly MetricTileData[] = [
@@ -1566,10 +1663,6 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const overlay = searchParams.get('v6-overlay');
-  const routeTransitionSearchParams = new URLSearchParams(location.search);
-  if (route.hashId === 'journey-overview') routeTransitionSearchParams.delete('tab');
-  const routeTransitionSearch = routeTransitionSearchParams.toString();
-  const routeTransitionKey = `${location.pathname}${routeTransitionSearch ? `?${routeTransitionSearch}` : ''}:${route.hashId}`;
 
   let child: ReactNode = null;
   switch (route.hashId) {
@@ -1604,7 +1697,7 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <EvidenceScreen mode="audit-mode" />;
       break;
     case 'ces-calendar':
-      child = <CalendarScreen mode="ces-calendar" />;
+      child = <ComplianceHomeScreen />;
       break;
     case 'clinicians':
       child = <ProfileListScreen mode="clinicians" />;
@@ -1614,6 +1707,9 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       break;
     case 'dashboard':
       child = <DashboardScreen routeView={searchParams.get('view')} />;
+      break;
+    case 'compliance-home':
+      child = <ComplianceHomeScreen />;
       break;
     case 'personal-profile':
       child = <PersonalProfileScreen />;
@@ -1630,6 +1726,9 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
     case 'events-board':
       // Design cross-ref (Agent 13): events-board to V6_DESIGN.html ~1334 (4-col risk buckets, metrics 162/4/12/28, exact card data/semantics from eventsBoardColumns ~508). Screen uses pragmatic data + full fields via BoardLane.
       child = <EventsBoardScreen />;
+      break;
+    case 'policy-home':
+      child = <PolicyHomeScreen />;
       break;
     case 'policy-library':
       child = <PolicyMatrixScreen />;
@@ -1654,31 +1753,32 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <CalendarScreen mode="master-calendar" />;
       break;
     case 'master-controls':
-      // Design cross-ref (Agent 03 / Agent 15): master-controls to V6_DESIGN.html ~1371 (masterControlRecords ~596, metrics 104/81/22/1, cards), cesMasterControlAudit projection (inventory + audit/evidence rows + validate). Screen is now projection-backed for parity.
+      // Full master-control inventory + dossier workflow. Keep this route on the
+      // dedicated screen; ComplianceHome only links to it.
       child = <MasterControlsScreen />;
       break;
     case 'my-tasks':
+    case 'pm-my-tasks':
       child = <MyTasksScreen />;
       break;
     case 'patients':
       child = <ProfileListScreen mode="patients" />;
       break;
     case 'ces-board':
+    case 'pm-sprint-plan':
       // Design cross-ref (Agent 12 background): ces-board to V6_DESIGN.html ~1320 (7-col kanbanLanes from complianceBoardColumns ~409 incl. dedicated "Awaiting Action / Evidence" with EVT-REV cards + meta/awaitingType/missing, metrics, filters, summary 'Sprint 12 - 38 cards - 5 awaiting action/evidence', desktop:grid-cols-7 via BoardLane).
       // Current: exact lanes + cards (pragmatic subset), 7 metrics, awaiting column + fields, BoardScreen + filters. Proposals: dynamic from V3 seeds/snapshot or cesMasterControlAudit, link cards to /evidence /swimlane, derive metrics from projections.
       // Agent 21 read-only CES Integration/Routing gap vs design: BoardScreen renders <BoardLane lane={lane} /> (no onCardClick prop), so no navigation from cards. Design explicitly calls for future CTA links from board to /evidence / swimlane (and exposure from Calendar/Events). Routing is complete, but interactive cross-CES-view integration is a gap in current prototype. See routeRegistry Agent 21 comment.
       child = <BoardScreen />;
       break;
     case 'defensible-2':
-      // DefenCIble = the rich Defensible2 studio (template→source→verify→generate,
-      // billing route, eCIgn). EvidenceStudio remains for the other evidence routes.
-      child = <Defensible2Studio />;
+      child = <ComplianceHomeScreen />;
       break;
     case 'evidence-center':
       child = <EvidenceStudio initialTab="studio" />;
       break;
     case 'evidence-intake':
-      child = <EvidenceStudio initialTab="studio" />;
+      child = <BradEvidenceIntake />;
       break;
     case 'evidence-packet-studio':
       child = <EvidenceStudio initialTab="studio" />;
@@ -1701,7 +1801,12 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
     case 'user-guide':
       child = <UserGuideScreen />;
       break;
+    case 'gao-001-v11-preview':
+      child = <GAO001V11Viewer />;
+      break;
     case 'ces-reports':
+    case 'pm-sprint-review':
+    case 'pm-dashboard':
       // Design cross-ref (Agent 03/23/16): ces-reports to V6_DESIGN.html ~1410 (cesReportCards, reportBars ~1414, metrics ~1416-1421).
       // Agent 21: Now fully wired to real V3 seed data via buildReportMetrics / buildReportCards / buildReportTrendBars (no placeholders). Cards use actual sprint/blocked/completed/surveyCritical counts. Trend derived from unit states. Subnav + nav to /master-controls /evidence preserved. My-tasks uses buildTaskLanes too.
       child = <ReportsScreen />;
@@ -1824,70 +1929,15 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
   }
 
   const wrapped = child;
-  const [transitionPages, setTransitionPages] = useState<{
-    current: { content: ReactNode; routeKey: string };
-    outgoing: { content: ReactNode; routeKey: string } | null;
-    phase: 'settled' | 'transitioning';
-  }>({
-    current: { content: wrapped, routeKey: routeTransitionKey },
-    outgoing: null,
-    phase: 'settled',
-  });
-
-  useLayoutEffect(() => {
-    if (transitionPages.current.routeKey === routeTransitionKey) return undefined;
-
-    setTransitionPages((current) => ({
-      current: { content: wrapped, routeKey: routeTransitionKey },
-      outgoing: current.current,
-      phase: 'transitioning',
-    }));
-
-    return undefined;
-  }, [transitionPages.current.routeKey, routeTransitionKey]);
-
-  useEffect(() => {
-    if (transitionPages.phase !== 'transitioning') return undefined;
-
-    const timer = window.setTimeout(() => {
-      setTransitionPages((current) =>
-        current.phase === 'transitioning' ? { ...current, outgoing: null, phase: 'settled' } : current,
-      );
-    }, 1100);
-
-    return () => window.clearTimeout(timer);
-  }, [transitionPages.phase, transitionPages.current.routeKey]);
 
   if (route.group === 'Auth') {
     return child;
   }
 
-  const mainContent = (
-    <div
-      className={cx('grid', transitionPages.phase === 'transitioning' && 'relative overflow-hidden')}
-    >
-      {transitionPages.outgoing && (
-        <div
-          key={`${transitionPages.outgoing.routeKey}-out`}
-          className="v6-page-transition-base col-start-1 row-start-1"
-        >
-          {transitionPages.outgoing.content}
-        </div>
-      )}
-      <div
-        key={`${transitionPages.current.routeKey}-${transitionPages.phase}`}
-        className={cx(
-          'grid col-start-1 row-start-1',
-          transitionPages.phase === 'transitioning' && 'v6-page-transition-reveal',
-        )}
-      >
-        {transitionPages.current.content}
-      </div>
-    </div>
-  );
+  const mainContent = wrapped;
 
   const pathname = location?.pathname || '';
-  const isOnboardingGroup = pathname.startsWith('/journey') || pathname.startsWith('/onboarding-v2') || ['journey-overview', 'journey-new-hire', 'journey-orientation', 'module-player', 'lesson-player', 'module-assessment-splash', 'module-assessment-quiz', 'final-assessment-splash', 'final-assessment-quiz', 'final-result', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'].includes(route.hashId || '') || route.group === 'Onboarding';
+  const isOnboardingGroup = pathname.startsWith('/journey') || pathname.startsWith('/onboarding-v2') || ['journey-overview', 'journey-new-hire', 'journey-orientation', 'module-player', 'lesson-player', 'module-assessment-splash', 'module-assessment-quiz', 'final-assessment-splash', 'final-assessment-quiz', 'final-result', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide', 'gao-001-v11-preview'].includes(route.hashId || '') || route.group === 'Onboarding';
   let content = mainContent;
 
   if (isOnboardingGroup) {
@@ -1918,8 +1968,10 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
     'clinicians',
     'clinician-detail',
     'dashboard',
+    'compliance-home',
     'ecign-workspace',
     'events-board',
+    'policy-home',
     'policy-library',
     'policy-detail',
     'forms-library',
@@ -1942,6 +1994,7 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
     'form-viewer',
     'brad',
     'user-guide',
+    'gao-001-v11-preview',
     'ces-reports',
     'report-policy-review-aging',
     'report-policy-expiration',
@@ -1992,7 +2045,7 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
 
 function ScreenStack({ children, metrics }: { children: ReactNode; metrics: readonly MetricTileData[] }) {
   return (
-    <div className="grid gap-2xl">
+    <div className="mx-auto grid w-full max-w-[1400px] gap-2xl">
       {metrics.length > 0 && <MetricGrid metrics={metrics} />}
       {children}
     </div>
@@ -2018,7 +2071,7 @@ interface ModernCardData {
 
 // === EXACT ported animation helpers (generateDonutSvg + generateSparkline + replayCardAnimation + resetCardVisuals + animate) ===
 // Ported for requestAnimationFrame + easeOut = 1 - Math.pow(1-progress,4), 1200ms
-// Donut: svg circles + dashoffset + text % count. Sparkline: polyline points calc + dash offset.
+// Donut: svg circles + dashoffset + text % count. Sparkline: smooth SVG path + dash offset.
 // React components use refs + useEffect(replayKey) + direct RAF mutation (setAttribute / style.strokeDashoffset)
 // Triggers via replayKey (from mouseenter) + internal view-enter via IntersectionObserver. Uses data-* attrs. drop-shadow preserved.
 
@@ -2084,16 +2137,44 @@ function generateSparkline(data: number[], colorType: string = 'secondary', card
   const max = (data && data.length) ? Math.max(...data) : 0;
   const min = (data && data.length) ? Math.min(...data) : 0;
   const range = max - min || 1;
-  // final target points (for reference / reset)
-  const finalPoints = (data || []).map((val, i) => {
-    const x = padding + (i / Math.max(1, (data.length - 1))) * (w - padding * 2);
-    const y = h - padding - ((val - min) / range) * (h - padding * 2);
-    return `${x},${y}`;
-  }).join(' ');
-  return { strokeColor, w, h, padding, sizingClass, max, min, range, finalPoints };
+  return { strokeColor, w, h, padding, sizingClass, max, min, range };
 }
 
-function resetCardVisuals(container: HTMLElement | null, type: 'donut' | 'sparkline', generated: any) {
+type DonutSvgData = ReturnType<typeof generateDonutSvg>;
+type SparklineSvgData = ReturnType<typeof generateSparkline> & { data: number[] };
+type ChartSvgData = Partial<DonutSvgData> & Partial<SparklineSvgData>;
+
+function buildSmoothSparklinePath(data: number[], generated: ChartSvgData, progress = 1): string {
+  if (!data.length) return '';
+  const w = generated.w ?? 120;
+  const h = generated.h ?? 40;
+  const padding = generated.padding ?? 4;
+  const min = generated.min ?? Math.min(...data);
+  const range = generated.range ?? (Math.max(...data) - min || 1);
+  const baseY = h - padding;
+  const points = data.map((val, i) => {
+    const x = padding + (i / Math.max(1, data.length - 1)) * (w - padding * 2);
+    const targetY = h - padding - ((val - min) / range) * (h - padding * 2);
+    const y = baseY - ((baseY - targetY) * progress);
+    return { x, y };
+  });
+
+  if (points.length === 1) return `M ${points[0].x},${points[0].y}`;
+  const midpoint = (a: { x: number; y: number }, b: { x: number; y: number }) => ({
+    x: (a.x + b.x) / 2,
+    y: (a.y + b.y) / 2,
+  });
+  const firstMid = midpoint(points[0], points[1]);
+  let path = `M ${points[0].x},${points[0].y} Q ${points[0].x},${points[0].y} ${firstMid.x},${firstMid.y}`;
+  for (let i = 1; i < points.length - 1; i += 1) {
+    const mid = midpoint(points[i], points[i + 1]);
+    path += ` T ${mid.x},${mid.y}`;
+  }
+  const last = points[points.length - 1];
+  return `${path} T ${last.x},${last.y}`;
+}
+
+function resetCardVisuals(container: HTMLElement | null, type: 'donut' | 'sparkline', generated: ChartSvgData) {
   if (!container) return;
   if (type === 'donut') {
     const svg = container.querySelector('svg');
@@ -2107,16 +2188,17 @@ function resetCardVisuals(container: HTMLElement | null, type: 'donut' | 'sparkl
     }
     if (text) text.textContent = '0%';
   } else {
-    const path = container.querySelector('.sparkline-path') as SVGPolylineElement | null;
+    const path = container.querySelector('.sparkline-path') as SVGPathElement | null;
     if (path) {
       path.style.transition = 'none';
+      path.setAttribute('d', buildSmoothSparklinePath(generated.data ?? [], generated, 0));
       path.setAttribute('stroke-dasharray', '100');
       path.setAttribute('stroke-dashoffset', '100');
     }
   }
 }
 
-function replayCardAnimation(target: Element | SVGCircleElement | SVGSVGElement | SVGPolylineElement | null | HTMLElement, type?: 'donut' | 'sparkline', generated?: any, textEl?: HTMLSpanElement | null) {
+function replayCardAnimation(target: Element | SVGCircleElement | SVGSVGElement | SVGPathElement | null | HTMLElement, type?: 'donut' | 'sparkline', generated?: ChartSvgData, textEl?: HTMLSpanElement | null) {
   if (target && (target as HTMLElement).querySelector) {
     // called with card element from tick -- dispatch inside
     const card = target as HTMLElement;
@@ -2131,9 +2213,9 @@ function replayCardAnimation(target: Element | SVGCircleElement | SVGSVGElement 
   const dur = 1200;
   if (type === 'donut') {
     const donutPath = target as SVGCircleElement;
-    const circumference = generated.circumference;
-    const targetOffset = generated.targetOffset;
-    const pct = generated.pct;
+    const circumference = generated?.circumference ?? 0;
+    const targetOffset = generated?.targetOffset ?? circumference;
+    const pct = generated?.pct ?? 0;
     animate(dur, (easeOutVal) => {
       if (textEl) textEl.textContent = Math.round(easeOutVal * pct) + '%';
       const currentOffset = circumference - ((circumference - targetOffset) * easeOutVal);
@@ -2143,19 +2225,17 @@ function replayCardAnimation(target: Element | SVGCircleElement | SVGSVGElement 
       donutPath.setAttribute('stroke-dashoffset', String(targetOffset));
     });
   } else {
-    const sparkPath = target as SVGPolylineElement;
-    const dataVals: number[] = generated.data || (sparkPath.getAttribute('data-values') ? JSON.parse(sparkPath.getAttribute('data-values')!) : []);
-    const { w, h, padding, min, range } = generated;
-    // RAF for points (exact calc)
+    const sparkPath = target as SVGPathElement;
+    let dataVals: number[] = generated?.data ?? [];
+    if (!dataVals.length && sparkPath.getAttribute('data-values')) {
+      try {
+        dataVals = JSON.parse(sparkPath.getAttribute('data-values') || '[]') as number[];
+      } catch {
+        dataVals = [];
+      }
+    }
     animate(dur, (easeOutVal) => {
-      const points = (dataVals || []).map((val, i) => {
-        const x = padding + (i / Math.max(1, (dataVals.length - 1))) * (w - padding * 2);
-        const targetY = h - padding - ((val - min) / range) * (h - padding * 2);
-        const baseY = h - padding;
-        const currentY = baseY - ((baseY - targetY) * easeOutVal);
-        return `${x},${currentY}`;
-      }).join(' ');
-      sparkPath.setAttribute('points', points);
+      sparkPath.setAttribute('d', buildSmoothSparklinePath(dataVals, generated ?? {}, easeOutVal));
     });
     // Also drive dash offset via RAF + direct style (no CSS transition)
     // start from 100
@@ -2173,12 +2253,16 @@ function AnimatedDonut({ percentage, colorType = 'secondary', cardType = 'normal
   const svgRef = useRef<SVGSVGElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const generatedRef = useRef<any>(null);
+  const generatedRef = useRef<DonutSvgData | null>(null);
+  const shadowId = `donut-pop-${useId().replace(/:/g, '')}`;
 
-  const generated = generateDonutSvg(percentage, colorType, cardType);
-  generatedRef.current = generated;
+  const generated = useMemo(() => generateDonutSvg(percentage, colorType, cardType), [percentage, colorType, cardType]);
   const { pct, strokeColor: defaultStroke, bgColor, containerSize, textSize, cx, cy, strokeWidth, radius, circumference, targetOffset } = generated;
   const strokeColor = stroke || defaultStroke;
+
+  useEffect(() => {
+    generatedRef.current = generated;
+  }, [generated]);
 
   // useEffect on replayKey to replay animation (also supports external mouseenter replayKey)
   useEffect(() => {
@@ -2226,40 +2310,50 @@ function AnimatedDonut({ percentage, colorType = 'secondary', cardType = 'normal
 
   return (
     <div ref={wrapperRef} className={`relative ${containerSize} flex items-center justify-center font-montserrat`}>
-      <svg ref={svgRef} viewBox="0 0 100 100" className="transform -rotate-90 w-full h-full drop-shadow-sm">
-        <circle cx={cx} cy={cy} r={radius} stroke={bgColor} strokeWidth={strokeWidth} fill="none" />
-        <circle
-          className="donut-path"
-          data-target-value={pct}
-          data-circumference={circumference}
-          data-target-offset={targetOffset}
-          cx={cx}
-          cy={cy}
-          r={radius}
-          stroke={strokeColor}
-          strokeWidth={strokeWidth}
-          fill="none"
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference}
-          strokeLinecap="round"
-        />
+      <svg ref={svgRef} viewBox="0 0 100 100" className="h-full w-full -rotate-90 overflow-visible drop-shadow-[0_7px_16px_rgba(31,28,27,0.08)]">
+        <defs>
+          <filter id={shadowId} x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#1F1C1B" floodOpacity="0.12" />
+          </filter>
+        </defs>
+        <g filter={`url(#${shadowId})`}>
+          <circle cx={cx} cy={cy} r={radius} stroke={bgColor} strokeWidth={strokeWidth} fill="none" />
+          <circle
+            className="donut-path"
+            data-target-value={pct}
+            data-circumference={circumference}
+            data-target-offset={targetOffset}
+            cx={cx}
+            cy={cy}
+            r={radius}
+            stroke={strokeColor}
+            strokeWidth={strokeWidth}
+            fill="none"
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference}
+            strokeLinecap="round"
+          />
+        </g>
       </svg>
-      <span ref={textRef} className={`donut-text absolute ${textSize} font-bold text-neutral-600`}>0%</span>
+      <span ref={textRef} className={`donut-text absolute ${textSize} font-light tracking-tight text-[#52404B]`}>0%</span>
     </div>
   );
 }
 
 function AnimatedSparkline({ data, colorType = 'secondary', cardType = 'normal', replayKey = 0, stroke }: { data: number[]; colorType?: string; cardType?: string; replayKey?: number; stroke?: string }) {
-  const pathRef = useRef<SVGPolylineElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const generatedRef = useRef<any>(null);
+  const generatedRef = useRef<SparklineSvgData | null>(null);
 
-  const generatedBase = generateSparkline(data, colorType, cardType);
+  const generatedBase = useMemo(() => generateSparkline(data, colorType, cardType), [data, colorType, cardType]);
   // attach live data for replay helpers
-  const generated = { ...generatedBase, data: data || [] };
-  generatedRef.current = generated;
+  const generated = useMemo(() => ({ ...generatedBase, data: data || [] }), [data, generatedBase]);
   const { strokeColor: defaultStroke, sizingClass } = generatedBase;
   const strokeColor = stroke || defaultStroke;
+
+  useEffect(() => {
+    generatedRef.current = generated;
+  }, [generated]);
 
   useEffect(() => {
     const path = pathRef.current;
@@ -2299,11 +2393,15 @@ function AnimatedSparkline({ data, colorType = 'secondary', cardType = 'normal',
 
   return (
     <div ref={wrapperRef} className="w-full">
-      <svg viewBox="0 0 120 40" className={`w-full ${sizingClass} overflow-visible drop-shadow-sm`} fill="none">
-        <polyline
+      <svg viewBox="0 0 120 40" className={`w-full ${sizingClass} overflow-visible drop-shadow-[0_8px_16px_rgba(31,28,27,0.08)]`} fill="none">
+        <line x1="4" y1="12" x2="116" y2="12" stroke="#F1F2EF" strokeWidth="1" strokeDasharray="3 3" />
+        <line x1="4" y1="22" x2="116" y2="22" stroke="#F1F2EF" strokeWidth="1" strokeDasharray="3 3" />
+        <line x1="4" y1="32" x2="116" y2="32" stroke="#F1F2EF" strokeWidth="1" strokeDasharray="3 3" />
+        <path
           ref={pathRef}
           className="sparkline-path vector-effect-non-scaling-stroke"
           data-values={JSON.stringify(data)}
+          d={buildSmoothSparklinePath(data || [], generated, 0)}
           pathLength="100"
           strokeDasharray="100"
           strokeDashoffset="100"
@@ -2394,22 +2492,64 @@ function getBadgeStyles(status: string) {
   }
 }
 
+function getDashboardCardIcon(title: string): LucideIcon {
+  const text = title.toUpperCase();
+  if (text.includes('MISSED') || text.includes('REVIEW REQUIRED')) return ShieldAlert;
+  if (text.includes('READINESS') || text.includes('CERTIFICATION')) return ShieldCheck;
+  if (text.includes('EVIDENCE')) return FileCheck2;
+  if (text.includes('ECIGN') || text.includes('SIGNATURE')) return PenTool;
+  if (text.includes('POLICY') || text.includes('PUBLISHED')) return FileText;
+  if (text.includes('TRAINING') || text.includes('ACKNOWLEDGMENT') || text.includes('COMPETENCY')) return BookOpen;
+  if (text.includes('THREAD') || text.includes('COMMUNITY') || text.includes('ENGAGEMENT') || text.includes('ROLE')) return Users;
+  if (text.includes('EXPIRING') || text.includes('SLA') || text.includes('STALE')) return Clock;
+  if (text.includes('CROSS-LINK')) return Layers;
+  if (text.includes('DRILL')) return Crosshair;
+  if (text.includes('GAP')) return TrendingDown;
+  if (text.includes('CONVERSION') || text.includes('USAGE')) return TrendingUp;
+  if (text.includes('CLOSURE') || text.includes('COMPLETION')) return CheckCircle2;
+  return Activity;
+}
+
+function EmptyMetricViz() {
+  return (
+    <div className="flex flex-col items-center justify-center text-[#D8D8D2] opacity-80 transition-opacity duration-300 group-hover:opacity-100">
+      <svg
+        width="66"
+        height="66"
+        viewBox="0 0 66 66"
+        fill="none"
+        aria-hidden="true"
+        className="drop-shadow-[0_8px_16px_rgba(31,28,27,0.04)]"
+      >
+        <circle cx="33" cy="33" r="24" stroke="currentColor" strokeWidth="1.5" strokeDasharray="5 5" />
+        <circle cx="33" cy="33" r="13" stroke="currentColor" strokeWidth="1" opacity="0.55" />
+        <path d="M21 41 Q33 26 45 35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 5" />
+      </svg>
+      <span className="mt-4 text-[9px] font-bold uppercase tracking-[0.22em] text-[#A0A0A0]">
+        Gathering Metrics
+      </span>
+    </div>
+  );
+}
+
+function DashboardLogoWatermark() {
+  return <StaticCardWatermark className="ci-dashboard-logo-watermark" />;
+}
+
 function ModernDashboardCard({ card, index, mode = 'grid', onNavigate }: { card: ModernCardData; index: number; mode?: 'grid' | 'carousel'; onNavigate: (path: string) => void }) {
-  // Sizing for grid specific: index0 col-span-2 row-span-2, index5/6 col-span-2 row-span-1 etc.
   const gridCardType = index === 0 ? 'featured' : (index === 5 || index === 6 ? 'wide' : 'normal');
   const cardType = mode === 'carousel' ? (card.carouselSize?.chartType ?? 'normal') : gridCardType;
-  // Sizing for grid specific per task: index0 col-span-2 row-span-2, index5/6 col-span-2 row-span-1 etc. (no aspect to follow spec)
   const sizingClass = mode === 'carousel'
     ? 'absolute'
-    : index === 0 ? 'col-span-2 row-span-2' : (index === 5 || index === 6 ? 'col-span-2 row-span-1' : 'col-span-1');
+    : index === 0
+      ? 'md:col-span-6 md:row-span-2 min-h-[420px]'
+      : (index === 5 || index === 6 ? 'md:col-span-6 min-h-[280px]' : 'md:col-span-3 min-h-[280px]');
   const theme = getDashboardTheme(card.status, (index % 3) !== 0, mode);
 
-  // Shadows EXACT per task: carousel ... shadow-[0_53px_106px_-17px_rgba(0,0,0,0.3)] border-0 backdrop-blur-3xl ; grid ... + hover. Border-0 everywhere.
   const frameClass = mode === 'carousel'
     ? `${theme.cardBg} border-0 backdrop-blur-3xl rounded-2xl p-6 shadow-[0_53px_106px_-17px_rgba(0,0,0,0.3)]`
-    : `${theme.cardBg} border-0 rounded-2xl p-6 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)]`;
+    : 'ci-dashboard-card bg-white rounded-[26px] p-8';
 
-  // Carousel style: absolute (via class), top/left/z/ size. transform=translateX + drift via RAF only. No CSS animation.
   const carouselStyle: CSSProperties | undefined = mode === 'carousel'
     ? {
         width: card.carouselSize?.w ?? 320,
@@ -2421,11 +2561,10 @@ function ModernDashboardCard({ card, index, mode = 'grid', onNavigate }: { card:
       }
     : undefined;
 
-  // replayKey to force re-run of animations on hover. Include hover replay.
   const [replayKey, setReplayKey] = useState(0);
   const handleMouseEnter = () => setReplayKey(k => k + 1);
+  const Icon = getDashboardCardIcon(card.title);
 
-  // Resolve chart color to match spec colors
   const resolvedChartColor = card.chart?.color || (
     card.status === 'WATCH' ? 'primary' :
     card.status === 'GOOD' ? 'blue' :
@@ -2433,8 +2572,8 @@ function ModernDashboardCard({ card, index, mode = 'grid', onNavigate }: { card:
   );
 
   const chartNode = useMemo(() => {
-    if (!card.chart) return <span className="text-neutral-400 text-sm italic">No data viz</span>;
-    const themeStroke = theme.stroke; // thread exact stroke from getDashboardTheme
+    if (!card.chart) return <EmptyMetricViz />;
+    const themeStroke = theme.stroke;
     if (card.chart.type === 'donut' && card.chart.value != null) {
       return <AnimatedDonut percentage={card.chart.value} colorType={resolvedChartColor} cardType={cardType} replayKey={replayKey} stroke={themeStroke} />;
     }
@@ -2444,34 +2583,36 @@ function ModernDashboardCard({ card, index, mode = 'grid', onNavigate }: { card:
     return null;
   }, [card.chart, cardType, replayKey, resolvedChartColor, theme.stroke]);
 
-  // Click navigates. Carousel movement is pure JS RAF + drag (exact to HTML), no CSS drift.
-  const hoverAndAnimClass = mode === 'carousel' ? 'cursor-pointer' : 'hover:-translate-y-2 hover:shadow-[0_35px_60px_-15px_rgba(0,0,0,0.22)] cursor-pointer';
+  const hoverAndAnimClass = mode === 'carousel' ? 'cursor-pointer' : 'cursor-pointer hover:-translate-y-1.5';
 
   return (
     <div
       onClick={() => onNavigate(card.targetPath)}
       onMouseEnter={handleMouseEnter}
-      style={carouselStyle}
       data-speed={mode === 'carousel' ? card.cSpeed : undefined}
       data-initial-x={mode === 'carousel' ? card.cX : undefined}
-      className={`dashboard-card ${theme.text} ${frameClass} flex flex-col ${sizingClass} transition-colors duration-300 ${hoverAndAnimClass} group`}
+      className={`dashboard-card ci-stagger-card ${theme.text} ${frameClass} flex flex-col ${sizingClass} transition-all duration-500 ${hoverAndAnimClass} group`}
+      style={{
+        ...carouselStyle,
+        animationDelay: mode === 'grid' ? `${index * 75}ms` : undefined,
+      }}
     >
-      <div className={cx('flex justify-between items-start', mode === 'carousel' ? 'mb-2' : 'mb-4')}>
-        {/* Exact title h3 text-[10px] md:text-xs font-montserrat uppercase tracking-[0.18em] */}
-        <h3 className="text-[10px] md:text-xs font-montserrat uppercase tracking-[0.18em]">
-          {card.title}
-        </h3>
-        {/* status badge px-3 py-1 rounded-full font-bold font-montserrat */}
+      <div className={cx('flex justify-between items-start gap-4', mode === 'carousel' ? 'mb-2' : 'mb-6')}>
+        <div className="flex min-w-0 items-center gap-2">
+          <Icon className="h-4 w-4 shrink-0 text-[#A0A0A0] transition-colors duration-300 group-hover:text-[#007970]" aria-hidden />
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#007970] md:text-[11px]">
+            {card.title}
+          </h3>
+        </div>
         <span className={`text-[10px] px-3 py-1 rounded-full font-bold font-montserrat uppercase tracking-wider ${mode === 'grid' ? getBadgeStyles(card.status) : theme.badge}`}>
           {card.status}
         </span>
       </div>
-      <div className="flex-1 flex items-center justify-center py-2">
+      <div className="relative flex flex-1 items-center justify-center py-4">
         {chartNode}
       </div>
-      {/* Footer border-t border-current/10 */}
-      <div className="mt-auto pt-3 border-t border-current/10 transition-colors">
-        <p className="text-sm font-normal text-neutral-500">{card.footer}</p>
+      <div className="mt-auto pt-5 shadow-[inset_0_1px_0_rgba(229,228,227,0.6)] transition-colors">
+        <p className="text-[13px] font-normal leading-relaxed text-[#747470]">{card.footer}</p>
       </div>
     </div>
   );
@@ -2479,115 +2620,468 @@ function ModernDashboardCard({ card, index, mode = 'grid', onNavigate }: { card:
 
 function DashboardScreen({ routeView }: { routeView?: string | null }) {
   const navigate = useNavigate();
-  const requestedDashboardTab = routeView;
 
   const dashboardTabs = [
-    { id: 'overview', label: 'OVERVIEW' },
-    { id: 'policy', label: 'POLICY' },
-    { id: 'compliance', label: 'COMPLIANCE' },
-    { id: 'training', label: 'TRAINING' },
-    { id: 'community', label: 'COMMUNITY' },
+    { id: 'home', label: 'Home' },
+    { id: 'compliance', label: 'Compliance' },
+    { id: 'policy', label: 'Policies' },
+    { id: 'training', label: 'Training' },
+    { id: 'evidence', label: 'Evidence' },
+    { id: 'community', label: 'Community' },
+    { id: 'reports', label: 'Reports' },
   ] as const;
+  type DashboardTabId = typeof dashboardTabs[number]['id'];
+  type DashboardMetricTabId = Exclude<DashboardTabId, 'home'>;
 
-  const activeTab = dashboardTabs.some((tab) => tab.id === requestedDashboardTab) ? requestedDashboardTab! : 'overview';
+  const requestedDashboardTab = routeView?.trim().toLowerCase() ?? '';
+  const dashboardAliases: Partial<Record<string, DashboardTabId>> = {
+    overview: 'reports',
+    policies: 'policy',
+  };
+  const requestedTab = requestedDashboardTab ? (dashboardAliases[requestedDashboardTab] ?? requestedDashboardTab) : null;
+  const activeTab: DashboardTabId = dashboardTabs.some((tab) => tab.id === requestedTab)
+    ? (requestedTab as DashboardTabId)
+    : 'home';
+  const metricTab = activeTab === 'home' ? null : activeTab;
+  const communityThreads = useThreadStore((state) => state.threads);
 
-  // Exact dashboardData + getCardsForTab from HTML (titles/status/chart/footer match per tab exactly)
-  const dashboardData: Record<string, ModernCardData[]> = {
-    overview: [
-      { title: 'POLICIES PENDING APPROVAL', status: 'WATCH', chart: { type: 'donut', value: 67 }, footer: '49 policies in final approval queue.', targetPath: '/policy-lifecycle?stage=REVIEW' },
-      { title: 'POLICIES EXPIRING — 90 DAYS', status: 'WATCH', chart: undefined, footer: '16 policies reach annual term inside window.', targetPath: '/reports/policy-expiration?window=90' },
-      { title: 'OPEN MISSED COMPLIANCE EVENTS', status: 'REVIEW REQUIRED', chart: { type: 'donut', value: 48 }, footer: '4 missed or overdue compliance events.', targetPath: '/calendar?view=sprint&filter=missed' },
-      { title: 'EVIDENCE CLOSURE', status: 'STEADY', chart: { type: 'donut', value: 68 }, footer: 'Required artifacts closing within sprint.', targetPath: '/evidence?filter=missing-required' },
-      { title: 'ECIGN EXPIRING — 90 DAYS', status: 'STEADY', chart: { type: 'sparkline', data: [10, 25, 15, 30, 20, 35, 25] }, footer: '11 signature records within 90-day horizon.', targetPath: '/reports/ecign-expiring?window=90' },
-      { title: 'TRAINING OVERDUE', status: 'WATCH', chart: undefined, footer: '3 learners past due on required modules.', targetPath: '/reports/training-overdue' },
-      { title: 'OPEN UNANSWERED THREADS', status: 'STEADY', chart: undefined, footer: '2 community threads need action.', targetPath: '/community/threads?filter=unanswered' },
+  const percent = (value: number, total: number): number => {
+    if (!Number.isFinite(value) || !Number.isFinite(total) || total <= 0) return 0;
+    return Math.min(100, Math.max(0, Math.round((value / total) * 100)));
+  };
+
+  const statusFromPercent = (value: number): ModernCardData['status'] => (
+    value >= 80 ? 'GOOD' : value >= 55 ? 'STEADY' : 'WATCH'
+  );
+
+  const sprintSummary = useMemo(() => buildSprintSummary(), []);
+  const dashboardCalendarEvents = useMemo(() => buildCalendarEvents(), []);
+  const dashboardEvidenceRows = useMemo(() => buildEvidenceRows(), []);
+  const dashboardAuditRows = useMemo(() => buildAuditRows(), []);
+  const dashboardReportTrendBars = useMemo(() => buildReportTrendBars().slice(0, 7), []);
+  const communityMembers = useMemo(() => listCommunityUsers(), []);
+
+  const workflowValues = useMemo(() => Object.values(WORKFLOWS), []);
+  const workflowPolicyIds = useMemo(
+    () => new Set(workflowValues.flatMap((workflow) => workflow.policyRefs ?? [])),
+    [workflowValues],
+  );
+  const formLinkedPolicyIds = useMemo(
+    () => new Set(FORMS_DATASET.flatMap((form) => form.policies).filter((policyId) => /^[A-Z]{2}-[A-Z]{2}-\d{3}$/.test(policyId))),
+    [],
+  );
+  const achcPolicyIds = useMemo(() => new Set(achcSurveyRows.map((row) => row.policyId).filter(Boolean)), []);
+  const hhEvidencePolicyIds = useMemo(() => new Set(hhEvidenceRows.map((row) => row.policyId).filter(Boolean)), []);
+
+  const openSprintItems = Math.max(0, sprintSummary.total - sprintSummary.completed);
+  const pendingSignatureCount = sprintSummary.awaitingSignature;
+  const blockerPressureCount = sprintSummary.blocked;
+  const missingEvidenceCount = sprintSummary.surveyCritical;
+  const highRiskAlerts = sprintSummary.blocked + sprintSummary.surveyCritical + sprintSummary.overdue;
+  const auditReadinessPct = percent(sprintSummary.readyToCertify, sprintSummary.total);
+  const certificationReadinessPct = percent(sprintSummary.readyToCertify + sprintSummary.completed, sprintSummary.total);
+  const evidenceClosurePct = percent(sprintSummary.completed + sprintSummary.readyToCertify, sprintSummary.total);
+  const eventRiskCount = dashboardCalendarEvents.filter((event) => event.tone === 'orange' || Boolean(event.risk)).length;
+  const eventRiskPct = percent(eventRiskCount, dashboardCalendarEvents.length);
+  const signoffReadyPct = percent(Math.max(0, sprintSummary.total - pendingSignatureCount), sprintSummary.total);
+  const expiringSignatureCount = pendingSignatureCount + sprintSummary.overdue;
+  const expiringSignaturePct = percent(expiringSignatureCount, sprintSummary.total);
+
+  // P1 fix: explicit support check before green/ready (evidence, sigs, no blockers)
+  const hasFullCesSupport = sprintSummary.blocked === 0 && sprintSummary.awaitingSignature === 0 && sprintSummary.surveyCritical === 0 && sprintSummary.readyToCertify > 0;
+
+  const policyCount = POLICY_CORPUS.length;
+  const policyFormCoveragePct = percent(formLinkedPolicyIds.size, policyCount);
+  const policyWorkflowCoveragePct = percent(workflowPolicyIds.size, policyCount);
+  const achcMappingCoveragePct = percent(achcPolicyIds.size, policyCount);
+  const hhEvidenceCoveragePct = percent(hhEvidencePolicyIds.size, policyCount);
+  const crossLinkedPolicyCount = new Set([...formLinkedPolicyIds, ...workflowPolicyIds, ...achcPolicyIds, ...hhEvidencePolicyIds]).size;
+  const policyCrossLinkPct = percent(crossLinkedPolicyCount, policyCount);
+  const policyDomainPct = percent(new Set(POLICY_CORPUS.map((policy) => policy.domainCode)).size, LIFECYCLE_DOMAIN_ORDER.length);
+  const policySignalBars = LIFECYCLE_DOMAIN_ORDER.slice(0, 7).map((domain) => POLICY_CORPUS.filter((policy) => policy.domainCode === domain).length);
+
+  const gaoTrainingModules = ALL_MODULES.filter((module) => module.group === 'GAO').length;
+  const annualTrainingModules = ALL_MODULES.filter((module) => module.group === 'ANN').length;
+  const roleTrainingModules = ALL_MODULES.filter((module) => module.group === 'ROLE').length;
+  const competencyTrainingModules = ALL_MODULES.filter((module) => module.method !== 'None').length;
+  const supervisorSignoffModules = ALL_MODULES.filter((module) => module.supervisorSignature).length;
+  const evidenceBackedModules = ALL_MODULES.filter((module) => module.evidenceAppendix && module.evidenceAppendix !== 'NONE').length;
+  const policyLinkedTrainingModules = ALL_MODULES.filter((module) => module.policyRefs.length > 0).length;
+  const requiredTrainingModules = gaoTrainingModules + annualTrainingModules;
+  const trainingCatalogPct = percent(requiredTrainingModules, ALL_MODULES.length);
+  const trainingGroupBars = ['GAO', 'ROLE', 'ANN', 'COMP', 'ADV'].map((group) => ALL_MODULES.filter((module) => module.group === group).length);
+
+  const unresolvedThreadStatuses = new Set(['open', 'needs_brad', 'needs_human_review', 'planned', 'in_progress']);
+  const unresolvedThreadCount = communityThreads.filter((thread) => unresolvedThreadStatuses.has(thread.status)).length;
+  const unansweredThreadCount = communityThreads.filter((thread) => thread.status === 'open' || thread.status === 'needs_brad' || thread.status === 'needs_human_review').length;
+  const resolvedThreadCount = communityThreads.filter((thread) => thread.status === 'answered' || thread.status === 'resolved' || thread.status === 'closed').length;
+  const highRiskThreadCount = communityThreads.filter((thread) => thread.status === 'needs_human_review' || thread.category === 'bug' || thread.tags.some((tag) => /risk|urgent|blocked|audit/i.test(tag))).length;
+  const threadToCesCount = communityThreads.filter((thread) => (thread.relatedEventIds?.length ?? 0) > 0).length;
+  const knowledgeThreadCount = communityThreads.filter((thread) => thread.type === 'knowledge_article' || (thread.relatedHelpArticleIds?.length ?? 0) > 0).length;
+  const staleThreadCount = communityThreads.filter((thread) => {
+    if (!unresolvedThreadStatuses.has(thread.status)) return false;
+    const lastActivity = new Date(thread.lastActivityAt).getTime();
+    return Number.isFinite(lastActivity) && Date.now() - lastActivity > 14 * 24 * 60 * 60 * 1000;
+  }).length;
+  const threadResolutionPct = percent(resolvedThreadCount, communityThreads.length);
+  const threadToCesPct = percent(threadToCesCount, communityThreads.length);
+  const knowledgeUsePct = percent(knowledgeThreadCount, communityThreads.length);
+  const communityEngagementPct = percent(
+    communityThreads.reduce((total, thread) => total + Math.max(1, thread.participantCount), 0),
+    Math.max(communityMembers.length * 2, 1),
+  );
+
+  const dashboardHeaders: Record<DashboardMetricTabId, { title: string; subtitle: string }> = {
+    compliance: {
+      title: 'Compliance Readiness',
+      subtitle: 'Audit-ready tracking for mandated events, evidence closure, eCign status, blocker pressure, and active sprint recovery.',
+    },
+    policy: {
+      title: 'Policy & Attestation Health',
+      subtitle: 'Monitor policy approval workflows, SLA adherence, expiration windows, and staff attestation gaps across the enterprise.',
+    },
+    training: {
+      title: 'Training & Competency',
+      subtitle: 'Track drill participation, onboarding completion, role-based training gaps, and supervisor sign-off readiness.',
+    },
+    evidence: {
+      title: 'Evidence Completeness',
+      subtitle: 'Track missing files, stale packets, expiring master evidence, eCign pressure, and audit-mode recovery signals.',
+    },
+    community: {
+      title: 'Community Engagement',
+      subtitle: 'Monitor support thread resolution, high-risk signals, and knowledge base adoption to support your teams.',
+    },
+    reports: {
+      title: 'Agency Performance Reports',
+      subtitle: 'Track key compliance, policy, training, evidence, and community metrics across the agency before they become survey risks.',
+    },
+  };
+
+  const dashboardData: Record<DashboardMetricTabId, ModernCardData[]> = {
+    compliance: [
+      { title: 'CERTIFICATION / LOCK READINESS', status: hasFullCesSupport ? statusFromPercent(certificationReadinessPct) : 'WATCH', chart: { type: 'donut', value: certificationReadinessPct }, footer: hasFullCesSupport ? `${sprintSummary.readyToCertify} ready, ${sprintSummary.completed} completed.` : `${sprintSummary.readyToCertify} ready (PROJECTED — evidence/signatures/minutes incomplete; not certification-ready)`, targetPath: '/audit?view=lock-readiness' },
+      { title: 'OPEN MISSED EVENTS', status: eventRiskCount > 0 ? 'REVIEW REQUIRED' : 'GOOD', chart: { type: 'donut', value: eventRiskPct }, footer: `${eventRiskCount} of ${dashboardCalendarEvents.length} calendar events require recovery.`, targetPath: '/calendar?view=sprint&filter=missed' },
+      { title: 'EVIDENCE CLOSURE', status: hasFullCesSupport ? statusFromPercent(evidenceClosurePct) : 'WATCH', chart: { type: 'donut', value: evidenceClosurePct }, footer: hasFullCesSupport ? `${sprintSummary.readyToCertify} items ready to certify.` : `${sprintSummary.readyToCertify} items (PROJECTED — missing evidence/signatures; validate before close)`, targetPath: '/evidence?filter=missing-required' },
+      { title: 'ECIGN SIGNATURE STATUS', status: statusFromPercent(signoffReadyPct), chart: { type: 'sparkline', data: dashboardReportTrendBars }, footer: `${pendingSignatureCount} sprint items await signature.`, targetPath: '/reports/ecign-signatures' },
+      { title: 'ECIGN EXPIRING — 90 DAYS', status: expiringSignatureCount > 0 ? 'WATCH' : 'GOOD', chart: { type: 'donut', value: expiringSignaturePct }, footer: `${expiringSignatureCount} signature-related items in watch.`, targetPath: '/reports/ecign-expiring?window=90' },
+      { title: 'EXPIRING / MISSING MASTER EVIDENCE — 90 DAYS', status: dashboardEvidenceRows.length > 0 ? 'WATCH' : 'GOOD', chart: undefined, footer: `${dashboardEvidenceRows.length} evidence projection rows in current review.`, targetPath: '/reports/master-evidence-expiring?window=90' },
+      { title: 'BLOCKER PRESSURE', status: blockerPressureCount > 0 ? 'WATCH' : 'GOOD', chart: undefined, footer: `${blockerPressureCount} active pressure points.`, targetPath: '/ces/board?filter=blocked' },
     ],
     policy: [
-      { title: 'POLICIES PENDING REVIEW', status: 'WATCH', chart: { type: 'donut', value: 23 }, footer: '5 policies in REVIEW.', targetPath: '/policy-lifecycle?stage=REVIEW' },
-      { title: 'POLICIES PENDING APPROVAL', status: 'STEADY', chart: { type: 'donut', value: 15 }, footer: 'Approval flow current.', targetPath: '/policy-lifecycle?stage=APPROVAL' },
-      { title: 'APPROVED BUT UNPUBLISHED', status: 'STEADY', chart: undefined, footer: '7 approved, pending publish.', targetPath: '/policy-lifecycle' },
-      { title: 'EXPIRING POLICIES — 90 DAYS', status: 'WATCH', chart: { type: 'donut', value: 17 }, footer: 'Annual review cycle items flagged.', targetPath: '/reports/policy-expiration?window=90' },
-      { title: 'POLICY ATTESTATION GAPS', status: 'WATCH', chart: { type: 'sparkline', data: [30, 20, 25, 15, 20, 10, 5] }, footer: 'Attestation catch-up in progress.', targetPath: '/reports/policy-attestation' },
-      { title: 'POLICY CROSS-LINK GAPS', status: 'STEADY', chart: undefined, footer: 'Cross references 92% intact.', targetPath: '/reports/policy-crosslinks' },
-      { title: 'POLICY APPROVAL SLA MISSED', status: 'GOOD', chart: { type: 'donut', value: 5 }, footer: 'SLA adherence high.', targetPath: '/reports/policy-sla' },
-    ],
-    compliance: [
-      { title: 'OPEN MISSED EVENTS', status: 'REVIEW REQUIRED', chart: { type: 'donut', value: 44 }, footer: '4 events require recovery.', targetPath: '/calendar?view=sprint&filter=missed' },
-      { title: 'EVIDENCE CLOSURE', status: 'STEADY', chart: { type: 'donut', value: 70 }, footer: 'Evidence intake healthy.', targetPath: '/evidence?filter=missing-required' },
-      { title: 'EXPIRING / MISSING MASTER EVIDENCE — 90 DAYS', status: 'WATCH', chart: undefined, footer: 'Master evidence window active.', targetPath: '/reports/master-evidence-expiring?window=90' },
-      { title: 'ECIGN SIGNATURE STATUS', status: 'STEADY', chart: { type: 'sparkline', data: [15, 20, 10, 25, 15, 30, 20] }, footer: 'Signatures on cadence.', targetPath: '/reports/ecign-signatures' },
-      { title: 'ECIGN EXPIRING — 90 DAYS', status: 'STEADY', chart: { type: 'donut', value: 29 }, footer: 'No critical backlog.', targetPath: '/reports/ecign-expiring?window=90' },
-      { title: 'BLOCKER PRESSURE', status: 'WATCH', chart: undefined, footer: '4 active pressure points.', targetPath: '/ces/board?filter=blocked' },
-      { title: 'CERTIFICATION / LOCK READINESS', status: 'GOOD', chart: { type: 'donut', value: 81 }, footer: 'Lock readiness within target.', targetPath: '/audit?view=lock-readiness' },
+      { title: 'POLICY FORM COVERAGE', status: statusFromPercent(policyFormCoveragePct), chart: { type: 'donut', value: policyFormCoveragePct }, footer: `${formLinkedPolicyIds.size} policies linked to forms.`, targetPath: '/forms' },
+      { title: 'POLICY WORKFLOW COVERAGE', status: statusFromPercent(policyWorkflowCoveragePct), chart: { type: 'donut', value: policyWorkflowCoveragePct }, footer: `${workflowPolicyIds.size} policies linked to generated workflows.`, targetPath: '/workflows' },
+      { title: 'ACHC MAPPING COVERAGE', status: statusFromPercent(achcMappingCoveragePct), chart: { type: 'donut', value: achcMappingCoveragePct }, footer: `${achcPolicyIds.size} policies mapped to ACHC survey rows.`, targetPath: '/framework?view=achc' },
+      { title: 'POLICY CROSS-LINK COVERAGE', status: statusFromPercent(policyCrossLinkPct), chart: undefined, footer: `${crossLinkedPolicyCount} policies have at least one mapped signal.`, targetPath: '/reports/policy-crosslinks' },
+      { title: 'POLICY DOMAINS MAPPED', status: statusFromPercent(policyDomainPct), chart: { type: 'donut', value: policyDomainPct }, footer: `${LIFECYCLE_DOMAIN_ORDER.length} lifecycle domains in taxonomy.`, targetPath: '/framework' },
+      { title: 'HH EVIDENCE MAP', status: statusFromPercent(hhEvidenceCoveragePct), chart: { type: 'donut', value: hhEvidenceCoveragePct }, footer: `${hhEvidenceRows.length} HH evidence rows across ${hhEvidencePolicyIds.size} policies.`, targetPath: '/framework?view=hh-evidence' },
+      { title: 'POLICY DOMAIN LOAD', status: 'STEADY', chart: { type: 'sparkline', data: policySignalBars }, footer: `${policyCount} active corpus records by domain.`, targetPath: '/library/policies' },
     ],
     training: [
-      { title: 'ANNUAL TRAINING COMPLETION', status: 'STEADY', chart: { type: 'donut', value: 64 }, footer: 'Cohort progress on track.', targetPath: '/journey/admin?report=annual-training' },
-      { title: 'TRAINING OVERDUE BY ROLE', status: 'WATCH', chart: undefined, footer: 'Clinical roles priority.', targetPath: '/reports/training-overdue' },
-      { title: 'COMPETENCY SIGN-OFF GAPS', status: 'REVIEW REQUIRED', chart: { type: 'donut', value: 41 }, footer: '3 pending supervisor sign-off.', targetPath: '/journey/supervisor?filter=signoff-missing' },
-      { title: 'POLICY ACKNOWLEDGMENT TRAINING GAP', status: 'STEADY', chart: { type: 'sparkline', data: [5, 10, 8, 15, 10, 20, 12] }, footer: 'Appendix F current.', targetPath: '/reports/training-policy-attestation' },
-      { title: 'DRILL PARTICIPATION READINESS', status: 'GOOD', chart: { type: 'donut', value: 84 }, footer: 'Drills completed on schedule.', targetPath: '/reports/training-drills' },
-      { title: 'TRAINING EVIDENCE MISSING', status: 'WATCH', chart: undefined, footer: 'Evidence packets staged.', targetPath: '/reports/training-evidence' },
-      { title: 'ESCALATED LEARNERS', status: 'WATCH', chart: undefined, footer: '3 learners escalated — license/appendix focus.', targetPath: '/journey/admin?filter=escalations' },
+      { title: 'CORE TRAINING CATALOG', status: statusFromPercent(trainingCatalogPct), chart: { type: 'donut', value: trainingCatalogPct }, footer: `${requiredTrainingModules} GAO + annual required modules.`, targetPath: '/journey' },
+      { title: 'COMPETENCY ASSESSMENT MODULES', status: statusFromPercent(percent(competencyTrainingModules, ALL_MODULES.length)), chart: { type: 'donut', value: percent(competencyTrainingModules, ALL_MODULES.length) }, footer: `${competencyTrainingModules} modules require validation beyond reading.`, targetPath: '/journey/supervisor' },
+      { title: 'ANNUAL TRAINING CATALOG', status: statusFromPercent(percent(annualTrainingModules, ALL_MODULES.length)), chart: { type: 'donut', value: percent(annualTrainingModules, ALL_MODULES.length) }, footer: `${annualTrainingModules} annual modules in the canonical catalog.`, targetPath: '/journey/admin?report=annual-training' },
+      { title: 'POLICY-LINKED TRAINING', status: statusFromPercent(percent(policyLinkedTrainingModules, ALL_MODULES.length)), chart: { type: 'sparkline', data: trainingGroupBars }, footer: `${policyLinkedTrainingModules} modules cite policy source references.`, targetPath: '/reports/training-policy-attestation' },
+      { title: 'SUPERVISOR SIGN-OFF MODULES', status: supervisorSignoffModules > 0 ? 'WATCH' : 'GOOD', chart: undefined, footer: `${supervisorSignoffModules} modules require supervisor signature.`, targetPath: '/journey/supervisor?filter=signoff-missing' },
+      { title: 'TRAINING EVIDENCE APPENDICES', status: evidenceBackedModules > 0 ? 'STEADY' : 'WATCH', chart: undefined, footer: `${evidenceBackedModules} modules generate appendix evidence.`, targetPath: '/reports/training-evidence' },
+      { title: 'ROLE-SPECIFIC MODULES', status: roleTrainingModules > 0 ? 'STEADY' : 'WATCH', chart: undefined, footer: `${roleTrainingModules} modules assigned by employee role.`, targetPath: '/journey/admin?filter=role-modules' },
+    ],
+    evidence: [
+      { title: 'EVIDENCE CLOSURE', status: statusFromPercent(evidenceClosurePct), chart: { type: 'donut', value: evidenceClosurePct }, footer: `${sprintSummary.readyToCertify + sprintSummary.completed} sprint items ready or closed.`, targetPath: '/evidence?filter=missing-required' },
+      { title: 'NOT-READY EVIDENCE SIGNALS', status: missingEvidenceCount > 0 ? 'WATCH' : 'GOOD', chart: { type: 'donut', value: percent(missingEvidenceCount, sprintSummary.total) }, footer: `${missingEvidenceCount} sprint items are not audit ready.`, targetPath: '/audit?filter=missing-evidence' },
+      { title: 'ECIGN SIGNATURE STATUS', status: statusFromPercent(signoffReadyPct), chart: { type: 'sparkline', data: dashboardReportTrendBars }, footer: `${pendingSignatureCount} signature items remain open.`, targetPath: '/reports/ecign-signatures' },
+      { title: 'ECIGN EXPIRING — 90 DAYS', status: expiringSignatureCount > 0 ? 'WATCH' : 'GOOD', chart: { type: 'donut', value: expiringSignaturePct }, footer: `${expiringSignatureCount} signature items in watch.`, targetPath: '/reports/ecign-expiring?window=90' },
+      { title: 'MASTER EVIDENCE WATCH', status: dashboardEvidenceRows.length > 0 ? 'WATCH' : 'GOOD', chart: undefined, footer: `${dashboardEvidenceRows.length} evidence projection rows available.`, targetPath: '/reports/master-evidence-expiring?window=90' },
+      { title: 'PACKET STUDIO THROUGHPUT', status: statusFromPercent(percent(FORMS_DATASET.filter((form) => form.classifications.includes('audit_critical')).length, FORMS_DATASET.length)), chart: { type: 'sparkline', data: LIFECYCLE_DOMAIN_ORDER.slice(0, 7).map((domain) => FORMS_DATASET.filter((form) => form.domainCode === domain).length) }, footer: `${FORMS_DATASET.length} form artifacts available for packets.`, targetPath: '/evidence/packet-studio' },
+      { title: 'AUDIT MODE OPEN ITEMS', status: dashboardAuditRows.length > 0 ? 'REVIEW REQUIRED' : 'GOOD', chart: undefined, footer: `${dashboardAuditRows.length} audit rows in current projection.`, targetPath: '/audit' },
     ],
     community: [
-      { title: 'OPEN UNANSWERED THREADS', status: 'STEADY', chart: { type: 'donut', value: 22 }, footer: '2 unanswered — triage now.', targetPath: '/community/threads?filter=unanswered' },
-      { title: 'THREAD RESOLUTION SLA', status: 'STEADY', chart: { type: 'donut', value: 76 }, footer: 'Resolution within SLA.', targetPath: '/reports/community-thread-sla' },
-      { title: 'ENGAGEMENT BY ROLE', status: 'GOOD', chart: undefined, footer: 'Strong cross-role activity.', targetPath: '/reports/community-engagement-by-role' },
-      { title: 'HIGH-RISK THREAD SIGNALS', status: 'WATCH', chart: { type: 'sparkline', data: [10, 25, 15, 30, 20, 15, 25] }, footer: 'Monitor flagged items.', targetPath: '/community/threads?filter=flagged' },
-      { title: 'KNOWLEDGE BASE ARTICLE USAGE', status: 'STEADY', chart: undefined, footer: 'Help center adoption rising.', targetPath: '/reports/help-center-usage' },
-      { title: 'THREAD-TO-CES CONVERSION', status: 'GOOD', chart: { type: 'donut', value: 43 }, footer: 'CES routing stable.', targetPath: '/reports/community-to-ces' },
-      { title: 'STALE COMMUNITY QUESTIONS', status: 'WATCH', chart: undefined, footer: 'Review older open items.', targetPath: '/community/threads?filter=stale' },
+      { title: 'ENGAGEMENT BY ROLE', status: statusFromPercent(communityEngagementPct), chart: undefined, footer: `${communityThreads.length} persisted threads across ${communityMembers.length} profiles.`, targetPath: '/reports/community-engagement-by-role' },
+      { title: 'THREAD-TO-CES CONVERSION', status: statusFromPercent(threadToCesPct), chart: { type: 'donut', value: threadToCesPct }, footer: `${threadToCesCount} threads link to CES events.`, targetPath: '/reports/community-to-ces' },
+      { title: 'OPEN UNANSWERED THREADS', status: unansweredThreadCount > 0 ? 'STEADY' : 'GOOD', chart: { type: 'donut', value: percent(unansweredThreadCount, communityThreads.length) }, footer: `${unansweredThreadCount} unanswered threads need triage.`, targetPath: '/community/threads?filter=unanswered' },
+      { title: 'THREAD RESOLUTION SLA', status: statusFromPercent(threadResolutionPct), chart: { type: 'donut', value: threadResolutionPct }, footer: `${resolvedThreadCount} threads answered, resolved, or closed.`, targetPath: '/reports/community-thread-sla' },
+      { title: 'KNOWLEDGE BASE ARTICLE USAGE', status: statusFromPercent(knowledgeUsePct), chart: undefined, footer: `${knowledgeThreadCount} threads reference knowledge articles.`, targetPath: '/reports/help-center-usage' },
+      { title: 'HIGH-RISK THREAD SIGNALS', status: highRiskThreadCount > 0 ? 'WATCH' : 'GOOD', chart: { type: 'sparkline', data: [communityThreads.length, unresolvedThreadCount, unansweredThreadCount, highRiskThreadCount, threadToCesCount, knowledgeThreadCount, staleThreadCount] }, footer: `${highRiskThreadCount} flagged community signals.`, targetPath: '/community/threads?filter=flagged' },
+      { title: 'STALE COMMUNITY QUESTIONS', status: staleThreadCount > 0 ? 'WATCH' : 'GOOD', chart: undefined, footer: `${staleThreadCount} unresolved threads older than 14 days.`, targetPath: '/community/threads?filter=stale' },
+    ],
+    reports: [
+      { title: 'OPEN MISSED COMPLIANCE EVENTS', status: eventRiskCount > 0 ? 'REVIEW REQUIRED' : 'GOOD', chart: { type: 'donut', value: eventRiskPct }, footer: `${eventRiskCount} calendar events flagged for recovery.`, targetPath: '/calendar?view=sprint&filter=missed' },
+      { title: 'EVIDENCE CLOSURE', status: statusFromPercent(evidenceClosurePct), chart: { type: 'donut', value: evidenceClosurePct }, footer: `${sprintSummary.readyToCertify + sprintSummary.completed} required artifacts ready or closed.`, targetPath: '/evidence?filter=missing-required' },
+      { title: 'ECIGN EXPIRING — 90 DAYS', status: expiringSignatureCount > 0 ? 'WATCH' : 'GOOD', chart: { type: 'sparkline', data: dashboardReportTrendBars }, footer: `${expiringSignatureCount} signature items within the sprint watch.`, targetPath: '/reports/ecign-expiring?window=90' },
+      { title: 'OPEN UNANSWERED THREADS', status: unansweredThreadCount > 0 ? 'STEADY' : 'GOOD', chart: undefined, footer: `${unansweredThreadCount} community threads need action.`, targetPath: '/community/threads?filter=unanswered' },
+      { title: 'POLICY CROSS-LINK COVERAGE', status: statusFromPercent(policyCrossLinkPct), chart: { type: 'donut', value: policyCrossLinkPct }, footer: `${crossLinkedPolicyCount} policies linked to forms, workflows, ACHC, or HH evidence.`, targetPath: '/policy-lifecycle?stage=REVIEW' },
+      { title: 'HH EVIDENCE COVERAGE', status: statusFromPercent(hhEvidenceCoveragePct), chart: undefined, footer: `${hhEvidencePolicyIds.size} policies represented in HH evidence map.`, targetPath: '/reports/policy-expiration?window=90' },
+      { title: 'REQUIRED TRAINING CATALOG', status: statusFromPercent(trainingCatalogPct), chart: undefined, footer: `${requiredTrainingModules} required GAO and annual modules in catalog.`, targetPath: '/reports/training-overdue' },
     ],
   };
 
-  const getCardsForTab = (tab: string): ModernCardData[] => dashboardData[tab] || dashboardData.overview;
+  const dashboardHomeStats: readonly { icon: LucideIcon; label: string; value: string }[] = [
+    { icon: ShieldCheck, label: 'Audit readiness', value: `${auditReadinessPct}%` },
+    { icon: ClipboardCheck, label: 'Open sprint items', value: String(openSprintItems) },
+    { icon: FileCheck2, label: 'Not audit ready', value: String(missingEvidenceCount) },
+    { icon: PenTool, label: 'Pending sign-offs', value: String(pendingSignatureCount) },
+    { icon: BookOpen, label: 'Core training modules', value: String(requiredTrainingModules) },
+    { icon: ShieldAlert, label: 'High-risk alerts', value: String(highRiskAlerts) },
+  ];
 
-  const cards = getCardsForTab(activeTab);
+  const dashboardFocusCards: readonly {
+    body: string;
+    category: string;
+    icon: LucideIcon;
+    status: string;
+    statusClass: string;
+    title: string;
+    to: string;
+  }[] = [
+    {
+      body: 'Review open compliance work, blocked items, overdue tasks, missing evidence, pending approvals, and sprint readiness.',
+      category: 'CES',
+      icon: ClipboardCheck,
+      status: `${openSprintItems} open`,
+      statusClass: 'bg-[#E5FEFF] text-[#007970]',
+      title: 'Compliance Execution Sprint',
+      to: '/dashboard?view=compliance',
+    },
+    {
+      body: 'Check overdue reviews, policy gaps, linked forms, workflow coverage, ACHC mappings, and lifecycle items that need action.',
+      category: 'Policies',
+      icon: FileText,
+      status: `${policyCount} policies`,
+      statusClass: 'bg-[#EEF5FF] text-[#4E8FE8]',
+      title: 'Policy Readiness',
+      to: '/dashboard?view=policy',
+    },
+    {
+      body: 'Track onboarding modules, annual training, role-based learning paths, incomplete quizzes, competency checks, and certificates.',
+      category: 'Training',
+      icon: BookOpen,
+      status: `${requiredTrainingModules} core`,
+      statusClass: 'bg-[#FCEBEA] text-[#B3261E]',
+      title: 'Training & Competency',
+      to: '/dashboard?view=training',
+    },
+    {
+      body: 'Find missing files, unsigned packets, stale evidence, expiring items, Drive-link gaps, and records not yet ready for survey review.',
+      category: 'Evidence',
+      icon: FileCheck2,
+      status: `${missingEvidenceCount} not ready`,
+      statusClass: 'bg-[#FFF2EB] text-[#F06923]',
+      title: 'Evidence Completeness',
+      to: '/dashboard?view=evidence',
+    },
+    {
+      body: 'Surface active PIPs, CAPs, adverse events, complaints, infection surveillance, feeder audits, and Governing Body escalation items.',
+      category: 'QAPI',
+      icon: AlertTriangle,
+      status: `${blockerPressureCount} blockers`,
+      statusClass: 'bg-[#E5FEFF] text-[#007970]',
+      title: 'QAPI & Improvement Watch',
+      to: '/compliance/master-controls',
+    },
+    {
+      body: 'Get step-by-step help for policies, workflows, missing evidence, mandated events, QAPI packets, and audit readiness questions.',
+      category: 'Brad',
+      icon: PanelRightOpen,
+      status: 'Ready',
+      statusClass: 'bg-[#E5FEFF] text-[#007970]',
+      title: 'Ask Brad What Needs Attention',
+      to: '/iadministrator',
+    },
+  ];
 
-  const gridCards = [...cards]
-    .sort((a, b) => a.status.localeCompare(b.status));
+  const dashboardQuickActions: readonly { icon: LucideIcon; label: string; to: string }[] = [
+    { icon: Activity, label: 'Start Daily Review', to: '/dashboard?view=compliance' },
+    { icon: ClipboardCheck, label: 'Open CES Sprint', to: '/compliance' },
+    { icon: Search, label: 'Review Missing Evidence', to: '/audit?filter=missing-evidence' },
+    { icon: PenTool, label: 'Check Pending Signatures', to: '/reports/ecign-signatures' },
+    { icon: FileText, label: 'Open Policy Readiness', to: '/dashboard?view=policy' },
+    { icon: BookOpen, label: 'View Training Due', to: '/dashboard?view=training' },
+    { icon: AlertTriangle, label: 'Open QAPI Watch', to: '/compliance/master-controls' },
+    { icon: PanelRightOpen, label: 'Ask Brad What to Do Next', to: '/iadministrator' },
+  ];
 
-  // EXACT structure matching dashboard_redesign.html: absolute full bleed, header absolute floating overlay, canvas absolute inset-0.
-  // Shell chrome-free ensures no outer borders/paddings/docks.
+  const activeHeader = metricTab ? dashboardHeaders[metricTab] : null;
+  const cards = metricTab ? dashboardData[metricTab] : [];
+
   return (
-    <div className="fixed inset-0 z-0 bg-[#F8F9FA] text-neutral-600 font-roboto antialiased h-screen w-screen overflow-hidden pointer-events-auto">
-      {/* Canvas Layer (True Full Screen Edge-to-Edge) */}
-      <main id="dashboard-content" className="absolute inset-0 w-full h-full overflow-hidden">
-        <div className="flex h-full w-full items-center justify-center overflow-y-auto px-[clamp(88px,8vw,180px)] py-[clamp(48px,6vh,80px)] hide-scrollbar">
-          <div className="flex w-full max-w-[1480px] items-start justify-center gap-8">
-            <nav className="flex w-[164px] shrink-0 flex-col gap-2 rounded-[24px] bg-white/88 p-2 shadow-[0_16px_50px_rgba(31,28,27,0.06)] backdrop-blur-md" role="tablist" aria-label="Dashboard sections">
-              {dashboardTabs.map((tab) => {
-                const isActive = activeTab === tab.id;
-                const target = tab.id === 'overview' ? '/dashboard' : `/dashboard?view=${tab.id}`;
-                const cls = `min-h-[42px] rounded-[18px] px-4 text-left text-[11px] font-bold font-montserrat tracking-[0.18em] uppercase transition-all duration-300 ${isActive ? 'bg-white text-[#C74601] shadow-[0_8px_24px_rgba(31,28,27,0.06)]' : 'bg-transparent text-[#747470]/70 hover:bg-[#FAFBF8]/80 hover:text-[#52404B]'}`;
-                return (
+    <div className="v6-dashboard-shell min-h-screen w-full overflow-x-hidden bg-[#FAFAF7] px-6 pb-16 pt-4 font-roboto text-[#52404B] selection:bg-[#E5FEFF] md:px-12" data-hash-id="dashboard" data-route="/dashboard">
+      <main id="dashboard-content" className="mx-auto flex w-full max-w-[1400px] flex-col">
+        <div className="relative z-20 flex justify-start">
+          <nav className={workspaceTabNavClass} role="tablist" aria-label="Dashboard sections">
+            {dashboardTabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              const target = tab.id === 'home' ? '/dashboard' : `/dashboard?view=${tab.id}`;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => navigate(target, { replace: true })}
+                  className={cx(
+                    workspaceCompactTabClass,
+                    'whitespace-nowrap',
+                    isActive ? workspaceTabActiveClass : workspaceTabInactiveClass,
+                  )}
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        {activeTab === 'home' ? (
+          <div className="space-y-10 pb-12">
+            <section className="ci-page-hero relative overflow-hidden rounded-b-[24px] rounded-tr-[24px] bg-white p-10 shadow-sm md:p-14">
+              <DashboardLogoWatermark />
+              <div className="relative z-10 max-w-4xl">
+                <p className="mb-6 font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#F06923]">Care Indeed Command Center</p>
+                <h1 className="mb-6 font-montserrat text-4xl font-bold leading-none tracking-tight text-[#007970] md:text-5xl lg:text-6xl">
+                  Your Compliance Day, <br />
+                  At a Glance
+                </h1>
+                <p className="mb-10 max-w-3xl font-roboto text-lg font-light leading-relaxed text-[#52404B] md:text-xl">
+                  A focused executive dashboard showing what needs attention today across compliance execution, policy readiness, training progress, evidence status, open risks, and team activity.
+                </p>
+                <div className="flex flex-col gap-4 font-montserrat sm:flex-row">
                   <button
-                    key={tab.id}
                     type="button"
-                    onClick={() => navigate(target, { replace: true })}
-                    className={cls}
-                    role="tab"
-                    aria-selected={isActive}
+                    onClick={() => navigate('/dashboard?view=compliance', { replace: true })}
+                    className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#F06923] px-8 py-4 text-center text-[12px] font-bold uppercase tracking-widest text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_0_25px_6px_rgba(240,105,35,0.38)]"
                   >
-                    {tab.label}
+                    <Activity className="h-4 w-4" aria-hidden />
+                    Start Daily Review
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/audit')}
+                    className="inline-flex items-center justify-center gap-2 rounded-[12px] border-[1.5px] border-[#007970] bg-white px-8 py-4 text-center text-[12px] font-bold uppercase tracking-widest text-[#007970] transition-all hover:bg-[#F7FEFF]"
+                  >
+                    <ShieldCheck className="h-4 w-4" aria-hidden />
+                    Open Audit Mode
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <div className="grid w-full grid-cols-2 gap-6 md:grid-cols-3 xl:grid-cols-6">
+              {dashboardHomeStats.map((stat) => {
+                const Icon = stat.icon;
+                return (
+                  <div key={stat.label} className="ci-stagger-card group flex min-h-[164px] flex-col items-center justify-center rounded-[24px] bg-white p-6 text-center shadow-sm transition-colors hover:border-[#007970]" style={{ animationDelay: `${dashboardHomeStats.indexOf(stat) * 75}ms` }}>
+                    <Icon className="mb-4 h-6 w-6 text-[#007970]" aria-hidden />
+                    <span className="mb-3 font-montserrat text-3xl font-bold text-[#F06923] transition-transform duration-300 group-hover:scale-110 md:text-4xl">{stat.value}</span>
+                    <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#747470]">{stat.label}</span>
+                  </div>
                 );
               })}
-            </nav>
-            <div className="grid h-[min(84vh,900px)] min-h-[660px] w-full max-w-[1200px] grid-cols-4 auto-rows-[minmax(0,1fr)] gap-6">
-              {gridCards.map((c, i) => (
-                <ModernDashboardCard key={`${activeTab}-${c.title}`} card={c} index={i} mode="grid" onNavigate={navigate} />
-              ))}
             </div>
+
+            <section className="rounded-[24px] bg-white p-8 shadow-sm md:p-10">
+              <div className="mb-8 max-w-3xl">
+                <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Today&apos;s Focus</h2>
+                <p className="mt-3 text-base leading-relaxed text-[#747470]">
+                  Start with the work most likely to affect survey readiness, then jump into the detailed dashboard view behind each signal.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
+                {dashboardFocusCards.map((card, index) => {
+                  const Icon = card.icon;
+                  return (
+                    <button
+                      key={card.title}
+                      type="button"
+                      onClick={() => navigate(card.to, { replace: card.to.startsWith('/dashboard') })}
+                      className="ci-stagger-card group flex min-h-[248px] flex-col justify-between rounded-[24px] bg-white p-8 text-left shadow-sm transition-all hover:-translate-y-1 hover:shadow-md focus-visible:outline-none focus-visible:shadow-focus"
+                      style={{ animationDelay: `${index * 75}ms` }}
+                    >
+                      <span>
+                        <span className="mb-6 flex items-center justify-between gap-4">
+                          <span className="grid h-12 w-12 place-items-center rounded-[16px] bg-[#E5FEFF] text-[#007970]">
+                            <Icon className="h-6 w-6" aria-hidden />
+                          </span>
+                          <span className={cx('rounded-full px-3 py-1 font-montserrat text-[10px] font-bold uppercase tracking-wider', card.statusClass)}>
+                            {card.status}
+                          </span>
+                        </span>
+                        <span className="font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#F06923]">{card.category}</span>
+                        <span className="mt-3 block font-montserrat text-xl font-bold text-[#007970] transition-colors group-hover:text-[#F06923]">{card.title}</span>
+                        <span className="mt-4 block text-sm leading-relaxed text-[#747470]">{card.body}</span>
+                      </span>
+                      <span className="mt-7 inline-flex items-center gap-2 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#007970]">
+                        Open view
+                        <ArrowRight className="h-4 w-4 text-[#F06923] transition-transform group-hover:translate-x-1" aria-hidden />
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section className="rounded-[24px] bg-white p-8 shadow-sm md:p-10">
+              <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Quick Actions</h2>
+              <div className="mt-8 flex flex-wrap gap-4">
+                {dashboardQuickActions.map((action) => {
+                  const Icon = action.icon;
+                  return (
+                    <button
+                      key={action.label}
+                      type="button"
+                      onClick={() => navigate(action.to, { replace: action.to.startsWith('/dashboard') })}
+                      className="group inline-flex items-center gap-2 rounded-[12px] bg-[#FAFBF8] px-5 py-3 font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#52404B] transition-colors hover:bg-[#E5FEFF] hover:text-[#007970]"
+                    >
+                      <Icon className="h-4 w-4" aria-hidden />
+                      {action.label}
+                      <ArrowRight className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section className="mx-auto max-w-4xl rounded-[24px] bg-[#E5FEFF] p-10 text-center shadow-sm md:p-12">
+              <h2 className="font-montserrat text-3xl font-bold text-[#007970]">Run the daily readiness check</h2>
+              <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[#005C55]">
+                Review today&apos;s open work, blockers, evidence gaps, sign-offs, policy items, training deadlines, and high-risk alerts before they become survey problems.
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate('/dashboard?view=compliance', { replace: true })}
+                className="mt-8 inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#F06923] px-8 py-4 font-montserrat text-[12px] font-bold uppercase tracking-widest text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_0_25px_6px_rgba(240,105,35,0.32)]"
+              >
+                Run Daily Check
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </button>
+            </section>
           </div>
-        </div>
+        ) : activeHeader ? (
+          <>
+            <section className="ci-page-hero ci-dashboard-panel relative z-10 overflow-hidden rounded-b-[32px] rounded-tr-[32px] bg-white p-10 md:p-14">
+              <div className="relative z-10 max-w-3xl">
+                <span className="mb-4 block font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#F06923]">
+                  Performance Insights
+                </span>
+                <h1 className="mb-4 font-montserrat text-3xl font-bold leading-[1.15] tracking-tight text-[#007970] md:text-5xl">
+                  {activeHeader.title}
+                </h1>
+                <p className="text-lg font-light leading-relaxed text-[#747470]">
+                  {activeHeader.subtitle}
+                </p>
+              </div>
+            </section>
+
+            <section className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-12" aria-label={`${activeHeader.title} metrics`}>
+              {cards.map((card, index) => (
+                <ModernDashboardCard key={`${activeTab}-${card.title}`} card={card} index={index} mode="grid" onNavigate={navigate} />
+              ))}
+            </section>
+          </>
+        ) : null}
       </main>
     </div>
   );
-}
-
-// Reference legacy symbols to satisfy strict unused checks (no-op)
-if (false) {
 }
 
 // (Old dashboard metrics + carousel implementation removed per redesign — new CES Command Center above)
@@ -2703,6 +3197,182 @@ function ClinicianDetailScreen() {
   );
 }
 
+function PolicyHomeScreen() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="-m-xl min-h-screen overflow-x-hidden bg-[#FAFBF8] px-6 pb-16 pt-4 font-roboto text-[#52404B] selection:bg-[#E5FEFF] md:px-12" data-hash-id="policy-home" data-route="/library">
+      <main className="mx-auto flex w-full max-w-[1400px] flex-col">
+        <div className="relative z-20 flex justify-start">
+          <PolicyAreaNav />
+        </div>
+
+        <div className="space-y-10 pb-12">
+          <section className="ci-page-hero relative overflow-hidden rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-10 shadow-sm md:p-14">
+            <StaticCardWatermark />
+            <div className="relative z-10 flex flex-col items-start justify-between gap-12 xl:flex-row xl:items-end">
+              <div className="max-w-3xl">
+                <h2 className="mb-6 font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#F06923]">Policy Command Center</h2>
+                <h1 className="mb-6 font-montserrat text-4xl font-bold leading-none tracking-tight text-[#007970] md:text-5xl lg:text-6xl">
+                  Care Indeed <br />
+                  Policy Library
+                </h1>
+                <p className="mb-10 max-w-3xl font-roboto text-lg font-light leading-relaxed text-[#52404B] md:text-xl">
+                  A defensible home health policy system connecting agency policies, forms, workflows, ACHC standards, CMS Conditions of Participation, evidence expectations, and policy lifecycle controls in one searchable workspace.
+                </p>
+                <div className="flex flex-col gap-4 font-montserrat sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/library/policies')}
+                    className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#F06923] px-8 py-4 text-center text-[12px] font-bold uppercase tracking-widest text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_0_25px_6px_rgba(240,105,35,0.38)]"
+                  >
+                    <BookOpen className="h-4 w-4" aria-hidden />
+                    Open Policy Library
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/policy-lifecycle')}
+                    className="inline-flex items-center justify-center gap-2 rounded-[12px] border-[1.5px] border-[#007970] bg-white px-8 py-4 text-center text-[12px] font-bold uppercase tracking-widest text-[#007970] transition-all hover:bg-[#F7FEFF]"
+                  >
+                    <AlertTriangle className="h-4 w-4" aria-hidden />
+                    View Policy Gaps
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div className="grid w-full grid-cols-2 gap-6 md:grid-cols-3 xl:grid-cols-6">
+            {policyHomeStats.map((stat) => {
+              const Icon = stat.icon;
+              return (
+                <div key={stat.label} className="group flex min-h-[164px] flex-col items-center justify-center rounded-[24px] border border-[#E5E4E3] bg-white p-6 text-center shadow-sm transition-colors hover:border-[#007970]">
+                  <Icon className="mb-4 h-6 w-6 text-[#007970]" aria-hidden />
+                  <span className="mb-3 font-montserrat text-3xl font-bold text-[#F06923] transition-transform duration-300 group-hover:scale-110 md:text-4xl">{stat.value}</span>
+                  <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#747470]">{stat.label}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <section className="rounded-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:p-10">
+            <div className="mb-8 max-w-3xl">
+              <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Policy Workspace</h2>
+              <p className="mt-3 text-base leading-relaxed text-[#747470]">
+                Move between the library, linked forms, workflow evidence, taxonomy, ACHC mapping, and review controls without leaving the policy command surface.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
+              {policyWorkspaceCards.map((card) => {
+                const Icon = card.icon;
+                const tone = card.tone === 'orange'
+                  ? {
+                      badge: 'bg-[#FFF2EB] text-[#F06923]',
+                      icon: 'bg-[#FFF2EB] text-[#F06923]',
+                    }
+                  : card.tone === 'blue'
+                    ? {
+                        badge: 'bg-[#EEF5FF] text-[#4E8FE8]',
+                        icon: 'bg-[#EEF5FF] text-[#4E8FE8]',
+                      }
+                    : {
+                        badge: 'bg-[#E5FEFF] text-[#007970]',
+                        icon: 'bg-[#E5FEFF] text-[#007970]',
+                      };
+                return (
+                  <button
+                    key={card.title}
+                    type="button"
+                    onClick={() => navigate(card.to)}
+                    className="group flex min-h-[260px] flex-col justify-between rounded-[24px] border border-[#E5E4E3] bg-white p-8 text-left shadow-sm transition-all hover:-translate-y-1 hover:border-[#007970] hover:shadow-md focus-visible:outline-none focus-visible:shadow-focus"
+                  >
+                    <span>
+                      <span className="mb-6 flex items-center justify-between gap-4">
+                        <span className={cx('grid h-12 w-12 place-items-center rounded-[16px]', tone.icon)}>
+                          <Icon className="h-6 w-6" aria-hidden />
+                        </span>
+                        <span className={cx('rounded-full px-3 py-1 font-montserrat text-[10px] font-bold uppercase tracking-wider', tone.badge)}>
+                          {card.status}
+                        </span>
+                      </span>
+                      <span className="font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#F06923]">{card.category}</span>
+                      <span className="mt-3 block font-montserrat text-xl font-bold text-[#007970] transition-colors group-hover:text-[#F06923]">{card.title}</span>
+                      <span className="mt-4 block text-sm leading-relaxed text-[#747470]">{card.body}</span>
+                    </span>
+                    <span className="mt-7 inline-flex items-center gap-2 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#007970]">
+                      Open workspace
+                      <ArrowRight className="h-4 w-4 text-[#F06923] transition-transform group-hover:translate-x-1" aria-hidden />
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="grid gap-8 xl:grid-cols-[1.15fr_0.85fr]">
+            <div className="rounded-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:p-10">
+              <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Quick Actions</h2>
+              <div className="mt-8 flex flex-wrap gap-4">
+                {policyQuickActions.map((action) => {
+                  const Icon = action.icon;
+                  return (
+                    <button
+                      key={action.label}
+                      type="button"
+                      onClick={() => navigate(action.to)}
+                      className="inline-flex items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-5 py-3 font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#52404B] transition-colors hover:border-[#C4F4F5] hover:bg-[#E5FEFF] hover:text-[#007970]"
+                    >
+                      <Icon className="h-4 w-4" aria-hidden />
+                      {action.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="rounded-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:p-10">
+              <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Taxonomy Framework</h2>
+              <div className="mt-8 space-y-5">
+                {[
+                  { label: 'Policies', helper: 'Home, Policies, Forms, Workflows, Taxonomy' },
+                  { label: 'Taxonomy', helper: 'Framework, Lifecycle, ACHC' },
+                  { label: 'ACHC', helper: 'HH Evidence, Standards Matrix, Crosswalk' },
+                ].map((item, index) => (
+                  <div key={item.label} className="flex gap-4">
+                    <span className={cx('grid h-9 w-9 shrink-0 place-items-center rounded-[12px] font-montserrat text-sm font-bold', index === 0 ? 'bg-[#007970] text-white' : index === 1 ? 'bg-[#FFF2EB] text-[#F06923]' : 'bg-[#E5FEFF] text-[#007970]')}>
+                      {index + 1}
+                    </span>
+                    <span>
+                      <span className="block font-montserrat text-base font-bold text-[#007970]">{item.label}</span>
+                      <span className="mt-1 block text-sm leading-relaxed text-[#747470]">{item.helper}</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="mx-auto max-w-4xl rounded-[24px] border border-[#C4F4F5] bg-[#E5FEFF] p-10 text-center shadow-sm md:p-12">
+            <h2 className="font-montserrat text-3xl font-bold text-[#007970]">Ready to review policy readiness?</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[#005C55]">
+              Check missing links, overdue reviews, form dependencies, workflow coverage, ACHC mappings, and evidence expectations before they become survey findings.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/policy-lifecycle')}
+              className="mt-8 inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#F06923] px-8 py-4 font-montserrat text-[12px] font-bold uppercase tracking-widest text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_0_25px_6px_rgba(240,105,35,0.32)]"
+            >
+              Run Policy Readiness Check
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </button>
+          </section>
+        </div>
+      </main>
+    </div>
+  );
+}
+
 function PolicyMatrixScreen() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
@@ -2736,15 +3406,16 @@ function PolicyMatrixScreen() {
 
   const handleRowClick = (row: BasicRow) => {
     const id = row.id;
-    if (id) navigate(`/library/${encodeURIComponent(id)}`, { state: { policyBackLabel: 'Policies', policyBackTo: '/library' } });
+    if (id) navigate(`/library/${encodeURIComponent(id)}`, { state: { policyBackLabel: 'Policies', policyBackTo: '/library/policies' } });
   };
   const visibleRows = filteredRows.slice(0, 60);
   const hiddenCount = filteredRows.length - visibleRows.length;
 
   return (
-    <div className="min-h-screen bg-[#FAFBF8] px-6 pb-16 pt-4 font-roboto text-[#52404B] md:px-12" data-hash-id="policy-library" data-route="/library">
+    <div className="min-h-screen bg-[#FAFBF8] px-6 pb-16 pt-4 font-roboto text-[#52404B] md:px-12" data-hash-id="policy-library" data-route="/library/policies">
       <main className="mx-auto flex w-full max-w-[1400px] flex-col">
-        <section className="mb-8 rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:px-12 md:py-10">
+        <PolicyAreaNav />
+        <section className="ci-page-hero mb-8 rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:px-12 md:py-10">
           <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
             <div className="max-w-3xl">
               <p className="mb-3 font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#F06923]">Policy Registry</p>
@@ -2752,24 +3423,6 @@ function PolicyMatrixScreen() {
               <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#747470]">
                 Search and open the canonical policy corpus without the old dense table wall.
               </p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => navigate('/framework')}
-                className="inline-flex items-center justify-center gap-2 rounded-[12px] border-[1.5px] border-[#007970] bg-white px-6 py-3 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#007970] transition-all hover:bg-[#F7FEFF]"
-              >
-                <FolderOpen className="h-4 w-4" aria-hidden />
-                Taxonomy
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/policy-approvals')}
-                className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#F06923] px-6 py-3 font-montserrat text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_0_25px_6px_rgba(240,105,35,0.28)]"
-              >
-                <ShieldCheck className="h-4 w-4" aria-hidden />
-                Approvals
-              </button>
             </div>
           </div>
         </section>
@@ -3632,85 +4285,172 @@ function CesEmbeddedBoardView({ variant }: { variant: 'sprint' | 'events' }) {
   );
 }
 
+const sprintBoardTabs = [
+  { id: 'home', label: 'Sprint Home', to: '/compliance' },
+  { id: 'dashboard', label: 'Sprint Dashboard', to: '/ces/board' },
+  { id: 'workspace', label: 'DefenCIble', to: '/evidence' },
+  { id: 'calendar', label: 'CES Calendar', to: '/ces/calendar' },
+  { id: 'controls', label: 'Control Register', to: '/compliance/master-controls' },
+] as const;
+
+function SprintBoardTabLabel({ label }: { label: string }) {
+  if (label !== 'DefenCIble') return <>{label}</>;
+  return (
+    <>
+      Defen<span className="!text-brand-teal">CI</span>ble
+    </>
+  );
+}
+
+function SprintBoardNavigationTabs() {
+  return (
+    <nav aria-label="Compliance portal sections" className={workspaceTabNavClass}>
+      {sprintBoardTabs.map((tab) => {
+        const isActive = tab.id === 'dashboard';
+        return (
+          <Link
+            key={tab.id}
+            to={tab.to}
+            className={`${workspaceTabClass} ${isActive ? workspaceTabActiveClass : workspaceTabInactiveClass}`}
+            aria-current={isActive ? 'page' : undefined}
+          >
+            <SprintBoardTabLabel label={tab.label} />
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
 function BoardScreen() {
   const navigate = useNavigate();
-  // Local lazy projection (CES only)
   const boardLanesLocal = buildBoardLanes();
   const boardLaneCountLocal = (title: string) => boardLanesLocal.find((l) => l.title === title)?.count ?? 0;
-  const boardMetricsLocal: readonly MetricTileData[] = [
-    { label: 'Upcoming', value: String(boardLaneCountLocal('Upcoming')), helper: 'Not yet opened', tone: 'slate' },
-    { label: 'Ready', value: String(boardLaneCountLocal('Ready')), helper: 'Can start now', tone: 'green' },
-    { label: 'In Progress', value: String(boardLaneCountLocal('In Progress')), helper: 'Active execution', tone: 'teal' },
-    { label: 'Awaiting Signature', value: String(boardLaneCountLocal('Awaiting Signature')), helper: 'Pending signatures', tone: 'amber' },
-    { label: 'Awaiting Action/Evidence', value: String(boardLaneCountLocal('Awaiting Action / Evidence')), helper: 'Evidence or action pending', tone: 'amber' },
-    { label: 'Blocked', value: String(boardLaneCountLocal('Blocked')), helper: 'Evidence/signature gaps', tone: 'orange' },
-    { label: 'Certified', value: String(boardLaneCountLocal('Completed')), helper: 'Completed and locked', tone: 'green' },
-  ];
   const [activeFilter, setActiveFilter] = useState('All work');
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedEvent, setSelectedEvent] = useState<CalendarEventData | null>(null);
-  const filteredLanes = boardLanesLocal.filter(l => {
-    if (activeFilter === 'All work') return true;
-    if (activeFilter === 'Mine') return l.cards.some(c => c.owner.includes('Manager') || c.owner.includes('Lead'));
-    if (activeFilter === 'Blocked') return l.title.includes('Blocked') || l.title.includes('Awaiting');
-    if (activeFilter === 'Missing evidence') return l.title.includes('Awaiting') || l.title.includes('Blocked');
-    if (activeFilter === 'Awaiting signature') return l.title.includes('Signature');
-    if (activeFilter === 'Awaiting action / evidence') return l.title.includes('Action') || l.title.includes('Evidence');
-    return true;
-  });
+  const totalCards = boardLanesLocal.reduce((sum, lane) => sum + (lane.count || lane.cards.length), 0);
+  const awaitingCards = boardLaneCountLocal('Awaiting Action / Evidence');
+  const filteredLanes = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+    return boardLanesLocal.map((lane) => {
+      const cards = lane.cards.filter((card) => {
+        const laneTitle = lane.title.toLowerCase();
+        const haystack = [card.id, card.title, card.owner, card.due, card.meta, card.missing, ...card.chips].filter(Boolean).join(' ').toLowerCase();
+        const matchesSearch = !normalizedSearch || haystack.includes(normalizedSearch);
+        if (!matchesSearch) return false;
+        if (activeFilter === 'All work') return true;
+        if (activeFilter === 'Mine') return /manager|lead|administrator|officer/i.test(card.owner);
+        if (activeFilter === 'Blocked') return laneTitle.includes('blocked') || card.tone === 'orange';
+        if (activeFilter === 'Missing evidence') return card.awaitingType === 'evidence' || Boolean(card.missing) || laneTitle.includes('evidence');
+        if (activeFilter === 'Awaiting signature') return laneTitle.includes('signature') || haystack.includes('sign');
+        if (activeFilter === 'Awaiting action') return card.awaitingType === 'action' || laneTitle.includes('action');
+        return true;
+      });
+      return { ...lane, cards, count: cards.length };
+    });
+  }, [activeFilter, boardLanesLocal, searchTerm]);
+
+  const openBoardCard = (card: BoardCardData) => {
+    const targetId = card.id || '';
+    const isCesEventClick = card.awaitingType === 'action' || targetId.includes('EVT') || /CES|QAPI|EVT|evt-/i.test(String(card.title || '')) || /QAPI|Governing/i.test(String(card.title || ''));
+    if (isCesEventClick) {
+      const swimlaneData = q2QapiSwimlane;
+      const evt: CalendarEventData = {
+        id: targetId || 'ces-evt',
+        label: card.title || 'CES Event',
+        day: 12,
+        owner: card.owner || resolveDisplayName('Compliance Officer'),
+        progress: typeof card.progress === 'number' ? card.progress : 65,
+        tone: (card.tone as any) || 'teal',
+        readiness: 'Open',
+        workflowId: /QAPI/i.test(String(card.title)) ? 'QA-WF-03' : 'CES',
+        swimlane: swimlaneData,
+      } as CalendarEventData;
+      setSelectedEvent(evt);
+      return;
+    }
+    if (card.awaitingType === 'evidence' || targetId) {
+      navigate(`/evidence?control=${encodeURIComponent(targetId)}`);
+    } else if (card.awaitingType === 'action' || targetId.includes('EVT')) {
+      navigate('/workflows');
+    } else {
+      navigate('/evidence');
+    }
+  };
+
   return (
-    <ScreenStack metrics={boardMetricsLocal}>
-      <section className="grid gap-lg">
-        <div className="flex flex-wrap items-center justify-between gap-md rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-md shadow-rest">
-          <div className="flex flex-wrap gap-sm">
-            {['All work', 'Mine', 'Blocked', 'Missing evidence', 'Awaiting signature', 'Awaiting action / evidence'].map((label) => (
-              <button
-                className={cx(
-                  'min-h-tap rounded-md border px-md text-sm transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
-                  label === activeFilter
-                    ? 'border-brand-teal bg-brand-teal text-on-brand'
-                    : 'border-card bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal hover:bg-surface-hover',
-                )}
-                key={label}
-                type="button"
-                onClick={() => setActiveFilter(label)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <p className="text-sm text-ink">Sprint 12 - {boardLanesLocal.reduce((s, l) => s + (l.count || l.cards.length), 0)} cards - {boardLaneCountLocal('Awaiting Action / Evidence')} awaiting action/evidence</p>
+    <div className="min-h-screen bg-[#FAFBF8] px-6 pb-16 pt-4 font-roboto text-[#52404B] selection:bg-[#E5FEFF] md:px-12" data-hash-id="ces-board" data-route="/ces/board">
+      <main className="mx-auto flex w-full max-w-[1400px] flex-col">
+        <div className="relative z-20 flex justify-start">
+          <SprintBoardNavigationTabs />
         </div>
-        <div className="overflow-x-hidden pb-sm">
-          <div className="grid grid-cols-1 gap-md tablet-l:grid-cols-2 desktop:grid-cols-7">
-            {filteredLanes.map((lane) => (
-              <BoardLane key={lane.title} lane={lane} onCardClick={(card) => {
-                const targetId = card.id || '';
-                const isCesEventClick = card.awaitingType === 'action' || targetId.includes('EVT') || /CES|QAPI|EVT|evt-/i.test(String(card.title || '')) || /QAPI|Governing/i.test(String(card.title || ''));
-                if (isCesEventClick) {
-                  // Use setSelectedEvent pattern (like CalendarSwimlaneInline) to open real inline swimlane with real cards (q2QapiSwimlane or equiv from design/generated), preserve nav context in ces-board (no shell replace, no navigate).
-                  const swimlaneData = q2QapiSwimlane;
-                  const evt: CalendarEventData = {
-                    id: targetId || 'ces-evt',
-                    label: card.title || 'CES Event',
-                    day: 12,
-                    owner: card.owner || resolveDisplayName('Compliance Officer'),
-                    progress: typeof card.progress === 'number' ? card.progress : 65,
-                    tone: (card.tone as any) || 'teal',
-                    readiness: 'Open',
-                    workflowId: /QAPI/i.test(String(card.title)) ? 'QA-WF-03' : 'CES',
-                    swimlane: swimlaneData,
-                  } as CalendarEventData;
-                  setSelectedEvent(evt);
-                  return;
-                }
-                if (card.awaitingType === 'evidence' || targetId) {
-                  navigate(`/evidence?control=${encodeURIComponent(targetId)}`);
-                } else if (card.awaitingType === 'action' || targetId.includes('EVT')) {
-                  navigate('/workflows');
-                } else {
-                  navigate('/evidence');
-                }
-              }} />
+
+        <section className="flex min-h-[calc(100vh-8rem)] flex-col overflow-hidden rounded-b-[32px] rounded-tr-[32px] bg-white p-6 shadow-[0_8px_30px_rgba(31,28,27,0.035)] md:p-8">
+        <div className="mb-6 flex shrink-0 flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="mb-2 text-tag font-semibold uppercase tracking-tag text-brand-orange">Compliance Workspace</p>
+            <h1 className="text-3xl font-bold tracking-tight text-brand-teal-deep">Sprint 12 Board</h1>
+            <p className="mt-2 text-sm text-muted">{totalCards} active cards - {awaitingCards} awaiting action/evidence</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <label className="relative block">
+              <Search aria-hidden="true" className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-disabled" />
+              <span className="sr-only">Search sprint</span>
+              <input
+                className="h-11 w-full rounded-full bg-[#FAFAF7] pl-10 pr-4 text-sm text-ink shadow-[inset_0_0_0_1px_rgba(229,228,227,0.7)] transition duration-fast placeholder:text-disabled focus:outline-none focus:shadow-[inset_0_0_0_1px_rgba(0,121,112,0.55)] md:w-64"
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search sprint..."
+                type="search"
+                value={searchTerm}
+              />
+            </label>
+            <button
+              aria-label="Sprint owners"
+              className="grid h-11 w-11 place-items-center rounded-full bg-[#FAFAF7] text-muted shadow-[inset_0_0_0_1px_rgba(229,228,227,0.7)] transition duration-fast hover:bg-[#e5feff] hover:text-brand-teal"
+              type="button"
+            >
+              <Users aria-hidden="true" className="h-5 w-5" />
+            </button>
+            <button
+              className="inline-flex h-11 items-center gap-2 rounded-full bg-brand-orange px-6 text-[11px] font-bold uppercase tracking-[0.18em] text-white shadow-[0_12px_28px_rgba(240,105,35,0.22)] transition duration-fast hover:bg-[#d85e1f]"
+              onClick={() => navigate('/ces/calendar?view=sprint')}
+              type="button"
+            >
+              <Plus aria-hidden="true" className="h-4 w-4" />
+              New Card
+            </button>
+          </div>
+        </div>
+
+        <div className="mb-6 flex shrink-0 items-center gap-3 overflow-x-auto border-b border-[#F1F0EE] pb-6">
+          <Filter aria-hidden="true" className="mr-2 h-4 w-4 shrink-0 text-disabled" />
+          {['All work', 'Mine', 'Blocked', 'Missing evidence', 'Awaiting signature', 'Awaiting action'].map((label) => (
+            <button
+              className={cx(
+                'shrink-0 rounded-full px-5 py-2 text-[11px] font-bold uppercase tracking-wider transition duration-fast focus-visible:outline-none focus-visible:shadow-focus',
+                label === activeFilter
+                  ? 'bg-[#e5feff] text-brand-teal'
+                  : 'bg-[#FAFAF7] text-muted hover:bg-[#F1F0EE] hover:text-brand-teal-deep',
+              )}
+              key={label}
+              onClick={() => setActiveFilter(label)}
+              type="button"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden pb-2">
+          <div className="flex min-h-full items-start gap-6">
+            {filteredLanes.map((lane, index) => (
+              <SprintBoardColumn
+                index={index}
+                key={lane.title}
+                lane={lane}
+                onCardClick={openBoardCard}
+              />
             ))}
           </div>
         </div>
@@ -3722,9 +4462,150 @@ function BoardScreen() {
             onSelectEvent={setSelectedEvent}
           />
         )}
-      </section>
-    </ScreenStack>
+        </section>
+      </main>
+    </div>
   );
+}
+
+function SprintBoardColumn({ index, lane, onCardClick }: { index: number; lane: BoardLaneData; onCardClick: (card: BoardCardData) => void }) {
+  const Icon = getSprintLaneIcon(lane.title);
+  return (
+    <section
+      className="animate-board-col flex max-h-full w-[340px] shrink-0 flex-col rounded-[24px] bg-[#FAFAF7] p-4 shadow-[inset_0_0_0_1px_rgba(229,228,227,0.72)]"
+      style={{ animationDelay: `${index * 75}ms` }}
+    >
+      <header className="mb-5 flex items-center justify-between gap-3 px-2 pt-1">
+        <h2 className="flex min-w-0 items-center gap-2 truncate text-xs font-bold uppercase tracking-widest text-[#52404B]">
+          <Icon aria-hidden="true" className={cx('h-4 w-4 shrink-0', sprintToneTextClass(lane.tone))} />
+          <span className="truncate">{lane.title}</span>
+        </h2>
+        <span className={cx('rounded-full px-2.5 py-1 text-[10px] font-bold', sprintBadgeClass(lane.tone))}>
+          {lane.count}
+        </span>
+      </header>
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1 pb-4">
+        {lane.cards.map((card) => (
+          <SprintKanbanCard card={card} key={card.id} onClick={() => onCardClick(card)} />
+        ))}
+        {lane.cards.length === 0 && (
+          <div className="grid h-24 place-items-center rounded-[20px] border-2 border-dashed border-[#E5E4E3] text-xs font-semibold text-disabled">
+            No cards match
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function SprintKanbanCard({ card, onClick }: { card: BoardCardData; onClick: () => void }) {
+  const progressColor = sprintProgressClass(card.tone);
+  const initials = getOwnerInitials(card.owner);
+  return (
+    <article
+      className="group relative cursor-pointer overflow-hidden rounded-[20px] bg-white p-5 shadow-[0_2px_12px_rgba(31,28,27,0.025)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(31,28,27,0.06)]"
+      onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+    >
+      <div className="absolute bottom-0 left-0 h-1 w-full bg-[#FAFAF7]">
+        <div className={cx('h-full transition-all duration-500', progressColor)} style={{ width: `${card.progress}%` }} />
+      </div>
+
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <span className={cx('rounded px-2 py-1 text-[9px] font-bold uppercase tracking-wider', sprintIdBadgeClass(card.tone))}>
+          {card.id}
+        </span>
+        <button
+          aria-label={`More actions for ${card.title}`}
+          className="rounded-full p-1 text-disabled opacity-0 transition duration-fast hover:bg-[#FAFAF7] hover:text-[#52404B] group-hover:opacity-100"
+          onClick={(event) => {
+            event.stopPropagation();
+            onClick();
+          }}
+          type="button"
+        >
+          <MoreHorizontal aria-hidden="true" className="h-4 w-4" />
+        </button>
+      </div>
+
+      <h3 className="mb-4 line-clamp-3 text-[14px] font-medium leading-snug text-[#52404B]">
+        {card.title}
+      </h3>
+
+      <div className="mb-5 flex flex-wrap gap-2">
+        {card.chips.slice(0, 3).map((tag) => (
+          <span key={`${card.id}-${tag}`} className="rounded border border-[#F1F0EE] bg-[#FAFAF7] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-muted">
+            {tag}
+          </span>
+        ))}
+      </div>
+
+      <footer className="flex items-center justify-between gap-3 border-t border-[#F1F0EE] pt-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className={cx('grid h-7 w-7 shrink-0 place-items-center rounded-full text-[10px] font-bold shadow-sm', sprintAvatarClass(card.tone))}>
+            {initials}
+          </span>
+          <span className="flex min-w-0 items-center gap-1.5 truncate text-xs text-disabled">
+            <Clock aria-hidden="true" className="h-3 w-3 shrink-0" />
+            <span className="truncate">{card.due}</span>
+          </span>
+        </div>
+        <span className="text-[11px] font-bold text-disabled">{card.progress}%</span>
+      </footer>
+    </article>
+  );
+}
+
+function getSprintLaneIcon(title: string): LucideIcon {
+  if (/blocked/i.test(title)) return AlertTriangle;
+  if (/signature/i.test(title)) return PenTool;
+  if (/complete|certified/i.test(title)) return CheckCircle2;
+  if (/ready/i.test(title)) return ClipboardCheck;
+  if (/progress/i.test(title)) return Clock;
+  return ClipboardList;
+}
+
+function getOwnerInitials(owner: string) {
+  const parts = owner.split(/\s|\/|&|-/).filter(Boolean);
+  return (parts[0]?.[0] ?? 'C').toUpperCase() + (parts[1]?.[0] ?? parts[0]?.[1] ?? 'I').toUpperCase();
+}
+
+function sprintToneTextClass(tone: Tone) {
+  if (tone === 'orange' || tone === 'amber') return 'text-brand-orange';
+  if (tone === 'green') return 'text-brand-teal';
+  if (tone === 'slate') return 'text-muted';
+  return 'text-brand-teal';
+}
+
+function sprintBadgeClass(tone: Tone) {
+  if (tone === 'orange' || tone === 'amber') return 'bg-orange-50 text-brand-orange';
+  if (tone === 'green' || tone === 'teal') return 'bg-[#e5feff] text-brand-teal';
+  return 'bg-white text-muted shadow-sm';
+}
+
+function sprintIdBadgeClass(tone: Tone) {
+  if (tone === 'orange' || tone === 'amber') return 'bg-orange-50 text-brand-orange';
+  if (tone === 'green' || tone === 'teal') return 'bg-teal-50 text-brand-teal';
+  return 'bg-[#FAFAF7] text-muted shadow-[inset_0_0_0_1px_rgba(229,228,227,0.8)]';
+}
+
+function sprintAvatarClass(tone: Tone) {
+  if (tone === 'orange' || tone === 'amber') return 'bg-orange-50 text-brand-orange';
+  if (tone === 'slate') return 'bg-[#FAFAF7] text-muted';
+  return 'bg-[#e5feff] text-brand-teal';
+}
+
+function sprintProgressClass(tone: Tone) {
+  if (tone === 'orange' || tone === 'amber') return 'bg-brand-orange';
+  if (tone === 'green' || tone === 'teal') return 'bg-brand-teal';
+  return 'bg-[#E5E4E3]';
 }
 
 function buildWorkflowSwimlane(event: CalendarEventData): readonly BoardLaneData[] {
@@ -4148,11 +5029,34 @@ function ArtifactViewerScreen() {
   );
 }
 
+function normalizeAchcView(value: string | null): 'cards' | 'matrix' | 'signals' {
+  return value === 'matrix' || value === 'signals' ? value : 'cards';
+}
+
 function AchcScreen({ mode }: { mode: 'crosswalk' | 'survey' }) {
   const navigate = useNavigate();
-  const [view, setView] = useState<'cards' | 'matrix' | 'signals'>('cards');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedView = searchParams.get('view');
+  const view = normalizeAchcView(requestedView);
   const isCrosswalk = mode === 'crosswalk';
   const rows = isCrosswalk ? crosswalkRows : achcRows;
+
+  const setView = (nextView: 'cards' | 'matrix' | 'signals') => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      if (nextView === 'cards') next.delete('view');
+      else next.set('view', nextView);
+      return next;
+    }, { replace: true });
+  };
+
+  const openStandardsMatrix = () => {
+    if (isCrosswalk) {
+      navigate('/framework/achc-survey?view=matrix');
+      return;
+    }
+    setView('matrix');
+  };
 
   // V2 columns extended for V1 parity: crosswalk includes CMS/Title22 + evidence detail like prototype
   const columns = isCrosswalk
@@ -4197,11 +5101,13 @@ function AchcScreen({ mode }: { mode: 'crosswalk' | 'survey' }) {
       description={isCrosswalk ? 'ACHC standards, policy corridors, CMS and Title 22 anchors, and evidence notes grouped into scannable cards.' : 'Survey-readiness support is grouped into cards first, with the full checklist kept one tab away.'}
       eyebrow={isCrosswalk ? 'Regulatory Crosswalk' : 'Survey Alignment'}
       onTabChange={setView}
+      showTabs={false}
       tabs={tabs}
       title={isCrosswalk ? 'ACHC Crosswalk' : 'ACHC Survey Alignment'}
       actions={[
-        { icon: ShieldCheck, label: isCrosswalk ? 'Survey View' : 'Crosswalk', to: isCrosswalk ? '/framework/achc-survey' : '/framework/achc-survey/crosswalk' },
-        { icon: FileText, label: 'Policies', to: '/library', variant: 'secondary' },
+        { icon: FileText, label: 'HH Evidence', to: '/framework/hh-evidence-map', variant: 'secondary' },
+        { icon: ClipboardList, label: 'Standards Matrix', onClick: openStandardsMatrix, variant: view === 'matrix' && !isCrosswalk ? 'primary' : 'secondary' },
+        { icon: ShieldCheck, label: 'Crosswalk', to: '/framework/achc-survey/crosswalk', variant: isCrosswalk ? 'primary' : 'secondary' },
       ]}
     >
       <PolicyMetricsGrid metrics={achcMetrics} />
@@ -4311,8 +5217,9 @@ function HhEvidenceMapScreen() {
       tabs={tabs}
       title="HH Tag Evidence Map"
       actions={[
-        { icon: ShieldCheck, label: 'ACHC Survey', to: '/framework/achc-survey' },
-        { icon: FileText, label: 'Policies', to: '/library', variant: 'secondary' },
+        { icon: FileText, label: 'HH Evidence', to: '/framework/hh-evidence-map' },
+        { icon: ClipboardList, label: 'Standards Matrix', to: '/framework/achc-survey?view=matrix', variant: 'secondary' },
+        { icon: ShieldCheck, label: 'Crosswalk', to: '/framework/achc-survey/crosswalk', variant: 'secondary' },
       ]}
     >
       <PolicyMetricsGrid metrics={hhEvidenceMapMetrics} />

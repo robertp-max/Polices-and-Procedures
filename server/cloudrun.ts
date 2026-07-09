@@ -6,6 +6,7 @@ import { existsSync } from 'node:fs';
 import { authRouter } from './routes/auth.js';
 import { identityMiddleware } from './identity/middleware.js';
 import { createBradRouter } from './routes/brad.js';
+import { createNolanRouter } from './routes/nolan.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Care Indeed HH V2 — combined Cloud Run entry (same-origin).
@@ -60,6 +61,14 @@ try {
   app.use('/api/brad', createBradRouter());
 } catch (err) {
   console.error(JSON.stringify({ event: 'cloudrun.brad_mount_failed', message: (err as Error)?.message }));
+}
+
+// Nolan tutor — Nurse Onboarding & Learning Assistant (Training module,
+// deterministic; no model call, no internet). Same isolation wrapper.
+try {
+  app.use('/api/nolan', createNolanRouter());
+} catch (err) {
+  console.error(JSON.stringify({ event: 'cloudrun.nolan_mount_failed', message: (err as Error)?.message }));
 }
 
 // Any other /api path → clean JSON 404 (must not fall through to the SPA).

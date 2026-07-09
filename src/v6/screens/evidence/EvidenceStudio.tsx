@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { CalendarApi, type BradTrainingResponse, type ManifestFolder } from '@/policy/services/calendarApi';
 import StudioLanding from './StudioLanding';
 import { FolderOpen, Calendar, ClipboardCheck, Landmark, Stethoscope, ShieldCheck, AlertTriangle, Users, GraduationCap, Settings, FileStack } from 'lucide-react';
+import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabInactiveClass } from '@/components/theme/workspaceTabChrome';
 
 /* ════════════════════════════════════════════════════════════════════════════
    Evidence Studio — DefenCIble UI (ported from the approved design
@@ -64,8 +65,13 @@ type DriveFolder = {
   icon: IconKey;
   pageDesc?: string;
   children?: DriveFolder[];
-  /** Real Google Drive folder URL — when set, the card opens Drive in a new tab. */
+  /** Real Google Drive folder ID — when set, the card browses Drive inside the app. */
+  folderId?: string;
+  /** Secondary escape hatch to open the backing folder/file in Google Drive. */
   folderUrl?: string;
+  fileUrl?: string;
+  fileType?: string;
+  isFile?: boolean;
 };
 
 const ACCENTS: Record<AccentKey, { from: string; to: string }> = {
@@ -171,6 +177,18 @@ function iconForSection(section: string): IconKey {
   return 'year';
 }
 
+function driveFolderIdFromUrl(url?: string): string {
+  if (!url) return '';
+  const folderMatch = url.match(/\/folders\/([^/?#]+)/);
+  if (folderMatch?.[1]) return decodeURIComponent(folderMatch[1]);
+  try {
+    const parsed = new URL(url);
+    return parsed.searchParams.get('id') || '';
+  } catch {
+    return '';
+  }
+}
+
 function DriveCard({ folder, onOpen }: { folder: DriveFolder; onOpen: () => void }) {
   const a = ACCENTS[folder.accent];
   const Icon = ICONS[folder.icon];
@@ -203,9 +221,13 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
   const [folderPackets, setFolderPackets] = useState<Packet[]>([]);
   const [drivePath, setDrivePath] = useState<string[]>([]);
   // Real Drive folders from the CSV manifest (source of truth). Loaded when the
-  // DRIVE tab opens; each folder opens its real Google Drive URL in a new tab.
+  // DRIVE tab opens; folder cards browse inside the app using their Drive folder IDs.
   const [realFolders, setRealFolders] = useState<ManifestFolder[]>([]);
   const [foldersErr, setFoldersErr] = useState<string | null>(null);
+  const [driveExplorerLoading, setDriveExplorerLoading] = useState(false);
+  const [driveExplorerErr, setDriveExplorerErr] = useState<string | null>(null);
+  const [driveExplorerData, setDriveExplorerData] = useState<BradTrainingResponse | null>(null);
+  const [driveExplorerTrail, setDriveExplorerTrail] = useState<{ id: string; name: string }[]>([]);
   useEffect(() => {
     if (activeTab !== 'DRIVE') return;
     let on = true;
@@ -214,12 +236,33 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
       .catch((e) => { if (on) { setRealFolders([]); setFoldersErr(e instanceof Error ? e.message : 'Manifest unavailable'); } });
     return () => { on = false; };
   }, [activeTab]);
+  const openDriveFolderInApp = (folderId: string, name: string, trail = driveExplorerTrail) => {
+    if (!folderId) return;
+    const nextTrail = [...trail, { id: folderId, name }];
+    setDrivePath([]);
+    setDriveExplorerTrail(nextTrail);
+    setDriveExplorerLoading(true);
+    setDriveExplorerErr(null);
+    CalendarApi.driveFolderChildren(folderId)
+      .then((data) => setDriveExplorerData(data))
+      .catch((e) => {
+        setDriveExplorerData(null);
+        setDriveExplorerErr(e instanceof Error ? e.message : 'Google Drive folder is unavailable.');
+      })
+      .finally(() => setDriveExplorerLoading(false));
+  };
+  const resetDriveExplorer = () => {
+    setDriveExplorerData(null);
+    setDriveExplorerTrail([]);
+    setDriveExplorerErr(null);
+  };
   const realTop: DriveFolder[] = realFolders.map((f) => ({
     name: f.folderName || f.section || 'Folder',
     subtitle: f.fullFolderPath || undefined,
     meta: `${f.count} FILE${f.count === 1 ? '' : 'S'}${f.lastUpdated ? ' · ' + f.lastUpdated : ''}`,
     accent: accentForSection(f.section),
     icon: iconForSection(f.section),
+    folderId: f.folderId || driveFolderIdFromUrl(f.folderUrl),
     folderUrl: f.folderUrl,
   }));
   // Walk the drive path → current level items + node (for breadcrumb + page desc).
@@ -232,6 +275,28 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
     driveLevel = driveNode?.children ?? [];
   }
   const usingSample = realTop.length === 0;
+  const liveDriveCards: DriveFolder[] = driveExplorerData
+    ? [
+        ...driveExplorerData.folders.map((f) => ({
+          name: f.name,
+          subtitle: 'Google Drive folder',
+          meta: 'Folder',
+          accent: 'gold' as AccentKey,
+          icon: 'year' as IconKey,
+          folderId: f.id,
+        })),
+        ...driveExplorerData.files.map((f) => ({
+          name: f.name,
+          subtitle: f.path || 'Google Drive file',
+          meta: f.mimeType,
+          accent: 'blue' as AccentKey,
+          icon: 'draft' as IconKey,
+          fileUrl: f.webViewLink,
+          fileType: f.mimeType,
+          isFile: true,
+        })),
+      ]
+    : [];
 
   // --- STUDIO STATE ---
   const [step, setStep] = useState(1);
@@ -374,6 +439,11 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
   };
 
   const navTabs = ['DRIVE', 'CREATE PACKET', 'EDIT PACKET', 'SIGNATURE TRACKER'];
+  const previewPacketId = selectedEvent
+    ? `PKT_2026_${selectedEvent.id}`
+    : selectedTemplate
+      ? `PKT_2026_${selectedTemplate.id}`
+      : 'PKT_2026_DRAFT';
 
   return (
     <div className="min-h-screen bg-transparent p-6 md:p-10" data-hash-id="evidence-center" data-route="/evidence" data-template="evidence">
@@ -384,15 +454,15 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
 
       <div className="ci-evidence-studio max-w-[1200px] mx-auto">
 
-        {/* PILL NAVIGATION */}
-        <div className="bg-white/80 backdrop-blur-md rounded-full inline-flex p-1 shadow-md border border-transparent mb-6 overflow-x-auto max-w-full">
+        {/* TAB NAVIGATION */}
+        <div className="mb-6 flex max-w-full items-stretch overflow-x-auto font-montserrat">
           {navTabs.map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 text-xs font-medium tracking-[0.1em] uppercase whitespace-nowrap rounded-full transition-all duration-300 ${
-                activeTab === tab ? 'bg-[#007C7A] text-white shadow-md' : 'text-[#007C7A] hover:bg-teal-50/50'
+              className={`${workspaceCompactTabClass} whitespace-nowrap ${
+                activeTab === tab ? workspaceTabActiveClass : workspaceTabInactiveClass
               }`}
             >
               {tab}
@@ -410,32 +480,55 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
 
             {/* Breadcrumb */}
             <div className="mb-8 flex flex-wrap items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-disabled">
-              <button type="button" onClick={() => setDrivePath([])} className="transition-colors hover:text-[#007C7A]">Evidence</button>
-              {drivePath.map((seg, i) => (
-                <span key={i} className="flex items-center gap-2">
-                  <span className="text-gray-300">/</span>
-                  <button type="button" onClick={() => setDrivePath(drivePath.slice(0, i + 1))} className={i === drivePath.length - 1 ? 'text-ink' : 'transition-colors hover:text-[#007C7A]'}>{seg}</button>
-                </span>
-              ))}
+              <button type="button" onClick={() => { setDrivePath([]); resetDriveExplorer(); }} className="transition-colors hover:text-[#007C7A]">Evidence</button>
+              {driveExplorerTrail.length > 0
+                ? driveExplorerTrail.map((crumb, i) => (
+                    <span key={crumb.id} className="flex items-center gap-2">
+                      <span className="text-gray-300">/</span>
+                      <button
+                        type="button"
+                        onClick={() => openDriveFolderInApp(crumb.id, crumb.name, driveExplorerTrail.slice(0, i))}
+                        className={i === driveExplorerTrail.length - 1 ? 'text-ink' : 'transition-colors hover:text-[#007C7A]'}
+                      >
+                        {crumb.name}
+                      </button>
+                    </span>
+                  ))
+                : drivePath.map((seg, i) => (
+                    <span key={i} className="flex items-center gap-2">
+                      <span className="text-gray-300">/</span>
+                      <button type="button" onClick={() => setDrivePath(drivePath.slice(0, i + 1))} className={i === drivePath.length - 1 ? 'text-ink' : 'transition-colors hover:text-[#007C7A]'}>{seg}</button>
+                    </span>
+                  ))}
             </div>
 
-            {drivePath.length === 0 && (
+            {drivePath.length === 0 && driveExplorerTrail.length === 0 && (
               usingSample
                 ? <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-md py-sm text-xs text-amber-800">Showing <strong>sample</strong> folders — connect Google Drive{foldersErr ? ` (${foldersErr})` : ''} or set <code>DRIVE_MANIFEST_FILE_ID</code> to list the real evidence folders from the manifest.</div>
-                : <div className="mb-5 rounded-lg border border-tone-teal-border bg-tone-teal-bg px-md py-sm text-xs text-brand-teal-deep">Live from the Drive manifest — {realFolders.length} folder{realFolders.length === 1 ? '' : 's'}. Click a folder to open it in Google Drive.</div>
+                : <div className="mb-5 rounded-lg border border-tone-teal-border bg-tone-teal-bg px-md py-sm text-xs text-brand-teal-deep">Live from the Drive manifest — {realFolders.length} folder{realFolders.length === 1 ? '' : 's'}. Click a folder to browse it inside the app.</div>
             )}
-            {driveLevel.length > 0 ? (
+            {driveExplorerLoading ? (
+              <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-gray-200 text-sm font-light text-disabled">
+                Loading Google Drive folder...
+              </div>
+            ) : driveExplorerErr ? (
+              <div className="rounded-2xl border border-red-100 bg-red-50 px-md py-sm text-sm text-red-700">
+                {driveExplorerErr}
+              </div>
+            ) : (driveExplorerData ? liveDriveCards : driveLevel).length > 0 ? (
               <div className="flex flex-wrap gap-7">
-                {driveLevel.map((folder, idx) => (
+                {(driveExplorerData ? liveDriveCards : driveLevel).map((folder, idx) => (
                   <DriveCard key={idx} folder={folder} onOpen={() => {
-                    if (folder.folderUrl) { window.open(folder.folderUrl, '_blank', 'noopener,noreferrer'); return; }
+                    if (folder.isFile && folder.fileUrl) { window.open(folder.fileUrl, '_blank', 'noopener,noreferrer'); return; }
+                    if (folder.folderId) { openDriveFolderInApp(folder.folderId, folder.name, driveExplorerTrail); return; }
                     if (folder.children) setDrivePath([...drivePath, folder.name]);
+                    else if (folder.folderUrl) window.open(folder.folderUrl, '_blank', 'noopener,noreferrer');
                   }} />
                 ))}
               </div>
             ) : (
               <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-gray-200 text-sm font-light text-disabled">
-                No packets generated for {driveNode?.name} yet.
+                {driveExplorerData ? 'This Google Drive folder is empty.' : `No packets generated for ${driveNode?.name ?? 'this folder'} yet.`}
               </div>
             )}
 
@@ -771,7 +864,7 @@ export function EvidenceStudio({ initialTab = 'studio' }: { initialTab?: Evidenc
                 <div className="w-full md:w-1/3 bg-[#F8FAFC] rounded-[24px] p-6 shadow-sm border border-gray-100">
                   <div className="text-[10px] font-medium text-muted uppercase tracking-widest mb-2">PACKET ID</div>
                   <div className="flex gap-2 items-center mb-4">
-                    <span className="px-4 py-2 bg-white rounded-lg text-sm font-medium border border-gray-200 text-gray-800">PKT_2026_{Math.floor(Math.random() * 1000)}</span>
+                    <span className="px-4 py-2 bg-white rounded-lg text-sm font-medium border border-gray-200 text-gray-800">{previewPacketId}</span>
                     <button type="button" className="bg-[#007C7A] text-white p-2 rounded-lg shadow hover:bg-teal-800 transition-colors">
                       <DocIcon />
                     </button>

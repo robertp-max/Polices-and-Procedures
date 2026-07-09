@@ -9,7 +9,8 @@ import { CalendarApi, type ManifestSearchRow } from '@/policy/services/calendarA
    (GET /api/calendar/manifest/rows). It NEVER creates, renames, moves, deletes,
    or reorganizes any Google Drive folder or file. It searches only the CES
    Evidence Drive manifest (rooted at the canonical CES root), never all of
-   Google Drive. File rows open Google Drive Link; folder rows open Folder URL.
+   Google Drive. File rows open Google Drive Link; folder rows can be browsed
+   inside the app when an in-app folder handler is supplied.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const RECENT_KEY = 'cesEvidenceRecentSearches:v1';
@@ -73,6 +74,17 @@ function writeRecent(term: string, current: string[]): string[] {
 /* ── matching helpers ── */
 const norm = (s: string) => (s || '').toLowerCase();
 const ext = (name: string) => { const m = (name || '').toLowerCase().match(/\.([a-z0-9]+)$/); return m ? m[1] : ''; };
+function driveFolderIdFromUrl(url?: string): string {
+  if (!url) return '';
+  const folderMatch = url.match(/\/folders\/([^/?#]+)/);
+  if (folderMatch?.[1]) return decodeURIComponent(folderMatch[1]);
+  try {
+    const parsed = new URL(url);
+    return parsed.searchParams.get('id') || '';
+  } catch {
+    return '';
+  }
+}
 
 const SEARCH_FIELDS: (keyof ManifestSearchRow)[] = [
   'rawFileName', 'displayName', 'fullFolderPath', 'parentFolderPath', 'folderName', 'fileType',
@@ -144,7 +156,7 @@ function matchesDate(r: ManifestSearchRow, date: DateOpt, from: string, to: stri
 }
 const fieldContains = (val: string, q: string) => !q.trim() || norm(val).includes(norm(q).trim());
 
-export function CesEvidenceSearch() {
+export function CesEvidenceSearch({ onOpenFolder }: { onOpenFolder?: (folderId: string, folderName: string) => void } = {}) {
   const [rows, setRows] = useState<ManifestSearchRow[]>([]);
   const [loadErr, setLoadErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -214,6 +226,11 @@ export function CesEvidenceSearch() {
   }, [applied, rows]);
 
   const openRow = (r: ManifestSearchRow) => {
+    const folderId = r.kind === 'folder' ? (r.folderId || driveFolderIdFromUrl(r.folderUrl || r.driveLink)) : '';
+    if (folderId && onOpenFolder) {
+      onOpenFolder(folderId, r.displayName || r.folderName || 'Folder');
+      return;
+    }
     const url = r.kind === 'folder' ? (r.folderUrl || r.driveLink) : (r.driveLink || r.folderUrl);
     if (url) window.open(url, '_blank', 'noopener,noreferrer');
   };

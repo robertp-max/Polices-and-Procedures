@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import { ALL_MODULES, moduleById, modulesForRole } from '@/policy/journey/data/modules';
 import { RoleJourneyVisualizer } from '@/policy/journey/components/roleJourney/RoleJourneyVisualizer';
-import { DemoImpersonationBar } from '@/policy/journey/components/DemoImpersonationBar';
 import { useJourneyStore } from '@/policy/journey/stores/journeyStore';
 import type { ModuleAttempt } from '@/policy/journey/types/journey';
 import { cx } from '../../utils/classNames';
@@ -268,8 +267,6 @@ export function JourneyAcademyScreen() {
     return currentEmployee ? modulesForRole(currentEmployee.role) : ALL_MODULES;
   }, [assignedModuleIds, currentEmployee]);
 
-  const assignedIdSet = useMemo(() => new Set(assignedModules.map((m) => m.id)), [assignedModules]);
-
   const roleOnboardingCards = useMemo<AcademyCard[]>(() => {
     // Keep GAO entry + role-specific modules from assignment (not every role path in the catalog)
     // Role-specific tracks use group ROLE (RN-001, DON-001, …); GAO/ANN/ADV handled in other tabs
@@ -453,7 +450,7 @@ export function JourneyAcademyScreen() {
   return (
     <div
       className={cx(
-        'bg-[#FAFBF8] px-6 pt-4 font-roboto text-[#52404B] selection:bg-[#E5FEFF] md:px-12',
+        '-m-xl overflow-x-hidden bg-[#FAFBF8] px-6 pt-4 font-roboto text-[#52404B] selection:bg-[#E5FEFF] md:px-12',
         activeTab === 'roleJourney' ? 'pb-2' : 'min-h-screen pb-16',
       )}
     >
@@ -464,15 +461,6 @@ export function JourneyAcademyScreen() {
       ) : null}
 
       <main className="mx-auto flex w-full max-w-[1400px] flex-col">
-        <div className="mb-3">
-          <DemoImpersonationBar />
-          {assignedModuleIds.length > 0 ? (
-            <p className="mt-1 text-[11px] text-[#747470] font-mono">
-              Assignment: {assignedModuleIds.length} modules for {currentEmployee?.name || currentEmployeeId}
-              {assignedIdSet.size > 0 ? ` · role ${currentEmployee?.role ?? '—'}` : ''}
-            </p>
-          ) : null}
-        </div>
         <div className="relative z-20 flex justify-start">
           <AcademyTabs activeTab={activeTab} onChange={changeTab} />
         </div>

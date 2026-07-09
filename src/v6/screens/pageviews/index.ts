@@ -7,6 +7,7 @@ export { AdmissionPacketPreviewScreen } from './AdmissionPacketPreviewScreen';
 export { EcignWorkspaceScreen } from './EcignWorkspaceScreen';
 export { EventsBoardScreen } from './EventsBoardScreen';
 export { FormsLibraryScreen } from './FormsLibraryScreen';
+export { PolicyAreaNav } from './PolicyAreaNav';
 export { FrameworkScreen, FrameworkTabs, type FrameworkTabKey } from './FrameworkScreen';
 export { GenericReferenceScreen } from './GenericReferenceScreen';
 export { MasterControlsScreen } from './MasterControlsScreen';
@@ -41,5 +42,6 @@ export { NotFoundScreen } from './NotFoundScreen';
 export { Cms485AssessmentQuizPage } from './Cms485AssessmentQuizPage';
 export { PersonalProfileScreen } from './PersonalProfileScreen';
 export { CommunityScreen } from './CommunityScreen';
+export { ComplianceHomeScreen } from './ComplianceHomeScreen';
 
 

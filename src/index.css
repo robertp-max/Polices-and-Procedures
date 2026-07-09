@@ -352,19 +352,19 @@ body {
 
 .bg-surface {
   background-color: var(--surface-base) !important;
-  backdrop-filter: blur(18px) saturate(118%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(118%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .bg-surface-glass {
   background-color: var(--surface-glass) !important;
-  backdrop-filter: blur(22px) saturate(122%) !important;
-  -webkit-backdrop-filter: blur(22px) saturate(122%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .glass-toned {
-  backdrop-filter: blur(16px) saturate(118%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(118%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .bg-surface-glass,
@@ -445,11 +445,11 @@ textarea, input {
   caret-color: #FF7A00 !important;
 }
 
-/* Brad composer specific glass box: 77.7% opacity, 29px blur */
+/* Brad composer specific glass box: no blur. */
 .brad-composer-glass {
   background-color: var(--surface-glass) !important;
-  backdrop-filter: blur(29px) saturate(122%) !important;
-  -webkit-backdrop-filter: blur(29px) saturate(122%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   position: relative;
   overflow: hidden;
 }
@@ -613,46 +613,6 @@ th {
   animation: brad-spin-gradient 3.5s linear infinite;
 }
 
-.brad-composer-frame {
-  background: var(--brad-surface);
-}
-
-.brad-composer-light {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 2000px;
-  height: 2000px;
-  background: conic-gradient(
-    from 180deg at 50% 50%,
-    transparent 0%,
-    transparent 15%,
-    #4285f4 35%,
-    #ea4335 55%,
-    #fbbc05 75%,
-    #34a853 95%,
-    transparent 100%
-  );
-  will-change: transform;
-}
-
-.brad-composer-glow {
-  opacity: 0.15;
-  filter: blur(13px);
-  transform: scale(1);
-}
-
-.group:hover .brad-composer-glow {
-  opacity: 0.25;
-  filter: blur(18px);
-}
-
-.brad-composer-glow--active {
-  opacity: 0.40;
-  filter: blur(27px);
-  transform: scale(1.05);
-}
-
 .brad-menu-grid {
   transition-property: grid-template-rows, opacity !important;
   transition-duration: 500ms !important;
@@ -668,12 +628,6 @@ th {
 .brad-hint {
   transition-property: opacity !important;
   transition-duration: 300ms !important;
-  transition-timing-function: ease-in-out !important;
-}
-
-.brad-composer-glow {
-  transition-property: opacity, filter, transform !important;
-  transition-duration: 1000ms !important;
   transition-timing-function: ease-in-out !important;
 }
 
@@ -1329,8 +1283,8 @@ th {
 .personal-ops-panel,
 .personal-ops-panel__header {
   background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(29px) saturate(118%);
-  -webkit-backdrop-filter: blur(29px) saturate(118%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 :root[data-tod="morning"] .personal-ops-panel,
@@ -1403,11 +1357,11 @@ th {
   transition: color 500ms var(--ease-standard), opacity 500ms var(--ease-standard), transform 500ms var(--ease-standard);
 }
 
-/* ── Top bar: 7.77% glass blur over objects behind it ───────────────────── */
+/* ── Top bar: no backdrop blur over objects behind it ───────────────────── */
 .v6-top-bar {
   background-color: rgba(255, 255, 255, 0.0777) !important;
-  backdrop-filter: blur(7.77px) saturate(1.08) !important;
-  -webkit-backdrop-filter: blur(7.77px) saturate(1.08) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.0777) !important;
   box-shadow: none !important;
 }
@@ -1507,52 +1461,6 @@ th {
   box-shadow: none !important;
 }
 
-/* V6 page route transition: soft content reveal only. */
-.v6-page-transition-base {
-  min-width: 100%;
-  transition: filter 1000ms ease, opacity 1000ms ease;
-  filter: blur(8px);
-  opacity: 0.4;
-}
-
-.v6-page-transition-reveal {
-  position: fixed;
-  inset: 0;
-  animation: v6-page-content-reveal 700ms cubic-bezier(0.22, 1, 0.36, 1) 260ms both;
-  height: 100vh;
-  min-width: 100%;
-  width: 100vw;
-  will-change: opacity, filter;
-}
-
-.v6-page-transition-reveal {
-  background: #f8f9fa;
-  z-index: 30;
-}
-
-@keyframes v6-page-content-reveal {
-  from {
-    filter: blur(8px);
-    opacity: 0;
-  }
-  to {
-    filter: blur(0);
-    opacity: 1;
-  }
-}
-
-.v6-overlay-transition {
-  animation: v6-overlay-fade-in 500ms var(--ease-standard) both;
-}
-
-.v6-modal-transition,
-.v6-drawer-transition {
-  animation-duration: 500ms;
-  animation-fill-mode: both;
-  animation-timing-function: var(--ease-standard);
-  will-change: opacity, transform, filter;
-}
-
 .v6-modal-surface {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.985), rgba(245, 253, 252, 0.96)),
@@ -1595,30 +1503,6 @@ th {
   background: rgba(255, 255, 255, 0.08) !important;
 }
 
-.v6-modal-transition--rise {
-  animation-name: v6-modal-rise-in;
-}
-
-.v6-modal-transition--scale {
-  animation-name: v6-modal-scale-in;
-}
-
-.v6-modal-transition--drift {
-  animation-name: v6-modal-drift-in;
-}
-
-.v6-drawer-transition--slide {
-  animation-name: v6-drawer-slide-in;
-}
-
-.v6-drawer-transition--float {
-  animation-name: v6-drawer-slide-in;
-}
-
-.v6-drawer-transition--scale {
-  animation-name: v6-drawer-slide-in;
-}
-
 .v6-route-metrics {
   display: none;
 }
@@ -1644,55 +1528,69 @@ th {
     box-shadow 500ms var(--ease-standard),
     color 500ms var(--ease-standard),
     opacity 500ms var(--ease-standard),
-    transform 500ms var(--ease-standard),
-    backdrop-filter 500ms var(--ease-standard);
+    transform 500ms var(--ease-standard);
 }
 
-@keyframes v6-page-slide-in-from-right {
+@keyframes master-dossier-enter-from-left {
   from {
-    opacity: 1;
-    transform: translate3d(var(--v6-slide-in-x, 100%), var(--v6-slide-y, 0), 0);
+    opacity: 0;
+    transform: translate3d(-28px, 0, 0) scale(0.992);
   }
   to {
     opacity: 1;
-    transform: none;
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
-@keyframes v6-page-slide-out-to-left {
+@keyframes master-dossier-enter-from-right {
   from {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
+    opacity: 0;
+    transform: translate3d(28px, 0, 0) scale(0.992);
   }
   to {
     opacity: 1;
-    transform: translate3d(var(--v6-slide-out-x, -100%), var(--v6-slide-y, 0), 0);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
-@keyframes v6-overlay-fade-in {
-  from { opacity: 0; backdrop-filter: blur(0); }
-  to { opacity: 1; backdrop-filter: blur(4px); }
+@keyframes master-dossier-exit-to-left {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(-30px, 0, 0) scale(0.992);
+  }
 }
 
-@keyframes v6-modal-rise-in {
-  from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.985); }
-  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+@keyframes master-dossier-exit-to-right {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(30px, 0, 0) scale(0.992);
+  }
 }
 
-@keyframes v6-modal-scale-in {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+#root .master-dossier-enter-left {
+  animation: master-dossier-enter-from-left 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-@keyframes v6-modal-drift-in {
-  from { opacity: 0; transform: translate3d(-16px, 10px, 0) scale(0.985); }
-  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+#root .master-dossier-enter-right {
+  animation: master-dossier-enter-from-right 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-@keyframes v6-drawer-slide-in {
-  from { transform: translate3d(100%, 0, 0); }
-  to { transform: translate3d(0, 0, 0); }
+#root .master-dossier-exit-left {
+  animation: master-dossier-exit-to-left 150ms cubic-bezier(0.4, 0, 1, 1) both;
+  pointer-events: none;
+}
+
+#root .master-dossier-exit-right {
+  animation: master-dossier-exit-to-right 150ms cubic-bezier(0.4, 0, 1, 1) both;
+  pointer-events: none;
 }
 
 /* Dashboard carousel drift retired: dashboard now renders a static centered workspace. */
@@ -1700,6 +1598,197 @@ th {
   animation: none !important;
   will-change: auto;
   backface-visibility: hidden;
+}
+
+/* Legacy view fades are disabled; dashboard stagger and master-control carousel keep explicit motion. */
+#root .animate-fade-in {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+@keyframes ci-header-soft-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Header and tab chrome use opacity-only motion: no translate, scale, or blur. */
+#root .ci-page-hero,
+#root header,
+#root [role="banner"],
+#root .v6-top-bar,
+#root .ci-premium-header,
+#root .personal-ops-panel__header,
+#root [role="tablist"],
+#root nav[aria-label*="sections"] {
+  animation: ci-header-soft-fade-in 330ms var(--ease-standard) both !important;
+  transition-property: opacity !important;
+  transition-duration: 330ms !important;
+  transition-timing-function: var(--ease-standard) !important;
+  transition-delay: 0ms !important;
+}
+
+#root .ci-page-hero *,
+#root header *,
+#root [role="banner"] *,
+#root .v6-top-bar *,
+#root .ci-premium-header *,
+#root .personal-ops-panel__header *,
+#root [role="tablist"] *,
+#root nav[aria-label*="sections"] * {
+  animation: none !important;
+  transition-property: opacity, color, background-color, border-color, box-shadow !important;
+  transition-duration: 330ms !important;
+  transition-timing-function: var(--ease-standard) !important;
+}
+
+#root .ci-page-hero button:hover,
+#root .ci-page-hero a:hover,
+#root header button:hover,
+#root header a:hover,
+#root [role="banner"] button:hover,
+#root [role="banner"] a:hover,
+#root [role="tablist"] button:hover,
+#root [role="tablist"] a:hover,
+#root nav[aria-label*="sections"] button:hover,
+#root nav[aria-label*="sections"] a:hover,
+#root .ci-page-hero .group:hover *,
+#root header .group:hover *,
+#root [role="banner"] .group:hover * {
+  transform: none !important;
+}
+
+#root .ci-page-hero {
+  isolation: isolate;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+#root .ci-page-hero:has(> .ci-static-header-watermark),
+#root .ci-page-hero:has(> .ci-dashboard-logo-watermark) {
+  border: 0.777px solid #fff !important;
+}
+
+#root .ci-page-hero > .ci-static-header-watermark,
+#root .ci-page-hero > .ci-dashboard-logo-watermark {
+  background-image: url('/watermark-angel.png');
+  background-attachment: fixed;
+  background-position: right 5rem top 1.5rem;
+  background-repeat: no-repeat;
+  background-size: clamp(44rem, 44vw, 58rem) auto;
+  display: block;
+  inset: 0;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 0.777px), transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 0.777px), transparent 100%);
+  opacity: 0.777;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+#root .ci-page-hero > :not(.ci-static-header-watermark):not(.ci-dashboard-logo-watermark) {
+  position: relative;
+  z-index: 1;
+}
+
+#root .help-hero-glass-frame {
+  isolation: isolate;
+  margin: 0 -14px -14px 0;
+  overflow: hidden;
+  padding: 0 14px 14px 0;
+  position: relative;
+}
+
+#root .help-hero-glass-card {
+  -webkit-backdrop-filter: blur(14px) saturate(1.08);
+  backdrop-filter: blur(14px) saturate(1.08);
+  background: rgba(255, 255, 255, 0.92);
+  border: 0.777px solid rgba(255, 255, 255, 0.92) !important;
+  box-shadow:
+    10px 12px 22px -16px rgba(0, 65, 66, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.28);
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+#root .help-hero-glass-card::before {
+  background-attachment: fixed;
+  background-image: url('/watermark-angel.png');
+  background-position: right 5rem top 0.2rem;
+  background-repeat: no-repeat;
+  background-size: clamp(47.4188rem, 47.4188vw, 62.5066rem) auto;
+  content: "";
+  filter: blur(14px);
+  inset: -14px;
+  opacity: 0.5;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+#root .help-hero-glass-content {
+  position: relative;
+  z-index: 1;
+}
+
+#root .help-hero-card-icon {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+#root .help-hero-badge-row > span {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  padding: 0 !important;
+}
+
+@media (max-width: 900px) {
+  #root .ci-page-hero > .ci-static-header-watermark,
+  #root .ci-page-hero > .ci-dashboard-logo-watermark {
+    background-position: right -7rem top 7rem;
+    background-size: 23.1rem auto;
+    opacity: 0.06;
+  }
+}
+
+/* Global blur kill switch: scattered Tailwind blur utilities must not create view-smear. */
+#root [class*="backdrop-blur"],
+#root [class*="blur-"],
+#root [style*="backdrop-filter"],
+#root [style*="-webkit-backdrop-filter"],
+#root [style*="filter: blur"],
+#root [style*="filter:blur"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+}
+
+html,
+body,
+#root {
+  view-transition-name: none !important;
+}
+
+::view-transition,
+::view-transition-group(*),
+::view-transition-image-pair(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
 }
 
 .hide-scrollbar,
@@ -1717,10 +1806,10 @@ th {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .v6-page-transition,
-  .v6-overlay-transition,
-  .v6-modal-transition,
-  .v6-drawer-transition {
+  .master-dossier-enter-left,
+  .master-dossier-enter-right,
+  .master-dossier-exit-left,
+  .master-dossier-exit-right {
     animation: none !important;
   }
 }
@@ -1746,4 +1835,52 @@ th {
   border-width: 0 !important;
   border-color: transparent !important;
   /* box-shadow intentionally NOT forced to none here — ModernDashboardCard uses custom shadows */
+}
+
+@keyframes ci-stagger-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+#root .ci-stagger-card {
+  animation: ci-stagger-rise 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  opacity: 0;
+}
+
+#root .animate-board-col {
+  animation: ci-stagger-rise 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  opacity: 0;
+}
+
+#root .ci-dashboard-panel {
+  box-shadow:
+    0 4px 24px rgba(31, 28, 27, 0.025),
+    inset 0 0 0 1px rgba(229, 228, 227, 0.82);
+}
+
+#root .ci-dashboard-card {
+  box-shadow:
+    0 4px 24px rgba(31, 28, 27, 0.025),
+    inset 0 0 0 1px rgba(229, 228, 227, 0.78);
+}
+
+#root .ci-dashboard-card:hover {
+  box-shadow:
+    0 18px 44px rgba(31, 28, 27, 0.075),
+    inset 0 0 0 1px rgba(229, 228, 227, 0.88);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #root .ci-stagger-card,
+  #root .animate-board-col {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }

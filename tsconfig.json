@@ -3,5 +3,14 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ]
+  ],
+  "compilerOptions": {
+    // Paths here are read by tsx at runtime (server + scripts run from repo root)
+    // so server code can import shared src/policy modules that use the @ alias.
+    // Referenced projects do not inherit this; tsconfig.app.json declares its own paths for the app build.
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
 }

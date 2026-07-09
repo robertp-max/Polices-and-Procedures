@@ -5,6 +5,13 @@ import { ProgressMeter, ToneTag, type MetricTileData, type SurfaceCardData } fro
 import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { PolicyAreaNav } from './PolicyAreaNav';
+import {
+  workspaceCompactTabClass,
+  workspaceTabActiveClass,
+  workspaceTabInactiveClass,
+  workspaceTabNavClass,
+} from './workspaceTabChrome';
 
 export interface PolicyWorkspaceTab<T extends string = string> {
   id: T;
@@ -20,39 +27,6 @@ export interface PolicyWorkspaceAction {
   variant?: 'primary' | 'secondary';
 }
 
-const tabToneClasses = {
-  blue: {
-    active: 'text-[#2F80ED]',
-    inactive: 'text-[#2F80ED]/70',
-    activeBg: 'rgba(203, 224, 245, 0.777)',
-    inactiveBg: 'rgba(230, 240, 250, 0.45)',
-  },
-  green: {
-    active: 'text-[#3E7D32]',
-    inactive: 'text-[#3E7D32]/70',
-    activeBg: 'rgba(218, 240, 213, 0.777)',
-    inactiveBg: 'rgba(235, 247, 232, 0.45)',
-  },
-  orange: {
-    active: 'text-[#F06923]',
-    inactive: 'text-[#F06923]/70',
-    activeBg: 'rgba(255, 216, 191, 0.777)',
-    inactiveBg: 'rgba(255, 240, 230, 0.45)',
-  },
-  red: {
-    active: 'text-[#EB5757]',
-    inactive: 'text-[#EB5757]/70',
-    activeBg: 'rgba(255, 201, 201, 0.777)',
-    inactiveBg: 'rgba(255, 230, 230, 0.45)',
-  },
-  teal: {
-    active: 'text-[#007970]',
-    inactive: 'text-[#007970]/70',
-    activeBg: 'rgba(209, 234, 230, 0.777)',
-    inactiveBg: 'rgba(230, 244, 241, 0.45)',
-  },
-};
-
 export function PolicyWorkspaceTabs<T extends string>({
   activeTab,
   onChange,
@@ -63,22 +37,18 @@ export function PolicyWorkspaceTabs<T extends string>({
   tabs: readonly PolicyWorkspaceTab<T>[];
 }) {
   return (
-    <nav aria-label="Policy workspace sections" className="flex max-w-full items-end -space-x-2 overflow-x-auto font-montserrat md:-space-x-3">
+    <nav aria-label="Policy workspace sections" className={workspaceTabNavClass}>
       {tabs.map((tab) => {
         const isActive = tab.id === activeTab;
-        const tone = tabToneClasses[tab.tone ?? 'teal'];
         return (
           <button
             key={tab.id}
             type="button"
             onClick={() => onChange(tab.id)}
-            style={{
-              backgroundColor: isActive ? tone.activeBg : tone.inactiveBg,
-              borderRadius: '10px 10px 0 0',
-            }}
             className={cx(
-              'relative flex items-center justify-center whitespace-nowrap border-0 px-4 text-[9px] font-bold uppercase tracking-wider shadow-[-2px_-1px_5px_rgba(82,64,75,0.06)] outline-none backdrop-blur-[6px] transition-all duration-300 hover:shadow-[-2px_-1px_7px_rgba(82,64,75,0.1)] md:px-6 md:text-[10px]',
-              isActive ? `z-30 h-8 translate-y-px ${tone.active}` : `z-10 h-[26px] ${tone.inactive} hover:h-7`,
+              workspaceCompactTabClass,
+              'flex items-center justify-center whitespace-nowrap',
+              isActive ? workspaceTabActiveClass : workspaceTabInactiveClass,
             )}
             aria-current={isActive ? 'page' : undefined}
           >
@@ -127,6 +97,8 @@ export function PolicyWorkspaceShell<T extends string = string>({
   description,
   eyebrow,
   onTabChange,
+  showTabs = true,
+  tabPlacement = 'top',
   tabs,
   title,
 }: {
@@ -138,31 +110,44 @@ export function PolicyWorkspaceShell<T extends string = string>({
   description: string;
   eyebrow: string;
   onTabChange?: (tab: T) => void;
+  showTabs?: boolean;
+  tabPlacement?: 'top' | 'hero';
   tabs?: readonly PolicyWorkspaceTab<T>[];
   title: string;
 }) {
+  const renderedTabs = showTabs && tabs && activeTab && onTabChange
+    ? <PolicyWorkspaceTabs activeTab={activeTab} onChange={onTabChange} tabs={tabs} />
+    : null;
+
   return (
     <div
-      className="min-h-screen bg-[#FAFBF8] px-6 pb-16 pt-4 font-roboto text-[#52404B] selection:bg-[#E5FEFF] md:px-12"
+      className="-m-xl min-h-screen overflow-x-hidden bg-[#FAFBF8] px-6 pb-16 pt-4 font-roboto text-[#52404B] selection:bg-[#E5FEFF] md:px-12"
       data-hash-id={dataHashId}
       data-route={dataRoute}
     >
       <main className="mx-auto flex w-full max-w-[1400px] flex-col">
-        {tabs && activeTab && onTabChange ? (
+        <PolicyAreaNav />
+        {renderedTabs && tabPlacement === 'top' ? (
           <div className="relative z-20 flex justify-start">
-            <PolicyWorkspaceTabs activeTab={activeTab} onChange={onTabChange} tabs={tabs} />
+            {renderedTabs}
           </div>
         ) : null}
-        <section className="mb-8 rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:px-12 md:py-10">
+        <section className="ci-page-hero mb-8 rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:px-12 md:py-10">
           <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
             <div className="max-w-3xl">
               <p className="mb-3 font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#F06923]">{eyebrow}</p>
               <h1 className="font-montserrat text-3xl font-bold leading-tight tracking-tight text-[#007970] md:text-5xl">{title}</h1>
               <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#747470]">{description}</p>
             </div>
-            {actions?.length ? (
-              <div className="flex flex-col gap-3 sm:flex-row">
-                {actions.map((action) => (
+            {(renderedTabs && tabPlacement === 'hero') || actions?.length ? (
+              <div
+                className={cx(
+                  'flex flex-col items-stretch gap-3 sm:flex-row sm:items-center xl:justify-end',
+                  renderedTabs && tabPlacement === 'hero' && 'xl:translate-x-12 xl:translate-y-8',
+                )}
+              >
+                {renderedTabs && tabPlacement === 'hero' ? renderedTabs : null}
+                {actions?.map((action) => (
                   <PolicyActionButton action={action} key={action.label} />
                 ))}
               </div>
@@ -226,17 +211,16 @@ export function PolicySegmentTabs<T extends string>({
   tabs: readonly { id: T; label: string }[];
 }) {
   return (
-    <div className="flex flex-wrap gap-2" role="tablist">
+    <div className="flex max-w-full items-stretch overflow-x-auto font-montserrat" role="tablist">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           type="button"
           onClick={() => onChange(tab.id)}
           className={cx(
-            'rounded-[10px] px-4 py-2 font-montserrat text-[10px] font-bold uppercase tracking-wider transition-all',
-            active === tab.id
-              ? 'bg-[#007970] text-white shadow-sm'
-              : 'border border-[#E5E4E3] bg-white text-[#747470] hover:bg-[#F7FEFF] hover:text-[#007970]',
+            workspaceCompactTabClass,
+            'whitespace-nowrap',
+            active === tab.id ? workspaceTabActiveClass : workspaceTabInactiveClass,
           )}
           aria-selected={active === tab.id}
         >

@@ -8,7 +8,7 @@ import { cx } from '../../utils/classNames';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/data/policyCorpus';
 import { frameworkPolicies } from '@/policy/data/frameworkSeed.generated';
 import { achcSurveyRows } from '@/policy/data/achcSurveyProjection.generated';
-import { achcPrintCrosswalk } from '@/policy/data/achcPrintCrosswalk.generated';
+import { PolicyAreaNav } from './PolicyAreaNav';
 
 interface DomainTileData {
   achcAnchors: string;
@@ -23,22 +23,10 @@ interface DomainTileData {
   tone: Tone;
 }
 
-interface MappingRowData {
-  achc: string;
-  cmsTitle22: string;
-  evidence: string;
-  forms: string;
-  policy: string;
-  standard: string;
-  status: string;
-  tone: Tone;
-}
-
 // ─── Real framework + ACHC data ──────────────────────────
-// Domain tiles + mapping rows use POLICY_CORPUS + full frameworkSeed.generated
-// + achcSurveyProjection.generated + achc*Crosswalk for counts, anchors,
-// standards, CMS/Title22, evidence. Real records and mappings now render
-// (no placeholders where data exists). Presentation-only (icons/tones) are constants.
+// Domain tiles use POLICY_CORPUS + full frameworkSeed.generated
+// + achcSurveyProjection.generated for counts, anchors, and readiness.
+// Real records render where data exists; presentation-only icons/tones are constants.
 
 // Presentation maps keyed by canonical domain code (UI styling, not data).
 const DOMAIN_ICON: Record<string, LucideIcon> = {
@@ -123,29 +111,6 @@ const frameworkDomains: readonly DomainTileData[] = domainAggregates.map((d) => 
   tone: DOMAIN_TONE[d.code] ?? 'teal',
 }));
 
-// One representative real policy per domain, enriched with real ACHC / crosswalk mappings when present.
-const mappingRows: readonly MappingRowData[] = LIFECYCLE_DOMAIN_ORDER.flatMap((code) => {
-  const policy = POLICY_CORPUS.find((p) => p.domainCode === code);
-  if (!policy) return [];
-  const surveyHit = achcSurveyRows.find(r => r.policyId === policy.id);
-  const crossHit = achcPrintCrosswalk.find(r => r.ibmPolicyId === policy.id);
-  const achcLabel = surveyHit?.achcStandards?.[0] || crossHit?.achcStandards?.[0] || policy.id;
-  const cms = surveyHit?.title22?.[0] || crossHit?.title22?.[0] || '—';
-  const ev = surveyHit?.evidenceCodes?.join('/') || (crossHit?.evidenceCodes?.length ? crossHit.evidenceCodes.join('/') : '—');
-  return [
-    {
-      achc: achcLabel,
-      cmsTitle22: cms,
-      evidence: ev,
-      forms: '—',
-      policy: policy.id,
-      standard: surveyHit?.policyTitle || policy.title,
-      status: (surveyHit?.mappingType === 'DIRECT' || crossHit) ? 'active' : 'review-required',
-      tone: DOMAIN_TONE[code] ?? 'teal',
-    },
-  ];
-});
-
 const contextCards: readonly SurfaceCardData[] = [
   {
     body: 'ACHC standards, CMS Conditions of Participation, and Title 22 state references are kept in one traceable architecture map.',
@@ -183,72 +148,14 @@ const alignmentCards: readonly (readonly [string, string, string, Tone])[] = [
   ['Title 22 refs', String(totalTitle22), 'State references with active stewardship rows', 'orange'],
 ];
 
-import { useNavigate } from 'react-router-dom';
+export type FrameworkTabKey = 'framework' | 'lifecycle' | 'achc';
 
-export type FrameworkTabKey = 'taxonomy' | 'mapping' | 'achc-survey' | 'achc-crosswalk' | 'hh-evidence-map';
-
-export function FrameworkTabs({
-  activeTab,
-  onFrameworkTabChange,
-}: {
-  activeTab: FrameworkTabKey;
-  onFrameworkTabChange?: (tab: 'taxonomy' | 'mapping') => void;
-}) {
-  const navigate = useNavigate();
-
-  const tabs = [
-    { id: 'taxonomy', label: 'Taxonomy Structure', path: '/framework' },
-    { id: 'mapping', label: 'Standard Mapping Snapshot', path: '/framework?tab=mapping' },
-    { id: 'achc-survey', label: 'ACHC Survey Alignment', path: '/framework/achc-survey' },
-    { id: 'achc-crosswalk', label: 'ACHC Crosswalk', path: '/framework/achc-survey/crosswalk' },
-    { id: 'hh-evidence-map', label: 'HH Tag Evidence Map', path: '/framework/hh-evidence-map' },
-  ];
-
-  return (
-    <nav aria-label="Policy architecture sections" className="flex max-w-full items-end -space-x-2 font-montserrat md:-space-x-3">
-      {tabs.map((tab) => {
-        const isActive = tab.id === activeTab;
-        return (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => {
-              const id = tab.id;
-              if (onFrameworkTabChange && (id === 'taxonomy' || id === 'mapping')) {
-                onFrameworkTabChange(id as 'taxonomy' | 'mapping');
-              } else {
-                const nextTab = tabs.find(t => t.id === id);
-                if (nextTab) navigate(nextTab.path);
-              }
-            }}
-            style={{
-              backgroundColor: isActive ? 'rgba(209, 234, 230, 0.777)' : 'rgba(230, 244, 241, 0.45)',
-              borderRadius: '10px 10px 0 0',
-            }}
-            className={cx(
-              'relative flex items-center justify-center border-0 px-4 text-[9px] font-bold uppercase tracking-wider shadow-[-2px_-1px_5px_rgba(82,64,75,0.06)] outline-none backdrop-blur-[6px] transition-all duration-300 hover:shadow-[-2px_-1px_7px_rgba(82,64,75,0.1)] md:px-6 md:text-[10px]',
-              isActive ? 'z-30 h-8 translate-y-px text-[#007970]' : 'z-10 h-[26px] text-[#007970]/70 hover:h-7',
-            )}
-            aria-current={isActive ? 'page' : undefined}
-          >
-            {tab.label}
-          </button>
-        );
-      })}
-    </nav>
-  );
+export function FrameworkTabs() {
+  return <PolicyAreaNav />;
 }
 
 export function FrameworkScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab: 'taxonomy' | 'mapping' = searchParams.get('tab') === 'mapping' ? 'mapping' : 'taxonomy';
-  const setActiveTab = (tab: 'taxonomy' | 'mapping') => {
-    setSearchParams((current) => {
-      const next = new URLSearchParams(current);
-      next.set('tab', tab);
-      return next;
-    });
-  };
   const viewParam = searchParams.get('view');
   const viewMode: 'grid' | 'tree' | 'heat' =
     viewParam === 'tree' || viewParam === 'heat' ? viewParam : 'grid';
@@ -267,17 +174,15 @@ export function FrameworkScreen() {
 
   return (
     <div
-      className="min-h-screen bg-[#FAFBF8] px-6 pb-16 pt-4 font-roboto text-[#52404B] md:px-12"
+      className="-m-xl min-h-screen overflow-x-hidden bg-[#FAFBF8] px-6 pb-16 pt-4 font-roboto text-[#52404B] md:px-12"
       data-hash-id="framework"
       data-route="/framework"
       data-template="framework"
     >
       <main className="mx-auto flex w-full max-w-[1400px] flex-col">
-        <div className="relative z-20 flex justify-start">
-          <FrameworkTabs activeTab={activeTab} onFrameworkTabChange={setActiveTab} />
-        </div>
+        <PolicyAreaNav />
 
-        <section className="mb-8 rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:px-12 md:py-10">
+        <section className="ci-page-hero mb-8 rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:px-12 md:py-10">
           <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
             <div className="max-w-3xl">
               <p className="mb-3 font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#F06923]">Policy Architecture</p>
@@ -288,22 +193,6 @@ export function FrameworkScreen() {
                 A decluttered view of the agency taxonomy, policy corpus, ACHC anchors, and lifecycle signals using live framework data.
               </p>
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Link
-                to="/library"
-                className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#F06923] px-6 py-3 font-montserrat text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_0_25px_6px_rgba(240,105,35,0.28)]"
-              >
-                <BookOpen className="h-4 w-4" aria-hidden />
-                Open Policies
-              </Link>
-              <Link
-                to="/policy-lifecycle"
-                className="inline-flex items-center justify-center gap-2 rounded-[12px] border-[1.5px] border-[#007970] bg-white px-6 py-3 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#007970] transition-all hover:bg-[#F7FEFF]"
-              >
-                <Workflow className="h-4 w-4" aria-hidden />
-                Lifecycle
-              </Link>
-            </div>
           </div>
         </section>
 
@@ -313,166 +202,98 @@ export function FrameworkScreen() {
           ))}
         </div>
 
-        {activeTab === 'taxonomy' ? (
-          <div className="space-y-8 pb-12">
-            <section className="rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:p-10">
-              <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                  <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Framework Domains</h2>
-                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#747470]">
-                    Domain ownership, policy scope, ACHC anchor density, and survey-readiness signals.
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2" aria-label="Framework view modes">
-                  {[
-                    ['grid', 'Grid'],
-                    ['tree', 'Hierarchy'],
-                    ['heat', 'Readiness'],
-                  ].map(([id, label]) => (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setViewMode(id as 'grid' | 'tree' | 'heat')}
-                      className={cx(
-                        'rounded-[10px] px-4 py-2 font-montserrat text-[10px] font-bold uppercase tracking-wider transition-all',
-                        viewMode === id
-                          ? 'bg-[#007970] text-white shadow-sm'
-                          : 'border border-[#E5E4E3] bg-white text-[#747470] hover:bg-[#F7FEFF] hover:text-[#007970]',
-                      )}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {viewMode === 'tree' ? (
-                <div className="space-y-5">
-                  <FrameworkLayerSection
-                    accent="red"
-                    label="Layer 1"
-                    title="Regulatory Board"
-                    items={['Title 22', '42 CFR Part 484', 'CMS State Ops', 'HIPAA', 'OSHA', 'OIG']}
-                  />
-                  <FrameworkLayerSection
-                    accent="teal"
-                    label="Layer 2"
-                    title="Strategic Domains"
-                    items={frameworkDomains.map((domain) => `${domain.code} - ${domain.title}`)}
-                  />
-                  <FrameworkLayerSection
-                    accent="orange"
-                    label="Layer 3"
-                    title="Policy Stewardship"
-                    items={['Named owners', 'Review cycle', 'Approval authority', 'Attestation records', 'Evidence anchors']}
-                  />
-                </div>
-              ) : (
-                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3" role="list">
-                  {sortedDomains.map((domain) => (
-                    <DomainTile domain={domain} key={domain.code} />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            <section className="grid gap-5 xl:grid-cols-3">
-              {contextCards.map((card) => (
-                <PolicySignalCard card={card} key={card.title} />
-              ))}
-            </section>
-
-            <section className="rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:p-10">
-              <div className="mb-6 flex items-start justify-between gap-4">
-                <div>
-                  <p className="font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#F06923]">Authority Context</p>
-                  <h2 className="mt-2 font-montserrat text-2xl font-semibold tracking-tight text-[#007970]">ACHC / CMS / Title 22</h2>
-                </div>
-                <ToneBadge size="sm" status="ready" />
-              </div>
-              <div className="grid gap-4 md:grid-cols-3">
-                {alignmentCards.map(([label, value, helper, tone]) => (
-                  <div className="rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8] p-5" key={label}>
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470]">{label}</p>
-                        <p className="mt-2 font-montserrat text-3xl font-bold text-[#007970]">{value}</p>
-                      </div>
-                      <ToneTag tone={tone}>{tone === 'orange' ? 'Review' : 'Mapped'}</ToneTag>
-                    </div>
-                    <p className="mt-3 text-xs leading-relaxed text-[#747470]">{helper}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-        ) : (
+        <div className="space-y-8 pb-12">
           <section className="rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:p-10">
-            <div className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Standard Mapping Snapshot</h2>
+                <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Framework Domains</h2>
                 <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#747470]">
-                  Representative rows connect ACHC standards to CMS Conditions of Participation, Title 22 references, policy IDs, forms, and evidence methods.
+                  Domain ownership, policy scope, ACHC anchor density, and survey-readiness signals.
                 </p>
               </div>
-              <Link
-                className="inline-flex w-fit items-center gap-2 rounded-[12px] bg-[#F06923] px-6 py-3 font-montserrat text-[11px] font-bold uppercase tracking-widest text-white transition-all hover:-translate-y-0.5"
-                to="/framework/achc-survey/crosswalk"
-              >
-                Open Crosswalk
-                <ArrowRight aria-hidden="true" className="h-4 w-4" />
-              </Link>
+              <div className="flex flex-wrap gap-2" aria-label="Framework view modes">
+                {[
+                  ['grid', 'Grid'],
+                  ['tree', 'Hierarchy'],
+                  ['heat', 'Readiness'],
+                ].map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setViewMode(id as 'grid' | 'tree' | 'heat')}
+                    className={cx(
+                      'rounded-[10px] px-4 py-2 font-montserrat text-[10px] font-bold uppercase tracking-wider transition-all',
+                      viewMode === id
+                        ? 'bg-[#007970] text-white shadow-sm'
+                        : 'border border-[#E5E4E3] bg-white text-[#747470] hover:bg-[#F7FEFF] hover:text-[#007970]',
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="hidden overflow-x-auto rounded-[18px] border border-[#E5E4E3] laptop:block">
-              <table className="min-w-full border-collapse text-left text-xs" aria-label="Framework standard mapping snapshot">
-                <thead className="bg-[#FAFBF8] font-montserrat text-[9px] uppercase tracking-widest text-[#747470]">
-                  <tr>
-                    <th className="border-b border-[#E5E4E3] px-5 py-4 font-bold" scope="col">ACHC</th>
-                    <th className="border-b border-[#E5E4E3] px-5 py-4 font-bold" scope="col">Standard focus</th>
-                    <th className="border-b border-[#E5E4E3] px-5 py-4 font-bold" scope="col">CMS / Title 22</th>
-                    <th className="border-b border-[#E5E4E3] px-5 py-4 font-bold" scope="col">Policy / Form</th>
-                    <th className="border-b border-[#E5E4E3] px-5 py-4 font-bold" scope="col">Evidence</th>
-                    <th className="border-b border-[#E5E4E3] px-5 py-4 font-bold" scope="col">Support</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {mappingRows.map((row) => (
-                    <tr className="transition hover:bg-[#F7FEFF]" key={row.achc}>
-                      <td className="border-b border-[#F1F1EF] px-5 py-4"><ToneTag tone={row.tone}>{row.achc}</ToneTag></td>
-                      <td className="border-b border-[#F1F1EF] px-5 py-4 font-semibold text-[#52404B]">{row.standard}</td>
-                      <td className="border-b border-[#F1F1EF] px-5 py-4 text-[#747470]">{row.cmsTitle22}</td>
-                      <td className="border-b border-[#F1F1EF] px-5 py-4 text-[#52404B]">
-                        <span className="font-mono font-bold text-[#007970]">{row.policy}</span>
-                        <span className="block text-[#747470]">{row.forms}</span>
-                      </td>
-                      <td className="border-b border-[#F1F1EF] px-5 py-4 text-[#747470]">{row.evidence}</td>
-                      <td className="border-b border-[#F1F1EF] px-5 py-4"><ToneBadge size="sm" status={row.status} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {viewMode === 'tree' ? (
+              <div className="space-y-5">
+                <FrameworkLayerSection
+                  accent="red"
+                  label="Layer 1"
+                  title="Regulatory Board"
+                  items={['Title 22', '42 CFR Part 484', 'CMS State Ops', 'HIPAA', 'OSHA', 'OIG']}
+                />
+                <FrameworkLayerSection
+                  accent="teal"
+                  label="Layer 2"
+                  title="Strategic Domains"
+                  items={frameworkDomains.map((domain) => `${domain.code} - ${domain.title}`)}
+                />
+                <FrameworkLayerSection
+                  accent="orange"
+                  label="Layer 3"
+                  title="Policy Stewardship"
+                  items={['Named owners', 'Review cycle', 'Approval authority', 'Attestation records', 'Evidence anchors']}
+                />
+              </div>
+            ) : (
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3" role="list">
+                {sortedDomains.map((domain) => (
+                  <DomainTile domain={domain} key={domain.code} />
+                ))}
+              </div>
+            )}
+          </section>
 
-            <div className="grid gap-4 laptop:hidden">
-              {mappingRows.map((row) => (
-                <article className="rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8] p-5" key={row.achc}>
-                  <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
-                    <ToneTag tone={row.tone}>{row.achc}</ToneTag>
-                    <ToneBadge size="sm" status={row.status} />
+          <section className="grid gap-5 xl:grid-cols-3">
+            {contextCards.map((card) => (
+              <PolicySignalCard card={card} key={card.title} />
+            ))}
+          </section>
+
+          <section className="rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:p-10">
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <p className="font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#F06923]">Authority Context</p>
+                <h2 className="mt-2 font-montserrat text-2xl font-semibold tracking-tight text-[#007970]">ACHC / CMS / Title 22</h2>
+              </div>
+              <ToneBadge size="sm" status="ready" />
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              {alignmentCards.map(([label, value, helper, tone]) => (
+                <div className="rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8] p-5" key={label}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470]">{label}</p>
+                      <p className="mt-2 font-montserrat text-3xl font-bold text-[#007970]">{value}</p>
+                    </div>
+                    <ToneTag tone={tone}>{tone === 'orange' ? 'Review' : 'Mapped'}</ToneTag>
                   </div>
-                  <h3 className="font-montserrat text-sm font-bold text-[#007970]">{row.standard}</h3>
-                  <p className="mt-2 text-sm text-[#747470]">{row.cmsTitle22}</p>
-                  <div className="mt-4 grid gap-2 text-sm text-[#52404B]">
-                    <span>{row.policy}</span>
-                    <span>{row.forms}</span>
-                    <span>{row.evidence}</span>
-                  </div>
-                </article>
+                  <p className="mt-3 text-xs leading-relaxed text-[#747470]">{helper}</p>
+                </div>
               ))}
             </div>
           </section>
-        )}
+        </div>
       </main>
     </div>
   );
