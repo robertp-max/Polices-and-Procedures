@@ -81,6 +81,14 @@ if (existsSync(DIST)) {
   app.use(express.static(DIST, { index: false, maxAge: '1h' }));
 }
 
+// Stable training narration/audio is mounted from GCS in Cloud Run so deploys
+// do not need to upload unchanged advanced-training WAV files.
+const narrationDir = process.env.NARRATION_ASSETS_DIR || '/mnt/narration';
+if (existsSync(narrationDir)) {
+  app.use(express.static(narrationDir, { index: false, maxAge: '1d' }));
+  console.log(JSON.stringify({ event: 'cloudrun.narration_static.enabled', narrationDir }));
+}
+
 // SPA history fallback: client-side routes (e.g. /login, /register, /dashboard)
 // and browser refresh return index.html. GET only.
 app.use((req: Request, res: Response, next: NextFunction) => {
