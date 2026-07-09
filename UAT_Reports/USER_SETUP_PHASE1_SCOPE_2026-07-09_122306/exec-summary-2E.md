@@ -7,7 +7,7 @@
 ## Commit
 
 - **Message:** `feat(user-setup): Phase 2E demo audit + permission scaffolding`
-- **SHA:** `680e1d30786ad3763114e973a391081603ce57c1` (`680e1d30`)
+- **SHA:** `815ab317231f70a7380d37516650c38be3fd8fe8` (`815ab317`) — primary feature commit; this summary SHA line may be updated by a docs-only follow-up
 
 ## Files changed
 
