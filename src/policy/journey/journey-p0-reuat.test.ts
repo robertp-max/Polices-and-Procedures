@@ -68,6 +68,34 @@ describe('Journey LMS P0 Re-UAT (local/demo only)', () => {
     expect(res.ok).toBe(false);
   });
 
+  it('P0-004b: blank Appendix F signer name is rejected (no employee-name default)', async () => {
+    const { prepareAppendixFSignature } = await import(
+      '../../v6/screens/pageviews/AppendixFScreen'
+    );
+    const employeeName = 'Maria Santos, RN';
+
+    const blank = prepareAppendixFSignature('', 'HRDirector', true);
+    expect(blank.ok).toBe(false);
+    if (!blank.ok) expect(blank.message).toMatch(/signer name/i);
+
+    const whitespace = prepareAppendixFSignature('   ', 'HRDirector', true);
+    expect(whitespace.ok).toBe(false);
+
+    const ok = prepareAppendixFSignature('Elena Vargas, HR Director', 'HRDirector', true);
+    expect(ok.ok).toBe(true);
+    if (ok.ok) {
+      expect(ok.sig.name).toBe('Elena Vargas, HR Director');
+      expect(ok.sig.name).not.toBe(employeeName);
+      expect(ok.sig.role).toBe('HRDirector');
+    }
+
+    const wrongRole = prepareAppendixFSignature('Elena Vargas', 'Supervisor', true);
+    expect(wrongRole.ok).toBe(false);
+
+    const notCleared = prepareAppendixFSignature('Elena Vargas', 'HRDirector', false);
+    expect(notCleared.ok).toBe(false);
+  });
+
   it('P0-005: Supervisor can log supervised visit; clearance respects count', () => {
     const empId = 'EMP-1002'; // assume HHA needs visits
     const sig = { name: 'DON Elena', role: 'DON' as const, at: new Date().toISOString(), method: 'attested' as const };

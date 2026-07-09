@@ -65,6 +65,28 @@ const achcTopics = [
   "Medical Device Act"
 ];
 
+/** Prepare Appendix F HR sign-off. Never defaults signer name to the subject employee. */
+export function prepareAppendixFSignature(
+  sigName: string,
+  sigRole: 'HRDirector' | 'Supervisor' | 'Other',
+  allCleared: boolean,
+): { ok: true; sig: SignatureRecord } | { ok: false; message: string } {
+  if (!allCleared) {
+    return { ok: false, message: 'All 15 items must be PASS or NA.' };
+  }
+  const name = sigName.trim();
+  if (!name) {
+    return { ok: false, message: 'Signer name is required. Enter the HR Director full name.' };
+  }
+  if (sigRole !== 'HRDirector') {
+    return { ok: false, message: 'Signature requires HRDirector role.' };
+  }
+  return {
+    ok: true,
+    sig: { name, role: 'HRDirector', pngDataUrl: '', signedAt: new Date().toISOString() },
+  };
+}
+
 export function AppendixFScreen() {
   const { state, update } = useLearner();
   const journey = useJourneyStore();
@@ -76,7 +98,6 @@ export function AppendixFScreen() {
   const [sigMessage, setSigMessage] = useState<string | null>(null);
 
   const currentEmpId = journey.currentEmployeeId;
-  const employee = journey.employees.find(e => e.id === currentEmpId) || journey.employees[0];
   const storedItems = journey.appendixF[currentEmpId] ?? APPENDIX_F_TEMPLATE.map(i => ({ ...i }));
   const items = localItems ?? storedItems;
   const allCleared = items.every(i => i.status === 'PASS' || i.status === 'NA');
@@ -89,16 +110,12 @@ export function AppendixFScreen() {
 
   function handleSignAppendixF() {
     setSigMessage(null);
-    if (!allCleared) {
-      setSigMessage('All 15 items must be PASS or NA.');
+    const prepared = prepareAppendixFSignature(sigName, sigRole, allCleared);
+    if (!prepared.ok) {
+      setSigMessage(prepared.message);
       return;
     }
-    if (sigRole !== 'HRDirector') {
-      setSigMessage('Signature requires HRDirector role.');
-      return;
-    }
-    const sig: SignatureRecord = { name: sigName.trim() || employee.name, role: 'HRDirector', pngDataUrl: '', signedAt: new Date().toISOString() };
-    const res = journey.signAppendixF(currentEmpId, sig);
+    const res = journey.signAppendixF(currentEmpId, prepared.sig);
     setSigMessage(res.message);
     if (res.ok) setLocalItems(null);
   }
@@ -439,7 +456,8 @@ export function AppendixFScreen() {
                   type="text"
                   value={sigName}
                   onChange={(e) => setSigName(e.target.value)}
-                  placeholder={employee.name}
+                  placeholder="HR Director full name (required)"
+                  aria-label="Appendix F signer name"
                   className="w-full rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs text-ink placeholder:text-muted"
                 />
                 <select
