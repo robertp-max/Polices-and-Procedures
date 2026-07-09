@@ -1,19 +1,93 @@
-import { useState } from 'react';
-import { BadgeCheck, ClipboardCheck, KeyRound, LockKeyhole, ShieldCheck, Smartphone, UserCog } from 'lucide-react';
-import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
-import { Button, ToneBadge } from '../../primitives';
+import { useMemo, useState } from 'react';
+import {
+  BadgeCheck,
+  ClipboardCheck,
+  KeyRound,
+  LockKeyhole,
+  ShieldCheck,
+  Smartphone,
+  UserCog,
+  UserPlus,
+} from 'lucide-react';
+import type { JourneyRole } from '@/policy/journey/types/journey';
+import type { User } from '@/policy/security/identity/types';
+import { USER_GROUPS, USER_GROUP_BY_ID } from '@/policy/security/identity/userGroups';
+import { useUserAssignmentsStore } from '@/policy/security/identity/userAssignmentsStore';
+import {
+  buildOnboardingTrackForRole,
+  type UserSetupFieldsPayload,
+} from '@/policy/security/identity/userSetupAssignments';
+import {
+  DataTable,
+  MetricGrid,
+  SurfaceCard,
+  ToneTag,
+  type DataTableColumn,
+  type MetricTileData,
+  type SurfaceCardData,
+} from '../../components';
+import { Button, FormField, Input, Select, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabInactiveClass } from './workspaceTabChrome';
+
+/**
+ * Demo actor for edit/delete authorization checks in the identity store.
+ * Phase 2B is localStorage-only — no real auth session is required here.
+ * `demo-user-careindeed` is the protected Super Admin seed (cannot self-delete /
+ * is the stable demo operator id used in Phase 2A unit tests).
+ */
+const DEMO_ACTOR_USER_ID = 'demo-user-careindeed';
+
+const PROTECTED_USER_IDS = new Set(['demo-user-careindeed']);
+
+const PRIVILEGED_GROUP_IDS = new Set([
+  'grp-super-admin',
+  'grp-admin',
+  'grp-system',
+  'grp-user-access-admin',
+]);
+
+const JOURNEY_ROLES: readonly JourneyRole[] = [
+  'ADM',
+  'DON',
+  'RN',
+  'LVN',
+  'PT',
+  'PTA',
+  'OT',
+  'COTA',
+  'SLP',
+  'MSW',
+  'HHA',
+];
+
+const JOURNEY_ROLE_LABELS: Record<JourneyRole, string> = {
+  ADM: 'Administrator (ADM)',
+  DON: 'Director of Nursing (DON)',
+  RN: 'Registered Nurse (RN)',
+  LVN: 'Licensed Vocational Nurse (LVN)',
+  PT: 'Physical Therapist (PT)',
+  PTA: 'Physical Therapist Assistant (PTA)',
+  OT: 'Occupational Therapist (OT)',
+  COTA: 'Certified OT Assistant (COTA)',
+  SLP: 'Speech-Language Pathologist (SLP)',
+  MSW: 'Medical Social Worker (MSW)',
+  HHA: 'Home Health Aide (HHA)',
+};
 
 interface AdminUserRow extends Record<string, string> {
   accessStatus: string;
-  auditStatus: string;
+  discipline: string;
+  email: string;
+  firstDay: string;
+  groupId: string;
   groups: string;
-  lastReview: string;
-  mfaStatus: string;
   name: string;
-  readinessStatus: string;
+  onboarding: string;
   role: string;
+  status: string;
+  supervisor: string;
   userId: string;
 }
 
@@ -32,164 +106,132 @@ interface AssignmentLane {
   users: string;
 }
 
-interface OverridePermission {
-  desc: string;
-  id: string;
-  label: string;
+interface EditFormState {
+  discipline: string;
+  email: string;
+  firstDay: string;
+  groupId: string;
+  hireDate: string;
+  name: string;
+  onboardingTrack: 'none' | 'role';
+  role: string;
+  status: 'active' | 'pending' | 'suspended';
+  supervisorId: string;
 }
 
-type OverrideMode = 'default' | 'grant' | 'revoke';
+interface CreateFormState {
+  discipline: string;
+  email: string;
+  firstDay: string;
+  groupId: string;
+  hireDate: string;
+  name: string;
+  onboardingTrack: 'none' | 'role';
+  role: string;
+  status: 'active' | 'pending' | 'suspended';
+  supervisorId: string;
+}
 
-const userMetrics: readonly MetricTileData[] = [
-  { label: 'Users', value: '96', helper: 'Active directory accounts', tone: 'teal' },
-  { label: 'MFA', value: '94%', helper: 'Protected sign-ins', tone: 'green' },
-  { label: 'Privileged', value: '11', helper: 'Dual-control accounts', tone: 'amber' },
-  { label: 'Reviews', value: '4', helper: 'Access items due soon', tone: 'orange' },
-];
+const emptyCreateForm = (): CreateFormState => ({
+  name: '',
+  email: '',
+  groupId: 'grp-pending-user',
+  status: 'pending',
+  role: '',
+  discipline: '',
+  supervisorId: '',
+  firstDay: '',
+  hireDate: '',
+  onboardingTrack: 'none',
+});
 
-const userRows: readonly AdminUserRow[] = [
-  {
-    accessStatus: 'locked',
-    auditStatus: 'validated',
-    groups: 'Super Admin, Security Admin',
-    lastReview: 'Jun 18, 2026',
-    mfaStatus: 'certified',
-    name: 'Brad Administrator',
-    readinessStatus: 'ready',
-    role: 'Platform Owner',
-    userId: 'u-admin-brad',
-  },
-  {
-    accessStatus: 'active',
-    auditStatus: 'complete',
-    groups: 'Compliance Council, QAPI Review',
-    lastReview: 'Jun 17, 2026',
-    mfaStatus: 'certified',
-    name: 'Tina Patel',
-    readinessStatus: 'validated',
-    role: 'Compliance Officer',
-    userId: 'u-compliance-tp',
-  },
-  {
-    accessStatus: 'active',
-    auditStatus: 'uploaded',
-    groups: 'Clinical RN, Policy Authors',
-    lastReview: 'Jun 14, 2026',
-    mfaStatus: 'ready',
-    name: 'Maria Gonzalez',
-    readinessStatus: 'ready',
-    role: 'DON',
-    userId: 'u-don-01',
-  },
-  {
-    accessStatus: 'pending',
-    auditStatus: 'review-required',
-    groups: 'Onboarding Operations',
-    lastReview: 'Jun 10, 2026',
-    mfaStatus: 'pending',
-    name: 'Jon Rivera',
-    readinessStatus: 'attention',
-    role: 'Credentialing Coordinator',
-    userId: 'u-onboarding-jr',
-  },
-  {
-    accessStatus: 'active',
-    auditStatus: 'validated',
-    groups: 'Business Office, Payroll Export',
-    lastReview: 'Jun 12, 2026',
-    mfaStatus: 'certified',
-    name: 'Ops Lead',
-    readinessStatus: 'ready',
-    role: 'Primary Ops',
-    userId: 'demo-user-careindeed',
-  },
-  {
-    accessStatus: 'locked',
-    auditStatus: 'approved',
-    groups: 'Surveyor Read-only',
-    lastReview: 'Jun 19, 2026',
-    mfaStatus: 'certified',
-    name: 'External Surveyor',
-    readinessStatus: 'approved',
-    role: 'Audit Observer',
-    userId: 'u-surveyor-ro',
-  },
-];
+function statusToAccessStatus(status: User['status']): string {
+  if (status === 'suspended') return 'locked';
+  if (status === 'pending') return 'pending';
+  return 'active';
+}
 
-const userColumns: readonly DataTableColumn<AdminUserRow>[] = [
-  { key: 'name', label: 'Name' },
-  { key: 'role', label: 'Role' },
-  { key: 'groups', label: 'Groups' },
-  { key: 'mfaStatus', label: 'MFA', status: true },
-  { key: 'accessStatus', label: 'Access', status: true },
-  { key: 'lastReview', label: 'Last review' },
-];
+function formatDateLabel(iso?: string | null): string {
+  if (!iso) return '—';
+  const day = iso.slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return iso;
+  try {
+    return new Date(`${day}T12:00:00`).toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch {
+    return day;
+  }
+}
 
-const securityCards: readonly SurfaceCardData[] = [
-  {
-    body: 'Privileged users remain locked behind MFA, administrator review, and a second approver before provisioning changes apply.',
-    icon: LockKeyhole,
-    progress: 91,
-    status: 'locked',
-    title: 'Privileged access guardrail',
-    tone: 'slate',
-  },
-  {
-    body: 'Clinical, compliance, onboarding, and business-office assignments stay segmented by group so PHI and export permissions remain bounded.',
-    icon: ShieldCheck,
-    progress: 86,
-    status: 'validated',
-    title: 'Least-privilege coverage',
-    tone: 'teal',
-  },
-  {
-    body: 'Four user assignments are due for owner attestation before the next survey packet is locked for read-only review.',
-    icon: ClipboardCheck,
-    progress: 72,
-    status: 'review-required',
-    title: 'Access review queue',
-    tone: 'orange',
-  },
-];
+function activeGroupId(
+  assignments: { userId: string; groupId: string; revokedAt?: string }[],
+  userId: string,
+): string {
+  const active = assignments.find(a => a.userId === userId && !a.revokedAt);
+  return active?.groupId ?? 'grp-pending-user';
+}
 
-const securitySummaries: readonly SecuritySummary[] = [
-  {
-    detail: 'Administrator and provisioning lanes require MFA plus dual approval.',
-    label: 'Privileged lane',
-    status: 'locked',
-    tone: 'slate',
-    value: '11 users',
-  },
-  {
-    detail: 'Compliance and QAPI users can export evidence only after packet retention checks pass.',
-    label: 'Evidence export',
-    status: 'validated',
-    tone: 'teal',
-    value: '18 users',
-  },
-  {
-    detail: 'Clinical user access stays active for care, policy, and task workflows.',
-    label: 'Clinical access',
-    status: 'ready',
-    tone: 'green',
-    value: '41 users',
-  },
-  {
-    detail: 'Pending onboarding assignments need supervisor confirmation before activation.',
-    label: 'Pending changes',
-    status: 'attention',
-    tone: 'orange',
-    value: '4 reviews',
-  },
-];
+function groupLabel(groupId: string): string {
+  return USER_GROUP_BY_ID[groupId]?.name ?? groupId;
+}
 
-const assignmentLanes: readonly AssignmentLane[] = [
-  { group: 'Super Admin', owner: 'Security Admin', status: 'locked', users: '8' },
-  { group: 'Compliance Council', owner: 'Compliance Officer', status: 'validated', users: '12' },
-  { group: 'Clinical RN', owner: 'DON', status: 'ready', users: '34' },
-  { group: 'Onboarding Operations', owner: 'Credentialing Lead', status: 'review-required', users: '18' },
-  { group: 'Surveyor Read-only', owner: 'QAPI Lead', status: 'approved', users: '3' },
-];
+function buildEditForm(
+  user: User,
+  groupId: string,
+  setup: {
+    role?: JourneyRole | null;
+    discipline?: string;
+    supervisorId?: string | null;
+    firstDay?: string;
+    hireDate?: string;
+    onboarding?: { trackId: string } | null;
+  } | undefined,
+): EditFormState {
+  return {
+    name: user.name,
+    email: user.email,
+    groupId,
+    status: user.status,
+    role: setup?.role ?? '',
+    discipline: setup?.discipline ?? '',
+    supervisorId: setup?.supervisorId ?? '',
+    firstDay: setup?.firstDay?.slice(0, 10) ?? '',
+    hireDate: setup?.hireDate?.slice(0, 10) ?? '',
+    onboardingTrack: setup?.onboarding ? 'role' : 'none',
+  };
+}
+
+function setupPayloadFromForm(form: {
+  role: string;
+  discipline: string;
+  supervisorId: string;
+  firstDay: string;
+  hireDate: string;
+  onboardingTrack: 'none' | 'role';
+  status?: string;
+}): UserSetupFieldsPayload {
+  const role = (form.role || null) as JourneyRole | null;
+  const payload: UserSetupFieldsPayload = {
+    role,
+    discipline: form.discipline.trim() || undefined,
+    supervisorId: form.supervisorId || null,
+    firstDay: form.firstDay || undefined,
+    hireDate: form.hireDate || undefined,
+  };
+
+  if (form.onboardingTrack === 'none') {
+    payload.onboarding = null;
+  } else if (role) {
+    payload.onboarding = buildOnboardingTrackForRole(role, {
+      firstDay: form.firstDay || undefined,
+    });
+  }
+
+  return payload;
+}
 
 const userPanelTabs = [
   { id: 'security', label: 'Security' },
@@ -199,52 +241,364 @@ const userPanelTabs = [
 
 type UserPanelTabId = (typeof userPanelTabs)[number]['id'];
 
-const overridePermissions: readonly OverridePermission[] = [
-  { id: 'policy-writing', label: 'Policy writing', desc: 'Draft and submit policy revisions' },
-  { id: 'evidence-upload', label: 'Evidence upload', desc: 'Upload documents and audit packets' },
-  { id: 'ecign-signing', label: 'eCIgn signing', desc: 'Clinical preceptor and coordinator signoff' },
-  { id: 'surveyor-viewer-access', label: 'Surveyor viewer access', desc: 'Read-only timeline view for surveyors' },
-  { id: 'user-administration', label: 'User administration', desc: 'Manage user profiles and group roles' },
-];
-
-const overrideOptions: readonly { label: string; mode: OverrideMode; status: string }[] = [
-  { label: 'Default', mode: 'default', status: 'ready' },
-  { label: 'Force Grant', mode: 'grant', status: 'validated' },
-  { label: 'Force Revoke', mode: 'revoke', status: 'review-required' },
-];
-
-const getDefaultOverrides = (): Record<string, OverrideMode> =>
-  overridePermissions.reduce<Record<string, OverrideMode>>((overrides, permission) => {
-    overrides[permission.id] = 'default';
-    return overrides;
-  }, {});
-
 export function AdminUsersScreen() {
-  const [selectedUserId, setSelectedUserId] = useState<string | null>('u-compliance-tp');
-  const [activePanel, setActivePanel] = useState<UserPanelTabId>('security');
-  const [userOverrides, setUserOverrides] = useState<Record<string, Record<string, OverrideMode>>>({});
-  const [lastSaved, setLastSaved] = useState<string | null>(null);
+  const users = useUserAssignmentsStore(s => s.users);
+  const assignments = useUserAssignmentsStore(s => s.assignments);
+  const setupAssignments = useUserAssignmentsStore(s => s.setupAssignments);
+  const addUser = useUserAssignmentsStore(s => s.addUser);
+  const editUser = useUserAssignmentsStore(s => s.editUser);
+  const deleteUser = useUserAssignmentsStore(s => s.deleteUser);
 
-  const selectedUser = userRows.find(r => r.userId === selectedUserId);
-  const overrideModes = selectedUserId ? (userOverrides[selectedUserId] ?? getDefaultOverrides()) : getDefaultOverrides();
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [activePanel, setActivePanel] = useState<UserPanelTabId>('assignments');
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState<CreateFormState>(emptyCreateForm);
+  const [editForm, setEditForm] = useState<EditFormState | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formSuccess, setFormSuccess] = useState<string | null>(null);
+
+  const userById = useMemo(() => new Map(users.map(u => [u.id, u])), [users]);
+
+  const rows: AdminUserRow[] = useMemo(() => {
+    return [...users]
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((user) => {
+        const groupId = activeGroupId(assignments, user.id);
+        const setup = setupAssignments[user.id];
+        const supervisorName = setup?.supervisorId
+          ? (userById.get(setup.supervisorId)?.name ?? setup.supervisorId)
+          : '—';
+        const roleLabel = setup?.role
+          ? (JOURNEY_ROLE_LABELS[setup.role] ?? setup.role)
+          : (setup?.discipline || '—');
+        const onboardingLabel = setup?.onboarding
+          ? `${setup.onboarding.trackId} (${setup.onboarding.status})`
+          : 'Unassigned';
+
+        return {
+          userId: user.id,
+          name: user.name,
+          email: user.email,
+          role: roleLabel,
+          groups: groupLabel(groupId),
+          groupId,
+          status: user.status,
+          accessStatus: statusToAccessStatus(user.status),
+          supervisor: supervisorName,
+          firstDay: formatDateLabel(setup?.firstDay),
+          discipline: setup?.discipline ?? '—',
+          onboarding: onboardingLabel,
+        };
+      });
+  }, [users, assignments, setupAssignments, userById]);
+
+  const userColumns: readonly DataTableColumn<AdminUserRow>[] = [
+    { key: 'name', label: 'Name' },
+    { key: 'role', label: 'Role / discipline' },
+    { key: 'groups', label: 'Group' },
+    { key: 'accessStatus', label: 'Access', status: true },
+    { key: 'supervisor', label: 'Supervisor' },
+    { key: 'firstDay', label: 'First day' },
+    { key: 'onboarding', label: 'Onboarding' },
+  ];
+
+  const metrics = useMemo((): MetricTileData[] => {
+    const activeCount = users.filter(u => u.status === 'active').length;
+    const suspendedCount = users.filter(u => u.status === 'suspended').length;
+    const pendingCount = users.filter(u => u.status === 'pending').length;
+    const privilegedUserIds = new Set(
+      assignments
+        .filter(a => !a.revokedAt && PRIVILEGED_GROUP_IDS.has(a.groupId))
+        .map(a => a.userId),
+    );
+    const withSupervisor = Object.values(setupAssignments).filter(
+      s => s.active && s.supervisorId,
+    ).length;
+    const withOnboarding = Object.values(setupAssignments).filter(
+      s => s.active && s.onboarding,
+    ).length;
+
+    return [
+      {
+        label: 'Active users',
+        value: String(activeCount),
+        helper: `${users.length} total in demo directory`,
+        tone: 'teal',
+      },
+      {
+        label: 'Suspended',
+        value: String(suspendedCount),
+        helper: pendingCount ? `${pendingCount} pending` : 'Soft-deactivated accounts',
+        tone: 'orange',
+      },
+      {
+        label: 'Privileged',
+        value: String(privilegedUserIds.size),
+        helper: 'Super Admin / Admin / access admin',
+        tone: 'amber',
+      },
+      {
+        label: 'Supervised',
+        value: String(withSupervisor),
+        helper: `${withOnboarding} with onboarding track`,
+        tone: 'green',
+      },
+    ];
+  }, [users, assignments, setupAssignments]);
+
+  const securitySummaries = useMemo((): SecuritySummary[] => {
+    const privileged = new Set(
+      assignments
+        .filter(a => !a.revokedAt && PRIVILEGED_GROUP_IDS.has(a.groupId))
+        .map(a => a.userId),
+    ).size;
+    const clinicalRoles = new Set(['RN', 'LVN', 'HHA', 'PT', 'PTA', 'OT', 'COTA', 'SLP', 'MSW', 'DON']);
+    const clinical = Object.values(setupAssignments).filter(
+      s => s.active && s.role && clinicalRoles.has(s.role),
+    ).length;
+    const pending = users.filter(u => u.status === 'pending').length;
+    const withSetupRole = Object.values(setupAssignments).filter(s => s.active && s.role).length;
+
+    return [
+      {
+        label: 'Privileged lane',
+        value: `${privileged} users`,
+        detail: 'Users with Super Admin, Admin, System, or User Access Admin group assignment.',
+        status: privileged > 0 ? 'locked' : 'ready',
+        tone: 'slate',
+      },
+      {
+        label: 'Journey roles assigned',
+        value: `${withSetupRole} users`,
+        detail: 'Active setup rows with a CMS/ops journey role (RN, DON, ADM, …).',
+        status: 'validated',
+        tone: 'teal',
+      },
+      {
+        label: 'Clinical access',
+        value: `${clinical} users`,
+        detail: 'Active users whose setup role is a clinical discipline.',
+        status: 'ready',
+        tone: 'green',
+      },
+      {
+        label: 'Pending activation',
+        value: `${pending} users`,
+        detail: 'Accounts in pending status awaiting activation or group confirmation.',
+        status: pending > 0 ? 'attention' : 'ready',
+        tone: 'orange',
+      },
+    ];
+  }, [users, assignments, setupAssignments]);
+
+  const assignmentLanes = useMemo((): AssignmentLane[] => {
+    const counts = new Map<string, number>();
+    for (const a of assignments) {
+      if (a.revokedAt) continue;
+      counts.set(a.groupId, (counts.get(a.groupId) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .filter(([, n]) => n > 0)
+      .sort((a, b) => b[1] - a[1] || groupLabel(a[0]).localeCompare(groupLabel(b[0])))
+      .slice(0, 12)
+      .map(([groupId, n]) => {
+        const group = USER_GROUP_BY_ID[groupId];
+        const isPrivileged = PRIVILEGED_GROUP_IDS.has(groupId);
+        return {
+          group: group?.name ?? groupId,
+          owner: group?.description?.slice(0, 72) ?? 'Group membership',
+          status: isPrivileged ? 'locked' : n > 0 ? 'ready' : 'pending',
+          users: String(n),
+        };
+      });
+  }, [assignments]);
+
+  const securityCards = useMemo((): SurfaceCardData[] => {
+    const privileged = new Set(
+      assignments
+        .filter(a => !a.revokedAt && PRIVILEGED_GROUP_IDS.has(a.groupId))
+        .map(a => a.userId),
+    ).size;
+    const active = users.filter(u => u.status === 'active').length;
+    const suspended = users.filter(u => u.status === 'suspended').length;
+    const total = Math.max(users.length, 1);
+    const activePct = Math.round((active / total) * 100);
+    const setupComplete = Object.values(setupAssignments).filter(
+      s => s.active && (s.role || s.supervisorId || s.firstDay),
+    ).length;
+    const setupPct = Math.round((setupComplete / total) * 100);
+
+    return [
+      {
+        body: `${privileged} privileged group members. Demo directory only — dual-control and MFA are not enforced against a real IdP in this phase.`,
+        icon: LockKeyhole,
+        progress: Math.min(100, privileged * 12),
+        status: 'locked',
+        title: 'Privileged access (demo)',
+        tone: 'slate',
+      },
+      {
+        body: `${setupComplete} of ${users.length} users have role, supervisor, or first-day setup data from the identity registry.`,
+        icon: ShieldCheck,
+        progress: setupPct,
+        status: 'validated',
+        title: 'Setup coverage',
+        tone: 'teal',
+      },
+      {
+        body: `${suspended} suspended (soft-deactivated). Active rate ${activePct}% of the local demo directory.`,
+        icon: ClipboardCheck,
+        progress: activePct,
+        status: suspended > 0 ? 'review-required' : 'ready',
+        title: 'Directory hygiene',
+        tone: 'orange',
+      },
+    ];
+  }, [users, assignments, setupAssignments]);
+
+  const groupOptions = useMemo(
+    () =>
+      USER_GROUPS.map(g => ({
+        value: g.id,
+        label: g.name,
+      })),
+    [],
+  );
+
+  const roleOptions = useMemo(
+    () => [
+      { value: '', label: '— No journey role —' },
+      ...JOURNEY_ROLES.map(r => ({ value: r, label: JOURNEY_ROLE_LABELS[r] })),
+    ],
+    [],
+  );
+
+  const supervisorOptions = useMemo(() => {
+    const exclude = selectedUserId;
+    return [
+      { value: '', label: '— No supervisor —' },
+      ...users
+        .filter(u => u.id !== exclude && u.status !== 'suspended')
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map(u => ({ value: u.id, label: `${u.name} (${u.email})` })),
+    ];
+  }, [users, selectedUserId]);
+
+  const selectedUser = selectedUserId ? userById.get(selectedUserId) : undefined;
+  const selectedSetup = selectedUserId ? setupAssignments[selectedUserId] : undefined;
+  const isProtected = selectedUserId ? PROTECTED_USER_IDS.has(selectedUserId) : false;
+
+  const openEdit = (userId: string) => {
+    const user = userById.get(userId);
+    if (!user) return;
+    const groupId = activeGroupId(assignments, userId);
+    const setup = setupAssignments[userId];
+    setSelectedUserId(userId);
+    setEditForm(buildEditForm(user, groupId, setup));
+    setFormError(null);
+    setFormSuccess(null);
+    setShowCreate(false);
+  };
 
   const handleRowClick = (row: AdminUserRow) => {
-    setSelectedUserId(row.userId === selectedUserId ? null : row.userId);
+    if (row.userId === selectedUserId) {
+      setSelectedUserId(null);
+      setEditForm(null);
+      setFormError(null);
+      setFormSuccess(null);
+      return;
+    }
+    openEdit(row.userId);
   };
 
-  const handleOverrideChange = (permissionId: string, value: OverrideMode) => {
-    if (!selectedUserId) return;
-    setUserOverrides((current) => {
-      const forUser = current[selectedUserId] ?? getDefaultOverrides();
-      return {
-        ...current,
-        [selectedUserId]: {
-          ...forUser,
-          [permissionId]: value,
-        },
-      };
+  const handleSaveEdit = () => {
+    if (!selectedUserId || !editForm) return;
+    if (PROTECTED_USER_IDS.has(selectedUserId)) {
+      setFormError('This user record is protected and cannot be edited here.');
+      return;
+    }
+
+    const result = editUser(selectedUserId, DEMO_ACTOR_USER_ID, {
+      name: editForm.name,
+      email: editForm.email,
+      groupId: editForm.groupId,
+      status: editForm.status,
+      setup: setupPayloadFromForm(editForm),
     });
+
+    if (!result.ok) {
+      setFormError(result.error ?? 'Save failed.');
+      setFormSuccess(null);
+      return;
+    }
+
+    setFormError(null);
+    setFormSuccess('Saved to local demo directory (localStorage).');
+    // Refresh form from store after merge
+    const user = useUserAssignmentsStore.getState().getUserById(selectedUserId);
+    const setup = useUserAssignmentsStore.getState().getSetupAssignment(selectedUserId);
+    const groupId = activeGroupId(useUserAssignmentsStore.getState().assignments, selectedUserId);
+    if (user) setEditForm(buildEditForm(user, groupId, setup));
   };
+
+  const handleDeactivate = () => {
+    if (!selectedUserId) return;
+    if (PROTECTED_USER_IDS.has(selectedUserId)) {
+      setFormError('This user is protected and cannot be removed.');
+      return;
+    }
+    const result = deleteUser(selectedUserId, DEMO_ACTOR_USER_ID);
+    if (!result.ok) {
+      setFormError(result.error ?? 'Deactivate failed.');
+      setFormSuccess(null);
+      return;
+    }
+    setFormError(null);
+    setFormSuccess('User soft-deactivated (status suspended, setup.active = false).');
+    const user = useUserAssignmentsStore.getState().getUserById(selectedUserId);
+    const setup = useUserAssignmentsStore.getState().getSetupAssignment(selectedUserId);
+    const groupId = activeGroupId(useUserAssignmentsStore.getState().assignments, selectedUserId);
+    if (user) setEditForm(buildEditForm(user, groupId, setup));
+  };
+
+  const handleCreate = () => {
+    const emailForLookup = createForm.email.trim().toLowerCase();
+    const setup = setupPayloadFromForm(createForm);
+    const result = addUser({
+      name: createForm.name,
+      email: createForm.email,
+      groupId: createForm.groupId,
+      status: createForm.status,
+      setup,
+    });
+    if (!result.ok) {
+      setFormError(result.error ?? 'Create failed.');
+      setFormSuccess(null);
+      return;
+    }
+    setFormError(null);
+    setFormSuccess('User created in local demo directory.');
+    setCreateForm(emptyCreateForm());
+    setShowCreate(false);
+    // Select the newly created user (match by email captured before reset)
+    const created = useUserAssignmentsStore
+      .getState()
+      .users.find(u => u.email.toLowerCase() === emailForLookup);
+    if (created) openEdit(created.id);
+  };
+
+  const statusOptions = [
+    { value: 'active', label: 'Active' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'suspended', label: 'Suspended' },
+  ];
+
+  const onboardingOptions = [
+    { value: 'none', label: 'No onboarding track' },
+    { value: 'role', label: 'Assign role track (modulesForRole)' },
+  ];
+
+  const fieldClass = 'grid gap-md tablet-l:grid-cols-2';
 
   return (
     <section
@@ -255,115 +609,393 @@ export function AdminUsersScreen() {
       data-template="matrix"
     >
       <div className="sr-only"><h1>Users</h1></div>
-      <MetricGrid metrics={userMetrics} />
+
+      <div
+        className="rounded-lg border border-tone-amber-border bg-tone-amber-bg/40 px-lg py-md text-sm text-ink"
+        role="status"
+      >
+        <strong className="font-medium">Demo / localStorage only — not a production directory.</strong>
+        {' '}
+        Roster, roles, supervisors, and onboarding tracks persist in{' '}
+        <code className="text-xs">ci.identityRegistry.v1</code> until Phase 2F (real IdP).
+        Actor for edit/delete: <code className="text-xs">{DEMO_ACTOR_USER_ID}</code>.
+      </div>
+
+      <MetricGrid metrics={metrics} />
 
       <section className="grid gap-xl desktop:grid-cols-1">
         <section className="grid content-start gap-lg" aria-label="Admin users role and access assignment matrix">
-          <DataTable 
-            columns={userColumns} 
-            label="Admin users role and access assignment matrix" 
-            rows={userRows} 
-            onRowClick={handleRowClick}
-          />
+          <div className="flex flex-wrap items-center justify-between gap-md">
+            <p className="text-sm text-secondary">
+              {rows.length} users from identity store · click a row to edit setup
+            </p>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                setShowCreate(v => !v);
+                setSelectedUserId(null);
+                setEditForm(null);
+                setFormError(null);
+                setFormSuccess(null);
+              }}
+            >
+              <span className="inline-flex items-center gap-xs">
+                <UserPlus className="h-icon-sm w-icon-sm" aria-hidden="true" />
+                {showCreate ? 'Cancel create' : 'Add user'}
+              </span>
+            </Button>
+          </div>
 
-          {selectedUser && (
-            <section className="mt-md rounded-lg border border-tone-orange-border bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest transition duration-normal">
-              <div className="mb-lg flex flex-wrap items-start justify-between gap-lg border-b border-hairline pb-md">
-                <div className="grid gap-xs">
-                  <div className="flex flex-wrap items-center gap-sm">
-                    <h3 className="text-h3 font-medium text-ink">Permission Override Matrix</h3>
-                    <ToneBadge size="sm" status="review-required" />
-                  </div>
-                  <p className="text-sm text-secondary">
-                    {selectedUser.name} / {selectedUser.role}
-                    {lastSaved === selectedUserId && (
-                      <span className="ml-sm text-xs text-tone-green-text">Draft saved</span>
-                    )}
-                  </p>
-                  <p className="max-w-content text-xs text-muted">
-                    Review access exceptions with clear inherited, grant, and revoke states before admin attestation.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setSelectedUserId(null)}
-                  className="min-h-tap rounded-md px-md text-xs font-medium text-brand-teal transition duration-fast ease-standard hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus"
-                  type="button"
-                >
-                  Close matrix
-                </button>
+          {formError && (
+            <div className="rounded-md border border-tone-orange-border bg-tone-orange-bg px-md py-sm text-sm text-tone-orange-text" role="alert">
+              {formError}
+            </div>
+          )}
+          {formSuccess && (
+            <div className="rounded-md border border-tone-green-border bg-tone-green-bg px-md py-sm text-sm text-tone-green-text" role="status">
+              {formSuccess}
+            </div>
+          )}
+
+          {showCreate && (
+            <section className="rounded-lg border border-tone-teal-border bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
+              <h3 className="mb-lg text-h3 font-medium text-ink">Create user</h3>
+              <div className={fieldClass}>
+                <FormField label="Full name" required>
+                  {(props) => (
+                    <Input
+                      {...props}
+                      value={createForm.name}
+                      onChange={(e) => setCreateForm(f => ({ ...f, name: e.target.value }))}
+                    />
+                  )}
+                </FormField>
+                <FormField label="Email (@careindeed.com)" required>
+                  {(props) => (
+                    <Input
+                      {...props}
+                      type="email"
+                      value={createForm.email}
+                      onChange={(e) => setCreateForm(f => ({ ...f, email: e.target.value }))}
+                      placeholder="name@careindeed.com"
+                    />
+                  )}
+                </FormField>
+                <FormField label="User group" required>
+                  {(props) => (
+                    <Select
+                      {...props}
+                      options={groupOptions}
+                      value={createForm.groupId}
+                      onChange={(e) => setCreateForm(f => ({ ...f, groupId: e.target.value }))}
+                    />
+                  )}
+                </FormField>
+                <FormField label="Status">
+                  {(props) => (
+                    <Select
+                      {...props}
+                      options={statusOptions}
+                      value={createForm.status}
+                      onChange={(e) =>
+                        setCreateForm(f => ({
+                          ...f,
+                          status: e.target.value as CreateFormState['status'],
+                        }))
+                      }
+                    />
+                  )}
+                </FormField>
+                <FormField label="Journey role">
+                  {(props) => (
+                    <Select
+                      {...props}
+                      options={roleOptions}
+                      value={createForm.role}
+                      onChange={(e) => setCreateForm(f => ({ ...f, role: e.target.value }))}
+                    />
+                  )}
+                </FormField>
+                <FormField label="Discipline">
+                  {(props) => (
+                    <Input
+                      {...props}
+                      value={createForm.discipline}
+                      onChange={(e) => setCreateForm(f => ({ ...f, discipline: e.target.value }))}
+                    />
+                  )}
+                </FormField>
+                <FormField label="Supervisor">
+                  {(props) => (
+                    <Select
+                      {...props}
+                      options={[
+                        { value: '', label: '— No supervisor —' },
+                        ...users
+                          .filter(u => u.status !== 'suspended')
+                          .sort((a, b) => a.name.localeCompare(b.name))
+                          .map(u => ({ value: u.id, label: `${u.name} (${u.email})` })),
+                      ]}
+                      value={createForm.supervisorId}
+                      onChange={(e) => setCreateForm(f => ({ ...f, supervisorId: e.target.value }))}
+                    />
+                  )}
+                </FormField>
+                <FormField label="Onboarding track">
+                  {(props) => (
+                    <Select
+                      {...props}
+                      options={onboardingOptions}
+                      value={createForm.onboardingTrack}
+                      onChange={(e) =>
+                        setCreateForm(f => ({
+                          ...f,
+                          onboardingTrack: e.target.value as 'none' | 'role',
+                        }))
+                      }
+                    />
+                  )}
+                </FormField>
+                <FormField label="First day">
+                  {(props) => (
+                    <Input
+                      {...props}
+                      type="date"
+                      value={createForm.firstDay}
+                      onChange={(e) => setCreateForm(f => ({ ...f, firstDay: e.target.value }))}
+                    />
+                  )}
+                </FormField>
+                <FormField label="Hire date">
+                  {(props) => (
+                    <Input
+                      {...props}
+                      type="date"
+                      value={createForm.hireDate}
+                      onChange={(e) => setCreateForm(f => ({ ...f, hireDate: e.target.value }))}
+                    />
+                  )}
+                </FormField>
               </div>
-
-              <div className="overflow-hidden rounded-lg border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset" aria-label="Permission override grid">
-                <div className="grid grid-cols-[minmax(0,1fr)_minmax(360px,auto)] gap-md border-b border-hairline px-lg py-sm text-tag uppercase tracking-tag text-muted">
-                  <span>Access area</span>
-                  <span className="text-center">Override state</span>
-                </div>
-                <div className="divide-y divide-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset">
-                  {overridePermissions.map((permission) => (
-                    <div
-                      className="grid gap-md px-lg py-md tablet-l:grid-cols-[minmax(0,1fr)_minmax(360px,auto)]"
-                      key={permission.id}
-                    >
-                      <div className="grid gap-xs">
-                        <p className="text-sm font-medium text-ink">{permission.label}</p>
-                        <p className="text-xs text-secondary">{permission.desc}</p>
-                      </div>
-                      <div className="grid grid-cols-3 gap-xs rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset p-xs">
-                        {overrideOptions.map((option) => {
-                          const isSelected = overrideModes[permission.id] === option.mode;
-
-                          return (
-                            <button
-                              aria-pressed={isSelected}
-                              className={cx(
-                                'min-h-tap rounded-md border px-sm text-xs font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
-                                isSelected
-                                  ? 'border-brand-teal bg-brand-teal text-on-brand shadow-rest'
-                                  : 'border-transparent bg-transparent text-secondary hover:bg-surface-hover hover:text-brand-teal',
-                                isSelected && option.mode === 'grant' && 'border-tone-green-border bg-tone-green-bg text-tone-green-text',
-                                isSelected && option.mode === 'revoke' && 'border-tone-orange-border bg-tone-orange-bg text-tone-orange-text',
-                              )}
-                              key={option.mode}
-                              onClick={() => handleOverrideChange(permission.id, option.mode)}
-                              type="button"
-                            >
-                              {option.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-md flex flex-wrap justify-end gap-md">
-                <Button size="sm" variant="secondary" onClick={() => {
-                  if (selectedUserId) {
-                    setUserOverrides((current) => {
-                      const { [selectedUserId]: _removed, ...rest } = current;
-                      return rest;
-                    });
-                  }
-                }}>
-                  Restore Defaults
+              <div className="mt-lg flex flex-wrap justify-end gap-md">
+                <Button size="sm" variant="secondary" onClick={() => setShowCreate(false)}>
+                  Cancel
                 </Button>
                 <Button
                   className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange/95 font-light"
                   size="sm"
-                  onClick={() => {
-                    if (selectedUserId) {
-                      const uid = selectedUserId;
-                      setLastSaved(uid);
-                      setTimeout(() => {
-                        setLastSaved(null);
-                        setSelectedUserId(null);
-                      }, 1200);
-                    } else {
-                      setSelectedUserId(null);
-                    }
-                  }}
+                  onClick={handleCreate}
                 >
-                  Save Override Draft
+                  Create user
+                </Button>
+              </div>
+            </section>
+          )}
+
+          <DataTable
+            columns={userColumns}
+            label="Admin users role and access assignment matrix"
+            rows={rows}
+            onRowClick={handleRowClick}
+          />
+
+          {selectedUser && editForm && (
+            <section className="mt-md rounded-lg border border-tone-orange-border bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest transition duration-normal">
+              <div className="mb-lg flex flex-wrap items-start justify-between gap-lg border-b border-hairline pb-md">
+                <div className="grid gap-xs">
+                  <div className="flex flex-wrap items-center gap-sm">
+                    <h3 className="text-h3 font-medium text-ink">User setup</h3>
+                    <ToneBadge size="sm" status={statusToAccessStatus(selectedUser.status)} />
+                    {isProtected && <ToneBadge size="sm" status="locked" />}
+                  </div>
+                  <p className="text-sm text-secondary">
+                    {selectedUser.name} · {selectedUser.email} · <code className="text-xs">{selectedUser.id}</code>
+                  </p>
+                  <p className="max-w-content text-xs text-muted">
+                    Edit identity fields, group assignment, journey role, supervisor, first day, and onboarding track.
+                    Changes persist to the local identity registry only.
+                  </p>
+                  {selectedSetup?.journeyEmployeeSeedRef && (
+                    <p className="text-xs text-muted">
+                      Journey seed ref: <code>{selectedSetup.journeyEmployeeSeedRef}</code>
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => {
+                    setSelectedUserId(null);
+                    setEditForm(null);
+                    setFormError(null);
+                    setFormSuccess(null);
+                  }}
+                  className="min-h-tap rounded-md px-md text-xs font-medium text-brand-teal transition duration-fast ease-standard hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus"
+                  type="button"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className={fieldClass}>
+                <FormField label="Full name" required>
+                  {(props) => (
+                    <Input
+                      {...props}
+                      disabled={isProtected}
+                      value={editForm.name}
+                      onChange={(e) => setEditForm(f => (f ? { ...f, name: e.target.value } : f))}
+                    />
+                  )}
+                </FormField>
+                <FormField label="Email (@careindeed.com)" required>
+                  {(props) => (
+                    <Input
+                      {...props}
+                      type="email"
+                      disabled={isProtected}
+                      value={editForm.email}
+                      onChange={(e) => setEditForm(f => (f ? { ...f, email: e.target.value } : f))}
+                    />
+                  )}
+                </FormField>
+                <FormField label="User group">
+                  {(props) => (
+                    <Select
+                      {...props}
+                      disabled={isProtected}
+                      options={groupOptions}
+                      value={editForm.groupId}
+                      onChange={(e) => setEditForm(f => (f ? { ...f, groupId: e.target.value } : f))}
+                    />
+                  )}
+                </FormField>
+                <FormField label="Status">
+                  {(props) => (
+                    <Select
+                      {...props}
+                      disabled={isProtected}
+                      options={statusOptions}
+                      value={editForm.status}
+                      onChange={(e) =>
+                        setEditForm(f =>
+                          f
+                            ? { ...f, status: e.target.value as EditFormState['status'] }
+                            : f,
+                        )
+                      }
+                    />
+                  )}
+                </FormField>
+                <FormField label="Journey role">
+                  {(props) => (
+                    <Select
+                      {...props}
+                      disabled={isProtected}
+                      options={roleOptions}
+                      value={editForm.role}
+                      onChange={(e) => setEditForm(f => (f ? { ...f, role: e.target.value } : f))}
+                    />
+                  )}
+                </FormField>
+                <FormField label="Discipline">
+                  {(props) => (
+                    <Input
+                      {...props}
+                      disabled={isProtected}
+                      value={editForm.discipline}
+                      onChange={(e) =>
+                        setEditForm(f => (f ? { ...f, discipline: e.target.value } : f))
+                      }
+                    />
+                  )}
+                </FormField>
+                <FormField label="Supervisor">
+                  {(props) => (
+                    <Select
+                      {...props}
+                      disabled={isProtected}
+                      options={supervisorOptions}
+                      value={editForm.supervisorId}
+                      onChange={(e) =>
+                        setEditForm(f => (f ? { ...f, supervisorId: e.target.value } : f))
+                      }
+                    />
+                  )}
+                </FormField>
+                <FormField label="Onboarding track">
+                  {(props) => (
+                    <Select
+                      {...props}
+                      disabled={isProtected}
+                      options={onboardingOptions}
+                      value={editForm.onboardingTrack}
+                      onChange={(e) =>
+                        setEditForm(f =>
+                          f
+                            ? { ...f, onboardingTrack: e.target.value as 'none' | 'role' }
+                            : f,
+                        )
+                      }
+                    />
+                  )}
+                </FormField>
+                <FormField label="First day">
+                  {(props) => (
+                    <Input
+                      {...props}
+                      type="date"
+                      disabled={isProtected}
+                      value={editForm.firstDay}
+                      onChange={(e) =>
+                        setEditForm(f => (f ? { ...f, firstDay: e.target.value } : f))
+                      }
+                    />
+                  )}
+                </FormField>
+                <FormField label="Hire date">
+                  {(props) => (
+                    <Input
+                      {...props}
+                      type="date"
+                      disabled={isProtected}
+                      value={editForm.hireDate}
+                      onChange={(e) =>
+                        setEditForm(f => (f ? { ...f, hireDate: e.target.value } : f))
+                      }
+                    />
+                  )}
+                </FormField>
+              </div>
+
+              {selectedSetup?.onboarding && (
+                <div className="mt-md rounded-md border border-hairline bg-surface-glass p-md text-xs text-secondary">
+                  <p className="font-medium text-ink">Current track: {selectedSetup.onboarding.trackId}</p>
+                  <p className="mt-xs">
+                    Status: {selectedSetup.onboarding.status} · Modules:{' '}
+                    {selectedSetup.onboarding.moduleIds.length}
+                    {selectedSetup.onboarding.dueDate
+                      ? ` · Due ${formatDateLabel(selectedSetup.onboarding.dueDate)}`
+                      : ''}
+                  </p>
+                </div>
+              )}
+
+              <div className="mt-md flex flex-wrap justify-end gap-md">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={isProtected || selectedUser.status === 'suspended'}
+                  onClick={handleDeactivate}
+                >
+                  Deactivate
+                </Button>
+                <Button
+                  className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange/95 font-light"
+                  size="sm"
+                  disabled={isProtected}
+                  onClick={handleSaveEdit}
+                >
+                  Save changes
                 </Button>
               </div>
             </section>
@@ -371,7 +1003,10 @@ export function AdminUsersScreen() {
 
           <section className="grid gap-md tablet-l:grid-cols-2" aria-label="Admin user security summary">
             {securitySummaries.map((summary) => (
-              <article className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden shadow-rest" key={summary.label}>
+              <article
+                className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden shadow-rest"
+                key={summary.label}
+              >
                 <div className="mb-md flex flex-wrap items-start justify-between gap-md">
                   <div>
                     <p className="text-tag uppercase tracking-tag text-muted">{summary.label}</p>
@@ -388,15 +1023,13 @@ export function AdminUsersScreen() {
         </section>
 
         <aside className="grid content-start gap-lg" aria-label="Admin users security panels">
-          <nav aria-label="User admin tabs" className="flex gap-xs overflow-x-auto rounded-full border border-card bg-white p-xs shadow-sm">
+          <nav aria-label="User admin tabs" className="flex max-w-full items-stretch overflow-x-auto font-montserrat">
             {userPanelTabs.map((tab) => (
               <button
                 aria-selected={activePanel === tab.id}
                 className={cx(
-                  'min-h-tap shrink-0 rounded-full px-md py-1.5 text-sm font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
-                  activePanel === tab.id
-                    ? 'bg-brand-teal text-on-brand shadow-rest'
-                    : 'text-secondary hover:bg-surface-hover hover:text-brand-teal',
+                  workspaceCompactTabClass,
+                  activePanel === tab.id ? workspaceTabActiveClass : workspaceTabInactiveClass,
                 )}
                 key={tab.id}
                 onClick={() => setActivePanel(tab.id)}
@@ -414,7 +1047,10 @@ export function AdminUsersScreen() {
                 <SurfaceCard card={card} key={card.title} />
               ))}
 
-              <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="mfa-readiness-title">
+              <section
+                className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest"
+                aria-labelledby="mfa-readiness-title"
+              >
                 <div className="mb-lg flex items-start justify-between gap-md">
                   <div className="grid gap-sm">
                     <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
@@ -422,24 +1058,37 @@ export function AdminUsersScreen() {
                     </span>
                     <div>
                       <h2 className="text-h2 font-medium text-ink" id="mfa-readiness-title">
-                        MFA and access readiness
+                        Directory readiness (demo)
                       </h2>
                       <p className="mt-xs text-sm text-muted">
-                        Security checks summarize sign-in posture before account changes are approved.
+                        Counts from the local identity registry — MFA is not enforced against a production IdP.
                       </p>
                     </div>
                   </div>
-                  <ToneBadge size="sm" status="certified" />
+                  <ToneBadge size="sm" status="ready" />
                 </div>
 
                 <div className="grid gap-sm">
-                  {[
-                    ['Certified MFA', '90 users', 'certified'],
-                    ['Pending enrollment', '4 users', 'pending'],
-                    ['Locked privileged lane', '11 users', 'locked'],
-                    ['Access review ready', '92 accounts', 'ready'],
-                  ].map(([label, value, status]) => (
-                    <div className="flex flex-wrap items-center justify-between gap-md rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md" key={label}>
+                  {(
+                    [
+                      ['Active accounts', `${users.filter(u => u.status === 'active').length} users`, 'ready'],
+                      ['Pending enrollment', `${users.filter(u => u.status === 'pending').length} users`, 'pending'],
+                      [
+                        'Privileged lane',
+                        `${new Set(assignments.filter(a => !a.revokedAt && PRIVILEGED_GROUP_IDS.has(a.groupId)).map(a => a.userId)).size} users`,
+                        'locked',
+                      ],
+                      [
+                        'With supervisor',
+                        `${Object.values(setupAssignments).filter(s => s.active && s.supervisorId).length} users`,
+                        'validated',
+                      ],
+                    ] as const
+                  ).map(([label, value, status]) => (
+                    <div
+                      className="flex flex-wrap items-center justify-between gap-md rounded-md bg-surface-glass backdrop-blur-md shadow-glass-inset p-md"
+                      key={label}
+                    >
                       <div>
                         <p className="text-tag uppercase tracking-tag text-muted">{label}</p>
                         <p className="mt-xs text-sm text-ink">{value}</p>
@@ -453,7 +1102,11 @@ export function AdminUsersScreen() {
           )}
 
           {activePanel === 'assignments' && (
-            <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="assignment-lanes-title" role="tabpanel">
+            <section
+              className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest"
+              aria-labelledby="assignment-lanes-title"
+              role="tabpanel"
+            >
               <div className="mb-lg flex items-start gap-md">
                 <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
                   <UserCog aria-hidden="true" className="h-icon-md w-icon-md" />
@@ -463,12 +1116,15 @@ export function AdminUsersScreen() {
                     Role and group lanes
                   </h2>
                   <p className="mt-xs text-sm text-muted">
-                    Group owners retain accountability for membership, role scope, and audit-ready user evidence.
+                    Live membership counts from active role assignments in the identity store.
                   </p>
                 </div>
               </div>
 
               <div className="divide-y divide-hairline rounded-md border border-hairline bg-surface-glass backdrop-blur-md shadow-glass-inset">
+                {assignmentLanes.length === 0 && (
+                  <p className="p-md text-sm text-muted">No active group assignments.</p>
+                )}
                 {assignmentLanes.map((lane) => (
                   <div className="grid gap-sm p-md" key={lane.group}>
                     <div className="flex flex-wrap items-center justify-between gap-sm">
@@ -480,7 +1136,7 @@ export function AdminUsersScreen() {
                     </div>
                     <div className="flex flex-wrap items-center gap-sm">
                       <ToneTag tone="slate">{lane.users} users</ToneTag>
-                      <span className="text-xs text-secondary">Role and permission assignment owner</span>
+                      <span className="text-xs text-secondary">Active assignment count</span>
                     </div>
                   </div>
                 ))}
@@ -491,21 +1147,23 @@ export function AdminUsersScreen() {
           {activePanel === 'audit' && (
             <SurfaceCard
               card={{
-                body: 'Audit packets include group owner, MFA state, last review date, and role assignment changes for survey traceability.',
+                body: 'Demo audit view — mutations write to localStorage identity registry. Production audit chain and IdP linkage land in Phase 2E/2F.',
                 icon: BadgeCheck,
-                progress: 88,
+                progress: 40,
                 status: 'ready',
-                title: 'Audit evidence package',
+                title: 'Audit evidence (demo)',
                 tone: 'teal',
               }}
             >
               <div className="grid gap-sm border-t border-hairline pt-md">
-                {[
-                  ['Provisioning access', 'User administration', 'locked'],
-                  ['Audit export', 'Audit packet export', 'validated'],
-                  ['Role assignment', 'User role assignment', 'review-required'],
-                  ['MFA enforcement', 'Security verification', 'certified'],
-                ].map(([label, value, status]) => (
+                {(
+                  [
+                    ['Registry key', 'ci.identityRegistry.v1', 'locked'],
+                    ['Users persisted', `${users.length} records`, 'validated'],
+                    ['Setup rows', `${Object.keys(setupAssignments).length} assignments`, 'ready'],
+                    ['Actor (demo)', DEMO_ACTOR_USER_ID, 'certified'],
+                  ] as const
+                ).map(([label, value, status]) => (
                   <div className="flex flex-wrap items-center justify-between gap-sm" key={value}>
                     <div className="flex min-w-0 items-center gap-sm">
                       <KeyRound aria-hidden="true" className="h-icon-sm w-icon-sm shrink-0 text-brand-teal" />
