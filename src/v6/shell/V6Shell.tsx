@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from 'react';
-import { Link, Outlet, matchPath, useLocation, useNavigate } from 'react-router-dom';
-import { Bot, Bookmark, ClipboardCheck, FileText, GitFork, GraduationCap, Heart, HelpCircle, Info, LayoutDashboard, MessageCircle, Settings, Share2, UserRound, Users, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { Outlet, matchPath, useLocation, useNavigate } from 'react-router-dom';
+import { Bookmark, Heart, Info, Share2, X } from 'lucide-react';
 import { PersonalOpsPanel } from './PersonalOpsPanel';
 import { usePersonalOpsStore } from '../../policy/stores/personalOpsStore';
 import { useUiStore } from '../../policy/stores/uiStore';
@@ -15,16 +15,21 @@ import { GuidedTourRunner } from '../guided/GuidedTourRunner';
 import { useGuidedTourStore } from '../guided/guidedTourStore';
 import { ThreadComposer, ThreadDetailPage, ThreadsPage } from '../../policy/help-center/threads';
 
-const NAV_ICONS: Record<string, ComponentType<{ className?: string; 'aria-hidden'?: boolean }>> = {
-  brad: Bot,
-  dashboard: LayoutDashboard,
-  ces: ClipboardCheck,
-  taxonomy: GitFork,
-  onboarding: GraduationCap,
-  'policy-lifecycle': FileText,
-  'help-center': HelpCircle,
-  community: Users,
-  admin: Settings,
+const WORKSPACE_NAV_ICON_ASSETS: Record<string, string> = {
+  dashboard: '/assets/navigation/nav-dashboard-analytics-red.png',
+  ces: '/assets/navigation/nav-compliance-checklist-gold.png',
+  taxonomy: '/assets/navigation/nav-policies-shield-green.png',
+  onboarding: '/assets/navigation/nav-training-cap-blue.png',
+  'help-center': '/assets/navigation/nav-help-question-purple.png',
+};
+
+const UTILITY_NAV_ICON_ASSETS = {
+  profile: '/assets/navigation/nav-user-profile-gray.png',
+  settings: '/assets/navigation/nav-settings-gear-gray.png',
+  feedback: '/assets/navigation/nav-feedback-chat-gray.png',
+  help: '/assets/navigation/nav-help-question-gray.png',
+  share: '/assets/navigation/nav-share-gray.png',
+  info: '/assets/navigation/nav-info-gray.png',
 };
 
 export function V6Shell() {
@@ -36,7 +41,6 @@ export function V6Shell() {
   const tourActive = useGuidedTourStore((s) => s.active);
   const mainRef = useRef<HTMLElement | null>(null);
   const [hasScrolledMain, setHasScrolledMain] = useState(false);
-  const [navOpen, setNavOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [renderFeedbackPanel, setRenderFeedbackPanel] = useState(feedbackOpen);
   const [feedbackPanelVisible, setFeedbackPanelVisible] = useState(feedbackOpen);
@@ -56,9 +60,11 @@ export function V6Shell() {
   const isPolicyDetailRoute = pathname.startsWith('/library/') && !pathname.includes('/print');
   const isChromeFreeRoute = isLessonPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute || isEmbedRequest || isPolicyDetailRoute;
   // Keep the dock visible during a guided tour so its nav targets stay anchorable.
-  const showDock = !isChromeFreeRoute && !isDashboardRoute && (!pathname.startsWith('/iadministrator') || bradLanding || tourActive);
+  const showDock = !isChromeFreeRoute && (!pathname.startsWith('/iadministrator') || bradLanding || tourActive);
+  const showRouteChrome = !isChromeFreeRoute;
   // Policy detail gets zero shell padding (for clean header flush to top) but keeps scroll.
   const suppressShellPadding = isDashboardRoute || isLessonPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute || isEmbedRequest || pathname.startsWith('/iadministrator') || isPolicyDetailRoute;
+  const constrainRouteWidth = showRouteChrome && !suppressShellPadding;
   const panelTop = '0px';
   const panelHeight = '100vh';
 
@@ -77,28 +83,30 @@ export function V6Shell() {
   }, [pathname]);
 
   const dockItems = useMemo(
-    () =>
-      [...primaryNavBarItems]
+    () => {
+      return [...primaryNavBarItems]
         .sort((a, b) => {
-          const order = ['dashboard', 'ces', 'taxonomy', 'onboarding'];
+          const order = ['dashboard', 'ces', 'taxonomy', 'onboarding', 'help-center'];
           return order.indexOf(a.id) - order.indexOf(b.id);
         })
         .map((item) => {
-          const Icon = NAV_ICONS[item.id] ?? HelpCircle;
           return {
-            icon: <Icon className="h-5 w-5" aria-hidden />,
+            id: item.id,
+            icon: (
+              <NavImageIcon
+                src={WORKSPACE_NAV_ICON_ASSETS[item.id] ?? WORKSPACE_NAV_ICON_ASSETS['help-center']}
+                className="h-10 w-10 drop-shadow-[0_8px_12px_rgba(5,45,40,0.18)]"
+              />
+            ),
             label: item.label,
             onClick: () => navigate(item.to),
             isActive: activeNavItem === item.id,
-            colorStyle: getLeftRadialColor(item.id),
             tourTarget: item.id === 'ces' ? 'nav.compliance' : undefined,
           };
-        }),
+        });
+    },
     [activeNavItem, navigate],
   );
-
-  // Close the nav drawer whenever the route changes.
-  useEffect(() => { setNavOpen(false); }, [pathname]);
 
   useEffect(() => {
     let timer: number | undefined;
@@ -163,30 +171,21 @@ export function V6Shell() {
 
   return (
     <div className={cx('theme-ci-light-orange flex h-screen overflow-hidden font-light text-ink p-0 m-0 border-0 bg-canvas', isLessonPlayerRoute ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset' : '')}>
-      {!isChromeFreeRoute && (
+      {showRouteChrome && (
         <>
-          {(showDock || isDashboardRoute) && (
+          {showDock && (
             <button
               type="button"
               onClick={() => navigate('/iadministrator')}
               aria-label="Open Brad"
               className={cx(
-                'fixed left-5 top-5 z-popover hidden h-11 w-11 place-items-center rounded-full bg-transparent text-ink shadow-none transition duration-300 ease-standard hover:-translate-y-0.5 hover:text-brand-teal-deep laptop:grid',
+                'fixed left-5 top-5 z-popover grid h-11 w-11 place-items-center rounded-full bg-transparent text-ink shadow-none transition duration-300 ease-standard hover:-translate-y-0.5 hover:text-brand-teal-deep',
                 activeNavItem === 'brad' && 'text-brand-teal',
               )}
             >
               <AnimatedCareIndeedLogo active={bradActivityActive} className="h-9 w-9" />
             </button>
           )}
-          <button
-            type="button"
-            onClick={() => setNavOpen(true)}
-            aria-label="Open navigation"
-            aria-expanded={navOpen}
-            className="fixed left-5 top-5 z-popover grid h-11 w-11 place-items-center rounded-full bg-transparent text-ink shadow-none transition duration-300 ease-standard hover:-translate-y-0.5 hover:text-brand-teal-deep laptop:hidden"
-          >
-            <ColoredHamburgerIcon />
-          </button>
           <button
             type="button"
             data-tour-target="nav.profile"
@@ -197,63 +196,19 @@ export function V6Shell() {
               isPersonalOpsOpen && 'text-brand-teal',
             )}
           >
-            <UserRound className="h-5 w-5" aria-hidden />
+            <NavImageIcon src={UTILITY_NAV_ICON_ASSETS.profile} className="h-8 w-8 drop-shadow-[0_7px_12px_rgba(5,45,40,0.14)]" />
           </button>
-          {(showDock || isDashboardRoute) && (
+          {showDock && (
             <LeftRadialDock items={dockItems} />
           )}
         </>
-      )}
-
-      {/* Off-canvas nav drawer support is intentionally retained for existing state but has no visible hamburger trigger in the top bar. */}
-      {!isChromeFreeRoute && navOpen && (
-        <div
-          className="fixed inset-0 z-command bg-ink/20 backdrop-blur-sm"
-          onClick={() => setNavOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-      {!isChromeFreeRoute && navOpen && (
-        <aside className="fixed left-0 top-0 z-command flex h-screen w-[min(320px,86vw)] flex-col bg-surface px-4 py-4 shadow-hover">
-          <div className="mb-6 flex items-center justify-between">
-            <span className="text-sm font-medium text-brand-teal-deep">Navigation</span>
-            <button
-              type="button"
-              onClick={() => setNavOpen(false)}
-              aria-label="Close navigation"
-              className="grid h-10 w-10 place-items-center rounded-xl border border-transparent bg-transparent text-ink transition duration-500 ease-standard hover:bg-black/5 hover:text-brand-teal"
-            >
-              <X className="h-5 w-5" aria-hidden />
-            </button>
-          </div>
-          <nav className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto" aria-label="Primary navigation">
-            {primaryNavItems.map((item) => {
-              const Icon = NAV_ICONS[item.id] ?? HelpCircle;
-              const isActive = activeNavItem === item.id;
-              return (
-                <Link
-                  key={item.id}
-                  to={item.to}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={cx(
-                    'flex min-h-tap items-center gap-3 rounded-lg px-3 py-2 text-sm transition duration-500 ease-standard hover:bg-surface-hover hover:text-brand-teal-deep',
-                    isActive ? 'bg-surface-hover font-medium text-brand-teal-deep' : 'text-ink',
-                  )}
-                >
-                  {item.id === 'brad' ? <AnimatedCareIndeedLogo active={bradActivityActive} className="h-6 w-6" /> : <Icon className="h-5 w-5" aria-hidden />}
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        </aside>
       )}
 
       <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col">
         <div className="flex h-full min-h-0 min-w-0 flex-1 flex-row">
           <main
             className={cx(
-              !isDashboardRoute && 'min-h-0 flex-1 overflow-y-auto overflow-x-hidden',
+              'min-h-0 flex-1 overflow-y-auto overflow-x-hidden',
               'transition-[padding-right] duration-500 ease-standard',
               !isChromeFreeRoute && !isDashboardRoute && 'v6-main-scrollmask',
               suppressShellPadding
@@ -275,11 +230,17 @@ export function V6Shell() {
                   : undefined
             }
           >
-            <Outlet />
+            {constrainRouteWidth ? (
+              <div className="mx-auto w-full max-w-[1400px]">
+                <Outlet />
+              </div>
+            ) : (
+              <Outlet />
+            )}
           </main>
         </div>
       </div>
-      {!isChromeFreeRoute && renderPersonalPanel && (
+      {showRouteChrome && renderPersonalPanel && (
         <div
           className={cx(
             'fixed right-0 z-modal w-full max-w-[380px] overflow-visible transition-all duration-500 ease-standard',
@@ -295,7 +256,7 @@ export function V6Shell() {
         </div>
       )}
 
-      {!isChromeFreeRoute && (
+      {showRouteChrome && (
         <FloatingActionRail
           renderFeedbackPanel={renderFeedbackPanel}
           feedbackPanelVisible={feedbackPanelVisible}
@@ -305,33 +266,23 @@ export function V6Shell() {
         />
       )}
 
-      {!isChromeFreeRoute && (
+      {showRouteChrome && (
         <button
           type="button"
           onClick={() => navigate('/admin/user-groups')}
           aria-label="Open admin settings"
           className={cx(
-            'fixed bottom-5 right-5 z-popover grid h-11 w-11 place-items-center rounded-full bg-transparent text-ink shadow-none transition duration-300 ease-standard hover:-translate-y-0.5 hover:text-brand-teal-deep',
+            'fixed bottom-5 left-5 z-popover grid h-11 w-11 place-items-center rounded-full bg-transparent text-ink shadow-none transition duration-300 ease-standard hover:-translate-y-0.5 hover:text-brand-teal-deep',
             activeNavItem === 'admin' && 'text-brand-teal'
           )}
         >
-          <Settings className="h-5 w-5" aria-hidden />
+          <NavImageIcon src={UTILITY_NAV_ICON_ASSETS.settings} className="h-8 w-8 drop-shadow-[0_7px_12px_rgba(5,45,40,0.14)]" />
         </button>
       )}
 
       {/* Brad Guided Assistance - global, route-spanning gated tour overlay. */}
       <GuidedTourRunner />
     </div>
-  );
-}
-
-function ColoredHamburgerIcon() {
-  return (
-    <span className="flex h-5 w-5 flex-col items-center justify-center gap-[3px]" aria-hidden="true">
-      <span className="block h-[2px] w-5 rounded-full" style={{ backgroundColor: 'var(--brand-orange)' }} />
-      <span className="block h-[2px] w-5 rounded-full" style={{ backgroundColor: 'var(--brand-orange)' }} />
-      <span className="block h-[2px] w-5 rounded-full" style={{ backgroundColor: 'var(--ecign-orange)' }} />
-    </span>
   );
 }
 
@@ -345,7 +296,20 @@ function ColoredKebabIcon() {
   );
 }
 
+function NavImageIcon({ src, className = 'h-6 w-6' }: { src: string; className?: string }) {
+  return (
+    <img
+      src={src}
+      alt=""
+      aria-hidden="true"
+      draggable={false}
+      className={cx('pointer-events-none block select-none object-contain', className)}
+    />
+  );
+}
+
 type RadialDockItem = {
+  id: string;
   icon: ReactNode;
   label: string;
   onClick: () => void;
@@ -354,105 +318,37 @@ type RadialDockItem = {
   tourTarget?: string;
 };
 
-function getLeftRadialColor(itemId: string): CSSProperties {
-  switch (itemId) {
-    case 'dashboard':
-      return { backgroundColor: 'var(--brand-teal)' };
-    case 'ces':
-      return { backgroundColor: '#06A6AB' };
-    case 'taxonomy':
-      return { backgroundColor: '#7FE7EA' };
-    case 'onboarding':
-      return { backgroundColor: 'color-mix(in srgb, var(--brand-orange) 68%, white)' };
-    default:
-      return { backgroundColor: 'var(--brand-teal)' };
-  }
-}
-
 function LeftRadialDock({ items }: { items: RadialDockItem[] }) {
-  const [open, setOpen] = useState(false);
-  const totalAngle = 140;
-  const startAngle = -(totalAngle / 2);
-  const angleStep = items.length > 1 ? totalAngle / (items.length - 1) : 0;
   const transitionClass = 'transition-all duration-300 ease-out';
 
-  const handleMouseEnter = () => {
-    if (open) return;
-    setOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    if (!open) return;
-    setOpen(false);
-  };
-
   return (
-    <>
-      <div
-        className={cx('fixed inset-0 z-[40] transition-all duration-500', open ? 'bg-slate-900/[0.33] backdrop-blur-sm opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none')}
-        onClick={handleMouseLeave}
-        aria-hidden="true"
-      />
-      <div
-        className="fixed left-6 top-1/2 z-[50] hidden -translate-y-1/2 laptop:block"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        <div className="relative flex h-11 w-11 items-center justify-center">
-          <div className={cx('absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-500', open ? 'h-[360px] w-[360px]' : 'h-11 w-11')} aria-hidden="true" />
-          <div className={cx('pointer-events-none absolute inset-0 flex items-center justify-center')}>
-            {items.map((item, index) => {
-              const angle = startAngle + index * angleStep;
-              const targetX = Math.cos(angle * Math.PI / 180) * 110;
-              const targetY = Math.sin(angle * Math.PI / 180) * 110;
-              const delay = index * 50;
-              return (
-                <button
-                  key={item.label}
-                  type="button"
-                  data-tour-target={item.tourTarget}
-                  onClick={() => {
-                    item.onClick();
-                    handleMouseLeave();
-                  }}
-                  aria-label={item.label}
-                  title={item.label}
-                  className={cx(
-                    'absolute flex h-11 w-11 items-center justify-center rounded-full text-white shadow-lg hover:scale-110',
-                    transitionClass,
-                    item.isActive && 'ring-2 ring-white ring-offset-2 ring-offset-transparent',
-                  )}
-                  style={{
-                    transform: open ? `translate(${targetX}px, ${targetY}px)` : `translate(0px, 0px) scale(0)`,
-                    opacity: open ? 1 : 0,
-                    pointerEvents: open ? 'auto' : 'none',
-                    transitionDelay: `${delay}ms`,
-                    ...item.colorStyle,
-                  }}
-                >
-                  {item.icon}
-                </button>
-              );
-            })}
-          </div>
-          <button
-            type="button"
-            aria-label="Open navigation"
-            aria-expanded={open}
-            onClick={() => open ? handleMouseLeave() : handleMouseEnter()}
-            className={cx(
-              'relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-800 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl',
-              open && 'pointer-events-none scale-0 opacity-0',
-            )}
-          >
-            <span className="absolute transition-all duration-300" style={{ opacity: open ? 0 : 1, transform: open ? 'rotate(-90deg) scale(0.5)' : 'rotate(0deg) scale(1)' }}>
-              <ColoredHamburgerIcon />
-            </span>
-            <X className="absolute h-5 w-5 text-slate-800 transition-all duration-300" style={{ opacity: open ? 1 : 0, transform: open ? 'rotate(0deg) scale(1)' : 'rotate(90deg) scale(0.5)' }} aria-hidden />
-          </button>
-        </div>
-      </div>
-    </>
+    <nav
+      aria-label="Primary navigation"
+      className="fixed left-5 top-[82px] z-[50] flex flex-col items-center gap-3"
+    >
+      {items.map((item) => (
+        <button
+          key={item.id}
+          type="button"
+          data-tour-target={item.tourTarget}
+          onClick={item.onClick}
+          aria-label={item.label}
+          aria-current={item.isActive ? 'page' : undefined}
+          title={item.label}
+          className={cx(
+            'flex h-11 w-11 items-center justify-center bg-transparent shadow-none hover:scale-110',
+            'focus-visible:outline-none focus-visible:shadow-focus',
+            transitionClass,
+            item.isActive && 'scale-110',
+          )}
+          style={{
+            ...item.colorStyle,
+          }}
+        >
+          {item.icon}
+        </button>
+      ))}
+    </nav>
   );
 }
 
@@ -541,10 +437,10 @@ function FloatingActionRail({
   };
   const rightActionStyle: CSSProperties = { backgroundColor: '#F1F5F9', color: '#94A3B8' };
   const rightActions = [
-    { label: 'Open feedback', title: 'Feedback', icon: <MessageCircle className="h-5 w-5" aria-hidden />, onClick: openFeedback, colorStyle: rightActionStyle },
-    { label: 'Open help center', title: 'Help', icon: <HelpCircle className="h-5 w-5" aria-hidden />, onClick: () => navigate('/help'), colorStyle: rightActionStyle },
-    { label: 'Share', title: 'Share', icon: <Share2 className="h-5 w-5" aria-hidden />, colorStyle: rightActionStyle },
-    { label: 'Information', title: 'Info', icon: <Info className="h-5 w-5" aria-hidden />, colorStyle: rightActionStyle },
+    { label: 'Open feedback', title: 'Feedback', icon: <NavImageIcon src={UTILITY_NAV_ICON_ASSETS.feedback} className="h-7 w-7" />, onClick: openFeedback, colorStyle: rightActionStyle },
+    { label: 'Open help center', title: 'Help', icon: <NavImageIcon src={UTILITY_NAV_ICON_ASSETS.help} className="h-7 w-7" />, onClick: () => navigate('/help'), colorStyle: rightActionStyle },
+    { label: 'Share', title: 'Share', icon: <NavImageIcon src={UTILITY_NAV_ICON_ASSETS.share} className="h-7 w-7" />, colorStyle: rightActionStyle },
+    { label: 'Information', title: 'Info', icon: <NavImageIcon src={UTILITY_NAV_ICON_ASSETS.info} className="h-7 w-7" />, colorStyle: rightActionStyle },
   ];
   const rightTotalAngle = 140;
   const rightStartAngle = 180 - (rightTotalAngle / 2);
@@ -575,7 +471,6 @@ function FloatingActionRail({
           hidden && 'pointer-events-none opacity-0',
         )}
         onMouseEnter={handleRadialMouseEnter}
-        onMouseLeave={handleRadialMouseLeave}
         aria-hidden={hidden ? 'true' : undefined}
       >
         <div className={cx('absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-500', radialOpen ? 'h-[360px] w-[360px]' : 'h-11 w-11')} aria-hidden="true" />
