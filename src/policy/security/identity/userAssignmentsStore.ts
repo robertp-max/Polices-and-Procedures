@@ -15,8 +15,23 @@ import {
   normalizeUserEmail,
   toAppUser,
 } from './identityNormalization';
+import {
+  type UserSetupAssignment,
+  type UserSetupFieldsPayload,
+  buildSeedSetupAssignments,
+  createDefaultSetupAssignment,
+  mergeSetupAssignment,
+  normalizeSetupAssignment,
+} from './userSetupAssignments';
 
+/**
+ * Persist key remains `ci.identityRegistry.v1` (same localStorage key as before).
+ * Internal payload `version` is bumped 1 → 2 to include `setupAssignments`.
+ * v1 blobs without setupAssignments are migrated on load (seed map filled, then
+ * any persisted setupAssignments overlaid). Demo/local-only — no backend.
+ */
 const STORAGE_KEY = 'ci.identityRegistry.v1';
+const REGISTRY_VERSION = 2 as const;
 const PROTECTED_USER_IDS = new Set(['demo-user-careindeed']);
 const SUPER_ADMIN_GROUP_ID = 'grp-super-admin';
 const PRIVILEGED_GROUP_IDS = new Set(['grp-super-admin', 'grp-admin', 'grp-system', 'grp-user-access-admin']);
@@ -27,6 +42,8 @@ export interface AddUserPayload {
   groupId: string;
   status: 'active' | 'pending' | 'suspended';
   sendInvite?: boolean;
+  /** Optional journey/setup fields (role, supervisor, firstDay, onboarding, …). */
+  setup?: UserSetupFieldsPayload;
 }
 
 export interface EditUserPayload {
@@ -34,6 +51,8 @@ export interface EditUserPayload {
   email?: string;
   groupId?: string;
   status?: 'active' | 'pending' | 'suspended';
+  /** Optional journey/setup fields (role, supervisor, firstDay, onboarding, …). */
+  setup?: UserSetupFieldsPayload;
 }
 
 export interface CrudResult {
@@ -44,20 +63,30 @@ export interface CrudResult {
 export interface IdentityRegistrySnapshot {
   users: User[];
   assignments: RoleAssignment[];
+  /** Phase 2A: journey-shaped setup assignments keyed by identity userId. */
+  setupAssignments: Record<string, UserSetupAssignment>;
 }
 
-interface StoredIdentityRegistry extends IdentityRegistrySnapshot {
-  version: 1;
+interface StoredIdentityRegistry {
+  version: 1 | 2;
   updatedAt: string;
+  users: User[];
+  assignments: RoleAssignment[];
+  setupAssignments?: Record<string, UserSetupAssignment>;
 }
 
 export interface UserAssignmentsState {
   users: User[];
   assignments: RoleAssignment[];
+  setupAssignments: Record<string, UserSetupAssignment>;
 
   getUserById: (userId: string) => User | undefined;
   getActiveAssignmentsForUser: (userId: string, atIso?: string) => RoleAssignment[];
   getRegistrySnapshot: () => IdentityRegistrySnapshot;
+
+  getSetupAssignment: (userId: string) => UserSetupAssignment | undefined;
+  getAllSetupAssignments: () => UserSetupAssignment[];
+  setSetupAssignment: (userId: string, patch: UserSetupFieldsPayload) => CrudResult;
 
   hydrateRegistry: (snapshot: IdentityRegistrySnapshot) => void;
   upsertAuthenticatedUser: (authUser: AuthDemoUser | null, nowIso?: string) => User | null;
@@ -123,6 +152,20 @@ function validateEmail(email: string): string | null {
   return null;
 }
 
+function cloneSetupMap(
+  map: Record<string, UserSetupAssignment> | undefined | null,
+): Record<string, UserSetupAssignment> {
+  const out: Record<string, UserSetupAssignment> = {};
+  if (!map || typeof map !== 'object') return out;
+  for (const [userId, raw] of Object.entries(map)) {
+    if (!raw || typeof raw !== 'object') continue;
+    const normalized = normalizeSetupAssignment({ ...raw, userId: raw.userId || userId });
+    if (!normalized.userId) continue;
+    out[normalized.userId] = normalized;
+  }
+  return out;
+}
+
 function loadStoredRegistry(): IdentityRegistrySnapshot | null {
   if (typeof window === 'undefined') return null;
   try {
@@ -130,9 +173,11 @@ function loadStoredRegistry(): IdentityRegistrySnapshot | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<StoredIdentityRegistry>;
     if (!Array.isArray(parsed.users) || !Array.isArray(parsed.assignments)) return null;
+    // v1 → v2: setupAssignments may be missing; mergeRegistry fills seed defaults.
     return {
       users: parsed.users.filter(Boolean).map(user => normalizeUser(user as User)),
       assignments: parsed.assignments.filter(Boolean).map(a => ({ ...(a as RoleAssignment) })),
+      setupAssignments: cloneSetupMap(parsed.setupAssignments),
     };
   } catch {
     return null;
@@ -143,10 +188,11 @@ function saveRegistry(snapshot: IdentityRegistrySnapshot): void {
   if (typeof window === 'undefined') return;
   try {
     const payload: StoredIdentityRegistry = {
-      version: 1,
+      version: REGISTRY_VERSION,
       updatedAt: new Date().toISOString(),
       users: snapshot.users.map(user => ({ ...user })),
       assignments: snapshot.assignments.map(assignment => ({ ...assignment })),
+      setupAssignments: cloneSetupMap(snapshot.setupAssignments),
     };
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   } catch {
@@ -228,10 +274,40 @@ function mergeRegistry(persisted: IdentityRegistrySnapshot | null): IdentityRegi
   for (const assignment of ROLE_ASSIGNMENTS) addAssignment({ ...assignment });
   for (const assignment of persisted?.assignments ?? []) addAssignment({ ...assignment });
 
+  // Setup assignments: seed from DEMO_USERS, then overlay persisted (persisted wins).
+  // Remap userIds when identity merge collapsed ids.
+  const setupByUserId: Record<string, UserSetupAssignment> = {};
+  const seedSetup = buildSeedSetupAssignments();
+  for (const [userId, setup] of Object.entries(seedSetup)) {
+    const remapped = idRemap.get(userId) ?? userId;
+    setupByUserId[remapped] = normalizeSetupAssignment({ ...setup, userId: remapped });
+  }
+  for (const [userId, setup] of Object.entries(persisted?.setupAssignments ?? {})) {
+    const setupUserId = setup.userId || userId;
+    const remappedUserId = idRemap.get(setupUserId) ?? setupUserId;
+    const remappedSupervisor = setup.supervisorId
+      ? (idRemap.get(setup.supervisorId) ?? setup.supervisorId)
+      : null;
+    setupByUserId[remappedUserId] = normalizeSetupAssignment({
+      ...setup,
+      userId: remappedUserId,
+      supervisorId: remappedSupervisor,
+    });
+  }
+  // Ensure every known user has a setup record (additive default).
+  for (const user of usersById.values()) {
+    if (!setupByUserId[user.id]) {
+      setupByUserId[user.id] = createDefaultSetupAssignment(user.id, {
+        active: user.status !== 'suspended',
+      }, user.createdAt ?? new Date().toISOString());
+    }
+  }
+
   const users = [...usersById.values()];
   return {
     users,
     assignments: [...assignmentsById.values()],
+    setupAssignments: setupByUserId,
   };
 }
 
@@ -240,7 +316,7 @@ function initialRegistry(): IdentityRegistrySnapshot {
 }
 
 function setAndPersist(
-  set: (partial: Pick<UserAssignmentsState, 'users' | 'assignments'>) => void,
+  set: (partial: Pick<UserAssignmentsState, 'users' | 'assignments' | 'setupAssignments'>) => void,
   snapshot: IdentityRegistrySnapshot,
 ): void {
   saveRegistry(snapshot);
@@ -254,6 +330,7 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
   return {
     users: initial.users,
     assignments: initial.assignments,
+    setupAssignments: initial.setupAssignments,
 
     getUserById(userId) {
       const normalized = normalizeUserEmail(userId);
@@ -274,11 +351,38 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
     },
 
     getRegistrySnapshot() {
-      const { users, assignments } = get();
+      const { users, assignments, setupAssignments } = get();
       return {
         users: users.map(user => ({ ...user })),
         assignments: assignments.map(assignment => ({ ...assignment })),
+        setupAssignments: cloneSetupMap(setupAssignments),
       };
+    },
+
+    getSetupAssignment(userId) {
+      return get().setupAssignments[userId];
+    },
+
+    getAllSetupAssignments() {
+      return Object.values(get().setupAssignments).map(a => normalizeSetupAssignment(a));
+    },
+
+    setSetupAssignment(userId, patch) {
+      const { users, assignments, setupAssignments } = get();
+      if (!users.some(u => u.id === userId)) {
+        return { ok: false, error: 'User not found.' };
+      }
+      const now = new Date().toISOString();
+      const nextSetup = {
+        ...setupAssignments,
+        [userId]: mergeSetupAssignment(setupAssignments[userId], userId, patch, now),
+      };
+      setAndPersist(set, {
+        users,
+        assignments,
+        setupAssignments: nextSetup,
+      });
+      return { ok: true };
     },
 
     hydrateRegistry(snapshot) {
@@ -286,6 +390,10 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
       setAndPersist(set, mergeRegistry({
         users: [...current.users, ...snapshot.users],
         assignments: [...current.assignments, ...snapshot.assignments],
+        setupAssignments: {
+          ...current.setupAssignments,
+          ...cloneSetupMap(snapshot.setupAssignments),
+        },
       }));
     },
 
@@ -295,7 +403,7 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
       const appUser = toAppUser(authUser, nowIso);
       if (!appUser) return null;
 
-      const { users, assignments } = get();
+      const { users, assignments, setupAssignments } = get();
       const email = normalizeUserEmail(appUser.email);
       const authSubject = getAuthSubject(authUser);
       const provider = getAuthProvider(authUser);
@@ -347,12 +455,35 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
         ];
       }
 
-      setAndPersist(set, mergeRegistry({ users: nextUsers, assignments: nextAssignments }));
+      // Remap setup assignment userIds that collapsed into targetId.
+      const nextSetup: Record<string, UserSetupAssignment> = {};
+      for (const [key, setup] of Object.entries(setupAssignments)) {
+        const remappedId = oldIds.has(setup.userId) || oldIds.has(key) ? targetId : setup.userId;
+        const remappedSupervisor = setup.supervisorId && oldIds.has(setup.supervisorId)
+          ? targetId
+          : setup.supervisorId;
+        nextSetup[remappedId] = normalizeSetupAssignment({
+          ...setup,
+          userId: remappedId,
+          supervisorId: remappedSupervisor,
+        });
+      }
+      if (!nextSetup[targetId]) {
+        nextSetup[targetId] = createDefaultSetupAssignment(targetId, {
+          active: nextUser.status !== 'suspended',
+        }, nowIso);
+      }
+
+      setAndPersist(set, mergeRegistry({
+        users: nextUsers,
+        assignments: nextAssignments,
+        setupAssignments: nextSetup,
+      }));
       return nextUser;
     },
 
     addUser(payload) {
-      const { users, assignments } = get();
+      const { users, assignments, setupAssignments } = get();
 
       if (!payload.name.trim()) return { ok: false, error: 'Full name is required.' };
 
@@ -387,12 +518,25 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
         effectiveFrom: now,
       };
 
-      setAndPersist(set, mergeRegistry({ users: [...users, newUser], assignments: [...assignments, newAssignment] }));
+      const newSetup = createDefaultSetupAssignment(
+        userId,
+        {
+          active: (payload.status ?? 'pending') !== 'suspended',
+          ...payload.setup,
+        },
+        now,
+      );
+
+      setAndPersist(set, mergeRegistry({
+        users: [...users, newUser],
+        assignments: [...assignments, newAssignment],
+        setupAssignments: { ...setupAssignments, [userId]: newSetup },
+      }));
       return { ok: true };
     },
 
     editUser(userId, _currentUserId, payload) {
-      const { users, assignments } = get();
+      const { users, assignments, setupAssignments } = get();
 
       const user = users.find(u => u.id === userId);
       if (!user) return { ok: false, error: 'User not found.' };
@@ -419,6 +563,8 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
         return { ok: false, error: 'Invalid user group selected.' };
       }
 
+      const now = new Date().toISOString();
+
       const updatedUser: User = {
         ...user,
         ...(payload.name !== undefined ? { name: payload.name.trim() } : {}),
@@ -439,20 +585,38 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
                 userId,
                 groupId: payload.groupId,
                 scope: { organizationId: DEFAULT_ORGANIZATION_ID },
-                effectiveFrom: new Date().toISOString(),
+                effectiveFrom: now,
               },
             ];
+      }
+
+      let nextSetup = setupAssignments;
+      if (payload.setup !== undefined || payload.status !== undefined) {
+        const setupPatch: UserSetupFieldsPayload = { ...payload.setup };
+        if (payload.status === 'suspended') {
+          setupPatch.active = false;
+        } else if (
+          (payload.status === 'active' || payload.status === 'pending')
+          && payload.setup?.active === undefined
+        ) {
+          setupPatch.active = true;
+        }
+        nextSetup = {
+          ...setupAssignments,
+          [userId]: mergeSetupAssignment(setupAssignments[userId], userId, setupPatch, now),
+        };
       }
 
       setAndPersist(set, mergeRegistry({
         users: users.map(u => (u.id === userId ? updatedUser : u)),
         assignments: updatedAssignments,
+        setupAssignments: nextSetup,
       }));
       return { ok: true };
     },
 
     deleteUser(userId, currentUserId) {
-      const { users, assignments } = get();
+      const { users, assignments, setupAssignments } = get();
 
       if (PROTECTED_USER_IDS.has(userId)) {
         return { ok: false, error: 'This user is protected and cannot be removed.' };
@@ -478,8 +642,21 @@ export const useUserAssignmentsStore = create<UserAssignmentsState>((set, get) =
           ? { ...assignment, revokedAt: now, effectiveTo: now }
           : assignment,
       );
+      const nextSetup = {
+        ...setupAssignments,
+        [userId]: mergeSetupAssignment(
+          setupAssignments[userId],
+          userId,
+          { active: false },
+          now,
+        ),
+      };
 
-      setAndPersist(set, mergeRegistry({ users: updatedUsers, assignments: updatedAssignments }));
+      setAndPersist(set, mergeRegistry({
+        users: updatedUsers,
+        assignments: updatedAssignments,
+        setupAssignments: nextSetup,
+      }));
       return { ok: true };
     },
   };
@@ -504,3 +681,32 @@ export function hydrateIdentityRegistry(snapshot: IdentityRegistrySnapshot): voi
 export function upsertAuthenticatedAppUser(authUser: AuthDemoUser | null): User | null {
   return useUserAssignmentsStore.getState().upsertAuthenticatedUser(authUser);
 }
+
+export function getLiveSetupAssignment(userId: string): UserSetupAssignment | undefined {
+  return useUserAssignmentsStore.getState().getSetupAssignment(userId);
+}
+
+export function getLiveAllSetupAssignments(): UserSetupAssignment[] {
+  return useUserAssignmentsStore.getState().getAllSetupAssignments();
+}
+
+export function setLiveSetupAssignment(userId: string, patch: UserSetupFieldsPayload): CrudResult {
+  return useUserAssignmentsStore.getState().setSetupAssignment(userId, patch);
+}
+
+/**
+ * Demo/local-only: re-seed the in-memory store from DEMO_USERS + current localStorage.
+ * Used by unit tests (and never as a production API). Clears nothing from disk unless
+ * the caller cleared localStorage first.
+ */
+export function rehydrateIdentityRegistryFromStorage(): void {
+  const snap = initialRegistry();
+  useUserAssignmentsStore.setState({
+    users: snap.users,
+    assignments: snap.assignments,
+    setupAssignments: snap.setupAssignments,
+  });
+  saveRegistry(snap);
+}
+
+export { STORAGE_KEY as IDENTITY_REGISTRY_STORAGE_KEY, REGISTRY_VERSION as IDENTITY_REGISTRY_VERSION };

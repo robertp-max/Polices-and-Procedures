@@ -15,3 +15,6 @@ export * from './pageAccessStore';
 export * from './pageAccess';
 export * from './PageAccessRouteGuard';
 export * from './PageAccessMatrix';
+// Phase 2A — user setup assignments (journey-shaped fields on identity User)
+export * from './userSetupAssignments';
+export * from './userAssignmentsStore';
