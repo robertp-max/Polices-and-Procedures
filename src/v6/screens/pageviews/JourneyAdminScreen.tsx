@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertTriangle, ArrowDown, ArrowUp, BarChart3, CalendarClock, CheckCircle2, FileCheck2, GripVertical, LockKeyhole, Plus, ShieldCheck, Trash2, Users } from 'lucide-react';
 import { DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, toneBarClasses, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { Button, ToneBadge, Input, Textarea } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { useJourneyStore } from '@/policy/journey/stores/journeyStore';
+import type { JourneyEscalation } from '@/policy/journey/types/journey';
+import { humanEscalation } from '@/policy/journey/utils/escalation';
 
 interface SyllabusRow extends Record<string, string> {
   catalogId: string;
@@ -281,13 +284,29 @@ const cohortPanels = [
   { icon: FileCheck2, label: 'Evidence packets', status: 'uploaded', value: '41 attached' },
 ] as const;
 
+function escalationSeverityTone(severity: JourneyEscalation['severity']): Tone {
+  if (severity === 'CRITICAL') return 'red';
+  if (severity === 'WARN') return 'amber';
+  return 'teal';
+}
+
+function escalationStatusBadge(status: JourneyEscalation['status']): string {
+  if (status === 'Open') return 'review-required';
+  if (status === 'Acknowledged') return 'active';
+  return 'ready';
+}
+
 export function JourneyAdminScreen() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  type JourneyAdminTab = 'overview' | 'syllabus' | 'review' | 'governance' | 'builder';
+  type JourneyAdminTab = 'overview' | 'syllabus' | 'review' | 'governance' | 'builder' | 'escalations';
   const requestedTab = searchParams.get('tab');
   const activeTab: JourneyAdminTab =
-    requestedTab === 'syllabus' || requestedTab === 'review' || requestedTab === 'governance' || requestedTab === 'builder'
+    requestedTab === 'syllabus'
+    || requestedTab === 'review'
+    || requestedTab === 'governance'
+    || requestedTab === 'builder'
+    || requestedTab === 'escalations'
       ? requestedTab
       : 'overview';
   const setActiveTab = (tab: JourneyAdminTab) => {
@@ -297,6 +316,46 @@ export function JourneyAdminScreen() {
       return next;
     });
   };
+
+  // Live escalations from journeyStore (Phase 2D). Demo/local-only until 2F backend.
+  const escalations = useJourneyStore((s) => s.escalations);
+  const employees = useJourneyStore((s) => s.employees);
+  const recomputeEscalations = useJourneyStore((s) => s.recomputeEscalations);
+  const acknowledgeEscalation = useJourneyStore((s) => s.acknowledgeEscalation);
+  const resolveEscalation = useJourneyStore((s) => s.resolveEscalation);
+
+  useEffect(() => {
+    recomputeEscalations();
+  }, [recomputeEscalations]);
+
+  const employeeNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const e of employees) map.set(e.id, e.name);
+    return map;
+  }, [employees]);
+
+  const sortedEscalations = useMemo(() => {
+    const severityRank: Record<JourneyEscalation['severity'], number> = {
+      CRITICAL: 0,
+      WARN: 1,
+      INFO: 2,
+    };
+    const statusRank: Record<JourneyEscalation['status'], number> = {
+      Open: 0,
+      Acknowledged: 1,
+      Resolved: 2,
+    };
+    return [...escalations].sort((a, b) => {
+      const s = statusRank[a.status] - statusRank[b.status];
+      if (s !== 0) return s;
+      return severityRank[a.severity] - severityRank[b.severity];
+    });
+  }, [escalations]);
+
+  const openEscalationCount = escalations.filter((e) => e.status === 'Open').length;
+  const criticalOpenCount = escalations.filter(
+    (e) => e.status === 'Open' && e.severity === 'CRITICAL',
+  ).length;
   const [courseTitle, setCourseTitle] = useState('RN General Orientation and supervised clearance');
   const [roleTrack, setRoleTrack] = useState('Registered Nurse - new hire');
   const [targetTimeline, setTargetTimeline] = useState('30 calendar days with 2 supervised visits');
@@ -378,6 +437,7 @@ export function JourneyAdminScreen() {
             { id: 'overview', label: 'Overview' },
             { id: 'syllabus', label: 'Syllabus Catalog' },
             { id: 'review', label: 'Review Queues' },
+            { id: 'escalations', label: openEscalationCount > 0 ? `Escalations (${openEscalationCount})` : 'Escalations' },
             { id: 'governance', label: 'Governance & Refs' },
             { id: 'builder', label: 'Syllabus Builder' },
           ].map((tab) => (
@@ -389,7 +449,7 @@ export function JourneyAdminScreen() {
                   : 'text-secondary hover:bg-surface-hover',
               )}
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'overview' | 'syllabus' | 'review' | 'governance' | 'builder')}
+              onClick={() => setActiveTab(tab.id as JourneyAdminTab)}
               type="button"
             >
               {tab.label}
@@ -634,6 +694,102 @@ export function JourneyAdminScreen() {
                 <ToneBadge size="sm" status="review-required" />
               </div>
               <DataTable columns={reviewQueueColumns} label="Journey admin review queue" rows={reviewQueueRows} />
+            </section>
+          )}
+
+          {activeTab === 'escalations' && (
+            <section className="grid gap-lg" aria-labelledby="escalations-report-title">
+              <div className="flex flex-wrap items-start justify-between gap-lg">
+                <div className="grid gap-xs">
+                  <h2 className="text-h2 font-medium text-ink" id="escalations-report-title">
+                    Escalations &amp; credential deadlines
+                  </h2>
+                  <p className="max-w-content text-sm font-light text-muted">
+                    Live tickets from the journey escalation engine (HR-TD-001 overdue tiers, license
+                    expiry, Appendix F, remediation). Demo/local-only — persisted in browser storage
+                    until Phase 2F backend. Deadlines honor module <code className="text-xs">annualQuarter</code>{' '}
+                    (Q1–Q4) or hire/first-day anniversary for untagged annual modules.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-sm">
+                  <ToneTag tone={criticalOpenCount > 0 ? 'red' : openEscalationCount > 0 ? 'amber' : 'green'}>
+                    {openEscalationCount} open · {criticalOpenCount} critical
+                  </ToneTag>
+                  <Button size="sm" variant="secondary" type="button" onClick={() => recomputeEscalations()}>
+                    Recompute
+                  </Button>
+                </div>
+              </div>
+
+              {sortedEscalations.length === 0 ? (
+                <div className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl text-center">
+                  <CheckCircle2 className="mx-auto mb-md h-icon-lg w-icon-lg text-brand-teal" aria-hidden="true" />
+                  <p className="text-sm font-medium text-ink">No escalations on file</p>
+                  <p className="mt-xs text-xs font-light text-muted">
+                    Recompute after seeding learners or changing attempts to refresh.
+                  </p>
+                </div>
+              ) : (
+                <ul className="grid gap-md" aria-label="Escalation tickets">
+                  {sortedEscalations.map((esc) => {
+                    const empName = employeeNameById.get(esc.employeeId) ?? esc.employeeId;
+                    const canAct = esc.status === 'Open' || esc.status === 'Acknowledged';
+                    return (
+                      <li
+                        key={esc.id}
+                        className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-lg overflow-hidden shadow-rest"
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-md">
+                          <div className="grid gap-xs min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-sm">
+                              <ToneTag tone={escalationSeverityTone(esc.severity)}>{esc.severity}</ToneTag>
+                              <ToneBadge size="sm" status={escalationStatusBadge(esc.status)} />
+                              <span className="text-tag font-medium uppercase tracking-tag text-brand-teal">
+                                {esc.type}
+                              </span>
+                            </div>
+                            <p className="text-sm font-medium text-ink">
+                              {empName}
+                              {esc.moduleId ? (
+                                <span className="font-light text-muted"> · {esc.moduleId}</span>
+                              ) : null}
+                            </p>
+                            <p className="text-sm font-light text-secondary">{humanEscalation(esc)}</p>
+                            <p className="text-xs font-light text-muted">
+                              Policy: {esc.policyRef}
+                              {' · '}
+                              Triggered: {new Date(esc.triggerAt).toLocaleString()}
+                              {esc.resolvedBy ? ` · Resolved by ${esc.resolvedBy}` : ''}
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap gap-sm shrink-0">
+                            {esc.status === 'Open' ? (
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                type="button"
+                                onClick={() => acknowledgeEscalation(esc.id, 'Journey Admin')}
+                              >
+                                Acknowledge
+                              </Button>
+                            ) : null}
+                            {canAct && esc.status !== 'Resolved' ? (
+                              <Button
+                                size="sm"
+                                variant="primary"
+                                type="button"
+                                onClick={() => resolveEscalation(esc.id, 'Journey Admin')}
+                              >
+                                Resolve
+                              </Button>
+                            ) : null}
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </section>
           )}
 
