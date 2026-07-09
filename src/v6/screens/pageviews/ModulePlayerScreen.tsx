@@ -3,6 +3,10 @@ import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
 import { useJourneyStore } from "@/policy/journey/stores/journeyStore";
 import { moduleById } from "@/policy/journey/data/modules";
 import {
+  getAssignedModuleIdsForEmployee,
+  isModuleAssignedToEmployee,
+} from "@/v6/utils/journeyProfileAdapter";
+import {
   ArrowLeft,
   Check,
   Clock,
@@ -2132,6 +2136,10 @@ function FinalResultPage() {
 export function ModulePlayerScreen() {
   const { pathname } = useLocation();
   const params = useParams<{ moduleId?: string; lessonId?: string }>();
+  // Phase 2C: subscribe to current learner for assignment banner + completion employeeId
+  const learnerEmpId = useJourneyStore((s) => s.currentEmployeeId);
+  const learnerEmployees = useJourneyStore((s) => s.employees);
+  const learnerEmp = learnerEmployees.find((e) => e.id === learnerEmpId);
 
   // Gating removed - always proceed (no employee/GAO/Appendix F blocks)
   const rawModuleId = params.moduleId || (pathname.includes('/module/') ? pathname.split('/module/')[1]?.split('/')[0] : undefined);
@@ -2209,6 +2217,37 @@ export function ModulePlayerScreen() {
   }
 
   // Gating removed per request (no more idiotic module start blocks for GAO/Appendix F/etc.)
+  // Phase 2C: do NOT re-enable canStartModule here — only surface assignment context.
+  // Completions already write via recordLearnerCompletion(j.currentEmployeeId, …).
+  const assignedIds = getAssignedModuleIdsForEmployee(learnerEmpId, learnerEmp?.role);
+  const moduleInAssignment =
+    !rawModuleId
+    || assignedIds.length === 0
+    || isModuleAssignedToEmployee(learnerEmpId, rawModuleId, learnerEmp?.role);
+  const assignmentBanner =
+    rawModuleId && assignedIds.length > 0 ? (
+      <div
+        className={`no-print mx-4 mb-2 rounded-lg border px-3 py-2 text-[11px] font-mono ${
+          moduleInAssignment
+            ? 'border-tone-teal-border/40 bg-tone-teal-bg/20 text-brand-teal-deep'
+            : 'border-amber-300 bg-amber-50 text-amber-950'
+        }`}
+        role="status"
+      >
+        {moduleInAssignment ? (
+          <>
+            Learner assignment ({learnerEmp?.name || learnerEmpId}): module{' '}
+            <strong>{rawModuleId}</strong> is on this track ({assignedIds.length} modules).
+          </>
+        ) : (
+          <>
+            <strong>Not on this learner&apos;s assignment track</strong> ({learnerEmp?.name || learnerEmpId}).
+            Module <strong>{rawModuleId}</strong> is still playable (demo); completions still attach to{' '}
+            <code className="text-[10px]">{learnerEmpId}</code>. Prefer Academy for the assigned catalog.
+          </>
+        )}
+      </div>
+    ) : null;
 
   // The OASIS-E2 SOC simulator IS the page: cover the full viewport, above
   // the topbar and floating shell controls, so only the workspace is visible.
@@ -2236,6 +2275,7 @@ export function ModulePlayerScreen() {
       data-template="module-player"
     >
       <div className="w-full p-0 md:p-0 flex flex-col h-full" style={{ minHeight: 'calc(100vh - var(--topbar-h) - 2rem)' }}>
+        {assignmentBanner}
         <div className="flex-1">
           {element}
         </div>

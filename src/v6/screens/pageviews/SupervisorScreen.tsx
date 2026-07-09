@@ -1,12 +1,20 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Stethoscope, AlertTriangle, StopCircle, Plus, CheckCircle2 } from "lucide-react";
 import { useLearner } from "@/policy/journey/lib/learnerState";
 import { appCopy, contentV2 } from "@/policy/journey/data/contentV2Adapter";
 import { JourneyLearningShell } from "./JourneyLearningShell";
 import { ReviewerToolsPanel } from "@/policy/journey/components/ReviewerToolsPanel";
+import { DemoImpersonationBar } from "@/policy/journey/components/DemoImpersonationBar";
 import { useJourneyStore } from "@/policy/journey/stores/journeyStore";
 import type { SupervisedVisit, SignatureRecord } from "@/policy/journey/types/journey";
 import { modulesForRole } from "@/policy/journey/data/modules";
+import { getDirectReportUserIds } from "@/policy/security/identity/userSetupAssignments";
+import { useUserAssignmentsStore } from "@/policy/security/identity/userAssignmentsStore";
+import {
+  JOURNEY_EMPLOYEE_TO_IDENTITY,
+  resolveJourneyEmployeeId,
+  resolveIdentityUserIdFromEmployee,
+} from "@/v6/utils/journeyProfileAdapter";
 
 export function PhiWarningBlock() {
   return (
@@ -30,37 +38,96 @@ export function PhiWarningBlock() {
 export function SupervisorScreen() {
   const { state, setOptionalClinical } = useLearner();
   const journey = useJourneyStore();
+  const setupAssignments = useUserAssignmentsStore((s) => s.setupAssignments);
   const [inputText, setInputText] = useState("");
 
+  // Acting supervisor = demo-impersonated / current journey employee (e.g. EMP-2001 DON)
+  const actingSupervisorEmpId = journey.currentEmployeeId;
+  const actingSupervisor = journey.employees.find((e) => e.id === actingSupervisorEmpId);
+  const actingSupervisorIdentityId =
+    resolveIdentityUserIdFromEmployee(actingSupervisorEmpId)
+    || JOURNEY_EMPLOYEE_TO_IDENTITY[actingSupervisorEmpId]
+    || null;
+
+  /**
+   * Phase 2C: filter journey employees to direct reports of the acting supervisor.
+   * Prefer seed `supervisorId` match (EMP-2001 → EMP-1001/1002/1003) so visit/sign flows keep working.
+   * Also honor setup-layer reports via getDirectReportUserIds → journeyEmployeeSeedRef.
+   */
+  const reportEmployees = useMemo(() => {
+    const all = journey.employees;
+    const byJourneySupervisor = all.filter((e) => e.supervisorId === actingSupervisorEmpId);
+    const setupReportIds = actingSupervisorIdentityId
+      ? getDirectReportUserIds(setupAssignments, actingSupervisorIdentityId)
+      : [];
+    const fromSetup = setupReportIds
+      .map((userId) => {
+        const empId =
+          setupAssignments[userId]?.journeyEmployeeSeedRef
+          || resolveJourneyEmployeeId(userId);
+        return empId ? all.find((e) => e.id === empId) : undefined;
+      })
+      .filter((e): e is (typeof all)[number] => !!e);
+
+    const merged = new Map<string, (typeof all)[number]>();
+    for (const e of byJourneySupervisor) merged.set(e.id, e);
+    for (const e of fromSetup) merged.set(e.id, e);
+    return Array.from(merged.values());
+  }, [journey.employees, actingSupervisorEmpId, actingSupervisorIdentityId, setupAssignments]);
+
   // P0-005: Supervised Visit Logging state (minimal functional path)
-  const [selectedEmpId, setSelectedEmpId] = useState(journey.currentEmployeeId);
+  const [selectedEmpId, setSelectedEmpId] = useState(
+    () => reportEmployees[0]?.id || journey.currentEmployeeId,
+  );
   const [visitForm, setVisitForm] = useState({
     visitDate: new Date().toISOString().slice(0, 10),
     visitType: 'INITIAL' as SupervisedVisit['visitType'],
     rating: 'SATISFACTORY' as SupervisedVisit['rating'],
     comments: '',
-    supervisorName: 'Elena Navarro, RN DON',
-    supervisorRole: 'DON' as SignatureRecord['role'],
+    supervisorName: actingSupervisor?.name || 'Elena Navarro, RN DON',
+    supervisorRole: (actingSupervisor?.role === 'DON' ? 'DON' : 'Supervisor') as SignatureRecord['role'],
     followUp: false,
   });
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
 
+  // Keep selection inside filtered reports when impersonation / roster changes
+  useEffect(() => {
+    if (reportEmployees.length === 0) return;
+    if (!reportEmployees.some((e) => e.id === selectedEmpId)) {
+      setSelectedEmpId(reportEmployees[0].id);
+    }
+  }, [reportEmployees, selectedEmpId]);
+
+  // Sync visit form supervisor identity when demo impersonation changes
+  useEffect(() => {
+    if (!actingSupervisor) return;
+    setVisitForm((f) => ({
+      ...f,
+      supervisorName: actingSupervisor.name,
+      supervisorRole: (actingSupervisor.role === 'DON' ? 'DON' : 'Supervisor') as SignatureRecord['role'],
+    }));
+  }, [actingSupervisorEmpId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const o = state.optionalClinical;
   const interactions = [o.hub, o.skills, o.confidence, o.documentation, o.help].filter(Boolean).length;
 
-  const employees = journey.employees;
+  const employees = reportEmployees;
   const currentEmp = employees.find(e => e.id === selectedEmpId) || employees[0];
   const visits = journey.supervisedVisits.filter(v => v.employeeId === selectedEmpId);
 
-  const roleModules = modulesForRole(currentEmp.role);
+  const roleModules = currentEmp ? modulesForRole(currentEmp.role) : [];
   const supRequiredModules = roleModules.filter(m => (m.supervisedVisitsRequired ?? 0) > 0);
   const requiredCount = supRequiredModules.reduce((sum, m) => sum + (m.supervisedVisitsRequired ?? 0), 0);
   const satisfactoryVisits = visits.filter(v => v.rating === 'SATISFACTORY').length;
-  const canClear = satisfactoryVisits >= requiredCount && requiredCount > 0;
-  const cleared = currentEmp.clearedForIndependentWork;
+  const canClear = !!currentEmp && satisfactoryVisits >= requiredCount && requiredCount > 0;
+  const cleared = currentEmp?.clearedForIndependentWork ?? false;
 
   function saveSupervisedVisit() {
     setSaveMsg(null);
+    if (!currentEmp) {
+      setSaveMsg('No direct report selected. Switch demo impersonation to a supervisor (e.g. EMP-2001 DON).');
+      return;
+    }
     if (!visitForm.comments.trim()) {
       setSaveMsg('Comments required.');
       return;
@@ -73,7 +140,8 @@ export function SupervisorScreen() {
     };
     const visit: Omit<SupervisedVisit, 'id' | 'createdAt'> = {
       employeeId: selectedEmpId,
-      supervisorId: 'SUP-001', // placeholder
+      // Phase 2C: use acting supervisor EMP id (not hard-coded SUP-001)
+      supervisorId: actingSupervisorEmpId,
       visitDate: visitForm.visitDate,
       visitType: visitForm.visitType,
       rating: visitForm.rating,
@@ -109,6 +177,8 @@ export function SupervisorScreen() {
       subtitle="Access supplementary nursing guides, return demonstrations, and de-identified charting practices. This section is entirely optional and does not affect required course hours."
     >
       <div className="space-y-6">
+        {/* Demo learner/supervisor switcher (Phase 2C — until real session 2F) */}
+        <DemoImpersonationBar />
         {/* Reviewer Tools */}
         <ReviewerToolsPanel />
 
@@ -195,23 +265,41 @@ export function SupervisorScreen() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-bold uppercase text-muted block mb-1">Employee</label>
+                <label className="text-[10px] font-bold uppercase text-muted block mb-1">
+                  Direct report (filtered for {actingSupervisor?.name || actingSupervisorEmpId})
+                </label>
                 <select
-                  value={selectedEmpId}
+                  value={currentEmp?.id || ''}
                   onChange={e => setSelectedEmpId(e.target.value)}
                   className="w-full border border-hairline rounded p-2 text-sm bg-surface-glass"
+                  disabled={employees.length === 0}
                 >
-                  {employees.map(emp => (
-                    <option key={emp.id} value={emp.id}>{emp.name} ({emp.role})</option>
-                  ))}
+                  {employees.length === 0 ? (
+                    <option value="">No direct reports for this supervisor</option>
+                  ) : (
+                    employees.map(emp => (
+                      <option key={emp.id} value={emp.id}>{emp.name} ({emp.role})</option>
+                    ))
+                  )}
                 </select>
+                {employees.length === 0 && (
+                  <p className="mt-1 text-[10px] text-muted font-mono">
+                    Tip: use demo impersonation above to view as DON (EMP-2001 / usr-director) to see EMP-1001/1002/1003.
+                  </p>
+                )}
               </div>
 
               <div className="text-xs text-muted pt-6">
-                Required satisfactory visits for {currentEmp.role}: <strong className="text-brand-teal">{requiredCount}</strong><br />
-                Current satisfactory: <strong>{satisfactoryVisits}</strong> &nbsp;
-                {canClear && !cleared && <span className="text-green-600">Ready for clearance</span>}
-                {cleared && <span className="text-green-700 font-bold">CLEARED FOR INDEPENDENT PRACTICE</span>}
+                {currentEmp ? (
+                  <>
+                    Required satisfactory visits for {currentEmp.role}: <strong className="text-brand-teal">{requiredCount}</strong><br />
+                    Current satisfactory: <strong>{satisfactoryVisits}</strong> &nbsp;
+                    {canClear && !cleared && <span className="text-green-600">Ready for clearance</span>}
+                    {cleared && <span className="text-green-700 font-bold">CLEARED FOR INDEPENDENT PRACTICE</span>}
+                  </>
+                ) : (
+                  <span>Select a supervisor with direct reports to log visits.</span>
+                )}
               </div>
             </div>
 
@@ -278,7 +366,9 @@ export function SupervisorScreen() {
             </div>
 
             <div>
-              <div className="text-xs font-bold mb-1">Saved Visits for {currentEmp.name} (persists on refresh)</div>
+              <div className="text-xs font-bold mb-1">
+                Saved Visits for {currentEmp?.name || '—'} (persists on refresh)
+              </div>
               {visits.length === 0 && <div className="text-xs text-muted">No visits logged yet.</div>}
               <ul className="text-xs space-y-1">
                 {visits.map(v => (

@@ -15,21 +15,28 @@ import {
   Stethoscope,
   Share2,
 } from 'lucide-react';
-import { ALL_MODULES } from '@/policy/journey/data/modules';
+import { ALL_MODULES, moduleById, modulesForRole } from '@/policy/journey/data/modules';
+import { RoleJourneyVisualizer } from '@/policy/journey/components/roleJourney/RoleJourneyVisualizer';
+import { DemoImpersonationBar } from '@/policy/journey/components/DemoImpersonationBar';
 import { useJourneyStore } from '@/policy/journey/stores/journeyStore';
 import type { ModuleAttempt } from '@/policy/journey/types/journey';
 import { cx } from '../../utils/classNames';
+import {
+  workspaceCompactTabClass,
+  workspaceTabActiveClass,
+  workspaceTabInactiveClass,
+  workspaceTabNavClass,
+} from './workspaceTabChrome';
+import { StaticCardWatermark } from './StaticCardWatermark';
+import { NolanTutorPanel } from '../journey/NolanTutorPanel';
+import { getAssignedModuleIdsForEmployee } from '../../utils/journeyProfileAdapter';
 
-type AcademyTabId = 'home' | 'onboarding' | 'achc' | 'advanced' | 'certificates';
+type AcademyTabId = 'home' | 'onboarding' | 'roleJourney' | 'appendixF' | 'achc' | 'advanced' | 'certificates';
 type OnboardingPathId = 'gao';
 
 interface AcademyTab {
   id: AcademyTabId;
   label: string;
-  activeText: string;
-  inactiveText: string;
-  activeBg: string;
-  inactiveBg: string;
 }
 
 interface AcademyCard {
@@ -45,42 +52,30 @@ const academyTabs: AcademyTab[] = [
   {
     id: 'home',
     label: 'Home',
-    activeText: 'text-[#3E7D32]',
-    inactiveText: 'text-[#3E7D32]/70',
-    activeBg: 'rgba(218, 240, 213, 0.777)',
-    inactiveBg: 'rgba(235, 247, 232, 0.45)',
   },
   {
     id: 'onboarding',
     label: 'Onboarding',
-    activeText: 'text-[#F06923]',
-    inactiveText: 'text-[#F06923]/70',
-    activeBg: 'rgba(255, 216, 191, 0.777)',
-    inactiveBg: 'rgba(255, 240, 230, 0.45)',
+  },
+  {
+    id: 'roleJourney',
+    label: 'Role Journey',
+  },
+  {
+    id: 'appendixF',
+    label: 'Appendix F',
   },
   {
     id: 'achc',
     label: 'ACHC',
-    activeText: 'text-[#2F80ED]',
-    inactiveText: 'text-[#2F80ED]/70',
-    activeBg: 'rgba(203, 224, 245, 0.777)',
-    inactiveBg: 'rgba(230, 240, 250, 0.45)',
   },
   {
     id: 'advanced',
     label: 'Advanced',
-    activeText: 'text-[#EB5757]',
-    inactiveText: 'text-[#EB5757]/70',
-    activeBg: 'rgba(255, 201, 201, 0.777)',
-    inactiveBg: 'rgba(255, 230, 230, 0.45)',
   },
   {
     id: 'certificates',
     label: 'Certs',
-    activeText: 'text-[#007970]',
-    inactiveText: 'text-[#007970]/70',
-    activeBg: 'rgba(209, 234, 230, 0.777)',
-    inactiveBg: 'rgba(230, 244, 241, 0.45)',
   },
 ];
 
@@ -88,6 +83,8 @@ function toAcademyTabId(value: string | null): AcademyTabId | null {
   switch (value) {
     case 'home':
     case 'onboarding':
+    case 'roleJourney':
+    case 'appendixF':
     case 'achc':
     case 'advanced':
     case 'certificates':
@@ -96,57 +93,6 @@ function toAcademyTabId(value: string | null): AcademyTabId | null {
       return null;
   }
 }
-
-const onboardingCards: AcademyCard[] = [
-  {
-    id: 'GAO',
-    eyebrow: 'Path 1',
-    title: 'General Agency Orientation',
-    body: 'Foundation sequence for every role: mission, compliance, HIPAA, patient rights, safety, and survey readiness.',
-    status: 'Open',
-    to: '/journey?tab=onboarding&path=gao',
-  },
-  {
-    id: 'ADM-001',
-    eyebrow: 'Path 2',
-    title: 'Home Health Administrator',
-    body: 'Governance, QAPI oversight, billing compliance, survey readiness, and leadership responsibilities.',
-    status: 'Play',
-    to: '/journey/module/ADM-001',
-  },
-  {
-    id: 'DON-001',
-    eyebrow: 'Path 3',
-    title: 'Director of Nursing',
-    body: 'Clinical supervision, OASIS oversight, care-plan management, competency leadership, and infection prevention.',
-    status: 'Play',
-    to: '/journey/module/DON-001',
-  },
-  {
-    id: 'RN-001',
-    eyebrow: 'Path 4',
-    title: 'Registered Nurse',
-    body: 'Core clinical skills, documentation, medication management, OASIS accuracy, and patient assessment.',
-    status: 'Play',
-    to: '/journey/module/RN-001',
-  },
-  {
-    id: 'LVN-001',
-    eyebrow: 'Path 5',
-    title: 'Licensed Vocational Nurse',
-    body: 'Skilled nursing support under RN supervision with focused medication and documentation competency.',
-    status: 'Play',
-    to: '/journey/module/LVN-001',
-  },
-  {
-    id: 'PT-001',
-    eyebrow: 'Path 6',
-    title: 'Physical Therapist',
-    body: 'Therapy evaluation, goal setting, home exercise planning, and home-health documentation requirements.',
-    status: 'Play',
-    to: '/journey/module/PT-001',
-  },
-];
 
 function completionForModule(moduleId: string, attempts: ModuleAttempt[]) {
   const moduleAttempts = attempts.filter((attempt) => attempt.moduleId === moduleId);
@@ -163,7 +109,7 @@ function AcademyTabs({
   onChange: (tab: AcademyTabId) => void;
 }) {
   return (
-    <nav aria-label="Training academy sections" className="flex max-w-full items-end -space-x-2 font-montserrat md:-space-x-3">
+    <nav aria-label="Training academy sections" className={workspaceTabNavClass}>
       {academyTabs.map((tab) => {
         const isActive = tab.id === activeTab;
         return (
@@ -171,13 +117,10 @@ function AcademyTabs({
             key={tab.id}
             type="button"
             onClick={() => onChange(tab.id)}
-            style={{
-              backgroundColor: isActive ? tab.activeBg : tab.inactiveBg,
-              borderRadius: '10px 10px 0 0',
-            }}
             className={cx(
-              'relative flex items-center justify-center border-0 px-4 text-[9px] font-bold uppercase tracking-wider shadow-[-2px_-1px_5px_rgba(82,64,75,0.06)] outline-none backdrop-blur-[6px] transition-all duration-300 hover:shadow-[-2px_-1px_7px_rgba(82,64,75,0.1)] md:px-6 md:text-[10px]',
-              isActive ? `z-30 h-8 translate-y-px ${tab.activeText}` : `z-10 h-[26px] ${tab.inactiveText} hover:h-7`,
+              workspaceCompactTabClass,
+              'flex items-center justify-center whitespace-nowrap',
+              isActive ? workspaceTabActiveClass : workspaceTabInactiveClass,
             )}
             aria-current={isActive ? 'page' : undefined}
           >
@@ -284,6 +227,9 @@ export function JourneyAcademyScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const attempts = useJourneyStore((state) => state.attempts);
   const evidence = useJourneyStore((state) => state.evidence);
+  const currentEmployeeId = useJourneyStore((state) => state.currentEmployeeId);
+  const employees = useJourneyStore((state) => state.employees);
+  const currentEmployee = employees.find((e) => e.id === currentEmployeeId) || employees[0];
   const requestedTab = toAcademyTabId(searchParams.get('tab'));
   const onboardingPath = searchParams.get('path') === 'gao' ? 'gao' : null;
   const [activeTab, setActiveTab] = useState<AcademyTabId>(() => requestedTab ?? 'home');
@@ -294,9 +240,66 @@ export function JourneyAcademyScreen() {
     setActiveTab((current) => (current === nextTab ? current : nextTab));
   }, [requestedTab]);
 
+  // Phase 2C: completions / evidence scoped to demo-impersonated learner (not global aggregate)
+  const learnerAttempts = useMemo(
+    () => attempts.filter((a) => a.employeeId === currentEmployeeId),
+    [attempts, currentEmployeeId],
+  );
+  const learnerEvidence = useMemo(
+    () => evidence.filter((e) => e.employeeId === currentEmployeeId),
+    [evidence, currentEmployeeId],
+  );
+
+  /**
+   * Prefer Phase 2A setup onboarding.moduleIds for the impersonated learner;
+   * else modulesForRole(role). Catalog resolution still uses ALL_MODULES / moduleById.
+   */
+  const assignedModuleIds = useMemo(() => {
+    if (!currentEmployee) return [] as string[];
+    return getAssignedModuleIdsForEmployee(currentEmployee.id, currentEmployee.role);
+  }, [currentEmployee]);
+
+  const assignedModules = useMemo(() => {
+    if (assignedModuleIds.length > 0) {
+      return assignedModuleIds
+        .map((id) => moduleById(id))
+        .filter((m): m is NonNullable<typeof m> => !!m);
+    }
+    return currentEmployee ? modulesForRole(currentEmployee.role) : ALL_MODULES;
+  }, [assignedModuleIds, currentEmployee]);
+
+  const assignedIdSet = useMemo(() => new Set(assignedModules.map((m) => m.id)), [assignedModules]);
+
+  const roleOnboardingCards = useMemo<AcademyCard[]>(() => {
+    // Keep GAO entry + role-specific modules from assignment (not every role path in the catalog)
+    // Role-specific tracks use group ROLE (RN-001, DON-001, …); GAO/ANN/ADV handled in other tabs
+    const roleMods = assignedModules.filter((m) => m.group === 'ROLE');
+    const cards: AcademyCard[] = [
+      {
+        id: 'GAO',
+        eyebrow: 'Path 1',
+        title: 'General Agency Orientation',
+        body: 'Foundation sequence for every role: mission, compliance, HIPAA, patient rights, safety, and survey readiness.',
+        status: 'Open',
+        to: '/journey?tab=onboarding&path=gao',
+      },
+    ];
+    roleMods.slice(0, 8).forEach((module, index) => {
+      cards.push({
+        id: module.id,
+        eyebrow: `Path ${index + 2}`,
+        title: module.title,
+        body: `${module.method} - ${module.policyRefs.join(', ') || module.group}${module.cmsRefs.length ? ` - ${module.cmsRefs.join(', ')}` : ''}.`,
+        status: 'Play',
+        to: `/journey/module/${module.id}`,
+      });
+    });
+    return cards;
+  }, [assignedModules]);
+
   const achcCards = useMemo<AcademyCard[]>(
     () =>
-      ALL_MODULES
+      assignedModules
         .filter((module) => module.id.startsWith('ACHC-ART-'))
         .slice(0, 12)
         .map((module, index) => ({
@@ -307,51 +310,83 @@ export function JourneyAcademyScreen() {
           status: index === 0 ? 'Start' : 'Play',
           to: `/journey/module/${module.id}`,
         })),
-    [],
+    [assignedModules],
   );
 
+  // If assignment has no ACHC slice, fall back to catalog ACHC so the tab is not empty for roles that include ALL modules
+  const achcCardsResolved = useMemo(() => {
+    if (achcCards.length > 0) return achcCards;
+    // modulesForRole / setup usually includes ACHC via roles:'ALL'; if still empty show catalog slice
+    return ALL_MODULES
+      .filter((module) => module.id.startsWith('ACHC-ART-'))
+      .slice(0, 12)
+      .map((module, index) => ({
+        id: module.id,
+        eyebrow: `Module ${index + 1}`,
+        title: module.title,
+        body: `${module.durationMinutes ?? 60} min - ${module.cmsRefs.join(', ') || 'ACHC annual requirement'} - 80% pass threshold.`,
+        status: index === 0 ? 'Start' : 'Play',
+        to: `/journey/module/${module.id}`,
+      }));
+  }, [achcCards]);
+
   const gaoCards = useMemo<AcademyCard[]>(
-    () =>
-      ALL_MODULES
-        .filter((module) => module.group === 'GAO')
-        .map((module, index) => ({
-          id: module.id,
-          eyebrow: module.id === 'GAO-EXAM' ? 'Final Gate' : `GAO ${String(index + 1).padStart(2, '0')}`,
-          title: module.title,
-          body: `${module.method} - ${module.policyRefs.join(', ') || 'agency orientation'}${module.cmsRefs.length ? ` - ${module.cmsRefs.join(', ')}` : ''}.`,
-          status: module.id === 'GAO-001' ? 'Start' : 'Play',
-          to: `/journey/module/${module.id}`,
-        })),
-    [],
+    () => {
+      const gaoSource =
+        assignedModules.filter((module) => module.group === 'GAO').length > 0
+          ? assignedModules.filter((module) => module.group === 'GAO')
+          : ALL_MODULES.filter((module) => module.group === 'GAO');
+      return gaoSource.map((module, index) => ({
+        id: module.id,
+        eyebrow: module.id === 'GAO-EXAM' ? 'Final Gate' : `GAO ${String(index + 1).padStart(2, '0')}`,
+        title: module.title,
+        body: `${module.method} - ${module.policyRefs.join(', ') || 'agency orientation'}${module.cmsRefs.length ? ` - ${module.cmsRefs.join(', ')}` : ''}.`,
+        status: module.id === 'GAO-001' ? 'Start' : 'Play',
+        to: `/journey/module/${module.id}`,
+      }));
+    },
+    [assignedModules],
   );
 
   const advancedCards = useMemo<AcademyCard[]>(
-    () =>
-      ALL_MODULES
-        .filter((module) => module.group === 'ADV')
-        .map((module, index) => ({
-          id: module.id,
-          eyebrow: `RN-ADV-${String(index + 1).padStart(2, '0')}`,
-          title: module.title,
-          body: `${module.durationMinutes ?? 120} min - ${module.method} - ${module.policyRefs.join(', ') || 'clinical governance'}.`,
-          status: 'Play',
-          to: `/journey/module/${module.id}`,
-        })),
-    [],
+    () => {
+      const advSource =
+        assignedModules.filter((module) => module.group === 'ADV').length > 0
+          ? assignedModules.filter((module) => module.group === 'ADV')
+          : ALL_MODULES.filter((module) => module.group === 'ADV');
+      return advSource.map((module, index) => ({
+        id: module.id,
+        eyebrow: `RN-ADV-${String(index + 1).padStart(2, '0')}`,
+        title: module.title,
+        body: `${module.durationMinutes ?? 120} min - ${module.method} - ${module.policyRefs.join(', ') || 'clinical governance'}.`,
+        status: 'Play',
+        to: `/journey/module/${module.id}`,
+      }));
+    },
+    [assignedModules],
   );
 
   const completedModuleCount = useMemo(
-    () => new Set(attempts.filter((attempt) => attempt.lessonStatus === 'passed' || attempt.status === 'completed').map((attempt) => attempt.moduleId)).size,
-    [attempts],
+    () =>
+      new Set(
+        learnerAttempts
+          .filter((attempt) => attempt.lessonStatus === 'passed' || attempt.status === 'completed')
+          .map((attempt) => attempt.moduleId),
+      ).size,
+    [learnerAttempts],
   );
   const gaoCompletedCount = useMemo(
     () =>
       new Set(
-        attempts
-          .filter((attempt) => gaoCards.some((card) => card.id === attempt.moduleId) && (attempt.lessonStatus === 'passed' || attempt.status === 'completed'))
+        learnerAttempts
+          .filter(
+            (attempt) =>
+              gaoCards.some((card) => card.id === attempt.moduleId)
+              && (attempt.lessonStatus === 'passed' || attempt.status === 'completed'),
+          )
           .map((attempt) => attempt.moduleId),
       ).size,
-    [attempts, gaoCards],
+    [learnerAttempts, gaoCards],
   );
 
   const certificateCards = [
@@ -360,7 +395,7 @@ export function JourneyAcademyScreen() {
       eyebrow: 'Cert - GAO-001',
       title: 'General Agency Orientation',
       body: 'Issued when GAO-001 assessment and acknowledgement evidence are complete.',
-      status: completionForModule('GAO-001', attempts) ?? 'In Progress',
+      status: completionForModule('GAO-001', learnerAttempts) ?? 'In Progress',
       to: '/journey/module/GAO-001',
     },
     {
@@ -368,7 +403,7 @@ export function JourneyAcademyScreen() {
       eyebrow: 'Cert - ACHC',
       title: 'ACHC Cultural Awareness',
       body: 'Annual field-worker training certificate with quiz evidence and completion timestamp.',
-      status: completionForModule('ACHC-ART-M01', attempts) ?? 'In Progress',
+      status: completionForModule('ACHC-ART-M01', learnerAttempts) ?? 'In Progress',
       to: '/journey/module/ACHC-ART-M01',
     },
     {
@@ -376,7 +411,7 @@ export function JourneyAcademyScreen() {
       eyebrow: 'Cert - Advanced',
       title: 'CMS-485 Plan of Care Mastery',
       body: 'Advanced plan-of-care training certificate with scenario completion and review evidence.',
-      status: completionForModule('cms-485', attempts) ?? 'In Progress',
+      status: completionForModule('cms-485', learnerAttempts) ?? 'In Progress',
       to: '/journey/module/cms-485',
     },
   ];
@@ -409,14 +444,19 @@ export function JourneyAcademyScreen() {
     setSearchParams(next, { replace: true });
   };
   const copyComplianceLog = () => {
-    const summary = `Care Indeed Journey log: ${completedModuleCount} completed modules, ${evidence.length} evidence records.`;
+    const summary = `Care Indeed Journey log (${currentEmployeeId}): ${completedModuleCount} completed modules, ${learnerEvidence.length} evidence records.`;
     void navigator.clipboard?.writeText(summary);
     setNotice('Compliance log summary copied.');
     window.setTimeout(() => setNotice(null), 2600);
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFBF8] px-6 pb-16 pt-4 font-roboto text-[#52404B] selection:bg-[#E5FEFF] md:px-12">
+    <div
+      className={cx(
+        'bg-[#FAFBF8] px-6 pt-4 font-roboto text-[#52404B] selection:bg-[#E5FEFF] md:px-12',
+        activeTab === 'roleJourney' ? 'pb-2' : 'min-h-screen pb-16',
+      )}
+    >
       {notice ? (
         <div className="fixed bottom-6 right-6 z-[70] rounded-xl border border-[#C4F4F5] bg-[#E5FEFF] px-4 py-3 text-sm font-semibold text-[#007970] shadow-lg">
           {notice}
@@ -424,16 +464,23 @@ export function JourneyAcademyScreen() {
       ) : null}
 
       <main className="mx-auto flex w-full max-w-[1400px] flex-col">
+        <div className="mb-3">
+          <DemoImpersonationBar />
+          {assignedModuleIds.length > 0 ? (
+            <p className="mt-1 text-[11px] text-[#747470] font-mono">
+              Assignment: {assignedModuleIds.length} modules for {currentEmployee?.name || currentEmployeeId}
+              {assignedIdSet.size > 0 ? ` · role ${currentEmployee?.role ?? '—'}` : ''}
+            </p>
+          ) : null}
+        </div>
         <div className="relative z-20 flex justify-start">
           <AcademyTabs activeTab={activeTab} onChange={changeTab} />
         </div>
 
         {activeTab === 'home' ? (
           <div className="space-y-10 pb-12">
-            <section className="relative overflow-hidden rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-10 shadow-sm md:p-14">
-              <div className="pointer-events-none absolute -right-16 -top-16 flex h-[350px] w-[350px] items-center justify-center opacity-[0.035] md:h-[550px] md:w-[550px]">
-                <img src="/apple-icon.png" alt="" className="h-full w-full object-contain grayscale" />
-              </div>
+            <section className="ci-page-hero relative overflow-hidden rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-10 shadow-sm md:p-14">
+              <StaticCardWatermark />
               <div className="relative z-10 flex flex-col items-start justify-between gap-12 xl:flex-row">
                 <div className="max-w-3xl">
                   <h2 className="mb-6 font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#F06923]">Academy Overview</h2>
@@ -469,8 +516,8 @@ export function JourneyAcademyScreen() {
             <div className="grid w-full grid-cols-2 gap-6 md:grid-cols-4">
               {[
                 { value: '42 CFR', label: 'Part 484 aligned', icon: ShieldCheck },
-                { value: String(onboardingCards.length), label: 'Role pathways', icon: LayoutGrid },
-                { value: String(achcCards.length), label: 'ACHC modules', icon: BookOpen },
+                { value: String(roleOnboardingCards.length), label: 'Role pathways', icon: LayoutGrid },
+                { value: String(achcCardsResolved.length), label: 'ACHC modules', icon: BookOpen },
                 { value: String(completedModuleCount), label: 'Completed modules', icon: Award },
               ].map((stat) => {
                 const Icon = stat.icon;
@@ -523,6 +570,17 @@ export function JourneyAcademyScreen() {
                 }}
                 onClick={() => navigate('/journey/new-hire')}
               />
+              <ModuleCard
+                card={{
+                  id: 'certificates',
+                  eyebrow: 'Certificates',
+                  title: 'Completion Certificates',
+                  body: 'View issued training certificates, completion evidence, timestamps, and survey-ready learner records.',
+                  status: `${certificateCards.length} records`,
+                  to: '/journey?tab=certificates',
+                }}
+                onClick={() => changeTab('certificates')}
+              />
             </SectionContainer>
           </div>
         ) : null}
@@ -542,16 +600,28 @@ export function JourneyAcademyScreen() {
                 <PageHeader title="General Agency Orientation" subtitle="Complete the full GAO sequence before moving into role-specific onboarding and competency gates." />
                 <SectionContainer title="GAO Module Sequence" footer="Open any GAO module below. The full orientation path remains available here instead of jumping straight into GAO-001.">
                   {gaoCards.map((card) => (
-                    <ModuleCard key={card.id} card={card} status={completionForModule(card.id, attempts)} onClick={() => openModule(card)} />
+                    <ModuleCard key={card.id} card={card} status={completionForModule(card.id, learnerAttempts)} onClick={() => openModule(card)} />
                   ))}
                 </SectionContainer>
               </>
             ) : (
               <>
-                <PageHeader title="Role-Based Onboarding & Competency Journey" subtitle="CMS CoP alignment, supervisor sign-off gates, and personnel-file evidence for every role." />
+                <PageHeader
+                  title="Role-Based Onboarding & Competency Journey"
+                  subtitle={`CMS CoP alignment for ${currentEmployee?.name || 'learner'} (${currentEmployee?.role || 'role'}). Supervisor sign-off gates and personnel-file evidence.`}
+                />
                 <SectionContainer title="Role-Based Onboarding Paths" footer="Begin with General Agency Orientation, then open the pathway for your assigned role." action="Open New Hire Portal" onAction={() => navigate('/journey/new-hire')}>
-                  {onboardingCards.map((card) => (
-                    <ModuleCard key={card.id} card={card} status={card.id === 'GAO' ? `${gaoCompletedCount}/${gaoCards.length}` : completionForModule(card.id, attempts)} onClick={() => openModule(card)} />
+                  {roleOnboardingCards.map((card) => (
+                    <ModuleCard
+                      key={card.id}
+                      card={card}
+                      status={
+                        card.id === 'GAO'
+                          ? `${gaoCompletedCount}/${gaoCards.length}`
+                          : completionForModule(card.id, learnerAttempts)
+                      }
+                      onClick={() => openModule(card)}
+                    />
                   ))}
                 </SectionContainer>
               </>
@@ -559,13 +629,65 @@ export function JourneyAcademyScreen() {
           </div>
         ) : null}
 
+        {activeTab === 'roleJourney' ? (
+          <div className="pb-2">
+            <RoleJourneyVisualizer />
+          </div>
+        ) : null}
+
         {activeTab === 'achc' ? (
           <div className="space-y-8 pb-12">
             <PageHeader title="ACHC Required - Field Worker Edition" subtitle="Annual modules with scenario challenges, quiz gates, and evidence capture for survey readiness." />
             <SectionContainer title="Annual Mandatory Training" footer="Completion gate: all annual modules by Dec 31 with remediation tracking for missed thresholds." action="Start First Module" onAction={() => navigate('/journey/module/ACHC-ART-M01')}>
-              {achcCards.map((card) => (
-                <ModuleCard key={card.id} card={card} status={completionForModule(card.id, attempts)} onClick={() => openModule(card)} />
+              {achcCardsResolved.map((card) => (
+                <ModuleCard key={card.id} card={card} status={completionForModule(card.id, learnerAttempts)} onClick={() => openModule(card)} />
               ))}
+            </SectionContainer>
+          </div>
+        ) : null}
+
+        {activeTab === 'appendixF' ? (
+          <div className="space-y-8 pb-12">
+            <PageHeader title="Appendix F Onboarding Clearance" subtitle="Required pre-Day-1 clearance, HR review, signature control, and personnel-file evidence before work begins." />
+            <SectionContainer
+              title="Appendix F Packet"
+              footer="Appendix F remains the required onboarding gate before orientation, field work, or independent patient care."
+              action="Open Appendix F"
+              onAction={() => navigate('/journey/appendix-f')}
+            >
+              <ModuleCard
+                card={{
+                  id: 'appendix-f-required',
+                  eyebrow: 'Required Gate',
+                  title: 'Pre-Employment Screening Checklist',
+                  body: 'Open the live Appendix F checklist to review PASS/NA items, capture notes, and complete HR Director sign-off.',
+                  status: 'Open',
+                  to: '/journey/appendix-f',
+                }}
+                onClick={() => navigate('/journey/appendix-f')}
+              />
+              <ModuleCard
+                card={{
+                  id: 'appendix-f-evidence',
+                  eyebrow: 'Personnel File',
+                  title: 'Clearance Evidence Record',
+                  body: 'Use Appendix F to document background checks, exclusion screening, license review, health readiness, and final clearance state.',
+                  status: 'Active',
+                  to: '/journey/appendix-f',
+                }}
+                onClick={() => navigate('/journey/appendix-f')}
+              />
+              <ModuleCard
+                card={{
+                  id: 'appendix-f-unlocks',
+                  eyebrow: 'Training Access',
+                  title: 'Unlock Onboarding Journey',
+                  body: 'Once Appendix F is signed, learners can continue into GAO, role-specific onboarding, certificates, and supervisor gates.',
+                  status: 'Gate',
+                  to: '/journey?tab=onboarding',
+                }}
+                onClick={() => changeTab('onboarding')}
+              />
             </SectionContainer>
           </div>
         ) : null}
@@ -575,7 +697,7 @@ export function JourneyAcademyScreen() {
             <PageHeader title="Advanced Training - Plan of Care & Compliance" subtitle="Deep clinical modules for CMS-485, QAPI, OASIS-E2, and documentation defensibility." />
             <SectionContainer title="Advanced Clinical Training" footer="Specialized completion evidence supports competency reviews and remediation plans." action="Open Supervisor View" onAction={() => navigate('/journey/supervisor')}>
               {advancedCards.map((card) => (
-                <ModuleCard key={card.id} card={card} status={completionForModule(card.id, attempts)} onClick={() => openModule(card)} />
+                <ModuleCard key={card.id} card={card} status={completionForModule(card.id, learnerAttempts)} onClick={() => openModule(card)} />
               ))}
             </SectionContainer>
           </div>
@@ -589,7 +711,7 @@ export function JourneyAcademyScreen() {
                 <div>
                   <h2 className="font-montserrat text-2xl font-semibold tracking-tight text-[#007970]">Badge Rewards</h2>
                   <p className="mt-2 font-roboto text-sm font-light text-[#747470]">
-                    Completed modules: <strong className="font-semibold">{completedModuleCount}</strong>. Evidence records: <strong className="font-semibold">{evidence.length}</strong>.
+                    Completed modules: <strong className="font-semibold">{completedModuleCount}</strong>. Evidence records: <strong className="font-semibold">{learnerEvidence.length}</strong>.
                   </p>
                 </div>
                 <span className="font-montserrat text-xs font-bold uppercase tracking-wider text-[#747470]">{Math.min(completedModuleCount, 6)}/6 Unlocked</span>
@@ -622,7 +744,7 @@ export function JourneyAcademyScreen() {
               </div>
             </section>
 
-            <SectionContainer title="Completed Certificates" footer="Certificates remain tied to Journey attempts and evidence records." action="Open Appendix F" onAction={() => navigate('/journey/appendix-f')}>
+            <SectionContainer title="Completed Certificates" footer="Certificates remain tied to Journey attempts and evidence records." action="Download All as PDF" onAction={() => window.print()}>
               {certificateCards.map((card) => (
                 <ModuleCard key={card.id} card={card} onClick={() => openModule(card)} />
               ))}
@@ -649,6 +771,8 @@ export function JourneyAcademyScreen() {
           </div>
         ) : null}
       </main>
+      {/* Nolan — training tutor, available on every Academy tab. */}
+      <NolanTutorPanel />
     </div>
   );
 }

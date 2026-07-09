@@ -5,11 +5,11 @@
  * - Only completed / passed / cleared positive states.
  * - Never failures, remediation, deficiencies, incomplete, PHI, patient data, performance rankings.
  *
- * IDENTITY MAPPING GAP (documented):
- * Journey uses its own SEED_EMPLOYEES (EMP-XXXX ids) + separate learnerState / journeyStore.
- * Auth / Community uses demo-user / u-*-* ids from AuthProvider + communityProfileAdapter.
- * No unified mapping exists yet. This adapter returns data only for explicitly known demo overlaps or current journey employee.
- * If no match, returns empty array (no fakes).
+ * IDENTITY MAPPING (Phase 2C):
+ * Journey uses SEED_EMPLOYEES (EMP-XXXX) + journeyStore.
+ * Security identity uses DEMO_USERS (usr-*, demo-user-careindeed).
+ * Auth / Community may use demo-user / u-*-* ids.
+ * This adapter maps known overlaps; unmatched → empty achievements (no fakes).
  *
  * Usage: Call from profile screens. Opt-in via future profile setting.
  */
@@ -20,6 +20,9 @@ import {
   ACHC_BUNDLE_NAME,
   isAchcModuleId,
 } from '@/policy/journey/utils/achcTrainingCalculations';
+import { getLiveSetupAssignment } from '@/policy/security/identity/userAssignmentsStore';
+import { modulesForRole } from '@/policy/journey/data/modules';
+import type { JourneyRole } from '@/policy/journey/types/journey';
 
 export interface JourneyAchievement {
   id: string;
@@ -29,13 +32,114 @@ export interface JourneyAchievement {
   detail?: string;
 }
 
-/** Known demo mapping (only for prototype). Real systems must unify user <-> employee ids. */
-const DEMO_JOURNEY_EMPLOYEE_MAP: Record<string, string> = {
-  'demo-user': 'EMP-1001', // Maria Santos, RN example
+/**
+ * Known demo mapping: identity / auth / community userId → Journey EMP id.
+ * Phase 2A seed refs + legacy community ids for prototype only.
+ */
+export const DEMO_JOURNEY_EMPLOYEE_MAP: Record<string, string> = {
+  // Legacy auth / community demo ids
+  'demo-user': 'EMP-1001',
   'u-don-01': 'EMP-1001',
   'u-admin-brad': 'EMP-2001',
   'u-compliance-tp': 'EMP-1003',
+  // Phase 2A identity DEMO_USERS → SEED_EMPLOYEES concepts
+  'demo-user-careindeed': 'EMP-3001',
+  'usr-rn': 'EMP-1001',
+  'usr-lvn': 'EMP-1003',
+  'usr-chha': 'EMP-1002',
+  'usr-director': 'EMP-2001',
 };
+
+/** Reverse map: Journey EMP id → primary identity userId (Phase 2A seed). */
+export const JOURNEY_EMPLOYEE_TO_IDENTITY: Record<string, string> = {
+  'EMP-1001': 'usr-rn',
+  'EMP-1002': 'usr-chha',
+  'EMP-1003': 'usr-lvn',
+  'EMP-2001': 'usr-director',
+  'EMP-3001': 'demo-user-careindeed',
+};
+
+/**
+ * Resolve a security/auth/community userId (or raw EMP id) to a Journey employee id.
+ * Prefer static map, then setup `journeyEmployeeSeedRef`, then EMP-* passthrough.
+ */
+export function resolveJourneyEmployeeId(userId: string | null | undefined): string | null {
+  if (!userId) return null;
+  const trimmed = String(userId).trim();
+  if (!trimmed) return null;
+
+  if (DEMO_JOURNEY_EMPLOYEE_MAP[trimmed]) {
+    return DEMO_JOURNEY_EMPLOYEE_MAP[trimmed];
+  }
+
+  try {
+    const setup = getLiveSetupAssignment(trimmed);
+    if (setup?.journeyEmployeeSeedRef) {
+      return setup.journeyEmployeeSeedRef;
+    }
+  } catch {
+    // store unavailable outside app — ignore
+  }
+
+  if (/^EMP-\d+/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  return null;
+}
+
+/** Resolve Journey EMP id → identity userId when known. */
+export function resolveIdentityUserIdFromEmployee(employeeId: string | null | undefined): string | null {
+  if (!employeeId) return null;
+  if (JOURNEY_EMPLOYEE_TO_IDENTITY[employeeId]) {
+    return JOURNEY_EMPLOYEE_TO_IDENTITY[employeeId];
+  }
+  // Identity user ids used as EMP bridge via toJourneyEmployeeOverlap keep usr-* form
+  if (employeeId.startsWith('usr-') || employeeId === 'demo-user-careindeed') {
+    return employeeId;
+  }
+  return null;
+}
+
+/**
+ * Module ids assigned to a learner EMP via Phase 2A setup onboarding track.
+ * Falls back to `modulesForRole(role)` when no setup track is present.
+ */
+export function getAssignedModuleIdsForEmployee(
+  employeeId: string,
+  role?: JourneyRole | null,
+): string[] {
+  const identityId = resolveIdentityUserIdFromEmployee(employeeId);
+  if (identityId) {
+    try {
+      const setup = getLiveSetupAssignment(identityId);
+      const ids = setup?.onboarding?.moduleIds;
+      if (ids && ids.length > 0) {
+        return [...ids];
+      }
+      if (!role && setup?.role) {
+        return modulesForRole(setup.role).map((m) => m.id);
+      }
+    } catch {
+      // ignore
+    }
+  }
+  if (role) {
+    return modulesForRole(role).map((m) => m.id);
+  }
+  return [];
+}
+
+/** Whether a module is in the learner's assignment (or unassigned catalog when empty). */
+export function isModuleAssignedToEmployee(
+  employeeId: string,
+  moduleId: string,
+  role?: JourneyRole | null,
+): boolean {
+  const assigned = getAssignedModuleIdsForEmployee(employeeId, role);
+  if (assigned.length === 0) return true; // no assignment data → do not hard-block
+  return assigned.includes(moduleId);
+}
 
 export function getJourneyProfileAchievements(userId: string): JourneyAchievement[] {
   // Access zustand state via api (works outside React components)
@@ -46,7 +150,9 @@ export function getJourneyProfileAchievements(userId: string): JourneyAchievemen
   const evidence: any[] = state.evidence || [];
   const currentEmployeeId: string | null = state.currentEmployeeId || null;
 
-  const employeeId = DEMO_JOURNEY_EMPLOYEE_MAP[userId] || (userId === currentEmployeeId ? currentEmployeeId : null);
+  const employeeId =
+    resolveJourneyEmployeeId(userId)
+    || (userId === currentEmployeeId ? currentEmployeeId : null);
   if (!employeeId) {
     // No reliable mapping for this userId → return empty. Do not fabricate.
     return [];
