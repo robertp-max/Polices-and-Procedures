@@ -1,6 +1,21 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Outlet, matchPath, useLocation, useNavigate } from 'react-router-dom';
-import { Bookmark, Heart, Info, Share2, X } from 'lucide-react';
+import {
+  Bookmark,
+  ClipboardCheck,
+  GraduationCap,
+  Heart,
+  HelpCircle,
+  Info,
+  LayoutGrid,
+  MessageSquare,
+  Network,
+  Settings,
+  Share2,
+  User,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
 import { PersonalOpsPanel } from './PersonalOpsPanel';
 import { usePersonalOpsStore } from '../../policy/stores/personalOpsStore';
 import { useUiStore } from '../../policy/stores/uiStore';
@@ -15,21 +30,13 @@ import { GuidedTourRunner } from '../guided/GuidedTourRunner';
 import { useGuidedTourStore } from '../guided/guidedTourStore';
 import { ThreadComposer, ThreadDetailPage, ThreadsPage } from '../../policy/help-center/threads';
 
-const WORKSPACE_NAV_ICON_ASSETS: Record<string, string> = {
-  dashboard: '/assets/navigation/nav-dashboard-analytics-red.png',
-  ces: '/assets/navigation/nav-compliance-checklist-gold.png',
-  taxonomy: '/assets/navigation/nav-policies-shield-green.png',
-  onboarding: '/assets/navigation/nav-training-cap-blue.png',
-  'help-center': '/assets/navigation/nav-help-question-purple.png',
-};
-
-const UTILITY_NAV_ICON_ASSETS = {
-  profile: '/assets/navigation/nav-user-profile-gray.png',
-  settings: '/assets/navigation/nav-settings-gear-gray.png',
-  feedback: '/assets/navigation/nav-feedback-chat-gray.png',
-  help: '/assets/navigation/nav-help-question-gray.png',
-  share: '/assets/navigation/nav-share-gray.png',
-  info: '/assets/navigation/nav-info-gray.png',
+/** Monoline dock icons (screenshot style). */
+const NAV_ICONS: Record<string, LucideIcon> = {
+  dashboard: LayoutGrid,
+  ces: ClipboardCheck,
+  taxonomy: Network,
+  onboarding: GraduationCap,
+  'help-center': HelpCircle,
 };
 
 export function V6Shell() {
@@ -57,7 +64,12 @@ export function V6Shell() {
   // screen embeds another route in an iframe (e.g. policy appendices modal
   // showing an actual form workspace).
   const isEmbedRequest = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === '1';
-  const isPolicyDetailRoute = pathname.startsWith('/library/') && !pathname.includes('/print');
+  // Keep shell chrome on Policy Home + Policy Library; strip only for real policy detail.
+  const isPolicyDetailRoute =
+    pathname.startsWith('/library/') &&
+    pathname !== '/library' &&
+    pathname !== '/library/policies' &&
+    !pathname.includes('/print');
   const isChromeFreeRoute = isLessonPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute || isEmbedRequest || isPolicyDetailRoute;
   // Keep the dock visible during a guided tour so its nav targets stay anchorable.
   const showDock = !isChromeFreeRoute && (!pathname.startsWith('/iadministrator') || bradLanding || tourActive);
@@ -90,14 +102,10 @@ export function V6Shell() {
           return order.indexOf(a.id) - order.indexOf(b.id);
         })
         .map((item) => {
+          const Icon = NAV_ICONS[item.id] ?? HelpCircle;
           return {
             id: item.id,
-            icon: (
-              <NavImageIcon
-                src={WORKSPACE_NAV_ICON_ASSETS[item.id] ?? WORKSPACE_NAV_ICON_ASSETS['help-center']}
-                className="h-10 w-10 drop-shadow-[0_8px_12px_rgba(5,45,40,0.18)]"
-              />
-            ),
+            icon: <Icon className="h-[22px] w-[22px]" strokeWidth={1.5} aria-hidden />,
             label: item.label,
             onClick: () => navigate(item.to),
             isActive: activeNavItem === item.id,
@@ -192,11 +200,14 @@ export function V6Shell() {
             onClick={togglePersonalOps}
             aria-label="Open personal operations"
             className={cx(
-              'group fixed right-5 top-5 z-popover grid h-11 w-11 place-items-center rounded-full bg-transparent text-ink shadow-none transition duration-300 ease-standard hover:-translate-y-0.5 hover:text-brand-teal-deep',
-              isPersonalOpsOpen && 'text-brand-teal',
+              'group fixed right-5 top-5 z-popover flex h-11 w-11 items-center justify-center bg-transparent shadow-none transition duration-300 ease-standard hover:-translate-y-1',
+              isPersonalOpsOpen ? 'text-brand-teal' : 'text-slate-400 hover:text-brand-teal-deep',
             )}
           >
-            <NavImageIcon src={UTILITY_NAV_ICON_ASSETS.profile} className="h-8 w-8 drop-shadow-[0_7px_12px_rgba(5,45,40,0.14)]" />
+            <User className="h-[22px] w-[22px]" strokeWidth={1.5} aria-hidden />
+            <span className="pointer-events-none absolute right-14 whitespace-nowrap text-sm font-medium text-brand-teal opacity-0 transition-all duration-300 ease-out group-hover:-translate-x-2 group-hover:opacity-100 group-focus-visible:-translate-x-2 group-focus-visible:opacity-100">
+              Profile
+            </span>
           </button>
           {showDock && (
             <LeftRadialDock items={dockItems} />
@@ -272,11 +283,14 @@ export function V6Shell() {
           onClick={() => navigate('/admin/user-groups')}
           aria-label="Open admin settings"
           className={cx(
-            'fixed bottom-5 left-5 z-popover grid h-11 w-11 place-items-center rounded-full bg-transparent text-ink shadow-none transition duration-300 ease-standard hover:-translate-y-0.5 hover:text-brand-teal-deep',
-            activeNavItem === 'admin' && 'text-brand-teal'
+            'group fixed bottom-5 left-5 z-popover flex h-11 w-11 items-center justify-center bg-transparent shadow-none transition duration-300 ease-standard hover:-translate-y-1',
+            activeNavItem === 'admin' ? 'text-brand-teal' : 'text-slate-400 hover:text-brand-teal-deep'
           )}
         >
-          <NavImageIcon src={UTILITY_NAV_ICON_ASSETS.settings} className="h-8 w-8 drop-shadow-[0_7px_12px_rgba(5,45,40,0.14)]" />
+          <Settings className="h-[22px] w-[22px]" strokeWidth={1.5} aria-hidden />
+          <span className="pointer-events-none absolute left-14 whitespace-nowrap text-sm font-medium text-brand-teal opacity-0 transition-all duration-300 ease-out group-hover:translate-x-2 group-hover:opacity-100 group-focus-visible:translate-x-2 group-focus-visible:opacity-100">
+            Admin
+          </span>
         </button>
       )}
 
@@ -289,22 +303,10 @@ export function V6Shell() {
 function ColoredKebabIcon() {
   return (
     <span className="flex h-5 w-5 flex-col items-center justify-center gap-[2px]" aria-hidden="true">
-      <span className="block h-[5px] w-[5px] rounded-full" style={{ backgroundColor: 'var(--text-secondary)' }} />
-      <span className="block h-[5px] w-[5px] rounded-full" style={{ backgroundColor: 'var(--text-secondary)' }} />
-      <span className="block h-[5px] w-[5px] rounded-full" style={{ backgroundColor: 'var(--text-secondary)' }} />
+      <span className="block h-[5px] w-[5px] rounded-full bg-brand-orange" />
+      <span className="block h-[5px] w-[5px] rounded-full bg-ecign-orange" />
+      <span className="block h-[5px] w-[5px] rounded-full bg-brand-teal" />
     </span>
-  );
-}
-
-function NavImageIcon({ src, className = 'h-6 w-6' }: { src: string; className?: string }) {
-  return (
-    <img
-      src={src}
-      alt=""
-      aria-hidden="true"
-      draggable={false}
-      className={cx('pointer-events-none block select-none object-contain', className)}
-    />
   );
 }
 
@@ -334,18 +336,21 @@ function LeftRadialDock({ items }: { items: RadialDockItem[] }) {
           onClick={item.onClick}
           aria-label={item.label}
           aria-current={item.isActive ? 'page' : undefined}
-          title={item.label}
           className={cx(
-            'flex h-11 w-11 items-center justify-center bg-transparent shadow-none hover:scale-110',
+            'group relative flex h-11 w-11 items-center justify-center bg-transparent shadow-none',
             'focus-visible:outline-none focus-visible:shadow-focus',
-            transitionClass,
-            item.isActive && 'scale-110',
+            item.isActive ? 'text-brand-teal' : 'text-slate-400 hover:text-brand-teal-deep',
           )}
           style={{
             ...item.colorStyle,
           }}
         >
-          {item.icon}
+          <span className={cx(transitionClass, 'group-hover:scale-110 group-hover:-translate-y-1', item.isActive && 'scale-110')} aria-hidden="true">
+            {item.icon}
+          </span>
+          <span className="pointer-events-none absolute left-14 whitespace-nowrap text-sm font-medium text-brand-teal opacity-0 transition-all duration-300 ease-out group-hover:translate-x-2 group-hover:opacity-100 group-focus-visible:translate-x-2 group-focus-visible:opacity-100">
+            {item.label}
+          </span>
         </button>
       ))}
     </nav>
@@ -435,12 +440,12 @@ function FloatingActionRail({
     onFeedbackClose();
     navigate(route);
   };
-  const rightActionStyle: CSSProperties = { backgroundColor: '#F1F5F9', color: '#94A3B8' };
+  const rightActionClass = 'h-6 w-6 text-slate-400 transition-colors group-hover:text-brand-teal group-focus-visible:text-brand-teal';
   const rightActions = [
-    { label: 'Open feedback', title: 'Feedback', icon: <NavImageIcon src={UTILITY_NAV_ICON_ASSETS.feedback} className="h-7 w-7" />, onClick: openFeedback, colorStyle: rightActionStyle },
-    { label: 'Open help center', title: 'Help', icon: <NavImageIcon src={UTILITY_NAV_ICON_ASSETS.help} className="h-7 w-7" />, onClick: () => navigate('/help'), colorStyle: rightActionStyle },
-    { label: 'Share', title: 'Share', icon: <NavImageIcon src={UTILITY_NAV_ICON_ASSETS.share} className="h-7 w-7" />, colorStyle: rightActionStyle },
-    { label: 'Information', title: 'Info', icon: <NavImageIcon src={UTILITY_NAV_ICON_ASSETS.info} className="h-7 w-7" />, colorStyle: rightActionStyle },
+    { label: 'Feedback', title: 'Feedback', icon: <MessageSquare className={rightActionClass} strokeWidth={1.5} aria-hidden />, onClick: openFeedback },
+    { label: 'Help center', title: 'Help', icon: <HelpCircle className={rightActionClass} strokeWidth={1.5} aria-hidden />, onClick: () => navigate('/help') },
+    { label: 'Share', title: 'Share', icon: <Share2 className={rightActionClass} strokeWidth={1.5} aria-hidden /> },
+    { label: 'Information', title: 'Info', icon: <Info className={rightActionClass} strokeWidth={1.5} aria-hidden /> },
   ];
   const rightTotalAngle = 140;
   const rightStartAngle = 180 - (rightTotalAngle / 2);
@@ -473,8 +478,8 @@ function FloatingActionRail({
         onMouseEnter={handleRadialMouseEnter}
         aria-hidden={hidden ? 'true' : undefined}
       >
-        <div className={cx('absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-500', radialOpen ? 'h-[360px] w-[360px]' : 'h-11 w-11')} aria-hidden="true" />
-        <div className={cx('pointer-events-none absolute inset-0 flex items-center justify-center')}>
+        <div className={cx('absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-500', radialOpen ? 'h-[360px] w-[360px]' : 'h-11 w-11')} aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           {rightActions.map((action, index) => {
             const angle = rightStartAngle + index * rightAngleStep;
             const targetX = Math.cos(angle * Math.PI / 180) * 110;
@@ -490,16 +495,20 @@ function FloatingActionRail({
                 }}
                 aria-label={action.label}
                 title={action.title}
-                className={cx('absolute flex h-11 w-11 items-center justify-center rounded-full shadow-lg hover:scale-110', radialTransitionClass)}
+                className={cx('group absolute flex h-11 w-11 items-center justify-center bg-transparent shadow-none', radialTransitionClass)}
                 style={{
-                  transform: radialOpen ? `translate(${targetX}px, ${targetY}px)` : `translate(0px, 0px) scale(0)`,
+                  transform: radialOpen ? `translate(${targetX}px, ${targetY}px)` : 'translate(0px, 0px) scale(0)',
                   opacity: radialOpen ? 1 : 0,
                   pointerEvents: radialOpen ? 'auto' : 'none',
                   transitionDelay: `${delay}ms`,
-                  ...action.colorStyle,
                 }}
               >
-                {action.icon}
+                <span className={cx(radialTransitionClass, 'group-hover:scale-110 group-hover:-translate-y-1')} aria-hidden="true">
+                  {action.icon}
+                </span>
+                <span className="pointer-events-none absolute right-12 whitespace-nowrap text-sm font-medium text-brand-teal opacity-0 transition-all duration-300 ease-out group-hover:-translate-x-2 group-hover:opacity-100 group-focus-visible:-translate-x-2 group-focus-visible:opacity-100">
+                  {action.label}
+                </span>
               </button>
             );
           })}
@@ -511,14 +520,19 @@ function FloatingActionRail({
           aria-expanded={radialOpen}
           title="Page actions"
           className={cx(
-            'relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-800 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl',
-            radialOpen && 'pointer-events-none scale-0 opacity-0',
+            'group relative z-10 flex h-11 w-11 items-center justify-center bg-transparent shadow-none transition-all duration-300',
+            radialOpen ? 'pointer-events-none scale-0 opacity-0' : 'text-slate-400 hover:text-brand-teal'
           )}
         >
-          <span className="absolute transition-all duration-300" style={{ opacity: radialOpen ? 0 : 1, transform: radialOpen ? 'rotate(-90deg) scale(0.5)' : 'rotate(0deg) scale(1)' }}>
-            <ColoredKebabIcon />
+          <span className="flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-1" aria-hidden="true">
+            <span className="absolute transition-all duration-300" style={{ opacity: radialOpen ? 0 : 1, transform: radialOpen ? 'rotate(-90deg) scale(0.5)' : 'rotate(0deg) scale(1)' }}>
+              <ColoredKebabIcon />
+            </span>
+            <X className="absolute h-5 w-5 transition-all duration-300" style={{ opacity: radialOpen ? 1 : 0, transform: radialOpen ? 'rotate(0deg) scale(1)' : 'rotate(90deg) scale(0.5)' }} />
           </span>
-          <X className="absolute h-5 w-5 text-slate-800 transition-all duration-300" style={{ opacity: radialOpen ? 1 : 0, transform: radialOpen ? 'rotate(0deg) scale(1)' : 'rotate(90deg) scale(0.5)' }} aria-hidden />
+          <span className="pointer-events-none absolute right-14 whitespace-nowrap text-sm font-medium text-brand-teal opacity-0 transition-all duration-300 ease-out group-hover:-translate-x-2 group-hover:opacity-100 group-focus-visible:-translate-x-2 group-focus-visible:opacity-100">
+            Page actions
+          </span>
         </button>
       </div>
 

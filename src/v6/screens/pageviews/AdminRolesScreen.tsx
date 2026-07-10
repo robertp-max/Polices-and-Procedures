@@ -4,6 +4,7 @@ import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type
 import { ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
 import { cx } from '../../utils/classNames';
+import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabInactiveClass } from './workspaceTabChrome';
 
 interface AdminRoleRow extends Record<string, string> {
   permissionPosture: string;
@@ -228,15 +229,13 @@ export function AdminRolesScreen() {
         </section>
 
         <aside className="grid content-start gap-lg" aria-label="Admin role review panels">
-          <nav aria-label="Role configuration tabs" className="flex gap-xs overflow-x-auto rounded-full border border-card bg-white p-xs shadow-sm">
+          <nav aria-label="Role configuration tabs" className="flex max-w-full items-stretch overflow-x-auto font-montserrat">
             {rolePanelTabs.map((tab) => (
               <button
                 aria-selected={activePanel === tab.id}
                 className={cx(
-                  'min-h-tap shrink-0 rounded-full px-md py-1.5 text-sm font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
-                  activePanel === tab.id
-                    ? 'bg-brand-teal text-on-brand shadow-rest'
-                    : 'text-secondary hover:bg-surface-hover hover:text-brand-teal',
+                  workspaceCompactTabClass,
+                  activePanel === tab.id ? workspaceTabActiveClass : workspaceTabInactiveClass,
                 )}
                 key={tab.id}
                 onClick={() => setActivePanel(tab.id)}

@@ -347,10 +347,7 @@ export function JourneyAcademyScreen() {
 
   const advancedCards = useMemo<AcademyCard[]>(
     () => {
-      const advSource =
-        assignedModules.filter((module) => module.group === 'ADV').length > 0
-          ? assignedModules.filter((module) => module.group === 'ADV')
-          : ALL_MODULES.filter((module) => module.group === 'ADV');
+      const advSource = ALL_MODULES.filter((module) => module.group === 'ADV');
       return advSource.map((module, index) => ({
         id: module.id,
         eyebrow: `RN-ADV-${String(index + 1).padStart(2, '0')}`,
@@ -360,7 +357,7 @@ export function JourneyAcademyScreen() {
         to: `/journey/module/${module.id}`,
       }));
     },
-    [assignedModules],
+    [],
   );
 
   const completedModuleCount = useMemo(

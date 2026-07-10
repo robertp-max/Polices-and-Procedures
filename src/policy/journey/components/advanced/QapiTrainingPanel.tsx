@@ -390,7 +390,7 @@ export function QapiTrainingPanel({ moduleId, onComplete, onEvidence }: Props) {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-6">
-          <div className="mx-auto grid max-w-[1500px] gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
+          <div className="mx-auto grid max-w-[1400px] gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
             <main className="space-y-5">
               <section className="overflow-hidden rounded-lg border border-hairline bg-white shadow-rest">
                 <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">

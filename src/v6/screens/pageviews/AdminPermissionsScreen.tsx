@@ -3,6 +3,7 @@ import { AlertTriangle, ClipboardCheck, FileCheck2, KeyRound, LockKeyhole, Shiel
 import { DataTable, MetricGrid, SurfaceCard, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { ToneBadge } from '../../primitives';
 import { cx } from '../../utils/classNames';
+import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabInactiveClass } from './workspaceTabChrome';
 
 interface PermissionRow extends Record<string, string> {
   capability: string;
@@ -228,15 +229,13 @@ export function AdminPermissionsScreen() {
       <div className="sr-only"><h1>Permissions</h1></div>
       <MetricGrid metrics={permissionMetrics} />
       <section className="grid gap-xl rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset/90 p-xl shadow-rest backdrop-blur-xl">
-        <nav aria-label="Permission management tabs" className="flex gap-xs overflow-x-auto rounded-full border border-card bg-white p-xs shadow-sm">
+        <nav aria-label="Permission management tabs" className="flex max-w-full items-stretch overflow-x-auto font-montserrat">
           {permissionTabs.map((tab) => (
             <button
               aria-selected={activeTab === tab.id}
               className={cx(
-                'min-h-tap shrink-0 rounded-full px-md py-1.5 text-sm font-medium transition duration-fast ease-standard focus-visible:outline-none focus-visible:shadow-focus',
-                activeTab === tab.id
-                  ? 'bg-brand-teal text-on-brand shadow-rest'
-                  : 'text-secondary hover:bg-surface-hover hover:text-brand-teal',
+                workspaceCompactTabClass,
+                activeTab === tab.id ? workspaceTabActiveClass : workspaceTabInactiveClass,
               )}
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}

@@ -82,7 +82,9 @@ export const V6_ROUTES = [
   { path: '/framework/achc-survey', hashId: 'achc-survey', template: 'achc-survey', group: 'Taxonomy', title: 'ACHC Survey', description: 'ACHC survey alignment surface for policy support and open evidence gaps.' },
   { path: '/framework/achc-survey/crosswalk', hashId: 'achc-crosswalk', template: 'achc-crosswalk', group: 'Taxonomy', title: 'ACHC Crosswalk', description: 'ACHC, CMS, Title 22, policy, form, and evidence crosswalk.' },
   { path: '/framework/hh-evidence-map', hashId: 'hh-evidence-map', template: 'matrix', group: 'Taxonomy', title: 'HH Tag Evidence Map', description: 'Spreadsheet-backed HH standard to policy section evidence map with anchors, confidence, duplicates, and review flags.' },
-  { path: '/library', hashId: 'policy-library', template: 'matrix', group: 'Taxonomy', title: 'Policy Library', description: 'Policy library matrix for active agency policies and survey-ready context.' },
+  // /library/policies must be registered before /library/:policyId so "policies" is not a policy id.
+  { path: '/library', hashId: 'policy-home', template: 'dashboard', group: 'Taxonomy', title: 'Policy Home', description: 'Policy command center for library, forms, workflows, taxonomy, ACHC alignment, and readiness actions.' },
+  { path: '/library/policies', hashId: 'policy-library', template: 'matrix', group: 'Taxonomy', title: 'Policy Library', description: 'Policy library matrix for active agency policies and survey-ready context.' },
   { path: '/library/:policyId', hashId: 'policy-detail', template: 'detail', group: 'Taxonomy', title: 'Policy Detail', description: 'Policy detail with version metadata, required codes, section tabs, and appendices.' },
   { path: '/policy-approvals', hashId: 'policy-approvals', template: 'board', group: 'Taxonomy', title: 'Policy Approvals', description: 'Policy approval queue for lifecycle review, approval authority, and publication readiness.' },
   // Protected policy print route — reuses policy-detail hashId so existing PolicyDetailScreen
