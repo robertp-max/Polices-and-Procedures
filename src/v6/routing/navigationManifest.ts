@@ -15,7 +15,7 @@ export const primaryNavItems: NavItem[] = [
   // 'Clinician Profiles', 'Patient Profiles' and 'Calendar' hidden from the sidebar per request.
   // Routes still resolve by direct URL; they are just removed from the nav.
   { id: 'ces', label: 'Compliance', to: '/evidence', hashIds: ['defensible-2', 'ces-calendar', 'ces-board', 'master-controls', 'audit-mode', 'evidence-intake', 'evidence-packet-studio', 'ces-reports'] },
-  { id: 'taxonomy', label: 'Policies', to: '/framework', hashIds: ['taxonomy', 'framework', 'achc-survey', 'achc-crosswalk', 'hh-evidence-map', 'policy-library', 'forms-library', 'workflows', 'workflow-detail', 'workflow-swimlane', 'policy-lifecycle', 'policy-lifecycle-detail', 'policy-approvals', 'pm-approvals'] },
+  { id: 'taxonomy', label: 'Policies', to: '/library', hashIds: ['taxonomy', 'framework', 'achc-survey', 'achc-crosswalk', 'hh-evidence-map', 'policy-home', 'policy-library', 'forms-library', 'workflows', 'workflow-detail', 'workflow-swimlane', 'policy-lifecycle', 'policy-lifecycle-detail', 'policy-approvals', 'pm-approvals'] },
   { id: 'onboarding', label: 'Training', to: '/journey?tab=home', hashIds: ['journey-overview', 'journey-new-hire', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'] },
   // 'Evidence' and 'Hubstaff' hidden from the sidebar per request. Routes still resolve by URL.
   { id: 'help-center', label: 'Help', to: '/help', hashIds: ['help-center'] },
@@ -46,11 +46,12 @@ export const workspaceSubnavItems: Record<string, NavItem[]> = {
     { id: 'ces-reports', label: 'Reports', to: '/ces/reports', hashIds: ['ces-reports'] },
   ],
   taxonomy: [
-    { id: 'taxonomy', label: 'Taxonomy', to: '/framework', hashIds: ['taxonomy', 'framework'], matchPaths: ['/taxonomy', '/framework'] },
-    { id: 'policy-lifecycle', label: 'Policy Lifecycle', to: '/policy-lifecycle', hashIds: ['policy-lifecycle'], matchPaths: ['/policy-lifecycle', '/policy-lifecycle/:policyId'] },
-    { id: 'policy-library', label: 'Policies', to: '/library', hashIds: ['policy-library'], matchPaths: ['/library', '/library/:policyId', '/library/:policyId/print', '/print/:policyId'] },
+    { id: 'policy-home', label: 'Policy Home', to: '/library', hashIds: ['policy-home'], matchPaths: ['/library'] },
+    { id: 'policy-library', label: 'Policies', to: '/library/policies', hashIds: ['policy-library'], matchPaths: ['/library/policies', '/library/:policyId', '/library/:policyId/print', '/print/:policyId'] },
     { id: 'forms-library', label: 'Forms', to: '/forms', hashIds: ['forms-library'], matchPaths: ['/forms', '/forms/:formId', '/forms/:formId/print', '/forms/:formId/esign'] },
     { id: 'workflows-library', label: 'Workflows', to: '/workflows', hashIds: ['workflows'], matchPaths: ['/workflows', '/workflows/:workflowId', '/workflows/:workflowId/swimlane'] },
+    { id: 'taxonomy', label: 'Taxonomy', to: '/framework', hashIds: ['taxonomy', 'framework'], matchPaths: ['/taxonomy', '/framework'] },
+    { id: 'policy-lifecycle', label: 'Policy Lifecycle', to: '/policy-lifecycle', hashIds: ['policy-lifecycle'], matchPaths: ['/policy-lifecycle', '/policy-lifecycle/:policyId'] },
     { id: 'policy-approvals', label: 'Policy Approval', to: '/policy-approvals', hashIds: ['policy-approvals', 'pm-approvals'], matchPaths: ['/policy-approvals', '/pm/approvals'] },
   ],
   onboarding: [
@@ -97,11 +98,12 @@ export const WORKSPACE_SUBNAV: Record<string, NavItem[]> = {
     { id: 'ces-reports', label: 'Reports', to: '/ces/reports', hashIds: ['ces-reports'] },
   ],
   taxonomy: [
-    { id: 'taxonomy', label: 'Taxonomy', to: '/framework', hashIds: ['taxonomy', 'framework'] },
-    { id: 'policy-lifecycle', label: 'Policy Lifecycle', to: '/policy-lifecycle', hashIds: ['policy-lifecycle'] },
-    { id: 'policy-library', label: 'Policies', to: '/library', hashIds: ['policy-library'] },
+    { id: 'policy-home', label: 'Policy Home', to: '/library', hashIds: ['policy-home'] },
+    { id: 'policy-library', label: 'Policies', to: '/library/policies', hashIds: ['policy-library'] },
     { id: 'forms-library', label: 'Forms', to: '/forms', hashIds: ['forms-library'] },
     { id: 'workflows-library', label: 'Workflows', to: '/workflows', hashIds: ['workflows'] },
+    { id: 'taxonomy', label: 'Taxonomy', to: '/framework', hashIds: ['taxonomy', 'framework'] },
+    { id: 'policy-lifecycle', label: 'Policy Lifecycle', to: '/policy-lifecycle', hashIds: ['policy-lifecycle'] },
     { id: 'policy-approvals', label: 'Policy Approval', to: '/policy-approvals', hashIds: ['policy-approvals', 'pm-approvals'] },
   ],
   // Add more for other workspaces as needed

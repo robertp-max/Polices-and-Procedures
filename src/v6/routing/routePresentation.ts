@@ -69,7 +69,12 @@ export const SIDEBAR_SECTIONS = [
   {
     label: 'Policy Library',
     hashIds: [
+      'policy-home',
       'policy-library',
+      'forms-library',
+      'workflows',
+      'workflow-detail',
+      'workflow-swimlane',
       'policy-lifecycle',
       'taxonomy',
       'framework',
@@ -324,6 +329,12 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
     eyebrow: 'Taxonomy',
     icon: FileText,
     title: 'Policy Detail',
+  },
+  'policy-home': {
+    description: 'Policy command center connecting the library, forms, workflows, taxonomy, ACHC alignment, and readiness actions.',
+    eyebrow: 'Policies',
+    icon: LayoutDashboard,
+    title: 'Policy Home',
   },
   'policy-library': {
     description: 'Canonical policy corpus with lifecycle state, owner stewardship, review cycles, and survey context.',
