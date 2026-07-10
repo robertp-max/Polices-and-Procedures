@@ -11,6 +11,8 @@ import { evaluateBradPhiReadiness } from './BradPhiReadinessGate.js';
 import { scanForPhiEgress } from './PhiEgressGuard.js';
 import { BradNolanRelay, type BradResearchIntent } from './BradNolanRelay.js';
 import { agentAuditLog } from './AgentAuditLogger.js';
+import { routeCriticalIncident } from '../brad/criticalIncidentRouter.js';
+import { runWorkflowExpertLookup, isStrongExpertMatch } from '../../../src/policy/brad/workflowExpert.ts';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Brad Runtime — internal operations agent.
@@ -131,6 +133,29 @@ export class BradRuntime {
         phiMode: false, result: 'blocked: PHI present, PHI mode not verified-ready',
       });
       return { text: 'This request contains PHI and cannot be processed in the current mode (PHI mode is not verified-ready). It was not sent to any model.', synthetic: true, blocked: true, reason: 'phi-not-permitted' };
+    }
+
+    // Deterministic workflow expert — canonical workflow/P&P data outranks
+    // model paraphrase for workflow/process questions in EVERY runtime mode.
+    // Urgent/critical-incident messages keep their safety-first routing
+    // (the internal responder handles those with the playbook composer).
+    const incidentRoute = routeCriticalIncident(userText);
+    if (!incidentRoute.urgent && this.cfg.brad.runtimeMode !== 'mock') {
+      const expert = runWorkflowExpertLookup(userText);
+      if (isStrongExpertMatch(expert)) {
+        agentAuditLog.logBrad({
+          requestId: crypto.randomUUID(), actorId, role, action: 'workflow-expert-answer',
+          modelId: 'deterministic-workflow-expert', promptVersion: this.cfg.brad.promptVersion,
+          phiMode: phiPermitted, result: `ok: pass ${expert.debug.passFound}, ${expert.debug.matchedWorkflowIds.join(',')}`,
+        });
+        return {
+          text: expert.text,
+          synthetic: true,
+          blocked: false,
+          references: expert.references,
+          track: 'GENERAL',
+        };
+      }
     }
 
     const res = await this.adapter.chat({ system: BRAD_SYSTEM_PROMPT, user: userText, requestId: crypto.randomUUID() });

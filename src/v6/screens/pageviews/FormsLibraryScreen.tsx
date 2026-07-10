@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Archive, ClipboardCheck, ClipboardList, FileCheck2, Link2, PenLine, Search, ShieldCheck, Users } from 'lucide-react';
+import { Archive, ClipboardList, FileCheck2, Link2, PenLine, Search, ShieldCheck, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
 import { DataTable, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
@@ -230,12 +230,9 @@ export function FormsLibraryScreen() {
       description="Browse approved forms as cards first, with the full matrix tucked behind its own tab for audit and bulk review work."
       eyebrow="Forms Registry"
       onTabChange={setView}
+      showTabs={false}
       tabs={tabs}
       title="Forms Library"
-      actions={[
-        { icon: ShieldCheck, label: 'Policies', to: '/library', variant: 'secondary' },
-        { icon: ClipboardCheck, label: 'Approvals', to: '/policy-approvals' },
-      ]}
     >
       <PolicyMetricsGrid metrics={formsMetrics} />
 

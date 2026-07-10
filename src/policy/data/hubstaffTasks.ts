@@ -41,8 +41,8 @@ export const HUBSTAFF_PROJECTS: HubProject[] = [
     categories: ['Form Setup','Workflow','Calendar','Survey'],
   },
   {
-    key: 'oasis', label: 'OASIS-E1 Assessment & Submission', shortLabel: 'OASIS',
-    description: '42 CFR §484.55 — OASIS-E1 assessment forms, QA checklists, transmission audits, clinician competency.',
+    key: 'oasis', label: 'OASIS-E2 Assessment & Submission', shortLabel: 'OASIS',
+    description: '42 CFR §484.55 — OASIS-E2 assessment forms, QA checklists, transmission audits, clinician competency.',
     hubstaffId: '', script: 'npm run push:oasis',
     categories: ['Form Setup','Workflow','Calendar','Survey'],
   },
@@ -195,7 +195,7 @@ const CMS485_TASKS: HubTask[] = [
 /* ─── OASIS tasks ────────────────────────────────────────────── */
 
 const OASIS_TASKS: HubTask[] = [
-  { id:'OASIS-FM-001', title:'OASIS-E1 Assessment Form — Template Validation', project:'oasis', category:'Form Setup', risk:'critical', cfr:'42 CFR §484.55', description:'Form CL-FM-002 | Validate all OASIS-E1 M/GG/J-items (effective 1/1/2023), verify SOC/ROC/FU/TRN/DC versions, iQIES compatibility.' },
+  { id:'OASIS-FM-001', title:'OASIS-E2 Assessment Form — Template Validation', project:'oasis', category:'Form Setup', risk:'critical', cfr:'42 CFR §484.55', description:'Form CL-FM-002 | Validate all OASIS-E2 M/GG/J-items (effective 1/1/2023), verify SOC/ROC/FU/TRN/DC versions, iQIES compatibility.' },
   { id:'OASIS-FM-002', title:'SOC Comprehensive Assessment — Calibration', project:'oasis', category:'Form Setup', risk:'critical', description:'Form CL-FM-001 | Calibrate SOC assessment: 13 OASIS time points, demographic fields, EHR integration. Deadline: within 5 days of SOC.' },
   { id:'OASIS-FM-003', title:'Recertification / ROC Assessment — Form Review', project:'oasis', category:'Form Setup', risk:'critical', cfr:'42 CFR §484.55(b)(c)', description:'Form CL-FM-003 | Review Recert and ROC forms: required OASIS items, episode transition dates.' },
   { id:'OASIS-FM-004', title:'Discharge / Transfer Assessment — Workflow Setup', project:'oasis', category:'Form Setup', risk:'critical', cfr:'42 CFR §484.55(d)', description:'Form CL-FM-004 | Set up discharge/transfer workflows: 48-hr completion, 30-day transmission deadline.' },
@@ -205,7 +205,7 @@ const OASIS_TASKS: HubTask[] = [
   { id:'OASIS-FM-008', title:'Clinician Competency Validation — OASIS', project:'oasis', category:'Form Setup', risk:'critical', cfr:'42 CFR §484.55(a)(3)', description:'Form CL-FM-051 | Initial and annual competency validation, IRR testing (target ≥85%).' },
   { id:'OASIS-FM-009', title:'Documentation Source Evidence Matrix', project:'oasis', category:'Form Setup', risk:'medium', description:'Form CL-FM-050 | Map each OASIS item to acceptable documentation sources. Train all assessors.' },
   { id:'OASIS-FM-010', title:'Standardized Assessment Tool Administration Checklist', project:'oasis', category:'Form Setup', risk:'high', description:'Form CL-FM-056 | PHQ-2/9 (D0150/160), BIMS (C0200-500), pain tools (J0900). Document tool and score in OASIS.' },
-  { id:'OASIS-WF-001', title:'SOC OASIS Workflow — Assessment to Transmission', dueDate:'2026-05-01', project:'oasis', category:'Workflow', risk:'critical', cfr:'42 CFR §484.55; §484.250', description:'SOC→OASIS-E1 within 5 days→QA checklist→Clinical Mgr review→iQIES→confirm→resolve rejections within 72 hrs. Deadline: 30 days from SOC.' },
+  { id:'OASIS-WF-001', title:'SOC OASIS Workflow — Assessment to Transmission', dueDate:'2026-05-01', project:'oasis', category:'Workflow', risk:'critical', cfr:'42 CFR §484.55; §484.250', description:'SOC→OASIS-E2 within 5 days→QA checklist→Clinical Mgr review→iQIES→confirm→resolve rejections within 72 hrs. Deadline: 30 days from SOC.' },
   { id:'OASIS-WF-002', title:'OASIS QA Review Process — Monthly Audits', dueDate:'2026-05-31', project:'oasis', category:'Workflow', risk:'high', description:'Monthly: 10% sample, coding worksheets, IRR score (target ≥85%), top 3 discrepancies, feedback, report to QAPI.' },
   { id:'OASIS-WF-003', title:'Annual OASIS Clinician Competency Program', dueDate:'2026-09-30', project:'oasis', category:'Workflow', risk:'critical', description:'Annual: schedule all assessors, IRR case studies, score CL-FM-051, re-train <85%, document in personnel files.' },
   { id:'OASIS-WF-004', title:'OASIS Submission Compliance — Pre-Survey Evidence Bundle', dueDate:'2026-07-15', project:'oasis', category:'Survey', risk:'critical', description:'Pre-survey: transmission logs, QA checklists, competency records, IRR results, rejection/correction log. Target: ≥95% clean submission.' },
@@ -213,7 +213,7 @@ const OASIS_TASKS: HubTask[] = [
   { id:'OASIS-CO-002', title:'Q2 2026 — OASIS Transmission Audit', dueDate:'2026-06-30', project:'oasis', category:'Calendar', risk:'high', description:'Q2 audit of all OASIS submissions.' },
   { id:'OASIS-CO-003', title:'Q3 2026 — OASIS Transmission Audit', dueDate:'2026-09-30', project:'oasis', category:'Calendar', risk:'high', description:'Q3 audit of all OASIS submissions.' },
   { id:'OASIS-CO-004', title:'Q4 2026 — OASIS Transmission Audit + Annual Review', dueDate:'2026-12-31', project:'oasis', category:'Calendar', risk:'high', description:'Q4 and annual OASIS audit. Annual accuracy rate for QAPI reporting.' },
-  { id:'OASIS-CO-005', title:'OASIS-E1 Version Check — Annual Update Review', dueDate:'2026-01-31', project:'oasis', category:'Calendar', risk:'medium', description:'Annual check for CMS OASIS-E1 item changes. Update forms and training materials if needed.' },
+  { id:'OASIS-CO-005', title:'OASIS-E2 Version Check — Annual Update Review', dueDate:'2026-01-31', project:'oasis', category:'Calendar', risk:'medium', description:'Annual check for CMS OASIS-E2 item changes. Update forms and training materials if needed.' },
   { id:'OASIS-CO-006', title:'HHCAHPS / HH QRP — OASIS Alignment Review', dueDate:'2026-03-31', project:'oasis', category:'Calendar', risk:'high', cfr:'42 CFR §484.245', description:'Annual: verify OASIS items for public reporting captured, review quality measure rates in iQIES, compare to benchmarks.' },
 ];
 

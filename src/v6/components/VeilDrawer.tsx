@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type ReactNode } from 'react';
+import { useEffect, useId, type ReactNode } from 'react';
 import ReactDOM from 'react-dom';
 import { X } from 'lucide-react';
 import { ToneBadge } from '../primitives';
@@ -23,23 +23,9 @@ export function VeilDrawer({
   footer,
 }: VeilDrawerProps) {
   const titleId = useId();
-  const [mounted, setMounted] = useState(open);
-  const [visible, setVisible] = useState(open);
 
   useEffect(() => {
-    if (open) {
-      setMounted(true);
-      const frame = window.requestAnimationFrame(() => setVisible(true));
-      return () => window.cancelAnimationFrame(frame);
-    }
-
-    setVisible(false);
-    const timer = window.setTimeout(() => setMounted(false), 500);
-    return () => window.clearTimeout(timer);
-  }, [open]);
-
-  useEffect(() => {
-    if (!mounted) return undefined;
+    if (!open) return undefined;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -47,12 +33,12 @@ export function VeilDrawer({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [mounted, onClose]);
+  }, [onClose, open]);
 
-  if (!mounted) return null;
+  if (!open) return null;
 
   return ReactDOM.createPortal(
-    <div className="fixed inset-0 z-backdrop flex justify-end bg-brand-teal/15 backdrop-blur-sm v6-overlay-transition">
+    <div className="fixed inset-0 z-backdrop flex justify-end bg-brand-teal/15 backdrop-blur-sm">
       <div 
         className="fixed inset-0" 
         onClick={onClose} 
@@ -60,7 +46,7 @@ export function VeilDrawer({
       />
       <aside
         aria-labelledby={titleId}
-        className={`relative z-drawer flex h-full w-full max-w-md flex-col overflow-hidden border-l border-card bg-surface-glass backdrop-blur-md shadow-glass-inset shadow-hover transition-transform duration-500 ease-standard ${visible ? 'translate-x-0' : 'translate-x-full'}`}
+        className="relative z-drawer flex h-full w-full max-w-md flex-col overflow-hidden border-l border-card bg-surface-glass backdrop-blur-md shadow-glass-inset shadow-hover"
         role="dialog"
         aria-modal="true"
       >

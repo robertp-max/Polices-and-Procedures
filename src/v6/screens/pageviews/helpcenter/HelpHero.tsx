@@ -13,7 +13,7 @@ export function HelpHero({ onSearchFocus }: { onSearchFocus: () => void }) {
   return (
     <section className="ci-page-hero relative overflow-hidden rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-10 shadow-sm md:p-14">
       <StaticCardWatermark />
-      <div className="relative z-10 grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:items-center">
+      <div className="relative z-10 grid gap-10 lg:grid-cols-1 lg:items-center">
         <div>
           <h2 className="mb-6 font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#F06923]">
             Help Center Command Center
@@ -49,8 +49,8 @@ export function HelpHero({ onSearchFocus }: { onSearchFocus: () => void }) {
           </div>
         </div>
 
-        {/* Right-side visual card, hidden on small screens */}
-        <div className="hidden lg:block">
+        {/* Right-side visual card kept for later, but hidden from the UI. */}
+        <div className="hidden">
           <div className="help-hero-glass-frame">
             <div className="help-hero-glass-card rounded-[24px] border border-transparent p-8">
               <div className="help-hero-glass-content">

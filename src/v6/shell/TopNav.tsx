@@ -10,6 +10,15 @@ import { V6_ROUTES } from '../routing/routeRegistry';
 
 const navPath = (to: string) => to.split('?')[0] || to;
 
+function NavLabel({ id, label }: { id: string; label: string }) {
+  if (id !== 'defensible-2') return <>{label}</>;
+  return (
+    <>
+      Defen<span className="!text-brand-teal">CI</span>ble
+    </>
+  );
+}
+
 export function TopNav() {
   const { pathname } = useLocation();
 
@@ -67,13 +76,13 @@ export function TopNav() {
                 key={item.id}
                 to={item.to}
                 className={cx(
-                  'px-6 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-300',
+                  'px-6 py-2 rounded-full text-xs font-semibold tracking-wider uppercase',
                   isActive
                     ? 'bg-brand-teal text-white shadow-md'
                     : 'text-slate-500 hover:bg-slate-100 hover:text-brand-teal'
                 )}
               >
-                {item.label}
+                <NavLabel id={item.id} label={item.label} />
               </Link>
             );
           })}

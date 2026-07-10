@@ -14,6 +14,11 @@ import { ToneTag } from '../../components';
 import { cx } from '../../utils/classNames';
 import { workflowRows, getWorkflowDetail } from './WorkflowsScreen';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
+import {
+  workspaceCompactTabClass,
+  workspaceTabActiveClass,
+  workspaceTabInactiveClass,
+} from './workspaceTabChrome';
 
 interface WorkflowMeta {
   id: string;
@@ -346,13 +351,17 @@ export function WorkflowDetailScreen({ workflowId: propId }: { workflowId?: stri
           </div>
 
           {/* Tabs */}
-          <div className="flex flex-wrap gap-1 border-b border-hairline px-lg pt-3">
+          <div className="flex max-w-full items-stretch overflow-x-auto border-b border-hairline px-lg pt-3 font-montserrat">
             {WF_TABS.map((t) => (
               <button
                 key={t.id}
                 type="button"
                 onClick={() => setTab(t.id)}
-                className={`-mb-px rounded-t-md border-b-2 px-3 py-2 text-sm font-medium transition ${tab === t.id ? 'border-brand-teal text-brand-teal-deep' : 'border-transparent text-muted hover:text-brand-teal'}`}
+                className={cx(
+                  workspaceCompactTabClass,
+                  'flex items-center justify-center whitespace-nowrap',
+                  tab === t.id ? workspaceTabActiveClass : workspaceTabInactiveClass,
+                )}
               >
                 {t.label}
               </button>

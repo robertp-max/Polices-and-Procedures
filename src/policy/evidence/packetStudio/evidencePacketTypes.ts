@@ -78,10 +78,33 @@ export const EVIDENCE_PACKET_TYPES: EvidencePacketType[] = [
     eventTypeIds: ['qapi', 'committee', 'quality'],
     workflowIds: ['QA-WF-03'],
     requiredPolicyIds: ['QA-PI-001'],
-    requiredFormIds: ['QA-FM-020', 'QA-FM-025', 'QA-FM-026', 'QA-FM-027'],
+    requiredFormIds: [
+      'QA-FM-001', // QAPI Committee Meeting Minutes Template
+      'QA-FM-002', // PIP Charter
+      'QA-FM-003', // Quality Indicator Monthly Dashboard
+      'QA-FM-004', // Adverse Event RCA Worksheet
+      'QA-FM-005', // CAP Tracking Tool
+      'QA-FM-006', // Infection Control Line List & Surveillance Log
+      'QA-FM-021', // PIP Remeasurement & Status
+      'CO-FM-024', // Compliance Committee Meeting Minutes
+      'EN-FM-022', // Enterprise Policy Compliance Scorecard
+      'GV-FM-023', // Annual Compliance Report to Governing Body
+    ],
     requiredEvidenceTypes: ['qapi-dashboard', 'chart-audit-summary', 'incident-log', 'infection-log'],
     requiredSignerRoles: ['Administrator', 'QAPI Lead'],
-    packetSections: baseSections('qapi-quarterly', { forms: ['QA-FM-020', 'QA-FM-025'], policies: ['QA-PI-001'], evidence: ['qapi-dashboard', 'chart-audit-summary'], signed: true, appendix: true }),
+    packetSections: baseSections('qapi-quarterly', {
+      forms: [
+        // Required child forms for QA-WF-03 (must be present for validation to pass)
+        'QA-FM-001', 'QA-FM-002', 'QA-FM-003', 'QA-FM-004', 'QA-FM-005', 'QA-FM-006',
+        'QA-FM-021', 'CO-FM-024', 'EN-FM-022', 'GV-FM-023',
+        // Supporting report sections (may be included)
+        'QA-FM-020', 'QA-FM-025', 'QA-FM-026', 'QA-FM-027',
+      ],
+      policies: ['QA-PI-001'],
+      evidence: ['qapi-dashboard', 'chart-audit-summary'],
+      signed: true,
+      appendix: true,
+    }),
     frequency: 'quarterly',
     mappingStatus: 'ready',
   },

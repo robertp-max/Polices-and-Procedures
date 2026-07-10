@@ -133,4 +133,23 @@ export const BRAD_QA_PROMPTS: QaPrompt[] = [
   { id: 98, prompt: 'who do i call for scheduling questions', accept: ['GENERAL'], urgent: false },
   { id: 99, prompt: 'what forms do i need for admission', accept: ['GENERAL'], urgent: false },
   { id: 100, prompt: 'can you explain the complaint process', accept: ['GENERAL', 'REPORTABLE_INCIDENT'], urgent: false },
+
+  // ── Worker as VICTIM (patient named as attacker must not flip to patient-injury) ──
+  { id: 101, prompt: 'help my patient stabbed me in the eye, i am bleeding and about to faint.', accept: ['IMMEDIATE_DANGER'], urgent: true },
+  { id: 102, prompt: 'my patient stabbed me with a fork', accept: ['IMMEDIATE_DANGER'], urgent: true },
+  { id: 103, prompt: 'the clients son slashed my arm with a boxcutter', accept: ['IMMEDIATE_DANGER'], urgent: true },
+  { id: 104, prompt: 'patient bit me and now im bleeding', accept: ['IMMEDIATE_DANGER', 'SERIOUS_INJURY'], urgent: true },
+  { id: 105, prompt: 'i am bleeding badly and about to pass out', accept: ['SERIOUS_INJURY', 'CLINICAL_EMERGENCY', 'IMMEDIATE_DANGER'], urgent: true },
+  { id: 106, prompt: 'my patient hit me in the face and my eye is swelling', accept: ['IMMEDIATE_DANGER'], urgent: true },
+  // Non-regression: "stabbing pain" is clinical, never violence.
+  { id: 107, prompt: 'my patient has stabbing chest pain', accept: ['CLINICAL_EMERGENCY'], urgent: true },
+
+  // ── Violent scene, patient as victim: scene safety FIRST (CMS/BLS doctrine) ──
+  { id: 108, prompt: 'help my client got shot', accept: ['IMMEDIATE_DANGER'], urgent: true },
+  { id: 109, prompt: 'my patient was stabbed by an intruder', accept: ['IMMEDIATE_DANGER'], urgent: true },
+  { id: 110, prompt: 'i hear gunshots outside the patients house', accept: ['IMMEDIATE_DANGER'], urgent: true },
+  { id: 111, prompt: 'there was a drive by at my clients home', accept: ['IMMEDIATE_DANGER'], urgent: true },
+  // Non-regression: vaccinations and radiating pain are never violence.
+  { id: 112, prompt: 'i gave the patient his flu shot today, where do i document it', accept: ['GENERAL'], urgent: false },
+  { id: 113, prompt: 'patient reports shooting pain down her left leg', accept: ['GENERAL', 'CLINICAL_EMERGENCY'], urgent: false },
 ];

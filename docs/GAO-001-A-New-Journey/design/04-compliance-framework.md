@@ -57,7 +57,7 @@ Per shell recon: the **only** sanctioned attestation/ack write path is `Module0O
 ## 3. MANDATORY REPORTING LANGUAGE PLACEMENT
 
 **Exact sentence (verbatim, no paraphrase, no partial use):**
-> "Follow agency mandatory reporting protocol immediately; do not investigate or confront; supervisor/Compliance assists with required external reporting, but required reporting must not be delayed."
+> "Follow agency mandatory reporting protocol immediately; do not investigate or confront — your job stops at reporting the facts."
 
 ### Placement (binding)
 - **Scene 6**: must appear verbatim in (a) narration at the feedback tier (after learner's decision point) and (b) Field Notes for the node that unlocks the reporting decision. Field Notes may add framing text around it but must reproduce the sentence unaltered, not summarized.

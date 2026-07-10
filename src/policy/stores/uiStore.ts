@@ -91,27 +91,9 @@ interface ShellState {
   toggleTheme: () => void;
 }
 
-/** Runs the theme mutator inside a View Transition (or with a
- *  class-based transition fallback) so the swap is smooth and applies
- *  immediately without a page refresh. */
+/** Apply theme changes directly; view transitions are disabled globally. */
 function runThemeSwap(mutate: () => void) {
-  if (typeof document === 'undefined') {
-    mutate();
-    return;
-  }
-  const root = document.documentElement;
-  const withClassFallback = () => {
-    root.classList.add('ci-theme-transitioning');
-    mutate();
-    window.setTimeout(() => root.classList.remove('ci-theme-transitioning'), 550);
-  };
-  // View Transitions API (Chromium 111+, Safari TP, Firefox behind flag)
-  const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
-  if (typeof doc.startViewTransition === 'function') {
-    doc.startViewTransition(mutate);
-  } else {
-    withClassFallback();
-  }
+  mutate();
 }
 
 export const useShellStore = create<ShellState>((set, get) => ({

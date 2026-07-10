@@ -20,7 +20,7 @@ export type EvidencePacketDraft = {
   createdAt: string;
   exportStatus: 'not_exported' | 'ready' | 'exported';
   signatureStatus: 'not_required' | 'pending' | 'complete';
-  packetStatus: 'draft' | 'needs_review' | 'ready_to_export' | 'exported' | 'locked';
+  packetStatus: 'Packet Not Started' | 'Packet Generated — Not Reviewed' | 'Packet Validated — Gaps Remain' | 'Packet Accepted — Tasks Satisfied' | 'Event Certified / Locked';
   sources: EvidencePacketSource[];
   missingSources: EvidencePacketSource[];
   sections: EvidencePacketSection[];
@@ -160,7 +160,7 @@ export function buildEvidencePacketDraft(
     createdAt: now,
     exportStatus: missingSources.length === 0 ? 'ready' : 'not_exported',
     signatureStatus: packet.requiredSignerRoles.length > 0 ? 'pending' : 'not_required',
-    packetStatus: missingSources.length === 0 && packet.mappingStatus !== 'needs_mapping' ? 'ready_to_export' : 'needs_review',
+    packetStatus: missingSources.length === 0 && packet.mappingStatus !== 'needs_mapping' ? 'Packet Validated — Gaps Remain' : 'Packet Generated — Not Reviewed',
     sources,
     missingSources,
     sections: packet.packetSections,

@@ -19,6 +19,7 @@ import { getCommendations, getUserBadges, giveCommendation, COMMEND_CATEGORIES, 
 import { isAdminRole } from '../../utils/adminRoleHelper';
 import { Badge } from '../../primitives';
 import { PHI_FIELD_WARNING, scanForPhi, type PhiScanResult } from '@/policy/help-center/threads/threadPhiGuard';
+import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabInactiveClass } from './workspaceTabChrome';
 
 // Re-export for backward compat with previous work
 export type { BasicUserProfile, ProfileVisibility };
@@ -39,10 +40,8 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
       type="button"
       onClick={onClick}
       className={cx(
-        'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
-        active
-          ? 'border-brand-teal text-brand-teal-deep'
-          : 'border-transparent text-muted hover:text-ink hover:border-hairline'
+        workspaceCompactTabClass,
+        active ? workspaceTabActiveClass : workspaceTabInactiveClass,
       )}
     >
       {children}
@@ -534,7 +533,7 @@ export function PersonalProfileScreen() {
 
         {/* Tabs (only shown when authorized) */}
         <div className="mt-8 border-b border-hairline">
-          <div className="-mb-px flex flex-wrap gap-x-1">
+          <div className="flex max-w-full items-stretch overflow-x-auto font-montserrat">
             {TABS.map((t) => (
               <TabButton
                 key={t.key}

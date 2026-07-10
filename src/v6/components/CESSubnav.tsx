@@ -1,12 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
 
 const cesSubnavItems = [
-  { label: 'Evidence Studio', path: '/evidence', brand: true },
   { label: 'Calendar', path: '/ces/calendar' },
   { label: 'Workflows', path: '/workflows' },
   { label: 'Master Controls', path: '/compliance/master-controls' },
-  { label: 'Audit Mode', path: '/audit' },
-  { label: 'Reports', path: '/ces/reports' },
+  { label: 'Evidence Studio', path: '/evidence', brand: true },
 ];
 
 /**

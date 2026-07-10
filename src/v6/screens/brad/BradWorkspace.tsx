@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type MouseEvent } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Send, Loader2, CheckCircle2, XCircle, AlertTriangle, ShieldCheck, ShieldAlert,
@@ -24,6 +24,9 @@ import type { GuidedAssistanceIntent } from '../../guided/types';
 import { useUiStore } from '@/policy/stores/uiStore';
 import { AnimatedCareIndeedLogo } from '../../shell/AnimatedCareIndeedLogo';
 import { BradResponseThreadActions } from '@/policy/help-center/threads';
+import { parseExportCommand, resolveExportWorkflows, buildWorkflowExport, NON_PHI_NOTICE } from '@/policy/brad/workflowExport';
+import { BradWorkflowActions, downloadWorkflowExport } from './BradWorkflowActions';
+import { loadChatHistory, saveChatHistory, clearChatHistory, maxMessageSeq, type ChatMsg } from './chatHistory';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Brad iAdministrator workspace.
@@ -33,10 +36,6 @@ import { BradResponseThreadActions } from '@/policy/help-center/threads';
      quick actions collapse, generated work hidden behind a drawer.
    • Surfaces use --brad-* theme variables (time-of-day themes; default = noon).
    ═══════════════════════════════════════════════════════════════════════════ */
-
-type ChatMsg =
-  | { id: string; role: 'user'; text: string }
-  | { id: string; role: 'brad'; text: string; synthetic: boolean; blocked: boolean; reason?: string; references?: BradReference[] };
 
 /** Drop the plain-text reference line — the UI renders references as clickable chips instead. */
 function stripReferenceLine(text: string): string {
@@ -89,7 +88,14 @@ export default function BradWorkspace() {
   const [identity] = useState(getIdentity());
 
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<ChatMsg[]>([]);
+  // Conversation persists on THIS device per identity (localStorage, bounded +
+  // expiring — see chatHistory.ts). Restore once on mount and resume the id
+  // counter past restored messages so keys/thread ids never collide.
+  const [messages, setMessages] = useState<ChatMsg[]>(() => {
+    const restored = loadChatHistory(getIdentity().userId);
+    msgSeq = Math.max(msgSeq, maxMessageSeq(restored));
+    return restored;
+  });
   const [thinking, setThinking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -114,15 +120,8 @@ export default function BradWorkspace() {
 
   const transcriptEnd = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
-  const composerShellRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const animationRef = useRef<number | null>(null);
-  const lightActiveRef = useRef(false);
-  const targetRotationRef = useRef(0);
-  const currentRotationRef = useRef(0);
   const prevComposerMenuRef = useRef<'quick' | 'work'>('quick');
-  const [composerFocused, setComposerFocused] = useState(false);
-  const [lightRotation, setLightRotation] = useState(0);
 
   const readB64 = (file: File) => new Promise<string>((resolve, reject) => {
     const r = new FileReader();
@@ -163,24 +162,21 @@ export default function BradWorkspace() {
   useEffect(() => { void loadIdentityScoped(); void refreshObjects(); }, [loadIdentityScoped, refreshObjects, identity]);
   useEffect(() => { void refreshApprovals(); }, [refreshApprovals]);
   useEffect(() => { transcriptEnd.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+  // Write-through: keep the device copy of the transcript current (bounded +
+  // best-effort; storage failures never interrupt chat).
+  useEffect(() => { saveChatHistory(identity.userId, messages); }, [identity.userId, messages]);
+
+  /** Start over: clears the visible thread AND the device-stored copy. */
+  const newConversation = useCallback(() => {
+    setMessages([]);
+    clearChatHistory(identity.userId);
+    setError(null);
+    setGuidedSession(null);
+  }, [identity.userId]);
   useEffect(() => {
     if (openComposerMenu) prevComposerMenuRef.current = openComposerMenu;
   }, [openComposerMenu]);
-  useEffect(() => {
-    const animate = () => {
-      if (!lightActiveRef.current) {
-        targetRotationRef.current += composerFocused ? 0.8 : 0.4;
-      }
-      const delta = ((targetRotationRef.current - currentRotationRef.current) % 360 + 540) % 360 - 180;
-      currentRotationRef.current += delta * (lightActiveRef.current ? 0.12 : 0.04);
-      setLightRotation(currentRotationRef.current);
-      animationRef.current = requestAnimationFrame(animate);
-    };
-    animationRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (animationRef.current !== null) cancelAnimationFrame(animationRef.current);
-    };
-  }, [composerFocused]);
   useEffect(() => {
     const active = thinking || uploading || guidedSession !== null || messages.length > 0;
     setBradActivityActive(active);
@@ -274,6 +270,27 @@ export default function BradWorkspace() {
         }
         return;
       }
+
+      // ── Workflow export commands: deterministic, fully client-side ──
+      // ("export CL-WF-26 markdown", "export qapi workflows json",
+      //  "export all workflows csv"). Non-PHI workflow metadata only.
+      const exportCmd = parseExportCommand(text);
+      if (exportCmd) {
+        setMessages((m) => [...m, { id: nextId(), role: 'user', text }]);
+        const { workflows, label } = resolveExportWorkflows(exportCmd);
+        if (workflows.length === 0) {
+          bradSay(`I searched the workflow library, linked P&Ps, forms, workflow graph, and event data, but did not find workflows matching “${exportCmd.queryText || text}”. Try a workflow ID (e.g. CL-WF-26) or “export all workflows ${exportCmd.format === 'markdown' ? 'markdown' : exportCmd.format}”.`);
+          return;
+        }
+        try {
+          const file = buildWorkflowExport(workflows, exportCmd.format, { label });
+          downloadWorkflowExport(file);
+          bradSay(`Done — exported ${workflows.length} workflow${workflows.length === 1 ? '' : 's'} to ${file.filename}. ${NON_PHI_NOTICE}`);
+        } catch (err) {
+          bradSay(`I couldn’t build that export: ${(err as Error).message}`);
+        }
+        return;
+      }
     }
 
     const docNote = attachments.length
@@ -355,40 +372,12 @@ export default function BradWorkspace() {
   }, [quickActions]);
   const landing = messages.length === 0;
   const welcomeName = me?.displayName || identity.displayName || 'Regular User';
-  const composerLightStyle = { transform: `translate(-50%, -50%) rotate(${lightRotation}deg)` };
   const isQuickMenuRelative = openComposerMenu === 'quick' || (!openComposerMenu && prevComposerMenuRef.current === 'quick');
   const isWorkMenuRelative = openComposerMenu === 'work' || (!openComposerMenu && prevComposerMenuRef.current === 'work');
 
-  function handleComposerMouseMove(e: MouseEvent<HTMLDivElement>) {
-    const rect = composerShellRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const x = e.clientX - (rect.left + rect.width / 2);
-    const y = e.clientY - (rect.top + rect.height / 2);
-    const insideZone = (x * x) / (400 * 400) + (y * y) / (200 * 200) <= 1;
-    lightActiveRef.current = insideZone;
-    if (insideZone) {
-      const mouseAngleDeg = (Math.atan2(y, x) * 180) / Math.PI;
-      targetRotationRef.current = mouseAngleDeg + 90 - 144;
-    }
-  }
-
   const composerInner = (
-    <div
-      ref={composerShellRef}
-      className="group relative w-full"
-      onMouseMove={handleComposerMouseMove}
-      onMouseLeave={() => { lightActiveRef.current = false; }}
-    >
-      <div className={`brad-composer-glow absolute inset-0 rounded-3xl pointer-events-none ${composerFocused || thinking || openComposerMenu ? 'brad-composer-glow--active' : ''}`} aria-hidden>
-        <div className="absolute inset-0 overflow-hidden rounded-3xl">
-          <div className="brad-composer-light" style={composerLightStyle} />
-        </div>
-      </div>
-      <div className="brad-composer-frame relative z-10 overflow-hidden rounded-3xl p-[1px] shadow-[0_15px_50px_-12px_rgba(0,0,0,0.1)]">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="brad-composer-light" style={composerLightStyle} />
-        </div>
-        <div className="relative z-10 flex flex-col overflow-hidden rounded-[calc(1.5rem-1px)] bg-[var(--brad-surface)]">
+    <div className="brad-composer-glass w-full rounded-3xl border border-[var(--brad-border)] bg-[var(--brad-surface)] shadow-sm">
+      <div className="relative z-10 flex flex-col overflow-hidden rounded-3xl bg-[var(--brad-surface)]">
         <input ref={fileInputRef} type="file" multiple className="hidden" aria-label="Upload documents" title="Upload documents" onChange={(e) => void handleFiles(e.target.files)} />
         {attachments.length > 0 && (
           <div className="flex flex-wrap gap-1.5 px-4 pt-3">
@@ -405,8 +394,6 @@ export default function BradWorkspace() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(); } }}
-          onFocus={() => setComposerFocused(true)}
-          onBlur={() => setComposerFocused(false)}
           placeholder="Ask Brad to generate, analyze, or draft documents…"
           rows={landing ? 3 : 1}
           disabled={thinking}
@@ -498,7 +485,6 @@ export default function BradWorkspace() {
             {thinking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="-ml-0.5 h-[18px] w-[18px]" />}
           </button>
         </div>
-        </div>
       </div>
     </div>
   );
@@ -542,6 +528,17 @@ export default function BradWorkspace() {
       {/* ───────────────────────── ACTIVE CHAT ───────────────────────── */}
       {!landing && (
         <div className="relative z-10 flex flex-1 flex-col">
+          {/* Conversation is retained on this device (per identity) — offer a clean start. */}
+          <div className="mx-auto flex w-full max-w-3xl justify-end pt-1">
+            <button
+              type="button"
+              onClick={newConversation}
+              disabled={thinking}
+              className="rounded-full border border-[var(--brad-border)] bg-[var(--brad-surface)] px-3 py-1 text-xs font-medium text-[var(--brad-muted)] shadow-sm transition hover:border-brand-teal hover:text-brand-teal disabled:opacity-50"
+            >
+              New conversation
+            </button>
+          </div>
           {/* Bottom-anchored transcript: newest sits just above the composer, older
               messages are pushed up — standard chat behavior. */}
           <div className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col overflow-y-auto pb-4">
@@ -567,6 +564,9 @@ export default function BradWorkspace() {
                       <p className="whitespace-pre-wrap text-[15px]">{stripReferenceLine(m.text)}</p>
                       {m.references && m.references.length > 0 && (
                         <BradReferenceLinks references={m.references} onOpen={setRefDrawer} />
+                      )}
+                      {m.references && m.references.length > 0 && (
+                        <BradWorkflowActions references={m.references} />
                       )}
                       {!m.synthetic && (
                         <BradResponseThreadActions

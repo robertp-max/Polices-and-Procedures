@@ -19,6 +19,11 @@ import { hasNarrationAudio, narrationAssetPath } from '../../data/narrationManif
 import { cms485Cases, type CaseField, type ClinicalCase } from '../../data/advancedTraining/cms485PlanOfCareCases.data';
 import { getTermsForSection } from '../../data/advancedTraining/cms485Terminology';
 import { SECTIONS, TRAINING_CARDS, type TrainingCard } from '../../data/advancedTraining/cms485SourceCards';
+import {
+  workspaceCompactTabClass,
+  workspaceTabActiveClass,
+  workspaceTabInactiveClass,
+} from '../../../../components/theme/workspaceTabChrome';
 
 interface Props {
   moduleId: string;
@@ -696,13 +701,17 @@ export const PlanOfCareTrainingPanel: React.FC<Props> = ({ moduleId, onComplete,
         </div>
 
         <div className="mt-lg flex flex-wrap items-center justify-between gap-md">
-          <div className="inline-flex rounded-lg bg-surface-glass p-xs shadow-glass-inset" role="tablist" aria-label="CMS-485 training modes">
+          <div className="flex max-w-full items-end overflow-x-auto border-b border-hairline font-montserrat" role="tablist" aria-label="CMS-485 training modes">
             <button
               type="button"
               role="tab"
               aria-selected={mode === 'lessons'}
               onClick={() => setMode('lessons')}
-              className={cx('inline-flex min-h-tap items-center gap-sm rounded-md px-md py-sm text-xs font-medium transition', mode === 'lessons' ? 'bg-brand-teal text-white shadow-pill-action' : 'text-brand-teal hover:bg-surface-hover')}
+              className={cx(
+                workspaceCompactTabClass,
+                '-mb-px inline-flex items-center gap-sm whitespace-nowrap',
+                mode === 'lessons' ? workspaceTabActiveClass : workspaceTabInactiveClass,
+              )}
             >
               <BookOpen size={16} />
               Lessons
@@ -712,7 +721,11 @@ export const PlanOfCareTrainingPanel: React.FC<Props> = ({ moduleId, onComplete,
               role="tab"
               aria-selected={mode === 'audit-lab'}
               onClick={() => setMode('audit-lab')}
-              className={cx('inline-flex min-h-tap items-center gap-sm rounded-md px-md py-sm text-xs font-medium transition', mode === 'audit-lab' ? 'bg-brand-teal text-white shadow-pill-action' : 'text-brand-teal hover:bg-surface-hover')}
+              className={cx(
+                workspaceCompactTabClass,
+                '-mb-px inline-flex items-center gap-sm whitespace-nowrap',
+                mode === 'audit-lab' ? workspaceTabActiveClass : workspaceTabInactiveClass,
+              )}
             >
               <Microscope size={16} />
               Audit Lab

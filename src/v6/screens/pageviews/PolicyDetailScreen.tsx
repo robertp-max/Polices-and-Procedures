@@ -11,6 +11,7 @@ import { CareIndeedButton } from '@/components/theme/CareIndeedButton';
 import { CareIndeedTabs } from '@/components/theme/CareIndeedTabs';
 import { CareIndeedEyebrow } from '@/components/theme/CareIndeedEyebrow';
 import { CareIndeedDataBlock } from '@/components/theme/CareIndeedDataBlock';
+import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabInactiveClass } from './workspaceTabChrome';
 
 const routeMarker = {
   group: 'Taxonomy',
@@ -661,17 +662,16 @@ export function PolicyDetailScreen() {
               <main className="px-6 md:px-12 lg:px-16 py-8">
                 <div className="max-w-7xl mx-auto" key={boundedIndex} style={{ animation: 'pdFadeIn 0.3s ease-in-out' }}>
                   {showSubNav && subNavAsPills && (
-                    <div className="flex flex-wrap gap-2 mb-6">
+                    <div className="mb-6 flex max-w-full items-stretch overflow-x-auto font-montserrat whitespace-nowrap [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
                       {subNavItems.map(({ card, idx }) => card.kind === 'section' && (
                         <button
                           key={card.section.id}
                           type="button"
                           onClick={() => goTo(idx)}
                           className={cx(
-                            'px-4 py-2 rounded-full text-xs cursor-pointer transition-colors',
-                            idx === boundedIndex
-                              ? 'bg-surface-hover text-brand-teal-deep border border-brand-teal/30 font-semibold shadow-sm'
-                              : 'bg-white border border-card text-secondary hover:bg-gray-50',
+                            workspaceCompactTabClass,
+                            'whitespace-nowrap',
+                            idx === boundedIndex ? workspaceTabActiveClass : workspaceTabInactiveClass,
                           )}
                         >
                           {stripNumbering(card.section.title)}
@@ -680,17 +680,16 @@ export function PolicyDetailScreen() {
                     </div>
                   )}
                   {showSubNav && !subNavAsPills && (
-                    <div className="flex space-x-6 border-b border-card mb-6 px-2 text-sm overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+                    <div className="mb-6 flex max-w-full items-stretch overflow-x-auto border-b border-card font-montserrat whitespace-nowrap [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
                       {subNavItems.map(({ card, idx }) => card.kind === 'section' && (
                         <button
                           key={card.section.id}
                           type="button"
                           onClick={() => goTo(idx)}
                           className={cx(
-                            'pb-3 border-b-2 cursor-pointer transition-colors',
-                            idx === boundedIndex
-                              ? 'border-brand-teal-deep text-brand-teal-deep font-semibold'
-                              : 'border-transparent text-muted hover:text-brand-teal',
+                            workspaceCompactTabClass,
+                            'whitespace-nowrap',
+                            idx === boundedIndex ? workspaceTabActiveClass : workspaceTabInactiveClass,
                           )}
                         >
                           {stripNumbering(card.section.title)}

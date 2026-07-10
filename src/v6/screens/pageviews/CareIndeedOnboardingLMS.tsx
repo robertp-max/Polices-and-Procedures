@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ALL_MODULES as ACHC_ALL_MODULES } from '@/policy/journey/data/ACHC_Annual_Assembled';
+import { GAO_V2_EXPANDED_BY_ID } from '@/policy/journey/data/gaoExpanded.v2.generated';
 import { useLearner } from '@/policy/journey/lib/learnerState';
 import ACHCArchivalCertificate from '@/policy/journey/components/ACHCArchivalCertificate';
 import { useJourneyStore } from '@/policy/journey/stores/journeyStore';
@@ -489,7 +490,7 @@ const GAO_MODULES_PART1: TrainingModule[] = [
 <p>When a CMS surveyor or ACHC reviewer arrives, one of the first things they verify is whether staff understand the agency's mission, their role within it, and how values translate into patient care decisions. This module is not theoretical. Your completion is documented in your personnel file and constitutes evidence of competency orientation.</p>
 </div>
 <p><em>Estimated time for this page: 3 minutes of reading plus narration.</em></p>`,
-        narration: "Lina Reyes sits at her desk on her very first day at Care Indeed Home Health Care. She logs in, and a new message appears in her inbox. The subject line reads: Welcome to Care Indeed Home Health Care.\n\nThis is more than a greeting. Lina is joining a Medicare-certified, ACHC-accredited home health agency. That means every team member — clinical and non-clinical — carries real responsibility for patient safety, regulatory compliance, and the trust that families and physicians place in us.\n\nAs she opens the email, Lina learns what this module will cover: the agency mission and what it demands, the vision for excellence, core values as daily behavior, how home health differs from facility care, the importance of accurate documentation, when and how to escalate concerns, and why survey readiness starts on day one.\n\nThis is the beginning of Lina's onboarding journey. Before she steps into a patient's home, she must understand the standards, the expectations, and the reasons behind them. What she learns today will shape how she cares for patients and how she protects herself and the agency every single visit.",
+        narration: "Alex sits at their desk on their very first day at Care Indeed Home Health Care. They log in, and a new message appears in their inbox. The subject line reads: Welcome to Care Indeed Home Health Care.\n\nThis is more than a greeting. Alex is joining a Medicare-certified, ACHC-accredited home health agency. That means every team member — clinical and non-clinical — carries real responsibility for patient safety, regulatory compliance, and the trust that families and physicians place in us.\n\nAs they open the email, Alex learns what this module will cover: the agency mission and what it demands, the vision for excellence, core values as daily behavior, how home health differs from facility care, the importance of accurate documentation, when and how to escalate concerns, and why survey readiness starts on day one.\n\nThis is the beginning of Alex's onboarding journey. Before they step into a patient's home, they must understand the standards, the expectations, and the reasons behind them. What they learn today will shape how they care for patients and how they protect themselves and the agency every single visit.",
       },
       {
         title: "Our Mission — What It Demands of You",
@@ -573,27 +574,33 @@ const GAO_MODULES_PART1: TrainingModule[] = [
         content: `<h2>Knowledge Check — Checkpoint Before Scenarios</h2>
 <div style="background:#F0F9FF;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #0284C7;">
 <strong>Checkpoint 1:</strong> A CMS surveyor asks you: "Can you tell me about your agency's mission?" Which response best demonstrates understanding?
+<details><summary style="cursor:pointer; font-weight:bold; margin-top:8px;">View Answer</summary>
 <ul>
 <li>A) "We provide home health care." (Too vague — does not demonstrate orientation completion)</li>
 <li><strong>B) "We provide patient-centered, evidence-based services that promote independence and dignity, with a commitment to clinical excellence and regulatory integrity."</strong> ✅</li>
 <li>C) "I am not sure, I just do my job." (Demonstrates failure of orientation training)</li>
 </ul>
+</details>
 </div>
 <div style="background:#F0F9FF;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #0284C7;">
 <strong>Checkpoint 2:</strong> You notice something concerning during a home visit but are not sure if it is serious enough to report. What is the correct action?
+<details><summary style="cursor:pointer; font-weight:bold; margin-top:8px;">View Answer</summary>
 <ul>
 <li>A) Wait and see if it happens again next visit (Delay = potential harm)</li>
 <li><strong>B) Document your observation and report to your supervisor the same day</strong> ✅</li>
 <li>C) Ask the patient's family member what they think (Not the reporting chain)</li>
 </ul>
+</details>
 </div>
 <div style="background:#F0F9FF;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #0284C7;">
 <strong>Checkpoint 3:</strong> Which of the following is TRUE about your documentation in home health?
+<details><summary style="cursor:pointer; font-weight:bold; margin-top:8px;">View Answer</summary>
 <ul>
 <li>A) If another staff member saw it too, you do not need to document it</li>
 <li>B) You can complete documentation within 72 hours</li>
 <li><strong>C) Your documentation is often the sole record of what occurred and serves as legal evidence</strong> ✅</li>
 </ul>
+</details>
 </div>`,
         narration: "Before we move to the scenario challenges, let us check your understanding with three quick questions. These are not graded, but they mirror what you will see on the final quiz and what surveyors actually ask staff during site visits. Take a moment to answer each one honestly before reading the debrief.",
       },
@@ -603,24 +610,28 @@ const GAO_MODULES_PART1: TrainingModule[] = [
 <div style="background:#FFF3E0;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #F59E0B;">
 <strong>SCENARIO 1: The New Employee and the Concerning Observation</strong>
 <p>You are a newly hired home health aide completing your second week. During a routine visit to assist Mr. Torres with bathing, you notice several small bruises on his upper arms that were not there last visit. Mr. Torres lives with his adult son. When you ask about the bruises, Mr. Torres becomes quiet and says, "I am clumsy. I bump into things." His son is in the other room. What do you do?</p>
+<details><summary style="cursor:pointer; font-weight:bold; margin-top:8px;">View Answer</summary>
 <ul>
 <li><strong>Best Action:</strong> Document your objective observation (location, size, color of bruises; patient's stated explanation; patient's demeanor when asked), complete your visit duties, and report to your supervising RN immediately after the visit. ✅</li>
 <li><em>Why:</em> Mandatory reporting is required. Your role is to observe, document, and report through the chain — not to confront a potential abuser or unilaterally call Adult Protective Services from the home unless there is immediate danger.</li>
 </ul>
+</details>
 </div>
 <div style="background:#FFF3E0;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #F59E0B;">
 <strong>SCENARIO 2: The Family Member's Inappropriate Request</strong>
 <p>You are a physical therapist completing a home visit with Mrs. Chen. Her daughter, who is present, says: "While you are here, can you look at my knee? It has been bothering me for weeks. You are a PT — can you just tell me what is wrong?" What do you do?</p>
+<details><summary style="cursor:pointer; font-weight:bold; margin-top:8px;">View Answer</summary>
 <ul>
 <li><strong>Best Action:</strong> Politely decline, explain that you are only authorized to treat the patient of record (Mrs. Chen), and suggest the daughter contact her physician. ✅</li>
 <li><em>Why:</em> Services must be provided in accordance with the plan of care (42 CFR §484.60). Treating anyone other than the patient of record is a scope violation and creates liability.</li>
 </ul>
+</details>
 </div>`,
         narration: "Now let us put your learning to the test with two realistic scenarios. These mirror situations that actually occur in home health. For each one, I want you to think about what you would genuinely do before reading the answer options. Consider: What does the mission demand? What do the values require? What does policy say? There is always a clearly correct answer — and several tempting wrong answers that feel reasonable but carry real risk.",
       },
       {
-        title: "Survey Readiness, Attestation & Completion Evidence",
-        content: `<h2>Survey Readiness, Attestation & Completion Evidence</h2>
+        title: "Survey Readiness & Post-Test Preparation",
+        content: `<h2>Survey Readiness & Post-Test Preparation</h2>
 <h3>What Surveyors May Ask You:</h3>
 <ul>
 <li>"What is your agency's mission?"</li>
@@ -631,12 +642,12 @@ const GAO_MODULES_PART1: TrainingModule[] = [
 </ul>
 <p><strong>How to Answer:</strong> Answer honestly in your own words. It is acceptable to say: "I would contact my supervisor" or "I would refer to policy" if you are unsure. Never lie to a surveyor.</p>
 <div style="background:#E8F5E9;padding:16px;border-radius:8px;margin:16px 0;">
-<h3>Onboarding Attestation:</h3>
-<p>By completing this module, you attest that you understand the mission, vision, values, your reporting and documentation responsibilities, and that compliance is mandatory. This record is stored in your personnel file.</p>
+<h3>Training Record:</h3>
+<p>Completing this module records your lesson progress, post-test result, and completion timestamp. Policy acknowledgments, signatures, and supervisor sign-offs are separate assigned activities when required.</p>
 </div>
 <h3>Remediation Protocol:</h3>
 <p>If you score below 80% on the final quiz, you must retake it within 3 business days. You have a maximum of 3 attempts before supervisor escalation.</p>`,
-        narration: "Let me prepare you for survey readiness. When surveyors arrive, they may pull any staff member aside and ask about your training, your understanding of the mission, and how you handle concerns. Answer honestly, in your own words. Do not try to recite a scripted answer — surveyors see through that immediately. If you are unsure of something, it is always acceptable to say you would contact your supervisor or reference the policy. Now, your completion of this module constitutes a formal attestation. Your quiz score, completion timestamp, and attestation signature are all filed in your personnel record. You need a score of eighty percent or higher to pass. If you do not pass, you have three business days to retake. Three failures triggers supervisor escalation. This is not punitive — it is protective. Patients deserve staff who understand these fundamentals. Congratulations on completing the content portion of GAO-001. You are now ready for the final quiz.",
+        narration: "Let me prepare you for survey readiness. A surveyor may ask what the agency mission means, what training you received, how you report a concern, what you do when a patient refuses care, or how you document your visits. Answer honestly in your own words. Do not recite a script. If you are unsure, say you would contact your supervisor or reference the policy. Your lesson progress, quiz score, and completion timestamp are recorded as training evidence. Policy acknowledgments and signatures are separate assigned activities when required. You need a score of eighty percent or higher to pass. If you do not pass, you have three business days to retake. Three failures triggers supervisor escalation. This is protective, not punitive. Patients deserve staff who understand these fundamentals. You are ready for the final quiz.",
       },
     ],
     exam: [
@@ -762,7 +773,7 @@ const GAO_MODULES_PART1: TrainingModule[] = [
       }
     ],
     passScore: 80,
-    competencyMethod: "Post-test (≥80%) + onboarding attestation + supervisor/HR review where applicable",
+    competencyMethod: "Post-test (≥80%) + training completion record + supervisor/HR review where applicable",
   },
 {
     id: "GAO-002",
@@ -3879,7 +3890,7 @@ const docMattersModule: TrainingModule = {
   regulatoryBasis: "42 CFR §484.60 / CL-CP-001",
 };
 
-const ALL_MODULES: TrainingModule[] = [
+const ALL_MODULES_BASE: TrainingModule[] = [
   ...GAO_MODULES_PART1,     // GAO 001-014
   ...GAO_MODULES_PART2,     // GAO 015-EXAM
   ...ADM_MODULES,           // Administrator
@@ -3899,6 +3910,34 @@ const ALL_MODULES: TrainingModule[] = [
   oasisSocModule,
   docMattersModule,
 ];
+
+// GAO v2 expanded overrides from Documents/Onboarding/GAOupdates.md (all GAO except GAO-001)
+const ALL_MODULES: TrainingModule[] = ALL_MODULES_BASE.map((m) => {
+  const expanded = GAO_V2_EXPANDED_BY_ID[m.id];
+  if (!expanded) return m;
+  // Prefer expanded exam only when it is at least as complete as the existing authored set
+  // (source file often omits exams for batch-2/3 modules — do not replace good 5–10Q banks).
+  const expandedExam = expanded.exam ?? [];
+  const baseExam = m.exam ?? [];
+  const exam =
+    expandedExam.length >= 5 || expandedExam.length >= baseExam.length
+      ? expandedExam.length
+        ? expandedExam
+        : baseExam
+      : baseExam.length
+        ? baseExam
+        : expandedExam;
+  return {
+    ...m,
+    title: expanded.title,
+    durationMinutes: expanded.durationMinutes,
+    policyMapped: expanded.policyMapped?.length ? expanded.policyMapped : m.policyMapped,
+    regulatoryBasis: expanded.regulatoryBasis ?? m.regulatoryBasis,
+    pages: expanded.pages?.length ? expanded.pages : m.pages,
+    exam,
+    passScore: expanded.passScore ?? m.passScore,
+  };
+});
 
 const MODULE_MAP: Record<string, TrainingModule> = {};
 ALL_MODULES.forEach((m) => { MODULE_MAP[m.id] = m; });
@@ -4597,7 +4636,6 @@ const CareIndeedLmsHeader: React.FC<{
       background: "rgba(255, 255, 255, 0.88)",
       border: `1px solid ${BRAND.border}`,
       boxShadow: "0 18px 45px rgba(15, 23, 42, 0.08)",
-      backdropFilter: "blur(18px)",
     }}
   >
     <div style={{ minWidth: "260px" }}>
@@ -5070,9 +5108,5 @@ const COMPLIANCE_CALENDAR = {
     { trigger: "License expires", timeline: "Expiration date", action: "Immediate removal from clinical duties", policy: "HR-TA-004 § 6.2.5" },
     { trigger: "OIG/SAM exclusion confirmed", timeline: "Immediate", action: "Remove, terminate, CO notified <24 hrs", policy: "HR-TA-003 § 6.3" },
   ],
-};
-
-
-
-export { SCORM_METADATA, COMPLIANCE_CALENDAR, ANN_MODULES, ALL_MODULES };
+};export { SCORM_METADATA, COMPLIANCE_CALENDAR, ANN_MODULES, ALL_MODULES };
 export default CareIndeedOnboardingLMS;

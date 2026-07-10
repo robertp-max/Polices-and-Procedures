@@ -25,7 +25,7 @@ export interface FormMeta {
 }
 
 const STD_STATUS = (subject: string): FormMeta['statusMeaning'] => ({
-  missing:           `${subject} is not on file. Survey-ready gap — upload or create before the event is closed.`,
+  missing:           `${subject} is not on file. Compliance gap — upload or create before the event is closed.`,
   pending:           `${subject} has not been started. Open the form and begin input when prerequisites are met.`,
   'in-progress':     `${subject} has been opened and is being filled out. Complete all required fields before sign-off.`,
   'requires-review': `${subject} is filled out and awaiting review by an approver before it can be finalized.`,
@@ -251,6 +251,28 @@ export const FORMS_CATALOG: Record<string, FormMeta> = {
     instructions: 'Record exercise scenario, participants, communication tree test, identified gaps, and updates made to the emergency plan.',
     statusMeaning: STD_STATUS('EP exercise record'),
   },
+  'CL-SYS-OASIS-EHR': {
+    id: 'CL-SYS-OASIS-EHR',
+    title: 'OASIS Assessment System of Record (EHR / iQIES)',
+    purpose: 'Documents the EHR-native OASIS assessment, lock, export, and iQIES transmission evidence chain for SOC/ROC/Recert/Transfer/Discharge time points. This is not a paper form substitute; it is the cataloged control for system-of-record evidence.',
+    whenRequired: 'At every applicable OASIS time point (SOC, ROC, Recertification, Transfer, Discharge/Death) for Medicare home health patients.',
+    whoCompletes: 'Authorized RN assessor completes OASIS in the EHR; OASIS Transmission Coordinator manages export/iQIES submission; OASIS Quality Reviewer validates accuracy.',
+    linkedRelevance: 'Policies CL-CA-001, CL-CA-002, CL-CA-003, CL-OA-001/CL-OA-101; evidence = assessment lock timestamp, assessor identity, transmission receipt, correction log, QA review.',
+    instructions: 'Complete OASIS in the certified EHR. Lock assessment within regulatory timeframe. Export/transmit to iQIES per CMS. File transmission receipt and any correction/resubmission record in the patient evidence packet / CES evidence intake. Do not use a paper OASIS as primary unless EHR downtime procedure applies.',
+    statusMeaning: STD_STATUS('OASIS EHR assessment/transmission evidence'),
+  },
+
+  'CL-FM-MED-RECON': {
+    id: 'CL-FM-MED-RECON',
+    title: 'Medication Reconciliation & Profile Review Record',
+    purpose: 'Captures medication reconciliation at transitions and ongoing medication profile review, high-risk medication checks, and patient medication education teach-back.',
+    whenRequired: 'At SOC, ROC, resumption, recertification, transfer/discharge transitions, and when medication changes are ordered.',
+    whoCompletes: 'Assigned RN (or appropriate licensed clinician) with physician order alignment; Clinical Manager oversight for high-risk meds.',
+    linkedRelevance: 'Policies CL-SD-012 Medication Management & Administration and CL-SD-013 Medication Reconciliation at Transitions; evidence retained in clinical record / CES evidence packet.',
+    instructions: 'Reconcile home meds against orders. Document discrepancies, high-alert meds, education, and teach-back. Attach or link EHR med profile export when available. Route medication errors through incident workflow.',
+    statusMeaning: STD_STATUS('Medication reconciliation/profile review record'),
+  },
+
 };
 
 export function getFormMeta(formId?: string): FormMeta | null {

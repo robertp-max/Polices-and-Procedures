@@ -79,6 +79,14 @@ function categoryToTrack(c: ScenarioCategory): IncidentTrack {
    worker, which steers injury/assault toward the clinician-safety playbook. */
 const WORKER_SELF = /\b(me|my|myself|i['’ ]?m|i was|i am|i feel|on me|at me|hit me|attacked me|i got)\b/i;
 
+/* First-person VICTIM: the writer themself is hurt ("stabbed me", "my eye is
+   bleeding", "I am about to faint"). This outranks any mention of who did it —
+   "my patient stabbed me" names the patient as ATTACKER, and must never route
+   to the patient-injury playbook just because the word "patient" appears.
+   Exported for bradIncidentProfiles' victim-aware profile selection. */
+export const WORKER_VICTIM =
+  /\b(stabb\w*|knifed|hit|bit|punch\w*|kick\w*|attack\w*|assault\w*|cut|slash\w*|scratch\w*|grabb\w*|chok\w*|strangl\w*|shov\w*|push\w*|burn\w*|swung at|hurt|injur\w*)\s+me\b|\bi\s*(['’]?m|am|was)\s*(bleeding|hurt|injured|wounded|stabbed|dizzy|woozy|lightheaded|about to (faint|pass out)|going to (faint|pass out)|feeling faint)\b|\bmy\s+(eye|face|head|arm|hand|leg|neck|chest|stomach|back|shoulder)\b[^.]{0,30}\b(bleed\w*|stabbed|cut|burn\w*|injur\w*|hurt\w*|swelling|swollen)\b/i;
+
 /* ─── Second-chance safety net (only runs when the precise classifier returns
    GENERAL_QUERY). High recall by design — order matters; first match wins. ── */
 interface SecondChanceRule {
@@ -109,9 +117,14 @@ const SECOND_CHANCE: SecondChanceRule[] = [
       /\b(assault\w*|attack\w*|attacked me|jumped me|beat me|beating me)\b/i,
       /\b(hit me|hitting me|punch\w*|kick\w*|slapp?\w*|shov\w*|push\w*|bit me|biting me|scratch\w*|grab\w*|grabbed me|grop\w*|chok\w*|strangl\w*|spit\w* (on|at) me|threw|throwing)\b/i,
       /\b(threaten\w*|threat\b|menac\w*|stalk\w*|harass\w*|rob\w*|mugg\w*|held me|cornered|chasing|chased|came at me|coming at me|swung at|swinging at|lunged|follow\w* me)\b/i,
-      // Inherent weapons (always urgent). Ambiguous objects (bat/scissors/hammer)
-      // are handled by the assault/threw/swung verbs above, not by name.
-      /\b(gun|firearm|pistol|rifle|handgun|shotgun|knife|machete|blade|weapon|brandish\w*|pointed (a|the) (gun|knife|weapon))\b/i,
+      // Inherent weapons and weapon verbs (always urgent — stabbing implies a
+      // blade). Ambiguous objects (bat/scissors/hammer) are handled by the
+      // assault/threw/swung verbs above, not by name.
+      /\b(gun|firearm|pistol|rifle|handgun|shotgun|knife|machete|blade|weapon|stabbed|stabs?\b|stabbing(?!\s+(pain|sensation|ache|feeling))|knifed|slash\w*|brandish\w*|pointed (a|the) (gun|knife|weapon))\b/i,
+      // Shootings — anyone shot = dangerous scene (scene safety before care).
+      // "flu shot / B12 shot" is safe (needs got/was adjacency or gunshot noun);
+      // "shooting pain" stays clinical via the lookahead.
+      /\b(gun ?shots?|gunfire|drive[- ]?by|shots? fired|(got|was|were|been|being|they|someone|somebody) shot\b|shot (him|her|them|me|us|at)|shooting(?!\s+(pain|sensation|ache|feeling)))\b/i,
       /\b(in danger|my life|kill me|wants? to (hurt|kill)|going to (hurt|kill)|hurt me|trying to hurt|afraid (for|of) my (life|safety))\b/i,
     ],
   },
@@ -156,10 +169,13 @@ const SECOND_CHANCE: SecondChanceRule[] = [
   },
   {
     track: 'SERIOUS_INJURY',
-    category: (t) => (WORKER_SELF.test(t) && !/\b(patient|client|resident)\b/i.test(t)
+    // First-person victim wins outright; otherwise worker-self phrasing only
+    // counts when no patient/client is mentioned as the injured party.
+    category: (t) => (WORKER_VICTIM.test(t) || (WORKER_SELF.test(t) && !/\b(patient|client|resident)\b/i.test(t))
       ? 'CLINICIAN_SAFETY' : 'PATIENT_SAFETY_EMERGENCY'),
     lifeSafety: true,
     patterns: [
+      /\b(about to (faint|pass out)|going to (faint|pass out)|feel(ing)? faint|i(['’]?m| am) (dizzy|lightheaded))\b/i,
       /\b(hit (his|her|their|my|the) head|head (injury|wound|strike)|struck (his|her|their|my|the) head|bumped (his|her|their|my) head)\b/i,
       /\b(broke\w*|broken (bone|hip|arm|leg|wrist|ankle)|fracture\w*|dislocat\w*)\b/i,
       /\b(deep (cut|laceration)|laceration|gash|stitches|burn\w*|scald\w*)\b/i,

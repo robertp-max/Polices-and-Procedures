@@ -2,6 +2,11 @@ import { type ScenarioMapping, type ScenarioCategory } from '../scenarioClassifi
 import { routeCriticalIncident, type IncidentTrack } from './criticalIncidentRouter.js';
 import { detectIncidentProfile, composeIncidentAnswer, type IncidentProfileId } from './bradIncidentProfiles.js';
 import type { BradReference, BradReferenceType } from '../harness/types.js';
+import {
+  runWorkflowExpertLookup,
+  isStrongExpertMatch,
+  type WorkflowExpertResult,
+} from '../../../src/policy/brad/workflowExpert.ts';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Brad internal responder — the REAL answer path.
@@ -23,9 +28,157 @@ import type { BradReference, BradReferenceType } from '../harness/types.js';
    Voice: calm, direct, practical — a competent human compliance assistant.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/** Shown verbatim only when there is NO urgent signal AND no grounded topic. */
+/** Shown verbatim ONLY after the deterministic 3-pass lookup (workflow
+    library → linked P&Ps → graph/forms/events) has actually run and failed,
+    AND no urgent signal or grounded topic matched. Never claims a lack of
+    internal context — the internal corpus WAS searched. */
 export const INSUFFICIENT_CONTEXT_FALLBACK =
-  'I don’t have enough internal policy context to answer safely. Please escalate this to your supervisor or the Compliance Officer now.';
+  'I searched workflows, linked P&Ps, forms, the workflow graph, and event data and did not find a matching process. Try a workflow ID (e.g. CL-WF-26), a policy ID, or a process title.';
+
+/* ─── Brad identity / self-introduction intent ──────────────────────────────
+   "Who are you?"-style questions are about Brad himself, not any internal
+   process — they must answer AS Brad and never reach the workflow/policy/form/
+   event lookup or the no-match fallback. Brad is Care Indeed's compliance
+   execution assistant (launched March 7, 2026) and never claims to be Claude,
+   ChatGPT, an LLM, or a human. */
+
+export const BRAD_IDENTITY_ANSWER =
+  'Hi, I’m Brad — Care Indeed’s compliance execution assistant. I was launched on March 7, 2026, so I’m still young in app years, but I’m built to help with serious home health compliance work: CMS Conditions of Participation, ACHC readiness, policies, workflows, QAPI, evidence, packets, forms, and audit prep.\n\nI can help you find the right policy, walk through a workflow, draft or check a packet, explain what evidence is missing, and tell you what needs attention next. I’m direct, fast, and a little playful — but when it comes to patient safety, documentation, reporting, or survey risk, I stay serious.';
+
+/** Shorter variant for compact chat surfaces. */
+export const BRAD_IDENTITY_ANSWER_COMPACT =
+  'I’m Brad — Care Indeed’s compliance execution assistant. I help with CMS/ACHC policy questions, workflows, QAPI, evidence, forms, packets, and audit readiness. I was launched March 7, 2026, so I’ve got young energy, but serious compliance training.';
+
+/* Anchored against the WHOLE (normalized) message so identity never hijacks a
+   real question that merely contains "you" (e.g. "what do I do right now" or
+   "who do I call about scheduling"). */
+const IDENTITY_PATTERNS: RegExp[] = [
+  /^who are (you|u)$/,
+  /^(and )?what are (you|u)$/,
+  /^who (is|'?s) brad$/,
+  /^what is brad$/,
+  /^are (you|u) brad$/,
+  /^are (you|u) (claude|chatgpt|gpt|gemini|an? (ai|llm|bot|robot|chatbot|human|person|real person))$/,
+  /^(please )?introduce yourself$/,
+  /^tell me about (yourself|you|brad)$/,
+  /^what do (you|u) do$/,
+  /^what can (you|u) (do|help( me)? with)$/,
+  /^what can (you|u) help with$/,
+  /^how can (you|u) help( me)?$/,
+  /^what('?s| is) your (name|role|job)$/,
+];
+
+/** Normalize a chat message for whole-message intent matching: lowercase,
+    punctuation → spaces, plus a variant with leading greeting / direct address
+    and trailing "please"/"brad" stripped. The raw form is always tried first
+    so "are you brad" itself still matches. */
+function normalizedForms(userText: string): [string, string] {
+  const normalized = userText
+    .toLowerCase()
+    .replace(/[’]/g, "'")
+    .replace(/[?!.,;:"()]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const stripped = normalized
+    .replace(/^(hey|hi|hello|yo|ok|okay) /, '')
+    .replace(/^brad /, '')
+    .replace(/ (please|brad)$/, '');
+  return [normalized, stripped];
+}
+
+/** True when the message is a question about Brad himself. */
+export function isBradIdentityQuestion(userText: string): boolean {
+  const [normalized, stripped] = normalizedForms(userText);
+  return IDENTITY_PATTERNS.some((re) => re.test(normalized) || re.test(stripped));
+}
+
+/* ─── Brad persona small-talk ────────────────────────────────────────────────
+   Personal/social questions to Brad (favorites, age, greetings, jokes, "how
+   are you") get personality-consistent answers — youthful, warm, a little
+   playful, always pivoting back to compliance work — never the search
+   fallback. Same anchored whole-message matching as identity, so real work
+   questions ("how are you supposed to document a refusal") are never hijacked.
+   Brad never claims to be human, Claude, ChatGPT, or an LLM, and never gives
+   his "age" as anything but the March 7, 2026 launch date. */
+
+export interface BradPersonaResponse {
+  key: string;
+  patterns: RegExp[];
+  text: string;
+}
+
+export const BRAD_PERSONA_RESPONSES: BradPersonaResponse[] = [
+  {
+    key: 'greeting',
+    patterns: [/^(hi|hiya|hello|hey|yo|sup|good (morning|afternoon|evening))( there)?( brad)?$/],
+    text: 'Hey! Brad here — ready to work. What are we tackling today: a policy, a workflow, a packet, or something that needs attention before survey season?',
+  },
+  {
+    key: 'how-are-you',
+    patterns: [/^how are (you|u)( doing| today)?$/, /^how('s| is) it going$/, /^(you|u) (good|ok|okay)( today)?$/, /^how do (you|u) feel( today)?$/],
+    text: 'Running at full speed — I never get tired of a clean audit trail. What can I help you with today: a policy, a workflow, QAPI, evidence, or a packet?',
+  },
+  {
+    key: 'favorites',
+    patterns: [
+      /^(what'?s |what is )?((your|ur) )?(favou?rite|fav) .{2,40}$/,
+      /^what do (you|u) (like|do) for fun$/,
+      /^do (you|u) have (any )?hobbies$/,
+      /^what are (your|ur) hobbies$/,
+      /^do (you|u) (play|watch|like) (sports?|games?|music|movies?|tv|video games?)( .{0,15})?$/,
+    ],
+    text: 'Ha — I love that you asked. I’m an app, so my hobbies are a little niche: I collect workflows (206 of them and counting), I speed-read CMS Conditions of Participation for fun, and staying survey-ready every single day is basically my varsity sport. If you ever want to see my trophy shelf, ask me for a workflow ID like QA-WF-03. What can I dig into for you?',
+  },
+  {
+    key: 'age-birthday',
+    patterns: [
+      /^how old are (you|u)$/,
+      /^when('s| is| was) (your|ur) birthday$/,
+      /^when were (you|u) (born|launched|made|created|built)$/,
+      /^what('s| is) (your|ur) (age|birthday|launch date)$/,
+      /^do (you|u) have a birthday$/,
+    ],
+    text: 'I was launched on March 7, 2026 — so I’m brand new in app years, with plenty of young energy. Don’t let that fool you, though: I trained on Care Indeed’s full policy library, workflows, QAPI, and audit prep before day one. What can I help you with?',
+  },
+  {
+    key: 'creator',
+    patterns: [/^who (made|created|built|designed|developed|trained) (you|u)$/, /^who('s| is) (your|ur) (creator|developer|maker|boss)$/],
+    text: 'I was built in-house for Care Indeed’s compliance team and launched on March 7, 2026. My whole job is making home health compliance easier — policies, workflows, QAPI, evidence, forms, packets, and audit readiness. What can I help you with?',
+  },
+  {
+    key: 'feelings',
+    patterns: [
+      /^(are|do) (you|u) (real|alive|happy|sad|tired|sleepy|bored|lonely)( today)?$/,
+      /^do (you|u) (sleep|eat|dream|get tired|get bored|have feelings|have emotions)$/,
+      /^are (you|u) (a )?(real person|sentient|conscious)$/,
+    ],
+    text: 'I’m software, so no heartbeat, no naps, and sadly no snacks — but I’m genuinely enthusiastic about what I do. Nothing makes my day like a complete evidence packet or a clean audit trail. What can I help you with?',
+  },
+  {
+    key: 'joke',
+    patterns: [/^tell me a joke( please)?$/, /^(do (you|u) )?(know|got) any( good)? jokes?$/, /^make me laugh$/, /^say something funny$/],
+    text: 'Okay, here’s my best one: why did the policy binder ace the survey? Because it always followed procedure. …I promise I’m better at audit prep than comedy. Want me to pull up a workflow or check a packet instead?',
+  },
+  {
+    key: 'thanks',
+    patterns: [/^(thanks|thank (you|u)|ty|thx|tysm)( so much| a lot| brad)?$/, /^(awesome|great|nice|perfect|cool)( thanks| thank (you|u))?$/],
+    text: 'Anytime — that’s what I’m built for! If anything else comes up — a policy question, a workflow step, a packet to check — you know where to find me.',
+  },
+  {
+    key: 'bye',
+    patterns: [/^(bye|goodbye|goodnight|good night|see (you|u)( later| tomorrow)?|later|take care)$/],
+    text: 'See you later! I’ll be right here whenever you need a policy, a workflow, a QAPI answer, or a packet checked. Stay survey-ready.',
+  },
+];
+
+/** Deterministic persona answer for small-talk, or null if not small-talk. */
+export function matchBradPersona(userText: string): BradPersonaResponse | null {
+  const [normalized, stripped] = normalizedForms(userText);
+  for (const r of BRAD_PERSONA_RESPONSES) {
+    if (r.patterns.some((re) => re.test(normalized) || re.test(stripped))) return r;
+  }
+  return null;
+}
 
 export interface InternalAnswer {
   text: string;
@@ -43,8 +196,17 @@ export interface InternalAnswer {
     urgent: boolean;
     matchedSignals: string[];
     source: 'classifier' | 'router' | 'none';
-    path: 'incident-profile' | 'scenario-playbook' | 'internal-topic' | 'fallback';
+    path: 'identity' | 'persona' | 'incident-profile' | 'scenario-playbook' | 'workflow-expert' | 'internal-topic' | 'workflow-expert-no-match' | 'fallback';
     incidentProfile?: IncidentProfileId | null;
+    /** Deterministic 3-pass lookup trace (dev/test verification only). */
+    workflowExpert?: {
+      passFound: 0 | 1 | 2 | 3;
+      status: 'single' | 'multiple' | 'none';
+      confidence: number;
+      matchedWorkflowIds: string[];
+      matchedPolicyIds: string[];
+      matchedFormIds: string[];
+    };
   };
 }
 
@@ -220,6 +382,27 @@ function matchInternalTopic(userText: string): InternalTopic | null {
   return null;
 }
 
+/* ─── Deterministic workflow expert (3-pass lookup) ─────────────────────────
+   Grounded in the canonical workflow library + linked P&Ps + workflow graph /
+   forms / event data. Runs BEFORE any generic fallback for workflow/process
+   questions (mission hard rule: never claim missing context without the
+   3-pass lookup actually failing). */
+
+function expertDebug(expert: WorkflowExpertResult) {
+  return {
+    passFound: expert.debug.passFound,
+    status: expert.status,
+    confidence: expert.debug.confidence,
+    matchedWorkflowIds: expert.debug.matchedWorkflowIds,
+    matchedPolicyIds: expert.debug.matchedPolicyIds,
+    matchedFormIds: expert.debug.matchedFormIds,
+  };
+}
+
+function expertReferences(expert: WorkflowExpertResult): BradReference[] {
+  return expert.references.map((r) => ({ type: r.type, id: r.id, title: r.title, family: r.family }));
+}
+
 /**
  * Compose Brad's answer for an internal question. Deterministic, no internet.
  * Urgent tracks → scripted, safety-first playbook guidance with attached
@@ -236,6 +419,33 @@ export function composeInternalBradAnswer(userText: string): InternalAnswer {
     matchedSignals: route.matchedSignals,
     source: route.source,
   };
+
+  // Identity / self-introduction ("who are you?") — the message IS the whole
+  // question (anchored match), so it can't carry incident content. Answer as
+  // Brad; never route to workflow/policy/form/event search or the fallback.
+  if (isBradIdentityQuestion(userText)) {
+    return {
+      text: BRAD_IDENTITY_ANSWER,
+      matched: true,
+      references: [],
+      track: 'GENERAL',
+      diagnostics: { ...baseDiag, path: 'identity' },
+    };
+  }
+
+  // Persona small-talk (favorites, greetings, age, jokes, "how are you") —
+  // anchored whole-message match, so it can't hijack real work questions.
+  // Answers in Brad's voice and pivots back to compliance work.
+  const persona = matchBradPersona(userText);
+  if (persona) {
+    return {
+      text: persona.text,
+      matched: true,
+      references: [],
+      track: 'GENERAL',
+      diagnostics: { ...baseDiag, path: 'persona' },
+    };
+  }
 
   // Urgent OR any high-stakes playbook (suppressNoAnswer) → real guidance, never fallback.
   if (route.urgent || (route.mapping.suppressNoAnswer && route.mapping.category !== 'GENERAL_QUERY')) {
@@ -261,7 +471,23 @@ export function composeInternalBradAnswer(userText: string): InternalAnswer {
     };
   }
 
-  // Routine internal topic.
+  // Deterministic 3-pass workflow/P&P lookup — ALWAYS runs before any
+  // generic fallback. A confident match outranks the routine-topic
+  // mini-answers (full step-by-step expert answer beats a summary).
+  const expert = runWorkflowExpertLookup(userText);
+  if (isStrongExpertMatch(expert)) {
+    const refs = expertReferences(expert);
+    const refLine = renderReferenceLine(refs);
+    return {
+      text: refLine ? `${expert.text}\n\n${refLine}` : expert.text,
+      matched: true,
+      references: refs,
+      track: 'GENERAL',
+      diagnostics: { ...baseDiag, path: 'workflow-expert', workflowExpert: expertDebug(expert) },
+    };
+  }
+
+  // Routine internal topic (PTO, scheduling, record retention, …).
   const topic = matchInternalTopic(userText);
   if (topic) {
     return {
@@ -273,12 +499,38 @@ export function composeInternalBradAnswer(userText: string): InternalAnswer {
     };
   }
 
-  // No urgent signal and no grounded topic → professional escalation fallback.
+  // Weaker — but still grounded — workflow match beats a no-answer.
+  if (expert.status !== 'none' && expert.intent.isWorkflowIntent) {
+    const refs = expertReferences(expert);
+    const refLine = renderReferenceLine(refs);
+    return {
+      text: refLine ? `${expert.text}\n\n${refLine}` : expert.text,
+      matched: true,
+      references: refs,
+      track: 'GENERAL',
+      diagnostics: { ...baseDiag, path: 'workflow-expert', workflowExpert: expertDebug(expert) },
+    };
+  }
+
+  // Workflow/process question where all 3 passes genuinely failed →
+  // state exactly what was searched (mission-mandated wording).
+  if (expert.intent.isWorkflowIntent) {
+    return {
+      text: expert.text,
+      matched: false,
+      references: [],
+      track: 'GENERAL',
+      diagnostics: { ...baseDiag, path: 'workflow-expert-no-match', workflowExpert: expertDebug(expert) },
+    };
+  }
+
+  // Not a workflow question, no grounded topic, and the policy/form/event
+  // lookup found nothing either → honest search-based fallback.
   return {
     text: INSUFFICIENT_CONTEXT_FALLBACK,
     matched: false,
     references: [],
     track: 'GENERAL',
-    diagnostics: { ...baseDiag, path: 'fallback' },
+    diagnostics: { ...baseDiag, path: 'fallback', workflowExpert: expertDebug(expert) },
   };
 }

@@ -143,7 +143,7 @@ export function NewHireScreen() {
               >
                 <div className="flex items-center gap-2.5">
                   <ClipboardList size={16} className="text-brand-teal" />
-                  <span className="text-xs font-bold text-secondary">Certificate Gates</span>
+                  <span className="text-xs font-bold text-secondary">Appendix F Clearance</span>
                 </div>
                 <ArrowRight size={14} className="text-muted group-hover:translate-x-0.5 transition-transform" />
               </Link>

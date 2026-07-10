@@ -58,7 +58,7 @@ const academyTabs: AcademyTab[] = [
   },
   {
     id: 'roleJourney',
-    label: 'Role Journey',
+    label: 'Journey',
   },
   {
     id: 'appendixF',

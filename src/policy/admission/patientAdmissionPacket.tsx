@@ -205,6 +205,19 @@ const ROUTE_SECTION_ID: Record<PaymentRoute, string> = {
   NOT_APPLICABLE_NO_BILLABLE_SERVICES: "route-not-applicable",
 };
 
+// Single source of truth: patient-facing admission child forms/evidence by payment route (P1 fix).
+// Only patient-facing required; no internal master-control dossiers.
+export const ADMISSION_REQUIRED_FORMS_BY_ROUTE: Record<PaymentRoute, string[]> = {
+  PRIVATE_PAY: ['AD-FM-001', 'AD-FM-002', 'AD-FM-003', 'AD-FM-004'], // agreement, rights, privacy, consent
+  LONG_TERM_CARE_INSURANCE: ['AD-FM-001', 'AD-FM-002', 'AD-FM-003', 'AD-FM-004', 'AD-FM-005'], // + carrier auth
+  MEDICARE_ADVANTAGE_OR_PRIVATE_INSURANCE: ['AD-FM-001', 'AD-FM-002', 'AD-FM-003', 'AD-FM-004', 'AD-FM-006'], // + assignment
+  ORIGINAL_MEDICARE_FFS: ['AD-FM-001', 'AD-FM-002', 'AD-FM-003', 'AD-FM-004', 'CMS-ABN', 'CMS-HHCCN'], // + official notices
+  MEDI_CAL_OR_MEDICAID: ['AD-FM-001', 'AD-FM-002', 'AD-FM-003', 'AD-FM-004', 'AD-FM-007'], // + medicaid notice
+  VA_WORKERS_COMP_OR_OTHER_CONTRACT: ['AD-FM-001', 'AD-FM-002', 'AD-FM-003', 'AD-FM-004', 'AD-FM-008'], // + sponsor auth
+  PENDING_VERIFICATION: ['AD-FM-001', 'AD-FM-002', 'AD-FM-003', 'AD-FM-004'], // minimal until verified
+  NOT_APPLICABLE_NO_BILLABLE_SERVICES: ['AD-FM-001', 'AD-FM-002', 'AD-FM-003'], // no billing docs
+};
+
 const ROUTE_CONFIGS: Record<PaymentRoute, PayerRouteConfig> = {
   PRIVATE_PAY: {
     paymentRoute: "PRIVATE_PAY",
@@ -340,7 +353,7 @@ const BASE_PATIENT_SECTIONS: PacketSection[] = [
     id: "patient-identification",
     title: "Patient and Admission Information",
     body: [
-      "Care Indeed Home Health uses this agreement to confirm the patient, admission date, agency contact information, receipt of required notices, and the selected payment pathway.",
+      "Care Indeed Home Health Care, Inc. uses this agreement to confirm the patient, admission date, agency contact information, receipt of required notices, and the selected payment pathway.",
       "The patient or authorized representative should ask questions before signing if any section is unclear.",
     ],
   },
@@ -376,7 +389,7 @@ const ADMISSION_ACKNOWLEDGMENT_SECTIONS: Record<string, PacketSection> = {
     body: [
       "The patient or authorized representative consents to receive home health services ordered by the physician or allowed practitioner and accepted by the agency.",
       "Services may include assessment, skilled nursing, therapy, aide, social work, care coordination, teaching, and other authorized services within the plan of care.",
-      "Care Indeed Home Health may coordinate with physicians, payers, caregivers, and service partners as needed to arrange and document care.",
+      "Care Indeed Home Health Care, Inc. may coordinate with physicians, payers, caregivers, and service partners as needed to arrange and document care.",
     ],
   },
   "patient-rights": {
@@ -749,7 +762,7 @@ export function renderPatientFacingText(data: AdmissionPacketData): string {
   // Patient-facing text NEVER includes internal sections, even for an agency copy.
   const pages = buildAdmissionPacketPages({ ...data, agencyRecordCopy: false });
   return [
-    "Care Indeed Home Health Patient Admission Agreement",
+    "Care Indeed Home Health Care, Inc. Patient Admission Agreement",
     `Packet ID: ${data.packetId}`,
     `Patient: ${data.patientName}`,
     `Agency: ${data.agencyName}`,
@@ -1354,7 +1367,7 @@ export const sampleAdmissionPacketData: AdmissionPacketData = {
   dateOfBirth: "01/01/1945",
   medicalRecordNumber: "MRN-MOCK-001",
   admissionDate: "06/26/2026",
-  agencyName: "Care Indeed Home Health",
+  agencyName: "Care Indeed Home Health Care, Inc.",
   agencyPhone: "555-0100",
   agencyAddress: "Example service area address",
   paymentRoute: "PENDING_VERIFICATION",

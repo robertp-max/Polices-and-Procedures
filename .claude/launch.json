@@ -7,6 +7,13 @@
       "runtimeArgs": ["run", "dev:web", "--", "--port", "5180", "--strictPort"],
       "port": 5180,
       "autoPort": false
+    },
+    {
+      "name": "v2-api",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:api"],
+      "port": 8787,
+      "autoPort": false
     }
   ]
 }

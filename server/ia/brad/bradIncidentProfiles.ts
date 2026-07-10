@@ -1,4 +1,4 @@
-import type { IncidentRoute } from './criticalIncidentRouter.js';
+import { WORKER_VICTIM, type IncidentRoute } from './criticalIncidentRouter.js';
 import { SEXUAL_ASSAULT_RE, SEXUAL_HARASSMENT_RE } from './sexualMisconductPatterns.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -27,6 +27,7 @@ export type IncidentProfileId =
   | 'sexual_assault'
   | 'sexual_harassment'
   | 'violence_threat'
+  | 'violent_scene_patient'
   | 'unsafe_environment'
   | 'patient_death'
   | 'patient_clinical'
@@ -40,6 +41,13 @@ const WORKER_INJURY_SELF =
   /\b(needle[- ]?stick|stuck\s+(myself|me)\s+with|sharps?\s+injur\w*|blood\s+exposure|body\s+fluid\s+exposure|i\s+(cut|burned|hurt|injured)\s+(myself|my)\b)/i;
 
 const DEATH_WORDS = /\b(dead|died|deceased|passed away|lifeless|no pulse|pulseless)\b/i;
+
+/* Patient/third party is the VICTIM of violence ("my client got shot") — the
+   scene is dangerous even though the clinician isn't (yet) hurt. Scene-safety
+   doctrine (CMS/BLS): check the clinician's own safety FIRST, then 911, then
+   aid within scope only if the scene is safe. */
+const PATIENT_VICTIM_VIOLENCE =
+  /\b(client|patient|resident|he|she|they)\b[^.]{0,40}\b(got|was|were|been) (shot|stabbed|attacked|assaulted|beaten|knifed)\b|\b(shot|stabbed|attacked|assaulted|beaten|knifed)\b[^.]{0,25}\b(my (client|patient)|the (client|patient|resident))\b|\b(gun ?shots?|gunfire|shots? fired|drive[- ]?by)\b/i;
 const PREGNANCY = /\b(pregnan\w*|i (might|may) be pregnant|keeping the baby|the baby)\b/i;
 
 /** Decide the specific incident profile for an urgent route (null → use playbook). */
@@ -56,7 +64,9 @@ export function detectIncidentProfile(text: string, route: IncidentRoute): Incid
     case 'CLINICAL_EMERGENCY':
       return 'patient_clinical';
     case 'IMMEDIATE_DANGER':
-      return 'violence_threat';
+      // Patient-as-victim on a violent scene gets scene-safety-first + patient
+      // aid; the clinician-as-victim/threatened response stays violence_threat.
+      return PATIENT_VICTIM_VIOLENCE.test(t) && !WORKER_VICTIM.test(t) ? 'violent_scene_patient' : 'violence_threat';
     case 'UNSAFE_ENVIRONMENT':
       return 'unsafe_environment';
     case 'SERIOUS_INJURY':
@@ -114,6 +124,15 @@ export function composeIncidentAnswer(profile: IncidentProfileId, text: string):
         'Don’t go back into the home or continue the visit until leadership confirms it’s safe. Are you somewhere safe right now?',
       ].join('\n\n');
 
+    case 'violent_scene_patient':
+      return [
+        'Your safety comes first — you can’t help your patient if you get hurt too.',
+        'If whoever hurt them could still be nearby, or the scene isn’t clearly safe, get yourself to safety NOW and call 911 from a safe place. Do not stay in or re-enter an unsafe scene — that is exactly what EMS and law enforcement are trained for.',
+        'Call 911 immediately. If — and only if — the scene is safe, help within your scope until EMS arrives: apply firm direct pressure to bleeding, keep the patient still and warm, and don’t remove anything from a wound.',
+        'Once EMS and law enforcement take over, notify your supervisor/Administrator right away — this is a critical event. Document the objective facts: times, what you saw, what you did, and who you notified. Leadership handles any required external reporting.',
+        'Are you safe right now, and have you called 911?',
+      ].join('\n\n');
+
     case 'unsafe_environment':
       return [
         'Trust your instincts — if a visit doesn’t feel safe, your safety comes first.',
@@ -132,7 +151,7 @@ export function composeIncidentAnswer(profile: IncidentProfileId, text: string):
 
     case 'patient_clinical':
       return [
-        'Let’s get help to your patient right now.',
+        'Let’s get help to your patient right now — take two seconds to confirm the scene is safe for you first; you can’t help anyone if you get hurt too.',
         'Call 911 immediately and stay on the line. If the patient is unresponsive or not breathing, begin CPR/BLS within your scope. You can’t pronounce death — EMS handles that.',
         'Notify the physician and your supervisor/DON as soon as you can, and note the exact times. Document what you saw, what you did, and who you notified, in real time. If the patient refuses care, urge them, don’t force it, and document the refusal.',
         'Don’t delay calling 911 to make other calls first. Have you called 911 and is help on the way?',
@@ -140,7 +159,7 @@ export function composeIncidentAnswer(profile: IncidentProfileId, text: string):
 
     case 'patient_injury':
       return [
-        'Let’s make sure your patient is okay.',
+        'Let’s make sure your patient is okay — and check that the scene is safe for you first; your safety always comes first.',
         'If they hit their head, are on blood thinners, have severe pain or bleeding, or any major change, call 911. Don’t move them if a serious injury is possible unless they’re in immediate danger.',
         'Assess for injury, notify the physician and your supervisor, and document the objective facts in real time — what happened, the time, what you observed, and who you notified. Open an incident report.',
         'Don’t guess at a diagnosis or write conclusions — record what you actually observed. Is the patient stable right now, or do you need to call 911?',

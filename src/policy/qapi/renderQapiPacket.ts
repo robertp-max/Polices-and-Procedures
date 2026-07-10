@@ -10,7 +10,7 @@
    Self-contained HTML (inline SVG wordmark — no external/absolute logo).
    ════════════════════════════════════════════════════════════════ */
 import type { ClinicalDump } from './qapiTypes';
-import { extractQapiRollup } from './qapiExtraction';
+import { extractQapiRollup, type QapiRollup } from './qapiExtraction';
 import { buildPersonnelAddendum, buildAddendumReference, type AddendumReference } from './personnelActionAddendum';
 import { validateQapiPacketForLock } from './validateQapiPacketForLock';
 
@@ -30,6 +30,12 @@ export interface QapiPacketOptions {
   policyIds?: string[];
   /** Governance approvers for the lock check (name + authorityConfirmed). */
   approvers?: Array<{ role: string; name?: string; authorityConfirmed?: boolean }>;
+  /** Derived-source path: quorum line recovered from the source (e.g. "8/8 present — quorum met"). */
+  quorumOverride?: string;
+  /** Derived-source path: replaces the role-by-role attendee table when names are not individually structured. */
+  attendanceNote?: string;
+  /** Derived-source path: prominent notice that the packet was built from an unstructured dump and needs review. */
+  derivedNotice?: string;
 }
 
 function page(banner: string, title: string, inner: string, footerRight: string): string {
@@ -46,14 +52,24 @@ function kpiTable(rows: Array<[string, string | number, string | number, string,
 export function renderQapiPacketHtml(dump: ClinicalDump, eventDateInput: string, opts: QapiPacketOptions = {}): string {
   const reviewQuarter = opts.reviewQuarter ?? dump.meta?.quarter;
   const roll = extractQapiRollup(dump, eventDateInput, { reviewQuarter });
-  const w = roll.window;
   const addendum = buildPersonnelAddendum(dump, { quarter: reviewQuarter });
-  const ref: AddendumReference = buildAddendumReference(addendum);
+  return renderQapiPacketHtmlFromRollup(roll, buildAddendumReference(addendum), opts);
+}
+
+/**
+ * Render the FULL survey-defensible packet from a prebuilt rollup. Used by
+ * (1) the ClinicalDump path above and (2) the Brad-derived path, where the
+ * rollup was recovered deterministically from an unstructured source dump
+ * (any format) and carries exceptions + a derived-draft notice instead of
+ * silently downgrading to a thin summary.
+ */
+export function renderQapiPacketHtmlFromRollup(roll: QapiRollup, ref: AddendumReference, opts: QapiPacketOptions = {}): string {
+  const w = roll.window;
   const addendumRequired = ref.personnelActionReviewsOpened > 0;
   const c = roll.census;
   const interim = w.packetType === 'interim';
   const id = `QAPI-PKT-${w.quarterLabel.replace(/\s+/g, '-')}`;
-  const footerR = `${id} · ${w.packetType.toUpperCase()}`;
+  const footerR = `${id} · ${w.packetType.toUpperCase()}${opts.derivedNotice ? ' · BRAD-DERIVED DRAFT' : ''}`;
   const approvers = opts.approvers ?? [];
 
   // ── Lock validation (status banner only here; the live flow enforces it) ──
@@ -65,7 +81,7 @@ export function renderQapiPacketHtml(dump: ClinicalDump, eventDateInput: string,
     rollups: { activeCensus: c.activeCensus, recertCounts: c.recertDue, highRiskRollupPresent: true, priorPeriodComparisonPresent: false, claimsTrend: false },
     signatures: [],
     dateWindowViolations: [],
-    addendum: { required: addendumRequired, generatedId: addendumRequired ? addendum.documentId : null },
+    addendum: { required: addendumRequired, generatedId: addendumRequired ? ref.addendumId : null },
     sourceExceptions: roll.exceptions,
   });
   const statusColor = lock.pass ? '#0f7b34' : '#b35200';
@@ -75,6 +91,7 @@ export function renderQapiPacketHtml(dump: ClinicalDump, eventDateInput: string,
 
   // 1) Packet control page
   body += page(`${id} · ${w.quarterLabel}`, `${interim ? 'Interim ' : ''}${w.quarterLabel} QAPI Committee Packet`, `
+    ${opts.derivedNotice ? `<div class="notice"><b>BRAD-DERIVED DRAFT — REQUIRES HUMAN REVIEW.</b> ${esc(opts.derivedNotice)}</div>` : ''}
     <div class="card"><div class="h3">Packet Control</div>
       ${row('Packet ID', id)}${row('Event ID', opts.eventId ?? '—')}${row('Workflow ID', opts.workflowId ?? '—')}
       ${row('Reporting period', `${w.quarterStart} → ${w.quarterEnd}`)}
@@ -92,8 +109,10 @@ export function renderQapiPacketHtml(dump: ClinicalDump, eventDateInput: string,
   const expected = opts.attendeesExpected ?? ['Director of Nursing (Chair)', 'Clinical Manager', 'Compliance Officer', 'Medical Director', 'Administrator', 'QA Coordinator'];
   const present = opts.attendeesPresent ?? expected;
   body += page(id, 'Agenda & Quorum Roster', `
-    <div class="card"><div class="h3">Meeting</div>${row('Date', w.eventDate)}${row('Chair', opts.chair ?? '—')}${row('Recorder', opts.recorder ?? '—')}${row('Quorum', `${present.length} of ${expected.length} present — ${present.length >= Math.ceil(expected.length / 2) ? 'quorum met' : 'NO QUORUM'}`)}</div>
-    <div class="card"><div class="h3">Attendees</div><table class="t"><thead><tr><th>Role</th><th>Expected</th><th>Present</th></tr></thead><tbody>${expected.map((r) => `<tr><td>${esc(r)}</td><td>✓</td><td>${present.includes(r) ? '✓' : '—'}</td></tr>`).join('')}</tbody></table></div>`, footerR);
+    <div class="card"><div class="h3">Meeting</div>${row('Date', w.eventDate)}${row('Chair', opts.chair ?? '—')}${row('Recorder', opts.recorder ?? '—')}${row('Quorum', opts.quorumOverride ?? `${present.length} of ${expected.length} present — ${present.length >= Math.ceil(expected.length / 2) ? 'quorum met' : 'NO QUORUM'}`)}</div>
+    <div class="card"><div class="h3">Attendees</div>${opts.attendanceNote
+      ? `<p class="p">${esc(opts.attendanceNote)}</p>`
+      : `<table class="t"><thead><tr><th>Role</th><th>Expected</th><th>Present</th></tr></thead><tbody>${expected.map((r) => `<tr><td>${esc(r)}</td><td>✓</td><td>${present.includes(r) ? '✓' : '—'}</td></tr>`).join('')}</tbody></table>`}</div>`, footerR);
 
   // 3) Dashboard (real numerators/denominators)
   const denom = c.activeCensus || c.uniquePatients || c.patientsInScope;

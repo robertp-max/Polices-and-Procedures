@@ -69,7 +69,12 @@ export const SIDEBAR_SECTIONS = [
   {
     label: 'Policy Library',
     hashIds: [
+      'policy-home',
       'policy-library',
+      'forms-library',
+      'workflows',
+      'workflow-detail',
+      'workflow-swimlane',
       'policy-lifecycle',
       'taxonomy',
       'framework',
@@ -79,22 +84,22 @@ export const SIDEBAR_SECTIONS = [
   },
   {
     label: 'Forms',
-    hashIds: ['forms-library', 'form-viewer', 'ecign-workspace'],
+    hashIds: ['form-viewer', 'ecign-workspace'],
   },
   {
     label: 'CES / Compliance Execution',
     hashIds: [
+      'compliance-home',
       'ces-calendar',
       'ces-board',
       'events-board',
-      'workflows',
       'master-controls',
       'ces-reports',
       'my-tasks',
     ],
   },
   { label: 'Calendar', hashIds: ['master-calendar', 'staffing-calendar'] },
-  { label: 'DefenCIble', hashIds: ['defensible-2'] },
+  { label: 'Workspace', hashIds: ['defensible-2'] },
   { label: 'Audit Mode', hashIds: ['audit-mode'] },
   {
     label: 'Onboarding & Training',
@@ -237,12 +242,18 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
     icon: PanelsTopLeft,
     title: 'Events Board',
   },
+  'compliance-home': {
+    description: 'Compliance Execution Sprint home for blockers, evidence gaps, sign-offs, readiness, and quick actions.',
+    eyebrow: 'Compliance Execution (CES)',
+    icon: LayoutDashboard,
+    title: 'Compliance Home',
+  },
   'defensible-2': {
     description:
-      'DefenCIble evidence packet studio for source selection, packet generation, preview, export, and Drive sync.',
+      'Compliance workspace for Drive evidence, packet creation, packet edits, and eCign tracking.',
     eyebrow: 'Compliance Execution (CES)',
     icon: FolderOpen,
-    title: 'DefenCIble',
+    title: 'Workspace',
   },
   'form-viewer': {
     description: 'Structured form renderer with sections, validation, signer requirements, and linked policy context.',
@@ -287,10 +298,10 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
     icon: CalendarDays,
   },
   'master-controls': {
-    description: 'Control inventory matrix for operational risk tier, source status, evidence posture, and audit readiness.',
+    description: 'Control register for operational risk tier, source status, evidence posture, and audit readiness.',
     eyebrow: 'Compliance Execution (CES)',
     icon: ShieldCheck,
-    title: 'Master Controls',
+    title: 'Control Register',
   },
   'mobile-incident': { eyebrow: 'Compliance Execution (CES)', icon: Smartphone },
   'module-player': { eyebrow: 'Onboarding', icon: BookOpen },
@@ -325,6 +336,12 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
     icon: FileText,
     title: 'Policy Detail',
   },
+  'policy-home': {
+    description: 'Policy command center connecting the library, forms, workflows, taxonomy, ACHC alignment, and readiness actions.',
+    eyebrow: 'Policies',
+    icon: LayoutDashboard,
+    title: 'Policy Home',
+  },
   'policy-library': {
     description: 'Canonical policy corpus with lifecycle state, owner stewardship, review cycles, and survey context.',
     eyebrow: 'Taxonomy',
@@ -348,16 +365,16 @@ const routeChrome: Partial<Record<V6RouteHashId, RouteChrome>> = {
     icon: BookMarked,
   },
   workflows: {
-    description: 'Workflow library matrix linking CES workstreams to policy owners, required forms, evidence capture, and swimlane handoffs.',
-    eyebrow: 'Compliance Execution (CES)',
+    description: 'Workflow library matrix linking policy owners, required forms, evidence capture, and swimlane handoffs.',
+    eyebrow: 'Policies',
     icon: Workflow,
-    navLabel: 'Workflows Library',
-    title: 'Workflows Library',
+    navLabel: 'Workflows',
+    title: 'Workflows',
   },
   'workflow-swimlane': {
     description:
-      'Swimlane execution view for a mandatory event from intake through evidence build, review, signature, and final packet lock.',
-    eyebrow: 'Compliance Execution (CES)',
+      'Swimlane reference view for a workflow from intake through evidence build, review, signature, and final packet lock.',
+    eyebrow: 'Policies',
     icon: Workflow,
     title: 'Workflow Swimlane',
   },

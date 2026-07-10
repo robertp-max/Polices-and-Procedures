@@ -1,14 +1,23 @@
-import { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, ClipboardCheck, FileSignature, FolderOpen, History, ShieldCheck, X } from 'lucide-react';
-import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { AlertTriangle, ArrowRight, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, FileSignature, FolderOpen, History, Search, ShieldCheck, X, type LucideIcon } from 'lucide-react';
+import { DataTable, ToneTag, type DataTableColumn, type MetricTileData } from '../../components';
 import { hasRequiredDocumentationBody, loadMasterControlInventorySeed } from '@/policy/data/masterControlInventory';
 import {
   getMasterControlDocumentation,
 } from '@/policy/data/masterControlDocumentation.generated';
 import type { MasterControlDocumentationRecord, MasterControlDocumentationSection, MasterControlDocumentRef, MasterControlItem, MasterControlReadinessStatus } from '@/policy/types/masterControlInventory';
+import {
+  workspaceCompactTabClass,
+  workspaceTabActiveClass,
+  workspaceTabClass,
+  workspaceTabInactiveClass,
+  workspaceTabNavClass,
+} from './workspaceTabChrome';
 
 type MasterControlRow = Record<string, string>;
 type DossierTab = 'summary' | 'documents' | 'evidence' | 'workflow' | 'signoff' | 'audit' | 'documentation';
+type DossierMotion = 'idle' | 'exit-left' | 'exit-right' | 'enter-left' | 'enter-right';
 
 const tabs: readonly { id: DossierTab; label: string }[] = [
   { id: 'summary', label: 'Summary' },
@@ -19,6 +28,13 @@ const tabs: readonly { id: DossierTab; label: string }[] = [
   { id: 'audit', label: 'Audit Trail' },
   { id: 'documentation', label: 'Documentation' },
 ];
+
+const complianceTabs = [
+  { id: 'home', label: 'Sprint Home', to: '/compliance' },
+  { id: 'workspace', label: 'DefenCIble', to: '/evidence' },
+  { id: 'calendar', label: 'CES Calendar', to: '/ces/calendar' },
+  { id: 'controls', label: 'Control Register', to: '/compliance/master-controls' },
+] as const;
 
 const masterControlColumns: readonly DataTableColumn<MasterControlRow>[] = [
   { key: 'controlId', label: 'Control ID' },
@@ -31,32 +47,35 @@ const masterControlColumns: readonly DataTableColumn<MasterControlRow>[] = [
   { key: 'linkedPolicies', label: 'Linked Policies' },
 ];
 
-const controlCards = [
+const controlCards: readonly {
+  body: string;
+  icon: LucideIcon;
+  status: string;
+  title: string;
+  tone: 'orange' | 'teal';
+}[] = [
   {
     body: 'Rows open survey-ready dossiers with source documents, evidence criteria, verification rules, and sign-off obligations.',
     icon: ShieldCheck,
-    progress: 100,
-    status: 'validated',
+    status: 'Validated',
     title: 'Control dossiers',
     tone: 'teal',
   },
   {
     body: 'Admission packet documents are represented as templates only. Completed patient packets attach at runtime under PHI-safe authorization.',
     icon: FolderOpen,
-    progress: 88,
-    status: 'ready',
+    status: 'Ready',
     title: 'Document-backed',
     tone: 'teal',
   },
   {
     body: 'Readiness is computed from configuration, required evidence, sign-off requirements, and source posture. Seed data alone cannot mark OK.',
     icon: ClipboardCheck,
-    progress: 74,
-    status: 'review-required',
+    status: 'Review',
     title: 'Readiness gates',
     tone: 'orange',
   },
-] satisfies readonly SurfaceCardData[];
+] as const;
 
 function readinessLabel(status: MasterControlReadinessStatus): string {
   if (status === 'OK') return 'ok';
@@ -92,9 +111,36 @@ function buildMetrics(items: readonly MasterControlItem[]): readonly MetricTileD
   ];
 }
 
+function ComplianceNavigationTabs() {
+  return (
+    <nav aria-label="Compliance portal sections" className={workspaceTabNavClass}>
+      {complianceTabs.map((tab) => (
+        <Link
+          key={tab.id}
+          to={tab.to}
+          className={`${workspaceTabClass} ${tab.id === 'controls' ? workspaceTabActiveClass : workspaceTabInactiveClass}`}
+          aria-current={tab.id === 'controls' ? 'page' : undefined}
+        >
+          {tab.label === 'DefenCIble' ? (
+            <>
+              Defen<span className="!text-brand-teal">CI</span>ble
+            </>
+          ) : tab.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
 export function MasterControlsScreen() {
   const [items, setItems] = useState<readonly MasterControlItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [dossierMotion, setDossierMotion] = useState<DossierMotion>('idle');
+  const [search, setSearch] = useState('');
+  const [riskFilter, setRiskFilter] = useState('ALL');
+  const [readinessFilter, setReadinessFilter] = useState('ALL');
+  const dossierExitTimeoutRef = useRef<number | null>(null);
+  const dossierEnterTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -105,55 +151,304 @@ export function MasterControlsScreen() {
     return () => { mounted = false; };
   }, []);
 
+  useEffect(() => () => {
+    if (dossierExitTimeoutRef.current !== null) window.clearTimeout(dossierExitTimeoutRef.current);
+    if (dossierEnterTimeoutRef.current !== null) window.clearTimeout(dossierEnterTimeoutRef.current);
+  }, []);
+
   const rows = useMemo(() => items.map(toRow), [items]);
+  const filteredRows = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return rows.filter((row) => {
+      if (riskFilter !== 'ALL' && row.riskTier !== riskFilter) return false;
+      if (readinessFilter !== 'ALL' && row.readiness !== readinessFilter) return false;
+      if (!query) return true;
+      return (
+        row.controlId.toLowerCase().includes(query) ||
+        row.controlName.toLowerCase().includes(query) ||
+        row.category.toLowerCase().includes(query) ||
+        row.domain.toLowerCase().includes(query) ||
+        row.linkedPolicies.toLowerCase().includes(query)
+      );
+    });
+  }, [readinessFilter, riskFilter, rows, search]);
+  const metrics = useMemo(() => buildMetrics(items), [items]);
+  const riskOptions = useMemo(() => Array.from(new Set(rows.map((row) => row.riskTier))).sort(), [rows]);
+  const readinessOptions = useMemo(() => Array.from(new Set(rows.map((row) => row.readiness))).sort(), [rows]);
   const selected = useMemo(() => items.find((item) => item.id === selectedId) ?? null, [items, selectedId]);
+  const carouselIds = useMemo(() => filteredRows.map((row) => row.controlId), [filteredRows]);
+  const selectedCarouselIndex = selectedId ? carouselIds.indexOf(selectedId) : -1;
+  const firstBlockedControl = useMemo(() => items.find((item) => item.readinessStatus === 'BLOCKED') ?? items[0], [items]);
+  const metricIcons: readonly LucideIcon[] = [ClipboardCheck, AlertTriangle, ShieldCheck, FileSignature];
+
+  const clearDossierTimers = () => {
+    if (dossierExitTimeoutRef.current !== null) window.clearTimeout(dossierExitTimeoutRef.current);
+    if (dossierEnterTimeoutRef.current !== null) window.clearTimeout(dossierEnterTimeoutRef.current);
+    dossierExitTimeoutRef.current = null;
+    dossierEnterTimeoutRef.current = null;
+  };
+
+  const openControlDossier = (controlId: string) => {
+    clearDossierTimers();
+    setDossierMotion('idle');
+    setSelectedId(controlId);
+  };
+
+  const closeControlDossier = () => {
+    clearDossierTimers();
+    setDossierMotion('idle');
+    setSelectedId(null);
+  };
+
+  const moveSelectedControl = (direction: -1 | 1) => {
+    if (!carouselIds.length || dossierMotion.startsWith('exit')) return;
+    const nextIndex = selectedCarouselIndex >= 0
+      ? (selectedCarouselIndex + direction + carouselIds.length) % carouselIds.length
+      : direction === 1 ? 0 : carouselIds.length - 1;
+    const nextId = carouselIds[nextIndex];
+    if (!nextId || nextId === selectedId) return;
+
+    clearDossierTimers();
+    setDossierMotion(direction === 1 ? 'exit-left' : 'exit-right');
+    dossierExitTimeoutRef.current = window.setTimeout(() => {
+      setSelectedId(nextId);
+      setDossierMotion(direction === 1 ? 'enter-right' : 'enter-left');
+      dossierEnterTimeoutRef.current = window.setTimeout(() => {
+        setDossierMotion('idle');
+        dossierEnterTimeoutRef.current = null;
+      }, 240);
+      dossierExitTimeoutRef.current = null;
+    }, 150);
+  };
 
   return (
-    <section className="grid gap-xl" data-hash-id="master-controls" data-route="/compliance/master-controls">
-      <MetricGrid metrics={buildMetrics(items)} />
-
-      <section className="grid gap-xl desktop:grid-cols-6" aria-label="Master controls inventory and readiness">
-        <div className="grid content-start gap-lg desktop:col-span-4">
-          <DataTable
-            columns={masterControlColumns}
-            label="Master controls inventory matrix"
-            rows={rows}
-            onRowClick={(row) => setSelectedId(row.controlId)}
-          />
+    <div className="min-h-screen bg-[#FAFBF8] px-6 pb-16 pt-4 font-roboto text-[#52404B] selection:bg-[#E5FEFF] md:px-12" data-hash-id="master-controls" data-route="/compliance/master-controls">
+      <main className="mx-auto flex w-full max-w-[1400px] flex-col">
+        <div className="relative z-20 flex justify-start">
+          <ComplianceNavigationTabs />
         </div>
 
-        <aside className="grid content-start gap-lg desktop:col-span-2" aria-label="Master controls context cards">
-          {controlCards.map((card) => (
-            <SurfaceCard card={card} key={card.title} />
-          ))}
-        </aside>
-      </section>
+        <div className="space-y-10 pb-12">
+          <section className="ci-page-hero relative overflow-hidden rounded-b-[24px] rounded-tr-[24px] bg-white p-10 shadow-sm md:p-14">
+            <div className="relative z-10 flex flex-col gap-10 xl:flex-row xl:items-end xl:justify-between">
+              <div className="max-w-3xl">
+                <p className="mb-6 font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#F06923]">Compliance Control Register</p>
+                <h1 className="mb-6 font-montserrat text-4xl font-bold leading-none tracking-tight text-[#007970] md:text-5xl lg:text-6xl">
+                  Master Controls <br />
+                  Command Register
+                </h1>
+                <p className="max-w-3xl font-roboto text-lg font-light leading-relaxed text-[#52404B] md:text-xl">
+                  A survey-ready operating register for control ownership, required documentation, evidence gates, sign-off obligations, workflow tasks, and audit trail readiness.
+                </p>
+              </div>
+              <div className="flex flex-col gap-4 font-montserrat sm:flex-row xl:pb-2">
+                <button
+                  type="button"
+                  onClick={() => firstBlockedControl && openControlDossier(firstBlockedControl.id)}
+                  className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#F06923] px-8 py-4 text-center text-[12px] font-bold uppercase tracking-widest text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_0_25px_6px_rgba(240,105,35,0.38)]"
+                >
+                  <ShieldCheck className="h-4 w-4" aria-hidden />
+                  Open Control Dossier
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReadinessFilter('blocked')}
+                  className="inline-flex items-center justify-center gap-2 rounded-[12px] border-[1.5px] border-[#007970] bg-white px-8 py-4 text-center text-[12px] font-bold uppercase tracking-widest text-[#007970] transition-all hover:bg-[#F7FEFF]"
+                >
+                  <AlertTriangle className="h-4 w-4" aria-hidden />
+                  Review Blocked
+                </button>
+              </div>
+            </div>
+          </section>
 
-      {selected && <ControlDossierModal control={selected} onClose={() => setSelectedId(null)} />}
-    </section>
+          <div className="grid w-full grid-cols-2 gap-6 md:grid-cols-4">
+            {metrics.map((metric, index) => {
+              const Icon = metricIcons[index] ?? ShieldCheck;
+              return (
+                <div key={metric.label} className="group flex min-h-[164px] flex-col items-center justify-center rounded-[24px] bg-white p-8 text-center shadow-sm transition-colors hover:border-[#007970]">
+                  <Icon className="mb-4 h-6 w-6 text-[#007970]" aria-hidden />
+                  <span className="mb-3 font-montserrat text-3xl font-bold text-[#F06923] transition-transform duration-300 group-hover:scale-110 md:text-4xl">{metric.value}</span>
+                  <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#747470]">{metric.label}</span>
+                  <span className="mt-2 text-center text-xs leading-relaxed text-[#9A9A96]">{metric.helper}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <section className="grid gap-8 xl:grid-cols-[1fr_360px]" aria-label="Master controls inventory and readiness">
+            <div className="rounded-[24px] bg-white p-8 shadow-sm md:p-10">
+              <div className="mb-8 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+                <div>
+                  <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Control Inventory</h2>
+                  <p className="mt-2 text-sm text-[#747470]">{filteredRows.length} of {rows.length} controls shown. Select any row to open the full dossier.</p>
+                </div>
+                <div className="flex flex-col gap-3 lg:flex-row">
+                  <label className="flex min-h-11 min-w-[260px] items-center gap-2 rounded-[12px] bg-[#FAFBF8] px-3 text-sm text-[#747470]">
+                    <Search className="h-4 w-4 shrink-0" aria-hidden />
+                    <input
+                      type="text"
+                      value={search}
+                      onChange={(event) => setSearch(event.target.value)}
+                      placeholder="Search control, domain, policy..."
+                      className="w-full bg-transparent py-3 text-[#52404B] outline-none placeholder:text-[#9A9A96]"
+                      aria-label="Search master controls"
+                    />
+                  </label>
+                  <select
+                    value={riskFilter}
+                    onChange={(event) => setRiskFilter(event.target.value)}
+                    aria-label="Filter controls by risk tier"
+                    className="min-h-11 rounded-[12px] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470] outline-none focus:border-[#007970]"
+                  >
+                    <option value="ALL">All risk</option>
+                    {riskOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                  <select
+                    value={readinessFilter}
+                    onChange={(event) => setReadinessFilter(event.target.value)}
+                    aria-label="Filter controls by readiness"
+                    className="min-h-11 rounded-[12px] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470] outline-none focus:border-[#007970]"
+                  >
+                    <option value="ALL">All readiness</option>
+                    {readinessOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {filteredRows.length ? (
+                <DataTable
+                  columns={masterControlColumns}
+                  label="Master controls inventory matrix"
+                  rows={filteredRows}
+                  onRowClick={(row) => openControlDossier(row.controlId)}
+                />
+              ) : (
+                <div className="flex min-h-[220px] flex-col items-center justify-center rounded-[24px] border border-dashed border-[#E5E4E3] bg-[#FAFBF8] p-8 text-center">
+                  <Search className="mb-3 h-6 w-6 text-[#747470]" aria-hidden />
+                  <p className="font-montserrat text-sm font-bold text-[#007970]">No matching controls</p>
+                  <p className="mt-2 max-w-sm text-sm text-[#747470]">Try a different control ID, category, domain, policy, or readiness filter.</p>
+                </div>
+              )}
+            </div>
+
+            <aside className="grid content-start gap-6" aria-label="Master controls context cards">
+              {controlCards.map((card) => {
+                const Icon = card.icon;
+                const toneClass = card.tone === 'orange' ? 'bg-[#FFF2EB] text-[#F06923]' : 'bg-[#E5FEFF] text-[#007970]';
+                return (
+                  <article key={card.title} className="rounded-[24px] bg-white p-7 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
+                    <div className="mb-5 flex items-start justify-between gap-4">
+                      <span className={`grid h-11 w-11 place-items-center rounded-[16px] ${toneClass}`}>
+                        <Icon className="h-5 w-5" aria-hidden />
+                      </span>
+                      <span className={`rounded-full px-3 py-1 font-montserrat text-[10px] font-bold uppercase tracking-wider ${toneClass}`}>{card.status}</span>
+                    </div>
+                    <h3 className="font-montserrat text-lg font-bold text-[#007970]">{card.title}</h3>
+                    <p className="mt-3 text-sm leading-relaxed text-[#747470]">{card.body}</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (card.tone === 'orange') setReadinessFilter('blocked');
+                        else setRiskFilter('HIGH');
+                      }}
+                      className="mt-6 inline-flex items-center gap-2 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#007970]"
+                    >
+                      Inspect controls
+                      <ArrowRight className="h-4 w-4 text-[#F06923]" aria-hidden />
+                    </button>
+                  </article>
+                );
+              })}
+            </aside>
+          </section>
+        </div>
+      </main>
+
+      {selected && (
+        <ControlDossierModal
+          control={selected}
+          currentIndex={selectedCarouselIndex >= 0 ? selectedCarouselIndex : 0}
+          motion={dossierMotion}
+          totalCount={carouselIds.length}
+          onClose={closeControlDossier}
+          onNext={() => moveSelectedControl(1)}
+          onPrevious={() => moveSelectedControl(-1)}
+        />
+      )}
+    </div>
   );
 }
 
-function ControlDossierModal({ control, onClose }: { control: MasterControlItem; onClose: () => void }) {
+function ControlDossierModal({
+  control,
+  currentIndex,
+  motion,
+  onClose,
+  onNext,
+  onPrevious,
+  totalCount,
+}: {
+  control: MasterControlItem;
+  currentIndex: number;
+  motion: DossierMotion;
+  onClose: () => void;
+  onNext: () => void;
+  onPrevious: () => void;
+  totalCount: number;
+}) {
   const [activeTab, setActiveTab] = useState<DossierTab>('summary');
+  const canCarousel = totalCount > 1;
+  const motionClass = motion === 'idle' ? '' : `master-dossier-${motion}`;
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
+      if (!canCarousel) return;
+      if (event.key === 'ArrowLeft') onPrevious();
+      if (event.key === 'ArrowRight') onNext();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, [canCarousel, onClose, onNext, onPrevious]);
 
   return (
     <div className="fixed inset-0 z-modal flex items-center justify-center bg-ink/35 px-lg py-xl backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={`${control.id} control dossier`}>
-      <div className="flex max-h-[92vh] w-[min(1180px,96vw)] flex-col overflow-hidden rounded-lg border border-hairline bg-white shadow-hover">
+      {canCarousel && (
+        <>
+          <button
+            type="button"
+            onClick={onPrevious}
+            aria-label="Previous master control dossier"
+            className="fixed left-5 top-1/2 z-[1001] grid h-16 w-16 -translate-y-1/2 place-items-center rounded-full bg-[#F06923] text-white shadow-[0_18px_50px_rgba(240,105,35,0.35)] transition-all hover:-translate-x-1 hover:scale-105 hover:bg-[#D1571A] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#F7B08B] md:left-8"
+          >
+            <ChevronLeft className="h-9 w-9" aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={onNext}
+            aria-label="Next master control dossier"
+            className="fixed right-5 top-1/2 z-[1001] grid h-16 w-16 -translate-y-1/2 place-items-center rounded-full bg-[#F06923] text-white shadow-[0_18px_50px_rgba(240,105,35,0.35)] transition-all hover:translate-x-1 hover:scale-105 hover:bg-[#D1571A] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#F7B08B] md:right-8"
+          >
+            <ChevronRight className="h-9 w-9" aria-hidden />
+          </button>
+        </>
+      )}
+      <div
+        key={control.id}
+        className={`flex max-h-[92vh] w-[min(1180px,96vw)] flex-col overflow-hidden rounded-lg border border-hairline bg-white shadow-hover ${motionClass}`}
+      >
         <header className="flex items-start justify-between gap-lg border-b border-hairline px-xl py-lg">
           <div className="min-w-0">
             <div className="mb-sm flex flex-wrap items-center gap-sm">
               <ToneTag tone={control.riskTier === 'HIGH' ? 'orange' : 'teal'}>{control.riskTier}</ToneTag>
               <ToneTag tone={control.readinessStatus === 'BLOCKED' ? 'orange' : 'teal'}>{control.readinessStatus}</ToneTag>
               <span className="text-xs uppercase tracking-tag text-muted">{control.id}</span>
+              {canCarousel && (
+                <span className="rounded-full bg-[#FFF2EB] px-3 py-1 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#F06923]">
+                  {currentIndex + 1} of {totalCount}
+                </span>
+              )}
             </div>
             <h2 className="text-h2 font-medium text-ink">{control.name}</h2>
             <p className="mt-xs max-w-4xl text-sm text-muted">{control.modalSummary}</p>
@@ -163,13 +458,13 @@ function ControlDossierModal({ control, onClose }: { control: MasterControlItem;
           </button>
         </header>
 
-        <nav className="flex gap-sm overflow-x-auto border-b border-hairline px-xl py-sm" aria-label="Control dossier tabs">
+        <nav className="flex max-w-full items-stretch overflow-x-auto border-b border-hairline px-xl pt-sm font-montserrat" aria-label="Control dossier tabs">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`shrink-0 rounded-md px-md py-sm text-xs font-medium uppercase tracking-tag transition ${activeTab === tab.id ? 'bg-brand-teal text-on-brand' : 'text-secondary hover:bg-surface-hover'}`}
+              className={`${workspaceCompactTabClass} ${activeTab === tab.id ? workspaceTabActiveClass : workspaceTabInactiveClass}`}
             >
               {tab.label}
             </button>

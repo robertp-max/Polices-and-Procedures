@@ -330,6 +330,405 @@ export function deriveQapiBundleFromRecords(parsed: ParsedFile): QapiDerivedBund
   };
 }
 
+/* ─── Path 3: narrative / raw-text aggregate extraction ──────────────────
+   Plain-text uploads (TXT, prose exports, copy-pasted reports) parse to a
+   SINGLE full-text record, so Path 2's record-counting can only ever answer
+   "0 or 1" for every metric — a raw quarterly dataset derived almost nothing
+   (the "1-page empty draft" case). This path scans the narrative text itself
+   for labeled aggregates ("Missed visits: 106", "7 patients hospitalized",
+   "Quorum: 8/8") and record-ID families (AE-001…, INF-001…, PIP-T-001…),
+   producing the same low-confidence + verbatim-quote metrics. It never
+   overrides structured-record derivation — it only applies when the upload
+   has no structured fields, and it fills gaps rather than inventing data. */
+
+interface TextHit {
+  value: number;
+  quote: string;
+}
+
+function contextQuote(text: string, index: number, matchLen: number, radius = 70): string {
+  const start = Math.max(0, index - radius);
+  const end = Math.min(text.length, index + matchLen + radius);
+  return text.slice(start, end).replace(/\s+/g, ' ').trim();
+}
+
+function firstNumber(text: string, re: RegExp): TextHit | null {
+  const m = re.exec(text);
+  if (!m) return null;
+  const value = Number(m[1]);
+  if (!Number.isFinite(value)) return null;
+  return { value, quote: contextQuote(text, m.index, m[0].length) };
+}
+
+/** Count unique record IDs of one family (e.g. AE-001, MOCK-AE-001 → AE-001).
+    Table exports often arrive with cells run together ("initiatedMOCK-AE-002"),
+    so IDs may be glued to lowercase words — only an UPPERCASE letter or digit
+    immediately before/after disqualifies a candidate (partial-token guard). */
+function idFamilyCount(text: string, family: string): TextHit | null {
+  const re = new RegExp(`(?<![A-Z0-9])(${family})-(\\d{2,5})(?!\\d)`, 'g');
+  const ids = new Set<string>();
+  let firstIndex = -1;
+  let firstLen = 0;
+  for (const m of text.matchAll(re)) {
+    ids.add(`${m[1]}-${m[2]}`);
+    if (firstIndex < 0) { firstIndex = m.index ?? 0; firstLen = m[0].length; }
+  }
+  if (ids.size === 0) return null;
+  return { value: ids.size, quote: contextQuote(text, firstIndex, firstLen) };
+}
+
+export interface QapiTextAggregates {
+  /** True when the source reads like an AI generation prompt, not data. */
+  promptArtifact: boolean;
+  promptQuote?: string;
+  /** Reporting quarter declared in the source (e.g. "2026-Q2"), if stated. */
+  reviewQuarter: string | null;
+  activeCensus: TextHit | null;
+  episodesTotal: TextHit | null;
+  dischargedCount: TextHit | null;
+  recertificationCount: TextHit | null;
+  hospitalizations: TextHit | null;
+  missedVisits: TextHit | null;
+  complaintsCount: TextHit | null;
+  infectionLineListCount: TextHit | null;
+  confirmedHais: TextHit | null;
+  adverseEventsCount: TextHit | null;
+  pipTriggerCount: TextHit | null;
+  /** Named PIP recommendations found in the text (e.g. "PIP — OASIS Accuracy Improvement"). */
+  pipNames: Array<{ name: string; quote: string }>;
+  capCount: TextHit | null;
+  disciplinaryCount: TextHit | null;
+  quorum: { present: number; total: number; met: boolean; quote: string } | null;
+  attendeePresentCount: TextHit | null;
+  signoffRoles: string[];
+  oasisLateSoc: TextHit | null;
+  lateOrMissingF2f: TextHit | null;
+  medReconDiscrepancies: TextHit | null;
+  /** How many aggregate metrics were found (drives the overall note). */
+  foundCount: number;
+}
+
+const PROMPT_ARTIFACT_RE = /\b(?:hi|hello|hey)[,\s]+(?:claude|chatgpt|gpt|gemini|copilot)\b|please generate\b[\s\S]{0,120}?\b(?:synthetic|mock|dataset|test)/i;
+
+export function extractQapiTextAggregates(text: string): QapiTextAggregates {
+  const promptMatch = PROMPT_ARTIFACT_RE.exec(text);
+
+  // Named PIP recommendations ("PIP — OASIS Accuracy Improvement"), tolerant
+  // of run-together table cells on either side of the name.
+  const pipNames: Array<{ name: string; quote: string }> = [];
+  const seenPipNames = new Set<string>();
+  for (const m of text.matchAll(/(?<![A-Z])PIP\s+—\s+([A-Z][A-Za-z0-9 /&-]{2,60}?)(?=PIP|Existing|[\n·|]|$)/g)) {
+    const name = m[1].trim().replace(/\s+/g, ' ');
+    const key = name.toLowerCase();
+    if (name.length < 3 || seenPipNames.has(key)) continue;
+    seenPipNames.add(key);
+    pipNames.push({ name, quote: contextQuote(text, m.index ?? 0, m[0].length) });
+  }
+
+  // "Administrator Sign-off:" lines (singular + colon → actual sign-off
+  // records; skips headers like "Required Sign-offs:").
+  const signoffRoles: string[] = [];
+  for (const m of text.matchAll(/\b([A-Z][A-Za-z /&]{2,40}?)\s+Sign-off:/g)) {
+    const role = m[1].trim();
+    if (!/^required$/i.test(role) && !signoffRoles.includes(role)) signoffRoles.push(role);
+  }
+
+  const quorumMatch = /Quorum:\s*(\d+)\s*\/\s*(\d+)/i.exec(text);
+  const quorum = quorumMatch
+    ? {
+        present: Number(quorumMatch[1]),
+        total: Number(quorumMatch[2]),
+        met: /quorum met/i.test(text),
+        quote: contextQuote(text, quorumMatch.index, quorumMatch[0].length),
+      }
+    : null;
+
+  const presentMarks = [...text.matchAll(/✅\s*Present/g)];
+  const attendeePresentCount: TextHit | null = presentMarks.length
+    ? { value: presentMarks.length, quote: contextQuote(text, presentMarks[0].index ?? 0, presentMarks[0][0].length) }
+    : null;
+
+  const quarterMatch = /\bQ([1-4])[\s-]*(20\d{2})\b/.exec(text) ?? /\b(20\d{2})[\s-]*Q([1-4])\b/.exec(text);
+  const reviewQuarter = quarterMatch
+    ? (/^Q/.test(quarterMatch[0]) ? `${quarterMatch[2]}-Q${quarterMatch[1]}` : `${quarterMatch[1]}-Q${quarterMatch[2]}`)
+    : null;
+
+  const agg: QapiTextAggregates = {
+    promptArtifact: Boolean(promptMatch),
+    promptQuote: promptMatch ? contextQuote(text, promptMatch.index, promptMatch[0].length) : undefined,
+    reviewQuarter,
+    activeCensus: firstNumber(text, /(\d+)\s+active at (?:the )?start/i),
+    episodesTotal: firstNumber(text, /=\s*(\d+)\s+episodes/i) ?? firstNumber(text, /total[^.\n]{0,40}episodes:?\s*(\d+)/i),
+    dischargedCount: firstNumber(text, /discharge\w*\s*\((\d+)\)/i),
+    recertificationCount: firstNumber(text, /recert\w*\s*\((\d+)\)/i),
+    hospitalizations: firstNumber(text, /(\d+)\s+patients?\s+hospitali[sz]ed/i) ?? firstNumber(text, /hospitali[sz]ation events?:?\s*(\d+)/i),
+    missedVisits: firstNumber(text, /missed visits?:?\s*(\d+)/i),
+    complaintsCount: firstNumber(text, /(\d+)\s+complaints?\s+q\d/i) ?? idFamilyCount(text, 'CMP'),
+    infectionLineListCount: idFamilyCount(text, 'INF'),
+    confirmedHais: firstNumber(text, /(\d+)\s+confirmed HAIs?/i),
+    adverseEventsCount: idFamilyCount(text, 'AE'),
+    pipTriggerCount: firstNumber(text, /(\d+)\s+PIP triggers?/i) ?? idFamilyCount(text, 'PIP-T'),
+    pipNames,
+    capCount: idFamilyCount(text, 'CAP'),
+    disciplinaryCount: firstNumber(text, /(\d+)\s+disciplinary review triggers?/i) ?? idFamilyCount(text, 'DT'),
+    quorum,
+    attendeePresentCount,
+    signoffRoles,
+    oasisLateSoc: firstNumber(text, /late soc:?\s*(\d+)/i),
+    lateOrMissingF2f: firstNumber(text, /(\d+)\s+late\/missing f2f/i),
+    medReconDiscrepancies: firstNumber(text, /(\d+)\s+discrepanc\w+ at soc\/roc/i),
+    foundCount: 0,
+  };
+
+  agg.foundCount = [
+    agg.activeCensus, agg.episodesTotal, agg.dischargedCount, agg.recertificationCount,
+    agg.hospitalizations, agg.missedVisits, agg.complaintsCount, agg.infectionLineListCount,
+    agg.confirmedHais, agg.adverseEventsCount, agg.pipTriggerCount, agg.capCount,
+    agg.disciplinaryCount, agg.quorum, agg.attendeePresentCount,
+    agg.oasisLateSoc, agg.lateOrMissingF2f, agg.medReconDiscrepancies,
+  ].filter(Boolean).length + (agg.pipNames.length ? 1 : 0) + (agg.signoffRoles.length ? 1 : 0);
+
+  return agg;
+}
+
+/* ─── Per-record line-item segments (feed form filling) ──────────────────
+   Beyond aggregate counts, forms need actual rows. Each record-ID family
+   (AE-001…, INF-001…, CMP-001…, CAP-001…, DT-001…) is segmented: the text
+   run from one ID to the next same-family ID, scored so the DEFINITION row
+   (the one carrying dates/severity/status) wins over passing references. */
+
+export interface RecordSegment {
+  id: string;
+  /** Verbatim source run for this record (capped). */
+  text: string;
+  /** First ISO date in the segment (e.g. event/onset date). */
+  date: string | null;
+  /** All ISO dates found (deduped, ≤4) — CAP rows carry due dates etc. */
+  dates: string[];
+  severity: string | null;
+  status: string | null;
+  category: string | null;
+}
+
+const SEGMENT_CATEGORY: Record<string, RegExp> = {
+  AE: /(Unplanned Hospitalization|Medication Error|Near-Miss[^A-Z]{0,24}|Adverse Drug Reaction|Fall)/i,
+  INF: /(Wound \/ Surgical Site|Wound — Repeat|Surgical Site|Wound|UTI|Respiratory \(ILI\)|Respiratory|ILI)/i,
+  CMP: /(Communication|Scheduling|Care Quality|Billing|Rights)/i,
+};
+
+/** ISO dates, tolerant of digits glued directly before them ("Level 32026-04-08"). */
+function isoDatesIn(run: string): string[] {
+  const out: string[] = [];
+  for (const m of run.matchAll(/20\d{2}-(\d{2})-(\d{2})/g)) {
+    const mo = Number(m[1]);
+    const day = Number(m[2]);
+    if (mo >= 1 && mo <= 12 && day >= 1 && day <= 31) out.push(m[0]);
+  }
+  return Array.from(new Set(out));
+}
+const uniq = <T,>(arr: T[]): T[] => Array.from(new Set(arr));
+
+const SEGMENT_SEVERITY = /(Level\s*[1-4]|\bCritical\b|\bHigh\b|\bModerate\b|\bLow\b)/;
+const SEGMENT_STATUS = /(RCA Complete[^A-Z]{0,28}|RCA initiated|Investigation complete[^A-Z]{0,22}|Resolved[^A-Z]{0,30}|Closed[^A-Z]{0,18}|Open(?: — under review)?|Pending HR review|Pending|Complete[d]?)/;
+
+export function extractRecordSegments(text: string, family: 'AE' | 'INF' | 'CMP' | 'CAP' | 'DT'): RecordSegment[] {
+  const re = new RegExp(`(?<![A-Z0-9])(${family})-(\\d{2,5})(?!\\d)`, 'g');
+  const matches: Array<{ id: string; index: number }> = [];
+  for (const m of text.matchAll(re)) matches.push({ id: `${m[1]}-${m[2]}`, index: m.index ?? 0 });
+  if (!matches.length) return [];
+
+  interface Scored { seg: RecordSegment; score: number; index: number }
+  const best = new Map<string, Scored>();
+  for (let i = 0; i < matches.length; i++) {
+    const start = matches[i].index;
+    const end = Math.min(i + 1 < matches.length ? matches[i + 1].index : text.length, start + 420);
+    const run = text.slice(start, end).replace(/\s+/g, ' ').trim();
+    const dates = isoDatesIn(run).slice(0, 4);
+    const severity = SEGMENT_SEVERITY.exec(run)?.[1] ?? null;
+    const status = SEGMENT_STATUS.exec(run)?.[1]?.trim() ?? null;
+    const category = SEGMENT_CATEGORY[family]?.exec(run)?.[1] ?? null;
+    const score = (dates.length ? 2 : 0) + (status ? 1 : 0) + (severity ? 1 : 0) + (category ? 1 : 0);
+    const seg: RecordSegment = { id: matches[i].id, text: run, date: dates[0] ?? null, dates, severity, status, category };
+    const cur = best.get(seg.id);
+    // Highest-signal occurrence wins (definition row beats a passing mention);
+    // earliest occurrence wins ties for determinism.
+    if (!cur || score > cur.score) best.set(seg.id, { seg, score, index: start });
+  }
+  return [...best.values()].sort((a, b) => a.seg.id.localeCompare(b.seg.id, undefined, { numeric: true })).map((s) => s.seg);
+}
+
+/** One monthly quality-indicator dashboard row (QM-APR-001 style). */
+export interface DashboardRow {
+  metricId: string;
+  indicator: string;
+  month: string | null;
+  /** Numeric rate only when unambiguous (glued numerator/denominator digits make many rows ambiguous — those report rawValue instead). */
+  rate: number | null;
+  rawValue: string | null;
+  threshold: string | null;
+  status: string | null;
+}
+
+const MONTH_RE = /(January|February|March|April|May|June|July|August|September|October|November|December)\s*20\d{2}/;
+
+export function extractDashboardRows(text: string): DashboardRow[] {
+  // Tolerate run-together cells ("statusQM-APR-001Acute Care…") — only an
+  // UPPERCASE letter or digit immediately before disqualifies a candidate.
+  const idRe = /(?<![A-Z0-9])QM-([A-Z]{3})-(\d{3})(?!\d)/g;
+  const matches: Array<{ id: string; index: number; len: number }> = [];
+  for (const m of text.matchAll(idRe)) matches.push({ id: m[0], index: m.index ?? 0, len: m[0].length });
+
+  interface Scored { row: DashboardRow; score: number }
+  const best = new Map<string, Scored>();
+  for (let i = 0; i < matches.length; i++) {
+    const start = matches[i].index;
+    const end = Math.min(i + 1 < matches.length ? matches[i + 1].index : text.length, start + 300);
+    const run = text.slice(start + matches[i].len, end);
+    const monthMatch = MONTH_RE.exec(run);
+    const indicator = (monthMatch ? run.slice(0, monthMatch.index) : run.slice(0, 60))
+      .replace(/\s+/g, ' ').replace(/^[\s,;·|—-]+/, '').trim();
+    const threshold = /([≤≥]\s*\d+(?:\.\d+)?%)/.exec(run)?.[1] ?? null;
+    const statusMatch = /(✅[^✅⚠🔴]{0,40}|⚠️?[^✅⚠🔴]{0,40}|🔴[^✅⚠🔴]{0,60})/u.exec(run);
+    const status = statusMatch ? statusMatch[1].replace(/\s+/g, ' ').trim() : null;
+    // Look for the result value AFTER the month label so the glued year
+    // digits ("April 2026|78|92|84.8%") don't leak into the raw value.
+    const valueRegion = monthMatch ? run.slice(monthMatch.index + monthMatch[0].length) : run;
+    const valueMatch = /(\d+(?:\.\d+)?)%\s*[≤≥]/.exec(valueRegion) ?? /(?:–|—|-){2,}\s*(\d+(?:\.\d+)?)%/.exec(valueRegion);
+    let rate: number | null = null;
+    let rawValue: string | null = valueMatch ? `${valueMatch[1]}%` : null;
+    if (valueMatch) {
+      const v = Number(valueMatch[1]);
+      // Only trust it as a rate when it cannot be glued numerator/denominator
+      // digits: ≤100 and at most 2 integer digits.
+      if (Number.isFinite(v) && v <= 100 && /^\d{1,2}(\.\d+)?$/.test(valueMatch[1])) { rate = v; rawValue = null; }
+    }
+    if (!indicator) continue;
+    const row: DashboardRow = { metricId: matches[i].id, indicator, month: monthMatch ? monthMatch[0] : null, rate, rawValue, threshold, status };
+    // The definition row (month + threshold + status) beats passing references
+    // (e.g. PIP source lists citing "QM-APR-002, QM-MAY-002, …").
+    const score = (monthMatch ? 2 : 0) + (threshold ? 1 : 0) + (status ? 1 : 0) + (rate != null || rawValue ? 1 : 0);
+    const cur = best.get(row.metricId);
+    if (!cur || score > cur.score) best.set(row.metricId, { row, score });
+  }
+  return [...best.values()]
+    .filter((s) => s.score >= 2) // drop pure references that never matched a real row
+    .map((s) => s.row)
+    .sort((a, b) => a.metricId.localeCompare(b.metricId, undefined, { numeric: true }));
+}
+
+/** Governing-Body escalation items (GBE-001: …). */
+export function extractEscalationItems(text: string): Array<{ id: string; text: string }> {
+  const out: Array<{ id: string; text: string }> = [];
+  const seen = new Set<string>();
+  for (const m of text.matchAll(/\bGBE-(\d{2,4}):?\s*([^\n]{5,220})/g)) {
+    const id = `GBE-${m[1]}`;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push({ id, text: m[2].replace(/\s+/g, ' ').trim() });
+  }
+  return out;
+}
+
+/** Named sign-off records ("Administrator Sign-off: … — Name — YYYY-MM-DD"). */
+export function extractSignoffRecords(text: string): Array<{ role: string; name: string; date: string }> {
+  const out: Array<{ role: string; name: string; date: string }> = [];
+  for (const m of text.matchAll(/\b([A-Z][A-Za-z /&]{2,40}?)\s+Sign-off:\s*(?:[A-Z0-9-]+\s*—\s*)?([A-Za-z .'’-]+?)\s*—\s*(20\d{2}-\d{2}-\d{2})/g)) {
+    const role = m[1].trim();
+    if (/^required$/i.test(role)) continue;
+    out.push({ role, name: m[2].trim(), date: m[3] });
+  }
+  return out;
+}
+
+/** Prior-period action follow-up lines ("Q1 Action #1 …"). */
+export function extractPriorActionFollowUps(text: string): string[] {
+  return uniq([...text.matchAll(/\bQ\d Action #\d[^\n]{0,220}/g)].map((m) => m[0].replace(/\s+/g, ' ').trim()));
+}
+
+const TEXT_AGG_NOTE = 'Parsed from a narrative-text aggregate — confirm against the source before use.';
+
+const textMetric = (hit: TextHit | null, fallback: QapiDerivedMetric): QapiDerivedMetric =>
+  hit ? lowConfidence(hit.value, [hit.quote], TEXT_AGG_NOTE) : fallback;
+
+/** True when the parse produced no structured fields — only raw text records. */
+function isTextOnlyParse(parsed: ParsedFile): boolean {
+  return parsed.records.every((r) => Object.keys(r.fields).filter((k) => k !== 'text').length === 0);
+}
+
+/**
+ * Enrich a Path-2 bundle with narrative-text aggregates. Only applied to
+ * text-only parses (no structured records to trust instead), and labeled
+ * aggregates take precedence over Path 2's single-text-record keyword counts
+ * (which can only ever say "1 record matched" for a plain-text upload).
+ */
+function applyTextAggregates(bundle: QapiDerivedBundle, parsed: ParsedFile): QapiDerivedBundle {
+  if (!isTextOnlyParse(parsed)) return bundle;
+  const fullText = parsed.records.map((r) => r.text ?? '').join('\n');
+  if (fullText.trim().length < 200) return bundle;
+
+  const agg = extractQapiTextAggregates(fullText);
+  const notes: string[] = [bundle.overallNote];
+  if (agg.promptArtifact) {
+    notes.unshift(`⚠ This source reads like an AI generation prompt/instruction file, not operating data (found: “${agg.promptQuote ?? ''}”). Double-check that the intended dataset file is selected as the source.`);
+  }
+  if (agg.foundCount > 0) {
+    notes.push(`Recovered ${agg.foundCount} aggregate metric group(s) directly from the narrative text (labeled totals and record-ID families) — all low-confidence, each carries its verbatim source quote.`);
+  }
+
+  const pipCandidates: QapiPipTriggerCandidate[] = bundle.pipCorrectiveAction.length
+    ? bundle.pipCorrectiveAction
+    : agg.pipNames.map((p) => ({
+        trigger: `PIP — ${p.name}`,
+        issueSummary: p.quote,
+        severity: 'high',
+        ownerRoleSuggested: 'QAPI Coordinator',
+        correctiveActionRequired: true,
+        remeasurementMetric: `Remeasure "${p.name}" at next quarterly review`,
+        qapiReviewRequired: true,
+        sourceQuotes: [p.quote],
+      }));
+
+  return {
+    ...bundle,
+    overallNote: notes.join(' '),
+    meetingDetails: {
+      attendeeRoster: agg.attendeePresentCount
+        ? lowConfidence(`${agg.attendeePresentCount.value} attendees recorded present`, [agg.attendeePresentCount.quote], TEXT_AGG_NOTE)
+        : bundle.meetingDetails.attendeeRoster,
+      quorumStatus: agg.quorum
+        ? lowConfidence(`${agg.quorum.present}/${agg.quorum.total} present — quorum ${agg.quorum.met ? 'met' : 'NOT met'}`, [agg.quorum.quote], TEXT_AGG_NOTE)
+        : bundle.meetingDetails.quorumStatus,
+    },
+    censusPopulation: {
+      ...bundle.censusPopulation,
+      activeCensus: textMetric(agg.activeCensus ?? agg.episodesTotal, bundle.censusPopulation.activeCensus),
+      dischargedCount: textMetric(agg.dischargedCount, bundle.censusPopulation.dischargedCount),
+      recertificationCount: textMetric(agg.recertificationCount, bundle.censusPopulation.recertificationCount),
+    },
+    highRiskRollup: {
+      ...bundle.highRiskRollup,
+      clinicianDisciplinaryActionCount: textMetric(agg.disciplinaryCount, bundle.highRiskRollup.clinicianDisciplinaryActionCount),
+      clinicianPipOrLicenseFlagCount: textMetric(agg.pipTriggerCount, bundle.highRiskRollup.clinicianPipOrLicenseFlagCount),
+    },
+    adverseEvents: {
+      ...bundle.adverseEvents,
+      hospitalizationsTotal: textMetric(agg.hospitalizations, bundle.adverseEvents.hospitalizationsTotal),
+      infectionsTotal: textMetric(agg.infectionLineListCount ?? agg.confirmedHais, bundle.adverseEvents.infectionsTotal),
+    },
+    pipCorrectiveAction: pipCandidates,
+    chartAuditDocumentationIntegrity: {
+      ...bundle.chartAuditDocumentationIntegrity,
+      oasisLateSoc: textMetric(agg.oasisLateSoc, bundle.chartAuditDocumentationIntegrity.oasisLateSoc),
+      pocMissingF2F: textMetric(agg.lateOrMissingF2f, bundle.chartAuditDocumentationIntegrity.pocMissingF2F),
+      medReconciliationMismatch: textMetric(agg.medReconDiscrepancies, bundle.chartAuditDocumentationIntegrity.medReconciliationMismatch),
+    },
+    infectionControl: {
+      ...bundle.infectionControl,
+      healthcareAssociated: textMetric(agg.confirmedHais, bundle.infectionControl.healthcareAssociated),
+    },
+  };
+}
+
 /* ─── Dispatcher ─────────────────────────────────────────────────────── */
 
 function looksLikeClinicalDump(value: unknown): value is ClinicalDump {
@@ -381,5 +780,7 @@ export function deriveQapiBundle(parsed: ParsedFile, eventDateISO: string): Qapi
   }
   const dump = reconstructClinicalDump(parsed);
   if (dump) return deriveQapiBundleFromClinicalDump(dump, eventDateISO);
-  return deriveQapiBundleFromRecords(parsed);
+  // Narrative/plain-text uploads: enrich the record-level heuristics with
+  // labeled aggregates scanned from the text itself (Path 3).
+  return applyTextAggregates(deriveQapiBundleFromRecords(parsed), parsed);
 }

@@ -121,7 +121,7 @@ export function HowBradWorksPanel({ open, onClose }: { open: boolean; onClose: (
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="v6-modal-surface flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-hairline backdrop-blur-md v6-modal-transition v6-modal-transition--rise"
+        className="v6-modal-surface flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-hairline backdrop-blur-md"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

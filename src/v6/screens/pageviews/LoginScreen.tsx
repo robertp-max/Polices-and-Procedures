@@ -1,14 +1,13 @@
 import { type FormEvent, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
+import { CheckCircle2, Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import { cx } from '../../utils/classNames';
-import { BRAD_DEFAULT_ROUTE, safeReturnTo } from '../../utils/safeRedirect';
+import { safeReturnTo } from '../../utils/safeRedirect';
 
 export function LoginScreen() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberDevice, setRememberDevice] = useState(true);
   const [loading, setLoading] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
 
@@ -30,48 +29,32 @@ export function LoginScreen() {
 
   return (
     <main
-      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-tone-teal-bg p-lg text-ink"
+      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#FAFAF7] p-6 font-roboto text-[#52404B] selection:bg-[#E5FEFF]"
       data-group="Auth"
       data-hash-id="login-page"
       data-route="/login"
       data-template="login"
     >
-      {/* Subtle background enhancement matching V6 prototype */}
-      <div aria-hidden="true" className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-x-0 top-0 h-1/2 bg-surface-glass backdrop-blur-md shadow-glass-inset backdrop-blur-3xl" />
-      </div>
-
-      <a
-        className="absolute right-lg top-lg z-20 inline-flex min-h-tap items-center gap-sm rounded-lg border border-tone-teal-border bg-tone-teal-bg px-md text-sm font-medium text-ink shadow-rest transition duration-fast ease-standard hover:bg-surface-hover focus-visible:outline-none focus-visible:shadow-focus"
-        href={BRAD_DEFAULT_ROUTE}
-      >
-        <ArrowLeft aria-hidden="true" className="h-icon-sm w-icon-sm" />
-        Back to Dashboard
-      </a>
-
-      <section className="relative z-10 w-full max-w-[440px] rounded-[32px] border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset shadow-hover">
-        <div className="p-8">
-        <div className="mb-2xl flex justify-center">
+      <section className="relative z-10 flex w-full max-w-[420px] flex-col items-center rounded-[32px] border border-[#E5E4E3] bg-white p-10 shadow-[0_4px_24px_rgba(0,0,0,0.03)] md:p-12">
+        <div className="mb-10 flex justify-center">
           <img
             src="/ci-logo-gray.png"
-            alt="CareIndeed"
-            className="h-10 w-auto object-contain"
+            alt="Care Indeed"
+            className="w-32 object-contain"
           />
         </div>
 
-        <div className="mb-2xl text-center">
-          <h2 className="text-xl font-medium tracking-wide text-brand-teal-deep">Welcome Back</h2>
-          <p className="mt-1.5 text-sm font-light text-secondary">Please enter your credentials to continue</p>
-        </div>
+        <h1 className="mb-8 font-montserrat text-2xl font-semibold tracking-tight text-[#007970]">Welcome Back</h1>
 
-        <form className="space-y-5" noValidate onSubmit={handleSubmit}>
-          <label className="grid gap-sm">
-            <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Email Address</span>
-            <span className="relative flex h-control items-center rounded-2xl border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal shadow-rest transition duration-fast ease-standard focus-within:border-brand-teal">
-              <Mail aria-hidden="true" className="absolute left-md h-icon-sm w-icon-sm" />
+        <form className="w-full space-y-5" noValidate onSubmit={handleSubmit}>
+          <label className="block">
+            <span className="mb-1.5 ml-1 block font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#747470]">
+              Email Address
+            </span>
+            <span className="relative block">
               <input
                 autoComplete="email"
-                className="min-w-0 flex-1 bg-transparent pl-11 pr-md text-body font-light text-ink placeholder:text-disabled appearance-none border-0 outline-none focus:outline-none focus-visible:outline-none focus:ring-0"
+                className="w-full rounded-[12px] border border-[#E5E4E3] bg-white px-4 py-3 text-[14px] text-[#52404B] outline-none transition-colors placeholder:text-[#A0A0A0] focus:border-[#007970] disabled:cursor-not-allowed disabled:opacity-70"
                 disabled={loading}
                 placeholder="name@careindeed.com"
                 type="email"
@@ -79,65 +62,47 @@ export function LoginScreen() {
             </span>
           </label>
 
-          <label className="grid gap-sm">
-            <span className="flex items-center justify-between gap-md">
-              <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Password</span>
-              <a className="text-xs font-medium text-muted transition duration-fast ease-standard hover:text-ink" href="#forgot-password">
-                Forgot password?
-              </a>
+          <label className="block">
+            <span className="mb-1.5 ml-1 block font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#747470]">
+              Password
             </span>
-            <span className="relative flex h-control items-center rounded-2xl border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal shadow-rest transition duration-fast ease-standard focus-within:border-brand-teal">
-              <LockKeyhole aria-hidden="true" className="absolute left-md h-icon-sm w-icon-sm" />
+            <span className="relative block">
               <input
                 autoComplete="current-password"
-                className="min-w-0 flex-1 bg-transparent pl-11 pr-11 text-body font-light text-ink placeholder:text-disabled appearance-none border-0 outline-none focus:outline-none focus-visible:outline-none focus:ring-0"
+                className="w-full rounded-[12px] border border-[#E5E4E3] bg-white px-4 py-3 pr-12 text-[14px] text-[#52404B] outline-none transition-colors placeholder:text-[#A0A0A0] focus:border-[#007970] disabled:cursor-not-allowed disabled:opacity-70"
                 disabled={loading}
-                placeholder="••••••••••••"
+                placeholder="••••••••"
                 type={showPassword ? 'text' : 'password'}
               />
               <button
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
-                className="absolute right-md grid h-tap w-tap place-items-center rounded-md text-brand-teal transition duration-fast ease-standard hover:bg-tone-teal-bg focus-visible:outline-none focus-visible:shadow-focus"
+                className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-[10px] text-[#007970] transition-colors hover:bg-[#F7FEFF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007970]/30"
                 disabled={loading}
                 onClick={() => setShowPassword((value) => !value)}
                 type="button"
               >
-                {showPassword ? <EyeOff aria-hidden="true" className="h-icon-sm w-icon-sm" /> : <Eye aria-hidden="true" className="h-icon-sm w-icon-sm" />}
+                {showPassword ? <EyeOff aria-hidden="true" className="h-4 w-4" /> : <Eye aria-hidden="true" className="h-4 w-4" />}
               </button>
             </span>
           </label>
 
-          <div className="flex items-center justify-between gap-md pt-1 text-[13px] text-muted">
-            <label className="flex items-center gap-sm">
-              <input
-                checked={rememberDevice}
-                className="h-icon-sm w-icon-sm accent-brand-teal"
-                disabled={loading}
-                onChange={(event) => setRememberDevice(event.target.checked)}
-                type="checkbox"
-              />
-              <span>Remember me for 1 day</span>
-            </label>
-          </div>
-
-          <div className="pt-2">
+          <div className="pt-5">
             <button
-              className="inline-flex h-[52px] w-full items-center justify-center gap-sm rounded-2xl border border-transparent bg-brand-teal px-lg text-xs font-medium uppercase tracking-tag text-on-brand shadow-none transition duration-fast ease-standard hover:bg-brand-teal-deep focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-70"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-[12px] bg-[#F06923] px-8 py-3.5 font-montserrat text-[12px] font-bold uppercase tracking-widest text-white shadow-[0_4px_12px_rgba(240,105,35,0.2)] transition-all hover:-translate-y-0.5 hover:bg-[#D1571A] hover:shadow-[0_6px_16px_rgba(240,105,35,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F06923]/35 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-70"
               disabled={loading}
               type="submit"
             >
-              <span>{loading ? 'Authenticating' : 'Sign in securely'}</span>
-              {loading ? <LoaderCircle aria-hidden="true" className="h-icon-sm w-icon-sm animate-spin" /> : null}
+              <span>{loading ? 'Authenticating' : 'Sign In Securely'}</span>
+              {loading ? <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" /> : null}
             </button>
           </div>
         </form>
 
-        <p className="mt-8 text-center text-xs font-light text-disabled">
-          Protected by CareIndeed Enterprise Security.
+        <p className="mt-8 text-center font-roboto text-[11px] leading-relaxed text-[#747470] opacity-70">
+          Protected by Care Indeed Enterprise Security
           <br />
           Terms of Service &bull; Privacy Policy
         </p>
-        </div>
       </section>
 
       <div

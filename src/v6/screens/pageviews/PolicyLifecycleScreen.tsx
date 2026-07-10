@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AlertTriangle, Calendar, FileText, GitCompare, User } from 'lucide-react';
+import { AlertTriangle, Calendar, FileText, User } from 'lucide-react';
 import { ToneTag, type MetricTileData, type SurfaceCardData } from '../../components';
 import { ToneBadge } from '../../primitives';
 import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/data/policyCorpus';
@@ -127,12 +127,9 @@ export function PolicyLifecycleScreen() {
       description="Track policy states, review cadence, domain coverage, and required actions without exposing the full checklist on first load."
       eyebrow="Lifecycle Control"
       onTabChange={setView}
+      tabPlacement="hero"
       tabs={tabs}
       title="Policy Lifecycle"
-      actions={[
-        { icon: GitCompare, label: 'Approval Queue', to: '/policy-approvals' },
-        { icon: FileText, label: 'Policy Library', to: '/library', variant: 'secondary' },
-      ]}
     >
       <PolicyMetricsGrid metrics={metrics} />
 

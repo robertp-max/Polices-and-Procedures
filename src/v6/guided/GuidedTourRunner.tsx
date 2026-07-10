@@ -230,7 +230,7 @@ export function GuidedTourRunner() {
           key={i}
           onClick={showLockedToast}
           className="pointer-events-auto fixed"
-          style={{ top: s.top, left: s.left, width: s.width, height: s.height, zIndex: 9000, background: 'rgba(0,0,0,0.76)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)' }}
+          style={{ top: s.top, left: s.left, width: s.width, height: s.height, zIndex: 9000, background: 'rgba(0,0,0,0.76)' }}
           aria-hidden
         />
       ))}

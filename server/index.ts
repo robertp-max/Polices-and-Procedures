@@ -21,6 +21,7 @@ import { startAnomalyScheduler } from './audit/anomaly.js';
 import { authRouter } from './routes/auth.js';
 import { pmRouter } from './routes/pm.js';
 import { createBradRouter } from './routes/brad.js';
+import { createNolanRouter } from './routes/nolan.js';
 
 /* ═══════════════════════════════════════════════════════════════
    Care Indeed — Backend API (Express)
@@ -116,6 +117,9 @@ app.use('/api/ia', createIaRouter(iaService));
 // Brad assistant + Super Admin guarded-action layer (append-only generated objects).
 app.use('/api/brad', createBradRouter());
 
+// Nolan tutor — Nurse Onboarding & Learning Assistant (Training module, deterministic).
+app.use('/api/nolan', createNolanRouter());
+
 // 404 for unknown routes under /api.
 app.use('/api', (req, _res, next) => {
   next(new ApiError('event_not_found', `Unknown route: ${req.method} ${req.path}`, 404));
@@ -129,6 +133,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(__dirname, '..', 'dist');
 if (fs.existsSync(path.join(distDir, 'index.html'))) {
   app.use(express.static(distDir, { index: false, maxAge: '1h' }));
+  // Narration/audio WAVs are excluded from the image build context (see
+  // .gcloudignore) so deploys stop re-uploading ~1.4GB of unchanged audio.
+  // In Cloud Run they are served from a GCS volume mount instead (bucket
+  // ci-hhv2-narration mounted at NARRATION_ASSETS_DIR, path structure
+  // mirrors public/). No-op locally where dist/ still carries the files.
+  const narrationDir = process.env.NARRATION_ASSETS_DIR || '/mnt/narration';
+  if (fs.existsSync(narrationDir)) {
+    app.use(express.static(narrationDir, { index: false, maxAge: '1d' }));
+    log.info('static.narration.enabled', { narrationDir });
+  }
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
     res.sendFile(path.join(distDir, 'index.html'));

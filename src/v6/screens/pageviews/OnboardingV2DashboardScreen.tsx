@@ -1,8 +1,9 @@
-import { ShieldCheck, UserCheck, Users, AlertTriangle, FolderSync } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowRight, ClipboardList, ShieldCheck, UserCheck, Users, AlertTriangle, FolderSync } from 'lucide-react';
 import { MetricGrid, DataTable, SurfaceCard, type MetricTileData, type SurfaceCardData, type DataTableColumn } from '../../components';
 import { Badge } from '../../primitives';
 import { buildSeedSnapshot } from '@/policy/onboarding-v2/store/seed';
-import type { WorkforceMember } from '@/policy/onboarding-v2';
+import type { Vendor, WorkforceMember } from '@/policy/onboarding-v2';
 
 interface QueueRow extends Record<string, string> {
   id: string;
@@ -14,12 +15,14 @@ interface QueueRow extends Record<string, string> {
 }
 
 const snap = buildSeedSnapshot();
-const workforceById = new Map(snap.workforce.map((w: WorkforceMember) => [w.id, w]));
+const subjectById = new Map<string, Vendor | WorkforceMember>();
+snap.workforce.forEach((subject) => subjectById.set(subject.id, subject));
+snap.vendors.forEach((subject) => subjectById.set(subject.id, subject));
 
 const realBatchCount = snap.batches.length;
-const blockedCount = snap.units.filter((u: any) => u.status === 'Blocked').length;
-const awaitingSigCount = snap.signatures.filter((s: any) => s.status === 'Sent' || s.status === 'Requested').length;
-const completedUnits = snap.units.filter((u: any) => u.status === 'Completed').length;
+const blockedCount = snap.units.filter((unit) => unit.status === 'Blocked').length;
+const awaitingSigCount = snap.signatures.filter((signature) => signature.status === 'Sent' || signature.status === 'Requested').length;
+const completedUnits = snap.units.filter((unit) => unit.status === 'Completed').length;
 const totalUnits = snap.units.length || 1;
 const clearanceRate = Math.round((completedUnits / totalUnits) * 100);
 const metrics = [
@@ -39,19 +42,20 @@ const queueColumns: readonly DataTableColumn<QueueRow>[] = [
   { key: 'status', label: 'Clearance State', status: true },
 ];
 
-// Real queue rows derived from batches + workforce seed (no placeholder subjects)
-const queueRows: readonly QueueRow[] = snap.batches.map((b: any) => {
-  const subj = workforceById.get(b.subjectId) || { id: b.subjectId, legalName: b.subjectId, primaryRoleId: '—' } as any;
-  const statusRaw = (b.status || 'InProgress').toLowerCase();
+// Real queue rows derived from batches + subject seed (no placeholder subjects)
+const queueRows: readonly QueueRow[] = snap.batches.map((batch) => {
+  const subject = subjectById.get(batch.subjectId);
+  const role = subject && 'primaryRoleId' in subject ? subject.primaryRoleId : subject?.vendorType ?? '—';
+  const statusRaw = batch.status.toLowerCase();
   const uiStatus = statusRaw.includes('complete') ? 'complete' :
                    statusRaw.includes('block') ? 'blocked' :
                    statusRaw.includes('await') ? 'review-required' : 'active';
   return {
-    id: subj.id,
-    name: subj.legalName || subj.id,
-    role: subj.primaryRoleId || '—',
-    trigger: (b.triggerType as string) || 'NEW_HIRE',
-    date: (b.createdAt || '').slice(0, 10),
+    id: subject?.id ?? batch.subjectId,
+    name: subject?.legalName ?? batch.subjectId,
+    role,
+    trigger: batch.triggerType,
+    date: batch.createdAt.slice(0, 10),
     status: uiStatus,
   };
 });
@@ -109,6 +113,29 @@ export function OnboardingV2DashboardScreen() {
       data-template="dashboard"
     >
       <MetricGrid metrics={metrics} />
+
+      <section className="rounded-lg border border-card bg-surface-glass p-lg shadow-rest shadow-glass-inset backdrop-blur-md">
+        <div className="flex flex-col gap-md desktop:flex-row desktop:items-center desktop:justify-between">
+          <div className="flex items-start gap-md">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-tone-teal-bg text-brand-teal">
+              <ClipboardList className="h-icon-sm w-icon-sm" aria-hidden />
+            </span>
+            <div>
+              <h3 className="text-h3 font-medium text-ink">Appendix F Clearance</h3>
+              <p className="mt-xs max-w-2xl text-sm text-muted">
+                Open the required onboarding checklist, HR Director signature gate, and personnel-file clearance record.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/journey/appendix-f"
+            className="inline-flex min-h-tap items-center justify-center gap-sm rounded-md border border-brand-teal bg-brand-teal px-md text-sm font-medium text-on-brand transition hover:bg-brand-teal-deep focus-visible:outline-none focus-visible:shadow-focus"
+          >
+            Open Appendix F
+            <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden />
+          </Link>
+        </div>
+      </section>
 
       <section className="grid gap-lg desktop:grid-cols-1">
         <div className="grid content-start gap-md">

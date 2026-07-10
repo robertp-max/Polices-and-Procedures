@@ -332,3 +332,35 @@ export function parseSourceFile(input: ParseInput): ParsedFile {
 
 /** Formats that this build can fully parse client-side into source records. */
 export const FULLY_PARSEABLE_FORMATS: SourceFileFormat[] = ['json', 'csv', 'tsv', 'markdown', 'txt'];
+
+/**
+ * Merge several parsed source files into one record set so downstream
+ * derivation reads EVERY dumped document, not just the first. Record
+ * pointers are prefixed with the source file name for traceability.
+ */
+export function mergeParsedFiles(parsedList: Array<{ parsed: ParsedFile; fileName: string }>): ParsedFile {
+  if (parsedList.length === 0) {
+    return { format: 'unknown', parseStatus: 'empty', records: [], columnHeaders: [], note: 'No source files.' };
+  }
+  if (parsedList.length === 1) return parsedList[0].parsed;
+
+  const records: ParsedRecordCell[] = [];
+  const headers = new Set<string>();
+  const notes: string[] = [];
+  let parsedCount = 0;
+  for (const { parsed, fileName } of parsedList) {
+    if (parsed.parseStatus === 'parsed') parsedCount += 1;
+    else if (parsed.note) notes.push(`${fileName}: ${parsed.note}`);
+    for (const r of parsed.records) {
+      records.push({ ...r, pointer: `${fileName} › ${r.pointer}` });
+    }
+    for (const h of parsed.columnHeaders) headers.add(h);
+  }
+  return {
+    format: parsedList[0].parsed.format,
+    parseStatus: records.length ? 'parsed' : 'empty',
+    records,
+    columnHeaders: [...headers],
+    note: `Merged ${parsedList.length} source file(s) (${parsedCount} parsed)${notes.length ? ` — ${notes.join('; ')}` : ''}.`,
+  };
+}

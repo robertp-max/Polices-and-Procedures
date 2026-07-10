@@ -1,7 +1,8 @@
 # Phase 2C exec summary — Journey integration
 
 **Date:** 2026-07-09  
-**Branch:** (working tree at commit)  
+**Branch:** `gemini-light-orange-theme`  
+**Commit:** `4263664ccba43fc15c4fd9aebf34d226378c4e32` (`4263664c`)  
 **Scope:** Wire Phase 2A setup assignments into journey learner/supervisor surfaces. Demo/local only. No `gating.ts` logic changes. Nolan out of scope.
 
 ## Files changed
@@ -75,4 +76,6 @@ Also reads `setup.journeyEmployeeSeedRef` when resolving ids.
 
 ## Commit
 
-`feat(user-setup): Phase 2C journey integration (impersonation + supervisor filter)`
+- **SHA:** `4263664ccba43fc15c4fd9aebf34d226378c4e32`
+- **Message:** `feat(user-setup): Phase 2C journey integration (impersonation + supervisor filter)`
+- **Note:** `ModulePlayerScreen` staged as 2C-only delta on HEAD (pre-existing GAO scene WIP left unstaged in working tree).

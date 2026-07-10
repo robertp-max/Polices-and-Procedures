@@ -44666,9 +44666,9 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
     "requiredForms": [
       {
         "formId": "CL-FM-002",
-        "formTitle": "OASIS-E1 Assessment Form",
+        "formTitle": "OASIS-E2 Assessment Form",
         "required": true,
-        "sourceNeeded": "OASIS-E1 Assessment Form",
+        "sourceNeeded": "OASIS-E2 Assessment Form",
         "status": "unknown",
         "missingBlocker": true,
         "origin": "event.requiredForms"
@@ -45020,7 +45020,7 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
         "fields": [
           {
             "required": true,
-            "sourceHint": "OASIS-E1 Assessment Form",
+            "sourceHint": "OASIS-E2 Assessment Form",
             "aliases": [],
             "confidenceThreshold": 0.5,
             "manualEntryAllowed": true,
@@ -45029,7 +45029,7 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
             ],
             "mapsToPacketSections": [],
             "fieldId": "form_cl_fm_002",
-            "label": "OASIS-E1 Assessment Form",
+            "label": "OASIS-E2 Assessment Form",
             "type": "evidence_ref",
             "mapsToBundlePath": "forms.CL-FM-002"
           },
@@ -45216,17 +45216,17 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
           },
           {
             "required": false,
-            "sourceHint": "Look for content matching OASIS-E1 Assessment Form (CL-FM-002).",
+            "sourceHint": "Look for content matching OASIS-E2 Assessment Form (CL-FM-002).",
             "aliases": [
               "CL-FM-002",
-              "OASIS-E1 Assessment Form"
+              "OASIS-E2 Assessment Form"
             ],
             "confidenceThreshold": 0.5,
             "manualEntryAllowed": true,
             "mapsToFormIds": [],
             "mapsToPacketSections": [],
             "fieldId": "form_cl_fm_002_present",
-            "label": "OASIS-E1 Assessment Form present in source",
+            "label": "OASIS-E2 Assessment Form present in source",
             "type": "text",
             "mapsToBundlePath": "extracted.form_cl_fm_002_present"
           },
@@ -45511,7 +45511,7 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
     "readinessRules": [
       {
         "ruleId": "require-form-cl_fm_002",
-        "description": "OASIS-E1 Assessment Form (CL-FM-002) must be present or manually confirmed before packet generation.",
+        "description": "OASIS-E2 Assessment Form (CL-FM-002) must be present or manually confirmed before packet generation.",
         "requiresPaths": [
           "forms.CL-FM-002"
         ],
@@ -45613,12 +45613,12 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
       },
       {
         "fieldId": "form_cl_fm_002_present",
-        "label": "OASIS-E1 Assessment Form present in source",
+        "label": "OASIS-E2 Assessment Form present in source",
         "group": "Required Forms",
-        "hint": "Look for content matching OASIS-E1 Assessment Form (CL-FM-002).",
+        "hint": "Look for content matching OASIS-E2 Assessment Form (CL-FM-002).",
         "aliases": [
           "CL-FM-002",
-          "OASIS-E1 Assessment Form"
+          "OASIS-E2 Assessment Form"
         ]
       },
       {
@@ -52266,9 +52266,9 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
     "requiredForms": [
       {
         "formId": "CL-FM-002",
-        "formTitle": "OASIS-E1 Assessment Form",
+        "formTitle": "OASIS-E2 Assessment Form",
         "required": true,
-        "sourceNeeded": "OASIS-E1 Assessment Form",
+        "sourceNeeded": "OASIS-E2 Assessment Form",
         "status": "unknown",
         "missingBlocker": true,
         "origin": "event.requiredForms"
@@ -52602,7 +52602,7 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
         "fields": [
           {
             "required": true,
-            "sourceHint": "OASIS-E1 Assessment Form",
+            "sourceHint": "OASIS-E2 Assessment Form",
             "aliases": [],
             "confidenceThreshold": 0.5,
             "manualEntryAllowed": true,
@@ -52611,7 +52611,7 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
             ],
             "mapsToPacketSections": [],
             "fieldId": "form_cl_fm_002",
-            "label": "OASIS-E1 Assessment Form",
+            "label": "OASIS-E2 Assessment Form",
             "type": "evidence_ref",
             "mapsToBundlePath": "forms.CL-FM-002"
           },
@@ -52768,17 +52768,17 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
           },
           {
             "required": false,
-            "sourceHint": "Look for content matching OASIS-E1 Assessment Form (CL-FM-002).",
+            "sourceHint": "Look for content matching OASIS-E2 Assessment Form (CL-FM-002).",
             "aliases": [
               "CL-FM-002",
-              "OASIS-E1 Assessment Form"
+              "OASIS-E2 Assessment Form"
             ],
             "confidenceThreshold": 0.5,
             "manualEntryAllowed": true,
             "mapsToFormIds": [],
             "mapsToPacketSections": [],
             "fieldId": "form_cl_fm_002_present",
-            "label": "OASIS-E1 Assessment Form present in source",
+            "label": "OASIS-E2 Assessment Form present in source",
             "type": "text",
             "mapsToBundlePath": "extracted.form_cl_fm_002_present"
           },
@@ -53011,7 +53011,7 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
     "readinessRules": [
       {
         "ruleId": "require-form-cl_fm_002",
-        "description": "OASIS-E1 Assessment Form (CL-FM-002) must be present or manually confirmed before packet generation.",
+        "description": "OASIS-E2 Assessment Form (CL-FM-002) must be present or manually confirmed before packet generation.",
         "requiresPaths": [
           "forms.CL-FM-002"
         ],
@@ -53097,12 +53097,12 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
       },
       {
         "fieldId": "form_cl_fm_002_present",
-        "label": "OASIS-E1 Assessment Form present in source",
+        "label": "OASIS-E2 Assessment Form present in source",
         "group": "Required Forms",
-        "hint": "Look for content matching OASIS-E1 Assessment Form (CL-FM-002).",
+        "hint": "Look for content matching OASIS-E2 Assessment Form (CL-FM-002).",
         "aliases": [
           "CL-FM-002",
-          "OASIS-E1 Assessment Form"
+          "OASIS-E2 Assessment Form"
         ]
       },
       {
@@ -53192,9 +53192,9 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
     "requiredForms": [
       {
         "formId": "CL-FM-002",
-        "formTitle": "OASIS-E1 Assessment Form",
+        "formTitle": "OASIS-E2 Assessment Form",
         "required": true,
-        "sourceNeeded": "OASIS-E1 Assessment Form",
+        "sourceNeeded": "OASIS-E2 Assessment Form",
         "status": "unknown",
         "missingBlocker": true,
         "origin": "event.requiredForms"
@@ -53538,7 +53538,7 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
         "fields": [
           {
             "required": true,
-            "sourceHint": "OASIS-E1 Assessment Form",
+            "sourceHint": "OASIS-E2 Assessment Form",
             "aliases": [],
             "confidenceThreshold": 0.5,
             "manualEntryAllowed": true,
@@ -53547,7 +53547,7 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
             ],
             "mapsToPacketSections": [],
             "fieldId": "form_cl_fm_002",
-            "label": "OASIS-E1 Assessment Form",
+            "label": "OASIS-E2 Assessment Form",
             "type": "evidence_ref",
             "mapsToBundlePath": "forms.CL-FM-002"
           },
@@ -53719,17 +53719,17 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
           },
           {
             "required": false,
-            "sourceHint": "Look for content matching OASIS-E1 Assessment Form (CL-FM-002).",
+            "sourceHint": "Look for content matching OASIS-E2 Assessment Form (CL-FM-002).",
             "aliases": [
               "CL-FM-002",
-              "OASIS-E1 Assessment Form"
+              "OASIS-E2 Assessment Form"
             ],
             "confidenceThreshold": 0.5,
             "manualEntryAllowed": true,
             "mapsToFormIds": [],
             "mapsToPacketSections": [],
             "fieldId": "form_cl_fm_002_present",
-            "label": "OASIS-E1 Assessment Form present in source",
+            "label": "OASIS-E2 Assessment Form present in source",
             "type": "text",
             "mapsToBundlePath": "extracted.form_cl_fm_002_present"
           },
@@ -53988,7 +53988,7 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
     "readinessRules": [
       {
         "ruleId": "require-form-cl_fm_002",
-        "description": "OASIS-E1 Assessment Form (CL-FM-002) must be present or manually confirmed before packet generation.",
+        "description": "OASIS-E2 Assessment Form (CL-FM-002) must be present or manually confirmed before packet generation.",
         "requiresPaths": [
           "forms.CL-FM-002"
         ],
@@ -54082,12 +54082,12 @@ export const BRAD_MANDATED_EVENT_INTAKES: BradMandatedEventIntakeDefinition[] = 
       },
       {
         "fieldId": "form_cl_fm_002_present",
-        "label": "OASIS-E1 Assessment Form present in source",
+        "label": "OASIS-E2 Assessment Form present in source",
         "group": "Required Forms",
-        "hint": "Look for content matching OASIS-E1 Assessment Form (CL-FM-002).",
+        "hint": "Look for content matching OASIS-E2 Assessment Form (CL-FM-002).",
         "aliases": [
           "CL-FM-002",
-          "OASIS-E1 Assessment Form"
+          "OASIS-E2 Assessment Form"
         ]
       },
       {

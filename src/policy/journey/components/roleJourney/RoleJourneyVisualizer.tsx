@@ -116,34 +116,6 @@ export function RoleJourneyVisualizer() {
   const [activeRoleId, setActiveRoleId] = useState('JD-003'); // default: RN
   const [deepDive, setDeepDive] = useState<PhaseKey | null>(null);
   const evidenceRef = useRef<HTMLDivElement | null>(null);
-  const rootRef = useRef<HTMLDivElement | null>(null);
-
-  // Fit the visualizer to the shell viewport so the page never scrolls vertically:
-  // measure everything else in the scroll container (tab nav, paddings) and take the rest.
-  useEffect(() => {
-    const el = rootRef.current;
-    if (!el) return;
-    const fit = () => {
-      let scroller: HTMLElement | null = el.parentElement;
-      while (scroller) {
-        const style = window.getComputedStyle(scroller);
-        if ((style.overflowY === 'auto' || style.overflowY === 'scroll') && scroller.clientHeight > 0) break;
-        scroller = scroller.parentElement;
-      }
-      const viewport = scroller?.clientHeight ?? window.innerHeight;
-      const total = scroller?.scrollHeight ?? document.documentElement.scrollHeight;
-      const current = el.getBoundingClientRect().height;
-      const overflow = total - viewport;
-      if (overflow > 2) el.style.height = `${Math.max(440, current - overflow)}px`;
-    };
-    fit();
-    const settle = window.setTimeout(fit, 350); // re-fit after fonts/entry layout settle
-    window.addEventListener('resize', fit);
-    return () => {
-      window.clearTimeout(settle);
-      window.removeEventListener('resize', fit);
-    };
-  }, []);
 
   const activeRole = useMemo(() => ROLES.find((role) => role.id === activeRoleId) ?? ROLES[0], [activeRoleId]);
 
@@ -212,7 +184,7 @@ export function RoleJourneyVisualizer() {
   };
 
   return (
-    <div ref={rootRef} className="flex h-[calc(100dvh-160px)] min-h-[440px] w-full flex-col overflow-hidden font-roboto text-[#52404B]">
+    <div className="flex min-h-[calc(100dvh-150px)] w-full flex-col overflow-visible font-roboto text-[#52404B]">
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes rjCascade {
           0% { opacity: 0; transform: translateY(26px); }
@@ -248,18 +220,23 @@ export function RoleJourneyVisualizer() {
         }
       ` }} />
 
-      {/* HERO — compact single bar */}
-      <section className="rj-cascade relative mb-3 shrink-0 overflow-hidden rounded-b-[20px] rounded-tr-[20px] border border-[#E5E4E3] bg-white px-6 py-4 shadow-sm">
-        <div className="relative z-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-          <div className="min-w-0">
+      {/* HERO */}
+      <section className="rj-cascade relative mb-6 shrink-0 overflow-hidden rounded-b-[28px] rounded-tr-[28px] border border-[#E5E4E3] bg-white px-8 py-9 shadow-sm md:px-12 md:py-10">
+        <div className="pointer-events-none absolute -right-28 -top-36 h-[420px] w-[420px] rounded-full border-[36px] border-[#007970]/[0.025]" aria-hidden />
+        <div className="pointer-events-none absolute right-8 top-12 h-52 w-52 rounded-full border-[24px] border-[#007970]/[0.025]" aria-hidden />
+        <div className="relative z-10 flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+          <div className="max-w-4xl">
             <span className="mb-1 block font-montserrat text-[9px] font-bold uppercase tracking-widest text-[#F06923]">
               42 CFR Part 484 • CMS CoP Aligned • Survey-Ready
             </span>
-            <h1 className="truncate font-montserrat text-lg font-bold leading-tight tracking-tight text-[#007970] md:text-2xl">
+            <h1 className="font-montserrat text-3xl font-bold leading-tight tracking-tight text-[#007970] md:text-4xl">
               Role-Based Onboarding &amp; Competency Journey
             </h1>
+            <p className="mt-4 max-w-3xl font-roboto text-[15px] font-light leading-relaxed text-[#747470] md:text-base">
+              Select a CMS-required position below, then follow the horizontal clearance-to-compliance pathway for the selected role.
+            </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 flex-wrap items-center gap-3">
             <div className="hidden items-center gap-2 xl:flex">
               <HeroPill value={`${GAO_MODULES.length} + ${activeRole.modules.length}`} label={`GAO + ${activeRole.short} modules`} />
               <HeroPill value={String(quizGateCount)} label="quiz gates (80%)" />
@@ -271,12 +248,12 @@ export function RoleJourneyVisualizer() {
       </section>
 
       {/* ROLE SELECTOR + LEARNER SUMMARY ROW */}
-      <div className="rj-cascade relative z-30 mx-auto mb-3 flex w-full max-w-5xl shrink-0 flex-col gap-3 lg:flex-row lg:items-stretch" style={{ animationDelay: '90ms' }}>
+      <div className="rj-cascade relative z-30 mx-auto mb-6 flex w-full max-w-6xl shrink-0 flex-col gap-3 lg:flex-row lg:items-stretch" style={{ animationDelay: '90ms' }}>
         <RoleDropdown activeRole={activeRole} onSelect={setActiveRoleId} />
         {view === 'learner' ? <PersonaCard role={activeRole} overallPercent={overallPercent} /> : null}
       </div>
 
-      <div className="min-h-0 flex-1">
+      <div className="min-h-[560px] flex-1">
         {view === 'learner' ? (
           <LearnerJourney
             key={activeRole.id}
@@ -500,19 +477,25 @@ function LearnerJourney({
   const scrollByCard = (direction: 1 | -1) => {
     const track = trackRef.current;
     if (!track) return;
-    track.scrollBy({ left: direction * 400, behavior: 'smooth' });
+    track.scrollBy({ left: direction * 360, behavior: 'smooth' });
   };
 
   return (
-    <div className="mx-auto flex h-full min-h-0 w-full max-w-[1240px] flex-col">
-      {/* PHASE CAROUSEL — horizontal, edge-faded, fills remaining height */}
-      <div className="rj-cascade relative min-h-0 flex-1" style={{ animationDelay: '220ms' }}>
-        <div ref={trackRef} className="rj-carousel flex h-full snap-x snap-mandatory items-stretch gap-6 overflow-x-auto scroll-px-10 px-10 pb-3 pt-1">
-          {phases.map((phase, index) => (
-            <PhaseCard key={phase.key} phase={phase} delay={`${220 + index * 110}ms`} onDeepDive={() => onDeepDive(phase.key)}>
-              <PhaseCardBody phaseKey={phase.key} role={role} status={phase.status} onOpenEvidenceMap={onOpenEvidenceMap} />
-            </PhaseCard>
-          ))}
+    <div className="mx-auto flex h-full min-h-0 w-full max-w-[1400px] flex-col">
+      {/* PHASE FLOWCHART — horizontal sequence with connector rail */}
+      <div className="rj-cascade relative min-h-0 flex-1 rounded-[28px] border border-[#E5E4E3] bg-white/70 p-3 shadow-sm md:p-5" style={{ animationDelay: '220ms' }}>
+        <div ref={trackRef} className="rj-carousel flex min-h-[520px] snap-x snap-mandatory items-stretch overflow-x-auto scroll-px-8 px-8 pb-5 pt-7">
+          {phases.map((phase, index) => {
+            const nextPhase = phases[index + 1];
+            return (
+              <div key={phase.key} className="flex shrink-0 snap-start items-stretch">
+                <PhaseCard phase={phase} delay={`${220 + index * 110}ms`} onDeepDive={() => onDeepDive(phase.key)}>
+                  <PhaseCardBody phaseKey={phase.key} role={role} status={phase.status} onOpenEvidenceMap={onOpenEvidenceMap} />
+                </PhaseCard>
+                {nextPhase ? <FlowConnector complete={phase.status === 'complete'} active={nextPhase.status === 'active'} /> : null}
+              </div>
+            );
+          })}
         </div>
 
         {/* Edge fades over partially visible cards */}
@@ -541,6 +524,22 @@ function LearnerJourney({
   );
 }
 
+function FlowConnector({ complete, active }: { complete: boolean; active: boolean }) {
+  return (
+    <div className="relative flex w-14 shrink-0 items-start justify-center pt-[62px]" aria-hidden="true">
+      <div className={cx('h-[2px] w-full rounded-full', complete || active ? 'bg-[#007970]/55' : 'bg-[#E5E4E3]')} />
+      <span
+        className={cx(
+          'absolute top-[53px] flex h-5 w-5 items-center justify-center rounded-full border bg-white',
+          complete || active ? 'border-[#b2f5f7] text-[#007970]' : 'border-[#E5E4E3] text-[#A0A0A0]',
+        )}
+      >
+        <ArrowRight size={12} />
+      </span>
+    </div>
+  );
+}
+
 function PhaseCard({
   phase,
   delay,
@@ -556,7 +555,7 @@ function PhaseCard({
   const locked = phase.status === 'locked';
 
   return (
-    <div className="rj-cascade group h-full w-[320px] shrink-0 snap-center md:w-[368px]" style={{ animationDelay: delay }}>
+    <div className="rj-cascade group h-full w-[280px] shrink-0 md:w-[300px]" style={{ animationDelay: delay }}>
       <div
         role="button"
         tabIndex={0}
@@ -569,7 +568,7 @@ function PhaseCard({
         }}
         aria-label={`Open ${phase.title} deep dive`}
         className={cx(
-          'flex h-full cursor-pointer flex-col rounded-[24px] border bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,121,112,0.1)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007970]',
+          'flex h-full min-h-[500px] cursor-pointer flex-col rounded-[24px] border bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,121,112,0.1)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007970]',
           phase.status === 'active' ? 'border-[#F06923]/50 shadow-[0_8px_32px_rgba(240,105,35,0.08)]' : 'border-[#E5E4E3]',
           locked && 'opacity-70 saturate-[0.85] hover:opacity-100',
         )}
@@ -599,7 +598,7 @@ function PhaseCard({
               {phase.timeframe}
             </span>
           </div>
-          <h3 className="mb-2 font-montserrat text-xl font-semibold leading-snug text-[#007970]">{phase.title}</h3>
+          <h3 className="mb-2 font-montserrat text-lg font-semibold leading-snug text-[#007970]">{phase.title}</h3>
 
           {/* Phase progress */}
           <div className="mb-4">

@@ -1,4 +1,9 @@
 import React from 'react';
+import {
+  workspaceCompactTabClass,
+  workspaceTabActiveClass,
+  workspaceTabInactiveClass,
+} from './workspaceTabChrome';
 
 export interface TabItem {
   id: string;
@@ -19,7 +24,7 @@ export const CareIndeedTabs: React.FC<CareIndeedTabsProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`flex space-x-8 border-b border-card bg-transparent px-2 ${className}`}>
+    <div className={`flex max-w-full items-stretch overflow-x-auto border-b border-card bg-transparent font-montserrat ${className}`} role="tablist">
       {tabs.map((tab) => {
         const isActive = tab.id === activeTabId;
         return (
@@ -27,11 +32,11 @@ export const CareIndeedTabs: React.FC<CareIndeedTabsProps> = ({
             key={tab.id}
             type="button"
             onClick={() => onChange(tab.id)}
-            className={`py-4 text-sm font-semibold transition-all duration-150 border-b-4 focus:outline-none ${
-              isActive
-                ? 'border-brand-teal-deep text-brand-teal-deep'
-                : 'border-transparent text-muted hover:text-brand-teal hover:border-gray-300'
+            className={`${workspaceCompactTabClass} whitespace-nowrap ${
+              isActive ? workspaceTabActiveClass : workspaceTabInactiveClass
             }`}
+            role="tab"
+            aria-selected={isActive}
           >
             {tab.label}
           </button>

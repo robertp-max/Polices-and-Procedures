@@ -55,7 +55,7 @@ The Cognitive Load & Pacing table caps Scene 6 at 5 nodes, but the client-mandat
 
 **Report Immediately.** Federal law and Care Indeed policy both require reporting suspected abuse, neglect, exploitation, unsafe conditions, or compliance violations — the same day, not "when things settle down." Reporting is not optional once suspicion exists.
 
-**Supervisor/Compliance Assists.** Alex's job stops at reporting the facts. From there, the supervisor and Compliance team take over deciding what external reporting is required and how it gets filed — Alex is not left to handle this alone. "Follow agency mandatory reporting protocol immediately; do not investigate or confront; supervisor/Compliance assists with required external reporting, but required reporting must not be delayed."
+**Supervisor/Compliance Assists.** Alex's job stops at reporting the facts. From there, the supervisor and Compliance team take over deciding what external reporting is required and how it gets filed — Alex is not left to handle this alone. "Follow agency mandatory reporting protocol immediately; do not investigate or confront — your job stops at reporting the facts."
 
 **External Reporting Not Delayed.** Even while supervisor and Compliance are coordinating, the clock on required external reporting keeps running — nobody waits for more evidence, a callback, or a slow afternoon before a legally required report goes out.
 
@@ -66,7 +66,7 @@ The Cognitive Load & Pacing table caps Scene 6 at 5 nodes, but the client-mandat
 - Reference: Reporting of suspected abuse, neglect, or exploitation is required under federal and state mandated-reporter law. Your state's Adult Protective Services (APS) framework governs external reporting; Compliance/supervisor initiates it. Informational. Patient-rights framing under 42 CFR §484.50 is addressed directly in Scene 7 — not cited here.
 - Reference: HR-TA-005 Appendix A — General Agency Orientation Checklist (personnel file requirements). Informational.
 - Reporting standard: reasonable suspicion, not proof, triggers the duty to report.
-- Mandated protocol sentence (verbatim): "Follow agency mandatory reporting protocol immediately; do not investigate or confront; supervisor/Compliance assists with required external reporting, but required reporting must not be delayed."
+- Mandated protocol sentence (verbatim): "Follow agency mandatory reporting protocol immediately; do not investigate or confront — your job stops at reporting the facts."
 
 ### Narration Plan
 
@@ -88,7 +88,7 @@ The Cognitive Load & Pacing table caps Scene 6 at 5 nodes, but the client-mandat
 
 **Node-unlock — Report Immediately:** "Dana is blunt about timing. 'Federal law and our own policy both say the same thing: suspected abuse, neglect, exploitation, an unsafe home, a compliance violation — you report it the same day.' Alex nods; this is the part that has no gray area."
 
-**Node-unlock — Supervisor/Compliance Assists:** "'Here's the part new hires get wrong,' Dana says. 'You are not the one who decides what happens next. Once you've reported to me, Compliance and I take it from there.' She says the next sentence slowly, on purpose: 'Follow agency mandatory reporting protocol immediately; do not investigate or confront; supervisor/Compliance assists with required external reporting, but required reporting must not be delayed.' Alex writes the whole sentence down, word for word."
+**Node-unlock — Supervisor/Compliance Assists:** "'Here's the part new hires get wrong,' Dana says. 'You are not the one who decides what happens next. Once you've reported to me, Compliance and I take it from there.' She says the next sentence slowly, on purpose: 'Follow agency mandatory reporting protocol immediately; do not investigate or confront — your job stops at reporting the facts.' Alex writes the whole sentence down, word for word."
 
 **Node-unlock — External Reporting Not Delayed:** "Dana adds one more piece. 'Even after you've handed it to us, the clock doesn't stop. If a report to an outside agency is legally required, it goes out.' Alex asks what 'outside agency' usually means. 'Adult Protective Services, in most cases,' Dana says."
 

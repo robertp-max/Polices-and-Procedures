@@ -48,6 +48,14 @@ outputs
 *.mov
 *.mp4
 *.mp3
+# STABLE narration audio (~1.2GB, advanced-training only) lives in the
+# ci-hhv2-narration GCS bucket, mounted into Cloud Run at /mnt/narration —
+# if those files ever change, sync with:
+#   gsutil -m rsync -r public/advanced-training gs://ci-hhv2-narration/advanced-training
+# Narration under ACTIVE development (onboarding/ACHC → public/assets/narration)
+# intentionally ships with every build; move a module here + bucket-sync it
+# only once it stabilizes.
+public/advanced-training/**/*.wav
 
 # Scratch, logs, manifests
 *.log

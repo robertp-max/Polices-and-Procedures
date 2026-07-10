@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ClipboardList, FileText, GitBranch, Landmark, Search, Workflow } from 'lucide-react';
+import { GitBranch, Landmark, Search, Workflow } from 'lucide-react';
 import { DataTable, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { cx } from '../../utils/classNames';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
@@ -14,15 +14,47 @@ import {
   PolicySegmentTabs,
   PolicySignalCard,
   PolicyWorkspaceShell,
-  type PolicyWorkspaceTab,
 } from './PolicyWorkspace';
 
 
+type WorkflowRecord = {
+  auditRequirements?: string;
+  cadence?: {
+    interval?: string;
+    kind?: string;
+  };
+  dependencies?: readonly {
+    upstreamId?: string;
+  }[];
+  domain?: string;
+  id?: string;
+  metrics?: {
+    declaredRisk?: string;
+  };
+  outputs?: string;
+  policyRefs?: readonly string[];
+  processOverview?: string;
+  requiredForms?: readonly string[];
+  requiredFormsRaw?: string;
+  roles?: {
+    approval?: readonly string[];
+    primary?: readonly string[];
+    supporting?: readonly string[];
+  };
+  sla?: string;
+  steps?: readonly unknown[];
+  title?: string;
+  triggers?: readonly {
+    description?: string;
+  }[];
+};
+
+const workflowMap = WORKFLOWS as Record<string, WorkflowRecord>;
 
 export const getWorkflowDetail = (id: string) => {
-  const wf = WORKFLOWS[id];
+  const wf = workflowMap[id];
   if (wf) {
-    const res = resolveWorkflowPolicyRefs(wf);
+    const res = resolveWorkflowPolicyRefs(wf as Parameters<typeof resolveWorkflowPolicyRefs>[0]);
     const policyStr = res.effectivePolicyRefs.length > 0
       ? res.effectivePolicyRefs.map(r => r.title).join(', ')
       : (wf.policyRefs || []).join(', ');
@@ -36,8 +68,8 @@ export const getWorkflowDetail = (id: string) => {
       forms: formStr,
       evidence: evidenceStr,
       roles: (wf.roles?.primary || []).concat(wf.roles?.supporting || [], wf.roles?.approval || []).filter(Boolean).join(' / '),
-      triggers: (wf.triggers || []).map((t: any) => t.description).join(' | ') || wf.cadence?.interval || '—',
-      linkedWorkflows: (wf.dependencies || []).map((d: any) => d.upstreamId).join(', ') || '—',
+      triggers: (wf.triggers || []).map((trigger) => trigger.description).join(' | ') || wf.cadence?.interval || '—',
+      linkedWorkflows: (wf.dependencies || []).map((dependency) => dependency.upstreamId).join(', ') || '—',
       history: [
         { item: `Cadence: ${wf.cadence?.interval ?? '—'} (${wf.cadence?.kind ?? '—'})`, status: 'Defined', tone: 'teal' as const },
         { item: `${stepCount} steps; ${formCount} forms; roles: ${(wf.roles?.primary || []).join('/')}`, status: 'Ready', tone: 'teal' as const },
@@ -58,21 +90,22 @@ export interface WorkflowRow extends Record<string, string> {
   workflowId: string;
 }
 
-export const workflowRows: readonly WorkflowRow[] = Object.values(WORKFLOWS).map((wf: any) => {
+export const workflowRows: readonly WorkflowRow[] = Object.values(workflowMap).map((wf) => {
   const cad = wf.cadence || {};
   const freqRaw = cad.interval || '—';
   const frequency = typeof freqRaw === 'string' ? (freqRaw.charAt(0).toUpperCase() + freqRaw.slice(1)) : '—';
   const riskRaw = (wf.metrics?.declaredRisk || 'moderate').toLowerCase();
   const risk = /immediate_jeopardy|high/.test(riskRaw) ? 'High' : /moderate/.test(riskRaw) ? 'Medium' : 'Low';
   const primary = wf.roles?.primary?.[0] || wf.roles?.supporting?.[0] || wf.domain || '—';
+  const workflowId = wf.id ?? 'UNKNOWN-WF';
   return {
     domain: wf.domain || '—',
     domainOwner: String(primary),
     frequency,
     risk,
     status: 'active',
-    title: wf.title || wf.id,
-    workflowId: wf.id,
+    title: wf.title || workflowId,
+    workflowId,
   };
 });
 
@@ -94,7 +127,7 @@ const workflowColumns: readonly DataTableColumn<WorkflowRow>[] = [
 // workflowRows derived from real generated WORKFLOWS (full resolution of ids, titles, cadence, roles, risk, forms).
 
 const workflowCards: readonly SurfaceCardData[] = workflowRows.slice(0, 3).map((row, idx) => {
-  const wf: any = WORKFLOWS[row.workflowId] || {};
+  const wf = workflowMap[row.workflowId] || {};
   const stepC = wf.steps?.length || 0;
   const formC = (wf.requiredForms || []).length;
   return {
@@ -112,7 +145,6 @@ const allRisks = Array.from(new Set(workflowRows.map((r) => r.risk)));
 
 export default function WorkflowsScreen() {
   const navigate = useNavigate();
-  const [view, setView] = useState<'library' | 'matrix' | 'signals'>('library');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDomains, setActiveDomains] = useState<readonly string[]>([...allDomains]);
   const [activeRisks, setActiveRisks] = useState<readonly string[]>([...allRisks]);
@@ -141,28 +173,16 @@ export default function WorkflowsScreen() {
     navigate(`/workflows/${encodeURIComponent(row.workflowId)}`);
   }
 
-  const tabs: readonly PolicyWorkspaceTab<typeof view>[] = [
-    { id: 'library', label: 'Library', tone: 'teal' },
-    { id: 'matrix', label: 'Matrix', tone: 'orange' },
-    { id: 'signals', label: 'Signals', tone: 'green' },
-  ];
   const visibleRows = filteredRows.slice(0, 36);
   const hiddenCount = filteredRows.length - visibleRows.length;
 
   return (
     <PolicyWorkspaceShell
-      activeTab={view}
       dataHashId="workflows"
       dataRoute="/workflows"
-      description="Generated workflow records open as scannable cards first, with the full matrix and swimlane signals tucked into focused tabs."
+      description="Generated workflow records open as scannable cards first, with the full matrix and swimlane signals available below."
       eyebrow="Workflow Library"
-      onTabChange={setView}
-      tabs={tabs}
       title="Workflows"
-      actions={[
-        { icon: FileText, label: 'Policies', to: '/library', variant: 'secondary' },
-        { icon: ClipboardList, label: 'Forms', to: '/forms' },
-      ]}
     >
       <PolicyMetricsGrid metrics={workflowMetrics} />
 
@@ -213,59 +233,53 @@ export default function WorkflowsScreen() {
         </div>
       </PolicyPanel>
 
-      {view === 'library' ? (
-        <PolicyPanel title="Workflow Cards" description="Cards show the generated record essentials; open any card for detail and swimlane access.">
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {visibleRows.map((row) => {
-              const wf: any = WORKFLOWS[row.workflowId] || {};
-              const stepC = wf.steps?.length || 0;
-              const formC = (wf.requiredForms || []).length;
-              return (
-                <button
-                  key={row.workflowId}
-                  type="button"
-                  onClick={() => openRealDetail(row)}
-                  className="group flex min-h-[220px] flex-col justify-between rounded-[24px] border border-[#E5E4E3] bg-white p-6 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#007970] hover:shadow-md focus-visible:outline-none focus-visible:shadow-focus"
-                >
-                  <span>
-                    <span className="mb-4 flex items-start justify-between gap-4">
-                      <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{row.workflowId}</span>
-                      <ToneTag tone={row.risk === 'High' ? 'orange' : 'teal'}>{row.risk}</ToneTag>
-                    </span>
-                    <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] group-hover:text-[#F06923]">{row.title}</span>
-                    <span className="mt-3 block text-sm leading-relaxed text-[#747470]">{row.domain} - {row.frequency}</span>
+      <PolicyPanel title="Workflow Cards" description="Cards show the generated record essentials; open any card for detail and swimlane access.">
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {visibleRows.map((row) => {
+            const wf = workflowMap[row.workflowId] || {};
+            const stepC = wf.steps?.length || 0;
+            const formC = (wf.requiredForms || []).length;
+            return (
+              <button
+                key={row.workflowId}
+                type="button"
+                onClick={() => openRealDetail(row)}
+                className="group flex min-h-[220px] flex-col justify-between rounded-[24px] border border-[#E5E4E3] bg-white p-6 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#007970] hover:shadow-md focus-visible:outline-none focus-visible:shadow-focus"
+              >
+                <span>
+                  <span className="mb-4 flex items-start justify-between gap-4">
+                    <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{row.workflowId}</span>
+                    <ToneTag tone={row.risk === 'High' ? 'orange' : 'teal'}>{row.risk}</ToneTag>
                   </span>
-                  <span className="mt-6 border-t border-[#E5E4E3] pt-4 text-xs font-medium leading-relaxed text-[#747470]">
-                    {stepC} steps - {formC} forms - {row.domainOwner}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          {filteredRows.length === 0 ? <p className="mt-6 text-sm text-[#747470]">No workflows match current filters.</p> : null}
-          {hiddenCount > 0 ? <p className="mt-8 text-center text-sm text-[#747470]">Showing first 36 matches. Search or filter to narrow the list.</p> : null}
-        </PolicyPanel>
-      ) : null}
+                  <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] group-hover:text-[#F06923]">{row.title}</span>
+                  <span className="mt-3 block text-sm leading-relaxed text-[#747470]">{row.domain} - {row.frequency}</span>
+                </span>
+                <span className="mt-6 border-t border-[#E5E4E3] pt-4 text-xs font-medium leading-relaxed text-[#747470]">
+                  {stepC} steps - {formC} forms - {row.domainOwner}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {filteredRows.length === 0 ? <p className="mt-6 text-sm text-[#747470]">No workflows match current filters.</p> : null}
+        {hiddenCount > 0 ? <p className="mt-8 text-center text-sm text-[#747470]">Showing first 36 matches. Search or filter to narrow the list.</p> : null}
+      </PolicyPanel>
 
-      {view === 'matrix' ? (
-        <PolicyPanel title="Workflow Matrix" description="The generated table is still here for bulk review, audit comparison, and QA passes.">
-          <DataTable
-            columns={workflowColumns}
-            label="Workflows library matrix"
-            rows={filteredRows}
-            onRowClick={(row) => openRealDetail(row)}
-          />
-          {filteredRows.length === 0 ? <div className="p-md text-sm text-muted">No workflows match current filters.</div> : null}
-        </PolicyPanel>
-      ) : null}
+      <PolicyPanel title="Workflow Matrix" description="The generated table is still here for bulk review, audit comparison, and QA passes.">
+        <DataTable
+          columns={workflowColumns}
+          label="Workflows library matrix"
+          rows={filteredRows}
+          onRowClick={(row) => openRealDetail(row)}
+        />
+        {filteredRows.length === 0 ? <div className="p-md text-sm text-muted">No workflows match current filters.</div> : null}
+      </PolicyPanel>
 
-      {view === 'signals' ? (
-        <section className="grid gap-5 xl:grid-cols-3" aria-label="Workflow swimlane cards">
-          {workflowCards.map((card) => (
-            <PolicySignalCard card={card} key={card.title} />
-          ))}
-        </section>
-      ) : null}
+      <section className="grid gap-5 xl:grid-cols-3" aria-label="Workflow swimlane cards">
+        {workflowCards.map((card) => (
+          <PolicySignalCard card={card} key={card.title} />
+        ))}
+      </section>
     </PolicyWorkspaceShell>
   );
 }

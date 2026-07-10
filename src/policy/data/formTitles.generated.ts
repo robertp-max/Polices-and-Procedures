@@ -139,7 +139,7 @@ export const FORM_TITLES: Record<string, string> = {
   "HR-JD-010": "Job Description — Occupational Therapist (OT)",
   "HR-JD-011": "Job Description — Speech-Language Pathologist (SLP)",
   "CL-FM-001": "Start of Care (SOC) Comprehensive Assessment",
-  "CL-FM-002": "OASIS-E1 Assessment Form",
+  "CL-FM-002": "OASIS-E2 Assessment Form",
   "CL-FM-003": "Recertification / ROC Assessment",
   "CL-FM-004": "Discharge / Transfer Assessment",
   "CL-FM-005": "Plan of Care (485 Form)",

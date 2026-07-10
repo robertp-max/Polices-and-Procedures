@@ -13,7 +13,7 @@ import {
 } from '@/policy/services/calendarApi';
 import {
   buildEvidenceIdentityScope, buildIdempotencyKey, detectFormat, extractRecordFromCell,
-  parseSourceFile, sanitizeFileName, type EvidenceSourceRecord, type SourceSystem,
+  mergeParsedFiles, parseSourceFile, sanitizeFileName, type EvidenceSourceRecord, type SourceSystem,
 } from '@/policy/evidence/intake';
 import { applyDriveOutcome, persistCanonicalEvidence } from '@/policy/evidence/intake/intakeService';
 import type { ParsedFile } from '@/policy/evidence/intake/fileParsing';
@@ -915,12 +915,17 @@ export function Defensible2StudioLanding() {
     } else {
       const qapi = effectiveIntent === 'qapi' || /qapi/i.test(effectiveTemplateTitle);
       if (qapi) {
-        const primary = alphaSourceFilesRef.current[0];
-        if (primary) {
+        // Brad reads EVERY dumped document, not just the first — parse each
+        // file and merge the record sets before derivation.
+        const files = alphaSourceFilesRef.current;
+        if (files.length > 0) {
           setExtracting(true);
           try {
-            const { text, headBytes } = await readText(primary);
-            const parsed = parseSourceFile({ fileName: primary.name, mimeType: primary.type, text, headBytes, byteLength: primary.size });
+            const parsedList = await Promise.all(files.map(async (f) => {
+              const { text, headBytes } = await readText(f);
+              return { fileName: f.name, parsed: parseSourceFile({ fileName: f.name, mimeType: f.type, text, headBytes, byteLength: f.size }) };
+            }));
+            const parsed = mergeParsedFiles(parsedList);
             setQapiSourceParsed(parsed);
             setQapiDerivedBundle(deriveQapiBundle(parsed, selectedEvent?.date || new Date().toISOString().slice(0, 10)));
             setExtractionError(null);

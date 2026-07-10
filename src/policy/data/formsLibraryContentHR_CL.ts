@@ -659,7 +659,7 @@ export const FORM_OVERRIDES_EXT: Record<string, FormOverride> = {
     signers: ['Assessing Clinician (RN)', 'Patient / Representative'],
   },
   'CL-FM-002': {
-    p: 'CMS OASIS-E1 comprehensive assessment capturing all required data elements for payment, quality measurement, and CoP compliance.',
+    p: 'CMS OASIS-E2 comprehensive assessment capturing all required data elements for payment, quality measurement, and CoP compliance.',
     i: 'Completed at SOC, ROC, Recert, Transfer, and Discharge time points per 42 CFR § 484.55. Transmitted to iQIES within 30 days via CL-FM-045.',
     fields: [
       { label: 'Patient MRN', type: 'text', required: true, col: 2 },

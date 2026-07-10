@@ -2,10 +2,14 @@ import {
   buildAdmissionPacketPages,
   PatientAdmissionPacket,
   sampleAdmissionPacketData,
+  ADMISSION_REQUIRED_FORMS_BY_ROUTE,
+  type PaymentRoute,
 } from '@/policy/admission/patientAdmissionPacket';
 
 export function AdmissionPacketPreviewScreen() {
   const pages = buildAdmissionPacketPages(sampleAdmissionPacketData);
+  const route: PaymentRoute = (sampleAdmissionPacketData as any).paymentRoute || 'ORIGINAL_MEDICARE_FFS';
+  const requiredForms = ADMISSION_REQUIRED_FORMS_BY_ROUTE[route] || [];
 
   return (
     <section className="grid gap-xl" data-route="/evidence/admission-packet-preview" data-template="evidence">
@@ -17,6 +21,7 @@ export function AdmissionPacketPreviewScreen() {
           <code className="mx-xs rounded bg-surface-hover px-xs">.ci-admission-page</code>
           so print/PDF capture can collect every page.
         </p>
+        <p className="mt-sm text-sm">Route-specific patient-facing required child forms (P1 verified; only patient-facing, no internal dossiers): {requiredForms.join(', ')}</p>
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-card bg-surface-glass p-lg shadow-rest backdrop-blur-md shadow-glass-inset">
