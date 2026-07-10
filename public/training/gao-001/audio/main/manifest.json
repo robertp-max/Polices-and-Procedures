@@ -1,0 +1,65 @@
+[
+  {
+    "lesson": 1,
+    "location": "GAO-001.lesson.l1.delivery",
+    "file": "l01-delivery.wav",
+    "publicPath": "/training/gao-001/audio/main/l01-delivery.wav",
+    "bytes": 2753324
+  },
+  {
+    "lesson": 2,
+    "location": "GAO-001.lesson.l2.delivery",
+    "file": "l02-delivery.wav",
+    "publicPath": "/training/gao-001/audio/main/l02-delivery.wav",
+    "bytes": 2304044
+  },
+  {
+    "lesson": 3,
+    "location": "GAO-001.lesson.l3.delivery",
+    "file": "l03-delivery.wav",
+    "publicPath": "/training/gao-001/audio/main/l03-delivery.wav",
+    "bytes": 1808684
+  },
+  {
+    "lesson": 4,
+    "location": "GAO-001.lesson.l4.delivery",
+    "file": "l04-delivery.wav",
+    "publicPath": "/training/gao-001/audio/main/l04-delivery.wav",
+    "bytes": 1774124
+  },
+  {
+    "lesson": 5,
+    "location": "GAO-001.lesson.l5.delivery",
+    "file": "l05-delivery.wav",
+    "publicPath": "/training/gao-001/audio/main/l05-delivery.wav",
+    "bytes": 1966124
+  },
+  {
+    "lesson": 6,
+    "location": "GAO-001.lesson.l6.delivery",
+    "file": "l06-delivery.wav",
+    "publicPath": "/training/gao-001/audio/main/l06-delivery.wav",
+    "bytes": 2300204
+  },
+  {
+    "lesson": 7,
+    "location": "GAO-001.lesson.l7.delivery",
+    "file": "l07-delivery.wav",
+    "publicPath": "/training/gao-001/audio/main/l07-delivery.wav",
+    "bytes": 787244
+  },
+  {
+    "lesson": 8,
+    "location": "GAO-001.lesson.l8.delivery",
+    "file": "l08-delivery.wav",
+    "publicPath": "/training/gao-001/audio/main/l08-delivery.wav",
+    "bytes": 1217324
+  },
+  {
+    "lesson": 9,
+    "location": "GAO-001.lesson.l9.delivery",
+    "file": "l09-delivery.wav",
+    "publicPath": "/training/gao-001/audio/main/l09-delivery.wav",
+    "bytes": 2208044
+  }
+]

@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 
 import { useLearner } from "@/policy/journey/lib/learnerState";
+import { NolanLessonCheckpoint } from "../journey/NolanLessonCheckpoint";
 import { isLessonComplete } from "@/policy/journey/lib/moduleProgress";
 import { useUiState, formatHoursAndMins } from "@/policy/journey/lib/uiState";
 import { useActiveTime, ACTIVE_TIME } from "@/policy/journey/lib/activeTime";
@@ -66,8 +67,14 @@ import { isOasisSocModule, OASIS_SOC_MODULE_TITLE } from "@/policy/journey/compo
 import { Cms485AssessmentQuizPage } from "./Cms485AssessmentQuizPage";
 import CoreValuesInteractiveViewer from "@/policy/journey/components/CoreValuesInteractiveViewer";
 import GAO001Scene01WelcomeDesk from "@/policy/journey/components/GAO001Scene01WelcomeDesk";
+import GAO001Scene02MissionBriefing from "@/policy/journey/components/GAO001Scene02MissionBriefing";
+import GAO001Scene03VisionPillars from "@/policy/journey/components/GAO001Scene03VisionPillars";
+import GAO001Scene05HomeHealthDifference from "@/policy/journey/components/GAO001Scene05HomeHealthDifference";
+import GAO001Scene06ReportingEscalation from "@/policy/journey/components/GAO001Scene06ReportingEscalation";
+import GAO001Scene07PatientRefusal from "@/policy/journey/components/GAO001Scene07PatientRefusal";
+import GAO001Scene08EscalationPractice from "@/policy/journey/components/GAO001Scene08EscalationPractice";
+import GAO001Scene09ReadinessMap from "@/policy/journey/components/GAO001Scene09ReadinessMap";
 import GAO002OrgStructureViewer from "@/policy/journey/components/GAO002OrgStructureViewer";
-
 /* ==========================================================================
    SHARED PRIMITIVE COMPONENTS (Light Mode adapted)
    ========================================================================== */
@@ -160,18 +167,6 @@ function isCareIndeedOnboardingModule(moduleId?: string): boolean {
   return /^(GAO|ADM|DON|RN|LVN|PT|PTA|OT|COTA|SLP|MSW|HHA)-/.test(id);
 }
 
-function isCoreValuesLesson(card: any): boolean {
-  if (!card) return false;
-  const title = String(card?.display_title || card?.title || "").toLowerCase();
-  const html = String(card?.learner_facing_content || "");
-  return /core value/i.test(title) || /our core values/i.test(html) || title.includes("core values");
-}
-
-function isGAO001WelcomeScene(card: any): boolean {
-  if (!card) return false;
-  const title = String(card?.display_title || card?.title || "").toLowerCase();
-  return title.includes("welcome to care indeed") || title.includes("first day");
-}
 
 function isGAO002Interactive(moduleId?: string): boolean {
   // Exact match 'GAO-002' per Integration & Shell spec
@@ -944,7 +939,25 @@ function LessonPlayerPage() {
     setCurrentIdx(0);
     setNarrationPlaying(false);
     setNarrationSpeaking(false);
-  }, [moduleId, lessonId]);
+    if (speechSupported) window.speechSynthesis.cancel();
+    const el = narrationAudioRef.current;
+    if (el) {
+      el.pause();
+      el.currentTime = 0;
+    }
+  }, [moduleId, lessonId, speechSupported]);
+
+  // Stop both real audio and browser TTS when the card changes
+  useEffect(() => {
+    if (speechSupported) window.speechSynthesis.cancel();
+    setNarrationSpeaking(false);
+    setNarrationPlaying(false);
+    const el = narrationAudioRef.current;
+    if (el) {
+      el.pause();
+      el.currentTime = 0;
+    }
+  }, [currentIdx, speechSupported]);
 
   useEffect(() => {
     return () => {
@@ -952,9 +965,25 @@ function LessonPlayerPage() {
     };
   }, [speechSupported]);
 
+  const stopNarrationSpeech = () => {
+    if (speechSupported) window.speechSynthesis.cancel();
+    setNarrationSpeaking(false);
+  };
+
+  const stopNarrationAudio = () => {
+    const el = narrationAudioRef.current;
+    if (el) {
+      el.pause();
+      el.currentTime = 0;
+    }
+    setNarrationPlaying(false);
+  };
+
   const toggleNarrationAudio = () => {
     const el = narrationAudioRef.current;
     if (!el) return;
+    // Real file always wins — never mix with browser TTS
+    stopNarrationSpeech();
     if (el.paused) {
       void el.play().then(() => setNarrationPlaying(true)).catch(() => setNarrationPlaying(false));
     } else {
@@ -964,15 +993,33 @@ function LessonPlayerPage() {
   };
 
   const toggleNarrationSpeech = () => {
+    // Only when no registered narration file exists for this card
     if (!speechSupported) return;
-    if (narrationSpeaking) {
-      window.speechSynthesis.cancel();
-      setNarrationSpeaking(false);
+    if (hasNarrationAudio(currentCard.app.location)) {
+      // Prefer the real asset if it became available
+      toggleNarrationAudio();
       return;
     }
+    if (narrationSpeaking) {
+      stopNarrationSpeech();
+      return;
+    }
+    stopNarrationAudio();
     window.speechSynthesis.cancel();
     setTimeout(() => {
-      const text = currentCard.transcript_text || currentCard.narration_script || '';
+      // Use the content tab text as the main narration, falling back to transcript/script
+      let contentText = '';
+      if (currentCard.content || currentCard.html_content) {
+        try {
+          const html = currentCard.content || currentCard.html_content || '';
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          contentText = doc.body.textContent || '';
+        } catch (e) {
+          console.error('Failed to parse HTML for narration', e);
+        }
+      }
+      const text = contentText || currentCard.transcript_text || currentCard.narration_script || '';
+
       const utter = new SpeechSynthesisUtterance(text);
       utter.rate = 0.95;
       utter.onend = () => setNarrationSpeaking(false);
@@ -1124,23 +1171,27 @@ function LessonPlayerPage() {
           </div>
         </header>
 
-        <main className={`grid min-h-0 flex-1 grid-cols-1 gap-[20px] p-0 ${isGAO002FullWorkspace(moduleId) ? 'lg:grid-cols-1' : 'lg:grid-cols-[420px_minmax(0,1fr)]'} lg:p-0`}>
-          <aside className={`flex min-h-0 flex-col rounded-[22px] border border-[#E5E4E3] bg-white p-[20px] shadow-[0_18px_50px_rgba(31,28,27,0.08)] ${isGAO002FullWorkspace(moduleId) ? 'hidden' : ''}`}>
-            <div className="mb-4 flex border-b border-[#E5E4E3]">
-              <button
-                type="button"
-                onClick={() => setActiveTab("content")}
-                className={`border-b-2 px-4 pb-3 text-xs font-bold uppercase tracking-[0.14em] ${activeTab === "content" ? "border-[#007970] text-[#007970]" : "border-transparent text-[#747470]"}`}
-              >
+        {/* Left grows (base 420px + 7.77%); right panel locked to 16:13 from available height. */}
+        <main
+          className={`flex min-h-0 flex-1 flex-col gap-[20px] p-0 lg:flex-row lg:items-stretch ${
+            isGAO002FullWorkspace(moduleId) ? '' : ''
+          }`}
+        >
+          <aside
+            className={`flex min-h-0 min-w-0 flex-col rounded-[22px] border border-[#E5E4E3] bg-white p-[20px] shadow-[0_18px_50px_rgba(31,28,27,0.08)] ${
+              isGAO002FullWorkspace(moduleId) ? 'hidden' : 'flex-1'
+            }`}
+            style={
+              isGAO002FullWorkspace(moduleId)
+                ? undefined
+                : { minWidth: 'calc(420px * 1.0777)', flex: '1 1 auto' }
+            }
+          >
+            {/* Narration tab removed for all onboarding scenes — main audio is the footer play button only */}
+            <div className="mb-3">
+              <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#007970]">
                 Content
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("narration")}
-                className={`border-b-2 px-4 pb-3 text-xs font-bold uppercase tracking-[0.14em] ${activeTab === "narration" ? "border-[#007970] text-[#007970]" : "border-transparent text-[#747470]"}`}
-              >
-                Narration
-              </button>
+              </div>
             </div>
 
             <div className="min-h-0 flex-1 overflow-auto pr-1">
@@ -1160,38 +1211,79 @@ function LessonPlayerPage() {
                     Complete all scenes to reach “Reporting Lines Practice Complete”.
                   </div>
                 </div>
-              ) : activeTab === "content" ? (
-                <OnboardingLessonHtml card={currentCard} />
               ) : (
-                <div className="space-y-4">
-                  <div>
-                    <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#C74601]">Narration Script</div>
-                    <h2 className="mt-1 text-xl font-bold text-[#004142]">{currentCard.display_title}</h2>
-                  </div>
-                  <p className="whitespace-pre-line text-sm leading-7 text-[#524C4B]">
-                    {currentCard.narration_script || currentCard.transcript_text || "No narration text available."}
-                  </p>
-                </div>
+                <OnboardingLessonHtml card={currentCard} />
               )}
             </div>
           </aside>
 
-          <section className="h-full rounded-[24px] border border-[#E5E4E3] bg-white p-[20px] shadow-[0_18px_50px_rgba(31,28,27,0.08)] lg:min-h-0">
-            <div className="h-full w-full flex flex-col rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8] overflow-hidden">
-              {isCoreValuesLesson(currentCard) ? (
-                <CoreValuesInteractiveViewer 
+          <section
+            className={`flex min-h-0 flex-col bg-white ${
+              /^GAO-001_L\d+_DELIVERY$/.test(currentCard.card_id)
+                ? 'rounded-none border-0 p-0 shadow-none overflow-hidden'
+                : 'rounded-[24px] border border-[#E5E4E3] p-[20px] shadow-[0_18px_50px_rgba(31,28,27,0.08)]'
+            }`}
+            style={
+              isGAO002FullWorkspace(moduleId)
+                ? { flex: '1 1 auto', minHeight: 0, width: '100%' }
+                : {
+                    flex: '0 0 auto',
+                    alignSelf: 'stretch',
+                    height: '100%',
+                    aspectRatio: '16 / 13',
+                    width: 'auto',
+                    maxWidth: '100%',
+                    minWidth: 0,
+                  }
+            }
+          >
+            <div
+              className={`flex min-h-0 h-full w-full flex-1 flex-col overflow-hidden ${
+                /^GAO-001_L\d+_DELIVERY$/.test(currentCard.card_id)
+                  ? 'rounded-none border-0 bg-black'
+                  : 'rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8]'
+              }`}
+            >
+              {currentCard.card_id === 'GAO-001_L1_DELIVERY' ? (
+                <GAO001Scene01WelcomeDesk
+                  onComplete={() => console.info('[GAO-001 Scene 1] completed')}
+                />
+              ) : currentCard.card_id === 'GAO-001_L2_DELIVERY' ? (
+                <GAO001Scene02MissionBriefing
+                  onComplete={() => console.info('[GAO-001 Scene 2] completed')}
+                />
+              ) : currentCard.card_id === 'GAO-001_L3_DELIVERY' ? (
+                <GAO001Scene03VisionPillars
+                  onComplete={() => console.info('[GAO-001 Scene 3] completed')}
+                />
+              ) : currentCard.card_id === 'GAO-001_L4_DELIVERY' ? (
+                <CoreValuesInteractiveViewer
                   onComplete={() => {
                     console.info('[GAO Core Values] Interactive scene completed');
-                  }} 
+                  }}
                 />
-              ) : isGAO001WelcomeScene(currentCard) ? (
-                <GAO001Scene01WelcomeDesk 
-                  onComplete={() => {
-                    console.info('[GAO-001 Scene 1] visual_scene_completed');
-                  }} 
+              ) : currentCard.card_id === 'GAO-001_L5_DELIVERY' ? (
+                <GAO001Scene05HomeHealthDifference
+                  onComplete={() => console.info('[GAO-001 Scene 5] completed')}
+                />
+              ) : currentCard.card_id === 'GAO-001_L6_DELIVERY' ? (
+                <GAO001Scene06ReportingEscalation
+                  onComplete={() => console.info('[GAO-001 Scene 6] completed')}
+                />
+              ) : currentCard.card_id === 'GAO-001_L7_DELIVERY' ? (
+                <GAO001Scene07PatientRefusal
+                  onComplete={() => console.info('[GAO-001 Scene 7] completed')}
+                />
+              ) : currentCard.card_id === 'GAO-001_L8_DELIVERY' ? (
+                <GAO001Scene08EscalationPractice
+                  onComplete={() => console.info('[GAO-001 Scene 8] completed')}
+                />
+              ) : currentCard.card_id === 'GAO-001_L9_DELIVERY' ? (
+                <GAO001Scene09ReadinessMap
+                  onComplete={() => console.info('[GAO-001 Scene 9] completed')}
                 />
               ) : isGAO002Interactive(moduleId) ? (
-                <GAO002OrgStructureViewer 
+                <GAO002OrgStructureViewer
                   onComplete={() => {
                     // Safely mark GAO-002 lessons complete using withLessonCompleted (module-level progress).
                     // Safe completion wording: "Reporting Lines Practice Complete"
@@ -1202,15 +1294,15 @@ function LessonPlayerPage() {
                         setState((s) => withLessonCompleted(s, moduleId, 'GAO-002-L2'));
                       }
                       // Record module completion (journey flow)
-                      try { 
-                        const j = useJourneyStore.getState(); 
-                        j.recordLearnerCompletion(j.currentEmployeeId, 'GAO-002', true); 
+                      try {
+                        const j = useJourneyStore.getState();
+                        j.recordLearnerCompletion(j.currentEmployeeId, 'GAO-002', true);
                       } catch {}
-                    } catch (e) { 
+                    } catch (e) {
                       // non-fatal: log + allow parent flow
                       console.info('[GAO-002] onComplete: lessons marked (or fallback to parent flow)');
                     }
-                  }} 
+                  }}
                 />
               ) : hasMedia(currentCard.app.location) ? (
                 <MediaSlot
@@ -1289,7 +1381,14 @@ function LessonPlayerPage() {
           </div>
         </footer>
 
-        <audio ref={narrationAudioRef} src={narrationAssetPath(currentCard.app.location)} onEnded={() => setNarrationPlaying(false)} preload="none" />
+        <audio
+          key={currentCard.app.location}
+          ref={narrationAudioRef}
+          src={narrationAudioReady ? narrationAssetPath(currentCard.app.location) : undefined}
+          onEnded={() => setNarrationPlaying(false)}
+          onError={() => setNarrationPlaying(false)}
+          preload={narrationAudioReady ? "metadata" : "none"}
+        />
       </div>
     );
   }
@@ -1383,21 +1482,16 @@ function LessonPlayerPage() {
           <div className="grid grid-cols-1 lg:grid-cols-[400px,1fr] xl:grid-cols-[440px,1fr] grid-rows-[1fr] gap-2 w-full flex-1 min-h-0 h-full">
             <div className="border border-[#E5E4E3] bg-white rounded-xl p-[20px] shadow-md text-xs flex flex-col overflow-hidden h-full">
               {/* Content / Narration tabs */}
-              <div className="flex mb-2 border-b border-hairline">
+              <div className="flex gap-2">
                 <button
                   onClick={() => setActiveTab('content')}
                   className={`px-3 py-1 text-xs font-semibold ${activeTab === 'content' ? 'border-b-2 border-brand-teal text-brand-teal' : 'text-muted'}`}
                 >
                   Content
                 </button>
-                <button
-                  onClick={() => setActiveTab('narration')}
-                  className={`px-3 py-1 text-xs font-semibold ${activeTab === 'narration' ? 'border-b-2 border-brand-teal text-brand-teal' : 'text-muted'}`}
-                >
-                  Narration
-                </button>
+                {/* Narration tab hidden as per request */}
               </div>
-              <div className="flex-1 min-h-0 overflow-auto text-[10px] leading-tight">
+              <div id="lesson-content-container" className="flex-1 min-h-0 overflow-auto text-[10px] leading-tight">
                 {activeTab === 'content' ? (
                   <>
                     {isCms485 ? (
@@ -1751,8 +1845,24 @@ function LessonPlayerPage() {
           )}
         </div>
 
-        {/* Hidden audio for narration controls */}
-        <audio ref={narrationAudioRef} src={narrationAssetPath(currentCard.app.location)} onEnded={() => setNarrationPlaying(false)} preload="none" />
+        {/* Nolan lesson checkpoint — clarifying-questions moment, keyed per lesson
+            so it reappears fresh on every lesson; NEVER gates Next. */}
+        <NolanLessonCheckpoint
+          key={`nolan-${moduleId}-${lessonId}`}
+          moduleId={moduleId}
+          lessonTitle={lesson?.title ?? "this lesson"}
+          cards={cards}
+        />
+
+        {/* Hidden audio for narration controls — real file when registered; no browser TTS mix-in */}
+        <audio
+          key={currentCard.app.location}
+          ref={narrationAudioRef}
+          src={narrationAudioReady ? narrationAssetPath(currentCard.app.location) : undefined}
+          onEnded={() => setNarrationPlaying(false)}
+          onError={() => setNarrationPlaying(false)}
+          preload={narrationAudioReady ? "metadata" : "none"}
+        />
       </div>
     </div>
   );

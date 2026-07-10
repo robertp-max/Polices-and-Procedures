@@ -25,12 +25,15 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8080
 # Runtime needs node_modules (incl. tsx to run the TS server), the built SPA,
-# the server source, and the (synthetic) allowlist under config/.
+# the server source, shared src modules imported by the server, tsconfig path
+# aliases for tsx, and the (synthetic) allowlist under config/.
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/server ./server
+COPY --from=build /app/src ./src
 COPY --from=build /app/config ./config
 COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/tsconfig.json ./tsconfig.json
 USER node
 EXPOSE 8080
 CMD ["npx", "--no-install", "tsx", "server/cloudrun.ts"]

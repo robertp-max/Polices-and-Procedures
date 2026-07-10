@@ -1,16 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { 
-  Users, 
-  Stethoscope, 
-  Shield, 
-  PhoneCall, 
-  CheckCircle2, 
-  XCircle, 
-  Volume2, 
-  VolumeX, 
-  RotateCcw, 
-  X, 
-  Award 
+import {
+  Users,
+  Stethoscope,
+  Shield,
+  PhoneCall,
+  CheckCircle2,
+  XCircle,
+  X,
+  Award
 } from 'lucide-react';
 
 // Premium self-contained Web Audio synth (adapted from CoreValuesInteractiveViewer patterns)
@@ -218,7 +215,7 @@ const brandStyles = `
     100% { transform: scale(1); opacity: 1; filter: brightness(1) drop-shadow(0 0 4px rgba(15,91,84,0.2)); }
   }
   .node-bloom { animation: bloom 620ms cubic-bezier(0.2, 0.9, 0.3, 1) forwards; }
-  
+
   @keyframes linePulse {
     0%, 100% { stroke-opacity: 0.65; }
     50% { stroke-opacity: 0.95; }
@@ -267,18 +264,24 @@ const brandStyles = `
   }
 
   .hotspot-marker {
-    transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+    transition: filter 0.15s ease;
+  }
+  .artifact-hotspot {
+    transition: filter 0.15s ease;
+  }
+  .artifact-hotspot:hover {
+    filter: brightness(1.1);
   }
   .hotspot-group {
     cursor: pointer;
-    transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+    transition: filter 0.15s ease;
   }
-  .hotspot-group:hover { transform: translateY(-1px); }
+  .hotspot-group:hover { filter: brightness(1.1) saturate(1.1); }
   .hotspot-group:focus-visible {
     outline: 3px solid #C74601;
     outline-offset: 4px;
   }
-  .reduced-motion .hotspot-group:hover { transform: none; }
+  .reduced-motion .hotspot-group:hover { filter: none; }
 
   .phase-dot {
     width: 7px; height: 7px; border-radius: 999px;
@@ -291,15 +294,35 @@ const brandStyles = `
     box-shadow: 0 25px 60px -15px rgba(15, 27, 26, 0.35), 0 10px 20px -5px rgba(15, 27, 26, 0.2);
     border: 1px solid #E5E4E3;
   }
+
+  .current-node {
+    filter: drop-shadow(0 0 10px rgba(199, 70, 1, 0.45)) brightness(1.05);
+  }
+  .future-node {
+    opacity: 0.55;
+  }
+  .completed-node {
+    filter: saturate(0.9);
+  }
+  .locked {
+    cursor: not-allowed;
+  }
 `;
 
 interface GAO002Scene01GovernanceOrgChartProps {
   onComplete?: () => void;
   currentObjective?: number;
+  completedObjectives?: number[];
   onCompleteObjective?: () => void;
   onFocusArtifact?: (id: string, objId: number) => void;
   focusedArtifact?: string | null;
   isMuted?: boolean;
+  onAddNote?: (obj: number, text: string) => void;
+  onReset?: () => void;
+  onToggleMute?: () => void;
+  nextActionText?: string;
+  progressPct?: number;
+  narrationText?: string;
   // Shared coordinator support (optional)
   unlockedNodes?: string[];
   onNodeUnlocked?: (nodeId: string) => void;
@@ -307,12 +330,20 @@ interface GAO002Scene01GovernanceOrgChartProps {
   playSound?: (type: 'click' | 'unlock' | 'chime' | 'correct' | 'error' | 'complete') => void;
 }
 
-export default function GAO002Scene01GovernanceOrgChart({ 
-  onComplete, 
-  unlockedNodes: externalUnlocked, 
-  onNodeUnlocked, 
-  onNarration, 
-  playSound 
+export default function GAO002Scene01GovernanceOrgChart({
+  onComplete,
+  currentObjective = 1,
+  completedObjectives = [],
+  onFocusArtifact,
+  onAddNote,
+  onReset,
+  onToggleMute,
+  nextActionText = '',
+  progressPct = 0,
+  unlockedNodes: externalUnlocked,
+  onNodeUnlocked,
+  onNarration,
+  playSound
 }: GAO002Scene01GovernanceOrgChartProps) {
   const SCENE1_KEY = 'gao002-scene1-progress';
 
@@ -341,9 +372,9 @@ export default function GAO002Scene01GovernanceOrgChart({
     return false;
   });
   const [challengeFeedback, setChallengeFeedback] = useState<{ correct: boolean; text: string } | null>(null);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted] = useState(false);
   const [bloomingId, setBloomingId] = useState<string | null>(null);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [, setReducedMotion] = useState(false);
   const [narrationLog, setNarrationLog] = useState<string>(''); // live region for a11y + narration tier
 
   // Persist scene 1 progress
@@ -390,10 +421,19 @@ export default function GAO002Scene01GovernanceOrgChart({
   }, [isMuted]);
 
   const isUnlocked = useCallback((id: string) => unlocked.includes(id), [unlocked]);
-  const totalUnlocks = 5; // 4 roles + challenge
-  const currentProgress = unlocked.length + (challengeComplete && !unlocked.includes('challenge') ? 1 : 0);
-  const progressLabel = `${Math.min(currentProgress, totalUnlocks)} / ${totalUnlocks} Roles & Pathways Unlocked`;
   const isFullyComplete = unlocked.length >= 4 && challengeComplete;
+
+  // Objective mapping for gating (Scene 1: objs 1-4)
+  const nodeToObjective: Record<string, number> = {
+    'briefing': 1,
+    'policy': 1,
+    'gb': 2,
+    'admin': 3,
+    'don': 4,
+    'co': 4,
+    'challenge': 4,
+  };
+
 
   // Emit narration tier (supports coordinator + internal log + live region)
   const emitNarration = useCallback((tier: 'scene_start' | 'node_unlock' | 'feedback' | 'scene_complete', payload: any) => {
@@ -434,13 +474,6 @@ export default function GAO002Scene01GovernanceOrgChart({
     }
   }, [isFullyComplete, onComplete, emitNarration]);
 
-  const toggleMute = () => {
-    const next = !isMuted;
-    setIsMuted(next);
-    synth.muted = next;
-    playSound?.(next ? 'click' : 'click');
-  };
-
   const resetAll = () => {
     synth.playClick();
     setUnlocked([]);
@@ -461,10 +494,28 @@ export default function GAO002Scene01GovernanceOrgChart({
     onNodeUnlocked?.(id);
   };
 
-  // Core unlock handler (full SVG node click)
+  // Core unlock handler (full SVG node click) — now respects currentObjective gating
   const handleNodeClick = (id: string) => {
+    const targetObj = nodeToObjective[id] || 1;
+    const isCurrent = targetObj === currentObjective;
+    const isDone = completedObjectives.includes(targetObj);
+
+    if (!isCurrent && !isDone) {
+      // Future artifact — gentle lock (no full content)
+      const msg = `This belongs to Objective ${targetObj}. Complete the current objective first.`;
+      emitNarration('feedback', { text: msg, correct: false, nodeId: id });
+      onFocusArtifact?.(id, targetObj);
+      return;
+    }
+
     if (id === 'challenge') {
-      if (challengeComplete) return;
+      if (challengeComplete) {
+        // allow review
+        setActiveNodeId('challenge');
+        setInteractionPhase(2);
+        return;
+      }
+      if (!isCurrent) return;
       synth.playClick();
       setActiveNodeId('challenge');
       setInteractionPhase(1);
@@ -473,9 +524,18 @@ export default function GAO002Scene01GovernanceOrgChart({
       return;
     }
 
+    if (isUnlocked(id) && isDone) {
+      // Completed — allow review (read-only open)
+      setActiveNodeId(id);
+      setInteractionPhase(2);
+      onFocusArtifact?.(id, targetObj);
+      return;
+    }
     if (isUnlocked(id)) return;
 
-    // Premium unlock sequence
+    if (!isCurrent) return; // extra guard
+
+    // Premium unlock sequence only for current objective
     setBloomingId(id);
     synth.playUnlock();
     playSound?.('unlock');
@@ -488,15 +548,17 @@ export default function GAO002Scene01GovernanceOrgChart({
 
       const node = ROLE_NODES.find(n => n.id === id);
       if (node) {
-        emitNarration('node_unlock', { 
-          text: node.unlockNarration, 
-          nodeId: id, 
+        emitNarration('node_unlock', {
+          text: node.unlockNarration,
+          nodeId: id,
           fullInstructional: node.body,
-          citation: node.citation 
+          citation: node.citation
         });
+        onAddNote?.(targetObj, node.unlockNarration.substring(0, 120) + '...');
       }
 
       setBloomingId(null);
+      onFocusArtifact?.(id, targetObj);
     }, 180);
   };
 
@@ -526,7 +588,7 @@ export default function GAO002Scene01GovernanceOrgChart({
     setInteractionPhase(next);
     synth.playClick();
     if (next === 4 && activeNodeId && activeNodeId !== 'challenge') {
-      // Acknowledge completes unlock visually if not already
+      // Mark completes unlock visually if not already
       if (!isUnlocked(activeNodeId)) {
         markUnlocked(activeNodeId);
       }
@@ -549,11 +611,11 @@ export default function GAO002Scene01GovernanceOrgChart({
       setTimeout(() => {
         setChallengeComplete(true);
         markUnlocked('challenge');
-        emitNarration('feedback', { 
-          text: fbText, 
-          correct: true, 
+        emitNarration('feedback', {
+          text: fbText,
+          correct: true,
           nodeId: 'challenge',
-          verbatim: CHALLENGE_NODE.feedbackCorrect 
+          verbatim: CHALLENGE_NODE.feedbackCorrect
         });
         // Advance to complete state
         setInteractionPhase(2);
@@ -574,54 +636,10 @@ export default function GAO002Scene01GovernanceOrgChart({
   const activeIsChallenge = activeNodeId === 'challenge';
   const showPanel = !!activeNodeId;
 
-  // Progress classes for reduced motion
-  const motionClass = reducedMotion ? 'reduced-motion' : '';
-
   return (
-    <div className={`h-full w-full flex flex-col bg-white overflow-hidden rounded-2xl border border-[#E5E4E3] font-sans ${motionClass}`} style={{ fontFamily: 'Inter, system-ui, -apple-system, sans-serif' }}>
-      {/* Premium calm header */}
-      <div className="px-6 py-3.5 border-b border-[#E5E4E3] bg-white flex items-center justify-between z-20 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#0F5B54] flex items-center justify-center">
-            <Shield className="w-5 h-5 text-[#FDF8F3]" />
-          </div>
-          <div>
-            <div className="text-[15px] font-semibold tracking-[-0.1px] text-[#0F5B54]">Heidi&apos;s Reporting Map</div>
-            <div className="text-[10px] text-[#5F5A57] tracking-[0.4px] uppercase">Governing Body &amp; Executive Roles — L1</div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          {/* Progress */}
-          <div className="flex items-center gap-2 rounded-xl bg-[#F4F1EA] border border-[#E5E4E3] px-3.5 py-1 text-xs font-bold text-[#0F5B54]">
-            <div className="w-2 h-2 rounded-full bg-[#0F5B54]" />
-            {progressLabel}
-          </div>
-
-          {/* Mute */}
-          <button
-            onClick={toggleMute}
-            className={`p-2 rounded-xl border transition-all ${isMuted ? 'bg-rose-50 border-rose-200 text-rose-600' : 'bg-white hover:bg-[#F8F5F0] border-[#D8D4CC] text-[#0F5B54]'}`}
-            aria-label={isMuted ? 'Unmute premium audio cues' : 'Mute premium audio cues'}
-            title={isMuted ? 'Unmute' : 'Mute'}
-          >
-            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          </button>
-
-          {/* Reset */}
-          <button
-            onClick={resetAll}
-            className="p-2 rounded-xl border border-[#D8D4CC] bg-white hover:bg-[#F8F5F0] text-[#0F5B54]"
-            aria-label="Reset scene progress"
-            title="Reset"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* Full SVG Workspace — 1100×620 elegant office + wall org chart */}
-      <div className="flex-1 relative bg-[#F8F4ED] overflow-hidden">
+    <div className="h-full w-full overflow-hidden bg-[#F8F4ED]" style={{ fontFamily: 'Inter, system-ui, -apple-system, sans-serif' }}>
+      {/* Full SVG Workspace — the entire screen is the image */}
+      <div className="h-full w-full relative overflow-hidden">
         <svg
           ref={svgRef}
           viewBox="0 0 1100 620"
@@ -672,7 +690,7 @@ export default function GAO002Scene01GovernanceOrgChart({
 
           {/* Elegant warm cream office wall */}
           <rect width="1100" height="620" fill="url(#wallGrad)" />
-          
+
           {/* Subtle wall paneling detail */}
           <g opacity="0.06" stroke="#2C2520" strokeWidth="2">
             <line x1="80" y1="40" x2="80" y2="420" />
@@ -720,8 +738,8 @@ export default function GAO002Scene01GovernanceOrgChart({
             <text x="258" y="25" textAnchor="middle" className="role-label" fontSize="12" fill="#FDF8F3">CARE INDEED — ORGANIZATIONAL AUTHORITY</text>
 
             {/* === GOVERNING BODY (top center) === */}
-            <g 
-              className={`hotspot-group ${bloomingId === 'gb' ? 'node-bloom' : ''} ${isUnlocked('gb') ? 'unlocked-node' : ''}`}
+            <g
+              className={`hotspot-group ${bloomingId === 'gb' ? 'node-bloom' : ''} ${isUnlocked('gb') ? 'unlocked-node' : ''} ${currentObjective === 2 ? 'current-node' : completedObjectives.includes(2) ? 'completed-node' : 'future-node locked'}`}
               onClick={() => handleNodeClick('gb')}
               onKeyDown={(e) => handleNodeKeyDown(e, 'gb')}
               role="button"
@@ -745,8 +763,8 @@ export default function GAO002Scene01GovernanceOrgChart({
             <line x1="363" y1="210" x2="363" y2="292" stroke="#1E3A5F" strokeWidth="2.5" />
 
             {/* COMPLIANCE OFFICER — DUAL REPORTING (coral dashed lines from CO up to Admin and GB) */}
-            <g 
-              className={`hotspot-group ${bloomingId === 'co' ? 'node-bloom' : ''} ${isUnlocked('co') ? 'unlocked-node' : ''}`}
+            <g
+              className={`hotspot-group ${bloomingId === 'co' ? 'node-bloom' : ''} ${isUnlocked('co') ? 'unlocked-node' : ''} ${currentObjective === 4 ? 'current-node' : completedObjectives.includes(4) ? 'completed-node' : 'future-node locked'}`}
               onClick={() => handleNodeClick('co')}
               onKeyDown={(e) => handleNodeKeyDown(e, 'co')}
               role="button"
@@ -770,23 +788,23 @@ export default function GAO002Scene01GovernanceOrgChart({
           </g>
 
           {/* Additional premium office artifacts for objectives (tied to real learning) */}
-          {/* Briefing folder - Objective 1 */}
-          <g 
-            className="artifact-hotspot" 
-            onClick={() => handleNodeClick('briefing')} 
-            role="button" 
+          {/* Briefing folder - Objective 1 - placed on desk */}
+          <g
+            className="artifact-hotspot"
+            onClick={() => handleNodeClick('briefing')}
+            role="button"
             tabIndex={0}
             aria-label="Heidi's Welcome Briefing folder - Click for Objective 1"
           >
-            <rect x="80" y="400" width="40" height="25" rx="2" fill="#8B5E3C" stroke="#5C4033" strokeWidth="1" />
-            <text x="100" y="417" textAnchor="middle" fontSize="6" fill="#FDF8F3">BRIEFING</text>
+            <rect x="155" y="452" width="42" height="16" rx="2" fill="#8B5E3C" stroke="#5C4033" strokeWidth="1" />
+            <text x="176" y="463" textAnchor="middle" fontSize="6" fill="#FDF8F3">BRIEFING</text>
           </g>
 
           {/* Policy binder GV-OG-001 - for compliance learning */}
-          <g 
-            className="artifact-hotspot" 
-            onClick={() => handleNodeClick('policy')} 
-            role="button" 
+          <g
+            className="artifact-hotspot"
+            onClick={() => handleNodeClick('policy')}
+            role="button"
             tabIndex={0}
             aria-label="Policy binder GV-OG-001"
           >
@@ -863,8 +881,8 @@ export default function GAO002Scene01GovernanceOrgChart({
           </g>
 
           {/* Notebook / field notes cue (5th ambient hotspot) */}
-          <g 
-            transform="translate(78, 462)" 
+          <g
+            transform="translate(78, 462)"
             className="hotspot-group"
             onClick={() => {
               // Bonus unlock if survey knowledge node
@@ -888,6 +906,48 @@ export default function GAO002Scene01GovernanceOrgChart({
             <ellipse cx="22" cy="28" rx="44" ry="19" fill="#F4E9C8" opacity="0.12" />
             <rect x="12" y="8" width="20" height="34" rx="3" fill="#3A2F24" />
           </g>
+
+          {/* === EMBEDDED UI - much more obvious guidance inside the image === */}
+          {/* Large, clear Task Panel (top left, prominent but fits the office) */}
+          <g transform="translate(25, 25)">
+            <rect x="0" y="0" width="380" height="95" rx="8" fill="#0F5B54" stroke="#C74601" strokeWidth="3" />
+            <text x="14" y="22" fontSize="11" fill="#C9B38A" fontFamily="Inter, system-ui" fontWeight="700">OBJECTIVE {currentObjective}/8</text>
+            <text x="14" y="42" fontSize="16" fill="#FDF8F3" fontFamily="Inter, system-ui" fontWeight="700">YOUR TASK:</text>
+            <text x="14" y="62" fontSize="13" fill="#FAD9C5" fontFamily="Inter, system-ui">{nextActionText}</text>
+            <text x="14" y="82" fontSize="10" fill="#A8D5D3" fontFamily="Inter, system-ui">{progressPct}% complete • Only click the highlighted item</text>
+          </g>
+
+          {/* Strong visual "CLICK THIS" indicator for the active target */}
+          {currentObjective === 1 && (
+            <g transform="translate(75, 395)">
+              <rect x="-5" y="-5" width="55" height="40" rx="3" fill="none" stroke="#C74601" strokeWidth="4" />
+              <text x="50" y="15" fontSize="11" fill="#C74601" fontWeight="700">← CLICK HERE</text>
+            </g>
+          )}
+          {currentObjective === 2 && (
+            <g>
+              <rect x="160" y="40" width="190" height="82" rx="9" fill="none" stroke="#C74601" strokeWidth="5" />
+              <text x="355" y="55" fontSize="12" fill="#C74601" fontWeight="700">CLICK THE GOVERNING BODY</text>
+            </g>
+          )}
+          {currentObjective === 3 && (
+            <g>
+              <rect x="40" y="140" width="120" height="80" rx="8" fill="none" stroke="#C74601" strokeWidth="5" />
+              <text x="165" y="160" fontSize="11" fill="#C74601" fontWeight="700">CLICK ADMINISTRATOR</text>
+            </g>
+          )}
+
+          {/* Embedded minimal controls (bottom right corner of image) */}
+          <g transform="translate(910, 545)">
+            <g onClick={() => onToggleMute && onToggleMute()} style={{cursor: 'pointer'}}>
+              <rect x="0" y="0" width="50" height="26" rx="4" fill="#1E3A3A" stroke="#C9B38A" strokeWidth="1" />
+              <text x="6" y="17" fontSize="8" fill="#C9B38A" fontFamily="Inter, system-ui">{isMuted ? 'SOUND OFF' : 'SOUND'}</text>
+            </g>
+            <g onClick={() => onReset && onReset()} style={{cursor: 'pointer'}} transform="translate(58,0)">
+              <rect x="0" y="0" width="50" height="26" rx="4" fill="#1E3A3A" stroke="#C9B38A" strokeWidth="1" />
+              <text x="8" y="17" fontSize="8" fill="#C9B38A" fontFamily="Inter, system-ui">RESET</text>
+            </g>
+          </g>
         </svg>
 
         {/* 5+ Tasteful SVG-native Hotspot Overlays (navy pill + orange marker aesthetic) */}
@@ -897,7 +957,7 @@ export default function GAO002Scene01GovernanceOrgChart({
         {/* Elegant docked / overlay PHASE PANEL */}
         {showPanel && (
           <div className="absolute inset-0 z-30 bg-black/45 backdrop-blur-[2px] flex items-center justify-center p-4 md:p-8" onClick={closePanel}>
-            <div 
+            <div
               className="premium-panel bg-white rounded-2xl w-full max-w-[520px] overflow-hidden border border-[#E5E4E3]"
               onClick={e => e.stopPropagation()}
             >
@@ -932,7 +992,7 @@ export default function GAO002Scene01GovernanceOrgChart({
                   {interactionPhase === 1 && 'STORY BEAT'}
                   {interactionPhase === 2 && 'FULL CONTENT'}
                   {interactionPhase === 3 && 'SURVEY TIE-IN'}
-                  {interactionPhase === 4 && 'ACKNOWLEDGE'}
+                  {interactionPhase === 4 && 'CONTINUE'}
                   {activeIsChallenge && interactionPhase >= 2 && 'DECISION COMPLETE'}
                 </div>
               </div>
@@ -1019,11 +1079,11 @@ export default function GAO002Scene01GovernanceOrgChart({
                 ) : (
                   <>
                     {interactionPhase < 4 && (
-                      <button 
+                      <button
                         onClick={advancePhase}
                         className="px-6 py-2.5 rounded-xl bg-[#0F5B54] text-white text-sm font-bold tracking-widest active:bg-[#083D38] transition"
                       >
-                        {interactionPhase === 3 ? 'ACKNOWLEDGE &amp; CONTINUE' : 'NEXT'}
+                        {interactionPhase === 3 ? 'GOT IT — CONTINUE' : 'NEXT'}
                       </button>
                     )}
                     {interactionPhase === 4 && (
@@ -1056,9 +1116,9 @@ export default function GAO002Scene01GovernanceOrgChart({
         )}
 
         {/* Live region for narration tiers + a11y announcements */}
-        <div 
-          ref={liveRef} 
-          aria-live="polite" 
+        <div
+          ref={liveRef}
+          aria-live="polite"
           className="sr-only"
           role="status"
         >

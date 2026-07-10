@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { 
+import {
   CheckCircle2, RotateCcw, Volume2, VolumeX,
   Check, Award, MapPin
 } from 'lucide-react';
@@ -145,31 +145,31 @@ const brandStyles = `
 
 // Data pulled from GAO-002 finalTest + L1/L2
 const ROLES = [
-  { 
-    id: 'gb', 
-    label: 'Governing Body', 
-    short: 'GB', 
+  {
+    id: 'gb',
+    label: 'Governing Body',
+    short: 'GB',
     responsibility: 'Approve scope of services and Compliance Officer appointment',
     color: '#0F5B54'
   },
-  { 
-    id: 'admin', 
-    label: 'Administrator', 
-    short: 'Admin', 
+  {
+    id: 'admin',
+    label: 'Administrator',
+    short: 'Admin',
     responsibility: 'Day-to-day operations under 42 CFR 484.105(b)',
     color: '#1E3A5F'
   },
-  { 
-    id: 'don', 
-    label: 'Director of Nursing', 
-    short: 'DON', 
+  {
+    id: 'don',
+    label: 'Director of Nursing',
+    short: 'DON',
     responsibility: 'Supervise all clinical practice',
     color: '#2D4A3E'
   },
-  { 
-    id: 'co', 
-    label: 'Compliance Officer', 
-    short: 'CO', 
+  {
+    id: 'co',
+    label: 'Compliance Officer',
+    short: 'CO',
     responsibility: 'Receive and investigate compliance reports; reports to Administrator AND Governing Body',
     color: '#C74601'
   }
@@ -188,19 +188,50 @@ const CORRECT_SEQUENCE = ['s1', 's2', 's3', 's4'];
 
 const AVAILABILITY_ANSWERS = ['administrator', 'admin', 'director of nursing', 'don', 'administrator and director of nursing', 'both'];
 
+// Objective mapping for Scene 3
+// 7 = Communication Pathways / map assembly
+// 8 = Ready for Post-Test / all 4 practices
+const practiceToObjective: Record<string, number> = {
+  'map': 7,
+  'match': 8,
+  'tf': 8,
+  'seq': 8,
+  'input': 8,
+  'connection': 7,
+};
+
 interface Props {
   onComplete?: () => void;
   priorScenesComplete?: boolean; // carry forward unlocked state from previous scenes
   currentObjective?: number;
+  completedObjectives?: number[];
   onCompleteObjective?: () => void;
   onFocusArtifact?: (id: string, objId: number) => void;
   focusedArtifact?: string | null;
   isMuted?: boolean;
+  onAddNote?: (obj: number, text: string) => void;
+  onReset?: () => void;
+  onToggleMute?: () => void;
+  nextActionText?: string;
+  progressPct?: number;
+  narrationText?: string;
 }
 
 interface MatchState { [roleId: string]: string | null; }
 
-export default function GAO002Scene03ReportingMap({ onComplete, priorScenesComplete = true }: Props) {
+export default function GAO002Scene03ReportingMap({
+  onComplete,
+  priorScenesComplete = true,
+  currentObjective = 7,
+  completedObjectives = [],
+  onCompleteObjective,
+  onFocusArtifact,
+  onAddNote,
+  onReset,
+  onToggleMute,
+  nextActionText = '',
+  progressPct = 0
+}: Props) {
   const SCENE3_KEY = 'gao002-scene3-progress';
 
   const [styleInjected, setStyleInjected] = useState(false);
@@ -277,6 +308,17 @@ export default function GAO002Scene03ReportingMap({ onComplete, priorScenesCompl
   const [showCompleteOverlay, setShowCompleteOverlay] = useState(false);
 
   // Derived
+
+  const isPracticeAllowed = (key: string): boolean => {
+    const target = practiceToObjective[key] || 7;
+    return target === currentObjective || completedObjectives.includes(target);
+  };
+
+  const guardPractice = (key: string): boolean => {
+    if (isPracticeAllowed(key)) return true;
+    onFocusArtifact?.(key, practiceToObjective[key] || 7);
+    return false;
+  };
   const allConnectionsAssembled = CONNECTIONS.every(c => assembledConnections.includes(c));
   const allPracticesPassed = matchComplete && tfComplete && seqComplete && inputComplete;
   const canComplete = allPracticesPassed && (priorScenesComplete || assembledConnections.length >= 3);
@@ -322,6 +364,7 @@ export default function GAO002Scene03ReportingMap({ onComplete, priorScenesCompl
 
   // === ASSEMBLE THE MAP (click to light final connections) ===
   const toggleConnection = (conn: string) => {
+    if (!guardPractice('map')) return;
     if (assembledConnections.includes(conn)) {
       // allow re-click to reinforce
       audio.playSoftClick();
@@ -345,12 +388,14 @@ export default function GAO002Scene03ReportingMap({ onComplete, priorScenesCompl
 
   // === PRACTICE 1: Click-to-Match ===
   const handleMatchRoleClick = (roleId: string) => {
+    if (!guardPractice('match')) return;
     if (matchComplete) return;
     audio.playSoftClick();
     setMatchSelectedRole(roleId === matchSelectedRole ? null : roleId);
   };
 
   const handleMatchRespClick = (resp: string) => {
+    if (!guardPractice('match')) return;
     if (matchComplete || !matchSelectedRole) return;
     audio.playClick();
 
@@ -438,7 +483,7 @@ export default function GAO002Scene03ReportingMap({ onComplete, priorScenesCompl
   const checkInput = () => {
     const val = inputValue.trim().toLowerCase();
     const isCorrect = AVAILABILITY_ANSWERS.some(a => val.includes(a) || val === a);
-    
+
     if (isCorrect) {
       setInputComplete(true);
       setInputFeedback(null);
@@ -465,6 +510,8 @@ export default function GAO002Scene03ReportingMap({ onComplete, priorScenesCompl
       const t = setTimeout(() => {
         setShowCompleteOverlay(true);
         audio.playWarmChime();
+        onAddNote?.(8, 'All reporting lines and practices mastered. Ready for post-test.');
+        if (onCompleteObjective) onCompleteObjective();
         if (onComplete) {
           // defer to allow overlay render + tasteful moment
           setTimeout(() => onComplete(), 780);
@@ -472,7 +519,7 @@ export default function GAO002Scene03ReportingMap({ onComplete, priorScenesCompl
       }, 520);
       return () => clearTimeout(t);
     }
-  }, [canComplete, showCompleteOverlay, onComplete]);
+  }, [canComplete, showCompleteOverlay, onComplete, onCompleteObjective, onAddNote]);
 
   const handleResetAll = () => {
     audio.playChime();
@@ -553,8 +600,8 @@ export default function GAO002Scene03ReportingMap({ onComplete, priorScenesCompl
         </div>
 
         {/* Premium Full SVG Map — modeled exactly on scene-04-values + CoreValues polish */}
-        <svg 
-          viewBox="0 0 1000 420" 
+        <svg
+          viewBox="0 0 1000 420"
           className="w-full h-auto max-h-[268px] rounded-xl bg-white border border-[#E5E4E3] shadow-inner"
           preserveAspectRatio="xMidYMid meet"
         >
@@ -657,6 +704,26 @@ export default function GAO002Scene03ReportingMap({ onComplete, priorScenesCompl
             <text x="62" y="70" fontSize="9" fill="#524C4B">Dual reporting = coral dashed</text>
           </g>
           <text x="820" y="62" fontSize="9" fill="#64748B" fontWeight="500">Click any line to assemble</text>
+
+          {/* === EMBEDDED UI inside the image - big obvious guidance === */}
+          <g transform="translate(25, 20)">
+            <rect x="0" y="0" width="400" height="82" rx="8" fill="#0F5B54" stroke="#C74601" strokeWidth="3" />
+            <text x="14" y="20" fontSize="10" fill="#C9B38A" fontFamily="Inter, system-ui" fontWeight="700">OBJECTIVE {currentObjective}/8 — YOUR TASK:</text>
+            <text x="14" y="40" fontSize="15" fill="#FDF8F3" fontFamily="Inter, system-ui" fontWeight="700">{nextActionText}</text>
+            <text x="14" y="60" fontSize="11" fill="#FAD9C5" fontFamily="Inter, system-ui">Only interact with the items for this objective</text>
+            <text x="14" y="76" fontSize="9" fill="#A8D5D3" fontFamily="Inter, system-ui">{progressPct}% complete</text>
+          </g>
+
+          <g transform="translate(920, 380)">
+            <g onClick={() => onToggleMute && onToggleMute()} style={{cursor:'pointer'}}>
+              <rect x="0" y="0" width="48" height="22" rx="3" fill="#2C2520" />
+              <text x="6" y="15" fontSize="7" fill="#C9B38A">SOUND</text>
+            </g>
+            <g onClick={() => onReset && onReset()} style={{cursor:'pointer'}} transform="translate(55,0)">
+              <rect x="0" y="0" width="48" height="22" rx="3" fill="#2C2520" />
+              <text x="6" y="15" fontSize="7" fill="#C9B38A">RESET</text>
+            </g>
+          </g>
         </svg>
 
         <div className="mt-2 flex gap-2 text-[10px] text-[#64748B]">

@@ -1,0 +1,59 @@
+[
+  {
+    "id": "GAO-001.lesson.l1.delivery",
+    "file": "gao-001.lesson.l1.delivery.wav",
+    "skipped": true
+  },
+  {
+    "id": "GAO-001.lesson.l2.delivery",
+    "file": "gao-001.lesson.l2.delivery.wav",
+    "skipped": true
+  },
+  {
+    "id": "GAO-001.lesson.l3.delivery",
+    "file": "gao-001.lesson.l3.delivery.wav",
+    "skipped": true
+  },
+  {
+    "id": "GAO-001.lesson.l4.delivery",
+    "file": "gao-001.lesson.l4.delivery.wav",
+    "skipped": true
+  },
+  {
+    "id": "GAO-001.lesson.l5.delivery",
+    "file": "gao-001.lesson.l5.delivery.wav",
+    "skipped": true
+  },
+  {
+    "id": "GAO-001.lesson.l6.delivery",
+    "file": "gao-001.lesson.l6.delivery.wav",
+    "seconds": 47.92,
+    "sr": 24000,
+    "gen_seconds": 121.96,
+    "words": 122
+  },
+  {
+    "id": "GAO-001.lesson.l7.delivery",
+    "file": "gao-001.lesson.l7.delivery.wav",
+    "seconds": 16.4,
+    "sr": 24000,
+    "gen_seconds": 38.72,
+    "words": 52
+  },
+  {
+    "id": "GAO-001.lesson.l8.delivery",
+    "file": "gao-001.lesson.l8.delivery.wav",
+    "seconds": 25.36,
+    "sr": 24000,
+    "gen_seconds": 61.29,
+    "words": 76
+  },
+  {
+    "id": "GAO-001.lesson.l9.delivery",
+    "file": "gao-001.lesson.l9.delivery.wav",
+    "seconds": 46.0,
+    "sr": 24000,
+    "gen_seconds": 115.23,
+    "words": 134
+  }
+]

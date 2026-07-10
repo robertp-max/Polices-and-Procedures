@@ -5,8 +5,6 @@ import GAO002Scene01GovernanceOrgChart from './GAO002Scene01GovernanceOrgChart';
 import GAO002Scene02CoverageOnCall from './GAO002Scene02CoverageOnCall';
 import GAO002Scene03ReportingMap from './GAO002Scene03ReportingMap';
 
-import { ChevronLeft, ChevronRight, Volume2, VolumeX, RotateCcw, Award } from 'lucide-react';
-
 interface GAO002OrgStructureViewerProps {
   onComplete?: () => void;
 }
@@ -16,7 +14,7 @@ interface GAO002OrgStructureViewerProps {
  * Thin, tasteful chrome + scene stepper that hosts the three rich dedicated scene implementations.
  * Visual language strictly follows GAO-001 Scene 4 benchmark (deep teal, navy, coral, warm cream, refined motion).
  */
-export default function GAO002OrgStructureViewer({ onComplete }: GAO002OrgStructureViewerProps) {
+export default function GAO002OrgStructureViewer(_props: GAO002OrgStructureViewerProps) {
   const STORAGE_KEY = 'gao002-interactive-progress';
 
   // 8 guided objectives integrated from original 8 path items
@@ -57,42 +55,97 @@ export default function GAO002OrgStructureViewer({ onComplete }: GAO002OrgStruct
   const [narration, setNarration] = useState('Heidi receives the reporting map from Dana. Follow the guided objectives.');
   const [focusedArtifact, setFocusedArtifact] = useState<string | null>(null);
 
-  // Persist
+  // Real drawers state
+  const [, setOpenDrawer] = useState<'notebook' | 'reference' | 'transcript' | null>(null);
+  const [fieldNotes, setFieldNotes] = useState<Array<{ obj: number; text: string }>>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const p = JSON.parse(saved);
+        return p.fieldNotes ?? [];
+      }
+    } catch {}
+    return [];
+  });
+
+  // Add note when completing objectives (called from complete + scenes)
+  const addFieldNote = (obj: number, text: string) => {
+    setFieldNotes(prev => {
+      if (prev.some(n => n.obj === obj)) return prev;
+      const next = [...prev, { obj, text }];
+      return next;
+    });
+  };
+
+  // Persist notes too
   useEffect(() => {
     try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      const base = saved ? JSON.parse(saved) : {};
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        ...base,
         currentObjective,
-        completedObjectives: Array.from(completedObjectives)
+        completedObjectives: Array.from(completedObjectives),
+        fieldNotes
       }));
     } catch {}
-  }, [currentObjective, completedObjectives]);
+  }, [currentObjective, completedObjectives, fieldNotes]);
+
+  // (notes persistence handled in add + notes useEffect above for consolidated save)
 
   const currentObjData = OBJECTIVES.find(o => o.id === currentObjective)!;
   const currentScene = currentObjData.scene;
 
   const isObjectiveCompleted = (id: number) => completedObjectives.has(id);
 
+  // Next Action callout texts (precise guidance for low-tech users)
+  const getNextActionText = (objId: number): string => {
+    switch (objId) {
+      case 1: return 'Click the brown BRIEFING folder on the desk';
+      case 2: return 'Click the GOVERNING BODY box on the big wall chart';
+      case 3: return 'Click the ADMINISTRATOR box on the wall chart';
+      case 4: return 'Click the DON box, then the red phone for the challenge';
+      case 5: return 'Click a roster card or a hierarchy step';
+      case 6: return 'Click the phone + answer the question on the right';
+      case 7: return 'Click the gray lines to connect the boxes';
+      case 8: return 'Complete the 4 practice boards on the right (Match, T/F, Sequence, Type)';
+      default: return 'Follow the highlighted item';
+    }
+  };
+
   const advanceToNext = () => {
     if (currentObjective < 8 && isObjectiveCompleted(currentObjective)) {
       const next = currentObjective + 1;
       setCurrentObjective(next);
       setFocusedArtifact(null);
+      setOpenDrawer(null);
       setNarration(`Objective ${next}: ${OBJECTIVES[next-1].title}`);
     }
   };
 
   const completeCurrentObjective = () => {
-    setCompletedObjectives(prev => new Set([...prev, currentObjective]));
+    const obj = currentObjective;
+    setCompletedObjectives(prev => {
+      const next = new Set([...prev, obj]);
+      return next;
+    });
+    // Add to real Field Notebook
+    const noteText = OBJECTIVES.find(o => o.id === obj)?.title || `Objective ${obj} complete`;
+    addFieldNote(obj, `Completed: ${noteText}. Key takeaway from scene.`);
     setNarration('Objective complete. Advance to next.');
     // auto advance if possible
     setTimeout(advanceToNext, 800);
   };
 
   const handleArtifactClick = (artifactId: string, objId: number) => {
-    if (objId !== currentObjective) return;
+    if (objId !== currentObjective && !isObjectiveCompleted(objId)) {
+      // Future artifact - gentle lock feedback (scenes can also show)
+      setNarration(`Locked: Complete Objective ${currentObjective} first. This belongs to Objective ${objId}.`);
+      return;
+    }
     setFocusedArtifact(artifactId);
     // point-and-click: move focus/camera framing (subtle transform simulation)
-    setNarration(`Focusing on ${artifactId}. Review the details.`);
+    setNarration(`Focusing on ${artifactId}. ${isObjectiveCompleted(objId) ? 'Review mode.' : 'Review the details.'}`);
     // In real, the scene will handle zoom
   };
 
@@ -105,6 +158,8 @@ export default function GAO002OrgStructureViewer({ onComplete }: GAO002OrgStruct
     setCurrentObjective(1);
     setCompletedObjectives(new Set());
     setFocusedArtifact(null);
+    setFieldNotes([]);
+    setOpenDrawer(null);
     setNarration('Reset. Begin with Objective 1.');
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -115,115 +170,65 @@ export default function GAO002OrgStructureViewer({ onComplete }: GAO002OrgStruct
   };
 
   const progress = Math.round((completedObjectives.size / 8) * 100);
-  const breadcrumb = `Scene ${currentScene + 1} • Objective ${currentObjective}/8: ${currentObjData.title}`;
 
   return (
-    <div className="h-full w-full flex flex-col bg-[#FAFBF8] overflow-hidden text-[#2C2825]" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div className="h-full w-full overflow-hidden bg-[#F8F4ED] text-[#2C2825]" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
       <style>{`
         @media (prefers-reduced-motion: reduce) {
           * { animation: none !important; transition: none !important; }
         }
-        .workspace-full { width: 100%; height: 100%; }
-        .objective-chip { background: #0F5B54; color: white; }
-        .artifact-hotspot { cursor: pointer; }
-        .artifact-hotspot.locked { opacity: 0.4; cursor: not-allowed; }
-        .camera-focus { transition: transform 400ms ease; }
       `}</style>
 
-      {/* Premium header - keep Save & Exit style, full workspace */}
-      <div className="shrink-0 border-b border-[#E5E4E3] bg-white px-5 py-3 flex items-center gap-3">
-        <div className="min-w-0">
-          <div className="uppercase tracking-[1.5px] text-[10px] font-bold text-[#C74601]">GAO-002 • A NEW JOURNEY</div>
-          <div className="font-semibold text-[19px] leading-none tracking-[-0.3px] text-[#004142] mt-1">Organizational Structure &amp; Reporting</div>
-        </div>
-
-        {/* Breadcrumb / objective path */}
-        <div className="ml-auto text-xs font-mono text-[#5F5A57] px-3 py-1 bg-[#F4F1EA] rounded">
-          {breadcrumb}
-        </div>
-
-        <div className="flex items-center gap-2 pl-2 border-l border-[#E5E4E3]">
-          <button onClick={toggleMute} className="flex items-center gap-1 px-2.5 py-1 text-xs border rounded-full hover:bg-white" aria-label="Toggle sound">
-            {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />} <span className="hidden md:inline text-[10px]">SOUND</span>
-          </button>
-          <button onClick={reset} className="p-1.5 rounded hover:bg-white border" title="Reset">
-            <RotateCcw size={15} />
-          </button>
-        </div>
-      </div>
-
-      {/* Current Objective chip - in workspace */}
-      <div className="shrink-0 px-5 py-2 bg-white border-b flex items-center gap-3">
-        <div className="objective-chip px-3 py-1 rounded text-xs font-bold tracking-wider">
-          CURRENT OBJECTIVE {currentObjective}/8
-        </div>
-        <div className="text-sm font-medium">{currentObjData.title}</div>
-        <div className="text-xs text-[#5F5A57] ml-2">{currentObjData.desc}</div>
-        <div className="ml-auto text-xs font-mono">{progress}% COMPLETE</div>
-      </div>
-
-      {/* Full workspace - entire screen for SVG + in-scene UI */}
-      <div className="flex-1 min-h-0 relative workspace-full overflow-hidden">
-        {/* Scene content with point-and-click */}
-        <div className="absolute inset-0">
-          {currentScene === 0 && (
-            <GAO002Scene01GovernanceOrgChart
-              currentObjective={currentObjective}
-              onCompleteObjective={completeCurrentObjective}
-              onFocusArtifact={handleArtifactClick}
-              focusedArtifact={focusedArtifact}
-              isMuted={isMuted}
-            />
-          )}
-          {currentScene === 1 && (
-            <GAO002Scene02CoverageOnCall
-              currentObjective={currentObjective}
-              onCompleteObjective={completeCurrentObjective}
-              onFocusArtifact={handleArtifactClick}
-              focusedArtifact={focusedArtifact}
-              isMuted={isMuted}
-            />
-          )}
-          {currentScene === 2 && (
-            <GAO002Scene03ReportingMap
-              currentObjective={currentObjective}
-              onCompleteObjective={completeCurrentObjective}
-              onFocusArtifact={handleArtifactClick}
-              focusedArtifact={focusedArtifact}
-              isMuted={isMuted}
-            />
-          )}
-        </div>
-
-        {/* In-scene drawers / notebook (inside workspace, not left panel) */}
-        <div className="absolute bottom-4 left-4 right-4 flex gap-2 z-10">
-          <button className="px-3 py-1 text-xs bg-white border rounded shadow text-[#0F5B54]" onClick={() => setNarration('Field Notebook: [accumulated notes from objectives]')}>Field Notebook</button>
-          <button className="px-3 py-1 text-xs bg-white border rounded shadow text-[#0F5B54]" onClick={() => setNarration('Reference Notes: 42 CFR 484.105, GV-OG-001')}>Reference Notes</button>
-          <button className="px-3 py-1 text-xs bg-white border rounded shadow text-[#0F5B54]" onClick={() => setNarration(narration)}>Transcript</button>
-        </div>
-      </div>
-
-      {/* Bottom controls - keep tasteful */}
-      <div className="shrink-0 border-t bg-white px-4 py-3 text-sm flex flex-col md:flex-row gap-2 md:items-center">
-        <div className="flex-1 text-[#524C4B] pr-3">
-          <span className="uppercase tracking-widest text-[9px] font-bold text-[#C74601]">LIVE NARRATION</span>
-          <div className="leading-tight mt-0.5">{narration}</div>
-        </div>
-
-        <div className="flex gap-2 shrink-0">
-          <button onClick={() => { if (currentObjective > 1) setCurrentObjective(currentObjective - 1); }} disabled={currentObjective === 1} className="px-3 py-1.5 rounded-xl border text-xs flex items-center gap-1 disabled:opacity-40">
-            <ChevronLeft size={15} /> PREV OBJ
-          </button>
-          <button onClick={advanceToNext} disabled={!isObjectiveCompleted(currentObjective) || currentObjective === 8} className="px-3 py-1.5 rounded-xl border text-xs flex items-center gap-1 disabled:opacity-40">
-            NEXT OBJ <ChevronRight size={15} />
-          </button>
-
-          {isObjectiveCompleted(8) && (
-            <button onClick={() => { if (onComplete) onComplete(); }} className="px-4 py-1.5 rounded-2xl bg-[#C74601] text-white text-xs font-bold tracking-wider flex items-center gap-1">
-              <Award size={15} /> REPORTING LINES PRACTICE COMPLETE
-            </button>
-          )}
-        </div>
+      {/* The entire screen below the thin header is the workspace image. */}
+      <div className="h-full w-full relative">
+        {currentScene === 0 && (
+          <GAO002Scene01GovernanceOrgChart
+            currentObjective={currentObjective}
+            completedObjectives={Array.from(completedObjectives)}
+            onCompleteObjective={completeCurrentObjective}
+            onFocusArtifact={handleArtifactClick}
+            focusedArtifact={focusedArtifact}
+            isMuted={isMuted}
+            onAddNote={addFieldNote}
+            onReset={reset}
+            onToggleMute={toggleMute}
+            nextActionText={getNextActionText(currentObjective)}
+            progressPct={progress}
+            narrationText={narration}
+          />
+        )}
+        {currentScene === 1 && (
+          <GAO002Scene02CoverageOnCall
+            currentObjective={currentObjective}
+            completedObjectives={Array.from(completedObjectives)}
+            onCompleteObjective={completeCurrentObjective}
+            onFocusArtifact={handleArtifactClick}
+            focusedArtifact={focusedArtifact}
+            isMuted={isMuted}
+            onAddNote={addFieldNote}
+            onReset={reset}
+            onToggleMute={toggleMute}
+            nextActionText={getNextActionText(currentObjective)}
+            progressPct={progress}
+            narrationText={narration}
+          />
+        )}
+        {currentScene === 2 && (
+          <GAO002Scene03ReportingMap
+            currentObjective={currentObjective}
+            completedObjectives={Array.from(completedObjectives)}
+            onCompleteObjective={completeCurrentObjective}
+            onFocusArtifact={handleArtifactClick}
+            focusedArtifact={focusedArtifact}
+            isMuted={isMuted}
+            onAddNote={addFieldNote}
+            onReset={reset}
+            onToggleMute={toggleMute}
+            nextActionText={getNextActionText(currentObjective)}
+            progressPct={progress}
+            narrationText={narration}
+          />
+        )}
       </div>
     </div>
   );

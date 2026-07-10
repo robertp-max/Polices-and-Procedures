@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  ShieldCheck, 
-  Heart, 
-  Scale, 
-  Award, 
-  Users, 
-  CheckCircle2, 
+import {
+  ShieldCheck,
+  Heart,
+  Scale,
+  Award,
+  Users,
+  CheckCircle2,
   XCircle,
   CheckSquare,
   Check,
@@ -15,8 +15,10 @@ import {
   Volume2,
   VolumeX,
   RotateCcw,
-  X
-} from 'lucide-react';
+  X,
+  } from 'lucide-react';
+import GAO001SharedOverlay from './GAO001SharedOverlay';
+import { gao001SceneArt } from '../data/gao001SceneArt';
 
 // Web Audio API Synthesizer for self-contained interaction sounds
 class InteractiveAudioSynth {
@@ -36,7 +38,7 @@ class InteractiveAudioSynth {
 
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
-    
+
     osc.type = 'sine';
     osc.frequency.setValueAtTime(1200, this.ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(150, this.ctx.currentTime + 0.08);
@@ -46,7 +48,7 @@ class InteractiveAudioSynth {
 
     osc.connect(gain);
     gain.connect(this.ctx.destination);
-    
+
     osc.start();
     osc.stop(this.ctx.currentTime + 0.08);
   }
@@ -84,17 +86,17 @@ class InteractiveAudioSynth {
     notes.forEach((freq, idx) => {
       const osc = this.ctx!.createOscillator();
       const gain = this.ctx!.createGain();
-      
+
       osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, now + idx * 0.1);
-      
+
       gain.gain.setValueAtTime(0, now + idx * 0.1);
       gain.gain.linearRampToValueAtTime(0.05, now + idx * 0.1 + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.8);
 
       osc.connect(gain);
       gain.connect(this.ctx!.destination);
-      
+
       osc.start(now + idx * 0.1);
       osc.stop(now + idx * 0.1 + 0.9);
     });
@@ -117,7 +119,7 @@ const SCENE_HOTSPOTS = [
     id: 'chart',
     title: "The Coffee Table",
     icon: AlertCircle,
-    position: { top: '65%', left: '42%' }, 
+    position: { top: '65%', left: '42%' },
     dialogue: "Insurance won't cover her physical therapy unless you write down that you were here for 60 minutes. You were only here 45, but can you just round up? It's for her own good.",
     actor: "Family Member",
     targetValueId: 'integrity',
@@ -200,7 +202,7 @@ const brandStyles = `
   .animate-slide-up {
     animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
-  
+
   @keyframes ping-slow {
     75%, 100% { transform: scale(1.6); opacity: 0; }
   }
@@ -337,8 +339,8 @@ const brandStyles = `
 `;
 
 const SceneArtwork = ({ eyesClosed }: { eyesClosed: boolean }) => (
-  <svg 
-    viewBox="0 0 1000 600" 
+  <svg
+    viewBox="0 0 1000 600"
     className="absolute inset-0 w-full h-full object-cover"
     preserveAspectRatio="xMidYMid slice"
     xmlns="http://www.w3.org/2000/svg"
@@ -362,7 +364,7 @@ const SceneArtwork = ({ eyesClosed }: { eyesClosed: boolean }) => (
 
     {/* Background Wall */}
     <rect width="1000" height="600" fill="#FDF8F3" />
-    
+
     {/* Clean Wallpaper Stripe details */}
     <g opacity="0.05" stroke="#1E293B" strokeWidth="15" strokeDasharray="15, 20">
       <line x1="50" y1="0" x2="50" y2="400" />
@@ -375,7 +377,7 @@ const SceneArtwork = ({ eyesClosed }: { eyesClosed: boolean }) => (
       <line x1="750" y1="0" x2="750" y2="400" />
       <line x1="850" y1="0" x2="850" y2="400" />
     </g>
-    
+
     {/* Baseboard & Textured Wooden Floor */}
     <rect y="400" width="1000" height="15" fill="#E6DCCF" />
     <rect y="415" width="1000" height="185" fill="#D2BBA0" />
@@ -392,7 +394,7 @@ const SceneArtwork = ({ eyesClosed }: { eyesClosed: boolean }) => (
       <line x1="700" y1="415" x2="660" y2="600" />
       <line x1="900" y1="415" x2="860" y2="600" />
     </g>
-    
+
     {/* Floor Rug */}
     <ellipse cx="450" cy="510" rx="350" ry="60" fill="#7A9CA3" opacity="0.8" />
     <path d="M 120 510 Q 450 600 780 510" fill="none" stroke="#688990" strokeWidth="2" strokeDasharray="10, 10" opacity="0.5"/>
@@ -511,15 +513,15 @@ const SceneArtwork = ({ eyesClosed }: { eyesClosed: boolean }) => (
       <rect x="55" y="140" width="25" height="100" fill="#7F8C8D" rx="10" />
       <ellipse cx="40" cy="245" rx="18" ry="10" fill="#E67E22" />
       <ellipse cx="70" cy="245" rx="18" ry="10" fill="#E67E22" />
-      
+
       <g className="animate-breathe" style={{ transformOrigin: '55px 140px' }}>
         <rect x="20" y="60" width="70" height="100" fill="#9B59B6" rx="25" />
-        
+
         <g className="animate-nod" style={{ transformOrigin: '55px 58px', animationDelay: '0.5s' }}>
           <circle cx="55" cy="30" r="28" fill="#F3C6A5" />
           <path d="M 25 35 Q 55 -10 85 35 Q 90 60 75 60 Q 55 50 35 60 Q 20 60 25 35 Z" fill="#E2E8F0" />
           <circle cx="55" cy="-6" r="14" fill="#CBD5E1" />
-          
+
           {eyesClosed ? (
             <g stroke="#334155" strokeWidth="2.5" strokeLinecap="round">
               <line x1="43" y1="28" x2="51" y2="29" />
@@ -554,7 +556,7 @@ const SceneArtwork = ({ eyesClosed }: { eyesClosed: boolean }) => (
       <rect x="65" y="150" width="22" height="165" fill="#094B45" rx="10" />
       <ellipse cx="45" cy="315" rx="16" ry="10" fill="#FFFFFF" style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.1))' }} />
       <ellipse cx="75" cy="315" rx="16" ry="10" fill="#FFFFFF" style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.1))' }} />
-      
+
       <g className="animate-breathe" style={{ transformOrigin: '60px 150px', animationDelay: '0.7s' }}>
         <path d="M 25 70 L 95 70 L 105 160 L 15 160 Z" fill="#0F5B54" />
         <path d="M 45 70 Q 60 105 75 70" fill="none" stroke="#ECEFF1" strokeWidth="3" />
@@ -564,13 +566,13 @@ const SceneArtwork = ({ eyesClosed }: { eyesClosed: boolean }) => (
         <rect x="82" y="93" width="9" height="4" fill="#3498DB" rx="1" />
         <line x1="83" y1="101" x2="90" y2="101" stroke="#90A4AE" strokeWidth="1" />
         <line x1="83" y1="104" x2="88" y2="104" stroke="#90A4AE" strokeWidth="1" />
-        
+
         <g className="animate-nod" style={{ transformOrigin: '60px 55px', animationDelay: '1s' }}>
           <circle cx="60" cy="-10" r="12" fill="#2C3E50" />
           <circle cx="60" cy="22" r="27" fill="#2C3E50" />
           <circle cx="60" cy="32" r="23" fill="#8D5524" />
           <path d="M 37 32 Q 60 12 83 32 Q 80 18 60 18 Q 40 18 37 32 Z" fill="#2C3E50" />
-          
+
           {eyesClosed ? (
             <g stroke="#1A0A00" strokeWidth="2.5" strokeLinecap="round">
               <line x1="50" y1="30" x2="56" y2="31" />
@@ -587,7 +589,7 @@ const SceneArtwork = ({ eyesClosed }: { eyesClosed: boolean }) => (
 
           <path d="M 56 42 Q 60 46 64 42" fill="none" stroke="#4E2B12" strokeWidth="2.5" strokeLinecap="round" />
         </g>
-        
+
         <g className="animate-arm" style={{ transformOrigin: '30px 80px', animationDelay: '1.2s' }}>
           <path d="M 30 80 Q 0 150 -60 160" fill="none" stroke="#0F5B54" strokeWidth="16" strokeLinecap="round" />
           <circle cx="-65" cy="160" r="9" fill="#8D5524" />
@@ -604,7 +606,7 @@ const SceneArtwork = ({ eyesClosed }: { eyesClosed: boolean }) => (
       <rect x="180" y="20" width="12" height="70" fill="#5C3A21" rx="4" />
       <rect x="10" y="15" width="210" height="20" fill="#A57153" rx="8" style={{ filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.1))' }} />
       <rect x="10" y="15" width="210" height="5" fill="#C49A76" rx="2" />
-      
+
       <g transform="translate(130, -5) rotate(10)">
         <rect width="60" height="40" fill="#8D6E63" rx="4" style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.15))' }} />
         <rect x="5" y="5" width="50" height="30" fill="#FFFFFF" rx="2" />
@@ -613,7 +615,7 @@ const SceneArtwork = ({ eyesClosed }: { eyesClosed: boolean }) => (
         <line x1="15" y1="28" x2="45" y2="28" stroke="#B0BEC5" strokeWidth="2" />
         <rect x="20" y="15" width="30" height="4" fill="#34495E" rx="2" transform="rotate(-25 20 15)"/>
       </g>
-      
+
       <g transform="translate(35, -5)">
         <path d="M 10 -5 Q 5 -15 12 -25 Q 19 -35 12 -45" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" opacity="0.65" className="animate-steam-1" />
         <path d="M 18 -5 Q 13 -15 20 -25 Q 27 -35 20 -45" fill="none" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" opacity="0.45" className="animate-steam-2" />
@@ -645,7 +647,7 @@ const SceneArtwork = ({ eyesClosed }: { eyesClosed: boolean }) => (
       <path d="M 70 140 Q 140 60 130 110 Q 90 130 70 140 Z" fill="#81C784" />
       <path d="M 70 140 Q 30 110 50 135 Z" fill="#66BB6A" />
     </g>
-    
+
     {/* Tablet on Kitchen Counter */}
     <g transform="translate(850, 240)">
        <rect width="50" height="70" fill="#34495E" rx="6" transform="rotate(15)" style={{ filter: 'drop-shadow(2px 3px 4px rgba(0,0,0,0.2))' }} />
@@ -664,7 +666,7 @@ const SceneArtwork = ({ eyesClosed }: { eyesClosed: boolean }) => (
       <polygon points="30,50 -20,300 130,300" fill="url(#lampLightCone)" opacity="0.45" />
     </g>
 
-    {/* Sleeping Cat bottom right with animated ZzzZ */}
+    {/* Sleeping cat bottom right with animated ZzzZ */}
     <g transform="translate(870, 495)">
       {/* Cat body (curled sleeping) */}
       <ellipse cx="45" cy="35" rx="38" ry="22" fill="#4A3728" />
@@ -703,7 +705,6 @@ interface CoreValuesInteractiveViewerProps {
 }
 
 export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesInteractiveViewerProps) {
-  const [styleInjected, setStyleInjected] = useState(false);
   const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null);
   const [completedHotspots, setCompletedHotspots] = useState<string[]>([]);
   const [interactionPhase, setInteractionPhase] = useState(1);
@@ -713,14 +714,55 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
   const [eyesClosed, setEyesClosed] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(false);
 
-  // Inject styles
   useEffect(() => {
-    if (styleInjected) return;
-    const style = document.createElement('style');
-    style.innerHTML = brandStyles;
-    document.head.appendChild(style);
-    setStyleInjected(true);
-  }, [styleInjected]);
+    const styleSheet = document.createElement("style");
+    styleSheet.type = "text/css";
+    styleSheet.innerText = brandStyles;
+    document.head.appendChild(styleSheet);
+    return () => { document.head.removeChild(styleSheet); };
+  }, []);
+
+  const showLegacyArt = false;
+  if (!showLegacyArt) {
+    return (
+      <GAO001SharedOverlay
+        imageSrc={gao001SceneArt['scene-04'].src}
+        altText={gao001SceneArt['scene-04'].alt}
+        objective="Learn what makes home health different."
+        onComplete={onComplete}
+        hotspots={[
+          {
+            id: 'observe', x: 25, y: 40, label: 'Observe the home',
+            fieldNotes: {
+              title: 'Observe the Home',
+              content: 'In home health, the patient\'s environment provides critical context for their care and recovery.'
+            }
+          },
+          {
+            id: 'routines', x: 75, y: 40, label: 'Respect routines',
+            fieldNotes: {
+              title: 'Respect Routines',
+              content: 'We are guests in their home. Adapt your care delivery to respect their established routines when safe.'
+            }
+          },
+          {
+            id: 'safety', x: 25, y: 60, label: 'Notice safety context',
+            fieldNotes: {
+              title: 'Safety Context',
+              content: 'Identify fall risks, medication storage issues, or environmental hazards that might not be visible in a facility.'
+            }
+          },
+          {
+            id: 'person', x: 75, y: 60, label: 'See the whole person',
+            fieldNotes: {
+              title: 'See the Whole Person',
+              content: 'Home care allows us to understand the patient holistically—their family dynamics, resources, and daily life.'
+            }
+          }
+        ]}
+      />
+    );
+  }
 
   // Auto Blinking Logic for characters
   useEffect(() => {
@@ -771,7 +813,7 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
   const handleValueSelect = (valueId: string) => {
     if (interactionPhase !== 1) return;
     setSelectedValue(valueId);
-    
+
     if (valueId === activeHotspot?.targetValueId) {
       synth.playClick();
       setTimeout(() => setInteractionPhase(2), 550);
@@ -784,7 +826,7 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
   const handleActionSelect = (action: any) => {
     if (interactionPhase !== 2) return;
     setSelectedAction(action.id);
-    
+
     if (action.isCorrect) {
       synth.playChime();
       setTimeout(() => {
@@ -823,20 +865,20 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2 text-xs font-bold text-[#007970] bg-[#E5FEFF] px-3 py-1 rounded-lg border border-[#C4F4F5]">
-            <Eye className="w-3.5 h-3.5" /> 
+            <Eye className="w-3.5 h-3.5" />
             {completedHotspots.length} / {SCENE_HOTSPOTS.length} Solved
           </div>
 
           {/* Controls */}
-          <button 
+          <button
             onClick={toggleMute}
             className={`p-1.5 rounded-lg border transition-all text-[#007970] ${isMuted ? 'bg-rose-100 border-rose-200' : 'bg-white hover:bg-[#E5FEFF] border-[#C4F4F5]'}`}
             title={isMuted ? "Unmute sounds" : "Mute sounds"}
           >
             {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
           </button>
-          
-          <button 
+
+          <button
             onClick={resetProgress}
             className="p-1.5 rounded-lg border border-[#C4F4F5] bg-white hover:bg-[#E5FEFF] text-[#007970]"
             title="Reset scene"
@@ -854,7 +896,7 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
         {SCENE_HOTSPOTS.map((spot) => {
           const isComplete = completedHotspots.includes(spot.id);
           return (
-            <div 
+            <div
               key={spot.id}
               className="absolute z-10 flex flex-col items-center gap-1.5 transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 hover:scale-105"
               style={spot.position as React.CSSProperties}
@@ -887,7 +929,7 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
         {activeHotspot && (
           <div className="absolute inset-0 bg-[#0F5B54]/60 backdrop-blur-sm z-20 flex items-center justify-center p-6 animate-pop-in">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-full overflow-y-auto flex flex-col border-2 border-[#EEF4F3]">
-              
+
               <div className="p-5 border-b border-[#E2E8F0] flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur-sm z-10">
                 <div className="flex items-center gap-3">
                   <div className="bg-[#EEF4F3] p-2 rounded-lg text-[#0F5B54]">
@@ -929,7 +971,7 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
                       const isWrong = isSelected && !isCorrect;
                       const isShaking = shakeId === cv.id;
                       const disabled = interactionPhase > 1;
-                      
+
                       let btnClass = "bg-white border-[#E2E8F0] text-[#64748B] hover:border-[#007970]/30 hover:bg-[#E5FEFF]";
                       if (isCorrect || (disabled && cv.id === activeHotspot.targetValueId)) {
                         btnClass = "bg-[#E5FEFF] border-[#007970] text-[#007970] shadow-sm ring-1 ring-[#007970]";
@@ -972,7 +1014,7 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
 
                         let btnClass = "bg-white border-[#E2E8F0] text-[#4A5568] hover:border-[#007970]/30 hover:bg-[#E5FEFF]";
                         let iconColor = "text-[#A0AEC0]";
-                        
+
                         if (isCorrect) {
                           btnClass = "bg-[#E5FEFF] border-[#007970] text-[#007970] shadow-sm ring-1 ring-[#007970]";
                           iconColor = "text-[#007970]";
@@ -991,8 +1033,8 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
                             className={`w-full p-4 rounded-xl border-2 flex items-start gap-3 transition-all duration-200 text-left ${btnClass} ${isShaking ? 'animate-shake' : ''}`}
                           >
                             <div className={`mt-0.5 flex-shrink-0 ${iconColor}`}>
-                              {isCorrect ? <CheckCircle2 className="w-5 h-5" /> : 
-                              isWrong ? <XCircle className="w-5 h-5" /> : 
+                              {isCorrect ? <CheckCircle2 className="w-5 h-5" /> :
+                              isWrong ? <XCircle className="w-5 h-5" /> :
                               <div className="w-5 h-5 rounded-full border-2 border-current opacity-30" />}
                             </div>
                             <span className="text-[13px] leading-relaxed">{opt.text}</span>
@@ -1012,7 +1054,7 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
                         <p className="text-[13px] leading-relaxed text-[#E5FEFF] opacity-90">{activeHotspot.feedback}</p>
                       </div>
                     </div>
-                    <button 
+                    <button
                       onClick={closeInteraction}
                       className="w-full py-3 bg-[#C74601] hover:bg-[#A63A01] text-white rounded-lg font-bold text-[13px] uppercase tracking-widest transition-colors shadow-sm"
                     >

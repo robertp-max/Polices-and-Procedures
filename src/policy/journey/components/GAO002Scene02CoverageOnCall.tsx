@@ -268,16 +268,43 @@ const NARRATION_TIERS = [
   },
 ];
 
+// Objective mapping for Scene 2 (5 = structure/roster/hierarchy, 6 = vignette + decision)
+const actionToObjective: Record<string, number> = {
+  'roster': 5,
+  'hierarchy': 5,
+  'screenshot': 5,
+  'vignette': 6,
+  'decision': 6,
+};
+
 interface Props {
   onComplete?: () => void;
   currentObjective?: number;
+  completedObjectives?: number[];
   onCompleteObjective?: () => void;
   onFocusArtifact?: (id: string, objId: number) => void;
   focusedArtifact?: string | null;
   isMuted?: boolean;
+  onAddNote?: (obj: number, text: string) => void;
+  onReset?: () => void;
+  onToggleMute?: () => void;
+  nextActionText?: string;
+  progressPct?: number;
+  narrationText?: string;
 }
 
-export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
+export default function GAO002Scene02CoverageOnCall({
+  onComplete,
+  currentObjective = 5,
+  completedObjectives = [],
+  onCompleteObjective,
+  onFocusArtifact,
+  onAddNote,
+  onReset,
+  onToggleMute,
+  nextActionText = '',
+  progressPct = 0
+}: Props) {
   const SCENE2_KEY = 'gao002-scene2-progress';
 
   const [styleInjected, setStyleInjected] = useState(false);
@@ -386,11 +413,13 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
     if (isCorrectDecision && isFullyExplored && onComplete) {
       const t = setTimeout(() => {
         console.info('[GAO-002 Scene 2] visual_scene_completed');
+        onAddNote?.(6, 'On-call escalation correct. Roster screenshot habit noted.');
+        if (onCompleteObjective) onCompleteObjective();
         onComplete();
       }, 850);
       return () => clearTimeout(t);
     }
-  }, [isCorrectDecision, isFullyExplored, onComplete]);
+  }, [isCorrectDecision, isFullyExplored, onComplete, onCompleteObjective, onAddNote]);
 
   const markExplored = (id: string) => {
     if (!explored.includes(id)) {
@@ -398,6 +427,17 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
       setExplored(next);
       audio.play('click');
     }
+  };
+
+  const isActionAllowed = (actionId: string): boolean => {
+    const target = actionToObjective[actionId] || 5;
+    return target === currentObjective || completedObjectives.includes(target);
+  };
+
+  const guardAction = (actionId: string): boolean => {
+    if (isActionAllowed(actionId)) return true;
+    onFocusArtifact?.(actionId, actionToObjective[actionId] || 5);
+    return false;
   };
 
   const toggleMute = () => {
@@ -424,6 +464,7 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
 
   // Roster hotspot
   const handleRosterClick = (id: string) => {
+    if (!guardAction('roster')) return;
     markExplored(id);
     setActiveRosterId(id === activeRosterId ? null : id);
     setHierarchyHighlight(null);
@@ -432,6 +473,7 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
 
   // Hierarchy step
   const handleHierarchyClick = (id: string) => {
+    if (!guardAction('hierarchy')) return;
     markExplored('hierarchy');
     setHierarchyHighlight(id);
     setActiveRosterId(null);
@@ -449,6 +491,7 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
   // Screenshot habit
   const handleScreenshot = () => {
     if (screenshotSaved) return;
+    if (!guardAction('screenshot')) return;
     setScreenshotSaved(true);
     markExplored('screenshot');
     audio.play('chime');
@@ -461,6 +504,7 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
 
   // Vignette interaction — advance escalation steps (4 tiers)
   const advanceVignette = () => {
+    if (!guardAction('vignette')) return;
     const next = Math.min(vignettePhase + 1, 4);
     setVignettePhase(next);
     markExplored('vignette');
@@ -489,6 +533,7 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
 
   // Decision board
   const handleDecision = (opt: typeof CHALLENGE_OPTIONS[0]) => {
+    if (!guardAction('decision')) return;
     if (!decisionUnlocked || decisionChoice) return;
 
     setDecisionChoice(opt.id);
@@ -520,9 +565,9 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
   // allHotspotsComplete gated internally via state (kept for completeness, not read in render path)
 
   return (
-    <div className="h-full w-full flex flex-col bg-[#FAFBF8] overflow-hidden rounded-[18px] border border-[#E5E4E3] relative font-sans" role="region" aria-label="GAO-002 Coverage and Continuity interactive scene">
-      {/* Premium header — navy/orange benchmark style */}
-      <div className="px-5 py-3.5 border-b border-[#E5E4E3] bg-white flex items-center justify-between z-20 shrink-0">
+    <div className="h-full w-full overflow-hidden bg-[#FAFBF8]" role="region" aria-label="GAO-002 Coverage and Continuity interactive scene">
+      {/* SVG content area - full workspace image, UI embedded inside */}
+      <div className="h-full w-full relative overflow-hidden">
         <div className="flex items-center gap-3">
           <div>
             <div className="text-[13px] font-bold tracking-[0.5px] text-[#0F5B54] uppercase">GAO-002 • L2</div>
@@ -632,10 +677,10 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
 
               {/* Roster entries — interactive groups */}
               {/* Clinician */}
-              <g 
-                className="coverage-hotspot" 
+              <g
+                className="coverage-hotspot"
                 onClick={() => handleRosterClick('clinician-roster')}
-                role="button" 
+                role="button"
                 aria-label="Select on-call clinician roster entry"
               >
                 <rect x="42" y="68" width="332" height="46" rx="3" fill={activeRosterId === 'clinician-roster' ? '#E8F0ED' : '#FDF8F3'} />
@@ -645,10 +690,10 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
               </g>
 
               {/* DON */}
-              <g 
-                className="coverage-hotspot" 
+              <g
+                className="coverage-hotspot"
                 onClick={() => handleRosterClick('don-roster')}
-                role="button" 
+                role="button"
                 aria-label="Select on-call DON roster entry"
               >
                 <rect x="42" y="120" width="332" height="46" rx="3" fill={activeRosterId === 'don-roster' ? '#E8F0ED' : '#FDF8F3'} />
@@ -658,10 +703,10 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
               </g>
 
               {/* Admin */}
-              <g 
-                className="coverage-hotspot" 
+              <g
+                className="coverage-hotspot"
                 onClick={() => handleRosterClick('admin-roster')}
-                role="button" 
+                role="button"
                 aria-label="Select on-call Administrator roster entry"
               >
                 <rect x="42" y="172" width="332" height="46" rx="3" fill={activeRosterId === 'admin-roster' ? '#E8F0ED' : '#FDF8F3'} />
@@ -675,11 +720,11 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
             </g>
 
             {/* Screenshot habit icon — prominent warm accent */}
-            <g 
-              transform="translate(352, 238)" 
-              className="coverage-hotspot" 
+            <g
+              transform="translate(352, 238)"
+              className="coverage-hotspot"
               onClick={handleScreenshot}
-              role="button" 
+              role="button"
               aria-label="Screenshot the roster to your phone (practical habit)"
             >
               <rect x="-18" y="-13" width="42" height="28" rx="4" fill="#C74601" opacity={screenshotSaved ? 0.35 : 0.95} />
@@ -700,19 +745,19 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
               return (
                 <g key={step.id}>
                   {/* Node circle */}
-                  <g 
-                    className="coverage-hotspot" 
+                  <g
+                    className="coverage-hotspot"
                     onClick={() => handleHierarchyClick(step.id)}
-                    role="button" 
+                    role="button"
                     aria-label={`Hierarchy step: ${step.label}`}
                   >
-                    <circle 
-                      cx="100" 
-                      cy={y} 
-                      r="19" 
-                      fill={isActive ? '#C74601' : '#0F5B54'} 
-                      stroke="#FDF8F3" 
-                      strokeWidth="2.5" 
+                    <circle
+                      cx="100"
+                      cy={y}
+                      r="19"
+                      fill={isActive ? '#C74601' : '#0F5B54'}
+                      stroke="#FDF8F3"
+                      strokeWidth="2.5"
                     />
                     <text x="100" y={y + 4} fontSize="10" fill="#FDF8F3" textAnchor="middle" fontWeight="700">
                       {idx + 1}
@@ -727,11 +772,11 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
 
                   {/* Elegant connecting arrow (curved refined path) */}
                   {idx < 2 && (
-                    <path 
+                    <path
                       d={`M 100 ${y + 21} Q 78 ${y + 38} 100 ${y + 52}`}
-                      fill="none" 
-                      stroke={isActive ? '#C74601' : '#C4A17A'} 
-                      strokeWidth="2.5" 
+                      fill="none"
+                      stroke={isActive ? '#C74601' : '#C4A17A'}
+                      strokeWidth="2.5"
                       strokeLinecap="round"
                       className={isActive ? 'elegant-flow' : ''}
                       opacity={isActive ? 0.95 : 0.65}
@@ -782,9 +827,9 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
             </g>
 
             {/* Phone icon — pulsing ring */}
-            <g 
-              transform="translate(48, 178)" 
-              className={ringing || vignettePhase >= 2 ? 'phone-ring' : ''} 
+            <g
+              transform="translate(48, 178)"
+              className={ringing || vignettePhase >= 2 ? 'phone-ring' : ''}
               onClick={advanceVignette}
               style={{ cursor: 'pointer' }}
             >
@@ -801,12 +846,12 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
 
             {/* Status dots for vignette progress */}
             {[1,2,3,4].map((n, i) => (
-              <circle 
-                key={i} 
-                cx={32 + i * 18} 
-                cy="238" 
-                r="3.5" 
-                fill={vignettePhase >= n ? '#C74601' : '#2C4652'} 
+              <circle
+                key={i}
+                cx={32 + i * 18}
+                cy="238"
+                r="3.5"
+                fill={vignettePhase >= n ? '#C74601' : '#2C4652'}
               />
             ))}
           </g>
@@ -821,6 +866,35 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
             <rect y="530" width="1000" height="50" fill="#0F2A36" opacity="0.65" />
             <text x="500" y="554" fontSize="9" fill="#A8C5C8" textAnchor="middle" letterSpacing="1">On-call roster + weekend escalation • Correct first call = on-call clinician • Screenshot habit prevents survey findings</text>
           </g>
+
+          {/* === EMBEDDED UI - big obvious task panel inside the image === */}
+          <g transform="translate(25, 20)">
+            <rect x="0" y="0" width="400" height="88" rx="8" fill="#0F5B54" stroke="#C74601" strokeWidth="3" />
+            <text x="14" y="20" fontSize="10" fill="#C9B38A" fontFamily="Inter, system-ui" fontWeight="700">OBJECTIVE {currentObjective}/8 — YOUR TASK:</text>
+            <text x="14" y="42" fontSize="15" fill="#FDF8F3" fontFamily="Inter, system-ui" fontWeight="700">{nextActionText}</text>
+            <text x="14" y="62" fontSize="11" fill="#FAD9C5" fontFamily="Inter, system-ui">Only the highlighted items are active right now</text>
+            <text x="14" y="78" fontSize="9" fill="#A8D5D3" fontFamily="Inter, system-ui">{progressPct}% complete</text>
+          </g>
+
+          {/* Strong highlight example for current objective targets */}
+          {currentObjective === 5 && (
+            <g>
+              <rect x="320" y="95" width="160" height="55" rx="6" fill="none" stroke="#C74601" strokeWidth="5" />
+              <text x="485" y="115" fontSize="11" fill="#C74601" fontWeight="700">CLICK THESE</text>
+            </g>
+          )}
+
+          {/* Embedded controls in scene */}
+          <g transform="translate(920, 500)">
+            <g onClick={() => onToggleMute && onToggleMute()} style={{cursor:'pointer'}}>
+              <rect x="0" y="0" width="48" height="24" rx="3" fill="#2C2520" />
+              <text x="6" y="16" fontSize="7" fill="#C9B38A">SOUND</text>
+            </g>
+            <g onClick={() => onReset && onReset()} style={{cursor:'pointer'}} transform="translate(55,0)">
+              <rect x="0" y="0" width="48" height="24" rx="3" fill="#2C2520" />
+              <text x="6" y="16" fontSize="7" fill="#C9B38A">RESET</text>
+            </g>
+          </g>
         </svg>
 
         {/* Overlaid interactive panels (premium, tasteful) — absolute positioned like benchmarks */}
@@ -833,8 +907,8 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
             <div className="mt-1 text-[#1F2F38]">{currentRoster.name}</div>
             <div className="text-[#5C4033] font-mono text-xs mt-0.5">{currentRoster.phone}</div>
             <div className="text-xs text-[#64748B] mt-2 leading-snug">{currentRoster.note}</div>
-            <button 
-              onClick={() => setActiveRosterId(null)} 
+            <button
+              onClick={() => setActiveRosterId(null)}
               className="mt-3 text-xs uppercase tracking-widest text-[#0F5B54] hover:text-[#C74601]"
             >
               CLOSE
@@ -908,8 +982,8 @@ export default function GAO002Scene02CoverageOnCall({ onComplete }: Props) {
                   const isCorrectOpt = opt.isCorrect;
                   let cls = "decision-card w-full text-left border rounded-xl px-3 py-2 text-xs bg-[#FDF8F3] border-[#C4A17A] hover:border-[#0F5B54] text-[#1F2F38]";
                   if (selected) {
-                    cls = isCorrectOpt 
-                      ? "decision-card w-full text-left border rounded-xl px-3 py-2 text-xs bg-[#E5FEFF] border-[#0F5B54] text-[#0F5B54] font-medium" 
+                    cls = isCorrectOpt
+                      ? "decision-card w-full text-left border rounded-xl px-3 py-2 text-xs bg-[#E5FEFF] border-[#0F5B54] text-[#0F5B54] font-medium"
                       : "decision-card w-full text-left border rounded-xl px-3 py-2 text-xs bg-[#FEF2F2] border-[#B45309] text-[#9F1239]";
                   }
                   return (

@@ -1,22 +1,12 @@
-﻿/* GAO Phase 1 trainings â€” Modules 001-007
-   Source: Builder/Policies/ALL_POLICIES.md and individual P&P files.
-   All narration written for 130-150 wpm pacing. */
+/* GAO Phase 1 trainings — Modules 001-007 (AAA v2 for 003-005; 001/002/006/007 preserved) */
 
 import type { ModuleTraining } from './trainingContent.types';
 
-const IMG = {
-  org: '/assets/media/gao-mission-values.jpg',
-  scope: '/assets/media/patient-rights.jpg',
-  compliance: '/assets/media/abuse-reporting.jpg',
-  hotline: '/assets/media/hipaa-privacy.jpg',
-  whistle: '/assets/media/hipaa-privacy.jpg',
-  hipaa: '/assets/media/hipaa-privacy.jpg',
-  infection: '/assets/media/infection-ppe.jpg',
-  emergency: '/assets/media/emergency-prep.jpg',
-};
+const NAV_BULLETS = ["Single-card view","Audio narration on every card","Challenges required to advance","80% to pass final test"];
+const NAV_NARRATION = "One card at a time. Audio narration on every card. Challenges must be completed before you continue. The final test requires eighty percent to pass.";
+const NAV_BODY = "You will move through one card at a time. Use Next and Previous to navigate. Your progress, time on each card, and challenge responses are tracked for compliance. Skipping cards is not allowed.";
 
 export const GAO_TRAININGS_001_007: ModuleTraining[] = [
-  /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ GAO-001 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   {
     moduleId: 'GAO-001',
     policyRefs: ['EN-CM-001'],
@@ -338,8 +328,6 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
       ],
     },
   },
-
-  /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ GAO-002 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   {
     moduleId: 'GAO-002',
     policyRefs: ['GV-OG-001'],
@@ -597,786 +585,2505 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
       ],
     },
   },
-
-  /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ GAO-003 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   {
-    moduleId: 'GAO-003',
-    policyRefs: ['GV-OG-003'],
-    cmsRefs: ['42 CFR 484.20'],
-    estimatedDurationMin: 45,
-    durationSource: 'DEFAULT',
-    splash: {
-      title: 'Scope of Services',
-      subtitle: 'What we do â€” and what we do not do',
-      whyItMatters:
-        'Providing services outside the approved scope is a Medicare condition-level deficiency and can void coverage of every visit on a case. Knowing the scope protects the patient, the agency, and your license.',
-      narration:
-        'In this module you will learn what services this agency is approved to provide, what services we do not provide, and what to do when a referral or family request asks us to step outside our scope.',
-      imageUrl: IMG.scope,
-    },
-    navigation: {
-      title: 'How This Training Works',
-      body: 'One card at a time. Narration plays on every card. Challenges required. 80% to pass.',
-      bullets: ['Card-by-card flow', 'Audio narration', 'Challenges required', '80% pass threshold'],
-      narration: 'One card at a time. Narration on every card. Challenges must be completed. Eighty percent to pass.',
-    },
-    lessons: [
-      {
-        id: 'GAO-003-L1',
-        order: 1,
-        title: 'Approved Scope and Boundaries',
-        objectives: [
-          'List the disciplines included in our approved scope',
-          'Identify services we do NOT provide',
-          'Describe the action when a referral falls outside scope',
-        ],
-        cards: [
-          {
-            id: 'GAO-003-L1-S',
-            type: 'summary',
-            title: 'What You Will Learn',
-            body: 'You will learn our approved disciplines (skilled nursing, PT, OT, SLP, MSW, HHA), our excluded services (acute hospice, IV chemotherapy, pediatric ventilator, in-patient psych), and the scope-check workflow at intake.',
-            narration:
-              'In this lesson you will learn the disciplines we are approved to provide: skilled nursing, physical therapy, occupational therapy, speech-language pathology, medical social work, and home health aide. You will also learn the services we do not provide and the scope-check workflow that protects every referral.',
-            estDurationSec: 40,
-          },
-          {
-            id: 'GAO-003-L1-C1',
-            type: 'content',
-            title: 'Approved Disciplines',
-            body: 'We are licensed and Medicare-certified to provide intermittent skilled nursing, physical therapy, occupational therapy, speech-language pathology, medical social work, and home health aide services in the patient home.',
-            narration:
-              'We are licensed and Medicare-certified to provide intermittent skilled nursing, physical therapy, occupational therapy, speech-language pathology, medical social work, and home health aide services. Care must be intermittent and must occur in the patient home as defined by Medicare.',
-            estDurationSec: 45,
-          },
-          {
-            id: 'GAO-003-L1-C2',
-            type: 'content',
-            title: 'Services We Do Not Provide',
-            body: 'We do not provide: continuous private-duty nursing, in-patient hospice, IV chemotherapy administration, pediatric ventilator management, or psychiatric inpatient services. Custodial-only care is also outside Medicare home health benefit.',
-            narration:
-              'We do not provide continuous private-duty nursing, in-patient hospice, IV chemotherapy administration, pediatric ventilator management, or psychiatric inpatient services. Purely custodial care is also outside the Medicare home health benefit. If a referral asks for any of these, the referral must be redirected.',
-            estDurationSec: 55,
-          },
-          {
-            id: 'GAO-003-L1-C3',
-            type: 'content',
-            title: 'Scope-Check at Intake',
-            body: 'Every referral runs through a documented scope check at intake (OP-RI-001). If the referral falls outside scope, intake refers the patient to an appropriate provider and documents the redirection. Accepting an out-of-scope referral creates a survey deficiency and may void payment.',
-            narration:
-              'Every referral runs through a documented scope check at intake. If the referral falls outside our approved scope, intake redirects the patient to an appropriate provider and documents the action. Accepting an out-of-scope referral is a survey-level deficiency and may void Medicare payment for the entire episode.',
-            estDurationSec: 55,
-          },
-          {
-            id: 'GAO-003-L1-C4',
-            type: 'content',
-            title: 'Field Example: Scope in a Hospital Referral',
-            body: 'The hospital discharge planner calls for daily aide visits for a patient who needs only medication reminders and light housekeeping. No skilled nursing or therapy is ordered and the patient is not homebound under Medicare rules. Per GV-OG-003 (Scope of Services Definition), you thank the planner, explain we do not provide custodial homemaker services under our home health license, and give the contact for two private-pay agencies that do. You document the call and the redirect in the intake log. The case never opens.',
-            narration: 'Field example. Hospital calls for daily aide for medication reminders and housekeeping only. No skilled need, not homebound. Per GV-OG-003 you explain we do not provide that service under our license and give the planner names of private-pay agencies. You log the redirect. The case stays out of our scope.',
-            estDurationSec: 55,
-          },
-          {
-            id: 'GAO-003-L1-C5',
-            type: 'content',
-            title: 'Common Scope Pitfalls in the Field',
-            body: 'Never agree to "just check in" or "help with groceries" if the plan of care does not authorize it. If a family pressures you during a visit to perform non-covered tasks, politely decline, explain what your authorized role is, and report the request to your supervisor. Verbal promises outside scope create liability and false expectations.',
-            narration: 'Common pitfalls. Do not agree to "just check in" or run errands if it is not in the authorized plan. If a family pushes for non-covered help, decline politely, restate your role, and tell your supervisor. Verbal promises outside scope create legal and compliance risk.',
-            estDurationSec: 50,
-          },
-          {
-            id: 'GAO-003-L1-CH',
-            type: 'challenge',
-            title: 'Out-of-Scope Request',
-            body: 'A family asks us to send an aide for eight hours daily to provide companionship and meal preparation only. The patient has no skilled need.',
-            narration:
-              'A scenario. A family asks us to send a home health aide for eight hours daily to provide companionship and meal preparation only. The patient has no skilled need on file. What is the correct action?',
-            estDurationSec: 45,
-            challenge: {
-              id: 'GAO-003-L1-CH-Q',
-              format: 'scenario_decision',
-              prompt: 'What is the correct action?',
-              narration: 'What is the correct action when a request is custodial only with no skilled need?',
-              options: [
-                { id: 'a', label: 'Accept and bill Medicare for aide hours.', isCorrect: false, feedback: 'Custodial-only care without a skilled need is not a Medicare benefit. Billing it is a false claim.' },
-                { id: 'b', label: 'Redirect the family to a private-pay homemaker agency and document the referral.', isCorrect: true, feedback: 'Correct. Out-of-scope referrals must be redirected to an appropriate provider and documented.' },
-                { id: 'c', label: 'Quietly add a fictitious skilled need so the case can be opened.', isCorrect: false, feedback: 'Falsifying a skilled need is fraud and can trigger criminal liability.' },
-                { id: 'd', label: 'Tell the family no and end the conversation.', isCorrect: false, feedback: 'Patient is owed a redirect to an appropriate provider, not a dismissal.' },
-              ],
-              policyRef: 'GV-OG-003',
-              feedbackCorrect: 'Redirect and document. The patient is served, the agency stays in scope, and the referral source is informed.',
-              feedbackIncorrect: 'Accepting custodial-only requests under Medicare home health is a false claim and a scope violation.',
-              complianceImpact: 'Out-of-scope acceptance is a 42 CFR 484.20 violation and may trigger Medicare overpayment recovery for every visit on the case.',
-              realWorldConsequence: 'Published Medicare audit settlements have exceeded one million dollars for systematic out-of-scope acceptance.',
-              correctBehaviorGuidance: 'When in doubt, escalate to the intake supervisor before accepting. Document the scope check on every referral.',
-            },
-          },
-        ],
-      },
-      {
-        id: 'GAO-003-L2',
-        order: 2,
-        title: 'Annual Scope Review and Change Control',
-        objectives: [
-          'Describe the annual scope review per 42 CFR 484.20',
-          'Explain the change-control workflow when adding or removing services',
-        ],
-        cards: [
-          {
-            id: 'GAO-003-L2-S',
-            type: 'summary',
-            title: 'Scope Lifecycle',
-            body: 'You will learn how scope is reviewed annually by the Governing Body, how a service is added or removed, and what evidence the surveyor will request.',
-            narration: 'In this lesson you will learn how scope is reviewed annually by the Governing Body, how a service is added or removed through change control, and what evidence the surveyor will request to verify the process.',
-            estDurationSec: 35,
-          },
-          {
-            id: 'GAO-003-L2-C1',
-            type: 'content',
-            title: 'Annual Review',
-            body: 'The Governing Body reviews scope at least annually. Inputs include patient population data, staffing, regulatory changes, and QAPI findings. The reviewed scope is published in the EMR and on the Notice of Privacy Practices.',
-            narration: 'The Governing Body reviews scope at least annually. Inputs include patient population data, staffing, regulatory changes, and quality findings. The reviewed scope is published in the electronic medical record and on the Notice of Privacy Practices delivered at admission.',
-            estDurationSec: 55,
-          },
-          {
-            id: 'GAO-003-L2-C2',
-            type: 'content',
-            title: 'Change Control',
-            body: 'Adding or removing a service requires: feasibility analysis, staffing plan, P&P revision, training plan, Governing Body approval, and state notification when required. No service is launched without all six.',
-            narration: 'Adding or removing a service requires six steps: feasibility analysis, staffing plan, policy and procedure revision, training plan, Governing Body approval, and state notification when required. No service is launched in the field without all six.',
-            estDurationSec: 60,
-          },
-          {
-            id: 'GAO-003-L2-C3',
-            type: 'content',
-            title: 'Field Example: Adding IV Therapy',
-            body: 'The agency decides to add IV antibiotic therapy. Per GV-OG-003 the process starts with feasibility data (projected referrals, payer mix), then a staffing plan to hire two IV-certified RNs, P&P updates for central line care, a two-day competency training, Governing Body resolution, and state notification. Only after all steps complete does the first IV referral get accepted. Field staff are notified the new service is live.',
-            narration: 'Field example. To add IV antibiotics the agency did feasibility numbers, hired and trained IV nurses, updated policies, trained staff, got Board approval, and notified the state. Only then did the first patient get accepted. You never see a service appear without that full process.',
-            estDurationSec: 55,
-          },
-          {
-            id: 'GAO-003-L2-C4',
-            type: 'content',
-            title: 'Survey Evidence for Scope',
-            body: 'Surveyors will request: the current scope document signed by the Governing Body, the minutes of the annual review meeting, training records for any newly added service, and a sample of redirected referrals. If you accepted care outside scope you will be asked to explain why.',
-            narration: 'Surveyors ask for the signed scope document, board minutes from the review, training records for new services, and examples of redirected cases. If you ever accepted out-of-scope work you will have to explain it.',
-            estDurationSec: 45,
-          },
-          {
-            id: 'GAO-003-L2-CH',
-            type: 'challenge',
-            title: 'Change-Control Sequence',
-            body: 'Place the change-control steps in the correct order.',
-            narration: 'Place the steps for adding a new service in correct order.',
-            estDurationSec: 50,
-            challenge: {
-              id: 'GAO-003-L2-CH-Q',
-              format: 'sequencing',
-              prompt: 'Place the steps in correct order.',
-              narration: 'Place the steps in correct order.',
-              steps: [
-                { id: 's1', label: 'Feasibility analysis' },
-                { id: 's2', label: 'Staffing plan' },
-                { id: 's3', label: 'P&P revision' },
-                { id: 's4', label: 'Training plan' },
-                { id: 's5', label: 'Governing Body approval' },
-                { id: 's6', label: 'State notification (if required)' },
-              ],
-              correctOrder: ['s1', 's2', 's3', 's4', 's5', 's6'],
-              policyRef: 'GV-OG-003',
-              feedbackCorrect: 'Correct sequence preserves due-diligence evidence and survey defensibility.',
-              feedbackIncorrect: 'Skipping or reordering steps invalidates the change and may trigger licensure issues.',
-              complianceImpact: 'Service launches without Governing Body approval violate 42 CFR 484.20 and licensure requirements.',
-              realWorldConsequence: 'Agencies have been forced to retroactively suspend services after surveyors discovered missing approvals.',
-              correctBehaviorGuidance: 'Follow the six-step sequence in order. Document at every step. No exceptions.',
-            },
-          },
-        ],
-      },
-    ],
-    finalTest: {
-      id: 'GAO-003-FT',
-      passingScorePct: 0.80,
-      instructionsNarration: 'Final test on scope of services. Eighty percent required.',
-      failAction: 'remediation',
-      questions: [
-        {
-          id: 'GAO-003-FT-Q1',
-          format: 'matching',
-          prompt: 'Match each request to whether it is IN scope or OUT of scope.',
-          narration: 'Match each request to whether it is in scope or out of scope.',
-          matches: [
-            { left: 'Skilled wound care 3x/week', right: 'IN scope' },
-            { left: 'PT eval and home exercise program', right: 'IN scope' },
-            { left: '8 hours daily companionship only', right: 'OUT of scope' },
-            { left: 'Pediatric home ventilator management', right: 'OUT of scope' },
-            { left: 'IV chemotherapy infusion in home', right: 'OUT of scope' },
-          ],
-          rationale: 'Skilled, intermittent need defines our scope. Continuous, custodial, or specialty in-home services are excluded.',
-          policyRef: 'GV-OG-003',
-        },
-        {
-          id: 'GAO-003-FT-Q2',
-          format: 'scenario_decision',
-          prompt: 'A referral asks for daily continuous nursing for 12 hours. What do you do?',
-          narration: 'A referral asks for daily continuous nursing of twelve hours. What is the correct action?',
-          options: [
-            { id: 'a', label: 'Accept it as a home health case.', isCorrect: false, feedback: 'Continuous duty exceeds the intermittent benefit.' },
-            { id: 'b', label: 'Redirect to a private-duty nursing agency and document.', isCorrect: true, feedback: 'Correct.' },
-            { id: 'c', label: 'Split the case across multiple home health visits to disguise the duration.', isCorrect: false, feedback: 'This is fraudulent splitting and triggers audits.' },
-            { id: 'd', label: 'Refer the family to the ER instead.', isCorrect: false, feedback: 'The patient does not need acute care; redirect to private-duty nursing.' },
-          ],
-          rationale: 'Continuous duty is outside Medicare home health.',
-          policyRef: 'GV-OG-003',
-        },
-        {
-          id: 'GAO-003-FT-Q3',
-          format: 'true_false',
-          prompt: 'Custodial-only care is reimbursable under Medicare home health if a family requests it.',
-          narration: 'True or false: custodial-only care is reimbursable under Medicare home health if a family requests it.',
-          options: [
-            { id: 't', label: 'True', isCorrect: false, feedback: 'False â€” Medicare does not cover custodial-only care.' },
-            { id: 'f', label: 'False', isCorrect: true, feedback: 'Correct.' },
-          ],
-          rationale: 'Custodial-only care does not meet skilled need requirements.',
-          policyRef: 'GV-OG-003',
-        },
-        {
-          id: 'GAO-003-FT-Q4',
-          format: 'field_completion',
-          prompt: 'Document the redirection workflow at intake.',
-          narration: 'Complete the three required fields documented when an out-of-scope referral is redirected.',
-          fields: [
-            { id: 'f1', label: 'Reason out of scope', acceptableAnswers: ['no skilled need', 'continuous care', 'custodial only', 'pediatric ventilator', 'IV chemotherapy', 'inpatient'] },
-            { id: 'f2', label: 'Provider redirected to', acceptableAnswers: ['private-pay agency', 'private duty', 'hospice', 'inpatient facility', 'specialty provider'] },
-            { id: 'f3', label: 'Person notified (referral source)', acceptableAnswers: ['referring physician', 'physician', 'discharge planner', 'case manager', 'family'] },
-          ],
-          rationale: 'Documentation is the survey-defensible evidence of correct scope handling.',
-          policyRef: 'GV-OG-003',
-        },
-      ],
-    },
+  moduleId: "GAO-003",
+  policyRefs: [
+    "GV-OG-003"
+  ],
+  cmsRefs: [],
+  estimatedDurationMin: 30,
+  durationSource: "DEFAULT",
+  splash: {
+    title: "Scope of Services",
+    subtitle: "Care Indeed GAO — AAA Record v2.0",
+    whyItMatters: "Home health care is the provision of skilled medical services in a patient's home, ordered by a physician, and covered under Medicare Part A when specific eligibility criteria are met.",
+    narration: "Welcome to GAO-003, Scope of Services. Home health care is the provision of skilled medical services in a patient's home, ordered by a physician, and covered under Medicare Part A when specific eligibility criteria are met."
   },
-
-  /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ GAO-004 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  navigation: {
+    title: "How This Training Works",
+    body: "You will move through one card at a time. Use Next and Previous to navigate. Your progress, time on each card, and challenge responses are tracked for compliance. Skipping cards is not allowed.",
+    bullets: [
+      "Single-card view",
+      "Audio narration on every card",
+      "Challenges required to advance",
+      "80% to pass final test"
+    ],
+    narration: "One card at a time. Audio narration on every card. Challenges must be completed before you continue. The final test requires eighty percent to pass."
+  },
+  lessons: [
+    {
+      id: "GAO-003-L1",
+      order: 1,
+      title: "What Home Health Care Is",
+      objectives: [
+        "Apply key requirements from What Home Health Care Is",
+        "Identify correct field actions related to What Home Health Care Is"
+      ],
+      cards: [
+        {
+          id: "GAO-003-L1-S",
+          type: "summary",
+          title: "What Home Health Care Is",
+          body: "Home health care is the provision of skilled medical services in a patient's home, ordered by a physician, and covered under Medicare Part A when specific eligibility criteria are met.",
+          narration: "In this lesson: What Home Health Care Is. Home health care is the provision of skilled medical services in a patient's home, ordered by a physician, and covered under Medicare Part A when specific eligibility criteria are met.",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-003-L1-C1",
+          type: "content",
+          title: "What Home Health Care Is",
+          body: "Home health care is the provision of skilled medical services in a patient's home, ordered by a physician, and covered under Medicare Part A when specific eligibility criteria are met.",
+          narration: "Home health care is the provision of skilled medical services in a patient's home, ordered by a physician, and covered under Medicare Part A when specific eligibility criteria are met. Understanding the scope of services that Care Indeed provides is essential for every employee because it defines the boundaries of what you can and cannot do, what the agency is authorized to deliver, and what patients are entitled to receive. To qualify for Medicare home health services under 42 CFR Section 484.55, five eligibility criteria must be met simultaneously. First, the patient must be homebound, meaning they are confined to their home due to their medical condition. Homebound does not mean the patient can never leave the house. It means that leaving home requires considerable and taxing effort, and absences are infrequent, short in duration, or for medical treatment. A patient who goes to dialysis three times a week can",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-003-L1-C2",
+          type: "content",
+          title: "What Home Health Care Is (part 2)",
+          body: "still be homebound. A patient who drives to the grocery store and attends social events regularly is likely not homebound. Second, the patient must need skilled services.",
+          narration: "still be homebound. A patient who drives to the grocery store and attends social events regularly is likely not homebound. Second, the patient must need skilled services. This means the patient requires nursing care, physical therapy, occupational therapy, or speech-language pathology services that can only be performed safely and effectively by a licensed professional or under the supervision of one. Skilled need is the qualifying requirement. Without it, no amount of homebound status or physician orders qualifies a patient for Medicare home health. Third, services must be physician-ordered with an individualized plan of care. The physician or allowed practitioner must certify the patient's eligibility, establish the plan of care, and sign the orders. The plan of care is not a suggestion or a template. It is a legal document that specifies exactly which services will be provided, by which disciplines, at what frequency, for what duration, and with what goals.",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-003-L1-C3",
+          type: "content",
+          title: "What Home Health Care Is (part 3)",
+          body: "Fourth, services must be intermittent, meaning they are not continuous twenty-four-hour care. Medicare home health is designed for periodic skilled visits, typically ranging from daily to a few times per week, with each visit lasting a defined period.",
+          narration: "Fourth, services must be intermittent, meaning they are not continuous twenty-four-hour care. Medicare home health is designed for periodic skilled visits, typically ranging from daily to a few times per week, with each visit lasting a defined period. Patients who require around-the-clock nursing care are not appropriate for intermittent home health services. Fifth, the patient must meet the face-to-face encounter requirement. A physician or allowed practitioner must have a face-to-face encounter with the patient within specified timeframes related to the start of care. This ensures a physician has actually seen and evaluated the patient before certifying them for home health. Understanding these five criteria prevents two critical errors in your daily work. The first error is providing services the agency is not authorized to provide, which can result in Medicare fraud allegations, denied claims, and survey deficiencies. The second error is failing to provide services the patient is entitled to",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-003-L1-C4",
+          type: "content",
+          title: "What Home Health Care Is (part 4)",
+          body: "receive, which can result in patient harm, unmet needs, and complaints to CMS.",
+          narration: "receive, which can result in patient harm, unmet needs, and complaints to CMS.",
+          estDurationSec: 35
+        },
+        {
+          id: "GAO-003-L1-CH",
+          type: "challenge",
+          title: "Knowledge Check 1 Q: A patient leaves home twice a week for…",
+          body: "Knowledge Check 1 Q: A patient leaves home twice a week for dialysis and once a month for a physician appointment. Can they be considered homebound? A: Yes. Homebound status allows absences for medical treatment.",
+          narration: "Knowledge Check 1 Q: A patient leaves home twice a week for dialysis and once a month for a physician appointment. Can they be considered homebound? A: Yes. Homebound status allows absences for medical treatment. Dialysis and physician visits are medical purposes.",
+          estDurationSec: 55,
+          challenge: {
+            id: "GAO-003-L1-CH-Q",
+            format: "scenario_decision",
+            prompt: "Knowledge Check 1 Q: A patient leaves home twice a week for dialysis and once a month for a physician appointment. Can they be considered homebound? A: Yes. Homebound status allows absences for medical treatment. Dialysis and physician visits are medical purposes.",
+            narration: "Knowledge Check 1 Q: A patient leaves home twice a week for dialysis and once a month for a physician appointment. Can they be considered homebound? A: Yes. Homebound status allows absences for medical treatment. Dialysis and physician visits are medical purposes.",
+            options: [
+              {
+                id: "a",
+                label: "Apply the policy-based correct action.",
+                isCorrect: true,
+                feedback: "Correct — this matches the module guidance."
+              },
+              {
+                id: "b",
+                label: "Document only and take no further action until the next scheduled visit.",
+                isCorrect: false,
+                feedback: "Documentation alone is not enough when action or notification is required."
+              },
+              {
+                id: "c",
+                label: "Ask a coworker informally and wait for them to decide.",
+                isCorrect: false,
+                feedback: "You must follow the formal policy pathway yourself."
+              },
+              {
+                id: "d",
+                label: "Ignore the issue if the patient appears comfortable.",
+                isCorrect: false,
+                feedback: "Patient comfort does not override required clinical or compliance actions."
+              }
+            ],
+            policyRef: "GV-OG-003",
+            feedbackCorrect: "Correct.",
+            feedbackIncorrect: "Review the expected response and policy guidance.",
+            complianceImpact: "Incorrect action can create survey, safety, or legal exposure.",
+            realWorldConsequence: "Patient harm, delayed reporting, or noncompliance findings can result.",
+            correctBehaviorGuidance: ""
+          }
+        }
+      ]
+    },
+    {
+      id: "GAO-003-L2",
+      order: 2,
+      title: "Services We Provide",
+      objectives: [
+        "Apply key requirements from Services We Provide",
+        "Identify correct field actions related to Services We Provide"
+      ],
+      cards: [
+        {
+          id: "GAO-003-L2-S",
+          type: "summary",
+          title: "Services We Provide",
+          body: "Care Indeed provides six categories of skilled home health services, each defined by the CMS Conditions of Participation and delivered by qualified professionals who meet specific personnel requirements.",
+          narration: "In this lesson: Services We Provide. Care Indeed provides six categories of skilled home health services, each defined by the CMS Conditions of Participation and delivered by qualified professionals who meet specific personnel requirements. Skilled nursing is provided by registered nurses and licensed vocational nurses under 42 CFR Section 484.115 subsections (a) and (c).",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-003-L2-C1",
+          type: "content",
+          title: "Services We Provide",
+          body: "Care Indeed provides six categories of skilled home health services, each defined by the CMS Conditions of Participation and delivered by qualified professionals who meet specific personnel requirements.",
+          narration: "Care Indeed provides six categories of skilled home health services, each defined by the CMS Conditions of Participation and delivered by qualified professionals who meet specific personnel requirements. Skilled nursing is provided by registered nurses and licensed vocational nurses under 42 CFR Section 484.115 subsections (a) and (c). RNs perform comprehensive assessments, develop and update care plans, manage complex wound care, administer medications, provide patient and caregiver education, and coordinate the interdisciplinary team. LVNs provide skilled nursing services under the supervision of an RN or the Director of Nursing, including medication administration, wound care, and patient monitoring within their scope of practice. Physical therapy is provided by physical therapists and physical therapist assistants under Section 484.115 subsections (d) and (e). PTs evaluate functional limitations, develop treatment plans, provide therapeutic exercise and mobility training, assess assistive device needs, and establish home exercise programs. PTAs deliver PT interventions under the direct supervision",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-003-L2-C2",
+          type: "content",
+          title: "Services We Provide (part 2)",
+          body: "of the PT. A PTA cannot evaluate, develop a treatment plan, or discharge a patient from therapy. Occupational therapy is provided by occupational therapists and certified occupational therapy assistants under Section 484.115 subsections (f) and (g).",
+          narration: "of the PT. A PTA cannot evaluate, develop a treatment plan, or discharge a patient from therapy. Occupational therapy is provided by occupational therapists and certified occupational therapy assistants under Section 484.115 subsections (f) and (g). OTs evaluate the patient's ability to perform activities of daily living, recommend adaptive equipment, provide upper extremity rehabilitation, and develop strategies for functional independence. COTAs deliver OT interventions under the direct supervision of the OT. Speech-language pathology is provided by speech-language pathologists under Section 484.115 subsection (h). SLPs evaluate and treat speech, language, cognitive, and swallowing disorders. In home health, swallowing evaluation and treatment is a particularly critical service because dysphagia creates aspiration pneumonia risk, which is a leading cause of hospitalization and mortality in the home health population. Medical social services are provided by medical social workers under Section 484.115 subsection (i). MSWs address psychosocial barriers to care, connect patients and families with",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-003-L2-C3",
+          type: "content",
+          title: "Services We Provide (part 3)",
+          body: "community resources, provide counseling for adjustment to illness, assist with advance directive planning, and help resolve financial or insurance barriers that affect the patient's ability to receive care. Home health aide services are provided by home health aides under 42 CFR Section 484.80.",
+          narration: "community resources, provide counseling for adjustment to illness, assist with advance directive planning, and help resolve financial or insurance barriers that affect the patient's ability to receive care. Home health aide services are provided by home health aides under 42 CFR Section 484.80. HHAs provide personal care, assistance with activities of daily living, health-related tasks as delegated by the RN, vital signs monitoring, and patient observation. HHA services must be part of the plan of care and supervised by an RN. The RN must make a supervisory visit to the patient's home at least every fourteen days during the first sixty days and every sixty days thereafter to observe the HHA providing care and assess whether the aide services continue to meet the patient's needs. Each of these services must be physician-ordered as part of a comprehensive plan of care, and the clinician providing the service must meet the personnel",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-003-L2-C4",
+          type: "content",
+          title: "Services We Provide (part 4)",
+          body: "qualifications defined in the CMS Conditions of Participation. No service can be added, removed, or modified without a corresponding physician order and care plan update. ---",
+          narration: "qualifications defined in the CMS Conditions of Participation. No service can be added, removed, or modified without a corresponding physician order and care plan update. ---",
+          estDurationSec: 35
+        },
+        {
+          id: "GAO-003-L2-CH",
+          type: "challenge",
+          title: "Apply This Lesson",
+          body: "What is the key takeaway from \"Services We Provide\"?",
+          narration: "What is the key takeaway from \"Services We Provide\"?",
+          estDurationSec: 55,
+          challenge: {
+            id: "GAO-003-L2-CH-Q",
+            format: "scenario_decision",
+            prompt: "What is the key takeaway from \"Services We Provide\"?",
+            narration: "What is the key takeaway from \"Services We Provide\"?",
+            options: [
+              {
+                id: "a",
+                label: "Care Indeed provides six categories of skilled home health services, each defined by the CMS Conditions of Participation and delivered by qualified professionals who meet specific…",
+                isCorrect: true,
+                feedback: "Correct — this matches the module guidance."
+              },
+              {
+                id: "b",
+                label: "Document only and take no further action until the next scheduled visit.",
+                isCorrect: false,
+                feedback: "Documentation alone is not enough when action or notification is required."
+              },
+              {
+                id: "c",
+                label: "Ask a coworker informally and wait for them to decide.",
+                isCorrect: false,
+                feedback: "You must follow the formal policy pathway yourself."
+              },
+              {
+                id: "d",
+                label: "Ignore the issue if the patient appears comfortable.",
+                isCorrect: false,
+                feedback: "Patient comfort does not override required clinical or compliance actions."
+              }
+            ],
+            policyRef: "GV-OG-003",
+            feedbackCorrect: "Correct.",
+            feedbackIncorrect: "Review the expected response and policy guidance.",
+            complianceImpact: "Incorrect action can create survey, safety, or legal exposure.",
+            realWorldConsequence: "Patient harm, delayed reporting, or noncompliance findings can result.",
+            correctBehaviorGuidance: "Care Indeed provides six categories of skilled home health services, each defined by the CMS Conditions of Participation and delivered by qualified professionals who meet specific personnel requirements."
+          }
+        }
+      ]
+    },
+    {
+      id: "GAO-003-L3",
+      order: 3,
+      title: "Scope Boundaries",
+      objectives: [
+        "Apply key requirements from Scope Boundaries",
+        "Identify correct field actions related to Scope Boundaries"
+      ],
+      cards: [
+        {
+          id: "GAO-003-L3-S",
+          type: "summary",
+          title: "Scope Boundaries",
+          body: "It is equally important to understand what Care Indeed does not provide. Operating outside the agency's authorized scope creates serious legal, financial, and patient safety risks. We do not provide twenty-four-hour continuous care. Medicare home health is designed for intermittent skilled visits.",
+          narration: "In this lesson: Scope Boundaries. It is equally important to understand what Care Indeed does not provide. Operating outside the agency's authorized scope creates serious legal, financial, and patient safety risks. We do not provide twenty-four-hour continuous care. Medicare home health is designed for intermittent skilled visits.",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-003-L3-C1",
+          type: "content",
+          title: "Scope Boundaries",
+          body: "It is equally important to understand what Care Indeed does not provide. Operating outside the agency's authorized scope creates serious legal, financial, and patient safety risks. We do not provide twenty-four-hour continuous care. Medicare home health is designed for intermittent skilled visits.",
+          narration: "It is equally important to understand what Care Indeed does not provide. Operating outside the agency's authorized scope creates serious legal, financial, and patient safety risks. We do not provide twenty-four-hour continuous care. Medicare home health is designed for intermittent skilled visits. If a patient's condition deteriorates to the point where they need round-the-clock nursing care, the appropriate response is to communicate with the physician, update the care plan, and potentially recommend a higher level of care such as inpatient hospitalization or skilled nursing facility placement. We do not provide custodial care only. Custodial care means assistance with activities of daily living without a skilled need. If a patient's only need is help with bathing and dressing but they do not require nursing, therapy, or other skilled services, they do not qualify for Medicare home health. Home health aide services are only covered when there is a qualifying skilled need",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-003-L3-C2",
+          type: "content",
+          title: "Scope Boundaries (part 2)",
+          body: "that also requires aide support as part of the care plan. We do not provide physician services. Care Indeed clinicians execute physician orders. We do not write orders, prescribe medications, or make medical diagnoses.",
+          narration: "that also requires aide support as part of the care plan. We do not provide physician services. Care Indeed clinicians execute physician orders. We do not write orders, prescribe medications, or make medical diagnoses. If a patient's condition changes and new orders are needed, the clinician contacts the physician, provides clinical information, and requests orders. The physician makes the medical decision. We do not dispense durable medical equipment. While Care Indeed clinicians may assess the need for DME, train patients on its use, and coordinate delivery with DME suppliers, we do not supply the equipment itself. This is a separate Medicare benefit category with its own suppliers and billing. We do not provide services outside our California license scope. Care Indeed is licensed to operate in specific geographic areas and provide specific categories of service as defined by the California Department of Public Health. Providing services outside the licensed scope",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-003-L3-C3",
+          type: "content",
+          title: "Scope Boundaries (part 3)",
+          body: "can result in licensure action, fines, or agency closure. And critically, we never provide services that are not on the physician's plan of care. Even if a service seems clinically appropriate, if it is not ordered and documented on the plan of care, we cannot provide it.",
+          narration: "can result in licensure action, fines, or agency closure. And critically, we never provide services that are not on the physician's plan of care. Even if a service seems clinically appropriate, if it is not ordered and documented on the plan of care, we cannot provide it. The correct response is to communicate the identified need to the physician, request an order, update the plan of care, and then provide the service once authorized. Why does this matter practically? Because patients and families will sometimes ask you to do things outside the plan of care. A family member might ask you to check on their spouse's blood sugar even though diabetes management is not on the care plan. A patient might ask you to help rearrange furniture. A caregiver might ask for medical advice about their own health condition. In each case, the correct response is to politely explain that",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-003-L3-C4",
+          type: "content",
+          title: "Scope Boundaries (part 4)",
+          body: "you can only provide services that are ordered on the plan of care, and to help them access the appropriate resource for their request.",
+          narration: "you can only provide services that are ordered on the plan of care, and to help them access the appropriate resource for their request. Providing out-of-scope services can result in Medicare fraud allegations if the service is billed, survey deficiencies if identified during a review, licensure sanctions if the service is outside your professional scope, malpractice liability if the patient is harmed, and patient harm if the service is provided by someone not qualified to deliver it.",
+          estDurationSec: 35
+        },
+        {
+          id: "GAO-003-L3-CH",
+          type: "challenge",
+          title: "Scenario Challenge 1 Scenario: A patient's daughter asks…",
+          body: "Scenario Challenge 1 Scenario: A patient's daughter asks you to check her own blood pressure during your visit with the patient. She says she has been feeling dizzy and her doctor appointment is not for two weeks.",
+          narration: "Scenario Challenge 1 Scenario: A patient's daughter asks you to check her own blood pressure during your visit with the patient. She says she has been feeling dizzy and her doctor appointment is not for two weeks.",
+          estDurationSec: 55,
+          challenge: {
+            id: "GAO-003-L3-CH-Q",
+            format: "scenario_decision",
+            prompt: "Scenario Challenge 1 Scenario: A patient's daughter asks you to check her own blood pressure during your visit with the patient. She says she has been feeling dizzy and her doctor appointment is not for two weeks.",
+            narration: "Scenario Challenge 1 Scenario: A patient's daughter asks you to check her own blood pressure during your visit with the patient. She says she has been feeling dizzy and her doctor appointment is not for two weeks.",
+            options: [
+              {
+                id: "a",
+                label: "Apply the policy-based correct action.",
+                isCorrect: true,
+                feedback: "Correct — this matches the module guidance."
+              },
+              {
+                id: "b",
+                label: "Document only and take no further action until the next scheduled visit.",
+                isCorrect: false,
+                feedback: "Documentation alone is not enough when action or notification is required."
+              },
+              {
+                id: "c",
+                label: "Ask a coworker informally and wait for them to decide.",
+                isCorrect: false,
+                feedback: "You must follow the formal policy pathway yourself."
+              },
+              {
+                id: "d",
+                label: "Ignore the issue if the patient appears comfortable.",
+                isCorrect: false,
+                feedback: "Patient comfort does not override required clinical or compliance actions."
+              }
+            ],
+            policyRef: "GV-OG-003",
+            feedbackCorrect: "Correct.",
+            feedbackIncorrect: "Review the expected response and policy guidance.",
+            complianceImpact: "Incorrect action can create survey, safety, or legal exposure.",
+            realWorldConsequence: "Patient harm, delayed reporting, or noncompliance findings can result.",
+            correctBehaviorGuidance: ""
+          }
+        }
+      ]
+    },
+    {
+      id: "GAO-003-L4",
+      order: 4,
+      title: "The Interdisciplinary Team",
+      objectives: [
+        "Apply key requirements from The Interdisciplinary Team",
+        "Identify correct field actions related to The Interdisciplinary Team"
+      ],
+      cards: [
+        {
+          id: "GAO-003-L4-S",
+          type: "summary",
+          title: "The Interdisciplinary Team",
+          body: "Home health is not siloed. A single patient may receive visits from an RN, PT, OT, SLP, MSW, and HHA, all coordinated through the plan of care.",
+          narration: "In this lesson: The Interdisciplinary Team. Home health is not siloed. A single patient may receive visits from an RN, PT, OT, SLP, MSW, and HHA, all coordinated through the plan of care. Understanding how the interdisciplinary team works is essential because most clinical errors in home health are not caused by lack of skill but by lack of communication between disciplines. The plan of care is the central coordination document.",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-003-L4-C1",
+          type: "content",
+          title: "The Interdisciplinary Team",
+          body: "Home health is not siloed. A single patient may receive visits from an RN, PT, OT, SLP, MSW, and HHA, all coordinated through the plan of care.",
+          narration: "Home health is not siloed. A single patient may receive visits from an RN, PT, OT, SLP, MSW, and HHA, all coordinated through the plan of care. Understanding how the interdisciplinary team works is essential because most clinical errors in home health are not caused by lack of skill but by lack of communication between disciplines. The plan of care is the central coordination document. Every discipline providing services to a patient references the same plan of care. It specifies each discipline's involvement, visit frequency, goals, and interventions. When you document a visit, you are contributing to the interdisciplinary record that every other team member will reference. All disciplines must communicate findings that affect other disciplines. This is not optional and it is not something that can wait until the next case conference. If a physical therapist notes that a patient has difficulty swallowing during exercises, the PT must communicate",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-003-L4-C2",
+          type: "content",
+          title: "The Interdisciplinary Team (part 2)",
+          body: "this to the RN immediately, who may request a physician order for an SLP evaluation. If a home health aide observes a new skin breakdown during personal care, the aide must report it to the supervising RN the same day so the RN can assess and update the care plan.",
+          narration: "this to the RN immediately, who may request a physician order for an SLP evaluation. If a home health aide observes a new skin breakdown during personal care, the aide must report it to the supervising RN the same day so the RN can assess and update the care plan. The RN coordinates overall patient care in home health. While each discipline manages its own interventions, the RN serves as the care coordinator who ensures all disciplines are working toward consistent goals, the plan of care reflects the patient's current status, physician communication is timely, and changes in condition are addressed across all disciplines simultaneously. The Director of Nursing oversees the entire clinical team. The DON is responsible for ensuring that the interdisciplinary process functions effectively, that case conferences occur regularly, that supervision requirements are met, and that clinical quality standards are maintained across all disciplines. Case conferences bring the",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-003-L4-C3",
+          type: "content",
+          title: "The Interdisciplinary Team (part 3)",
+          body: "interdisciplinary team together to review complex patients, address coordination challenges, and align care goals. During case conferences, each discipline reports on the patient's progress, any concerns identified, and recommendations for care plan changes.",
+          narration: "interdisciplinary team together to review complex patients, address coordination challenges, and align care goals. During case conferences, each discipline reports on the patient's progress, any concerns identified, and recommendations for care plan changes. These conferences are documented and serve as evidence of interdisciplinary coordination during surveys. Your role in interdisciplinary coordination depends on your discipline, but the core principle applies to everyone: if you see something that affects another discipline, communicate it now, not later. Do not assume someone else will notice. Do not assume the other discipline will read your visit note. Pick up the phone, send a secure message, or speak to the person directly. The patient's safety depends on real-time communication, not assumptions. The most common coordination failures in home health involve delayed communication of falls or near-falls, failure to report changes in skin integrity across disciplines, medication discrepancies identified during visits but not communicated to the",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-003-L4-C4",
+          type: "content",
+          title: "The Interdisciplinary Team (part 4)",
+          body: "prescribing physician, and changes in patient functional status that affect multiple disciplines' treatment plans but are only documented in one discipline's notes.",
+          narration: "prescribing physician, and changes in patient functional status that affect multiple disciplines' treatment plans but are only documented in one discipline's notes.",
+          estDurationSec: 35
+        },
+        {
+          id: "GAO-003-L4-CH",
+          type: "challenge",
+          title: "Knowledge Check 2 Q: An HHA notices during personal care…",
+          body: "Knowledge Check 2 Q: An HHA notices during personal care that the patient has a new area of redness on their sacrum. The HHA's next visit is in two days.",
+          narration: "Knowledge Check 2 Q: An HHA notices during personal care that the patient has a new area of redness on their sacrum. The HHA's next visit is in two days. When should they report this? A: The same day, immediately after the visit. New skin findings must be reported to the supervising RN promptly, not at the next visit.",
+          estDurationSec: 55,
+          challenge: {
+            id: "GAO-003-L4-CH-Q",
+            format: "scenario_decision",
+            prompt: "Knowledge Check 2 Q: An HHA notices during personal care that the patient has a new area of redness on their sacrum. The HHA's next visit is in two days. When should they report this? A: The same day, immediately after the visit.",
+            narration: "Knowledge Check 2 Q: An HHA notices during personal care that the patient has a new area of redness on their sacrum. The HHA's next visit is in two days. When should they report this? A: The same day, immediately after the visit.",
+            options: [
+              {
+                id: "a",
+                label: "Apply the policy-based correct action.",
+                isCorrect: true,
+                feedback: "Correct — this matches the module guidance."
+              },
+              {
+                id: "b",
+                label: "Document only and take no further action until the next scheduled visit.",
+                isCorrect: false,
+                feedback: "Documentation alone is not enough when action or notification is required."
+              },
+              {
+                id: "c",
+                label: "Ask a coworker informally and wait for them to decide.",
+                isCorrect: false,
+                feedback: "You must follow the formal policy pathway yourself."
+              },
+              {
+                id: "d",
+                label: "Ignore the issue if the patient appears comfortable.",
+                isCorrect: false,
+                feedback: "Patient comfort does not override required clinical or compliance actions."
+              }
+            ],
+            policyRef: "GV-OG-003",
+            feedbackCorrect: "Correct.",
+            feedbackIncorrect: "Review the expected response and policy guidance.",
+            complianceImpact: "Incorrect action can create survey, safety, or legal exposure.",
+            realWorldConsequence: "Patient harm, delayed reporting, or noncompliance findings can result.",
+            correctBehaviorGuidance: ""
+          }
+        }
+      ]
+    },
+    {
+      id: "GAO-003-L5",
+      order: 5,
+      title: "Module Summary",
+      objectives: [
+        "Apply key requirements from Module Summary",
+        "Identify correct field actions related to Module Summary"
+      ],
+      cards: [
+        {
+          id: "GAO-003-L5-S",
+          type: "summary",
+          title: "Module Summary",
+          body: "Let us summarize the key principles you need to carry forward from this module. Home health care is skilled, intermittent, physician-ordered services provided in the patient's home.",
+          narration: "In this lesson: Module Summary. Let us summarize the key principles you need to carry forward from this module. Home health care is skilled, intermittent, physician-ordered services provided in the patient's home. The five Medicare eligibility criteria are homebound status, skilled need, physician orders with a plan of care, intermittent services, and the face-to-face encounter requirement.",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-003-L5-C1",
+          type: "content",
+          title: "Module Summary",
+          body: "Let us summarize the key principles you need to carry forward from this module. Home health care is skilled, intermittent, physician-ordered services provided in the patient's home.",
+          narration: "Let us summarize the key principles you need to carry forward from this module. Home health care is skilled, intermittent, physician-ordered services provided in the patient's home. The five Medicare eligibility criteria are homebound status, skilled need, physician orders with a plan of care, intermittent services, and the face-to-face encounter requirement. All five must be met simultaneously for a patient to qualify. If even one criterion is not met, the patient is not eligible for Medicare home health, and services provided would not be reimbursable. Care Indeed provides six service lines: skilled nursing by RNs and LVNs, physical therapy by PTs and PTAs, occupational therapy by OTs and COTAs, speech-language pathology by SLPs, medical social services by MSWs, and home health aide services by HHAs. Each service is governed by specific CMS personnel qualification requirements, and each must be ordered by a physician as part of the plan of care.",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-003-L5-C2",
+          type: "content",
+          title: "Module Summary (part 2)",
+          body: "Out-of-scope services create serious risk. We do not provide continuous care, custodial-only care, physician services, DME dispensing, services outside our license scope, or services not on the plan of care.",
+          narration: "Out-of-scope services create serious risk. We do not provide continuous care, custodial-only care, physician services, DME dispensing, services outside our license scope, or services not on the plan of care. When patients or families request something outside scope, the correct response is to explain the limitation politely and help connect them with the appropriate resource. Interdisciplinary coordination through the plan of care is a CMS requirement and a patient safety imperative. The plan of care is the central document. The RN coordinates care across disciplines. The DON oversees the clinical team. Case conferences align goals. And most importantly, when you observe something that affects another discipline, you communicate it immediately. For your daily practice, remember these action items. Before every visit, review the plan of care to confirm what services you are authorized to provide. During every visit, document what you actually did, what you observed, and what you communicated.",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-003-L5-C3",
+          type: "content",
+          title: "Module Summary (part 3)",
+          body: "If a patient or family requests something outside the plan of care, politely redirect and contact your supervisor or the physician if a care plan change may be warranted. If you observe something clinically relevant to another discipline, communicate it the same day by phone, secure message, or in person.",
+          narration: "If a patient or family requests something outside the plan of care, politely redirect and contact your supervisor or the physician if a care plan change may be warranted. If you observe something clinically relevant to another discipline, communicate it the same day by phone, secure message, or in person. Know the boundaries. Providing services outside the authorized scope is not going above and beyond. It is a compliance violation that puts you, the patient, and the agency at risk. Stay within your scope, stay within the plan of care, and communicate proactively. That is how you deliver safe, compliant, high-quality care at Care Indeed. You are now ready to proceed to the final exam. The exam contains ten questions. You need eighty percent or higher to pass.",
+          estDurationSec: 55
+        },
+        {
+          id: "GAO-003-L5-CH",
+          type: "challenge",
+          title: "Scenario Challenge 2 Scenario: During a skilled nursing…",
+          body: "Scenario Challenge 2 Scenario: During a skilled nursing visit, the patient tells you they feel their physical therapy is not helping and they want to stop PT. They ask you to just cancel it.",
+          narration: "Scenario Challenge 2 Scenario: During a skilled nursing visit, the patient tells you they feel their physical therapy is not helping and they want to stop PT. They ask you to just cancel it. Expected Response: Explain that you cannot discontinue another discipline's services.",
+          estDurationSec: 55,
+          challenge: {
+            id: "GAO-003-L5-CH-Q",
+            format: "scenario_decision",
+            prompt: "Scenario Challenge 2 Scenario: During a skilled nursing visit, the patient tells you they feel their physical therapy is not helping and they want to stop PT. They ask you to just cancel it. Expected Response: Explain that you cannot discontinue another discipline's services.",
+            narration: "Scenario Challenge 2 Scenario: During a skilled nursing visit, the patient tells you they feel their physical therapy is not helping and they want to stop PT. They ask you to just cancel it. Expected Response: Explain that you cannot discontinue another discipline's services.",
+            options: [
+              {
+                id: "a",
+                label: "Apply the policy-based correct action.",
+                isCorrect: true,
+                feedback: "Correct — this matches the module guidance."
+              },
+              {
+                id: "b",
+                label: "Document only and take no further action until the next scheduled visit.",
+                isCorrect: false,
+                feedback: "Documentation alone is not enough when action or notification is required."
+              },
+              {
+                id: "c",
+                label: "Ask a coworker informally and wait for them to decide.",
+                isCorrect: false,
+                feedback: "You must follow the formal policy pathway yourself."
+              },
+              {
+                id: "d",
+                label: "Ignore the issue if the patient appears comfortable.",
+                isCorrect: false,
+                feedback: "Patient comfort does not override required clinical or compliance actions."
+              }
+            ],
+            policyRef: "GV-OG-003",
+            feedbackCorrect: "Correct.",
+            feedbackIncorrect: "Review the expected response and policy guidance.",
+            complianceImpact: "Incorrect action can create survey, safety, or legal exposure.",
+            realWorldConsequence: "Patient harm, delayed reporting, or noncompliance findings can result.",
+            correctBehaviorGuidance: ""
+          }
+        }
+      ]
+    }
+  ],
+  finalTest: {
+    id: "GAO-003-FT",
+    passingScorePct: 0.8,
+    instructionsNarration: "Final test on Scope of Services. 80 percent required to pass.",
+    failAction: "remediation",
+    questions: [
+      {
+        id: "q1",
+        format: "scenario_decision",
+        prompt: "Which of the following is NOT a Medicare home health eligibility criterion?",
+        narration: "Which of the following is NOT a Medicare home health eligibility criterion?",
+        options: [
+          {
+            id: "a",
+            label: "Patient is homebound -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Services are physician-ordered -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "c",
+            label: "Patient requires 24-hour continuous care -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "d",
+            label: "Patient needs skilled services",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q1 from AAA Record v2.0 for GAO-003.",
+        policyRef: "GV-OG-003"
+      },
+      {
+        id: "q2",
+        format: "scenario_decision",
+        prompt: "A patient's family asks you to help with tasks not on the plan of care. What should you do?",
+        narration: "A patient's family asks you to help with tasks not on the plan of care. What should you do?",
+        options: [
+          {
+            id: "a",
+            label: "Help them since you are already there -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Politely decline and explain you can only provide services ordered on the plan of care -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "c",
+            label: "Do the tasks but do not document them -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "Ask the family to pay out-of-pocket for the extra services",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q2 from AAA Record v2.0 for GAO-003.",
+        policyRef: "GV-OG-003"
+      },
+      {
+        id: "q3",
+        format: "scenario_decision",
+        prompt: "Which document serves as the central coordination tool for the interdisciplinary team?",
+        narration: "Which document serves as the central coordination tool for the interdisciplinary team?",
+        options: [
+          {
+            id: "a",
+            label: "The employee handbook -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "The OASIS assessment -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "c",
+            label: "The plan of care -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "d",
+            label: "The discharge summary",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q3 from AAA Record v2.0 for GAO-003.",
+        policyRef: "GV-OG-003"
+      },
+      {
+        id: "q4",
+        format: "scenario_decision",
+        prompt: "Care Indeed provides which of the following?",
+        narration: "Care Indeed provides which of the following?",
+        options: [
+          {
+            id: "a",
+            label: "24-hour live-in care -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Intermittent skilled home health services -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "c",
+            label: "Physician diagnostic services -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "Durable medical equipment dispensing",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q4 from AAA Record v2.0 for GAO-003.",
+        policyRef: "GV-OG-003"
+      },
+      {
+        id: "q5",
+        format: "scenario_decision",
+        prompt: "If a PT notices a patient has swallowing difficulty during therapy, what should the PT do?",
+        narration: "If a PT notices a patient has swallowing difficulty during therapy, what should the PT do?",
+        options: [
+          {
+            id: "a",
+            label: "Document it and wait for the next case conference -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Communicate immediately to the RN for possible SLP referral -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "c",
+            label: "Attempt to assess the swallowing themselves -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "Ignore it since swallowing is outside PT scope",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q5 from AAA Record v2.0 for GAO-003.",
+        policyRef: "GV-OG-003"
+      },
+      {
+        id: "q6",
+        format: "scenario_decision",
+        prompt: "What does homebound mean under Medicare home health eligibility?",
+        narration: "What does homebound mean under Medicare home health eligibility?",
+        options: [
+          {
+            id: "a",
+            label: "The patient can never leave their home -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Leaving home requires considerable and taxing effort, and absences are infrequent or for medical treatment -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "c",
+            label: "The patient lives alone with no transportation -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "The patient has a physician order stating they are homebound",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q6 from AAA Record v2.0 for GAO-003.",
+        policyRef: "GV-OG-003"
+      },
+      {
+        id: "q7",
+        format: "scenario_decision",
+        prompt: "Which role coordinates overall patient care across all disciplines in home health?",
+        narration: "Which role coordinates overall patient care across all disciplines in home health?",
+        options: [
+          {
+            id: "a",
+            label: "The Administrator -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "The physician -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "c",
+            label: "The RN -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "d",
+            label: "The medical social worker",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q7 from AAA Record v2.0 for GAO-003.",
+        policyRef: "GV-OG-003"
+      },
+      {
+        id: "q8",
+        format: "scenario_decision",
+        prompt: "A patient asks you to provide a service that seems clinically appropriate but is not on the plan of care. What is correct?",
+        narration: "A patient asks you to provide a service that seems clinically appropriate but is not on the plan of care. What is correct?",
+        options: [
+          {
+            id: "a",
+            label: "Provide the service because it benefits the patient -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Provide the service and add it to your documentation -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "c",
+            label: "Contact the physician to request an order and care plan update before providing the service -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "d",
+            label: "Provide the service but do not bill for it",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q8 from AAA Record v2.0 for GAO-003.",
+        policyRef: "GV-OG-003"
+      },
+      {
+        id: "q9",
+        format: "scenario_decision",
+        prompt: "How often must an RN make a supervisory visit to observe an HHA providing care during the first 60 days?",
+        narration: "How often must an RN make a supervisory visit to observe an HHA providing care during the first 60 days?",
+        options: [
+          {
+            id: "a",
+            label: "Every 7 days -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Every 14 days -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "c",
+            label: "Every 30 days -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "Every 60 days",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q9 from AAA Record v2.0 for GAO-003.",
+        policyRef: "GV-OG-003"
+      },
+      {
+        id: "q10",
+        format: "scenario_decision",
+        prompt: "What is the primary risk of providing out-of-scope services?",
+        narration: "What is the primary risk of providing out-of-scope services?",
+        options: [
+          {
+            id: "a",
+            label: "The patient may be dissatisfied -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "The visit may take longer than scheduled -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "c",
+            label: "Medicare fraud allegations, survey deficiencies, licensure sanctions, and patient harm -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "d",
+            label: "The agency may need to hire additional staff",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q10 from AAA Record v2.0 for GAO-003.",
+        policyRef: "GV-OG-003"
+      }
+    ]
+  }
+},
   {
-    moduleId: 'GAO-004',
-    policyRefs: ['CO-CP-001', 'CO-CP-004'],
-    cmsRefs: [],
-    estimatedDurationMin: 45,
-    durationSource: 'PP',
-    splash: {
-      title: 'Corporate Compliance Program',
-      subtitle: 'Seven elements that protect patients and the agency',
-      whyItMatters:
-        'OIG expects every health care entity to operate a written compliance program. Failure to demonstrate the seven elements is a finding in every CMS and OIG audit and can trigger Corporate Integrity Agreements with five-year monitoring.',
-      narration:
-        'In this module you will learn the seven elements of our Corporate Compliance Program, the Code of Conduct that governs every employee, and your obligations as a compliance reporter. This is one of the most-cited audit topics in home health.',
-      imageUrl: IMG.compliance,
-    },
-    navigation: {
-      title: 'How This Training Works',
-      body: 'One card at a time. Narration plays. Challenges required. 80% to pass.',
-      bullets: ['Single-card flow', 'Audio narration', 'Required challenges', '80% pass'],
-      narration: 'One card at a time. Narration on every card. Challenges required. Eighty percent passing score.',
-    },
-    lessons: [
-      {
-        id: 'GAO-004-L1',
-        order: 1,
-        title: 'Seven Elements of Compliance',
-        objectives: [
-          'List the seven OIG compliance program elements',
-          'Identify your role under each element',
-        ],
-        cards: [
-          {
-            id: 'GAO-004-L1-S',
-            type: 'summary',
-            title: 'What You Will Learn',
-            body: 'The seven OIG elements: written standards, designated Compliance Officer, training and education, effective communication, monitoring and auditing, enforcement and discipline, and prompt response and corrective action.',
-            narration:
-              'In this lesson you will learn the seven OIG compliance program elements: written standards, a designated Compliance Officer, training and education, effective communication, monitoring and auditing, enforcement and discipline, and prompt response with corrective action.',
-            estDurationSec: 40,
-          },
-          {
-            id: 'GAO-004-L1-C1',
-            type: 'content',
-            title: 'Elements 1-3: Standards, Officer, Training',
-            body: '**Element 1** â€” Written standards include policies, the Code of Conduct, and procedures.\n**Element 2** â€” A designated Compliance Officer with dual reporting (CO-CP-002).\n**Element 3** â€” Training at hire and annually for all workforce; this module is element 3 in action.',
-            narration:
-              'Elements one through three: First, written standards including all policies and the Code of Conduct. Second, a designated Compliance Officer with dual reporting to the Administrator and Governing Body. Third, training at hire and annually for all workforce. This module you are taking right now is element three in action.',
-            estDurationSec: 60,
-          },
-          {
-            id: 'GAO-004-L1-C2',
-            type: 'content',
-            title: 'Elements 4-5: Communication and Auditing',
-            body: '**Element 4** â€” Effective communication: hotline, anonymous reporting, open-door policy.\n**Element 5** â€” Monitoring and auditing: annual internal audits aligned to the OIG Work Plan and our risk register.',
-            narration:
-              'Elements four and five: First, effective communication, which includes the compliance hotline, anonymous reporting, and the open-door policy with the Compliance Officer. Second, monitoring and auditing, which includes annual internal audits aligned to the OIG Work Plan and our internal risk register.',
-            estDurationSec: 55,
-          },
-          {
-            id: 'GAO-004-L1-C3',
-            type: 'content',
-            title: 'Elements 6-7: Discipline and Corrective Action',
-            body: '**Element 6** â€” Enforcement and discipline applied consistently regardless of position.\n**Element 7** â€” Prompt response with documented corrective action; root-cause analysis required for systemic issues.',
-            narration:
-              'Elements six and seven: First, enforcement and discipline applied consistently regardless of position. A senior leader is held to the same standard as a new hire. Second, prompt response with documented corrective action and root-cause analysis for systemic issues. Slow response is itself a compliance failure.',
-            estDurationSec: 55,
-          },
-          {
-            id: 'GAO-004-L1-C4',
-            type: 'content',
-            title: 'Field Example: Hotline Use Under Element 4',
-            body: 'During a visit you discover that a prior aide documented a bath visit but the patient states no one came that day. You document the discrepancy factually in your note and, because you suspect falsification, you call the compliance hotline that same evening rather than waiting for your supervisor. Per CO-CP-001 (Corporate Compliance Program) the call is logged and investigated. Your identity is protected. This is Element 4 in daily practice.',
-            narration: 'Field example. You find evidence that an aide documented a bath that never happened. You log the discrepancy and call the compliance hotline the same night. Per CO-CP-001 the call is logged and investigated with identity protection. That is element four working.',
-            estDurationSec: 55,
-          },
-          {
-            id: 'GAO-004-L1-C5',
-            type: 'content',
-            title: 'Your Role in Element 7: Corrective Action',
-            body: 'When a corrective action plan is issued after an incident or audit, you are responsible for completing your assigned action items on time and documenting that you did so. If the plan requires a new workflow, you follow it even if it slows you down. Surveyors will verify that staff actually changed behavior, not just that a memo was sent.',
-            narration: 'When a corrective action plan comes out after an incident or audit, your job is to complete your assigned items on time and document completion. If it changes how you do visits, you follow the new workflow. Surveyors check that people actually changed, not just that a memo was sent.',
-            estDurationSec: 50,
-          },
-          {
-            id: 'GAO-004-L1-CH',
-            type: 'challenge',
-            title: 'Identify the Element',
-            body: 'Match each scenario to the OIG element it most directly involves.',
-            narration: 'Match each scenario to the OIG compliance element it most directly involves.',
-            estDurationSec: 50,
-            challenge: {
-              id: 'GAO-004-L1-CH-Q',
-              format: 'matching',
-              prompt: 'Match scenario to element.',
-              narration: 'Match each scenario to the corresponding compliance element.',
-              matches: [
-                { left: 'Anonymous hotline call about billing', right: 'Element 4 â€” Effective communication' },
-                { left: 'Annual review of OASIS coding accuracy', right: 'Element 5 â€” Monitoring and auditing' },
-                { left: 'Termination of an employee for repeated documentation falsification', right: 'Element 6 â€” Enforcement and discipline' },
-                { left: 'Updated policy issued after a survey citation', right: 'Element 7 â€” Prompt response and corrective action' },
-              ],
-              policyRef: 'CO-CP-001',
-              feedbackCorrect: 'You can identify the element behind each compliance behavior. This is what surveyors test.',
-              feedbackIncorrect: 'Review the seven elements. Each maps to a survey-relevant behavior; surveyors will pose scenarios like these.',
-              complianceImpact: 'Inability to identify the seven elements is a workforce-knowledge finding under OIG guidance.',
-              realWorldConsequence: 'Agencies under Corporate Integrity Agreement have lost contracts after staff failed compliance interviews.',
-              correctBehaviorGuidance: 'Memorize all seven elements and an example of each. Be ready to describe them in plain language.',
-            },
-          },
-        ],
-      },
-      {
-        id: 'GAO-004-L2',
-        order: 2,
-        title: 'Code of Conduct',
-        objectives: [
-          'Identify prohibited conduct under CO-CP-004',
-          'Describe sanctions for non-compliance',
-        ],
-        cards: [
-          {
-            id: 'GAO-004-L2-S',
-            type: 'summary',
-            title: 'Code of Conduct Overview',
-            body: 'The Code of Conduct (CO-CP-004) sets behavioral standards. It governs honesty, conflict of interest, kickbacks, gifts, false claims, and patient interactions. Every employee signs acknowledgment annually.',
-            narration:
-              'The Code of Conduct sets behavioral standards for every employee. It governs honesty, conflict of interest, prohibited gifts and kickbacks, false claims, and respectful patient interactions. Every employee signs acknowledgment annually as evidence of receipt.',
-            estDurationSec: 45,
-          },
-          {
-            id: 'GAO-004-L2-C1',
-            type: 'content',
-            title: 'Conflict of Interest and Gifts',
-            body: 'Disclose any financial interest in a vendor, referral source, or competitor. Gifts above nominal value (typically $25) must be reported and may need to be returned. Anti-kickback statute prohibits anything of value exchanged for referrals.',
-            narration:
-              'You must disclose any financial interest in a vendor, a referral source, or a competitor. Gifts above nominal value, typically twenty-five dollars, must be reported and may need to be returned. The federal Anti-Kickback Statute prohibits anything of value exchanged for patient referrals.',
-            estDurationSec: 55,
-          },
-          {
-            id: 'GAO-004-L2-C2',
-            type: 'content',
-            title: 'False Claims and Documentation',
-            body: 'Submitting a claim for services not rendered, upcoding, or falsifying documentation is a False Claims Act violation. Penalties include treble damages, exclusion from Medicare, and criminal prosecution. Every visit note is a federal record.',
-            narration:
-              'Submitting a claim for services not rendered, upcoding visits, or falsifying documentation is a False Claims Act violation. Penalties include treble damages, exclusion from Medicare, and in severe cases criminal prosecution. Every visit note you sign is a federal record.',
-            estDurationSec: 55,
-          },
-          {
-            id: 'GAO-004-L2-C3',
-            type: 'content',
-            title: 'Sanctions and Discipline',
-            body: 'Code violations carry consistent discipline regardless of role: verbal warning, written warning, suspension, or termination. Repeated or willful violations result in immediate termination and may be reported to licensing boards and the OIG.',
-            narration:
-              'Code violations carry consistent discipline regardless of role: verbal warning, written warning, suspension, or termination. Repeated or willful violations result in immediate termination and may be reported to your licensing board and the Office of Inspector General.',
-            estDurationSec: 55,
-          },
-          {
-            id: 'GAO-004-L2-C4',
-            type: 'content',
-            title: 'Field Example: Gift from Vendor',
-            body: 'A DME representative leaves a $75 gift basket at the front desk "for the nurses." Per CO-CP-004 (Code of Conduct & Ethics) you do not take any item, you return it or have the office return it, and you log the attempt in the compliance log. Accepting even small gifts from vendors tied to referrals can be an Anti-Kickback violation. Documenting the return protects the agency and you.',
-            narration: 'Field example. A DME rep leaves a seventy-five dollar gift basket for the nurses. Per CO-CP-004 you return it and log the attempt. Small gifts from vendors can still be kickbacks. Logging the return protects everyone.',
-            estDurationSec: 50,
-          },
-          {
-            id: 'GAO-004-L2-C5',
-            type: 'content',
-            title: 'Applying the Code When No One Is Watching',
-            body: 'The Code applies when you are alone in the patient\'s home, when you are behind on notes at midnight, and when a patient offers you cash for "extra help." Your signature on the annual attestation is your promise that you will follow it even when no supervisor is present. Surveyors and auditors assume you follow the Code; the evidence comes from your documentation and patient interviews.',
-            narration: 'The Code applies when you are alone in the home, when notes are late, or when cash is offered. Your annual signature is a promise you will follow it when no one is watching. Surveyors check your documentation and patient stories to see if the Code is real.',
-            estDurationSec: 50,
-          },
-          {
-            id: 'GAO-004-L2-CH',
-            type: 'challenge',
-            title: 'Spot the Violation',
-            body: 'Review four short situations and identify which are Code of Conduct violations.',
-            narration: 'Review the situations and identify which are violations of the Code of Conduct.',
-            estDurationSec: 60,
-            challenge: {
-              id: 'GAO-004-L2-CH-Q',
-              format: 'error_id',
-              prompt: 'Identify the Code violations in the list.',
-              narration: 'Identify the Code of Conduct violations in the following situations.',
-              errorTargets: [
-                { id: 'e1', description: 'Accepting a $200 gift card from a DME vendor â€” Anti-Kickback violation' },
-                { id: 'e2', description: 'Documenting a visit you did not perform â€” False Claims Act violation' },
-                { id: 'e3', description: 'Disclosing a sibling who works at a referring SNF and recusing from referral decisions â€” NOT a violation, this is correct disclosure' },
-                { id: 'e4', description: 'Sharing patient details on Facebook â€” HIPAA and Code of Conduct violation' },
-              ],
-              policyRef: 'CO-CP-004',
-              feedbackCorrect: 'You correctly identified the violations and the proper disclosure. Disclosure with recusal is the right behavior; concealment is the violation.',
-              feedbackIncorrect: 'Disclosure of a conflict and recusal is correct. The violations are gifts, false claims, and PHI disclosure on social media.',
-              complianceImpact: 'Each true violation is independently actionable under federal law in addition to internal discipline.',
-              realWorldConsequence: 'Anti-Kickback violations have led to multi-million dollar settlements and individual criminal indictments.',
-              correctBehaviorGuidance: 'When in doubt, disclose. Disclosure with recusal is almost always permitted; concealment is almost never.',
-            },
-          },
-        ],
-      },
-    ],
-    finalTest: {
-      id: 'GAO-004-FT',
-      passingScorePct: 0.80,
-      instructionsNarration: 'Final test on the corporate compliance program and Code of Conduct. Eighty percent required.',
-      failAction: 'remediation',
-      questions: [
-        {
-          id: 'GAO-004-FT-Q1',
-          format: 'sequencing',
-          prompt: 'Order the seven OIG compliance elements as written in CO-CP-001.',
-          narration: 'Place the seven OIG compliance elements in their canonical order.',
-          steps: [
-            { id: 's1', label: 'Written standards' },
-            { id: 's2', label: 'Designated Compliance Officer' },
-            { id: 's3', label: 'Training and education' },
-            { id: 's4', label: 'Effective communication' },
-            { id: 's5', label: 'Monitoring and auditing' },
-            { id: 's6', label: 'Enforcement and discipline' },
-            { id: 's7', label: 'Prompt response and corrective action' },
-          ],
-          correctOrder: ['s1', 's2', 's3', 's4', 's5', 's6', 's7'],
-          rationale: 'OIG canonical order is required knowledge for survey interviews.',
-          policyRef: 'CO-CP-001',
-        },
-        {
-          id: 'GAO-004-FT-Q2',
-          format: 'scenario_decision',
-          prompt: 'A vendor offers you a free weekend at a resort to "thank you for the partnership." What do you do?',
-          narration: 'A vendor offers you a free weekend at a resort to thank you for the partnership. What do you do?',
-          options: [
-            { id: 'a', label: 'Accept and tell no one.', isCorrect: false, feedback: 'Concealment compounds the violation.' },
-            { id: 'b', label: 'Decline, document the offer, and report it to the Compliance Officer.', isCorrect: true, feedback: 'Correct.' },
-            { id: 'c', label: 'Accept but pay the resort yourself later.', isCorrect: false, feedback: 'Self-payment after the fact does not cure the kickback.' },
-            { id: 'd', label: 'Forward the offer to your supervisor and let them decide.', isCorrect: false, feedback: 'You must decline and report; this is your individual obligation.' },
-          ],
-          rationale: 'Decline, document, report. Anti-Kickback Statute carries criminal liability.',
-          policyRef: 'CO-CP-004',
-        },
-        {
-          id: 'GAO-004-FT-Q3',
-          format: 'true_false',
-          prompt: 'A senior leader can be exempted from Code of Conduct discipline if the conduct supports business goals.',
-          narration: 'True or false: a senior leader can be exempted from discipline if the conduct supports business goals.',
-          options: [
-            { id: 't', label: 'True', isCorrect: false, feedback: 'False â€” element six requires consistent discipline regardless of position.' },
-            { id: 'f', label: 'False', isCorrect: true, feedback: 'Correct â€” discipline applies consistently to every level.' },
-          ],
-          rationale: 'Inconsistent discipline invalidates the entire compliance program in OIG\'s view.',
-          policyRef: 'CO-CP-001',
-        },
-        {
-          id: 'GAO-004-FT-Q4',
-          format: 'structured_input',
-          prompt: 'Name the federal law that imposes treble damages for billing services not rendered.',
-          narration: 'Name the federal law that imposes treble damages for billing services not rendered.',
-          fields: [
-            { id: 'fca', label: 'Law', acceptableAnswers: ['False Claims Act', 'FCA', 'false claims act', '31 USC 3729', 'False Claims Act (FCA)'] },
-          ],
-          rationale: 'The False Claims Act is the dominant fraud-enforcement statute in healthcare.',
-          policyRef: 'CO-CP-004',
-        },
-      ],
-    },
+  moduleId: "GAO-004",
+  policyRefs: [
+    "CO-CP-001",
+    "CO-CP-004"
+  ],
+  cmsRefs: [],
+  estimatedDurationMin: 35,
+  durationSource: "DEFAULT",
+  splash: {
+    title: "Corporate Compliance Program",
+    subtitle: "Care Indeed GAO — AAA Record v2.0",
+    whyItMatters: "Care Indeed maintains a Corporate Compliance Program under policy CO-CP-001 to prevent, detect, and correct violations of federal and state laws, regulations, and internal policies.",
+    narration: "Welcome to GAO-004, Corporate Compliance Program. Care Indeed maintains a Corporate Compliance Program under policy CO-CP-001 to prevent, detect, and correct violations of federal and state laws, regulations, and internal policies."
   },
-
-  /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ GAO-005 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  navigation: {
+    title: "How This Training Works",
+    body: "You will move through one card at a time. Use Next and Previous to navigate. Your progress, time on each card, and challenge responses are tracked for compliance. Skipping cards is not allowed.",
+    bullets: [
+      "Single-card view",
+      "Audio narration on every card",
+      "Challenges required to advance",
+      "80% to pass final test"
+    ],
+    narration: "One card at a time. Audio narration on every card. Challenges must be completed before you continue. The final test requires eighty percent to pass."
+  },
+  lessons: [
+    {
+      id: "GAO-004-L1",
+      order: 1,
+      title: "Why Compliance Matters",
+      objectives: [
+        "Apply key requirements from Why Compliance Matters",
+        "Identify correct field actions related to Why Compliance Matters"
+      ],
+      cards: [
+        {
+          id: "GAO-004-L1-S",
+          type: "summary",
+          title: "Why Compliance Matters",
+          body: "Care Indeed maintains a Corporate Compliance Program under policy CO-CP-001 to prevent, detect, and correct violations of federal and state laws, regulations, and internal policies.",
+          narration: "In this lesson: Why Compliance Matters. Care Indeed maintains a Corporate Compliance Program under policy CO-CP-001 to prevent, detect, and correct violations of federal and state laws, regulations, and internal policies. This module is one of the most important in your entire orientation because the consequences of noncompliance in home health care are severe, personal, and real. The stakes are not theoretical.",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-004-L1-C1",
+          type: "content",
+          title: "Why Compliance Matters",
+          body: "Care Indeed maintains a Corporate Compliance Program under policy CO-CP-001 to prevent, detect, and correct violations of federal and state laws, regulations, and internal policies.",
+          narration: "Care Indeed maintains a Corporate Compliance Program under policy CO-CP-001 to prevent, detect, and correct violations of federal and state laws, regulations, and internal policies. This module is one of the most important in your entire orientation because the consequences of noncompliance in home health care are severe, personal, and real. The stakes are not theoretical. Medicare and Medicaid fraud carries federal criminal penalties including imprisonment. False Claims Act violations under 31 USC Section 3729 result in treble damages, meaning three times the amount of the false claim, plus civil penalties exceeding eleven thousand dollars per false claim submitted. Exclusion from federal healthcare programs means the agency can no longer bill Medicare or Medicaid, which for most home health agencies means closure. And individual employees can be personally liable — this is not just an agency-level risk. The Office of Inspector General recovers billions of dollars annually from healthcare fraud",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-004-L1-C2",
+          type: "content",
+          title: "Why Compliance Matters (part 2)",
+          body: "cases. Home health care has historically been one of the most targeted sectors for fraud enforcement actions. Cases involve agencies billing for visits that never occurred, falsifying OASIS assessments to increase reimbursement, providing medically unnecessary services to generate revenue, and paying kickbacks for…",
+          narration: "cases. Home health care has historically been one of the most targeted sectors for fraud enforcement actions. Cases involve agencies billing for visits that never occurred, falsifying OASIS assessments to increase reimbursement, providing medically unnecessary services to generate revenue, and paying kickbacks for patient referrals. In these cases, individual clinicians who participated in the fraud have been prosecuted, fined, excluded from healthcare programs, and in some cases sentenced to prison. You might think this does not apply to you because you are not involved in billing or coding. That assumption is dangerous. Every clinician who documents a visit creates the foundation for a billing claim. If you document that you provided a service you did not actually provide, that documentation becomes the basis for a false claim. If you falsify visit times, patient assessments, or clinical findings, you are creating the raw material for potential fraud — even if you",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-004-L1-C3",
+          type: "content",
+          title: "Why Compliance Matters (part 3)",
+          body: "never touch the billing system. Care Indeed's Corporate Compliance Program is designed to prevent these situations by establishing clear rules, providing training, creating reporting channels, monitoring for problems, and responding promptly when issues arise.",
+          narration: "never touch the billing system. Care Indeed's Corporate Compliance Program is designed to prevent these situations by establishing clear rules, providing training, creating reporting channels, monitoring for problems, and responding promptly when issues arise. Your responsibility as an employee is to understand the compliance program, follow its requirements, and use the reporting channels when you see something that concerns you.",
+          estDurationSec: 35
+        },
+        {
+          id: "GAO-004-L1-CH",
+          type: "challenge",
+          title: "Knowledge Check 1 Q: Can an individual clinician be…",
+          body: "Knowledge Check 1 Q: Can an individual clinician be personally liable for Medicare fraud even if they did not submit the billing claim? A: Yes.",
+          narration: "Knowledge Check 1 Q: Can an individual clinician be personally liable for Medicare fraud even if they did not submit the billing claim? A: Yes.",
+          estDurationSec: 55,
+          challenge: {
+            id: "GAO-004-L1-CH-Q",
+            format: "scenario_decision",
+            prompt: "Knowledge Check 1 Q: Can an individual clinician be personally liable for Medicare fraud even if they did not submit the billing claim? A: Yes.",
+            narration: "Knowledge Check 1 Q: Can an individual clinician be personally liable for Medicare fraud even if they did not submit the billing claim? A: Yes.",
+            options: [
+              {
+                id: "a",
+                label: "Apply the policy-based correct action.",
+                isCorrect: true,
+                feedback: "Correct — this matches the module guidance."
+              },
+              {
+                id: "b",
+                label: "Document only and take no further action until the next scheduled visit.",
+                isCorrect: false,
+                feedback: "Documentation alone is not enough when action or notification is required."
+              },
+              {
+                id: "c",
+                label: "Ask a coworker informally and wait for them to decide.",
+                isCorrect: false,
+                feedback: "You must follow the formal policy pathway yourself."
+              },
+              {
+                id: "d",
+                label: "Ignore the issue if the patient appears comfortable.",
+                isCorrect: false,
+                feedback: "Patient comfort does not override required clinical or compliance actions."
+              }
+            ],
+            policyRef: "CO-CP-001",
+            feedbackCorrect: "Correct.",
+            feedbackIncorrect: "Review the expected response and policy guidance.",
+            complianceImpact: "Incorrect action can create survey, safety, or legal exposure.",
+            realWorldConsequence: "Patient harm, delayed reporting, or noncompliance findings can result.",
+            correctBehaviorGuidance: ""
+          }
+        }
+      ]
+    },
+    {
+      id: "GAO-004-L2",
+      order: 2,
+      title: "Seven Elements of Compliance",
+      objectives: [
+        "Apply key requirements from Seven Elements of Compliance",
+        "Identify correct field actions related to Seven Elements of Compliance"
+      ],
+      cards: [
+        {
+          id: "GAO-004-L2-S",
+          type: "summary",
+          title: "Seven Elements of Compliance",
+          body: "The OIG defines seven elements of an effective compliance program. Care Indeed implements all seven, and you are expected to understand how each one protects you, your patients, and the agency. The first element is written policies and procedures.",
+          narration: "In this lesson: Seven Elements of Compliance. The OIG defines seven elements of an effective compliance program. Care Indeed implements all seven, and you are expected to understand how each one protects you, your patients, and the agency. The first element is written policies and procedures.",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-004-L2-C1",
+          type: "content",
+          title: "Seven Elements of Compliance",
+          body: "The OIG defines seven elements of an effective compliance program. Care Indeed implements all seven, and you are expected to understand how each one protects you, your patients, and the agency. The first element is written policies and procedures.",
+          narration: "The OIG defines seven elements of an effective compliance program. Care Indeed implements all seven, and you are expected to understand how each one protects you, your patients, and the agency. The first element is written policies and procedures. Care Indeed maintains a comprehensive policy framework starting with CO-CP-001, the Corporate Compliance Plan, which is the master document governing the program. Every policy in the agency's framework supports compliance by defining expected behavior, clinical standards, and documentation requirements. You are responsible for knowing and following the policies that apply to your role. The second element is a designated Compliance Officer and Compliance Committee. Per policy CO-CP-002, Care Indeed has a designated Compliance Officer who is responsible for overseeing the day-to-day operation of the compliance program, investigating reported concerns, recommending corrective actions, and reporting to leadership and the Governing Body. The Compliance Committee includes representatives from clinical, administrative, and quality departments.",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-004-L2-C2",
+          type: "content",
+          title: "Seven Elements of Compliance (part 2)",
+          body: "The third element is training and education. This orientation module is part of that element. Every employee receives compliance training at hire and annually thereafter.",
+          narration: "The third element is training and education. This orientation module is part of that element. Every employee receives compliance training at hire and annually thereafter. The training covers fraud, waste, and abuse recognition; reporting obligations; key federal and state laws; the agency's compliance policies; and the consequences of noncompliance. Completion is documented and tracked. The fourth element is effective communication, including a hotline. Per policy CO-CP-006, Care Indeed maintains a confidential compliance hotline and multiple reporting channels so employees can report concerns without fear of retaliation. The hotline is anonymous — you do not have to identify yourself to report a concern. The fifth element is internal auditing and monitoring. Per policy CO-CP-004, Care Indeed conducts regular internal audits of clinical documentation, billing accuracy, personnel files, and policy compliance. These audits are designed to identify problems before they become survey deficiencies, legal violations, or patient safety issues. Audit findings are",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-004-L2-C3",
+          type: "content",
+          title: "Seven Elements of Compliance (part 3)",
+          body: "reported to the Compliance Officer and corrective actions are implemented. The sixth element is enforcement through consistent discipline. When violations are identified, the agency applies consistent discipline per HR-ER-002 regardless of the employee's position or tenure.",
+          narration: "reported to the Compliance Officer and corrective actions are implemented. The sixth element is enforcement through consistent discipline. When violations are identified, the agency applies consistent discipline per HR-ER-002 regardless of the employee's position or tenure. Discipline may range from counseling and retraining to termination and referral for legal action, depending on the severity and intentionality of the violation. The seventh element is response and corrective action. When a compliance issue is identified through audit, report, or investigation, the agency responds with a defined process: investigation, root cause analysis, corrective action implementation, monitoring of the corrective action, and documentation of the entire process per CO-CP-001 Section 6.7. ---",
+          estDurationSec: 46
+        },
+        {
+          id: "GAO-004-L2-CH",
+          type: "challenge",
+          title: "Apply This Lesson",
+          body: "What is the key takeaway from \"Seven Elements of Compliance\"?",
+          narration: "What is the key takeaway from \"Seven Elements of Compliance\"?",
+          estDurationSec: 55,
+          challenge: {
+            id: "GAO-004-L2-CH-Q",
+            format: "scenario_decision",
+            prompt: "What is the key takeaway from \"Seven Elements of Compliance\"?",
+            narration: "What is the key takeaway from \"Seven Elements of Compliance\"?",
+            options: [
+              {
+                id: "a",
+                label: "The OIG defines seven elements of an effective compliance program. Care Indeed implements all seven, and you are expected to understand how each one protects you, your patients,…",
+                isCorrect: true,
+                feedback: "Correct — this matches the module guidance."
+              },
+              {
+                id: "b",
+                label: "Document only and take no further action until the next scheduled visit.",
+                isCorrect: false,
+                feedback: "Documentation alone is not enough when action or notification is required."
+              },
+              {
+                id: "c",
+                label: "Ask a coworker informally and wait for them to decide.",
+                isCorrect: false,
+                feedback: "You must follow the formal policy pathway yourself."
+              },
+              {
+                id: "d",
+                label: "Ignore the issue if the patient appears comfortable.",
+                isCorrect: false,
+                feedback: "Patient comfort does not override required clinical or compliance actions."
+              }
+            ],
+            policyRef: "CO-CP-001",
+            feedbackCorrect: "Correct.",
+            feedbackIncorrect: "Review the expected response and policy guidance.",
+            complianceImpact: "Incorrect action can create survey, safety, or legal exposure.",
+            realWorldConsequence: "Patient harm, delayed reporting, or noncompliance findings can result.",
+            correctBehaviorGuidance: "The OIG defines seven elements of an effective compliance program. Care Indeed implements all seven, and you are expected to understand how each one protects you, your patients, and the agency."
+          }
+        }
+      ]
+    },
+    {
+      id: "GAO-004-L3",
+      order: 3,
+      title: "Your Compliance Obligations",
+      objectives: [
+        "Apply key requirements from Your Compliance Obligations",
+        "Identify correct field actions related to Your Compliance Obligations"
+      ],
+      cards: [
+        {
+          id: "GAO-004-L3-S",
+          type: "summary",
+          title: "Your Compliance Obligations",
+          body: "Every employee at Care Indeed has specific compliance obligations that are conditions of employment. These are not guidelines or suggestions. They are requirements. You must follow all federal, state, and agency policies that apply to your role.",
+          narration: "In this lesson: Your Compliance Obligations. Every employee at Care Indeed has specific compliance obligations that are conditions of employment. These are not guidelines or suggestions. They are requirements. You must follow all federal, state, and agency policies that apply to your role. This includes clinical protocols, documentation standards, billing rules, patient rights requirements, and workplace conduct standards.",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-004-L3-C1",
+          type: "content",
+          title: "Your Compliance Obligations",
+          body: "Every employee at Care Indeed has specific compliance obligations that are conditions of employment. These are not guidelines or suggestions. They are requirements. You must follow all federal, state, and agency policies that apply to your role.",
+          narration: "Every employee at Care Indeed has specific compliance obligations that are conditions of employment. These are not guidelines or suggestions. They are requirements. You must follow all federal, state, and agency policies that apply to your role. This includes clinical protocols, documentation standards, billing rules, patient rights requirements, and workplace conduct standards. Ignorance of a policy is not a defense. It is your responsibility to read, understand, and follow the policies assigned to you during onboarding and throughout your employment. You must document accurately and truthfully. Never falsify records. This means documenting the care you actually provided, the time you actually spent, the findings you actually observed, and the clinical reasoning you actually applied. Documentation must be contemporaneous — completed at the time of service or as close to it as possible. Reconstructing visit notes from memory hours or days later creates accuracy risks and is not acceptable practice. You",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-004-L3-C2",
+          type: "content",
+          title: "Your Compliance Obligations (part 2)",
+          body: "must bill only for services actually provided. If a visit did not occur, it cannot be billed. If you provided a lower level of service than ordered, you document what you actually did, not what was ordered. Upcoding — billing for a higher level of service than provided — is a form of abuse that violates federal law.",
+          narration: "must bill only for services actually provided. If a visit did not occur, it cannot be billed. If you provided a lower level of service than ordered, you document what you actually did, not what was ordered. Upcoding — billing for a higher level of service than provided — is a form of abuse that violates federal law. You must report suspected fraud, waste, or abuse immediately through the channels available to you. If you see a colleague falsifying documentation, if you become aware of billing irregularities, if you suspect kickback arrangements, or if you observe any practice that seems inconsistent with legal or ethical standards, you must report it. Silence is complicity. You must cooperate with compliance investigations. If the Compliance Officer or an external investigator asks you questions about your documentation, your clinical practices, or your observations, you must respond honestly and completely. Obstruction or dishonesty during an",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-004-L3-C3",
+          type: "content",
+          title: "Your Compliance Obligations (part 3)",
+          body: "investigation is itself a serious violation. You must complete all required compliance training on time. Training deadlines are tracked, and failure to complete required training is a compliance deficiency that can affect your employment status and the agency's survey readiness.",
+          narration: "investigation is itself a serious violation. You must complete all required compliance training on time. Training deadlines are tracked, and failure to complete required training is a compliance deficiency that can affect your employment status and the agency's survey readiness. You must sign the Code of Conduct acknowledgment annually. This acknowledgment confirms that you have read, understood, and agree to comply with the agency's compliance requirements. What you must not do is equally clear. You must not submit false claims or documentation. You must not accept kickbacks or illegal remuneration. You must not refer patients based on financial arrangements, which would violate the Stark Law and Anti-Kickback Statute. You must not retaliate against anyone who reports a compliance concern. And you must not ignore suspected violations.",
+          estDurationSec: 54
+        },
+        {
+          id: "GAO-004-L3-CH",
+          type: "challenge",
+          title: "Scenario Challenge 1 Scenario: You overhear a colleague on…",
+          body: "Scenario Challenge 1 Scenario: You overhear a colleague on the phone telling the scheduler to mark a visit as completed even though the patient was not home and no visit occurred.",
+          narration: "Scenario Challenge 1 Scenario: You overhear a colleague on the phone telling the scheduler to mark a visit as completed even though the patient was not home and no visit occurred. What do you do? Expected Response: This is suspected fraud — billing for a visit that did not occur.",
+          estDurationSec: 55,
+          challenge: {
+            id: "GAO-004-L3-CH-Q",
+            format: "scenario_decision",
+            prompt: "Scenario Challenge 1 Scenario: You overhear a colleague on the phone telling the scheduler to mark a visit as completed even though the patient was not home and no visit occurred.",
+            narration: "Scenario Challenge 1 Scenario: You overhear a colleague on the phone telling the scheduler to mark a visit as completed even though the patient was not home and no visit occurred.",
+            options: [
+              {
+                id: "a",
+                label: "Apply the policy-based correct action.",
+                isCorrect: true,
+                feedback: "Correct — this matches the module guidance."
+              },
+              {
+                id: "b",
+                label: "Document only and take no further action until the next scheduled visit.",
+                isCorrect: false,
+                feedback: "Documentation alone is not enough when action or notification is required."
+              },
+              {
+                id: "c",
+                label: "Ask a coworker informally and wait for them to decide.",
+                isCorrect: false,
+                feedback: "You must follow the formal policy pathway yourself."
+              },
+              {
+                id: "d",
+                label: "Ignore the issue if the patient appears comfortable.",
+                isCorrect: false,
+                feedback: "Patient comfort does not override required clinical or compliance actions."
+              }
+            ],
+            policyRef: "CO-CP-001",
+            feedbackCorrect: "Correct.",
+            feedbackIncorrect: "Review the expected response and policy guidance.",
+            complianceImpact: "Incorrect action can create survey, safety, or legal exposure.",
+            realWorldConsequence: "Patient harm, delayed reporting, or noncompliance findings can result.",
+            correctBehaviorGuidance: ""
+          }
+        }
+      ]
+    },
+    {
+      id: "GAO-004-L4",
+      order: 4,
+      title: "Fraud, Waste, and Abuse",
+      objectives: [
+        "Apply key requirements from Fraud, Waste, and Abuse",
+        "Identify correct field actions related to Fraud, Waste, and Abuse"
+      ],
+      cards: [
+        {
+          id: "GAO-004-L4-S",
+          type: "summary",
+          title: "Fraud, Waste, and Abuse",
+          body: "You must understand the differences between fraud, waste, and abuse because each represents a different type of violation with different implications. Fraud is intentional deception or misrepresentation for unauthorized benefit.",
+          narration: "In this lesson: Fraud, Waste, and Abuse. You must understand the differences between fraud, waste, and abuse because each represents a different type of violation with different implications. Fraud is intentional deception or misrepresentation for unauthorized benefit.",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-004-L4-C1",
+          type: "content",
+          title: "Fraud, Waste, and Abuse",
+          body: "You must understand the differences between fraud, waste, and abuse because each represents a different type of violation with different implications. Fraud is intentional deception or misrepresentation for unauthorized benefit.",
+          narration: "You must understand the differences between fraud, waste, and abuse because each represents a different type of violation with different implications. Fraud is intentional deception or misrepresentation for unauthorized benefit. In home health, examples include billing for visits that never occurred, falsifying OASIS assessments to obtain higher Medicare reimbursement, forging physician signatures on orders, providing services to patients who do not qualify for home health in order to generate revenue, and paying physicians or referral sources for patient referrals. Fraud is a criminal offense. The Department of Justice prosecutes healthcare fraud cases aggressively, and penalties include imprisonment, fines, and permanent exclusion from federal healthcare programs. Waste is the overutilization of services or resources not caused by criminal intent. In home health, examples include continuing skilled nursing visits after the patient's goals have been met and there is no further skilled need, ordering excessive supplies that are not medically necessary, providing",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-004-L4-C2",
+          type: "content",
+          title: "Fraud, Waste, and Abuse (part 2)",
+          body: "visit frequencies higher than the patient's condition warrants, and using higher-cost interventions when equally effective lower-cost alternatives exist. Waste may not be criminal, but it increases healthcare costs, triggers audit scrutiny, and can lead to claim denials and repayment demands.",
+          narration: "visit frequencies higher than the patient's condition warrants, and using higher-cost interventions when equally effective lower-cost alternatives exist. Waste may not be criminal, but it increases healthcare costs, triggers audit scrutiny, and can lead to claim denials and repayment demands. Abuse is practices that are inconsistent with sound fiscal, business, or medical practices. The key distinction from fraud is that abuse may not involve intentional deception. Examples include upcoding — billing for a higher level of service than was actually provided, providing services that are not medically necessary but not with fraudulent intent, failing to follow evidence-based protocols resulting in unnecessary services, and poor documentation practices that make it impossible to verify that billed services were appropriate. Three key federal laws govern fraud and abuse in healthcare. The False Claims Act under 31 USC Section 3729 creates civil liability for knowingly submitting false claims to the government. Knowingly includes acting",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-004-L4-C3",
+          type: "content",
+          title: "Fraud, Waste, and Abuse (part 3)",
+          body: "with reckless disregard for the truth — you do not have to intend to defraud. The Anti-Kickback Statute under 42 USC Section 1320a-7b makes it a criminal offense to offer, pay, solicit, or receive anything of value to induce or reward patient referrals for services covered by federal healthcare programs.",
+          narration: "with reckless disregard for the truth — you do not have to intend to defraud. The Anti-Kickback Statute under 42 USC Section 1320a-7b makes it a criminal offense to offer, pay, solicit, or receive anything of value to induce or reward patient referrals for services covered by federal healthcare programs. And the Stark Law under 42 USC Section 1395nn prohibits physicians from referring patients to entities with which the physician has a financial relationship, unless a specific exception applies.",
+          estDurationSec: 35
+        },
+        {
+          id: "GAO-004-L4-CH",
+          type: "challenge",
+          title: "Knowledge Check 2 Q: A clinician bills for a…",
+          body: "Knowledge Check 2 Q: A clinician bills for a forty-five-minute visit but actually spent only twenty minutes with the patient.",
+          narration: "Knowledge Check 2 Q: A clinician bills for a forty-five-minute visit but actually spent only twenty minutes with the patient. Is this fraud, waste, or abuse? A: This is fraud if the clinician intentionally misrepresented the visit duration, or abuse if it resulted from careless documentation practices.",
+          estDurationSec: 55,
+          challenge: {
+            id: "GAO-004-L4-CH-Q",
+            format: "scenario_decision",
+            prompt: "Knowledge Check 2 Q: A clinician bills for a forty-five-minute visit but actually spent only twenty minutes with the patient.",
+            narration: "Knowledge Check 2 Q: A clinician bills for a forty-five-minute visit but actually spent only twenty minutes with the patient.",
+            options: [
+              {
+                id: "a",
+                label: "Apply the policy-based correct action.",
+                isCorrect: true,
+                feedback: "Correct — this matches the module guidance."
+              },
+              {
+                id: "b",
+                label: "Document only and take no further action until the next scheduled visit.",
+                isCorrect: false,
+                feedback: "Documentation alone is not enough when action or notification is required."
+              },
+              {
+                id: "c",
+                label: "Ask a coworker informally and wait for them to decide.",
+                isCorrect: false,
+                feedback: "You must follow the formal policy pathway yourself."
+              },
+              {
+                id: "d",
+                label: "Ignore the issue if the patient appears comfortable.",
+                isCorrect: false,
+                feedback: "Patient comfort does not override required clinical or compliance actions."
+              }
+            ],
+            policyRef: "CO-CP-001",
+            feedbackCorrect: "Correct.",
+            feedbackIncorrect: "Review the expected response and policy guidance.",
+            complianceImpact: "Incorrect action can create survey, safety, or legal exposure.",
+            realWorldConsequence: "Patient harm, delayed reporting, or noncompliance findings can result.",
+            correctBehaviorGuidance: ""
+          }
+        }
+      ]
+    },
+    {
+      id: "GAO-004-L5",
+      order: 5,
+      title: "Reporting & Protections",
+      objectives: [
+        "Apply key requirements from Reporting & Protections",
+        "Identify correct field actions related to Reporting & Protections"
+      ],
+      cards: [
+        {
+          id: "GAO-004-L5-S",
+          type: "summary",
+          title: "Reporting & Protections",
+          body: "Care Indeed provides multiple channels for reporting compliance concerns because the agency recognizes that different situations require different reporting options.",
+          narration: "In this lesson: Reporting & Protections. Care Indeed provides multiple channels for reporting compliance concerns because the agency recognizes that different situations require different reporting options.",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-004-L5-C1",
+          type: "content",
+          title: "Reporting & Protections",
+          body: "Care Indeed provides multiple channels for reporting compliance concerns because the agency recognizes that different situations require different reporting options.",
+          narration: "Care Indeed provides multiple channels for reporting compliance concerns because the agency recognizes that different situations require different reporting options. Per policy CO-CP-006, your reporting channels are, in order of typical use: your direct supervisor, the Compliance Officer, the anonymous compliance hotline, the Administrator, and external channels including the OIG Hotline at 1-800-HHS-TIPS and state regulatory agencies. You may choose any of these channels. You do not have to start with your supervisor. If your concern involves your supervisor, go directly to the Compliance Officer or the hotline. If your concern involves the Compliance Officer, go to the Administrator. If you believe internal channels are compromised, use the external channels. The point is that you always have a way to report. The anonymous compliance hotline deserves special emphasis. It is available to report concerns without identifying yourself. The agency cannot trace anonymous reports to determine the reporter's identity. This channel",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-004-L5-C2",
+          type: "content",
+          title: "Reporting & Protections (part 2)",
+          body: "exists specifically to eliminate the fear that reporting could lead to personal consequences. Use it whenever you prefer anonymity. Whistleblower protection is absolute.",
+          narration: "exists specifically to eliminate the fear that reporting could lead to personal consequences. Use it whenever you prefer anonymity. Whistleblower protection is absolute. Per policy CO-CP-005 and federal and California state whistleblower protection laws, no employee may be retaliated against for reporting a compliance concern in good faith. Retaliation includes termination, demotion, reduced hours, unfavorable schedule changes, harassment, intimidation, or any other adverse employment action taken because an employee reported a concern. Retaliation against a reporter is itself a terminable offense and a potential federal violation that exposes the retaliator and the agency to additional liability. Good faith means you honestly believe a violation may have occurred. It does not mean you have to be right. A good-faith report that turns out to be unfounded after investigation is still protected. The agency would rather investigate ten unfounded concerns than miss one real violation because an employee was afraid to report.",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-004-L5-C3",
+          type: "content",
+          title: "Reporting & Protections (part 3)",
+          body: "When in doubt, report. It is always better to report a concern that turns out to be nothing than to stay silent about actual fraud. You will not be punished for good-faith reporting, even if the investigation finds no violation.",
+          narration: "When in doubt, report. It is always better to report a concern that turns out to be nothing than to stay silent about actual fraud. You will not be punished for good-faith reporting, even if the investigation finds no violation. But if you know about a violation and fail to report it, you could share liability for the violation itself. Timing matters. Report concerns as soon as you become aware of them. Do not wait to gather more evidence. Do not investigate on your own. And do not discuss the concern with colleagues other than through the proper reporting channels. Early reporting gives the agency the best chance to investigate, correct, and prevent further harm.",
+          estDurationSec: 49
+        },
+        {
+          id: "GAO-004-L5-CH",
+          type: "challenge",
+          title: "Scenario Challenge 2 Scenario: After reporting a billing…",
+          body: "Scenario Challenge 2 Scenario: After reporting a billing concern to the Compliance Officer, your supervisor begins assigning you to less desirable shifts and makes negative comments about people who cannot mind their…",
+          narration: "Scenario Challenge 2 Scenario: After reporting a billing concern to the Compliance Officer, your supervisor begins assigning you to less desirable shifts and makes negative comments about people who cannot mind their own business.",
+          estDurationSec: 55,
+          challenge: {
+            id: "GAO-004-L5-CH-Q",
+            format: "scenario_decision",
+            prompt: "Scenario Challenge 2 Scenario: After reporting a billing concern to the Compliance Officer, your supervisor begins assigning you to less desirable shifts and makes negative comments about people who cannot mind their own business.",
+            narration: "Scenario Challenge 2 Scenario: After reporting a billing concern to the Compliance Officer, your supervisor begins assigning you to less desirable shifts and makes negative comments about people who cannot mind their own business.",
+            options: [
+              {
+                id: "a",
+                label: "Apply the policy-based correct action.",
+                isCorrect: true,
+                feedback: "Correct — this matches the module guidance."
+              },
+              {
+                id: "b",
+                label: "Document only and take no further action until the next scheduled visit.",
+                isCorrect: false,
+                feedback: "Documentation alone is not enough when action or notification is required."
+              },
+              {
+                id: "c",
+                label: "Ask a coworker informally and wait for them to decide.",
+                isCorrect: false,
+                feedback: "You must follow the formal policy pathway yourself."
+              },
+              {
+                id: "d",
+                label: "Ignore the issue if the patient appears comfortable.",
+                isCorrect: false,
+                feedback: "Patient comfort does not override required clinical or compliance actions."
+              }
+            ],
+            policyRef: "CO-CP-001",
+            feedbackCorrect: "Correct.",
+            feedbackIncorrect: "Review the expected response and policy guidance.",
+            complianceImpact: "Incorrect action can create survey, safety, or legal exposure.",
+            realWorldConsequence: "Patient harm, delayed reporting, or noncompliance findings can result.",
+            correctBehaviorGuidance: ""
+          }
+        }
+      ]
+    },
+    {
+      id: "GAO-004-L6",
+      order: 6,
+      title: "Module Summary",
+      objectives: [
+        "Apply key requirements from Module Summary",
+        "Identify correct field actions related to Module Summary"
+      ],
+      cards: [
+        {
+          id: "GAO-004-L6-S",
+          type: "summary",
+          title: "Module Summary",
+          body: "Let us consolidate the essential takeaways from this module on corporate compliance. Care Indeed's Corporate Compliance Program implements all seven OIG elements: written policies, a designated Compliance Officer, training and education, communication channels including a hotline, internal…",
+          narration: "In this lesson: Module Summary. Let us consolidate the essential takeaways from this module on corporate compliance. Care Indeed's Corporate Compliance Program implements all seven OIG elements: written policies, a designated Compliance Officer, training and education, communication channels including a hotline, internal auditing, consistent enforcement, and response with corrective action.",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-004-L6-C1",
+          type: "content",
+          title: "Module Summary",
+          body: "Let us consolidate the essential takeaways from this module on corporate compliance. Care Indeed's Corporate Compliance Program implements all seven OIG elements: written policies, a designated Compliance Officer, training and education, communication channels including a hotline, internal auditing, consistent…",
+          narration: "Let us consolidate the essential takeaways from this module on corporate compliance. Care Indeed's Corporate Compliance Program implements all seven OIG elements: written policies, a designated Compliance Officer, training and education, communication channels including a hotline, internal auditing, consistent enforcement, and response with corrective action. These seven elements are not optional — they are the OIG's framework for what constitutes an effective compliance program, and they reflect the agency's commitment to operating lawfully and ethically. You are personally obligated to follow laws, document truthfully, bill accurately, and report violations. These obligations are not delegable. You cannot say that billing is not your job when your documentation is the foundation of every claim. You cannot say that compliance is the Compliance Officer's problem when you are the one delivering care and creating records in the field. Understand the differences between fraud, waste, and abuse. Fraud is intentional deception. Waste is overutilization",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-004-L6-C2",
+          type: "content",
+          title: "Module Summary (part 2)",
+          body: "without criminal intent. Abuse is practices inconsistent with sound standards. All three create financial, legal, and patient safety risks, but fraud carries the most severe penalties including criminal prosecution. Know the key federal laws.",
+          narration: "without criminal intent. Abuse is practices inconsistent with sound standards. All three create financial, legal, and patient safety risks, but fraud carries the most severe penalties including criminal prosecution. Know the key federal laws. The False Claims Act creates civil liability for knowingly submitting false claims — and knowingly includes reckless disregard. The Anti-Kickback Statute criminalizes payments to induce referrals. The Stark Law prohibits physician self-referrals with financial relationships. Use the reporting channels available to you. You have five options: supervisor, Compliance Officer, anonymous hotline, Administrator, and external agencies. You do not have to start with your supervisor. You can go directly to whichever channel you are most comfortable with. Whistleblower protection is absolute. No retaliation for good-faith reporting. Period. This is not just agency policy — it is federal and California state law. If you experience retaliation, report the retaliation itself through a separate channel. For your daily practice,",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-004-L6-C3",
+          type: "content",
+          title: "Module Summary (part 3)",
+          body: "remember three compliance principles that will serve you well throughout your career at Care Indeed. First, document what actually happened, not what should have happened or what was planned. Accuracy is your shield. Second, if something does not look right, report it. Trust your instincts and use the channels.",
+          narration: "remember three compliance principles that will serve you well throughout your career at Care Indeed. First, document what actually happened, not what should have happened or what was planned. Accuracy is your shield. Second, if something does not look right, report it. Trust your instincts and use the channels. Third, complete your compliance training on time, every time. Your training completion is tracked and verified during surveys. You are now ready for the final exam. Ten questions, eighty percent to pass. ---",
+          estDurationSec: 35
+        },
+        {
+          id: "GAO-004-L6-CH",
+          type: "challenge",
+          title: "Apply This Lesson",
+          body: "What is the key takeaway from \"Module Summary\"?",
+          narration: "What is the key takeaway from \"Module Summary\"?",
+          estDurationSec: 55,
+          challenge: {
+            id: "GAO-004-L6-CH-Q",
+            format: "scenario_decision",
+            prompt: "What is the key takeaway from \"Module Summary\"?",
+            narration: "What is the key takeaway from \"Module Summary\"?",
+            options: [
+              {
+                id: "a",
+                label: "Let us consolidate the essential takeaways from this module on corporate compliance.",
+                isCorrect: true,
+                feedback: "Correct — this matches the module guidance."
+              },
+              {
+                id: "b",
+                label: "Document only and take no further action until the next scheduled visit.",
+                isCorrect: false,
+                feedback: "Documentation alone is not enough when action or notification is required."
+              },
+              {
+                id: "c",
+                label: "Ask a coworker informally and wait for them to decide.",
+                isCorrect: false,
+                feedback: "You must follow the formal policy pathway yourself."
+              },
+              {
+                id: "d",
+                label: "Ignore the issue if the patient appears comfortable.",
+                isCorrect: false,
+                feedback: "Patient comfort does not override required clinical or compliance actions."
+              }
+            ],
+            policyRef: "CO-CP-001",
+            feedbackCorrect: "Correct.",
+            feedbackIncorrect: "Review the expected response and policy guidance.",
+            complianceImpact: "Incorrect action can create survey, safety, or legal exposure.",
+            realWorldConsequence: "Patient harm, delayed reporting, or noncompliance findings can result.",
+            correctBehaviorGuidance: "Let us consolidate the essential takeaways from this module on corporate compliance. Care Indeed's Corporate Compliance Program implements all seven OIG elements: written policies, a designated Compliance Officer,…"
+          }
+        }
+      ]
+    }
+  ],
+  finalTest: {
+    id: "GAO-004-FT",
+    passingScorePct: 0.8,
+    instructionsNarration: "Final test on Corporate Compliance Program. 80 percent required to pass.",
+    failAction: "remediation",
+    questions: [
+      {
+        id: "q1",
+        format: "scenario_decision",
+        prompt: "Billing for home health visits that were never actually made is an example of: -",
+        narration: "Billing for home health visits that were never actually made is an example of: -",
+        options: [
+          {
+            id: "a",
+            label: "Waste",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Abuse",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "c",
+            label: "Fraud",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "Administrative error",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q1 from AAA Record v2.0 for GAO-004.",
+        policyRef: "CO-CP-001"
+      },
+      {
+        id: "q2",
+        format: "scenario_decision",
+        prompt: "How many elements does the OIG identify for an effective compliance program? -",
+        narration: "How many elements does the OIG identify for an effective compliance program? -",
+        options: [
+          {
+            id: "a",
+            label: "5",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "7",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "c",
+            label: "10",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "12",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q2 from AAA Record v2.0 for GAO-004.",
+        policyRef: "CO-CP-001"
+      },
+      {
+        id: "q3",
+        format: "scenario_decision",
+        prompt: "An employee reports suspected fraud to the hotline. Their supervisor retaliates by reducing hours. This is:",
+        narration: "An employee reports suspected fraud to the hotline. Their supervisor retaliates by reducing hours. This is:",
+        options: [
+          {
+            id: "a",
+            label: "Acceptable if the report was unfounded -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "A violation of whistleblower protection — a terminable offense -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "c",
+            label: "The supervisor's discretion |",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "Only a problem if the employee proves fraud",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q3 from AAA Record v2.0 for GAO-004.",
+        policyRef: "CO-CP-001"
+      },
+      {
+        id: "q4",
+        format: "scenario_decision",
+        prompt: "The Anti-Kickback Statute prohibits:",
+        narration: "The Anti-Kickback Statute prohibits:",
+        options: [
+          {
+            id: "a",
+            label: "Providing skilled nursing in the home -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Payments to induce patient referrals -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "c",
+            label: "Hiring without background check |",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "Failing to complete annual training",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q4 from AAA Record v2.0 for GAO-004.",
+        policyRef: "CO-CP-001"
+      },
+      {
+        id: "q5",
+        format: "scenario_decision",
+        prompt: "If you suspect a compliance violation but are not sure, you should:",
+        narration: "If you suspect a compliance violation but are not sure, you should:",
+        options: [
+          {
+            id: "a",
+            label: "Wait until you have concrete proof -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Report the concern — better to report and be wrong than stay silent -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "c",
+            label: "Investigate on your own |",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "Discuss with coworkers ### Expansion (Q6–Q10)",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q5 from AAA Record v2.0 for GAO-004.",
+        policyRef: "CO-CP-001"
+      },
+      {
+        id: "q6",
+        format: "scenario_decision",
+        prompt: "Under the False Claims Act, knowingly includes which of the following?",
+        narration: "Under the False Claims Act, knowingly includes which of the following?",
+        options: [
+          {
+            id: "a",
+            label: "Only intentional fraud with documented proof -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Acting with reckless disregard for the truth -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "c",
+            label: "Honest mistakes in documentation |",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "Following supervisor instructions",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q6 from AAA Record v2.0 for GAO-004.",
+        policyRef: "CO-CP-001"
+      },
+      {
+        id: "q7",
+        format: "scenario_decision",
+        prompt: "Which element of the OIG compliance framework does this training module satisfy? -",
+        narration: "Which element of the OIG compliance framework does this training module satisfy? -",
+        options: [
+          {
+            id: "a",
+            label: "Internal auditing",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Enforcement - C) Training and education",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "c",
+            label: "Response and corrective action",
+            isCorrect: true,
+            feedback: "Correct."
+          }
+        ],
+        rationale: "Source exam item Q7 from AAA Record v2.0 for GAO-004.",
+        policyRef: "CO-CP-001"
+      },
+      {
+        id: "q8",
+        format: "scenario_decision",
+        prompt: "A clinician documents a forty-five-minute visit but spent only twenty minutes. This is best classified as: -",
+        narration: "A clinician documents a forty-five-minute visit but spent only twenty minutes. This is best classified as: -",
+        options: [
+          {
+            id: "a",
+            label: "Acceptable practice",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Fraud or abuse depending on intent - C) Waste",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "c",
+            label: "A scheduling issue",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q8 from AAA Record v2.0 for GAO-004.",
+        policyRef: "CO-CP-001"
+      },
+      {
+        id: "q9",
+        format: "scenario_decision",
+        prompt: "If your compliance concern involves your direct supervisor, what should you do?",
+        narration: "If your compliance concern involves your direct supervisor, what should you do?",
+        options: [
+          {
+            id: "a",
+            label: "Report to your supervisor anyway per the chain of command -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Skip the supervisor and report directly to the Compliance Officer or hotline -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "c",
+            label: "Wait until the supervisor is no longer your manager |",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "Ignore it",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q9 from AAA Record v2.0 for GAO-004.",
+        policyRef: "CO-CP-001"
+      }
+    ]
+  }
+},
   {
-    moduleId: 'GAO-005',
-    policyRefs: ['CO-CP-006'],
-    cmsRefs: [],
-    estimatedDurationMin: 45,
-    durationSource: 'DEFAULT',
-    splash: {
-      title: 'Compliance Hotline and Reporting',
-      subtitle: 'How to report a concern, anonymously or by name',
-      whyItMatters:
-        'A compliance program without a working reporting channel is theoretical. OIG and CMS examine call logs, response times, and outcomes. Failure to report a known concern is itself a violation under CO-CP-005.',
-      narration:
-        'In this module you will learn how to use the compliance hotline, what reporting channels are available, and your obligations and protections as a reporter.',
-      imageUrl: IMG.hotline,
-    },
-    navigation: {
-      title: 'How This Training Works',
-      body: 'One card at a time. Narration plays on every card. Challenges required.',
-      bullets: ['Card-by-card flow', 'Narration required', 'Challenges required', '80% pass'],
-      narration: 'One card at a time, narration on every card, challenges required, eighty percent to pass.',
-    },
-    lessons: [
-      {
-        id: 'GAO-005-L1',
-        order: 1,
-        title: 'Reporting Channels and Process',
-        objectives: [
-          'Identify all available reporting channels',
-          'Describe how anonymity is protected',
-          'Explain the reporter\'s obligations and protections',
-        ],
-        cards: [
-          {
-            id: 'GAO-005-L1-S',
-            type: 'summary',
-            title: 'What You Will Learn',
-            body: 'You will learn the four reporting channels (hotline, web portal, in-person, written), the response timeline (24-hour acknowledgment, 30-day investigation), and the non-retaliation protection.',
-            narration:
-              'In this lesson you will learn the four reporting channels â€” hotline, web portal, in-person, and written â€” the response timeline of twenty-four hour acknowledgment and thirty-day investigation, and the non-retaliation protection that applies to every reporter.',
-            estDurationSec: 45,
-          },
-          {
-            id: 'GAO-005-L1-C1',
-            type: 'content',
-            title: 'Available Channels',
-            body: 'Channels: 24/7 toll-free hotline, secure web portal, in-person meeting with Compliance Officer, written letter to the Compliance Officer. Anonymous reports are accepted through the hotline and web portal.',
-            narration:
-              'Four reporting channels are available: A twenty-four seven toll-free hotline, a secure web portal, an in-person meeting with the Compliance Officer, and a written letter delivered to the Compliance Officer. Anonymous reports are accepted through the hotline and the web portal.',
-            estDurationSec: 50,
-          },
-          {
-            id: 'GAO-005-L1-C2',
-            type: 'content',
-            title: 'Response Timeline',
-            body: 'Acknowledgment within 24 hours. Investigation initiated within 5 business days. Substantive response within 30 days. Reporter receives status updates if non-anonymous.',
-            narration:
-              'You can expect acknowledgment of any report within twenty-four hours. Investigation begins within five business days. A substantive response is delivered within thirty days. If you reported by name, you will receive status updates throughout.',
-            estDurationSec: 50,
-          },
-          {
-            id: 'GAO-005-L1-C3',
-            type: 'content',
-            title: 'Non-Retaliation Protection',
-            body: 'Retaliation against a good-faith reporter is itself a terminable offense and a violation of state and federal whistleblower laws. Suspected retaliation must be reported immediately and is investigated as a separate matter.',
-            narration:
-              'Retaliation against any good-faith reporter is itself a terminable offense and a violation of state and federal whistleblower law. Suspected retaliation must be reported immediately and is investigated as a separate matter from the underlying concern.',
-            estDurationSec: 50,
-          },
-          {
-            id: 'GAO-005-L1-C4',
-            type: 'content',
-            title: 'Field Example: Anonymous Report of Falsified Visit',
-            body: 'You discover documentation for a wound care visit that could not have occurred because the patient was hospitalized. You do not want to confront the charting nurse. Per CO-CP-006 (Compliance Hotline & Reporting Mechanisms) you use the anonymous web portal that evening, providing the patient name, date, and the fact that the patient was in the hospital. The portal issues a confirmation number. Within 24 hours you receive an acknowledgment (visible without login). The investigation results in a corrective plan and no one knows you reported.',
-            narration: 'Field example. You see a wound care note for a patient who was in the hospital that day. You use the anonymous web portal per CO-CP-006 that evening. You give the details and get a confirmation number. The report is investigated without anyone learning who reported.',
-            estDurationSec: 55,
-          },
-          {
-            id: 'GAO-005-L1-C5',
-            type: 'content',
-            title: 'What to Include in a Report',
-            body: 'When reporting, give specific facts: who, what, when, where, and any documents or patient identifiers. Do not investigate yourself or confront the person. Good-faith reports based on reasonable suspicion are protected even if the investigation does not substantiate every detail.',
-            narration: 'When you report, stick to facts: who, what, when, where, and any supporting notes. Do not investigate on your own or confront anyone. Good-faith reports based on reasonable suspicion are protected even if every detail is not confirmed.',
-            estDurationSec: 45,
-          },
-          {
-            id: 'GAO-005-L1-CH',
-            type: 'challenge',
-            title: 'Choose the Channel',
-            body: 'You witnessed a clinical billing irregularity and you want to remain anonymous.',
-            narration: 'You witnessed a clinical billing irregularity and you want to remain anonymous. Which channels protect anonymity?',
-            estDurationSec: 40,
-            challenge: {
-              id: 'GAO-005-L1-CH-Q',
-              format: 'scenario_decision',
-              prompt: 'Which channel best fits your need?',
-              narration: 'Which channel best fits the need to report anonymously?',
-              options: [
-                { id: 'a', label: 'In-person meeting with the Compliance Officer.', isCorrect: false, feedback: 'In-person meetings cannot be anonymous.' },
-                { id: 'b', label: 'Toll-free hotline or secure web portal.', isCorrect: true, feedback: 'Correct. Both support anonymous reporting.' },
-                { id: 'c', label: 'Email to your supervisor.', isCorrect: false, feedback: 'Email is not anonymous and the supervisor may be implicated.' },
-                { id: 'd', label: 'Public social media post.', isCorrect: false, feedback: 'Social media disclosure violates HIPAA and Code of Conduct.' },
-              ],
-              policyRef: 'CO-CP-006',
-              feedbackCorrect: 'Hotline and web portal are designed to receive anonymous reports while preserving evidence.',
-              feedbackIncorrect: 'Anonymity is protected only on the hotline and web portal. Email and in-person leave identifiable trails.',
-              complianceImpact: 'A working anonymous channel is required by OIG element four; failing to use the right channel can compromise the investigation.',
-              realWorldConsequence: 'Reporters who used social media or email have lost whistleblower protection and faced HIPAA penalties.',
-              correctBehaviorGuidance: 'Use the hotline or portal for anonymous reports. Provide as much detail as possible so investigators can act.',
-            },
-          },
-        ],
-      },
-      {
-        id: 'GAO-005-L2',
-        order: 2,
-        title: 'What to Report and How to Document It',
-        objectives: [
-          'Identify reportable concerns by category',
-          'Document a report so investigators can act on it',
-        ],
-        cards: [
-          {
-            id: 'GAO-005-L2-S',
-            type: 'summary',
-            title: 'Reportable Concerns',
-            body: 'You will learn what is reportable: false claims, kickbacks, abuse, HIPAA breaches, retaliation, unsafe practice, scope violations, and any suspected violation of law or policy.',
-            narration: 'In this lesson you will learn what is reportable: false claims, kickbacks, abuse, HIPAA breaches, retaliation, unsafe practice, scope violations, and any suspected violation of law or policy. When in doubt, report.',
-            estDurationSec: 45,
-          },
-          {
-            id: 'GAO-005-L2-C1',
-            type: 'content',
-            title: 'Categories of Reports',
-            body: 'Categories: clinical safety, billing/coding, privacy, harassment/discrimination, conflict of interest, theft, retaliation, unsafe environment. Each routes to a specific investigator on the Compliance team.',
-            narration: 'Reports fall into categories: clinical safety, billing and coding, privacy, harassment and discrimination, conflict of interest, theft, retaliation, and unsafe environment. Each category routes to a specific investigator on the Compliance team.',
-            estDurationSec: 55,
-          },
-          {
-            id: 'GAO-005-L2-C2',
-            type: 'content',
-            title: 'How to Document a Report',
-            body: 'Include: who, what, when, where, witnesses, and any documents. Stick to facts you observed. Do not speculate. Investigators will follow up; you do not need to prove the case.',
-            narration: 'When you report, include: who was involved, what happened, when it happened, where it happened, who else witnessed, and any documents you have. Stick to facts you observed. Do not speculate. Investigators will follow up; you do not need to prove the case yourself.',
-            estDurationSec: 60,
-          },
-          {
-            id: 'GAO-005-L2-C3',
-            type: 'content',
-            title: 'Field Example: Reporting a Timecard Concern',
-            body: 'An LVN tells you she saw a coworker clock in from home, drive to the first patient, then document the drive time as patient care time. You have no direct proof but a reasonable suspicion. Per CO-CP-006 you submit a hotline report with the names, date, and the statement you heard. You do not confront the coworker. The report triggers an audit of that clinician\'s EVV and time records.',
-            narration: 'Field example. You hear that an LVN is clocking in from home and billing drive time as care time. You have a reasonable suspicion. Per CO-CP-006 you call the hotline with the facts you know and do not confront anyone. The report leads to an EVV audit.',
-            estDurationSec: 50,
-          },
-          {
-            id: 'GAO-005-L2-C4',
-            type: 'content',
-            title: 'After You Report: What Happens Next',
-            body: 'You will receive an acknowledgment. The Compliance Officer triages the report within five days. If it involves patient safety it is escalated immediately. You may be contacted for follow-up if you left contact info. At the end you receive a summary of the outcome if you are not anonymous. Your only ongoing duty is to cooperate honestly if asked.',
-            narration: 'After you report you get an acknowledgment. Triage within five days. Safety issues are escalated fast. You may be contacted for more info. At the end you receive a summary outcome if you gave your name. Cooperate honestly if asked. That is your only duty after reporting.',
-            estDurationSec: 45,
-          },
-          {
-            id: 'GAO-005-L2-CH',
-            type: 'challenge',
-            title: 'Build a Report',
-            body: 'Complete the required fields for a hotline report on suspected billing irregularity.',
-            narration: 'Complete the required fields for a hotline report on a suspected billing irregularity.',
-            estDurationSec: 55,
-            challenge: {
-              id: 'GAO-005-L2-CH-Q',
-              format: 'field_completion',
-              prompt: 'Complete the required hotline report fields.',
-              narration: 'Complete the required hotline report fields.',
-              fields: [
-                { id: 'who', label: 'Who is involved (role/initials)', acceptableAnswers: ['scheduler', 'biller', 'clinician', 'supervisor', 'admin'] },
-                { id: 'what', label: 'What happened (1 line)', acceptableAnswers: ['billed visits not performed', 'upcoded visit', 'billed for cancelled visit', 'duplicate billing'] },
-                { id: 'when', label: 'When (date or range)', acceptableAnswers: ['this week', 'last week', 'date', 'today', 'yesterday'] },
-                { id: 'witness', label: 'Witness (yes/no/unknown)', acceptableAnswers: ['yes', 'no', 'unknown'] },
-              ],
-              policyRef: 'CO-CP-006',
-              feedbackCorrect: 'A complete report enables investigators to act within the 5-business-day window.',
-              feedbackIncorrect: 'Incomplete reports stall investigations and may force re-contact, undermining anonymity.',
-              complianceImpact: 'Stalled investigations are a documented OIG criticism and may invalidate the program element 4.',
-              realWorldConsequence: 'Cases dismissed for incomplete documentation have allowed ongoing fraud to continue for additional months.',
-              correctBehaviorGuidance: 'Provide who/what/when/where/witnesses on every report. Attach documents when possible.',
-            },
-          },
-        ],
-      },
-    ],
-    finalTest: {
-      id: 'GAO-005-FT',
-      passingScorePct: 0.80,
-      instructionsNarration: 'Final test on hotline and reporting. Eighty percent required.',
-      failAction: 'remediation',
-      questions: [
-        {
-          id: 'GAO-005-FT-Q1',
-          format: 'matching',
-          prompt: 'Match the channel to whether it supports anonymous reporting.',
-          narration: 'Match each reporting channel to whether it supports anonymity.',
-          matches: [
-            { left: 'Toll-free hotline', right: 'Anonymous OK' },
-            { left: 'Secure web portal', right: 'Anonymous OK' },
-            { left: 'In-person meeting', right: 'NOT anonymous' },
-            { left: 'Written letter', right: 'Optional anonymous (no signature)' },
-          ],
-          rationale: 'Each channel has different anonymity properties; staff must choose the right one.',
-          policyRef: 'CO-CP-006',
-        },
-        {
-          id: 'GAO-005-FT-Q2',
-          format: 'sequencing',
-          prompt: 'Place the response timeline events in correct order.',
-          narration: 'Place the response timeline in correct order.',
-          steps: [
-            { id: 's1', label: 'Acknowledgment within 24 hours' },
-            { id: 's2', label: 'Investigation initiated within 5 business days' },
-            { id: 's3', label: 'Substantive response within 30 days' },
-          ],
-          correctOrder: ['s1', 's2', 's3'],
-          rationale: 'Surveyors validate timeliness from the call log; staff must know the timeline.',
-          policyRef: 'CO-CP-006',
-        },
-        {
-          id: 'GAO-005-FT-Q3',
-          format: 'true_false',
-          prompt: 'A supervisor may discipline an employee for a good-faith hotline report.',
-          narration: 'True or false: a supervisor may discipline an employee for a good-faith hotline report.',
-          options: [
-            { id: 't', label: 'True', isCorrect: false, feedback: 'False â€” that is retaliation.' },
-            { id: 'f', label: 'False', isCorrect: true, feedback: 'Correct.' },
-          ],
-          rationale: 'Retaliation is a separate, independently terminable offense.',
-          policyRef: 'CO-CP-006',
-        },
-        {
-          id: 'GAO-005-FT-Q4',
-          format: 'structured_input',
-          prompt: 'State the maximum time within which a substantive response must be delivered.',
-          narration: 'State the maximum time within which a substantive response to a hotline report must be delivered.',
-          fields: [
-            { id: 'days', label: 'Days', acceptableAnswers: ['30', '30 days', 'thirty', 'thirty days'] },
-          ],
-          rationale: 'Thirty-day substantive response is the agency commitment per CO-CP-006.',
-          policyRef: 'CO-CP-006',
-        },
-      ],
-    },
+  moduleId: "GAO-005",
+  policyRefs: [
+    "CO-CP-006"
+  ],
+  cmsRefs: [],
+  estimatedDurationMin: 30,
+  durationSource: "DEFAULT",
+  splash: {
+    title: "Compliance Hotline & Reporting",
+    subtitle: "Care Indeed GAO — AAA Record v2.0",
+    whyItMatters: "Care Indeed maintains a confidential compliance hotline as part of the agency's Corporate Compliance Program, required under policy CO-CP-006.",
+    narration: "Welcome to GAO-005, Compliance Hotline & Reporting. Care Indeed maintains a confidential compliance hotline as part of the agency's Corporate Compliance Program, required under policy CO-CP-006."
   },
-
-  /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ GAO-006 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  navigation: {
+    title: "How This Training Works",
+    body: "You will move through one card at a time. Use Next and Previous to navigate. Your progress, time on each card, and challenge responses are tracked for compliance. Skipping cards is not allowed.",
+    bullets: [
+      "Single-card view",
+      "Audio narration on every card",
+      "Challenges required to advance",
+      "80% to pass final test"
+    ],
+    narration: "One card at a time. Audio narration on every card. Challenges must be completed before you continue. The final test requires eighty percent to pass."
+  },
+  lessons: [
+    {
+      id: "GAO-005-L1",
+      order: 1,
+      title: "The Compliance Hotline",
+      objectives: [
+        "Apply key requirements from The Compliance Hotline",
+        "Identify correct field actions related to The Compliance Hotline"
+      ],
+      cards: [
+        {
+          id: "GAO-005-L1-S",
+          type: "summary",
+          title: "The Compliance Hotline",
+          body: "Care Indeed maintains a confidential compliance hotline as part of the agency's Corporate Compliance Program, required under policy CO-CP-006. In the previous module, you learned about the seven elements of compliance and the types of fraud, waste, and abuse that can occur in home health care.",
+          narration: "In this lesson: The Compliance Hotline. Care Indeed maintains a confidential compliance hotline as part of the agency's Corporate Compliance Program, required under policy CO-CP-006. In the previous module, you learned about the seven elements of compliance and the types of fraud, waste, and abuse that can occur in home health care.",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-005-L1-C1",
+          type: "content",
+          title: "The Compliance Hotline",
+          body: "Care Indeed maintains a confidential compliance hotline as part of the agency's Corporate Compliance Program, required under policy CO-CP-006. In the previous module, you learned about the seven elements of compliance and the types of fraud, waste, and abuse that can occur in home health care.",
+          narration: "Care Indeed maintains a confidential compliance hotline as part of the agency's Corporate Compliance Program, required under policy CO-CP-006. In the previous module, you learned about the seven elements of compliance and the types of fraud, waste, and abuse that can occur in home health care. This module focuses specifically on how to report compliance concerns, what happens after you report, and the protections that ensure you can report safely. The compliance hotline is not a suggestion box. It is a critical safety mechanism that gives every employee a direct, confidential channel to report suspected violations without fear of retaliation. CMS and the OIG expect agencies to have effective communication channels as part of their compliance programs, and the hotline is the centerpiece of that requirement. Why does a dedicated hotline matter? Because the reality of healthcare compliance is that many employees who witness potential violations do not report them.",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-005-L1-C2",
+          type: "content",
+          title: "The Compliance Hotline (part 2)",
+          body: "Research consistently shows that the top reasons for non-reporting are fear of retaliation, belief that nothing will be done, uncertainty about whether the situation is actually a violation, and not knowing how to report. The hotline addresses all four barriers. It is anonymous, eliminating retaliation risk.",
+          narration: "Research consistently shows that the top reasons for non-reporting are fear of retaliation, belief that nothing will be done, uncertainty about whether the situation is actually a violation, and not knowing how to report. The hotline addresses all four barriers. It is anonymous, eliminating retaliation risk. It goes directly to the Compliance Officer, ensuring action. It accepts reports even when the reporter is unsure, and it provides a clear, simple mechanism for reporting. You should use the compliance hotline whenever you observe or become aware of any activity that may violate federal or state law, CMS Conditions of Participation, agency policies, the Code of Conduct, billing and documentation standards, patient rights, or professional ethics. You do not need to be certain that a violation occurred. You only need to have a good-faith belief that something may be wrong. The hotline is available at all times. Reports can be made by",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-005-L1-C3",
+          type: "content",
+          title: "The Compliance Hotline (part 3)",
+          body: "phone or through the designated reporting system. You may identify yourself or remain anonymous. If you choose to remain anonymous, the agency will investigate the concern without attempting to identify you.",
+          narration: "phone or through the designated reporting system. You may identify yourself or remain anonymous. If you choose to remain anonymous, the agency will investigate the concern without attempting to identify you. However, providing your identity can sometimes help the Compliance Officer gather additional information and conduct a more thorough investigation. The choice is entirely yours. It is important to understand that the compliance hotline is not the only reporting channel. Per CO-CP-006, you have five channels available. Your direct supervisor is the first option for routine concerns. The Compliance Officer is available for any compliance issue, regardless of severity. The anonymous hotline is available when you prefer anonymity. The Administrator is available if other channels are compromised. And external agencies, including the OIG Hotline at 1-800-HHS-TIPS and the California Department of Public Health, are available when you believe internal channels will not adequately address the concern.",
+          estDurationSec: 63
+        },
+        {
+          id: "GAO-005-L1-CH",
+          type: "challenge",
+          title: "Knowledge Check 1 Q: You witness something that might be a…",
+          body: "Knowledge Check 1 Q: You witness something that might be a compliance violation but you are not sure. Should you report it or wait until you have more evidence? A: Report it now.",
+          narration: "Knowledge Check 1 Q: You witness something that might be a compliance violation but you are not sure. Should you report it or wait until you have more evidence? A: Report it now. You only need a good-faith belief that something may be wrong.",
+          estDurationSec: 55,
+          challenge: {
+            id: "GAO-005-L1-CH-Q",
+            format: "scenario_decision",
+            prompt: "Knowledge Check 1 Q: You witness something that might be a compliance violation but you are not sure. Should you report it or wait until you have more evidence? A: Report it now. You only need a good-faith belief that something may be wrong.",
+            narration: "Knowledge Check 1 Q: You witness something that might be a compliance violation but you are not sure. Should you report it or wait until you have more evidence? A: Report it now. You only need a good-faith belief that something may be wrong.",
+            options: [
+              {
+                id: "a",
+                label: "Apply the policy-based correct action.",
+                isCorrect: true,
+                feedback: "Correct — this matches the module guidance."
+              },
+              {
+                id: "b",
+                label: "Document only and take no further action until the next scheduled visit.",
+                isCorrect: false,
+                feedback: "Documentation alone is not enough when action or notification is required."
+              },
+              {
+                id: "c",
+                label: "Ask a coworker informally and wait for them to decide.",
+                isCorrect: false,
+                feedback: "You must follow the formal policy pathway yourself."
+              },
+              {
+                id: "d",
+                label: "Ignore the issue if the patient appears comfortable.",
+                isCorrect: false,
+                feedback: "Patient comfort does not override required clinical or compliance actions."
+              }
+            ],
+            policyRef: "CO-CP-006",
+            feedbackCorrect: "Correct.",
+            feedbackIncorrect: "Review the expected response and policy guidance.",
+            complianceImpact: "Incorrect action can create survey, safety, or legal exposure.",
+            realWorldConsequence: "Patient harm, delayed reporting, or noncompliance findings can result.",
+            correctBehaviorGuidance: ""
+          }
+        }
+      ]
+    },
+    {
+      id: "GAO-005-L2",
+      order: 2,
+      title: "What to Report and How",
+      objectives: [
+        "Apply key requirements from What to Report and How",
+        "Identify correct field actions related to What to Report and How"
+      ],
+      cards: [
+        {
+          id: "GAO-005-L2-S",
+          type: "summary",
+          title: "What to Report and How",
+          body: "Knowing what to report is as important as knowing how to report. In home health care, reportable concerns fall into several categories, and understanding them helps you recognize situations that require action.",
+          narration: "In this lesson: What to Report and How. Knowing what to report is as important as knowing how to report. In home health care, reportable concerns fall into several categories, and understanding them helps you recognize situations that require action.",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-005-L2-C1",
+          type: "content",
+          title: "What to Report and How",
+          body: "Knowing what to report is as important as knowing how to report. In home health care, reportable concerns fall into several categories, and understanding them helps you recognize situations that require action.",
+          narration: "Knowing what to report is as important as knowing how to report. In home health care, reportable concerns fall into several categories, and understanding them helps you recognize situations that require action. Billing and documentation concerns include visits billed but not provided, documentation that does not reflect actual care delivered, upcoding or billing for higher service levels than provided, patients being kept on service after goals are met and skilled need has ended, and any pattern of documentation that seems designed to inflate reimbursement rather than accurately reflect patient care. Patient care concerns include care provided below accepted professional standards, failure to follow physician orders or the plan of care, failure to report changes in patient condition, medication errors that are not reported, and any situation where patient safety is being compromised by staff action or inaction. Workplace conduct concerns include harassment, discrimination, unsafe working conditions, retaliation against reporters, substance",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-005-L2-C2",
+          type: "content",
+          title: "What to Report and How (part 2)",
+          body: "impairment in the workplace, and violations of professional boundaries with patients or families. Regulatory compliance concerns include failure to maintain required licensure or certifications, failure to complete required training, unauthorized persons providing clinical services, HIPAA violations and unauthorized…",
+          narration: "impairment in the workplace, and violations of professional boundaries with patients or families. Regulatory compliance concerns include failure to maintain required licensure or certifications, failure to complete required training, unauthorized persons providing clinical services, HIPAA violations and unauthorized disclosure of patient information, and failure to follow infection control or safety protocols. Financial misconduct includes misuse of agency funds or resources, accepting gifts or payments from vendors or referral sources in violation of the Anti-Kickback Statute, and any financial arrangement that appears to be designed to influence patient referrals. When making a report, include as much detail as possible. What did you observe? When did it happen? Where did it occur? Who was involved? Were there witnesses? What documentation might be relevant? If you do not know all the details, report what you do know. A partial report is infinitely better than no report. The Compliance Officer will follow up to",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-005-L2-C3",
+          type: "content",
+          title: "What to Report and How (part 3)",
+          body: "gather additional information. Do not investigate on your own. Do not confront the person you believe committed the violation. Do not collect evidence. Do not interview colleagues about what they may have seen. Your role is to report. The Compliance Officer's role is to investigate.",
+          narration: "gather additional information. Do not investigate on your own. Do not confront the person you believe committed the violation. Do not collect evidence. Do not interview colleagues about what they may have seen. Your role is to report. The Compliance Officer's role is to investigate. Attempting your own investigation can compromise the formal investigation, alert the subject and allow evidence destruction, put you at personal risk, and create legal complications that affect the agency's ability to take corrective action.",
+          estDurationSec: 35
+        },
+        {
+          id: "GAO-005-L2-CH",
+          type: "challenge",
+          title: "Scenario Challenge 1 Scenario: You notice that a colleague…",
+          body: "Scenario Challenge 1 Scenario: You notice that a colleague consistently documents arriving at patient homes at the scheduled time, but you have observed them arriving fifteen to twenty minutes late on multiple…",
+          narration: "Scenario Challenge 1 Scenario: You notice that a colleague consistently documents arriving at patient homes at the scheduled time, but you have observed them arriving fifteen to twenty minutes late on multiple occasions. You are not sure if this is intentional fraud or just poor time management.",
+          estDurationSec: 55,
+          challenge: {
+            id: "GAO-005-L2-CH-Q",
+            format: "scenario_decision",
+            prompt: "Scenario Challenge 1 Scenario: You notice that a colleague consistently documents arriving at patient homes at the scheduled time, but you have observed them arriving fifteen to twenty minutes late on multiple occasions.",
+            narration: "Scenario Challenge 1 Scenario: You notice that a colleague consistently documents arriving at patient homes at the scheduled time, but you have observed them arriving fifteen to twenty minutes late on multiple occasions.",
+            options: [
+              {
+                id: "a",
+                label: "Apply the policy-based correct action.",
+                isCorrect: true,
+                feedback: "Correct — this matches the module guidance."
+              },
+              {
+                id: "b",
+                label: "Document only and take no further action until the next scheduled visit.",
+                isCorrect: false,
+                feedback: "Documentation alone is not enough when action or notification is required."
+              },
+              {
+                id: "c",
+                label: "Ask a coworker informally and wait for them to decide.",
+                isCorrect: false,
+                feedback: "You must follow the formal policy pathway yourself."
+              },
+              {
+                id: "d",
+                label: "Ignore the issue if the patient appears comfortable.",
+                isCorrect: false,
+                feedback: "Patient comfort does not override required clinical or compliance actions."
+              }
+            ],
+            policyRef: "CO-CP-006",
+            feedbackCorrect: "Correct.",
+            feedbackIncorrect: "Review the expected response and policy guidance.",
+            complianceImpact: "Incorrect action can create survey, safety, or legal exposure.",
+            realWorldConsequence: "Patient harm, delayed reporting, or noncompliance findings can result.",
+            correctBehaviorGuidance: ""
+          }
+        }
+      ]
+    },
+    {
+      id: "GAO-005-L3",
+      order: 3,
+      title: "What Happens After You Report",
+      objectives: [
+        "Apply key requirements from What Happens After You Report",
+        "Identify correct field actions related to What Happens After You Report"
+      ],
+      cards: [
+        {
+          id: "GAO-005-L3-S",
+          type: "summary",
+          title: "What Happens After You Report",
+          body: "Understanding what happens after you file a report helps you trust the process and reduces anxiety about reporting. The compliance investigation process at Care Indeed follows a defined protocol under CO-CP-001 Section 6.7.",
+          narration: "In this lesson: What Happens After You Report. Understanding what happens after you file a report helps you trust the process and reduces anxiety about reporting. The compliance investigation process at Care Indeed follows a defined protocol under CO-CP-001 Section 6.7.",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-005-L3-C1",
+          type: "content",
+          title: "What Happens After You Report",
+          body: "Understanding what happens after you file a report helps you trust the process and reduces anxiety about reporting. The compliance investigation process at Care Indeed follows a defined protocol under CO-CP-001 Section 6.7.",
+          narration: "Understanding what happens after you file a report helps you trust the process and reduces anxiety about reporting. The compliance investigation process at Care Indeed follows a defined protocol under CO-CP-001 Section 6.7. When a report is received, the Compliance Officer conducts an initial assessment to determine the nature and severity of the concern, whether immediate action is needed to protect patients or prevent ongoing harm, which investigation resources are required, and whether external reporting obligations apply, such as mandatory reporting to state agencies or law enforcement. For concerns involving immediate patient safety risk, the Compliance Officer will take protective action first and investigate second. Patient safety always takes priority over the investigation process. This might include temporarily reassigning a clinician, notifying the DON for clinical oversight, or contacting the patient's physician. The investigation phase involves gathering relevant documentation including clinical records, billing records, personnel files, and any other evidence.",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-005-L3-C2",
+          type: "content",
+          title: "What Happens After You Report (part 2)",
+          body: "It includes interviewing relevant parties, which may include the reporter if identified, the subject of the concern, supervisors, and witnesses. It includes analyzing the evidence against applicable laws, regulations, and policies.",
+          narration: "It includes interviewing relevant parties, which may include the reporter if identified, the subject of the concern, supervisors, and witnesses. It includes analyzing the evidence against applicable laws, regulations, and policies. And it includes consulting with legal counsel if the concern involves potential legal violations. The investigation timeline varies based on complexity. Simple matters may be resolved within days. Complex investigations involving multiple employees, extensive documentation review, or potential legal implications may take weeks. The Compliance Officer will keep the reporter informed of progress if the reporter is identified and wishes to receive updates. Once the investigation is complete, the Compliance Officer determines findings and recommends corrective actions. Corrective actions may include employee counseling and retraining, disciplinary action up to and including termination, process or policy changes to prevent recurrence, refunding overpayments if billing violations are confirmed, self-disclosure to CMS or the OIG if required, and referral to law enforcement",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-005-L3-C3",
+          type: "content",
+          title: "What Happens After You Report (part 3)",
+          body: "if criminal activity is confirmed. All investigations are documented with findings, corrective actions, and follow-up monitoring. These records are maintained by the Compliance Officer and reported to the Governing Body on a regular basis.",
+          narration: "if criminal activity is confirmed. All investigations are documented with findings, corrective actions, and follow-up monitoring. These records are maintained by the Compliance Officer and reported to the Governing Body on a regular basis. The Governing Body has ultimate oversight of the compliance program and must be informed of significant findings. One important principle: the outcome of an investigation does not determine whether the report was appropriate. Even if an investigation finds no violation, the report was still the right thing to do if it was made in good faith. The agency values a culture of reporting over a culture of silence.",
+          estDurationSec: 44
+        },
+        {
+          id: "GAO-005-L3-CH",
+          type: "challenge",
+          title: "Knowledge Check 2 Q: If an investigation finds no…",
+          body: "Knowledge Check 2 Q: If an investigation finds no violation, does that mean the reporter was wrong to report? A: No. A good-faith report is always appropriate even if the investigation finds no violation.",
+          narration: "Knowledge Check 2 Q: If an investigation finds no violation, does that mean the reporter was wrong to report? A: No. A good-faith report is always appropriate even if the investigation finds no violation.",
+          estDurationSec: 55,
+          challenge: {
+            id: "GAO-005-L3-CH-Q",
+            format: "scenario_decision",
+            prompt: "Knowledge Check 2 Q: If an investigation finds no violation, does that mean the reporter was wrong to report? A: No. A good-faith report is always appropriate even if the investigation finds no violation.",
+            narration: "Knowledge Check 2 Q: If an investigation finds no violation, does that mean the reporter was wrong to report? A: No. A good-faith report is always appropriate even if the investigation finds no violation.",
+            options: [
+              {
+                id: "a",
+                label: "Apply the policy-based correct action.",
+                isCorrect: true,
+                feedback: "Correct — this matches the module guidance."
+              },
+              {
+                id: "b",
+                label: "Document only and take no further action until the next scheduled visit.",
+                isCorrect: false,
+                feedback: "Documentation alone is not enough when action or notification is required."
+              },
+              {
+                id: "c",
+                label: "Ask a coworker informally and wait for them to decide.",
+                isCorrect: false,
+                feedback: "You must follow the formal policy pathway yourself."
+              },
+              {
+                id: "d",
+                label: "Ignore the issue if the patient appears comfortable.",
+                isCorrect: false,
+                feedback: "Patient comfort does not override required clinical or compliance actions."
+              }
+            ],
+            policyRef: "CO-CP-006",
+            feedbackCorrect: "Correct.",
+            feedbackIncorrect: "Review the expected response and policy guidance.",
+            complianceImpact: "Incorrect action can create survey, safety, or legal exposure.",
+            realWorldConsequence: "Patient harm, delayed reporting, or noncompliance findings can result.",
+            correctBehaviorGuidance: ""
+          }
+        }
+      ]
+    },
+    {
+      id: "GAO-005-L4",
+      order: 4,
+      title: "Whistleblower Protections",
+      objectives: [
+        "Apply key requirements from Whistleblower Protections",
+        "Identify correct field actions related to Whistleblower Protections"
+      ],
+      cards: [
+        {
+          id: "GAO-005-L4-S",
+          type: "summary",
+          title: "Whistleblower Protections",
+          body: "Whistleblower protection is the foundation that makes the entire compliance reporting system work. Without protection, employees will not report, and without reports, violations go undetected. Care Indeed's protections are built on three layers: agency policy, federal law, and California state law.",
+          narration: "In this lesson: Whistleblower Protections. Whistleblower protection is the foundation that makes the entire compliance reporting system work. Without protection, employees will not report, and without reports, violations go undetected. Care Indeed's protections are built on three layers: agency policy, federal law, and California state law.",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-005-L4-C1",
+          type: "content",
+          title: "Whistleblower Protections",
+          body: "Whistleblower protection is the foundation that makes the entire compliance reporting system work. Without protection, employees will not report, and without reports, violations go undetected. Care Indeed's protections are built on three layers: agency policy, federal law, and California state law.",
+          narration: "Whistleblower protection is the foundation that makes the entire compliance reporting system work. Without protection, employees will not report, and without reports, violations go undetected. Care Indeed's protections are built on three layers: agency policy, federal law, and California state law. At the agency level, policy CO-CP-005 establishes a zero-tolerance policy for retaliation against any employee who reports a compliance concern in good faith. Retaliation is broadly defined to include any adverse employment action motivated by the employee's reporting activity. This includes termination, demotion, suspension, reduction in hours, unfavorable schedule changes, transfer to a less desirable position, negative performance evaluations influenced by the report, verbal or written harassment related to the report, social isolation or exclusion from professional activities, and any other action that would discourage a reasonable employee from reporting. At the federal level, multiple laws protect healthcare whistleblowers. The False Claims Act includes a qui tam provision that",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-005-L4-C2",
+          type: "content",
+          title: "Whistleblower Protections (part 2)",
+          body: "allows employees to file lawsuits on behalf of the government against employers who submit false claims to federal programs. Qui tam relators, as these whistleblowers are called, are entitled to a percentage of any recovery.",
+          narration: "allows employees to file lawsuits on behalf of the government against employers who submit false claims to federal programs. Qui tam relators, as these whistleblowers are called, are entitled to a percentage of any recovery. The False Claims Act also prohibits retaliation against qui tam relators and provides for reinstatement, double back pay, and compensation for litigation costs. At the California state level, additional protections apply. California Labor Code Section 1102.5 prohibits employers from retaliating against employees who report suspected violations of state or federal laws. California Health and Safety Code provides additional protections for healthcare workers who report patient safety concerns. These state protections may provide remedies beyond federal law, including emotional distress damages. What constitutes retaliation can sometimes be subtle. It is not always a termination or demotion. It can be a pattern of small adverse actions that collectively create a hostile environment for the reporter. Examples include",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-005-L4-C3",
+          type: "content",
+          title: "Whistleblower Protections (part 3)",
+          body: "consistently receiving the worst shift assignments after filing a report, being excluded from team meetings or professional development opportunities, receiving vague or unjustified negative performance feedback, having previously approved time-off requests suddenly denied, and supervisors making comments about…",
+          narration: "consistently receiving the worst shift assignments after filing a report, being excluded from team meetings or professional development opportunities, receiving vague or unjustified negative performance feedback, having previously approved time-off requests suddenly denied, and supervisors making comments about loyalty or trust that are directed at the reporter. If you believe you are experiencing retaliation, document everything with dates, times, specific actions, and witnesses. Report the retaliation through a separate compliance channel — not through the same supervisor who may be retaliating. The agency investigates retaliation claims with the same rigor as other compliance concerns, and confirmed retaliation results in disciplinary action against the retaliator, up to and including termination. Remember: your protection is not conditional on the outcome of the investigation. Whether the original concern is substantiated or not, your right to report without retaliation is absolute as long as you reported in good faith. ---",
+          estDurationSec: 63
+        },
+        {
+          id: "GAO-005-L4-CH",
+          type: "challenge",
+          title: "Apply This Lesson",
+          body: "What is the key takeaway from \"Whistleblower Protections\"?",
+          narration: "What is the key takeaway from \"Whistleblower Protections\"?",
+          estDurationSec: 55,
+          challenge: {
+            id: "GAO-005-L4-CH-Q",
+            format: "scenario_decision",
+            prompt: "What is the key takeaway from \"Whistleblower Protections\"?",
+            narration: "What is the key takeaway from \"Whistleblower Protections\"?",
+            options: [
+              {
+                id: "a",
+                label: "Whistleblower protection is the foundation that makes the entire compliance reporting system work.",
+                isCorrect: true,
+                feedback: "Correct — this matches the module guidance."
+              },
+              {
+                id: "b",
+                label: "Document only and take no further action until the next scheduled visit.",
+                isCorrect: false,
+                feedback: "Documentation alone is not enough when action or notification is required."
+              },
+              {
+                id: "c",
+                label: "Ask a coworker informally and wait for them to decide.",
+                isCorrect: false,
+                feedback: "You must follow the formal policy pathway yourself."
+              },
+              {
+                id: "d",
+                label: "Ignore the issue if the patient appears comfortable.",
+                isCorrect: false,
+                feedback: "Patient comfort does not override required clinical or compliance actions."
+              }
+            ],
+            policyRef: "CO-CP-006",
+            feedbackCorrect: "Correct.",
+            feedbackIncorrect: "Review the expected response and policy guidance.",
+            complianceImpact: "Incorrect action can create survey, safety, or legal exposure.",
+            realWorldConsequence: "Patient harm, delayed reporting, or noncompliance findings can result.",
+            correctBehaviorGuidance: "Whistleblower protection is the foundation that makes the entire compliance reporting system work. Without protection, employees will not report, and without reports, violations go undetected."
+          }
+        }
+      ]
+    },
+    {
+      id: "GAO-005-L5",
+      order: 5,
+      title: "Module Summary",
+      objectives: [
+        "Apply key requirements from Module Summary",
+        "Identify correct field actions related to Module Summary"
+      ],
+      cards: [
+        {
+          id: "GAO-005-L5-S",
+          type: "summary",
+          title: "Module Summary",
+          body: "Let us consolidate the essentials of compliance reporting and whistleblower protections. Care Indeed provides five reporting channels: your direct supervisor for routine concerns, the Compliance Officer for any compliance issue, the anonymous hotline for confidential reporting, the Administrator if…",
+          narration: "In this lesson: Module Summary. Let us consolidate the essentials of compliance reporting and whistleblower protections. Care Indeed provides five reporting channels: your direct supervisor for routine concerns, the Compliance Officer for any compliance issue, the anonymous hotline for confidential reporting, the Administrator if other channels are compromised, and external agencies including the OIG Hotline and the California Department of…",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-005-L5-C1",
+          type: "content",
+          title: "Module Summary",
+          body: "Let us consolidate the essentials of compliance reporting and whistleblower protections. Care Indeed provides five reporting channels: your direct supervisor for routine concerns, the Compliance Officer for any compliance issue, the anonymous hotline for confidential reporting, the Administrator if other channels are…",
+          narration: "Let us consolidate the essentials of compliance reporting and whistleblower protections. Care Indeed provides five reporting channels: your direct supervisor for routine concerns, the Compliance Officer for any compliance issue, the anonymous hotline for confidential reporting, the Administrator if other channels are compromised, and external agencies including the OIG Hotline and the California Department of Public Health for situations where internal channels are insufficient. You do not need certainty to report. A good-faith belief that something may be wrong is sufficient. The Compliance Officer investigates and determines whether a violation occurred. Your job is to report, not to investigate. Reportable concerns include billing irregularities, documentation falsification, patient care quality issues, workplace conduct violations, regulatory noncompliance, HIPAA breaches, and financial misconduct. When reporting, provide as much detail as possible including what you observed, when, where, who was involved, and any supporting documentation. But a partial report is always better than no",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-005-L5-C2",
+          type: "content",
+          title: "Module Summary (part 2)",
+          body: "report. After you report, the Compliance Officer assesses severity, may take immediate protective action for patient safety, investigates by gathering evidence and interviewing parties, determines findings, implements corrective actions, and documents the entire process.",
+          narration: "report. After you report, the Compliance Officer assesses severity, may take immediate protective action for patient safety, investigates by gathering evidence and interviewing parties, determines findings, implements corrective actions, and documents the entire process. Significant findings are reported to the Governing Body. Whistleblower protection operates on three levels: agency policy CO-CP-005, federal law including the False Claims Act qui tam provisions, and California state law including Labor Code Section 1102.5. Retaliation is broadly defined and includes any adverse employment action motivated by reporting. Retaliation is a terminable offense. If you experience retaliation, document it and report through a separate channel. Your protection does not depend on the investigation outcome. It depends on your good faith at the time of reporting. For your daily practice, remember these principles. First, see something, say something. Do not rationalize away concerns or assume someone else will handle it. Second, use whichever reporting channel you",
+          estDurationSec: 64
+        },
+        {
+          id: "GAO-005-L5-C3",
+          type: "content",
+          title: "Module Summary (part 3)",
+          body: "are most comfortable with. You do not have to follow a specific order. Third, you cannot be punished for good-faith reporting, period. Fourth, timing matters — report as soon as you become aware of a concern. And fifth, do not investigate on your own. Report and let the Compliance Officer handle the investigation.",
+          narration: "are most comfortable with. You do not have to follow a specific order. Third, you cannot be punished for good-faith reporting, period. Fourth, timing matters — report as soon as you become aware of a concern. And fifth, do not investigate on your own. Report and let the Compliance Officer handle the investigation. The compliance reporting system works only if employees use it. Every report that is filed, investigated, and resolved strengthens the agency's compliance culture. Every concern that goes unreported weakens it. You are a critical part of this system. You are now ready for the final exam. Ten questions, eighty percent to pass.",
+          estDurationSec: 45
+        },
+        {
+          id: "GAO-005-L5-CH",
+          type: "challenge",
+          title: "Scenario Challenge 2 Scenario: A coworker confides in you…",
+          body: "Scenario Challenge 2 Scenario: A coworker confides in you that they reported a HIPAA concern about a supervisor three weeks ago, and since then the supervisor has given them unfavorable performance ratings and excluded…",
+          narration: "Scenario Challenge 2 Scenario: A coworker confides in you that they reported a HIPAA concern about a supervisor three weeks ago, and since then the supervisor has given them unfavorable performance ratings and excluded them from team meetings.",
+          estDurationSec: 55,
+          challenge: {
+            id: "GAO-005-L5-CH-Q",
+            format: "scenario_decision",
+            prompt: "Scenario Challenge 2 Scenario: A coworker confides in you that they reported a HIPAA concern about a supervisor three weeks ago, and since then the supervisor has given them unfavorable performance ratings and excluded them from team meetings.",
+            narration: "Scenario Challenge 2 Scenario: A coworker confides in you that they reported a HIPAA concern about a supervisor three weeks ago, and since then the supervisor has given them unfavorable performance ratings and excluded them from team meetings.",
+            options: [
+              {
+                id: "a",
+                label: "Apply the policy-based correct action.",
+                isCorrect: true,
+                feedback: "Correct — this matches the module guidance."
+              },
+              {
+                id: "b",
+                label: "Document only and take no further action until the next scheduled visit.",
+                isCorrect: false,
+                feedback: "Documentation alone is not enough when action or notification is required."
+              },
+              {
+                id: "c",
+                label: "Ask a coworker informally and wait for them to decide.",
+                isCorrect: false,
+                feedback: "You must follow the formal policy pathway yourself."
+              },
+              {
+                id: "d",
+                label: "Ignore the issue if the patient appears comfortable.",
+                isCorrect: false,
+                feedback: "Patient comfort does not override required clinical or compliance actions."
+              }
+            ],
+            policyRef: "CO-CP-006",
+            feedbackCorrect: "Correct.",
+            feedbackIncorrect: "Review the expected response and policy guidance.",
+            complianceImpact: "Incorrect action can create survey, safety, or legal exposure.",
+            realWorldConsequence: "Patient harm, delayed reporting, or noncompliance findings can result.",
+            correctBehaviorGuidance: ""
+          }
+        }
+      ]
+    }
+  ],
+  finalTest: {
+    id: "GAO-005-FT",
+    passingScorePct: 0.8,
+    instructionsNarration: "Final test on Compliance Hotline & Reporting. 80 percent required to pass.",
+    failAction: "remediation",
+    questions: [
+      {
+        id: "q1",
+        format: "scenario_decision",
+        prompt: "The compliance hotline at Care Indeed is:",
+        narration: "The compliance hotline at Care Indeed is:",
+        options: [
+          {
+            id: "a",
+            label: "Only for use by supervisors and managers -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Available to all employees, including anonymously -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "c",
+            label: "Only for reporting criminal activity |",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "Monitored by external law enforcement",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q1 from AAA Record v2.0 for GAO-005.",
+        policyRef: "CO-CP-006"
+      },
+      {
+        id: "q2",
+        format: "scenario_decision",
+        prompt: "When should you report a suspected compliance violation? -",
+        narration: "When should you report a suspected compliance violation? -",
+        options: [
+          {
+            id: "a",
+            label: "After gathering sufficient evidence",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "At the next team meeting - C) As soon as you become aware of the concern",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "c",
+            label: "Only during business hours",
+            isCorrect: true,
+            feedback: "Correct."
+          }
+        ],
+        rationale: "Source exam item Q2 from AAA Record v2.0 for GAO-005.",
+        policyRef: "CO-CP-006"
+      },
+      {
+        id: "q3",
+        format: "scenario_decision",
+        prompt: "If your direct supervisor is involved in the suspected violation, you should:",
+        narration: "If your direct supervisor is involved in the suspected violation, you should:",
+        options: [
+          {
+            id: "a",
+            label: "Report to the supervisor anyway per chain of command -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Report directly to the Compliance Officer, hotline, or Administrator -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "c",
+            label: "Wait until the supervisor transfers |",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "Discuss it with coworkers first",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q3 from AAA Record v2.0 for GAO-005.",
+        policyRef: "CO-CP-006"
+      },
+      {
+        id: "q4",
+        format: "scenario_decision",
+        prompt: "Whistleblower protection applies:",
+        narration: "Whistleblower protection applies:",
+        options: [
+          {
+            id: "a",
+            label: "Only when the reported violation is confirmed -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Only for reports made through the anonymous hotline -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "c",
+            label: "To all good-faith reports regardless of investigation outcome -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "d",
+            label: "Only during the first 90 days of employment",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q4 from AAA Record v2.0 for GAO-005.",
+        policyRef: "CO-CP-006"
+      },
+      {
+        id: "q5",
+        format: "scenario_decision",
+        prompt: "Which of the following is an example of retaliation?",
+        narration: "Which of the following is an example of retaliation?",
+        options: [
+          {
+            id: "a",
+            label: "Being asked to participate in the investigation as a witness -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Receiving consistently unfavorable shift assignments after filing a compliance report -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "c",
+            label: "Attending mandatory retraining |",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "Being counseled for an unrelated performance issue ### Expansion (Q6–Q10)",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q5 from AAA Record v2.0 for GAO-005.",
+        policyRef: "CO-CP-006"
+      },
+      {
+        id: "q6",
+        format: "scenario_decision",
+        prompt: "How many reporting channels does Care Indeed provide for compliance concerns? -",
+        narration: "How many reporting channels does Care Indeed provide for compliance concerns? -",
+        options: [
+          {
+            id: "a",
+            label: "2",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "3",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "c",
+            label: "4",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "5",
+            isCorrect: true,
+            feedback: "Correct."
+          }
+        ],
+        rationale: "Source exam item Q6 from AAA Record v2.0 for GAO-005.",
+        policyRef: "CO-CP-006"
+      },
+      {
+        id: "q7",
+        format: "scenario_decision",
+        prompt: "After a compliance report is filed, what is the FIRST thing the Compliance Officer does?",
+        narration: "After a compliance report is filed, what is the FIRST thing the Compliance Officer does?",
+        options: [
+          {
+            id: "a",
+            label: "Terminates the accused employee |",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "Contacts law enforcement -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "c",
+            label: "Conducts an initial assessment of severity and immediate risk -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "d",
+            label: "Notifies the reporter that the case is closed",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q7 from AAA Record v2.0 for GAO-005.",
+        policyRef: "CO-CP-006"
+      },
+      {
+        id: "q8",
+        format: "scenario_decision",
+        prompt: "The False Claims Act qui tam provision allows:",
+        narration: "The False Claims Act qui tam provision allows:",
+        options: [
+          {
+            id: "a",
+            label: "Agencies to fire whistleblowers |",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "b",
+            label: "The government to eliminate the compliance hotline -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "c",
+            label: "Employees to file lawsuits on behalf of the government against employers who submit false claims -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "d",
+            label: "Physicians to self-refer patients",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q8 from AAA Record v2.0 for GAO-005.",
+        policyRef: "CO-CP-006"
+      },
+      {
+        id: "q9",
+        format: "scenario_decision",
+        prompt: "Should you attempt to investigate a suspected violation yourself before reporting?",
+        narration: "Should you attempt to investigate a suspected violation yourself before reporting?",
+        options: [
+          {
+            id: "a",
+            label: "No — report the concern and let the Compliance Officer investigate -",
+            isCorrect: true,
+            feedback: "Correct."
+          },
+          {
+            id: "b",
+            label: "Yes, if you can do it discreetly |",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "c",
+            label: "Only if your supervisor approves -",
+            isCorrect: false,
+            feedback: "Incorrect."
+          },
+          {
+            id: "d",
+            label: "Yes, to strengthen your report with evidence",
+            isCorrect: false,
+            feedback: "Incorrect."
+          }
+        ],
+        rationale: "Source exam item Q9 from AAA Record v2.0 for GAO-005.",
+        policyRef: "CO-CP-006"
+      }
+    ]
+  }
+},
   {
     moduleId: 'GAO-006',
     policyRefs: ['CO-CP-005'],
@@ -1596,8 +3303,6 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
       ],
     },
   },
-
-  /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ GAO-007 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   {
     moduleId: 'GAO-007',
     policyRefs: ['CO-HP-001', 'CO-HP-004'],
@@ -1855,5 +3560,5 @@ export const GAO_TRAININGS_001_007: ModuleTraining[] = [
         },
       ],
     },
-  },
+  }
 ];

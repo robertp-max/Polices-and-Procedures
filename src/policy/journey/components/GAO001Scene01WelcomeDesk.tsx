@@ -1,4 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import GAO001SharedOverlay from './GAO001SharedOverlay';
+import {
+  gao001SceneArt,
+  resolveGao001Scene01Cover,
+  resolveGao001Scene01Desk,
+} from '../data/gao001SceneArt';
+import { GAO001_S01_OVERLAY_BY_HOTSPOT } from '../data/gao001/scene01/narration';
 
 interface GAO001Scene01WelcomeDeskProps {
   onComplete?: () => void;
@@ -159,10 +166,26 @@ class SoftAudio {
 
 const audio = new SoftAudio();
 
+const ORIENTATION_ITEMS = [
+  "Agency Mission, Vision & Core Values",
+  "Medicare-certified and ACHC-accredited status overview",
+  "Conditions of Participation (42 CFR Part 484) awareness",
+  "Role responsibilities in the home setting",
+  "Documentation and escalation expectations",
+  "Survey-readiness mindset — every day",
+  "Patient rights and plan-of-care boundaries",
+  "Mandatory reporting protocol",
+  "Training path and post-test requirements",
+];
+
 export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01WelcomeDeskProps) {
   const [styleInjected, setStyleInjected] = useState(false);
+  /** Cover page with two images, then the interactive desk scene. */
+  const [coverDismissed, setCoverDismissed] = useState(false);
   const [explored, setExplored] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'desk' | 'emailOnMonitor'>('desk');
+  const [coverA, coverB] = resolveGao001Scene01Cover();
+  const deskSrc = resolveGao001Scene01Desk();
   const [emailStep, setEmailStep] = useState(0);
   const [badgeZoomOpen, setBadgeZoomOpen] = useState(false);
   const [orientationZoomOpen, setOrientationZoomOpen] = useState(false);
@@ -174,21 +197,12 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
 
-  // Camera for badge
+  // Simulated badge photo only — no device camera access for the training scene.
   const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-      streamRef.current = stream;
-      setCameraActive(true);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-    } catch (err) {
-      console.error('Camera error', err);
-      alert('Camera access denied or not available. Using placeholder photo.');
-      // Fallback placeholder (neutral, no personal names per audit)
-      setBadgePhoto('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI0VFRjRGMzIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzBGNUI1NCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SEg8L3RleHQ+PC9zdmc+');
-    }
+    setCameraActive(false);
+    setBadgePhoto('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI0VFRjRGMzIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzYiIHI9IjE2IiBmaWxsPSIjMEY1QjU0IiBvcGFjaXR5PSIwLjE1Ii8+PHRleHQgeD0iNTAiIHk9IjcwIiBmb250LXNpemU9IjE0IiBmaWxsPSIjMEY1QjU0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iSW50ZXIiPkFMRVg8L3RleHQ+PHRleHQgeD0iNTAiIHk9Ijg2IiBmb250LXNpemU9IjgiIGZpbGw9IiM0NzU1NjkiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlJOIE5ldyBIaXJlPC90ZXh0Pjwvc3ZnPg==');
+    console.info('[GAO-001 Scene 1] badge_photo_captured');
+    audio.play('chime');
   };
 
   const captureToBadge = () => {
@@ -305,6 +319,160 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
     setOrientationZoomOpen(false);
   };
 
+  if (!coverDismissed) {
+    return (
+      <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden bg-black">
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 p-3 md:gap-5 md:p-5">
+          <div className="text-center px-2">
+            <p className="font-montserrat text-[10px] font-bold uppercase tracking-[0.18em] text-[#F06923]">
+              GAO-001 · Cover
+            </p>
+            <h2 className="mt-1 font-montserrat text-xl font-bold text-white md:text-2xl">
+              Start Alex&apos;s Journey
+            </h2>
+            <p className="mt-1 text-sm text-white/70">
+              Cover page — continue into Scene 1 at the welcome desk.
+            </p>
+          </div>
+          <div className="grid w-full max-w-6xl min-h-0 flex-1 grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
+            <div className="relative min-h-0 w-full overflow-hidden rounded-xl bg-black" style={{ aspectRatio: '16 / 13' }}>
+              <img
+                src={coverA}
+                alt="Scene 1 cover image 1"
+                className="absolute inset-0 h-full w-full object-contain object-center"
+                draggable={false}
+              />
+            </div>
+            <div className="relative min-h-0 w-full overflow-hidden rounded-xl bg-black" style={{ aspectRatio: '16 / 13' }}>
+              <img
+                src={coverB}
+                alt="Scene 1 cover image 2"
+                className="absolute inset-0 h-full w-full object-contain object-center"
+                draggable={false}
+              />
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCoverDismissed(true)}
+            className="shrink-0 rounded-xl bg-[#F06923] px-8 py-3.5 font-montserrat text-sm font-bold uppercase tracking-widest text-white shadow-[0_10px_28px_rgba(240,105,35,0.35)] transition hover:bg-[#d95a1a]"
+          >
+            Enter Scene 1
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const showLegacyArt = false;
+  if (!showLegacyArt) {
+    return (
+      <GAO001SharedOverlay
+        imageSrc={deskSrc}
+        altText={gao001SceneArt['scene-01'].alt}
+        objective="Open the welcome email."
+        onComplete={onComplete}
+        // Main scene narration plays from the shell footer play button (not an in-scene strip).
+        hotspots={[
+          {
+            id: 'email', x: 45, y: 45, label: 'Welcome email',
+            fieldNotes: {
+              title: 'Welcome to Care Indeed',
+              content: GAO001_S01_OVERLAY_BY_HOTSPOT.email.transcript,
+            },
+            narration: {
+              src: GAO001_S01_OVERLAY_BY_HOTSPOT.email.src,
+              transcript: GAO001_S01_OVERLAY_BY_HOTSPOT.email.transcript,
+            },
+            question: {
+              prompt: 'Why is it important to understand the agency\'s mission and values on day one?',
+              choices: [
+                { id: 'c1', text: 'It is a Medicare requirement that all staff memorize the exact mission statement.', isCorrect: false, feedback: 'Not quite. While important, Medicare doesn\'t require exact memorization. The focus is on applying these values.' },
+                { id: 'c2', text: 'It sets the foundation for safe, compliant, and patient-centered care.', isCorrect: true, feedback: 'Correct. Understanding our mission ensures every action aligns with our commitment to quality care.' },
+                { id: 'c3', text: 'It is only necessary for administrative staff, not field clinicians.', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because field clinicians are the primary representatives of our mission in the home.' }
+              ]
+            }
+          },
+          {
+            id: 'checklist', x: 68, y: 60, label: 'Day 1 checklist',
+            fieldNotes: {
+              title: 'Orientation Checklist',
+              content: GAO001_S01_OVERLAY_BY_HOTSPOT.checklist.transcript,
+            },
+            narration: {
+              src: GAO001_S01_OVERLAY_BY_HOTSPOT.checklist.src,
+              transcript: GAO001_S01_OVERLAY_BY_HOTSPOT.checklist.transcript,
+            },
+            question: {
+              prompt: 'What should you do if a surveyor asks you about your orientation process?',
+              choices: [
+                { id: 'c1', text: 'Refuse to answer and tell them to speak to the administrator.', isCorrect: false, feedback: 'Not quite. The safer answer is to answer honestly and confidently based on the training you received.' },
+                { id: 'c2', text: 'Guess the answers if you are unsure to appear knowledgeable.', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because guessing can lead to misinformation. Surveyors prefer you to know where to find the answers if you don\'t know them offhand.' },
+                { id: 'c3', text: 'Explain the training areas you completed and how they prepare you for your role.', isCorrect: true, feedback: 'Good choice. Surveyors want to verify that you understand your responsibilities and received adequate training.' }
+              ]
+            }
+          },
+          {
+            id: 'packet', x: 80, y: 70, label: 'Orientation packet',
+            fieldNotes: {
+              title: 'Orientation Materials',
+              content: GAO001_S01_OVERLAY_BY_HOTSPOT.packet.transcript,
+            },
+            narration: {
+              src: GAO001_S01_OVERLAY_BY_HOTSPOT.packet.src,
+              transcript: GAO001_S01_OVERLAY_BY_HOTSPOT.packet.transcript,
+            },
+            question: {
+              prompt: 'Why are reporting protocols critical in home health?',
+              choices: [
+                { id: 'c1', text: 'They ensure timely communication of patient changes to the care team.', isCorrect: true, feedback: 'Correct. Clear escalation pathways protect the patient and ensure appropriate interventions.' },
+                { id: 'c2', text: 'They are only used to document disciplinary actions for staff.', isCorrect: false, feedback: 'Not quite. Reporting protocols are primarily clinical tools for patient safety, not just administrative HR tracking.' },
+                { id: 'c3', text: 'They allow clinicians to bypass the physician and make independent diagnosis.', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because home health clinicians must coordinate with the physician for changes in the plan of care.' }
+              ]
+            }
+          },
+          {
+            id: 'badge', x: 58, y: 65, label: 'ID badge',
+            fieldNotes: {
+              title: 'Clinician ID Badge',
+              content: GAO001_S01_OVERLAY_BY_HOTSPOT.badge.transcript,
+            },
+            narration: {
+              src: GAO001_S01_OVERLAY_BY_HOTSPOT.badge.src,
+              transcript: GAO001_S01_OVERLAY_BY_HOTSPOT.badge.transcript,
+            },
+            question: {
+              prompt: 'When should your ID badge be visible?',
+              choices: [
+                { id: 'c1', text: 'Only during state surveys or when a supervisor is present.', isCorrect: false, feedback: 'Not quite. The safer answer is that patients and families need to know who is in their home at all times.' },
+                { id: 'c2', text: 'At all times while providing care or representing the agency.', isCorrect: true, feedback: 'Good choice. Visible identification builds trust and is a basic safety requirement.' }
+              ]
+            }
+          },
+          {
+            id: 'notebook', x: 18, y: 65, label: 'Field notebook',
+            fieldNotes: {
+              title: 'Field Notebook',
+              content: GAO001_S01_OVERLAY_BY_HOTSPOT.notebook.transcript,
+            },
+            narration: {
+              src: GAO001_S01_OVERLAY_BY_HOTSPOT.notebook.src,
+              transcript: GAO001_S01_OVERLAY_BY_HOTSPOT.notebook.transcript,
+            },
+            question: {
+              prompt: 'Which of the following is an example of documenting facts, not assumptions?',
+              choices: [
+                { id: 'c1', text: '"Patient seemed angry and uncooperative because of family issues."', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because it makes assumptions about the patient\'s emotional state and its cause.' },
+                { id: 'c2', text: '"Patient refused medication, stating \'I am too tired right now.\'"', isCorrect: true, feedback: 'Correct. This protects the patient and keeps the record clear by documenting exact observations and quotes.' },
+                { id: 'c3', text: '"Patient looks like they might be getting a cold soon."', isCorrect: false, feedback: 'Not quite. The safer answer is to document objective signs (e.g., "Patient coughing, temperature 99.5F").' }
+              ]
+            }
+          }
+        ]}
+      />
+    );
+  }
+
   return (
     <div className="h-full w-full flex flex-col bg-[#FAFBF8] overflow-hidden rounded-[18px] border border-[#E5E4E3] relative font-sans">
       {/* Top bar for this visual only */}
@@ -319,7 +487,7 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
             {isMuted ? '🔇 Muted' : '🔊 Sound'}
           </button>
           {showComplete && (
-            <div className="text-xs font-bold px-3 py-1 bg-[#0F5B54] text-white rounded">Orientation Started</div>
+            <div className="text-xs font-bold px-3 py-1 bg-[#0F5B54] text-white rounded">Orientation Practice Complete</div>
           )}
         </div>
       </div>
@@ -354,7 +522,7 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
 
           {/* Rich background - warm off-white with teal accents */}
           <rect width="1000" height="620" fill="#F8F1E9" />
-          
+
           {/* Wall with subtle teal paneling (richer like Scene 4) */}
           <rect x="0" y="0" width="1000" height="260" fill="#EEF4F3" />
           <g opacity="0.12" stroke="#0F5B54" strokeWidth="12">
@@ -385,10 +553,10 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
             {/* Main desk top */}
             <rect x="90" y="295" width="820" height="22" fill="url(#deskWood)" rx="4" filter="url(#softShadow)" />
             <rect x="90" y="295" width="820" height="6" fill="#D4A574" rx="2" />
-            
+
             {/* Desk body / front */}
             <rect x="95" y="317" width="810" height="210" fill="#B89D7E" rx="6" />
-            
+
             {/* Teal accent trim */}
             <rect x="95" y="317" width="810" height="8" fill="#0F5B54" rx="2" />
 
@@ -426,7 +594,7 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
 
             {/* Head */}
             <circle cx="279" cy="275" r="20" fill="#E8C9A0" />
-            
+
             {/* Hair - warm dark with style */}
             <path d="M 261 262 Q 279 248 297 262 Q 295 255 279 254 Q 263 255 261 262" fill="#3D2B1F" />
             <path d="M 265 268 Q 279 275 293 268" fill="#2A1F15" />
@@ -448,7 +616,7 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
 
             {/* Bezel - rich navy teal */}
             <rect x="355" y="235" width="190" height="175" fill="#1E3A3A" rx="10" filter="url(#softShadow)" />
-            
+
             {/* Inner bezel */}
             <rect x="365" y="245" width="170" height="155" fill="#0F5B54" rx="6" />
 
@@ -562,25 +730,25 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
 
         {/* Email appears ON THE MONITOR with Next button */}
         {viewMode === 'emailOnMonitor' && (
-          <div 
+          <div
             className="absolute left-[35%] top-[24%] w-[26%] h-[32%] bg-[#FDF8F3] border-2 border-[#0F5B54] rounded-md p-3 text-[8px] leading-tight overflow-auto z-30 shadow-inner"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="font-bold text-[#0F5B54] text-[8px] mb-0.5">Welcome to Care Indeed Home Health Care</div>
             <div className="text-[#2D3748] mb-1">From: hr@careindeed.com</div>
-            
+
             {emailStep >= 1 && (
               <div className="mb-1">
                 Welcome to Care Indeed Home Health Care, Inc. You are joining a Medicare-certified, ACHC-accredited home health agency.
               </div>
             )}
-            
+
             {emailStep >= 2 && (
               <div className="mb-1 text-[#0F5B54] font-medium">
                 What You Will Learn: mission, values, documentation, escalation, survey readiness.
               </div>
             )}
-            
+
             {emailStep >= 3 && (
               <div>
                 Why it matters: Surveyors check understanding of agency mission and responsibilities.
@@ -589,7 +757,7 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
 
             <div className="mt-2 flex justify-between items-center">
               {emailStep < 3 ? (
-                <button 
+                <button
                   onClick={nextEmailStep}
                   className="text-[7px] bg-[#F26D33] text-white px-2 py-0.5 rounded hover:bg-[#E05922]"
                 >
@@ -632,18 +800,18 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
               {/* Camera controls */}
               <div className="space-y-2">
                 {!badgePhoto && (
-                  <button 
+                  <button
                     onClick={startCamera}
                     className="w-full py-2 bg-[#0F5B54] text-white rounded font-bold text-sm"
                   >
-                    Turn Camera On
+                    Simulate Photo Capture
                   </button>
                 )}
 
                 {cameraActive && (
                   <div>
                     <video ref={videoRef} autoPlay playsInline className="w-full rounded border" />
-                    <button 
+                    <button
                       onClick={captureToBadge}
                       className="mt-2 w-full py-2 bg-[#F26D33] text-white rounded font-bold text-sm"
                     >
@@ -655,6 +823,7 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
                 {badgePhoto && (
                   <div className="text-center text-sm text-[#0F5B54]">Photo added to your badge! ✓</div>
                 )}
+                <div className="text-center text-[10px] text-[#64748B]">Camera is simulated — no device access requested.</div>
               </div>
             </div>
           </div>
@@ -668,17 +837,11 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
               <div className="text-xs text-[#64748B] mb-4">Day 1 • GAO-001</div>
 
               <div className="space-y-2 text-sm">
-                {[
-                  "Agency Mission & Values",
-                  "Medicare-certified & ACHC-accredited standards",
-                  "Documentation requirements",
-                  "Escalation & reporting protocols",
-                  "Survey readiness basics"
-                ].map((item, idx) => {
+                {ORIENTATION_ITEMS.map((item, idx) => {
                   const key = `item-${idx}`;
                   const checked = !!orientationChecks[key];
                   return (
-                    <div 
+                    <div
                       key={key}
                       onClick={() => toggleOrientationCheck(key)}
                       className="flex items-center gap-2 p-2 rounded border cursor-pointer hover:bg-[#EEF4F3]"
@@ -692,7 +855,7 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
                 })}
               </div>
 
-              <div className="mt-4 text-xs text-center text-[#64748B]">Complete the checklist items above</div>
+              <div className="mt-4 text-xs text-center text-[#64748B]">Review the nine orientation areas before continuing.</div>
             </div>
           </div>
         )}
@@ -700,7 +863,7 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
         {/* Completion Banner */}
         {showComplete && (
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-[#0F5B54] text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg z-50 flex items-center gap-2">
-            Scene Practice Complete — Ready for Next Scene
+            Orientation Practice Complete
           </div>
         )}
       </div>
