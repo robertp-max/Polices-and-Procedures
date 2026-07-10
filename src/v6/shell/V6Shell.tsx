@@ -12,6 +12,7 @@ import {
   MessageSquare,
   Settings,
   Share2,
+  Shield,
   User,
   X,
   type LucideIcon,
@@ -33,6 +34,7 @@ import { ThreadComposer, ThreadDetailPage, ThreadsPage } from '../../policy/help
 const NAV_ICONS: Record<string, LucideIcon> = {
   dashboard: LayoutGrid,
   ces: ClipboardCheck,
+  defensible: Shield,
   taxonomy: FileText,
   onboarding: GraduationCap,
   'help-center': HelpCircle,
@@ -96,7 +98,7 @@ export function V6Shell() {
     () => {
       return [...primaryNavBarItems]
         .sort((a, b) => {
-          const order = ['dashboard', 'ces', 'taxonomy', 'onboarding', 'help-center'];
+          const order = ['dashboard', 'ces', 'taxonomy', 'onboarding', 'help-center', 'defensible'];
           return order.indexOf(a.id) - order.indexOf(b.id);
         })
         .map((item) => {
@@ -208,7 +210,10 @@ export function V6Shell() {
             </span>
           </button>
           {showDock && (
-            <LeftRadialDock items={dockItems} />
+            <LeftRadialDock
+              items={dockItems.filter((item) => item.id !== 'defensible')}
+              centerItems={dockItems.filter((item) => item.id === 'defensible')}
+            />
           )}
         </>
       )}
@@ -318,36 +323,54 @@ type RadialDockItem = {
   tourTarget?: string;
 };
 
-function LeftRadialDock({ items }: { items: RadialDockItem[] }) {
+function DockButton({ item }: { item: RadialDockItem }) {
   return (
-    <nav
-      aria-label="Primary navigation"
-      className="fixed left-5 top-[82px] z-[50] flex flex-col items-center gap-2"
+    <button
+      key={item.id}
+      type="button"
+      data-tour-target={item.tourTarget}
+      onClick={item.onClick}
+      aria-label={item.label}
+      aria-current={item.isActive ? 'page' : undefined}
+      className={cx(
+        'group relative flex h-10 w-10 items-center justify-center bg-transparent shadow-none transition duration-300 ease-standard hover:text-brand-teal-deep',
+        'focus-visible:outline-none focus-visible:shadow-focus',
+        item.isActive ? 'text-brand-teal' : 'text-slate-400',
+      )}
+      style={{
+        ...item.colorStyle,
+      }}
     >
-      {items.map((item) => (
-        <button
-          key={item.id}
-          type="button"
-          data-tour-target={item.tourTarget}
-          onClick={item.onClick}
-          aria-label={item.label}
-          aria-current={item.isActive ? 'page' : undefined}
-          className={cx(
-            'group relative flex h-10 w-10 items-center justify-center bg-transparent shadow-none transition duration-300 ease-standard hover:text-brand-teal-deep',
-            'focus-visible:outline-none focus-visible:shadow-focus',
-            item.isActive ? 'text-brand-teal' : 'text-slate-400',
-          )}
-          style={{
-            ...item.colorStyle,
-          }}
+      {item.icon}
+      <span className="pointer-events-none absolute left-full ml-3 whitespace-nowrap font-montserrat text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-teal-deep opacity-0 -translate-x-2 transition-all duration-300 ease-standard group-hover:translate-x-0 group-hover:opacity-100">
+        {item.label}
+      </span>
+    </button>
+  );
+}
+
+function LeftRadialDock({ items, centerItems = [] }: { items: RadialDockItem[]; centerItems?: RadialDockItem[] }) {
+  return (
+    <>
+      <nav
+        aria-label="Primary navigation"
+        className="fixed left-5 top-[82px] z-[50] flex flex-col items-center gap-2"
+      >
+        {items.map((item) => (
+          <DockButton key={item.id} item={item} />
+        ))}
+      </nav>
+      {centerItems.length > 0 && (
+        <nav
+          aria-label="DefenCIble"
+          className="fixed left-5 top-1/2 z-[50] flex -translate-y-1/2 flex-col items-center gap-2"
         >
-          {item.icon}
-          <span className="pointer-events-none absolute left-full ml-3 whitespace-nowrap font-montserrat text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-teal-deep opacity-0 -translate-x-2 transition-all duration-300 ease-standard group-hover:translate-x-0 group-hover:opacity-100">
-            {item.label}
-          </span>
-        </button>
-      ))}
-    </nav>
+          {centerItems.map((item) => (
+            <DockButton key={item.id} item={item} />
+          ))}
+        </nav>
+      )}
+    </>
   );
 }
 

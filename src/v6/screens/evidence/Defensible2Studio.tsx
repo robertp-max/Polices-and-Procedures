@@ -5,7 +5,7 @@ import { CesEvidenceSearch } from './CesEvidenceSearch';
 import { CalendarApi } from '../../../policy/services/calendarApi';
 import { ecignApi } from '../../../policy/ecign/api';
 import { getEcignSignerIdentity } from '../../../policy/ecign/signerIdentity';
-import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabInactiveClass } from '@/components/theme/workspaceTabChrome';
+import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabInactiveClass, workspaceTabNavClass } from '@/components/theme/workspaceTabChrome';
 
 // Color-code the real Drive folders by name so the grid keeps its event-domain palette.
 const FOLDER_PALETTE = ['text-[#FACC15]', 'text-[#3B82F6]', 'text-[#2DD4BF]', 'text-[#FB923C]', 'text-[#A855F7]', 'text-[#22C55E]', 'text-[#EC4899]'];
@@ -800,7 +800,14 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
     setActiveTab('DRIVE');
   };
 
-  const navTabs = ['DRIVE', 'CREATE PACKET', 'EDIT PACKET', 'eCIgn'];
+  // Tab display labels are decoupled from their internal switch values so the
+  // rename (Create Packet → Packets) never touches the activeTab === '…' logic.
+  const navTabs: { value: string; label: string }[] = [
+    { value: 'DRIVE', label: 'Drive' },
+    { value: 'CREATE PACKET', label: 'Packets' },
+    { value: 'EDIT PACKET', label: 'Edit Packet' },
+    { value: 'eCIgn', label: 'eCIgn' },
+  ];
   const previewPages = [
     {
       title: selectedTemplate?.name || 'Evidence Packet',
@@ -900,22 +907,23 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
       `}} />
 
       <div className="mx-auto max-w-[1280px] px-4 py-8 md:px-10 md:py-12">
-        <div className="mb-10 flex max-w-full items-stretch overflow-x-auto font-montserrat">
-          <div className="flex max-w-full items-stretch overflow-x-auto">
-            {navTabs.map(tab => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveTab(tab)}
-                className={`${workspaceCompactTabClass} whitespace-nowrap ${
-                  activeTab === tab ? workspaceTabActiveClass : workspaceTabInactiveClass
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-        </div>
+        <nav aria-label="DefenCIble sections" className={workspaceTabNavClass}>
+          {navTabs.map(tab => (
+            <button
+              key={tab.value}
+              type="button"
+              onClick={() => setActiveTab(tab.value)}
+              aria-current={activeTab === tab.value ? 'page' : undefined}
+              className={`${workspaceCompactTabClass} whitespace-nowrap ${
+                activeTab === tab.value ? workspaceTabActiveClass : workspaceTabInactiveClass
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+        {/* Content panel the folder-tabs seat on (shared workspace idiom). */}
+        <div className="rounded-b-2xl rounded-tr-2xl border border-[#E5E4E3] bg-white/60 p-4 shadow-[0_12px_45px_rgba(0,0,0,0.04)] md:p-6">
 
         {/* ==================================================== */}
         {/* DRIVE TAB (Folder View) */}
@@ -1685,6 +1693,9 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
             </div>
           </div>
         )}
+
+        </div>
+        {/* /content panel */}
 
         {activeTab === 'CREATE PACKET' && studioGenerating && studioSaveStatus !== 'saving' && <BradGeneratingOverlay />}
         {activeTab === 'CREATE PACKET' && studioSaveStatus === 'saving' && <GoogleUploadingOverlay />}

@@ -41,7 +41,6 @@ interface ControlRow {
 
 const complianceTabs: readonly ComplianceMainTab[] = [
   { id: 'home', label: 'Sprint Home', to: '/compliance' },
-  { id: 'workspace', label: 'DefenCIble', to: '/evidence' },
   { id: 'calendar', label: 'CES Calendar', to: '/ces/calendar' },
   { id: 'controls', label: 'Control Register', to: '/compliance/master-controls' },
 ];
@@ -136,15 +135,6 @@ function eventToneClass(event: CesCalendarEvent): string {
   return 'bg-[#007970] text-white';
 }
 
-function ComplianceTabLabel({ label }: { label: string }) {
-  if (label !== 'DefenCIble') return <>{label}</>;
-  return (
-    <>
-      Defen<span className="!text-brand-teal">CI</span>ble
-    </>
-  );
-}
-
 function NavigationTabs({ activeView }: { activeView: ComplianceView }) {
   return (
     <nav aria-label="Compliance portal sections" className={workspaceTabNavClass}>
@@ -155,7 +145,7 @@ function NavigationTabs({ activeView }: { activeView: ComplianceView }) {
           className={`${workspaceTabClass} ${activeView === tab.id ? workspaceTabActiveClass : workspaceTabInactiveClass}`}
           aria-current={activeView === tab.id ? 'page' : undefined}
         >
-          <ComplianceTabLabel label={tab.label} />
+          {tab.label}
         </Link>
       ))}
     </nav>

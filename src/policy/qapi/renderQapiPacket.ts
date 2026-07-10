@@ -10,7 +10,7 @@
    Self-contained HTML (inline SVG wordmark — no external/absolute logo).
    ════════════════════════════════════════════════════════════════ */
 import type { ClinicalDump } from './qapiTypes';
-import { extractQapiRollup } from './qapiExtraction';
+import { extractQapiRollup, type QapiRollup } from './qapiExtraction';
 import { buildPersonnelAddendum, buildAddendumReference, type AddendumReference } from './personnelActionAddendum';
 import { validateQapiPacketForLock } from './validateQapiPacketForLock';
 
@@ -30,6 +30,21 @@ export interface QapiPacketOptions {
   policyIds?: string[];
   /** Governance approvers for the lock check (name + authorityConfirmed). */
   approvers?: Array<{ role: string; name?: string; authorityConfirmed?: boolean }>;
+  /** Derived-source path: quorum line recovered from the source (e.g. "8/8 present — quorum met"). */
+  quorumOverride?: string;
+  /** Derived-source path: replaces the role-by-role attendee table when names are not individually structured. */
+  attendanceNote?: string;
+  /** Derived-source path: prominent notice that the packet was built from an unstructured dump and needs review. */
+  derivedNotice?: string;
+  /** Rollup paths whose value could NOT be recovered — rendered as
+      "UNKNOWN — SOURCE NOT RECOVERED" instead of a false zero / "OK". */
+  unknownPaths?: string[];
+  /** Synthetic/UAT watermark banner (source declared itself synthetic/mock). */
+  syntheticWatermark?: string;
+  /** Source agency name when it is NOT Care Indeed (must not be presented as CI evidence). */
+  sourceAgency?: string;
+  /** Source dataset ID for provenance (e.g. "QAPI-Q2-DS-001"). */
+  datasetId?: string;
 }
 
 function page(banner: string, title: string, inner: string, footerRight: string): string {
@@ -46,15 +61,36 @@ function kpiTable(rows: Array<[string, string | number, string | number, string,
 export function renderQapiPacketHtml(dump: ClinicalDump, eventDateInput: string, opts: QapiPacketOptions = {}): string {
   const reviewQuarter = opts.reviewQuarter ?? dump.meta?.quarter;
   const roll = extractQapiRollup(dump, eventDateInput, { reviewQuarter });
-  const w = roll.window;
   const addendum = buildPersonnelAddendum(dump, { quarter: reviewQuarter });
-  const ref: AddendumReference = buildAddendumReference(addendum);
+  return renderQapiPacketHtmlFromRollup(roll, buildAddendumReference(addendum), opts);
+}
+
+/**
+ * Render the FULL survey-defensible packet from a prebuilt rollup. Used by
+ * (1) the ClinicalDump path above and (2) the Brad-derived path, where the
+ * rollup was recovered deterministically from an unstructured source dump
+ * (any format) and carries exceptions + a derived-draft notice instead of
+ * silently downgrading to a thin summary.
+ */
+export function renderQapiPacketHtmlFromRollup(roll: QapiRollup, ref: AddendumReference, opts: QapiPacketOptions = {}): string {
+  const w = roll.window;
   const addendumRequired = ref.personnelActionReviewsOpened > 0;
   const c = roll.census;
   const interim = w.packetType === 'interim';
   const id = `QAPI-PKT-${w.quarterLabel.replace(/\s+/g, '-')}`;
-  const footerR = `${id} · ${w.packetType.toUpperCase()}`;
+  const footerR = `${id} · ${w.packetType.toUpperCase()}${opts.derivedNotice ? ' · BRAD-DERIVED DRAFT' : ''}`;
   const approvers = opts.approvers ?? [];
+
+  // Missing-not-zero: a value whose path was flagged unrecovered renders as
+  // "UNKNOWN — SOURCE NOT RECOVERED", never a false 0 / "OK" / "clean".
+  const unknown = new Set(opts.unknownPaths ?? []);
+  const UNK = 'UNKNOWN — SOURCE NOT RECOVERED';
+  const val = (path: string, value: string | number): string | number => (unknown.has(path) ? UNK : value);
+  const statusVal = (path: string, okStatus: string): string => (unknown.has(path) ? UNK : okStatus);
+  // Synthetic / other-agency provenance banner (shown on every page top when set).
+  const watermark = opts.syntheticWatermark
+    ? `<div class="notice" style="background:#fff4d6;border-left-color:#a86a00;color:#7a5200;"><b>${esc(opts.syntheticWatermark)}.</b> This packet is NOT Care Indeed operational evidence.${opts.sourceAgency ? ` Source agency: <b>${esc(opts.sourceAgency)}</b>.` : ''}${opts.datasetId ? ` Dataset: ${esc(opts.datasetId)}.` : ''}</div>`
+    : '';
 
   // ── Lock validation (status banner only here; the live flow enforces it) ──
   const lock = validateQapiPacketForLock({
@@ -65,7 +101,7 @@ export function renderQapiPacketHtml(dump: ClinicalDump, eventDateInput: string,
     rollups: { activeCensus: c.activeCensus, recertCounts: c.recertDue, highRiskRollupPresent: true, priorPeriodComparisonPresent: false, claimsTrend: false },
     signatures: [],
     dateWindowViolations: [],
-    addendum: { required: addendumRequired, generatedId: addendumRequired ? addendum.documentId : null },
+    addendum: { required: addendumRequired, generatedId: addendumRequired ? ref.addendumId : null },
     sourceExceptions: roll.exceptions,
   });
   const statusColor = lock.pass ? '#0f7b34' : '#b35200';
@@ -75,7 +111,10 @@ export function renderQapiPacketHtml(dump: ClinicalDump, eventDateInput: string,
 
   // 1) Packet control page
   body += page(`${id} · ${w.quarterLabel}`, `${interim ? 'Interim ' : ''}${w.quarterLabel} QAPI Committee Packet`, `
+    ${watermark}
+    ${opts.derivedNotice ? `<div class="notice"><b>BRAD-DERIVED DRAFT — REQUIRES HUMAN REVIEW.</b> ${esc(opts.derivedNotice)}</div>` : ''}
     <div class="card"><div class="h3">Packet Control</div>
+      ${opts.sourceAgency ? row('Source agency', opts.sourceAgency) : ''}${opts.datasetId ? row('Source dataset', opts.datasetId) : ''}
       ${row('Packet ID', id)}${row('Event ID', opts.eventId ?? '—')}${row('Workflow ID', opts.workflowId ?? '—')}
       ${row('Reporting period', `${w.quarterStart} → ${w.quarterEnd}`)}
       ${row('Data-through date', w.dataThroughDate)}${row('Packet type', w.packetType.toUpperCase())}
@@ -92,8 +131,11 @@ export function renderQapiPacketHtml(dump: ClinicalDump, eventDateInput: string,
   const expected = opts.attendeesExpected ?? ['Director of Nursing (Chair)', 'Clinical Manager', 'Compliance Officer', 'Medical Director', 'Administrator', 'QA Coordinator'];
   const present = opts.attendeesPresent ?? expected;
   body += page(id, 'Agenda & Quorum Roster', `
-    <div class="card"><div class="h3">Meeting</div>${row('Date', w.eventDate)}${row('Chair', opts.chair ?? '—')}${row('Recorder', opts.recorder ?? '—')}${row('Quorum', `${present.length} of ${expected.length} present — ${present.length >= Math.ceil(expected.length / 2) ? 'quorum met' : 'NO QUORUM'}`)}</div>
-    <div class="card"><div class="h3">Attendees</div><table class="t"><thead><tr><th>Role</th><th>Expected</th><th>Present</th></tr></thead><tbody>${expected.map((r) => `<tr><td>${esc(r)}</td><td>✓</td><td>${present.includes(r) ? '✓' : '—'}</td></tr>`).join('')}</tbody></table></div>`, footerR);
+    ${watermark}
+    <div class="card"><div class="h3">Meeting</div>${row('Date', w.eventDate)}${row('Chair', opts.chair ?? '—')}${row('Recorder', opts.recorder ?? '—')}${row('Quorum', opts.quorumOverride ?? `${present.length} of ${expected.length} present — ${present.length >= Math.ceil(expected.length / 2) ? 'quorum met' : 'NO QUORUM'}`)}</div>
+    <div class="card"><div class="h3">Attendees</div>${opts.attendanceNote
+      ? `<p class="p">${esc(opts.attendanceNote)}</p>`
+      : `<table class="t"><thead><tr><th>Role</th><th>Expected</th><th>Present</th></tr></thead><tbody>${expected.map((r) => `<tr><td>${esc(r)}</td><td>✓</td><td>${present.includes(r) ? '✓' : '—'}</td></tr>`).join('')}</tbody></table>`}</div>`, footerR);
 
   // 3) Dashboard (real numerators/denominators)
   const denom = c.activeCensus || c.uniquePatients || c.patientsInScope;
@@ -104,9 +146,9 @@ export function renderQapiPacketHtml(dump: ClinicalDump, eventDateInput: string,
     ['Recerts due', c.recertDue, denom, '—', 'admission_status'],
     ['High-risk cases (QAPI-required)', roll.highRisk.qapiRequiredCases, c.patientsInScope, '—', 'high_risk_flags'],
     ['Immediate-action cases', roll.highRisk.immediateActionCases, c.patientsInScope, roll.highRisk.immediateActionCases ? 'escalate' : 'none', 'high_risk_flags'],
-    ['Incidents (in window)', roll.incidents.total, c.patientsInScope, `${roll.incidents.openRca} open RCA`, 'QA-FM-026'],
-    ['Infections (in window)', roll.infections.total, c.patientsInScope, `rate context: HCA ${roll.infections.healthcareAssociated}`, 'QA-FM-027'],
-    ['Critical labs unreported', roll.labs.criticalUnreported, roll.labs.criticalTotal, roll.labs.criticalUnreported ? 'PIP candidate' : 'ok', 'Lab log'],
+    ['Incidents (in window)', val('incidents.total', roll.incidents.total), c.patientsInScope, `${val('incidents.openRca', roll.incidents.openRca)} open RCA`, 'QA-FM-026'],
+    ['Infections (in window)', val('infections.total', roll.infections.total), c.patientsInScope, `rate context: HCA ${val('infections.healthcareAssociated', roll.infections.healthcareAssociated)}`, 'QA-FM-027'],
+    ['Critical labs unreported', val('labs.criticalUnreported', roll.labs.criticalUnreported), val('labs.criticalTotal', roll.labs.criticalTotal), statusVal('labs.criticalUnreported', roll.labs.criticalUnreported ? 'PIP candidate' : 'ok'), 'Lab log'],
   ]) + (interim ? `<p class="muted">Excluded as post-${esc(w.dataThroughDate)}: ${roll.incidents.excludedFutureDated} incident(s), ${roll.infections.excludedFutureDated} infection(s).</p>` : ''), footerR);
 
   // 4) High-risk rollup
@@ -118,20 +160,20 @@ export function renderQapiPacketHtml(dump: ClinicalDump, eventDateInput: string,
   // 5) Incident log + 6) Infection line list
   body += page(id, 'Incident / Adverse-Event Summary (QA-FM-026)', `
     <div class="card"><div class="h3">By category (in window)</div><table class="t"><thead><tr><th>Category</th><th>Count</th></tr></thead><tbody>${Object.entries(roll.incidents.byCategory).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('') || '<tr><td colspan="2">None in window</td></tr>'}</tbody></table>
-      ${row('Total in window', String(roll.incidents.total))}${row('Open RCAs', String(roll.incidents.openRca))}${row('Unreported', String(roll.incidents.unreported))}</div>
-    <div class="card"><div class="h3">Infection Control (QA-FM-027)</div>${row('Cases in window', String(roll.infections.total))}${row('Healthcare-associated', String(roll.infections.healthcareAssociated))}${row('Community-acquired', String(roll.infections.communityAcquired))}${row('Unreported to state', String(roll.infections.unreportedToState))}</div>`, footerR);
+      ${row('Total in window', String(val('incidents.total', roll.incidents.total)))}${row('Open RCAs', String(val('incidents.openRca', roll.incidents.openRca)))}${row('Unreported', String(val('incidents.unreported', roll.incidents.unreported)))}</div>
+    <div class="card"><div class="h3">Infection Control (QA-FM-027)</div>${row('Cases in window', String(val('infections.total', roll.infections.total)))}${row('Healthcare-associated', String(val('infections.healthcareAssociated', roll.infections.healthcareAssociated)))}${row('Community-acquired', String(val('infections.communityAcquired', roll.infections.communityAcquired)))}${row('Unreported to state', String(val('infections.unreportedToState', roll.infections.unreportedToState)))}</div>`, footerR);
 
   // 7) Chart audit + 8) complaints + documentation findings
   body += page(id, 'Chart Audit & Documentation Integrity (QA-FM-025)', `
     <div class="card"><div class="h3">Methodology</div><p class="p">Chart audit denominator tied to active census (${esc(String(c.activeCensus))}) + recerts due (${esc(String(c.recertDue))}). Findings below are derived from OASIS/POC document review.</p></div>
     <div class="card"><div class="h3">Documentation findings (OASIS / CMS-485)</div>
-      ${row('OASIS SOC not completed ≤5 days', String(roll.documentation.oasisLateSoc))}
-      ${row('POC missing face-to-face encounter', String(roll.documentation.pocMissingF2F))}
-      ${row('POC unsigned / pending physician signature', String(roll.documentation.pocUnsignedOrMissingSignature))}
-      ${row('Homebound not justified', String(roll.documentation.homeboundNotJustified))}
-      ${row('Med-reconciliation count mismatch (OASIS↔POC)', String(roll.documentation.medReconMismatch))}
-      ${row('Pressure injury present, no wound orders', String(roll.documentation.pressureInjuryNoWoundOrders))}
-      ${row('OASIS high mobility need, no therapy ordered', String(roll.documentation.therapyNeedNoOrder))}</div>
+      ${row('OASIS SOC not completed ≤5 days', String(val('documentation.oasisLateSoc', roll.documentation.oasisLateSoc)))}
+      ${row('POC missing face-to-face encounter', String(val('documentation.pocMissingF2F', roll.documentation.pocMissingF2F)))}
+      ${row('POC unsigned / pending physician signature', String(val('documentation.pocUnsigned', roll.documentation.pocUnsignedOrMissingSignature)))}
+      ${row('Homebound not justified', String(val('documentation.homeboundNotJustified', roll.documentation.homeboundNotJustified)))}
+      ${row('Med-reconciliation count mismatch (OASIS↔POC)', String(val('documentation.medReconMismatch', roll.documentation.medReconMismatch)))}
+      ${row('Pressure injury present, no wound orders', String(val('documentation.pressureInjury', roll.documentation.pressureInjuryNoWoundOrders)))}
+      ${row('OASIS high mobility need, no therapy ordered', String(val('documentation.therapyNeed', roll.documentation.therapyNeedNoOrder)))}</div>
     ${roll.exceptions.length ? `<div class="card"><div class="h3">Source-data exceptions (must resolve before final lock)</div><ul class="bul">${roll.exceptions.slice(0, 10).map((e) => `<li><b>[${esc(e.severity)}]</b> ${esc(e.reason)}</li>`).join('')}</ul></div>` : ''}`, footerR);
 
   // 9) Governing Body summary + sealed addendum REFERENCE (no personnel details)

@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# =============================================================================
+# EVIDENCE GUARDRAIL — pre-commit hook
+# -----------------------------------------------------------------------------
+# Protects the Evidence (DefenCIble) surface, which has regressed twice
+# (8bc7b4d2 fixed it, 4953685c broke it again by swapping /evidence to the
+# static ComplianceHomeScreen mockup whose Drive folders have no click
+# handlers).
+#
+# Blocks a commit when:
+#   1. It modifies or deletes anything under src/v6/screens/evidence/
+#   2. src/v6/screens/RepresentativeScreens.tsx (staged) no longer wires
+#      case 'defensible-2' to <Defensible2Studio />, or drops its import.
+#
+# Intentional change? Re-run with:  EVIDENCE_GUARD_ALLOW=1 git commit ...
+# Activated via:  git config core.hooksPath .githooks
+# =============================================================================
+[ "${EVIDENCE_GUARD_ALLOW:-}" = "1" ] && exit 0
+
+status=0
+
+# --- 1. Block edits/deletes under the protected evidence folder -------------
+protected_changes=$(git diff --cached --name-status -- 'src/v6/screens/evidence/' | grep -v '^A' || true)
+if [ -n "$protected_changes" ]; then
+  echo "GUARDRAIL: commit modifies/deletes protected evidence files:" >&2
+  echo "$protected_changes" | sed 's/^/  /' >&2
+  echo "If intentional, re-run with EVIDENCE_GUARD_ALLOW=1" >&2
+  status=1
+fi
+
+# --- 2. Keep /evidence (defensible-2) wired to the real Defensible2Studio ---
+REP=src/v6/screens/RepresentativeScreens.tsx
+if git diff --cached --name-only | grep -q "^${REP}$"; then
+  staged=$(git show ":${REP}" 2>/dev/null)
+  rep_bad=0
+  if ! printf '%s' "$staged" | grep -q "import Defensible2Studio from '@/v6/screens/evidence/Defensible2Studio'"; then
+    echo "GUARDRAIL: staged ${REP} drops the Defensible2Studio import — /evidence Drive browsing would break again." >&2
+    rep_bad=1
+  fi
+  if ! printf '%s' "$staged" | grep -A6 "case 'defensible-2':" | grep -q "<Defensible2Studio />"; then
+    echo "GUARDRAIL: staged ${REP} no longer renders <Defensible2Studio /> for case 'defensible-2' — this exact regression already happened twice (8bc7b4d2, 4953685c)." >&2
+    rep_bad=1
+  fi
+  if [ $rep_bad -ne 0 ]; then
+    echo "If intentional, re-run with EVIDENCE_GUARD_ALLOW=1" >&2
+    status=1
+  fi
+fi
+
+exit $status

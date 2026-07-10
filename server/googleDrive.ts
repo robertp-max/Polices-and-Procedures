@@ -1,34 +1,30 @@
 import { Readable } from 'node:stream';
 import { google, type drive_v3 } from 'googleapis';
-import { env } from './env.js';
+import { env, DRIVE_EVIDENCE_LOCK } from './env.js';
 import { log } from './logger.js';
 import { ApiError, fromGoogleError } from './errors.js';
+import { planDriveAuth, createDriveAuthClient, describeDriveAuthPlan } from './googleDriveAuth.js';
 
 /* ═══════════════════════════════════════════════════════════════
    Google Drive service — evidence FILE storage beside the existing
    Calendar integration.
 
-   Auth: reuses the SAME service-account key as googleCalendar.ts
-   (env.credentialsPath). There is NO second Google auth path.
+   Auth (DRIVE ONLY — Calendar keeps its own key-file path):
+     - production/Cloud Run: keyless impersonation of the locked Drive
+       service account (GOOGLE_DRIVE_AUTH_MODE=impersonation)
+     - local development: the existing external JSON key file
+       (GOOGLE_APPLICATION_CREDENTIALS — default, unchanged)
+   Mode selection + fail-closed validation live in googleDriveAuth.ts.
 
-   Scopes (narrowest-first, per integration brief):
-     - https://www.googleapis.com/auth/drive.file
-     - https://www.googleapis.com/auth/drive.metadata.readonly
-   If Shared-Drive folder find/create fails with insufficient scope,
-   broaden to https://www.googleapis.com/auth/drive (documented in the
-   report). The service account must also be a Content manager (or
-   equivalent) on the Shared Drive.
+   Scopes (narrowest-first, per integration brief) are defined in
+   googleDriveAuth.ts (DRIVE_SCOPES). If Shared-Drive folder find/create
+   fails with insufficient scope, broaden to
+   https://www.googleapis.com/auth/drive (documented in the report).
+   The Drive identity must also be a Content manager (or equivalent)
+   on the Shared Drive.
    ═══════════════════════════════════════════════════════════════ */
 
 const DRIVE_FOLDER_MIME = 'application/vnd.google-apps.folder';
-
-const SCOPES = [
-  'https://www.googleapis.com/auth/drive.file',
-  'https://www.googleapis.com/auth/drive.metadata.readonly',
-  // Required for the explicit "select source from Drive" flow: the service
-  // account reads only the file the user picked, then hands it to source ingest.
-  'https://www.googleapis.com/auth/drive.readonly',
-];
 
 let _client: drive_v3.Drive | null = null;
 
@@ -38,13 +34,20 @@ const folderIdCache = new Map<string, string>();
 async function getClient(): Promise<drive_v3.Drive> {
   if (_client) return _client;
   try {
-    const auth = new google.auth.GoogleAuth({
-      keyFile: env.credentialsPath,
-      scopes: SCOPES,
+    const plan = planDriveAuth({
+      authMode: env.driveAuthMode,
+      impersonateServiceAccount: env.driveImpersonateServiceAccount,
+      credentialsPath: env.credentialsPath,
+      credentialsPresent: env.calendarCredentialsPresent,
+      approvedServiceAccountEmail: DRIVE_EVIDENCE_LOCK.serviceAccountEmail,
     });
-    const authClient = await auth.getClient();
+    for (const warning of plan.warnings) log.warn('google.drive.auth.config', { warning });
+    const authClient = await createDriveAuthClient(plan);
     _client = google.drive({ version: 'v3', auth: authClient as never });
-    log.info('google.drive.auth.ready', { sharedDriveId: env.driveEvidenceSharedDriveId });
+    log.info('google.drive.auth.ready', {
+      ...describeDriveAuthPlan(plan),
+      sharedDriveId: env.driveEvidenceSharedDriveId,
+    });
     return _client;
   } catch (e) {
     log.error('google.drive.auth.failed', { error: (e as Error).message });

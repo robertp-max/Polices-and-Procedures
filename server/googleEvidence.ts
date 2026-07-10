@@ -33,7 +33,10 @@ export type EvidenceCategory =
   | 'ecign_certificate'
   | 'final_package';
 
-const DEFENSIBLE_PACKET_FOLDER_ID = '1oWEQxrPWoy8bBIDG1a-5afQU9vEYWmU0';
+// Externalized to validated server config (GOOGLE_DRIVE_PACKET_FOLDER_ID with
+// the locked canonical Event Packets folder as the default) — same value,
+// same runtime behavior.
+const DEFENSIBLE_PACKET_FOLDER_ID = env.drivePacketFolderId;
 
 /** Stable, non-PHI subfolder names under each event folder. */
 export const EVIDENCE_SUBFOLDERS: Record<EvidenceCategory, string> = {

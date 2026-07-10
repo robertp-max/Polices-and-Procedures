@@ -13,7 +13,7 @@
     "extractionPath": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2\\output\\mock_assessments\\5365321efba73d43.extraction.json",
     "driveFileId": null,
     "driveUrl": null,
-    "createdAtNote": "2026-07-02T18:17:03.942Z"
+    "createdAtNote": "2026-07-10T21:56:15.294Z"
   },
   "extraction": {
     "engine": "brad",
@@ -21,21 +21,21 @@
     "fields": [
       {
         "key": "patient_name",
-        "value": "Volodymyr Ivanovich Zheleznyak",
-        "confidence": 1,
+        "value": "Volodymyr Ivanovich Zheleznyak (goes by \"Volo\")",
+        "confidence": 0.99,
         "sourceSnippet": "His name is Volodymyr Ivanovich Zheleznyak.",
-        "agreement": 2,
-        "needsReview": false,
+        "agreement": 1,
+        "needsReview": true,
         "group": "Patient",
         "label": "Patient full legal name"
       },
       {
         "key": "date_of_birth",
         "value": "December 8, 1961",
-        "confidence": 1,
+        "confidence": 0.98,
         "sourceSnippet": "He's 63 years old, date of birth December 8, 1961.",
-        "agreement": 3,
-        "needsReview": false,
+        "agreement": 1,
+        "needsReview": true,
         "group": "Patient",
         "label": "Patient date of birth"
       },
@@ -51,8 +51,8 @@
       },
       {
         "key": "address",
-        "value": "1547 North Delaware Street, San Mateo, 94401 (converted garage/studio behind the house)",
-        "confidence": 1,
+        "value": "1547 North Delaware Street, San Mateo, 94401 (converted garage behind a house)",
+        "confidence": 0.97,
         "sourceSnippet": "He's been living in a converted garage behind a house at 1547 North Delaware Street, San Mateo, 94401.",
         "agreement": 1,
         "needsReview": true,
@@ -72,17 +72,17 @@
       {
         "key": "county",
         "value": "San Mateo",
-        "confidence": 0.9,
-        "sourceSnippet": "a social worker at San Mateo Medical Center ED",
-        "agreement": 2,
-        "needsReview": false,
+        "confidence": 0.55,
+        "sourceSnippet": "1547 North Delaware Street, San Mateo, 94401",
+        "agreement": 1,
+        "needsReview": true,
         "group": "Patient",
         "label": "County of residence"
       },
       {
         "key": "start_of_care",
-        "value": "06/29/2025 (Saturday SOC visit, day after 06/28/2025 referral)",
-        "confidence": 0.8,
+        "value": "Planned Saturday SOC visit, any time after 10 AM (day after 06/28/2025 referral; exact date not stated verbatim)",
+        "confidence": 0.5,
         "sourceSnippet": "We'll arrange a Saturday SOC visit.",
         "agreement": 1,
         "needsReview": true,
@@ -91,7 +91,7 @@
       },
       {
         "key": "primary_physician",
-        "value": "Dr. Lauren Maxwell (ED physician, certifying physician until Dr. Carlos Mendes takes over 07/10)",
+        "value": "Dr. Lauren Maxwell (ED physician; certifying physician until Dr. Carlos Mendes takes over at San Mateo County Health Clinic)",
         "confidence": 0.9,
         "sourceSnippet": "Dr. Maxwell has signed off on the home health orders and she'll be the certifying physician until Dr. Mendes takes over.",
         "agreement": 1,
@@ -102,20 +102,20 @@
       {
         "key": "physician_phone",
         "value": "(650) 555-1200",
-        "confidence": 1,
+        "confidence": 0.97,
         "sourceSnippet": "Her number is (650) 555-1200, fax (650) 555-1201.",
-        "agreement": 3,
-        "needsReview": false,
+        "agreement": 1,
+        "needsReview": true,
         "group": "Admission / Physician",
         "label": "Physician phone"
       },
       {
         "key": "physician_fax",
         "value": "(650) 555-1201",
-        "confidence": 1,
+        "confidence": 0.97,
         "sourceSnippet": "Her number is (650) 555-1200, fax (650) 555-1201.",
-        "agreement": 3,
-        "needsReview": false,
+        "agreement": 1,
+        "needsReview": true,
         "group": "Admission / Physician",
         "label": "Physician fax"
       },
@@ -131,51 +131,51 @@
       },
       {
         "key": "f2f_date",
-        "value": "06/28/2025",
-        "confidence": 0.9,
-        "sourceSnippet": "she's willing to do the initial certification and face-to-face. She documented it today.",
-        "agreement": 3,
-        "needsReview": false,
+        "value": "06/28/2025 (face-to-face documented \"today\", the referral date)",
+        "confidence": 0.85,
+        "sourceSnippet": "She's willing to do the initial certification and face-to-face. She documented it today.",
+        "agreement": 1,
+        "needsReview": true,
         "group": "Admission / Physician",
         "label": "Face-to-face encounter date"
       },
       {
         "key": "diagnosis",
-        "value": "Parkinson's disease",
-        "confidence": 0.75,
+        "value": "Parkinson's disease (diagnosed 8 years ago) with recurrent falls; comorbid Type 2 diabetes (uncontrolled, glucose 342), heart failure (EF 35-40%), CKD stage 3B, hypertension; s/p mechanical fall with 6 cm left shin skin tear and hypothermia (no single 'primary' diagnosis explicitly designated)",
+        "confidence": 0.6,
         "sourceSnippet": "Parkinson's disease — diagnosed eight years ago.",
-        "agreement": 2,
-        "needsReview": false,
+        "agreement": 1,
+        "needsReview": true,
         "group": "Diagnosis / Clinical",
         "label": "Primary diagnosis"
       },
       {
         "key": "services_ordered",
         "value": "Skilled nursing 5x/week for first two weeks then step down to 3x/week; Physical therapy 3x/week; Occupational therapy 3x/week; Medical social work weekly; Home health aide daily",
-        "confidence": 1,
-        "sourceSnippet": "Skilled nursing 5x/week for the first two weeks ... Then step down to 3x/week. Physical therapy 3x/week ... Occupational therapy 3x/week ... Medical social work weekly ... Home health aide daily",
-        "agreement": 2,
-        "needsReview": false,
+        "confidence": 0.95,
+        "sourceSnippet": "Skilled nursing 5x/week for the first two weeks (daily except weekends if possible...",
+        "agreement": 1,
+        "needsReview": true,
         "group": "Services Ordered",
         "label": "Services ordered (disciplines and frequency)"
       },
       {
         "key": "payer",
         "value": "Medi-Cal (Health Plan of San Mateo)",
-        "confidence": 1,
+        "confidence": 0.95,
         "sourceSnippet": "His Medi-Cal is now active through Health Plan of San Mateo.",
-        "agreement": 2,
-        "needsReview": false,
+        "agreement": 1,
+        "needsReview": true,
         "group": "Payer / Billing Route",
         "label": "Payer / insurance"
       },
       {
         "key": "payer_id",
         "value": "HPSM-90381455G",
-        "confidence": 1,
+        "confidence": 0.97,
         "sourceSnippet": "Medi-Cal ID is HPSM-90381455G.",
-        "agreement": 3,
-        "needsReview": false,
+        "agreement": 1,
+        "needsReview": true,
         "group": "Payer / Billing Route",
         "label": "Policy / member / plan ID number"
       },
@@ -201,9 +201,9 @@
       },
       {
         "key": "legal_authority",
-        "value": "None — no POA/conservator; ex-wife and daughter have no legal authority",
-        "confidence": 1,
-        "sourceSnippet": "His ex-wife Iryna has no legal authority. His daughter Oksana has no legal authority.",
+        "value": "None — no POA, no conservator, no legal designation; MSW to pursue healthcare POA or conservatorship",
+        "confidence": 0.95,
+        "sourceSnippet": "no POA. He doesn't have capacity to fully understand them right now... there's nobody legally designated.",
         "agreement": 1,
         "needsReview": true,
         "group": "Representative / Legal Authority",
@@ -211,38 +211,38 @@
       },
       {
         "key": "emergency_contact_name",
-        "value": "Iryna Kovalenko (ex-wife)",
-        "confidence": 0.9,
-        "sourceSnippet": "His ex-wife Iryna Kovalenko lives in Daly City — (650) 555-0934 ... She brought him to the ED today.",
-        "agreement": 2,
-        "needsReview": false,
+        "value": "Iryna Kovalenko (ex-wife; brought him to ED, staying overnight, primary contact/interpreter)",
+        "confidence": 0.7,
+        "sourceSnippet": "His ex-wife Iryna Kovalenko lives in Daly City — (650) 555-0934",
+        "agreement": 1,
+        "needsReview": true,
         "group": "Emergency Preparedness",
         "label": "Primary emergency contact name"
       },
       {
         "key": "emergency_contact_phone",
         "value": "(650) 555-0934",
-        "confidence": 0.9,
-        "sourceSnippet": "Iryna Kovalenko lives in Daly City — (650) 555-0934",
-        "agreement": 3,
-        "needsReview": false,
+        "confidence": 0.7,
+        "sourceSnippet": "His ex-wife Iryna Kovalenko lives in Daly City — (650) 555-0934",
+        "agreement": 1,
+        "needsReview": true,
         "group": "Emergency Preparedness",
         "label": "Primary emergency contact phone"
       },
       {
         "key": "primary_language",
-        "value": "Ukrainian",
+        "value": "Ukrainian (also understands Russian; minimal English)",
         "confidence": 0.95,
         "sourceSnippet": "for anything medical, it has to be in Ukrainian or Russian — he understands both.",
-        "agreement": 2,
-        "needsReview": false,
+        "agreement": 1,
+        "needsReview": true,
         "group": "Interpreter / Language",
         "label": "Primary language"
       },
       {
         "key": "interpreter_needed",
-        "value": "Yes — Ukrainian interpreter",
-        "confidence": 1,
+        "value": "Yes — Ukrainian phone interpreter required for consent, teaching, and complex medical discussions",
+        "confidence": 0.97,
         "sourceSnippet": "For the full assessment, please use a Ukrainian phone interpreter.",
         "agreement": 1,
         "needsReview": true,
@@ -251,9 +251,9 @@
       },
       {
         "key": "advance_directive_status",
-        "value": "None — no AHCD, POLST, or POA; full code by default",
-        "confidence": 1,
-        "sourceSnippet": "None. No AHCD, no POLST, no POA... Full code by default.",
+        "value": "None — no AHCD, no POLST, no DNR; full code by default",
+        "confidence": 0.97,
+        "sourceSnippet": "None. No AHCD, no POLST, no POA.",
         "agreement": 1,
         "needsReview": true,
         "group": "Advance Directives",
@@ -261,15 +261,28 @@
       }
     ],
     "missing": [
+      "patient_name",
+      "date_of_birth",
       "medical_record",
       "address",
       "phone",
+      "county",
       "start_of_care",
       "primary_physician",
+      "physician_phone",
+      "physician_fax",
       "admitting_clinician",
+      "f2f_date",
+      "diagnosis",
+      "services_ordered",
+      "payer",
+      "payer_id",
       "representative_name",
       "representative_relationship",
       "legal_authority",
+      "emergency_contact_name",
+      "emergency_contact_phone",
+      "primary_language",
       "interpreter_needed",
       "advance_directive_status"
     ],
@@ -288,7 +301,7 @@
       },
       {
         "key": "county",
-        "sourceSnippet": "a social worker at San Mateo Medical Center ED"
+        "sourceSnippet": "1547 North Delaware Street, San Mateo, 94401"
       },
       {
         "key": "start_of_care",
@@ -308,7 +321,7 @@
       },
       {
         "key": "f2f_date",
-        "sourceSnippet": "she's willing to do the initial certification and face-to-face. She documented it today."
+        "sourceSnippet": "She's willing to do the initial certification and face-to-face. She documented it today."
       },
       {
         "key": "diagnosis",
@@ -316,7 +329,7 @@
       },
       {
         "key": "services_ordered",
-        "sourceSnippet": "Skilled nursing 5x/week for the first two weeks ... Then step down to 3x/week. Physical therapy 3x/week ... Occupational therapy 3x/week ... Medical social work weekly ... Home health aide daily"
+        "sourceSnippet": "Skilled nursing 5x/week for the first two weeks (daily except weekends if possible..."
       },
       {
         "key": "payer",
@@ -328,15 +341,15 @@
       },
       {
         "key": "legal_authority",
-        "sourceSnippet": "His ex-wife Iryna has no legal authority. His daughter Oksana has no legal authority."
+        "sourceSnippet": "no POA. He doesn't have capacity to fully understand them right now... there's nobody legally designated."
       },
       {
         "key": "emergency_contact_name",
-        "sourceSnippet": "His ex-wife Iryna Kovalenko lives in Daly City — (650) 555-0934 ... She brought him to the ED today."
+        "sourceSnippet": "His ex-wife Iryna Kovalenko lives in Daly City — (650) 555-0934"
       },
       {
         "key": "emergency_contact_phone",
-        "sourceSnippet": "Iryna Kovalenko lives in Daly City — (650) 555-0934"
+        "sourceSnippet": "His ex-wife Iryna Kovalenko lives in Daly City — (650) 555-0934"
       },
       {
         "key": "primary_language",
@@ -348,93 +361,10 @@
       },
       {
         "key": "advance_directive_status",
-        "sourceSnippet": "None. No AHCD, no POLST, no POA... Full code by default."
+        "sourceSnippet": "None. No AHCD, no POLST, no POA."
       }
     ],
-    "conflicts": [
-      {
-        "key": "patient_name",
-        "values": [
-          "Volodymyr Ivanovich Zheleznyak",
-          "Volodymyr Ivanovich Zheleznyak (goes by \"Volo\")"
-        ]
-      },
-      {
-        "key": "address",
-        "values": [
-          "1547 North Delaware Street, San Mateo, 94401 (converted garage/studio behind the house)",
-          "1547 North Delaware Street, San Mateo, 94401 (converted garage behind the house)",
-          "1547 North Delaware Street, San Mateo, 94401 (converted garage/studio behind house)"
-        ]
-      },
-      {
-        "key": "primary_physician",
-        "values": [
-          "Dr. Lauren Maxwell (ED physician, certifying physician until Dr. Carlos Mendes takes over 07/10)",
-          "Dr. Lauren Maxwell (ED physician / certifying physician)",
-          "Dr. Lauren Maxwell (ED physician; certifying physician until PCP Dr. Carlos Mendes takes over)"
-        ]
-      },
-      {
-        "key": "diagnosis",
-        "values": [
-          "Parkinson's disease",
-          "Parkinson's disease (with recent fall/prolonged down time; comorbid uncontrolled Type 2 diabetes, heart failure EF 35-40%, CKD stage 3B, HTN)"
-        ]
-      },
-      {
-        "key": "services_ordered",
-        "values": [
-          "Skilled nursing 5x/week for first two weeks then step down to 3x/week; Physical therapy 3x/week; Occupational therapy 3x/week; Medical social work weekly; Home health aide daily",
-          "Skilled nursing 5x/week for first two weeks then 3x/week; Physical therapy 3x/week; Occupational therapy 3x/week; Medical social work weekly; Home health aide daily"
-        ]
-      },
-      {
-        "key": "payer",
-        "values": [
-          "Medi-Cal (Health Plan of San Mateo)",
-          "Medi-Cal (through Health Plan of San Mateo)"
-        ]
-      },
-      {
-        "key": "legal_authority",
-        "values": [
-          "None — no POA/conservator; ex-wife and daughter have no legal authority",
-          "None — no POA, conservator, or court order",
-          "None — no POA, no conservator, no legally designated decision-maker (MSW to pursue healthcare POA or conservatorship)"
-        ]
-      },
-      {
-        "key": "emergency_contact_name",
-        "values": [
-          "Iryna Kovalenko (ex-wife)",
-          "Iryna Kovalenko"
-        ]
-      },
-      {
-        "key": "primary_language",
-        "values": [
-          "Ukrainian",
-          "Ukrainian (also understands Russian; minimal English)"
-        ]
-      },
-      {
-        "key": "interpreter_needed",
-        "values": [
-          "Yes — Ukrainian interpreter",
-          "Yes — Ukrainian interpreter (phone interpreter for full assessment/consent/teaching)",
-          "Yes — Ukrainian (understands Russian as well)"
-        ]
-      },
-      {
-        "key": "advance_directive_status",
-        "values": [
-          "None — no AHCD, POLST, or POA; full code by default",
-          "None (no AHCD, no POLST, no DNR); full code by default",
-          "None — no AHCD, no POLST, no POA; full code by default"
-        ]
-      }
-    ],
-    "validationSummary": "13/24 fields filled with majority agreement across 3 reads; 11 need review; 11 conflicts."
+    "conflicts": [],
+    "validationSummary": "0/24 fields filled with majority agreement across 3 reads; 24 need review; 0 conflicts."
   }
 }

@@ -10,6 +10,7 @@ import { POLICY_CORPUS, LIFECYCLE_DOMAIN_ORDER, DOMAIN_LABEL } from '@/policy/da
 import { FORMS_DATASET, type FormRecord } from '@/policy/data/formsLibraryDataset';
 import { buildFormContent, type FormField, type FormSection } from '@/policy/data/formsLibraryContent';
 import EvidenceStudio from '@/v6/screens/evidence/EvidenceStudio';
+import Defensible2Studio from '@/v6/screens/evidence/Defensible2Studio';
 import BradEvidenceIntake from '@/v6/screens/evidence/BradEvidenceIntake';
 import AIComplianceReviewScreen from './pageviews/AIComplianceReviewScreen';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
@@ -1772,7 +1773,11 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <BoardScreen />;
       break;
     case 'defensible-2':
-      child = <ComplianceHomeScreen />;
+      // DefenCIble = the rich Defensible2 studio (template→source→verify→generate,
+      // billing route, eCIgn). EvidenceStudio remains for the other evidence routes.
+      // DO NOT swap this back to ComplianceHomeScreen — that is a static mockup whose
+      // Drive folders have no click handlers (regressed twice: see 8bc7b4d2, 4953685c).
+      child = <Defensible2Studio />;
       break;
     case 'evidence-center':
       child = <EvidenceStudio initialTab="studio" />;
@@ -4288,19 +4293,9 @@ function CesEmbeddedBoardView({ variant }: { variant: 'sprint' | 'events' }) {
 const sprintBoardTabs = [
   { id: 'home', label: 'Sprint Home', to: '/compliance' },
   { id: 'dashboard', label: 'Sprint Dashboard', to: '/ces/board' },
-  { id: 'workspace', label: 'DefenCIble', to: '/evidence' },
   { id: 'calendar', label: 'CES Calendar', to: '/ces/calendar' },
   { id: 'controls', label: 'Control Register', to: '/compliance/master-controls' },
 ] as const;
-
-function SprintBoardTabLabel({ label }: { label: string }) {
-  if (label !== 'DefenCIble') return <>{label}</>;
-  return (
-    <>
-      Defen<span className="!text-brand-teal">CI</span>ble
-    </>
-  );
-}
 
 function SprintBoardNavigationTabs() {
   return (
@@ -4314,7 +4309,7 @@ function SprintBoardNavigationTabs() {
             className={`${workspaceTabClass} ${isActive ? workspaceTabActiveClass : workspaceTabInactiveClass}`}
             aria-current={isActive ? 'page' : undefined}
           >
-            <SprintBoardTabLabel label={tab.label} />
+            {tab.label}
           </Link>
         );
       })}

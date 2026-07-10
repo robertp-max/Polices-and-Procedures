@@ -53,6 +53,8 @@ export const DRIVE_EVIDENCE_LOCK = {
   projectId: 'orbital-stage-443721-v1',
   sharedDriveId: '0AMhwVb2RmU-fUk9PVA',
   storageProvider: 'google_drive_calendar',
+  /** Canonical "Event Packets" folder — the active packet destination. */
+  packetFolderId: '1oWEQxrPWoy8bBIDG1a-5afQU9vEYWmU0',
 } as const;
 
 export const env = {
@@ -81,6 +83,23 @@ export const env = {
    *  per-event / admission folder structure. The service account must have write
    *  access to this folder. */
   packetOverrideFolderId: process.env.GOOGLE_DRIVE_PACKET_FOLDER_ID ?? '',
+  /** Resolved packet destination: configured value or the locked canonical
+   *  Event Packets folder. Externalizes the previously hardcoded id WITHOUT
+   *  changing the runtime value. */
+  get drivePacketFolderId(): string {
+    return this.packetOverrideFolderId || DRIVE_EVIDENCE_LOCK.packetFolderId;
+  },
+
+  /** ───── Drive authentication mode (DRIVE ONLY — Calendar unaffected) ─────
+   * 'key_file'      → LOCAL DEVELOPMENT ONLY: the existing external JSON key
+   *                   referenced by GOOGLE_APPLICATION_CREDENTIALS (default,
+   *                   preserves current local behavior).
+   * 'impersonation' → production/Cloud Run: keyless — ADC of the runtime
+   *                   identity impersonates ONLY the locked Drive service
+   *                   account. Validated fail-closed in googleDriveAuth.ts
+   *                   and assertDriveEvidenceLock(). */
+  driveAuthMode: process.env.GOOGLE_DRIVE_AUTH_MODE ?? '',
+  driveImpersonateServiceAccount: process.env.GOOGLE_DRIVE_IMPERSONATE_SERVICE_ACCOUNT ?? '',
   // 01_CES is LOCKED — no writes land there until a readiness date is provided.
   // All packets go to the Event Packets folder instead. To unlock, set
   // DRIVE_01_CES_READINESS_DATE to an ISO date (YYYY-MM-DD); 01_CES then opens
@@ -165,10 +184,13 @@ export interface DriveLockResult {
  */
 export function assertDriveEvidenceLock(opts: { throwOnMismatch?: boolean } = {}): DriveLockResult {
   const problems: string[] = [];
+  const driveAuthMode = (env.driveAuthMode || 'key_file').trim().toLowerCase();
   const info: Record<string, string> = {
     storageProvider: env.evidenceStorageProvider,
     sharedDriveId: env.driveEvidenceSharedDriveId,
     rootFolderId: env.driveEvidenceRootFolderId,
+    packetFolderId: env.drivePacketFolderId,
+    driveAuthMode,
     credentialsPath: env.credentialsPath,
     evidenceEnabled: String(env.calendarEvidenceEnabled),
   };
@@ -178,6 +200,20 @@ export function assertDriveEvidenceLock(opts: { throwOnMismatch?: boolean } = {}
   }
   if (env.driveEvidenceSharedDriveId !== DRIVE_EVIDENCE_LOCK.sharedDriveId) {
     problems.push(`sharedDriveId "${env.driveEvidenceSharedDriveId}" != locked "${DRIVE_EVIDENCE_LOCK.sharedDriveId}"`);
+  }
+
+  // Keyless impersonation (DRIVE ONLY): the target must be configured and must
+  // be exactly the locked Drive service account. Fail closed on drift/absence.
+  if (driveAuthMode === 'impersonation') {
+    const target = env.driveImpersonateServiceAccount.trim();
+    info.driveImpersonationTarget = target || '(missing)';
+    if (!target) {
+      problems.push('GOOGLE_DRIVE_AUTH_MODE=impersonation but GOOGLE_DRIVE_IMPERSONATE_SERVICE_ACCOUNT is not set');
+    } else if (target !== DRIVE_EVIDENCE_LOCK.serviceAccountEmail) {
+      problems.push(`impersonation target "${target}" != locked "${DRIVE_EVIDENCE_LOCK.serviceAccountEmail}"`);
+    }
+  } else if (driveAuthMode !== 'key_file') {
+    problems.push(`unknown GOOGLE_DRIVE_AUTH_MODE "${env.driveAuthMode}" (use "impersonation" or "key_file")`);
   }
 
   if (env.calendarCredentialsPresent) {
@@ -203,7 +239,10 @@ export function assertDriveEvidenceLock(opts: { throwOnMismatch?: boolean } = {}
   }
 
   const ok = problems.length === 0;
-  const enforced = env.calendarCredentialsPresent && env.calendarEvidenceEnabled;
+  // Enforced whenever evidence is enabled AND a Drive auth path is in play:
+  // key file present (dev) or keyless impersonation configured (deployed).
+  const enforced = env.calendarEvidenceEnabled
+    && (env.calendarCredentialsPresent || driveAuthMode === 'impersonation');
   if (!ok && enforced && opts.throwOnMismatch) {
     throw new Error(
       `[drive-lock] Google Drive evidence config drift detected — refusing to start:\n  - ${problems.join('\n  - ')}\n` +

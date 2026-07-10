@@ -13,11 +13,11 @@ import {
 } from '@/policy/services/calendarApi';
 import {
   buildEvidenceIdentityScope, buildIdempotencyKey, detectFormat, extractRecordFromCell,
-  parseSourceFile, sanitizeFileName, type EvidenceSourceRecord, type SourceSystem,
+  mergeParsedFiles, parseSourceFile, sanitizeFileName, type EvidenceSourceRecord, type SourceSystem,
 } from '@/policy/evidence/intake';
 import { applyDriveOutcome, persistCanonicalEvidence } from '@/policy/evidence/intake/intakeService';
 import type { ParsedFile } from '@/policy/evidence/intake/fileParsing';
-import { deriveQapiBundle, type QapiDerivedBundle } from '@/policy/brad/intake/adapters/qapiIntakeAdapter';
+import { deriveQapiBundle, segmentQapiSourceByQuarter, type QapiDerivedBundle, type QapiSourceSegment } from '@/policy/brad/intake/adapters/qapiIntakeAdapter';
 import {
   generatePacket as generateAlphaPacket,
   getSignatureRequirements,
@@ -415,6 +415,9 @@ export function Defensible2StudioLanding() {
   // interim/final date window stays correct. Null for non-QAPI templates.
   const [qapiSourceParsed, setQapiSourceParsed] = useState<ParsedFile | null>(null);
   const [qapiDerivedBundle, setQapiDerivedBundle] = useState<QapiDerivedBundle | null>(null);
+  // When a dump holds multiple quarters and the event date matches none, the
+  // user picks which quarter to generate (drives deriveQapiBundle's targetQuarter).
+  const [qapiTargetQuarter, setQapiTargetQuarter] = useState<string | null>(null);
   // Empty until Brad's suggestion or the user's Step-2 choice fills it — a truthy
   // default (e.g. 'PENDING_VERIFICATION') previously masked Brad's identified route
   // on the review screen. The final route is written on Step-2 confirmation.
@@ -512,13 +515,21 @@ export function Defensible2StudioLanding() {
   const driveReachable = !!driveHealth?.drive?.reachable;
 
   const selectedEvent = useMemo(() => events.find((e) => e.id === eventId), [events, eventId]);
-  // Re-derive the QAPI bundle when the picked event changes (source is confirmed
-  // before the event is finalized in the grid below) so the interim/final date
-  // window reflects the actual selected event, not the default at confirm-time.
+  // Quarters present in the uploaded source (empty for a single-quarter dump).
+  const qapiSegments = useMemo<QapiSourceSegment[]>(
+    () => (qapiSourceParsed ? segmentQapiSourceByQuarter(qapiSourceParsed.records.map((r) => r.text ?? '').join('\n')) : []),
+    [qapiSourceParsed],
+  );
+  // Multi-quarter dump with no explicit pick → generate ALL quarters (dump-and-go);
+  // the review just PREVIEWS one representative quarter so the panel isn't empty.
+  const generatingAllQuarters = qapiSegments.length > 1 && !qapiTargetQuarter;
+  const previewQuarter = qapiTargetQuarter ?? (qapiSegments.length > 1 ? qapiSegments[0].quarter : null);
+  // Re-derive the QAPI bundle when the picked event, source, OR chosen quarter
+  // changes so the interim/final window + segment reflect the real selection.
   useEffect(() => {
     if (!qapiSourceParsed) return;
-    setQapiDerivedBundle(deriveQapiBundle(qapiSourceParsed, selectedEvent?.date || new Date().toISOString().slice(0, 10)));
-  }, [selectedEvent?.date, qapiSourceParsed]);
+    setQapiDerivedBundle(deriveQapiBundle(qapiSourceParsed, selectedEvent?.date || new Date().toISOString().slice(0, 10), previewQuarter ?? undefined));
+  }, [selectedEvent?.date, qapiSourceParsed, previewQuarter]);
   const eventMatchesSelectedTemplate = useCallback((event: (typeof events)[number]) => {
     const title = `${event.title || ''} ${event.id || ''} ${event.eventSubType || ''} ${event.category || ''}`.toLowerCase();
     const domain = String(event.domain || '').toLowerCase();
@@ -684,6 +695,7 @@ export function Defensible2StudioLanding() {
             eventId,
             eventTitle: selectedEvent?.title || selectedTemplateTitle,
             eventDateISO: selectedEvent?.date || new Date().toISOString().slice(0, 10),
+            targetQuarter: qapiTargetQuarter ?? undefined,
           })
         : await generateAlphaPacket({
         templateId: selectedTemplateTitle,
@@ -717,7 +729,7 @@ export function Defensible2StudioLanding() {
       setAlphaPreview(null);
       setFlowStep('alphaError');
     }
-  }, [eventId, qapiDerivedBundle, qapiSourceParsed, selectedBillingRoute, selectedEvent?.date, selectedEvent?.title, selectedSourceMode, selectedTemplateTitle, sourceIntent, sourceParseSummary.parsed, verifiedFields, triggerToast]);
+  }, [eventId, qapiDerivedBundle, qapiSourceParsed, qapiTargetQuarter, selectedBillingRoute, selectedEvent?.date, selectedEvent?.title, selectedSourceMode, selectedTemplateTitle, sourceIntent, sourceParseSummary.parsed, verifiedFields, triggerToast]);
 
   const printOrDownloadPacket = useCallback(() => {
     if (alphaPreview?.pdfUrl || alphaPreview?.driveUrl) {
@@ -915,13 +927,19 @@ export function Defensible2StudioLanding() {
     } else {
       const qapi = effectiveIntent === 'qapi' || /qapi/i.test(effectiveTemplateTitle);
       if (qapi) {
-        const primary = alphaSourceFilesRef.current[0];
-        if (primary) {
+        // Brad reads EVERY dumped document, not just the first — parse each
+        // file and merge the record sets before derivation.
+        const files = alphaSourceFilesRef.current;
+        if (files.length > 0) {
           setExtracting(true);
           try {
-            const { text, headBytes } = await readText(primary);
-            const parsed = parseSourceFile({ fileName: primary.name, mimeType: primary.type, text, headBytes, byteLength: primary.size });
+            const parsedList = await Promise.all(files.map(async (f) => {
+              const { text, headBytes } = await readText(f);
+              return { fileName: f.name, parsed: parseSourceFile({ fileName: f.name, mimeType: f.type, text, headBytes, byteLength: f.size }) };
+            }));
+            const parsed = mergeParsedFiles(parsedList);
             setQapiSourceParsed(parsed);
+            setQapiTargetQuarter(null); // fresh source → clear any prior quarter pick
             setQapiDerivedBundle(deriveQapiBundle(parsed, selectedEvent?.date || new Date().toISOString().slice(0, 10)));
             setExtractionError(null);
           } catch (e) {
@@ -1348,6 +1366,43 @@ export function Defensible2StudioLanding() {
                   : ' (Brad’s identified route, confirmed). Only this route appears in the packet.'}
               </p>
             )}
+            {!isPatientAdmissionTemplate(selectedTemplateTitle) && qapiSegments.length > 1 && (
+              <div className="mx-auto mt-6 max-w-2xl rounded-[22px] border border-[#cfe6e8] bg-[#F3FAFA] p-5 text-left">
+                <h3 className="font-montserrat text-xs font-bold uppercase tracking-widest text-[#007970]">{qapiSegments.length} quarters detected</h3>
+                <p className="mt-2 font-roboto text-xs leading-5 text-[#524D4B]">
+                  {generatingAllQuarters
+                    ? <>Brad will generate a clean, separate packet for <strong>every quarter</strong> — no cross-quarter mixing. Optionally narrow to just one below.</>
+                    : <>Generating <strong>{qapiSegments.find((s) => s.quarter === qapiTargetQuarter)?.quarterLabel ?? 'one quarter'}</strong> only. Choose “All quarters” to generate every quarter.</>}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setQapiTargetQuarter(null)}
+                    aria-pressed={generatingAllQuarters}
+                    className={`rounded-full px-4 py-2 font-montserrat text-xs font-medium uppercase tracking-wider transition ${generatingAllQuarters ? 'bg-[#007970] text-white shadow' : 'border border-[#E5E4E3] bg-white text-[#315B53] hover:border-[#007970]'}`}
+                  >
+                    All quarters
+                  </button>
+                  {qapiSegments.map((s) => {
+                    const active = qapiTargetQuarter === s.quarter;
+                    return (
+                      <button
+                        key={s.datasetId ?? s.quarterLabel ?? s.quarter ?? ''}
+                        type="button"
+                        onClick={() => setQapiTargetQuarter(active ? null : (s.quarter ?? null))}
+                        aria-pressed={active}
+                        className={`rounded-full px-4 py-2 font-montserrat text-xs font-medium uppercase tracking-wider transition ${active ? 'bg-[#007970] text-white shadow' : 'border border-[#E5E4E3] bg-white text-[#315B53] hover:border-[#007970]'}`}
+                      >
+                        {s.quarterLabel ?? s.quarter}{s.meetingDate ? ` · ${s.meetingDate}` : ''}
+                      </button>
+                    );
+                  })}
+                </div>
+                {generatingAllQuarters && (
+                  <p className="mt-3 font-roboto text-[11px] italic text-[#747470]">Preview below shows {qapiSegments[0]?.quarterLabel ?? 'the first quarter'} as a sample; all {qapiSegments.length} quarters will be in the compiled packet.</p>
+                )}
+              </div>
+            )}
             {!isPatientAdmissionTemplate(selectedTemplateTitle) && qapiDerivedBundle && (() => {
               const bundle = qapiDerivedBundle;
               const metricGroups: Array<[string, Record<string, { value: unknown; confidence: string; needsReview: boolean; note?: string }>]> = [
@@ -1395,8 +1450,12 @@ export function Defensible2StudioLanding() {
                 </div>
               );
             })()}
-            <button type="button" onClick={startCompilePacket} className="mt-8 rounded-full bg-[#C74601] px-10 py-4 font-montserrat text-xs font-medium uppercase tracking-wider text-white shadow-md transition-all hover:bg-[#421700] hover:shadow-lg">
-              Compile Packet
+            <button
+              type="button"
+              onClick={startCompilePacket}
+              className="mt-8 rounded-full bg-[#C74601] px-10 py-4 font-montserrat text-xs font-medium uppercase tracking-wider text-white shadow-md transition-all hover:bg-[#421700] hover:shadow-lg"
+            >
+              {generatingAllQuarters ? `Compile ${qapiSegments.length} Packets` : 'Compile Packet'}
             </button>
           </div>}
 

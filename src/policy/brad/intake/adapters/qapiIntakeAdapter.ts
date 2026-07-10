@@ -28,6 +28,122 @@ import type { ClinicalDump } from '../../../qapi/qapiTypes';
 import { extractQapiRollup, type QapiRollup } from '../../../qapi/qapiExtraction';
 import type { ParsedFile, ParsedRecordCell } from '../../../evidence/intake/fileParsing';
 
+/* ─── Quarter segmentation (fixes Q1/Q2/Q3/Q4 cross-contamination) ───────
+   A single dump often contains multiple quarters back-to-back (each opening
+   with "Dataset ID: QAPI-Q{n}-DS-…" + "Quarter: Q{n} 20YY (…)" + "QAPI
+   Meeting Date: …"). Treating the whole file as one record makes alias/
+   keyword recovery pull values ACROSS quarter boundaries — the packet then
+   mislabels Q2 data as Q1, etc. So we hard-segment first and extract from
+   exactly one quarter, selected by the event's meeting date (robust: a
+   quarter's REVIEW meeting falls in the next calendar quarter, so meeting-
+   date matching beats calendar-quarter math). Fail closed when the target
+   can't be resolved. */
+
+export interface QapiSourceSegment {
+  /** e.g. "QAPI-Q2-DS-001" */
+  datasetId: string | null;
+  /** e.g. "2026-Q2" */
+  quarter: string | null;
+  /** e.g. "Q2 2026" */
+  quarterLabel: string | null;
+  /** Source agency name (NOT necessarily Care Indeed — provenance). */
+  agency: string | null;
+  /** e.g. "2026-07-10" */
+  meetingDate: string | null;
+  /** True when the source declares itself synthetic/mock/non-PHI. */
+  synthetic: boolean;
+  /** The verbatim text of just this quarter's block. */
+  text: string;
+}
+
+const DATASET_MARKER_RE = /Dataset ID:\s*(QAPI-Q([1-4])-DS-[A-Za-z0-9-]+)/g;
+
+/** Split a multi-quarter dump into per-quarter segments. Returns [] when the
+    source has 0–1 dataset markers (i.e. not a multi-quarter file). */
+export function segmentQapiSourceByQuarter(fullText: string): QapiSourceSegment[] {
+  const marks = [...fullText.matchAll(DATASET_MARKER_RE)];
+  if (marks.length <= 1) return [];
+  const docAgency = /Agency:\s*([^\n|]+)/.exec(fullText)?.[1]?.trim() ?? null;
+  const segs: QapiSourceSegment[] = [];
+  for (let i = 0; i < marks.length; i++) {
+    const start = marks[i].index ?? 0;
+    const end = i + 1 < marks.length ? (marks[i + 1].index ?? fullText.length) : fullText.length;
+    const text = fullText.slice(start, end);
+    const qMatch = /Quarter:\s*Q([1-4])\s*(20\d{2})/.exec(text);
+    segs.push({
+      datasetId: marks[i][1],
+      quarter: qMatch ? `${qMatch[2]}-Q${qMatch[1]}` : null,
+      quarterLabel: qMatch ? `Q${qMatch[1]} ${qMatch[2]}` : `Q${marks[i][2]}`,
+      agency: /Agency:\s*([^\n|]+)/.exec(text)?.[1]?.trim() ?? docAgency,
+      meetingDate: /QAPI Meeting Date:\s*(20\d{2}-\d{2}-\d{2})/.exec(text)?.[1] ?? null,
+      synthetic: /\bsynthetic\b|\bmock\b|not for production|no real phi/i.test(text),
+      text,
+    });
+  }
+  return segs;
+}
+
+export interface QuarterSelection {
+  segment: QapiSourceSegment | null;
+  segments: QapiSourceSegment[];
+  conflict: boolean;
+  reason: string;
+}
+
+/** Pick the ONE segment to use, by (1) explicit target quarter, else (2) the
+    segment whose QAPI Meeting Date equals the event date. Fail closed (no
+    segment, conflict=true) when it can't be resolved unambiguously. */
+export function selectQuarterSegment(
+  segments: QapiSourceSegment[],
+  opts: { eventDateISO?: string; targetQuarter?: string },
+): QuarterSelection {
+  if (segments.length === 0) return { segment: null, segments, conflict: false, reason: 'single-quarter source' };
+
+  if (opts.targetQuarter) {
+    const s = segments.find((x) => x.quarter === opts.targetQuarter);
+    if (s) return { segment: s, segments, conflict: false, reason: `matched requested quarter ${opts.targetQuarter}` };
+    return { segment: null, segments, conflict: true, reason: `requested quarter ${opts.targetQuarter} not present (found ${segments.map((x) => x.quarter ?? '?').join(', ')})` };
+  }
+
+  if (opts.eventDateISO) {
+    const byMeeting = segments.filter((x) => x.meetingDate === opts.eventDateISO);
+    if (byMeeting.length === 1) return { segment: byMeeting[0], segments, conflict: false, reason: `matched meeting date ${opts.eventDateISO} → ${byMeeting[0].quarterLabel}` };
+    if (byMeeting.length > 1) return { segment: null, segments, conflict: true, reason: `${byMeeting.length} quarters share meeting date ${opts.eventDateISO}` };
+  }
+
+  return {
+    segment: null,
+    segments,
+    conflict: true,
+    reason: `source contains ${segments.length} quarters (${segments.map((x) => x.quarterLabel ?? '?').join(', ')}) but none matches the event${opts.eventDateISO ? ` meeting date ${opts.eventDateISO}` : ''} — specify the quarter to generate.`,
+  };
+}
+
+export interface ResolvedQapiSource extends QuarterSelection {
+  /** Parsed file narrowed to the selected quarter (or the original when single-quarter). */
+  parsed: ParsedFile;
+}
+
+/** Resolve a (possibly multi-quarter) parsed dump to a single quarter's
+    records + provenance. Shared by deriveQapiBundle and the packet driver so
+    both agree on which quarter — and whether to fail closed. */
+export function resolveQapiSource(parsed: ParsedFile, eventDateISO: string, targetQuarter?: string): ResolvedQapiSource {
+  const fullText = parsed.records.map((r) => r.text ?? '').join('\n');
+  const segments = segmentQapiSourceByQuarter(fullText);
+  if (segments.length === 0) {
+    return { segment: null, segments, conflict: false, reason: 'single-quarter source', parsed };
+  }
+  const sel = selectQuarterSegment(segments, { eventDateISO, targetQuarter });
+  if (!sel.segment) return { ...sel, parsed };
+  // Narrow the parsed file to just the selected quarter's text.
+  const narrowed: ParsedFile = {
+    ...parsed,
+    records: [{ pointer: `quarter:${sel.segment.quarter ?? sel.segment.quarterLabel ?? '?'}`, fields: { text: sel.segment.text.slice(0, 8000) }, text: sel.segment.text }],
+    note: `Segmented to ${sel.segment.quarterLabel} (${sel.segment.datasetId}) from a ${segments.length}-quarter dump. ${parsed.note ?? ''}`.trim(),
+  };
+  return { ...sel, parsed: narrowed };
+}
+
 export interface QapiDerivedMetric {
   value: number | string | string[] | null;
   confidence: 'high' | 'low' | 'none';
@@ -330,6 +446,387 @@ export function deriveQapiBundleFromRecords(parsed: ParsedFile): QapiDerivedBund
   };
 }
 
+/* ─── Path 3: narrative / raw-text aggregate extraction ──────────────────
+   Plain-text uploads (TXT, prose exports, copy-pasted reports) parse to a
+   SINGLE full-text record, so Path 2's record-counting can only ever answer
+   "0 or 1" for every metric. This path scans the narrative text itself for
+   labeled aggregates ("Missed visits: 106", "7 patients hospitalized",
+   "Quorum: 8/8") and record-ID families (AE-001…, INF-001…, PIP-T-001…),
+   producing the same low-confidence + verbatim-quote metrics. It never
+   overrides structured-record derivation — only applies to text-only
+   parses, and fills gaps rather than inventing data. */
+
+const uniq = <T>(arr: T[]): T[] => Array.from(new Set(arr));
+
+interface TextHit {
+  value: number;
+  quote: string;
+}
+
+function contextQuote(text: string, index: number, matchLen: number, radius = 70): string {
+  const start = Math.max(0, index - radius);
+  const end = Math.min(text.length, index + matchLen + radius);
+  return text.slice(start, end).replace(/\s+/g, ' ').trim();
+}
+
+function firstNumber(text: string, re: RegExp): TextHit | null {
+  const m = re.exec(text);
+  if (!m) return null;
+  const value = Number(m[1]);
+  if (!Number.isFinite(value)) return null;
+  return { value, quote: contextQuote(text, m.index, m[0].length) };
+}
+
+/** Count unique record IDs of one family (e.g. AE-001, MOCK-AE-001 → AE-001).
+    Table exports often arrive with cells run together ("initiatedMOCK-AE-002"),
+    so IDs may be glued to lowercase words — only an UPPERCASE letter or digit
+    immediately before/after disqualifies a candidate (partial-token guard). */
+/** Record-ID family regex tolerant of an optional quarter infix, so both
+    schemes match: "AE-001" (Q2 file) and "AE-Q1-001" (Q1/Q3/Q4 files). The
+    captured id includes the infix so counts stay per-quarter-unique. */
+function familyIdRegex(family: string): RegExp {
+  return new RegExp(`(?<![A-Z0-9])(${family})(-Q[1-4])?-(\\d{2,5})(?!\\d)`, 'g');
+}
+
+function idFamilyCount(text: string, family: string): TextHit | null {
+  const ids = new Set<string>();
+  let firstIndex = -1;
+  let firstLen = 0;
+  for (const m of text.matchAll(familyIdRegex(family))) {
+    ids.add(`${m[1]}${m[2] ?? ''}-${m[3]}`);
+    if (firstIndex < 0) { firstIndex = m.index ?? 0; firstLen = m[0].length; }
+  }
+  if (ids.size === 0) return null;
+  return { value: ids.size, quote: contextQuote(text, firstIndex, firstLen) };
+}
+
+export interface QapiTextAggregates {
+  /** True when the source reads like an AI generation prompt, not data. */
+  promptArtifact: boolean;
+  promptQuote?: string;
+  /** Reporting quarter declared in the source (e.g. "2026-Q2"), if stated. */
+  reviewQuarter: string | null;
+  activeCensus: TextHit | null;
+  episodesTotal: TextHit | null;
+  dischargedCount: TextHit | null;
+  recertificationCount: TextHit | null;
+  hospitalizations: TextHit | null;
+  missedVisits: TextHit | null;
+  complaintsCount: TextHit | null;
+  infectionLineListCount: TextHit | null;
+  confirmedHais: TextHit | null;
+  adverseEventsCount: TextHit | null;
+  pipTriggerCount: TextHit | null;
+  /** Named PIP recommendations found in the text (e.g. "PIP — OASIS Accuracy Improvement"). */
+  pipNames: Array<{ name: string; quote: string }>;
+  capCount: TextHit | null;
+  disciplinaryCount: TextHit | null;
+  quorum: { present: number; total: number; met: boolean; quote: string } | null;
+  attendeePresentCount: TextHit | null;
+  signoffRoles: string[];
+  oasisLateSoc: TextHit | null;
+  lateOrMissingF2f: TextHit | null;
+  medReconDiscrepancies: TextHit | null;
+  /** How many aggregate metrics were found (drives the overall note). */
+  foundCount: number;
+}
+
+const PROMPT_ARTIFACT_RE = /\b(?:hi|hello|hey)[,\s]+(?:claude|chatgpt|gpt|gemini|copilot)\b|please generate\b[\s\S]{0,120}?\b(?:synthetic|mock|dataset|test)/i;
+
+export function extractQapiTextAggregates(text: string): QapiTextAggregates {
+  const promptMatch = PROMPT_ARTIFACT_RE.exec(text);
+
+  // Named PIP recommendations ("PIP — OASIS Accuracy Improvement"), tolerant
+  // of run-together table cells on either side of the name.
+  const pipNames: Array<{ name: string; quote: string }> = [];
+  const seenPipNames = new Set<string>();
+  for (const m of text.matchAll(/(?<![A-Z])PIP\s+—\s+([A-Z][A-Za-z0-9 /&-]{2,60}?)(?=PIP|Existing|[\n·|]|$)/g)) {
+    const name = m[1].trim().replace(/\s+/g, ' ');
+    const key = name.toLowerCase();
+    if (name.length < 3 || seenPipNames.has(key)) continue;
+    seenPipNames.add(key);
+    pipNames.push({ name, quote: contextQuote(text, m.index ?? 0, m[0].length) });
+  }
+
+  // "Administrator Sign-off:" lines (singular + colon → actual sign-off
+  // records; skips headers like "Required Sign-offs:").
+  const signoffRoles: string[] = [];
+  for (const m of text.matchAll(/\b([A-Z][A-Za-z /&]{2,40}?)\s+Sign-off:/g)) {
+    const role = m[1].trim();
+    if (!/^required$/i.test(role) && !signoffRoles.includes(role)) signoffRoles.push(role);
+  }
+
+  const quorumMatch = /Quorum:\s*(\d+)\s*\/\s*(\d+)/i.exec(text);
+  const quorum = quorumMatch
+    ? {
+        present: Number(quorumMatch[1]),
+        total: Number(quorumMatch[2]),
+        met: /quorum met/i.test(text),
+        quote: contextQuote(text, quorumMatch.index, quorumMatch[0].length),
+      }
+    : null;
+
+  const presentMarks = [...text.matchAll(/✅\s*Present/g)];
+  const attendeePresentCount: TextHit | null = presentMarks.length
+    ? { value: presentMarks.length, quote: contextQuote(text, presentMarks[0].index ?? 0, presentMarks[0][0].length) }
+    : null;
+
+  const quarterMatch = /\bQ([1-4])[\s-]*(20\d{2})\b/.exec(text) ?? /\b(20\d{2})[\s-]*Q([1-4])\b/.exec(text);
+  const reviewQuarter = quarterMatch
+    ? (/^Q/.test(quarterMatch[0]) ? `${quarterMatch[2]}-Q${quarterMatch[1]}` : `${quarterMatch[1]}-Q${quarterMatch[2]}`)
+    : null;
+
+  const agg: QapiTextAggregates = {
+    promptArtifact: Boolean(promptMatch),
+    promptQuote: promptMatch ? contextQuote(text, promptMatch.index, promptMatch[0].length) : undefined,
+    reviewQuarter,
+    // Each metric tries the Q2-file phrasing first, then Q1/Q3/Q4 glued-table
+    // phrasings ("Active at Mar 31 (Q1 close)120 patients", "Hospitalizations
+    // Q15 (MOCK-…", "episodes tracked Q1127 episodes"), then ID-family counts.
+    activeCensus: firstNumber(text, /(\d+)\s+active at (?:the )?start/i) ?? firstNumber(text, /close\)\s*(\d+)\s*patients/i) ?? firstNumber(text, /active at [A-Za-z]{3} \d{1,2}[^\d]{0,20}(\d+)\s*patients/i),
+    episodesTotal: firstNumber(text, /=\s*(\d+)\s+episodes/i) ?? firstNumber(text, /episodes tracked[^\d]{0,12}(\d+)\s*episodes/i) ?? firstNumber(text, /total[^.\n]{0,40}episodes:?\s*(\d+)/i),
+    dischargedCount: firstNumber(text, /discharge\w*\s*\((\d+)\)/i) ?? firstNumber(text, /discharged\s+Q[1-4]?(\d+)\s*patients/i),
+    recertificationCount: firstNumber(text, /recert\w*\s*\((\d+)\)/i),
+    hospitalizations: firstNumber(text, /(\d+)\s+patients?\s+hospitali[sz]ed/i) ?? firstNumber(text, /hospitali[sz]ation events?:?\s*(\d+)/i) ?? firstNumber(text, /hospitali[sz]ations?\s*Q[1-4]?(\d+)\s*\(/i),
+    missedVisits: firstNumber(text, /missed visits?:?\s*(\d+)/i),
+    complaintsCount: firstNumber(text, /(\d+)\s+complaints?\s+q\d/i) ?? idFamilyCount(text, 'CMP'),
+    infectionLineListCount: idFamilyCount(text, 'INF'),
+    confirmedHais: firstNumber(text, /(\d+)\s+confirmed HAIs?/i),
+    adverseEventsCount: idFamilyCount(text, 'AE'),
+    pipTriggerCount: firstNumber(text, /(\d+)\s+PIP triggers?/i) ?? idFamilyCount(text, 'PIP-T') ?? firstNumber(text, /PIP TRIGGERS?\s*\((\d+)\s*Required\)/i),
+    pipNames,
+    capCount: idFamilyCount(text, 'CAP'),
+    disciplinaryCount: firstNumber(text, /(\d+)\s+disciplinary review triggers?/i) ?? idFamilyCount(text, 'DT') ?? idFamilyCount(text, 'DISC-TRIG') ?? firstNumber(text, /DISCIPLINARY ACTION TRIGGERS?\s*\((\d+)\s*Required\)/i),
+    quorum,
+    attendeePresentCount,
+    signoffRoles,
+    oasisLateSoc: firstNumber(text, /late soc:?\s*(\d+)/i),
+    lateOrMissingF2f: firstNumber(text, /(\d+)\s+late\/missing f2f/i),
+    medReconDiscrepancies: firstNumber(text, /(\d+)\s+discrepanc\w+ at soc\/roc/i),
+    foundCount: 0,
+  };
+
+  agg.foundCount = [
+    agg.activeCensus, agg.episodesTotal, agg.dischargedCount, agg.recertificationCount,
+    agg.hospitalizations, agg.missedVisits, agg.complaintsCount, agg.infectionLineListCount,
+    agg.confirmedHais, agg.adverseEventsCount, agg.pipTriggerCount, agg.capCount,
+    agg.disciplinaryCount, agg.quorum, agg.attendeePresentCount,
+    agg.oasisLateSoc, agg.lateOrMissingF2f, agg.medReconDiscrepancies,
+  ].filter(Boolean).length + (agg.pipNames.length ? 1 : 0) + (agg.signoffRoles.length ? 1 : 0);
+
+  return agg;
+}
+
+/* ─── Per-record line-item segments (feed form filling) ──────────────────
+   Beyond aggregate counts, forms need actual rows. Each record-ID family
+   (AE-001…, INF-001…, CMP-001…, CAP-001…, DT-001…) is segmented: the text
+   run from one ID to the next same-family ID, scored so the DEFINITION row
+   (the one carrying dates/severity/status) wins over passing references. */
+
+export interface RecordSegment {
+  id: string;
+  /** Verbatim source run for this record (capped). */
+  text: string;
+  /** First ISO date in the segment (e.g. event/onset date). */
+  date: string | null;
+  /** All ISO dates found (deduped, ≤4) — CAP rows carry due dates etc. */
+  dates: string[];
+  severity: string | null;
+  status: string | null;
+  category: string | null;
+}
+
+const SEGMENT_CATEGORY: Record<string, RegExp> = {
+  AE: /(Unplanned Hospitalization|Medication Error|Near-Miss[^A-Z]{0,24}|Adverse Drug Reaction|Fall)/,
+  INF: /(Wound \/ Surgical Site|Wound — Repeat|Surgical Site|Wound|UTI|Respiratory \(ILI\)|Respiratory|ILI)/,
+  CMP: /(Communication|Scheduling|Care Quality|Billing|Rights)/,
+};
+const SEGMENT_SEVERITY = /(Level\s*[1-4]|\bCritical\b|\bHigh\b|\bModerate\b|\bLow\b)/;
+const SEGMENT_STATUS = /(RCA Complete[^A-Z]{0,28}|RCA initiated|Investigation complete[^A-Z]{0,22}|Resolved[^A-Z]{0,30}|Closed[^A-Z]{0,18}|Open(?: — under review)?|Pending HR review|Pending|Complete[d]?)/;
+
+export function extractRecordSegments(text: string, family: 'AE' | 'INF' | 'CMP' | 'CAP' | 'DT'): RecordSegment[] {
+  const matches: Array<{ id: string; index: number }> = [];
+  for (const m of text.matchAll(familyIdRegex(family))) matches.push({ id: `${m[1]}${m[2] ?? ''}-${m[3]}`, index: m.index ?? 0 });
+  if (!matches.length) return [];
+
+  interface Scored { seg: RecordSegment; score: number; index: number }
+  const best = new Map<string, Scored>();
+  for (let i = 0; i < matches.length; i++) {
+    const start = matches[i].index;
+    const end = Math.min(i + 1 < matches.length ? matches[i + 1].index : text.length, start + 420);
+    const run = text.slice(start, end).replace(/\s+/g, ' ').trim();
+    // No \b anchors: dump cells glue the date to adjacent digits/letters
+    // ("Level 32026-04-08", "Site2026-04-14"); the "20" year prefix anchors it.
+    const dates = uniq([...run.matchAll(/20\d{2}-\d{2}-\d{2}/g)].map((m) => m[0])).slice(0, 4);
+    const severity = SEGMENT_SEVERITY.exec(run)?.[1] ?? null;
+    const status = SEGMENT_STATUS.exec(run)?.[1]?.trim() ?? null;
+    const category = SEGMENT_CATEGORY[family]?.exec(run)?.[1] ?? null;
+    const score = dates.length * 2 + (status ? 1 : 0) + (severity ? 1 : 0) + (category ? 1 : 0);
+    const seg: RecordSegment = { id: matches[i].id, text: run, date: dates[0] ?? null, dates, severity, status, category };
+    const cur = best.get(seg.id);
+    // Highest-signal occurrence wins (definition row beats a passing mention);
+    // earliest occurrence wins ties for determinism.
+    if (!cur || score > cur.score) best.set(seg.id, { seg, score, index: start });
+  }
+  return [...best.values()].sort((a, b) => a.seg.id.localeCompare(b.seg.id, undefined, { numeric: true })).map((s) => s.seg);
+}
+
+/** One monthly quality-indicator dashboard row (QM-APR-001 style). */
+export interface DashboardRow {
+  metricId: string;
+  indicator: string;
+  month: string | null;
+  /** Numeric rate only when unambiguous (glued numerator/denominator digits make many rows ambiguous — those report rawValue instead). */
+  rate: number | null;
+  rawValue: string | null;
+  threshold: string | null;
+  status: string | null;
+}
+
+const MONTH_RE = /(January|February|March|April|May|June|July|August|September|October|November|December)\s*20\d{2}/;
+
+export function extractDashboardRows(text: string): DashboardRow[] {
+  // Table cells run together in dumps ("QM-APR-001Acute Care…"), so a trailing
+  // \b never fires — guard with lookarounds instead.
+  const idRe = /(?<![A-Z0-9])QM-([A-Z]{3})-(\d{3})(?!\d)/g;
+  const matches: Array<{ id: string; index: number; len: number }> = [];
+  for (const m of text.matchAll(idRe)) matches.push({ id: m[0], index: m.index ?? 0, len: m[0].length });
+  const rows: DashboardRow[] = [];
+  for (let i = 0; i < matches.length; i++) {
+    const start = matches[i].index;
+    const end = Math.min(i + 1 < matches.length ? matches[i + 1].index : text.length, start + 300);
+    const run = text.slice(start + matches[i].len, end);
+    const monthMatch = MONTH_RE.exec(run);
+    const indicator = (monthMatch ? run.slice(0, monthMatch.index) : run.slice(0, 60)).replace(/\s+/g, ' ').trim();
+    const threshold = /([≤≥]\s*\d+(?:\.\d+)?%)/.exec(run)?.[1] ?? null;
+    const statusMatch = /(✅[^✅⚠🔴]{0,40}|⚠️?[^✅⚠🔴]{0,40}|🔴[^✅⚠🔴]{0,60})/u.exec(run);
+    const status = statusMatch ? statusMatch[1].replace(/\s+/g, ' ').trim() : null;
+    const valueMatch = /(\d+(?:\.\d+)?)%\s*[≤≥]/.exec(run) ?? /(?:–|—|-){2,}\s*(\d+(?:\.\d+)?)%/.exec(run);
+    let rate: number | null = null;
+    let rawValue: string | null = valueMatch ? `${valueMatch[1]}%` : null;
+    if (valueMatch) {
+      const v = Number(valueMatch[1]);
+      // Only trust it as a rate when it cannot be glued numerator/denominator
+      // digits: ≤100 and at most 2 integer digits.
+      if (Number.isFinite(v) && v <= 100 && /^\d{1,2}(\.\d+)?$/.test(valueMatch[1])) { rate = v; rawValue = null; }
+    }
+    if (indicator) rows.push({ metricId: matches[i].id, indicator, month: monthMatch ? monthMatch[0] : null, rate, rawValue, threshold, status });
+  }
+  return rows;
+}
+
+/** Governing-Body escalation items (GBE-001: …). */
+export function extractEscalationItems(text: string): Array<{ id: string; text: string }> {
+  const out: Array<{ id: string; text: string }> = [];
+  const seen = new Set<string>();
+  for (const m of text.matchAll(/\bGBE-(\d{2,4}):?\s*([^\n]{5,220})/g)) {
+    const id = `GBE-${m[1]}`;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push({ id, text: m[2].replace(/\s+/g, ' ').trim() });
+  }
+  return out;
+}
+
+/** Named sign-off records ("Administrator Sign-off: … — Name — YYYY-MM-DD"). */
+export function extractSignoffRecords(text: string): Array<{ role: string; name: string; date: string }> {
+  const out: Array<{ role: string; name: string; date: string }> = [];
+  for (const m of text.matchAll(/\b([A-Z][A-Za-z /&]{2,40}?)\s+Sign-off:\s*(?:[A-Z0-9-]+\s*—\s*)?([A-Za-z .'’-]+?)\s*—\s*(20\d{2}-\d{2}-\d{2})/g)) {
+    const role = m[1].trim();
+    if (/^required$/i.test(role)) continue;
+    out.push({ role, name: m[2].trim(), date: m[3] });
+  }
+  return out;
+}
+
+/** Prior-period action follow-up lines ("Q1 Action #1 …"). */
+export function extractPriorActionFollowUps(text: string): string[] {
+  return uniq([...text.matchAll(/\bQ\d Action #\d[^\n]{0,220}/g)].map((m) => m[0].replace(/\s+/g, ' ').trim()));
+}
+
+const TEXT_AGG_NOTE = 'Parsed from a narrative-text aggregate — confirm against the source before use.';
+
+const textMetric = (hit: TextHit | null, fallback: QapiDerivedMetric): QapiDerivedMetric =>
+  hit ? lowConfidence(hit.value, [hit.quote], TEXT_AGG_NOTE) : fallback;
+
+/** True when the parse produced no structured fields — only raw text records. */
+function isTextOnlyParse(parsed: ParsedFile): boolean {
+  return parsed.records.every((r) => Object.keys(r.fields).filter((k) => k !== 'text').length === 0);
+}
+
+/**
+ * Enrich a Path-2 bundle with narrative-text aggregates. Only applied to
+ * text-only parses (no structured records to trust instead), and labeled
+ * aggregates take precedence over Path 2's single-text-record keyword counts.
+ */
+function applyTextAggregates(bundle: QapiDerivedBundle, parsed: ParsedFile): QapiDerivedBundle {
+  if (!isTextOnlyParse(parsed)) return bundle;
+  const fullText = parsed.records.map((r) => r.text ?? '').join('\n');
+  if (fullText.trim().length < 200) return bundle;
+
+  const agg = extractQapiTextAggregates(fullText);
+  const notes: string[] = [bundle.overallNote];
+  if (agg.promptArtifact) {
+    notes.unshift(`⚠ This source reads like an AI generation prompt/instruction file, not operating data (found: “${agg.promptQuote ?? ''}”). Double-check that the intended dataset file is selected as the source.`);
+  }
+  if (agg.foundCount > 0) {
+    notes.push(`Recovered ${agg.foundCount} aggregate metric group(s) directly from the narrative text (labeled totals and record-ID families) — all low-confidence, each carries its verbatim source quote.`);
+  }
+
+  const pipCandidates: QapiPipTriggerCandidate[] = bundle.pipCorrectiveAction.length
+    ? bundle.pipCorrectiveAction
+    : agg.pipNames.map((p) => ({
+        trigger: `PIP — ${p.name}`,
+        issueSummary: p.quote,
+        severity: 'high',
+        ownerRoleSuggested: 'QAPI Coordinator',
+        correctiveActionRequired: true,
+        remeasurementMetric: `Remeasure "${p.name}" at next quarterly review`,
+        qapiReviewRequired: true,
+        sourceQuotes: [p.quote],
+      }));
+
+  return {
+    ...bundle,
+    overallNote: notes.join(' '),
+    meetingDetails: {
+      attendeeRoster: agg.attendeePresentCount
+        ? lowConfidence(`${agg.attendeePresentCount.value} attendees recorded present`, [agg.attendeePresentCount.quote], TEXT_AGG_NOTE)
+        : bundle.meetingDetails.attendeeRoster,
+      quorumStatus: agg.quorum
+        ? lowConfidence(`${agg.quorum.present}/${agg.quorum.total} present — quorum ${agg.quorum.met ? 'met' : 'NOT met'}`, [agg.quorum.quote], TEXT_AGG_NOTE)
+        : bundle.meetingDetails.quorumStatus,
+    },
+    censusPopulation: {
+      ...bundle.censusPopulation,
+      activeCensus: textMetric(agg.activeCensus ?? agg.episodesTotal, bundle.censusPopulation.activeCensus),
+      dischargedCount: textMetric(agg.dischargedCount, bundle.censusPopulation.dischargedCount),
+      recertificationCount: textMetric(agg.recertificationCount, bundle.censusPopulation.recertificationCount),
+    },
+    highRiskRollup: {
+      ...bundle.highRiskRollup,
+      clinicianDisciplinaryActionCount: textMetric(agg.disciplinaryCount, bundle.highRiskRollup.clinicianDisciplinaryActionCount),
+      clinicianPipOrLicenseFlagCount: textMetric(agg.pipTriggerCount, bundle.highRiskRollup.clinicianPipOrLicenseFlagCount),
+    },
+    adverseEvents: {
+      ...bundle.adverseEvents,
+      hospitalizationsTotal: textMetric(agg.hospitalizations, bundle.adverseEvents.hospitalizationsTotal),
+      infectionsTotal: textMetric(agg.infectionLineListCount ?? agg.confirmedHais, bundle.adverseEvents.infectionsTotal),
+    },
+    pipCorrectiveAction: pipCandidates,
+    chartAuditDocumentationIntegrity: {
+      ...bundle.chartAuditDocumentationIntegrity,
+      oasisLateSoc: textMetric(agg.oasisLateSoc, bundle.chartAuditDocumentationIntegrity.oasisLateSoc),
+      pocMissingF2F: textMetric(agg.lateOrMissingF2f, bundle.chartAuditDocumentationIntegrity.pocMissingF2F),
+      medReconciliationMismatch: textMetric(agg.medReconDiscrepancies, bundle.chartAuditDocumentationIntegrity.medReconciliationMismatch),
+    },
+    infectionControl: {
+      ...bundle.infectionControl,
+      healthcareAssociated: textMetric(agg.confirmedHais, bundle.infectionControl.healthcareAssociated),
+    },
+  };
+}
+
 /* ─── Dispatcher ─────────────────────────────────────────────────────── */
 
 function looksLikeClinicalDump(value: unknown): value is ClinicalDump {
@@ -374,12 +871,27 @@ export function reconstructClinicalDump(parsed: ParsedFile): ClinicalDump | null
  * that matches neither shape still returns a fully-populated "no evidence,
  * verify manually" bundle rather than failing packet generation outright.
  */
-export function deriveQapiBundle(parsed: ParsedFile, eventDateISO: string): QapiDerivedBundle {
+export function deriveQapiBundle(parsed: ParsedFile, eventDateISO: string, targetQuarter?: string): QapiDerivedBundle {
   if (parsed.records.length === 0) {
     const empty = deriveQapiBundleFromRecords(parsed);
     return { ...empty, sourceMode: 'none', overallNote: 'No parseable content in the uploaded source.' };
   }
   const dump = reconstructClinicalDump(parsed);
   if (dump) return deriveQapiBundleFromClinicalDump(dump, eventDateISO);
-  return deriveQapiBundleFromRecords(parsed);
+
+  // Multi-quarter dumps: narrow to exactly one quarter BEFORE any extraction,
+  // so aggregates/records never cross quarter boundaries. Fail closed when the
+  // target quarter can't be resolved rather than mixing data.
+  const resolved = resolveQapiSource(parsed, eventDateISO, targetQuarter);
+  if (resolved.conflict) {
+    const empty = deriveQapiBundleFromRecords({ ...parsed, records: [] });
+    return {
+      ...empty,
+      sourceMode: 'none',
+      overallNote: `SOURCE CONFLICT — packet not generated. ${resolved.reason}`,
+    };
+  }
+  // Narrative/plain-text uploads: enrich the record-level heuristics with
+  // labeled aggregates scanned from the (quarter-narrowed) text itself (Path 3).
+  return applyTextAggregates(deriveQapiBundleFromRecords(resolved.parsed), resolved.parsed);
 }
