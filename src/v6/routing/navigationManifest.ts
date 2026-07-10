@@ -18,14 +18,14 @@ export const primaryNavItems: NavItem[] = [
   { id: 'taxonomy', label: 'Policies', to: '/library', hashIds: ['taxonomy', 'framework', 'achc-survey', 'achc-crosswalk', 'hh-evidence-map', 'policy-home', 'policy-library', 'forms-library', 'workflows', 'workflow-detail', 'workflow-swimlane', 'policy-lifecycle', 'policy-lifecycle-detail', 'policy-approvals', 'pm-approvals'] },
   { id: 'onboarding', label: 'Training', to: '/journey?tab=home', hashIds: ['journey-overview', 'journey-new-hire', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'] },
   // 'Evidence' and 'Hubstaff' hidden from the sidebar per request. Routes still resolve by URL.
-  { id: 'help-center', label: 'Help', to: '/help', hashIds: ['help-center'] },
+  { id: 'help-center', label: 'Help Center', to: '/help', hashIds: ['help-center'] },
   { id: 'community', label: 'Community', to: '/community', hashIds: ['community', 'community-members'] },
   // System Documentation and Demo are hidden from the nav bar per request.
   // (Their routes still resolve by direct URL; they are just hidden from the sidebar.)
   { id: 'admin', label: 'Admin', to: '/admin/user-groups', hashIds: ['admin-groups', 'admin-roles', 'admin-permissions', 'admin-users', 'admin-community-profiles'] },
 ];
 
-export const chromeOnlyPrimaryNavItemIds = new Set(['brad', 'help-center', 'community', 'admin']);
+export const chromeOnlyPrimaryNavItemIds = new Set(['brad', 'community', 'admin']);
 export const primaryNavBarItems = primaryNavItems.filter((item) => !chromeOnlyPrimaryNavItemIds.has(item.id));
 
 // Workspace subnavs shown inside the workspace content area (top of page), not in main sidebar
