@@ -37,6 +37,7 @@ export { HelpCenterScreen } from './HelpCenterScreen';
 export { GovernanceScreen } from './GovernanceScreen';
 export { SurveyorViewerScreen } from './SurveyorViewerScreen';
 export { LoginScreen } from './LoginScreen';
+export { ForgotPasswordScreen, ResetPasswordScreen, SetupAccountScreen } from './AuthFlowScreens';
 export { MobileIncidentScreen } from './MobileIncidentScreen';
 export { NotFoundScreen } from './NotFoundScreen';
 export { Cms485AssessmentQuizPage } from './Cms485AssessmentQuizPage';

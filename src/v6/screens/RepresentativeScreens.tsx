@@ -33,7 +33,7 @@ import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
 import { BoardLane, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
-import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, AdminCommunityProfilesScreen, AdmissionPacketPreviewScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyAreaNav, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, UserGuideScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, MobileIncidentScreen, NotFoundScreen, PersonalProfileScreen, CommunityScreen, ComplianceHomeScreen } from './pageviews';
+import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, AdminCommunityProfilesScreen, AdmissionPacketPreviewScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyAreaNav, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, UserGuideScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, ForgotPasswordScreen, ResetPasswordScreen, SetupAccountScreen, MobileIncidentScreen, NotFoundScreen, PersonalProfileScreen, CommunityScreen, ComplianceHomeScreen } from './pageviews';
 import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabClass, workspaceTabInactiveClass, workspaceTabNavClass } from './pageviews/workspaceTabChrome';
 import { StaticCardWatermark } from './pageviews/StaticCardWatermark';
 
@@ -1921,6 +1921,15 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
     case 'login-page':
       child = <LoginScreen />;
       break;
+    case 'forgot-password-page':
+      child = <ForgotPasswordScreen />;
+      break;
+    case 'reset-password-page':
+      child = <ResetPasswordScreen />;
+      break;
+    case 'setup-account-page':
+      child = <SetupAccountScreen />;
+      break;
     case 'mobile-incident':
       child = <MobileIncidentScreen />;
       break;
@@ -2039,6 +2048,9 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
     'governance',
     'surveyor-viewer',
     'login-page',
+    'forgot-password-page',
+    'reset-password-page',
+    'setup-account-page',
     'mobile-incident',
     'pm-my-tasks',
     'pm-sprint-plan',

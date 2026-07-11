@@ -25,7 +25,7 @@ import { SendEmailCommand, SESClient } from '@aws-sdk/client-ses';
 import { ApiError } from '../errors.js';
 import { log } from '../logger.js';
 import type { AuthSession, DemoUser, RegistrationRecord, RegistrationStatus, TokenRecord } from './types.js';
-import { findApprovedUser, getLoadError, isAllowlistAvailable, normalizeEmail as normalizeApprovedEmail, normalizeSfOrgId } from './approvedUsers.js';
+import { findApprovedUser, findApprovedUserByEmail, getLoadError, isAllowlistAvailable, normalizeEmail as normalizeApprovedEmail, normalizeSfOrgId } from './approvedUsers.js';
 
 interface DemoAuthConfig {
   region: string;
@@ -568,15 +568,23 @@ export class DemoAuthService {
     const lastName = attrs.family_name;
     const name = attrs.name || [firstName, lastName].filter(Boolean).join(' ').trim() || undefined;
     const authSubject = attrs.sub || me.Username;
+    const email = attrs.email ?? '';
+    // COG-1: enrich the verified Cognito identity with the server-side
+    // allowlist role/department. The client can only display this — the
+    // server derives it fresh on every /me call, so no client edit
+    // (localStorage/payload/header) can elevate a role.
+    const approved = email ? findApprovedUserByEmail(email) : null;
     return {
       id: authSubject,
       authSubject,
       provider: 'cognito',
-      email: attrs.email ?? '',
+      email,
       name,
       firstName,
       lastName,
       emailVerified: attrs.email_verified === 'true',
+      role: approved?.role,
+      department: approved?.department,
     };
   }
 
