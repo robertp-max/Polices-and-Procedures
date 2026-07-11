@@ -489,6 +489,21 @@
           (<code>DRIVE_EVIDENCE_LOCK</code> in <code>server/env.ts</code>). What is still demo/local today is
           identity, Journey state, and parts of review/audit — not Drive file storage.
         </div>
+        <div class="callout warn">
+          <strong>Implementation status update (2026-07-11):</strong>
+          (1) <strong>Cognito login (Phase COG-1)</strong> is the approved <em>tactical</em> identity implementation —
+          real AuthProvider, route guards, account provisioning, and session containment are code-complete; the
+          integration review passed on <code>integration/cog1-review</code>; <em>not yet merged or deployed</em>.
+          Firebase Auth remains the long-term target only and is <em>not</em> required for the login milestone.
+          (2) <strong>Keyless Drive impersonation</strong> (Cloud Run runtime identity in
+          <code>data-hangout-500409-j4</code> impersonating the Drive service account in
+          <code>orbital-stage-443721-v1</code>) is code-prepared with proposed IAM/Cloud Run commands;
+          <em>not yet applied or deployed</em>; the production target has no permanent JSON key.
+          (3) The <strong>universal packet platform</strong> is under active implementation on
+          <code>packet-platform</code> — packet work is not production-complete.
+          Next sequence: freeze packet-platform → reconcile COG-1 once → one compatibility gate → merge →
+          deploy dev Cloud Run → verify one non-PHI user lifecycle.
+        </div>
         <div class="table-scroll">
         <table>
           <thead>
@@ -753,6 +768,16 @@
   updatedAt
   lastLoginAt</code></pre>
           </div>
+        </div>
+
+        <div class="callout warn">
+          <strong>Tactical vs target IdP:</strong> the sections above describe the <em>long-term</em> Firebase Auth
+          target. The <em>current</em> approved implementation (Phase COG-1) authenticates against the existing
+          <strong>AWS Cognito</strong> backend for the fastest working login: the Cognito <code>sub</code> is bound to
+          the existing canonical CIHHC <code>User.userId</code> (no duplicate person model), server-returned
+          allowlist role is authoritative, and the provider interface is deliberately IdP-agnostic so the later
+          Firebase migration replaces the auth adapter, not every consumer. COG-1 passed integration review and is
+          not yet merged or deployed. See <code>docs/COG1_COGNITO_LOGIN.md</code>.
         </div>
 
         <h3>Server canonical learner profile — metadata only, no Drive files</h3>
@@ -1259,6 +1284,16 @@
           Drive. If application identity (Firebase Auth) and Drive identity (Workspace) diverge for a given user, that
           is a launch blocker to resolve — not something to paper over with public links.
         </p>
+        <div class="callout ok">
+          <strong>Approved credential direction — keyless impersonation:</strong> the external JSON key file is the
+          <em>local-development fallback only</em>. The production target is keyless: the Cloud Run runtime identity
+          (app project <code>data-hangout-500409-j4</code>) impersonates only this Drive service account (integration
+          project <code>orbital-stage-443721-v1</code>) via short-lived IAM Credentials tokens
+          (<code>GOOGLE_DRIVE_AUTH_MODE=impersonation</code>, fail-closed validation in
+          <code>server/googleDriveAuth.ts</code>). Status: code prepared and tested; the scoped IAM binding and
+          Cloud Run configuration are <em>proposed only — not applied, not deployed</em>. No permanent JSON key is
+          ever deployed. See <code>docs/DRIVE_KEYLESS_IMPERSONATION.md</code>.
+        </div>
         <div class="callout danger">
           <strong>Never:</strong> public or &ldquo;anyone with the link&rdquo; evidence sharing; Google credentials in the
           browser; privileged Drive operations from the client. All privileged Drive calls are server-side.
