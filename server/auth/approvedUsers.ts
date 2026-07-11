@@ -236,6 +236,17 @@ export function findApprovedUser(email: string, sfOrgId: string): ApprovedUser |
   ) ?? null;
 }
 
+/**
+ * Email-only allowlist lookup (active rows only). Used to enrich the
+ * authenticated /me profile with the server-authoritative role/department —
+ * never for registration verification (which requires the SF Org ID pair).
+ */
+export function findApprovedUserByEmail(email: string): ApprovedUser | null {
+  const normEmail = normalizeEmail(email);
+  if (!normEmail) return null;
+  return loadApprovedUsers().find(u => u.email === normEmail && u.status === 'active') ?? null;
+}
+
 /** Count of active rows in the currently loaded allowlist. */
 export function getApprovedUserCount(): number {
   return loadApprovedUsers().filter(u => u.status === 'active').length;

@@ -1,32 +1,86 @@
 import { type FormEvent, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, CheckCircle2, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, ShieldAlert } from 'lucide-react';
 import { cx } from '../../utils/classNames';
 import { BRAD_DEFAULT_ROUTE, safeReturnTo } from '../../utils/safeRedirect';
+import { useAuth } from '@/auth/AuthProvider';
 
+/**
+ * Phase COG-1: real Cognito-backed sign-in through useAuth(). Handles the
+ * NEW_PASSWORD_REQUIRED first-login challenge with a typed internal model —
+ * raw Cognito challenge objects never reach this component. Credential errors
+ * are generic (no account enumeration).
+ */
 export function LoginScreen() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { login, completeNewPassword, challenge, error, clearError } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [localError, setLocalError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberDevice, setRememberDevice] = useState(true);
   const [loading, setLoading] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
+  const displayError = localError ?? error;
+  const inChallenge = challenge?.type === 'NEW_PASSWORD_REQUIRED';
 
-    window.setTimeout(() => {
-      setLoading(false);
-      setToastVisible(true);
-      // Honor a safe intended deep link (?returnTo=/legacy ?from=); otherwise
-      // default authenticated landing is Brad. SPA navigation preserves routing.
-      const dest = safeReturnTo(searchParams.get('returnTo') ?? searchParams.get('from'));
-      window.setTimeout(() => {
-        navigate(dest, { replace: true });
-      }, 400);
-    }, 900);
+  function redirectAfterAuth() {
+    setToastVisible(true);
+    // Honor a safe intended deep link (?returnTo= / ?from=); otherwise the
+    // default authenticated landing is Brad. SPA navigation preserves routing.
+    const dest = safeReturnTo(searchParams.get('returnTo') ?? searchParams.get('from'));
+    window.setTimeout(() => navigate(dest, { replace: true }), 400);
   }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLocalError(null);
+    clearError();
+    if (!email.trim() || !password) {
+      setLocalError('Enter your email and password.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const outcome = await login(email.trim(), password);
+      if (outcome === 'ok') redirectAfterAuth();
+      // outcome === 'challenge' → the NEW_PASSWORD_REQUIRED form renders below.
+    } catch {
+      // useAuth().error already carries the safe message.
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleChallengeSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLocalError(null);
+    clearError();
+    if (newPassword.length < 8) {
+      setLocalError('Choose a password of at least 8 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setLocalError('Passwords do not match.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await completeNewPassword(newPassword);
+      redirectAfterAuth();
+    } catch {
+      // useAuth().error carries the safe policy/service message.
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const fieldShell = 'relative flex h-control items-center rounded-2xl border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal shadow-rest transition duration-fast ease-standard focus-within:border-brand-teal';
+  const fieldInput = 'min-w-0 flex-1 bg-transparent pl-11 pr-md text-body font-light text-ink placeholder:text-disabled appearance-none border-0 outline-none focus:outline-none focus-visible:outline-none focus:ring-0';
 
   return (
     <main
@@ -60,21 +114,83 @@ export function LoginScreen() {
         </div>
 
         <div className="mb-2xl text-center">
-          <h2 className="text-xl font-medium tracking-wide text-brand-teal-deep">Welcome Back</h2>
-          <p className="mt-1.5 text-sm font-light text-secondary">Please enter your credentials to continue</p>
+          <h2 className="text-xl font-medium tracking-wide text-brand-teal-deep">
+            {inChallenge ? 'Set Your New Password' : 'Welcome Back'}
+          </h2>
+          <p className="mt-1.5 text-sm font-light text-secondary">
+            {inChallenge
+              ? 'Your account requires a new password before continuing.'
+              : 'Please enter your credentials to continue'}
+          </p>
         </div>
 
+        {displayError ? (
+          <div className="mb-lg flex items-start gap-sm rounded-2xl border border-tone-orange-border bg-tone-orange-bg px-md py-sm text-sm text-ink" role="alert">
+            <ShieldAlert aria-hidden="true" className="mt-0.5 h-icon-sm w-icon-sm shrink-0 text-brand-orange" />
+            <span>{displayError}</span>
+          </div>
+        ) : null}
+
+        {inChallenge ? (
+          <form className="space-y-5" noValidate onSubmit={handleChallengeSubmit}>
+            <p className="text-sm font-light text-secondary">
+              Signing in as <span className="font-medium text-ink">{challenge.email}</span>
+            </p>
+            <label className="grid gap-sm">
+              <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">New Password</span>
+              <span className={fieldShell}>
+                <LockKeyhole aria-hidden="true" className="absolute left-md h-icon-sm w-icon-sm" />
+                <input
+                  autoComplete="new-password"
+                  className={fieldInput}
+                  disabled={loading}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                  placeholder="••••••••••••"
+                  type="password"
+                  value={newPassword}
+                />
+              </span>
+            </label>
+            <label className="grid gap-sm">
+              <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Confirm Password</span>
+              <span className={fieldShell}>
+                <LockKeyhole aria-hidden="true" className="absolute left-md h-icon-sm w-icon-sm" />
+                <input
+                  autoComplete="new-password"
+                  className={fieldInput}
+                  disabled={loading}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  placeholder="••••••••••••"
+                  type="password"
+                  value={confirmPassword}
+                />
+              </span>
+            </label>
+            <div className="pt-2">
+              <button
+                className="inline-flex h-[52px] w-full items-center justify-center gap-sm rounded-2xl border border-transparent bg-brand-teal px-lg text-xs font-medium uppercase tracking-tag text-on-brand shadow-none transition duration-fast ease-standard hover:bg-brand-teal-deep focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-70"
+                disabled={loading}
+                type="submit"
+              >
+                <span>{loading ? 'Updating password' : 'Set password and sign in'}</span>
+                {loading ? <LoaderCircle aria-hidden="true" className="h-icon-sm w-icon-sm animate-spin" /> : null}
+              </button>
+            </div>
+          </form>
+        ) : (
         <form className="space-y-5" noValidate onSubmit={handleSubmit}>
           <label className="grid gap-sm">
             <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Email Address</span>
-            <span className="relative flex h-control items-center rounded-2xl border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal shadow-rest transition duration-fast ease-standard focus-within:border-brand-teal">
+            <span className={fieldShell}>
               <Mail aria-hidden="true" className="absolute left-md h-icon-sm w-icon-sm" />
               <input
                 autoComplete="email"
-                className="min-w-0 flex-1 bg-transparent pl-11 pr-md text-body font-light text-ink placeholder:text-disabled appearance-none border-0 outline-none focus:outline-none focus-visible:outline-none focus:ring-0"
+                className={fieldInput}
                 disabled={loading}
+                onChange={(event) => setEmail(event.target.value)}
                 placeholder="name@careindeed.com"
                 type="email"
+                value={email}
               />
             </span>
           </label>
@@ -82,18 +198,20 @@ export function LoginScreen() {
           <label className="grid gap-sm">
             <span className="flex items-center justify-between gap-md">
               <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Password</span>
-              <a className="text-xs font-medium text-muted transition duration-fast ease-standard hover:text-ink" href="#forgot-password">
+              <Link className="text-xs font-medium text-muted transition duration-fast ease-standard hover:text-ink" to="/forgot-password">
                 Forgot password?
-              </a>
+              </Link>
             </span>
-            <span className="relative flex h-control items-center rounded-2xl border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset text-brand-teal shadow-rest transition duration-fast ease-standard focus-within:border-brand-teal">
+            <span className={fieldShell}>
               <LockKeyhole aria-hidden="true" className="absolute left-md h-icon-sm w-icon-sm" />
               <input
                 autoComplete="current-password"
-                className="min-w-0 flex-1 bg-transparent pl-11 pr-11 text-body font-light text-ink placeholder:text-disabled appearance-none border-0 outline-none focus:outline-none focus-visible:outline-none focus:ring-0"
+                className={cx(fieldInput, 'pr-11')}
                 disabled={loading}
+                onChange={(event) => setPassword(event.target.value)}
                 placeholder="••••••••••••"
                 type={showPassword ? 'text' : 'password'}
+                value={password}
               />
               <button
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
@@ -131,6 +249,7 @@ export function LoginScreen() {
             </button>
           </div>
         </form>
+        )}
 
         <p className="mt-8 text-center text-xs font-light text-disabled">
           Protected by CareIndeed Enterprise Security.
