@@ -120,11 +120,220 @@ const PRD_APPENDIX_D_DATA_VALIDATION = [
   'Excluded',
 ] as const;
 
+/** §10 Universal Packet Backbone — exact ordered module IDs (19). */
+const PRD_BACKBONE_MODULE_IDS = [
+  'branded-cover',
+  'packet-identity-and-status',
+  'validation-and-lock-readiness',
+  'executive-summary-or-analysis',
+  'trigger-and-originating-workflow',
+  'scope-and-reporting-period',
+  'source-and-required-form-completion-matrix',
+  'analytical-findings',
+  'risks-gaps-and-exceptions',
+  'triggered-workflows-and-resulting-actions',
+  'decisions-and-approvals',
+  'action-items-owners-and-deadlines',
+  'evidence-index',
+  'missing-evidence-disclosure',
+  'signature-and-attestation',
+  'audit-chronology',
+  'final-certification-and-lock-record',
+  'attachment-manifest',
+  'supporting-forms-and-evidence',
+] as const;
+
+/** §13.1 QAPI Part I — exact ordered module IDs (11). */
+const PRD_QAPI_PART_I_MODULE_IDS = [
+  'qapi-cover-page',
+  'qapi-packet-control-source-validation-readiness',
+  'qapi-executive-analysis',
+  'qapi-rich-kpi-dashboard',
+  'qapi-source-feeder-workflow-form-utilization',
+  'qapi-detailed-findings-and-trend-analysis',
+  'qapi-pip-cap-rca-personnel-review-determinations',
+  'qapi-triggered-workflow-and-dependency-register',
+  'qapi-committee-and-governing-body-decisions',
+  'qapi-action-item-workflow-accountability-register',
+  'qapi-approvals-ecign-lock-readiness',
+] as const;
+
+/** §13.1 QAPI Part II — exact ordered module IDs (7). */
+const PRD_QAPI_PART_II_MODULE_IDS = [
+  'qapi-attachment-manifest',
+  'qapi-completed-source-forms',
+  'qapi-generated-pip-cap-rca-forms',
+  'qapi-triggered-workflow-execution-packages',
+  'qapi-confidential-personnel-review-addendum-reference',
+  'qapi-source-derivation-reconciliation-provenance',
+  'qapi-superseded-or-excluded-source-register',
+] as const;
+
+/** FR-019 classification options — exact PRD strings (15). */
+const PRD_FR019_CLASSIFICATIONS = [
+  'Source evidence',
+  'Corrected source data',
+  'Supplemental evidence',
+  'Meeting discussion',
+  'Management explanation',
+  'Reviewer note',
+  'Packet narrative',
+  'KPI input',
+  'Finding response',
+  'Corrective-action update',
+  'Workflow update',
+  'Signature/approval information',
+  'Attachment',
+  'Confidential personnel information',
+  'Legal/privileged information',
+] as const;
+
+/** FR-019 destination options — exact PRD strings (12). */
+const PRD_FR019_DESTINATIONS = [
+  'Executive analysis',
+  'Specific finding',
+  'KPI',
+  'Triggered workflow',
+  'Action item',
+  'Specific form',
+  'New attachment',
+  'Evidence index',
+  'Confidential addendum',
+  'Replace/correct value',
+  'Reviewer note only',
+  'Exclude from final packet',
+] as const;
+
+/** FR-022 edit impact dimension keys — exact ordered list from PRD (17). */
+const PRD_FR022_IMPACT_DIMENSION_KEYS = [
+  'kpiCalculations',
+  'trends',
+  'findings',
+  'riskRatings',
+  'pipCapRcaDecisions',
+  'workflowTriggersAndInstances',
+  'requiredForms',
+  'actions',
+  'governingBodyRecommendations',
+  'approvals',
+  'signers',
+  'attachments',
+  'confidentiality',
+  'hashes',
+  'pagination',
+  'ecignEnvelopeValidity',
+  'lockEligibility',
+] as const;
+
+/**
+ * Exact §17.1 packet lifecycle ALLOWED_TRANSITIONS successor sets.
+ * Any future shortcut re-introduction fails this snapshot.
+ */
+const EXPECTED_PACKET_LIFECYCLE_TRANSITIONS: Record<
+  PacketLifecycleStatus,
+  readonly PacketLifecycleStatus[]
+> = {
+  SOURCE_COLLECTION: ['DRAFT_GENERATED', 'BLOCKED', 'CANCELLED'],
+  DRAFT_GENERATED: ['UNDER_ANALYSIS', 'BLOCKED', 'CANCELLED'],
+  UNDER_ANALYSIS: ['READY_FOR_REVIEW', 'BLOCKED', 'CANCELLED'],
+  READY_FOR_REVIEW: ['UNDER_REVIEW', 'BLOCKED', 'CANCELLED'],
+  UNDER_REVIEW: ['EDITING', 'BLOCKED', 'CANCELLED'],
+  EDITING: ['VALIDATION_REQUIRED', 'BLOCKED', 'CANCELLED'],
+  VALIDATION_REQUIRED: ['READY_FOR_APPROVAL', 'EDITING', 'BLOCKED', 'CANCELLED'],
+  READY_FOR_APPROVAL: [
+    'APPROVED_FOR_SIGNATURE',
+    'RETURNED_FOR_CORRECTION',
+    'BLOCKED',
+    'CANCELLED',
+  ],
+  APPROVED_FOR_SIGNATURE: [
+    'SIGNER_CONFIRMATION',
+    'RETURNED_FOR_CORRECTION',
+    'BLOCKED',
+    'CANCELLED',
+  ],
+  SIGNER_CONFIRMATION: [
+    'ECIGN_PREPARING',
+    'RETURNED_FOR_CORRECTION',
+    'BLOCKED',
+    'CANCELLED',
+  ],
+  ECIGN_PREPARING: [
+    'SENT_FOR_SIGNATURE',
+    'RETURNED_FOR_CORRECTION',
+    'BLOCKED',
+    'CANCELLED',
+  ],
+  SENT_FOR_SIGNATURE: [
+    'PARTIALLY_SIGNED',
+    'SIGNATURE_DECLINED',
+    'SIGNATURE_EXPIRED',
+    'RETURNED_FOR_CORRECTION',
+    'BLOCKED',
+    'CANCELLED',
+  ],
+  PARTIALLY_SIGNED: [
+    'FULLY_SIGNED',
+    'SIGNATURE_DECLINED',
+    'SIGNATURE_EXPIRED',
+    'RETURNED_FOR_CORRECTION',
+    'BLOCKED',
+    'CANCELLED',
+  ],
+  FULLY_SIGNED: ['SIGNED_PACKAGE_BUILDING', 'BLOCKED', 'AMENDMENT_REQUIRED'],
+  SIGNED_PACKAGE_BUILDING: ['CERTIFICATION_REVIEW', 'BLOCKED'],
+  CERTIFICATION_REVIEW: [
+    'CERTIFIED',
+    'RETURNED_FOR_CORRECTION',
+    'AMENDMENT_REQUIRED',
+    'BLOCKED',
+  ],
+  CERTIFIED: ['DRIVE_PUBLISHING', 'BLOCKED', 'AMENDMENT_REQUIRED'],
+  DRIVE_PUBLISHING: ['PUBLISHED', 'BLOCKED'],
+  PUBLISHED: ['LOCKED', 'AMENDMENT_REQUIRED', 'SUPERSEDED'],
+  LOCKED: [],
+  BLOCKED: [
+    'SOURCE_COLLECTION',
+    'DRAFT_GENERATED',
+    'UNDER_ANALYSIS',
+    'READY_FOR_REVIEW',
+    'UNDER_REVIEW',
+    'EDITING',
+    'VALIDATION_REQUIRED',
+    'READY_FOR_APPROVAL',
+    'APPROVED_FOR_SIGNATURE',
+    'SIGNER_CONFIRMATION',
+    'ECIGN_PREPARING',
+    'SENT_FOR_SIGNATURE',
+    'PARTIALLY_SIGNED',
+    'FULLY_SIGNED',
+    'SIGNED_PACKAGE_BUILDING',
+    'CERTIFICATION_REVIEW',
+    'CERTIFIED',
+    'DRIVE_PUBLISHING',
+    'PUBLISHED',
+    'CANCELLED',
+  ],
+  RETURNED_FOR_CORRECTION: ['EDITING', 'CANCELLED'],
+  SIGNATURE_DECLINED: [
+    'RETURNED_FOR_CORRECTION',
+    'SIGNER_CONFIRMATION',
+    'CANCELLED',
+  ],
+  SIGNATURE_EXPIRED: [
+    'RETURNED_FOR_CORRECTION',
+    'SIGNER_CONFIRMATION',
+    'ECIGN_PREPARING',
+    'CANCELLED',
+  ],
+  CANCELLED: [],
+  SUPERSEDED: [],
+  AMENDMENT_REQUIRED: ['EDITING', 'SUPERSEDED', 'CANCELLED'],
+};
+
 describe('vocabulary — §14.6 comparability states', () => {
   it('matches PRD text exactly (including em-dashes)', () => {
     expect([...COMPARABILITY_STATES]).toEqual([...PRD_COMPARABILITY]);
-    expect(COMPARABILITY_STATES).toContain('NOT COMPARABLE — DEFINITION CHANGED');
-    expect(COMPARABILITY_STATES).toContain('COMPARABLE WITH LIMITATION');
     // Ensure em-dash (U+2014), not hyphen-minus
     for (const s of COMPARABILITY_STATES) {
       if (s.includes('COMPARABLE') && s !== 'COMPARABLE' && s !== 'COMPARABLE WITH LIMITATION') {
@@ -137,9 +346,6 @@ describe('vocabulary — §14.6 comparability states', () => {
 describe('vocabulary — FR-012 workflow decision states', () => {
   it('matches PRD text exactly (12 states, em-dashes preserved)', () => {
     expect([...WORKFLOW_DECISION_STATES]).toEqual([...PRD_FR012]);
-    expect(WORKFLOW_DECISION_STATES).toHaveLength(12);
-    expect(WORKFLOW_DECISION_STATES).toContain('CANDIDATE — NEEDS VALIDATION');
-    expect(WORKFLOW_DECISION_STATES).toContain('CONFIRMED — NOT YET ACTIVATED');
   });
 });
 
@@ -156,28 +362,32 @@ describe('vocabulary — Appendix D', () => {
     expect([...APPENDIX_D_DATA_VALIDATION_STATUS_VOCABULARY]).toEqual([
       ...PRD_APPENDIX_D_DATA_VALIDATION,
     ]);
-    expect(APPENDIX_D_DATA_VALIDATION_STATUS_VOCABULARY).toContain(
-      'Unknown — not recovered',
-    );
   });
 });
 
 describe('module id coverage', () => {
-  it('exports 19 backbone + 11 QAPI Part I + 7 QAPI Part II modules', () => {
-    expect(UNIVERSAL_BACKBONE_MODULE_IDS).toHaveLength(19);
-    expect(QAPI_PART_I_MODULE_IDS).toHaveLength(11);
-    expect(QAPI_PART_II_MODULE_IDS).toHaveLength(7);
+  it('exports exact §10 backbone module IDs (19)', () => {
+    expect([...UNIVERSAL_BACKBONE_MODULE_IDS]).toEqual([...PRD_BACKBONE_MODULE_IDS]);
+  });
+
+  it('exports exact §13.1 QAPI Part I module IDs (11)', () => {
+    expect([...QAPI_PART_I_MODULE_IDS]).toEqual([...PRD_QAPI_PART_I_MODULE_IDS]);
+  });
+
+  it('exports exact §13.1 QAPI Part II module IDs (7)', () => {
+    expect([...QAPI_PART_II_MODULE_IDS]).toEqual([...PRD_QAPI_PART_II_MODULE_IDS]);
   });
 });
 
 describe('FR-019 supplemental vocabularies', () => {
-  it('has 15 classification options and 12 destination options', () => {
-    expect(SUPPLEMENTAL_CLASSIFICATION_OPTIONS).toHaveLength(15);
-    expect(SUPPLEMENTAL_DESTINATION_OPTIONS).toHaveLength(12);
-    expect(SUPPLEMENTAL_CLASSIFICATION_OPTIONS).toContain(
-      'Confidential personnel information',
-    );
-    expect(SUPPLEMENTAL_DESTINATION_OPTIONS).toContain('Exclude from final packet');
+  it('matches exact PRD classification options (15)', () => {
+    expect([...SUPPLEMENTAL_CLASSIFICATION_OPTIONS]).toEqual([
+      ...PRD_FR019_CLASSIFICATIONS,
+    ]);
+  });
+
+  it('matches exact PRD destination options (12)', () => {
+    expect([...SUPPLEMENTAL_DESTINATION_OPTIONS]).toEqual([...PRD_FR019_DESTINATIONS]);
   });
 });
 
@@ -195,11 +405,8 @@ describe('FR-033 audit event vocabulary', () => {
 });
 
 describe('FR-022 edit impact dimensions', () => {
-  it('enumerates every impact dimension key', () => {
-    expect(EDIT_IMPACT_DIMENSION_KEYS).toContain('kpiCalculations');
-    expect(EDIT_IMPACT_DIMENSION_KEYS).toContain('ecignEnvelopeValidity');
-    expect(EDIT_IMPACT_DIMENSION_KEYS).toContain('lockEligibility');
-    expect(EDIT_IMPACT_DIMENSION_KEYS.length).toBeGreaterThanOrEqual(16);
+  it('enumerates the exact PRD impact dimension key list', () => {
+    expect([...EDIT_IMPACT_DIMENSION_KEYS]).toEqual([...PRD_FR022_IMPACT_DIMENSION_KEYS]);
   });
 });
 
@@ -220,24 +427,78 @@ describe('packet lifecycle state machine (§17.1)', () => {
     }
   });
 
-  it('allows the main happy-path adjacencies', () => {
+  it('allows the main happy-path adjacencies only (no intermediate skips)', () => {
     expect(isAllowedPacketTransition('SOURCE_COLLECTION', 'DRAFT_GENERATED')).toBe(true);
+    expect(isAllowedPacketTransition('DRAFT_GENERATED', 'UNDER_ANALYSIS')).toBe(true);
+    expect(isAllowedPacketTransition('UNDER_ANALYSIS', 'READY_FOR_REVIEW')).toBe(true);
+    expect(isAllowedPacketTransition('READY_FOR_REVIEW', 'UNDER_REVIEW')).toBe(true);
+    expect(isAllowedPacketTransition('UNDER_REVIEW', 'EDITING')).toBe(true);
+    expect(isAllowedPacketTransition('EDITING', 'VALIDATION_REQUIRED')).toBe(true);
+    expect(isAllowedPacketTransition('VALIDATION_REQUIRED', 'READY_FOR_APPROVAL')).toBe(
+      true,
+    );
     expect(isAllowedPacketTransition('PUBLISHED', 'LOCKED')).toBe(true);
     expect(isAllowedPacketTransition('SENT_FOR_SIGNATURE', 'PARTIALLY_SIGNED')).toBe(
       true,
     );
+    expect(isAllowedPacketTransition('PARTIALLY_SIGNED', 'FULLY_SIGNED')).toBe(true);
   });
 
-  it('rejects 3+ illegal jumps from non-terminals', () => {
+  it('rejects shortcuts that skip mandated intermediate states', () => {
     const illegal: Array<[PacketLifecycleStatus, PacketLifecycleStatus]> = [
       ['SOURCE_COLLECTION', 'LOCKED'],
+      ['DRAFT_GENERATED', 'EDITING'],
       ['DRAFT_GENERATED', 'FULLY_SIGNED'],
+      ['UNDER_ANALYSIS', 'EDITING'],
+      ['UNDER_ANALYSIS', 'VALIDATION_REQUIRED'],
+      ['READY_FOR_REVIEW', 'EDITING'],
+      ['UNDER_REVIEW', 'VALIDATION_REQUIRED'],
+      ['UNDER_REVIEW', 'READY_FOR_APPROVAL'],
       ['UNDER_REVIEW', 'PUBLISHED'],
+      ['EDITING', 'READY_FOR_APPROVAL'],
+      ['EDITING', 'UNDER_REVIEW'],
+      ['VALIDATION_REQUIRED', 'READY_FOR_REVIEW'],
+      ['READY_FOR_APPROVAL', 'EDITING'],
+      ['SENT_FOR_SIGNATURE', 'FULLY_SIGNED'],
+      ['CERTIFIED', 'PUBLISHED'],
       ['ECIGN_PREPARING', 'LOCKED'],
     ];
     for (const [from, to] of illegal) {
       expect(isAllowedPacketTransition(from, to)).toBe(false);
       expect(() => assertPacketTransition(from, to)).toThrow(/Illegal packet/);
+    }
+  });
+
+  it('allows justified non-linear edges (cycles, return, signature alts, blocked)', () => {
+    // EDITING ↔ VALIDATION_REQUIRED
+    expect(isAllowedPacketTransition('EDITING', 'VALIDATION_REQUIRED')).toBe(true);
+    expect(isAllowedPacketTransition('VALIDATION_REQUIRED', 'EDITING')).toBe(true);
+    // RETURNED_FOR_CORRECTION re-entry
+    expect(isAllowedPacketTransition('READY_FOR_APPROVAL', 'RETURNED_FOR_CORRECTION')).toBe(
+      true,
+    );
+    expect(isAllowedPacketTransition('RETURNED_FOR_CORRECTION', 'EDITING')).toBe(true);
+    // Signature decline/expiry
+    expect(isAllowedPacketTransition('SENT_FOR_SIGNATURE', 'SIGNATURE_DECLINED')).toBe(
+      true,
+    );
+    expect(isAllowedPacketTransition('SIGNATURE_EXPIRED', 'ECIGN_PREPARING')).toBe(true);
+    // BLOCKED entry/exit
+    expect(isAllowedPacketTransition('UNDER_REVIEW', 'BLOCKED')).toBe(true);
+    expect(isAllowedPacketTransition('BLOCKED', 'UNDER_REVIEW')).toBe(true);
+  });
+
+  it('matches the exact ALLOWED_TRANSITIONS successor set for every state', () => {
+    const states = Object.keys(
+      EXPECTED_PACKET_LIFECYCLE_TRANSITIONS,
+    ) as PacketLifecycleStatus[];
+    expect(Object.keys(PACKET_LIFECYCLE_TRANSITIONS).sort()).toEqual(
+      [...states].sort(),
+    );
+    for (const state of states) {
+      expect([...PACKET_LIFECYCLE_TRANSITIONS[state]]).toEqual([
+        ...EXPECTED_PACKET_LIFECYCLE_TRANSITIONS[state],
+      ]);
     }
   });
 });
@@ -350,5 +611,16 @@ describe('ALLOWED_TRANSITIONS aggregate', () => {
     );
     expect(isAllowedTransition('packet', 'LOCKED', 'EDITING')).toBe(false);
     expect(isAllowedTransition('trigger', 'CLOSED', 'CANDIDATE')).toBe(false);
+  });
+
+  it('packet machine successor sets match the exact snapshot', () => {
+    expect(ALLOWED_TRANSITIONS.packet).toBe(PACKET_LIFECYCLE_TRANSITIONS);
+    for (const state of Object.keys(
+      EXPECTED_PACKET_LIFECYCLE_TRANSITIONS,
+    ) as PacketLifecycleStatus[]) {
+      expect([...ALLOWED_TRANSITIONS.packet[state]]).toEqual([
+        ...EXPECTED_PACKET_LIFECYCLE_TRANSITIONS[state],
+      ]);
+    }
   });
 });

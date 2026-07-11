@@ -6,15 +6,14 @@
 import type { PacketModuleId } from './archetype';
 import type { PacketLifecycleStatus } from './packetInstance';
 
-/** Classification applied to the packet chrome / handling notice. */
+/** Classification applied to the packet chrome / handling notice. Closed vocabulary. */
 export type PacketClassification =
   | 'public'
   | 'internal'
   | 'confidential'
   | 'restricted-personnel'
   | 'legal-privileged'
-  | 'synthetic-uat'
-  | string;
+  | 'synthetic-uat';
 
 /** Identity slice of the renderable packet model. */
 export interface PacketModelIdentity {
