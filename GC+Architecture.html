@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Care Indeed V2 — Drive-First Evidence Architecture (Firebase / Google Cloud Target)</title>
+  <style>
+    :root {
+      --teal: #007970;
+      --teal-2: #00645d;
+      --teal-soft: #e7f4f2;
+      --orange: #c74600;
+      --orange-2: #a83b00;
+      --orange-soft: #fff0e7;
+      --ink: #17202a;
+      --muted: #64748b;
+      --line: #dbe4ea;
+      --surface: #ffffff;
+      --bg: #f6f8f9;
+      --code: #0f172a;
+      --ok: #0f766e;
+      --warn: #a16207;
+      --danger: #b91c1c;
+      --blue: #1d4ed8;
+      --shadow: 0 18px 55px rgba(15, 23, 42, 0.10);
+      --soft-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+      --radius: 22px;
+      --radius-sm: 14px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(0, 121, 112, 0.10), transparent 36rem),
+        radial-gradient(circle at top right, rgba(199, 70, 0, 0.10), transparent 34rem),
+        var(--bg);
+      line-height: 1.55;
+    }
+    a { color: var(--teal); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .page {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 26px 20px;
+      border-right: 1px solid var(--line);
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(14px);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .brand-mark {
+      width: 42px; height: 42px; border-radius: 14px;
+      background: linear-gradient(135deg, var(--teal), #00a795);
+      display: grid; place-items: center;
+      color: white; font-weight: 800; letter-spacing: -0.04em;
+      box-shadow: var(--soft-shadow);
+    }
+    .brand h1 { font-size: 15px; line-height: 1.1; margin: 0; }
+    .brand p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .toc-title {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--orange);
+      font-weight: 800;
+      text-transform: uppercase;
+      margin: 18px 0 10px;
+    }
+    .toc a {
+      display: block;
+      padding: 8px 10px;
+      border-radius: 10px;
+      color: #334155;
+      font-size: 13px;
+      text-decoration: none;
+    }
+    .toc a:hover { background: var(--teal-soft); color: var(--teal-2); }
+    main {
+      padding: 34px;
+      max-width: 1320px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .hero {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 34px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+      min-height: 280px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
+      align-items: center;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -120px;
+      top: -120px;
+      width: 360px;
+      height: 360px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,121,112,0.16), transparent 70%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: var(--orange);
+      background: var(--orange-soft);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .hero h2 {
+      font-size: clamp(36px, 5vw, 64px);
+      line-height: 0.95;
+      margin: 18px 0 16px;
+      color: var(--teal);
+      letter-spacing: -0.06em;
+    }
+    .hero p {
+      max-width: 780px;
+      font-size: 17px;
+      color: #334155;
+      margin: 0 0 22px;
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid transparent;
+      padding: 12px 16px;
+      border-radius: 13px;
+      font-weight: 800;
+      font-size: 14px;
+      text-decoration: none;
+    }
+    .btn-primary { background: var(--orange); color: white; }
+    .btn-primary:hover { background: var(--orange-2); text-decoration: none; }
+    .btn-secondary { background: var(--teal-soft); color: var(--teal-2); border-color: rgba(0,121,112,0.18); }
+    .btn-secondary:hover { background: #d7eeea; text-decoration: none; }
+    .hero-card {
+      position: relative;
+      z-index: 1;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff, #f8fbfb);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: var(--soft-shadow);
+    }
+    .hero-card h3 { margin: 0 0 8px; color: var(--teal-2); }
+    .badges { display:flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+    .badge {
+      display: inline-flex; align-items:center; gap: 6px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 750;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #475569;
+      white-space: nowrap;
+    }
+    .badge.teal { background: var(--teal-soft); color: var(--teal-2); border-color: rgba(0,121,112,0.25); }
+    .badge.orange { background: var(--orange-soft); color: var(--orange-2); border-color: rgba(199,70,0,0.22); }
+    .badge.warn { background: #fef9c3; color: #854d0e; border-color: #fde68a; }
+    .badge.blue { background: #eaf2ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .grid {
+      display: grid;
+      gap: 18px;
+    }
+    .grid.cols-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .grid.cols-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .grid.cols-4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    section {
+      margin-top: 28px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--soft-shadow);
+    }
+    section h2 {
+      margin: 0 0 8px;
+      color: var(--teal);
+      font-size: 28px;
+      letter-spacing: -0.03em;
+    }
+    section h3 {
+      margin: 24px 0 8px;
+      color: #0f3f3b;
+      font-size: 19px;
+    }
+    .lead { color: #334155; font-size: 16px; max-width: 960px; }
+    .card {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 6px 20px rgba(15,23,42,0.04);
+    }
+    .card h3 { margin-top: 0; }
+    .card p:last-child { margin-bottom: 0; }
+    .metric {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .metric .icon {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 13px;
+      background: var(--teal-soft);
+      color: var(--teal);
+      font-weight: 900;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      margin: 14px 0;
+      font-size: 14px;
+    }
+    .table-scroll { overflow-x: auto; }
+    th, td {
+      text-align: left;
+      padding: 12px 13px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    th {
+      background: #f1f7f6;
+      color: #0f3f3b;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    tr:last-child td { border-bottom: none; }
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+    code {
+      background: #f1f5f9;
+      padding: 2px 5px;
+      border-radius: 6px;
+      color: #0f172a;
+      font-size: 0.93em;
+    }
+    pre {
+      background: #0f172a;
+      color: #dbeafe;
+      padding: 18px;
+      border-radius: 16px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .callout {
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--teal);
+      background: #f8fbfb;
+      padding: 14px 16px;
+      border-radius: 14px;
+      margin: 16px 0;
+    }
+    .callout.warn { border-left-color: var(--warn); background: #fffbea; }
+    .callout.danger { border-left-color: var(--danger); background: #fff1f2; }
+    .callout.ok { border-left-color: var(--ok); background: #ecfdf5; }
+    .svg-wrap {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      background: #ffffff;
+      margin: 18px 0;
+      box-shadow: var(--soft-shadow);
+    }
+    svg { max-width: 100%; height: auto; display: block; }
+    .small { color: var(--muted); font-size: 13px; }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0;
+    }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: #fff;
+      font-size: 12px;
+      color: #475569;
+    }
+    .dot { width: 9px; height: 9px; border-radius: 999px; display: inline-block; }
+    .dot.teal { background: var(--teal); }
+    .dot.orange { background: var(--orange); }
+    .dot.blue { background: var(--blue); }
+    .dot.warn { background: var(--warn); }
+    .dot.gray { background: #94a3b8; }
+    .print-note {
+      margin: 24px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @media (max-width: 1060px) {
+      .page { grid-template-columns: 1fr; }
+      aside { position: relative; height: auto; }
+      .hero, .two-col, .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
+      main { padding: 18px; }
+      .hero { padding: 24px; }
+    }
+    @media print {
+      aside { display:none; }
+      .page { display:block; }
+      body { background:white; }
+      main { max-width:none; padding:0; }
+      section, .hero { box-shadow:none; break-inside: avoid; }
+      .btn { border: 1px solid #ccc; color:#111 !important; background:white !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside>
+      <div class="brand">
+        <div class="brand-mark">CI</div>
+        <div>
+          <h1>Drive-First Evidence<br/>Architecture</h1>
+          <p>Care Indeed V2 · Phase 2F Target</p>
+        </div>
+      </div>
+      <div class="toc-title">Architecture sections</div>
+      <nav class="toc">
+        <a href="#summary">1. Executive summary</a>
+        <a href="#current-state">2. Current state (code-verified)</a>
+        <a href="#target-architecture">3. Target architecture</a>
+        <a href="#service-map">4. AWS → GCP map</a>
+        <a href="#identity">5. Identity &amp; user setup</a>
+        <a href="#firestore">6. Firestore model</a>
+        <a href="#functions">7. Cloud Functions API</a>
+        <a href="#evidence-workflow">8. Evidence workflow</a>
+        <a href="#drive">9. Google Drive — canonical</a>
+        <a href="#temp-gcs">10. Temporary Cloud Storage</a>
+        <a href="#integrity">11. Drive sync &amp; integrity</a>
+        <a href="#ecign">12. eCign signed artifacts</a>
+        <a href="#packets">13. Survey packets &amp; exports</a>
+        <a href="#audit">14. Audit model</a>
+        <a href="#journey-nolan">15. Journey + Nolan + Brad</a>
+        <a href="#security">16. Security controls</a>
+        <a href="#rules">17. Rules strategy</a>
+        <a href="#environments">18. Environments</a>
+        <a href="#deployment">19. Deployment</a>
+        <a href="#migration">20. Migration plan</a>
+        <a href="#acceptance">21. Acceptance gates</a>
+        <a href="#backlog">22. Backlog</a>
+        <a href="#final-statement">23. Final statement</a>
+      </nav>
+      <div class="toc-title">Status</div>
+      <div class="badges">
+        <span class="badge warn">Phase 2F Target</span>
+        <span class="badge teal">Serverless</span>
+        <span class="badge orange">Drive = Canonical Evidence</span>
+        <span class="badge blue">No Permanent GCS Evidence</span>
+      </div>
+    </aside>
+
+    <main>
+      <header class="hero">
+        <div>
+          <span class="eyebrow">Care Indeed V2 · Drive-First Evidence Architecture</span>
+          <h2>Google Drive Canonical Evidence, Firestore Metadata, Serverless Commands</h2>
+          <p>
+            The production-target architecture for the Care Indeed Home Health Compliance application:
+            Firebase Auth for identity, Firestore for operational metadata and state, Cloud Functions v2 as
+            the server-side command authority, Google Drive as the canonical repository for evidence artifacts,
+            and Google Cloud Storage strictly as temporary processing infrastructure.
+          </p>
+          <div class="actions">
+            <a class="btn btn-primary" href="#target-architecture">View Architecture</a>
+            <a class="btn btn-secondary" href="#migration">Phase 2F Migration</a>
+            <a class="btn btn-secondary" href="#acceptance">Acceptance Gates</a>
+          </div>
+        </div>
+        <div class="hero-card">
+          <h3>North Star</h3>
+          <p>
+            &ldquo;Google Drive stores canonical evidence artifacts. Firestore stores evidence metadata and all normal
+            operational state. Non-evidence records remain metadata only. Google Cloud Storage, when used, is
+            temporary processing infrastructure and not a second evidence system of record.&rdquo;
+          </p>
+          <div class="badges">
+            <span class="badge teal">Firebase Auth</span>
+            <span class="badge teal">Firestore</span>
+            <span class="badge teal">Cloud Functions v2</span>
+            <span class="badge orange">Google Drive Canonical</span>
+            <span class="badge warn">GCS Temporary Only</span>
+          </div>
+        </div>
+      </header>
+
+      <section id="summary">
+        <h2>1. Executive summary</h2>
+        <p class="lead">
+          This document is the corrected architecture baseline for the Care Indeed Home Health V2 application
+          (policy library, forms library, workflow library, mandated events, CES, Evidence Center, eCign,
+          Journey/onboarding, Nolan, Brad, and administrative surfaces). It replaces the earlier draft that
+          proposed a permanent, retention-locked Google Cloud Storage evidence bucket. That storage decision is
+          <strong>no longer approved</strong>. The approved decision is Drive-first: the actual evidence files
+          and deliberately generated final artifacts live in Google Drive; everything else is metadata.
+        </p>
+        <div class="grid cols-4">
+          <div class="card metric">
+            <div class="icon">1</div>
+            <div><h3>Identity</h3><p>Firebase Auth owns login. Firestore owns the Care Indeed profile, role, learner, supervisor, and assignment context.</p></div>
+          </div>
+          <div class="card metric">
+            <div class="icon">2</div>
+            <div><h3>Commands</h3><p>Cloud Functions v2 are the server-side chokepoint for provisioning, evidence finalization, signatures, clearances, exports, repair, and audit.</p></div>
+          </div>
+          <div class="card metric">
+            <div class="icon">3</div>
+            <div><h3>State</h3><p>Firestore stores users, assignments, attempts, deadlines, workflow tasks, approvals, and evidence <em>metadata</em>. Never file bytes.</p></div>
+          </div>
+          <div class="card metric">
+            <div class="icon">4</div>
+            <div><h3>Artifacts</h3><p>Google Drive stores canonical evidence files, signed eCign packages, certificates, and final survey/audit packets. GCS is a temporary workbench only.</p></div>
+          </div>
+        </div>
+        <div class="callout ok">
+          <strong>What the code already proves:</strong> the repository already has a working, server-side Google Drive
+          evidence integration (<code>server/googleDrive.ts</code>, <code>server/googleEvidence.ts</code>) with a locked
+          service-account identity, Shared Drive support, non-PHI folder conventions, packet publishing, and a CSV
+          manifest. The Drive-first decision <em>hardens what exists</em> — it does not introduce a new evidence system.
+        </div>
+        <div class="callout warn">
+          <strong>Production honesty rule:</strong> identity, Journey state, and several review flows remain demo/local
+          today. Until Phase 2F is implemented and verified, the application must not be presented as production security
+          or an ACHC system of record.
+        </div>
+        <div class="callout danger">
+          <strong>Retired decision:</strong> there is <em>no</em> permanent production evidence bucket
+          (the previously drafted <code>cihh-prod-evidence-{env}</code> is removed), no GCS Bucket Lock evidence
+          retention, and no permanent GCS copies of signed forms, certificates, or exports. Any GCS object that
+          outlives its processing job is an architecture defect.
+        </div>
+      </section>
+
+      <section id="current-state">
+        <h2>2. Current state — verified in code, not assumed</h2>
+        <p class="lead">
+          The statements below are based on the executable repository, which takes precedence over any earlier
+          documentation. Where this differs from the previous draft of this document, the code wins.
+        </p>
+        <div class="callout ok">
+          <strong>Documentation conflict resolved:</strong> the earlier draft described evidence as demo/localStorage-only
+          and proposed building GCS evidence storage. In reality the CES evidence pipeline already stores files in
+          Google Drive server-side, bans localStorage for CES state by locked contract
+          (<code>src/policy/evidence/storageProviders/types.ts</code>), and fails closed on Drive configuration drift
+          (<code>DRIVE_EVIDENCE_LOCK</code> in <code>server/env.ts</code>). What is still demo/local today is
+          identity, Journey state, and parts of review/audit — not Drive file storage.
+        </div>
+        <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Area</th><th>Current implementation (code evidence)</th><th>Phase 2F target</th><th>Migration note</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Runtime</td>
+              <td>Vite/React SPA + Express server (<code>server/index.ts</code>, port 8787), deployed to Cloud Run for demos</td>
+              <td>SPA on Firebase Hosting; commands on Cloud Functions v2</td>
+              <td>Express route handlers become Functions; contracts preserved.</td>
+            </tr>
+            <tr>
+              <td>Identity roster</td>
+              <td>Zustand + <code>ci.identityRegistry.v1</code> (<code>userAssignmentsStore.ts</code>); demo auth via AWS Cognito CDK stack</td>
+              <td>Firebase Auth + <code>/users/{uid}</code></td>
+              <td>Keep Zustand as frontend cache; Firestore becomes source of truth.</td>
+            </tr>
+            <tr>
+              <td>Journey state</td>
+              <td><code>ci-journey-v1</code> localStorage (<code>journeyStore.ts</code>)</td>
+              <td>Firestore attempts, escalations, signatures metadata</td>
+              <td>Client store becomes cache; writes go through Functions.</td>
+            </tr>
+            <tr>
+              <td>CES operational metadata</td>
+              <td><code>file_local</code> or DynamoDB via <code>CES_METADATA_PROVIDER</code> (<code>server/env.ts</code>); localStorage prohibited by locked contract</td>
+              <td>Firestore documents</td>
+              <td>Same pointer-only rule: metadata never carries file bytes.</td>
+            </tr>
+            <tr>
+              <td>Evidence files</td>
+              <td><strong>Already Google Drive.</strong> Service-account upload into a Workspace Shared Drive; non-PHI folder segments; PHI name tripwire; 01_CES write lock until a readiness date</td>
+              <td>Same Drive canonical store, hardened: upload sessions, SHA-256, idempotent finalization, integrity checks</td>
+              <td>Adapter/hardening work — not a rebuild and not a second store.</td>
+            </tr>
+            <tr>
+              <td>Packet generation</td>
+              <td><code>savePacketToEvent</code> / <code>saveAdmissionPacket</code> render HTML→PDF and upload-or-replace into a Drive packet folder + CSV manifest upsert</td>
+              <td>Same Drive destination; add export-job metadata, Drive verification, packet hash, versioned finals</td>
+              <td>Replace-in-place becomes supersede-with-history for accepted finals.</td>
+            </tr>
+            <tr>
+              <td>eCign artifacts</td>
+              <td>Path B write-once canonical store contract (<code>canonicalArtifactStore.ts</code>), byte-freeze, server-side SHA-256, journaled store, live Drive sandbox publisher (replica)</td>
+              <td>Final executed package = Drive evidence artifact; Firestore stores signer/hash metadata</td>
+              <td>Keep write-once semantics; corrections create a new version.</td>
+            </tr>
+            <tr>
+              <td>Audit</td>
+              <td>Demo audit surfaces; manifest audit log (<code>server/manifestAudit.ts</code>); not tamper-evident</td>
+              <td>Server append-only Firestore ledger + hash chain; deliberate audit exports may become Drive artifacts</td>
+              <td>Client never writes audit directly.</td>
+            </tr>
+            <tr>
+              <td>Security gates</td>
+              <td>Soft client gates; server PHI-name guard and Drive config lock are real</td>
+              <td>Firebase custom claims + Security Rules + Functions validation + App Check</td>
+              <td>Any compliance-affecting mutation must be server-enforced.</td>
+            </tr>
+            <tr>
+              <td>Assistants</td>
+              <td>Nolan (Journey tutor, guidance-only), Brad (compliance intake/composer), Compliance Intelligence (IA) server surface</td>
+              <td>Unchanged roles; read server context; never mutate compliance records</td>
+              <td>No AI approval authority — enforced server-side.</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+      </section>
+
+      <section id="target-architecture">
+        <h2>3. Target Firebase / GCP architecture</h2>
+        <p class="lead">
+          Firebase-native services carry the app-facing layer. Google Drive (Workspace Shared Drive) is the canonical
+          evidence repository. Cloud Storage appears only as a short-lived processing workbench with lifecycle cleanup.
+        </p>
+
+        <div class="legend">
+          <span class="pill"><span class="dot teal"></span>Firebase app services</span>
+          <span class="pill"><span class="dot orange"></span>Canonical evidence layer (Google Drive)</span>
+          <span class="pill"><span class="dot warn"></span>Temporary processing only</span>
+          <span class="pill"><span class="dot blue"></span>Automation / operations</span>
+        </div>
+
+        <div class="svg-wrap">
+          <svg viewBox="0 0 1160 780" role="img" aria-label="Drive-first Firebase Google Cloud architecture diagram">
+            <defs>
+              <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.16"/>
+              </filter>
+              <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#475569" />
+              </marker>
+              <style>
+                .box { fill:#fff; stroke:#dbe4ea; stroke-width:1.5; filter:url(#shadow); }
+                .boxTeal { fill:#e7f4f2; stroke:#007970; stroke-width:1.5; filter:url(#shadow); }
+                .boxOrange { fill:#fff0e7; stroke:#c74600; stroke-width:1.5; filter:url(#shadow); }
+                .boxBlue { fill:#eaf2ff; stroke:#1d4ed8; stroke-width:1.5; filter:url(#shadow); }
+                .boxWarn { fill:#fffbea; stroke:#a16207; stroke-width:1.5; stroke-dasharray:6 4; filter:url(#shadow); }
+                .text { font: 700 16px Inter, Arial; fill:#17202a; }
+                .sub { font: 12px Inter, Arial; fill:#64748b; }
+                .tiny { font: 11px Inter, Arial; fill:#475569; }
+                .line { stroke:#475569; stroke-width:1.7; marker-end:url(#arrow); fill:none; }
+                .line2 { stroke:#c74600; stroke-width:1.7; marker-end:url(#arrow); fill:none; }
+                .lineTmp { stroke:#a16207; stroke-width:1.7; marker-end:url(#arrow); fill:none; stroke-dasharray:5 5; }
+              </style>
+            </defs>
+
+            <rect x="35" y="30" width="1090" height="720" rx="28" fill="#f8fbfb" stroke="#dbe4ea"/>
+            <text x="60" y="70" class="text" fill="#007970">Care Indeed V2 — Drive-First Serverless Target</text>
+            <text x="60" y="91" class="sub">Server-side commands for compliance-affecting writes. Drive = canonical evidence. GCS = temporary processing only.</text>
+
+            <rect x="70" y="125" width="185" height="92" rx="18" class="boxTeal"/>
+            <text x="92" y="160" class="text">React V2 App</text>
+            <text x="92" y="183" class="sub">Journey · Nolan · CES · Brad</text>
+
+            <rect x="315" y="125" width="195" height="92" rx="18" class="boxTeal"/>
+            <text x="340" y="160" class="text">Firebase Hosting</text>
+            <text x="340" y="183" class="sub">static SPA delivery</text>
+
+            <rect x="570" y="125" width="195" height="92" rx="18" class="boxTeal"/>
+            <text x="595" y="160" class="text">Firebase Auth</text>
+            <text x="595" y="183" class="sub">users + custom claims</text>
+
+            <rect x="825" y="125" width="185" height="92" rx="18" class="boxTeal"/>
+            <text x="850" y="160" class="text">App Check</text>
+            <text x="850" y="183" class="sub">client attestation</text>
+
+            <path d="M255 171 H315" class="line"/>
+            <path d="M510 171 H570" class="line"/>
+            <path d="M765 171 H825" class="line"/>
+
+            <rect x="420" y="285" width="280" height="118" rx="18" class="boxOrange"/>
+            <text x="448" y="320" class="text">Cloud Functions v2</text>
+            <text x="448" y="343" class="sub">server-side command authority</text>
+            <text x="448" y="363" class="tiny">evidence finalize · accept · supersede</text>
+            <text x="448" y="381" class="tiny">eCign · export · repair · audit append</text>
+
+            <path d="M560 217 V285" class="line"/>
+            <path d="M667 217 C667 250 600 255 585 285" class="line"/>
+            <path d="M917 217 C917 258 730 262 700 300" class="line"/>
+
+            <rect x="80" y="285" width="250" height="118" rx="18" class="box"/>
+            <text x="108" y="320" class="text">Cloud Firestore</text>
+            <text x="108" y="343" class="sub">metadata + operational state</text>
+            <text x="108" y="363" class="tiny">users · learners · assignments · events</text>
+            <text x="108" y="381" class="tiny">evidence metadata · audit ledger</text>
+
+            <path d="M420 344 H330" class="line"/>
+
+            <rect x="790" y="270" width="290" height="150" rx="18" class="boxOrange"/>
+            <text x="818" y="303" class="text">Google Drive API</text>
+            <text x="818" y="326" class="sub">Workspace Shared Drive</text>
+            <text x="818" y="348" class="tiny">CANONICAL evidence artifacts</text>
+            <text x="818" y="366" class="tiny">uploaded docs · signed eCign packages</text>
+            <text x="818" y="384" class="tiny">certificates · final survey packets</text>
+            <text x="818" y="402" class="tiny">driveFileId = stable identity</text>
+
+            <path d="M700 335 H790" class="line2"/>
+
+            <rect x="420" y="470" width="280" height="104" rx="18" class="boxWarn"/>
+            <text x="448" y="503" class="text">Cloud Storage (TEMP)</text>
+            <text x="448" y="526" class="sub">upload staging · quarantine · scan</text>
+            <text x="448" y="546" class="tiny">packet builds · lifecycle-deleted</text>
+
+            <path d="M540 403 V470" class="lineTmp"/>
+            <path d="M700 522 C760 522 820 470 870 420" class="lineTmp"/>
+
+            <rect x="80" y="470" width="250" height="104" rx="18" class="box"/>
+            <text x="108" y="503" class="text">Server audit ledger</text>
+            <text x="108" y="526" class="sub">append-only Firestore entries</text>
+            <text x="108" y="546" class="tiny">hash-chained · server-written only</text>
+
+            <path d="M420 522 H330" class="line"/>
+
+            <rect x="80" y="630" width="220" height="88" rx="18" class="boxBlue"/>
+            <text x="108" y="665" class="text">Cloud Scheduler</text>
+            <text x="108" y="688" class="sub">integrity checks · annual jobs</text>
+
+            <rect x="340" y="630" width="220" height="88" rx="18" class="boxBlue"/>
+            <text x="368" y="665" class="text">Cloud Tasks</text>
+            <text x="368" y="688" class="sub">retryable exports · async work</text>
+
+            <rect x="600" y="630" width="220" height="88" rx="18" class="boxBlue"/>
+            <text x="628" y="665" class="text">Cloud Logging</text>
+            <text x="628" y="688" class="sub">ops telemetry (not audit)</text>
+
+            <rect x="860" y="630" width="220" height="88" rx="18" class="boxBlue"/>
+            <text x="888" y="665" class="text">Secret Manager</text>
+            <text x="888" y="688" class="sub">Drive credentials · config</text>
+
+            <path d="M190 630 C190 600 400 590 480 574" class="line"/>
+            <path d="M450 630 C450 606 500 596 540 574" class="line"/>
+            <path d="M710 630 C710 606 600 596 580 574" class="line"/>
+            <path d="M970 630 C970 600 700 470 660 403" class="line"/>
+          </svg>
+        </div>
+
+        <div class="callout ok">
+          <strong>Architecture decision:</strong> Firebase Auth + Firestore + Cloud Functions v2 replace the AWS
+          Cognito + DynamoDB + Express pattern for identity, state, and commands. Google Drive remains — and is
+          confirmed as — the canonical evidence repository. Cloud Storage is limited to temporary processing and is
+          <em>not</em> a second permanent evidence system of record.
+        </div>
+      </section>
+
+      <section id="service-map">
+        <h2>4. AWS → Firebase / GCP service map</h2>
+        <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>AWS / current concept</th><th>Firebase / GCP target</th><th>Role in Care Indeed V2</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Cognito (demo auth)</td><td>Firebase Auth</td><td>Authentication, MFA, custom claims</td><td>Use the Auth UID as the primary server identity.</td></tr>
+            <tr><td>Express server / API Gateway + Lambda</td><td>Cloud Functions for Firebase v2</td><td>Server-side command API</td><td>Callable/HTTPS functions, scheduled jobs, background handlers. Preserve existing route contracts.</td></tr>
+            <tr><td>DynamoDB / file_local CES metadata</td><td>Cloud Firestore</td><td>Metadata and operational state</td><td>Document model maps cleanly to learners/events/evidence metadata. Pointer-only rule preserved.</td></tr>
+            <tr><td>S3 (metadata snapshots)</td><td>Google Drive (canonical evidence) + Cloud Storage (temporary processing only)</td><td>Evidence artifacts vs. transient workbench</td><td>Drive stores the files. GCS objects are staged, processed, and deleted. No permanent evidence bucket.</td></tr>
+            <tr><td>EventBridge Scheduler</td><td>Cloud Scheduler + Pub/Sub</td><td>Mandated events, annual training, credential checks, Drive integrity sweeps</td><td>Scheduled Functions invoke recompute and reconciliation jobs.</td></tr>
+            <tr><td>SQS</td><td>Cloud Tasks</td><td>Export jobs, async validation, approval waits</td><td>Use for retryable command execution with idempotency keys.</td></tr>
+            <tr><td>CloudWatch</td><td>Cloud Logging, Monitoring, Error Reporting</td><td>Operational visibility and alarms</td><td>Logs are operational telemetry — never the compliance audit ledger.</td></tr>
+            <tr><td>S3 Object Lock (previously mapped to GCS Bucket Lock)</td><td><strong>Not selected.</strong> Application-level accepted-evidence controls on Drive + Firestore</td><td>Evidence protection</td><td>Drive is not automatically WORM. See <a href="#drive">§9</a>. True WORM archival, if legally required, is a separate unresolved decision — it must not silently reintroduce a permanent GCS evidence copy.</td></tr>
+            <tr><td>Secrets Manager</td><td>Secret Manager</td><td>Drive service credentials, API secrets</td><td>Functions access via service-account IAM; nothing in client bundles.</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </section>
+
+      <section id="identity">
+        <h2>5. Identity &amp; user setup architecture</h2>
+        <p class="lead">
+          Firebase Auth provides the authenticated principal. Firestore stores the application profile, setup assignment,
+          learner profile, supervisory relationships, and permission state. Custom claims carry coarse roles;
+          Firestore relationship documents and server functions enforce fine-grained scope.
+        </p>
+
+        <div class="two-col">
+          <div class="card">
+            <h3>Authentication source</h3>
+            <pre><code>FirebaseAuthUser
+  uid
+  email
+  displayName
+  emailVerified
+  disabled
+  customClaims:
+    appRole: "admin" | "hr" | "supervisor" | "learner"
+    groups: ["grp-super-admin", "grp-rn"]
+    branchIds: ["ci-main"]</code></pre>
+          </div>
+          <div class="card">
+            <h3>Application profile</h3>
+            <pre><code>/users/{uid}
+  userId
+  email
+  displayName
+  status
+  appRole
+  authProviderId
+  createdAt
+  updatedAt
+  lastLoginAt</code></pre>
+          </div>
+        </div>
+
+        <h3>Server canonical learner profile — metadata only, no Drive files</h3>
+        <pre><code>/learners/{learnerId}
+  userId
+  employeeId
+  preferredName
+  jobTitle
+  discipline
+  learnerRole        // ADM, DON, RN, LVN, PT, PTA, OT, COTA, SLP, MSW, HHA
+  department
+  branch
+  hireDate
+  firstDay
+  employmentStatus
+  supervisorId
+  preceptorId
+  onboardingTrackId
+  annualTrainingCycle
+  clearanceStatus
+  createdAt
+  updatedAt</code></pre>
+
+        <div class="callout danger">
+          <strong>No self-approval:</strong> learners cannot approve, sign, certify, clear, or override themselves.
+          Nolan and Brad cannot approve, sign, certify, clear, override, or create compliance evidence.
+        </div>
+      </section>
+
+      <section id="firestore">
+        <h2>6. Firestore data model</h2>
+        <p class="lead">
+          Firestore is the single metadata and operational-state database. Evidence <em>files</em> live in Google Drive;
+          Firestore holds only metadata, state, IDs, hashes, and Drive references. Field names follow the repository's
+          existing <code>GoogleDriveEvidenceRef</code> conventions (camelCase, <code>driveFileId</code>,
+          <code>contentStatus</code>, …).
+        </p>
+
+        <h3>Core collections</h3>
+        <pre><code>/users/{uid}
+
+/learners/{learnerId}
+/learners/{learnerId}/assignments/{assignmentId}
+/learners/{learnerId}/policyReads/{policyId}
+/learners/{learnerId}/attempts/{attemptId}
+/learners/{learnerId}/credentials/{credentialId}
+/learners/{learnerId}/auditRefs/{auditId}
+
+/supervisorRelationships/{relationshipId}
+
+/workflows/{workflowId}
+/workflows/{workflowId}/versions/{version}
+
+/events/{eventId}
+/events/{eventId}/tasks/{taskId}
+/events/{eventId}/forms/{formInstanceId}
+/events/{eventId}/evidence/{evidenceId}
+/events/{eventId}/approvals/{approvalId}
+
+/auditEvents/{partition}/entries/{auditId}
+/exports/{exportId}
+/uploadSessions/{uploadSessionId}</code></pre>
+
+        <h3>Evidence metadata document — the Drive reference is the artifact pointer</h3>
+        <pre><code>/events/{eventId}/evidence/{evidenceId}
+  evidenceId
+  policyId
+  workflowId
+  eventId
+  taskId
+  formId
+  formInstanceId
+  learnerId
+  sourceSurface: "EvidenceCenter" | "WorkflowDrawer" | "FormSigningWorkspace" | "JourneyEvidenceCapture"
+  evidenceType: "supporting_documentation" | "form_instance" | "signed_artifact"
+              | "ecign_certificate" | "final_package" | "audit_export"
+  documentVersion
+
+  // Canonical Google Drive reference — driveFileId is the stable identity.
+  driveFileId
+  driveFolderId
+  driveSharedDriveId
+  driveWebViewLink          // refreshable presentation metadata, NOT identity
+  driveRevisionId
+  driveModifiedTime
+
+  fileName                  // sanitized, non-PHI
+  mimeType
+  sizeBytes
+  sha256
+
+  status: "staged" | "submitted" | "accepted" | "rejected" | "superseded"
+  // internal processing states (never replace the user-facing lifecycle):
+  // "validating" | "transferring" | "repair_required" | "integrity_error"
+  createdBy
+  createdAt
+  updatedAt
+
+  submittedBy
+  submittedAt
+  reviewedBy
+  reviewedAt
+  decision
+  rejectionReason
+
+  signedBy
+  signedAt
+  lockedAt
+  supersedesEvidenceId
+
+  accessVerificationStatus
+  lastAccessVerifiedAt
+  integrityStatus
+  driveSyncStatus
+  driveSyncedAt
+
+  retentionClass
+  legalHold
+
+  uploadSessionId
+  commandId
+  auditRef</code></pre>
+
+        <div class="callout danger">
+          <strong>Never stored in Firestore:</strong> file binary contents, base64 evidence bodies, full signed PDFs,
+          raw signature images, entire packet contents, unnecessary PHI, or secret values. A pointer plus a hash is the
+          maximum. This preserves the existing locked pointer-only contract from
+          <code>src/policy/evidence/storageProviders/types.ts</code>.
+        </div>
+
+        <h3>Non-evidence domains are metadata only</h3>
+        <p class="lead">
+          Ordinary application records never automatically create Drive files. A non-evidence record may
+          <em>reference</em> an <code>evidenceId</code>; it must never duplicate the evidence file.
+        </p>
+        <div class="grid cols-2">
+          <div class="card small">
+            <h3>Metadata-only domains (no Drive files, ever)</h3>
+            <ul>
+              <li>user records, learner profiles, supervisor relationships</li>
+              <li>assignments, module attempts, SCORM progress, quiz scores, deadlines</li>
+              <li>credentials metadata, policy definitions, policy-body source content</li>
+              <li>form-template definitions, workflow definitions and versions</li>
+              <li>event records, task records, approval records, notification records</li>
+              <li>calendar records, ordinary audit events, export-job records</li>
+              <li>upload-session records, UI preferences, analytics counters, dashboards</li>
+            </ul>
+          </div>
+          <div class="card small">
+            <h3>Evidence artifacts (Drive canonical)</h3>
+            <ul>
+              <li>uploaded supporting documents; completed/finalized evidence files</li>
+              <li>accepted evidence; signed forms; executed eCign packages</li>
+              <li>final signature artifacts; completed certificates</li>
+              <li>finalized policy acknowledgments <em>when rendered as an artifact</em></li>
+              <li>final survey packets; deliberately generated audit packets and compliance exports</li>
+              <li>final immutable-by-application document versions</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout warn">
+          <strong>Important distinction:</strong> a form <em>definition/template</em> is application content (metadata).
+          A completed, signed, or certified form PDF may be evidence in Drive. An audit <em>event</em> is structured
+          server metadata; a deliberately generated audit <em>packet</em> may be an evidence artifact in Drive. An export
+          <em>job</em> is metadata; its successfully completed final packet may be evidence in Drive. The authored policy
+          corpus, generated TypeScript datasets, and source workflow Markdown stay in the repository — they are not
+          migrated to Drive merely because they are documents.
+        </div>
+
+        <h3>Indexes to plan</h3>
+        <div class="table-scroll">
+        <table>
+          <thead><tr><th>Query</th><th>Collection</th><th>Index fields</th><th>Consumer</th></tr></thead>
+          <tbody>
+            <tr><td>Overdue learner tasks</td><td>assignments collection group</td><td><code>status, dueDate, branch</code></td><td>Admin / Nolan plan</td></tr>
+            <tr><td>Supervisor direct reports</td><td>learners</td><td><code>supervisorId, employmentStatus</code></td><td>Supervisor page</td></tr>
+            <tr><td>Expiring credentials</td><td>credentials collection group</td><td><code>status, expirationDate</code></td><td>Credential checker</td></tr>
+            <tr><td>Event evidence by status</td><td>evidence collection group</td><td><code>eventId, status, createdAt</code></td><td>Survey export</td></tr>
+            <tr><td>Evidence needing integrity check</td><td>evidence collection group</td><td><code>integrityStatus, lastAccessVerifiedAt</code></td><td>Integrity scheduler</td></tr>
+            <tr><td>Open approvals</td><td>approvals collection group</td><td><code>status, assignedTo, dueDate</code></td><td>CES / eCign</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </section>
+
+      <section id="functions">
+        <h2>7. Cloud Functions command/API layer</h2>
+        <p class="lead">
+          All compliance-affecting writes go through Cloud Functions. The client may read authorized records when rules
+          allow, but it cannot finalize completions, promote evidence, sign, clear, certify, override, repair Drive
+          links, or write audit records. Every function re-checks authorization internally — hidden UI buttons are not
+          security.
+        </p>
+
+        <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Function</th><th>Trigger</th><th>Purpose</th><th>Audit required?</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>authOnCreateUser</code></td><td>Auth event</td><td>Create shell <code>/users/{uid}</code> profile.</td><td>Yes</td></tr>
+            <tr><td><code>adminCreateUser</code></td><td>Callable / HTTPS</td><td>Create Firebase user, user profile, learner profile, assignment seed. No Drive file.</td><td>Yes</td></tr>
+            <tr><td><code>adminUpdateUserSetup</code></td><td>Callable / HTTPS</td><td>Update role, supervisor, firstDay, onboarding track. No Drive file.</td><td>Yes</td></tr>
+            <tr><td><code>journeyGetLearnerPlan</code></td><td>Callable / HTTPS</td><td>Return assignments, due dates, policies, credentials, next action.</td><td>Read audit optional</td></tr>
+            <tr><td><code>journeyStartAttempt</code></td><td>Callable / HTTPS</td><td>Create module attempt; enforce assignment/prerequisite logic. No Drive file.</td><td>Yes</td></tr>
+            <tr><td><code>journeyCompleteAttempt</code></td><td>Callable / HTTPS</td><td>Validate result, write completion, recompute deadlines. No Drive file.</td><td>Yes</td></tr>
+            <tr><td><code>evidenceUploadInit</code></td><td>Callable / HTTPS</td><td>Create an idempotent upload session and a signed <em>temporary</em> staging target.</td><td>Yes</td></tr>
+            <tr><td><code>evidenceFinalize</code></td><td>Callable / HTTPS / Storage event</td><td>Validate the staged object, scan, hash, create the canonical Drive file, write evidence metadata, delete the temp object. Idempotent by <code>commandId</code>.</td><td>Yes</td></tr>
+            <tr><td><code>evidenceReview</code></td><td>Callable / HTTPS</td><td>Accept/reject submitted evidence; enforce reviewer role and no self-review.</td><td>Yes</td></tr>
+            <tr><td><code>evidenceSupersede</code></td><td>Callable / HTTPS</td><td>Create a corrected evidence version referencing <code>supersedesEvidenceId</code>; never edits the accepted artifact in place.</td><td>Yes</td></tr>
+            <tr><td><code>ecignFinalize</code></td><td>Callable / HTTPS</td><td>Bind signer identity, freeze bytes, store the executed package in Drive, persist signer/hash metadata.</td><td>Yes</td></tr>
+            <tr><td><code>supervisorClearanceSign</code></td><td>Callable / HTTPS</td><td>Validate supervisor/preceptor/DON authority before clearance.</td><td>Yes</td></tr>
+            <tr><td><code>eventTaskUpdate</code></td><td>Callable / HTTPS</td><td>Update CES task status; enforce dependencies and lock rules. No Drive file.</td><td>Yes</td></tr>
+            <tr><td><code>exportSurveyPacket</code></td><td>Cloud Tasks / HTTPS</td><td>Verify + retrieve accepted evidence from Drive, assemble in temp storage, upload the final packet to Drive, index in Firestore, delete temp objects.</td><td>Yes</td></tr>
+            <tr><td><code>driveIntegrityCheck</code></td><td>Cloud Scheduler / Callable</td><td>Verify Drive metadata/access for evidence records; flag missing/trashed/moved/hash-mismatch; dry-run reporting.</td><td>Yes</td></tr>
+            <tr><td><code>driveRepair</code></td><td>Callable / HTTPS (admin)</td><td>Authorized relink/refresh of Drive references with explicit reason; audited.</td><td>Yes</td></tr>
+            <tr><td><code>annualTrainingGenerator</code></td><td>Cloud Scheduler</td><td>Create annual assignments based on active learners and cycles. No Drive file.</td><td>Yes</td></tr>
+            <tr><td><code>credentialExpiryChecker</code></td><td>Cloud Scheduler</td><td>Create reminders/escalations for expiring credentials. No Drive file.</td><td>Yes</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Command envelope</h3>
+        <pre><code>{
+  "commandId": "cmd_...",              // idempotency key — a retry must not create a second Drive file
+  "actor": {
+    "uid": "firebase-auth-uid",
+    "email": "admin@careindeed.com",
+    "claims": ["admin", "hr"]
+  },
+  "action": "evidenceFinalize",
+  "target": {
+    "entityType": "evidence",
+    "entityId": "ev_..."
+  },
+  "payload": { "uploadSessionId": "us_...", "...": "..." },
+  "requestContext": {
+    "requestId": "...",
+    "appCheckVerified": true
+  }
+}</code></pre>
+      </section>
+
+      <section id="evidence-workflow">
+        <h2>8. Evidence workflow — adapter, not rebuild</h2>
+        <p class="lead">
+          The existing V2 evidence workflow is preserved: Evidence Center, WorkflowDrawer evidence capture,
+          event/workflow/policy/task/form-instance linkage, the staged → submitted → accepted/rejected → superseded
+          lifecycle, review controls, the evidence-complete certification gate, accepted-evidence read-only behavior,
+          audit mode, and survey packets. The Drive/Firestore architecture lands <em>behind</em> these interfaces
+          through a thin adapter.
+        </p>
+
+        <div class="grid cols-2">
+          <div class="card small">
+            <h3>Do not replace</h3>
+            <ul>
+              <li><strong>Evidence Center</strong> as the central user workspace</li>
+              <li><strong>WorkflowDrawer evidence panel</strong> inside CES/event work</li>
+              <li><strong>Evidence lifecycle:</strong> staged → submitted → accepted/rejected → superseded</li>
+              <li><strong>Evidence-complete gate</strong> for event certification</li>
+              <li><strong>Accepted-evidence read-only</strong> and no-silent-delete behavior</li>
+              <li>Existing user-visible labels and review controls</li>
+            </ul>
+          </div>
+          <div class="card small">
+            <h3>Move behind it</h3>
+            <ul>
+              <li>local/demo evidence metadata → Firestore evidence documents</li>
+              <li>direct base64 upload → upload session + temp staging + <code>evidenceFinalize</code></li>
+              <li>client-only acceptance → <code>evidenceReview</code> Cloud Function</li>
+              <li>soft role checks → custom claims + server checks</li>
+              <li>demo audit → append-only server audit entries</li>
+              <li>Zustand stores remain caches/compatibility layers — authority moves server-side</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="svg-wrap">
+          <svg viewBox="0 0 1180 620" role="img" aria-label="Evidence flow: existing workflow, temporary staging, canonical Google Drive, Firestore metadata">
+            <defs>
+              <marker id="arrow3" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#475569" />
+              </marker>
+              <style>
+                .sbox { fill:#fff; stroke:#dbe4ea; stroke-width:1.5; filter:url(#shadow); }
+                .sboxT { fill:#e7f4f2; stroke:#007970; stroke-width:1.5; filter:url(#shadow); }
+                .sboxO { fill:#fff0e7; stroke:#c74600; stroke-width:1.5; filter:url(#shadow); }
+                .sboxB { fill:#eef4ff; stroke:#1d4ed8; stroke-width:1.5; filter:url(#shadow); }
+                .sboxW { fill:#fffbea; stroke:#a16207; stroke-width:1.5; stroke-dasharray:6 4; filter:url(#shadow); }
+                .slabel { font: 700 14px Inter, Arial; fill:#17202a; }
+                .ssub { font: 12px Inter, Arial; fill:#64748b; }
+                .sedge { stroke:#475569; stroke-width:1.8; fill:none; marker-end:url(#arrow3); }
+                .sdash { stroke:#a16207; stroke-width:1.6; stroke-dasharray:5 5; fill:none; marker-end:url(#arrow3); }
+              </style>
+            </defs>
+            <rect x="30" y="30" width="1120" height="560" rx="26" fill="#f8fbfb" stroke="#dbe4ea"/>
+            <text x="60" y="70" class="slabel" fill="#007970">Existing V2 Evidence Workflow → Server Commands → Temporary Staging → Canonical Google Drive + Firestore Metadata</text>
+
+            <rect x="65" y="115" width="180" height="96" rx="16" class="sboxT"/>
+            <text x="88" y="148" class="slabel">Evidence Center</text>
+            <text x="88" y="171" class="ssub">upload · classify</text>
+            <text x="88" y="190" class="ssub">link to eventId</text>
+
+            <rect x="285" y="115" width="195" height="96" rx="16" class="sboxT"/>
+            <text x="308" y="148" class="slabel">Event Workspace</text>
+            <text x="308" y="171" class="ssub">WorkflowDrawer</text>
+            <text x="308" y="190" class="ssub">evidence panel + gate</text>
+
+            <rect x="520" y="115" width="200" height="96" rx="16" class="sboxO"/>
+            <text x="543" y="148" class="slabel">Cloud Function</text>
+            <text x="543" y="171" class="ssub">auth · role · App Check</text>
+            <text x="543" y="190" class="ssub">upload session (idempotent)</text>
+
+            <rect x="760" y="115" width="175" height="96" rx="16" class="sboxW"/>
+            <text x="783" y="148" class="slabel">Temp GCS</text>
+            <text x="783" y="171" class="ssub">stage · scan · hash</text>
+            <text x="783" y="190" class="ssub">deleted after finalize</text>
+
+            <rect x="975" y="115" width="155" height="96" rx="16" class="sboxO"/>
+            <text x="995" y="148" class="slabel">Google Drive</text>
+            <text x="995" y="171" class="ssub">canonical artifact</text>
+            <text x="995" y="190" class="ssub">Shared Drive folder</text>
+
+            <path d="M245 163 H285" class="sedge"/>
+            <path d="M480 163 H520" class="sedge"/>
+            <path d="M720 163 H760" class="sdash"/>
+            <path d="M935 163 H975" class="sedge"/>
+
+            <rect x="105" y="300" width="190" height="96" rx="16" class="sbox"/>
+            <text x="128" y="333" class="slabel">Firestore metadata</text>
+            <text x="128" y="356" class="ssub">driveFileId · sha256</text>
+            <text x="128" y="375" class="ssub">staged/submitted/accepted</text>
+
+            <rect x="350" y="300" width="205" height="96" rx="16" class="sboxO"/>
+            <text x="373" y="333" class="slabel">Acceptance command</text>
+            <text x="373" y="356" class="ssub">reviewer role · no self-review</text>
+            <text x="373" y="375" class="ssub">accepted = read-only</text>
+
+            <rect x="610" y="300" width="200" height="96" rx="16" class="sbox"/>
+            <text x="633" y="333" class="slabel">Append-only audit</text>
+            <text x="633" y="356" class="ssub">actor · role · timestamp</text>
+            <text x="633" y="375" class="ssub">hash chain · server-only</text>
+
+            <rect x="865" y="300" width="205" height="96" rx="16" class="sboxB"/>
+            <text x="888" y="333" class="slabel">Survey/Audit Mode</text>
+            <text x="888" y="356" class="ssub">accepted evidence read-only</text>
+            <text x="888" y="375" class="ssub">packet export from Drive</text>
+
+            <path d="M1050 211 C1050 260 967 260 967 300" class="sedge"/>
+            <path d="M620 211 C620 260 452 260 452 300" class="sedge"/>
+            <path d="M620 211 C620 262 300 258 240 300" class="sedge"/>
+            <path d="M620 211 C620 268 690 266 700 300" class="sedge"/>
+            <path d="M810 348 H865" class="sedge"/>
+
+            <rect x="105" y="470" width="450 " height="82" rx="16" class="sbox"/>
+            <text x="128" y="503" class="slabel">Integrity checker (scheduled)</text>
+            <text x="128" y="526" class="ssub">current · missing · trashed · access_denied · moved · revision_changed · hash_mismatch</text>
+
+            <rect x="610" y="470" width="460" height="82" rx="16" class="sboxO"/>
+            <text x="633" y="503" class="slabel">Supersede path</text>
+            <text x="633" y="526" class="ssub">correction = NEW evidence version + supersedesEvidenceId; prior record preserved</text>
+
+            <path d="M200 396 V470" class="sedge"/>
+            <path d="M452 396 C452 430 700 430 760 470" class="sedge"/>
+          </svg>
+        </div>
+
+        <h3>Preserved lifecycle → target backing</h3>
+        <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Current V2 state/behavior</th><th>Drive-first backing</th><th>Change intent</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>staged</code></td><td>Firestore metadata + temporary staging object (or direct-to-Drive draft where the existing flow already does so)</td><td>Persist, validate, and survive reloads/users</td></tr>
+            <tr><td><code>submitted</code></td><td>Firestore state transition by Cloud Function</td><td>Server-enforce who submitted and when</td></tr>
+            <tr><td><code>accepted</code></td><td>Canonical Google Drive file + read-only application behavior + audit</td><td>Application-level lock; no in-place edits or silent deletes through the app</td></tr>
+            <tr><td><code>rejected</code></td><td>Firestore rejection reason + audit event</td><td>Preserve reason and resubmission trail</td></tr>
+            <tr><td><code>superseded</code></td><td>New evidence record referencing <code>supersedesEvidenceId</code>; prior record retained per policy</td><td>Corrections version forward — never overwrite</td></tr>
+            <tr><td>Evidence-complete gate</td><td>Query accepted evidence by <code>eventId</code> / <code>workflowId</code></td><td>Keep current gate semantics; change persistence only</td></tr>
+            <tr><td>Audit Mode read-only evidence</td><td>Firestore metadata + verified Drive links + export function</td><td>Make survey packets durable and verifiable</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Evidence finalization flow (successful path)</h3>
+        <pre><code> 1. Authenticate actor (Firebase Auth).
+ 2. Validate App Check where enabled.
+ 3. Validate role and record scope.
+ 4. Create an idempotent upload session (uploadSessionId + commandId).
+ 5. Upload to temporary storage (or an approved equivalent).
+ 6. Validate object existence, type, size, and state.
+ 7. Scan where configured.
+ 8. Calculate SHA-256.
+ 9. Create or update the canonical Drive file (idempotent by commandId).
+10. Verify Drive metadata and expected access.
+11. Write Firestore evidence metadata.
+12. Append server-side audit.
+13. Mark the upload session complete.
+14. Delete the temporary object.
+15. Return the evidence ID and canonical Drive link.</code></pre>
+
+        <div class="callout warn">
+          <strong>Honesty rule:</strong> evidence is never marked accepted or available merely because a temporary
+          upload succeeded. If the Drive write succeeds but the Firestore write fails, the session records enough state
+          to reconcile the existing Drive file — a retry with the same <code>commandId</code> locates it (e.g. via Drive
+          <code>appProperties</code>) and must <em>not</em> create a second file. The partial failure is audited and the
+          record enters <code>repair_required</code> until reconciled.
+        </div>
+      </section>
+
+      <section id="drive">
+        <h2>9. Google Drive — the canonical evidence repository</h2>
+        <p class="lead">
+          Google Drive (a Workspace Shared Drive) stores the actual evidence bytes. The Drive <code>fileId</code> is the
+          stable canonical locator; a stored <code>webViewLink</code> is refreshable presentation metadata, never the
+          identity. This section hardens the integration that already exists in <code>server/googleDrive.ts</code>.
+        </p>
+
+        <h3>Verified existing integration (preserve and harden)</h3>
+        <div class="grid cols-2">
+          <div class="card small">
+            <h3>Already implemented in code</h3>
+            <ul>
+              <li>Service-account auth (Google Auth key file), Shared-Drive-aware queries</li>
+              <li>Locked identity: <code>DRIVE_EVIDENCE_LOCK</code> pins service account, project, Shared Drive; boot fails closed on drift</li>
+              <li><code>findOrCreateFolder</code> (idempotent, cached), <code>ensureFolderPath</code></li>
+              <li>Upload, upload-or-replace, copy, download, folder tree/children listing</li>
+              <li>Non-PHI name sanitizer + PHI-name tripwire (<code>looksLikePhiName</code>)</li>
+              <li><code>01_CES</code> top-level write lock until a readiness date (HTTP 423)</li>
+              <li>CSV Drive manifest + local fallback (<code>server/data/drive-manifest.csv</code>) with manifest upsert on every packet save</li>
+              <li>Calendar attachment indexing of Drive evidence refs</li>
+            </ul>
+          </div>
+          <div class="card small">
+            <h3>Hardening required for Phase 2F</h3>
+            <ul>
+              <li>Upload sessions + <code>commandId</code> idempotency (no duplicate files on retry)</li>
+              <li>SHA-256 stored on every evidence record; revision ID + modified time captured</li>
+              <li>Existence / trashed / access / moved / revision verification (see <a href="#integrity">§11</a>)</li>
+              <li>Supersede-with-history for accepted finals (replace-in-place is only acceptable for pre-acceptance drafts and regenerated non-final packets)</li>
+              <li>Orphan detection both directions (Firestore record ↔ Drive file)</li>
+              <li>Metadata updates that never change the evidence ID</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Drive folder strategy — IDs and non-PHI descriptors only</h3>
+        <pre><code>{Shared Drive root}                       // GOOGLE_DRIVE_EVIDENCE_ROOT_FOLDER_ID
+  01_CES/                                 // LOCKED until readiness date (existing behavior)
+    Evidence/
+      {YYYY}/{MonthName}/{eventId}/       // event evidence, deepened by taskId/formId/formInstanceId
+      Intake/{YYYY}/{MonthName}/{classification}/{eventId}/
+      Admission/Packets/
+      Mock/                               // training/mock evidence quarantine
+      Packets/{YYYY}/{packetId}/{group}/  // physical packet copies (provenance kept in metadata)
+  Event Packets/                          // active packet destination while 01_CES is locked
+  Signed Forms/                           // executed eCign packages (folder id via env)
+  Exports/                                // final survey/audit packets (folder id via env)</code></pre>
+        <p class="small">
+          Folder names derive from system IDs, dates, and classifications — never patient or employee names. Folder IDs
+          are configuration (<code>GOOGLE_DRIVE_*_FOLDER_ID</code>), not hardcoded values; the one hardcoded packet
+          folder id in <code>server/googleEvidence.ts</code> should move to configuration during Phase 2F.
+        </p>
+
+        <h3>Required Drive operations</h3>
+        <div class="grid cols-3">
+          <div class="card small">
+            <h3>Create / write</h3>
+            <ul>
+              <li>create file / upload file</li>
+              <li>create folder / identify parent</li>
+              <li>update metadata without changing evidence ID</li>
+              <li>retry safely; no duplicates (idempotency key)</li>
+            </ul>
+          </div>
+          <div class="card small">
+            <h3>Verify / read</h3>
+            <ul>
+              <li>retrieve metadata, webViewLink, revision ID, modified time</li>
+              <li>verify existence; detect trashed files</li>
+              <li>verify expected access; detect access loss</li>
+              <li>identify moved files; Shared Drive behavior</li>
+            </ul>
+          </div>
+          <div class="card small">
+            <h3>Reconcile</h3>
+            <ul>
+              <li>reconcile partial failures</li>
+              <li>identify orphaned Drive files</li>
+              <li>identify Firestore records whose Drive files are missing</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Authentication model</h3>
+        <p>
+          The verified existing model is a <strong>dedicated service account</strong>
+          (<code>careindeed-drive-evidence@…iam.gserviceaccount.com</code>) granted Content manager access on the
+          organization's Workspace <strong>Shared Drive</strong>. This matches the actual tenant: files are owned by the
+          Shared Drive (not an individual's My Drive), the key is server-side only, and no domain-wide delegation is
+          required for the evidence write path. Browser users open evidence via Workspace permissions on the Shared
+          Drive. If application identity (Firebase Auth) and Drive identity (Workspace) diverge for a given user, that
+          is a launch blocker to resolve — not something to paper over with public links.
+        </p>
+        <div class="callout danger">
+          <strong>Never:</strong> public or &ldquo;anyone with the link&rdquo; evidence sharing; Google credentials in the
+          browser; privileged Drive operations from the client. All privileged Drive calls are server-side.
+        </div>
+
+        <h3>Google Drive is not automatically WORM</h3>
+        <div class="callout warn">
+          <strong>Warning:</strong> ordinary Google Drive storage is <em>not</em> inherently WORM, object-locked,
+          legally immutable, tamper-proof, or retention-locked. A Drive admin or a compromised account with sufficient
+          permission can move, trash, or edit files. The protections below are <em>application-level controls</em>, and
+          they are why the integrity checker (<a href="#integrity">§11</a>) exists. If regulatory or legal requirements
+          demand true WORM retention, that is a separate archival-control decision that remains
+          <strong>unresolved</strong> — and it must not silently reintroduce permanent GCS duplication merely to make an
+          immutability claim.
+        </div>
+        <div class="grid cols-2">
+          <div class="card small">
+            <h3>Application-level accepted-evidence controls</h3>
+            <ul>
+              <li>Accepted evidence cannot be edited in place through the application</li>
+              <li>Accepted evidence cannot be silently deleted through the application</li>
+              <li>Correction creates a new evidence version referencing <code>supersedesEvidenceId</code></li>
+              <li>The old evidence record remains available according to policy</li>
+              <li>SHA-256, Drive file ID, and Drive revision ID (when available) are stored</li>
+            </ul>
+          </div>
+          <div class="card small">
+            <h3>Detection and accountability</h3>
+            <ul>
+              <li>Actor and timestamp audited on every change</li>
+              <li>Permission changes audited</li>
+              <li>Integrity failures are visible, never masked</li>
+              <li>Legal-hold state represented in metadata (<code>legalHold</code>)</li>
+              <li>Destructive administrative repair requires explicit authorization and reason</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Evidence link behavior</h3>
+        <ul>
+          <li>Every evidence link uses the canonical Drive reference: <code>driveFileId</code> for identity, a current <code>webViewLink</code> for display.</li>
+          <li>Links open in a new browser tab with <code>target="_blank"</code> and <code>rel="noopener noreferrer"</code>.</li>
+          <li>No fake locally constructed URLs; no fallback to any permanent GCS URL (none exists).</li>
+          <li>A trashed or access-denied file is never shown as valid evidence — the UI shows a visible integrity error instead.</li>
+          <li>An authorized repair/relink workflow exists; repair and relink operations are audited.</li>
+          <li>The intended browser user's actual Drive access is verified under the chosen Workspace identity model before the flow is called complete.</li>
+        </ul>
+      </section>
+
+      <section id="temp-gcs">
+        <h2>10. Cloud Storage — temporary processing only</h2>
+        <p class="lead">
+          Google Cloud Storage may be used only as short-lived technical processing infrastructure. There is no
+          permanent production evidence bucket, and no GCS path is ever the system of record for an artifact.
+        </p>
+
+        <div class="grid cols-2">
+          <div class="card small">
+            <h3>Approved temporary uses</h3>
+            <ul>
+              <li>upload staging and quarantine</li>
+              <li>MIME inspection and size validation</li>
+              <li>malware/security scanning</li>
+              <li>SHA-256 calculation</li>
+              <li>PDF generation, document rendering, format conversion</li>
+              <li>ZIP assembly for packet builds</li>
+              <li>failed-transfer recovery and retryable processing</li>
+            </ul>
+          </div>
+          <div class="card small">
+            <h3>Prohibited</h3>
+            <ul>
+              <li>a permanent evidence bucket (the drafted <code>cihh-prod-evidence-{env}</code> is retired)</li>
+              <li>permanent signed forms, certificates, or exports in GCS</li>
+              <li>GCS bucket/object paths as canonical evidence locators</li>
+              <li>Bucket Lock / retention lock as the selected evidence architecture</li>
+              <li>PHI, patient names, employee legal names, or diagnoses in object paths or filenames</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Temporary path layout (lifecycle-cleaned)</h3>
+        <pre><code>// One staging bucket per environment (TEMP_UPLOAD_BUCKET). Objects are transient by design.
+temporary-uploads/{uid}/{uploadSessionId}/{safeFileName}
+quarantine/{uploadSessionId}/{safeFileName}
+generated-pending/{jobId}/{safeFileName}
+packet-build/{exportId}/{safeFileName}</code></pre>
+        <p class="small">
+          Configure an object-lifecycle rule (e.g. delete after 24–72 hours) so abandoned temporary objects are cleaned
+          automatically. Successful flows delete their temp objects explicitly at finalization; the lifecycle rule is the
+          backstop, not the mechanism.
+        </p>
+
+        <h3>Storage lifecycle table</h3>
+        <div class="table-scroll">
+        <table>
+          <thead><tr><th>Artifact stage</th><th>Where it lives</th><th>Lifetime</th><th>System of record?</th></tr></thead>
+          <tbody>
+            <tr><td>Browser-selected file, pre-validation</td><td>Temp GCS <code>temporary-uploads/…</code></td><td>Minutes → hours; deleted at finalize</td><td>No</td></tr>
+            <tr><td>Quarantined / scanning object</td><td>Temp GCS <code>quarantine/…</code></td><td>Until scan verdict; lifecycle backstop</td><td>No</td></tr>
+            <tr><td>Packet under assembly</td><td>Temp GCS <code>packet-build/{exportId}/…</code></td><td>Duration of the export job</td><td>No</td></tr>
+            <tr><td>Canonical evidence artifact</td><td><strong>Google Drive</strong> (Shared Drive folder)</td><td>Retention policy</td><td><strong>Yes</strong></td></tr>
+            <tr><td>Evidence metadata / state</td><td><strong>Firestore</strong></td><td>Retention policy</td><td><strong>Yes (metadata)</strong></td></tr>
+            <tr><td>Audit entries</td><td>Firestore append-only ledger</td><td>Retention policy</td><td><strong>Yes (audit)</strong></td></tr>
+          </tbody>
+        </table>
+        </div>
+      </section>
+
+      <section id="integrity">
+        <h2>11. Drive synchronization and integrity</h2>
+        <p class="lead">
+          Because Drive is canonical but not inherently immutable, the platform runs a server-side integrity checker
+          that continuously proves the metadata and the artifacts still agree.
+        </p>
+
+        <h3>Integrity states</h3>
+        <div class="table-scroll">
+        <table>
+          <thead><tr><th>State</th><th>Meaning</th><th>Surface behavior</th></tr></thead>
+          <tbody>
+            <tr><td><code>current</code></td><td>File exists, accessible, revision/hash as recorded</td><td>Link renders normally</td></tr>
+            <tr><td><code>pending</code></td><td>Not yet verified (new record or awaiting sweep)</td><td>Neutral state; verification scheduled</td></tr>
+            <tr><td><code>missing</code></td><td>Drive file not found</td><td>Visible integrity defect; repair workflow</td></tr>
+            <tr><td><code>trashed</code></td><td>File is in Drive trash</td><td>Never displayed as valid evidence</td></tr>
+            <tr><td><code>access_denied</code></td><td>Service identity or viewer lost expected access</td><td>Not presented as available; alert + repair</td></tr>
+            <tr><td><code>moved</code></td><td>Parent folder changed unexpectedly</td><td>Metadata refresh or investigation</td></tr>
+            <tr><td><code>revision_changed</code></td><td>Drive revision differs from recorded revision</td><td>Investigate; accepted artifacts should not change</td></tr>
+            <tr><td><code>hash_mismatch</code></td><td>Recomputed SHA-256 differs from stored hash</td><td>Integrity error; fail closed for exports</td></tr>
+            <tr><td><code>orphaned_firestore_record</code></td><td>Metadata exists; Drive file does not</td><td>Repair queue</td></tr>
+            <tr><td><code>orphaned_drive_file</code></td><td>Drive file exists; no metadata record</td><td>Reconciliation queue</td></tr>
+            <tr><td><code>repair_required</code></td><td>Partial failure awaiting reconciliation</td><td>Blocked from acceptance/export until repaired</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Checker capabilities</h3>
+        <ul>
+          <li>Check a single evidence record on demand (e.g. before rendering a link or building a packet).</li>
+          <li>Scheduled sweeps (Cloud Scheduler → <code>driveIntegrityCheck</code>) with <code>DRIVE_INTEGRITY_CHECK_SCHEDULE</code>.</li>
+          <li>Administrative repair with dry-run reporting before any mutation.</li>
+          <li>Safe metadata refresh (webViewLink, revision, modified time) that never changes the evidence ID.</li>
+          <li>Non-PHI logs; all repair operations audited with actor and reason.</li>
+          <li>File contents are downloaded only when an integrity calculation (hash recompute) requires it and authorization permits it — never merely to refresh a link.</li>
+        </ul>
+      </section>
+
+      <section id="ecign">
+        <h2>12. eCign and signed artifacts</h2>
+        <p class="lead">
+          The eCign Path B implementation already defines the right invariants in code: a write-once canonical artifact
+          store (<code>putOnce</code>, no update operation), byte-freezing, server-side SHA-256, and Drive publishing as
+          a replica target. Phase 2F promotes the final executed package to a first-class Drive evidence artifact.
+        </p>
+        <div class="grid cols-2">
+          <div class="card small">
+            <h3>Preserved from the existing implementation</h3>
+            <ul>
+              <li>Form-instance identity and canonical signed-package resolution</li>
+              <li>Write-once semantics: an executed package is never overwritten in place</li>
+              <li>Server-side hash over canonical bytes (never trusted from the client)</li>
+              <li>Signer hierarchy, roles, and permission checks</li>
+            </ul>
+          </div>
+          <div class="card small">
+            <h3>Firestore signature metadata</h3>
+            <pre><code>formInstanceId
+evidenceId
+driveFileId
+driveWebViewLink
+documentVersion
+signerUserId
+signerRole
+signedAt
+signatureMethod
+sha256
+workflowId / eventId
+status
+auditRef</code></pre>
+          </div>
+        </div>
+        <div class="callout warn">
+          <strong>Correction path:</strong> a corrected package creates a <em>new</em> evidence version referencing
+          <code>supersedesEvidenceId</code> and preserves the prior record. Typed names or client-only signature images
+          are not production-grade signatures until server-side identity binding and the audit trail are actually
+          implemented and verified.
+        </div>
+      </section>
+
+      <section id="packets">
+        <h2>13. Survey packet and export generation</h2>
+        <p class="lead">
+          Packet generation reads canonical Drive evidence — never a permanent GCS copy (none exists) and never stale
+          cached URLs. The existing packet pipeline (<code>savePacketToEvent</code>, QAPI/Admission renderers, manifest
+          upsert) already publishes finals to Drive; Phase 2F adds verification, hashing, and export-job metadata.
+        </p>
+
+        <h3>Packet flow</h3>
+        <pre><code> 1. Create export-job metadata (/exports/{exportId}) — metadata only.
+ 2. Resolve accepted evidence through Firestore (by eventId / workflowId / status).
+ 3. Verify EVERY required Drive file (existence, not trashed, access, hash where required).
+ 4. Fail closed — or clearly identify missing/inaccessible evidence. Never silently omit
+    evidence and still label the packet complete.
+ 5. Retrieve authorized artifacts server-side from Drive.
+ 6. Assemble the packet in temporary processing storage (packet-build/{exportId}/…).
+ 7. Calculate the packet SHA-256.
+ 8. Upload the finalized packet to Google Drive (exports/packets folder).
+ 9. Save final packet evidence metadata in Firestore (evidenceType: "final_package").
+10. Append audit.
+11. Delete temporary packet-build objects.
+12. Return the canonical Drive evidence link.</code></pre>
+
+        <div class="callout warn">
+          <strong>Freshness rule:</strong> every packet-generation run refreshes or verifies current Drive metadata
+          rather than trusting stale URLs. The final packet is not persisted in GCS — its only durable home is Drive,
+          indexed by Firestore, and (as today) upserted into the Drive manifest.
+        </div>
+      </section>
+
+      <section id="audit">
+        <h2>14. Audit architecture</h2>
+        <p class="lead">
+          Audit entries are server-generated, append-only by application design, attributable to an authenticated
+          identity, timestamped server-side, linked to a request/command ID, and impossible for the client to write
+          directly. The audit ledger is structured metadata in Firestore. Cloud Logging is operational telemetry, not
+          the compliance ledger.
+        </p>
+
+        <h3>Audit entry shape</h3>
+        <pre><code>/auditEvents/{partition}/entries/{auditId}
+  auditId
+  actorUserId
+  actorRole
+  action
+  entityType
+  entityId
+  evidenceId
+  policyId
+  workflowId
+  eventId
+  beforeHash
+  afterHash
+  previousAuditHash
+  currentAuditHash
+  requestId
+  result
+  appCheckVerified
+  createdAt</code></pre>
+
+        <div class="grid cols-3">
+          <div class="card">
+            <h3>Client</h3>
+            <p>May read allowed audit summaries if role permits. May never write audit entries directly.</p>
+          </div>
+          <div class="card">
+            <h3>Function</h3>
+            <p>Every state-changing command appends audit before returning success, hash-chained to the previous entry.</p>
+          </div>
+          <div class="card">
+            <h3>Deliberate exports</h3>
+            <p>Ordinary audit events stay in Firestore — <em>no Drive document per audit event</em>. A deliberately
+            generated, signed audit export packet may become a Drive evidence artifact
+            (<code>evidenceType: "audit_export"</code>).</p>
+          </div>
+        </div>
+
+        <div class="callout danger">
+          <strong>Never in audit payloads:</strong> patient clinical payloads, full document contents, raw signatures,
+          secrets, access tokens, unrestricted Drive permissions, file contents, or unnecessary employee PII.
+        </div>
+      </section>
+
+      <section id="journey-nolan">
+        <h2>15. Journey + Nolan + Brad integration</h2>
+        <p class="lead">
+          Journey owns the training experience. Nolan (Nurse Onboarding &amp; Learning Assistant) remains a deterministic
+          learner tutor that reads context and explains what is due, what policy applies, and what to do next. Brad
+          supports compliance intake/composition. Neither mutates the compliance record; all their state is metadata.
+        </p>
+
+        <h3>Nolan context provider (metadata only — no Drive files)</h3>
+        <pre><code>NolanServerContext
+  currentUserId
+  currentLearnerId
+  role
+  discipline
+  hireDate / firstDay
+  supervisor / preceptor
+  assignedModules / currentModule / currentLesson
+  currentPolicyRefs
+  dueSoonItems / overdueItems
+  annualTrainingDue
+  expiringDocuments
+  quizAttempts / failedKnowledgeChecks
+  nextRequiredAction
+  blockedReasons
+  missingDataFlags</code></pre>
+
+        <table>
+          <thead><tr><th>Nolan / Brad can</th><th>Nolan / Brad cannot</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Explain lesson content, summarize requirements, answer clarifying questions, identify due/overdue items, list policies to read, explain credential gaps, draft intake summaries for human review, point to supervisor/HR.</td>
+              <td>Mark complete, sign, approve, certify, override, clear independent practice, accept or promote evidence, alter audit, create policy acknowledgments, or mutate any compliance record.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Journey completion command</h3>
+        <pre><code>journeyCompleteAttempt(request)
+  requireAuth()
+  requireAppCheck()
+  load learner
+  load assignment
+  validate module is assigned or allowed
+  validate score/attempt payload
+  write attempt status              // Firestore metadata only — no Drive file
+  recompute deadlines/escalations
+  appendAudit("journeyCompleteAttempt")
+  return learnerPlanDelta</code></pre>
+      </section>
+
+      <section id="security">
+        <h2>16. Security controls</h2>
+        <p class="lead">
+          Layered controls: Firebase Auth, custom claims, Security Rules, App Check, Cloud Functions validation,
+          service-account IAM, Secret Manager, application-level evidence locks, and server-generated audit.
+          Rules protect client access; Functions protect business-critical mutations.
+        </p>
+
+        <div class="grid cols-3">
+          <div class="card">
+            <h3>Authentication</h3>
+            <p>Firebase Auth UID is the runtime identity. Production removes the demo fallback and binds every action to the authenticated user.</p>
+          </div>
+          <div class="card">
+            <h3>Authorization</h3>
+            <p>Custom claims for broad roles; Firestore profile/relationship documents for supervisor and learner-specific scope. Every server command re-checks both.</p>
+          </div>
+          <div class="card">
+            <h3>Command validation</h3>
+            <p>Functions re-check authorization, resource ownership, status, prerequisites, and lock state before writes. Hidden UI buttons are not security.</p>
+          </div>
+          <div class="card">
+            <h3>App Check</h3>
+            <p>Protects callable functions and Firebase resources from unauthorized clients (<code>APP_CHECK_ENFORCEMENT</code>).</p>
+          </div>
+          <div class="card">
+            <h3>Storage boundaries</h3>
+            <p>Clients write only to their own temporary staging paths. Canonical Drive writes happen only through the trusted server identity. No Google credentials in the browser.</p>
+          </div>
+          <div class="card">
+            <h3>Secrets</h3>
+            <p>Drive service credentials live in Secret Manager (<code>GOOGLE_DRIVE_CREDENTIALS_SECRET</code>); no key files in the repo, no secrets in client-side Vite variables.</p>
+          </div>
+        </div>
+
+        <h3>Command authority — server-side only</h3>
+        <p class="small">
+          User provisioning, role changes, assignment finalization, completion finalization, evidence submission,
+          evidence acceptance/rejection, evidence superseding, eCign execution, supervisor clearance, certification,
+          overrides, audit append, packet finalization, Drive repair/relink, and access-permission changes are all
+          server commands. None are direct client writes. No learner self-approval, no self-clearance,
+          no self-certification, no Nolan/Brad/AI approval authority, no AI mutation of compliance records,
+          no client-created audit events.
+        </p>
+
+        <div class="callout danger">
+          <strong>PII/PHI production gate:</strong> do not store real employee PII, patient PHI, or signature artifacts
+          until the organization verifies the approved Google Workspace/Drive environment, contractual and legal posture
+          (including BAA), service eligibility, access-control model, auditability, retention requirements,
+          minimum-necessary design, incident response, backup/recovery expectations, security review, and compliance
+          approval. Development and testing use mock or de-identified data only. PHI never appears in filenames, folder
+          names, GCS paths, logs, task names, exception messages, test fixtures, screenshots, or AI prompts — and PHI is
+          never sent to Nolan, Brad, Claude, another LLM, embeddings, or external analytics without an explicitly
+          approved PHI architecture.
+        </div>
+      </section>
+
+      <section id="rules">
+        <h2>17. Security Rules strategy</h2>
+        <p class="lead">
+          Rules default-deny writes. Direct client writes may be allowed only for low-risk learner preferences or
+          draft-only states. Compliance-affecting writes go through Cloud Functions.
+        </p>
+
+        <h3>Firestore rules posture — conceptual</h3>
+        <pre><code>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function hasRole(role) {
+      return signedIn() && request.auth.token.roles.hasAny([role]);
+    }
+
+    match /users/{uid} {
+      allow read: if isSelf(uid) || hasRole('admin') || hasRole('hr');
+      allow write: if false; // server function only
+    }
+
+    match /learners/{learnerId} {
+      allow read: if signedIn() && userCanReadLearner(learnerId);
+      allow write: if false; // server function only
+    }
+
+    match /events/{eventId}/{doc=**} {
+      allow read: if signedIn() && userCanReadEvent(eventId);
+      allow write: if false; // server function only — includes evidence metadata
+    }
+
+    match /auditEvents/{partition}/entries/{auditId} {
+      allow read: if hasRole('admin') || hasRole('compliance');
+      allow write: if false; // never client
+    }
+  }
+}</code></pre>
+
+        <h3>Storage rules posture — temporary paths only</h3>
+        <pre><code>service firebase.storage {
+  match /b/{bucket}/o {
+    // The ONLY client-writable surface: the user's own temporary staging path.
+    match /temporary-uploads/{uid}/{uploadSessionId}/{fileName} {
+      allow write: if request.auth != null && request.auth.uid == uid;
+      allow read: if false;
+    }
+
+    // Quarantine and packet-build paths are server-only.
+    match /{allPaths=**} {
+      allow read, write, delete: if false; // trusted service identity only
+    }
+  }
+}</code></pre>
+        <p class="small">
+          There are no <code>evidence/</code>, <code>signatures/</code>, <code>certificates/</code>, or
+          <code>exports/</code> permanent GCS rules — those paths do not exist in this architecture. Canonical evidence
+          access control is Workspace/Shared Drive permission management plus server-side verification.
+        </p>
+      </section>
+
+      <section id="environments">
+        <h2>18. Environments and configuration</h2>
+        <p class="lead">
+          Separate Firebase projects for development, staging, and production; a distinct Shared Drive (or clearly
+          separated folder trees) per environment. Never rehearse destructive or permission-changing operations against
+          the production Shared Drive.
+        </p>
+
+        <div class="table-scroll">
+        <table>
+          <thead><tr><th>Environment</th><th>Firebase project</th><th>Drive target</th><th>Data</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td>Local</td><td>Emulator Suite</td><td>Mock Drive adapter (deterministic, in-memory)</td><td>Mock/demo only</td><td>Fast dev, tests, no cloud writes.</td></tr>
+            <tr><td>Dev</td><td><code>care-indeed-v2-dev</code></td><td>Dev Shared Drive / sandbox folders</td><td>Mock/demo only</td><td>Feature development, QA.</td></tr>
+            <tr><td>Staging</td><td><code>care-indeed-v2-staging</code></td><td>Staging Shared Drive</td><td>De-identified pilot data only</td><td>Rules, functions, integrity/repair rehearsal.</td></tr>
+            <tr><td>Production</td><td><code>care-indeed-v2-prod</code></td><td>Production Shared Drive</td><td>Real data only after signoff</td><td>Operational system of record.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Server configuration (validated at startup; no secrets in client bundles)</h3>
+        <pre><code>FIREBASE_PROJECT_ID
+GOOGLE_DRIVE_SHARED_DRIVE_ID
+GOOGLE_DRIVE_EVIDENCE_ROOT_FOLDER_ID
+GOOGLE_DRIVE_SIGNED_FORMS_FOLDER_ID
+GOOGLE_DRIVE_EXPORTS_FOLDER_ID
+GOOGLE_WORKSPACE_DELEGATED_USER        // only if a delegation model is ever approved
+GOOGLE_DRIVE_CREDENTIALS_SECRET        // Secret Manager reference — never a key file in the repo
+TEMP_UPLOAD_BUCKET
+APP_CHECK_ENFORCEMENT
+DRIVE_INTEGRITY_CHECK_SCHEDULE</code></pre>
+        <p class="small">
+          The existing repo already validates Drive identity at boot (<code>assertDriveEvidenceLock</code>) and fails
+          closed on drift; the Functions runtime keeps that behavior. When Drive configuration is absent, environment
+          validation fails clearly — the system never silently falls back to a different store.
+        </p>
+
+        <h3>Emulator Suite expectation</h3>
+        <pre><code>firebase emulators:start \
+  --only auth,firestore,functions,storage,hosting
+# Drive is exercised via the deterministic mock adapter in local/emulator runs.</code></pre>
+      </section>
+
+      <section id="deployment">
+        <h2>19. Deployment architecture</h2>
+        <p class="lead">
+          Firebase Hosting serves the Vite/React SPA. Cloud Functions v2 deploy separately. App Hosting/Cloud Run remains
+          an option for a future full-stack path (the demo already runs on Cloud Run today).
+        </p>
+
+        <div class="grid cols-2">
+          <div class="card">
+            <h3>Recommended initial deployment</h3>
+            <pre><code>Firebase Hosting
+  /dist static build
+Cloud Functions v2
+  /functions TypeScript project
+Cloud Firestore
+Cloud Storage (temporary bucket + lifecycle rule)
+Google Drive API (Workspace Shared Drive)
+Firebase Auth
+App Check
+Secret Manager</code></pre>
+          </div>
+          <div class="card">
+            <h3>Optional later deployment</h3>
+            <pre><code>Firebase App Hosting
+  Cloud Run-backed app
+  Cloud Build
+  Artifact Registry
+  Cloud CDN
+Use only if SSR/full-stack web app is needed.</code></pre>
+          </div>
+        </div>
+
+        <h3>Build order</h3>
+        <ol>
+          <li>Set GCP billing budget and alert thresholds.</li>
+          <li>Create dev/staging/prod Firebase projects.</li>
+          <li>Verify the Workspace Shared Drive per environment and grant the server service identity Content manager access.</li>
+          <li>Enable the Google Drive API; store credentials in Secret Manager.</li>
+          <li>Enable Firebase Auth and allowed sign-in providers.</li>
+          <li>Create Firestore and baseline indexes.</li>
+          <li>Create the <em>temporary</em> staging bucket with a lifecycle cleanup rule. (No permanent evidence bucket.)</li>
+          <li>Write default-deny Firestore/Storage rules (Storage rules cover temporary paths only).</li>
+          <li>Enable App Check for the web app and Functions.</li>
+          <li>Deploy user profile and learner profile Functions.</li>
+          <li>Migrate Admin Users from the localStorage source to a Firestore-backed cache.</li>
+          <li>Deploy Journey assignment/deadline Functions.</li>
+          <li>Wrap the existing evidence workflow with upload-session + <code>evidenceFinalize</code> Functions over the existing Drive integration; do not rebuild the Evidence Center UX.</li>
+          <li>Deploy the audit append helper and the integrity-check schedule.</li>
+          <li>Deploy the export packet Function (Drive-verified, temp-assembled, Drive-published).</li>
+          <li>Run Emulator Suite tests, then staging UAT, then production readiness review.</li>
+        </ol>
+      </section>
+
+      <section id="migration">
+        <h2>20. Migration plan — Phase 2F</h2>
+        <p class="lead">
+          Staged migration; nothing flips at once. Identity first, then Journey state, then evidence hardening behind the
+          existing workflow, then audit/export. Keep demo labels until gates are truly server-enforced.
+        </p>
+
+        <div class="table-scroll">
+        <table>
+          <thead><tr><th>Phase</th><th>Goal</th><th>Key changes</th><th>Exit gate</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>2F-0</td>
+              <td>Foundation</td>
+              <td>Projects, Auth, Firestore, Functions scaffold, temp bucket + lifecycle, rules, App Check, Secret Manager, budget alerts. Drive identity verified per environment.</td>
+              <td>Emulator + dev deploy works; environment validation fails clearly when Drive config is absent.</td>
+            </tr>
+            <tr>
+              <td>2F-1</td>
+              <td>Real auth session</td>
+              <td>Replace the demo AuthProvider with Firebase Auth; map UID to <code>/users/{uid}</code>.</td>
+              <td>No hardcoded demo user in the production build.</td>
+            </tr>
+            <tr>
+              <td>2F-2</td>
+              <td>User setup API</td>
+              <td>Move <code>userAssignmentsStore</code> persistence to Firestore/Functions; keep Zustand as cache.</td>
+              <td>Admin create/edit/deactivate survives refresh and cross-device.</td>
+            </tr>
+            <tr>
+              <td>2F-3</td>
+              <td>Journey/Nolan context</td>
+              <td>Load learner profile, assignments, deadlines, policies, attempts from Firestore-backed APIs.</td>
+              <td>Nolan plan matches the server learner plan.</td>
+            </tr>
+            <tr>
+              <td>2F-4</td>
+              <td>Evidence hardening (adapter)</td>
+              <td>Upload sessions, idempotent <code>evidenceFinalize</code> over the existing Drive integration, SHA-256 + revision capture, server-enforced review, supersede path. Existing Evidence Center flow untouched.</td>
+              <td>Retry creates no duplicate Drive file; accepted evidence is read-only; no local-only evidence claims remain.</td>
+            </tr>
+            <tr>
+              <td>2F-5</td>
+              <td>Audit hardening</td>
+              <td>Server-only audit entries with hash chain; integrity checker scheduled; repair workflow.</td>
+              <td>Demo audit label removed only after the tamper-evident pipeline passes.</td>
+            </tr>
+            <tr>
+              <td>2F-6</td>
+              <td>Survey packet export</td>
+              <td>Export Function verifies Drive evidence, assembles in temp storage, publishes the final packet to Drive, indexes it in Firestore.</td>
+              <td>End-to-end upload → finalize → accept → export verified; no temp objects remain.</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+      </section>
+
+      <section id="acceptance">
+        <h2>21. Acceptance gates</h2>
+        <p class="lead">
+          The architecture is not complete until these gates pass. Use them as the definition of done for Phase 2F.
+        </p>
+
+        <div class="table-scroll">
+        <table>
+          <thead><tr><th>Gate</th><th>Required result</th></tr></thead>
+          <tbody>
+            <tr><td>Auth</td><td>Production build uses a Firebase Auth session; no hardcoded demo fallback.</td></tr>
+            <tr><td>Role enforcement</td><td>Wrong-role users cannot accept evidence; a learner cannot approve, certify, or clear themselves; direct client writes to accepted evidence are denied.</td></tr>
+            <tr><td>Metadata-only domains</td><td>A normal assignment, task update, or audit event creates <em>no</em> Drive file.</td></tr>
+            <tr><td>Evidence finalization</td><td>A completed finalization creates exactly one Drive file and one evidence metadata record; the stored Drive file ID matches the returned link; the stored SHA-256 matches the artifact.</td></tr>
+            <tr><td>Idempotency</td><td>A retry with the same <code>commandId</code> creates no duplicate Drive file; failed finalization remains recoverable.</td></tr>
+            <tr><td>Temp hygiene</td><td>Temporary storage objects are deleted after successful finalization; lifecycle rules clean abandoned objects.</td></tr>
+            <tr><td>Immutability semantics</td><td>Accepted evidence cannot be overwritten in place; superseding creates a new record and preserves the old one.</td></tr>
+            <tr><td>Integrity</td><td>A missing Drive file is reported as an integrity defect; trashed or access-denied files are never shown as valid/available evidence.</td></tr>
+            <tr><td>Links</td><td>Evidence links use the canonical Drive reference and open in a new tab with <code>rel="noopener noreferrer"</code>; the intended viewer's Drive access is verified.</td></tr>
+            <tr><td>Packets</td><td>Packet generation reads canonical Drive evidence, creates no permanent GCS copy, stores the final packet in Drive, and indexes it in Firestore.</td></tr>
+            <tr><td>eCign</td><td>Finalization stores the executed signed artifact in Drive with signer metadata in Firestore; corrections version forward.</td></tr>
+            <tr><td>Audit</td><td>Every state-changing Function appends a hash-chained audit entry with actor, action, timestamp, requestId; no PHI in audit payloads or logs.</td></tr>
+            <tr><td>Assistants</td><td>Nolan/Brad remain guidance-only; no AI mutation of compliance records.</td></tr>
+            <tr><td>Regression</td><td>Existing Journey, CES, Evidence Center, and workflow/event behavior is not broken; existing tests continue to pass.</td></tr>
+            <tr><td>Configuration</td><td>Environment validation fails clearly when Drive configuration is absent; Security Rules deny client writes to users, learners, events, evidence, audit.</td></tr>
+            <tr><td>App Check</td><td>Callable functions and Firebase resources enforce App Check in staging/prod.</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>End-to-end acceptance scenario</h3>
+        <pre><code> 1. HR admin signs in with Firebase Auth.
+ 2. HR creates an RN learner with firstDay, supervisor, license expiry. (Metadata only — no Drive file.)
+ 3. The learner signs in and sees the assigned Journey plan.
+ 4. Nolan answers "What do I need to complete?" from server context.
+ 5. The learner completes an assigned module attempt. (Metadata only.)
+ 6. The supervisor sees direct-report status.
+ 7. The learner uses the existing Evidence workflow to upload a supporting document.
+ 8. evidenceUploadInit stages it in temporary storage; evidenceFinalize validates, hashes,
+    creates the canonical Google Drive file, writes Firestore metadata, appends audit,
+    and deletes the temporary object.
+ 9. A reviewer (not the learner) accepts the evidence; it becomes read-only in the app.
+10. An eCign signature flow finalizes; the executed package lands in Drive as evidence.
+11. The audit ledger shows user setup, attempt, evidence, signature, and export events.
+12. exportSurveyPacket verifies every accepted Drive file, assembles the packet in temp
+    storage, publishes the final packet to Drive, and indexes it in Firestore.
+13. Opening any evidence link resolves the canonical Drive file in a new tab; a trashed
+    or inaccessible file shows an integrity error instead of a dead link.</code></pre>
+      </section>
+
+      <section id="backlog">
+        <h2>22. Deliberate backlog / not Phase 2F</h2>
+        <p class="lead">
+          Keep Phase 2F boring. No heavy platforms, AI services, or broad infrastructure until the serverless backbone is proven.
+        </p>
+        <div class="grid cols-2">
+          <div class="card">
+            <h3>Do not build yet</h3>
+            <ul>
+              <li>Open edX / Moodle / Frappe / Learning Locker as parallel platforms</li>
+              <li>Vertex AI / Firebase AI Logic for Nolan</li>
+              <li>BigQuery analytics pipelines</li>
+              <li>Cloud SQL unless Firestore cannot satisfy a specific query</li>
+              <li>GKE / Kubernetes</li>
+              <li>Complex BPMN engine embedding</li>
+              <li>Multi-region production before MVP stability</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Open decisions / later enhancements</h3>
+            <ul>
+              <li><strong>True WORM archival:</strong> if regulation or legal counsel requires genuinely immutable retention, evaluate a dedicated archival control as a separate approved decision — without recreating a permanent GCS evidence store by default.</li>
+              <li>Drive revision-pinning / export notarization (signed manifest) for final packets</li>
+              <li>xAPI-inspired immutable learning statements</li>
+              <li>Cloud Tasks operation queues for approval wait states</li>
+              <li>Formal workflow definition versioning</li>
+              <li>BigQuery read-only analytics after the audit design stabilizes</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="final-statement">
+        <h2>23. Final architecture statement</h2>
+        <div class="callout ok">
+          <strong>Practical final architecture:</strong> Firebase Auth = identity; Firestore = operational metadata and
+          state; Cloud Functions = command authority; Google Drive = canonical evidence artifacts; temporary Cloud
+          Storage = processing/quarantine only; Scheduler/Tasks = automation; Rules/App Check = client guardrails;
+          Logging/Monitoring = operations; server audit = compliance traceability.
+        </div>
+        <div class="callout">
+          <strong>North star:</strong> &ldquo;Google Drive stores canonical evidence artifacts. Firestore stores evidence
+          metadata and all normal operational state. Non-evidence records remain metadata only. Google Cloud Storage,
+          when used, is temporary processing infrastructure and not a second evidence system of record.&rdquo;
+        </div>
+        <p class="print-note">Generated as a standalone HTML architecture document for Care Indeed V2 (Care Indeed Home Health Compliance). Review with engineering, security, compliance, and product before implementation.</p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
