@@ -64,6 +64,42 @@ describe('deriveQapiBundle — ClinicalDump path (real extractQapiRollup math)',
 });
 
 describe('deriveQapiBundle — heuristic path (the real-world shell-packet bug scenario)', () => {
+  it('recovers flat structured QAPI aggregate JSON even when nested PIP arrays are present', () => {
+    const source = {
+      event_title: 'Live DefenCIble QAPI JSON Smoke',
+      meeting_date: '2026-05-07',
+      attendees: ['QA Director', 'Administrator', 'Clinical Manager'],
+      active_census: 42,
+      discharged_count: 7,
+      recert_count: 5,
+      high_acuity_count: 6,
+      hospitalizations: 2,
+      falls_total: 1,
+      infections_total: 3,
+      healthcare_associated: 1,
+      pips: [{ id: 'PIP-LIVE-JSON', title: 'Falls reduction', status: 'open' }],
+    };
+    const text = JSON.stringify(source);
+    const parsed = parseSourceFile({ fileName: 'flat-qapi.json', mimeType: 'application/json', text, byteLength: text.length });
+    expect(parsed.records.some((r) => r.pointer === '$')).toBe(true);
+
+    const bundle = deriveQapiBundle(parsed, '2026-05-07');
+    expect(bundle.sourceMode).toBe('heuristic_records');
+    expect(bundle.meetingDetails.attendeeRoster.value).toBe('QA Director, Administrator, Clinical Manager');
+    expect(bundle.censusPopulation.activeCensus.value).toBe(42);
+    expect(bundle.censusPopulation.dischargedCount.value).toBe(7);
+    expect(bundle.censusPopulation.recertificationCount.value).toBe(5);
+    expect(bundle.censusPopulation.highAcuityCount.value).toBe(6);
+    expect(bundle.adverseEvents.hospitalizationsTotal.value).toBe(2);
+    expect(bundle.adverseEvents.fallsTotal.value).toBe(1);
+    expect(bundle.adverseEvents.infectionsTotal.value).toBe(3);
+    expect(bundle.infectionControl.healthcareAssociated.value).toBe(1);
+    expect(bundle.pipCorrectiveAction).toHaveLength(1);
+    expect(bundle.pipCorrectiveAction[0].issueSummary).toBe('Falls reduction');
+    expect(bundle.censusPopulation.activeCensus.confidence).toBe('low');
+    expect(bundle.censusPopulation.activeCensus.needsReview).toBe(true);
+  });
+
   it('never produces a shell — derives real counts with source quotes and needsReview flags from a messy upload', () => {
     const parsed = parseSourceFile({ fileName: '2026-QAPI-Mock.json', mimeType: 'application/json', text: MESSY_UPLOAD_TEXT, byteLength: MESSY_UPLOAD_TEXT.length });
     expect(parsed.parseStatus).toBe('parsed');

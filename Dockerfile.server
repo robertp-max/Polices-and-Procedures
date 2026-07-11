@@ -40,6 +40,8 @@ COPY --from=build /app/tsconfig.node.json ./tsconfig.node.json
 # launch it. Only used when PDF_RENDER_ENABLED=true (otherwise saves fall to HTML).
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 RUN npx playwright install --with-deps chromium && chmod -R o+rx /ms-playwright
+RUN mkdir -p /app/data/brad/uploads /app/output/sources /app/output/mock_assessments \
+  && chown -R node:node /app/data /app/output
 EXPOSE 8080
 USER node
 CMD ["npx", "tsx", "server/index.ts"]

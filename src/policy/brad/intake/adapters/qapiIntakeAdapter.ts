@@ -330,6 +330,14 @@ function pickField(fields: Record<string, unknown>, aliases: string[]): unknown 
 
 const asArray = (v: unknown): unknown[] => (Array.isArray(v) ? v : v != null ? [v] : []);
 const quote = (r: ParsedRecordCell, max = 160): string => (r.text || JSON.stringify(r.fields)).slice(0, max);
+const asFiniteNumber = (v: unknown): number | null => {
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  if (typeof v === 'string') {
+    const n = Number(v.replace(/,/g, '').trim());
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+};
 
 export function deriveQapiBundleFromRecords(parsed: ParsedFile): QapiDerivedBundle {
   const records = parsed.records;
@@ -349,7 +357,7 @@ export function deriveQapiBundleFromRecords(parsed: ParsedFile): QapiDerivedBund
   const topFlags = [...flagCounts.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 8);
   const topFlagQuotes = topFlags.flatMap(([, v]) => v.quotes).slice(0, 6);
 
-  const pipRecords = records.filter((r) => pickField(r.fields, ['pipId', 'pip_id']) !== undefined);
+  const pipRecords = records.filter((r) => pickField(r.fields, ['pipId', 'pip_id']) !== undefined || /^(\$|file:[^:]+):?\.?pips?\[/.test(r.pointer));
   const failedOrOpenPips = pipRecords.filter((r) => {
     const status = String(pickField(r.fields, ['status']) ?? '').toLowerCase();
     return status.includes('fail') || status.includes('open') || status.includes('active');
@@ -371,14 +379,32 @@ export function deriveQapiBundleFromRecords(parsed: ParsedFile): QapiDerivedBund
     list.length
       ? lowConfidence(list.length, list.slice(0, 3).map((r) => quote(r)), `Counted ${list.length} record(s) matching "${label}" by keyword/alias match — not a validated field, confirm manually.`)
       : NO_EVIDENCE(`No records matched "${label}" in this upload.`);
+  const metricFromField = (aliases: string[], label: string): QapiDerivedMetric | null => {
+    for (const r of records) {
+      const n = asFiniteNumber(pickField(r.fields, aliases));
+      if (n != null) return lowConfidence(n, [quote(r)], `Read "${label}" from an aggregate source field — confirm against the uploaded source.`);
+    }
+    return null;
+  };
+  const metricFromFieldOrCount = (aliases: string[], list: ParsedRecordCell[], label: string): QapiDerivedMetric =>
+    metricFromField(aliases, label) ?? metricFromCount(list, label);
+  const textFromField = (aliases: string[], label: string): QapiDerivedMetric | null => {
+    for (const r of records) {
+      const v = pickField(r.fields, aliases);
+      if (v == null || v === '') continue;
+      const value = Array.isArray(v) ? v.map(String).join(', ') : String(v);
+      return lowConfidence(value, [quote(r)], `Read "${label}" from an aggregate source field — confirm against the uploaded source.`);
+    }
+    return null;
+  };
 
   const pipTriggers: QapiPipTriggerCandidate[] = failedOrOpenPips.map((r) => ({
     trigger: `PIP flagged ${String(pickField(r.fields, ['status']) ?? 'open/failed')}`,
-    issueSummary: String(pickField(r.fields, ['issue']) ?? quote(r)),
+    issueSummary: String(pickField(r.fields, ['issue', 'title', 'name', 'summary']) ?? quote(r)),
     severity: 'high',
     ownerRoleSuggested: 'QAPI Coordinator',
     correctiveActionRequired: true,
-    remeasurementMetric: String(pickField(r.fields, ['actual_outcome']) ?? 'Re-measure at next quarterly review'),
+    remeasurementMetric: String(pickField(r.fields, ['actual_outcome', 'remeasurementMetric', 'remeasurement_metric']) ?? 'Re-measure at next quarterly review'),
     qapiReviewRequired: true,
     sourceQuotes: [quote(r)],
   }));
@@ -387,24 +413,24 @@ export function deriveQapiBundleFromRecords(parsed: ParsedFile): QapiDerivedBund
     sourceMode: 'heuristic_records',
     overallNote: `Upload did not match the known ClinicalDump schema (${parsed.note || 'unstructured/mixed content'}). Derived ${records.length} record(s) via alias/keyword matching — every metric below is low-confidence and requires reviewer confirmation.`,
     meetingDetails: {
-      attendeeRoster: NO_EVIDENCE(),
-      quorumStatus: NO_EVIDENCE(),
+      attendeeRoster: textFromField(['attendees', 'attendeesPresent', 'attendees_present', 'attendeeRoster', 'attendee_roster', 'roster'], 'attendee roster') ?? NO_EVIDENCE(),
+      quorumStatus: textFromField(['quorumStatus', 'quorum_status', 'quorum'], 'quorum status') ?? NO_EVIDENCE(),
     },
     censusPopulation: {
-      activeCensus: NO_EVIDENCE('No patient census records recognized in this upload.'),
-      dischargedCount: NO_EVIDENCE('No patient census records recognized in this upload.'),
-      recertificationCount: NO_EVIDENCE('No patient census records recognized in this upload.'),
-      qapiRequiredCount: topFlags.length ? lowConfidence(clinicianRecords.filter((r) => asArray(pickField(r.fields, ['performanceFlags', 'high_risk_flags'])).length > 0).length, topFlagQuotes) : NO_EVIDENCE(),
-      highAcuityCount: NO_EVIDENCE('No patient acuity field recognized in this upload.'),
+      activeCensus: metricFromField(['activeCensus', 'active_census', 'active census', 'active_count'], 'active census') ?? NO_EVIDENCE('No patient census records recognized in this upload.'),
+      dischargedCount: metricFromField(['dischargedCount', 'discharged_count', 'discharge_count', 'discharges', 'discharged'], 'discharged count') ?? NO_EVIDENCE('No patient census records recognized in this upload.'),
+      recertificationCount: metricFromField(['recertificationCount', 'recertification_count', 'recert_count', 'recertifications', 'recerts'], 'recertification count') ?? NO_EVIDENCE('No patient census records recognized in this upload.'),
+      qapiRequiredCount: metricFromField(['qapiRequiredCount', 'qapi_required_count', 'qapi_required', 'qapi_cases'], 'QAPI-required count') ?? (topFlags.length ? lowConfidence(clinicianRecords.filter((r) => asArray(pickField(r.fields, ['performanceFlags', 'high_risk_flags'])).length > 0).length, topFlagQuotes) : NO_EVIDENCE()),
+      highAcuityCount: metricFromField(['highAcuityCount', 'high_acuity_count', 'high_acuity', 'high_acuity_cases'], 'high-acuity count') ?? NO_EVIDENCE('No patient acuity field recognized in this upload.'),
     },
     highRiskRollup: {
       topFlags: topFlags.length ? lowConfidence(topFlags.map(([flag, v]) => `${flag} (${v.count})`), topFlagQuotes) : NO_EVIDENCE('No performanceFlags/high_risk_flags arrays found.'),
-      immediateActionCases: metricFromCount(abuseNeglectRecords, 'abuse/neglect'),
-      clinicianPipOrLicenseFlagCount: clinicianRecords.length ? lowConfidence(pipRecords.length, pipRecords.slice(0, 3).map((r) => quote(r))) : NO_EVIDENCE(),
-      clinicianDisciplinaryActionCount: disciplinaryRecords.length
+      immediateActionCases: metricFromFieldOrCount(['immediateActionCases', 'immediate_action_cases'], abuseNeglectRecords, 'abuse/neglect'),
+      clinicianPipOrLicenseFlagCount: metricFromField(['clinicianPipOrLicenseFlagCount', 'clinician_pip_or_license_flag_count', 'clinician_pip_or_license_flags'], 'clinician PIP/license flags') ?? (clinicianRecords.length ? lowConfidence(pipRecords.length, pipRecords.slice(0, 3).map((r) => quote(r))) : NO_EVIDENCE()),
+      clinicianDisciplinaryActionCount: metricFromField(['clinicianDisciplinaryActionCount', 'clinician_disciplinary_action_count', 'disciplinary_count', 'disciplinary_actions'], 'clinician disciplinary actions') ?? (disciplinaryRecords.length
         ? lowConfidence(disciplinaryRecords.length, disciplinaryRecords.slice(0, 3).map((r) => quote(r)))
-        : NO_EVIDENCE('No disciplinaryActions field or "disciplinary" keyword matched in this upload.'),
-      overloadedClinicianAssignmentCount: clinicianRecords.length
+        : NO_EVIDENCE('No disciplinaryActions field or "disciplinary" keyword matched in this upload.')),
+      overloadedClinicianAssignmentCount: metricFromField(['overloadedClinicianAssignmentCount', 'overloaded_clinician_assignment_count', 'overloaded_clinician_count'], 'overloaded clinician assignments') ?? (clinicianRecords.length
         ? lowConfidence(
             clinicianRecords.filter((r) => {
               const caseload = Number(pickField(r.fields, ['caseloadCount', 'caseload_count']));
@@ -413,32 +439,32 @@ export function deriveQapiBundleFromRecords(parsed: ParsedFile): QapiDerivedBund
             }).length,
             clinicianRecords.slice(0, 3).map((r) => quote(r)),
           )
-        : NO_EVIDENCE(),
+        : NO_EVIDENCE()),
     },
     adverseEvents: {
-      hospitalizationsTotal: metricFromCount(hospitalizationRecords, 'hospitalization'),
-      fallsTotal: metricFromCount(fallRecords, 'fall'),
-      infectionsTotal: metricFromCount(infectionRecords, 'infection'),
-      unreportedInfections: infectionRecords.length
+      hospitalizationsTotal: metricFromFieldOrCount(['hospitalizationsTotal', 'hospitalizations_total', 'hospitalizations', 'hospitalization_count'], hospitalizationRecords, 'hospitalization'),
+      fallsTotal: metricFromFieldOrCount(['fallsTotal', 'falls_total', 'falls', 'fall_count'], fallRecords, 'fall'),
+      infectionsTotal: metricFromFieldOrCount(['infectionsTotal', 'infections_total', 'infections', 'infection_count'], infectionRecords, 'infection'),
+      unreportedInfections: metricFromField(['unreportedInfections', 'unreported_infections', 'infection_unreported_count'], 'unreported infections') ?? (infectionRecords.length
         ? lowConfidence(infectionRecords.filter((r) => pickField(r.fields, ['reported', 'reported_to_state']) === false).length, infectionRecords.slice(0, 3).map((r) => quote(r)))
-        : NO_EVIDENCE(),
-      criticalLabEventsUnreported: NO_EVIDENCE('No lab records recognized in this upload.'),
+        : NO_EVIDENCE()),
+      criticalLabEventsUnreported: metricFromField(['criticalLabEventsUnreported', 'critical_lab_events_unreported', 'critical_labs_unreported'], 'critical lab events unreported') ?? NO_EVIDENCE('No lab records recognized in this upload.'),
     },
     pipCorrectiveAction: pipTriggers,
     chartAuditDocumentationIntegrity: {
-      oasisLateSoc: NO_EVIDENCE('No OASIS timeliness field recognized in this upload.'),
-      pocMissingF2F: NO_EVIDENCE('No plan-of-care fields recognized in this upload.'),
-      pocUnsignedOrMissingSignature: NO_EVIDENCE('No plan-of-care fields recognized in this upload.'),
-      medReconciliationMismatch: metricFromCount(medicationRecords, 'medication reconciliation'),
+      oasisLateSoc: metricFromField(['oasisLateSoc', 'oasis_late_soc', 'late_soc'], 'late OASIS SOC') ?? NO_EVIDENCE('No OASIS timeliness field recognized in this upload.'),
+      pocMissingF2F: metricFromField(['pocMissingF2F', 'poc_missing_f2f', 'late_or_missing_f2f'], 'POC missing F2F') ?? NO_EVIDENCE('No plan-of-care fields recognized in this upload.'),
+      pocUnsignedOrMissingSignature: metricFromField(['pocUnsignedOrMissingSignature', 'poc_unsigned_or_missing_signature', 'unsigned_orders'], 'POC unsigned/missing signature') ?? NO_EVIDENCE('No plan-of-care fields recognized in this upload.'),
+      medReconciliationMismatch: metricFromFieldOrCount(['medReconciliationMismatch', 'med_reconciliation_mismatch', 'med_recon_discrepancies'], medicationRecords, 'medication reconciliation'),
     },
     infectionControl: {
-      healthcareAssociated: infectionRecords.length
+      healthcareAssociated: metricFromField(['healthcareAssociated', 'healthcare_associated', 'healthcare_associated_infections', 'confirmed_hais', 'hais'], 'healthcare-associated infections') ?? (infectionRecords.length
         ? lowConfidence(infectionRecords.filter((r) => pickField(r.fields, ['healthcare_associated']) === true).length, infectionRecords.slice(0, 2).map((r) => quote(r)))
-        : NO_EVIDENCE(),
-      communityAcquired: infectionRecords.length
+        : NO_EVIDENCE()),
+      communityAcquired: metricFromField(['communityAcquired', 'community_acquired', 'community_acquired_infections'], 'community-acquired infections') ?? (infectionRecords.length
         ? lowConfidence(infectionRecords.filter((r) => pickField(r.fields, ['community_acquired']) === true).length, infectionRecords.slice(0, 2).map((r) => quote(r)))
-        : NO_EVIDENCE(),
-      unreportedToState: NO_EVIDENCE('No infection reporting-status field recognized in this upload.'),
+        : NO_EVIDENCE()),
+      unreportedToState: metricFromField(['unreportedToState', 'unreported_to_state', 'infection_unreported_to_state'], 'infection reporting status') ?? NO_EVIDENCE('No infection reporting-status field recognized in this upload.'),
     },
     medicationSafety: {
       medicationEventLineList: metricFromCount(medicationRecords, 'medication event'),

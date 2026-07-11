@@ -188,6 +188,10 @@ function recordsFromJson(value: unknown): { records: ParsedRecordCell[]; headers
     // Prefer top-level array properties as the record collections.
     const arrayProps = Object.entries(value).filter(([, v]) => Array.isArray(v));
     if (arrayProps.length > 0) {
+      const rootFields = Object.fromEntries(
+        Object.entries(value).filter(([, v]) => !(Array.isArray(v) && v.some((x) => x && typeof x === 'object'))),
+      );
+      if (Object.keys(rootFields).length > 0) emit(rootFields, '$');
       for (const [k, v] of arrayProps) walk(v, `$.${k}`);
     } else {
       walk(value, '$');
