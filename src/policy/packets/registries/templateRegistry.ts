@@ -52,12 +52,27 @@ export interface PacketTemplateSelectionOutput {
   Drive_destination_pattern: string;
 }
 
-/** Template card metadata for the Packet Template Selector. */
+/**
+ * Template card metadata for the Packet Template Selector (FR-001).
+ * Cards display: title, description, archetype, category, availability, last-used date.
+ * Favorites and recently-used are supported via helpers (user-scoped at runtime).
+ */
 export interface PacketTemplateDefinition extends PacketTemplateSelectionOutput {
   title: string;
   description: string;
+  /** FR-001 category for filter/grouping. */
   category: string;
   availability: PacketTemplateAvailability;
+  /**
+   * FR-001 last-used date (ISO-8601).
+   * `null` until the selector wires user-scoped last-used tracking.
+   */
+  lastUsedAt: string | null;
+  /**
+   * Whether this template may appear in the Favorites UI.
+   * Actual favorite membership is user-scoped (see `listFavoriteTemplates`).
+   */
+  favoriteEligible: boolean;
   /** §7.2 / §7.3 / §7.4 rollout tier when applicable. */
   rolloutTier: 'current' | 'P0' | 'P1' | 'P2' | null;
 }
@@ -131,6 +146,8 @@ export const PACKET_TEMPLATES: readonly PacketTemplateDefinition[] = [
       'Production analytical-report packet for Quarterly QAPI governance reviews: KPI dashboard, findings, PIP/CAP/RCA determinations, workflow triggers, committee decisions, and Drive-published trend sidecars.',
     category: 'QAPI',
     availability: 'Available',
+    lastUsedAt: null,
+    favoriteEligible: true,
     rolloutTier: 'current',
     compatible_event_family_ids: ['qapi_meeting'],
     compatible_workflow_ids: ['QA-WF-03'],
@@ -153,6 +170,8 @@ export const PACKET_TEMPLATES: readonly PacketTemplateDefinition[] = [
       'Monthly QAPI committee analytical-report packet using the same archetype and renderer as Quarterly QAPI (FR acceptance §23.1.1). Focuses on indicator dashboard, action-item roll-forward, and monthly committee record.',
     category: 'QAPI',
     availability: 'Available',
+    lastUsedAt: null,
+    favoriteEligible: true,
     rolloutTier: 'current',
     compatible_event_family_ids: ['qapi_meeting', 'qapi_dashboard_refresh'],
     compatible_workflow_ids: ['QA-WF-03', 'QA-WF-02'],
@@ -183,6 +202,8 @@ export const PACKET_TEMPLATES: readonly PacketTemplateDefinition[] = [
       'P0 meeting packet for quarterly Governing Body oversight: agenda, QAPI/Compliance/Risk reports, motions, votes, minutes, and action items.',
     category: 'Governance',
     availability: 'Planned',
+    lastUsedAt: null,
+    favoriteEligible: true,
     rolloutTier: 'P0',
     compatible_event_family_ids: [
       'governing_body_meeting',
@@ -215,6 +236,8 @@ export const PACKET_TEMPLATES: readonly PacketTemplateDefinition[] = [
       'P0 annual analytical-report packet for QAPI program evaluation, annual plan, and Governing Body submission.',
     category: 'QAPI',
     availability: 'Planned',
+    lastUsedAt: null,
+    favoriteEligible: true,
     rolloutTier: 'P0',
     compatible_event_family_ids: ['qapi_annual_eval'],
     compatible_workflow_ids: ['QA-WF-10', 'QA-WF-01'],
@@ -252,6 +275,8 @@ export const PACKET_TEMPLATES: readonly PacketTemplateDefinition[] = [
       'P0 PIP/CAPA packet for performance improvement projects, corrective action plans, effectiveness checks, and closure.',
     category: 'QAPI',
     availability: 'Needs configuration',
+    lastUsedAt: null,
+    favoriteEligible: true,
     rolloutTier: 'P0',
     compatible_event_family_ids: [],
     compatible_workflow_ids: ['QA-WF-04', 'QA-WF-05'],
@@ -282,6 +307,8 @@ export const PACKET_TEMPLATES: readonly PacketTemplateDefinition[] = [
       'P0 incident investigation packet for adverse events, near misses, hospitalizations, and root-cause analysis.',
     category: 'Risk',
     availability: 'Needs configuration',
+    lastUsedAt: null,
+    favoriteEligible: true,
     rolloutTier: 'P0',
     compatible_event_family_ids: ['incident_report', 'sentinel_event_rca'],
     compatible_workflow_ids: ['QA-WF-05'],
@@ -309,6 +336,8 @@ export const PACKET_TEMPLATES: readonly PacketTemplateDefinition[] = [
       'P0 survey-response packet for ACHC/CMS/CDPH/OSHA surveys, deficiency response, and plan of correction.',
     category: 'Compliance',
     availability: 'Needs configuration',
+    lastUsedAt: null,
+    favoriteEligible: true,
     rolloutTier: 'P0',
     compatible_event_family_ids: ['survey_activation'],
     compatible_workflow_ids: ['CO-WF-05'],
@@ -336,6 +365,8 @@ export const PACKET_TEMPLATES: readonly PacketTemplateDefinition[] = [
       'P0 employee-competency packet for onboarding, competency validation, clearance, and annual revalidation.',
     category: 'HR',
     availability: 'Needs configuration',
+    lastUsedAt: null,
+    favoriteEligible: true,
     rolloutTier: 'P0',
     compatible_event_family_ids: [
       'competency_validation',
@@ -408,3 +439,62 @@ export function toSelectionOutput(
 export function templateArchetypeIds(): readonly PacketArchetypeId[] {
   return PACKET_TEMPLATES.map((t) => t.packet_archetype_id);
 }
+
+/** FR-001 category filter — templates matching the given category label. */
+export function templatesByCategory(
+  category: string,
+): readonly PacketTemplateDefinition[] {
+  return PACKET_TEMPLATES.filter((t) => t.category === category);
+}
+
+/**
+ * FR-001 favorites support — resolve user-scoped favorite ids to templates.
+ * Only `favoriteEligible` templates are returned.
+ */
+export function listFavoriteTemplates(
+  favoriteTemplateIds: ReadonlySet<string> | readonly string[],
+): readonly PacketTemplateDefinition[] {
+  const ids =
+    favoriteTemplateIds instanceof Set
+      ? favoriteTemplateIds
+      : new Set(favoriteTemplateIds);
+  return PACKET_TEMPLATES.filter(
+    (t) => t.favoriteEligible && ids.has(t.packet_template_id),
+  );
+}
+
+/**
+ * FR-001 recently-used support — resolve ordered recent ids to templates.
+ * Preserves input order; unknown ids are skipped.
+ */
+export function listRecentlyUsedTemplates(
+  recentTemplateIdsInOrder: readonly string[],
+): readonly PacketTemplateDefinition[] {
+  const out: PacketTemplateDefinition[] = [];
+  for (const id of recentTemplateIdsInOrder) {
+    const t = BY_ID.get(id);
+    if (t) out.push(t);
+  }
+  return out;
+}
+
+/**
+ * Pure projection: attach a last-used timestamp for card display without
+ * mutating the registry (registry `lastUsedAt` stays null until wired).
+ */
+export function withLastUsedAt(
+  template: PacketTemplateDefinition,
+  lastUsedAt: string | null,
+): PacketTemplateDefinition {
+  return { ...template, lastUsedAt };
+}
+
+/** Stable §7.2 P0 template ids (exact set). */
+export const P0_TEMPLATE_IDS = [
+  'governing-body-meeting',
+  'annual-qapi',
+  'pip-capa',
+  'incident-rca',
+  'survey-poc',
+  'onboarding-competency',
+] as const;

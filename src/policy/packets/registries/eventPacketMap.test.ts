@@ -11,14 +11,22 @@ import { MANDATED_EVENTS_EXPANDED } from '@/policy/data/mandatedEventsExpanded';
 import { MULTI_YEAR_EVENTS } from '@/policy/data/multiYearEvents';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 
-import type { PacketArchetypeId } from '../contracts';
+import type { PacketArchetypeId, PacketModuleId } from '../contracts';
+import {
+  QAPI_PART_I_MODULE_IDS,
+  QAPI_PART_II_MODULE_IDS,
+} from '../contracts';
 import {
   EVENT_PACKET_MAP,
   getEventPacketDefinition,
   isKnownWorkflowId,
+  isPersonnelSensitiveFamily,
 } from './eventPacketMap';
 import {
   getTemplate,
+  listFavoriteTemplates,
+  listRecentlyUsedTemplates,
+  P0_TEMPLATE_IDS,
   PACKET_TEMPLATES,
   templateArchetypeIds,
   templatesForEventFamily,
@@ -38,6 +46,11 @@ const VALID_ARCHETYPES: ReadonlySet<PacketArchetypeId> = new Set([
   'audit',
   'contract-vendor',
 ]);
+
+const EXPECTED_QAPI_MODULES: readonly PacketModuleId[] = [
+  ...QAPI_PART_I_MODULE_IDS,
+  ...QAPI_PART_II_MODULE_IDS,
+];
 
 function distinctFamiliesFromSources(): Set<string> {
   const families = new Set<string>();
@@ -132,23 +145,64 @@ describe('eventPacketMap — §23.1.3 coverage', () => {
       expect(t!.confidentiality_rule.length).toBeGreaterThan(0);
       expect(t!.Drive_destination_pattern.length).toBeGreaterThan(0);
       expect(t!.availability).toBe('Available');
+      // FR-001 card metadata
+      expect(t!.category).toBe('QAPI');
+      expect(t!.lastUsedAt).toBeNull();
+      expect(t!.favoriteEligible).toBe(true);
     }
   });
 
-  it('§7.2 P0 templates exist with Planned or Needs configuration status', () => {
-    const p0Ids = [
+  it('QAPI quarterly/monthly required modules, approvers, and signers match exactly', () => {
+    const quarterly = getTemplate('qapi-quarterly');
+    const monthly = getTemplate('qapi-monthly');
+    expect(quarterly).toBeDefined();
+    expect(monthly).toBeDefined();
+
+    expect(quarterly!.required_modules).toEqual(EXPECTED_QAPI_MODULES);
+    expect(monthly!.required_modules).toEqual(EXPECTED_QAPI_MODULES);
+
+    expect(quarterly!.required_approvers).toEqual([
+      'QAPI Committee Chair',
+      'Administrator',
+    ]);
+    expect(quarterly!.required_signers).toEqual([
+      'Administrator',
+      'Clinical Manager',
+      'QAPI Committee Chair',
+    ]);
+
+    expect(monthly!.required_approvers).toEqual([
+      'QAPI Committee Chair',
+      'QAPI Coordinator',
+    ]);
+    expect(monthly!.required_signers).toEqual([
+      'QAPI Committee Chair',
+      'QAPI Coordinator',
+    ]);
+  });
+
+  it('§7.2 P0 template ids are exactly the six required templates', () => {
+    expect(P0_TEMPLATE_IDS).toEqual([
       'governing-body-meeting',
       'annual-qapi',
       'pip-capa',
       'incident-rca',
       'survey-poc',
       'onboarding-competency',
-    ] as const;
-    for (const id of p0Ids) {
+    ]);
+
+    const p0FromRegistry = PACKET_TEMPLATES.filter((t) => t.rolloutTier === 'P0').map(
+      (t) => t.packet_template_id,
+    );
+    expect(p0FromRegistry).toEqual([...P0_TEMPLATE_IDS]);
+
+    for (const id of P0_TEMPLATE_IDS) {
       const t = getTemplate(id);
       expect(t, id).toBeDefined();
       expect(['Planned', 'Needs configuration']).toContain(t!.availability);
       expect(t!.rolloutTier).toBe('P0');
+      expect(t!.lastUsedAt).toBeNull();
+      expect(t!.favoriteEligible).toBe(true);
       expect(VALID_ARCHETYPES.has(t!.packet_archetype_id)).toBe(true);
     }
   });
@@ -162,5 +216,49 @@ describe('eventPacketMap — §23.1.3 coverage', () => {
         ).toBeTruthy();
       }
     }
+  });
+
+  it('personnel/credentialing/HR families use restricted aggregate-only confidentiality (PRD §13.4/§20.2)', () => {
+    const mustRestrict = [
+      'staff_file_audit',
+      'license_exclusion_audit',
+      'oig_sam_exclusion_check',
+      'coi_disclosure',
+      'competency_validation',
+      'qapi_meeting',
+    ] as const;
+
+    for (const familyId of mustRestrict) {
+      const def = getEventPacketDefinition(familyId);
+      expect(def, familyId).toBeDefined();
+      expect(
+        isPersonnelSensitiveFamily(familyId, def!.eventTitle, def!.archetypeId),
+        familyId,
+      ).toBe(true);
+      expect(def!.confidentialityRules.length).toBeGreaterThan(0);
+      const rule = def!.confidentialityRules[0]!;
+      expect(rule.classification, familyId).toBe('restricted');
+      expect(rule.aggregateOnlyInGeneralPacket, familyId).toBe(true);
+      expect(rule.separateAddendum, familyId).toBe(true);
+      expect(rule.redactFromGeneralPacket, familyId).toBe(true);
+    }
+  });
+
+  it('FR-001 favorites and recently-used helpers resolve template ids', () => {
+    const favs = listFavoriteTemplates(['qapi-quarterly', 'governing-body-meeting']);
+    expect(favs.map((t) => t.packet_template_id)).toEqual([
+      'qapi-quarterly',
+      'governing-body-meeting',
+    ]);
+
+    const recent = listRecentlyUsedTemplates([
+      'onboarding-competency',
+      'unknown-template',
+      'qapi-monthly',
+    ]);
+    expect(recent.map((t) => t.packet_template_id)).toEqual([
+      'onboarding-competency',
+      'qapi-monthly',
+    ]);
   });
 });

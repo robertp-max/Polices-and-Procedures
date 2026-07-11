@@ -232,41 +232,109 @@ function collectFamilies(events: readonly RegulatoryEvent[]): Map<string, Family
   return map;
 }
 
-function defaultConfidentiality(archetypeId: PacketArchetypeId): PacketConfidentialityRule[] {
+/**
+ * Restricted personnel/PHI confidentiality rule (PRD §13.4 / §20.2).
+ * General packet body is aggregate-only; identifiable details stay in addendum.
+ */
+const RESTRICTED_PERSONNEL_RULE: PacketConfidentialityRule = {
+  ruleId: 'restricted-personnel-or-phi',
+  classification: 'restricted',
+  restrictedToRoles: [
+    'Administrator',
+    'Director of Nursing',
+    'Compliance Officer',
+    'HR Lead',
+    'Clinical Manager',
+  ],
+  watermarkText: 'CONFIDENTIAL — RESTRICTED ACCESS',
+  separateAddendum: true,
+  redactFromGeneralPacket: true,
+  aggregateOnlyInGeneralPacket: true,
+};
+
+const AGENCY_CONFIDENTIAL_RULE: PacketConfidentialityRule = {
+  ruleId: 'agency-confidential',
+  classification: 'agency-confidential',
+  restrictedToRoles: [],
+  watermarkText: null,
+  separateAddendum: false,
+  redactFromGeneralPacket: false,
+  aggregateOnlyInGeneralPacket: false,
+};
+
+/**
+ * Explicit personnel/credentialing/HR family ids that must use restricted
+ * aggregate-only rules even when mapped to a non-restricted archetype (e.g. audit).
+ */
+const PERSONNEL_SENSITIVE_FAMILY_IDS: ReadonlySet<string> = new Set([
+  /* credentialing / HR file audits */
+  'staff_file_audit',
+  'license_exclusion_audit',
+  'oig_sam_exclusion_check',
+  /* competency / training / onboarding */
+  'competency_validation',
+  'competency_validation_biennial',
+  'employee_compliance_training',
+  'bbp_training',
+  'hipaa_training',
+  'hha_aide_inservice',
+  'hha_skill_observation',
+  'hha_aide_observation',
+  'ep_staff_training',
+  /* personnel disclosures */
+  'coi_disclosure',
+  /* QAPI includes personnel-review determinations — general body aggregate-only (§13.4) */
+  'qapi_meeting',
+  'qapi_dashboard_refresh',
+  'qapi_annual_eval',
+]);
+
+/**
+ * Family-semantics classifier for personnel sensitivity (PRD §13.4 / §20.2).
+ * Classifies by family id + title keywords + archetype — not archetype alone.
+ * When uncertain, returns restricted (more restrictive).
+ */
+export function isPersonnelSensitiveFamily(
+  eventFamilyId: string,
+  eventTitle: string,
+  archetypeId: PacketArchetypeId,
+): boolean {
   if (
     archetypeId === 'employee-competency' ||
     archetypeId === 'privacy-breach' ||
     archetypeId === 'incident-investigation'
   ) {
-    return [
-      {
-        ruleId: 'restricted-personnel-or-phi',
-        classification: 'restricted',
-        restrictedToRoles: [
-          'Administrator',
-          'Director of Nursing',
-          'Compliance Officer',
-          'HR Lead',
-          'Clinical Manager',
-        ],
-        watermarkText: 'CONFIDENTIAL — RESTRICTED ACCESS',
-        separateAddendum: true,
-        redactFromGeneralPacket: true,
-        aggregateOnlyInGeneralPacket: true,
-      },
-    ];
+    return true;
   }
-  return [
-    {
-      ruleId: 'agency-confidential',
-      classification: 'agency-confidential',
-      restrictedToRoles: [],
-      watermarkText: null,
-      separateAddendum: false,
-      redactFromGeneralPacket: false,
-      aggregateOnlyInGeneralPacket: false,
-    },
-  ];
+  if (PERSONNEL_SENSITIVE_FAMILY_IDS.has(eventFamilyId)) {
+    return true;
+  }
+  const blob = `${eventFamilyId} ${eventTitle}`.toLowerCase();
+  // Keyword net — prefer restricted when any personnel/HR/credential signal is present.
+  if (
+    /personnel|credential|staff[_ -]?file|staff file|competenc|onboard|exclusion|employee|aide|hr[_ -]|human.resource|background.check|coi|conflict of interest|license.?exclusion|sam.?exclusion|personnel.?review|discipline|sanction|investigation/.test(
+      blob,
+    )
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Confidentiality rules by family semantics (not archetype alone).
+ * Personnel/credentialing/HR/competency/personnel-review families always get
+ * restricted + aggregateOnlyInGeneralPacket per PRD §13.4 / §20.2.
+ */
+function defaultConfidentiality(
+  eventFamilyId: string,
+  eventTitle: string,
+  archetypeId: PacketArchetypeId,
+): PacketConfidentialityRule[] {
+  if (isPersonnelSensitiveFamily(eventFamilyId, eventTitle, archetypeId)) {
+    return [RESTRICTED_PERSONNEL_RULE];
+  }
+  return [AGENCY_CONFIDENTIAL_RULE];
 }
 
 function defaultCompletionGates(
@@ -437,7 +505,11 @@ function buildDefinition(agg: FamilyAggregate): MandatedEventPacketDefinition {
     requiredSignerRoles: [...agg.signerRoles].sort(),
     allowedDualCapacitySignatures: [],
     completionGates: defaultCompletionGates(agg.eventFamilyId, knownForms),
-    confidentialityRules: defaultConfidentiality(archetypeId),
+    confidentialityRules: defaultConfidentiality(
+      agg.eventFamilyId,
+      agg.eventTitle,
+      archetypeId,
+    ),
     retentionRule:
       'Retain per agency records-retention schedule and applicable federal/state record rules; final archetype retention periods pending compliance approval (PRD §28 #7).',
     driveDestinationTemplate:
