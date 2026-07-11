@@ -1,0 +1,8 @@
+{
+  "_comment": "TEST FIXTURE ONLY — deliberately WRONG identity to prove the lock fails closed. NOT a real credential.",
+  "type": "service_account",
+  "project_id": "some-other-project",
+  "private_key_id": "0000000000000000000000000000000000000000",
+  "private_key": "FAKE-TEST-PLACEHOLDER-NOT-A-REAL-PRIVATE-KEY",
+  "client_email": "wrong-identity@some-other-project.iam.gserviceaccount.com"
+}

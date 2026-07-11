@@ -1,0 +1,8 @@
+{
+  "_comment": "TEST FIXTURE ONLY — this is NOT a real credential. The private_key value is a placeholder string, not key material.",
+  "type": "service_account",
+  "project_id": "orbital-stage-443721-v1",
+  "private_key_id": "0000000000000000000000000000000000000000",
+  "private_key": "FAKE-TEST-PLACEHOLDER-NOT-A-REAL-PRIVATE-KEY",
+  "client_email": "careindeed-drive-evidence@orbital-stage-443721-v1.iam.gserviceaccount.com"
+}

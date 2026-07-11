@@ -212,6 +212,15 @@ export function assertDriveEvidenceLock(opts: { throwOnMismatch?: boolean } = {}
     } else if (target !== DRIVE_EVIDENCE_LOCK.serviceAccountEmail) {
       problems.push(`impersonation target "${target}" != locked "${DRIVE_EVIDENCE_LOCK.serviceAccountEmail}"`);
     }
+    // Production-shaped mode also pins the packet destination: the TEMP
+    // packet-folder override is a development-only convenience and must not
+    // redirect packets in a deployed impersonation environment.
+    if (env.drivePacketFolderId !== DRIVE_EVIDENCE_LOCK.packetFolderId) {
+      problems.push(
+        `packetFolderId "${env.drivePacketFolderId}" != locked "${DRIVE_EVIDENCE_LOCK.packetFolderId}" `
+        + '(GOOGLE_DRIVE_PACKET_FOLDER_ID overrides are development-only)',
+      );
+    }
   } else if (driveAuthMode !== 'key_file') {
     problems.push(`unknown GOOGLE_DRIVE_AUTH_MODE "${env.driveAuthMode}" (use "impersonation" or "key_file")`);
   }
