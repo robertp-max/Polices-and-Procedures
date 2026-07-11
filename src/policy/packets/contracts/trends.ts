@@ -3,6 +3,8 @@
  * §14.5, §14.6, §14.8, §16.6. Pure types only. Zero runtime side effects.
  */
 
+import type { Fr015DeterminationOption, WorkflowDecisionState } from './triggers';
+
 /**
  * §14.6 Comparability states — EXACT PRD strings (em-dashes preserved).
  */
@@ -129,7 +131,8 @@ export interface QapiWorkflowSnapshot {
   workflowId: string;
   workflowInstanceId: string | null;
   title: string | null;
-  decisionState: string;
+  /** FR-012 decision state — closed vocabulary. */
+  decisionState: WorkflowDecisionState;
   status: string | null;
   carryForward: boolean | null;
   dueDate: string | null;
@@ -140,7 +143,8 @@ export interface QapiWorkflowSnapshot {
 export interface QapiPipSnapshot {
   pipId: string;
   findingId: string | null;
-  determination: string | null;
+  /** FR-015 determination — closed vocabulary. */
+  determination: Fr015DeterminationOption | null;
   status: string | null;
   effectiveness: string | null;
   openedAt: string | null;

@@ -102,9 +102,9 @@ export interface SupplementalInformationItem {
   originalFilename: string | null;
   submittedBy: string;
   submittedAt: string;
-  classification: SupplementalClassification | string;
-  destination: SupplementalDestination | string;
-  validationStatus: string;
+  classification: SupplementalClassification;
+  destination: SupplementalDestination;
+  validationStatus: SupplementalValidationStatus;
   reviewerId: string | null;
   appliedChangeIds: string[];
   relatedFindingIds: string[];
