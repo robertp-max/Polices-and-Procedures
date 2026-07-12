@@ -1,7 +1,7 @@
 import type { PacketEnvelope } from "@/policy/packets/contracts";
 import type { FormInstanceRow, SignatureRow } from "../../ecign/store";
 import { createEnvelopeBinding, withEnvelopeBindingMetadata } from "../../ecign/envelopeBindings";
-import { deriveEnvelopeStatus, isEnvelopeFullySigned } from "./envelopeStatus";
+import { deriveEnvelopeStatus, isEnvelopeFullySigned, normalizeEnvelopeStatus } from "./envelopeStatus";
 import {
   buildSignaturePlacementMap,
   type SignaturePlacementDocument,
@@ -175,6 +175,10 @@ export interface VoidEnvelopeInput extends SendEnvelopeInput {
   reason: string;
 }
 
+export interface MaterialEditEnvelopeInput extends SendEnvelopeInput {
+  reason: string;
+}
+
 export interface ReplaceSignerEnvelopeInput extends SendEnvelopeInput {
   fromSignerId: string;
   toSignerId: string;
@@ -215,6 +219,7 @@ export function createPacketEnvelopeService(dependencies: PacketEnvelopeServiceD
     resend: (input: RemindEnvelopeInput) => resendEnvelope(dependencies, input),
     void: (input: VoidEnvelopeInput) => voidEnvelope(dependencies, input),
     cancel: (input: VoidEnvelopeInput) => cancelEnvelope(dependencies, input),
+    invalidateForMaterialEdit: (input: MaterialEditEnvelopeInput) => invalidateEnvelopeForMaterialEdit(dependencies, input),
     replaceSigner: (input: ReplaceSignerEnvelopeInput) => replaceSignerEnvelope(dependencies, input),
     extend: (input: ExtendEnvelopeInput) => extendEnvelope(dependencies, input),
     refreshStatus: (envelopeId: string) => refreshEnvelopeStatus(dependencies, envelopeId),
@@ -264,7 +269,11 @@ export async function prepareEnvelope(
     );
     const created = await dependencies.createFormInstance(createInput);
     const bound = withEnvelopeBindingMetadata(created, envelopeBinding);
-    const formInstanceId = readRequiredString(bound, ["id", "formInstanceId", "form_instance_id"], "eCIgn form instance");
+    const formInstanceId = readRequiredString(
+      bound,
+      ["id", "instance_id", "formInstanceId", "form_instance_id"],
+      "eCIgn form instance",
+    );
 
     memberFormInstances.push(bound);
     documents.push(createSignaturePlacementDocument(form, formInstanceId));
@@ -309,7 +318,7 @@ export async function prepareEnvelope(
     workflowId: input.workflowId,
     status: "prepared",
     memberFormInstanceIds: memberFormInstances.map((instance) =>
-      readRequiredString(instance, ["id", "formInstanceId", "form_instance_id"], "eCIgn form instance"),
+      readRequiredString(instance, ["id", "instance_id", "formInstanceId", "form_instance_id"], "eCIgn form instance"),
     ),
     requiredSignerIds,
     signaturePlacementMap,
@@ -324,7 +333,7 @@ export async function prepareEnvelope(
     for (const formInstance of memberFormInstances) {
       const formInstanceId = readRequiredString(
         formInstance,
-        ["id", "formInstanceId", "form_instance_id"],
+        ["id", "instance_id", "formInstanceId", "form_instance_id"],
         "eCIgn form instance",
       );
       for (const signerId of requiredSignerIds) {
@@ -362,7 +371,11 @@ export async function sendEnvelope(
   for (const instance of instances) {
     await delegate({
       envelopeId: input.envelopeId,
-      formInstanceId: readRequiredString(instance, ["id", "formInstanceId", "form_instance_id"], "eCIgn form instance"),
+      formInstanceId: readRequiredString(
+        instance,
+        ["id", "instance_id", "formInstanceId", "form_instance_id"],
+        "eCIgn form instance",
+      ),
       actorId: input.actorId,
     });
   }
@@ -387,7 +400,11 @@ export async function remindEnvelope(
   for (const instance of filterInstancesForSigner(instances, input.signerId)) {
     await delegate({
       envelopeId: input.envelopeId,
-      formInstanceId: readRequiredString(instance, ["id", "formInstanceId", "form_instance_id"], "eCIgn form instance"),
+      formInstanceId: readRequiredString(
+        instance,
+        ["id", "instance_id", "formInstanceId", "form_instance_id"],
+        "eCIgn form instance",
+      ),
       actorId: input.actorId,
     });
   }
@@ -406,7 +423,11 @@ export async function resendEnvelope(
   for (const instance of filterInstancesForSigner(instances, input.signerId)) {
     await delegate({
       envelopeId: input.envelopeId,
-      formInstanceId: readRequiredString(instance, ["id", "formInstanceId", "form_instance_id"], "eCIgn form instance"),
+      formInstanceId: readRequiredString(
+        instance,
+        ["id", "instance_id", "formInstanceId", "form_instance_id"],
+        "eCIgn form instance",
+      ),
       actorId: input.actorId,
     });
   }
@@ -430,7 +451,11 @@ export async function voidEnvelope(
   for (const instance of instances) {
     await delegate({
       envelopeId: input.envelopeId,
-      formInstanceId: readRequiredString(instance, ["id", "formInstanceId", "form_instance_id"], "eCIgn form instance"),
+      formInstanceId: readRequiredString(
+        instance,
+        ["id", "instance_id", "formInstanceId", "form_instance_id"],
+        "eCIgn form instance",
+      ),
       actorId: input.actorId,
       reason: input.reason,
     });
@@ -465,7 +490,7 @@ export async function cancelEnvelope(
         envelopeId: input.envelopeId,
         formInstanceId: readRequiredString(
           instance,
-          ["id", "formInstanceId", "form_instance_id"],
+          ["id", "instance_id", "formInstanceId", "form_instance_id"],
           "eCIgn form instance",
         ),
         actorId: input.actorId,
@@ -496,7 +521,11 @@ export async function replaceSignerEnvelope(
   for (const instance of instances) {
     await delegate({
       envelopeId: input.envelopeId,
-      formInstanceId: readRequiredString(instance, ["id", "formInstanceId", "form_instance_id"], "eCIgn form instance"),
+      formInstanceId: readRequiredString(
+        instance,
+        ["id", "instance_id", "formInstanceId", "form_instance_id"],
+        "eCIgn form instance",
+      ),
       actorId: input.actorId,
       fromSignerId: input.fromSignerId,
       toSignerId: input.toSignerId,
@@ -518,7 +547,11 @@ export async function extendEnvelope(
   for (const instance of instances) {
     await delegate({
       envelopeId: input.envelopeId,
-      formInstanceId: readRequiredString(instance, ["id", "formInstanceId", "form_instance_id"], "eCIgn form instance"),
+      formInstanceId: readRequiredString(
+        instance,
+        ["id", "instance_id", "formInstanceId", "form_instance_id"],
+        "eCIgn form instance",
+      ),
       actorId: input.actorId,
       expiresAt: input.expiresAt,
       reason: input.reason,
@@ -535,6 +568,26 @@ export async function refreshEnvelopeStatus(
   const envelope = await requireEnvelope(dependencies, envelopeId);
   const instances = await dependencies.listEnvelopeFormInstances(envelopeId);
   return refreshEnvelopeStatusFromRows(dependencies, envelope, instances);
+}
+
+export async function invalidateEnvelopeForMaterialEdit(
+  dependencies: PacketEnvelopeServiceDependencies,
+  input: MaterialEditEnvelopeInput,
+): Promise<PacketEnvelope> {
+  const envelope = await requireEnvelope(dependencies, input.envelopeId);
+  const status = readEnvelopeStatus(envelope);
+
+  if (isEnvelopeFullySigned(status)) {
+    throw new Error("Cannot apply a material edit to a fully-signed packet envelope.");
+  }
+  if (status === "prepared") {
+    return cancelEnvelope(dependencies, input);
+  }
+  if (status === "sent" || status === "delivered" || status === "viewed" || status === "partially-signed") {
+    return voidEnvelope(dependencies, input);
+  }
+
+  throw new Error(`Cannot apply a material edit to packet envelope from status ${status ?? "unknown"}.`);
 }
 
 function assertPrepareInput(input: PrepareEnvelopeInput): void {
@@ -748,13 +801,25 @@ function filterInstancesForSigner(
   }
 
   return instances.filter((instance) => {
-    const requiredSigners = readStringArray(instance, ["required_signers", "requiredSigners"]);
-    return requiredSigners.includes(signerId);
+    const requiredSigners = readArray(instance, ["required_signers", "requiredSigners"]);
+    return requiredSigners.some((requiredSigner) => requiredSignerMatches(requiredSigner, signerId));
   });
 }
 
+function requiredSignerMatches(requiredSigner: unknown, signerId: string): boolean {
+  if (typeof requiredSigner === "string") {
+    return requiredSigner === signerId;
+  }
+  if (requiredSigner === null || typeof requiredSigner !== "object") {
+    return false;
+  }
+
+  const signerKeys = ["user_id", "userId", "signer_user_id", "signerUserId", "id", "field_id", "fieldId"];
+  return readString(requiredSigner, signerKeys) === signerId;
+}
+
 function readEnvelopeStatus(envelope: PacketEnvelope): string | undefined {
-  return readString(envelope, ["status", "state"]);
+  return normalizeEnvelopeStatus(readString(envelope, ["status", "state"]));
 }
 
 function withEnvelopePatch(envelope: PacketEnvelope, patch: EnvelopePatch): PacketEnvelope {
@@ -801,7 +866,7 @@ function readString(record: unknown, keys: readonly string[]): string | undefine
   return undefined;
 }
 
-function readStringArray(record: unknown, keys: readonly string[]): readonly string[] {
+function readArray(record: unknown, keys: readonly string[]): readonly unknown[] {
   if (record === null || typeof record !== "object") {
     return [];
   }
@@ -809,7 +874,7 @@ function readStringArray(record: unknown, keys: readonly string[]): readonly str
   const values = record as Record<string, unknown>;
   for (const key of keys) {
     const value = values[key];
-    if (Array.isArray(value) && value.every((item) => typeof item === "string")) {
+    if (Array.isArray(value)) {
       return value;
     }
   }
