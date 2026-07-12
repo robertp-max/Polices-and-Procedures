@@ -1,14 +1,22 @@
-import { useMemo, useState } from "react";
-import type { CSSProperties } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { PacketModel } from "@/policy/packets/contracts";
 import { OutlinePanel } from "./OutlinePanel";
 import { PreviewPanel } from "./PreviewPanel";
+import AddInformationTab from "./tabs/AddInformationTab";
+import AskBradTab from "./tabs/AskBradTab";
 import { EditTab } from "./tabs/EditTab";
 import { HistoryTab } from "./tabs/HistoryTab";
 import { SourcesTab } from "./tabs/SourcesTab";
 import { ValidationTab } from "./tabs/ValidationTab";
 
-export type WorkspaceTabId = "edit" | "sources" | "validation" | "history";
+export type WorkspaceTabId =
+  | "edit"
+  | "add-information"
+  | "ask-brad"
+  | "sources"
+  | "validation"
+  | "history";
 
 export type WorkspaceEditIntent =
   | "narrative"
@@ -57,21 +65,24 @@ export type WorkspaceTabProps = {
   readonly context: WorkspaceTabContext;
 };
 
+export type WorkspaceTabDefinition = {
+  readonly id: WorkspaceTabId;
+  readonly label: string;
+  readonly render?: (context: WorkspaceTabContext) => ReactNode;
+};
+
 export type WorkspaceShellProps = {
   readonly initialPacket?: unknown;
   readonly initialSources?: unknown;
   readonly initialValidationResult?: unknown;
   readonly initialHistory?: unknown;
   readonly initialTab?: WorkspaceTabId;
+  readonly tabs?: readonly WorkspaceTabDefinition[];
+  readonly workspaceFooter?: ReactNode;
   readonly readOnly?: boolean;
   readonly onSubmitEdit?: (
     edit: WorkspaceEditSubmission,
   ) => Promise<WorkspaceEditResult | void> | WorkspaceEditResult | void;
-};
-
-type TabDefinition = {
-  readonly id: WorkspaceTabId;
-  readonly label: string;
 };
 
 type WorkspaceHistoryEntry = {
@@ -98,7 +109,7 @@ type WorkspaceValidationResult = {
   }[];
 };
 
-export const WORKSPACE_TABS: readonly TabDefinition[] = [
+export const WORKSPACE_TABS: readonly WorkspaceTabDefinition[] = [
   { id: "edit", label: "Edit" },
   { id: "sources", label: "Sources" },
   { id: "validation", label: "Validation" },
@@ -297,7 +308,7 @@ export const DEFAULT_WORKSPACE_PACKET = {
 const styles: Record<string, CSSProperties> = {
   root: {
     display: "grid",
-    gridTemplateRows: "auto 1fr",
+    gridTemplateRows: "auto minmax(0, 1fr) auto",
     minHeight: 720,
     height: "100%",
     background: "#f8fafc",
@@ -349,7 +360,6 @@ const styles: Record<string, CSSProperties> = {
   },
   tabs: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
     borderBottom: "1px solid #d9dee7",
   },
   tab: {
@@ -371,6 +381,13 @@ const styles: Record<string, CSSProperties> = {
   tabPanel: {
     minHeight: 0,
     overflow: "auto",
+  },
+  footer: {
+    minWidth: 0,
+    overflow: "auto",
+    borderTop: "1px solid #d9dee7",
+    background: "#ffffff",
+    padding: 16,
   },
 };
 
@@ -401,18 +418,30 @@ export function WorkspaceShell({
   initialValidationResult = DEFAULT_WORKSPACE_VALIDATION,
   initialHistory = DEFAULT_WORKSPACE_HISTORY,
   initialTab = "edit",
+  tabs = WORKSPACE_TABS,
+  workspaceFooter,
   readOnly = false,
   onSubmitEdit,
 }: WorkspaceShellProps) {
+  const availableTabs = tabs.length > 0 ? tabs : WORKSPACE_TABS;
+  const initialActiveTab = hasWorkspaceTab(availableTabs, initialTab)
+    ? initialTab
+    : availableTabs[0]?.id ?? "edit";
   const [packet, setPacket] = useState(() => cloneWorkspacePacket(initialPacket));
   const [validationResult, setValidationResult] = useState(() =>
     cloneWorkspacePacket(initialValidationResult),
   );
   const [history, setHistory] = useState(() => cloneWorkspacePacket(initialHistory));
-  const [activeTab, setActiveTab] = useState<WorkspaceTabId>(initialTab);
+  const [activeTab, setActiveTab] = useState<WorkspaceTabId>(initialActiveTab);
   const [selectedOutlineId, setSelectedOutlineId] = useState("sections");
   const packetId = getWorkspacePacketId(packet);
   const title = getWorkspacePacketTitle(packet);
+  const activeTabDefinition = availableTabs.find((tab) => tab.id === activeTab);
+
+  useEffect(() => {
+    if (hasWorkspaceTab(availableTabs, activeTab)) return;
+    setActiveTab(availableTabs[0]?.id ?? "edit");
+  }, [activeTab, availableTabs]);
 
   const context = useMemo<WorkspaceTabContext>(
     () => ({
@@ -470,8 +499,15 @@ export function WorkspaceShell({
         </main>
 
         <aside style={styles.tabsPanel}>
-          <nav aria-label="Packet workspace tabs" role="tablist" style={styles.tabs}>
-            {WORKSPACE_TABS.map((tab) => (
+          <nav
+            aria-label="Packet workspace tabs"
+            role="tablist"
+            style={{
+              ...styles.tabs,
+              gridTemplateColumns: `repeat(${availableTabs.length}, minmax(0, 1fr))`,
+            }}
+          >
+            {availableTabs.map((tab) => (
               <button
                 aria-controls={`workspace-panel-${tab.id}`}
                 aria-selected={activeTab === tab.id}
@@ -496,15 +532,50 @@ export function WorkspaceShell({
             role="tabpanel"
             style={styles.tabPanel}
           >
-            {activeTab === "edit" ? <EditTab context={context} /> : null}
-            {activeTab === "sources" ? <SourcesTab context={context} /> : null}
-            {activeTab === "validation" ? <ValidationTab context={context} /> : null}
-            {activeTab === "history" ? <HistoryTab context={context} /> : null}
+            {renderWorkspaceTab(activeTabDefinition, activeTab, context)}
           </section>
         </aside>
       </div>
+
+      {workspaceFooter ? <footer style={styles.footer}>{workspaceFooter}</footer> : null}
     </section>
   );
+}
+
+function hasWorkspaceTab(
+  tabs: readonly WorkspaceTabDefinition[],
+  tabId: WorkspaceTabId,
+): boolean {
+  return tabs.some((tab) => tab.id === tabId);
+}
+
+function renderWorkspaceTab(
+  tab: WorkspaceTabDefinition | undefined,
+  activeTab: WorkspaceTabId,
+  context: WorkspaceTabContext,
+): ReactNode {
+  if (tab?.render) return tab.render(context);
+
+  switch (activeTab) {
+    case "edit":
+      return <EditTab context={context} />;
+    case "add-information":
+      return <AddInformationTab packetInstanceId={context.packetId} />;
+    case "ask-brad":
+      return (
+        <AskBradTab
+          packetInstanceId={context.packetId}
+          expectedRevision={readPacketRevision(context.packet)}
+          onPacketUpdated={(packetModel) => context.onPacketChange?.(packetModel)}
+        />
+      );
+    case "sources":
+      return <SourcesTab context={context} />;
+    case "validation":
+      return <ValidationTab context={context} />;
+    case "history":
+      return <HistoryTab context={context} />;
+  }
 }
 
 function historyRows(value: unknown): WorkspaceHistoryEntry[] {
@@ -518,6 +589,21 @@ function readValidationStatus(validationResult: unknown): string {
 
 function readString(value: unknown): string | undefined {
   return typeof value === "string" && value.trim().length > 0 ? value : undefined;
+}
+
+function readNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function readPacketRevision(packet: unknown): number {
+  const record = asRecord(packet);
+  const identity = asRecord(record?.identity);
+  return (
+    readNumber(record?.revision) ??
+    readNumber(identity?.revision) ??
+    readNumber(identity?.packetVersion) ??
+    1
+  );
 }
 
 function asRecord(value: unknown): Record<string, unknown> | undefined {
