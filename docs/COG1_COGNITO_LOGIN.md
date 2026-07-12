@@ -9,16 +9,22 @@ The provider interface is deliberately IdP-agnostic so that migration replaces
 
 **Post-review hardening (on `integration/cog1-review`):** two Major fixes landed after
 the integration review:
-1. **Demo-bypass now requires an explicit development-only signal** (`import.meta.env.DEV`
-   or `VITE_LOCAL_DEMO_AUTH_BYPASS`) in addition to the deployed-host veto. Hostname
-   inference alone (localhost / `*.vercel.app`) can no longer enable demo mode in a
-   production build, and no host outside the denylist silently falls into demo
-   (`src/auth/bypass.ts`, regression tests in `src/auth/bypass.test.ts`).
+1. **Demo-bypass is gated by an absolute dev-build check.** A production build
+   (`import.meta.env.DEV === false`) can **never** activate demo auth — the explicit
+   `VITE_LOCAL_DEMO_AUTH_BYPASS` opt-in does **not** override a production build; it
+   only takes effect *inside* a dev build (where it additionally authorizes demo on a
+   non-vetoed host beyond localhost / `*.vercel.app`). Deployed hosts (CloudFront,
+   `*.run.app`, careindeed.com) are vetoed unconditionally on top of that. Hostname
+   inference alone never enables demo. (`src/auth/bypass.ts`, regression tests in
+   `src/auth/bypass.test.ts`.)
 2. **Suspended/disabled application users are rejected server-side even with a valid
    Cognito token** via `assertRegistrationActiveForSession`, wired into the shared
    `DemoAuthService.getCurrentUser` seam — so `/me`, admin APIs (through
-   `assertAdminAccessToken`), and the login/refresh resolution paths all fail closed
-   with 403 (`server/auth/service.ts`, unit tests in `server/auth/authService.test.ts`).
+   `assertAdminAccessToken`), and both the login and **refresh** paths fail closed with
+   403. Refresh validates the newly-issued access token through `getCurrentUser`, so a
+   user suspended mid-session cannot obtain a refreshed session
+   (`server/auth/service.ts`, unit tests in `server/auth/authService.test.ts` run via
+   `vitest.server.config.ts`).
 
 ## What changed
 
@@ -65,8 +71,9 @@ the real `userId`/email/name/role through the same `useAuth()` contract as befor
 - Admin API endpoints re-validate the caller's access token server-side
   (`assertAdminAccessToken`); the UI card is convenience, not the boundary.
 - Disabled/revoked users fail the next `/me`/refresh and lose the session.
-- Local demo bypass policy is unchanged (`bypass.ts`): CloudFront production never
-  bypasses; localhost/Vercel previews may, for development.
+- Local demo bypass (`bypass.ts`): only a **dev build** can enable it — deployed hosts
+  are vetoed unconditionally, and a production build never bypasses regardless of the
+  `VITE_LOCAL_DEMO_AUTH_BYPASS` flag or hostname.
 
 ## MFA — deliberately out of scope (follow-on backlog)
 

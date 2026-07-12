@@ -559,6 +559,13 @@ export class DemoAuthService {
       throw new ApiError('auth_error', 'Session refresh failed.', 401);
     }
 
+    // COG-1 fail-closed: validate the refreshed access token through the same
+    // getCurrentUser seam used by /me, which enforces the active-registration
+    // gate. A user suspended/disabled mid-session therefore cannot obtain a
+    // refreshed session (it throws 403), rather than extending access to the
+    // next token lifetime.
+    await this.getCurrentUser(auth.AccessToken);
+
     return {
       accessToken: auth.AccessToken,
       idToken: auth.IdToken,

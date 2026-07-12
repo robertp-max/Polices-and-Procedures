@@ -43,16 +43,25 @@ describe('isDemoAuthBypassEnabled', () => {
     );
 
     it('vercel-preview behavior cannot leak into a production build', () => {
-      // A prod build served on a vercel host is not demo unless explicitly opted in.
+      // A prod build served on a vercel host is never demo.
       expect(isDemoAuthBypassEnabled('preview-abc.vercel.app', { devBuild: false, explicitFlag: false })).toBe(false);
     });
 
-    it('honors the deliberate explicit opt-in on a non-vetoed host', () => {
-      expect(isDemoAuthBypassEnabled('some-random-host.example', { devBuild: false, explicitFlag: true })).toBe(true);
+    it('the explicit opt-in does NOT re-enable demo in a production build', () => {
+      // Corrected contract: explicitFlag only takes effect inside a dev build;
+      // in a production build (devBuild=false) it can never re-enable demo.
+      expect(isDemoAuthBypassEnabled('some-random-host.example', { devBuild: false, explicitFlag: true })).toBe(false);
     });
 
     it('still vetoes deployed hosts even with the explicit opt-in', () => {
       expect(isDemoAuthBypassEnabled('anything.run.app', { devBuild: false, explicitFlag: true })).toBe(false);
+    });
+
+    it('an arbitrary non-vetoed host with the explicit flag still returns false in a production build', () => {
+      // Gap-1 regression: explicitFlag=true must NOT override devBuild=false.
+      expect(isDemoAuthBypassEnabled('some-vanity-domain.example', { devBuild: false, explicitFlag: true })).toBe(false);
+      expect(isDemoAuthBypassEnabled('localhost', { devBuild: false, explicitFlag: true })).toBe(false);
+      expect(isDemoAuthBypassEnabled('preview-abc.vercel.app', { devBuild: false, explicitFlag: true })).toBe(false);
     });
   });
 

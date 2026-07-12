@@ -25,13 +25,16 @@ export interface DemoBypassSignals {
  *     careindeed.com) can NEVER activate demo auth, regardless of any build
  *     flag. This is an absolute denylist veto.
  *
- *  2. DEVELOPMENT-ONLY CONDITION — on every other host, demo bypass requires
- *     an explicit development-only signal: either a local `vite dev` build
- *     (`import.meta.env.DEV`) or a deliberately set `VITE_LOCAL_DEMO_AUTH_BYPASS`
- *     opt-in. Hostname inference alone (localhost / *.vercel.app) is NOT
- *     sufficient — a production `vite build` served on any host that merely
- *     isn't on the denylist (a new vanity domain, `*.web.app`, `*.pages.dev`,
- *     a bare IP, etc.) will NOT silently fall into demo mode.
+ *  2. DEV-BUILD GATE — a production build (`import.meta.env.DEV === false`)
+ *     can NEVER activate demo auth. The explicit `VITE_LOCAL_DEMO_AUTH_BYPASS`
+ *     opt-in does NOT override this: it only takes effect inside a dev build.
+ *     So a production `vite build`, on any host (localhost, vercel preview,
+ *     a vanity domain, `*.web.app`, `*.pages.dev`, a bare IP), never falls
+ *     into demo mode — flag or no flag.
+ *
+ *  3. DEVELOPMENT HOST/OPT-IN — inside a dev build, the standard local/preview
+ *     hosts (localhost, 127.0.0.1, *.vercel.app) get the bypass, and the
+ *     explicit flag additionally authorizes it on any other non-vetoed host.
  *
  * `signals` exists only so tests can exercise the production-build path; in the
  * app the real `import.meta.env` values are always used.
@@ -50,17 +53,17 @@ export function isDemoAuthBypassEnabled(hostOverride?: string, signals?: DemoByp
     return false;
   }
 
-  // (2) Development-only condition — required. Without it, hostname alone
-  // (including localhost / vercel preview) can never enable demo mode.
+  // (2) Dev-build gate — ABSOLUTE. A production build never activates demo,
+  // and the explicit flag cannot override a production build.
   const devBuild = signals?.devBuild ?? (import.meta.env.DEV === true);
+  if (!devBuild) return false;
+
+  // (3) Inside a dev build: standard local/preview hosts, or an explicit opt-in
+  // on any other non-vetoed host.
   const explicitFlag =
     signals?.explicitFlag ?? (import.meta.env.VITE_LOCAL_DEMO_AUTH_BYPASS === 'true');
-  if (!devBuild && !explicitFlag) return false;
-
   const isLocalhost = host === 'localhost' || host === '127.0.0.1';
   const isVercelPreview = host.endsWith('.vercel.app');
 
-  // Inside a dev build, the standard local/preview hosts get the bypass; the
-  // explicit flag additionally authorizes it anywhere not vetoed above.
   return isLocalhost || isVercelPreview || explicitFlag;
 }
