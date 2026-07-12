@@ -4,6 +4,7 @@ import {
   FileLocalPacketStore,
   type PacketMetadataStore,
 } from '../store.js';
+import { createPacketBradRouter } from './brad.js';
 import { createPacketLifecycleRouter } from './lifecycle.js';
 import { createPacketSourcesRouter } from './sources.js';
 import { packetTemplatesRouter } from './templates.js';
@@ -18,6 +19,7 @@ export function createPacketsRouter(options: PacketsRouterOptions = {}): Router 
 
   router.use('/templates', packetTemplatesRouter);
   router.use(createPacketSourcesRouter({ store }));
+  router.use(createPacketBradRouter({ store }));
   router.use(createPacketLifecycleRouter({ store }));
 
   return router;

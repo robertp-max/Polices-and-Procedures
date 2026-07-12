@@ -37,9 +37,11 @@ export type BradObjectType =
   | 'BradGeneratedOtpRecord';
 
 /** Lifecycle of a Brad-created object. Append-only objects are `committed` at
-    creation; protected/cloud-changing objects start `pending-approval`. */
+    creation; packet patch changes start `proposed`, then move through approval
+    and application. */
 export type WriteStatus =
   | 'committed'          // append-only object persisted; immutable
+  | 'proposed'           // proposed change; no effect applied
   | 'pending-approval'   // requires Super Admin approval before any effect
   | 'approved'           // Super Admin approved; effect may be attempted
   | 'denied'             // Super Admin denied; no effect

@@ -19,6 +19,8 @@ import type {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 export const HARNESS_VERSION = 'brad-harness-2026.06.24.1';
+export const BRAD_PACKET_PATCH_OBJECT_TYPE = 'BradGeneratedPacketPatch' as BradObjectType;
+export const BRAD_PACKET_PATCH_OBJECT_REGISTRY = [BRAD_PACKET_PATCH_OBJECT_TYPE] as const;
 
 type StoreRecord =
   | { kind: 'object'; object: BradGeneratedObject }
