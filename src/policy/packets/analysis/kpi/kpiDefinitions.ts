@@ -20,7 +20,7 @@ export type KpiThresholdDirection =
   | 'lower-is-better'
   | 'range';
 
-export type KpiCalculationKind = 'count' | 'direct' | 'ratio';
+export type KpiCalculationKind = 'count' | 'direct' | 'ratio' | 'complementRatio';
 
 export interface KpiTarget {
   value: number;
@@ -78,6 +78,62 @@ const VALIDATED = 'Validated' satisfies AppendixDDataValidationStatus;
 
 const BASE_QAPI_KPI_DEFINITIONS = [
   {
+    indicatorId: 'qapi-patients-episodes-in-scope',
+    title: 'Patients or episodes in scope',
+    cohort: 'Patients or episodes accepted into the measurement-period QAPI review scope',
+    numerator: 'Patients or episodes in measurement scope',
+    denominator: null,
+    exclusions: [
+      'Patients or episodes outside the accepted reporting period',
+      'Duplicate source rows for the same patient or episode',
+    ],
+    unit: 'count',
+    formula: 'patientsOrEpisodesInScope',
+    target: { value: 1, display: '>= 1 in scope', operator: '>=' },
+    threshold: {
+      direction: 'higher-is-better',
+      label: '>= 1 in scope',
+      operator: '>=',
+      value: 1,
+    },
+    benchmark: 'QAPI packet completeness threshold',
+    sourceRecords: ['censusPopulation.patientsOrEpisodesInScope'],
+    definitionVersion: QAPI_KPI_DEFINITION_VERSION,
+    validationStatus: VALIDATED,
+    calculation: {
+      kind: 'count',
+      valueField: 'patientsOrEpisodesInScope',
+    },
+  },
+  {
+    indicatorId: 'qapi-active-census',
+    title: 'Active census',
+    cohort: 'All active home health patients at period close',
+    numerator: 'Active patients at period close',
+    denominator: null,
+    exclusions: [
+      'Discharged patients before period close',
+      'Patients outside the accepted reporting period',
+    ],
+    unit: 'count',
+    formula: 'activeCensus',
+    target: { value: 1, display: '>= 1 active patient', operator: '>=' },
+    threshold: {
+      direction: 'higher-is-better',
+      label: '>= 1 active patient',
+      operator: '>=',
+      value: 1,
+    },
+    benchmark: 'QAPI packet completeness threshold',
+    sourceRecords: ['censusPopulation.activeCensus'],
+    definitionVersion: QAPI_KPI_DEFINITION_VERSION,
+    validationStatus: VALIDATED,
+    calculation: {
+      kind: 'count',
+      valueField: 'activeCensus',
+    },
+  },
+  {
     indicatorId: 'qapi-hospitalization-rate',
     title: 'Acute-care hospitalization rate',
     cohort: 'All active home health patients during the measurement period',
@@ -112,6 +168,72 @@ const BASE_QAPI_KPI_DEFINITIONS = [
     },
   },
   {
+    indicatorId: 'qapi-ed-use-rate',
+    title: 'ED use rate per 100 active patients',
+    cohort: 'All active home health patients during the measurement period',
+    numerator: 'Emergency-department visits during the measurement period',
+    denominator: 'Active census at period close',
+    exclusions: [
+      'Scheduled outpatient visits not classified as ED use',
+      'Duplicate ED records for the same encounter',
+    ],
+    unit: 'rate',
+    formula: '(edUseTotal / activeCensus) * 100',
+    target: { value: 5, display: '<= 5 per 100 patients', operator: '<=' },
+    threshold: {
+      direction: 'lower-is-better',
+      label: '<= 5 per 100 patients',
+      operator: '<=',
+      value: 5,
+    },
+    benchmark: 'Agency ED-utilization threshold',
+    sourceRecords: [
+      'adverseEvents.edUseTotal',
+      'censusPopulation.activeCensus',
+    ],
+    definitionVersion: QAPI_KPI_DEFINITION_VERSION,
+    validationStatus: VALIDATED,
+    calculation: {
+      kind: 'ratio',
+      numeratorField: 'edUseTotal',
+      denominatorField: 'activeCensus',
+      scale: 100,
+    },
+  },
+  {
+    indicatorId: 'qapi-adverse-event-rate',
+    title: 'Adverse event rate per 100 active patients',
+    cohort: 'All active home health patients during the measurement period',
+    numerator: 'Adverse events opened during the measurement period',
+    denominator: 'Active census at period close',
+    exclusions: [
+      'Duplicate adverse-event rows for the same event',
+      'Events outside the accepted reporting period',
+    ],
+    unit: 'rate',
+    formula: '(adverseEventsTotal / activeCensus) * 100',
+    target: { value: 5, display: '<= 5 per 100 patients', operator: '<=' },
+    threshold: {
+      direction: 'lower-is-better',
+      label: '<= 5 per 100 patients',
+      operator: '<=',
+      value: 5,
+    },
+    benchmark: 'Agency adverse-event trend threshold',
+    sourceRecords: [
+      'adverseEvents.adverseEventsTotal',
+      'censusPopulation.activeCensus',
+    ],
+    definitionVersion: QAPI_KPI_DEFINITION_VERSION,
+    validationStatus: VALIDATED,
+    calculation: {
+      kind: 'ratio',
+      numeratorField: 'adverseEventsTotal',
+      denominatorField: 'activeCensus',
+      scale: 100,
+    },
+  },
+  {
     indicatorId: 'qapi-infection-rate',
     title: 'Infection event rate',
     cohort: 'All active home health patients during the measurement period',
@@ -141,6 +263,50 @@ const BASE_QAPI_KPI_DEFINITIONS = [
       kind: 'ratio',
       numeratorField: 'infectionsTotal',
       denominatorField: 'activeCensus',
+      scale: 100,
+    },
+  },
+  {
+    indicatorId: 'qapi-documentation-audit-compliance',
+    title: 'Documentation-audit compliance',
+    cohort: 'Charts included in the period chart-audit sample',
+    numerator: 'Audited charts without documentation defects',
+    denominator: 'Charts audited',
+    exclusions: [
+      'Charts excluded from the approved audit sample',
+      'Duplicate defects already counted under the same chart and defect type',
+    ],
+    unit: 'percentage',
+    formula:
+      '((chartsAudited - (oasisLateSoc + pocMissingF2F + pocUnsignedOrMissingSignature + medReconciliationMismatch)) / chartsAudited) * 100',
+    target: { value: 95, display: '>= 95.0%', operator: '>=' },
+    threshold: {
+      direction: 'higher-is-better',
+      label: '>= 95.0%',
+      operator: '>=',
+      value: 95,
+    },
+    benchmark: 'Agency chart-audit compliance threshold',
+    sourceRecords: [
+      'chartAuditDocumentationIntegrity.oasisLateSoc',
+      'chartAuditDocumentationIntegrity.pocMissingF2F',
+      'chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature',
+      'chartAuditDocumentationIntegrity.medReconciliationMismatch',
+      'chartAuditDocumentationIntegrity.documentationDefectsTotal',
+      'chartAuditDocumentationIntegrity.chartsAudited',
+    ],
+    definitionVersion: QAPI_KPI_DEFINITION_VERSION,
+    validationStatus: VALIDATED,
+    calculation: {
+      kind: 'complementRatio',
+      numeratorFields: [
+        'oasisLateSoc',
+        'pocMissingF2F',
+        'pocUnsignedOrMissingSignature',
+        'medReconciliationMismatch',
+      ],
+      denominatorField: 'chartsAudited',
+      reportedTotalField: 'documentationDefectsTotal',
       scale: 100,
     },
   },
@@ -190,6 +356,72 @@ const BASE_QAPI_KPI_DEFINITIONS = [
     },
   },
   {
+    indicatorId: 'qapi-medication-reconciliation-compliance',
+    title: 'Medication-reconciliation compliance',
+    cohort: 'Charts included in the period chart-audit sample',
+    numerator: 'Audited charts without medication-reconciliation mismatch defects',
+    denominator: 'Charts audited',
+    exclusions: [
+      'Charts excluded from the approved audit sample',
+      'Medication discrepancies verified as duplicate rows',
+    ],
+    unit: 'percentage',
+    formula: '((chartsAudited - medReconciliationMismatch) / chartsAudited) * 100',
+    target: { value: 95, display: '>= 95.0%', operator: '>=' },
+    threshold: {
+      direction: 'higher-is-better',
+      label: '>= 95.0%',
+      operator: '>=',
+      value: 95,
+    },
+    benchmark: 'Agency medication-reconciliation compliance threshold',
+    sourceRecords: [
+      'chartAuditDocumentationIntegrity.medReconciliationMismatch',
+      'chartAuditDocumentationIntegrity.chartsAudited',
+    ],
+    definitionVersion: QAPI_KPI_DEFINITION_VERSION,
+    validationStatus: VALIDATED,
+    calculation: {
+      kind: 'complementRatio',
+      numeratorFields: ['medReconciliationMismatch'],
+      denominatorField: 'chartsAudited',
+      scale: 100,
+    },
+  },
+  {
+    indicatorId: 'qapi-missed-visit-compliance',
+    title: 'Missed-visit compliance',
+    cohort: 'Scheduled home health visits during the measurement period',
+    numerator: 'Scheduled visits completed or otherwise not missed',
+    denominator: 'Scheduled visits',
+    exclusions: [
+      'Visits canceled by documented patient request',
+      'Visits outside the accepted reporting period',
+    ],
+    unit: 'percentage',
+    formula: '((scheduledVisits - missedVisits) / scheduledVisits) * 100',
+    target: { value: 95, display: '>= 95.0%', operator: '>=' },
+    threshold: {
+      direction: 'higher-is-better',
+      label: '>= 95.0%',
+      operator: '>=',
+      value: 95,
+    },
+    benchmark: 'Agency missed-visit compliance threshold',
+    sourceRecords: [
+      'visitUtilization.missedVisits',
+      'visitUtilization.scheduledVisits',
+    ],
+    definitionVersion: QAPI_KPI_DEFINITION_VERSION,
+    validationStatus: VALIDATED,
+    calculation: {
+      kind: 'complementRatio',
+      numeratorFields: ['missedVisits'],
+      denominatorField: 'scheduledVisits',
+      scale: 100,
+    },
+  },
+  {
     indicatorId: 'qapi-complaint-rate',
     title: 'Complaint rate per 100 active patients',
     cohort: 'All active home health patients during the measurement period',
@@ -220,6 +452,62 @@ const BASE_QAPI_KPI_DEFINITIONS = [
       numeratorField: 'complaintsCount',
       denominatorField: 'activeCensus',
       scale: 100,
+    },
+  },
+  {
+    indicatorId: 'qapi-active-pip-count',
+    title: 'Active PIPs',
+    cohort: 'Performance-improvement projects active during the measurement period',
+    numerator: 'Active performance-improvement projects',
+    denominator: null,
+    exclusions: [
+      'Closed PIPs with documented governing-body acceptance before period start',
+      'Draft PIP ideas not opened for QAPI tracking',
+    ],
+    unit: 'count',
+    formula: 'activePipCount',
+    target: { value: 0, display: '<= 0 overdue/untriaged active PIPs', operator: '<=' },
+    threshold: {
+      direction: 'lower-is-better',
+      label: '<= 0 overdue/untriaged active PIPs',
+      operator: '<=',
+      value: 0,
+    },
+    benchmark: 'No overdue or untriaged active PIPs at packet lock',
+    sourceRecords: ['pipCorrectiveAction.activePipCount'],
+    definitionVersion: QAPI_KPI_DEFINITION_VERSION,
+    validationStatus: VALIDATED,
+    calculation: {
+      kind: 'count',
+      valueField: 'activePipCount',
+    },
+  },
+  {
+    indicatorId: 'qapi-open-cap-rca-count',
+    title: 'Open CAPs or RCAs',
+    cohort: 'Corrective-action plans and root-cause analyses open at packet lock',
+    numerator: 'Open CAP or RCA items',
+    denominator: null,
+    exclusions: [
+      'CAPs or RCAs closed with documented effectiveness review before packet lock',
+      'Duplicate CAP/RCA rows tied to the same source issue',
+    ],
+    unit: 'count',
+    formula: 'openCapRcaCount',
+    target: { value: 0, display: '<= 0 overdue open CAPs/RCAs', operator: '<=' },
+    threshold: {
+      direction: 'lower-is-better',
+      label: '<= 0 overdue open CAPs/RCAs',
+      operator: '<=',
+      value: 0,
+    },
+    benchmark: 'No overdue open CAPs or RCAs at packet lock',
+    sourceRecords: ['pipCorrectiveAction.openCapRcaCount'],
+    definitionVersion: QAPI_KPI_DEFINITION_VERSION,
+    validationStatus: VALIDATED,
+    calculation: {
+      kind: 'count',
+      valueField: 'openCapRcaCount',
     },
   },
   {
@@ -367,9 +655,20 @@ export const QAPI_KPI_DEFINITIONS = BASE_QAPI_KPI_DEFINITIONS.flatMap((definitio
   QAPI_KPI_MEASUREMENT_CADENCES.map((cadence) => withCadence(definition, cadence)),
 ) satisfies readonly KpiDefinition[];
 
-export const MINIMUM_QAPI_KPI_INDICATOR_IDS = BASE_QAPI_KPI_DEFINITIONS.map(
-  (definition) => definition.indicatorId,
-);
+export const MINIMUM_QAPI_KPI_INDICATOR_IDS = [
+  'qapi-patients-episodes-in-scope',
+  'qapi-active-census',
+  'qapi-hospitalization-rate',
+  'qapi-ed-use-rate',
+  'qapi-adverse-event-rate',
+  'qapi-infection-rate',
+  'qapi-documentation-audit-compliance',
+  'qapi-medication-reconciliation-compliance',
+  'qapi-missed-visit-compliance',
+  'qapi-complaint-rate',
+  'qapi-active-pip-count',
+  'qapi-open-cap-rca-count',
+] as const;
 
 export function getQapiKpiDefinition(
   indicatorId: string,

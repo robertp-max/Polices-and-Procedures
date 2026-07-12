@@ -239,6 +239,9 @@ function runCalculation(
   if (calculation.kind === 'ratio') {
     return calculateRatio(calculation, inputs);
   }
+  if (calculation.kind === 'complementRatio') {
+    return calculateComplementRatio(calculation, inputs);
+  }
   if (calculation.kind === 'count') {
     const field = calculation.valueField ?? calculation.numeratorField;
     if (!field) {
@@ -290,10 +293,91 @@ function calculateRatio(
       sourceQuotes,
     };
   }
+  const value = (numerator.value / denominator.value) * (calculation.scale ?? 1);
+  if (!Number.isFinite(value)) {
+    return nonKnown(
+      'REJECTED',
+      'Ratio calculation produced a non-finite value; KPI must not leak NaN or Infinity.',
+      numerator.value,
+      denominator.value,
+      'low',
+      sourceQuotes,
+    );
+  }
   return {
     state: 'KNOWN',
-    value: (numerator.value / denominator.value) * (calculation.scale ?? 1),
+    value,
     numerator: numerator.value,
+    denominator: denominator.value,
+    confidence: 'high',
+    validationStatus: VALIDATED,
+    reason: null,
+    sourceQuotes,
+  };
+}
+
+function calculateComplementRatio(
+  calculation: KpiCalculationSpec,
+  inputs: KpiInputRecord,
+): CalculationOutput {
+  const excluded = readNumerator(calculation, inputs);
+  if (excluded.kind !== 'known') {
+    return outputFromFailedRead(excluded, null, null);
+  }
+  if (!calculation.denominatorField) {
+    return nonKnown(
+      'REJECTED',
+      'Complement-rate KPI definition is missing a denominator field.',
+      null,
+      null,
+      'low',
+      excluded.sourceQuotes,
+    );
+  }
+  const denominator = readNumericField(inputs, calculation.denominatorField);
+  if (denominator.kind !== 'known') {
+    return outputFromFailedRead(denominator, null, null);
+  }
+  const sourceQuotes = [...excluded.sourceQuotes, ...denominator.sourceQuotes];
+  if (denominator.value === 0) {
+    return {
+      state: 'ZERO_DENOMINATOR',
+      value: null,
+      numerator: null,
+      denominator: 0,
+      confidence: 'high',
+      validationStatus: VALIDATED_WITH_LIMITATION,
+      reason: 'Denominator is zero; complement rate is not calculable and must not be shown as 0.',
+      sourceQuotes,
+    };
+  }
+  const numerator = denominator.value - excluded.value;
+  if (numerator < 0 && !numbersEqual(numerator, 0)) {
+    return nonKnown(
+      'CONFLICTED',
+      `Complement-rate numerator is negative: denominator ${denominator.value} minus excluded count ${excluded.value}.`,
+      null,
+      denominator.value,
+      'low',
+      sourceQuotes,
+      CONFLICTED_RECONCILIATION_REQUIRED,
+    );
+  }
+  const value = (numerator / denominator.value) * (calculation.scale ?? 1);
+  if (!Number.isFinite(value)) {
+    return nonKnown(
+      'REJECTED',
+      'Complement-rate calculation produced a non-finite value; KPI must not leak NaN or Infinity.',
+      numerator,
+      denominator.value,
+      'low',
+      sourceQuotes,
+    );
+  }
+  return {
+    state: 'KNOWN',
+    value,
+    numerator,
     denominator: denominator.value,
     confidence: 'high',
     validationStatus: VALIDATED,
