@@ -1,10 +1,10 @@
 import type {
-  AppendixDDataValidationStatus,
   DriveArtifactPointer,
   PacketAttachmentInstance,
   PacketFinding,
 } from '@/policy/packets/contracts';
 import { SOURCE_VALIDATION_STATUS } from './sourceValidation';
+import type { SourceDataValidationStatus } from './sourceValidation';
 
 export const SOURCE_UTILIZATION_BUCKETS = [
   'expected-but-missing',
@@ -25,7 +25,7 @@ export interface SourceFormUtilization {
   purpose: string;
   recordsReviewed: number | null;
   findings: PacketFinding[];
-  validationStatus: AppendixDDataValidationStatus;
+  validationStatus: SourceDataValidationStatus;
   attachment: PacketAttachmentInstance | DriveArtifactPointer | null;
 }
 
@@ -55,7 +55,7 @@ export interface GeneratedByTriggerSource {
   sourceId: string;
   sourceName: string | null;
   purpose: string;
-  validationStatus: AppendixDDataValidationStatus;
+  validationStatus: SourceDataValidationStatus;
 }
 
 export interface CarriedForwardSource {
@@ -64,7 +64,7 @@ export interface CarriedForwardSource {
   sourceName: string | null;
   priorPacketInstanceId: string;
   carryForwardReason: string;
-  validationStatus: AppendixDDataValidationStatus;
+  validationStatus: SourceDataValidationStatus;
 }
 
 export interface SourceConflict {

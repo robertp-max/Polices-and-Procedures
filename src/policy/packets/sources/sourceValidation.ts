@@ -2,19 +2,31 @@ import type {
   AppendixDDataValidationStatus,
   PacketValidationFinding,
 } from '@/policy/packets/contracts';
-import { APPENDIX_D_DATA_VALIDATION_STATUS_VOCABULARY } from '@/policy/packets/contracts';
 import type { QapiDerivedMetric } from '@/policy/brad/intake/adapters/qapiIntakeAdapter';
+
+export const UNKNOWN_NOT_RECOVERED_TEXT = 'UNKNOWN — NOT RECOVERED' as const;
+
+export type SourceDataValidationStatus =
+  | Exclude<AppendixDDataValidationStatus, 'Unknown — not recovered'>
+  | typeof UNKNOWN_NOT_RECOVERED_TEXT;
 
 export const SOURCE_VALIDATION_STATUS = {
   validated: 'Validated',
   validatedWithLimitation: 'Validated with limitation',
   provisionalHumanReviewRequired: 'Provisional — human review required',
   conflictedReconciliationRequired: 'Conflicted — reconciliation required',
-  unknownNotRecovered: 'Unknown — not recovered',
+  unknownNotRecovered: UNKNOWN_NOT_RECOVERED_TEXT,
   excluded: 'Excluded',
-} as const satisfies Record<string, AppendixDDataValidationStatus>;
+} as const satisfies Record<string, SourceDataValidationStatus>;
 
-export const SOURCE_VALIDATION_OUTCOMES = APPENDIX_D_DATA_VALIDATION_STATUS_VOCABULARY;
+export const SOURCE_VALIDATION_OUTCOMES = [
+  SOURCE_VALIDATION_STATUS.validated,
+  SOURCE_VALIDATION_STATUS.validatedWithLimitation,
+  SOURCE_VALIDATION_STATUS.provisionalHumanReviewRequired,
+  SOURCE_VALIDATION_STATUS.conflictedReconciliationRequired,
+  SOURCE_VALIDATION_STATUS.unknownNotRecovered,
+  SOURCE_VALIDATION_STATUS.excluded,
+] as const;
 
 export interface SourceValidationDecisionInput {
   recovered: boolean;
@@ -25,18 +37,18 @@ export interface SourceValidationDecisionInput {
 }
 
 export interface SourceValidationSummary {
-  status: AppendixDDataValidationStatus;
+  status: SourceDataValidationStatus;
   findings: PacketValidationFinding[];
   note: string | null;
 }
 
-export function isSourceValidationStatus(value: string): value is AppendixDDataValidationStatus {
-  return (APPENDIX_D_DATA_VALIDATION_STATUS_VOCABULARY as readonly string[]).includes(value);
+export function isSourceValidationStatus(value: string): value is SourceDataValidationStatus {
+  return (SOURCE_VALIDATION_OUTCOMES as readonly string[]).includes(value);
 }
 
 export function decideSourceValidationStatus(
   input: SourceValidationDecisionInput,
-): AppendixDDataValidationStatus {
+): SourceDataValidationStatus {
   if (input.excluded) return SOURCE_VALIDATION_STATUS.excluded;
   if (input.conflicted) return SOURCE_VALIDATION_STATUS.conflictedReconciliationRequired;
   if (!input.recovered) return SOURCE_VALIDATION_STATUS.unknownNotRecovered;
@@ -47,7 +59,7 @@ export function decideSourceValidationStatus(
 
 export function validationStatusForQapiMetric(
   metric: QapiDerivedMetric,
-): AppendixDDataValidationStatus {
+): SourceDataValidationStatus {
   if (metric.value === null || metric.confidence === 'none') {
     return SOURCE_VALIDATION_STATUS.unknownNotRecovered;
   }
@@ -70,4 +82,13 @@ export function summarizeSourceValidation(input: {
     findings: input.findings ?? [],
     note: input.note ?? null,
   };
+}
+
+export function renderRecoveredSourceValue(
+  value: QapiDerivedMetric['value'] | number | boolean | null | undefined,
+): QapiDerivedMetric['value'] | number | boolean | typeof UNKNOWN_NOT_RECOVERED_TEXT {
+  if (value === null || value === undefined || value === '') {
+    return UNKNOWN_NOT_RECOVERED_TEXT;
+  }
+  return value;
 }

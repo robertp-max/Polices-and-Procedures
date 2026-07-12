@@ -1,8 +1,6 @@
 import {
   deriveQapiBundle,
-  resolveQapiSource,
   segmentQapiSourceByQuarter,
-  selectQuarterSegment,
 } from '@/policy/brad/intake/adapters/qapiIntakeAdapter';
 import type {
   QapiDerivedBundle,
@@ -10,11 +8,12 @@ import type {
 } from '@/policy/brad/intake/adapters/qapiIntakeAdapter';
 import { parseSourceFile } from '@/policy/evidence/intake/fileParsing';
 import type { ParseInput, ParsedFile } from '@/policy/evidence/intake/fileParsing';
-import type { AppendixDDataValidationStatus } from '@/policy/packets/contracts';
 import {
   decideSourceValidationStatus,
   SOURCE_VALIDATION_STATUS,
+  UNKNOWN_NOT_RECOVERED_TEXT,
 } from './sourceValidation';
+import type { SourceDataValidationStatus } from './sourceValidation';
 
 export const SOURCE_SEGMENT_EXCLUSION_REASONS = {
   datasetMismatch: 'Dataset hard stop — segment does not match the requested dataset',
@@ -24,7 +23,7 @@ export const SOURCE_SEGMENT_EXCLUSION_REASONS = {
   nextPeriodOperationalRecord: 'Period hard stop — next-period operational record',
   ambiguousSource: 'Ambiguous source — fail closed',
   notSelected: 'Not selected — another segment matched the packet boundary',
-  unknownNotRecovered: 'Unknown — not recovered',
+  unknownNotRecovered: UNKNOWN_NOT_RECOVERED_TEXT,
 } as const;
 
 export type SourceSegmentExclusionReason =
@@ -78,7 +77,7 @@ export interface SegmentSourceFileInput extends ParseInput {
 
 export interface SegmentationResult {
   status: SegmentationStatus;
-  validationStatus: AppendixDDataValidationStatus;
+  validationStatus: SourceDataValidationStatus;
   selectedSegment: NormalizedSourceSegment | null;
   allSegments: NormalizedSourceSegment[];
   excludedSegments: ExcludedSourceSegment[];
@@ -94,6 +93,8 @@ export interface SegmentedQapiBundleResult {
 const QAPI_DATASET_RE = /Dataset ID:\s*(QAPI-Q([1-4])-DS-[A-Za-z0-9-]+)/;
 const QAPI_QUARTER_RE = /Quarter:\s*Q([1-4])\s*(20\d{2})/;
 const ISO_DATE_RE = /20\d{2}-\d{2}-\d{2}/;
+const OPERATIONAL_DATE_RE =
+  /\b(?:visit|service|record|incident|complaint|infection|admission|discharge|occurrence|onset|operational)\s+date:\s*(20\d{2}-\d{2}-\d{2})/gi;
 
 export function segmentSourceFile(input: SegmentSourceFileInput): SegmentationResult {
   const parsed = parseSourceFile(input);
@@ -135,30 +136,23 @@ export function segmentParsedSource(input: SegmentSourcesInput): SegmentationRes
     ? qapiSegments.map((segment, index) => normalizeQapiSegment(segment, sourceId, index))
     : [inferSingleSegment(fullText, sourceId)];
 
-  const selectedId = selectSegmentId({
+  const selection = selectSegment({
     input,
-    qapiSegments,
     segments,
   });
 
-  if (!selectedId) {
-    const detail = qapiSegments.length > 0
-      ? selectQuarterSegment(qapiSegments, {
-          eventDateISO: input.eventDateISO,
-          targetQuarter: input.targetPeriod,
-        }).reason
-      : 'No segment matched the requested source boundary.';
+  if (!selection.segmentId) {
     return failedResult({
       input,
       sourceId,
       segments,
       parsed: input.parsed,
-      reason: detail,
+      reason: selection.reason,
       validationStatus: SOURCE_VALIDATION_STATUS.unknownNotRecovered,
     });
   }
 
-  const selected = segments.find((segment) => segment.segmentId === selectedId) ?? null;
+  const selected = segments.find((segment) => segment.segmentId === selection.segmentId) ?? null;
   if (!selected) {
     return failedResult({
       input,
@@ -186,9 +180,7 @@ export function segmentParsedSource(input: SegmentSourcesInput): SegmentationRes
     .filter((segment) => segment.segmentId !== selected.segmentId)
     .map((segment) => exclusionForSegment(segment, selected, input));
 
-  const resolved = input.eventDateISO && qapiSegments.length > 0
-    ? resolveQapiSource(input.parsed, input.eventDateISO, input.targetPeriod)
-    : null;
+  const selectedParsed = parsedForSelectedSegment(input.parsed, selected, segments);
 
   return {
     status: 'selected',
@@ -199,34 +191,38 @@ export function segmentParsedSource(input: SegmentSourcesInput): SegmentationRes
     selectedSegment: selected,
     allSegments: segments,
     excludedSegments,
-    parsed: resolved && !resolved.conflict ? resolved.parsed : input.parsed,
+    parsed: selectedParsed,
     reason: excludedSegments.length > 0
       ? `Selected ${selected.segmentId}; excluded ${excludedSegments.length} non-matching segment(s).`
       : `Selected ${selected.segmentId}.`,
   };
 }
 
-function selectSegmentId(input: {
+function selectSegment(input: {
   input: SegmentSourcesInput;
-  qapiSegments: QapiSourceSegment[];
   segments: NormalizedSourceSegment[];
-}): string | null {
-  if (input.input.targetDatasetId) {
-    const byDataset = input.segments.filter((segment) => segment.datasetId === input.input.targetDatasetId);
-    return oneOrNull(byDataset)?.segmentId ?? null;
-  }
-
-  if (input.qapiSegments.length > 0) {
-    const selection = selectQuarterSegment(input.qapiSegments, {
-      eventDateISO: input.input.eventDateISO,
-      targetQuarter: input.input.targetPeriod,
-    });
-    if (selection.conflict || !selection.segment) return null;
-    return input.segments.find((segment) => segment.datasetId === selection.segment?.datasetId)?.segmentId ?? null;
-  }
-
+}): { segmentId: string | null; reason: string } {
   const candidates = input.segments.filter((segment) => segmentMatchesBoundary(segment, input.input));
-  return oneOrNull(candidates)?.segmentId ?? null;
+  if (candidates.length === 1) {
+    return {
+      segmentId: candidates[0].segmentId,
+      reason: `Matched requested source boundary: ${candidates[0].segmentId}.`,
+    };
+  }
+
+  if (candidates.length > 1) {
+    return {
+      segmentId: null,
+      reason: `${SOURCE_SEGMENT_EXCLUSION_REASONS.ambiguousSource}: ${candidates
+        .map((segment) => segment.segmentId)
+        .join(', ')} all matched the requested boundary.`,
+    };
+  }
+
+  return {
+    segmentId: null,
+    reason: selectionFailureReason(input.segments, input.input),
+  };
 }
 
 function failedResult(input: {
@@ -235,7 +231,7 @@ function failedResult(input: {
   segments: NormalizedSourceSegment[];
   parsed: ParsedFile;
   reason: string;
-  validationStatus: AppendixDDataValidationStatus;
+  validationStatus: SourceDataValidationStatus;
 }): SegmentationResult {
   return {
     status: 'failed-closed',
@@ -318,9 +314,9 @@ function exclusionReasonForBoundary(
   }
   if (
     input.eventDateISO
+    && segment.dateRole === 'governance'
     && segment.eventDate
     && segment.eventDate !== input.eventDateISO
-    && !governanceDateAllowedAfterPeriod(segment, input)
   ) {
     return SOURCE_SEGMENT_EXCLUSION_REASONS.eventDateMismatch;
   }
@@ -361,7 +357,8 @@ function inferSingleSegment(text: string, sourceId: string): NormalizedSourceSeg
   const period = quarterMatch ? `${quarterMatch[2]}-Q${quarterMatch[1]}` : null;
   const bounds = period ? quarterBounds(period) : null;
   const meetingDate = /QAPI Meeting Date:\s*(20\d{2}-\d{2}-\d{2})/.exec(text)?.[1] ?? null;
-  const eventDate = meetingDate ?? ISO_DATE_RE.exec(text)?.[0] ?? null;
+  const operationalDate = inferOperationalDate(text, period);
+  const eventDate = meetingDate ?? operationalDate ?? ISO_DATE_RE.exec(text)?.[0] ?? null;
   return {
     segmentId: datasetMatch?.[1] ?? `${sourceId}:single-source`,
     sourceId,
@@ -372,7 +369,7 @@ function inferSingleSegment(text: string, sourceId: string): NormalizedSourceSeg
     periodStart: bounds?.start ?? null,
     periodEnd: bounds?.end ?? null,
     eventDate,
-    dateRole: meetingDate ? 'governance' : 'unknown',
+    dateRole: meetingDate ? 'governance' : operationalDate ? 'operational' : 'unknown',
     sourceClassification: /\bsynthetic\b|\bmock\b|not for production|no real phi/i.test(text)
       ? 'synthetic'
       : 'production',
@@ -384,10 +381,6 @@ function textFromParsedFile(parsed: ParsedFile): string {
   return parsed.records
     .map((record) => record.text ?? String(record.fields.text ?? ''))
     .join('\n');
-}
-
-function oneOrNull<T>(items: T[]): T | null {
-  return items.length === 1 ? items[0] : null;
 }
 
 function sameText(left: string | null, right: string | null | undefined): boolean {
@@ -412,12 +405,53 @@ function dateWithinPeriod(dateISO: string, period: string): boolean {
   return dateISO >= bounds.start && dateISO <= bounds.end;
 }
 
-function governanceDateAllowedAfterPeriod(
-  segment: NormalizedSourceSegment,
+function selectionFailureReason(
+  segments: NormalizedSourceSegment[],
   input: SegmentSourcesInput,
-): boolean {
-  if (!input.targetPeriod || segment.period !== input.targetPeriod) return false;
-  if (segment.dateRole !== 'governance') return false;
-  const bounds = quarterBounds(input.targetPeriod);
-  return Boolean(bounds && segment.eventDate && segment.eventDate > bounds.end);
+): string {
+  if (input.targetPeriod && !segments.some((segment) => segment.period === input.targetPeriod)) {
+    const found = segments.map((segment) => segment.period ?? '?').join(', ');
+    return `requested quarter ${input.targetPeriod} not present (found ${found})`;
+  }
+
+  const reasons = Array.from(
+    new Set(
+      segments
+        .map((segment) => exclusionReasonForBoundary(segment, input))
+        .filter((reason) => reason !== SOURCE_SEGMENT_EXCLUSION_REASONS.notSelected),
+    ),
+  );
+  if (reasons.length > 0) {
+    return `No segment matched the requested source boundary: ${reasons.join('; ')}.`;
+  }
+  return 'No segment matched the requested source boundary.';
+}
+
+function parsedForSelectedSegment(
+  parsed: ParsedFile,
+  selected: NormalizedSourceSegment,
+  segments: NormalizedSourceSegment[],
+): ParsedFile {
+  if (segments.length <= 1) return parsed;
+  return {
+    ...parsed,
+    records: [{
+      pointer: `segment:${selected.segmentId}`,
+      fields: { text: selected.text.slice(0, 8000) },
+      text: selected.text,
+    }],
+    columnHeaders: parsed.columnHeaders.includes('text')
+      ? parsed.columnHeaders
+      : [...parsed.columnHeaders, 'text'],
+    note: `Segmented to ${selected.periodLabel ?? selected.period ?? selected.segmentId} (${selected.segmentId}) from a ${segments.length}-segment source. ${parsed.note ?? ''}`.trim(),
+  };
+}
+
+function inferOperationalDate(text: string, period: string | null): string | null {
+  const dates = [...text.matchAll(OPERATIONAL_DATE_RE)].map((match) => match[1]);
+  if (dates.length === 0) return null;
+  if (period) {
+    return dates.find((date) => !dateWithinPeriod(date, period)) ?? dates[0];
+  }
+  return dates[0];
 }
