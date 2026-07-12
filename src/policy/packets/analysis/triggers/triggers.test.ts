@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type {
-  PacketFinding,
-  PipEvaluationFactors,
+import {
+  WORKFLOW_DECISION_STATES,
+  type PacketFinding,
+  type PipEvaluationFactors,
 } from '@/policy/packets/contracts';
 import {
   createPacketFinding,
@@ -183,6 +184,23 @@ describe('FR-011 finding model', () => {
 });
 
 describe('FR-012 canonical workflow trigger evaluation', () => {
+  it('uses the exact 12 PRD workflow state strings', () => {
+    expect(WORKFLOW_DECISION_STATES).toEqual([
+      'NOT TRIGGERED',
+      'CANDIDATE — NEEDS VALIDATION',
+      'PENDING AUTHORIZED REVIEW',
+      'CONFIRMED — NOT YET ACTIVATED',
+      'ACTIVATED',
+      'LINKED TO EXISTING ACTIVE WORKFLOW',
+      'CONTINUED FROM PRIOR PERIOD',
+      'BLOCKED',
+      'ESCALATED',
+      'SUSTAINMENT MONITORING',
+      'CLOSED',
+      'WORKFLOW UNRESOLVED',
+    ]);
+  });
+
   it('resolves canonical workflows and fails closed when unresolved', () => {
     const resolved = resolveCanonicalWorkflow(PIP_CANONICAL_WORKFLOW_ID);
     expect(resolved.resolved).toBe(true);
@@ -201,7 +219,7 @@ describe('FR-012 canonical workflow trigger evaluation', () => {
     expect(unresolved.decisionState).toBe('WORKFLOW UNRESOLVED');
     expect(unresolved.canonicalWorkflowId).toBeNull();
     expect(unresolved.newWorkflowInstanceId).toBeNull();
-    expect(unresolved.decisionRationale).toContain(
+    expect(unresolved.decisionRationale).toBe(
       'WORKFLOW UNRESOLVED — HUMAN CONFIGURATION REQUIRED',
     );
   });
@@ -360,18 +378,42 @@ describe('FR-014 and FR-015 PIP decision logic', () => {
     ]);
   });
 
-  it('does not turn 8 PIP trigger scenarios into 8 automatic PIPs', () => {
+  it('deduplicates 8 authorized PIP triggers for the same root issue', () => {
     const inputs = Array.from({ length: 8 }, (_unused, index) =>
       pipInput({
         finding: baseFinding({ findingId: `finding-pip-${String(index + 1)}` }),
-        rootIssueKey: `root-${String(index + 1)}`,
-        factors: { ...basePipFactors, qapiCommitteeAuthorization: null },
+        triggerRuleId: `tr-pip-${String(index + 1)}`,
+        rootIssueKey: 'hospitalization-rate',
+        factors: {
+          ...basePipFactors,
+          qapiCommitteeAuthorization: 'QAPI Committee approved new PIP charter.',
+        },
       }),
     );
     const decisions = evaluatePipDecisionBatch(inputs);
+    const newPipDecisions = decisions.filter((decision) => decision.newWorkflowRequired);
+    const linkedDecisions = decisions.filter(
+      (decision) => decision.decisionState === 'LINKED TO EXISTING ACTIVE WORKFLOW',
+    );
+
     expect(decisions).toHaveLength(8);
-    expect(decisions.filter((decision) => decision.determination === 'New PIP')).toHaveLength(0);
-    expect(decisions.every((decision) => decision.activationKey === null)).toBe(true);
+    expect(newPipDecisions).toHaveLength(1);
+    expect(linkedDecisions).toHaveLength(7);
+    expect(newPipDecisions[0]?.activationKey?.split('\u001f')).toEqual([
+      'agency-1',
+      '2026-Q1',
+      'finding-pip-1',
+      'tr-pip-1',
+      PIP_CANONICAL_WORKFLOW_ID,
+    ]);
+    expect(
+      linkedDecisions.every(
+        (decision) =>
+          decision.existingWorkflowInstanceId === newPipDecisions[0]?.activationKey &&
+          decision.activationKey === null &&
+          decision.newWorkflowRequired === false,
+      ),
+    ).toBe(true);
   });
 });
 

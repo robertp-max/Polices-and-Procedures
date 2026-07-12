@@ -312,11 +312,7 @@ function buildDecisionRationale(
   decisionState: WorkflowDecisionState,
 ): string {
   if (decisionState === 'WORKFLOW UNRESOLVED') {
-    const candidate =
-      input.candidateWorkflowId === null
-        ? ''
-        : ` Candidate ${input.candidateWorkflowId} (${input.candidateConfidence} confidence) requires human configuration.`;
-    return `${WORKFLOW_UNRESOLVED_BANNER}.${candidate}`;
+    return WORKFLOW_UNRESOLVED_BANNER;
   }
   if (decisionState === 'NOT TRIGGERED') {
     return input.preconditions.recurrenceSatisfied === false
