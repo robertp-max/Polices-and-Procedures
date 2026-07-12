@@ -8,6 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
+import type { AuditEvent } from '../audit/writer.js';
 import {
   buildPacketIdentityKey,
   isAllowedPacketTransition,
@@ -16,7 +17,16 @@ import {
   type PacketInstance,
   type PacketLifecycleStatus,
 } from '@/policy/packets/contracts';
-import { emitPacketAudit, systemPacketActor, userPacketActor } from './auditEvents.js';
+import {
+  createPacketAuditEmitter,
+  emitPacketAudit,
+  queryPacketAuditEvents,
+  systemPacketActor,
+  userPacketActor,
+  type PacketAuditEmitter,
+  type PacketAuditLedgerConfig,
+  type PacketAuditQueryFilter,
+} from './auditEvents.js';
 
 /** Store selection seam — env wiring lands in a later package. Do not touch server/env.ts. */
 export const PACKET_STORE_PROVIDER = 'file_local' as const;
@@ -149,7 +159,16 @@ export interface PacketListQuery {
 /**
  * Patch fields allowed on public update.
  * Identity-key / packetId-family fields are rejected with ImmutableIdentityError.
+ * Lifecycle-owned fields are intentionally absent; status changes must flow
+ * through transitionPacket / amendment / supersession entry points.
  */
+type LifecycleOwnedField =
+  | 'status'
+  | 'lockedAt'
+  | 'certifiedAt'
+  | 'supersedesPacketInstanceId'
+  | 'supersededByPacketInstanceId';
+
 export type PacketInstancePatch = Partial<
   Omit<
     PacketStoreDocument,
@@ -163,8 +182,12 @@ export type PacketInstancePatch = Partial<
     | 'workflowInstanceId'
     | 'packetTemplateId'
     | 'packetId'
+    | LifecycleOwnedField
   >
 >;
+
+type LifecycleOwnedPatch = Partial<Pick<PacketStoreDocument, LifecycleOwnedField>>;
+type InternalPacketInstancePatch = PacketInstancePatch & LifecycleOwnedPatch;
 
 export interface PacketUpdateOptions {
   actor?: PacketAuditActor;
@@ -234,6 +257,22 @@ export class ImmutableIdentityError extends Error {
   }
 }
 
+/** Attempt to mutate lifecycle-owned fields through public metadata update. */
+export class LifecycleOwnedFieldError extends Error {
+  readonly code = 'lifecycle_owned_field' as const;
+  readonly packetInstanceId: string;
+  readonly field: string;
+
+  constructor(packetInstanceId: string, field: string) {
+    super(
+      `Packet lifecycle field "${field}" is owned by transition/amendment APIs (packet ${packetInstanceId}).`,
+    );
+    this.name = 'LifecycleOwnedFieldError';
+    this.packetInstanceId = packetInstanceId;
+    this.field = field;
+  }
+}
+
 /** Mutation attempted against an immutable LOCKED (or terminal) packet. */
 export class LockedPacketError extends Error {
   readonly code = 'locked_packet' as const;
@@ -285,6 +324,14 @@ export class IllegalTransitionError extends Error {
 
 const FORBIDDEN_FIELD_SET = new Set<string>(FORBIDDEN_FIELDS);
 const IMMUTABLE_IDENTITY_SET = new Set<string>(IMMUTABLE_IDENTITY_FIELDS);
+const LIFECYCLE_OWNED_FIELDS = [
+  'status',
+  'lockedAt',
+  'certifiedAt',
+  'supersedesPacketInstanceId',
+  'supersededByPacketInstanceId',
+] as const satisfies readonly LifecycleOwnedField[];
+const LIFECYCLE_OWNED_FIELD_SET = new Set<string>(LIFECYCLE_OWNED_FIELDS);
 
 /** Opaque id / hash / url-like strings may exceed the free-text threshold. */
 function isOpaqueIdentifier(value: string): boolean {
@@ -332,6 +379,21 @@ export function assertNoForbiddenFields(obj: unknown, context: string): void {
       node.forEach((item, i) => walk(item, `${pathHint}[${i}]`));
       return;
     }
+    if (typeof (node as { toJSON?: unknown }).toJSON === 'function') {
+      throw new ForbiddenFieldError(
+        pathHint || '(value)',
+        context,
+        `Packet metadata may not contain custom toJSON at "${pathHint || '(value)'}" in ${context}.`,
+      );
+    }
+    const proto = Object.getPrototypeOf(node);
+    if (proto !== Object.prototype && proto !== null) {
+      throw new ForbiddenFieldError(
+        pathHint || '(value)',
+        context,
+        `Packet metadata may contain only plain JSON objects at "${pathHint || '(value)'}" in ${context}.`,
+      );
+    }
     for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
       const childPath = pathHint ? `${pathHint}.${k}` : k;
       if (FORBIDDEN_FIELD_SET.has(k) && v != null && v !== '') {
@@ -355,6 +417,17 @@ export function assertNoIdentityMutation(
   for (const field of IMMUTABLE_IDENTITY_FIELDS) {
     if (Object.prototype.hasOwnProperty.call(patch, field)) {
       throw new ImmutableIdentityError(packetInstanceId, field);
+    }
+  }
+}
+
+export function assertNoLifecycleOwnedMutation(
+  packetInstanceId: string,
+  patch: Record<string, unknown>,
+): void {
+  for (const field of LIFECYCLE_OWNED_FIELDS) {
+    if (Object.prototype.hasOwnProperty.call(patch, field)) {
+      throw new LifecycleOwnedFieldError(packetInstanceId, field);
     }
   }
 }
@@ -406,6 +479,7 @@ function resolveActor(
  * conditional writes or transactions.
  */
 const packetUpdateChains = new Map<string, Promise<unknown>>();
+const identityCreateChains = new Map<string, Promise<unknown>>();
 
 function withPacketUpdateLock<T>(packetInstanceId: string, fn: () => Promise<T>): Promise<T> {
   const prev = packetUpdateChains.get(packetInstanceId) ?? Promise.resolve();
@@ -430,9 +504,33 @@ function withPacketUpdateLock<T>(packetInstanceId: string, fn: () => Promise<T>)
   return run;
 }
 
+function withIdentityCreateLock<T>(identityKey: string, fn: () => Promise<T>): Promise<T> {
+  const prev = identityCreateChains.get(identityKey) ?? Promise.resolve();
+  const run = prev.then(
+    () => fn(),
+    () => fn(),
+  );
+  const settled = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  identityCreateChains.set(identityKey, settled);
+  void settled.then(() => {
+    if (identityCreateChains.get(identityKey) === settled) {
+      identityCreateChains.delete(identityKey);
+    }
+  });
+  return run;
+}
+
 /** Diagnostics only (read-only): number of packet update chains currently held. */
 export function getActiveUpdateChainCount(): number {
   return packetUpdateChains.size;
+}
+
+/** Diagnostics only (read-only): number of identity create chains currently held. */
+export function getActiveIdentityCreateChainCount(): number {
+  return identityCreateChains.size;
 }
 
 /**
@@ -442,18 +540,37 @@ export function getActiveUpdateChainCount(): number {
  * getById()/readDoc() cannot spoof the revision or terminal-state checks.
  */
 const STORE_DATA_DIRS = new WeakMap<FileLocalPacketStore, string>();
+const STORE_AUDIT_EMITTERS = new WeakMap<FileLocalPacketStore, PacketAuditEmitter>();
 
-function readDocumentAuthoritative(
-  store: FileLocalPacketStore,
-  packetInstanceId: string,
-): PacketStoreDocument | null {
+function getAuthoritativeDir(store: FileLocalPacketStore): string {
   const dir = STORE_DATA_DIRS.get(store);
   if (!dir) {
     throw new Error(
       'Unrecognized store instance: refusing to update outside a constructor-registered FileLocalPacketStore',
     );
   }
-  const file = path.join(dir, `${safeId(packetInstanceId)}.json`);
+  return dir;
+}
+
+function authoritativeFileFor(store: FileLocalPacketStore, packetInstanceId: string): string {
+  return path.join(getAuthoritativeDir(store), `${safeId(packetInstanceId)}.json`);
+}
+
+function getAuditEmitter(store: FileLocalPacketStore): PacketAuditEmitter {
+  const emitter = STORE_AUDIT_EMITTERS.get(store);
+  if (!emitter) {
+    throw new Error(
+      'Unrecognized store instance: refusing to audit outside a constructor-registered FileLocalPacketStore',
+    );
+  }
+  return emitter;
+}
+
+function readDocumentAuthoritative(
+  store: FileLocalPacketStore,
+  packetInstanceId: string,
+): PacketStoreDocument | null {
+  const file = authoritativeFileFor(store, packetInstanceId);
   if (!fs.existsSync(file)) return null;
   try {
     return JSON.parse(fs.readFileSync(file, 'utf8')) as PacketStoreDocument;
@@ -462,41 +579,59 @@ function readDocumentAuthoritative(
   }
 }
 
+function writeStagedDocument(
+  store: FileLocalPacketStore,
+  packetInstanceId: string,
+  value: PacketStoreDocument,
+): { file: string; tmp: string } {
+  const file = authoritativeFileFor(store, packetInstanceId);
+  const dir = path.dirname(file);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  const tmp = `${file}.${randomUUID()}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(value, null, 2), 'utf8');
+  return { file, tmp };
+}
+
+function commitStagedDocument(staged: { file: string; tmp: string }): void {
+  fs.renameSync(staged.tmp, staged.file);
+}
+
+function abortStagedDocument(staged: { tmp: string }): void {
+  fs.rmSync(staged.tmp, { force: true });
+}
+
 /* ─── File-local implementation ─────────────────────────────────────── */
 
 export class FileLocalPacketStore implements PacketMetadataStore {
   readonly provider = PACKET_STORE_PROVIDER;
-  private readonly dir: string;
 
   /**
    * @param cacheRoot Optional root directory for packet instance JSON files.
    *   Defaults to `<cwd>/.cache/packet-instances`. Tests inject a temp dir.
    */
-  constructor(cacheRoot?: string) {
-    this.dir =
+  constructor(cacheRoot?: string, auditLedger?: PacketAuditLedgerConfig) {
+    const dir =
       cacheRoot && cacheRoot.trim().length > 0
         ? path.resolve(cacheRoot)
         : path.join(process.cwd(), '.cache', 'packet-instances');
+    const auditEmitter = createPacketAuditEmitter(auditLedger);
     // Register the authoritative data dir for module-private reads inside the
     // update critical section (defeats overridden-getById spoofing).
-    STORE_DATA_DIRS.set(this, this.dir);
+    STORE_DATA_DIRS.set(this, dir);
+    STORE_AUDIT_EMITTERS.set(this, auditEmitter);
   }
 
   private ensure(): void {
-    if (!fs.existsSync(this.dir)) {
-      fs.mkdirSync(this.dir, { recursive: true });
+    const dir = getAuthoritativeDir(this);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
     }
   }
 
   private fileFor(packetInstanceId: string): string {
-    return path.join(this.dir, `${safeId(packetInstanceId)}.json`);
-  }
-
-  private writeJson(file: string, value: unknown): void {
-    this.ensure();
-    const tmp = `${file}.tmp`;
-    fs.writeFileSync(tmp, JSON.stringify(value, null, 2), 'utf8');
-    fs.renameSync(tmp, file);
+    return authoritativeFileFor(this, packetInstanceId);
   }
 
   private readDoc(packetInstanceId: string): PacketStoreDocument | null {
@@ -512,10 +647,11 @@ export class FileLocalPacketStore implements PacketMetadataStore {
 
   private listAllDocs(): PacketStoreDocument[] {
     this.ensure();
-    const names = fs.readdirSync(this.dir).filter((n) => n.endsWith('.json') && !n.endsWith('.tmp'));
+    const dir = getAuthoritativeDir(this);
+    const names = fs.readdirSync(dir).filter((n) => n.endsWith('.json') && !n.endsWith('.tmp'));
     const out: PacketStoreDocument[] = [];
     for (const name of names) {
-      const file = path.join(this.dir, name);
+      const file = path.join(dir, name);
       try {
         const doc = JSON.parse(fs.readFileSync(file, 'utf8')) as PacketStoreDocument;
         if (doc && typeof doc.packetInstanceId === 'string') {
@@ -594,98 +730,109 @@ export class FileLocalPacketStore implements PacketMetadataStore {
       packet_template_id: packetTemplateId,
     });
 
-    const existing = await this.findByIdentityKey(identityKey);
-    if (existing) {
-      return { instance: existing, created: false };
-    }
+    return withIdentityCreateLock(identityKey, async () => {
+      const existing = await this.findByIdentityKey(identityKey);
+      if (existing) {
+        return { instance: existing, created: false };
+      }
 
-    const ts = nowIso();
-    const packetInstanceId =
-      input.packetInstanceId && input.packetInstanceId.trim().length > 0
-        ? input.packetInstanceId.trim()
-        : randomUUID();
+      const ts = nowIso();
+      const packetInstanceId =
+        input.packetInstanceId && input.packetInstanceId.trim().length > 0
+          ? input.packetInstanceId.trim()
+          : randomUUID();
 
-    if (await this.getById(packetInstanceId)) {
-      throw new Error(`Packet instance id already exists: ${packetInstanceId}`);
-    }
+      if (readDocumentAuthoritative(this, packetInstanceId)) {
+        throw new Error(`Packet instance id already exists: ${packetInstanceId}`);
+      }
 
-    const packetVersion =
-      typeof input.packetVersion === 'number' && Number.isFinite(input.packetVersion)
-        ? input.packetVersion
-        : 1;
-    if (packetVersion < 1) {
-      throw new Error('packetVersion must be a positive finite number');
-    }
+      const packetVersion =
+        typeof input.packetVersion === 'number' && Number.isFinite(input.packetVersion)
+          ? input.packetVersion
+          : 1;
+      if (packetVersion < 1) {
+        throw new Error('packetVersion must be a positive finite number');
+      }
 
-    const doc: PacketStoreDocument = {
-      packetInstanceId,
-      packetId: input.packetId?.trim() || packetInstanceId,
-      packetVersion,
-      agencyId,
-      eventFamilyId,
-      eventInstanceId,
-      archetypeId,
-      archetypeVersion,
-      packetTemplateId,
-      subtype: input.subtype ?? null,
-      workflowId,
-      workflowInstanceId,
-      reportingPeriodStart: input.reportingPeriodStart ?? null,
-      reportingPeriodEnd: input.reportingPeriodEnd ?? null,
-      dataThroughDate: input.dataThroughDate ?? null,
-      status: input.status ?? 'SOURCE_COLLECTION',
-      moduleInstances: input.moduleInstances ?? [],
-      attachmentInstances: input.attachmentInstances ?? [],
-      blockerIds: input.blockerIds ?? [],
-      warningIds: input.warningIds ?? [],
-      approvalIds: input.approvalIds ?? [],
-      signatureIds: input.signatureIds ?? [],
-      evidenceManifestId: input.evidenceManifestId?.trim() || `em_${packetInstanceId}`,
-      auditChronologyId: input.auditChronologyId?.trim() || `ac_${packetInstanceId}`,
-      driveFolderUrl: null,
-      finalArtifactUrl: null,
-      createdAt: ts,
-      createdBy,
-      updatedAt: ts,
-      certifiedAt: null,
-      lockedAt: null,
-      contentHash: input.contentHash ?? null,
-      supersedesPacketInstanceId: input.supersedesPacketInstanceId ?? null,
-      supersededByPacketInstanceId: null,
-      sourceClassification: input.sourceClassification ?? null,
-      revision: 1,
-      identityKey,
-    };
-
-    assertNoForbiddenFields(doc, 'createPacketInstance.doc');
-    this.writeJson(this.fileFor(packetInstanceId), doc);
-
-    const actor = resolveActor(input.actor, createdBy);
-    await emitPacketAudit({
-      eventType: 'packet.template_selected',
-      packetInstanceId,
-      actor,
-      reason: input.reason ?? null,
-      summary: 'Packet instance created',
-      packetVersion: doc.packetVersion,
-      revision: doc.revision,
-      after: {
-        packetInstanceId: doc.packetInstanceId,
-        status: doc.status,
-        identityKey: doc.identityKey,
-        packetVersion: doc.packetVersion,
-        revision: doc.revision,
-      },
-      resource: {
-        resourceType: 'packet',
-        resourceId: packetInstanceId,
-        parentResourceId: null,
+      const doc: PacketStoreDocument = {
         packetInstanceId,
-        packetVersion: doc.packetVersion,
-      },
-    });
+        packetId: input.packetId?.trim() || packetInstanceId,
+        packetVersion,
+        agencyId,
+        eventFamilyId,
+        eventInstanceId,
+        archetypeId,
+        archetypeVersion,
+        packetTemplateId,
+        subtype: input.subtype ?? null,
+        workflowId,
+        workflowInstanceId,
+        reportingPeriodStart: input.reportingPeriodStart ?? null,
+        reportingPeriodEnd: input.reportingPeriodEnd ?? null,
+        dataThroughDate: input.dataThroughDate ?? null,
+        status: input.status ?? 'SOURCE_COLLECTION',
+        moduleInstances: input.moduleInstances ?? [],
+        attachmentInstances: input.attachmentInstances ?? [],
+        blockerIds: input.blockerIds ?? [],
+        warningIds: input.warningIds ?? [],
+        approvalIds: input.approvalIds ?? [],
+        signatureIds: input.signatureIds ?? [],
+        evidenceManifestId: input.evidenceManifestId?.trim() || `em_${packetInstanceId}`,
+        auditChronologyId: input.auditChronologyId?.trim() || `ac_${packetInstanceId}`,
+        driveFolderUrl: null,
+        finalArtifactUrl: null,
+        createdAt: ts,
+        createdBy,
+        updatedAt: ts,
+        certifiedAt: null,
+        lockedAt: null,
+        contentHash: input.contentHash ?? null,
+        supersedesPacketInstanceId: input.supersedesPacketInstanceId ?? null,
+        supersededByPacketInstanceId: null,
+        sourceClassification: input.sourceClassification ?? null,
+        revision: 1,
+        identityKey,
+      };
 
-    return { instance: doc, created: true };
+      assertNoForbiddenFields(doc, 'createPacketInstance.doc');
+      const staged = writeStagedDocument(this, packetInstanceId, doc);
+
+      try {
+        const actor = resolveActor(input.actor, createdBy);
+        await emitPacketAudit(
+          {
+            eventType: 'packet.template_selected',
+            packetInstanceId,
+            actor,
+            reason: input.reason ?? null,
+            summary: 'Packet instance created',
+            packetVersion: doc.packetVersion,
+            revision: doc.revision,
+            after: {
+              packetInstanceId: doc.packetInstanceId,
+              status: doc.status,
+              identityKey: doc.identityKey,
+              packetVersion: doc.packetVersion,
+              revision: doc.revision,
+            },
+            resource: {
+              resourceType: 'packet',
+              resourceId: packetInstanceId,
+              parentResourceId: null,
+              packetInstanceId,
+              packetVersion: doc.packetVersion,
+            },
+          },
+          getAuditEmitter(this),
+        );
+        commitStagedDocument(staged);
+      } catch (e) {
+        abortStagedDocument(staged);
+        throw e;
+      }
+
+      return { instance: doc, created: true };
+    });
   }
 
   /**
@@ -702,7 +849,18 @@ export class FileLocalPacketStore implements PacketMetadataStore {
     patch: PacketInstancePatch,
     options: PacketUpdateOptions = {},
   ): Promise<PacketStoreDocument> {
-    return applyUpdate(this, id, expectedRevision, patch, options, /* allowTerminal */ false);
+    return applyUpdate(this, id, expectedRevision, patch, options, {
+      allowTerminal: false,
+      allowLifecycleFields: false,
+    });
+  }
+
+  async queryAuditEvents(filter: PacketAuditQueryFilter = {}): Promise<AuditEvent[]> {
+    return queryPacketAuditEvents(getAuditEmitter(this), filter);
+  }
+
+  getAuditLedgerPath(): string | null {
+    return getAuditEmitter(this).ledgerPath;
   }
 }
 
@@ -720,9 +878,13 @@ async function applyUpdate(
   store: FileLocalPacketStore,
   id: string,
   expectedRevision: number,
-  patch: PacketInstancePatch,
+  patch: InternalPacketInstancePatch,
   options: PacketUpdateOptions,
-  allowTerminal: boolean,
+  mode: {
+    allowTerminal: boolean;
+    allowLifecycleFields: boolean;
+    allowedCurrentStatuses?: readonly PacketLifecycleStatus[];
+  },
 ): Promise<PacketStoreDocument> {
   const packetInstanceId = requireNonEmpty('packetInstanceId', id);
   if (typeof expectedRevision !== 'number' || !Number.isFinite(expectedRevision)) {
@@ -731,8 +893,11 @@ async function applyUpdate(
   assertNoForbiddenFields(patch, 'update');
   assertNoIdentityMutation(packetInstanceId, patch as Record<string, unknown>);
 
-  // Defense in depth: strip identity fields even if types are bypassed.
+  // Defense in depth: strip identity/store-owned fields even if types are bypassed.
   const patchRecord = { ...(patch as Record<string, unknown>) };
+  if (!mode.allowLifecycleFields) {
+    assertNoLifecycleOwnedMutation(packetInstanceId, patchRecord);
+  }
   for (const field of IMMUTABLE_IDENTITY_SET) {
     delete patchRecord[field];
   }
@@ -754,12 +919,30 @@ async function applyUpdate(
     }
 
     if (
-      !allowTerminal &&
+      !mode.allowTerminal &&
       (current.status === 'LOCKED' ||
         current.status === 'SUPERSEDED' ||
         current.status === 'CANCELLED')
     ) {
       throw new LockedPacketError(packetInstanceId, current.status);
+    }
+
+    if (
+      mode.allowedCurrentStatuses &&
+      !mode.allowedCurrentStatuses.includes(current.status)
+    ) {
+      if (
+        current.status === 'LOCKED' ||
+        current.status === 'SUPERSEDED' ||
+        current.status === 'CANCELLED'
+      ) {
+        throw new LockedPacketError(packetInstanceId, current.status);
+      }
+      const requestedStatus =
+        typeof patchRecord.status === 'string'
+          ? (patchRecord.status as PacketLifecycleStatus)
+          : current.status;
+      throw new IllegalTransitionError(packetInstanceId, current.status, requestedStatus);
     }
 
     const ts = nowIso();
@@ -788,50 +971,137 @@ async function applyUpdate(
 
     assertNoForbiddenFields(next, 'update.doc');
 
-    const rootDir = (store as unknown as { dir: string }).dir;
-    const file = path.join(rootDir, `${safeId(packetInstanceId)}.json`);
-    const tmp = `${file}.tmp`;
-    if (!fs.existsSync(path.dirname(file))) {
-      fs.mkdirSync(path.dirname(file), { recursive: true });
-    }
-    fs.writeFileSync(tmp, JSON.stringify(next, null, 2), 'utf8');
-    fs.renameSync(tmp, file);
-
     const actor = resolveActor(
       options.actor,
       typeof (patch as { updatedBy?: string }).updatedBy === 'string'
         ? (patch as { updatedBy?: string }).updatedBy
         : undefined,
     );
-    await emitPacketAudit({
-      eventType: options.auditEventType ?? 'packet.edited',
-      packetInstanceId,
-      actor,
-      reason: options.reason ?? null,
-      summary: 'Packet instance updated',
-      packetVersion: next.packetVersion,
-      revision: next.revision,
-      before: {
-        status: current.status,
-        packetVersion: current.packetVersion,
-        revision: current.revision,
-      },
-      after: {
-        status: next.status,
-        packetVersion: next.packetVersion,
-        revision: next.revision,
-      },
-      resource: {
-        resourceType: 'packet',
-        resourceId: packetInstanceId,
-        parentResourceId: null,
-        packetInstanceId,
-        packetVersion: next.packetVersion,
-      },
-    });
+    const staged = writeStagedDocument(store, packetInstanceId, next);
+    try {
+      await emitPacketAudit(
+        {
+          eventType: options.auditEventType ?? 'packet.edited',
+          packetInstanceId,
+          actor,
+          reason: options.reason ?? null,
+          summary: 'Packet instance updated',
+          packetVersion: next.packetVersion,
+          revision: next.revision,
+          before: {
+            status: current.status,
+            packetVersion: current.packetVersion,
+            revision: current.revision,
+          },
+          after: {
+            status: next.status,
+            packetVersion: next.packetVersion,
+            revision: next.revision,
+          },
+          resource: {
+            resourceType: 'packet',
+            resourceId: packetInstanceId,
+            parentResourceId: null,
+            packetInstanceId,
+            packetVersion: next.packetVersion,
+          },
+        },
+        getAuditEmitter(store),
+      );
+      commitStagedDocument(staged);
+    } catch (e) {
+      abortStagedDocument(staged);
+      throw e;
+    }
 
     return next;
   });
+}
+
+function auditTypeForTransition(toStatus: PacketLifecycleStatus): PacketAuditEventType {
+  switch (toStatus) {
+    case 'LOCKED':
+      return 'packet.locked';
+    case 'CERTIFIED':
+      return 'packet.certified';
+    case 'PUBLISHED':
+      return 'packet.published';
+    case 'APPROVED_FOR_SIGNATURE':
+      return 'packet.approved';
+    case 'AMENDMENT_REQUIRED':
+      return 'packet.amended';
+    case 'SUPERSEDED':
+      return 'packet.superseded';
+    default:
+      return 'packet.edited';
+  }
+}
+
+/**
+ * Enforce §17.1 ALLOWED_TRANSITIONS and persist the new status.
+ * LOCKED / terminal source statuses are rejected outright; terminal-state
+ * mutation is only available through amendment/supersession entry points below.
+ */
+export async function transitionPacket(
+  store: PacketMetadataStore,
+  id: string,
+  expectedRevision: number,
+  toStatus: PacketLifecycleStatus,
+  actor: PacketAuditActor,
+  reason?: string,
+): Promise<PacketStoreDocument> {
+  const packetInstanceId = requireNonEmpty('packetInstanceId', id);
+  if (!toStatus) {
+    throw new Error('toStatus is required');
+  }
+  if (!actor?.actorId?.trim()) {
+    throw new Error('actor.actorId is required');
+  }
+  if (!(store instanceof FileLocalPacketStore)) {
+    throw new Error('transitionPacket requires FileLocalPacketStore');
+  }
+
+  const current = readDocumentAuthoritative(store, packetInstanceId);
+  if (!current) {
+    throw new PacketNotFoundError(packetInstanceId);
+  }
+
+  if (
+    current.status === 'LOCKED' ||
+    current.status === 'SUPERSEDED' ||
+    current.status === 'CANCELLED'
+  ) {
+    throw new LockedPacketError(packetInstanceId, current.status);
+  }
+
+  if (!isAllowedPacketTransition(current.status, toStatus)) {
+    throw new IllegalTransitionError(packetInstanceId, current.status, toStatus);
+  }
+
+  const patch: InternalPacketInstancePatch = { status: toStatus };
+  if (toStatus === 'LOCKED') {
+    patch.lockedAt = new Date().toISOString();
+  }
+  if (toStatus === 'CERTIFIED') {
+    patch.certifiedAt = new Date().toISOString();
+  }
+
+  return applyUpdate(
+    store,
+    packetInstanceId,
+    expectedRevision,
+    patch,
+    {
+      actor,
+      reason: reason ?? null,
+      auditEventType: auditTypeForTransition(toStatus),
+    },
+    {
+      allowTerminal: false,
+      allowLifecycleFields: true,
+      allowedCurrentStatuses: [current.status],
+    },
+  );
 }
 
 /* ─── Amendment / supersession — ONLY privileged terminal writers ───── */
@@ -856,30 +1126,31 @@ export async function beginAmendment(
     throw new Error('beginAmendment requires FileLocalPacketStore');
   }
 
-  const current = await store.getById(id);
+  const packetInstanceId = requireNonEmpty('packetInstanceId', id);
+  const current = readDocumentAuthoritative(store, packetInstanceId);
   if (!current) {
-    throw new PacketNotFoundError(id);
+    throw new PacketNotFoundError(packetInstanceId);
   }
   if (current.status === 'SUPERSEDED' || current.status === 'CANCELLED') {
-    throw new LockedPacketError(id, current.status);
+    throw new LockedPacketError(packetInstanceId, current.status);
   }
   if (current.status === 'AMENDMENT_REQUIRED') {
     if (current.revision !== expectedRevision) {
-      throw new StaleWriteError(id, expectedRevision, current.revision);
+      throw new StaleWriteError(packetInstanceId, expectedRevision, current.revision);
     }
     return current;
   }
 
   const allowedNormally = isAllowedPacketTransition(current.status, 'AMENDMENT_REQUIRED');
   if (!allowedNormally && current.status !== 'LOCKED') {
-    throw new IllegalTransitionError(id, current.status, 'AMENDMENT_REQUIRED');
+    throw new IllegalTransitionError(packetInstanceId, current.status, 'AMENDMENT_REQUIRED');
   }
 
   // LOCKED: non-exported applyUpdate(..., allowTerminal=true) — not available publicly.
   if (current.status === 'LOCKED') {
     return applyUpdate(
       store,
-      id,
+      packetInstanceId,
       expectedRevision,
       { status: 'AMENDMENT_REQUIRED' },
       {
@@ -887,19 +1158,21 @@ export async function beginAmendment(
         reason: reason ?? null,
         auditEventType: 'packet.amended',
       },
-      true,
+      {
+        allowTerminal: true,
+        allowLifecycleFields: true,
+        allowedCurrentStatuses: ['LOCKED'],
+      },
     );
   }
 
-  return store.update(
-    id,
+  return transitionPacket(
+    store,
+    packetInstanceId,
     expectedRevision,
-    { status: 'AMENDMENT_REQUIRED' },
-    {
-      actor,
-      reason: reason ?? null,
-      auditEventType: 'packet.amended',
-    },
+    'AMENDMENT_REQUIRED',
+    actor,
+    reason,
   );
 }
 
@@ -935,21 +1208,28 @@ export async function createSupersedingInstance(
     throw new Error('createSupersedingInstance requires FileLocalPacketStore');
   }
 
-  const prior = await store.getById(priorId);
+  const priorPacketInstanceId = requireNonEmpty('packetInstanceId', priorId);
+  const prior = readDocumentAuthoritative(store, priorPacketInstanceId);
   if (!prior) {
-    throw new PacketNotFoundError(priorId);
+    throw new PacketNotFoundError(priorPacketInstanceId);
   }
   if (prior.status === 'SUPERSEDED') {
-    throw new Error(`Packet ${priorId} is already SUPERSEDED`);
+    throw new Error(`Packet ${priorPacketInstanceId} is already SUPERSEDED`);
+  }
+  if (prior.status === 'CANCELLED') {
+    throw new LockedPacketError(priorPacketInstanceId, prior.status);
+  }
+  if (prior.status !== 'LOCKED') {
+    throw new IllegalTransitionError(priorPacketInstanceId, prior.status, 'SUPERSEDED');
   }
   if (prior.revision !== expectedRevision) {
-    throw new StaleWriteError(priorId, expectedRevision, prior.revision);
+    throw new StaleWriteError(priorPacketInstanceId, expectedRevision, prior.revision);
   }
 
   // Mutation 1: mark prior SUPERSEDED (module-private allowTerminal path).
   const markedPrior = await applyUpdate(
     store,
-    priorId,
+    priorPacketInstanceId,
     expectedRevision,
     { status: 'SUPERSEDED' },
     {
@@ -957,7 +1237,11 @@ export async function createSupersedingInstance(
       reason: input.reason ?? null,
       auditEventType: 'packet.superseded',
     },
-    true,
+    {
+      allowTerminal: true,
+      allowLifecycleFields: true,
+      allowedCurrentStatuses: ['LOCKED'],
+    },
   );
 
   // Mutation 2: create successor (public create emits packet.template_selected).
@@ -1001,7 +1285,11 @@ export async function createSupersedingInstance(
       reason: input.reason ?? null,
       auditEventType: 'packet.edited',
     },
-    true,
+    {
+      allowTerminal: true,
+      allowLifecycleFields: true,
+      allowedCurrentStatuses: ['SUPERSEDED'],
+    },
   );
 
   return { prior: linkedPrior, next: created.instance };

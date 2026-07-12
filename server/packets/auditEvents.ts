@@ -78,32 +78,16 @@ export interface PacketAuditLedgerConfig {
   query?: PacketAuditQueryFn;
 }
 
-let ledgerConfig: PacketAuditLedgerConfig = {};
-let fileLedger: IsolatedFileLedger | null = null;
-
-/** Configure the packet audit ledger sink/path (tests inject a temp path). */
-export function configurePacketAuditLedger(config: PacketAuditLedgerConfig): void {
-  ledgerConfig = { ...config };
-  if (config.append) {
-    fileLedger = null;
-    return;
-  }
-  if (config.ledgerPath && config.ledgerPath.trim().length > 0) {
-    fileLedger = new IsolatedFileLedger(path.resolve(config.ledgerPath));
-    return;
-  }
-  fileLedger = null;
+export interface PacketAuditEmitter {
+  readonly ledgerPath: string | null;
+  emit(event: EmitPacketAuditInput): Promise<AuditEvent>;
+  query(filter?: PacketAuditQueryFilter): Promise<AuditEvent[]>;
 }
 
-/** Reset to production default (global writer). */
-export function resetPacketAuditLedger(): void {
-  ledgerConfig = {};
-  fileLedger = null;
-}
-
-/** Current configured ledger file path, if any (for tests). */
-export function getConfiguredPacketAuditLedgerPath(): string | null {
-  return ledgerConfig.ledgerPath ? path.resolve(ledgerConfig.ledgerPath) : null;
+export function createPacketAuditEmitter(
+  config: PacketAuditLedgerConfig = {},
+): PacketAuditEmitter {
+  return new ConfiguredPacketAuditEmitter(config);
 }
 
 function mapActor(actor: PacketAuditActor): Actor {
@@ -137,11 +121,7 @@ export function packetAuditStreamKey(packetInstanceId: string): string {
   return `packet:${packetInstanceId.trim()}`;
 }
 
-/**
- * Append one packet.* event to the active ledger (injected or production).
- * Exactly one ledger row per call; callers must not double-emit.
- */
-export async function emitPacketAudit(event: EmitPacketAuditInput): Promise<AuditEvent> {
+function buildPacketAuditAppendInput(event: EmitPacketAuditInput): PacketAuditAppendInput {
   const packetInstanceId = event.packetInstanceId?.trim();
   if (!packetInstanceId) {
     throw new Error('emitPacketAudit requires packetInstanceId');
@@ -188,29 +168,33 @@ export async function emitPacketAudit(event: EmitPacketAuditInput): Promise<Audi
     retention_class: 'standard',
   };
 
-  if (ledgerConfig.append) {
-    return ledgerConfig.append(input);
-  }
-  if (fileLedger) {
-    return fileLedger.append(input);
-  }
-  return appendEvent(input);
+  return input;
 }
 
-/** Query packet audit events from the active ledger (injected or production). */
+/**
+ * Append one packet.* event to the supplied store-owned ledger.
+ * Exactly one ledger row per call; callers must not double-emit.
+ */
+export async function emitPacketAudit(
+  event: EmitPacketAuditInput,
+  emitter: PacketAuditEmitter = DEFAULT_PACKET_AUDIT_EMITTER,
+): Promise<AuditEvent> {
+  return emitter.emit(event);
+}
+
+/** Query packet audit events from a store-owned ledger, or from production by default. */
 export async function queryPacketAuditEvents(
+  emitterOrFilter: PacketAuditEmitter | PacketAuditQueryFilter = {},
   filter: PacketAuditQueryFilter = {},
 ): Promise<AuditEvent[]> {
-  if (ledgerConfig.query) {
-    return ledgerConfig.query(filter);
+  if (
+    emitterOrFilter &&
+    typeof (emitterOrFilter as PacketAuditEmitter).emit === 'function' &&
+    typeof (emitterOrFilter as PacketAuditEmitter).query === 'function'
+  ) {
+    return (emitterOrFilter as PacketAuditEmitter).query(filter);
   }
-  if (fileLedger) {
-    return fileLedger.query(filter);
-  }
-  return defaultQueryEvents({
-    stream: filter.stream,
-    limit: filter.limit ?? 200,
-  });
+  return DEFAULT_PACKET_AUDIT_EMITTER.query(emitterOrFilter as PacketAuditQueryFilter);
 }
 
 /** Convenience: build a system actor for internal mutations. */
@@ -373,3 +357,47 @@ class IsolatedFileLedger {
     return rows.slice(0, limit);
   }
 }
+
+class ConfiguredPacketAuditEmitter implements PacketAuditEmitter {
+  readonly ledgerPath: string | null;
+  private readonly appendFn: PacketAuditAppendFn | null;
+  private readonly queryFn: PacketAuditQueryFn | null;
+  private readonly fileLedger: IsolatedFileLedger | null;
+
+  constructor(config: PacketAuditLedgerConfig) {
+    this.ledgerPath =
+      config.ledgerPath && config.ledgerPath.trim().length > 0
+        ? path.resolve(config.ledgerPath)
+        : null;
+    this.appendFn = config.append ?? null;
+    this.queryFn = config.query ?? null;
+    this.fileLedger =
+      this.appendFn || !this.ledgerPath ? null : new IsolatedFileLedger(this.ledgerPath);
+  }
+
+  async emit(event: EmitPacketAuditInput): Promise<AuditEvent> {
+    const input = buildPacketAuditAppendInput(event);
+    if (this.appendFn) {
+      return this.appendFn(input);
+    }
+    if (this.fileLedger) {
+      return this.fileLedger.append(input);
+    }
+    return appendEvent(input);
+  }
+
+  async query(filter: PacketAuditQueryFilter = {}): Promise<AuditEvent[]> {
+    if (this.queryFn) {
+      return this.queryFn(filter);
+    }
+    if (this.fileLedger) {
+      return this.fileLedger.query(filter);
+    }
+    return defaultQueryEvents({
+      stream: filter.stream,
+      limit: filter.limit ?? 200,
+    });
+  }
+}
+
+const DEFAULT_PACKET_AUDIT_EMITTER = new ConfiguredPacketAuditEmitter({});

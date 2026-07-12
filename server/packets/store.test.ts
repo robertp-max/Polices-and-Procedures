@@ -8,16 +8,16 @@ import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { AuditEvent } from '../audit/writer.js';
 import {
-  configurePacketAuditLedger,
-  getConfiguredPacketAuditLedgerPath,
   packetAuditStreamKey,
-  queryPacketAuditEvents,
-  resetPacketAuditLedger,
+  userPacketActor,
+  type PacketAuditAppendInput,
 } from './auditEvents.js';
+import { transitionPacket } from './lifecycle.js';
 import {
   FileLocalPacketStore,
   ForbiddenFieldError,
   ImmutableIdentityError,
+  LifecycleOwnedFieldError,
   LockedPacketError,
   PHI_FREE_TEXT_LENGTH_THRESHOLD,
   StaleWriteError,
@@ -57,6 +57,33 @@ function assertAuditSequence(
   }
 }
 
+function fakeAuditEvent(input: PacketAuditAppendInput, sequence: number): AuditEvent {
+  return {
+    event_id: `evt-${sequence}`,
+    event_type: input.event_type,
+    event_version: 1,
+    occurred_at_utc: new Date().toISOString(),
+    stream: input.stream,
+    sequence,
+    prev_hash: sequence === 1 ? 'GENESIS' : `hash-${sequence - 1}`,
+    event_hash: `hash-${sequence}`,
+    actor: input.actor,
+    action: input.action,
+    resource: input.resource,
+    before: input.before,
+    after: input.after,
+    correlation_id: input.correlation_id ?? `corr-${sequence}`,
+    environment: {},
+    severity: input.severity ?? 'info',
+    phi_flag: false,
+    pii_flag: false,
+    retention_class: input.retention_class ?? 'standard',
+    payload: input.payload ?? {},
+    schema_version: 1,
+    idempotency_key: input.idempotency_key,
+  } as AuditEvent;
+}
+
 function baseInput(overrides: Partial<CreatePacketInstanceInput> = {}): CreatePacketInstanceInput {
   return {
     agencyId: 'agency-a',
@@ -85,15 +112,13 @@ describe('FileLocalPacketStore', () => {
     cacheRoot = makeTempDir('packet-store-');
     auditRoot = makeTempDir('packet-audit-');
     ledgerPath = path.join(auditRoot, 'audit_events.jsonl');
-    configurePacketAuditLedger({ ledgerPath });
-    store = new FileLocalPacketStore(cacheRoot);
+    store = new FileLocalPacketStore(cacheRoot, { ledgerPath });
     realLedgerMtimeBefore = fs.existsSync(REAL_AUDIT_LEDGER)
       ? fs.statSync(REAL_AUDIT_LEDGER).mtimeMs
       : null;
   });
 
   afterEach(() => {
-    resetPacketAuditLedger();
     fs.rmSync(cacheRoot, { recursive: true, force: true });
     fs.rmSync(auditRoot, { recursive: true, force: true });
   });
@@ -124,6 +149,30 @@ describe('FileLocalPacketStore', () => {
 
     const listed = await store.list({ agencyId: 'agency-a' });
     expect(listed).toHaveLength(1);
+  });
+
+  it('serializes concurrent createPacketInstance calls for one FR-004 identity key', async () => {
+    const N = 24;
+    const input = baseInput({
+      eventInstanceId: 'evt-create-race',
+      workflowInstanceId: 'wf-create-race',
+    });
+
+    const results = await Promise.all(
+      Array.from({ length: N }, () => store.createPacketInstance(input)),
+    );
+
+    expect(results.filter((r) => r.created)).toHaveLength(1);
+    expect(new Set(results.map((r) => r.instance.packetInstanceId)).size).toBe(1);
+    const identityKey = results[0]!.instance.identityKey;
+    const active = await store.findByIdentityKey(identityKey);
+    expect(active?.packetInstanceId).toBe(results[0]!.instance.packetInstanceId);
+
+    const listed = await store.list({ agencyId: 'agency-a' });
+    const activeMatches = listed.filter(
+      (doc) => doc.identityKey === identityKey && doc.status !== 'SUPERSEDED',
+    );
+    expect(activeMatches).toHaveLength(1);
   });
 
   it('distinct occurrence (event_instance_id) yields distinct instances (FR-005)', async () => {
@@ -174,6 +223,41 @@ describe('FileLocalPacketStore', () => {
         warningIds: ['nope'],
       }),
     ).rejects.toBeInstanceOf(LockedPacketError);
+  });
+
+  it('public update rejects lifecycle-owned fields while transitionPacket still changes status', async () => {
+    const { instance } = await store.createPacketInstance(
+      baseInput({ eventInstanceId: 'life-owned-1', workflowInstanceId: 'wf-life-owned-1' }),
+    );
+
+    for (const patch of [
+      { status: 'SUPERSEDED' },
+      { lockedAt: new Date().toISOString() },
+      { certifiedAt: new Date().toISOString() },
+    ] satisfies Array<Record<string, unknown>>) {
+      await expect(
+        store.update(instance.packetInstanceId, instance.revision, patch as never),
+      ).rejects.toBeInstanceOf(LifecycleOwnedFieldError);
+    }
+
+    const unchanged = await store.getById(instance.packetInstanceId);
+    expect(unchanged?.status).toBe('SOURCE_COLLECTION');
+    expect(unchanged?.revision).toBe(instance.revision);
+
+    const actor = userPacketActor('life-owner');
+    const transitioned = await transitionPacket(
+      store,
+      instance.packetInstanceId,
+      instance.revision,
+      'DRAFT_GENERATED',
+      actor,
+      'draft generated',
+    );
+    expect(transitioned.status).toBe('DRAFT_GENERATED');
+
+    const stream = packetAuditStreamKey(instance.packetInstanceId);
+    const events = await store.queryAuditEvents({ stream, limit: 100 });
+    assertAuditSequence(events, ['packet.template_selected', 'packet.edited']);
   });
 
   it('rejects patches to identity-key / packetId family fields (ImmutableIdentityError)', async () => {
@@ -288,6 +372,40 @@ describe('FileLocalPacketStore', () => {
     ).rejects.toBeInstanceOf(ForbiddenFieldError);
   });
 
+  it('rejects custom-toJSON metadata smuggling before persistence', async () => {
+    const smuggler = {
+      toJSON() {
+        return { patient_name: 'Jane Doe' };
+      },
+    };
+    const packetInstanceId = 'tojson-smuggle-1';
+
+    await expect(
+      store.createPacketInstance(
+        baseInput({
+          packetInstanceId,
+          eventInstanceId: 'evt-tojson',
+          workflowInstanceId: 'wf-tojson',
+          moduleInstances: [
+            {
+              moduleInstanceId: 'm-tojson',
+              moduleId: 'cover' as never,
+              status: 'not_started',
+              payload: smuggler as never,
+              contentHash: null,
+              order: 0,
+              updatedAt: new Date().toISOString(),
+              updatedBy: null,
+            },
+          ],
+        }),
+      ),
+    ).rejects.toBeInstanceOf(ForbiddenFieldError);
+
+    expect(await store.getById(packetInstanceId)).toBeNull();
+    expect(fs.existsSync(path.join(cacheRoot, `${packetInstanceId}.json`))).toBe(false);
+  });
+
   it('getById, findByIdentityKey, and list filter correctly', async () => {
     const a = await store.createPacketInstance(
       baseInput({
@@ -325,7 +443,7 @@ describe('FileLocalPacketStore', () => {
   });
 
   it('every mutation emits exactly one audit event on the temp ledger with verified chain', async () => {
-    expect(getConfiguredPacketAuditLedgerPath()).toBe(path.resolve(ledgerPath));
+    expect(store.getAuditLedgerPath()).toBe(path.resolve(ledgerPath));
 
     const created = await store.createPacketInstance(
       baseInput({ eventInstanceId: 'audit-mut-1', workflowInstanceId: 'wf-audit-1' }),
@@ -333,17 +451,17 @@ describe('FileLocalPacketStore', () => {
     const id = created.instance.packetInstanceId;
     const stream = packetAuditStreamKey(id);
 
-    const afterCreate = await queryPacketAuditEvents({ stream, limit: 100 });
+    const afterCreate = await store.queryAuditEvents({ stream, limit: 100 });
     assertAuditSequence(afterCreate, ['packet.template_selected']);
 
     const updated = await store.update(id, created.instance.revision, {
       warningIds: ['w-audit'],
     });
-    const afterUpdate = await queryPacketAuditEvents({ stream, limit: 100 });
+    const afterUpdate = await store.queryAuditEvents({ stream, limit: 100 });
     assertAuditSequence(afterUpdate, ['packet.template_selected', 'packet.edited']);
 
     await store.update(id, updated.revision, { blockerIds: ['b1'] });
-    const afterSecond = await queryPacketAuditEvents({ stream, limit: 100 });
+    const afterSecond = await store.queryAuditEvents({ stream, limit: 100 });
     assertAuditSequence(afterSecond, [
       'packet.template_selected',
       'packet.edited',
@@ -362,6 +480,58 @@ describe('FileLocalPacketStore', () => {
     }
   });
 
+  it('keeps audit sinks store-scoped with no importable global redirect hook', async () => {
+    const rootA = makeTempDir('packet-audit-scope-a-');
+    const rootB = makeTempDir('packet-audit-scope-b-');
+    const eventsA: PacketAuditAppendInput[] = [];
+    const eventsB: PacketAuditAppendInput[] = [];
+    const scopedA = new FileLocalPacketStore(rootA, {
+      append: async (input) => {
+        eventsA.push(input);
+        return fakeAuditEvent(input, eventsA.length);
+      },
+      query: async () => [],
+    });
+    const scopedB = new FileLocalPacketStore(rootB, {
+      append: async (input) => {
+        eventsB.push(input);
+        return fakeAuditEvent(input, eventsB.length);
+      },
+      query: async () => [],
+    });
+
+    try {
+      await scopedA.createPacketInstance(
+        baseInput({
+          agencyId: 'agency-audit-a',
+          eventInstanceId: 'evt-audit-a',
+          workflowInstanceId: 'wf-audit-a',
+        }),
+      );
+      await scopedB.createPacketInstance(
+        baseInput({
+          agencyId: 'agency-audit-b',
+          eventInstanceId: 'evt-audit-b',
+          workflowInstanceId: 'wf-audit-b',
+        }),
+      );
+
+      expect(eventsA).toHaveLength(1);
+      expect(eventsB).toHaveLength(1);
+      expect(eventsA[0]!.resource.id).not.toBe(eventsB[0]!.resource.id);
+      expect(eventsA[0]!.stream).toContain(eventsA[0]!.resource.id);
+      expect(eventsB[0]!.stream).toContain(eventsB[0]!.resource.id);
+
+      const auditMod = await import('./auditEvents.js');
+      expect(Object.prototype.hasOwnProperty.call(auditMod, 'configurePacketAuditLedger')).toBe(
+        false,
+      );
+    } finally {
+      fs.rmSync(rootA, { recursive: true, force: true });
+      fs.rmSync(rootB, { recursive: true, force: true });
+    }
+  });
+
   it('atomic write leaves a readable JSON document (tmp+rename)', async () => {
     const { instance } = await store.createPacketInstance(
       baseInput({ eventInstanceId: 'atomic-1', workflowInstanceId: 'wf-atomic-1' }),
@@ -374,20 +544,66 @@ describe('FileLocalPacketStore', () => {
     expect(parsed.packetInstanceId).toBe(instance.packetInstanceId);
   });
 
+  it('does not expose create or update mutations when audit append fails', async () => {
+    const failingCreateStore = new FileLocalPacketStore(cacheRoot, {
+      append: async () => {
+        throw new Error('ledger unavailable');
+      },
+      query: async () => [],
+    });
+    const createId = 'audit-fail-create';
+
+    await expect(
+      failingCreateStore.createPacketInstance(
+        baseInput({
+          packetInstanceId: createId,
+          eventInstanceId: 'audit-fail-create',
+          workflowInstanceId: 'wf-audit-fail-create',
+        }),
+      ),
+    ).rejects.toThrow('ledger unavailable');
+    expect(await failingCreateStore.getById(createId)).toBeNull();
+    expect(fs.existsSync(path.join(cacheRoot, `${createId}.json`))).toBe(false);
+
+    const { instance } = await store.createPacketInstance(
+      baseInput({
+        packetInstanceId: 'audit-fail-update',
+        eventInstanceId: 'audit-fail-update',
+        workflowInstanceId: 'wf-audit-fail-update',
+      }),
+    );
+    const failingUpdateStore = new FileLocalPacketStore(cacheRoot, {
+      append: async () => {
+        throw new Error('ledger unavailable');
+      },
+      query: async () => [],
+    });
+
+    await expect(
+      failingUpdateStore.update(instance.packetInstanceId, instance.revision, {
+        warningIds: ['should-not-stick'],
+      }),
+    ).rejects.toThrow('ledger unavailable');
+
+    const reloaded = await store.getById(instance.packetInstanceId);
+    expect(reloaded?.revision).toBe(instance.revision);
+    expect(reloaded?.warningIds).toEqual([]);
+    expect(fs.readdirSync(cacheRoot).some((name) => name.endsWith('.tmp'))).toBe(false);
+  });
+
   it('does not export any privileged LOCKED-mutation handle', async () => {
     const storeMod = await import('./store.js');
     const lifeMod = await import('./lifecycle.js');
 
-    // Explicit ban-list from QA: these must not appear on the public surface.
-    for (const name of [
-      '_lifecycleUpdate',
-      '__applyLifecycleUpdate',
-      'applyUpdate',
-      'allowLockedMutation',
-    ]) {
-      expect(Object.prototype.hasOwnProperty.call(storeMod, name)).toBe(false);
-      expect(Object.prototype.hasOwnProperty.call(lifeMod, name)).toBe(false);
-    }
+    const exportedNames = [
+      ...Object.keys(storeMod).map((name) => `store.${name}`),
+      ...Object.keys(lifeMod).map((name) => `lifecycle.${name}`),
+    ];
+    expect(
+      exportedNames.some((name) =>
+        /(^|\.)(__.*|_.*|apply.*update|.*allow.*terminal|.*allow.*locked)/i.test(name),
+      ),
+    ).toBe(false);
 
     const { instance } = await store.createPacketInstance(
       baseInput({
@@ -396,24 +612,17 @@ describe('FileLocalPacketStore', () => {
         workflowInstanceId: 'wf-export-lock-1',
       }),
     );
+    const actor = userPacketActor('u');
 
-    // Instance prototype / class must not expose __applyLifecycleUpdate.
+    // Instance prototype / class must not expose privileged-looking handles.
     expect(
-      typeof (store as unknown as { __applyLifecycleUpdate?: unknown }).__applyLifecycleUpdate,
-    ).toBe('undefined');
+      Object.getOwnPropertyNames(store).some((name) => /apply|allow.*locked/i.test(name)),
+    ).toBe(false);
     expect(
-      typeof (FileLocalPacketStore.prototype as unknown as { __applyLifecycleUpdate?: unknown })
-        .__applyLifecycleUpdate,
-    ).toBe('undefined');
-
-    /**
-     * Enumerate exported values that are general-purpose mutators (not the
-     * intentional amendment/supersession entry points) and assert LOCKED rejects.
-     */
-    const intentionalTerminalEntryPoints = new Set([
-      'beginAmendment',
-      'createSupersedingInstance',
-    ]);
+      Object.getOwnPropertyNames(FileLocalPacketStore.prototype).some((name) =>
+        /apply|allow.*locked/i.test(name),
+      ),
+    ).toBe(false);
 
     // store.update — public mutator
     await expect(
@@ -427,50 +636,62 @@ describe('FileLocalPacketStore', () => {
         instance.packetInstanceId,
         instance.revision,
         'AMENDMENT_REQUIRED',
-        { kind: 'user', actorId: 'u', actorRole: null, onBehalfOf: null },
+        actor,
       ),
     ).rejects.toBeInstanceOf(LockedPacketError);
 
-    // Walk module exports: any other function that looks like a generic update
-    // path with (store, id, rev, ...) must not succeed against LOCKED.
-    for (const [modName, mod] of [
+    const forged = {
+      ...(await store.getById(instance.packetInstanceId))!,
+      status: 'DRAFT_GENERATED' as const,
+    };
+    class SpoofingStore extends FileLocalPacketStore {
+      override async getById(): Promise<typeof forged> {
+        return forged;
+      }
+    }
+    const evil = new SpoofingStore(cacheRoot, { ledgerPath });
+    await expect(
+      evil.update(instance.packetInstanceId, instance.revision, { warningIds: ['evil'] }),
+    ).rejects.toBeInstanceOf(LockedPacketError);
+    await expect(
+      FileLocalPacketStore.prototype.update.call(
+        evil,
+        instance.packetInstanceId,
+        instance.revision,
+        { warningIds: ['prototype-evil'] },
+      ),
+    ).rejects.toBeInstanceOf(LockedPacketError);
+
+    const isClassLike = (value: Function): boolean =>
+      /^class\s/.test(Function.prototype.toString.call(value));
+    const mutatorExports = ([
       ['store', storeMod],
       ['lifecycle', lifeMod],
-    ] as const) {
-      for (const [exportName, value] of Object.entries(mod)) {
-        if (intentionalTerminalEntryPoints.has(exportName)) continue;
-        if (typeof value !== 'function') continue;
-        // Skip constructors / error classes / pure helpers.
-        if (
-          exportName.endsWith('Error') ||
-          exportName.startsWith('assert') ||
-          exportName === 'FileLocalPacketStore' ||
-          exportName === 'userPacketActor' ||
-          exportName === 'systemPacketActor'
-        ) {
-          continue;
+    ] as const).flatMap(([modName, mod]) =>
+      Object.entries(mod)
+        .filter(([, value]) => typeof value === 'function')
+        .filter(([, value]) => !isClassLike(value as Function))
+        .filter(([exportName, value]) => {
+          const fn = value as Function;
+          return /update|mutate|write|apply|transition/i.test(exportName) && fn.length >= 3;
+        })
+        .map(([exportName, value]) => ({ exportName, modName, value })),
+    );
+    expect(mutatorExports.map((entry) => `${entry.modName}.${entry.exportName}`)).toContain(
+      'lifecycle.transitionPacket',
+    );
+
+    for (const { exportName, value } of mutatorExports) {
+      const fn = value as (...args: unknown[]) => unknown;
+      try {
+        const result = /transition/i.test(exportName)
+          ? fn(evil, instance.packetInstanceId, instance.revision, 'AMENDMENT_REQUIRED', actor)
+          : fn(evil, instance.packetInstanceId, instance.revision, { warningIds: ['probe'] }, {});
+        if (result && typeof (result as Promise<unknown>).then === 'function') {
+          await expect(result as Promise<unknown>).rejects.toBeTruthy();
         }
-        // Generic mutators we already covered; ensure no surprise export named update*.
-        if (/update|mutate|write|apply/i.test(exportName) && exportName !== 'beginAmendment') {
-          // If someone reintroduces a privileged export, calling it must not
-          // silently succeed — either it rejects LOCKED or does not exist.
-          const fn = value as (...args: unknown[]) => unknown;
-          try {
-            const result = fn(
-              store,
-              instance.packetInstanceId,
-              instance.revision,
-              { warningIds: ['probe'] },
-              {},
-            );
-            if (result && typeof (result as Promise<unknown>).then === 'function') {
-              await expect(result as Promise<unknown>).rejects.toBeTruthy();
-            }
-          } catch {
-            // Sync throw is also a rejection of the probe.
-          }
-          void modName;
-        }
+      } catch {
+        // Sync throw is also a rejection of the probe.
       }
     }
 
@@ -557,5 +778,37 @@ describe('FileLocalPacketStore', () => {
         { warningIds: ['x'] },
       ),
     ).rejects.toThrow(/Unrecognized store instance/);
+  });
+
+  it('uses the constructor-registered directory even if a dir property is mutated', async () => {
+    const otherRoot = makeTempDir('packet-dir-poison-');
+    try {
+      const { instance } = await store.createPacketInstance(
+        baseInput({
+          packetInstanceId: 'dir-poison-1',
+          eventInstanceId: 'dir-poison-1',
+          workflowInstanceId: 'wf-dir-poison-1',
+        }),
+      );
+      (store as unknown as { dir: string }).dir = otherRoot;
+
+      const updated = await store.update(instance.packetInstanceId, instance.revision, {
+        warningIds: ['still-original-root'],
+      });
+
+      const originalFile = path.join(cacheRoot, `${instance.packetInstanceId}.json`);
+      const redirectedFile = path.join(otherRoot, `${instance.packetInstanceId}.json`);
+      expect(fs.existsSync(originalFile)).toBe(true);
+      expect(fs.existsSync(redirectedFile)).toBe(false);
+
+      const originalDoc = JSON.parse(fs.readFileSync(originalFile, 'utf8')) as {
+        revision: number;
+        warningIds: string[];
+      };
+      expect(originalDoc.revision).toBe(updated.revision);
+      expect(originalDoc.warningIds).toEqual(['still-original-root']);
+    } finally {
+      fs.rmSync(otherRoot, { recursive: true, force: true });
+    }
   });
 });
