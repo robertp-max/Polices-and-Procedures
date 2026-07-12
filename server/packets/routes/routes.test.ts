@@ -92,6 +92,14 @@ function packetFrom(body: unknown): PacketStoreDocument {
   return packet as PacketStoreDocument;
 }
 
+function errorBlockers(body: unknown): Array<Record<string, unknown>> {
+  const error = jsonObject(jsonObject(body).error);
+  const details = jsonObject(error.details);
+  const blockers = details.blockers;
+  expect(Array.isArray(blockers)).toBe(true);
+  return blockers as Array<Record<string, unknown>>;
+}
+
 async function listen(app: Express): Promise<Server> {
   return new Promise((resolve) => {
     const server = http.createServer(app);
@@ -240,6 +248,76 @@ describe('/api/packets route package', () => {
 
     const reloaded = await store.getById(packet.packetInstanceId);
     expect(reloaded?.warningIds).toEqual(['warning-first']);
+  });
+
+  it('returns structured blockers for malformed mutation bodies', async () => {
+    const badCreate = await requestJson(
+      app,
+      'POST',
+      '/api/packets',
+      {
+        ...baseInput({
+          eventInstanceId: 'evt-bad-version',
+          workflowInstanceId: 'wf-bad-version',
+        }),
+        packetVersion: 0,
+      },
+      { 'Idempotency-Key': 'packet-bad-version' },
+    );
+    expect(badCreate.status).toBe(400);
+    const createBlockers = errorBlockers(badCreate.body);
+    expect(createBlockers[0]?.code).toBe('field_value_invalid');
+    expect(createBlockers[0]?.path).toBe('packetVersion');
+
+    const created = await requestJson(
+      app,
+      'POST',
+      '/api/packets',
+      baseInput({
+        eventInstanceId: 'evt-malformed-body',
+        workflowInstanceId: 'wf-malformed-body',
+      }),
+      { 'Idempotency-Key': 'packet-malformed-body' },
+    );
+    const packet = packetFrom(created.body);
+
+    const badPatch = await requestJson(
+      app,
+      'PATCH',
+      `/api/packets/${packet.packetInstanceId}`,
+      {
+        expectedRevision: packet.revision,
+        patch: ['warningIds'],
+      },
+    );
+    expect(badPatch.status).toBe(400);
+    const patchBlockers = errorBlockers(badPatch.body);
+    expect(patchBlockers[0]?.code).toBe('patch_type_invalid');
+    expect(patchBlockers[0]?.path).toBe('patch');
+    const afterBadPatch = await store.getById(packet.packetInstanceId);
+    expect(afterBadPatch?.revision).toBe(packet.revision);
+    expect((afterBadPatch as unknown as { patch?: unknown })?.patch).toBeUndefined();
+
+    const badSource = await requestJson(
+      app,
+      'POST',
+      `/api/packets/${packet.packetInstanceId}/sources`,
+      {
+        expectedRevision: packet.revision,
+        sourceType: 'drive-evidence',
+        title: 'Malformed source metadata',
+        driveUrl: 123,
+      },
+    );
+    expect(badSource.status).toBe(400);
+    const sourceBlockers = errorBlockers(badSource.body);
+    expect(sourceBlockers[0]?.code).toBe('field_type_invalid');
+    expect(sourceBlockers[0]?.path).toBe('driveUrl');
+    const afterBadSource = await store.getById(packet.packetInstanceId);
+    expect(afterBadSource?.attachmentInstances).toHaveLength(0);
+    expect(await eventTypes(store, packet.packetInstanceId)).toEqual([
+      'packet.template_selected',
+    ]);
   });
 
   it('emits an audit event for each successful route mutation', async () => {

@@ -121,6 +121,13 @@ function optionalNumberField(body: Record<string, unknown>, field: string): numb
       field,
     );
   }
+  if (field === 'packetVersion' && value < 1) {
+    throw structuredBlockerError(
+      'field_value_invalid',
+      'Field "packetVersion" must be a positive number.',
+      field,
+    );
+  }
   return value;
 }
 
@@ -358,7 +365,18 @@ function sanitizedPatch(req: Request): {
   ignoredClientFields: string[];
 } {
   const body = asRecord(req.body);
-  const rawPatch = body.patch && typeof body.patch === 'object' && !Array.isArray(body.patch)
+  const hasPatchWrapper = Object.prototype.hasOwnProperty.call(body, 'patch');
+  if (
+    hasPatchWrapper &&
+    (!body.patch || typeof body.patch !== 'object' || Array.isArray(body.patch))
+  ) {
+    throw structuredBlockerError(
+      'patch_type_invalid',
+      'Field "patch" must be a JSON object when provided.',
+      'patch',
+    );
+  }
+  const rawPatch = hasPatchWrapper
     ? (body.patch as Record<string, unknown>)
     : body;
   const patchRecord: Record<string, unknown> = {};

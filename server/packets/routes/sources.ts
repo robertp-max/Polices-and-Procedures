@@ -82,8 +82,16 @@ function requiredString(body: AddPacketSourceBody, field: 'title' | 'sourceType'
   return value.trim();
 }
 
-function optionalString(value: string | null | undefined): string | null {
+function optionalString(body: AddPacketSourceBody, field: keyof AddPacketSourceBody): string | null {
+  const value = body[field];
   if (value === null || value === undefined) return null;
+  if (typeof value !== 'string') {
+    throw structuredBlockerError(
+      'field_type_invalid',
+      `Field "${field}" must be a string or null.`,
+      String(field),
+    );
+  }
   const trimmed = value.trim();
   return trimmed.length === 0 ? null : trimmed;
 }
@@ -188,13 +196,13 @@ function serverSourceHash(input: Record<string, unknown>): string {
 function buildAttachment(packet: PacketStoreDocument, body: AddPacketSourceBody): PacketAttachmentInstance {
   const sourceType = requiredString(body, 'sourceType');
   const title = requiredString(body, 'title');
-  const sourceId = optionalString(body.sourceId) ?? `${sourceType}:${Date.now().toString(36)}`;
-  const evidenceId = optionalString(body.evidenceId) ?? sourceId;
-  const formInstanceId = optionalString(body.formInstanceId);
-  const driveUrl = optionalString(body.driveUrl);
-  const mimeType = optionalString(body.mimeType);
-  const attachmentTypeId = optionalString(body.attachmentTypeId) ?? sourceType;
-  const confidentialityLevel = optionalString(body.confidentialityLevel) ?? 'agency-confidential';
+  const sourceId = optionalString(body, 'sourceId') ?? `${sourceType}:${Date.now().toString(36)}`;
+  const evidenceId = optionalString(body, 'evidenceId') ?? sourceId;
+  const formInstanceId = optionalString(body, 'formInstanceId');
+  const driveUrl = optionalString(body, 'driveUrl');
+  const mimeType = optionalString(body, 'mimeType');
+  const attachmentTypeId = optionalString(body, 'attachmentTypeId') ?? sourceType;
+  const confidentialityLevel = optionalString(body, 'confidentialityLevel') ?? 'agency-confidential';
   const createdAt = new Date().toISOString();
   const serverHashInput = {
     packetInstanceId: packet.packetInstanceId,
