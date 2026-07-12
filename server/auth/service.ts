@@ -56,6 +56,22 @@ type LoginResult =
 
 const DEFAULT_REGISTER_MESSAGE = 'If your email is eligible, we sent a setup link. Please check your inbox.';
 
+/**
+ * COG-1 fail-closed session gate: an authenticated Cognito token is necessary
+ * but NOT sufficient — the bound application account must also be active. A
+ * user suspended/disabled at the application level (registration status flipped
+ * away from 'active') is rejected on every token-validating call, so a session
+ * cannot outlive the account's active state until token expiry. Mirrors the
+ * active-account check that `login()` already enforces at sign-in.
+ */
+export function assertRegistrationActiveForSession(
+  registration: Pick<RegistrationRecord, 'status'> | null | undefined,
+): void {
+  if (!registration || registration.status !== 'active') {
+    throw new ApiError('auth_error', 'Account is not active.', 403);
+  }
+}
+
 export class DemoAuthService {
   private readonly cognito: CognitoIdentityProviderClient;
   private readonly dynamo: DynamoDBDocumentClient;
@@ -569,6 +585,11 @@ export class DemoAuthService {
     const name = attrs.name || [firstName, lastName].filter(Boolean).join(' ').trim() || undefined;
     const authSubject = attrs.sub || me.Username;
     const email = attrs.email ?? '';
+    // COG-1 fail-closed: reject suspended/disabled application users even when
+    // the Cognito token itself is still valid. Without this, a user suspended
+    // mid-session keeps access until the access token expires.
+    const registration = email ? await this.getRegistration(email) : null;
+    assertRegistrationActiveForSession(registration);
     // COG-1: enrich the verified Cognito identity with the server-side
     // allowlist role/department. The client can only display this — the
     // server derives it fresh on every /me call, so no client edit
