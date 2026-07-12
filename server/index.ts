@@ -19,6 +19,7 @@ import { auditV2Router } from './audit/routes.js';
 import { ceuRouter } from './ceu/routes.js';
 import { startAnomalyScheduler } from './audit/anomaly.js';
 import { authRouter } from './routes/auth.js';
+import { userAccessRouter } from './routes/userAccess.js';
 import { pmRouter } from './routes/pm.js';
 import { createBradRouter } from './routes/brad.js';
 
@@ -90,6 +91,7 @@ app.use('/api/audit/v2', auditV2Router);
 app.use('/api/ceu', ceuRouter);
 app.use('/api/compliance', complianceRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/admin/user-access', userAccessRouter);
 app.use('/api/pm', pmRouter);
 
 // Compliance Intelligence (iAdministrator) — local RAG engine.
