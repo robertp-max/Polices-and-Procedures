@@ -23,6 +23,7 @@ export const primaryNavItems: NavItem[] = [
     hashIds: ['defensible-2', 'evidence-center', 'evidence-intake', 'evidence-packet-studio', 'admission-packet-preview'],
     matchPaths: ['/evidence', '/evidence/intake', '/evidence/packet-studio', '/evidence/defensible-2', '/evidence/admission-packet-preview'],
   },
+  { id: 'packet-studio', label: 'Packet Studio', to: '/packet-studio', hashIds: ['packet-studio'] },
   { id: 'taxonomy', label: 'Policies', to: '/library', hashIds: ['taxonomy', 'framework', 'achc-survey', 'achc-crosswalk', 'hh-evidence-map', 'policy-home', 'policy-library', 'forms-library', 'workflows', 'workflow-detail', 'workflow-swimlane', 'policy-lifecycle', 'policy-lifecycle-detail', 'policy-approvals', 'pm-approvals'] },
   { id: 'onboarding', label: 'Training', to: '/journey?tab=home', hashIds: ['journey-overview', 'journey-new-hire', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'] },
   // 'Evidence' and 'Hubstaff' hidden from the sidebar per request. Routes still resolve by URL.

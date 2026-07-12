@@ -26,6 +26,7 @@ export type V6RouteTemplate =
   | 'login'
   | 'matrix'
   | 'module-player'
+  | 'packet-studio'
   | 'profiles'
   | 'reference-viewer'
   | 'reports'
@@ -66,6 +67,7 @@ export const V6_ROUTES = [
   { path: '/evidence', hashId: 'defensible-2', template: 'evidence', group: 'CES', title: 'DefenCIble', description: 'DefenCIble evidence packet studio for source selection, packet generation, preview, export, and Drive sync.' },
   { path: '/evidence/intake', hashId: 'evidence-intake', template: 'evidence', group: 'CES', title: 'Brad Evidence Intake', description: 'Brad Evidence Intake inside Evidence Center: upload source exports, resolve created-date filing, classify and dedupe, file to Drive, run full-population review, and prepare draft forms, agendas, tasks, and packets for human approval.' },
   { path: '/evidence/packet-studio', hashId: 'evidence-packet-studio', template: 'evidence', group: 'CES', title: 'Evidence Packet Studio', description: 'Brad-assisted evidence packet generator inside Evidence Center for event packets, source mapping, preview, and export readiness.' },
+  { path: '/packet-studio', hashId: 'packet-studio', template: 'packet-studio', group: 'CES', title: 'Packet Studio', description: 'Universal mandated-event packet studio for template selection and compatible CES event selection.' },
   { path: '/evidence/defensible-2', hashId: 'defensible-2', template: 'evidence', group: 'CES', title: 'Defensible 2.0', description: 'Live cloned DefenCIble view for side-by-side iteration.' },
   { path: '/evidence/admission-packet-preview', hashId: 'admission-packet-preview', template: 'evidence', group: 'CES', title: 'Patient Admission Packet Preview', description: 'DefenCIble preview route for the fixed multi-page patient admission packet template.' },
   { path: '/ces/reports', hashId: 'ces-reports', template: 'reports', group: 'CES', title: 'CES Reports', description: 'Compliance Execution reports for posture, packets, approvals, and throughput.' },
