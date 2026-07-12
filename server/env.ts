@@ -42,6 +42,21 @@ const iaIndexRoot = path.isAbsolute(iaIndexRaw)
   ? iaIndexRaw
   : path.resolve(repoRoot, iaIndexRaw);
 
+const packetStoreCacheRaw = process.env.PACKET_STORE_CACHE_ROOT ?? '.cache/packet-instances';
+const packetStoreCacheRoot = path.isAbsolute(packetStoreCacheRaw)
+  ? packetStoreCacheRaw
+  : path.resolve(repoRoot, packetStoreCacheRaw);
+
+const PACKET_DRIVE_CONNECTOR_VALUES = ['local', 'google'] as const;
+export type PacketDriveConnectorMode = (typeof PACKET_DRIVE_CONNECTOR_VALUES)[number];
+
+function resolvePacketDriveConnector(): PacketDriveConnectorMode {
+  const raw = (process.env.PACKET_DRIVE_CONNECTOR ?? 'local').trim().toLowerCase();
+  return PACKET_DRIVE_CONNECTOR_VALUES.includes(raw as PacketDriveConnectorMode)
+    ? (raw as PacketDriveConnectorMode)
+    : 'local';
+}
+
 /** ───── Google Drive Evidence — LOCKED canonical identity ───────────────────
  * Pinned to protect the evidence pipeline from accidental config drift (a wrong
  * service-account key, a different shared drive, or a mistyped provider). These
@@ -136,6 +151,10 @@ export const env = {
   apiSharedSecret: process.env.API_SHARED_SECRET ?? '',
   logLevel: (process.env.LOG_LEVEL ?? 'info') as 'debug' | 'info' | 'warn' | 'error',
   repoRoot,
+
+  /** ───── Packet Platform ─────────────────────────────────── */
+  packetDriveConnector: resolvePacketDriveConnector(),
+  packetStoreCacheRoot,
 
   /** ───── Compliance Intelligence (IA) ─────────────────────── */
   iaIndexRoot,
