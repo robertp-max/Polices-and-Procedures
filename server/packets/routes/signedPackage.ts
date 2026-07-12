@@ -370,7 +370,7 @@ function referenceInputs(
     targetKind: stringField(raw, 'targetKind'),
     targetId: stringField(raw, 'targetId'),
     reason: optionalString(raw, 'reason') ?? null,
-  });
+  }));
 }
 
 function ignoredClientHashFields(body: Record<string, unknown>): string[] {
