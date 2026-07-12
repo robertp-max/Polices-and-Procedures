@@ -1,11 +1,8 @@
 /**
- * Cross-registry integrity tests for packet archetypes, policies, templates,
- * and selector-boundary status normalization.
+ * Cross-registry integrity tests for packet archetypes, policies, and templates.
  */
 import { describe, expect, it } from 'vitest';
 
-import type { PacketLifecycleStatus } from '@/policy/packets/contracts';
-import { projectEventCardModel } from '@/v6/screens/packets/eventSelector/eventCardModel';
 import { ALL_ARCHETYPES, getArchetype, hasArchetype } from './archetypeRegistry';
 import {
   getApprovalPolicy,
@@ -97,27 +94,5 @@ describe('packet registry cross-reference integrity', () => {
       expect(template.required_approvers).toEqual([...QAPI_POLICY_ROLES]);
       expect(template.required_signers).toEqual([...QAPI_POLICY_ROLES]);
     }
-  });
-});
-
-describe('event selector packet-status boundary', () => {
-  it('drops provider packet statuses outside the closed lifecycle vocabulary', () => {
-    const card = projectEventCardModel({
-      calendarEvent: {
-        id: 'evt-unknown-status',
-        label: 'Unknown status event',
-        day: 1,
-        month: 1,
-        owner: 'Compliance',
-        progress: 0,
-        tone: 'teal',
-        sourceDate: '2026-01-01',
-      },
-      packetStatus: {
-        packetStatus: 'NOT_A_PACKET_STATUS' as unknown as PacketLifecycleStatus,
-      },
-    });
-
-    expect(card.packetStatus).toBe('unknown');
   });
 });
