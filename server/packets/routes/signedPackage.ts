@@ -61,6 +61,14 @@ export interface SignedPackageRouterOptions extends SignedPackageBuilderDependen
 
 const defaultStore = new FileLocalPacketStore();
 const HASH_FIELDS = new Set(['clientHash', 'trustedHash', 'contentHash', 'packetContentHash']);
+const SIGNED_PACKAGE_CREATED_STATUSES = new Set([
+  'SIGNED_PACKAGE_BUILDING',
+  'CERTIFICATION_REVIEW',
+  'DRIVE_PUBLISHING',
+  'PUBLISHED',
+  'CERTIFIED',
+  'LOCKED',
+]);
 
 function asyncH(fn: AsyncRoute) {
   return (req: Request, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
@@ -241,6 +249,29 @@ function packetInstanceIdFrom(req: Request, body: Record<string, unknown>): stri
   return stringField(body, 'packetInstanceId');
 }
 
+function nonEmptyString(value: string | null | undefined): boolean {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function assertPacketReadyForSignedPackage(packet: PacketStoreDocument): void {
+  if (nonEmptyString(packet.finalArtifactUrl) || SIGNED_PACKAGE_CREATED_STATUSES.has(packet.status)) {
+    throw structuredBlockerError(
+      'signed_package.already_exists',
+      `Packet ${packet.packetInstanceId} already has a signed package.`,
+      'signedPackage',
+      409,
+    );
+  }
+  if (packet.status !== 'FULLY_SIGNED') {
+    throw structuredBlockerError(
+      'signed_package.packet_not_fully_signed',
+      `Packet ${packet.packetInstanceId} is not fully signed.`,
+      'packet.status',
+      409,
+    );
+  }
+}
+
 function defaultPacketModel(packet: PacketStoreDocument): PacketModel {
   return {
     identity: {
@@ -290,7 +321,7 @@ async function resolveEnvelope(
   body: Record<string, unknown>,
 ): Promise<PacketEnvelope> {
   const resolved = await options.resolveEnvelope?.(packet, body);
-  if (resolved) return resolved;
+  if (resolved) return bindServerResolvedEnvelopeToPacket(resolved, packet);
   const envelope = optionalRecord(body, 'envelope');
   if (!envelope) {
     throw structuredBlockerError(
@@ -301,6 +332,17 @@ async function resolveEnvelope(
     );
   }
   return envelope as unknown as PacketEnvelope;
+}
+
+function bindServerResolvedEnvelopeToPacket(
+  envelope: PacketEnvelope,
+  packet: PacketStoreDocument,
+): PacketEnvelope {
+  return {
+    ...envelope,
+    packetInstanceId: packet.packetInstanceId,
+    frozenPacketVersion: packet.packetVersion,
+  };
 }
 
 async function resolvePacketModel(
@@ -388,6 +430,7 @@ async function signedPackageInput(
   const packet = await store.getById(packetInstanceId);
   if (!packet) throw new PacketNotFoundError(packetInstanceId);
   assertAgencyScope(req, packet.agencyId);
+  assertPacketReadyForSignedPackage(packet);
   const envelope = await resolveEnvelope(options, packet, body);
   return {
     packet,
