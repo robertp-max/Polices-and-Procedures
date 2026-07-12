@@ -110,6 +110,14 @@ const QAPI_COMPLETION_GATES = [
   'Zero unresolved blockers before certification and lock',
 ] as const;
 
+const QAPI_POLICY_ROLES = [
+  'Administrator',
+  'Clinical Manager',
+  'QAPI Chair',
+] as const;
+
+const DEFAULT_POLICY_ROLES = ['Authorized Approver'] as const;
+
 const QAPI_QUARTERLY_FORMS = [
   'QA-FM-020',
   'QA-FM-021',
@@ -154,8 +162,8 @@ export const PACKET_TEMPLATES: readonly PacketTemplateDefinition[] = [
     required_modules: QAPI_MODULES,
     required_analyses: QAPI_ANALYSES,
     required_forms: QAPI_QUARTERLY_FORMS,
-    required_approvers: ['QAPI Committee Chair', 'Administrator'],
-    required_signers: ['Administrator', 'Clinical Manager', 'QAPI Committee Chair'],
+    required_approvers: QAPI_POLICY_ROLES,
+    required_signers: QAPI_POLICY_ROLES,
     completion_gates: QAPI_COMPLETION_GATES,
     retention_rule: RETENTION_PENDING,
     confidentiality_rule:
@@ -184,8 +192,8 @@ export const PACKET_TEMPLATES: readonly PacketTemplateDefinition[] = [
       'prior-period-trend-comparison',
     ],
     required_forms: QAPI_MONTHLY_FORMS,
-    required_approvers: ['QAPI Committee Chair', 'QAPI Coordinator'],
-    required_signers: ['QAPI Committee Chair', 'QAPI Coordinator'],
+    required_approvers: QAPI_POLICY_ROLES,
+    required_signers: QAPI_POLICY_ROLES,
     completion_gates: QAPI_COMPLETION_GATES,
     retention_rule: RETENTION_PENDING,
     confidentiality_rule:
@@ -215,8 +223,8 @@ export const PACKET_TEMPLATES: readonly PacketTemplateDefinition[] = [
     required_modules: UNIVERSAL_BACKBONE_MODULE_IDS,
     required_analyses: [],
     required_forms: ['GV-F-001', 'GV-F-002', 'QA-F-020', 'CO-F-004', 'RM-F-010'],
-    required_approvers: ['Board Chair', 'Administrator'],
-    required_signers: ['Board Chair', 'Board Secretary'],
+    required_approvers: DEFAULT_POLICY_ROLES,
+    required_signers: DEFAULT_POLICY_ROLES,
     completion_gates: [
       'Board packet distributed per charter lead time',
       'Quorum confirmed',
@@ -250,12 +258,8 @@ export const PACKET_TEMPLATES: readonly PacketTemplateDefinition[] = [
       'prior-period-trend-comparison',
     ],
     required_forms: ['QA-FM-010', 'QA-FM-020', 'QA-FM-021', 'QA-FM-022'],
-    required_approvers: ['QAPI Committee Chair', 'Administrator', 'Board Chair'],
-    required_signers: [
-      'Administrator',
-      'Clinical Manager',
-      'QAPI Committee Chair',
-    ],
+    required_approvers: QAPI_POLICY_ROLES,
+    required_signers: QAPI_POLICY_ROLES,
     completion_gates: [
       'Annual evaluation complete with all required analyses',
       'Annual plan approved',
@@ -287,8 +291,8 @@ export const PACKET_TEMPLATES: readonly PacketTemplateDefinition[] = [
       'effectiveness-remeasurement',
     ],
     required_forms: ['QA-FM-021', 'QA-FM-005'],
-    required_approvers: ['QAPI Committee Chair', 'Administrator'],
-    required_signers: ['QAPI Committee Chair', 'Administrator'],
+    required_approvers: DEFAULT_POLICY_ROLES,
+    required_signers: DEFAULT_POLICY_ROLES,
     completion_gates: [
       'PIP/CAP charter complete with baseline and target',
       'Effectiveness remeasurement recorded',
@@ -315,8 +319,8 @@ export const PACKET_TEMPLATES: readonly PacketTemplateDefinition[] = [
     required_modules: UNIVERSAL_BACKBONE_MODULE_IDS,
     required_analyses: ['incident-timeline', 'root-cause-analysis', 'corrective-action-effectiveness'],
     required_forms: ['QA-FM-026', 'QA-FM-004', 'QA-FM-005', 'CL-FM-030'],
-    required_approvers: ['Clinical Manager', 'Administrator'],
-    required_signers: ['Clinical Manager', 'Administrator'],
+    required_approvers: DEFAULT_POLICY_ROLES,
+    required_signers: DEFAULT_POLICY_ROLES,
     completion_gates: [
       'Incident facts and timeline complete',
       'RCA documented when required',
@@ -344,8 +348,8 @@ export const PACKET_TEMPLATES: readonly PacketTemplateDefinition[] = [
     required_modules: UNIVERSAL_BACKBONE_MODULE_IDS,
     required_analyses: ['deficiency-mapping', 'poc-effectiveness'],
     required_forms: ['CO-FM-006', 'CO-FM-007', 'CO-FM-008', 'QA-FM-005'],
-    required_approvers: ['Administrator'],
-    required_signers: ['Administrator'],
+    required_approvers: DEFAULT_POLICY_ROLES,
+    required_signers: DEFAULT_POLICY_ROLES,
     completion_gates: [
       'All cited deficiencies mapped to owners and due dates',
       'Plan of Correction complete',
@@ -382,8 +386,8 @@ export const PACKET_TEMPLATES: readonly PacketTemplateDefinition[] = [
     required_modules: UNIVERSAL_BACKBONE_MODULE_IDS,
     required_analyses: ['competency-completion-matrix', 'skills-validation-summary'],
     required_forms: ['HR-FM-016', 'CL-FM-051', 'EN-FM-022', 'CO-FM-024'],
-    required_approvers: ['Clinical Manager', 'HR Lead', 'Administrator'],
-    required_signers: ['Clinical Manager', 'HR Lead'],
+    required_approvers: DEFAULT_POLICY_ROLES,
+    required_signers: DEFAULT_POLICY_ROLES,
     completion_gates: [
       'Required competencies validated for in-scope roles',
       'Training completion matrix complete',

@@ -332,7 +332,7 @@ export interface EventFilterState {
   eventFamily: string | null;
   workflow: string | null;
   owner: string | null;
-  packetStatus: string | null;
+  packetStatus: PacketLifecycleStatus | null;
   workflowStatus: string | null;
   eligibleOnly: boolean;
   existingDraft: boolean;
@@ -438,13 +438,13 @@ export function buildPastDuePredicate(
 
 /** Packet-store predicates — only meaningful when snapshot is present. */
 export function buildPacketStatusPredicate(
-  status: string | null,
+  status: PacketLifecycleStatus | null,
 ): (event: FilterableEvent) => boolean {
   if (!status) return () => true;
   return (event) => {
     const snap = event.packetSnapshot?.packetStatus ?? event.packetStatus;
     if (isUnknown(snap)) return false;
-    return String(snap) === status;
+    return snap === status;
   };
 }
 

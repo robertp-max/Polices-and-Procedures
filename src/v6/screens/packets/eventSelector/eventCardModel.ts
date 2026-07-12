@@ -9,7 +9,10 @@
 
 import type { CesCalendarEvent } from '@/policy/ces/cesViewProjections';
 import type { RegulatoryEvent } from '@/policy/data/regulatoryEvents';
-import type { PacketLifecycleStatus } from '@/policy/packets/contracts';
+import {
+  ALLOWED_TRANSITIONS,
+  type PacketLifecycleStatus,
+} from '@/policy/packets/contracts';
 
 /** Explicit placeholder for fields the packet store has not yet wired. */
 export type UnknownField = 'unknown';
@@ -19,7 +22,7 @@ export type UnknownField = 'unknown';
  * All fields optional; absent fields project to `'unknown'` on the card.
  */
 export interface PacketStatusSnapshot {
-  packetStatus?: PacketLifecycleStatus | string | null;
+  packetStatus?: PacketLifecycleStatus | null;
   hasExistingDraft?: boolean | null;
   isEligible?: boolean | null;
   isSignedOrLocked?: boolean | null;
@@ -54,7 +57,7 @@ export interface EventCardModel {
   workflowInstanceId: string | UnknownField;
   owner: string;
   eventStatus: string | UnknownField;
-  packetStatus: string | UnknownField;
+  packetStatus: PacketLifecycleStatus | UnknownField;
   requiredFormCompletion: number | UnknownField;
   evidenceCompleteness: number | UnknownField;
   approvalStatus: string | UnknownField;
@@ -135,6 +138,15 @@ function unknownIfBlank(value: string | null | undefined): string | UnknownField
   if (value === null || value === undefined) return 'unknown';
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : 'unknown';
+}
+
+function normalizePacketLifecycleStatus(
+  value: PacketLifecycleStatus | null | undefined,
+): PacketLifecycleStatus | UnknownField {
+  if (value === null || value === undefined) return 'unknown';
+  return Object.prototype.hasOwnProperty.call(ALLOWED_TRANSITIONS.packet, value)
+    ? value
+    : 'unknown';
 }
 
 function numberOrUnknown(value: number | null | undefined): number | UnknownField {
@@ -239,7 +251,9 @@ export function projectEventCardModel(input: ProjectEventCardInput): EventCardMo
       : unknownIfBlank(calendarEvent.readiness);
 
   // Packet-derived fields: only from provider snapshot — never invent.
-  const packetStatusValue = unknownIfBlank(packetStatus?.packetStatus ?? null);
+  const packetStatusValue = normalizePacketLifecycleStatus(
+    packetStatus?.packetStatus ?? null,
+  );
   const requiredFormCompletion =
     packetStatus && packetStatus.requiredFormCompletion !== undefined
       ? numberOrUnknown(packetStatus.requiredFormCompletion)

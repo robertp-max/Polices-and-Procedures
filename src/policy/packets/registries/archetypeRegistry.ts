@@ -15,10 +15,31 @@ import {
   QAPI_PART_II_MODULE_IDS,
   UNIVERSAL_BACKBONE_MODULE_IDS,
 } from '@/policy/packets/contracts';
+import {
+  DEFAULT_APPROVAL_POLICY_ID,
+  QAPI_QUARTERLY_APPROVAL_POLICY_ID,
+} from './approvalPolicies';
+import {
+  DEFAULT_LOCK_POLICY_ID,
+  QAPI_QUARTERLY_LOCK_POLICY_ID,
+} from './lockPolicies';
+import {
+  DEFAULT_SIGNATURE_POLICY_ID,
+  QAPI_QUARTERLY_SIGNATURE_POLICY_ID,
+} from './signaturePolicies';
 
 const BACKBONE = UNIVERSAL_BACKBONE_MODULE_IDS;
 const QAPI_PART_I = QAPI_PART_I_MODULE_IDS;
 const QAPI_PART_II = QAPI_PART_II_MODULE_IDS;
+
+/**
+ * Default-governed archetypes: meeting, pip-capa, incident-investigation,
+ * survey-response, employee-competency, policy-lifecycle, privacy-breach,
+ * emergency-drill, program-surveillance, audit, and contract-vendor.
+ * These registry-only families intentionally use the registered default
+ * signature, approval, and lock policies until specialized policy capability
+ * is product/compliance-approved.
+ */
 
 /** All universal backbone modules except supporting forms (forms stay last). */
 const BACKBONE_WITHOUT_FORMS: readonly PacketModuleId[] = BACKBONE.filter(
@@ -73,9 +94,9 @@ const MEETING: PacketArchetypeDefinition = defineArchetype({
   ],
   defaultClassification: 'confidential',
   defaultRetentionRule: 'retain-7-years-from-meeting-date',
-  signaturePolicyId: 'meeting-committee-signatures',
-  approvalPolicyId: 'meeting-committee-approvals',
-  lockPolicyId: 'meeting-committee-lock',
+  signaturePolicyId: DEFAULT_SIGNATURE_POLICY_ID,
+  approvalPolicyId: DEFAULT_APPROVAL_POLICY_ID,
+  lockPolicyId: DEFAULT_LOCK_POLICY_ID,
   attachmentRules: [
     evidenceAttachment('meeting-minutes', 'Signed minutes', {
       required: true,
@@ -115,9 +136,9 @@ const ANALYTICAL_REPORT: PacketArchetypeDefinition = defineArchetype({
   ],
   defaultClassification: 'confidential',
   defaultRetentionRule: 'retain-7-years-from-reporting-period-end',
-  signaturePolicyId: 'qapi-quarterly-signatures',
-  approvalPolicyId: 'qapi-quarterly-approvals',
-  lockPolicyId: 'qapi-quarterly-lock',
+  signaturePolicyId: QAPI_QUARTERLY_SIGNATURE_POLICY_ID,
+  approvalPolicyId: QAPI_QUARTERLY_APPROVAL_POLICY_ID,
+  lockPolicyId: QAPI_QUARTERLY_LOCK_POLICY_ID,
   attachmentRules: [
     evidenceAttachment('qapi-source-form', 'Completed source form', {
       required: true,
@@ -157,9 +178,9 @@ const PIP_CAPA: PacketArchetypeDefinition = defineArchetype({
   ],
   defaultClassification: 'confidential',
   defaultRetentionRule: 'retain-7-years-from-closure',
-  signaturePolicyId: 'pip-capa-signatures',
-  approvalPolicyId: 'pip-capa-approvals',
-  lockPolicyId: 'pip-capa-lock',
+  signaturePolicyId: DEFAULT_SIGNATURE_POLICY_ID,
+  approvalPolicyId: DEFAULT_APPROVAL_POLICY_ID,
+  lockPolicyId: DEFAULT_LOCK_POLICY_ID,
   attachmentRules: [
     evidenceAttachment('pip-capa-plan', 'PIP/CAP plan form', {
       required: true,
@@ -194,9 +215,9 @@ const INCIDENT_INVESTIGATION: PacketArchetypeDefinition = defineArchetype({
   ],
   defaultClassification: 'confidential',
   defaultRetentionRule: 'retain-7-years-from-incident-date',
-  signaturePolicyId: 'incident-investigation-signatures',
-  approvalPolicyId: 'incident-investigation-approvals',
-  lockPolicyId: 'incident-investigation-lock',
+  signaturePolicyId: DEFAULT_SIGNATURE_POLICY_ID,
+  approvalPolicyId: DEFAULT_APPROVAL_POLICY_ID,
+  lockPolicyId: DEFAULT_LOCK_POLICY_ID,
   attachmentRules: [
     evidenceAttachment('incident-report', 'Incident report form', {
       required: true,
@@ -228,9 +249,9 @@ const SURVEY_RESPONSE: PacketArchetypeDefinition = defineArchetype({
   ],
   defaultClassification: 'confidential',
   defaultRetentionRule: 'retain-7-years-from-survey-close',
-  signaturePolicyId: 'survey-response-signatures',
-  approvalPolicyId: 'survey-response-approvals',
-  lockPolicyId: 'survey-response-lock',
+  signaturePolicyId: DEFAULT_SIGNATURE_POLICY_ID,
+  approvalPolicyId: DEFAULT_APPROVAL_POLICY_ID,
+  lockPolicyId: DEFAULT_LOCK_POLICY_ID,
   attachmentRules: [
     evidenceAttachment('survey-notice', 'Survey notice and request list', {
       required: true,
@@ -263,9 +284,9 @@ const EMPLOYEE_COMPETENCY: PacketArchetypeDefinition = defineArchetype({
   ],
   defaultClassification: 'restricted-personnel',
   defaultRetentionRule: 'retain-for-employment-plus-7-years',
-  signaturePolicyId: 'employee-competency-signatures',
-  approvalPolicyId: 'employee-competency-approvals',
-  lockPolicyId: 'employee-competency-lock',
+  signaturePolicyId: DEFAULT_SIGNATURE_POLICY_ID,
+  approvalPolicyId: DEFAULT_APPROVAL_POLICY_ID,
+  lockPolicyId: DEFAULT_LOCK_POLICY_ID,
   attachmentRules: [
     evidenceAttachment('competency-assessment', 'Competency assessment', {
       required: true,
@@ -302,9 +323,9 @@ const POLICY_LIFECYCLE: PacketArchetypeDefinition = defineArchetype({
   ],
   defaultClassification: 'internal',
   defaultRetentionRule: 'retain-permanent-superseded-archive',
-  signaturePolicyId: 'policy-lifecycle-signatures',
-  approvalPolicyId: 'policy-lifecycle-approvals',
-  lockPolicyId: 'policy-lifecycle-lock',
+  signaturePolicyId: DEFAULT_SIGNATURE_POLICY_ID,
+  approvalPolicyId: DEFAULT_APPROVAL_POLICY_ID,
+  lockPolicyId: DEFAULT_LOCK_POLICY_ID,
   attachmentRules: [
     evidenceAttachment('policy-current-version', 'Current policy version', {
       required: true,
@@ -337,9 +358,9 @@ const PRIVACY_BREACH: PacketArchetypeDefinition = defineArchetype({
   ],
   defaultClassification: 'restricted-personnel',
   defaultRetentionRule: 'retain-6-years-from-closure-hipaa',
-  signaturePolicyId: 'privacy-breach-signatures',
-  approvalPolicyId: 'privacy-breach-approvals',
-  lockPolicyId: 'privacy-breach-lock',
+  signaturePolicyId: DEFAULT_SIGNATURE_POLICY_ID,
+  approvalPolicyId: DEFAULT_APPROVAL_POLICY_ID,
+  lockPolicyId: DEFAULT_LOCK_POLICY_ID,
   attachmentRules: [
     evidenceAttachment('breach-intake', 'Breach intake record', {
       required: true,
@@ -376,9 +397,9 @@ const EMERGENCY_DRILL: PacketArchetypeDefinition = defineArchetype({
   ],
   defaultClassification: 'internal',
   defaultRetentionRule: 'retain-7-years-from-drill-date',
-  signaturePolicyId: 'emergency-drill-signatures',
-  approvalPolicyId: 'emergency-drill-approvals',
-  lockPolicyId: 'emergency-drill-lock',
+  signaturePolicyId: DEFAULT_SIGNATURE_POLICY_ID,
+  approvalPolicyId: DEFAULT_APPROVAL_POLICY_ID,
+  lockPolicyId: DEFAULT_LOCK_POLICY_ID,
   attachmentRules: [
     evidenceAttachment('drill-scenario', 'Scenario and objectives', {
       required: true,
@@ -411,9 +432,9 @@ const PROGRAM_SURVEILLANCE: PacketArchetypeDefinition = defineArchetype({
   ],
   defaultClassification: 'confidential',
   defaultRetentionRule: 'retain-7-years-from-surveillance-period-end',
-  signaturePolicyId: 'program-surveillance-signatures',
-  approvalPolicyId: 'program-surveillance-approvals',
-  lockPolicyId: 'program-surveillance-lock',
+  signaturePolicyId: DEFAULT_SIGNATURE_POLICY_ID,
+  approvalPolicyId: DEFAULT_APPROVAL_POLICY_ID,
+  lockPolicyId: DEFAULT_LOCK_POLICY_ID,
   attachmentRules: [
     evidenceAttachment('surveillance-line-list', 'Line-list summary', {
       required: true,
@@ -449,9 +470,9 @@ const AUDIT: PacketArchetypeDefinition = defineArchetype({
   ],
   defaultClassification: 'confidential',
   defaultRetentionRule: 'retain-7-years-from-audit-close',
-  signaturePolicyId: 'audit-packet-signatures',
-  approvalPolicyId: 'audit-packet-approvals',
-  lockPolicyId: 'audit-packet-lock',
+  signaturePolicyId: DEFAULT_SIGNATURE_POLICY_ID,
+  approvalPolicyId: DEFAULT_APPROVAL_POLICY_ID,
+  lockPolicyId: DEFAULT_LOCK_POLICY_ID,
   attachmentRules: [
     evidenceAttachment('audit-workpapers', 'Audit workpapers', {
       required: true,
@@ -484,9 +505,9 @@ const CONTRACT_VENDOR: PacketArchetypeDefinition = defineArchetype({
   ],
   defaultClassification: 'confidential',
   defaultRetentionRule: 'retain-for-contract-term-plus-7-years',
-  signaturePolicyId: 'contract-vendor-signatures',
-  approvalPolicyId: 'contract-vendor-approvals',
-  lockPolicyId: 'contract-vendor-lock',
+  signaturePolicyId: DEFAULT_SIGNATURE_POLICY_ID,
+  approvalPolicyId: DEFAULT_APPROVAL_POLICY_ID,
+  lockPolicyId: DEFAULT_LOCK_POLICY_ID,
   attachmentRules: [
     evidenceAttachment('vendor-contract', 'Executed contract / BAA', {
       required: true,

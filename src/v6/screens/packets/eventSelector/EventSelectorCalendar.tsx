@@ -201,6 +201,13 @@ function FieldRow({ label, value }: { label: string; value: string }): ReactNode
   );
 }
 
+function toPacketStatusFilterValue(value: string): EventFilterState['packetStatus'] {
+  if (value.length === 0) return null;
+  return (PACKET_LIFECYCLE_STATUS_VALUES as readonly string[]).includes(value)
+    ? (value as NonNullable<EventFilterState['packetStatus']>)
+    : null;
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function EventSelectorCalendar({
@@ -596,7 +603,7 @@ export function EventSelectorCalendar({
           onChange={(e) =>
             setFilters((prev) => ({
               ...prev,
-              packetStatus: e.target.value || null,
+              packetStatus: toPacketStatusFilterValue(e.target.value),
             }))
           }
         >

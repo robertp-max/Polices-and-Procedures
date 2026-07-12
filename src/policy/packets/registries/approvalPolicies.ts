@@ -33,7 +33,7 @@ export interface ApprovalPolicy {
   prdRefs: readonly string[];
 }
 
-export const QAPI_QUARTERLY_APPROVAL_POLICY_ID = 'qapi-quarterly-approval';
+export const QAPI_QUARTERLY_APPROVAL_POLICY_ID = 'qapi-quarterly-approvals';
 export const DEFAULT_APPROVAL_POLICY_ID = 'default-approval-policy';
 
 /**

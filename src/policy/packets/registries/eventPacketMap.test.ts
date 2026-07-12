@@ -52,6 +52,12 @@ const EXPECTED_QAPI_MODULES: readonly PacketModuleId[] = [
   ...QAPI_PART_II_MODULE_IDS,
 ];
 
+const EXPECTED_QAPI_POLICY_ROLES = [
+  'Administrator',
+  'Clinical Manager',
+  'QAPI Chair',
+] as const;
+
 function distinctFamiliesFromSources(): Set<string> {
   const families = new Set<string>();
   const sources: readonly (readonly RegulatoryEvent[])[] = [
@@ -161,24 +167,11 @@ describe('eventPacketMap — §23.1.3 coverage', () => {
     expect(quarterly!.required_modules).toEqual(EXPECTED_QAPI_MODULES);
     expect(monthly!.required_modules).toEqual(EXPECTED_QAPI_MODULES);
 
-    expect(quarterly!.required_approvers).toEqual([
-      'QAPI Committee Chair',
-      'Administrator',
-    ]);
-    expect(quarterly!.required_signers).toEqual([
-      'Administrator',
-      'Clinical Manager',
-      'QAPI Committee Chair',
-    ]);
+    expect(quarterly!.required_approvers).toEqual([...EXPECTED_QAPI_POLICY_ROLES]);
+    expect(quarterly!.required_signers).toEqual([...EXPECTED_QAPI_POLICY_ROLES]);
 
-    expect(monthly!.required_approvers).toEqual([
-      'QAPI Committee Chair',
-      'QAPI Coordinator',
-    ]);
-    expect(monthly!.required_signers).toEqual([
-      'QAPI Committee Chair',
-      'QAPI Coordinator',
-    ]);
+    expect(monthly!.required_approvers).toEqual([...EXPECTED_QAPI_POLICY_ROLES]);
+    expect(monthly!.required_signers).toEqual([...EXPECTED_QAPI_POLICY_ROLES]);
   });
 
   it('§7.2 P0 template ids are exactly the six required templates', () => {
