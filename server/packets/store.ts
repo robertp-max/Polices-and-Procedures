@@ -331,7 +331,6 @@ const LIFECYCLE_OWNED_FIELDS = [
   'supersedesPacketInstanceId',
   'supersededByPacketInstanceId',
 ] as const satisfies readonly LifecycleOwnedField[];
-const LIFECYCLE_OWNED_FIELD_SET = new Set<string>(LIFECYCLE_OWNED_FIELDS);
 
 /** Opaque id / hash / url-like strings may exceed the free-text threshold. */
 function isOpaqueIdentifier(value: string): boolean {
@@ -360,6 +359,21 @@ function looksLikePhiFreeText(value: string): boolean {
  */
 export function assertNoForbiddenFields(obj: unknown, context: string): void {
   const seen = new Set<unknown>();
+  const hasToJson = (node: object): boolean => {
+    let cursor: object | null = node;
+    while (cursor) {
+      const descriptor = Object.getOwnPropertyDescriptor(cursor, 'toJSON');
+      if (descriptor) {
+        return (
+          typeof descriptor.value === 'function' ||
+          typeof descriptor.get === 'function' ||
+          typeof descriptor.set === 'function'
+        );
+      }
+      cursor = Object.getPrototypeOf(cursor);
+    }
+    return false;
+  };
   const walk = (node: unknown, pathHint: string): void => {
     if (node == null) return;
     if (typeof node === 'string') {
@@ -375,11 +389,7 @@ export function assertNoForbiddenFields(obj: unknown, context: string): void {
     if (typeof node !== 'object') return;
     if (seen.has(node)) return;
     seen.add(node);
-    if (Array.isArray(node)) {
-      node.forEach((item, i) => walk(item, `${pathHint}[${i}]`));
-      return;
-    }
-    if (typeof (node as { toJSON?: unknown }).toJSON === 'function') {
+    if (hasToJson(node)) {
       throw new ForbiddenFieldError(
         pathHint || '(value)',
         context,
@@ -387,15 +397,35 @@ export function assertNoForbiddenFields(obj: unknown, context: string): void {
       );
     }
     const proto = Object.getPrototypeOf(node);
-    if (proto !== Object.prototype && proto !== null) {
+    const isArray = Array.isArray(node);
+    if (isArray) {
+      if (proto !== Array.prototype && proto !== null) {
+        throw new ForbiddenFieldError(
+          pathHint || '(value)',
+          context,
+          `Packet metadata may contain only plain JSON arrays at "${pathHint || '(value)'}" in ${context}.`,
+        );
+      }
+    } else if (proto !== Object.prototype && proto !== null) {
       throw new ForbiddenFieldError(
         pathHint || '(value)',
         context,
         `Packet metadata may contain only plain JSON objects at "${pathHint || '(value)'}" in ${context}.`,
       );
     }
-    for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+
+    const descriptors = Object.getOwnPropertyDescriptors(node);
+    for (const [k, descriptor] of Object.entries(descriptors)) {
+      if (isArray && k === 'length') continue;
       const childPath = pathHint ? `${pathHint}.${k}` : k;
+      if (descriptor.get || descriptor.set) {
+        throw new ForbiddenFieldError(
+          childPath,
+          context,
+          `Packet metadata may not contain accessor property "${childPath}" in ${context}.`,
+        );
+      }
+      const v = descriptor.value;
       if (FORBIDDEN_FIELD_SET.has(k) && v != null && v !== '') {
         throw new ForbiddenFieldError(k, context);
       }
@@ -579,6 +609,39 @@ function readDocumentAuthoritative(
   }
 }
 
+function listDocumentsAuthoritative(store: FileLocalPacketStore): PacketStoreDocument[] {
+  const dir = getAuthoritativeDir(store);
+  if (!fs.existsSync(dir)) {
+    return [];
+  }
+  const names = fs.readdirSync(dir).filter((n) => n.endsWith('.json') && !n.endsWith('.tmp'));
+  const out: PacketStoreDocument[] = [];
+  for (const name of names) {
+    const file = path.join(dir, name);
+    try {
+      const doc = JSON.parse(fs.readFileSync(file, 'utf8')) as PacketStoreDocument;
+      if (doc && typeof doc.packetInstanceId === 'string') {
+        out.push(doc);
+      }
+    } catch {
+      continue;
+    }
+  }
+  return out;
+}
+
+function findActiveDocumentByIdentityKeyAuthoritative(
+  store: FileLocalPacketStore,
+  identityKey: string,
+): PacketStoreDocument | null {
+  const matches = listDocumentsAuthoritative(store).filter(
+    (d) => d.identityKey === identityKey && isActiveForIdentity(d),
+  );
+  if (matches.length === 0) return null;
+  matches.sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : a.updatedAt > b.updatedAt ? -1 : 0));
+  return matches[0] ?? null;
+}
+
 function writeStagedDocument(
   store: FileLocalPacketStore,
   packetInstanceId: string,
@@ -647,21 +710,7 @@ export class FileLocalPacketStore implements PacketMetadataStore {
 
   private listAllDocs(): PacketStoreDocument[] {
     this.ensure();
-    const dir = getAuthoritativeDir(this);
-    const names = fs.readdirSync(dir).filter((n) => n.endsWith('.json') && !n.endsWith('.tmp'));
-    const out: PacketStoreDocument[] = [];
-    for (const name of names) {
-      const file = path.join(dir, name);
-      try {
-        const doc = JSON.parse(fs.readFileSync(file, 'utf8')) as PacketStoreDocument;
-        if (doc && typeof doc.packetInstanceId === 'string') {
-          out.push(doc);
-        }
-      } catch {
-        continue;
-      }
-    }
-    return out;
+    return listDocumentsAuthoritative(this);
   }
 
   async getById(id: string): Promise<PacketStoreDocument | null> {
@@ -731,7 +780,7 @@ export class FileLocalPacketStore implements PacketMetadataStore {
     });
 
     return withIdentityCreateLock(identityKey, async () => {
-      const existing = await this.findByIdentityKey(identityKey);
+      const existing = findActiveDocumentByIdentityKeyAuthoritative(this, identityKey);
       if (existing) {
         return { instance: existing, created: false };
       }

@@ -175,6 +175,37 @@ describe('FileLocalPacketStore', () => {
     expect(activeMatches).toHaveLength(1);
   });
 
+  it('uses an authoritative identity lookup during create even if findByIdentityKey is overridden', async () => {
+    const input = baseInput({
+      eventInstanceId: 'evt-create-authoritative',
+      workflowInstanceId: 'wf-create-authoritative',
+    });
+    const first = await store.createPacketInstance(input);
+
+    class SpoofingStore extends FileLocalPacketStore {
+      override async findByIdentityKey(_key: string): Promise<null> {
+        return null;
+      }
+    }
+    const evil = new SpoofingStore(cacheRoot, { ledgerPath });
+    const second = await evil.createPacketInstance(
+      baseInput({
+        eventInstanceId: 'evt-create-authoritative',
+        workflowInstanceId: 'wf-create-authoritative',
+        createdBy: 'spoofing-user',
+      }),
+    );
+
+    expect(second.created).toBe(false);
+    expect(second.instance.packetInstanceId).toBe(first.instance.packetInstanceId);
+
+    const listed = await store.list({ agencyId: 'agency-a' });
+    const activeMatches = listed.filter(
+      (doc) => doc.identityKey === first.instance.identityKey && doc.status !== 'SUPERSEDED',
+    );
+    expect(activeMatches).toHaveLength(1);
+  });
+
   it('distinct occurrence (event_instance_id) yields distinct instances (FR-005)', async () => {
     const a = await store.createPacketInstance(
       baseInput({ eventInstanceId: 'evt-occ-A', workflowInstanceId: 'wfinst-A' }),
@@ -402,6 +433,81 @@ describe('FileLocalPacketStore', () => {
       ),
     ).rejects.toBeInstanceOf(ForbiddenFieldError);
 
+    expect(await store.getById(packetInstanceId)).toBeNull();
+    expect(fs.existsSync(path.join(cacheRoot, `${packetInstanceId}.json`))).toBe(false);
+
+    const arraySmuggler: unknown[] & { toJSON?: () => unknown } = [];
+    Object.defineProperty(arraySmuggler, 'toJSON', {
+      value() {
+        return [{ patient_name: 'Jane Doe' }];
+      },
+      enumerable: false,
+    });
+    const arrayPacketInstanceId = 'array-tojson-smuggle-1';
+
+    await expect(
+      store.createPacketInstance(
+        baseInput({
+          packetInstanceId: arrayPacketInstanceId,
+          eventInstanceId: 'evt-array-tojson',
+          workflowInstanceId: 'wf-array-tojson',
+          moduleInstances: [
+            {
+              moduleInstanceId: 'm-array-tojson',
+              moduleId: 'cover' as never,
+              status: 'not_started',
+              payload: arraySmuggler as never,
+              contentHash: null,
+              order: 0,
+              updatedAt: new Date().toISOString(),
+              updatedBy: null,
+            },
+          ],
+        }),
+      ),
+    ).rejects.toBeInstanceOf(ForbiddenFieldError);
+
+    expect(await store.getById(arrayPacketInstanceId)).toBeNull();
+    expect(fs.existsSync(path.join(cacheRoot, `${arrayPacketInstanceId}.json`))).toBe(false);
+  });
+
+  it('rejects accessor-backed metadata before it can change during serialization', async () => {
+    let accessCount = 0;
+    const accessorSmuggler: Record<string, unknown> = {};
+    Object.defineProperty(accessorSmuggler, 'summary', {
+      enumerable: true,
+      get() {
+        accessCount += 1;
+        return accessCount < 3
+          ? 'safe-token'
+          : `Clinical narrative free text ${'word '.repeat(PHI_FREE_TEXT_LENGTH_THRESHOLD)}`;
+      },
+    });
+    const packetInstanceId = 'accessor-smuggle-1';
+
+    await expect(
+      store.createPacketInstance(
+        baseInput({
+          packetInstanceId,
+          eventInstanceId: 'evt-accessor-smuggle',
+          workflowInstanceId: 'wf-accessor-smuggle',
+          moduleInstances: [
+            {
+              moduleInstanceId: 'm-accessor',
+              moduleId: 'cover' as never,
+              status: 'not_started',
+              payload: accessorSmuggler as never,
+              contentHash: null,
+              order: 0,
+              updatedAt: new Date().toISOString(),
+              updatedBy: null,
+            },
+          ],
+        }),
+      ),
+    ).rejects.toBeInstanceOf(ForbiddenFieldError);
+
+    expect(accessCount).toBe(0);
     expect(await store.getById(packetInstanceId)).toBeNull();
     expect(fs.existsSync(path.join(cacheRoot, `${packetInstanceId}.json`))).toBe(false);
   });
@@ -662,7 +768,8 @@ describe('FileLocalPacketStore', () => {
       ),
     ).rejects.toBeInstanceOf(LockedPacketError);
 
-    const isClassLike = (value: Function): boolean =>
+    type CallableExport = (...args: unknown[]) => unknown;
+    const isClassLike = (value: CallableExport): boolean =>
       /^class\s/.test(Function.prototype.toString.call(value));
     const mutatorExports = ([
       ['store', storeMod],
@@ -670,9 +777,9 @@ describe('FileLocalPacketStore', () => {
     ] as const).flatMap(([modName, mod]) =>
       Object.entries(mod)
         .filter(([, value]) => typeof value === 'function')
-        .filter(([, value]) => !isClassLike(value as Function))
+        .filter(([, value]) => !isClassLike(value as CallableExport))
         .filter(([exportName, value]) => {
-          const fn = value as Function;
+          const fn = value as CallableExport;
           return /update|mutate|write|apply|transition/i.test(exportName) && fn.length >= 3;
         })
         .map(([exportName, value]) => ({ exportName, modName, value })),
