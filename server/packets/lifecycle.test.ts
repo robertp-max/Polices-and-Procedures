@@ -9,10 +9,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { AuditEvent } from '../audit/writer.js';
 import type { PacketAuditActor, PacketLifecycleStatus } from '@/policy/packets/contracts';
 import {
-  configurePacketAuditLedger,
   packetAuditStreamKey,
-  queryPacketAuditEvents,
-  resetPacketAuditLedger,
   userPacketActor,
 } from './auditEvents.js';
 import { transitionPacket } from './lifecycle.js';
@@ -81,15 +78,13 @@ describe('transitionPacket / amendment / supersession', () => {
     cacheRoot = makeTempDir('packet-life-');
     auditRoot = makeTempDir('packet-life-audit-');
     ledgerPath = path.join(auditRoot, 'audit_events.jsonl');
-    configurePacketAuditLedger({ ledgerPath });
-    store = new FileLocalPacketStore(cacheRoot);
+    store = new FileLocalPacketStore(cacheRoot, { ledgerPath });
     realLedgerMtimeBefore = fs.existsSync(REAL_AUDIT_LEDGER)
       ? fs.statSync(REAL_AUDIT_LEDGER).mtimeMs
       : null;
   });
 
   afterEach(() => {
-    resetPacketAuditLedger();
     fs.rmSync(cacheRoot, { recursive: true, force: true });
     fs.rmSync(auditRoot, { recursive: true, force: true });
   });
@@ -111,7 +106,7 @@ describe('transitionPacket / amendment / supersession', () => {
     expect(next.status).toBe('DRAFT_GENERATED');
     expect(next.revision).toBe(instance.revision + 1);
 
-    const after = await queryPacketAuditEvents({ stream, limit: 100 });
+    const after = await store.queryAuditEvents({ stream, limit: 100 });
     assertAuditSequence(after, ['packet.template_selected', 'packet.edited']);
   });
 
@@ -234,8 +229,79 @@ describe('transitionPacket / amendment / supersession', () => {
     expect(amended.status).toBe('AMENDMENT_REQUIRED');
     expect(amended.packetInstanceId).toBe(instance.packetInstanceId);
 
-    const after = await queryPacketAuditEvents({ stream, limit: 100 });
+    const after = await store.queryAuditEvents({ stream, limit: 100 });
     assertAuditSequence(after, ['packet.template_selected', 'packet.amended']);
+  });
+
+  it('privileged ops use authoritative terminal state despite overridden getById', async () => {
+    const { instance: cancelledForAmend } = await store.createPacketInstance(
+      baseInput({
+        status: 'CANCELLED',
+        eventInstanceId: 'evil-amend-cancelled',
+        workflowInstanceId: 'wf-evil-amend-cancelled',
+      }),
+    );
+    const { instance: cancelledForSupersede } = await store.createPacketInstance(
+      baseInput({
+        status: 'CANCELLED',
+        eventInstanceId: 'evil-super-cancelled',
+        workflowInstanceId: 'wf-evil-super-cancelled',
+      }),
+    );
+    const forged = new Map<string, typeof cancelledForAmend | typeof cancelledForSupersede>([
+      [
+        cancelledForAmend.packetInstanceId,
+        { ...cancelledForAmend, status: 'LOCKED' as const },
+      ],
+      [
+        cancelledForSupersede.packetInstanceId,
+        { ...cancelledForSupersede, status: 'LOCKED' as const },
+      ],
+    ]);
+
+    class EvilStore extends FileLocalPacketStore {
+      override async getById(id: string): Promise<typeof cancelledForAmend | null> {
+        return forged.get(id) ?? null;
+      }
+    }
+    const evil = new EvilStore(cacheRoot, { ledgerPath });
+
+    const [amendResult, supersedeResult] = await Promise.allSettled([
+      beginAmendment(
+        evil,
+        cancelledForAmend.packetInstanceId,
+        cancelledForAmend.revision,
+        actor,
+        'forged lock',
+      ),
+      createSupersedingInstance(
+        evil,
+        cancelledForSupersede.packetInstanceId,
+        cancelledForSupersede.revision,
+        {
+          createdBy: 'user-life',
+          actor,
+          reason: 'forged lock',
+        },
+      ),
+    ]);
+
+    expect(amendResult.status).toBe('rejected');
+    expect(supersedeResult.status).toBe('rejected');
+    if (amendResult.status === 'rejected') {
+      expect(amendResult.reason).toBeInstanceOf(LockedPacketError);
+    }
+    if (supersedeResult.status === 'rejected') {
+      expect(supersedeResult.reason).toBeInstanceOf(LockedPacketError);
+    }
+
+    const amendDoc = await store.getById(cancelledForAmend.packetInstanceId);
+    const supersedeDoc = await store.getById(cancelledForSupersede.packetInstanceId);
+    expect(amendDoc?.status).toBe('CANCELLED');
+    expect(amendDoc?.revision).toBe(cancelledForAmend.revision);
+    expect(supersedeDoc?.status).toBe('CANCELLED');
+    expect(supersedeDoc?.revision).toBe(cancelledForSupersede.revision);
+    expect(supersedeDoc?.supersededByPacketInstanceId).toBeNull();
   });
 
   it('supersession preserves prior doc and emits one audit per persisted mutation', async () => {
@@ -283,7 +349,7 @@ describe('transitionPacket / amendment / supersession', () => {
 
     // Prior stream: create + status SUPERSEDED + link update = 3 events.
     const priorStream = packetAuditStreamKey(prior.packetInstanceId);
-    const priorEvents = await queryPacketAuditEvents({ stream: priorStream, limit: 100 });
+    const priorEvents = await store.queryAuditEvents({ stream: priorStream, limit: 100 });
     assertAuditSequence(priorEvents, [
       'packet.template_selected',
       'packet.superseded',
@@ -292,7 +358,7 @@ describe('transitionPacket / amendment / supersession', () => {
 
     // Successor stream: create only = 1 event.
     const nextStream = packetAuditStreamKey(next.packetInstanceId);
-    const nextEvents = await queryPacketAuditEvents({ stream: nextStream, limit: 100 });
+    const nextEvents = await store.queryAuditEvents({ stream: nextStream, limit: 100 });
     assertAuditSequence(nextEvents, ['packet.template_selected']);
 
     const active = await store.findByIdentityKey(prior.identityKey);
@@ -333,15 +399,15 @@ describe('transitionPacket / amendment / supersession', () => {
     const id = instance.packetInstanceId;
     const stream = packetAuditStreamKey(id);
 
-    let events = await queryPacketAuditEvents({ stream, limit: 100 });
+    let events = await store.queryAuditEvents({ stream, limit: 100 });
     assertAuditSequence(events, ['packet.template_selected']);
 
     const d1 = await transitionPacket(store, id, instance.revision, 'DRAFT_GENERATED', actor);
-    events = await queryPacketAuditEvents({ stream, limit: 100 });
+    events = await store.queryAuditEvents({ stream, limit: 100 });
     assertAuditSequence(events, ['packet.template_selected', 'packet.edited']);
 
     const d2 = await transitionPacket(store, id, d1.revision, 'UNDER_ANALYSIS', actor);
-    events = await queryPacketAuditEvents({ stream, limit: 100 });
+    events = await store.queryAuditEvents({ stream, limit: 100 });
     assertAuditSequence(events, [
       'packet.template_selected',
       'packet.edited',
@@ -349,7 +415,7 @@ describe('transitionPacket / amendment / supersession', () => {
     ]);
 
     await transitionPacket(store, id, d2.revision, 'READY_FOR_REVIEW', actor);
-    events = await queryPacketAuditEvents({ stream, limit: 100 });
+    events = await store.queryAuditEvents({ stream, limit: 100 });
     assertAuditSequence(events, [
       'packet.template_selected',
       'packet.edited',
