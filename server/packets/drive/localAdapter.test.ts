@@ -62,6 +62,27 @@ describe('LocalDriveAdapter', () => {
     }
   });
 
+  it('rejects idempotent replay when the governed destination changes', async () => {
+    const request = await buildPublishRequest(adapter, {
+      packetInstanceId: 'moved-replay-packet',
+      packetVersion: 1,
+    });
+    await adapter.publishArtifacts(request);
+    const movedDestination = {
+      ...request.destination,
+      driveFolderId: `${request.destination.driveFolderId}-moved`,
+      driveFolderUrl: `${request.destination.driveFolderUrl}-moved`,
+      pathSegments: [...request.destination.pathSegments, 'duplicate-destination'],
+    };
+    const movedReplay: PublishArtifactsRequest = {
+      ...request,
+      destination: movedDestination,
+    };
+
+    await expect(adapter.publishArtifacts(movedReplay)).rejects.toThrow(/destination differs/);
+    expect(fs.existsSync(path.join(cacheRoot, ...movedDestination.pathSegments))).toBe(false);
+  });
+
   it('round-trips sidecars through readSidecar by Drive file id', async () => {
     const request = await buildPublishRequest(adapter, {
       packetInstanceId: 'sidecar-packet',
@@ -85,6 +106,56 @@ describe('LocalDriveAdapter', () => {
       expect(sidecar.reportingPeriodStart).toBe('2026-01-01');
       expect(sidecar.reportingPeriodEnd).toBe('2026-03-31');
     }
+  });
+
+  it('rejects readSidecar when persisted sidecar bytes no longer match the pointer hash', async () => {
+    const request = await buildPublishRequest(adapter, {
+      packetInstanceId: 'tampered-sidecar-packet',
+      packetVersion: 1,
+    });
+    const result = await adapter.publishArtifacts(request);
+    const kpisPointer = result.pointers.find((pointer) => pointer.artifactType === 'kpis');
+    expect(kpisPointer).toBeDefined();
+    const kpisPath = path.join(
+      cacheRoot,
+      ...request.destination.pathSegments,
+      'tampered-sidecar-packet.kpis.json',
+    );
+    const mutated = JSON.parse(fs.readFileSync(kpisPath, 'utf8')) as Record<string, unknown>;
+    mutated.cadence = 'annual';
+    fs.writeFileSync(kpisPath, JSON.stringify(mutated, null, 2), 'utf8');
+
+    await expect(
+      adapter.readSidecar({
+        packetInstanceId: 'tampered-sidecar-packet',
+        sidecarKind: 'kpis',
+        driveFileId: kpisPointer!.driveFileId,
+      }),
+    ).rejects.toThrow(/Hash mismatch/);
+  });
+
+  it('does not read a sidecar for a different packet when a Drive file id is supplied', async () => {
+    await adapter.publishArtifacts(
+      await buildPublishRequest(adapter, {
+        packetInstanceId: 'requested-sidecar-packet',
+        packetVersion: 1,
+      }),
+    );
+    const otherRequest = await buildPublishRequest(adapter, {
+      packetInstanceId: 'other-sidecar-packet',
+      packetVersion: 1,
+    });
+    const otherResult = await adapter.publishArtifacts(otherRequest);
+    const otherKpisPointer = otherResult.pointers.find((pointer) => pointer.artifactType === 'kpis');
+    expect(otherKpisPointer).toBeDefined();
+
+    await expect(
+      adapter.readSidecar({
+        packetInstanceId: 'requested-sidecar-packet',
+        sidecarKind: 'kpis',
+        driveFileId: otherKpisPointer!.driveFileId,
+      }),
+    ).resolves.toBeNull();
   });
 
   it('rejects declared SHA-256 mismatches before writing artifacts', async () => {

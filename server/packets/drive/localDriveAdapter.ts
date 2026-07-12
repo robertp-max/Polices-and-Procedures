@@ -105,6 +105,11 @@ export class LocalDriveAdapter implements PacketDriveConnector {
         `Idempotency conflict for packet ${request.packetInstanceId} v${request.packetVersion}: artifact set differs from the manifest index.`,
       );
     }
+    if (existing && !destinationMatches(existing, request.destination)) {
+      throw new Error(
+        `Idempotency conflict for packet ${request.packetInstanceId} v${request.packetVersion}: destination differs from the manifest index.`,
+      );
+    }
 
     const publishedAt = existing?.publishedAt ?? new Date().toISOString();
     const folderPath = localFolderPath(this.cacheRoot, request.destination.pathSegments);
@@ -153,11 +158,19 @@ export class LocalDriveAdapter implements PacketDriveConnector {
       ? this.manifest.findArtifactByFileId(request.driveFileId)
       : this.manifest.findArtifactByPacketAndType(request.packetInstanceId, request.sidecarKind);
     if (!lookup || !isSidecarKind(lookup.artifact.artifactType)) return null;
+    if (lookup.entry.packetInstanceId !== request.packetInstanceId) return null;
     if (lookup.artifact.artifactType !== request.sidecarKind) return null;
     const file = localRelativePath(this.cacheRoot, lookup.artifact.localRelativePath);
     if (!fs.existsSync(file)) return null;
-    const parsed = JSON.parse(fs.readFileSync(file, 'utf8')) as PacketSidecarPayload;
-    return parsed.kind === request.sidecarKind ? parsed : null;
+    const bytes = readArtifactBytesVerifyingSha(
+      file,
+      lookup.artifact.pointer.sha256,
+      lookup.artifact.fileName,
+    );
+    const parsed = JSON.parse(bytes.toString('utf8')) as PacketSidecarPayload;
+    return parsed.kind === request.sidecarKind && parsed.packetInstanceId === request.packetInstanceId
+      ? parsed
+      : null;
   }
 
   async verifyArtifactHash(
@@ -592,6 +605,18 @@ function artifactSetFingerprint(request: PublishArtifactsRequest): string {
   return sha256Hex(Buffer.from(JSON.stringify(rows), 'utf8'));
 }
 
+function destinationMatches(entry: FolderManifestEntry, destination: DriveDestination): boolean {
+  return (
+    entry.driveFolderId === destination.driveFolderId &&
+    entry.driveFolderUrl === destination.driveFolderUrl &&
+    sameStringList(entry.pathSegments, destination.pathSegments)
+  );
+}
+
+function sameStringList(left: readonly string[], right: readonly string[]): boolean {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
 function localFolderPath(root: string, pathSegments: readonly string[]): string {
   return assertWithinRoot(root, path.join(root, ...pathSegments));
 }
@@ -629,6 +654,19 @@ function writeJsonAtomic(file: string, value: unknown): void {
   const tmp = `${file}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(value, null, 2), 'utf8');
   fs.renameSync(tmp, file);
+}
+
+function readArtifactBytesVerifyingSha(
+  file: string,
+  expectedSha256: string,
+  fileName: string,
+): Buffer {
+  const bytes = fs.readFileSync(file);
+  const actualSha256 = sha256Hex(bytes);
+  if (actualSha256 !== expectedSha256) {
+    throw new Error(`Hash mismatch for ${fileName}: stored bytes do not match the manifest pointer sha256.`);
+  }
+  return bytes;
 }
 
 function sha256Hex(bytes: Buffer): string {
