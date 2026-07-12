@@ -35,11 +35,11 @@ export const renderFindingsTrendsModule: ModuleRenderer = (context) => {
       <p class="p">Chart audit denominator tied to active census (${payload.roll.census.activeCensus}) + recerts due (${payload.roll.census.recertDue}). Findings below are derived from OASIS/POC document review.</p>
       ${renderKeyValueRow('OASIS SOC not completed ≤5 days', valueWithUnknown(unknownPaths, 'documentation.oasisLateSoc', payload.roll.documentation.oasisLateSoc))}
       ${renderKeyValueRow('POC missing face-to-face encounter', valueWithUnknown(unknownPaths, 'documentation.pocMissingF2F', payload.roll.documentation.pocMissingF2F))}
-      ${renderKeyValueRow('POC unsigned / pending physician signature', valueWithUnknown(unknownPaths, 'documentation.pocUnsigned', payload.roll.documentation.pocUnsignedOrMissingSignature))}
+      ${renderKeyValueRow('POC unsigned / pending physician signature', valueWithUnknown(unknownPaths, 'documentation.pocUnsignedOrMissingSignature', payload.roll.documentation.pocUnsignedOrMissingSignature, ['documentation.pocUnsigned']))}
       ${renderKeyValueRow('Homebound not justified', valueWithUnknown(unknownPaths, 'documentation.homeboundNotJustified', payload.roll.documentation.homeboundNotJustified))}
       ${renderKeyValueRow('Med-reconciliation count mismatch (OASIS↔POC)', valueWithUnknown(unknownPaths, 'documentation.medReconMismatch', payload.roll.documentation.medReconMismatch))}
-      ${renderKeyValueRow('Pressure injury present, no wound orders', valueWithUnknown(unknownPaths, 'documentation.pressureInjury', payload.roll.documentation.pressureInjuryNoWoundOrders))}
-      ${renderKeyValueRow('OASIS high mobility need, no therapy ordered', valueWithUnknown(unknownPaths, 'documentation.therapyNeed', payload.roll.documentation.therapyNeedNoOrder))}
+      ${renderKeyValueRow('Pressure injury present, no wound orders', valueWithUnknown(unknownPaths, 'documentation.pressureInjuryNoWoundOrders', payload.roll.documentation.pressureInjuryNoWoundOrders, ['documentation.pressureInjury']))}
+      ${renderKeyValueRow('OASIS high mobility need, no therapy ordered', valueWithUnknown(unknownPaths, 'documentation.therapyNeedNoOrder', payload.roll.documentation.therapyNeedNoOrder, ['documentation.therapyNeed']))}
     `)}
     ${renderPanel('Source-data exceptions', renderDataTable({
       headers: ['Severity', 'Path', 'Reason', 'Remediation'],

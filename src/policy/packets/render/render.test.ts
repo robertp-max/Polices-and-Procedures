@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync, readdirSync } from 'node:fs';
+import path from 'node:path';
 
 import type { AddendumReference } from '@/policy/qapi/personnelActionAddendum';
 import type { QapiRollup } from '@/policy/qapi/qapiExtraction';
@@ -7,7 +9,13 @@ import { renderQapiPacketHtmlFromRollup } from '@/policy/qapi/renderQapiPacket';
 describe('model-driven packet renderer', () => {
   it('preserves unrecovered source values, synthetic watermark, and lock banner', () => {
     const html = renderQapiPacketHtmlFromRollup(baseRollup(), baseReference(), {
-      unknownPaths: ['incidents.total', 'labs.criticalUnreported'],
+      unknownPaths: [
+        'incidents.total',
+        'labs.criticalUnreported',
+        'documentation.pocUnsignedOrMissingSignature',
+        'documentation.pressureInjuryNoWoundOrders',
+        'documentation.therapyNeedNoOrder',
+      ],
       syntheticWatermark: 'SYNTHETIC / UAT ONLY — outside agency mock data, not real PHI',
       sourceAgency: 'Outside Mock Agency',
       datasetId: 'QAPI-Q2-DS-001',
@@ -18,6 +26,9 @@ describe('model-driven packet renderer', () => {
     expect(html).toContain('SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION');
     expect(html).toContain('SYNTHETIC / UAT ONLY — outside agency mock data, not real PHI');
     expect(html).toContain('NOT LOCKABLE — 1 blocking item(s)');
+    expect(html).toContain('POC unsigned / pending physician signature</span><span class="kv-value">UNKNOWN — SOURCE NOT RECOVERED</span>');
+    expect(html).toContain('Pressure injury present, no wound orders</span><span class="kv-value">UNKNOWN — SOURCE NOT RECOVERED</span>');
+    expect(html).toContain('OASIS high mobility need, no therapy ordered</span><span class="kv-value">UNKNOWN — SOURCE NOT RECOVERED</span>');
   });
 
   it('renders analysis modules before supporting form pages', () => {
@@ -30,6 +41,32 @@ describe('model-driven packet renderer', () => {
     expect(dashboardIndex).toBeGreaterThan(-1);
     expect(formsIndex).toBeGreaterThan(-1);
     expect(dashboardIndex).toBeLessThan(formsIndex);
+  });
+
+  it('keeps admission color tokens centralized in the rendering-profile registry', () => {
+    const renderSourceRoot = 'src/policy/packets/render';
+    const renderingProfileSourcePath = path.join(
+      process.cwd(),
+      'src/policy/packets/registries/renderingProfiles.ts',
+    );
+    const chromeSourcePath = path.join(process.cwd(), renderSourceRoot, 'chrome.ts');
+    const moduleSourceDirectory = path.join(process.cwd(), renderSourceRoot, 'modules');
+    const moduleSourcePaths = readdirSync(moduleSourceDirectory)
+      .filter((fileName) => fileName.endsWith('.ts'))
+      .map((fileName) => path.join(moduleSourceDirectory, fileName));
+    const brandAdmissionTokens = ['#007c7a', '#e87722'];
+    const renderingProfileSource = readFileSync(renderingProfileSourcePath, 'utf8');
+
+    for (const token of brandAdmissionTokens) {
+      expect(renderingProfileSource).toContain(token);
+    }
+
+    const hardcodedBrandTokenMatches = [chromeSourcePath, ...moduleSourcePaths].flatMap((sourcePath) => {
+      const source = readFileSync(sourcePath, 'utf8');
+      return brandAdmissionTokens.filter((token) => source.includes(token)).map((token) => `${sourcePath}: ${token}`);
+    });
+
+    expect(hardcodedBrandTokenMatches).toEqual([]);
   });
 });
 

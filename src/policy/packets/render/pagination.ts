@@ -66,14 +66,24 @@ export function valueWithUnknown(
   unknownPaths: ReadonlySet<string>,
   path: string,
   value: string | number,
+  aliases: readonly string[] = [],
 ): string | number {
-  return unknownPaths.has(path) ? UNKNOWN_SOURCE_NOT_RECOVERED : value;
+  return hasUnknownPath(unknownPaths, path, aliases) ? UNKNOWN_SOURCE_NOT_RECOVERED : value;
 }
 
 export function statusWithUnknown(
   unknownPaths: ReadonlySet<string>,
   path: string,
   value: string,
+  aliases: readonly string[] = [],
 ): string {
-  return unknownPaths.has(path) ? UNKNOWN_SOURCE_NOT_RECOVERED : value;
+  return hasUnknownPath(unknownPaths, path, aliases) ? UNKNOWN_SOURCE_NOT_RECOVERED : value;
+}
+
+export function hasUnknownPath(
+  unknownPaths: ReadonlySet<string>,
+  path: string,
+  aliases: readonly string[] = [],
+): boolean {
+  return unknownPaths.has(path) || aliases.some((alias) => unknownPaths.has(alias));
 }
