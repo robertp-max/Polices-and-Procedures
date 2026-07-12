@@ -357,17 +357,6 @@ function assertDestination(value: unknown): SupplementalDestination {
   return value;
 }
 
-function assertValidationStatus(value: unknown): SupplementalValidationStatus {
-  if (!isSupplementalValidationStatus(value)) {
-    throw new SupplementalValidationError(
-      'supplemental_validation_status_invalid',
-      'Supplemental validationStatus is not governed.',
-      'validationStatus',
-    );
-  }
-  return value;
-}
-
 function assertStringArray(name: string, values: string[] | undefined): string[] {
   if (values === undefined) return [];
   return values.map((value) => requireNonEmpty(name, value));

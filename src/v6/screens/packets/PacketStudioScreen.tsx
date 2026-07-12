@@ -209,11 +209,16 @@ export default function PacketStudioScreen() {
         </div>
 
         {studioStep === 'template' ? (
-          <TemplateSelector
-            templates={templates}
-            className="min-w-0"
-            onSelect={handleTemplateSelect}
-          />
+          <>
+            {!selectedTemplate ? (
+              <p className="text-sm text-muted">No packet template selected.</p>
+            ) : null}
+            <TemplateSelector
+              templates={templates}
+              className="min-w-0"
+              onSelect={handleTemplateSelect}
+            />
+          </>
         ) : null}
 
         {studioStep === 'event' && selectedTemplate ? (
