@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PacketEnvelope } from "@/policy/packets/contracts";
-import type { FormInstanceRow, SignatureRow } from "../../../../../server/ecign/store";
+import type { FormInstanceRow, SignatureRow } from "../ecign/store";
 import {
   createPacketEnvelopeService,
   type PacketEnvelopeServiceDependencies,
-} from "../../../../../server/packets/envelope/envelopeService";
+} from "./envelope/envelopeService";
 import {
   buildSignatureStatusSteps,
   normalizeSignatureStatus,
   signatureStatusLabel,
-} from "./SignatureTracking";
+} from "@/v6/screens/packets/signing/SignatureTracking";
 
 const fixedNow = new Date("2026-07-12T12:00:00.000Z");
 
