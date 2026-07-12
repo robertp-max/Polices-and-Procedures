@@ -38,7 +38,8 @@ export interface RequireAuthDeps {
   nowIso: () => string;
 }
 
-function defaultDeps(): RequireAuthDeps {
+/** Production dependencies: real Cognito verification + server registry. */
+export function defaultRequireAuthDeps(): RequireAuthDeps {
   const service = buildDemoAuthServiceFromEnv(process.env);
   return {
     getCurrentUser: (t) => service.getCurrentUser(t),
@@ -48,6 +49,20 @@ function defaultDeps(): RequireAuthDeps {
     nowSeconds: () => Math.floor(Date.now() / 1000),
     nowIso: () => new Date().toISOString(),
   };
+}
+
+/**
+ * Merge dependency overrides with production defaults. Defaults (which build a
+ * Cognito service from env) are only constructed when a required dependency is
+ * missing — so a fully-injected test config never touches env-dependent code.
+ */
+export function mergeAuthDeps(override?: Partial<RequireAuthDeps>): RequireAuthDeps {
+  const o = override ?? {};
+  const complete =
+    !!o.getCurrentUser && !!o.loadRegistry && o.issuer !== undefined &&
+    o.clientId !== undefined && !!o.nowSeconds && !!o.nowIso;
+  if (complete) return o as RequireAuthDeps;
+  return { ...defaultRequireAuthDeps(), ...o };
 }
 
 function extractBearer(header: string | undefined): string {
@@ -82,7 +97,12 @@ export async function resolveVerifiedActor(
 /** Middleware factory: attaches the verified server actor or denies. */
 export function requireCognitoAuth(depsOverride?: Partial<RequireAuthDeps>): RequestHandler {
   return (req, _res, next) => {
-    const deps = { ...defaultDeps(), ...depsOverride };
+    let deps: RequireAuthDeps;
+    try {
+      deps = mergeAuthDeps(depsOverride);
+    } catch (e) {
+      return next(e);
+    }
     resolveVerifiedActor(req.header('authorization'), deps)
       .then((actor) => {
         req.actor = actor;

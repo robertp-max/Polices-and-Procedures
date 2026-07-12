@@ -77,6 +77,7 @@ export function resolveServerActor(
     type: 'user',
     user_id: user.id,
     display_name: user.name || user.email,
+    email: user.email,
     roles,
     attributes: { branches: [], service_lines: [], access_classes: [] },
     // MFA/IAL are NOT derived from client headers. Until a verified-token

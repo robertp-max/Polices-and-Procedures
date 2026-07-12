@@ -41,7 +41,9 @@ function superAdminOf(req: Request) {
   const a = req.actor;
   return verifySuperAdmin({
     userId: a?.user_id,
-    email: req.header('x-user-email') ?? undefined,
+    // COG-2: prefer the server-verified actor email; the x-user-email header is
+    // forgeable and only a last-resort fallback for pre-COG-2 local flows.
+    email: a?.email ?? req.header('x-user-email') ?? undefined,
     authenticated: !!req.session?.authenticated,
     actorType: (a?.type ?? 'system') as 'user' | 'service' | 'system',
   });

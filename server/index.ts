@@ -20,6 +20,8 @@ import { ceuRouter } from './ceu/routes.js';
 import { startAnomalyScheduler } from './audit/anomaly.js';
 import { authRouter } from './routes/auth.js';
 import { userAccessRouter } from './routes/userAccess.js';
+import { requireApiAuth, requireRole } from './auth/apiAuthBoundary.js';
+import { ADMIN_ROLE_GROUPS, AUDIT_ADMIN_ROLES } from './auth/routeAccessMatrix.js';
 import { pmRouter } from './routes/pm.js';
 import { createBradRouter } from './routes/brad.js';
 
@@ -82,16 +84,30 @@ app.use('/api', (req, _res, next) => {
   next();
 });
 
+// ── Authentication surface (mounted BEFORE the boundary) ──────────────────
+// The login/session lifecycle is public-capable and self-verifies its own
+// protected endpoints (/me, /logout, /refresh, /admin/* via
+// assertAdminAccessToken); it therefore lives OUTSIDE the boundary. The COG-2
+// admin user-access router resolves the verified actor and role-gates each
+// endpoint internally; it is additionally role-gated at the mount below.
+app.use('/api/auth', authRouter);
+app.use('/api/admin/user-access', requireRole(ADMIN_ROLE_GROUPS), userAccessRouter);
+
+// ── COG-2 authentication boundary ─────────────────────────────────────────
+// One consistent authentication path for every business router: a verified,
+// active canonical actor from a Cognito bearer, or a denial. Narrow public
+// exceptions (health checks) pass through via the route access matrix.
+app.use('/api', requireApiAuth());
+
+// ── Protected business routers (verified actor required) ──────────────────
 app.use('/api/calendar', calendarRouter);
 app.use('/api/ces', cesRouter);
 app.use('/api/hubstaff', hubstaffRouter);
 app.use('/api/ecign', ecignRouter);
-app.use('/api/audit', auditRouter);
-app.use('/api/audit/v2', auditV2Router);
+app.use('/api/audit', requireRole(AUDIT_ADMIN_ROLES), auditRouter);
+app.use('/api/audit/v2', requireRole(AUDIT_ADMIN_ROLES), auditV2Router);
 app.use('/api/ceu', ceuRouter);
 app.use('/api/compliance', complianceRouter);
-app.use('/api/auth', authRouter);
-app.use('/api/admin/user-access', userAccessRouter);
 app.use('/api/pm', pmRouter);
 
 // Compliance Intelligence (iAdministrator) — local RAG engine.
