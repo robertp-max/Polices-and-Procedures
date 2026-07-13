@@ -54,7 +54,9 @@ describe('WP-4.8 rendering QA structural checks', () => {
     expect(countMatches(html, /<div class="accent-rail"><span><\/span><span><\/span><\/div>/gu)).toBe(
       0,
     );
-    expect(countMatches(html, /src="\/ci-logo-packet-cover\.png"/gu)).toBe(1);
+    // Two cover-logo images: the Part A executive cover + the retained Part B
+    // (appendix) cover. Part A leads the document; Part B keeps its own cover.
+    expect(countMatches(html, /src="\/ci-logo-packet-cover\.png"/gu)).toBe(2);
     expect(countMatches(html, /class="print-running-footer"/gu)).toBe(1);
     expect(html).toContain('QAPI Committee Packet');
     expect(html).toContain('Care Indeed Home Health Care, Inc.');

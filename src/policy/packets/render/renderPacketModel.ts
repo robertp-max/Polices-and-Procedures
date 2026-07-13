@@ -5,6 +5,7 @@ import { getRenderingProfile } from '@/policy/packets/registries/renderingProfil
 import { renderPacketDocument } from './chrome';
 import { getModuleRenderer } from './moduleRendererRegistry';
 import { compactPages } from './pagination';
+import { renderPartAPages } from './partA/renderPartA';
 
 export function renderPacketModel(model: PacketModel): string {
   const profile = getRenderingProfile(model.renderingProfileId);
@@ -22,11 +23,12 @@ export function renderPacketModel(model: PacketModel): string {
     });
   });
 
-  return renderPacketDocument(
-    model,
-    profile,
-    compactPages(renderedPages.map((page) => page.html)),
-  );
+  // Part A — Executive Narrative front matter (synthesized from this model),
+  // then the modules as Part B — Evidence Appendices.
+  const partA = renderPartAPages(model, profile);
+  const partB = compactPages(renderedPages.map((page) => page.html));
+
+  return renderPacketDocument(model, profile, `${partA}\n${partB}`);
 }
 
 function orderedRenderableModules(

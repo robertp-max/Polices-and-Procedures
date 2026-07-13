@@ -61,6 +61,31 @@ export const renderKpiDashboardModule: ModuleRenderer = (context) => {
   });
 };
 
+/**
+ * Part A reuse — resolve the grounded KPI dashboard model / supplemental chart
+ * data for any packet module payload, or null when the payload is not an
+ * analytical (QAPI-shaped) payload. Keeps the executive narrative's charts
+ * bound to the exact same values the appendix renders (no re-derivation).
+ */
+export function resolveQapiRenderPayload(payload: unknown): QapiPacketRenderPayload | null {
+  return isRecord(payload) && isRecord((payload as { roll?: unknown }).roll)
+    ? (payload as QapiPacketRenderPayload)
+    : null;
+}
+
+export function resolveKpiDashboardModel(payload: unknown): KpiDashboardModel | null {
+  const render = resolveQapiRenderPayload(payload);
+  if (!render) return null;
+  const qapiModel = getQapiModelPayload(render);
+  return qapiModel?.kpiDashboard ?? buildLegacyDashboardModel(render);
+}
+
+export function resolveSupplementalCharts(payload: unknown): KpiSupplementalChartData[] {
+  const render = resolveQapiRenderPayload(payload);
+  if (!render) return [];
+  return buildSupplementalCharts(render, getQapiModelPayload(render));
+}
+
 function getQapiModelPayload(payload: QapiPacketRenderPayload): QapiPacketModelPayload | null {
   const candidate = payload.qapiModel;
   if (!isRecord(candidate)) return null;

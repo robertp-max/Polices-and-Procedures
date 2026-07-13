@@ -113,6 +113,42 @@ export function renderPacketDocument(
     .watermark{position:absolute;z-index:0;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:${profile.chrome.watermark.opacity};font-size:34px;font-weight:800;letter-spacing:.08em;text-align:center;color:#1f2937;transform:rotate(-28deg);padding:50px;text-transform:uppercase;}
     h1,h2,h3,.no-orphan{break-after:avoid;page-break-after:avoid;}
     .form-page{break-before:page;page-break-before:always;}
+    /* Part A — executive narrative */
+    .pa-sub{font-size:13px;font-weight:300;letter-spacing:.06em;color:#546161;margin:0 0 18px;}
+    .pa-lead{font-size:12.5px;line-height:1.62;color:#26343a;margin:0 0 14px;}
+    .pa-domain{margin:0 0 16px;break-inside:avoid;page-break-inside:avoid;}
+    .pa-domain h3{font-size:13px;font-weight:700;letter-spacing:.02em;color:#043f3f;margin:0 0 6px;}
+    .pa-domain p{font-size:11px;line-height:1.55;color:#374151;margin:0 0 8px;}
+    .pa-verdict{border-left:5px solid ${secondary};background:#f7fafa;padding:14px 16px;margin:0 0 16px;}
+    .pa-verdict p{font-size:12px;line-height:1.6;color:#26343a;margin:0;}
+    .pa-chart{border:1px solid #d7e1e1;border-radius:4px;padding:12px 14px;margin:0 0 14px;break-inside:avoid;page-break-inside:avoid;}
+    .pa-chart-title{font-size:12px;font-weight:700;color:#043f3f;margin:0 0 8px;padding:0;}
+    .pa-chart-cap{font-size:8.5px;font-style:italic;color:#697272;margin:8px 0 0;padding:0;}
+    .pa-svg{max-width:100%;height:auto;display:block;}
+    .pa-legend{display:flex;flex-wrap:wrap;gap:12px;font-size:9px;color:#697272;margin:2px 0 14px;}
+    .pa-key{display:inline-flex;align-items:center;gap:5px;}
+    .pa-key i{width:10px;height:10px;border-radius:2px;display:inline-block;}
+    .pa-donut-wrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap;}
+    .pa-donut-legend{flex:1;min-width:180px;}
+    .pa-donut-key{display:flex;align-items:center;gap:6px;font-size:9.5px;color:#374151;margin:3px 0;}
+    .pa-donut-key i{width:10px;height:10px;border-radius:2px;flex:none;}
+    .pa-donut-key span{flex:1;}
+    .pa-donut-key b{color:#043f3f;font-weight:700;}
+    .pa-stat-strip{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 16px;}
+    .pa-stat{flex:1;min-width:120px;border:1px solid #d7e1e1;border-radius:4px;padding:11px 13px;}
+    .pa-stat-v{font-size:23px;font-weight:800;line-height:1;}
+    .pa-stat-l{font-size:9px;text-transform:uppercase;letter-spacing:.09em;color:#697272;margin-top:5px;}
+    .pa-stat-s{font-size:8.5px;color:#9aa3a3;margin-top:3px;}
+    .pa-split{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
+    .pa-split>*{flex:1;min-width:250px;}
+    .pa-decisions{list-style:none;padding:0;margin:0 0 12px;}
+    .pa-decisions li{border-left:4px solid ${primary};background:#f7fafa;padding:9px 13px;margin:0 0 8px;font-size:11px;line-height:1.5;color:#374151;}
+    .pa-decisions li b{color:#043f3f;}
+    .pa-attribution{font-size:9px;color:#9aa3a3;font-style:italic;margin-top:10px;}
+    .pa-divider .pg-in{justify-content:center;text-align:center;}
+    .pa-divider-eyebrow{font-size:13px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:${secondary};margin:0 0 10px;}
+    .pa-divider-title{font-size:40px;font-weight:800;letter-spacing:.02em;color:#043f3f;margin:0 0 12px;}
+    .pa-divider-sub{font-size:12px;color:#546161;max-width:5in;margin:0 auto;line-height:1.6;}
     @media print{@page{size:${profile.pageSize};margin:.5in .72in;}body{background:#fff;}.print-running-footer{display:flex;position:fixed;bottom:.18in;left:.72in;right:.72in;z-index:20;justify-content:space-between;gap:18px;color:#697272;font-family:Roboto,Arial,sans-serif;font-size:10px;font-weight:300;}.pg{width:auto;min-height:0;margin:0;display:block;break-after:page;page-break-after:always;overflow:visible;box-shadow:none;}.pg-in,.pg-cover .pg-in{padding:0;display:block;}.pg-topline,.pg-foot{display:none;}.pg-cover-head{margin-bottom:.86in;}.panel,.notice,.signature-block{break-inside:avoid;page-break-inside:avoid;}.kpi-card{break-inside:avoid;page-break-inside:avoid;}.data-table{break-inside:auto;page-break-inside:auto;}.watermark{position:fixed;}}
   </style></head><body>${renderPrintRunningChrome(model, profile)}${bodyHtml}</body></html>`;
 }
@@ -206,6 +242,38 @@ export function renderModulePage(args: {
       watermarkText,
     },
   };
+}
+
+/**
+ * Module-agnostic page wrapper for computed front matter (Part A — Executive
+ * Narrative). Reuses the same chrome as module pages (logo header, cover title
+ * treatment, footer, watermark, print flow) but takes free-form content instead
+ * of a typed module instance.
+ */
+export function renderNarrativePage(args: {
+  model: PacketModel;
+  profile: PacketRenderingProfile;
+  title: string;
+  eyebrow?: string | null;
+  isCover?: boolean;
+  bodyHtml: string;
+  pageNumber: number;
+  totalPages: number;
+}): string {
+  const isCover = args.isCover ?? false;
+  const pageClass = ['pg', isCover ? 'pg-cover' : '', 'pg-partA'].filter(Boolean).join(' ');
+  const watermarkText = watermarkFor(args.model, args.profile);
+  return `<section class="${pageClass}" data-part="A" data-page-number="${args.pageNumber}">
+    ${renderAccentRail(args.profile)}
+    ${watermarkText ? `<div class="watermark">${escapeHtml(watermarkText)}</div>` : ''}
+    <div class="pg-in">
+      ${renderPageHeader(args.model, args.profile, args.title, args.pageNumber, isCover)}
+      ${args.eyebrow ? `<div class="cover-eyebrow">${escapeHtml(args.eyebrow)}</div>` : ''}
+      <h2 class="pg-h">${escapeHtml(args.title)}</h2><div class="rule"></div>
+      ${args.bodyHtml}
+      ${renderFooter(args.model, args.profile, args.pageNumber, args.totalPages)}
+    </div>
+  </section>`;
 }
 
 function renderAccentRail(profile: PacketRenderingProfile): string {
