@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import type { CSSProperties } from "react";
 import type * as PacketContracts from "@/policy/packets/contracts";
 import * as packetRendererModule from "@/policy/packets/render/renderPacketModel";
@@ -37,6 +37,33 @@ const styles: Record<string, CSSProperties> = {
     fontSize: 12,
     fontWeight: 500,
   },
+  actions: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
+  button: {
+    minHeight: 32,
+    padding: "0 12px",
+    borderRadius: 6,
+    border: "1px solid #007c7a",
+    background: "#007c7a",
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: "pointer",
+  },
+  buttonGhost: {
+    minHeight: 32,
+    padding: "0 12px",
+    borderRadius: 6,
+    border: "1px solid #007c7a",
+    background: "#ffffff",
+    color: "#007c7a",
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: "pointer",
+  },
   frameWrap: {
     minHeight: 0,
     padding: 14,
@@ -52,12 +79,44 @@ const styles: Record<string, CSSProperties> = {
 
 export function PreviewPanel({ packet, selectedOutlineId }: PreviewPanelProps) {
   const srcDoc = useMemo(() => buildPreviewHtml(packet), [packet]);
+  const fileName = useMemo(() => packetFileName(packet), [packet]);
+
+  const handleDownload = useCallback(() => {
+    const blob = new Blob([srcDoc], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = fileName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  }, [srcDoc, fileName]);
+
+  const handlePrint = useCallback(() => {
+    const printWindow = window.open("", "_blank", "noopener,noreferrer");
+    if (!printWindow) return;
+    printWindow.document.open();
+    printWindow.document.write(srcDoc);
+    printWindow.document.close();
+    printWindow.focus();
+    // Allow the packet stylesheet/layout to settle before invoking the print dialog.
+    window.setTimeout(() => printWindow.print(), 400);
+  }, [srcDoc]);
 
   return (
     <section style={styles.root} aria-label="live packet preview">
       <div style={styles.toolbar}>
         <span>Live preview</span>
-        {selectedOutlineId ? <span style={styles.outlineSignal}>{selectedOutlineId}</span> : null}
+        <div style={styles.actions}>
+          {selectedOutlineId ? <span style={styles.outlineSignal}>{selectedOutlineId}</span> : null}
+          <button type="button" style={styles.buttonGhost} onClick={handleDownload}>
+            Download HTML
+          </button>
+          <button type="button" style={styles.button} onClick={handlePrint}>
+            Print / Save as PDF
+          </button>
+        </div>
       </div>
       <div style={styles.frameWrap}>
         <iframe
@@ -166,6 +225,17 @@ function escapeHtml(value: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function packetFileName(packet: unknown): string {
+  const record = asRecord(packet);
+  const identity = record ? asRecord(record.identity) : undefined;
+  const packetId =
+    (identity ? readString(identity.packetId) : undefined) ??
+    (record ? readString(record.packetId) : undefined) ??
+    (record ? readString(record.title) : undefined);
+  const safe = (packetId ?? "packet").replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+  return `${safe || "packet"}.html`;
 }
 
 function asRecord(value: unknown): RecordLike | undefined {
