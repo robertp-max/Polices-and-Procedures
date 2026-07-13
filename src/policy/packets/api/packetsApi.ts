@@ -184,7 +184,10 @@ export class PacketsApi {
 
   constructor(options: PacketsApiOptions = {}) {
     this.baseUrl = normalizeBaseUrl(options.baseUrl ?? '/api');
-    this.fetchImpl = options.fetchImpl ?? fetch;
+    // The global fetch must keep its original `this` (window/globalThis); storing
+    // it on an instance field and calling `this.fetchImpl(...)` rebinds `this` and
+    // throws "Illegal invocation" in browsers. Bind the default to globalThis.
+    this.fetchImpl = options.fetchImpl ?? fetch.bind(globalThis);
     this.headers = options.headers;
   }
 

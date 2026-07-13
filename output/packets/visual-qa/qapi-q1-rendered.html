@@ -1,0 +1,678 @@
+<!doctype html><html><head><meta charset="utf-8"><title>QAPI-QUARTERLY-Q1-2026 2026-01-01 → 2026-03-31</title>
+  <style>
+    @page{size:letter;margin:0;}
+    *{box-sizing:border-box;}
+    body{margin:0;background:#eef2f2;font:12px/1.55 Roboto,Segoe UI,Arial,sans-serif;color:#1f2937;}
+    .pg{position:relative;width:8.5in;min-height:11in;background:#fff;margin:0 auto 14px;display:flex;flex-direction:column;break-after:page;page-break-after:always;overflow:hidden;}
+    .pg:empty{display:none;}
+    .accent-rail{height:4px;display:flex;width:100%;}
+    .accent-rail span:first-child{background:#007c7a;flex:3;}
+    .accent-rail span:last-child{background:#e87722;flex:1;}
+    .pg-banner{background:#f8fbfb;color:#335154;display:flex;justify-content:space-between;gap:18px;padding:10px 36px;border-bottom:1px solid #e3eaea;font-size:10px;letter-spacing:.12em;text-transform:uppercase;}
+    .pg-in{position:relative;z-index:1;flex:1;padding:28px 44px 24px;display:flex;flex-direction:column;}
+    .ci-mark{width:230px;height:auto;margin-bottom:10px;}
+    .pg-h{font-size:22px;line-height:1.2;color:#007c7a;margin:6px 0 0;break-after:avoid;page-break-after:avoid;}
+    .rule{width:54px;height:3px;background:#e87722;margin:10px 0 16px;}
+    .handling{border:1px solid #d8e7e7;background:#f8fbfb;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:10.5px;color:#335154;}
+    .lock-banner{border:1px solid #e5d0b8;background:#fff7ed;border-left:4px solid #b35200;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:10.5px;color:#7c2d12;}
+    .lock-banner.pass{background:#f0fdf4;border-color:#bbf7d0;border-left-color:#0f7b34;color:#14532d;}
+    .synthetic-banner{border:1px solid #f4d08b;background:#fff7d6;border-left:4px solid #a86a00;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:10.5px;color:#714d00;}
+    .panel{background:#fff;border:1px solid #e3eaea;border-radius:8px;padding:16px 18px;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,65,66,.04);break-inside:avoid;page-break-inside:avoid;}
+    .panel-title{font-size:12px;font-weight:700;color:#007c7a;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;break-after:avoid;page-break-after:avoid;}
+    .kv-row{display:flex;justify-content:space-between;gap:18px;border-bottom:1px solid #eef2f2;padding:5px 0;font-size:11.5px;}
+    .kv-key{color:#007c7a;font-weight:600;}
+    .kv-value{color:#111;text-align:right;}
+    .data-table{width:100%;border-collapse:collapse;font-size:10.5px;margin:4px 0 8px;break-inside:auto;page-break-inside:auto;}
+    .data-table caption{text-align:left;color:#526064;font-size:10px;margin:0 0 6px;}
+    .data-table thead{display:table-header-group;}
+    .data-table th{background:rgba(0,124,122,0.06);color:#007c7a;text-align:left;padding:7px 9px;border-bottom:2px solid rgba(0,124,122,0.12);}
+    .data-table td{padding:7px 9px;border-bottom:1px solid #eef2f2;vertical-align:top;}
+    .p{font-size:11.5px;color:#374151;margin:0 0 8px;}
+    .muted{color:#7a7470;font-size:10px;}
+    .list{margin:0 0 6px 16px;padding:0;font-size:11.5px;}
+    .list li{margin-bottom:4px;}
+    .notice{border:1px solid #d8e7e7;background:#f8fbfb;border-left:4px solid #007c7a;border-radius:8px;padding:10px 14px;font-size:11px;color:#335154;margin-bottom:12px;break-inside:avoid;page-break-inside:avoid;}
+    .notice-warning{background:#fff7ed;border-color:#f3c4a8;border-left-color:#e87722;color:#9a3412;}
+    .notice-blocker{background:#fef2f2;border-color:#fecaca;border-left-color:#b91c1c;color:#7f1d1d;}
+    .seal{border-color:#e6b3b3;background:#fff8f8;}
+    .signature-block{margin:18px 0;break-inside:avoid;page-break-inside:avoid;}
+    .signature-line{height:30px;border-bottom:1px solid #9ca3af;width:70%;}
+    .signature-role{font-size:10px;font-weight:700;color:#007c7a;text-transform:uppercase;margin-top:4px;}
+    .pg-foot{margin-top:auto;border-top:1px solid #eef2f2;padding-top:10px;display:flex;justify-content:space-between;gap:18px;font-size:9px;color:#7a7470;}
+    .watermark{position:absolute;z-index:0;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0.12;font-size:34px;font-weight:800;letter-spacing:.08em;text-align:center;color:#1f2937;transform:rotate(-28deg);padding:50px;text-transform:uppercase;}
+    h1,h2,h3,.no-orphan{break-after:avoid;page-break-after:avoid;}
+    .form-page{break-before:page;page-break-before:always;}
+    @media print{body{background:#fff;}.pg{margin:0;box-shadow:none;}}
+  </style></head><body><section class="pg" data-module-id="qapi-cover-page" data-page-number="1">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026 · Q1 2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">Q1 2026 QAPI Committee Packet</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div>
+    <div class="notice notice-warning"><b>BRAD-DERIVED DRAFT — REQUIRES HUMAN REVIEW.</b> Upload did not match the known ClinicalDump schema (unstructured/mixed content). Derived 1 record(s) via alias/keyword matching — every metric below is low-confidence and requires reviewer confirmation. Recovered 19 aggregate metric group(s) directly from the narrative text (labeled totals and record-ID families) — all low-confidence, each carries its verbatim source quote.</div>
+    <div class="panel"><div class="panel-title">Quarterly QAPI analytical report</div>
+      <div class="kv-row"><span class="kv-key">Packet ID</span><span class="kv-value">QAPI-QUARTERLY-Q1-2026</span></div>
+      <div class="kv-row"><span class="kv-key">Reporting period</span><span class="kv-value">2026-01-01 → 2026-03-31</span></div>
+      <div class="kv-row"><span class="kv-key">Data-through date</span><span class="kv-value">2026-03-31</span></div>
+      <div class="kv-row"><span class="kv-key">Packet type</span><span class="kv-value">FINAL</span></div>
+      <div class="kv-row"><span class="kv-key">Policy refs</span><span class="kv-value">QA-PP-001</span></div>
+    </div>
+    <div class="panel"><div class="panel-title">Scope statement</div>
+      <p class="p">This packet is the model-driven Q1 2026 QAPI analytical report. It preserves source-recovered values, validation findings, addendum references, and signature readiness without converting missing source evidence to compliant values.</p>
+    </div>
+  
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 1 of 18</span></div>
+    </div>
+  </section><section class="pg" data-module-id="qapi-packet-control-source-validation-readiness" data-page-number="2">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">Packet control, source validation, and readiness</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div>
+    <div class="panel"><div class="panel-title">Packet Control</div>
+      <div class="kv-row"><span class="kv-key">Source agency</span><span class="kv-value">Northwind Synthetic Home Health Agency (NSHHA)</span></div>
+      <div class="kv-row"><span class="kv-key">Source dataset</span><span class="kv-value">QAPI-Q1-DS-001</span></div>
+      <div class="kv-row"><span class="kv-key">Packet ID</span><span class="kv-value">QAPI-QUARTERLY-Q1-2026</span></div>
+      <div class="kv-row"><span class="kv-key">Event ID</span><span class="kv-value">QAPI-QUARTERLY-Q1-2026:event</span></div>
+      <div class="kv-row"><span class="kv-key">Workflow ID</span><span class="kv-value">QA-WF-03</span></div>
+      <div class="kv-row"><span class="kv-key">Reporting period</span><span class="kv-value">2026-01-01 → 2026-03-31</span></div>
+      <div class="kv-row"><span class="kv-key">Data-through date</span><span class="kv-value">2026-03-31</span></div>
+      <div class="kv-row"><span class="kv-key">Packet type</span><span class="kv-value">FINAL</span></div>
+      <div class="kv-row"><span class="kv-key">Policy refs</span><span class="kv-value">QA-PP-001</span></div>
+      <div class="kv-row"><span class="kv-key">Prepared by</span><span class="kv-value">UNKNOWN — NOT RECOVERED</span></div>
+      <div class="kv-row"><span class="kv-key">Reviewer</span><span class="kv-value">UNKNOWN — NOT RECOVERED</span></div>
+      <div class="kv-row"><span class="kv-key">Lock status</span><span class="kv-value">UNLOCKED (draft)</span></div>
+    </div>
+    <div class="panel"><div class="panel-title">Validation</div>
+      <p class="p"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></p>
+      <table class="data-table"><thead><tr><th>Severity</th><th>Path</th><th>Finding</th><th>Remediation</th></tr></thead><tbody><tr><td colspan="4">No blocking validation findings.</td></tr></tbody></table>
+    </div>
+    
+  
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 2 of 18</span></div>
+    </div>
+  </section><section class="pg" data-module-id="qapi-executive-analysis" data-page-number="3">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">Agenda &amp; Quorum Roster</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div>
+    <div class="panel"><div class="panel-title">Meeting</div>
+      <div class="kv-row"><span class="kv-key">Date</span><span class="kv-value">2026-04-09</span></div>
+      <div class="kv-row"><span class="kv-key">Chair</span><span class="kv-value">UNKNOWN — NOT RECOVERED</span></div>
+      <div class="kv-row"><span class="kv-key">Recorder</span><span class="kv-value">UNKNOWN — NOT RECOVERED</span></div>
+      <div class="kv-row"><span class="kv-key">Quorum</span><span class="kv-value">6 of 6 present — quorum met</span></div>
+    </div>
+    <div class="panel"><div class="panel-title">Attendees</div><table class="data-table"><thead><tr><th>Role or source note</th><th>Expected</th><th>Presence</th></tr></thead><tbody><tr><td>Director of Nursing (Chair)</td><td>Expected</td><td>Present</td></tr><tr><td>Clinical Manager</td><td>Expected</td><td>Present</td></tr><tr><td>Compliance Officer</td><td>Expected</td><td>Present</td></tr><tr><td>Medical Director</td><td>Expected</td><td>Present</td></tr><tr><td>Administrator</td><td>Expected</td><td>Present</td></tr><tr><td>QA Coordinator</td><td>Expected</td><td>Present</td></tr></tbody></table></div>
+    <div class="panel"><div class="panel-title">Executive analysis</div>
+      <p class="p">QAPI review covers census reconciliation, high-risk patient flags, incidents, infection-control counts, critical laboratory reporting, chart-audit findings, triggered workflow determinations, committee decisions, and lock readiness for Q1 2026.</p>
+    </div>
+  
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 3 of 18</span></div>
+    </div>
+  </section><section class="pg" data-module-id="qapi-rich-kpi-dashboard" data-page-number="4">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">QAPI Data Dashboard (QA-FM-020)</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div>
+    <style>
+    .kpi-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:8px;}
+    .kpi-card{border:1px solid #d7dee2;border-radius:6px;padding:10px;background:#fbfcfc;break-inside:avoid;page-break-inside:avoid;}
+    .kpi-card h3{font-size:11.5px;line-height:1.25;margin:0 0 7px;color:#111827;}
+    .kpi-card-value{font-size:19px;font-weight:800;color:#111827;margin-bottom:7px;}
+    .kpi-card-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;font-size:9.5px;color:#374151;}
+    .kpi-card-meta span{display:block;}
+    .kpi-card-source{font-size:9px;color:#4b5563;margin-top:7px;border-top:1px solid #e5e7eb;padding-top:6px;}
+    .kpi-status-line{font-weight:700;}
+    .kpi-chart-panel svg{display:block;width:100%;height:auto;margin:2px 0 8px;}
+    .kpi-chart-unknown{border-style:dashed;}
+    .kpi-chart-note{font-size:10.5px;color:#374151;margin:0 0 8px;}
+  </style>
+    <div class="panel"><div class="panel-title">KPI card grid</div><div class="kpi-card-grid"><article class="kpi-card">
+    <h3>Patients or episodes in scope</h3>
+    <div class="kpi-card-value">127</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> 127</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &gt;= 1 in scope</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">&#10003;</span> MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> censusPopulation.patientsOrEpisodesInScope</div>
+  </article><article class="kpi-card">
+    <h3>Active census</h3>
+    <div class="kpi-card-value">120</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> 120</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &gt;= 1 active patient</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">&#10003;</span> MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> censusPopulation.activeCensus</div>
+  </article><article class="kpi-card">
+    <h3>Acute-care hospitalization rate</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> ≤ 8.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> low</span>
+      <span><b>Validation</b> Provisional — human review required</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> adverseEvents.hospitalizationsTotal; censusPopulation.activeCensus</div>
+  </article><article class="kpi-card">
+    <h3>ED use rate per 100 active patients</h3>
+    <div class="kpi-card-value">2.5 per 100</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> 3</span>
+      <span><b>Denominator</b> 120</span>
+      <span><b>Target</b> &lt;= 5 per 100 patients</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">&#10003;</span> MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> adverseEvents.edUseTotal; censusPopulation.activeCensus</div>
+  </article><article class="kpi-card">
+    <h3>Adverse event rate per 100 active patients</h3>
+    <div class="kpi-card-value">6.7 per 100</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> 8</span>
+      <span><b>Denominator</b> 120</span>
+      <span><b>Target</b> &lt;= 5 per 100 patients</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">&#9888;</span> NOT_MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> adverseEvents.adverseEventsTotal; censusPopulation.activeCensus</div>
+  </article><article class="kpi-card">
+    <h3>Infection event rate</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> ≤ 2.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> low</span>
+      <span><b>Validation</b> Provisional — human review required</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> adverseEvents.infectionsTotal; censusPopulation.activeCensus</div>
+  </article><article class="kpi-card">
+    <h3>Documentation-audit compliance</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &gt;= 95.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> low</span>
+      <span><b>Validation</b> Provisional — human review required</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</div>
+  </article><article class="kpi-card">
+    <h3>Documentation defect rate</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> ≤ 5.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> low</span>
+      <span><b>Validation</b> Provisional — human review required</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</div>
+  </article><article class="kpi-card">
+    <h3>Medication-reconciliation compliance</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &gt;= 95.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> low</span>
+      <span><b>Validation</b> Provisional — human review required</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.chartsAudited</div>
+  </article><article class="kpi-card">
+    <h3>Missed-visit compliance</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &gt;= 95.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> none</span>
+      <span><b>Validation</b> Unknown — not recovered</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> visitUtilization.missedVisits; visitUtilization.scheduledVisits</div>
+  </article><article class="kpi-card">
+    <h3>Complaint rate per 100 active patients</h3>
+    <div class="kpi-card-value">2.5 per 100</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> 3</span>
+      <span><b>Denominator</b> 120</span>
+      <span><b>Target</b> ≤ 3 per 100 patients</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">&#10003;</span> MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> complaints.complaintsCount; censusPopulation.activeCensus</div>
+  </article><article class="kpi-card">
+    <h3>Active PIPs</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &lt;= 0 overdue/untriaged active PIPs</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> none</span>
+      <span><b>Validation</b> Unknown — not recovered</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> pipCorrectiveAction.activePipCount</div>
+  </article><article class="kpi-card">
+    <h3>Open CAPs or RCAs</h3>
+    <div class="kpi-card-value">3</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> 3</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &lt;= 0 overdue open CAPs/RCAs</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">&#9888;</span> NOT_MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> pipCorrectiveAction.openCapRcaCount</div>
+  </article><article class="kpi-card">
+    <h3>QAPI committee attendance rate</h3>
+    <div class="kpi-card-value">100.0%</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> 9</span>
+      <span><b>Denominator</b> 9</span>
+      <span><b>Target</b> 90% to 100%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">&#10003;</span> MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> meetingDetails.attendeesPresent; meetingDetails.attendeesExpected</div>
+  </article><article class="kpi-card">
+    <h3>QAPI action completion rate</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> ≥ 90.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> none</span>
+      <span><b>Validation</b> Unknown — not recovered</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> actionItems.actionItemsCompleted; actionItems.actionItemsDue</div>
+  </article><article class="kpi-card">
+    <h3>PIP trigger count</h3>
+    <div class="kpi-card-value">8</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> 8</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> ≤ 0 triggers</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">&#9888;</span> NOT_MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> pipCorrectiveAction.pipTriggerCount</div>
+  </article><article class="kpi-card">
+    <h3>Average QAPI action closure time</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> ≤ 14 days</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> none</span>
+      <span><b>Validation</b> Unknown — not recovered</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> actionItems.averageActionClosureDays</div>
+  </article></div></div>
+    <div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Monthly performance vs target</div><p class="kpi-chart-note"><b>UNKNOWN</b> QAPI KPI current values (count) cannot be rendered as a chart: Active PIPs value state is UNKNOWN.</p><table class="data-table"><caption>QAPI KPI current values (count)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Patients or episodes in scope</td><td>127</td><td>127</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 1 in scope</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>censusPopulation.patientsOrEpisodesInScope</td></tr><tr><td>Active census</td><td>120</td><td>120</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 1 active patient</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>censusPopulation.activeCensus</td></tr><tr><td>Active PIPs</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&lt;= 0 overdue/untriaged active PIPs</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown — not recovered</td><td>pipCorrectiveAction.activePipCount</td></tr><tr><td>Open CAPs or RCAs</td><td>3</td><td>3</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&lt;= 0 overdue open CAPs/RCAs</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>pipCorrectiveAction.openCapRcaCount</td></tr><tr><td>PIP trigger count</td><td>8</td><td>8</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 0 triggers</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>pipCorrectiveAction.pipTriggerCount</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Current vs prior period</div><p class="kpi-chart-note"><b>UNKNOWN</b> QAPI KPI current values (count) cannot be rendered as a chart: Patients or episodes in scope prior value is missing or malformed.</p><table class="data-table"><caption>QAPI KPI current values (count)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Patients or episodes in scope</td><td>127</td><td>127</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 1 in scope</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>censusPopulation.patientsOrEpisodesInScope</td></tr><tr><td>Active census</td><td>120</td><td>120</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 1 active patient</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>censusPopulation.activeCensus</td></tr><tr><td>Active PIPs</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&lt;= 0 overdue/untriaged active PIPs</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown — not recovered</td><td>pipCorrectiveAction.activePipCount</td></tr><tr><td>Open CAPs or RCAs</td><td>3</td><td>3</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&lt;= 0 overdue open CAPs/RCAs</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>pipCorrectiveAction.openCapRcaCount</td></tr><tr><td>PIP trigger count</td><td>8</td><td>8</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 0 triggers</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>pipCorrectiveAction.pipTriggerCount</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Monthly performance vs target</div><p class="kpi-chart-note"><b>UNKNOWN</b> QAPI KPI current values (percentage) cannot be rendered as a chart: Acute-care hospitalization rate value state is UNKNOWN.</p><table class="data-table"><caption>QAPI KPI current values (percentage)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Acute-care hospitalization rate</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 8.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>adverseEvents.hospitalizationsTotal; censusPopulation.activeCensus</td></tr><tr><td>Infection event rate</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 2.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>adverseEvents.infectionsTotal; censusPopulation.activeCensus</td></tr><tr><td>Documentation-audit compliance</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Documentation defect rate</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 5.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Medication-reconciliation compliance</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Missed-visit compliance</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown — not recovered</td><td>visitUtilization.missedVisits; visitUtilization.scheduledVisits</td></tr><tr><td>QAPI committee attendance rate</td><td>100.0%</td><td>9</td><td>9</td><td>90% to 100%</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>meetingDetails.attendeesPresent; meetingDetails.attendeesExpected</td></tr><tr><td>QAPI action completion rate</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≥ 90.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown — not recovered</td><td>actionItems.actionItemsCompleted; actionItems.actionItemsDue</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Current vs prior period</div><p class="kpi-chart-note"><b>UNKNOWN</b> QAPI KPI current values (percentage) cannot be rendered as a chart: Acute-care hospitalization rate value state is UNKNOWN.</p><table class="data-table"><caption>QAPI KPI current values (percentage)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Acute-care hospitalization rate</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 8.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>adverseEvents.hospitalizationsTotal; censusPopulation.activeCensus</td></tr><tr><td>Infection event rate</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 2.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>adverseEvents.infectionsTotal; censusPopulation.activeCensus</td></tr><tr><td>Documentation-audit compliance</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Documentation defect rate</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 5.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Medication-reconciliation compliance</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Missed-visit compliance</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown — not recovered</td><td>visitUtilization.missedVisits; visitUtilization.scheduledVisits</td></tr><tr><td>QAPI committee attendance rate</td><td>100.0%</td><td>9</td><td>9</td><td>90% to 100%</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>meetingDetails.attendeesPresent; meetingDetails.attendeesExpected</td></tr><tr><td>QAPI action completion rate</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≥ 90.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown — not recovered</td><td>actionItems.actionItemsCompleted; actionItems.actionItemsDue</td></tr></tbody></table></div><div class="panel kpi-chart-panel"><div class="panel-title">Monthly performance vs target: QAPI KPI current values (rate)</div><svg role="img" aria-labelledby="kpi-chart-qapi-kpi-current-rate-title kpi-chart-qapi-kpi-current-rate-desc" viewBox="0 0 640 186" xmlns="http://www.w3.org/2000/svg">
+    <title id="kpi-chart-qapi-kpi-current-rate-title">Monthly performance vs target: QAPI KPI current values (rate)</title>
+    <desc id="kpi-chart-qapi-kpi-current-rate-desc">Current KPI values in rate with target markers from the same shared KPI data table.</desc>
+    <rect width="640" height="186" fill="#ffffff"/>
+    <text x="8" y="18" font-size="12" font-weight="700" fill="#111827">Monthly performance vs target: QAPI KPI current values (rate)</text>
+    <text x="188" y="18" font-size="9" fill="#374151">Current bar</text>
+    <text x="284" y="18" font-size="9" fill="#374151">Dashed target marker</text>
+    <g>
+      <text x="8" y="52" font-size="10" fill="#111827">ED use rate per 100 active patients</text>
+      <rect x="188" y="42" width="156.75" height="12" rx="2" fill="#2563eb"/>
+      <line x1="501.5" y1="38" x2="501.5" y2="62" stroke="#111827" stroke-width="1.5" stroke-dasharray="3 2"/>
+      <text x="349.75" y="52" font-size="9" fill="#111827">2.5 per 100</text>
+      <text x="505.5" y="65" font-size="8.5" fill="#374151">Target &lt;= 5 per 100 patients</text>
+      <text x="606" y="52" font-size="9" text-anchor="end" fill="#374151">MET</text>
+    </g><g>
+      <text x="8" y="90" font-size="10" fill="#111827">Adverse event rate per 100 active patients</text>
+      <rect x="188" y="80" width="418" height="12" rx="2" fill="#2563eb"/>
+      <line x1="501.5" y1="76" x2="501.5" y2="100" stroke="#111827" stroke-width="1.5" stroke-dasharray="3 2"/>
+      <text x="611" y="90" font-size="9" fill="#111827">6.7 per 100</text>
+      <text x="505.5" y="103" font-size="8.5" fill="#374151">Target &lt;= 5 per 100 patients</text>
+      <text x="606" y="90" font-size="9" text-anchor="end" fill="#374151">NOT_MET</text>
+    </g><g>
+      <text x="8" y="128" font-size="10" fill="#111827">Complaint rate per 100 active patients</text>
+      <rect x="188" y="118" width="156.75" height="12" rx="2" fill="#2563eb"/>
+      <line x1="376.1" y1="114" x2="376.1" y2="138" stroke="#111827" stroke-width="1.5" stroke-dasharray="3 2"/>
+      <text x="349.75" y="128" font-size="9" fill="#111827">2.5 per 100</text>
+      <text x="380.1" y="141" font-size="8.5" fill="#374151">Target ≤ 3 per 100 patients</text>
+      <text x="606" y="128" font-size="9" text-anchor="end" fill="#374151">MET</text>
+    </g>
+  </svg><table class="data-table"><caption>QAPI KPI current values (rate)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>ED use rate per 100 active patients</td><td>2.5 per 100</td><td>3</td><td>120</td><td>&lt;= 5 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>adverseEvents.edUseTotal; censusPopulation.activeCensus</td></tr><tr><td>Adverse event rate per 100 active patients</td><td>6.7 per 100</td><td>8</td><td>120</td><td>&lt;= 5 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>adverseEvents.adverseEventsTotal; censusPopulation.activeCensus</td></tr><tr><td>Complaint rate per 100 active patients</td><td>2.5 per 100</td><td>3</td><td>120</td><td>≤ 3 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>complaints.complaintsCount; censusPopulation.activeCensus</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Current vs prior period</div><p class="kpi-chart-note"><b>UNKNOWN</b> QAPI KPI current values (rate) cannot be rendered as a chart: ED use rate per 100 active patients prior value is missing or malformed.</p><table class="data-table"><caption>QAPI KPI current values (rate)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>ED use rate per 100 active patients</td><td>2.5 per 100</td><td>3</td><td>120</td><td>&lt;= 5 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>adverseEvents.edUseTotal; censusPopulation.activeCensus</td></tr><tr><td>Adverse event rate per 100 active patients</td><td>6.7 per 100</td><td>8</td><td>120</td><td>&lt;= 5 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>adverseEvents.adverseEventsTotal; censusPopulation.activeCensus</td></tr><tr><td>Complaint rate per 100 active patients</td><td>2.5 per 100</td><td>3</td><td>120</td><td>≤ 3 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>complaints.complaintsCount; censusPopulation.activeCensus</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Monthly performance vs target</div><p class="kpi-chart-note"><b>UNKNOWN</b> QAPI KPI current values (days) cannot be rendered as a chart: Average QAPI action closure time value state is UNKNOWN.</p><table class="data-table"><caption>QAPI KPI current values (days)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Average QAPI action closure time</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 14 days</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown — not recovered</td><td>actionItems.averageActionClosureDays</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Current vs prior period</div><p class="kpi-chart-note"><b>UNKNOWN</b> QAPI KPI current values (days) cannot be rendered as a chart: Average QAPI action closure time value state is UNKNOWN.</p><table class="data-table"><caption>QAPI KPI current values (days)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Average QAPI action closure time</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 14 days</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown — not recovered</td><td>actionItems.averageActionClosureDays</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Up to four prior quarters / rolling monthly history</div><p class="kpi-chart-note"><b>UNKNOWN</b> Up to four prior quarters / rolling monthly history (count) cannot be rendered as a chart: Patients or episodes in scope Prior period is Unknown — not recovered or malformed.</p><table class="data-table"><caption>Rolling KPI history from prior and current shared KPI data points.</caption><thead><tr><th>Indicator</th><th>Period</th><th>Value</th><th>Target</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Patients or episodes in scope</td><td>Prior period</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>1</td><td>Unknown — not recovered</td><td>censusPopulation.patientsOrEpisodesInScope</td></tr><tr><td>Patients or episodes in scope</td><td>Q1 2026</td><td>127</td><td>1</td><td>Validated</td><td>censusPopulation.patientsOrEpisodesInScope</td></tr><tr><td>Active census</td><td>Prior period</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>1</td><td>Unknown — not recovered</td><td>censusPopulation.activeCensus</td></tr><tr><td>Active census</td><td>Q1 2026</td><td>120</td><td>1</td><td>Validated</td><td>censusPopulation.activeCensus</td></tr><tr><td>Active PIPs</td><td>Prior period</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>0</td><td>Unknown — not recovered</td><td>pipCorrectiveAction.activePipCount</td></tr><tr><td>Active PIPs</td><td>Q1 2026</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>0</td><td>Unknown — not recovered</td><td>pipCorrectiveAction.activePipCount</td></tr><tr><td>Open CAPs or RCAs</td><td>Prior period</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>0</td><td>Unknown — not recovered</td><td>pipCorrectiveAction.openCapRcaCount</td></tr><tr><td>Open CAPs or RCAs</td><td>Q1 2026</td><td>3</td><td>0</td><td>Validated</td><td>pipCorrectiveAction.openCapRcaCount</td></tr></tbody></table></div><div class="panel kpi-chart-panel"><div class="panel-title">Adverse events by category</div><svg role="img" aria-labelledby="kpi-qapi-adverse-events-by-category-title kpi-qapi-adverse-events-by-category-desc" viewBox="0 0 640 146" xmlns="http://www.w3.org/2000/svg">
+    <title id="kpi-qapi-adverse-events-by-category-title">Adverse events by category</title>
+    <desc id="kpi-qapi-adverse-events-by-category-desc">Events by validated category or stage.</desc>
+    <rect width="640" height="146" fill="#ffffff"/>
+    <text x="8" y="18" font-size="12" font-weight="700" fill="#111827">Adverse events by category</text>
+    <g>
+      <text x="8" y="53" font-size="10" fill="#111827">Hospitalization</text>
+      <rect x="188" y="42" width="418" height="12" rx="2" fill="#2563eb"/>
+      <text x="611" y="52" font-size="9" fill="#111827">5</text>
+      <text x="606" y="52" font-size="8.5" text-anchor="end" fill="#374151">3 open RCA</text>
+      <text x="188" y="67" font-size="8.5" fill="#4b5563">Adverse event category</text>
+    </g><g>
+      <text x="8" y="91" font-size="10" fill="#111827">Ed Without Hospitalization</text>
+      <rect x="188" y="80" width="250.79999999999998" height="12" rx="2" fill="#2563eb"/>
+      <text x="443.79999999999995" y="90" font-size="9" fill="#111827">3</text>
+      <text x="606" y="90" font-size="8.5" text-anchor="end" fill="#374151">3 open RCA</text>
+      <text x="188" y="105" font-size="8.5" fill="#4b5563">Adverse event category</text>
+    </g>
+  </svg><table class="data-table"><caption>Adverse events by category from the shared QAPI rollup object.</caption><thead><tr><th>Category or stage</th><th>Events</th><th>Detail</th><th>Status</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Hospitalization</td><td>5</td><td>Adverse event category</td><td>3 open RCA</td><td>Validated</td><td>QA-FM-026</td></tr><tr><td>Ed Without Hospitalization</td><td>3</td><td>Adverse event category</td><td>3 open RCA</td><td>Validated</td><td>QA-FM-026</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Infection trends + classification</div><p class="kpi-chart-note"><b>UNKNOWN</b> Infection trend classification from the shared QAPI rollup object. cannot be rendered as a chart: Unreported to state is Unknown — not recovered or malformed.</p><table class="data-table"><caption>Infection trend classification from the shared QAPI rollup object.</caption><thead><tr><th>Category or stage</th><th>Infections</th><th>Detail</th><th>Status</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Healthcare-associated</td><td>2</td><td>Infection classification</td><td>Healthcare-associated</td><td>Validated</td><td>QA-FM-027</td></tr><tr><td>Community-acquired</td><td>0</td><td>Infection classification</td><td>Community-acquired</td><td>Validated</td><td>QA-FM-027</td></tr><tr><td>Unreported to state</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>Reporting classification</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>Unknown — not recovered</td><td>QA-FM-027</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Documentation deficiencies by type</div><p class="kpi-chart-note"><b>UNKNOWN</b> Documentation deficiency counts from the shared QAPI rollup object. cannot be rendered as a chart: POC unsigned / pending physician signature is Unknown — not recovered or malformed.</p><table class="data-table"><caption>Documentation deficiency counts from the shared QAPI rollup object.</caption><thead><tr><th>Category or stage</th><th>Deficiencies</th><th>Detail</th><th>Status</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>OASIS SOC not completed ≤5 days</td><td>3</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr><tr><td>POC missing face-to-face encounter</td><td>2</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr><tr><td>POC unsigned / pending physician signature</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>Chart audit deficiency</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>Unknown — not recovered</td><td>QA-FM-025</td></tr><tr><td>Homebound not justified</td><td>0</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr><tr><td>Med-reconciliation count mismatch (OASIS↔POC)</td><td>4</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr><tr><td>Pressure injury present, no wound orders</td><td>0</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr><tr><td>OASIS high mobility need, no therapy ordered</td><td>0</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr></tbody></table></div><div class="panel kpi-chart-panel"><div class="panel-title">PIP/CAP status by stage</div><svg role="img" aria-labelledby="kpi-qapi-pip-cap-status-by-stage-title kpi-qapi-pip-cap-status-by-stage-desc" viewBox="0 0 640 108" xmlns="http://www.w3.org/2000/svg">
+    <title id="kpi-qapi-pip-cap-status-by-stage-title">PIP/CAP status by stage</title>
+    <desc id="kpi-qapi-pip-cap-status-by-stage-desc">Items by validated category or stage.</desc>
+    <rect width="640" height="108" fill="#ffffff"/>
+    <text x="8" y="18" font-size="12" font-weight="700" fill="#111827">PIP/CAP status by stage</text>
+    <g>
+      <text x="8" y="53" font-size="10" fill="#111827">PENDING AUTHORIZED REVIEW</text>
+      <rect x="188" y="42" width="418" height="12" rx="2" fill="#2563eb"/>
+      <text x="611" y="52" font-size="9" fill="#111827">8</text>
+      <text x="606" y="52" font-size="8.5" text-anchor="end" fill="#374151">PENDING AUTHORIZED REVIEW</text>
+      <text x="188" y="67" font-size="8.5" fill="#4b5563">FR-012 workflow decision state</text>
+    </g>
+  </svg><table class="data-table"><caption>PIP, CAP, RCA, and related workflow status by stage.</caption><thead><tr><th>Category or stage</th><th>Items</th><th>Detail</th><th>Status</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>PENDING AUTHORIZED REVIEW</td><td>8</td><td>FR-012 workflow decision state</td><td>PENDING AUTHORIZED REVIEW</td><td>Validated</td><td>Trigger register</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Complaints by category + resolution</div><p class="kpi-chart-note"><b>UNKNOWN</b> Complaint category and resolution counts from the shared QAPI data object. cannot be rendered as a chart: Complaint category is Unknown — not recovered or malformed.</p><table class="data-table"><caption>Complaint category and resolution counts from the shared QAPI data object.</caption><thead><tr><th>Category or stage</th><th>Complaints</th><th>Detail</th><th>Status</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Complaint category</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>Resolution status UNKNOWN</td><td>Unknown — not recovered</td><td>complaints.complaintsCount</td></tr></tbody></table></div>
+    
+  
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 4 of 18</span></div>
+    </div>
+  </section><section class="pg" data-module-id="qapi-source-feeder-workflow-form-utilization" data-page-number="5">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">Source, feeder-workflow, and form utilization analysis</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div>
+    <div class="panel"><div class="panel-title">Source provenance</div>
+      <div class="kv-row"><span class="kv-key">Source agency</span><span class="kv-value">Northwind Synthetic Home Health Agency (NSHHA)</span></div>
+      <div class="kv-row"><span class="kv-key">Source dataset</span><span class="kv-value">QAPI-Q1-DS-001</span></div>
+      <div class="kv-row"><span class="kv-key">Review quarter</span><span class="kv-value">Q1 2026</span></div>
+      <div class="kv-row"><span class="kv-key">Data-through date</span><span class="kv-value">2026-03-31</span></div>
+    </div>
+    <div class="panel"><div class="panel-title">Source, feeder-workflow, and form utilization analysis</div><table class="data-table"><thead><tr><th>Source / form</th><th>Recovered count</th><th>Use in packet</th></tr></thead><tbody><tr><td>Source census</td><td>127</td><td>Census reconciliation and duplicate-client review</td></tr><tr><td>QA-FM-026</td><td>8</td><td>Incident / adverse-event summary</td></tr><tr><td>QA-FM-027</td><td>4</td><td>Infection-control line list</td></tr><tr><td>Lab log</td><td>0</td><td>Critical lab reporting review</td></tr><tr><td>OASIS / CMS-485</td><td>168</td><td>Chart-audit denominator context</td></tr></tbody></table></div>
+  
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 5 of 18</span></div>
+    </div>
+  </section><section class="pg" data-module-id="qapi-detailed-findings-and-trend-analysis" data-page-number="6">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">Detailed findings and trend analysis</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div>
+    <div class="panel"><div class="panel-title">Incident / Adverse-Event Summary (QA-FM-026)</div>
+      <table class="data-table"><thead><tr><th>Category</th><th>Count</th></tr></thead><tbody><tr><td>hospitalization</td><td>5</td></tr><tr><td>ed_without_hospitalization</td><td>3</td></tr></tbody></table>
+      <div class="kv-row"><span class="kv-key">Total in window</span><span class="kv-value">8</span></div>
+      <div class="kv-row"><span class="kv-key">Open RCAs</span><span class="kv-value">3</span></div>
+      <div class="kv-row"><span class="kv-key">Unreported</span><span class="kv-value">0</span></div>
+    </div>
+    <div class="panel"><div class="panel-title">Infection Control (QA-FM-027)</div>
+      <div class="kv-row"><span class="kv-key">Cases in window</span><span class="kv-value">4</span></div>
+      <div class="kv-row"><span class="kv-key">Healthcare-associated</span><span class="kv-value">2</span></div>
+      <div class="kv-row"><span class="kv-key">Community-acquired</span><span class="kv-value">0</span></div>
+      <div class="kv-row"><span class="kv-key">Unreported to state</span><span class="kv-value">UNKNOWN — SOURCE NOT RECOVERED</span></div>
+    </div>
+    <div class="panel"><div class="panel-title">Chart Audit &amp; Documentation Integrity (QA-FM-025)</div>
+      <p class="p">Chart audit denominator tied to active census (120) + recerts due (48). Findings below are derived from OASIS/POC document review.</p>
+      <div class="kv-row"><span class="kv-key">OASIS SOC not completed ≤5 days</span><span class="kv-value">3</span></div>
+      <div class="kv-row"><span class="kv-key">POC missing face-to-face encounter</span><span class="kv-value">2</span></div>
+      <div class="kv-row"><span class="kv-key">POC unsigned / pending physician signature</span><span class="kv-value">UNKNOWN — SOURCE NOT RECOVERED</span></div>
+      <div class="kv-row"><span class="kv-key">Homebound not justified</span><span class="kv-value">0</span></div>
+      <div class="kv-row"><span class="kv-key">Med-reconciliation count mismatch (OASIS↔POC)</span><span class="kv-value">4</span></div>
+      <div class="kv-row"><span class="kv-key">Pressure injury present, no wound orders</span><span class="kv-value">0</span></div>
+      <div class="kv-row"><span class="kv-key">OASIS high mobility need, no therapy ordered</span><span class="kv-value">0</span></div>
+    </div>
+    <div class="panel"><div class="panel-title">Source-data exceptions</div><table class="data-table"><thead><tr><th>Severity</th><th>Path</th><th>Reason</th><th>Remediation</th></tr></thead><tbody><tr><td colspan="4">No source-data exceptions recovered.</td></tr></tbody></table></div>
+  
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 6 of 18</span></div>
+    </div>
+  </section><section class="pg" data-module-id="qapi-pip-cap-rca-personnel-review-determinations" data-page-number="7">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">High-Risk Patient Rollup</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div>
+    <div class="panel"><div class="panel-title">Top recurring high-risk flags</div><table class="data-table"><thead><tr><th>Flag</th><th>Count</th></tr></thead><tbody><tr><td colspan="2">None</td></tr></tbody></table></div>
+    <div class="panel"><div class="panel-title">Systemic themes</div><p class="muted">No single flag reached the systemic threshold (≥5).</p></div>
+    <div class="panel"><div class="panel-title">PIP, CAP, RCA, personnel-review, and other action determinations</div>
+      <ul class="list"><li>No immediate-action high-risk cases were recovered from the source rollup.</li><li>Critical lab reporting gap is UNKNOWN — SOURCE NOT RECOVERED.</li><li>Confidential personnel-review addendum reference must remain restricted and outside the main packet body.</li></ul>
+      <div class="kv-row"><span class="kv-key">Immediate-action cases</span><span class="kv-value">0</span></div>
+      <div class="kv-row"><span class="kv-key">QAPI-required cases</span><span class="kv-value">0</span></div>
+    </div>
+  
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 7 of 18</span></div>
+    </div>
+  </section><section class="pg" data-module-id="qapi-triggered-workflow-and-dependency-register" data-page-number="8">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">Triggered Workflow and Dependency Register</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div><div class="panel"><div class="panel-title">Triggered Workflow and Dependency Register</div><table class="data-table"><thead><tr><th>Trigger</th><th>State</th><th>Dependency / workflow</th><th>Source</th></tr></thead><tbody><tr><td>High-risk patient flag rollup</td><td>No trigger recovered</td><td>QAPI committee review</td><td>High-risk rollup</td></tr><tr><td>Immediate-action high-risk flags</td><td>No trigger recovered</td><td>Clinical leadership escalation</td><td>high_risk_flags</td></tr><tr><td>Open RCA count</td><td>Triggered</td><td>RCA completion workflow</td><td>QA-FM-026</td></tr><tr><td>Unreported critical labs</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>PIP/CAP and physician-notification audit</td><td>Lab log</td></tr><tr><td>Confidential personnel-review addendum</td><td>Triggered</td><td>Restricted personnel-review workflow</td><td>QAPI-HR-ADDENDUM-2026-Q1</td></tr></tbody></table></div>
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 8 of 18</span></div>
+    </div>
+  </section><section class="pg" data-module-id="qapi-committee-and-governing-body-decisions" data-page-number="9">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">Governing Body Summary &amp; Confidential Addendum Reference</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div>
+    <div class="panel"><div class="panel-title">Decisions requested</div><ul class="list"><li>Ratify the Q1 2026 QAPI report (final).</li><li>Approve new PIP candidates flagged by the dashboard.</li><li>Assign owners and due dates for open RCA, source-exception, and documentation-integrity actions.</li><li>Acknowledge the confidential personnel-action addendum (restricted access).</li></ul></div>
+    <div class="panel"><div class="panel-title">Governing Body packet summary</div>
+      <div class="kv-row"><span class="kv-key">Packet ID</span><span class="kv-value">QAPI-QUARTERLY-Q1-2026</span></div>
+      <div class="kv-row"><span class="kv-key">Committee packet type</span><span class="kv-value">FINAL</span></div>
+      <div class="kv-row"><span class="kv-key">QAPI-required high-risk cases</span><span class="kv-value">0</span></div>
+      <div class="kv-row"><span class="kv-key">Open source exceptions</span><span class="kv-value">0</span></div>
+      <div class="kv-row"><span class="kv-key">Confidential addendum reference</span><span class="kv-value">QAPI-HR-ADDENDUM-2026-Q1</span></div>
+    </div>
+  
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 9 of 18</span></div>
+    </div>
+  </section><section class="pg" data-module-id="qapi-action-item-workflow-accountability-register" data-page-number="10">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">Action-item, workflow, and accountability register</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div><div class="panel"><div class="panel-title">Action-item, workflow, and accountability register</div><table class="data-table"><thead><tr><th>Action item</th><th>Source-recovered basis</th><th>Owner capacity</th><th>Deadline basis</th></tr></thead><tbody><tr><td>Resolve source-data exceptions</td><td>No recovered source exception</td><td>QAPI Lead</td><td>Before final lock</td></tr><tr><td>Close open RCAs</td><td>3 open RCA(s)</td><td>Clinical Manager</td><td>Committee-assigned due date</td></tr><tr><td>Review critical lab reporting</td><td>UNKNOWN — SOURCE NOT RECOVERED unreported critical lab(s)</td><td>DON / Compliance Officer</td><td>Before certification review</td></tr><tr><td>Confirm eCIgn approver authority</td><td>No approver roster supplied</td><td>Administrator</td><td>Before signature routing</td></tr></tbody></table></div>
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 10 of 18</span></div>
+    </div>
+  </section><section class="pg" data-module-id="qapi-approvals-ecign-lock-readiness" data-page-number="11">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">Approval &amp; Signatures</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div>
+    <div class="panel"><div class="panel-title">Approvals, eCIgn status, and lock-readiness certification</div>
+      <p class="p">Signatures are captured via eCIgn and bound to a signer record (id, role, authority basis, timestamp, evidence hash). Blank lines below are NOT a substitute for a signature — an unsigned line is unapproved.</p>
+      
+    <div class="signature-block">
+      <div class="signature-line"></div>
+      <div class="signature-role">Director of Nursing (DON)</div>
+      <div class="muted">Signature / printed name / date — pending eCIgn</div>
+    </div>
+  
+    <div class="signature-block">
+      <div class="signature-line"></div>
+      <div class="signature-role">Administrator</div>
+      <div class="muted">Signature / printed name / date — pending eCIgn</div>
+    </div>
+  
+    <div class="signature-block">
+      <div class="signature-line"></div>
+      <div class="signature-role">Compliance Officer</div>
+      <div class="muted">Signature / printed name / date — pending eCIgn</div>
+    </div>
+  
+    <div class="signature-block">
+      <div class="signature-line"></div>
+      <div class="signature-role">Governing Body Chair</div>
+      <div class="muted">Signature / printed name / date — pending eCIgn</div>
+    </div>
+  
+    </div>
+    <div class="panel"><div class="panel-title">Lock validation findings</div><table class="data-table"><thead><tr><th>Severity</th><th>Path</th><th>Finding</th><th>Remediation</th></tr></thead><tbody><tr><td colspan="4">No blocking validation findings.</td></tr></tbody></table></div>
+  
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 11 of 18</span></div>
+    </div>
+  </section><section class="pg" data-module-id="qapi-attachment-manifest" data-page-number="12">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">Attachment manifest</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div><div class="panel"><div class="panel-title">Attachment manifest</div><table class="data-table"><thead><tr><th>Artifact ID</th><th>Title</th><th>Packet use</th><th>Placement</th></tr></thead><tbody><tr><td>QA-FM-020</td><td>QAPI Data Dashboard</td><td>Part I dashboard table</td><td>Main packet</td></tr><tr><td>QA-FM-026</td><td>Incident / Adverse-Event Summary</td><td>Incident findings and RCA counts</td><td>Main packet</td></tr><tr><td>QA-FM-027</td><td>Infection Control line list</td><td>Infection findings</td><td>Main packet</td></tr><tr><td>QA-FM-025</td><td>Chart Audit &amp; Documentation Integrity</td><td>Documentation findings</td><td>Main packet</td></tr><tr><td>QAPI-HR-ADDENDUM-2026-Q1</td><td>Confidential Personnel Action Addendum — REFERENCE ONLY</td><td>Restricted reference generated</td><td>Confidential addendum</td></tr></tbody></table></div>
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 12 of 18</span></div>
+    </div>
+  </section><section class="pg form-page" data-module-id="qapi-completed-source-forms" data-page-number="13">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">Completed source forms</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div><div class="panel"><div class="panel-title">Completed source forms</div><table class="data-table"><thead><tr><th>Form / package</th><th>Trigger basis</th><th>Rendered use</th><th>Completion status</th></tr></thead><tbody><tr><td>QA-FM-020</td><td>QAPI Data Dashboard</td><td>Recovered dashboard values rendered in Part I</td><td>Not labeled complete by renderer</td></tr><tr><td>QA-FM-025</td><td>Chart Audit &amp; Documentation Integrity</td><td>Recovered OASIS/POC findings rendered in Part I</td><td>Not labeled complete by renderer</td></tr><tr><td>QA-FM-026</td><td>Incident / Adverse-Event Summary</td><td>Recovered incident counts rendered in Part I</td><td>Not labeled complete by renderer</td></tr><tr><td>QA-FM-027</td><td>Infection Control line list</td><td>Recovered infection counts rendered in Part I</td><td>Not labeled complete by renderer</td></tr></tbody></table></div>
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 13 of 18</span></div>
+    </div>
+  </section><section class="pg form-page" data-module-id="qapi-generated-pip-cap-rca-forms" data-page-number="14">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">Generated PIP/CAP/RCA/corrective-action forms</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div><div class="panel"><div class="panel-title">Generated PIP/CAP/RCA/corrective-action forms</div><table class="data-table"><thead><tr><th>Form / package</th><th>Trigger basis</th><th>Rendered use</th><th>Completion status</th></tr></thead><tbody><tr><td>PIP/CAP candidate</td><td>Critical lab or high-risk trigger</td><td>Generated only after committee decision</td><td>Pending committee decision</td></tr><tr><td>RCA follow-up</td><td>Open RCA count</td><td>Generated when RCA remains open</td><td>Pending owner assignment</td></tr><tr><td>Corrective action</td><td>Source-data exception or documentation finding</td><td>Generated after validation review</td><td>Pending validation review</td></tr></tbody></table></div>
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 14 of 18</span></div>
+    </div>
+  </section><section class="pg form-page" data-module-id="qapi-triggered-workflow-execution-packages" data-page-number="15">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">Triggered workflow execution packages</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div><div class="panel"><div class="panel-title">Triggered workflow execution packages</div><table class="data-table"><thead><tr><th>Form / package</th><th>Trigger basis</th><th>Rendered use</th><th>Completion status</th></tr></thead><tbody><tr><td>Clinical escalation</td><td>Immediate-action high-risk cases</td><td>Workflow package reference</td><td>Pending evidence package</td></tr><tr><td>Restricted personnel-review workflow</td><td>Confidential personnel-review addendum reference</td><td>Restricted package reference</td><td>Restricted access</td></tr><tr><td>Physician-notification audit</td><td>Critical lab reporting gap</td><td>Workflow package reference</td><td>Pending evidence package</td></tr></tbody></table></div>
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 15 of 18</span></div>
+    </div>
+  </section><section class="pg" data-module-id="qapi-confidential-personnel-review-addendum-reference" data-page-number="16">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">Confidential personnel-review addendum reference</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div><div class="panel seal"><div class="panel-title">Confidential Personnel Action Addendum — REFERENCE ONLY</div>
+    <div class="kv-row"><span class="kv-key">Addendum ID</span><span class="kv-value">QAPI-HR-ADDENDUM-2026-Q1</span></div>
+    <div class="kv-row"><span class="kv-key">Content hash</span><span class="kv-value">sha256:4af4c8a3</span></div>
+    <div class="kv-row"><span class="kv-key">Reviews opened</span><span class="kv-value">5</span></div>
+    <div class="kv-row"><span class="kv-key">By category</span><span class="kv-value">Care Coordination Communication Pattern:1 · Documentation Timeliness Pattern:1 · Medication Reconciliation Variance Pattern:1 · OASIS Accuracy Pattern:1 · Visit Completion Variance Pattern:1</span></div>
+    <p class="p"><b>5 personnel-action review(s) opened across 5 categories; details sealed.</b></p>
+    <div class="notice notice-blocker">Confidential personnel details retained in restricted HR/Compliance addendum.</div>
+  </div>
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 16 of 18</span></div>
+    </div>
+  </section><section class="pg" data-module-id="qapi-source-derivation-reconciliation-provenance" data-page-number="17">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">Source derivation, reconciliation, and evidence provenance</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div>
+    <div class="panel"><div class="panel-title">Source derivation, reconciliation, and evidence provenance</div>
+      <div class="kv-row"><span class="kv-key">Packet ID</span><span class="kv-value">QAPI-QUARTERLY-Q1-2026</span></div>
+      <div class="kv-row"><span class="kv-key">Source agency</span><span class="kv-value">Northwind Synthetic Home Health Agency (NSHHA)</span></div>
+      <div class="kv-row"><span class="kv-key">Dataset ID</span><span class="kv-value">QAPI-Q1-DS-001</span></div>
+      <div class="kv-row"><span class="kv-key">Derived notice</span><span class="kv-value">Upload did not match the known ClinicalDump schema (unstructured/mixed content). Derived 1 record(s) via alias/keyword matching — every metric below is low-confidence and requires reviewer confirmation. Recovered 19 aggregate metric group(s) directly from the narrative text (labeled totals and record-ID families) — all low-confidence, each carries its verbatim source quote.</span></div>
+      <div class="kv-row"><span class="kv-key">Content hash</span><span class="kv-value">Not sealed</span></div>
+    </div>
+    <div class="panel"><div class="panel-title">Unrecovered source paths</div><table class="data-table"><thead><tr><th>Path</th><th>Rendered value</th><th>Reason</th></tr></thead><tbody><tr><td>labs.criticalUnreported</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>Rendered explicitly instead of a false zero / OK / compliant value</td></tr><tr><td>highRisk.immediateActionCases</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>Rendered explicitly instead of a false zero / OK / compliant value</td></tr><tr><td>highRisk.qapiRequiredCases</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>Rendered explicitly instead of a false zero / OK / compliant value</td></tr><tr><td>census.highAcuity</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>Rendered explicitly instead of a false zero / OK / compliant value</td></tr><tr><td>infections.unreportedToState</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>Rendered explicitly instead of a false zero / OK / compliant value</td></tr><tr><td>documentation.pocUnsignedOrMissingSignature</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>Rendered explicitly instead of a false zero / OK / compliant value</td></tr></tbody></table></div>
+  
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 17 of 18</span></div>
+    </div>
+  </section><section class="pg" data-module-id="qapi-superseded-or-excluded-source-register" data-page-number="18">
+    <div class="accent-rail"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-banner"><span>QAPI-QUARTERLY-Q1-2026</span><span>QAPI-QUARTERLY-Q1-2026 · Draft generated</span></div>
+    <div class="pg-in">
+      <svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="Care Indeed"><g fill="none" stroke="#e87722" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#007c7a">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>
+      <h2 class="pg-h">Superseded or excluded-source register</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div><div class="panel"><div class="panel-title">Superseded or excluded-source register</div><table class="data-table"><thead><tr><th>Excluded / superseded source group</th><th>Count</th><th>Basis</th></tr></thead><tbody><tr><td>Post-data-through incident records</td><td>0</td><td>Excluded from final packet through 2026-03-31</td></tr><tr><td>Post-data-through infection records</td><td>0</td><td>Excluded from final packet through 2026-03-31</td></tr><tr><td>Duplicate client IDs</td><td>0</td><td>No duplicate IDs recovered</td></tr></tbody></table></div>
+      <div class="pg-foot"><span><b>Care Indeed Home Health · 890 Santa Cruz Ave # B, Menlo Park, CA 94025</b></span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 18 of 18</span></div>
+    </div>
+  </section></body></html>
