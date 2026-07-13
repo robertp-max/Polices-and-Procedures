@@ -1,6 +1,20 @@
-import type { PacketValidationFinding, ValidationSeverity } from '@/policy/packets/contracts';
+import type { PacketValidationFinding, ValidationSeverity, WorkflowTriggerEvaluation } from '@/policy/packets/contracts';
 
 import type { RuleContext } from '../validatePacket';
+
+/**
+ * A workflow evaluation requires its canonical forms to be attached ONLY when it
+ * is actually opening/continuing an ACTIVE workflow. Candidate / pending /
+ * confirmed-not-yet-activated / not-triggered / sustainment / closed evaluations
+ * are recorded in the register (FR-013) and do NOT block packet approval on the
+ * downstream workflow's forms (§8.2, FR-012/FR-014; §24 PIP triggers are
+ * evaluated, not opened). Mirrors FEEDER_REQUIRED_DECISION_STATES in workflow.ts.
+ */
+const WORKFLOW_FORM_REQUIRED_DECISION_STATES: ReadonlySet<WorkflowTriggerEvaluation['decisionState']> = new Set([
+  'ACTIVATED',
+  'LINKED TO EXISTING ACTIVE WORKFLOW',
+  'CONTINUED FROM PRIOR PERIOD',
+]);
 
 export function validateForms(context: RuleContext): PacketValidationFinding[] {
   const findings: PacketValidationFinding[] = [];
@@ -86,6 +100,7 @@ export function validateForms(context: RuleContext): PacketValidationFinding[] {
   });
 
   context.workflowEvaluations.forEach((evaluation, evaluationIndex) => {
+    if (!WORKFLOW_FORM_REQUIRED_DECISION_STATES.has(evaluation.decisionState)) return;
     evaluation.requiredFormIds.forEach((requiredFormId) => {
       if (!availableFormIds.has(requiredFormId) && !evaluation.sourceFormIds.includes(requiredFormId)) {
         findings.push(finding({
