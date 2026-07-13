@@ -73,7 +73,10 @@ export function renderPacketDocument(
     .pg-in{position:relative;z-index:1;flex:1;padding:28px 44px 24px;display:flex;flex-direction:column;}
     .ci-mark{width:230px;height:auto;margin-bottom:10px;}
     .pg-h{font-size:22px;line-height:1.2;color:${primary};margin:6px 0 0;break-after:avoid;page-break-after:avoid;}
-    .rule{width:54px;height:3px;background:${secondary};margin:10px 0 16px;}
+    .cover-eyebrow{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:${secondary};margin:6px 0 2px;}
+    .rule{width:64px;height:4px;background:linear-gradient(90deg,${secondary},${primary});border-radius:2px;margin:10px 0 16px;}
+    section[data-module-id="qapi-cover-page"] .pg-h{font-size:34px;font-weight:800;line-height:1.1;margin-top:2px;}
+    section[data-module-id="qapi-cover-page"] .rule{width:120px;height:5px;margin:14px 0 18px;}
     .handling{border:1px solid #d8e7e7;background:#f8fbfb;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:10.5px;color:#335154;}
     .lock-banner{border:1px solid #e5d0b8;background:#fff7ed;border-left:4px solid #b35200;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:10.5px;color:#7c2d12;}
     .lock-banner.pass{background:#f0fdf4;border-color:#bbf7d0;border-left-color:#0f7b34;color:#14532d;}
@@ -120,6 +123,7 @@ export function renderChromePage(args: {
   lockPassed: boolean | null;
   beginOnNewPage: boolean;
   syntheticDetail: string | null;
+  eyebrow?: string | null;
 }): string {
   const pageClass = args.beginOnNewPage ? 'pg form-page' : 'pg';
   const watermarkText = watermarkFor(args.model, args.profile);
@@ -137,6 +141,7 @@ export function renderChromePage(args: {
     <div class="pg-banner"><span>${escapeHtml(args.banner)}</span><span>${escapeHtml(footerRightLabel(args.model))}</span></div>
     <div class="pg-in">
       ${renderLogo(args.profile)}
+      ${args.eyebrow ? `<div class="cover-eyebrow">${escapeHtml(args.eyebrow)}</div>` : ''}
       <h2 class="pg-h">${escapeHtml(args.title)}</h2><div class="rule"></div>
       ${handlingNotice}${lockBanner}${syntheticBanner}${args.bodyHtml}
       ${renderFooter(args.model, args.profile, args.pageNumber, args.totalPages)}
@@ -158,6 +163,7 @@ export function renderModulePage(args: {
   lockPassed?: boolean | null;
   beginOnNewPage?: boolean;
   syntheticDetail?: string | null;
+  eyebrow?: string | null;
 }): { html: string; page: RenderedPacketPage } {
   const watermarkText = watermarkFor(args.model, args.profile);
 
@@ -175,6 +181,7 @@ export function renderModulePage(args: {
       lockPassed: args.lockPassed ?? null,
       beginOnNewPage: args.beginOnNewPage ?? false,
       syntheticDetail: args.syntheticDetail ?? null,
+      eyebrow: args.eyebrow ?? null,
     }),
     page: {
       pageNumber: args.pageNumber,
@@ -202,7 +209,12 @@ function renderLogo(profile: PacketRenderingProfile): string {
     return '';
   }
   const colors = profileChromeColors(profile);
-  return `<svg class="ci-mark" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg" aria-label="${escapeHtml(profile.chrome.logo.altText)}"><g fill="none" stroke="${escapeHtml(colors.secondary)}" stroke-width="7" stroke-linecap="round"><circle cx="34" cy="22" r="13"/><path d="M8 56c0-16 12-26 26-26s26 10 26 26"/></g><text x="74" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="#1f2937">Care</text><text x="150" y="34" font-family="Roboto,Segoe UI,sans-serif" font-size="30" font-weight="700" fill="${escapeHtml(colors.primary)}">Indeed</text><text x="74" y="52" font-family="Roboto,Segoe UI,sans-serif" font-size="11" letter-spacing="2" fill="#7a7470">THE HEART OF HOME HEALTH</text></svg>`;
+  const orange = escapeHtml(colors.secondary);
+  const teal = escapeHtml(colors.primary);
+  // CareIndeed brand mark: orange "sunrise" concentric arcs + head, matching the
+  // Patient Admission Packet logo. Wordmark: teal "Care" + orange "Indeed",
+  // title-case tagline (source of truth: patientAdmissionPacket .ci-brand).
+  return `<svg class="ci-mark" viewBox="0 0 340 74" xmlns="http://www.w3.org/2000/svg" aria-label="${escapeHtml(profile.chrome.logo.altText)}"><g fill="none" stroke="${orange}" stroke-width="5" stroke-linecap="round"><path d="M6 52 A32 32 0 0 0 70 52"/><path d="M16 52 A22 22 0 0 0 60 52"/><path d="M26 52 A12 12 0 0 0 50 52"/></g><circle cx="38" cy="14" r="6" fill="${orange}"/><text x="90" y="42" font-family="Roboto,Segoe UI,sans-serif" font-size="27" font-weight="700" fill="${teal}">Care<tspan fill="${orange}">Indeed</tspan></text><text x="91" y="59" font-family="Roboto,Segoe UI,sans-serif" font-size="10" letter-spacing="0.4" fill="#7a7470">The Heart of Home Health.</text></svg>`;
 }
 
 function renderHandlingNotice(model: PacketModel, profile: PacketRenderingProfile): string {
