@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { packetsApi } from '@/policy/packets/api/packetsApi';
+import { getArchetype, hasArchetype } from '@/policy/packets/registries/archetypeRegistry';
+import type { PacketModel } from '@/policy/packets/contracts';
+import { generateQapiPacketModelFromText } from './generateQapiFromSource';
 import {
   PACKET_TEMPLATES,
   type PacketTemplateDefinition,
@@ -56,6 +59,10 @@ export default function PacketStudioScreen() {
   const [selectedTemplate, setSelectedTemplate] = useState<PacketTemplateSelectionOutput | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<EventCardModel | null>(null);
   const [studioStep, setStudioStep] = useState<StudioStep>('template');
+  const [sourceText, setSourceText] = useState('');
+  const [sourceFileName, setSourceFileName] = useState('qapi-source.txt');
+  const [generatedModel, setGeneratedModel] = useState<PacketModel | null>(null);
+  const [generateError, setGenerateError] = useState<string | null>(null);
   const [readinessOpen, setReadinessOpen] = useState(false);
   const [workspaceAction, setWorkspaceAction] = useState<WorkspaceLaunchAction | null>(null);
   const [loadState, setLoadState] = useState<LoadState>('loading');
@@ -133,14 +140,50 @@ export default function PacketStudioScreen() {
     setSelectedEvent(null);
     setWorkspaceAction(null);
     setReadinessOpen(false);
+    setGeneratedModel(null);
+    setGenerateError(null);
     setStudioStep('event');
   };
 
   const handleEventSelect = (event: EventCardModel) => {
     setSelectedEvent(event);
     setWorkspaceAction(null);
+    setGeneratedModel(null);
+    setGenerateError(null);
     setStudioStep('readiness');
     setReadinessOpen(true);
+  };
+
+  const handleSourceFile = (file: File) => {
+    setGenerateError(null);
+    setSourceFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = () => setSourceText(typeof reader.result === 'string' ? reader.result : '');
+    reader.onerror = () => setGenerateError('Could not read the selected file.');
+    reader.readAsText(file);
+  };
+
+  const handleGenerateFromSource = () => {
+    if (!selectedTemplate || !selectedEvent) return;
+    if (!sourceText.trim()) {
+      setGenerateError('Paste or upload QAPI source data first — no operational packet is generated from an empty source.');
+      return;
+    }
+    try {
+      const model = generateQapiPacketModelFromText({
+        text: sourceText,
+        fileName: sourceFileName,
+        event: selectedEvent,
+        templateId: selectedTemplate.packet_template_id,
+        generatedAtISO: new Date().toISOString(),
+      });
+      setGeneratedModel(model);
+      setGenerateError(null);
+      setWorkspaceAction('generate');
+      setStudioStep('workspace');
+    } catch (error) {
+      setGenerateError(error instanceof Error ? error.message : 'Packet generation failed for the provided source.');
+    }
   };
 
   const prepareWorkspace = (action: WorkspaceLaunchAction) => {
@@ -280,24 +323,78 @@ export default function PacketStudioScreen() {
               <h2 className="text-lg font-semibold text-ink">Generate/Open</h2>
               <p className="mt-xs text-sm text-muted">
                 {workspaceAction === 'generate'
-                  ? 'Packet draft generation is staged for this selected event.'
+                  ? 'Upload or paste the QAPI source dataset for this event, then generate the analytical packet.'
                   : 'Existing packet handoff is staged for this selected event.'}
               </p>
             </div>
-            <button
-              type="button"
-              className="min-h-tap w-fit rounded-md border border-hairline bg-brand-teal px-md text-sm font-medium text-white hover:opacity-90"
-              onClick={() => setStudioStep('workspace')}
-            >
-              Open workspace
-            </button>
+
+            {workspaceAction === 'generate' ? (
+              <div className="grid gap-sm">
+                <label className="grid gap-xs text-sm">
+                  <span className="font-medium text-ink">Source data file (.txt, .json, .csv, .md)</span>
+                  <input
+                    type="file"
+                    accept=".txt,.json,.csv,.tsv,.md,text/plain,application/json"
+                    className="text-sm"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleSourceFile(file);
+                    }}
+                  />
+                </label>
+                <label className="grid gap-xs text-sm">
+                  <span className="font-medium text-ink">…or paste the source dataset</span>
+                  <textarea
+                    className="min-h-[160px] w-full rounded-md border border-hairline bg-surface px-sm py-xs font-mono text-xs"
+                    placeholder="Paste QAPI source text (dataset markers, KPIs, findings, PIP triggers…)"
+                    value={sourceText}
+                    onChange={(e) => setSourceText(e.target.value)}
+                  />
+                </label>
+                <p className="text-xs text-muted">
+                  {sourceFileName !== 'qapi-source.txt' ? `Loaded: ${sourceFileName} · ` : ''}
+                  {sourceText.length.toLocaleString()} characters · segmentation resolves the quarter by the
+                  event date and fails closed on ambiguity; missing values render UNKNOWN, never zero.
+                </p>
+                {generateError ? (
+                  <div className="rounded-md border border-amber-300 bg-amber-50 px-md py-sm text-sm text-amber-900" role="alert">
+                    {generateError}
+                  </div>
+                ) : null}
+                <div className="flex flex-wrap gap-sm">
+                  <button
+                    type="button"
+                    className="min-h-tap w-fit rounded-md border border-hairline bg-brand-teal px-md text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+                    onClick={handleGenerateFromSource}
+                    disabled={!sourceText.trim()}
+                  >
+                    Generate packet from source
+                  </button>
+                  <button
+                    type="button"
+                    className="min-h-tap w-fit rounded-md border border-hairline px-md text-sm font-medium text-brand-teal hover:bg-surface-hover"
+                    onClick={() => { setGeneratedModel(null); setStudioStep('workspace'); }}
+                  >
+                    Open empty workspace instead
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="min-h-tap w-fit rounded-md border border-hairline bg-brand-teal px-md text-sm font-medium text-white hover:opacity-90"
+                onClick={() => setStudioStep('workspace')}
+              >
+                Open workspace
+              </button>
+            )}
           </section>
         ) : null}
 
         {studioStep === 'workspace' && workspacePacket ? (
           <WorkspaceShell
-            initialPacket={workspacePacket}
-            initialSources={workspacePacket}
+            initialPacket={generatedModel ?? workspacePacket}
+            initialSources={generatedModel ?? workspacePacket}
             initialValidationResult={EMPTY_VALIDATION_RESULT}
             initialHistory={workspaceHistory}
             tabs={PACKET_STUDIO_TABS}
@@ -437,7 +534,9 @@ function buildWorkspacePacket(
       dataThroughDate: selectedEvent.eventDate,
       status: packetStatus,
     },
-    renderingProfileId: selectedTemplate.packet_archetype_id,
+    renderingProfileId: hasArchetype(selectedTemplate.packet_archetype_id)
+      ? getArchetype(selectedTemplate.packet_archetype_id).renderingProfileId
+      : 'care-indeed-letter',
     classification: selectedTemplate.confidentiality_rule,
     handlingNotice: selectedTemplate.retention_rule,
     modules: selectedTemplate.required_modules.map((moduleId, index) => ({
