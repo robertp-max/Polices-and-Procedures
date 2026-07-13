@@ -25,7 +25,7 @@ type StudioStep = 'template' | 'event' | 'readiness' | 'generate-open' | 'worksp
 type WorkspaceLaunchAction = 'generate' | 'open-existing' | 'continue-review';
 
 const AGENCY_ID = 'care-indeed-home-health';
-const AGENCY_LABEL = 'Care Indeed Home Health';
+const AGENCY_LABEL = 'Care Indeed Home Health Care, Inc.';
 
 const STUDIO_STEPS: readonly { id: StudioStep; label: string }[] = [
   { id: 'template', label: 'Template' },

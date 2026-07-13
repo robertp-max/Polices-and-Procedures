@@ -2,118 +2,118 @@
   "packetId": "QAPI-QUARTERLY-Q1-2026",
   "datasetId": "QAPI-Q1-DS-001",
   "generatedAt": "2026-04-09T00:00:00.000Z",
-  "mode": "html-fallback",
-  "renderEnabled": false,
+  "mode": "playwright-screenshots",
+  "renderEnabled": true,
   "pageCount": 18,
   "pages": [
     {
       "pageNumber": 1,
       "moduleId": "qapi-cover-page",
       "htmlFile": "page-01.html",
-      "imageFile": null
+      "imageFile": "page-01.png"
     },
     {
       "pageNumber": 2,
       "moduleId": "qapi-packet-control-source-validation-readiness",
       "htmlFile": "page-02.html",
-      "imageFile": null
+      "imageFile": "page-02.png"
     },
     {
       "pageNumber": 3,
       "moduleId": "qapi-executive-analysis",
       "htmlFile": "page-03.html",
-      "imageFile": null
+      "imageFile": "page-03.png"
     },
     {
       "pageNumber": 4,
       "moduleId": "qapi-rich-kpi-dashboard",
       "htmlFile": "page-04.html",
-      "imageFile": null
+      "imageFile": "page-04.png"
     },
     {
       "pageNumber": 5,
       "moduleId": "qapi-source-feeder-workflow-form-utilization",
       "htmlFile": "page-05.html",
-      "imageFile": null
+      "imageFile": "page-05.png"
     },
     {
       "pageNumber": 6,
       "moduleId": "qapi-detailed-findings-and-trend-analysis",
       "htmlFile": "page-06.html",
-      "imageFile": null
+      "imageFile": "page-06.png"
     },
     {
       "pageNumber": 7,
       "moduleId": "qapi-pip-cap-rca-personnel-review-determinations",
       "htmlFile": "page-07.html",
-      "imageFile": null
+      "imageFile": "page-07.png"
     },
     {
       "pageNumber": 8,
       "moduleId": "qapi-triggered-workflow-and-dependency-register",
       "htmlFile": "page-08.html",
-      "imageFile": null
+      "imageFile": "page-08.png"
     },
     {
       "pageNumber": 9,
       "moduleId": "qapi-committee-and-governing-body-decisions",
       "htmlFile": "page-09.html",
-      "imageFile": null
+      "imageFile": "page-09.png"
     },
     {
       "pageNumber": 10,
       "moduleId": "qapi-action-item-workflow-accountability-register",
       "htmlFile": "page-10.html",
-      "imageFile": null
+      "imageFile": "page-10.png"
     },
     {
       "pageNumber": 11,
       "moduleId": "qapi-approvals-ecign-lock-readiness",
       "htmlFile": "page-11.html",
-      "imageFile": null
+      "imageFile": "page-11.png"
     },
     {
       "pageNumber": 12,
       "moduleId": "qapi-attachment-manifest",
       "htmlFile": "page-12.html",
-      "imageFile": null
+      "imageFile": "page-12.png"
     },
     {
       "pageNumber": 13,
       "moduleId": "qapi-completed-source-forms",
       "htmlFile": "page-13.html",
-      "imageFile": null
+      "imageFile": "page-13.png"
     },
     {
       "pageNumber": 14,
       "moduleId": "qapi-generated-pip-cap-rca-forms",
       "htmlFile": "page-14.html",
-      "imageFile": null
+      "imageFile": "page-14.png"
     },
     {
       "pageNumber": 15,
       "moduleId": "qapi-triggered-workflow-execution-packages",
       "htmlFile": "page-15.html",
-      "imageFile": null
+      "imageFile": "page-15.png"
     },
     {
       "pageNumber": 16,
       "moduleId": "qapi-confidential-personnel-review-addendum-reference",
       "htmlFile": "page-16.html",
-      "imageFile": null
+      "imageFile": "page-16.png"
     },
     {
       "pageNumber": 17,
       "moduleId": "qapi-source-derivation-reconciliation-provenance",
       "htmlFile": "page-17.html",
-      "imageFile": null
+      "imageFile": "page-17.png"
     },
     {
       "pageNumber": 18,
       "moduleId": "qapi-superseded-or-excluded-source-register",
       "htmlFile": "page-18.html",
-      "imageFile": null
+      "imageFile": "page-18.png"
     }
   ],
-  "note": "PDF_RENDER_ENABLED is not set; wrote rendered HTML pages as fallback visual evidence."
+  "note": null
 }

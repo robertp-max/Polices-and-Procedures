@@ -94,14 +94,7 @@ export function PreviewPanel({ packet, selectedOutlineId }: PreviewPanelProps) {
   }, [srcDoc, fileName]);
 
   const handlePrint = useCallback(() => {
-    const printWindow = window.open("", "_blank", "noopener,noreferrer");
-    if (!printWindow) return;
-    printWindow.document.open();
-    printWindow.document.write(srcDoc);
-    printWindow.document.close();
-    printWindow.focus();
-    // Allow the packet stylesheet/layout to settle before invoking the print dialog.
-    window.setTimeout(() => printWindow.print(), 400);
+    printPacketHtml(srcDoc);
   }, [srcDoc]);
 
   return (
@@ -144,6 +137,109 @@ export function buildPreviewHtml(packet: unknown): string {
       `<h1>Preview unavailable</h1><pre>${escapeHtml(error instanceof Error ? error.message : String(error))}</pre>`,
     );
   }
+}
+
+export function printPacketHtml(srcDoc: string): void {
+  const printWindow = window.open("", "_blank", "popup,width=900,height=1100");
+  if (printWindow && writePrintDocument(printWindow, srcDoc)) {
+    try {
+      printWindow.opener = null;
+    } catch {
+      // Some browsers expose opener as read-only for special window contexts.
+    }
+    queuePrint(printWindow);
+    return;
+  }
+
+  printPacketHtmlInFrame(srcDoc);
+}
+
+function writePrintDocument(targetWindow: Window, srcDoc: string): boolean {
+  try {
+    targetWindow.document.open();
+    targetWindow.document.write(srcDoc);
+    targetWindow.document.close();
+    return true;
+  } catch {
+    try {
+      targetWindow.close();
+    } catch {
+      // Ignore close failures; the iframe fallback still handles print.
+    }
+    return false;
+  }
+}
+
+function printPacketHtmlInFrame(srcDoc: string): void {
+  const existing = document.getElementById("packet-preview-print-frame");
+  existing?.remove();
+
+  const iframe = document.createElement("iframe");
+  iframe.id = "packet-preview-print-frame";
+  iframe.setAttribute("aria-hidden", "true");
+  iframe.style.position = "fixed";
+  iframe.style.right = "0";
+  iframe.style.bottom = "0";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.border = "0";
+  iframe.style.visibility = "hidden";
+
+  const cleanup = () => {
+    try {
+      iframe.remove();
+    } catch {
+      // The frame may already be gone if the browser fires afterprint twice.
+    }
+  };
+
+  document.body.appendChild(iframe);
+  const frameWindow = iframe.contentWindow;
+  if (!frameWindow || !writePrintDocument(frameWindow, srcDoc)) {
+    cleanup();
+    return;
+  }
+  queuePrint(frameWindow, cleanup);
+}
+
+function queuePrint(targetWindow: Window, cleanup?: () => void): void {
+  let printed = false;
+  const triggerPrint = () => {
+    if (printed) return;
+    printed = true;
+    try {
+      targetWindow.focus();
+      targetWindow.print();
+      if (cleanup) {
+        targetWindow.addEventListener("afterprint", cleanup, { once: true });
+        window.setTimeout(cleanup, 60_000);
+      }
+    } catch {
+      cleanup?.();
+    }
+  };
+
+  const targetDocument = targetWindow.document;
+  const fontReady = readFontReady(targetDocument);
+  const imagePromises = Array.from(targetDocument.images ?? [])
+    .filter((image) => !image.complete)
+    .map(
+      (image) =>
+        new Promise<void>((resolve) => {
+          image.addEventListener("load", () => resolve(), { once: true });
+          image.addEventListener("error", () => resolve(), { once: true });
+        }),
+    );
+
+  void Promise.allSettled([fontReady, ...imagePromises]).then(() => {
+    window.setTimeout(triggerPrint, 100);
+  });
+  window.setTimeout(triggerPrint, 1200);
+}
+
+function readFontReady(documentRef: Document): Promise<unknown> {
+  const fonts = (documentRef as Document & { readonly fonts?: { readonly ready?: Promise<unknown> } }).fonts;
+  return fonts?.ready ?? Promise.resolve();
 }
 
 function resolveRenderer(): RenderPacketModel | undefined {

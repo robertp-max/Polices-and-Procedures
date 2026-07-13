@@ -29,7 +29,7 @@ export const renderCoverModule: ModuleRenderer = (context) => {
     totalPages: context.totalPages,
     banner: `${payload.packetId} · ${roll.window.quarterLabel}`,
     title,
-    eyebrow: 'Care Indeed Home Health',
+    eyebrow: 'Care Indeed Home Health Care, Inc.',
     bodyHtml,
     contentBlocks: [{ kind: 'heading', level: 1, text: title }],
     lockStatusText: payload.lock.statusText,

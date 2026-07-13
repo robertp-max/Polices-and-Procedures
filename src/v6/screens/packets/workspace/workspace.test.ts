@@ -1,8 +1,8 @@
 import { createElement } from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildWorkspaceOutline } from "./OutlinePanel";
-import { buildPreviewHtml } from "./PreviewPanel";
+import { buildPreviewHtml, printPacketHtml } from "./PreviewPanel";
 import {
   DEFAULT_WORKSPACE_PACKET,
   DEFAULT_WORKSPACE_VALIDATION,
@@ -14,6 +14,12 @@ import { isComputedFieldPath, submitWorkspaceEdit } from "./tabs/EditTab";
 function renderWorkspace(props: Partial<Parameters<typeof WorkspaceShell>[0]> = {}) {
   return render(createElement(WorkspaceShell, props));
 }
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.useRealTimers();
+  document.getElementById("packet-preview-print-frame")?.remove();
+});
 
 describe("WorkspaceShell packet workspace", () => {
   it("renders the FR-018 three-panel workspace with renderer-backed preview and four owned tabs", () => {
@@ -143,5 +149,38 @@ describe("WorkspaceShell packet workspace", () => {
     expect(screen.getByTestId("validation-warnings-count").textContent).toBe("1");
     expect(screen.getByTestId("validation-info-count").textContent).toBe("1");
     expect(screen.getByTestId("validation-total-count").textContent).toBe("3");
+  });
+
+  it("prints packet preview HTML from a writable print window", async () => {
+    vi.useFakeTimers();
+    const fakeDocument = {
+      open: vi.fn(),
+      write: vi.fn(),
+      close: vi.fn(),
+      images: [],
+      fonts: { ready: Promise.resolve() },
+    } as unknown as Document;
+    const fakeWindow = {
+      document: fakeDocument,
+      focus: vi.fn(),
+      print: vi.fn(),
+      addEventListener: vi.fn(),
+      close: vi.fn(),
+      opener: {},
+    } as unknown as Window;
+    const openSpy = vi.spyOn(window, "open").mockReturnValue(fakeWindow);
+
+    printPacketHtml("<!doctype html><html><body>Packet</body></html>");
+
+    expect(openSpy).toHaveBeenCalledWith("", "_blank", "popup,width=900,height=1100");
+    expect(fakeDocument.open).toHaveBeenCalledTimes(1);
+    expect(fakeDocument.write).toHaveBeenCalledWith("<!doctype html><html><body>Packet</body></html>");
+    expect(fakeDocument.close).toHaveBeenCalledTimes(1);
+
+    await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(fakeWindow.focus).toHaveBeenCalledTimes(1);
+    expect(fakeWindow.print).toHaveBeenCalledTimes(1);
   });
 });

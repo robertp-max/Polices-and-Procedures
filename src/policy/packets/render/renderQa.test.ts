@@ -43,11 +43,21 @@ describe('WP-4.8 rendering QA structural checks', () => {
     expect(baseline.fixtureId).toBe(Q1_FIXTURE_EXPECTATIONS.datasetId);
     expect(baseline.approvedDesign).toBe('care-indeed-letter-qapi-analytical-v1');
     expect(styleText).toContain('@page{size:letter;margin:0;}');
-    expect(styleText).toContain('.accent-rail{height:4px;display:flex;width:100%;}');
+    expect(styleText).toContain('.pg-cover-head{display:flex;align-items:flex-start;justify-content:space-between;');
+    expect(styleText).toContain('.cover-meta{text-align:right;');
+    expect(styleText).toContain('font-family:Roboto,Arial,sans-serif;font-size:13px;font-weight:300;');
+    expect(styleText).toContain('.pg-foot{margin-top:auto;border-top:0;padding-top:16px;display:flex;justify-content:space-between;gap:18px;font-family:Roboto,Arial,sans-serif;font-size:11px;font-weight:300;');
+    expect(styleText).toContain('.rule{width:138px;height:4px;background:linear-gradient');
+    expect(styleText).toContain('@media print{@page{size:letter;margin:.5in .72in;}');
+    expect(styleText).toContain('.pg{width:auto;min-height:0;margin:0;display:block;break-after:page;page-break-after:always;overflow:visible;');
+    expect(styleText).toContain('.print-running-footer{display:flex;position:fixed;bottom:.18in;');
     expect(countMatches(html, /<div class="accent-rail"><span><\/span><span><\/span><\/div>/gu)).toBe(
-      sections.length,
+      0,
     );
-    expect(countMatches(html, /<svg class="ci-mark"/gu)).toBe(sections.length);
+    expect(countMatches(html, /src="\/ci-logo-packet-cover\.png"/gu)).toBe(1);
+    expect(countMatches(html, /class="print-running-footer"/gu)).toBe(1);
+    expect(html).toContain('QAPI Committee Packet');
+    expect(html).toContain('Care Indeed Home Health Care, Inc.');
     expect(sections).toHaveLength(baseline.expectedModuleOrder.length);
     expect(sections.map((section) => section.moduleId)).toStrictEqual(baseline.expectedModuleOrder);
     expect(sections.map((section) => section.pageNumber)).toStrictEqual(
