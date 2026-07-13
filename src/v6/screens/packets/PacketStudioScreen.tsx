@@ -14,13 +14,14 @@ import type { EventCardModel } from './eventSelector/eventCardModel';
 import { ReadinessDrawer } from './ReadinessDrawer';
 import type { ReadinessDrawerInput, ReadinessDrawerModel } from './readinessModel';
 import TriggerRegisterPanel from './workspace/TriggerRegisterPanel';
+import PacketSignoffPanel from './signing/PacketSignoffPanel';
 import {
   WorkspaceShell,
   type WorkspaceTabDefinition,
 } from './workspace/WorkspaceShell';
 
 type LoadState = 'registry' | 'loading' | 'api' | 'fallback';
-type StudioStep = 'template' | 'event' | 'readiness' | 'generate-open' | 'workspace';
+type StudioStep = 'template' | 'event' | 'readiness' | 'generate-open' | 'workspace' | 'signoff';
 type WorkspaceLaunchAction = 'generate' | 'open-existing' | 'continue-review';
 
 const AGENCY_ID = 'care-indeed-home-health';
@@ -32,6 +33,7 @@ const STUDIO_STEPS: readonly { id: StudioStep; label: string }[] = [
   { id: 'readiness', label: 'Readiness' },
   { id: 'generate-open', label: 'Generate/Open' },
   { id: 'workspace', label: 'Workspace' },
+  { id: 'signoff', label: 'Sign-off' },
 ];
 
 const PACKET_STUDIO_TABS = [
@@ -398,7 +400,46 @@ export default function PacketStudioScreen() {
             initialValidationResult={EMPTY_VALIDATION_RESULT}
             initialHistory={workspaceHistory}
             tabs={PACKET_STUDIO_TABS}
-            workspaceFooter={<TriggerRegisterPanel />}
+            workspaceFooter={
+              <div className="grid gap-md">
+                <TriggerRegisterPanel />
+                <div className="flex flex-wrap items-center justify-between gap-sm border-t border-hairline pt-md">
+                  <span className="text-sm text-muted">
+                    Packet ready to route to signers? Continue to eCIgn sign-off.
+                  </span>
+                  <button
+                    type="button"
+                    className="min-h-tap w-fit rounded-md border border-hairline bg-brand-teal px-md py-sm text-sm font-semibold text-white hover:opacity-90"
+                    onClick={() => setStudioStep('signoff')}
+                  >
+                    Continue to sign-off →
+                  </button>
+                </div>
+              </div>
+            }
+          />
+        ) : null}
+
+        {studioStep === 'signoff' && selectedTemplate && selectedEvent ? (
+          <PacketSignoffPanel
+            packetTitle={workspacePacket?.title ?? selectedEvent.eventTitle}
+            packetTemplateId={selectedTemplate.packet_template_id}
+            packetInstanceId={buildPacketInstanceId(
+              selectedTemplate.packet_template_id,
+              selectedEvent.eventInstanceId,
+            )}
+            workflowInstanceId={
+              knownString(selectedEvent.workflowInstanceId) ??
+              (knownString(selectedEvent.workflowId)
+                ? `${selectedEvent.workflowId}:${selectedEvent.eventInstanceId}`
+                : selectedEvent.eventInstanceId)
+            }
+            eventInstanceId={selectedEvent.eventInstanceId}
+            signerCapacities={preferSignerRoles(
+              selectedTemplate.required_signers,
+              selectedEvent.requiredSigners,
+            )}
+            onBack={() => setStudioStep('workspace')}
           />
         ) : null}
       </div>
@@ -574,6 +615,15 @@ function preferTemplateRoles(
   eventRoles: readonly string[] | 'unknown',
 ): readonly string[] | 'unknown' {
   return templateRoles.length > 0 ? templateRoles : eventRoles;
+}
+
+/** Resolve ordered signer capacities, always as a concrete list (template first). */
+function preferSignerRoles(
+  templateRoles: readonly string[],
+  eventRoles: readonly string[] | 'unknown',
+): readonly string[] {
+  if (templateRoles.length > 0) return templateRoles;
+  return eventRoles === 'unknown' ? [] : eventRoles;
 }
 
 function knownString(value: string | null | undefined): string | null {
