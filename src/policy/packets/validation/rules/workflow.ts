@@ -10,6 +10,20 @@ const EVIDENCE_DETERMINATIONS = [
   'Revise existing PIP',
 ] as const;
 
+/**
+ * Decision states in which a trigger evaluation is actually opening or
+ * continuing an ACTIVE downstream workflow, so its required feeder workflows
+ * must be linked/activated before the packet can be approved. Candidate,
+ * pending, confirmed-not-yet-activated, not-triggered, sustainment, escalated,
+ * and closed evaluations are recorded in the register (FR-013) but do NOT block
+ * packet approval on feeder linkage (§8.2, FR-012/FR-014).
+ */
+const FEEDER_REQUIRED_DECISION_STATES: ReadonlySet<WorkflowTriggerEvaluation['decisionState']> = new Set([
+  'ACTIVATED',
+  'LINKED TO EXISTING ACTIVE WORKFLOW',
+  'CONTINUED FROM PRIOR PERIOD',
+]);
+
 export function validateWorkflow(context: RuleContext): PacketValidationFinding[] {
   const findings: PacketValidationFinding[] = [];
   const identity = context.model.identity;
@@ -105,19 +119,28 @@ export function validateWorkflow(context: RuleContext): PacketValidationFinding[
       }));
     }
 
-    evaluation.dependencyWorkflowIds.forEach((dependencyWorkflowId) => {
-      if (!availableWorkflowIds.has(dependencyWorkflowId)) {
-        findings.push(finding({
-          id: `workflow-dependency-missing-${slug(evaluation.evaluationId)}-${slug(dependencyWorkflowId)}`,
-          severity: 'blocker',
-          code: 'missing-required-feeder-workflow',
-          path: `workflowEvaluations.${index}.dependencyWorkflowIds`,
-          message: `Missing required feeder workflow "${dependencyWorkflowId}" for evaluation "${evaluation.evaluationId}".`,
-          remediation: 'Link or activate the feeder workflow required by the trigger evaluation.',
-          relatedWorkflowId: dependencyWorkflowId,
-        }));
-      }
-    });
+    // Feeder-workflow linkage is a packet-approval BLOCKER only when the
+    // evaluation is actually opening/continuing an ACTIVE workflow. Candidate,
+    // pending-review, confirmed-not-yet-activated, not-triggered, sustainment,
+    // escalated, and closed evaluations record their downstream feeders in the
+    // Triggered-Workflow Register (FR-013) but MUST NOT block packet approval by
+    // demanding those feeders be pre-linked — the trigger is evaluated, not yet
+    // activated (§8.2, FR-012/FR-014; §24: PIP triggers are evaluated, not opened).
+    if (FEEDER_REQUIRED_DECISION_STATES.has(evaluation.decisionState)) {
+      evaluation.dependencyWorkflowIds.forEach((dependencyWorkflowId) => {
+        if (!availableWorkflowIds.has(dependencyWorkflowId)) {
+          findings.push(finding({
+            id: `workflow-dependency-missing-${slug(evaluation.evaluationId)}-${slug(dependencyWorkflowId)}`,
+            severity: 'blocker',
+            code: 'missing-required-feeder-workflow',
+            path: `workflowEvaluations.${index}.dependencyWorkflowIds`,
+            message: `Missing required feeder workflow "${dependencyWorkflowId}" for evaluation "${evaluation.evaluationId}".`,
+            remediation: 'Link or activate the feeder workflow required by the trigger evaluation.',
+            relatedWorkflowId: dependencyWorkflowId,
+          }));
+        }
+      });
+    }
 
     if (evaluation.blockerIds.length > 0) {
       findings.push(finding({
