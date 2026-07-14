@@ -23,14 +23,17 @@ export class CodexCliBradAdapter implements BradModelAdapter {
     }
     return new Promise((resolve) => {
       try {
-        const p = spawnCodex(['login', 'status'], ['ignore', 'pipe', 'ignore']);
+        const p = spawnCodex(['login', 'status'], ['ignore', 'pipe', 'pipe']);
         let out = '';
+        let err = '';
         const t = setTimeout(() => { p.kill(); resolve({ available: false, reason: 'codex login status timed out' }); }, 8000);
         p.stdout?.on('data', (d) => { out += d.toString(); });
+        p.stderr?.on('data', (d) => { err += d.toString(); });
         p.on('error', () => { clearTimeout(t); resolve({ available: false, reason: 'codex CLI not found on PATH' }); });
         p.on('close', (code) => {
           clearTimeout(t);
-          resolve(code === 0 && /Logged in/i.test(out)
+          const statusText = `${out}\n${err}`;
+          resolve(code === 0 && /Logged in/i.test(statusText)
             ? { available: true }
             : { available: false, reason: 'codex CLI is not logged in' });
         });

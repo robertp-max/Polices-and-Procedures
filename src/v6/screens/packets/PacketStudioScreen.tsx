@@ -680,7 +680,7 @@ function BradLogicSwitch({
               onClick={() => onChange(option.value)}
             >
               <span className="block text-xs font-semibold">{option.label}</span>
-              <span className="block text-[11px] opacity-80">{option.detail}</span>
+              {option.detail ? <span className="block text-[11px] opacity-80">{option.detail}</span> : null}
             </button>
           );
         })}
@@ -690,8 +690,8 @@ function BradLogicSwitch({
 }
 
 function bradLogicLabel(value: BradLogic): string {
-  if (value === 'qapi-master-claude') return 'Logic C';
-  if (value === 'qapi-raw-claude') return 'Logic D';
+  if (value === 'qapi-master-claude') return 'Logic A';
+  if (value === 'qapi-raw-claude') return 'Logic B';
   return value === 'claude' ? 'Logic A' : 'Logic B';
 }
 
@@ -700,21 +700,25 @@ function defaultBradLogicForTemplate(packetTemplateId: string): BradLogic {
 }
 
 function bradLogicForTemplate(packetTemplateId: string, value: BradLogic): BradLogic {
-  if (packetTemplateId === QAPI_QUARTERLY_TEMPLATE_ID) return value;
+  if (packetTemplateId === QAPI_QUARTERLY_TEMPLATE_ID) {
+    if (value === 'claude' || value === 'qapi-raw-claude') return 'qapi-master-claude';
+    return value;
+  }
   return isQapiPromptOnlyLogic(value) ? 'gpt' : value;
 }
 
-function bradLogicOptions(packetTemplateId: string): Array<{ value: BradLogic; label: string; detail: string }> {
-  const base: Array<{ value: BradLogic; label: string; detail: string }> = [
-    { value: 'claude', label: 'Logic A', detail: 'Claude' },
-    { value: 'gpt', label: 'Logic B', detail: 'GPT' },
+function bradLogicOptions(packetTemplateId: string): Array<{ value: BradLogic; label: string; detail?: string }> {
+  if (packetTemplateId === QAPI_QUARTERLY_TEMPLATE_ID) {
+    return [
+      { value: 'qapi-master-claude', label: 'Logic A' },
+      { value: 'gpt', label: 'Logic B' },
+    ];
+  }
+  const base: Array<{ value: BradLogic; label: string; detail?: string }> = [
+    { value: 'claude', label: 'Logic A' },
+    { value: 'gpt', label: 'Logic B' },
   ];
-  if (packetTemplateId !== QAPI_QUARTERLY_TEMPLATE_ID) return base;
-  return [
-    { value: 'qapi-master-claude', label: 'Logic C', detail: 'QAPI master' },
-    { value: 'qapi-raw-claude', label: 'Logic D', detail: 'Prompt only' },
-    ...base,
-  ];
+  return base;
 }
 
 function isQapiPromptOnlyLogic(value: BradLogic): boolean {

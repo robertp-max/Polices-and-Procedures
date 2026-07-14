@@ -12,7 +12,6 @@ import { buildFormContent, type FormField, type FormSection } from '@/policy/dat
 import EvidenceStudio from '@/v6/screens/evidence/EvidenceStudio';
 import Defensible2Studio from '@/v6/screens/evidence/Defensible2Studio';
 import BradEvidenceIntake from '@/v6/screens/evidence/BradEvidenceIntake';
-import PacketStudioScreen from '@/v6/screens/packets/PacketStudioScreen';
 import AIComplianceReviewScreen from './pageviews/AIComplianceReviewScreen';
 import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import { getWorkflowDetail } from './pageviews/WorkflowsScreen';
@@ -1787,10 +1786,10 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <BradEvidenceIntake />;
       break;
     case 'evidence-packet-studio':
-      child = <EvidenceStudio initialTab="studio" />;
+      child = <Defensible2Studio initialTab="packet2" />;
       break;
     case 'packet-studio':
-      child = <PacketStudioScreen />;
+      child = <Defensible2Studio initialTab="packet2" />;
       break;
     case 'admission-packet-preview':
       child = <AdmissionPacketPreviewScreen />;

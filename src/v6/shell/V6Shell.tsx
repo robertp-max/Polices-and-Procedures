@@ -256,9 +256,11 @@ export function V6Shell() {
             style={
               tourActive
                 ? { paddingRight: 'min(480px, 92vw)' }
-                : feedbackOpen
-                  ? { paddingRight: 'min(760px, 92vw)' }
-                  : undefined
+                  : feedbackOpen
+                    ? { paddingRight: 'min(760px, 92vw)' }
+                    : isPersonalOpsOpen
+                      ? { paddingRight: 'min(380px, 92vw)' }
+                      : undefined
             }
           >
             {constrainRouteWidth ? (
@@ -317,16 +319,6 @@ export function V6Shell() {
       {/* Brad Guided Assistance - global, route-spanning gated tour overlay. */}
       <GuidedTourRunner />
     </div>
-  );
-}
-
-function ColoredKebabIcon() {
-  return (
-    <span className="flex h-5 w-5 flex-col items-center justify-center gap-[2px]" aria-hidden="true">
-      <span className="block h-[5px] w-[5px] rounded-full bg-[#f97316]" />
-      <span className="block h-[5px] w-[5px] rounded-full bg-[#facc15]" />
-      <span className="block h-[5px] w-[5px] rounded-full bg-[#2563eb]" />
-    </span>
   );
 }
 
@@ -416,7 +408,6 @@ function FloatingActionRail({
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [pageElements, setPageElements] = useState<PageElementContext[]>([]);
   const [selectedElement, setSelectedElement] = useState<PageElementContext | null>(null);
-  const [radialOpen, setRadialOpen] = useState(false);
 
   const scanCurrentPageElements = (): PageElementContext[] => {
     const main = document.getElementById('main-content');
@@ -474,92 +465,20 @@ function FloatingActionRail({
     onFeedbackClose();
     navigate(route);
   };
-  const rightActionStyle: CSSProperties = { backgroundColor: '#F1F5F9', color: '#94A3B8' };
-  const rightActions = [
-    { label: 'Open feedback', title: 'Feedback', icon: <MessageSquare className="h-[22px] w-[22px]" strokeWidth={1.5} aria-hidden />, onClick: openFeedback, colorStyle: rightActionStyle },
-    { label: 'Open help center', title: 'Help', icon: <HelpCircle className="h-[22px] w-[22px]" strokeWidth={1.5} aria-hidden />, onClick: () => navigate('/help'), colorStyle: rightActionStyle },
-    { label: 'Share', title: 'Share', icon: <Share2 className="h-[22px] w-[22px]" strokeWidth={1.5} aria-hidden />, colorStyle: rightActionStyle },
-    { label: 'Information', title: 'Info', icon: <Info className="h-[22px] w-[22px]" strokeWidth={1.5} aria-hidden />, colorStyle: rightActionStyle },
-  ];
-  const rightTotalAngle = 140;
-  const rightStartAngle = 180 - (rightTotalAngle / 2);
-  const rightAngleStep = rightActions.length > 1 ? rightTotalAngle / (rightActions.length - 1) : 0;
-  const radialTransitionClass = 'transition-all duration-300 ease-out';
-
-  const handleRadialMouseEnter = () => {
-    if (radialOpen) return;
-    setRadialOpen(true);
-  };
-
-  const handleRadialMouseLeave = () => {
-    if (!radialOpen) return;
-    setRadialOpen(false);
-  };
-
   return (
     <>
-      <div
-        className={cx('fixed inset-0 z-[40] transition-all duration-500', radialOpen ? 'bg-slate-900/[0.33] backdrop-blur-sm opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none')}
-        onClick={handleRadialMouseLeave}
-        aria-hidden="true"
-      />
-      <div
-        aria-label="Right panel dock"
-        className={cx(
-          'fixed right-6 top-1/2 z-[50] flex h-11 w-11 -translate-y-1/2 items-center justify-center',
-          hidden && 'pointer-events-none opacity-0',
-        )}
-        onMouseEnter={handleRadialMouseEnter}
-        aria-hidden={hidden ? 'true' : undefined}
-      >
-        <div className={cx('absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-500', radialOpen ? 'h-[360px] w-[360px]' : 'h-11 w-11')} aria-hidden="true" />
-        <div className={cx('pointer-events-none absolute inset-0 flex items-center justify-center')}>
-          {rightActions.map((action, index) => {
-            const angle = rightStartAngle + index * rightAngleStep;
-            const targetX = Math.cos(angle * Math.PI / 180) * 110;
-            const targetY = Math.sin(angle * Math.PI / 180) * 110;
-            const delay = index * 50;
-            return (
-              <button
-                key={action.label}
-                type="button"
-                onClick={() => {
-                  action.onClick?.();
-                  handleRadialMouseLeave();
-                }}
-                aria-label={action.label}
-                title={action.title}
-                className={cx('absolute flex h-11 w-11 items-center justify-center rounded-full shadow-lg hover:scale-110', radialTransitionClass)}
-                style={{
-                  transform: radialOpen ? `translate(${targetX}px, ${targetY}px)` : `translate(0px, 0px) scale(0)`,
-                  opacity: radialOpen ? 1 : 0,
-                  pointerEvents: radialOpen ? 'auto' : 'none',
-                  transitionDelay: `${delay}ms`,
-                  ...action.colorStyle,
-                }}
-              >
-                {action.icon}
-              </button>
-            );
-          })}
-        </div>
         <button
           type="button"
-          onClick={() => radialOpen ? handleRadialMouseLeave() : handleRadialMouseEnter()}
-          aria-label="Open page actions"
-          aria-expanded={radialOpen}
-          title="Page actions"
+          onClick={openFeedback}
+          aria-label="Open feedback"
+          title="Feedback"
           className={cx(
-            'relative z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-800 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl',
-            radialOpen && 'pointer-events-none scale-0 opacity-0',
+            'fixed right-6 top-1/2 z-[50] flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-slate-500 shadow-lg transition-all duration-300 hover:scale-105 hover:text-brand-teal-deep hover:shadow-xl',
+            hidden && 'pointer-events-none opacity-0',
           )}
         >
-          <span className="absolute transition-all duration-300" style={{ opacity: radialOpen ? 0 : 1, transform: radialOpen ? 'rotate(-90deg) scale(0.5)' : 'rotate(0deg) scale(1)' }}>
-            <ColoredKebabIcon />
-          </span>
-          <X className="absolute h-5 w-5 text-slate-800 transition-all duration-300" style={{ opacity: radialOpen ? 1 : 0, transform: radialOpen ? 'rotate(0deg) scale(1)' : 'rotate(90deg) scale(0.5)' }} aria-hidden />
+          <MessageSquare className="h-[22px] w-[22px]" strokeWidth={1.5} aria-hidden />
         </button>
-      </div>
 
       {renderFeedbackPanel && (
         <aside

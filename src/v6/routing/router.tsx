@@ -27,7 +27,7 @@ export const v6Router = createBrowserRouter([
     ),
     errorElement: <RouteErrorBoundary />,
     children: [
-      { index: true, element: <Navigate replace to="/iadministrator" /> },
+      { index: true, element: <Navigate replace to="/compliance" /> },
       ...shellRoutes.map((route) => ({
         path: routeToChildPath(route.path),
         element: <RepresentativeScreen route={route} />,

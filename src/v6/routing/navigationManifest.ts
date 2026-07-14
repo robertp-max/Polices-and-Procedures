@@ -14,16 +14,15 @@ export const primaryNavItems: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', to: '/dashboard', hashIds: ['dashboard'] },
   // 'Clinician Profiles', 'Patient Profiles' and 'Calendar' hidden from the sidebar per request.
   // Routes still resolve by direct URL; they are just removed from the nav.
-  { id: 'ces', label: 'Compliance', to: '/ces/calendar', hashIds: ['ces-calendar', 'ces-board', 'master-controls', 'audit-mode', 'ces-reports'] },
+  { id: 'ces', label: 'Compliance', to: '/compliance', hashIds: ['compliance-home', 'ces-calendar', 'ces-board', 'master-controls', 'audit-mode', 'ces-reports'], matchPaths: ['/compliance', '/ces/calendar', '/ces/board', '/ces/events', '/ces/reports', '/audit'] },
   // Standalone DefenCIble entry — shield icon, rendered vertically centered on the left rail.
   {
     id: 'defensible',
     label: 'DefenCIble',
     to: '/evidence',
-    hashIds: ['defensible-2', 'evidence-center', 'evidence-intake', 'evidence-packet-studio', 'admission-packet-preview'],
-    matchPaths: ['/evidence', '/evidence/intake', '/evidence/packet-studio', '/evidence/defensible-2', '/evidence/admission-packet-preview'],
+    hashIds: ['defensible-2', 'evidence-center', 'evidence-intake', 'evidence-packet-studio', 'packet-studio', 'admission-packet-preview'],
+    matchPaths: ['/evidence', '/evidence/intake', '/evidence/packet-studio', '/packet-studio', '/evidence/defensible-2', '/evidence/admission-packet-preview'],
   },
-  { id: 'packet-studio', label: 'Packet Studio', to: '/packet-studio', hashIds: ['packet-studio'] },
   { id: 'taxonomy', label: 'Policies', to: '/library', hashIds: ['taxonomy', 'framework', 'achc-survey', 'achc-crosswalk', 'hh-evidence-map', 'policy-home', 'policy-library', 'forms-library', 'workflows', 'workflow-detail', 'workflow-swimlane', 'policy-lifecycle', 'policy-lifecycle-detail', 'policy-approvals', 'pm-approvals'] },
   { id: 'onboarding', label: 'Training', to: '/journey?tab=home', hashIds: ['journey-overview', 'journey-new-hire', 'appendix-f', 'supervisor', 'journey-admin', 'user-guide'] },
   // 'Evidence' and 'Hubstaff' hidden from the sidebar per request. Routes still resolve by URL.

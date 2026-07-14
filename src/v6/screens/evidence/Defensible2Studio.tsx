@@ -6,6 +6,7 @@ import { CalendarApi } from '../../../policy/services/calendarApi';
 import { ecignApi } from '../../../policy/ecign/api';
 import { getEcignSignerIdentity } from '../../../policy/ecign/signerIdentity';
 import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabInactiveClass, workspaceTabNavClass } from '@/components/theme/workspaceTabChrome';
+import PacketStudioScreen from '@/v6/screens/packets/PacketStudioScreen';
 
 // Color-code the real Drive folders by name so the grid keeps its event-domain palette.
 const FOLDER_PALETTE = ['text-[#FACC15]', 'text-[#3B82F6]', 'text-[#2DD4BF]', 'text-[#FB923C]', 'text-[#A855F7]', 'text-[#22C55E]', 'text-[#EC4899]'];
@@ -601,10 +602,17 @@ const CircularDataSourceButton = ({ title, desc, icon, strokeColor, onClick }) =
 );
 
 
-export function Defensible2Studio(_props?: { initialTab?: string }) {
-  const [activeTab, setActiveTab] = useState('CREATE PACKET');
-  const [studioGenerating, setStudioGenerating] = useState(false);
-  const [studioSaveStatus, setStudioSaveStatus] = useState('idle');
+export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) {
+  const resolveInitialTab = (value?: string) => {
+    if (value === 'packet2' || value === 'PACKET 2.0') return 'PACKET 2.0';
+    if (value === 'drive' || value === 'DRIVE') return 'DRIVE';
+    if (value === 'ecign' || value === 'eCIgn') return 'eCIgn';
+    if (value === 'edit' || value === 'EDIT PACKET') return 'EDIT PACKET';
+    return 'CREATE PACKET';
+  };
+  const [activeTab, setActiveTab] = useState(resolveInitialTab(initialTab));
+  const [studioGenerating] = useState(false);
+  const [studioSaveStatus] = useState('idle');
   const [folderPackets, setFolderPackets] = useState([]);
 
   // --- STUDIO STATE ---
@@ -615,7 +623,7 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
   const [dataSource, setDataSource] = useState('');
   
   // --- DRIVE SYNC STATE ---
-  const [driveSyncStatus, setDriveSyncStatus] = useState('idle'); 
+  const [, setDriveSyncStatus] = useState('idle');
 
   // --- MODAL STATE ---
   const [showSourceModal, setShowSourceModal] = useState(false);
@@ -630,7 +638,6 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
   const [isPacketLoaded, setIsPacketLoaded] = useState(false);
   const [chatInput, setChatInput] = useState('');
   const [chatMessages, setChatMessages] = useState([]);
-  const [previewPage, setPreviewPage] = useState(0);
   const [compilePhase, setCompilePhase] = useState('idle');
   const [zoomPage, setZoomPage] = useState(null);
   // Real Drive folders from the manifest (source of truth). Loaded when the DRIVE
@@ -649,6 +656,9 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
       .catch((e) => { if (on) { setRealFolders([]); setFoldersErr(e instanceof Error ? e.message : 'Manifest unavailable'); } });
     return () => { on = false; };
   }, [activeTab]);
+  useEffect(() => {
+    setActiveTab(resolveInitialTab(initialTab));
+  }, [initialTab]);
   const loadDriveFolderInApp = useCallback((folderId, name, trail = driveBrowserTrail) => {
     if (!folderId) return;
     const nextTrail = [...trail, { id: folderId, name }];
@@ -667,15 +677,6 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
     setDriveBrowser(null);
     setDriveBrowserTrail([]);
     setDriveBrowserErr(null);
-  }, []);
-
-  const handleStudioGeneratingChange = useCallback((active) => {
-    setStudioGenerating(active);
-    if (active) setStudioSaveStatus('idle');
-  }, []);
-
-  const handlePacketSaveStatusChange = useCallback((status) => {
-    setStudioSaveStatus(status);
   }, []);
 
   useEffect(() => {
@@ -805,6 +806,7 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
   const navTabs: { value: string; label: string }[] = [
     { value: 'DRIVE', label: 'Drive' },
     { value: 'CREATE PACKET', label: 'Packets' },
+    { value: 'PACKET 2.0', label: 'Packet 2.0' },
     { value: 'EDIT PACKET', label: 'Edit Packet' },
     { value: 'eCIgn', label: 'eCIgn' },
   ];
@@ -1062,6 +1064,12 @@ export function Defensible2Studio(_props?: { initialTab?: string }) {
         {activeTab === 'CREATE PACKET' && (
           <div className="animate-fade-in min-h-[720px]">
             <Defensible2StudioLanding />
+          </div>
+        )}
+
+        {activeTab === 'PACKET 2.0' && (
+          <div className="animate-fade-in min-h-[720px]">
+            <PacketStudioScreen />
           </div>
         )}
 
