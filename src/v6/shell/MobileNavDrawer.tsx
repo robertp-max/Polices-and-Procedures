@@ -1,8 +1,21 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Menu, X } from 'lucide-react';
 import { cx } from '../utils/classNames';
 
-export function MobileNavDrawer({ items, bradItem }: { items: any[], bradItem?: any }) {
+interface MobileNavItem {
+  id: string;
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+  isActive?: boolean;
+}
+
+interface MobileNavDrawerProps {
+  items: MobileNavItem[];
+  bradItem?: Pick<MobileNavItem, 'icon' | 'onClick'>;
+}
+
+export function MobileNavDrawer({ items, bradItem }: MobileNavDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
