@@ -15,10 +15,10 @@ const ALL_CLINICAL: JourneyRole[] = ['DON', 'RN', 'LVN', 'PT', 'PTA', 'OT', 'COT
    ───────────────────────────────────────────────────────────── */
 const GAO: JourneyModule[] = [
   { id: 'GAO-001', group: 'GAO', phase: 'GAO', title: 'Agency mission, vision, values', roles: 'ALL', policyRefs: ['EN-CM-001'], cmsRefs: [], method: 'None' },
-  { id: 'GAO-002', group: 'GAO', phase: 'GAO', title: 'Organizational structure & reporting', roles: 'ALL', policyRefs: ['GV-OG-001'], cmsRefs: [], method: 'None' },
-  { id: 'GAO-003', group: 'GAO', phase: 'GAO', title: 'Scope of Services', roles: 'ALL', policyRefs: ['GV-OG-003'], cmsRefs: [], method: 'None' },
-  { id: 'GAO-004', group: 'GAO', phase: 'GAO', title: 'Corporate Compliance Program', roles: 'ALL', policyRefs: ['CO-CP-001', 'CO-CP-004'], cmsRefs: [], method: 'Quiz', passThreshold: 0.8 },
-  { id: 'GAO-005', group: 'GAO', phase: 'GAO', title: 'Compliance Hotline & Reporting', roles: 'ALL', policyRefs: ['CO-CP-006'], cmsRefs: [], method: 'Quiz', passThreshold: 0.8 },
+  { id: 'GAO-002', group: 'GAO', phase: 'GAO', title: 'Organizational structure & reporting', roles: 'ALL', policyRefs: ['GV-OG-001'], cmsRefs: ['42 CFR 484.105(c)'], method: 'None' },
+  { id: 'GAO-003', group: 'GAO', phase: 'GAO', title: 'Scope of services', roles: 'ALL', policyRefs: ['GV-OG-003'], cmsRefs: [], method: 'None' },
+  { id: 'GAO-004', group: 'GAO', phase: 'GAO', title: 'Corporate compliance program', roles: 'ALL', policyRefs: ['CO-CP-001', 'CO-CP-004'], cmsRefs: [], method: 'Quiz', passThreshold: 0.8 },
+  { id: 'GAO-005', group: 'GAO', phase: 'GAO', title: 'Compliance hotline & reporting', roles: 'ALL', policyRefs: ['CO-CP-006'], cmsRefs: [], method: 'Quiz', passThreshold: 0.8 },
   { id: 'GAO-006', group: 'GAO', phase: 'GAO', title: 'Whistleblower protection', roles: 'ALL', policyRefs: ['CO-CP-005'], cmsRefs: [], method: 'Quiz', passThreshold: 0.8 },
   { id: 'GAO-007', group: 'GAO', phase: 'GAO', title: 'HIPAA privacy — PHI handling, minimum necessary', roles: 'ALL', policyRefs: ['CO-HP-001', 'CO-HP-004'], cmsRefs: ['45 CFR 164'], method: 'Quiz', passThreshold: 0.8 },
   { id: 'GAO-008', group: 'GAO', phase: 'GAO', title: 'HIPAA security — passwords, devices, data', roles: 'ALL', policyRefs: ['CO-HP-002'], cmsRefs: ['45 CFR 164'], method: 'Quiz', passThreshold: 0.8 },

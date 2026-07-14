@@ -125,4 +125,15 @@ export interface ModuleTraining {
   navigation: NavigationCard;
   lessons: Lesson[];
   finalTest: FinalTest;
+  // v2.3+ QA metadata for narration-only duration and expansion tracking
+  durationMethod?: string; // "narration-only"
+  narrationWordsPerMinute?: number; // 130
+  narrationWordCount?: number;
+  estimatedNarrationMinutes?: number;
+  contentReadingTimeCounted?: boolean;
+  scenarioTimeCounted?: boolean;
+  knowledgeCheckTimeCounted?: boolean;
+  quizTimeCounted?: boolean;
+  narrationOnlyPass?: boolean;
+  readyForSmeReview?: boolean;
 }
