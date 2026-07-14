@@ -30,6 +30,7 @@ import { AnimatedCareIndeedLogo } from './AnimatedCareIndeedLogo';
 import { GuidedTourRunner } from '../guided/GuidedTourRunner';
 import { useGuidedTourStore } from '../guided/guidedTourStore';
 import { ThreadComposer, ThreadDetailPage, ThreadsPage } from '../../policy/help-center/threads';
+import { MobileNavDrawer } from './MobileNavDrawer';
 
 const NAV_ICONS: Record<string, LucideIcon> = {
   dashboard: LayoutGrid,
@@ -187,7 +188,8 @@ export function V6Shell() {
               onClick={() => navigate('/iadministrator')}
               aria-label="Open Brad"
               className={cx(
-                'fixed left-5 top-5 z-popover grid h-11 w-11 place-items-center rounded-full bg-transparent text-ink shadow-none transition duration-300 ease-standard hover:-translate-y-0.5 hover:text-brand-teal-deep',
+                'hidden tablet-l:grid',
+                'fixed left-5 top-5 z-popover h-11 w-11 place-items-center rounded-full bg-transparent text-ink shadow-none transition duration-300 ease-standard hover:-translate-y-0.5 hover:text-brand-teal-deep',
                 activeNavItem === 'brad' && 'text-brand-teal',
               )}
             >
@@ -210,9 +212,20 @@ export function V6Shell() {
             </span>
           </button>
           {showDock && (
-            <LeftRadialDock
-              items={dockItems.filter((item) => item.id !== 'defensible')}
-              centerItems={dockItems.filter((item) => item.id === 'defensible')}
+            <div className="hidden tablet-l:block">
+              <LeftRadialDock
+                items={dockItems.filter((item) => item.id !== 'defensible')}
+                centerItems={dockItems.filter((item) => item.id === 'defensible')}
+              />
+            </div>
+          )}
+          {showDock && (
+            <MobileNavDrawer
+              items={dockItems}
+              bradItem={{
+                icon: <AnimatedCareIndeedLogo active={bradActivityActive} className="h-6 w-6" />,
+                onClick: () => navigate('/iadministrator')
+              }}
             />
           )}
         </>
@@ -228,8 +241,8 @@ export function V6Shell() {
               suppressShellPadding
                 ? 'p-0'
                 : cx(
-                  'pl-[calc(var(--space-lg)+10px)] pr-lg pb-32 tablet-p:pl-[calc(var(--space-3xl)+50px)] tablet-p:pr-3xl',
-                  'pt-6',
+                  'px-md pb-32 tablet-l:pl-[calc(var(--space-lg)+10px)] tablet-l:pr-lg tablet-p:pl-[calc(var(--space-3xl)+50px)] tablet-p:pr-3xl',
+                  'pt-20 tablet-l:pt-6',
                 ),
               !isChromeFreeRoute && !isDashboardRoute && hasScrolledMain && 'v6-main-scrollmask--scrolled',
             )}

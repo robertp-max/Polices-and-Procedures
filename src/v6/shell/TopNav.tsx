@@ -57,9 +57,9 @@ export function TopNav() {
   if (!showSubnav) return null;
 
   return (
-    <div className="fixed left-0 right-0 top-6 flex flex-col w-full bg-transparent z-50 shrink-0 pointer-events-none [&_nav]:pointer-events-auto">
-      <nav className="w-full flex justify-center mb-6">
-        <div className="flex items-center rounded-full bg-white shadow-sm p-1 gap-2">
+    <div className="fixed left-0 right-0 top-16 tablet-l:top-6 flex flex-col w-full bg-transparent z-50 shrink-0 pointer-events-none [&_nav]:pointer-events-auto">
+      <nav className="w-full flex justify-center mb-6 px-4 tablet-l:px-0">
+        <div className="flex items-center rounded-full bg-white shadow-sm p-1 gap-1 tablet-l:gap-2 w-full max-w-fit overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {subnavItems.map(item => {
             const isActive = isSubnavItemActive(item);
             return (
@@ -67,7 +67,7 @@ export function TopNav() {
                 key={item.id}
                 to={item.to}
                 className={cx(
-                  'px-6 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-300',
+                  'px-4 tablet-l:px-6 py-2 rounded-full text-[10px] tablet-l:text-xs font-semibold tracking-wider uppercase transition-all duration-300 whitespace-nowrap',
                   isActive
                     ? 'bg-brand-teal text-white shadow-md'
                     : 'text-slate-500 hover:bg-slate-100 hover:text-brand-teal'
