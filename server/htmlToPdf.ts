@@ -46,7 +46,12 @@ async function renderOnce(html: string): Promise<Buffer | null> {
     await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 8000 });
     await page.emulateMedia({ media: 'print' });
     await page.waitForTimeout(200);
-    const pdf = await page.pdf({ printBackground: true, preferCSSPageSize: true, format: 'Letter' });
+    const pdf = await page.pdf({
+      printBackground: true,
+      preferCSSPageSize: true,
+      format: 'Letter',
+      displayHeaderFooter: false,
+    });
     return Buffer.from(pdf);
   } catch (e) {
     log.warn('pdf.render.unavailable', { error: e instanceof Error ? e.message : String(e) });

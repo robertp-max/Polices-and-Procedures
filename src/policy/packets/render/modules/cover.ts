@@ -6,14 +6,15 @@ import { escapeHtml, renderKeyValueRow, renderModulePage, renderPanel, renderRaw
 export const renderCoverModule: ModuleRenderer = (context) => {
   const payload = context.module.payload as QapiPacketRenderPayload;
   const roll = payload.roll;
-  const title = `${roll.window.packetType === 'interim' ? 'Interim ' : ''}${roll.window.quarterLabel} QAPI Committee Packet`;
+  const reviewState = payload.lock.pass ? 'Final' : 'Draft - Requires Review';
+  const title = `${reviewState} ${roll.window.quarterLabel} QAPI Committee Packet`;
   const bodyHtml = `
     ${payload.derivedNotice ? renderRawNotice(`<b>BRAD-DERIVED DRAFT — REQUIRES HUMAN REVIEW.</b> ${escapeHtml(payload.derivedNotice)}`, 'warning') : ''}
     ${renderPanel('Quarterly QAPI analytical report', `
       ${renderKeyValueRow('Packet ID', payload.packetId)}
       ${renderKeyValueRow('Reporting period', `${roll.window.quarterStart} → ${roll.window.quarterEnd}`)}
       ${renderKeyValueRow('Data-through date', roll.window.dataThroughDate)}
-      ${renderKeyValueRow('Packet type', roll.window.packetType.toUpperCase())}
+      ${renderKeyValueRow('Packet readiness', reviewState.toUpperCase())}
       ${renderKeyValueRow('Policy refs', payload.policyIds.join(', '))}
     `)}
     ${renderPanel('Scope statement', `

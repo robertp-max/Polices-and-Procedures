@@ -1,367 +1,571 @@
 /**
- * Part A — Executive Narrative (universal, all archetypes).
+ * Part A — Executive Analysis.
  *
- * A render-time front matter that leads every packet: a story-driven executive
- * briefing synthesized ENTIRELY from the finished packet model (Part B). It is
- * extractive, never generative-of-fact — every number and chart datapoint comes
- * from values already in the model; UNKNOWN stays UNKNOWN (narrated, not filled).
- *
- * Works for any archetype: analytical packets (with a KPI dashboard) get the full
- * scorecard + domain charts; non-analytical packets degrade to a module-status
- * overview + decisions + how-to-read. Charts render only when their data exists.
+ * This is the Brad-style synthesis layer for packet output. It does not create
+ * new components, packet contracts, or evidence. It converts the already-rendered
+ * Part B packet model into a prose-first executive narrative with selective
+ * infographics only where they clarify the story. Every number comes from the
+ * model; UNKNOWN stays UNKNOWN.
  */
-import type { PacketModel, PacketRenderingProfile } from '@/policy/packets/contracts';
+import type {
+  PacketFinding,
+  PacketModel,
+  PacketModelModuleInstance,
+  PacketRenderingProfile,
+  QapiActionSnapshot,
+} from '@/policy/packets/contracts';
 import type { KpiDashboardCard, KpiDashboardModel } from '@/policy/packets/analysis/kpi/dashboardModel';
-import type { KpiSupplementalChartData } from '@/policy/packets/render/charts/kpiDashboardCharts';
+import type { QapiPacketModelPayload } from '@/policy/packets/qapi/buildQapiPacketModel';
 
 import { escapeHtml, renderNarrativePage } from '../chrome';
-import {
-  renderBulletChart,
-  renderDonut,
-  renderFunnel,
-  renderGauge,
-  renderLineChart,
-  renderLollipop,
-  renderRagHeatmap,
-  renderSlopeChart,
-  renderStatStrip,
-  type BulletRow,
-  type HeatCell,
-  type LollipopRow,
-  type RagStatus,
-  type SlopeSeries,
-} from './svgCharts';
-import {
-  resolveKpiDashboardModel,
-  resolveSupplementalCharts,
-} from '../modules/kpiDashboard';
+import { resolveKpiDashboardModel, resolveQapiRenderPayload } from '../modules/kpiDashboard';
 
 const UNKNOWN = 'UNKNOWN — NOT RECOVERED';
 
 interface PartAContext {
-  model: PacketModel;
-  profile: PacketRenderingProfile;
-  dashboard: KpiDashboardModel | null;
-  supplemental: readonly KpiSupplementalChartData[];
+  readonly model: PacketModel;
+  readonly qapi: QapiPacketModelPayload | null;
+  readonly dashboard: KpiDashboardModel | null;
+  readonly sourceModule: PacketModelModuleInstance | null;
 }
 
-/** Public entry — returns the concatenated Part A page sections + Part B divider. */
+interface ScoreCounts {
+  readonly total: number;
+  readonly met: number;
+  readonly below: number;
+  readonly unknown: number;
+  readonly other: number;
+}
+
 export function renderPartAPages(model: PacketModel, profile: PacketRenderingProfile): string {
-  const kpiModule = model.modules.find((m) => resolveKpiDashboardModel(m.payload) !== null);
-  const ctx: PartAContext = {
-    model,
-    profile,
-    dashboard: kpiModule ? resolveKpiDashboardModel(kpiModule.payload) : null,
-    supplemental: kpiModule ? resolveSupplementalCharts(kpiModule.payload) : [],
-  };
+  const ctx = buildContext(model);
+  const pageSpecs = partAPageSpecs(ctx);
+  const totalPages = pageSpecs.length;
+  let pageNumber = 1;
+  const page = (title: string, bodyHtml: string) =>
+    renderNarrativePage({
+      model,
+      profile,
+      title,
+      bodyHtml,
+      pageNumber: pageNumber++,
+      totalPages,
+    });
 
-  const pages: string[] = [];
-  let n = 1;
-  const total = ctx.dashboard ? 5 : 3;
-  const page = (title: string, body: string, opts: { isCover?: boolean; eyebrow?: string } = {}) =>
-    renderNarrativePage({ model, profile, title, eyebrow: opts.eyebrow, isCover: opts.isCover, bodyHtml: body, pageNumber: n++, totalPages: total });
-
-  pages.push(page(coverTitle(model), coverBody(ctx), { isCover: true, eyebrow: 'Care Indeed Home Health Care, Inc.' }));
-  pages.push(page('Quarter at a Glance', glanceBody(ctx)));
-  if (ctx.dashboard) {
-    pages.push(page('Performance vs Targets', performanceBody(ctx)));
-    pages.push(page('Domain Analysis', domainBody(ctx)));
-  }
-  pages.push(page('Decisions & Data Confidence', decisionsBody(ctx)));
-  pages.push(dividerPage(ctx, n++, total));
-  return pages.join('\n');
+  return pageSpecs.map((spec) => page(spec.title, spec.bodyHtml)).join('\n');
 }
 
-/* ─────────────────────────── scorecard synthesis ─────────────────────────── */
-interface Scored { card: KpiDashboardCard; status: RagStatus; value: number | null; }
-
-function scoreCards(dashboard: KpiDashboardModel | null): Scored[] {
-  if (!dashboard) return [];
-  return dashboard.cards.map((card) => ({ card, status: ragOf(card), value: card.currentValue.value }));
-}
-
-function ragOf(card: KpiDashboardCard): RagStatus {
-  if (card.currentValue.value === null || /unknown|not recovered/i.test(card.validationStatus)) return 'unknown';
-  const s = String(card.status).toLowerCase();
-  if (/(^|_)met|pass|exceed|on[-_ ]?track|within/.test(s) && !/not/.test(s)) return 'met';
-  if (/not[_ ]?met|below|missed|fail|breach|off[-_ ]?track/.test(s)) return 'below';
-  if (/approach|near|watch|warn|caution|trending/.test(s)) return 'near';
-  return 'near';
-}
-
-function counts(scored: readonly Scored[]) {
-  return {
-    total: scored.length,
-    met: scored.filter((s) => s.status === 'met').length,
-    near: scored.filter((s) => s.status === 'near').length,
-    below: scored.filter((s) => s.status === 'below').length,
-    unknown: scored.filter((s) => s.status === 'unknown').length,
-    recovered: scored.filter((s) => s.value !== null).length,
-  };
-}
-
-/* ─────────────────────────── cover page ─────────────────────────── */
-function coverTitle(model: PacketModel): string {
-  return `${humanize(model.identity.archetypeId)} Packet`;
-}
-
-function coverBody(ctx: PartAContext): string {
-  const period = periodLabel(ctx.model);
-  const scored = scoreCards(ctx.dashboard);
-  const c = counts(scored);
-  const stats = ctx.dashboard
-    ? renderStatStrip([
-      { label: 'Indicators met / exceeded', value: `${c.met}/${c.total}`, tone: 'met' },
-      { label: 'Near goal', value: String(c.near), tone: 'near' },
-      { label: 'Below target', value: String(c.below), tone: c.below > 0 ? 'below' : 'met' },
-      { label: 'Unverified this cycle', value: String(c.unknown), tone: c.unknown > 0 ? 'unknown' : 'met', sub: c.unknown > 0 ? 'flagged for source follow-up' : 'full recovery' },
-    ])
-    : renderStatStrip(moduleStatStrip(ctx.model));
-  return `
-    <p class="pa-sub">${escapeHtml(period)} · Part A · Executive Briefing &nbsp;|&nbsp; Part B · Evidence Appendices</p>
-    ${verdictBlock(ctx, c)}
-    ${stats}
-    <p class="pa-attribution">Narrative synthesized from Part B evidence — every figure and chart is extractive and traceable to a labeled appendix section; no values were generated. UNKNOWN indicators are shown honestly and never treated as zero.</p>
-  `;
-}
-
-function verdictBlock(ctx: PartAContext, c: ReturnType<typeof counts>): string {
-  const period = periodLabel(ctx.model);
-  const mover = biggestMover(ctx.dashboard);
-  if (!ctx.dashboard) {
-    const modules = ctx.model.modules.filter((m) => m.status !== 'not_applicable');
-    const complete = modules.filter((m) => m.status === 'complete').length;
-    return `<div class="pa-verdict"><p>This ${escapeHtml(humanize(ctx.model.identity.archetypeId))} packet for ${escapeHtml(period)} assembles ${modules.length} sections (${complete} complete). The evidence appendices (Part B) carry the authoritative record; the Committee is asked to review and act on the decisions summarized herein.</p></div>`;
-  }
-  const moverText = mover
-    ? ` Largest movement: ${escapeHtml(mover.label)} (${escapeHtml(mover.prior)} → ${escapeHtml(mover.current)}).`
-    : '';
-  const unknownText = c.unknown > 0
-    ? ` ${c.unknown} indicator(s) were not recovered from this cycle's source and are flagged for follow-up — not treated as zero.`
-    : ' All indicators were recovered from source.';
-  return `<div class="pa-verdict"><p>For ${escapeHtml(period)}, ${c.met} of ${c.total} quality indicators met or exceeded target, ${c.near} are near goal, and ${c.below} are below target.${moverText}${unknownText} The Governing Body is asked to ratify this report and act on the decisions in the "Decisions" section; every figure traces to the Part B appendices.</p></div>`;
-}
-
-/* ─────────────────────────── at a glance ─────────────────────────── */
-function glanceBody(ctx: PartAContext): string {
-  if (ctx.dashboard) {
-    const scored = scoreCards(ctx.dashboard);
-    const cells: HeatCell[] = scored.map((s) => ({
-      label: shortLabel(s.card.title),
-      status: s.status,
-      valueText: s.card.currentValue.value === null ? 'UNKNOWN' : s.card.currentValue.display,
-    }));
-    const slope = slopeSeries(ctx.dashboard);
-    const heatmap = renderRagHeatmap('pa-scorecard', 'Indicator scorecard', 'Every KPI at a glance — status by color, exact value labeled. Source: Appendix — KPI Dashboard.', cells);
-    const slopeChart = slope.length > 0
-      ? renderSlopeChart('pa-slope', 'Prior → current movement', 'Direction of change vs the prior period, for indicators with a recovered prior. Source: Appendix — KPI Dashboard (Prior vs Current).', slope)
-      : `<p class="pa-domain"><em>No comparable prior period was recovered this cycle, so quarter-over-quarter movement is not shown.</em></p>`;
-    return `${heatmap}${slopeChart}`;
-  }
-  const cells: HeatCell[] = ctx.model.modules
-    .filter((m) => m.status !== 'not_applicable')
-    .map((m) => ({ label: shortLabel(m.title), status: moduleStatus(m.status), valueText: humanize(m.status) }));
-  return renderRagHeatmap('pa-modules', 'Packet section status', 'Completion status of each packet section. Source: Part B appendices.', cells);
-}
-
-/* ─────────────────────────── performance vs targets ─────────────────────────── */
-function performanceBody(ctx: PartAContext): string {
-  const dashboard = ctx.dashboard!;
-  const scored = scoreCards(dashboard);
-  const c = counts(scored);
-  const bulletRows: BulletRow[] = scored
-    .filter((s) => s.card.target.value !== null)
-    .slice(0, 10)
-    .map((s) => ({
-      label: shortLabel(s.card.title),
-      value: s.value,
-      target: s.card.target.value,
-      unit: unitText(s.card.currentValue.unit),
-      status: s.status,
-    }));
-  const bullet = bulletRows.length > 0
-    ? renderBulletChart('pa-bullet', 'Indicators vs target', 'Bar = current value, orange tick = target. Hatched = unverified. Source: Appendix — KPI Dashboard.', bulletRows)
-    : '';
-  const pct = c.total > 0 ? Math.round((c.recovered / c.total) * 100) : null;
-  const gauge = renderGauge('pa-coverage', 'Evidence coverage', 'Share of indicators recovered from this cycle\'s source. Source: derived from Part B validation flags.', pct, `${c.recovered} of ${c.total} recovered`);
-  return `<div class="pa-split"><div>${bullet}</div><div>${gauge}</div></div>`;
-}
-
-/* ─────────────────────────── domain analysis (varied charts) ─────────────────────────── */
-function domainBody(ctx: PartAContext): string {
-  const blocks: string[] = [];
-  const adverse = findChart(ctx.supplemental, 'adverse-events-by-category');
-  if (adverse && hasAnyValue(adverse)) {
-    blocks.push(domain('Adverse Events', 'Incident mix for the period; open RCAs are noted in the appendix. Triggers indicate review thresholds, not conclusions.',
-      renderDonut('pa-adverse', 'Adverse events by category', `${adverse.caption} Source: Appendix — Findings / Incident Log.`, adverse.sourceData.map((r) => ({ label: r.label, value: r.value })), adverse.valueLabel)));
-  }
-  const infection = findChart(ctx.supplemental, 'infection-trends-classification');
-  if (infection && hasAnyValue(infection)) {
-    const points = infection.sourceData.map((r) => ({ label: shortLabel(r.label), value: r.value }));
-    blocks.push(domain('Infection Control', 'Infection classification counts for the period. Values are recovered from the infection log; unverified categories are shown as gaps.',
-      renderLineChart('pa-infection', 'Infection classification', `${infection.caption} Source: Appendix — Infection Log.`, points, null, '')));
-  }
-  const docs = findChart(ctx.supplemental, 'documentation-deficiencies-by-type');
-  if (docs && hasAnyValue(docs)) {
-    const rows: LollipopRow[] = docs.sourceData.map((r) => ({ label: shortLabel(r.label), value: r.value }));
-    blocks.push(domain('Documentation & Chart Audit', 'Documentation deficiencies by type from the chart audit. Higher counts flag review priorities.',
-      renderLollipop('pa-docs', 'Documentation deficiencies by type', `${docs.caption} Source: Appendix — Chart Audit.`, rows)));
-  }
-  const pip = findChart(ctx.supplemental, 'pip-cap-status-by-stage');
-  if (pip && hasAnyValue(pip)) {
-    const stages = pip.sourceData
-      .filter((r) => r.value !== null && Number.isFinite(r.value))
-      .map((r) => ({ label: shortLabel(r.label), value: r.value as number }));
-    if (stages.length > 0) {
-      blocks.push(domain('Workflow Triggers & PIP/CAPA', 'Trigger pipeline by decision state. Triggers are review thresholds — they are NOT determinations, discipline, or conclusions.',
-        renderFunnel('pa-pip', 'Trigger / PIP pipeline by stage', `${pip.caption} Source: Appendix — Trigger Register.`, stages)));
-    }
-  }
-  if (blocks.length === 0) {
-    return `<p class="pa-domain"><em>Domain-level detail was not recovered from this cycle's source. See Part B appendices for the full evidence record.</em></p>`;
-  }
-  return blocks.join('\n');
-}
-
-function domain(title: string, prose: string, chart: string): string {
-  return `<div class="pa-domain"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(prose)}</p>${chart}</div>`;
-}
-
-/* ─────────────────────────── decisions + data confidence ─────────────────────────── */
-function decisionsBody(ctx: PartAContext): string {
-  const period = periodLabel(ctx.model);
-  const scored = scoreCards(ctx.dashboard);
-  const c = counts(scored);
-  const items: string[] = [];
-  items.push(`<li><b>Ratify the ${escapeHtml(period)} ${escapeHtml(humanize(ctx.model.identity.archetypeId))} report.</b> Basis: ${ctx.dashboard ? `${c.met}/${c.total} indicators met, ${c.below} below target` : `${ctx.model.modules.filter((m) => m.status !== 'not_applicable').length} sections assembled`} (see Part B). Action: QAPI Committee / Governing Body.</li>`);
-  if (ctx.dashboard && c.below > 0) {
-    const belowNames = scored.filter((s) => s.status === 'below').slice(0, 4).map((s) => shortLabel(s.card.title)).join(', ');
-    items.push(`<li><b>Address below-target indicators.</b> ${escapeHtml(belowNames)}${c.below > 4 ? ', …' : ''} — review corrective actions in Appendix — Findings & Determinations. Action: DON / QAPI Chair.</li>`);
-  }
-  const hasTriggers = ctx.supplemental.some((s) => s.kind === 'pip-cap-status-by-stage' && hasAnyValue(s));
-  if (hasTriggers) {
-    items.push(`<li><b>Review workflow triggers.</b> Triggers are review thresholds, not determinations — see Appendix — Trigger Register before any action. Action: QAPI Committee.</li>`);
-  }
-  if (ctx.dashboard && c.unknown > 0) {
-    items.push(`<li><b>Approve source follow-up for unverified indicators.</b> ${c.unknown} indicator(s) not recovered this cycle. Action: QA Coordinator to reconcile source for next period.</li>`);
-  }
-
-  const pct = c.total > 0 ? Math.round((c.recovered / c.total) * 100) : null;
-  const gauge = ctx.dashboard
-    ? renderGauge('pa-coverage2', 'Evidence coverage this cycle', 'Recovered vs unverified indicators. Unverified are flagged, never zero-filled. Source: Part B validation flags.', pct, `${c.recovered} of ${c.total} recovered`)
-    : '';
-  const unknownNames = scored.filter((s) => s.status === 'unknown').slice(0, 6).map((s) => shortLabel(s.card.title));
-  const confidenceProse = ctx.dashboard
-    ? (c.unknown > 0
-      ? `<p class="pa-domain">${c.unknown} of ${c.total} indicators were not recovered from this cycle's source (${escapeHtml(unknownNames.join(', '))}${c.unknown > unknownNames.length ? ', …' : ''}) and are reported as ${UNKNOWN}. This reflects source completeness for the period, not a performance result; they are flagged for reconciliation next cycle.</p>`
-      : `<p class="pa-domain">All ${c.total} indicators were recovered from source this cycle. No values were estimated or imputed.</p>`)
-    : `<p class="pa-domain">This packet is assembled from ${ctx.model.modules.filter((m) => m.status !== 'not_applicable').length} evidence sections; see Part B for the authoritative record.</p>`;
-
-  return `
-    <div class="pa-domain"><h3>Decisions Requested</h3><ul class="pa-decisions">${items.join('')}</ul></div>
-    <div class="pa-domain"><h3>Data Confidence &amp; Gaps</h3>${confidenceProse}${gauge}</div>
-    <div class="pa-domain"><h3>How to Read This Packet</h3><p>Part A summarizes and interprets. <b>Part B — the appendices that follow — is the authoritative evidence record.</b> Every figure and chart above traces to a labeled appendix section.</p></div>
-  `;
-}
-
-/* ─────────────────────────── Part B divider ─────────────────────────── */
-function dividerPage(ctx: PartAContext, pageNumber: number, totalPages: number): string {
+export function renderPartBDividerPage(
+  model: PacketModel,
+  profile: PacketRenderingProfile,
+): string {
   const body = `
     <div class="pa-divider-eyebrow">Part B</div>
     <div class="pa-divider-title">Evidence Appendices</div>
-    <p class="pa-divider-sub">The authoritative, survey-defensible record for ${escapeHtml(periodLabel(ctx.model))}: source validation, KPI dashboard, findings, trends, workflow triggers, determinations, decisions, approvals, and attachments. Every figure in Part A traces here.</p>
+    <p class="pa-divider-sub">The authoritative evidence record follows: source validation, KPI dashboard, findings, trends, workflow triggers, determinations, decisions, approvals, attachments, source registers, and forms.</p>
   `;
   return renderNarrativePage({
-    model: ctx.model,
-    profile: ctx.profile,
+    model,
+    profile,
     title: '',
     isCover: false,
     bodyHtml: `<div class="pa-divider">${body}</div>`,
-    pageNumber,
-    totalPages,
-  }).replace('class="pg pg-partA"', 'class="pg pg-partA pa-divider"');
+    pageNumber: 1,
+    totalPages: 1,
+  })
+    .replace('class="pg pg-partA"', 'class="pg pg-partB pa-divider"')
+    .replace('data-part="A"', 'data-part="B"');
 }
 
-/* ─────────────────────────── helpers ─────────────────────────── */
-function slopeSeries(dashboard: KpiDashboardModel): SlopeSeries[] {
-  return dashboard.cards
-    .filter((card) => card.priorValue.value !== null && card.currentValue.value !== null)
-    .slice(0, 8)
-    .map((card) => ({
-      label: shortLabel(card.title),
-      prior: card.priorValue.value,
-      current: card.currentValue.value,
-      unit: unitText(card.currentValue.unit),
-    }));
+function buildContext(model: PacketModel): PartAContext {
+  const sourceModule = model.modules.find((module) => resolveQapiRenderPayload(module.payload) !== null) ?? null;
+  const payload = sourceModule ? resolveQapiRenderPayload(sourceModule.payload) : null;
+  const qapi = isRecord(payload?.qapiModel)
+    ? (payload.qapiModel as unknown as QapiPacketModelPayload)
+    : null;
+  return {
+    model,
+    sourceModule,
+    qapi,
+    dashboard: sourceModule ? resolveKpiDashboardModel(sourceModule.payload) : null,
+  };
 }
 
-function biggestMover(dashboard: KpiDashboardModel | null): { label: string; prior: string; current: string } | null {
-  if (!dashboard) return null;
-  const movers = dashboard.cards
-    .filter((c) => c.priorValue.value !== null && c.currentValue.value !== null)
-    .map((c) => ({ card: c, delta: Math.abs((c.currentValue.value as number) - (c.priorValue.value as number)) }))
-    .sort((a, b) => b.delta - a.delta);
-  const top = movers[0];
-  return top ? { label: shortLabel(top.card.title), prior: top.card.priorValue.display, current: top.card.currentValue.display } : null;
-}
+function partAPageSpecs(ctx: PartAContext): Array<{ title: string; bodyHtml: string }> {
+  if (!ctx.qapi || !ctx.dashboard) {
+    return [
+      { title: 'Part A — Executive Analysis', bodyHtml: genericExecutiveBody(ctx) },
+      { title: 'Evidence Story and Connected Risk', bodyHtml: genericEvidenceBody() },
+      { title: 'Decisions and Evidence Limits', bodyHtml: genericDecisionsBody(ctx) },
+    ];
+  }
 
-function moduleStatStrip(model: PacketModel) {
-  const modules = model.modules.filter((m) => m.status !== 'not_applicable');
   return [
-    { label: 'Sections', value: String(modules.length) },
-    { label: 'Complete', value: String(modules.filter((m) => m.status === 'complete').length), tone: 'met' as RagStatus },
-    { label: 'In progress', value: String(modules.filter((m) => m.status === 'in_progress').length), tone: 'near' as RagStatus },
-    { label: 'Blocked', value: String(modules.filter((m) => m.status === 'blocked').length), tone: 'below' as RagStatus },
+    { title: 'Part A — Executive Analysis', bodyHtml: executiveSummaryBody(ctx) },
+    { title: 'Accuracy, Missing Values, and Readiness', bodyHtml: accuracyMissingBody(ctx) },
+    { title: 'Evidence Story', bodyHtml: evidenceStoryBody(ctx) },
+    { title: 'Connected Risk Story', bodyHtml: connectedRiskBody(ctx) },
+    { title: 'PIP / CAP / RCA Determinations', bodyHtml: determinationsBody(ctx) },
+    { title: 'Decisions and Accountability', bodyHtml: decisionsBody(ctx) },
+    { title: 'Evidence Limits and Final Review Notes', bodyHtml: evidenceLimitsBody(ctx) },
   ];
 }
 
-function moduleStatus(status: string): RagStatus {
-  if (status === 'complete') return 'met';
-  if (status === 'in_progress') return 'near';
-  if (status === 'blocked' || status === 'stale') return 'below';
-  return 'unknown';
+function executiveSummaryBody(ctx: PartAContext): string {
+  if (!ctx.qapi || !ctx.dashboard) {
+    return genericExecutiveBody(ctx);
+  }
+  const counts = scoreCounts(ctx.dashboard);
+  const key = keyEvidence(ctx);
+  const lockText = lockStatusText(ctx);
+  const below = belowTargetCards(ctx.dashboard).map((card) => card.title);
+
+  return `
+    <p class="pa-sub">${escapeHtml(periodLabel(ctx.model))} · Executive analysis synthesized from Part B evidence</p>
+    <div class="pa-verdict">
+      <p>The packet is a draft analytical record that is strong enough for leadership review but not ready for final lock. The recovered evidence shows ${counts.met} of ${counts.total} KPI indicator(s) met target, ${counts.below} below target, and ${counts.unknown} unverified because source values were not recovered. ${escapeHtml(lockText)}.</p>
+    </div>
+    ${kpiReadinessInfographic(counts)}
+    <div class="pa-domain">
+      <h3>Executive Summary</h3>
+      <p>The overall QAPI picture is mixed: census and governance attendance are recovered, several patient-safety and performance domains are measurable, and multiple indicators remain provisional because the source did not provide validated numerators or denominators. This should be treated as a review-ready draft, not a final report.</p>
+      <p>The most material findings are the below-target indicators and the workflow triggers that require authorized human review. ${below.length > 0 ? `Below-target indicators include ${escapeHtml(joinHuman(below.slice(0, 5)))}${below.length > 5 ? ' and additional items listed in Part B' : ''}.` : 'No below-target KPI indicator was recovered from the KPI dashboard.'} These findings should be read alongside the trigger register and determinations appendix before any final action is taken.</p>
+      <p>What appears acceptable is limited to recovered, validated evidence. ${key.attendance ? `Governance attendance is recovered as ${escapeHtml(key.attendance)}.` : 'Governance attendance requires review in Part B.'} ${key.census ? `Population scope is recovered as ${escapeHtml(key.census)}.` : 'Population scope remains incomplete or unavailable.'} Unknown fields are not interpreted as zero, compliant, or not applicable.</p>
+      <p>Leadership should use this packet to decide which below-target domains need owner assignment, which triggers should move to authorized review, and which missing source elements must be reconciled before lock. Part B remains the source of truth for each figure, source record, and validation flag.</p>
+    </div>
+    <p class="pa-attribution">Narrative synthesized from Part B structured evidence. No values were generated; UNKNOWN values remain unrecovered and require source follow-up.</p>
+  `;
 }
 
-function findChart(supplemental: readonly KpiSupplementalChartData[], kind: string): KpiSupplementalChartData | undefined {
-  return supplemental.find((s) => s.kind === kind);
+function accuracyMissingBody(ctx: PartAContext): string {
+  if (!ctx.qapi || !ctx.dashboard) {
+    return genericExecutiveBody(ctx);
+  }
+  const counts = scoreCounts(ctx.dashboard);
+  const unknown = unknownCards(ctx.dashboard);
+  const below = belowTargetCards(ctx.dashboard);
+  const key = keyEvidence(ctx);
+
+  return `
+    <p class="pa-sub">${escapeHtml(periodLabel(ctx.model))} · Accuracy and missing-value review</p>
+    <div class="pa-domain">
+      <h3>Accuracy Check</h3>
+      <p>Brad’s packet narrative treats recovered values as source-backed only when the value survives the structured QAPI model and appears in Part B. Values that are missing, provisional, or human-review-required remain explicitly marked and are not softened into favorable conclusions.</p>
+      <p>Current KPI state: ${counts.met} met target, ${counts.below} below target, ${counts.unknown} unrecovered, and ${counts.other} with another status. The below-target set should drive owner assignment; the unrecovered set should drive source reconciliation.</p>
+    </div>
+    ${summaryTable(ctx)}
+    <div class="pa-domain">
+      <h3>Missing Values and Review Priorities</h3>
+      <p>${unknown.length > 0 ? `The unrecovered indicators are ${escapeHtml(joinHuman(unknown.map((card) => card.title)))}. These should stay UNKNOWN until the source provides a defensible numerator, denominator, or explicit total.` : 'No unrecovered KPI cards were present in the current dashboard model.'}</p>
+      <p>${below.length > 0 ? `Below-target indicators requiring review include ${escapeHtml(joinHuman(below.map((card) => card.title)))}.` : 'No below-target KPI cards were present in the current dashboard model.'} Population scope is ${escapeHtml(key.census ?? UNKNOWN)} and active census is ${escapeHtml(key.activeCensus ?? UNKNOWN)}.</p>
+    </div>
+  `;
 }
 
-function hasAnyValue(chart: KpiSupplementalChartData): boolean {
-  return chart.sourceData.some((r) => r.value !== null && Number.isFinite(r.value));
+function evidenceStoryBody(ctx: PartAContext): string {
+  if (!ctx.qapi || !ctx.dashboard) {
+    return genericEvidenceBody();
+  }
+  const key = keyEvidence(ctx);
+
+  return `
+    <p class="pa-sub">${escapeHtml(periodLabel(ctx.model))} · Narrative evidence presentation</p>
+    <div class="pa-domain">
+      <h3>What the Evidence Shows</h3>
+      <p>The reviewed population is ${escapeHtml(key.census ?? UNKNOWN)}, with active census ${escapeHtml(key.activeCensus ?? UNKNOWN)}. Hospitalization/adverse-event evidence is recovered as ${escapeHtml(key.adverseEvents ?? UNKNOWN)}, infections as ${escapeHtml(key.infections ?? UNKNOWN)}, medication-reconciliation evidence as ${escapeHtml(key.medicationReconciliation ?? UNKNOWN)}, complaints as ${escapeHtml(key.complaints ?? UNKNOWN)}, active PIPs as ${escapeHtml(key.activePips ?? UNKNOWN)}, open CAPs or RCAs as ${escapeHtml(key.openCapRca ?? UNKNOWN)}, and PIP trigger count as ${escapeHtml(key.pipTriggers ?? UNKNOWN)}.</p>
+      <p>These facts matter because the packet is not merely counting events; it is identifying where leadership can safely act and where it cannot. Recovered below-target indicators identify potential intervention areas. Unverified indicators identify evidence gaps that must be closed before conclusions are certified.</p>
+    </div>
+    ${evidenceScopeInfographic(ctx)}
+    ${recordsTable(ctx)}
+  `;
 }
 
-function unitText(unit: unknown): string {
-  const u = String(unit ?? '').toLowerCase();
-  if (u.includes('percent') || u === '%') return '%';
-  if (u.includes('per_100') || u.includes('per 100')) return ' per 100';
-  if (u.includes('per_1000') || u.includes('per 1000')) return '/1k';
-  if (u.includes('count') || u.includes('number') || u.includes('integer')) return '';
-  return '';
+function connectedRiskBody(ctx: PartAContext): string {
+  if (!ctx.qapi || !ctx.dashboard) {
+    return genericEvidenceBody();
+  }
+  const findings = ctx.qapi.findings;
+  const workflows = ctx.qapi.workflowEvaluations;
+  const triggerRows = ctx.qapi.triggerRegister;
+  const unknown = unknownCards(ctx.dashboard);
+  const below = belowTargetCards(ctx.dashboard);
+
+  return `
+    <p class="pa-sub">${escapeHtml(periodLabel(ctx.model))} · Connected risk narrative</p>
+    <div class="pa-domain">
+      <h3>Connected Findings and Risk Story</h3>
+      <p>The connected pattern is: ${below.length} below-target KPI indicator(s), ${findings.length} structured finding(s), ${workflows.length} workflow evaluation(s), and ${triggerRows.length} trigger-register row(s). A trigger is not a completed PIP, CAP, RCA, or personnel determination; it is a threshold requiring authorized review.</p>
+      <p>${findings.length > 0 ? escapeHtml(findingNarrative(findings)) : 'No structured finding narrative was recovered beyond the KPI and trigger evidence in Part B.'}</p>
+      <p>${unknown.length > 0 ? `Evidence limitations are material: ${escapeHtml(joinHuman(unknown.slice(0, 6).map((card) => card.title)))}${unknown.length > 6 ? ' and additional indicators' : ''} are not recovered. Those gaps should be assigned for source reconciliation, not treated as favorable performance.` : 'The KPI dashboard did not identify unrecovered indicators in the current model.'}</p>
+    </div>
+    <div class="pa-domain">
+      <h3>Professional Review Note</h3>
+      <p>This section is intentionally narrative rather than chart-heavy. Charts and tables appear only when they clarify the evidence path. The controlling record remains Part B, where each KPI card, trigger row, finding, and validation issue can be reviewed directly.</p>
+    </div>
+  `;
+}
+
+function determinationsBody(ctx: PartAContext): string {
+  const qapi = ctx.qapi;
+  const dashboard = ctx.dashboard;
+  if (!qapi || !dashboard) {
+    return genericDecisionsBody(ctx);
+  }
+  const triggerStates = countBy(qapi.triggerRegister.map((row) => row.decisionState));
+  const openReviews = qapi.workflowEvaluations.filter((evaluation) =>
+    evaluation.decisionState === 'PENDING AUTHORIZED REVIEW'
+    || evaluation.decisionState === 'CANDIDATE — NEEDS VALIDATION'
+    || evaluation.reviewedAt === null
+  );
+  const pipsOpened = qapi.trendSnapshot.pips.filter((pip) => pip.status !== null).length;
+
+  return `
+    <p class="pa-sub">${escapeHtml(periodLabel(ctx.model))} · Thresholds, determinations, and workflow state</p>
+    <div class="pa-domain">
+      <h3>PIP / CAP / RCA / Workflow Determinations</h3>
+      <p>Part B shows ${qapi.sourceCounts.pipTriggerScenarios.display} PIP trigger scenario(s), ${qapi.triggerRegister.length} trigger-register row(s), ${openReviews.length} review(s) pending or not fully authorized, and ${pipsOpened} PIP record(s) opened in the structured trend snapshot. These are separate facts. A trigger means review is required; it does not by itself prove that a PIP, CAP, RCA, personnel action, or corrective action has been opened.</p>
+      <p>Trigger states recovered in Part B: ${escapeHtml(formatCounts(triggerStates))}. Personnel-review evidence is limited to ${escapeHtml(String(qapi.sourceCounts.personnelReviewTriggers.display))}; restricted detail remains in the personnel addendum reference.</p>
+    </div>
+    ${triggerFlowInfographic(qapi, openReviews.length, pipsOpened)}
+  `;
+}
+
+function decisionsBody(ctx: PartAContext): string {
+  const qapi = ctx.qapi;
+  const dashboard = ctx.dashboard;
+  if (!qapi || !dashboard) {
+    return genericDecisionsBody(ctx);
+  }
+  const counts = scoreCounts(dashboard);
+  const actions = qapi.trendSnapshot.actionItems;
+
+  return `
+    <p class="pa-sub">${escapeHtml(periodLabel(ctx.model))} · Actionable decisions</p>
+    <div class="pa-domain">
+      <h3>Decisions and Accountability</h3>
+      <ul class="pa-decisions">
+        <li><b>Review the draft QAPI packet for readiness.</b> Basis: ${counts.met}/${counts.total} KPI indicator(s) met, ${counts.below} below target, ${counts.unknown} unverified. Authority: QAPI Committee / Governing Body. Appendix reference: KPI Dashboard and Validation.</li>
+        <li><b>Assign owners for below-target indicators and open workflow reviews.</b> Basis: ${qapi.findings.length} finding(s), ${qapi.workflowEvaluations.length} workflow evaluation(s), and ${qapi.triggerRegister.length} trigger row(s). Authority: QAPI Committee. Owner after approval: committee-assigned owner or role listed in Part B.</li>
+        <li><b>Approve source follow-up for unrecovered values before final lock.</b> Basis: ${counts.unknown} unverified KPI indicator(s) and source validation limitations. Authority: QA Coordinator / Administrator. Appendix reference: Source Validation and KPI Dashboard.</li>
+        ${actions.map((action) => decisionItem(action)).join('')}
+      </ul>
+    </div>
+  `;
+}
+
+function evidenceLimitsBody(ctx: PartAContext): string {
+  const dashboard = ctx.dashboard;
+  const unknown = dashboard ? unknownCards(dashboard) : [];
+
+  return `
+    <p class="pa-sub">${escapeHtml(periodLabel(ctx.model))} · Final review and presentation controls</p>
+    <div class="pa-domain">
+      <h3>Evidence Limitations</h3>
+      <p>Unknown values mean the source did not provide a recoverable value. They are not interpreted as zero, compliant, or not applicable. Provisional or human-review-required values must be resolved in Part B before the packet can be certified or locked.</p>
+      <p>Current lifecycle status is ${escapeHtml(formatStatus(ctx.model.identity.status))}; this Part A narrative is therefore a review aid, not a final certification.</p>
+    </div>
+    <div class="pa-domain">
+      <h3>Presentation Review</h3>
+      <p>The packet is formatted as a professional leadership packet: each major narrative section starts on a new page, tables wrap instead of truncating, and each visual element is used as an infographic summary rather than as decoration. ${unknown.length > 0 ? `The unresolved items to keep visible during final review are ${escapeHtml(joinHuman(unknown.map((card) => card.title)))}.` : 'No unresolved KPI display items were identified in the current dashboard model.'}</p>
+      <p>Before lock, reviewers should confirm that every source-backed value in Part A agrees with the corresponding Part B appendix row and that no UNKNOWN item has been converted into a favorable conclusion.</p>
+    </div>
+  `;
+}
+
+function genericExecutiveBody(ctx: PartAContext): string {
+  const activeModules = ctx.model.modules.filter((module) => module.status !== 'not_applicable');
+  return `
+    <p class="pa-sub">${escapeHtml(periodLabel(ctx.model))} · Executive analysis synthesized from Part B evidence</p>
+    <div class="pa-verdict"><p>This packet is assembled for leadership review from ${activeModules.length} evidence section(s). Part B remains the authoritative source record. The narrative below identifies what is complete, what requires review, and what should be assigned before approval or lock.</p></div>
+    <div class="pa-domain"><h3>Executive Summary</h3><p>The packet structure is present, but this archetype does not expose QAPI KPI records to the narrative layer. The committee should review section completion, validation status, signatures, and source evidence in Part B before any final determination.</p></div>
+    ${moduleStatusTable(ctx.model)}
+  `;
+}
+
+function genericEvidenceBody(): string {
+  return `
+    <div class="pa-domain"><h3>What the Evidence Shows</h3><p>The evidence record is organized in the appendices that follow. Each module title, status, and payload remains in Part B; Part A does not create new facts.</p></div>
+    <div class="pa-domain"><h3>Connected Findings and Risk Story</h3><p>No archetype-specific finding map was exposed to Part A. Treat this narrative as a routing note and complete the review from the appendices.</p></div>
+  `;
+}
+
+function genericDecisionsBody(ctx: PartAContext): string {
+  return `
+    <div class="pa-domain"><h3>Decisions and Accountability</h3><ul class="pa-decisions"><li><b>Review packet readiness.</b> Basis: ${ctx.model.modules.length} module(s) in Part B. Authority: packet owner / approving body.</li></ul></div>
+    <div class="pa-domain"><h3>Evidence Limitations</h3><p>Part A has no independent evidence source. Use Part B as the controlling record.</p></div>
+  `;
+}
+
+function summaryTable(ctx: PartAContext): string {
+  const key = keyEvidence(ctx);
+  return `<table class="data-table"><caption>Executive evidence snapshot</caption><thead><tr><th>Evidence area</th><th>Recovered value</th><th>Why it matters</th><th>Source</th></tr></thead><tbody>${[
+    row('Population reviewed', key.census, 'Defines the denominator and scope for QAPI review.', 'KPI Dashboard / Source Counts'),
+    row('Adverse events', key.adverseEvents, 'Signals patient-safety review pressure and potential RCA/CAP needs.', 'Adverse Event Records'),
+    row('Infections', key.infections, 'Shows infection-control surveillance volume for the period.', 'Infection Records'),
+    row('Documentation findings', key.documentationDefects, 'Identifies chart-audit and care-plan documentation risk.', 'Chart Audit Records'),
+    row('Medication reconciliation', key.medicationReconciliation, 'Highlights a high-risk transition-of-care control.', 'Documentation Findings'),
+    row('Complaints', key.complaints, 'Frames patient/family grievance and service-recovery workload.', 'Complaint Records'),
+    row('PIP triggers', key.pipTriggers, 'Marks thresholds requiring authorized review, not automatic PIP creation.', 'Trigger Register'),
+    row('Open CAPs / RCAs', key.openCapRca, 'Shows unresolved corrective-action or root-cause workload.', 'CAP/RCA Records'),
+  ].join('')}</tbody></table>`;
+}
+
+function recordsTable(ctx: PartAContext): string {
+  const qapi = ctx.qapi;
+  if (!qapi) return '';
+  const rows = [
+    row('Structured findings', String(qapi.findings.length), findingSources(qapi.findings), 'Findings'),
+    row('Workflow evaluations', String(qapi.workflowEvaluations.length), 'Trigger evaluations requiring validation or authorization review.', 'Workflow Evaluations'),
+    row('Trigger register rows', String(qapi.triggerRegister.length), 'Operational bridge from evidence threshold to review state.', 'Trigger Register'),
+    row('Action items', String(qapi.trendSnapshot.actionItems.length), 'Leadership follow-up items recovered from the source.', 'Action Register'),
+    row('Personnel review triggers', String(qapi.sourceCounts.personnelReviewTriggers.display), 'Restricted personnel-review threshold count; details remain sealed.', 'Personnel Addendum Reference'),
+  ].join('');
+  return `<table class="data-table"><caption>Structured record grounding used by Part A</caption><thead><tr><th>Record family</th><th>Count / value</th><th>Interpretation</th><th>Appendix</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function kpiReadinessInfographic(counts: ScoreCounts): string {
+  if (counts.total === 0) return '';
+  const recovered = counts.total - counts.unknown;
+  const cards = [
+    infographicMetric('Met target', counts.met, 'Recovered indicators meeting target', 'met'),
+    infographicMetric('Below target', counts.below, 'Requires review or owner assignment', 'below'),
+    infographicMetric('Unverified', counts.unknown, 'Source value not recovered', 'unknown'),
+    infographicMetric('Recovered', recovered, `${formatPercent(recovered, counts.total)} of KPI set`, 'neutral'),
+  ].join('');
+  const bar = [
+    barSegment('Met', counts.met, counts.total, 'met'),
+    barSegment('Below', counts.below, counts.total, 'below'),
+    barSegment('Unverified', counts.unknown, counts.total, 'unknown'),
+    barSegment('Other', counts.other, counts.total, 'neutral'),
+  ].join('');
+  return `
+    <div class="pa-infographic pa-score-infographic" role="group" aria-label="KPI readiness at a glance">
+      <div class="pa-info-head"><span>KPI readiness at a glance</span><b>${escapeHtml(String(counts.total))} indicators</b></div>
+      <div class="pa-info-grid">${cards}</div>
+      <div class="pa-stack" aria-label="KPI status distribution">${bar}</div>
+      <div class="pa-info-note">Infographic is descriptive only; Part B remains the source record for each indicator and validation flag.</div>
+    </div>
+  `;
+}
+
+function evidenceScopeInfographic(ctx: PartAContext): string {
+  const key = keyEvidence(ctx);
+  const items = [
+    scopeTile('Population', key.census, 'reviewed'),
+    scopeTile('Active census', key.activeCensus, 'current scope'),
+    scopeTile('Adverse events', key.adverseEvents, 'safety signal'),
+    scopeTile('Infections', key.infections, 'surveillance'),
+    scopeTile('Complaints', key.complaints, 'service recovery'),
+    scopeTile('PIP triggers', key.pipTriggers, 'review threshold'),
+  ].join('');
+  return `
+    <div class="pa-infographic pa-scope-infographic" role="group" aria-label="Evidence scope snapshot">
+      <div class="pa-info-head"><span>Evidence scope snapshot</span><b>Recovered fields only</b></div>
+      <div class="pa-scope-grid">${items}</div>
+    </div>
+  `;
+}
+
+function triggerFlowInfographic(
+  qapi: QapiPacketModelPayload,
+  openReviews: number,
+  pipsOpened: number,
+): string {
+  const steps = [
+    flowStep('Triggers', qapi.triggerRegister.length, 'threshold rows'),
+    flowStep('Review', openReviews, 'pending / not fully authorized'),
+    flowStep('PIPs opened', pipsOpened, 'structured records'),
+    flowStep('Actions', qapi.trendSnapshot.actionItems.length, 'follow-up items'),
+  ].join('');
+  return `
+    <div class="pa-infographic pa-flow-infographic" role="group" aria-label="Trigger to action map">
+      <div class="pa-info-head"><span>Trigger-to-action map</span><b>Do not collapse these steps</b></div>
+      <div class="pa-flow">${steps}</div>
+      <div class="pa-info-note">A trigger is a review threshold. It becomes a PIP, CAP, RCA, personnel action, or action item only after authorized review in Part B.</div>
+    </div>
+  `;
+}
+
+function infographicMetric(
+  label: string,
+  value: number,
+  note: string,
+  tone: 'met' | 'below' | 'unknown' | 'neutral',
+): string {
+  return `<div class="pa-info-card pa-info-${tone}"><b>${escapeHtml(value)}</b><span>${escapeHtml(label)}</span><small>${escapeHtml(note)}</small></div>`;
+}
+
+function scopeTile(label: string, value: string | null, note: string): string {
+  const isUnknownValue = value === null || /unknown|not recovered/i.test(value);
+  const tone = isUnknownValue ? 'unknown' : 'neutral';
+  return `<div class="pa-scope-tile pa-info-${tone}"><span>${escapeHtml(label)}</span><b>${escapeHtml(value ?? UNKNOWN)}</b><small>${escapeHtml(note)}</small></div>`;
+}
+
+function flowStep(label: string, value: number, note: string): string {
+  return `<div class="pa-flow-step"><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b><small>${escapeHtml(note)}</small></div>`;
+}
+
+function barSegment(
+  label: string,
+  value: number,
+  total: number,
+  tone: 'met' | 'below' | 'unknown' | 'neutral',
+): string {
+  if (value <= 0 || total <= 0) return '';
+  return `<span class="pa-stack-seg pa-info-${tone}" style="width:${formatPercent(value, total)}" title="${escapeHtml(label)}: ${escapeHtml(value)}">${escapeHtml(label)} ${escapeHtml(value)}</span>`;
+}
+
+function formatPercent(value: number, total: number): string {
+  if (total <= 0) return '0%';
+  return `${String(Math.max(0, Math.min(100, Math.round((value / total) * 100))))}%`;
+}
+
+function moduleStatusTable(model: PacketModel): string {
+  const rows = model.modules
+    .filter((module) => module.status !== 'not_applicable')
+    .map((module) => row(module.title, module.status, 'Review the corresponding appendix section.', module.moduleId))
+    .join('');
+  return `<table class="data-table"><caption>Part B module status</caption><thead><tr><th>Section</th><th>Status</th><th>Review note</th><th>Module</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function keyEvidence(ctx: PartAContext): Record<string, string | null> {
+  const dashboard = ctx.dashboard;
+  const qapi = ctx.qapi;
+  return {
+    census: cardDisplay(dashboard, /patients|episodes|scope/i) ?? displayRecovered(qapi?.sourceCounts.episodesTotal.display),
+    activeCensus: cardDisplay(dashboard, /active census/i) ?? displayRecovered(qapi?.sourceCounts.activeCensus.display),
+    adverseEvents: cardDisplay(dashboard, /adverse event/i) ?? displayRecovered(qapi?.sourceCounts.hospitalizations.display),
+    infections: cardDisplay(dashboard, /infection/i),
+    documentationDefects: cardDisplay(dashboard, /documentation defect/i),
+    medicationReconciliation: cardDisplay(dashboard, /medication[- ]reconciliation/i),
+    complaints: cardDisplay(dashboard, /complaint/i),
+    activePips: cardDisplay(dashboard, /active pips/i),
+    openCapRca: cardDisplay(dashboard, /open caps|rcas/i),
+    pipTriggers: cardDisplay(dashboard, /pip trigger/i) ?? displayRecovered(qapi?.sourceCounts.pipTriggerScenarios.display),
+    attendance: cardDisplay(dashboard, /attendance/i) ?? attendanceDisplay(qapi),
+  };
+}
+
+function scoreCounts(dashboard: KpiDashboardModel): ScoreCounts {
+  const cards = dashboard.cards;
+  const met = cards.filter((card) => isMet(card)).length;
+  const below = cards.filter((card) => isBelow(card)).length;
+  const unknown = cards.filter((card) => isUnknown(card)).length;
+  return {
+    total: cards.length,
+    met,
+    below,
+    unknown,
+    other: cards.length - met - below - unknown,
+  };
+}
+
+function isMet(card: KpiDashboardCard): boolean {
+  return card.currentValue.value !== null && /met|pass|exceed|within/i.test(String(card.status)) && !/not/i.test(String(card.status));
+}
+
+function isBelow(card: KpiDashboardCard): boolean {
+  return /not[_ ]?met|below|missed|fail|breach/i.test(String(card.status));
+}
+
+function isUnknown(card: KpiDashboardCard): boolean {
+  return card.currentValue.value === null || /unknown|not recovered/i.test(card.validationStatus);
+}
+
+function belowTargetCards(dashboard: KpiDashboardModel): KpiDashboardCard[] {
+  return dashboard.cards.filter(isBelow);
+}
+
+function unknownCards(dashboard: KpiDashboardModel): KpiDashboardCard[] {
+  return dashboard.cards.filter(isUnknown);
+}
+
+function cardDisplay(dashboard: KpiDashboardModel | null, pattern: RegExp): string | null {
+  const card = dashboard?.cards.find((candidate) => pattern.test(candidate.title));
+  if (!card) return null;
+  return card.currentValue.display;
+}
+
+function displayRecovered(value: unknown): string | null {
+  return value === null || value === undefined ? null : String(value);
+}
+
+function attendanceDisplay(qapi: QapiPacketModelPayload | null): string | null {
+  if (!qapi) return null;
+  const present = qapi.sourceCounts.committeeAttendancePresent.display;
+  const total = qapi.sourceCounts.committeeAttendanceTotal.display;
+  return `${String(present)} of ${String(total)}`;
+}
+
+function findingNarrative(findings: readonly PacketFinding[]): string {
+  const first = findings.slice(0, 3).map((finding) =>
+    `${finding.findingId}: ${finding.description} (${finding.currentState ?? 'state not recovered'})`,
+  );
+  return `${joinHuman(first)}. Each finding must be read with its source record IDs and required reviewer in Part B.`;
+}
+
+function findingSources(findings: readonly PacketFinding[]): string {
+  const ids = findings.flatMap((finding) => finding.sourceRecordIds).filter(Boolean);
+  if (ids.length === 0) return 'Source record IDs not recovered for all findings.';
+  return `Source record IDs include ${joinHuman(ids.slice(0, 5))}${ids.length > 5 ? ' and additional records' : ''}.`;
+}
+
+function decisionItem(action: QapiActionSnapshot): string {
+  return `<li><b>${escapeHtml(action.description)}</b> Basis: recovered action item ${escapeHtml(action.actionId)}. Owner: ${escapeHtml(action.ownerRole ?? 'to be assigned')}. Due date: ${escapeHtml(action.dueDate ?? 'not recovered')}.</li>`;
+}
+
+function lockStatusText(ctx: PartAContext): string {
+  const payload = ctx.sourceModule ? resolveQapiRenderPayload(ctx.sourceModule.payload) : null;
+  return payload?.lock?.statusText ?? formatStatus(ctx.model.identity.status);
+}
+
+function formatCounts(countsMap: ReadonlyMap<string, number>): string {
+  if (countsMap.size === 0) return 'none recovered';
+  return [...countsMap.entries()].map(([label, count]) => `${label}: ${String(count)}`).join('; ');
+}
+
+function countBy(values: readonly string[]): Map<string, number> {
+  const countsMap = new Map<string, number>();
+  for (const value of values) {
+    countsMap.set(value, (countsMap.get(value) ?? 0) + 1);
+  }
+  return countsMap;
+}
+
+function row(first: string, second: string | number | null | undefined, third: string, fourth: string): string {
+  return `<tr><td>${escapeHtml(first)}</td><td>${escapeHtml(second ?? UNKNOWN)}</td><td>${escapeHtml(third)}</td><td>${escapeHtml(fourth)}</td></tr>`;
+}
+
+function joinHuman(items: readonly string[]): string {
+  if (items.length === 0) return 'none recovered';
+  if (items.length === 1) return items[0]!;
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`;
 }
 
 function periodLabel(model: PacketModel): string {
   const start = model.identity.reportingPeriodStart;
   const end = model.identity.reportingPeriodEnd;
   if (start && end) {
-    const q = quarterOf(start);
-    return q ? q : `${start} → ${end}`;
+    const quarter = quarterOf(start);
+    return quarter ? `${quarter} (${start} through ${end})` : `${start} through ${end}`;
   }
-  return 'Reporting period';
+  return 'Reporting period not recovered';
 }
 
 function quarterOf(iso: string): string | null {
-  const m = /^(\d{4})-(\d{2})/.exec(iso);
-  if (!m) return null;
-  const year = m[1];
-  const month = Number(m[2]);
-  const quarter = Math.floor((month - 1) / 3) + 1;
-  return `Q${quarter} ${year}`;
+  const match = /^(\d{4})-(\d{2})/u.exec(iso);
+  if (!match) return null;
+  const year = match[1];
+  const month = Number(match[2]);
+  if (!year || !Number.isFinite(month)) return null;
+  return `Q${String(Math.floor((month - 1) / 3) + 1)} ${year}`;
 }
 
-function humanize(value: string): string {
-  return value.replace(/[-_]/g, ' ').replace(/\b\w/g, (ch) => ch.toUpperCase());
+function formatStatus(status: string): string {
+  return status.replace(/_/gu, ' ').toLowerCase().replace(/\b\w/gu, (letter) => letter.toUpperCase());
 }
 
-function shortLabel(value: string): string {
-  return value.replace(/\s*\([^)]*\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

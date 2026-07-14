@@ -4,6 +4,7 @@ import {
   extractEscalationItems,
   extractQapiTextAggregates,
   extractRecordSegments,
+  extractSignoffRecords,
 } from '@/policy/brad/intake/adapters/qapiIntakeAdapter';
 import type {
   QapiDerivedBundle,
@@ -26,6 +27,7 @@ import type {
 } from '@/policy/packets/contracts';
 import type { QapiPacketOptions, QapiPacketRenderPayload } from '@/policy/qapi/renderQapiPacket';
 import type { QapiRollup } from '@/policy/qapi/qapiExtraction';
+import type { ValidationFinding } from '@/policy/qapi/qapiTypes';
 import type { AddendumReference } from '@/policy/qapi/personnelActionAddendum';
 import { SYNTHETIC_UAT_WATERMARK } from '@/policy/packets/render/chrome';
 import {
@@ -174,7 +176,7 @@ interface PipTriggerRow {
   thresholdOperator: '>=' | '<=' | '>' | '<' | '=' | null;
 }
 
-const DEFAULT_POLICY_IDS = ['QA-PP-001'] as const;
+const DEFAULT_POLICY_IDS = ['QA-PG-001', 'QA-PG-002', 'GV-GB-001'] as const;
 const DEFAULT_ATTENDEES = [
   'Director of Nursing (Chair)',
   'Clinical Manager',
@@ -287,6 +289,12 @@ export function buildQapiPacketModel(input: BuildQapiPacketModelInput): PacketMo
     sourceAgency: segmentation.selectedSegment?.agency ?? input.targetAgency ?? null,
     datasetId: segmentation.selectedSegment?.datasetId ?? input.targetDatasetId ?? null,
     unknownPaths: unknownCollector.paths,
+    sourceApprovers: extractSignoffRecords(selectedText).map((record) => ({
+      role: record.role,
+      name: record.name,
+      date: record.date,
+      authorityConfirmed: false,
+    })),
     analytical: {
       cadence,
       segmentation,
@@ -402,7 +410,7 @@ function buildSourceCounts(
   text: string,
 ): QapiPacketSourceCounts {
   const quorumTotal = aggregates.quorum?.total ?? null;
-  const edWithoutHospitalization = countEdWithoutHospitalization(text);
+  const edWithoutHospitalization = aggregates.edUseTotal?.value ?? countEdWithoutHospitalization(text);
   const governingBodyEscalations = positiveCountOrNull(extractEscalationItems(text).length);
   const pipTriggerRows = positiveCountOrNull(extractPipTriggerRows(text).length);
   const personnelReviewSegments = positiveCountOrNull(extractRecordSegments(text, 'DT').length);
@@ -447,7 +455,7 @@ function buildSourceCounts(
       'GBE rows',
     ),
     pipTriggerScenarios: recoveredNumber(
-      aggregates.pipTriggerCount?.value ?? pipTriggerRows,
+      aggregates.pipTriggerCount?.value ?? aggregates.activePipCount?.value ?? pipTriggerRows,
       aggregates.pipTriggerCount ? SOURCE_VALIDATION_STATUS.validated : SOURCE_VALIDATION_STATUS.validatedWithLimitation,
       'PIP-T rows',
     ),
@@ -477,7 +485,6 @@ function recoveredNumber(
 const ED_WITHOUT_HOSPITALIZATION_MARKER =
   /\b(?:ed-visit-no-hospitalization|ed[_\s-]?visit[_\s-]?no[_\s-]?hospitalization|ed[_\s-]?without[_\s-]?hospitalization|ed visits? without hospitalization)\b/i;
 const AE_RECORD_ID = /\bAE-Q[1-4]-\d{3,5}\b/i;
-const ED_RECORD_ID = /(?<![A-Z0-9])ED(-Q[1-4])?-(\d{2,5})(?!\d)/g;
 
 function countEdWithoutHospitalization(text: string): number | null {
   const ids = new Set<string>();
@@ -490,10 +497,6 @@ function countEdWithoutHospitalization(text: string): number | null {
     if (!ED_WITHOUT_HOSPITALIZATION_MARKER.test(line)) continue;
     const recordId = AE_RECORD_ID.exec(line)?.[0];
     if (recordId) ids.add(recordId.toUpperCase());
-  }
-  for (const match of text.matchAll(ED_RECORD_ID)) {
-    const numericId = match[2];
-    if (numericId) ids.add(`ED${match[1] ?? ''}-${numericId}`);
   }
   return positiveCountOrNull(ids.size);
 }
@@ -571,19 +574,44 @@ function buildKpiInputs(
   setNumberInput(inputs, 'edUseTotal', sourceCounts.edVisitsWithoutHospitalization);
   setNumber(inputs, 'adverseEventsTotal', aggregates.adverseEventsCount?.value ?? null, 'textAggregate.adverseEventsCount');
   setMetricInput(inputs, 'infectionsTotal', bundle.adverseEvents.infectionsTotal);
+  setNumber(inputs, 'infectionsTotal', aggregates.confirmedHais?.value ?? null, 'textAggregate.confirmedHais');
   setMetricInput(inputs, 'oasisLateSoc', bundle.chartAuditDocumentationIntegrity.oasisLateSoc);
   setMetricInput(inputs, 'pocMissingF2F', bundle.chartAuditDocumentationIntegrity.pocMissingF2F);
   setMetricInput(inputs, 'pocUnsignedOrMissingSignature', bundle.chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature);
   setMetricInput(inputs, 'medReconciliationMismatch', bundle.chartAuditDocumentationIntegrity.medReconciliationMismatch);
-  setNumber(inputs, 'documentationDefectsTotal', documentationDefectsTotal(bundle), 'chartAuditDocumentationIntegrity');
-  setNumber(inputs, 'chartsAudited', sourceCounts.activeCensus.value, 'censusPopulation.activeCensus');
+  const medReconciliationDefects = derivedDefectCount(
+    aggregates.chartsAudited?.value,
+    aggregates.medicationReconciliationCompliant?.value,
+  );
+  setNumber(inputs, 'medReconciliationMismatch', medReconciliationDefects, 'textAggregate.medicationReconciliationCompliant');
+  setNumber(inputs, 'documentationDefectsTotal', aggregates.documentationDefects?.value ?? documentationDefectsTotal(bundle), 'chartAuditDocumentationIntegrity');
+  setNumber(inputs, 'chartsAudited', aggregates.chartsAudited?.value ?? sourceCounts.activeCensus.value, 'chartAuditDocumentationIntegrity.chartsAudited');
+  setNumber(
+    inputs,
+    'documentationAuditComplianceValue',
+    aggregates.documentationComplianceRate?.value
+      ?? percentFromParts(aggregates.documentationCompliant?.value, aggregates.chartsAudited?.value),
+    'textAggregate.documentationComplianceRate',
+  );
+  setNumber(
+    inputs,
+    'documentationDefectRateValue',
+    aggregates.documentationDefectRate?.value
+      ?? percentFromParts(aggregates.documentationDefects?.value, aggregates.chartsAudited?.value),
+    'textAggregate.documentationDefectRate',
+  );
+  setNumber(inputs, 'medReconciliationComplianceValue', aggregates.medicationReconciliationComplianceRate?.value ?? null, 'textAggregate.medicationReconciliationComplianceRate');
   setNumber(inputs, 'missedVisits', aggregates.missedVisits?.value ?? null, 'textAggregate.missedVisits');
+  setNumber(inputs, 'scheduledVisits', aggregates.scheduledVisits?.value ?? null, 'textAggregate.scheduledVisits');
   setNumber(inputs, 'complaintsCount', aggregates.complaintsCount?.value ?? null, 'textAggregate.complaintsCount');
-  setNumber(inputs, 'activePipCount', aggregates.pipNames.length || null, 'textAggregate.pipNames');
-  setNumber(inputs, 'openCapRcaCount', aggregates.capCount?.value ?? null, 'textAggregate.capCount');
+  setNumber(inputs, 'activePipCount', aggregates.activePipCount?.value ?? (aggregates.pipNames.length || null), 'textAggregate.activePipCount');
+  setNumber(inputs, 'openCapRcaCount', aggregates.openRcaCount?.value ?? aggregates.capCount?.value ?? null, 'textAggregate.openCapRcaCount');
   setNumberInput(inputs, 'attendeesPresent', sourceCounts.committeeAttendancePresent);
   setNumberInput(inputs, 'attendeesExpected', sourceCounts.committeeAttendanceTotal);
   setNumberInput(inputs, 'pipTriggerCount', sourceCounts.pipTriggerScenarios);
+  setNumber(inputs, 'actionItemsCompleted', aggregates.actionItemsCompleted?.value ?? null, 'textAggregate.actionItemsCompleted');
+  setNumber(inputs, 'actionItemsDue', aggregates.actionItemsDue?.value ?? null, 'textAggregate.actionItemsDue');
+  setNumber(inputs, 'averageActionClosureDays', aggregates.averageActionClosureDays?.value ?? null, 'textAggregate.averageActionClosureDays');
   return inputs;
 }
 
@@ -625,6 +653,20 @@ function documentationDefectsTotal(bundle: QapiDerivedBundle): number | null {
   return recoveredValues.length === values.length
     ? recoveredValues.reduce<number>((sum, value) => sum + value, 0)
     : null;
+}
+
+function derivedDefectCount(denominator: number | null | undefined, compliant: number | null | undefined): number | null {
+  if (denominator === null || denominator === undefined || compliant === null || compliant === undefined) return null;
+  const value = denominator - compliant;
+  return Number.isFinite(value) && value >= 0 ? value : null;
+}
+
+function percentFromParts(numerator: number | null | undefined, denominator: number | null | undefined): number | null {
+  if (numerator === null || numerator === undefined || denominator === null || denominator === undefined || denominator === 0) {
+    return null;
+  }
+  const value = (numerator / denominator) * 100;
+  return Number.isFinite(value) ? value : null;
 }
 
 function numberFromMetric(metric: QapiDerivedMetric): number | null {
@@ -890,7 +932,7 @@ function buildLegacyRollup(
       quarterEnd: period.end,
       dataThroughDate: period.dataThroughDate,
       packetType: 'final',
-      title: `${period.label} QAPI Review (Final)`,
+      title: `${period.label} QAPI Review (Draft - Requires Review)`,
       quarterLabel: period.label,
     },
     census: {
@@ -1011,10 +1053,13 @@ function buildPayload(input: {
   sourceAgency: string | null;
   datasetId: string | null;
   unknownPaths: readonly string[];
+  sourceApprovers: Array<{ role: string; name?: string; date?: string; authorityConfirmed?: boolean }>;
   analytical: QapiPacketModelPayload;
 }): QapiPacketRenderPayload {
   const expected = input.input.options?.attendeesExpected ?? [...DEFAULT_ATTENDEES];
   const present = input.input.options?.attendeesPresent ?? expected;
+  const approvers = input.input.options?.approvers ?? input.sourceApprovers;
+  const lockFindings = buildDraftLockFindings(input.unknownPaths, approvers);
   return {
     roll: input.roll,
     ref: input.addendumReference,
@@ -1026,8 +1071,8 @@ function buildPayload(input: {
     chair: input.input.options?.chair ?? 'UNKNOWN — NOT RECOVERED',
     recorder: input.input.options?.recorder ?? 'UNKNOWN — NOT RECOVERED',
     policyIds: input.input.options?.policyIds ?? [...DEFAULT_POLICY_IDS],
-    approvers: input.input.options?.approvers ?? [],
-    quorumOverride: input.input.options?.quorumOverride ?? null,
+    approvers,
+    quorumOverride: input.input.options?.quorumOverride ?? recoveredQuorumText(input.analytical),
     attendanceNote: input.input.options?.attendanceNote ?? null,
     derivedNotice: input.input.options?.derivedNotice ?? input.analytical.bundle.overallNote,
     unknownPaths: [...new Set(input.unknownPaths)],
@@ -1040,10 +1085,49 @@ function buildPayload(input: {
     lock: {
       pass: false,
       statusText: 'NOT LOCKABLE — draft packet-model build pending serialized orchestration gates',
-      findings: [],
+      findings: lockFindings,
     },
     qapiModel: input.analytical,
   };
+}
+
+function recoveredQuorumText(model: QapiPacketModelPayload): string | null {
+  const present = model.sourceCounts.committeeAttendancePresent.value;
+  const total = model.sourceCounts.committeeAttendanceTotal.value;
+  if (present == null || total == null) return null;
+  return `${present}/${total} standing members present - quorum ${present >= Math.ceil(total / 2) ? 'met' : 'NOT met'}`;
+}
+
+function buildDraftLockFindings(
+  unknownPaths: readonly string[],
+  approvers: readonly { role: string; name?: string; authorityConfirmed?: boolean }[],
+): ValidationFinding[] {
+  const findings: ValidationFinding[] = [{
+    pass: false,
+    severity: 'blocker',
+    path: 'packet.lock',
+    reason: 'Generated packet is a draft and has not passed approval, eCIgn, and lock orchestration gates.',
+    remediation: 'Complete source validation, approval routing, eCIgn signature capture, and final lock workflow before treating as final.',
+  }];
+  if (unknownPaths.length > 0) {
+    findings.push({
+      pass: false,
+      severity: 'high',
+      path: 'source.validation',
+      reason: `${unknownPaths.length} source-derived value(s) remain unknown or require review.`,
+      remediation: 'Resolve unknown source values or document reviewer acceptance before final handoff.',
+    });
+  }
+  if (!approvers.length || approvers.some((approver) => !approver.authorityConfirmed)) {
+    findings.push({
+      pass: false,
+      severity: 'blocker',
+      path: 'approvals.signatures',
+      reason: 'Source sign-off records are not final eCIgn signatures and approver authority is not confirmed.',
+      remediation: 'Capture required eCIgn signatures and confirm signer authority.',
+    });
+  }
+  return findings;
 }
 
 function buildQapiModules(

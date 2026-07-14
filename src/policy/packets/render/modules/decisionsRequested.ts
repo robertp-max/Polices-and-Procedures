@@ -7,7 +7,7 @@ import { renderList } from '../pagination';
 export const renderDecisionsRequestedModule: ModuleRenderer = (context) => {
   const payload = context.module.payload as QapiPacketRenderPayload;
   const decisionItems = [
-    `Ratify the ${payload.roll.window.quarterLabel} QAPI report (${payload.roll.window.packetType}).`,
+    `Review the ${payload.roll.window.quarterLabel} QAPI report for approval readiness (${payload.lock.pass ? 'lockable packet' : 'draft packet'}).`,
     'Approve new PIP candidates flagged by the dashboard.',
     'Assign owners and due dates for open RCA, source-exception, and documentation-integrity actions.',
     ...(payload.addendumRequired
@@ -18,7 +18,7 @@ export const renderDecisionsRequestedModule: ModuleRenderer = (context) => {
     ${renderPanel('Decisions requested', renderList(decisionItems))}
     ${renderPanel('Governing Body packet summary', `
       ${renderKeyValueRow('Packet ID', payload.packetId)}
-      ${renderKeyValueRow('Committee packet type', payload.roll.window.packetType.toUpperCase())}
+      ${renderKeyValueRow('Packet readiness', payload.lock.pass ? 'FINAL / LOCKABLE' : 'DRAFT / REQUIRES REVIEW')}
       ${renderKeyValueRow('QAPI-required high-risk cases', payload.roll.highRisk.qapiRequiredCases)}
       ${renderKeyValueRow('Open source exceptions', payload.roll.exceptions.length)}
       ${renderKeyValueRow('Confidential addendum reference', payload.addendumRequired ? payload.ref.addendumId : 'Not required by recovered source triggers')}

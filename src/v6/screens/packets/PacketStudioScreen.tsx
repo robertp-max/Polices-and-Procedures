@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { packetsApi } from '@/policy/packets/api/packetsApi';
 import { getArchetype, hasArchetype } from '@/policy/packets/registries/archetypeRegistry';
 import type { PacketModel } from '@/policy/packets/contracts';
+import {
+  segmentQapiSourceByQuarter,
+  selectQuarterSegment,
+} from '@/policy/brad/intake/adapters/qapiIntakeAdapter';
 import { generateQapiPacketModelFromText } from './generateQapiFromSource';
 import {
   PACKET_TEMPLATES,
@@ -23,9 +27,11 @@ import {
 type LoadState = 'registry' | 'loading' | 'api' | 'fallback';
 type StudioStep = 'template' | 'event' | 'readiness' | 'generate-open' | 'workspace' | 'signoff';
 type WorkspaceLaunchAction = 'generate' | 'open-existing' | 'continue-review';
+type BradLogic = 'claude' | 'gpt' | 'qapi-master-claude' | 'qapi-raw-claude';
 
 const AGENCY_ID = 'care-indeed-home-health';
 const AGENCY_LABEL = 'Care Indeed Home Health Care, Inc.';
+const QAPI_QUARTERLY_TEMPLATE_ID = 'qapi-quarterly';
 
 const STUDIO_STEPS: readonly { id: StudioStep; label: string }[] = [
   { id: 'template', label: 'Template' },
@@ -56,6 +62,33 @@ const EMPTY_VALIDATION_RESULT = {
   issues: [],
 } as const;
 
+interface BradSourceExtractionResponse {
+  readonly extraction?: {
+    readonly engine?: string;
+    readonly passes?: number;
+    readonly fields?: readonly BradSourceField[];
+    readonly missing?: readonly string[];
+    readonly conflicts?: readonly unknown[];
+    readonly validationSummary?: string;
+  };
+  readonly metadata?: {
+    readonly sourceId?: string;
+    readonly fileName?: string;
+    readonly charCount?: number;
+  };
+}
+
+export interface BradSourceField {
+  readonly key: string;
+  readonly value?: string | null;
+  readonly confidence?: number;
+  readonly sourceSnippet?: string;
+  readonly agreement?: number;
+  readonly needsReview?: boolean;
+  readonly group?: string;
+  readonly label?: string;
+}
+
 export default function PacketStudioScreen() {
   const [templates, setTemplates] = useState<readonly PacketTemplateDefinition[]>(PACKET_TEMPLATES);
   const [selectedTemplate, setSelectedTemplate] = useState<PacketTemplateSelectionOutput | null>(null);
@@ -65,6 +98,9 @@ export default function PacketStudioScreen() {
   const [sourceFileName, setSourceFileName] = useState('qapi-source.txt');
   const [generatedModel, setGeneratedModel] = useState<PacketModel | null>(null);
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generateStatus, setGenerateStatus] = useState<string | null>(null);
+  const [bradLogic, setBradLogic] = useState<BradLogic>('gpt');
   const [readinessOpen, setReadinessOpen] = useState(false);
   const [workspaceAction, setWorkspaceAction] = useState<WorkspaceLaunchAction | null>(null);
   const [loadState, setLoadState] = useState<LoadState>('loading');
@@ -144,6 +180,8 @@ export default function PacketStudioScreen() {
     setReadinessOpen(false);
     setGeneratedModel(null);
     setGenerateError(null);
+    setGenerateStatus(null);
+    setBradLogic(defaultBradLogicForTemplate(selectionOutput.packet_template_id));
     setStudioStep('event');
   };
 
@@ -152,12 +190,15 @@ export default function PacketStudioScreen() {
     setWorkspaceAction(null);
     setGeneratedModel(null);
     setGenerateError(null);
+    setGenerateStatus(null);
     setStudioStep('readiness');
     setReadinessOpen(true);
   };
 
   const handleSourceFile = (file: File) => {
+    if (isGenerating) return;
     setGenerateError(null);
+    setGenerateStatus(null);
     setSourceFileName(file.name);
     const reader = new FileReader();
     reader.onload = () => setSourceText(typeof reader.result === 'string' ? reader.result : '');
@@ -165,26 +206,74 @@ export default function PacketStudioScreen() {
     reader.readAsText(file);
   };
 
-  const handleGenerateFromSource = () => {
+  const handleGenerateFromSource = async () => {
+    if (isGenerating) return;
     if (!selectedTemplate || !selectedEvent) return;
     if (!sourceText.trim()) {
       setGenerateError('Paste or upload QAPI source data first — no operational packet is generated from an empty source.');
       return;
     }
+    const selectedSource = resolveQapiSourceTextForEvent(sourceText, selectedEvent);
+    if (selectedSource.error) {
+      setGenerateError(selectedSource.error);
+      setGenerateStatus(null);
+      return;
+    }
+    setIsGenerating(true);
+    setGenerateError(null);
+    const activeBradLogic = bradLogicForTemplate(selectedTemplate.packet_template_id, bradLogic);
+    const sourceForBrad = isQapiPromptOnlyLogic(activeBradLogic) ? sourceText : selectedSource.text;
+    const sourceForPacketBuild = isQapiPromptOnlyLogic(activeBradLogic) ? sourceText : selectedSource.text;
+    setGenerateStatus([
+      selectedSource.note,
+      `Selected event: ${selectedEvent.eventTitle} (${selectedEvent.eventInstanceId}) on ${selectedEvent.eventDate}.`,
+      `Brad is reading the source with ${bradLogicLabel(activeBradLogic)}. Packet generation will wait for this review.`,
+    ].filter(Boolean).join(' '));
     try {
+      let bradReview: BradSourceExtractionResponse | null = null;
+      try {
+        bradReview = await requireBradSourceReview({
+          text: sourceForBrad,
+          fileName: sourceFileName,
+          template: 'qapi',
+          packetTemplateId: selectedTemplate.packet_template_id,
+          packetTemplateTitle: selectedTemplateDefinition?.title ?? selectedTemplate.packet_template_id,
+          selectedEvent,
+          logic: activeBradLogic,
+        });
+      } catch {
+        bradReview = null;
+      }
+      const bradReady = !isQapiPromptOnlyLogic(activeBradLogic)
+        && bradReview?.extraction?.engine === 'brad'
+        && Boolean(bradReview.extraction.passes);
+      setGenerateStatus([
+        selectedSource.note,
+        `Selected event: ${selectedEvent.eventTitle} (${selectedEvent.eventInstanceId}) on ${selectedEvent.eventDate}.`,
+        isQapiPromptOnlyLogic(activeBradLogic) && bradReview?.extraction?.engine === 'brad'
+          ? (bradReview.extraction.validationSummary || `Brad ${bradLogicLabel(activeBradLogic)} received the QAPI prompt.`)
+          : bradReady
+          ? (bradReview?.extraction?.validationSummary || `Brad completed ${bradReview?.extraction?.passes ?? 0} source read pass(es).`)
+          : 'Source review did not return a verified reading; using the local parser fallback without invented values.',
+        bradReview?.metadata?.sourceId ? `Source ${bradReview.metadata.sourceId} captured for audit review.` : '',
+      ].filter(Boolean).join(' '));
       const model = generateQapiPacketModelFromText({
-        text: sourceText,
+        text: sourceForPacketBuild,
         fileName: sourceFileName,
         event: selectedEvent,
         templateId: selectedTemplate.packet_template_id,
         generatedAtISO: new Date().toISOString(),
+        bradExtraction: bradReady ? bradReview?.extraction : undefined,
       });
       setGeneratedModel(model);
       setGenerateError(null);
       setWorkspaceAction('generate');
       setStudioStep('workspace');
     } catch (error) {
+      setGenerateStatus(null);
       setGenerateError(error instanceof Error ? error.message : 'Packet generation failed for the provided source.');
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -338,6 +427,7 @@ export default function PacketStudioScreen() {
                     type="file"
                     accept=".txt,.json,.csv,.tsv,.md,text/plain,application/json"
                     className="text-sm"
+                    disabled={isGenerating}
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) handleSourceFile(file);
@@ -350,7 +440,12 @@ export default function PacketStudioScreen() {
                     className="min-h-[160px] w-full rounded-md border border-hairline bg-surface px-sm py-xs font-mono text-xs"
                     placeholder="Paste QAPI source text (dataset markers, KPIs, findings, PIP triggers…)"
                     value={sourceText}
-                    onChange={(e) => setSourceText(e.target.value)}
+                    disabled={isGenerating}
+                    onChange={(e) => {
+                      setSourceText(e.target.value);
+                      setGenerateStatus(null);
+                      setGenerateError(null);
+                    }}
                   />
                 </label>
                 <p className="text-xs text-muted">
@@ -358,27 +453,41 @@ export default function PacketStudioScreen() {
                   {sourceText.length.toLocaleString()} characters · segmentation resolves the quarter by the
                   event date and fails closed on ambiguity; missing values render UNKNOWN, never zero.
                 </p>
+                {generateStatus ? (
+                  <div className="rounded-md border border-brand-teal/30 bg-brand-teal/10 px-md py-sm text-sm text-brand-teal" role="status">
+                    {generateStatus}
+                  </div>
+                ) : null}
                 {generateError ? (
                   <div className="rounded-md border border-amber-300 bg-amber-50 px-md py-sm text-sm text-amber-900" role="alert">
                     {generateError}
                   </div>
                 ) : null}
                 <div className="flex flex-wrap gap-sm">
-                  <button
-                    type="button"
-                    className="min-h-tap w-fit rounded-md border border-hairline bg-brand-teal px-md text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
-                    onClick={handleGenerateFromSource}
-                    disabled={!sourceText.trim()}
-                  >
-                    Generate packet from source
-                  </button>
-                  <button
-                    type="button"
-                    className="min-h-tap w-fit rounded-md border border-hairline px-md text-sm font-medium text-brand-teal hover:bg-surface-hover"
-                    onClick={() => { setGeneratedModel(null); setStudioStep('workspace'); }}
-                  >
-                    Open empty workspace instead
-                  </button>
+                  <div className="flex flex-wrap gap-sm">
+                    <button
+                      type="button"
+                      className="min-h-tap w-fit rounded-md border border-hairline bg-brand-teal px-md text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+                      onClick={handleGenerateFromSource}
+                      disabled={!sourceText.trim() || isGenerating}
+                    >
+                      {isGenerating ? 'Brad is reading source…' : 'Generate packet from source'}
+                    </button>
+                    <button
+                      type="button"
+                      className="min-h-tap w-fit rounded-md border border-hairline px-md text-sm font-medium text-brand-teal hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={isGenerating}
+                      onClick={() => { setGeneratedModel(null); setStudioStep('workspace'); }}
+                    >
+                      Open empty workspace instead
+                    </button>
+                  </div>
+                  <BradLogicSwitch
+                    packetTemplateId={selectedTemplate.packet_template_id}
+                    value={bradLogicForTemplate(selectedTemplate.packet_template_id, bradLogic)}
+                    disabled={isGenerating}
+                    onChange={setBradLogic}
+                  />
                 </div>
               </div>
             ) : (
@@ -486,6 +595,253 @@ function StudioStepper({ activeStep }: { activeStep: StudioStep }) {
       })}
     </nav>
   );
+}
+
+async function requireBradSourceReview(input: {
+  readonly text: string;
+  readonly fileName: string;
+  readonly template: 'qapi' | 'admission' | 'event' | 'generic';
+  readonly packetTemplateId: string;
+  readonly packetTemplateTitle: string;
+  readonly selectedEvent?: EventCardModel;
+  readonly logic: BradLogic;
+}): Promise<BradSourceExtractionResponse> {
+  const eventContext = input.selectedEvent
+    ? buildSelectedGenerationContext({
+      event: input.selectedEvent,
+      packetTemplateId: input.packetTemplateId,
+      packetTemplateTitle: input.packetTemplateTitle,
+      sourceFileName: input.fileName,
+      logic: input.logic,
+    })
+    : '';
+  const reviewText = eventContext ? `${eventContext}\n\n${input.text}` : input.text;
+  const response = await fetch('/api/calendar/intake/extract-source', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      fileName: input.fileName,
+      mimeType: guessClientMimeType(input.fileName),
+      fileBase64: textToBase64(reviewText),
+      template: input.template,
+      packetTemplateId: input.packetTemplateId,
+      requireBrad: false,
+      bradLogic: input.logic,
+    }),
+  });
+  const payload = await response.json().catch(() => null) as
+    | BradSourceExtractionResponse
+    | { error?: { message?: string } }
+    | null;
+  if (!response.ok) {
+    const message = payload && 'error' in payload && payload.error?.message
+      ? payload.error.message
+      : 'Source review did not complete.';
+    throw new Error(message);
+  }
+  return (payload ?? {}) as BradSourceExtractionResponse;
+}
+
+function BradLogicSwitch({
+  packetTemplateId,
+  value,
+  disabled,
+  onChange,
+}: {
+  readonly packetTemplateId: string;
+  readonly value: BradLogic;
+  readonly disabled: boolean;
+  readonly onChange: (value: BradLogic) => void;
+}) {
+  const options = bradLogicOptions(packetTemplateId);
+  return (
+    <div className="ml-auto grid gap-xs justify-self-end text-right">
+      <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Brad logic</span>
+      <div
+        className="inline-flex rounded-md border border-hairline bg-surface p-xxs shadow-sm"
+        role="radiogroup"
+        aria-label="Brad logic"
+      >
+        {options.map((option) => {
+          const selected = option.value === value;
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              disabled={disabled}
+              className={[
+                'min-h-tap rounded px-md py-xs text-left transition disabled:cursor-not-allowed disabled:opacity-50',
+                selected
+                  ? 'bg-brand-teal text-white shadow-sm'
+                  : 'text-muted hover:bg-surface-hover',
+              ].join(' ')}
+              onClick={() => onChange(option.value)}
+            >
+              <span className="block text-xs font-semibold">{option.label}</span>
+              <span className="block text-[11px] opacity-80">{option.detail}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function bradLogicLabel(value: BradLogic): string {
+  if (value === 'qapi-master-claude') return 'Logic C';
+  if (value === 'qapi-raw-claude') return 'Logic D';
+  return value === 'claude' ? 'Logic A' : 'Logic B';
+}
+
+function defaultBradLogicForTemplate(packetTemplateId: string): BradLogic {
+  return packetTemplateId === QAPI_QUARTERLY_TEMPLATE_ID ? 'qapi-master-claude' : 'gpt';
+}
+
+function bradLogicForTemplate(packetTemplateId: string, value: BradLogic): BradLogic {
+  if (packetTemplateId === QAPI_QUARTERLY_TEMPLATE_ID) return value;
+  return isQapiPromptOnlyLogic(value) ? 'gpt' : value;
+}
+
+function bradLogicOptions(packetTemplateId: string): Array<{ value: BradLogic; label: string; detail: string }> {
+  const base: Array<{ value: BradLogic; label: string; detail: string }> = [
+    { value: 'claude', label: 'Logic A', detail: 'Claude' },
+    { value: 'gpt', label: 'Logic B', detail: 'GPT' },
+  ];
+  if (packetTemplateId !== QAPI_QUARTERLY_TEMPLATE_ID) return base;
+  return [
+    { value: 'qapi-master-claude', label: 'Logic C', detail: 'QAPI master' },
+    { value: 'qapi-raw-claude', label: 'Logic D', detail: 'Prompt only' },
+    ...base,
+  ];
+}
+
+function isQapiPromptOnlyLogic(value: BradLogic): boolean {
+  return value === 'qapi-master-claude' || value === 'qapi-raw-claude';
+}
+
+interface SelectedQapiSourceText {
+  readonly text: string;
+  readonly note: string | null;
+  readonly error: string | null;
+}
+
+function resolveQapiSourceTextForEvent(source: string, event: EventCardModel): SelectedQapiSourceText {
+  const segments = segmentQapiSourceByQuarter(source);
+  if (segments.length === 0) return { text: source, note: null, error: null };
+
+  const targetQuarter = selectedEventQuarter(event);
+  const selection = selectQuarterSegment(segments, {
+    eventDateISO: event.eventDate,
+    targetQuarter: targetQuarter ?? undefined,
+  });
+
+  if (!selection.segment) {
+    return {
+      text: source,
+      note: null,
+      error: `Source contains multiple QAPI quarters but Packet Studio could not match it to ${event.eventTitle} (${event.eventDate}). ${selection.reason}`,
+    };
+  }
+
+  return {
+    text: selection.segment.text,
+    note: `Selected ${selection.segment.quarterLabel ?? selection.segment.quarter ?? 'matching quarter'} from the uploaded multi-quarter source for ${event.eventTitle}.`,
+    error: null,
+  };
+}
+
+function quarterKeyFromISODate(value: string): string | null {
+  const match = /^(20\d{2})-(\d{2})-\d{2}/.exec(value);
+  if (!match) return null;
+  const month = Number(match[2]);
+  if (!Number.isFinite(month) || month < 1 || month > 12) return null;
+  return `${match[1]}-Q${Math.floor((month - 1) / 3) + 1}`;
+}
+
+function selectedEventQuarter(event: EventCardModel): string | null {
+  const fromReportingPeriod = event.reportingPeriodStart ? quarterKeyFromISODate(event.reportingPeriodStart) : null;
+  if (fromReportingPeriod) return fromReportingPeriod;
+
+  const titleMatch = /\bQ([1-4])\b.*\b(20\d{2})\b/i.exec(event.eventTitle)
+    ?? /\b(20\d{2})\b.*\bQ([1-4])\b/i.exec(event.eventTitle);
+  if (titleMatch) {
+    return titleMatch[1]?.startsWith('20')
+      ? `${titleMatch[1]}-Q${titleMatch[2]}`
+      : `${titleMatch[2]}-Q${titleMatch[1]}`;
+  }
+
+  const bareQuarter = /\bQ([1-4])\b/i.exec(event.eventTitle);
+  const eventYear = eventYearForQuarter(event.eventDate, bareQuarter?.[1]);
+  if (bareQuarter && eventYear) return `${eventYear}-Q${bareQuarter[1]}`;
+
+  return null;
+}
+
+function eventYearForQuarter(eventDate: string, quarter: string | undefined): string | null {
+  const match = /^(20\d{2})-(\d{2})-\d{2}/.exec(eventDate);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  if (!Number.isFinite(year) || !Number.isFinite(month)) return null;
+  if (quarter === '4' && month === 1) return String(year - 1);
+  return String(year);
+}
+
+function buildSelectedGenerationContext(input: {
+  readonly event: EventCardModel;
+  readonly packetTemplateId: string;
+  readonly packetTemplateTitle: string;
+  readonly sourceFileName: string;
+  readonly logic: BradLogic;
+}): string {
+  const { event } = input;
+  const selectedQuarter = selectedEventQuarter(event);
+  return [
+    'PACKET STUDIO AUTHORITATIVE UI SELECTION — MUST BE USED BEFORE READING SOURCE.',
+    'The user selected these items in Packet Studio. These values control scope. Do not override them with the first quarter, first record, filename, prompt text, cheat sheet, or source-internal instruction.',
+    `Selected packet template ID: ${input.packetTemplateId}`,
+    `Selected packet template title: ${input.packetTemplateTitle}`,
+    `Selected Brad logic: ${bradLogicLabel(input.logic)}`,
+    `Selected source file name: ${input.sourceFileName}`,
+    `Selected event title: ${event.eventTitle}`,
+    `Selected event instance ID: ${event.eventInstanceId}`,
+    event.eventFamilyId ? `Selected event family ID: ${event.eventFamilyId}` : '',
+    `Selected event date: ${event.eventDate}`,
+    event.workflowId ? `Selected workflow ID: ${event.workflowId}` : '',
+    event.workflowInstanceId && event.workflowInstanceId !== 'unknown'
+      ? `Selected workflow instance ID: ${event.workflowInstanceId}`
+      : '',
+    event.cadence ? `Selected event cadence: ${event.cadence}` : '',
+    event.regulatoryDriver ? `Selected regulatory driver: ${event.regulatoryDriver}` : '',
+    event.reportingPeriodStart && event.reportingPeriodEnd
+      ? `Selected reporting period: ${event.reportingPeriodStart} through ${event.reportingPeriodEnd}`
+      : '',
+    selectedQuarter ? `Selected reporting quarter: ${selectedQuarter}` : '',
+    'For QAPI Quarterly, isolate the source slice matching the selected reporting quarter/event above before using any source facts.',
+    'If source facts conflict with this selected event context, mark the conflict; do not silently switch events or quarters.',
+    'SOURCE BUNDLE FOR THE SELECTED EVENT:',
+  ].filter(Boolean).join('\n');
+}
+
+function guessClientMimeType(fileName: string): string {
+  const lower = fileName.toLowerCase();
+  if (lower.endsWith('.json')) return 'application/json';
+  if (lower.endsWith('.csv')) return 'text/csv';
+  if (lower.endsWith('.tsv')) return 'text/tab-separated-values';
+  if (lower.endsWith('.md')) return 'text/markdown';
+  return 'text/plain';
+}
+
+function textToBase64(text: string): string {
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
+  }
+  return btoa(binary);
 }
 
 function buildReadinessInput(

@@ -94,8 +94,8 @@ export function PreviewPanel({ packet, selectedOutlineId }: PreviewPanelProps) {
   }, [srcDoc, fileName]);
 
   const handlePrint = useCallback(() => {
-    printPacketHtml(srcDoc);
-  }, [srcDoc]);
+    void renderPacketPdf(srcDoc, fileName).catch(() => printPacketHtml(srcDoc));
+  }, [srcDoc, fileName]);
 
   return (
     <section style={styles.root} aria-label="live packet preview">
@@ -152,6 +152,35 @@ export function printPacketHtml(srcDoc: string): void {
   }
 
   printPacketHtmlInFrame(srcDoc);
+}
+
+export async function renderPacketPdf(srcDoc: string, fileName: string): Promise<void> {
+  const response = await fetch("/api/calendar/intake/render-pdf", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ html: srcDoc }),
+  });
+  if (!response.ok) {
+    throw new Error("PDF renderer unavailable.");
+  }
+  const payload = (await response.json()) as { pdfBase64?: string };
+  if (!payload.pdfBase64) {
+    throw new Error("PDF renderer returned no file.");
+  }
+  const binary = atob(payload.pdfBase64);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  const blob = new Blob([bytes], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName.replace(/\.html$/i, ".pdf");
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
 function writePrintDocument(targetWindow: Window, srcDoc: string): boolean {

@@ -21,7 +21,7 @@ export const renderPacketControlModule: ModuleRenderer = (context) => {
       ${renderKeyValueRow('Workflow ID', payload.workflowId)}
       ${renderKeyValueRow('Reporting period', `${payload.roll.window.quarterStart} → ${payload.roll.window.quarterEnd}`)}
       ${renderKeyValueRow('Data-through date', payload.roll.window.dataThroughDate)}
-      ${renderKeyValueRow('Packet type', payload.roll.window.packetType.toUpperCase())}
+      ${renderKeyValueRow('Packet readiness', payload.lock.pass ? 'FINAL / LOCKABLE' : 'DRAFT / REQUIRES REVIEW')}
       ${renderKeyValueRow('Policy refs', payload.policyIds.join(', '))}
       ${renderKeyValueRow('Prepared by', payload.preparedBy)}
       ${renderKeyValueRow('Reviewer', payload.reviewer)}
@@ -32,7 +32,7 @@ export const renderPacketControlModule: ModuleRenderer = (context) => {
       ${renderDataTable({
         headers: ['Severity', 'Path', 'Finding', 'Remediation'],
         rows: lockFindings,
-        emptyText: 'No blocking validation findings.',
+        emptyText: payload.lock.pass ? 'No blocking validation findings.' : 'Packet is not lockable; validation findings are required.',
       })}
     `)}
     ${payload.roll.window.packetType === 'interim'

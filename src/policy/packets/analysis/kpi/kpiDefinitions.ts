@@ -39,6 +39,7 @@ export interface KpiThreshold {
 
 export interface KpiCalculationSpec {
   kind: KpiCalculationKind;
+  preferredValueField?: string;
   valueField?: string;
   numeratorField?: string;
   numeratorFields?: readonly string[];
@@ -299,6 +300,7 @@ const BASE_QAPI_KPI_DEFINITIONS = [
     validationStatus: VALIDATED,
     calculation: {
       kind: 'complementRatio',
+      preferredValueField: 'documentationAuditComplianceValue',
       numeratorFields: [
         'oasisLateSoc',
         'pocMissingF2F',
@@ -344,6 +346,7 @@ const BASE_QAPI_KPI_DEFINITIONS = [
     validationStatus: VALIDATED,
     calculation: {
       kind: 'ratio',
+      preferredValueField: 'documentationDefectRateValue',
       numeratorFields: [
         'oasisLateSoc',
         'pocMissingF2F',
@@ -383,6 +386,7 @@ const BASE_QAPI_KPI_DEFINITIONS = [
     validationStatus: VALIDATED,
     calculation: {
       kind: 'complementRatio',
+      preferredValueField: 'medReconciliationComplianceValue',
       numeratorFields: ['medReconciliationMismatch'],
       denominatorField: 'chartsAudited',
       scale: 100,

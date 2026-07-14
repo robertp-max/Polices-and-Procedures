@@ -7,13 +7,22 @@ import { renderDataTable } from '../pagination';
 export const renderApprovalsLockModule: ModuleRenderer = (context) => {
   const payload = context.module.payload as QapiPacketRenderPayload;
   const roles = payload.approvers.length
-    ? payload.approvers.map((approver) => approver.role)
-    : ['Director of Nursing (DON)', 'Administrator', 'Compliance Officer', 'Governing Body Chair'];
-  const signatureHtml = roles.map((role) => `
+    ? payload.approvers
+    : [
+        { role: 'Director of Nursing (DON)' },
+        { role: 'Administrator' },
+        { role: 'Compliance Officer' },
+        { role: 'Governing Body Chair' },
+      ];
+  const signatureHtml = roles.map((approver) => `
     <div class="signature-block">
       <div class="signature-line"></div>
-      <div class="signature-role">${escapeHtml(role)}</div>
-      <div class="muted">Signature / printed name / date — pending eCIgn</div>
+      <div class="signature-role">${escapeHtml(approver.role)}</div>
+      <div class="muted">${
+        approver.name
+          ? `Source sign-off: ${escapeHtml(approver.name)}${approver.date ? ` — ${escapeHtml(approver.date)}` : ''}; eCIgn capture pending`
+          : 'Signature / printed name / date — pending eCIgn'
+      }</div>
     </div>
   `).join('');
   const findingRows = payload.lock.findings.map((finding) => [
@@ -30,7 +39,7 @@ export const renderApprovalsLockModule: ModuleRenderer = (context) => {
     ${renderPanel('Lock validation findings', renderDataTable({
       headers: ['Severity', 'Path', 'Finding', 'Remediation'],
       rows: findingRows,
-      emptyText: 'No blocking validation findings.',
+      emptyText: payload.lock.pass ? 'No blocking validation findings.' : 'Packet is not lockable; validation findings are required.',
     }))}
   `;
 

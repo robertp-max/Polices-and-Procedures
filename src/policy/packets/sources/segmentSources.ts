@@ -314,6 +314,7 @@ function exclusionReasonForBoundary(
   }
   if (
     input.eventDateISO
+    && !input.targetPeriod
     && segment.dateRole === 'governance'
     && segment.eventDate
     && segment.eventDate !== input.eventDateISO

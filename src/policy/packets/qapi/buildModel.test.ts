@@ -80,6 +80,70 @@ describe('WP-3.1 QAPI packet-model builder', () => {
     expect(payload.selectedSource.agency).not.toContain('Lakeside Contaminant');
   });
 
+  it('parses a free-form consolidated document dump instead of requiring a source template', () => {
+    const sourceDump = `
+QAPI Q2 2026 — Full Consolidated Record
+Synthetic UAT Data — No Real PHI — Not For Production
+Quarter: Q2 2026
+AgencyCare Indeed Home Health Care, Inc.
+Meeting Date2026-05-07ChairDirector of Nursing (DON)RecorderCompliance OfficerQuorum6 of 6 present — quorum metAttendees Expected8Attendees Present8Attendance Rate100.0% — MET
+Patients/Episodes in Scope (Reviewed)112Includes active + recently discharged within windowActive Census100Active patients at data-through dateHigh-Acuity Patients12New SOC Admissions (Q2)42Recertifications (Q2)18Resumptions of Care (Q2)6Discharges (Q2)35Transfers to Inpatient7OASIS/CMS-485 Records (Chart Audit Denominator)154
+Summary: 7 hospitalizations | 3 ED without hospitalization | Total adverse events = 7 | Open RCAs = 5 (RCA-Q2-001, 002, 004, 005, 007) | Completed RCAs = 2 (RCA-Q2-003, 006) | Unreported = 0
+Summary: Total infections = 7 | Healthcare-associated = 5 | Community-acquired = 2 | Unreported to state = 0 | CLUSTER-001 = 3 MRSA HAIs
+Audit Summary (140 records audited = 100 active + 40 from feeder audits): OASIS SOC not completed ≤5 days = 2 | POC missing F2F = 4 | POC unsigned/pending physician signature = 1 | Med-reconciliation mismatch = 5 | Total deficiencies = 12 | Total compliant = 128 | Defect rate = 8.6%
+Medication-reconciliation compliance89.3%125 compliant140 audited≥95.0%
+Q2 Totals: Scheduled = 150 | Completed = 126 | Missed = 24 | Overall compliance = 84.0%
+Summary: Total complaints = 7 | Rate = 7.0 per 100 | Resolved = 4 | Open = 3
+Active PIPs (8)
+PIP-T-001 OASIS accuracy threshold breach
+PIP-T-002 Clinician documentation pattern
+PIP-T-003 Infection cluster
+PIP-T-004 Adverse event rate above threshold
+PIP-T-005 Complaint rate above threshold
+PIP-T-006 Medication reconciliation below threshold
+PIP-T-007 Missed visit worsening trend
+PIP-T-008 Discharge documentation below threshold
+Open CAPs / RCAs (5)
+Action completion rate: 2 of 4 resolved = 50% | Average action closure time = 18 days
+Disciplinary flags: 5 total — sealed in QAPI-HR-ADDENDUM-2026-Q2
+    `;
+    const model = buildQapiPacketModel({
+      parsed: parseTxt(sourceDump, 'mockq2synth.md'),
+      eventDateISO: '2026-05-07',
+      targetAgency: 'Care Indeed Home Health Care, Inc.',
+      targetPeriod: '2026-Q2',
+      sourceId: 'mockq2synth.md',
+      generatedAt: '2026-07-13T00:00:00.000Z',
+    });
+    const payload = qapiPayload(model);
+    const dashboardCard = (title: RegExp) =>
+      payload.kpiDashboard.cards.find((card) => title.test(card.title));
+
+    expect(payload.sourceCounts.episodesTotal.value).toBe(112);
+    expect(payload.sourceCounts.activeCensus.value).toBe(100);
+    expect(payload.sourceCounts.hospitalizations.value).toBe(7);
+    expect(payload.sourceCounts.edVisitsWithoutHospitalization.value).toBe(3);
+    expect(payload.sourceCounts.pipTriggerScenarios.value).toBe(8);
+    expect(payload.sourceCounts.personnelReviewTriggers.value).toBe(5);
+    expect(dashboardCard(/patients|episodes/i)?.currentValue.display).toBe('112');
+    expect(dashboardCard(/active census/i)?.currentValue.display).toBe('100');
+    expect(dashboardCard(/hospitalization/i)?.currentValue.display).toBe('7.0%');
+    expect(dashboardCard(/ED use/i)?.currentValue.display).toBe('3.0 per 100');
+    expect(dashboardCard(/adverse event/i)?.currentValue.display).toBe('7.0 per 100');
+    expect(dashboardCard(/infection event/i)?.currentValue.display).toBe('5.0%');
+    expect(dashboardCard(/documentation-audit/i)?.currentValue.display).toBe('91.4%');
+    expect(dashboardCard(/documentation defect/i)?.currentValue.display).toBe('8.6%');
+    expect(dashboardCard(/medication-reconciliation/i)?.currentValue.display).toBe('89.3%');
+    expect(dashboardCard(/missed-visit/i)?.currentValue.display).toBe('84.0%');
+    expect(dashboardCard(/complaint/i)?.currentValue.display).toBe('7.0 per 100');
+    expect(dashboardCard(/active PIPs/i)?.currentValue.display).toBe('8');
+    expect(dashboardCard(/open CAPs/i)?.currentValue.display).toBe('5');
+    expect(dashboardCard(/attendance/i)?.currentValue.display).toBe('100.0%');
+    expect(dashboardCard(/action completion/i)?.currentValue.display).toBe('50.0%');
+    expect(dashboardCard(/PIP trigger/i)?.currentValue.display).toBe('8');
+    expect(dashboardCard(/closure time/i)?.currentValue.display).toBe('18.0 days');
+  });
+
   it('orders Part I analysis before Part II forms and follows the module registry', () => {
     const model = buildContaminatedQ1Model();
     const orderedModuleIds = model.modules

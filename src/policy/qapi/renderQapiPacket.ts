@@ -32,7 +32,7 @@ export interface QapiPacketOptions {
   attendeesPresent?: string[];
   policyIds?: string[];
   /** Governance approvers for the lock check (name + authorityConfirmed). */
-  approvers?: Array<{ role: string; name?: string; authorityConfirmed?: boolean }>;
+  approvers?: Array<{ role: string; name?: string; date?: string; authorityConfirmed?: boolean }>;
   /** Derived-source path: quorum line recovered from the source (e.g. "8/8 present — quorum met"). */
   quorumOverride?: string;
   /** Derived-source path: replaces the role-by-role attendee table when names are not individually structured. */
@@ -61,7 +61,7 @@ export type QapiPacketRenderPayload = Record<string, unknown> & {
   chair: string;
   recorder: string;
   policyIds: string[];
-  approvers: Array<{ role: string; name?: string; authorityConfirmed?: boolean }>;
+  approvers: Array<{ role: string; name?: string; date?: string; authorityConfirmed?: boolean }>;
   quorumOverride: string | null;
   attendanceNote: string | null;
   derivedNotice: string | null;
@@ -79,7 +79,7 @@ export type QapiPacketRenderPayload = Record<string, unknown> & {
   };
 };
 
-const DEFAULT_POLICY_IDS = ['QA-PP-001'] as const;
+const DEFAULT_POLICY_IDS = ['QA-PG-001', 'QA-PG-002', 'GV-GB-001'] as const;
 const DEFAULT_ATTENDEES = [
   'Director of Nursing (Chair)',
   'Clinical Manager',

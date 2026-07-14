@@ -5,7 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 /* ═══════════════════════════════════════════════════════════════
    Env loader — single source of truth for server configuration.
-   Loads `.env` from repo root. Soft-fails optional integrations so
+   Loads `.env` from repo root, then `.env.local` as an ignored local override.
+   Soft-fails optional integrations so
    each subsystem (Calendar, Compliance Intelligence) can start
    independently during local development.
    ═══════════════════════════════════════════════════════════════ */
@@ -15,6 +16,10 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
 dotenv.config({ path: path.join(repoRoot, '.env') });
+const localEnvPath = path.join(repoRoot, '.env.local');
+if (fs.existsSync(localEnvPath)) {
+  dotenv.config({ path: localEnvPath, override: true });
+}
 
 // Resolve the Google service-account path but don't hard-fail at boot.
 // The calendar router will return a typed auth error if the file is

@@ -95,6 +95,9 @@ const highlights: readonly HighlightCardData[] = [
   },
 ];
 
+const HOME_SURFACE_CLASS = 'rounded-lg bg-white shadow-[0_14px_34px_rgba(31,41,55,0.10),0_2px_8px_rgba(31,41,55,0.06)] ring-1 ring-black/[0.03]';
+const HOME_SURFACE_HOVER_CLASS = 'transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(31,41,55,0.14),0_4px_12px_rgba(31,41,55,0.08)]';
+
 function viewFromPath(pathname: string): ComplianceView {
   if (pathname.startsWith('/ces/calendar')) return 'calendar';
   if (pathname.startsWith('/compliance/master-controls')) return 'controls';
@@ -154,7 +157,7 @@ function NavigationTabs({ activeView }: { activeView: ComplianceView }) {
 
 function HighlightCard({ card }: { card: HighlightCardData }) {
   return (
-    <article className="flex h-full flex-col rounded-[26px] border border-[#E5E4E3] bg-white p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
+    <article className={`flex h-full flex-col p-8 ${HOME_SURFACE_CLASS} ${HOME_SURFACE_HOVER_CLASS}`}>
       <div className="mb-5 flex items-start justify-between gap-4">
         <span className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#F06923]">{card.eyebrow}</span>
         <span className={`rounded-[8px] px-2.5 py-1 font-montserrat text-[9px] font-bold uppercase tracking-wider ${card.badgeColor ?? 'bg-[#E5FEFF] text-[#007970]'}`}>
@@ -182,7 +185,7 @@ function HomeLandingView({ openWorkspace }: { openWorkspace: () => void }) {
 
   return (
     <div className="relative z-10 space-y-8">
-      <section className="ci-page-hero relative w-full overflow-hidden rounded-b-[32px] rounded-tr-[32px] border border-[#E5E4E3] bg-white p-10 shadow-[0_4px_24px_rgba(0,0,0,0.02)] md:p-14">
+      <section className={`ci-page-hero relative w-full overflow-hidden p-10 md:p-14 ${HOME_SURFACE_CLASS}`}>
         <StaticCardWatermark />
         <div className="relative z-10">
           <span className="mb-4 block font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#F06923]">
@@ -217,7 +220,7 @@ function HomeLandingView({ openWorkspace }: { openWorkspace: () => void }) {
 
       <section className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-6">
         {stats.map((stat) => (
-          <div key={stat.label} className="flex min-h-[140px] flex-col justify-center rounded-[26px] border border-[#E5E4E3] bg-white p-6 text-center shadow-[0_4px_24px_rgba(0,0,0,0.02)] md:p-8">
+          <div key={stat.label} className={`flex min-h-[140px] flex-col justify-center p-6 text-center md:p-8 ${HOME_SURFACE_CLASS}`}>
             <span className={`mb-2 block font-montserrat font-bold ${stat.strong ? 'text-xl text-[#007970]' : 'text-3xl text-[#F06923]'}`}>
               {stat.value}
             </span>
@@ -238,7 +241,7 @@ function HomeLandingView({ openWorkspace }: { openWorkspace: () => void }) {
       </section>
 
       <section className="grid grid-cols-1 gap-6 pt-6 lg:grid-cols-12">
-        <div className="rounded-[32px] border border-[#E5E4E3] bg-white p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] lg:col-span-4">
+        <div className={`p-8 lg:col-span-4 ${HOME_SURFACE_CLASS}`}>
           <h2 className="mb-6 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#007970]">Quick Actions</h2>
           <div className="flex flex-col gap-3">
             {[
@@ -263,7 +266,7 @@ function HomeLandingView({ openWorkspace }: { openWorkspace: () => void }) {
           </div>
         </div>
 
-        <div className="relative flex flex-col justify-between overflow-hidden rounded-[32px] border border-[#E5E4E3] bg-white p-10 shadow-[0_4px_24px_rgba(0,0,0,0.02)] md:p-14 lg:col-span-8">
+        <div className={`relative flex flex-col justify-between overflow-hidden p-10 md:p-14 lg:col-span-8 ${HOME_SURFACE_CLASS}`}>
           <ShieldCheck className="pointer-events-none absolute -bottom-10 -right-10 h-[280px] w-[280px] text-[#007970] opacity-[0.05]" aria-hidden />
           <div className="relative z-10">
             <h2 className="mb-4 font-montserrat text-3xl font-bold text-[#007970]">Ready to close the sprint?</h2>

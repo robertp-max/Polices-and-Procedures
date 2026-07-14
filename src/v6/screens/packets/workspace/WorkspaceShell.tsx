@@ -186,7 +186,7 @@ const DEFAULT_RENDER_PAYLOAD = {
   reviewer: "Quality reviewer",
   chair: "Director of Nursing",
   recorder: "QA coordinator",
-  policyIds: ["QA-PP-001"],
+  policyIds: ["QA-PG-001", "QA-PG-002", "GV-GB-001"],
   approvers: [{ role: "DON", name: "Dakota Director", authorityConfirmed: true }],
   quorumOverride: null,
   attendanceNote: null,

@@ -62,6 +62,10 @@ app.use('/api/calendar/intake/transcribe', express.json({ limit: '64mb' }));
 // default. Allow a larger limit on ONLY this route (before the global parser).
 app.use('/api/calendar/intake/packet', express.json({ limit: '32mb' }));
 
+// Packet Studio source dumps can be large. This route must parse the uploaded
+// source before the global 4mb parser so Brad can read the full document.
+app.use('/api/calendar/intake/extract-source', express.json({ limit: '32mb' }));
+
 app.use(express.json({ limit: '4mb' })); // signature PNG payloads
 
 // Identity / session must run BEFORE the PEP, the bearer gate, and any

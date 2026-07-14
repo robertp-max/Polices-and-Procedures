@@ -236,6 +236,10 @@ function runCalculation(
   definition: KpiDefinition,
   inputs: KpiInputRecord,
 ): CalculationOutput {
+  if (calculation.preferredValueField) {
+    const preferred = readNumericField(inputs, calculation.preferredValueField);
+    if (preferred.kind === 'known') return outputFromDirectRead(preferred, definition.unit);
+  }
   if (calculation.kind === 'ratio') {
     return calculateRatio(calculation, inputs);
   }

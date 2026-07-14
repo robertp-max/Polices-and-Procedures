@@ -50,16 +50,19 @@ describe('WP-4.8 rendering QA structural checks', () => {
     expect(styleText).toContain('.rule{width:138px;height:4px;background:linear-gradient');
     expect(styleText).toContain('@media print{@page{size:letter;margin:.5in .72in;}');
     expect(styleText).toContain('.pg{width:auto;min-height:0;margin:0;display:block;break-after:page;page-break-after:always;overflow:visible;');
-    expect(styleText).toContain('.print-running-footer{display:flex;position:fixed;bottom:.18in;');
+    expect(styleText).toContain('.print-running-footer{display:none;}');
+    expect(styleText).toContain('.pg-topline{display:flex;margin-bottom:.28in;}');
     expect(countMatches(html, /<div class="accent-rail"><span><\/span><span><\/span><\/div>/gu)).toBe(
       0,
     );
-    // Two cover-logo images: the Part A executive cover + the retained Part B
-    // (appendix) cover. Part A leads the document; Part B keeps its own cover.
-    expect(countMatches(html, /src="\/ci-logo-packet-cover\.png"/gu)).toBe(2);
+    // The real branded packet cover appears once at the front. Part A is no
+    // longer a second pseudo-cover, and Part B does not duplicate the cover.
+    expect(countMatches(html, /src="\/ci-logo-packet-cover\.png"/gu)).toBe(1);
     expect(countMatches(html, /class="print-running-footer"/gu)).toBe(1);
     expect(html).toContain('QAPI Committee Packet');
     expect(html).toContain('Care Indeed Home Health Care, Inc.');
+    expect(html.indexOf('data-module-id="qapi-cover-page"')).toBeLessThan(html.indexOf('data-part="A"'));
+    expect(html.indexOf('data-part="A"')).toBeLessThan(html.indexOf('Evidence Appendices'));
     expect(sections).toHaveLength(baseline.expectedModuleOrder.length);
     expect(sections.map((section) => section.moduleId)).toStrictEqual(baseline.expectedModuleOrder);
     expect(sections.map((section) => section.pageNumber)).toStrictEqual(
@@ -128,17 +131,17 @@ describe('WP-4.8 rendering QA structural checks', () => {
     }
   });
 
-  it('renders synthetic and confidential watermarks only when the packet classification requires them', () => {
+  it('renders QAPI synthetic notices without diagonal watermarks', () => {
     const { html: syntheticHtml, model } = renderQ1Packet();
     const confidentialHtml = renderPacketModel(withClassification(model, 'confidential'));
     const internalHtml = renderPacketModel(withClassification(model, 'internal'));
 
     expect(syntheticHtml).toContain(SYNTHETIC_UAT_WATERMARK);
-    expect(extractElements(syntheticHtml, 'div', 'watermark').length).toBeGreaterThan(0);
+    expect(extractElements(syntheticHtml, 'div', 'watermark').length).toBe(0);
     expect(extractElements(syntheticHtml, 'div', 'synthetic-banner').length).toBeGreaterThan(0);
 
-    expect(confidentialHtml).toContain('<div class="watermark">CONFIDENTIAL</div>');
     expect(confidentialHtml).toContain('CONFIDENTIAL');
+    expect(confidentialHtml).not.toContain('<div class="watermark">CONFIDENTIAL</div>');
     expect(confidentialHtml).not.toContain('<div class="synthetic-banner">');
 
     expect(internalHtml).not.toContain('<div class="watermark">');

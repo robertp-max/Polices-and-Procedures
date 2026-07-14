@@ -52,6 +52,7 @@ export const V6_ROUTES = [
   { path: '/iadministrator', hashId: 'brad', template: 'chat', group: 'Overview', title: 'iAdministrator', description: 'Brad decision-support workspace for policy and operations questions.' },
   { path: '/brad/builder', hashId: 'brad-builder', template: 'chat', group: 'Overview', title: 'Brad Builder', description: 'Super Admin builder tools for users, permissions, reusable reports, OTPs, cloud updates, and component requests.' },
   { path: '/ces/calendar', hashId: 'ces-calendar', template: 'calendar', group: 'CES', title: 'CES Calendar', description: 'Sprint compliance calendar for mandatory events, evidence windows, signature cutoffs, and survey packet milestones.' },
+  { path: '/compliance', hashId: 'compliance-home', template: 'dashboard', group: 'CES', title: 'Compliance Home', description: 'Compliance sprint home for open work, blockers, evidence, sign-offs, and audit readiness.' },
   { path: '/ces/board', hashId: 'ces-board', template: 'board', group: 'CES', title: 'CES Board', description: 'Operational Kanban board for sprint execution, blockers, evidence, signatures, and owner handoffs. Includes dedicated "Awaiting Action / Evidence" column for review events (QAPI, Infection Control, Incident/Adverse, Grievance, Audit).' },
   // Design cross-ref (Agent 15): All CES routes align to V6_DESIGN.html ~1308 (CES views),
   // V6_DESIGN_RECONCILIATION.md (most MATCHED_REFERENCE; see also events-board, evidence-center).

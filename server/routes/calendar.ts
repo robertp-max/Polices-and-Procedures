@@ -33,6 +33,7 @@ import {
 } from '../googleEvidence.js';
 import { listManifestFolders, listManifestRows } from '../manifest.js';
 import { ingestSource, type PacketTemplateKind } from '../sourcePipeline.js';
+import { bradReaderAvailable, type BradReaderLogic } from '../sourceExtraction.js';
 import { transcribeAudio } from '../transcription.js';
 import { htmlToPdfForced } from '../htmlToPdf.js';
 import { renderAdmissionPdf } from '../admissionPacketPdf.js';
@@ -669,26 +670,54 @@ calendarRouter.get('/manifest/rows', asyncHandler(async (_req, res) => {
 
 /**
  * POST /api/calendar/intake/extract-source
- * Verification-first source ingest: extract a PDF/text source, read it 3x via
- * Claude (no invention), map the selected template's fields, and persist the raw
+ * Verification-first source ingest: extract a PDF/text source, read it via
+ * the selected Brad reader (no invention), map the selected template's fields, and persist the raw
  * source + extraction sidecar with full source metadata. READ-ONLY w.r.t. Drive.
- * Body: { fileName, mimeType, fileBase64, template }.
+ * Body: { fileName, mimeType, fileBase64, template, packetTemplateId?, requireBrad?, bradLogic? }.
  */
 calendarRouter.post('/intake/extract-source', asyncHandler(async (req, res) => {
-  const { fileName, mimeType, fileBase64, template } = (req.body ?? {}) as {
-    fileName?: string; mimeType?: string; fileBase64?: string; template?: string;
+  const { fileName, mimeType, fileBase64, template, packetTemplateId, requireBrad, bradLogic } = (req.body ?? {}) as {
+    fileName?: string;
+    mimeType?: string;
+    fileBase64?: string;
+    template?: string;
+    packetTemplateId?: string;
+    requireBrad?: boolean;
+    bradLogic?: string;
   };
   if (!fileBase64) throw new ApiError('validation_error', 'fileBase64 is required.', 400);
   const bytes = Buffer.from(fileBase64, 'base64');
   if (!bytes.length) throw new ApiError('validation_error', 'Decoded file is empty.', 400);
   const kind: PacketTemplateKind = (['admission', 'qapi', 'event', 'generic'].includes(String(template))
     ? String(template) : 'generic') as PacketTemplateKind;
+  const selectedLogic = selectedBradReaderLogic(bradLogic, packetTemplateId);
+  if (requireBrad && !(await bradReaderAvailable(selectedLogic))) {
+    throw new ApiError(
+      'validation_error',
+      'Brad’s source reader is unavailable. Configure BRAD_PROVIDER=codex with Codex CLI login, or keep the Claude CLI backup configured, before forcing Brad-only generation.',
+      503,
+    );
+  }
   const result = await ingestSource({
     fileName: fileName || 'source', mimeType: mimeType || 'application/octet-stream',
-    bytes, template: kind, nowISO: new Date().toISOString(),
+    bytes, template: kind, nowISO: new Date().toISOString(), bradLogic: selectedLogic,
   });
+  if (requireBrad && (result.extraction.engine !== 'brad' || result.extraction.passes < 1)) {
+    throw new ApiError(
+      'validation_error',
+      result.extraction.validationSummary || 'Brad’s source reader did not complete a parseable reading pass.',
+      503,
+    );
+  }
   res.json(result);
 }));
+
+function selectedBradReaderLogic(value: string | undefined, packetTemplateId: string | undefined): BradReaderLogic | undefined {
+  if (value === 'claude' || value === 'gpt') return value;
+  if (value === 'qapi-master-claude' && packetTemplateId === 'qapi-quarterly') return value;
+  if (value === 'qapi-raw-claude' && packetTemplateId === 'qapi-quarterly') return value;
+  return undefined;
+}
 
 /**
  * POST /api/calendar/intake/render-pdf
