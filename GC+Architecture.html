@@ -490,19 +490,20 @@
           identity, Journey state, and parts of review/audit — not Drive file storage.
         </div>
         <div class="callout warn">
-          <strong>Implementation status update (2026-07-11):</strong>
-          (1) <strong>Cognito login (Phase COG-1)</strong> is the approved <em>tactical</em> identity implementation —
-          real AuthProvider, route guards, account provisioning, and session containment are code-complete; the
-          integration review passed on <code>integration/cog1-review</code>; <em>not yet merged or deployed</em>.
+          <strong>Implementation status update (2026-07-14):</strong>
+          (1) <strong>Cognito login and user-access controls (COG-1 / COG-2)</strong> are the approved
+          <em>tactical</em> identity implementation — real AuthProvider, route guards, account provisioning,
+          session containment, approved-user restrictions, and server route-access checks are merged into
+          <code>integration/consolidate-2026-07</code>; <em>not yet promoted or deployed</em>.
           Firebase Auth remains the long-term target only and is <em>not</em> required for the login milestone.
           (2) <strong>Keyless Drive impersonation</strong> (Cloud Run runtime identity in
           <code>data-hangout-500409-j4</code> impersonating the Drive service account in
           <code>orbital-stage-443721-v1</code>) is code-prepared with proposed IAM/Cloud Run commands;
           <em>not yet applied or deployed</em>; the production target has no permanent JSON key.
-          (3) The <strong>universal packet platform</strong> is under active implementation on
-          <code>packet-platform</code> — packet work is not production-complete.
-          Next sequence: freeze packet-platform → reconcile COG-1 once → one compatibility gate → merge →
-          deploy dev Cloud Run → verify one non-PHI user lifecycle.
+          (3) The <strong>universal packet platform</strong> is under active implementation and is now part of
+          <code>integration/consolidate-2026-07</code> — packet work is not production-complete.
+          Next sequence: complete the integration validation gate → promote only if accepted → deploy dev
+          Cloud Run → verify one non-PHI user lifecycle.
         </div>
         <div class="table-scroll">
         <table>
@@ -776,8 +777,9 @@
           <strong>AWS Cognito</strong> backend for the fastest working login: the Cognito <code>sub</code> is bound to
           the existing canonical CIHHC <code>User.userId</code> (no duplicate person model), server-returned
           allowlist role is authoritative, and the provider interface is deliberately IdP-agnostic so the later
-          Firebase migration replaces the auth adapter, not every consumer. COG-1 passed integration review and is
-          not yet merged or deployed. See <code>docs/COG1_COGNITO_LOGIN.md</code>.
+          Firebase migration replaces the auth adapter, not every consumer. COG-1 / COG-2 are merged into
+          <code>integration/consolidate-2026-07</code> and remain not yet promoted or deployed. See
+          <code>docs/COG1_COGNITO_LOGIN.md</code>.
         </div>
 
         <h3>Server canonical learner profile — metadata only, no Drive files</h3>
