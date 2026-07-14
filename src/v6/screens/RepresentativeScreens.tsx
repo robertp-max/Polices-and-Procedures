@@ -1,5 +1,5 @@
 import { Activity, AlertTriangle, ArrowRight, BarChart3, BookOpen, CalendarClock, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, Clock, Crosshair, FileCheck2, FileText, Filter, FolderOpen, History, Layers, MoreHorizontal, PanelRightOpen, PenTool, Plus, Search, ShieldAlert, ShieldCheck, Stethoscope, TrendingDown, TrendingUp, Upload, Users, type LucideIcon } from 'lucide-react';
-import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { createElement, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { buildBoardLanes, buildCalendarEvents, buildEventLanes, buildReportMetrics, buildSprintSummary, buildReportCards, buildReportTrendBars, buildEvidenceRows, buildAuditRows, FALLBACK_EVENT_LANES, getControlFromParams, getTasksForEvent } from '@/policy/ces/cesViewProjections';
@@ -2585,7 +2585,6 @@ function ModernDashboardCard({ card, index, mode = 'grid', onNavigate }: { card:
 
   const [replayKey, setReplayKey] = useState(0);
   const handleMouseEnter = () => setReplayKey(k => k + 1);
-  const Icon = getDashboardCardIcon(card.title);
 
   const resolvedChartColor = card.chart?.color || (
     card.status === 'WATCH' ? 'primary' :
@@ -2621,7 +2620,10 @@ function ModernDashboardCard({ card, index, mode = 'grid', onNavigate }: { card:
     >
       <div className={cx('flex justify-between items-start gap-4', mode === 'carousel' ? 'mb-2' : 'mb-6')}>
         <div className="flex min-w-0 items-center gap-2">
-          <Icon className="h-4 w-4 shrink-0 text-[#A0A0A0] transition-colors duration-300 group-hover:text-[#007970]" aria-hidden />
+          {createElement(getDashboardCardIcon(card.title), {
+            className: 'h-4 w-4 shrink-0 text-[#A0A0A0] transition-colors duration-300 group-hover:text-[#007970]',
+            'aria-hidden': true,
+          })}
           <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#007970] md:text-[11px]">
             {card.title}
           </h3>
@@ -2666,6 +2668,7 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
     : 'home';
   const metricTab = activeTab === 'home' ? null : activeTab;
   const communityThreads = useThreadStore((state) => state.threads);
+  const [dashboardNow] = useState(() => Date.now());
 
   const percent = (value: number, total: number): number => {
     if (!Number.isFinite(value) || !Number.isFinite(total) || total <= 0) return 0;
@@ -2743,7 +2746,7 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
   const staleThreadCount = communityThreads.filter((thread) => {
     if (!unresolvedThreadStatuses.has(thread.status)) return false;
     const lastActivity = new Date(thread.lastActivityAt).getTime();
-    return Number.isFinite(lastActivity) && Date.now() - lastActivity > 14 * 24 * 60 * 60 * 1000;
+    return Number.isFinite(lastActivity) && dashboardNow - lastActivity > 14 * 24 * 60 * 60 * 1000;
   }).length;
   const threadResolutionPct = percent(resolvedThreadCount, communityThreads.length);
   const threadToCesPct = percent(threadToCesCount, communityThreads.length);
@@ -3632,9 +3635,12 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
   const navigate = useNavigate();
   const requestedEventId = isCesCalendar ? searchParams.get('event') : null;
   const requestedEvent = findCalendarEventByLookup(config.events, requestedEventId);
-  const cesMonthOptions = isCesCalendar
-    ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]  // Full Jan-Dec for CES calendar (real source records from seed months shown; empty for months with no 2026 data in seed)
-    : [6];
+  const cesMonthOptions = useMemo(
+    () => isCesCalendar
+      ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]  // Full Jan-Dec for CES calendar (real source records from seed months shown; empty for months with no 2026 data in seed)
+      : [6],
+    [isCesCalendar],
+  );
   const requestedMonth = Number(searchParams.get('month'));
   const requestedYear = Number(searchParams.get('year'));
   const requestedView = searchParams.get('view');
@@ -3891,24 +3897,30 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
   }, [selectedEvent]);
 
   useEffect(() => {
-    setAgendaMode(isCesCalendar ? 'Month' : 'Week');
-    if (!requestedEventId) setSelectedEvent(null);
-    setActiveEventKey(null);
-    setActiveEventAnchor(null);
-    setResolverEvent(
-      mode === 'staffing-calendar'
-        ? events.find((event) => event.tone === 'orange' || event.tone === 'amber') ?? null
-        : null
-    );
+    const frame = window.requestAnimationFrame(() => {
+      setAgendaMode(isCesCalendar ? 'Month' : 'Week');
+      if (!requestedEventId) setSelectedEvent(null);
+      setActiveEventKey(null);
+      setActiveEventAnchor(null);
+      setResolverEvent(
+        mode === 'staffing-calendar'
+          ? events.find((event) => event.tone === 'orange' || event.tone === 'amber') ?? null
+          : null
+      );
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [activeCesMonth, isCesCalendar, mode, requestedEventId]);
 
   useEffect(() => {
     if (!isCesCalendar) return;
-    if (cesMonthOptions.includes(requestedMonth)) setCesMonthState(requestedMonth);
-    if ([2025, 2026, 2027].includes(requestedYear)) setCesYearState(requestedYear);
-    if (requestedView === 'calendar' || requestedView === 'sprint' || requestedView === 'events') {
-      setCesWorkspaceViewState(requestedView);
-    }
+    const frame = window.requestAnimationFrame(() => {
+      if (cesMonthOptions.includes(requestedMonth)) setCesMonthState(requestedMonth);
+      if ([2025, 2026, 2027].includes(requestedYear)) setCesYearState(requestedYear);
+      if (requestedView === 'calendar' || requestedView === 'sprint' || requestedView === 'events') {
+        setCesWorkspaceViewState(requestedView);
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [cesMonthOptions, isCesCalendar, requestedMonth, requestedView, requestedYear]);
 
   useEffect(() => {
@@ -3917,11 +3929,14 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
     const targetEvent = findCalendarEventByLookup(config.events, requestedEventId);
     if (!targetEvent) return;
 
-    setAgendaMode('Month');
-    setCesMonth(getEventMonth(targetEvent));
-    setSelectedEvent(targetEvent);
-    setActiveEventKey(null);
-    setActiveEventAnchor(null);
+    const frame = window.requestAnimationFrame(() => {
+      setAgendaMode('Month');
+      setCesMonth(getEventMonth(targetEvent));
+      setSelectedEvent(targetEvent);
+      setActiveEventKey(null);
+      setActiveEventAnchor(null);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [config.events, isCesCalendar, requestedEventId]);
 
   const openCalendarEvent = (event: CalendarEventData) => {
@@ -4481,7 +4496,6 @@ function BoardScreen() {
 }
 
 function SprintBoardColumn({ index, lane, onCardClick }: { index: number; lane: BoardLaneData; onCardClick: (card: BoardCardData) => void }) {
-  const Icon = getSprintLaneIcon(lane.title);
   return (
     <section
       className="animate-board-col flex max-h-full w-[340px] shrink-0 flex-col rounded-[24px] bg-[#FAFAF7] p-4 shadow-[inset_0_0_0_1px_rgba(229,228,227,0.72)]"
@@ -4489,7 +4503,10 @@ function SprintBoardColumn({ index, lane, onCardClick }: { index: number; lane: 
     >
       <header className="mb-5 flex items-center justify-between gap-3 px-2 pt-1">
         <h2 className="flex min-w-0 items-center gap-2 truncate text-xs font-bold uppercase tracking-widest text-[#52404B]">
-          <Icon aria-hidden="true" className={cx('h-4 w-4 shrink-0', sprintToneTextClass(lane.tone))} />
+          {createElement(getSprintLaneIcon(lane.title), {
+            'aria-hidden': true,
+            className: cx('h-4 w-4 shrink-0', sprintToneTextClass(lane.tone)),
+          })}
           <span className="truncate">{lane.title}</span>
         </h2>
         <span className={cx('rounded-full px-2.5 py-1 text-[10px] font-bold', sprintBadgeClass(lane.tone))}>

@@ -122,10 +122,12 @@ export function V6Shell() {
     let frame: number | undefined;
 
     if (isPersonalOpsOpen) {
-      setRenderPersonalPanel(true);
-      frame = window.requestAnimationFrame(() => setPersonalPanelVisible(true));
+      frame = window.requestAnimationFrame(() => {
+        setRenderPersonalPanel(true);
+        setPersonalPanelVisible(true);
+      });
     } else {
-      setPersonalPanelVisible(false);
+      frame = window.requestAnimationFrame(() => setPersonalPanelVisible(false));
       timer = window.setTimeout(() => setRenderPersonalPanel(false), 500);
     }
 
@@ -165,10 +167,12 @@ export function V6Shell() {
     let frame: number | undefined;
 
     if (feedbackOpen) {
-      setRenderFeedbackPanel(true);
-      frame = window.requestAnimationFrame(() => setFeedbackPanelVisible(true));
+      frame = window.requestAnimationFrame(() => {
+        setRenderFeedbackPanel(true);
+        setFeedbackPanelVisible(true);
+      });
     } else {
-      setFeedbackPanelVisible(false);
+      frame = window.requestAnimationFrame(() => setFeedbackPanelVisible(false));
       timer = window.setTimeout(() => setRenderFeedbackPanel(false), 500);
     }
 

@@ -69,7 +69,7 @@ function extractVersionDate(policy: PolicyContent): string | null {
   for (const section of policy.sections) {
     const dateMatch = section.body.match(/\|\s*Effective Date\s*\|\s*([0-9-]+)/i);
     if (dateMatch) return dateMatch[1];
-    const versionMatch = section.body.match(/\|\s*Version\s*\|\s*([^\|]+)/i);
+    const versionMatch = section.body.match(/\|\s*Version\s*\|\s*([^|]+)/i);
     if (versionMatch) {
       const v = versionMatch[1].trim();
       // try to find date nearby
