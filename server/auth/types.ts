@@ -46,4 +46,7 @@ export interface DemoUser {
   firstName?: string;
   lastName?: string;
   emailVerified: boolean;
+  /** Server-authoritative role from the approved-users allowlist (COG-1). */
+  role?: string;
+  department?: string;
 }

@@ -162,6 +162,9 @@ export const V6_ROUTES = [
   { path: '/surveyor/policy/:policyId', hashId: 'surveyor-viewer', template: 'detail', group: 'Admin', title: 'Surveyor Viewer', description: 'Read-only surveyor policy viewer for external audit access.' },
   { path: '/policy-lifecycle/:policyId', hashId: 'policy-lifecycle-detail', template: 'lifecycle', group: 'Taxonomy', title: 'Policy Lifecycle Detail', description: 'Policy lifecycle deep link for a specific policy record.' },
   { path: '/login', hashId: 'login-page', template: 'login', group: 'Auth', title: 'Sign In', description: 'Authentication entry screen outside the V6 shell.' },
+  { path: '/forgot-password', hashId: 'forgot-password-page', template: 'login', group: 'Auth', title: 'Forgot Password', description: 'Request a password reset code (outside the V6 shell).' },
+  { path: '/reset-password', hashId: 'reset-password-page', template: 'login', group: 'Auth', title: 'Reset Password', description: 'Complete a password reset with an emailed code (outside the V6 shell).' },
+  { path: '/setup-account', hashId: 'setup-account-page', template: 'login', group: 'Auth', title: 'Account Setup', description: 'Invited-account setup from a secure emailed link (outside the V6 shell).' },
 ] as const satisfies readonly V6RouteDefinition[];
 
 export type V6RouteHashId = (typeof V6_ROUTES)[number]['hashId'];
