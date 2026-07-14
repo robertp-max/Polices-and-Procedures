@@ -53,6 +53,8 @@ export const ROUTE_ACCESS_MATRIX: RouteAccessEntry[] = [
   { mount: 'ceu', access: 'AUTHENTICATED', note: 'CEU records. Verified user required.' },
   { mount: 'compliance', access: 'AUTHENTICATED', note: 'Compliance surface. Verified user required; administration-level role gates are follow-on.' },
   { mount: 'pm', access: 'AUTHENTICATED', note: 'PM/tasks. Verified user required.' },
+  { mount: 'packet-templates', access: 'AUTHENTICATED', note: 'Packet Studio template registry. Verified user required.' },
+  { mount: 'packets', access: 'AUTHENTICATED', note: 'Packet Studio packet lifecycle, readiness, sources, signing, and Brad-assisted editing. Verified user required; packet workflow state gates apply inside the router.' },
   { mount: 'ia', access: 'AUTHENTICATED', publicPaths: ['/api/ia/health'], note: 'Compliance Intelligence. /health is public; queries require a verified user.' },
   { mount: 'brad', access: 'AUTHENTICATED', note: 'Brad assistant. Verified user required; privileged /superadmin/* actions self-verify super-admin server-side (verifySuperAdmin) using the verified actor.' },
 ];
