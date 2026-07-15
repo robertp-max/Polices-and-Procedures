@@ -206,22 +206,21 @@ const RN_MODULES: RoleModuleRow[] = [
   { id: 'RN-SUP', phase: 'Weeks 2–4', title: 'Supervised patient visits (min 2 experienced RN; min 5 new grads / new to HH)', policy: 'HR-TA-005 § 6.3', method: 'Direct supervision', competency: 'HR-TA-005 Appendix E per visit', competencyKind: 'observation' },
 ];
 
-// LVN journey is defined in the source framework as the RN journey minus OASIS
-// authorization, HHA supervision, and POC initiation — plus LVN scope items.
+// LVN V5 track — titles aligned to standalone modules in modules/lvn.
 const LVN_MODULES: RoleModuleRow[] = [
-  { id: 'LVN-001', phase: 'Week 1', title: 'LVN scope of practice limitations', policy: 'CA B&P Code § 2859', method: 'Classroom', competency: 'Quiz (80%)', competencyKind: 'quiz' },
-  { id: 'LVN-002', phase: 'Week 1', title: 'EHR system — navigation and documentation', policy: '—', method: 'Classroom + demo', competency: 'Return demo (mock note)', competencyKind: 'return-demo' },
-  { id: 'LVN-003', phase: 'Week 1', title: 'Clinical documentation standards', policy: 'CL-CD-001 to CL-CD-004', method: 'Classroom', competency: 'Record review exercise', competencyKind: 'exercise' },
-  { id: 'LVN-004', phase: 'Week 2', title: 'RN co-signature & supervision requirements', policy: 'HR-TA-005 § 6.3', method: 'Classroom + form review', competency: 'Quiz', competencyKind: 'quiz' },
-  { id: 'LVN-005', phase: 'Week 2', title: 'Medication administration under RN / physician POC', policy: 'CL-SD-012, CL-SD-013', method: 'Classroom + demo', competency: 'Skills check-off', competencyKind: 'skills-checkoff' },
-  { id: 'LVN-006', phase: 'Week 2', title: 'Wound care standards', policy: 'CL-SD-011', method: 'Classroom + demo', competency: 'Return demo', competencyKind: 'return-demo' },
-  { id: 'LVN-007', phase: 'Week 3', title: 'Fall risk assessment & prevention', policy: 'CL-SD-015', method: 'Case study', competency: 'Case study assessment', competencyKind: 'case-study' },
-  { id: 'LVN-008', phase: 'Week 3', title: 'Pain assessment & management', policy: 'CL-SD-014', method: 'Case study', competency: 'Case study assessment', competencyKind: 'case-study' },
-  { id: 'LVN-009', phase: 'Week 3', title: 'Infection prevention — clinical application', policy: 'CL-SD-016', method: 'Demo + return demo', competency: 'Return demo', competencyKind: 'return-demo' },
-  { id: 'LVN-010', phase: 'Week 3', title: 'Patient identification & verification', policy: 'OP-PA-002', method: 'Observation', competency: '—', competencyKind: 'none' },
-  { id: 'LVN-011', phase: 'Week 4', title: 'LVN-specific skills check-offs per CA practice act', policy: 'CA B&P Code § 2859', method: 'Skills lab', competency: 'Skills check-off', competencyKind: 'skills-checkoff' },
-  { id: 'LVN-012', phase: 'Week 4', title: 'Observation, reporting & escalation to RN', policy: 'CL-CD-001', method: 'Classroom + demo', competency: 'Scenario', competencyKind: 'scenario' },
-  { id: 'LVN-SUP', phase: 'Weeks 2–4', title: 'Supervised patient visits (min 3 experienced; min 5 new to HH)', policy: 'HR-TA-005 § 6.3', method: 'Direct supervision', competency: 'HR-TA-005 Appendix E per visit', competencyKind: 'observation' },
+  { id: 'LVN-001', phase: 'Week 1', title: 'EHR System — LVN Documentation Module', policy: 'CL-CD-001, IT-UP-001', method: 'Classroom + demo', competency: 'Return demo (mock note)', competencyKind: 'return-demo' },
+  { id: 'LVN-002', phase: 'Week 1', title: 'LVN Scope of Practice — CA B&P § 2859', policy: 'CA B&P Code § 2859', method: 'Classroom', competency: 'Quiz (80%)', competencyKind: 'quiz' },
+  { id: 'LVN-003', phase: 'Week 1', title: 'RN Co-Signature & Supervision Requirements', policy: 'HR-TD-003 / CL-CS-001', method: 'Classroom + form review', competency: 'Quiz', competencyKind: 'quiz' },
+  { id: 'LVN-004', phase: 'Week 1', title: 'Clinical Documentation Standards', policy: 'CL-CD-001 to CL-CD-002', method: 'Classroom', competency: 'Record review exercise', competencyKind: 'exercise' },
+  { id: 'LVN-005', phase: 'Week 2', title: 'Plan of Care: Working Under RN/Physician POC', policy: 'CL-CP-001', method: 'Case study', competency: 'Case study', competencyKind: 'case-study' },
+  { id: 'LVN-006', phase: 'Week 2', title: 'Medication Management & Reconciliation', policy: 'CL-SD-012, CL-SD-013', method: 'Classroom + demo', competency: 'Skills check-off', competencyKind: 'skills-checkoff' },
+  { id: 'LVN-007', phase: 'Week 3', title: 'Wound Care: LVN Scope', policy: 'CL-SD-011', method: 'Classroom + demo', competency: 'Return demo', competencyKind: 'return-demo' },
+  { id: 'LVN-008', phase: 'Week 3', title: 'Fall Risk Assessment & Prevention', policy: 'CL-SD-015', method: 'Case study', competency: 'Case study assessment', competencyKind: 'case-study' },
+  { id: 'LVN-009', phase: 'Week 3', title: 'Pain Assessment & Management', policy: 'CL-SD-014', method: 'Case study', competency: 'Case study assessment', competencyKind: 'case-study' },
+  { id: 'LVN-010', phase: 'Week 3', title: 'Infection Prevention — Clinical Application', policy: 'CL-SD-016', method: 'Demo + return demo', competency: 'Return demo', competencyKind: 'return-demo' },
+  { id: 'LVN-011', phase: 'Week 4', title: 'Patient Identification & Verification', policy: 'OP-PA-002', method: 'Observation', competency: 'Scenario', competencyKind: 'scenario' },
+  { id: 'LVN-012', phase: 'Week 4', title: 'LVN-Specific Skills Check-offs per CA Practice Act', policy: 'CA B&P Code § 2859 / HR-TC-001', method: 'Skills lab', competency: 'Skills check-off', competencyKind: 'skills-checkoff' },
+  { id: 'LVN-SUP', phase: 'Weeks 2–4', title: 'Supervised Patient Visits', policy: 'HR-TA-005 § 6.3 — number required by current agency policy', method: 'Direct supervision', competency: 'HR-TA-005 Appendix E per visit', competencyKind: 'observation' },
 ];
 
 const PT_MODULES: RoleModuleRow[] = [
