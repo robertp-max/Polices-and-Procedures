@@ -174,6 +174,8 @@ function isGAO002Interactive(moduleId?: string): boolean {
 }
 
 const isGAO002FullWorkspace = (moduleId?: string) => isGAO002Interactive(moduleId);
+const isGAO001DeliveryScene = (moduleId: string | undefined, cardId: string | undefined) =>
+  moduleId === 'GAO-001' && cardId === 'GAO-001_L1_DELIVERY';
 
 const onboardingDotBg = {
   backgroundColor: "#FAFBF8",
@@ -1051,6 +1053,7 @@ function LessonPlayerPage() {
   const nextLesson = currentLessonIdx < allLessons.length - 1 ? allLessons[currentLessonIdx + 1] : null;
 
   const currentCard = cards[currentIdx];
+  const gao001DeliveryScene = isGAO001DeliveryScene(moduleId, currentCard.card_id);
   const isChallengeCard = Boolean(currentCard.internal_challenge);
   const isDebriefCard = currentCard.card_type === "debrief";
   const isLast = currentIdx === cards.length - 1;
@@ -1184,6 +1187,8 @@ function LessonPlayerPage() {
             style={
               isGAO002FullWorkspace(moduleId)
                 ? undefined
+                : gao001DeliveryScene
+                ? { flex: '1 1 auto', minWidth: '360px' }
                 : { minWidth: 'calc(420px * 1.0777)', flex: '1 1 auto' }
             }
           >
@@ -1219,13 +1224,23 @@ function LessonPlayerPage() {
 
           <section
             className={`flex min-h-0 flex-col bg-white ${
-              /^GAO-001_L\d+_DELIVERY$/.test(currentCard.card_id)
+              gao001DeliveryScene
                 ? 'rounded-none border-0 p-0 shadow-none overflow-hidden'
                 : 'rounded-[24px] border border-[#E5E4E3] p-[20px] shadow-[0_18px_50px_rgba(31,28,27,0.08)]'
             }`}
             style={
               isGAO002FullWorkspace(moduleId)
                 ? { flex: '1 1 auto', minHeight: 0, width: '100%' }
+                : gao001DeliveryScene
+                ? {
+                    flex: '0 0 auto',
+                    alignSelf: 'stretch',
+                    height: '100%',
+                    aspectRatio: '16 / 13',
+                    width: 'auto',
+                    maxWidth: '100%',
+                    minWidth: 0,
+                  }
                 : {
                     flex: '0 0 auto',
                     alignSelf: 'stretch',
@@ -1239,9 +1254,9 @@ function LessonPlayerPage() {
           >
             <div
               className={`flex min-h-0 h-full w-full flex-1 flex-col overflow-hidden ${
-                /^GAO-001_L\d+_DELIVERY$/.test(currentCard.card_id)
+                gao001DeliveryScene
                   ? 'rounded-none border-0 bg-black'
-                  : 'rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8]'
+                  : 'rounded-[18px] border-0 bg-white'
               }`}
             >
               {currentCard.card_id === 'GAO-001_L1_DELIVERY' ? (

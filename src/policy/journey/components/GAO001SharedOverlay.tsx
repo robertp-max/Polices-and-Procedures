@@ -56,6 +56,12 @@ interface GAO001SharedOverlayProps {
   narration?: SceneNarrationConfig;
   onComplete?: () => void;
   linear?: boolean;
+  fillPanel?: boolean;
+  renderCustomModal?: (args: {
+    hotspot: Hotspot;
+    close: () => void;
+    complete: () => void;
+  }) => React.ReactNode | null;
 }
 
 const SHARED_STYLES = `
@@ -158,6 +164,8 @@ export default function GAO001SharedOverlay({
   hotspots,
   onComplete,
   linear = false,
+  fillPanel = false,
+  renderCustomModal,
 }: GAO001SharedOverlayProps) {
   const [completedNodeIds, setCompletedNodeIds] = useState<Set<string>>(new Set());
   const [revealedNodeIds, setRevealedNodeIds] = useState<Set<string>>(new Set());
@@ -240,27 +248,47 @@ export default function GAO001SharedOverlay({
   };
 
   const activeHotspot = activeModalNodeId ? hotspots.find(h => h.id === activeModalNodeId) : null;
+  const completeActiveHotspot = () => {
+    if (activeModalNodeId) {
+      setCompletedNodeIds(prev => new Set(prev).add(activeModalNodeId));
+      setRevealedNodeIds(prev => new Set(prev).add(activeModalNodeId));
+    }
+    setShowSuccessScreen(false);
+    setActiveModalNodeId(null);
+    setSelectedChoiceId(null);
+  };
+  const customModal = activeHotspot
+    ? renderCustomModal?.({
+        hotspot: activeHotspot,
+        close: closeDrawer,
+        complete: completeActiveHotspot,
+      }) ?? null
+    : null;
 
   return (
-    <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden bg-black font-sans">
+    <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden bg-white font-sans">
 
-      {/* Stage fills player 16:13 bounds. Image uses contain (no stretch). New art is ~16:13 so no bars. */}
+      {/* Stage fills either the original 16:13 scene bounds or the full right-side panel. */}
       <div
         className={`relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden ${mounted ? 'animate-scene' : 'opacity-0'}`}
         style={{ containerType: 'size' }}
       >
         <div
           className="relative overflow-hidden"
-          style={{
-            width: 'min(100cqw, calc(100cqh * 16 / 13))',
-            height: 'min(100cqh, calc(100cqw * 13 / 16))',
-            aspectRatio: '16 / 13',
-          }}
+          style={
+            fillPanel
+              ? { width: '100%', height: '100%' }
+              : {
+                  width: 'min(100cqw, calc(100cqh * 16 / 13))',
+                  height: 'min(100cqh, calc(100cqw * 13 / 16))',
+                  aspectRatio: '16 / 13',
+                }
+          }
         >
           <img
             src={imageSrc}
             alt={altText}
-            className="pointer-events-none absolute inset-0 z-0 block h-full w-full object-contain object-center"
+            className={`pointer-events-none absolute inset-0 z-0 block h-full w-full object-center ${fillPanel ? 'object-cover' : 'object-contain'}`}
             draggable={false}
           />
 
@@ -310,6 +338,7 @@ export default function GAO001SharedOverlay({
               {/* The Marker */}
               <button
                 onClick={() => handleHotspotClick(spot, index)}
+                aria-label={spot.label}
                 className={`relative w-12 h-12 -ml-6 -mt-6 rounded-full flex items-center justify-center text-white shadow-lg transition-transform duration-300 hover:scale-110 z-40 ${colorClass} ${pulseClass}`}
               >
                 {isComplete
@@ -354,7 +383,7 @@ export default function GAO001SharedOverlay({
         </div> {/* End image-aspect stage */}
 
         {/* ---------------- THE NEW MODAL LAYER ---------------- */}
-        {activeHotspot && (
+        {activeHotspot && (customModal ?? (
             <div className={`fixed inset-0 bg-[#1F1C1B]/50 backdrop-blur-md transition-opacity duration-700 flex items-center justify-center p-4 md:p-6 z-50 opacity-100`}>
 
                 {/* Success Screen */}
@@ -506,7 +535,7 @@ export default function GAO001SharedOverlay({
                     </div>
                 )}
             </div>
-        )}
+        ))}
 
         {/* Success State Overlay */}
         {hotspots.length > 0 && completedNodeIds.size === hotspots.length && !activeModalNodeId && showCompleteBanner && (
