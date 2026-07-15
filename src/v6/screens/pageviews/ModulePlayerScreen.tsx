@@ -64,6 +64,7 @@ import { isAdvancedModule, getAdvancedVariant } from "@/policy/journey/data/adva
 import { AdvancedTrainingPlayer } from "@/policy/journey/components/advanced/AdvancedTrainingPlayer";
 import { OasisSocTrainingPanel } from "@/policy/journey/components/advanced/OasisSocTrainingPanel";
 import { isOasisSocModule, OASIS_SOC_MODULE_TITLE } from "@/policy/journey/components/advanced/oasisSocModule";
+import { getLvnStandaloneModule, isLvnStandaloneModule } from "@/policy/journey/modules/lvn";
 import { Cms485AssessmentQuizPage } from "./Cms485AssessmentQuizPage";
 import CoreValuesInteractiveViewer from "@/policy/journey/components/CoreValuesInteractiveViewer";
 import GAO001Scene01WelcomeDesk from "@/policy/journey/components/GAO001Scene01WelcomeDesk";
@@ -2271,16 +2272,36 @@ export function ModulePlayerScreen() {
 
   // HOIST useMemo here so it is ALWAYS called (P0-002 fix for hook order)
   const element = useMemo(() => {
+    const dispatchModuleId =
+      params.moduleId
+      || (pathname.includes('/module/')
+        ? pathname.split('/module/')[1]?.split('/')[0]?.split('?')[0]
+        : undefined);
+
     // Dispatch ADV modules to domain player for main module view (fixes runtime for RN-ADV)
     // OASIS-E2 SOC renders its own self-contained panel — resolved FIRST and
     // independently of the shared advanced-training contract (see oasisSocModule.ts).
-    if (isOasisSocModule(params.moduleId)) {
-      return <OasisSocTrainingPanel moduleId={params.moduleId!} />;
+    if (isOasisSocModule(dispatchModuleId)) {
+      return <OasisSocTrainingPanel moduleId={dispatchModuleId!} />;
     }
-    if (params.moduleId && isAdvancedModule(params.moduleId) && !isGAO002Interactive(params.moduleId)) {
-      const variant = getAdvancedVariant(params.moduleId) || 'plan_of_care';
-      const title = getModuleDef(params.moduleId)?.title || params.moduleId;
-      return <AdvancedTrainingPlayer moduleId={params.moduleId} moduleTitle={title} variant={variant} />;
+    // LVN V5 standalone SC04 modules (full interactive players — not placeholder lesson shell)
+    if (dispatchModuleId && isLvnStandaloneModule(dispatchModuleId)) {
+      const LvnModule = getLvnStandaloneModule(dispatchModuleId);
+      if (LvnModule) {
+        return (
+          <div className="min-h-[70vh] w-full" data-lvn-standalone={dispatchModuleId}>
+            <div className="mb-3 px-2 sm:px-4 pt-2">
+              <BackLink to="/journey?tab=onboarding&path=lvn">Back to LVN path</BackLink>
+            </div>
+            <LvnModule />
+          </div>
+        );
+      }
+    }
+    if (dispatchModuleId && isAdvancedModule(dispatchModuleId) && !isGAO002Interactive(dispatchModuleId)) {
+      const variant = getAdvancedVariant(dispatchModuleId) || 'plan_of_care';
+      const title = getModuleDef(dispatchModuleId)?.title || dispatchModuleId;
+      return <AdvancedTrainingPlayer moduleId={dispatchModuleId} moduleTitle={title} variant={variant} />;
     }
     if (pathname === "/journey/module/m0") {
       return <Module0OrientationPage />;
@@ -2303,7 +2324,7 @@ export function ModulePlayerScreen() {
     if (params.lessonId) {
       return <LessonPlayerPage />;
     }
-    if (params.moduleId) {
+    if (dispatchModuleId) {
       return <Module1OverviewPage />;
     }
     return (
@@ -2311,9 +2332,9 @@ export function ModulePlayerScreen() {
         Route unrecognized in learning dispatcher.
       </div>
     );
-  }, [pathname, params]);
+  }, [pathname, params.moduleId, params.lessonId]);
 
-  if (rawModuleId && !journeyMod && !isOasisSocModule(rawModuleId) && !isAdvancedModule(rawModuleId) && !isGAO002Interactive(rawModuleId) && !['m0'].includes(rawModuleId)) {
+  if (rawModuleId && !journeyMod && !isOasisSocModule(rawModuleId) && !isAdvancedModule(rawModuleId) && !isLvnStandaloneModule(rawModuleId) && !isGAO002Interactive(rawModuleId) && !['m0'].includes(rawModuleId)) {
     // Unknown module - bypass for RN-ADV modules (registered in adapter/courseModules)
     return (
       <section className="p-8">
