@@ -225,6 +225,8 @@ const MSW: JourneyModule[] = [
 ];
 
 const HHA: JourneyModule[] = [
+  { id: 'HHA-PRE-1', group: 'ROLE', phase: 'PRE_DAY_1', title: 'HHA training program completion verified', roles: ['HHA'], policyRefs: ['HR-TA-004'], cmsRefs: ['42 CFR 484.80(b)'], method: 'RecordReview', evidenceAppendix: 'B' },
+  { id: 'HHA-PRE-2', group: 'ROLE', phase: 'PRE_DAY_1', title: 'Prior competency evaluation verified (if prior HHA)', roles: ['HHA'], policyRefs: ['HR-TA-004'], cmsRefs: ['42 CFR 484.80(c)'], method: 'RecordReview', evidenceAppendix: 'B' },
   { id: 'HHA-001', group: 'ROLE', phase: 'ROLE', week: 1, title: 'Communication skills', roles: ['HHA'], policyRefs: ['HR-TD-003'], cmsRefs: ['42 CFR 484.80(h)(1)'], method: 'SkillsCheckoff', evidenceAppendix: 'HRTD003_D' },
   { id: 'HHA-002', group: 'ROLE', phase: 'ROLE', week: 1, title: 'Observation, reporting, documentation of patient status', roles: ['HHA'], policyRefs: ['CL-CD-001', 'HR-TD-003'], cmsRefs: ['42 CFR 484.80(h)(2)'], method: 'SkillsCheckoff', evidenceAppendix: 'HRTD003_D' },
   { id: 'HHA-003', group: 'ROLE', phase: 'ROLE', week: 1, title: 'Reading & recording vital signs', roles: ['HHA'], policyRefs: ['HR-TD-003'], cmsRefs: ['42 CFR 484.80(h)(3)'], method: 'SkillsCheckoff', passThreshold: 1.0, evidenceAppendix: 'HRTD003_D' },
