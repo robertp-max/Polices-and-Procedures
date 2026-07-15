@@ -1962,4 +1962,3 @@ const btnSecondary: React.CSSProperties = {
   cursor: 'pointer',
   fontFamily: 'inherit',
 };
-
