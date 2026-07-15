@@ -42,6 +42,14 @@ export interface RoleDef {
   modules: RoleModuleRow[];
 }
 
+export interface RoleOnboardingPathDef {
+  id: string;
+  label: string;
+  title: string;
+  description: string;
+  roleShorts: string[];
+}
+
 export interface PreHireStep {
   step: string;
   action: string;
@@ -416,6 +424,72 @@ export const ROLES: RoleDef[] = [
       'Annual competency re-evaluation: HR-TD-003 Appendix D covering ALL 9 competency areas',
     ],
     modules: HHA_MODULES,
+  },
+];
+
+export const ROLE_ONBOARDING_PATHS: RoleOnboardingPathDef[] = [
+  {
+    id: 'lvn',
+    label: 'LVN',
+    title: 'Licensed Vocational Nurse',
+    description: 'Scope, supervision, documentation, medication, wound care, safety, and supervised-visit competency.',
+    roleShorts: ['LVN'],
+  },
+  {
+    id: 'rn',
+    label: 'RN',
+    title: 'Registered Nurse',
+    description: 'Comprehensive assessment, OASIS, plan of care, care coordination, supervision, documentation, and clinical leadership.',
+    roleShorts: ['RN'],
+  },
+  {
+    id: 'adm',
+    label: 'ADM',
+    title: 'Agency Administrator',
+    description: 'Governance, CMS Conditions of Participation, compliance, QAPI, operations, personnel, and agency oversight.',
+    roleShorts: ['ADM'],
+  },
+  {
+    id: 'don',
+    label: 'DON',
+    title: 'Director of Nursing / Clinical Manager',
+    description: 'Clinical supervision, competency management, QAPI oversight, documentation audit, and patient-care governance.',
+    roleShorts: ['DON'],
+  },
+  {
+    id: 'hha',
+    label: 'HHA',
+    title: 'Home Health Aide',
+    description: 'Personal care, observation, infection control, documentation, patient-specific skills, and supervision readiness.',
+    roleShorts: ['HHA'],
+  },
+  {
+    id: 'pt-pta',
+    label: 'PT/PTA',
+    title: 'Physical Therapy',
+    description: 'Therapy evaluation, plan implementation, fall-risk intervention, homebound status, documentation, and supervised visits.',
+    roleShorts: ['PT', 'PTA'],
+  },
+  {
+    id: 'ot-cota',
+    label: 'OT/COTA',
+    title: 'Occupational Therapy',
+    description: 'ADL assessment, home safety, adaptive equipment, OT/COTA supervision, documentation, and supervised visits.',
+    roleShorts: ['OT', 'COTA'],
+  },
+  {
+    id: 'slp',
+    label: 'SLP',
+    title: 'Speech-Language Pathology',
+    description: 'Dysphagia, cognitive-linguistic assessment, OASIS-authorized duties, education documentation, and supervised visits.',
+    roleShorts: ['SLP'],
+  },
+  {
+    id: 'msw',
+    label: 'MSW',
+    title: 'Medical Social Worker',
+    description: 'Psychosocial assessment, community resources, advance directives, mandatory reporting, and social-work documentation.',
+    roleShorts: ['MSW'],
   },
 ];
 
