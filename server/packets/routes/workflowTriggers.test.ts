@@ -7,6 +7,7 @@ import express, { type ErrorRequestHandler, type Express } from 'express';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ApiError } from '../../errors.js';
 import { identityMiddleware } from '../../identity/middleware.js';
+import { mountTestAuthBoundary, testAuthHeaders, VIEWER_BEARER } from '../../auth/testAuthHarness.js';
 import type { AuditEvent } from '../../audit/writer.js';
 import { packetAuditStreamKey } from '../auditEvents.js';
 import {
@@ -69,19 +70,15 @@ function buildApp(store: FileLocalPacketStore): Express {
   const app = express();
   app.use(express.json({ limit: '1mb' }));
   app.use('/api', identityMiddleware);
+  mountTestAuthBoundary(app); // same requireApiAuth boundary as production
   app.use('/api/packets', createWorkflowTriggersRouter({ store }));
   app.use(ERROR_HANDLER);
   return app;
 }
 
 function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
-  return {
-    'content-type': 'application/json',
-    'x-user-id': 'route-user',
-    'x-user-roles': 'qapi_chair',
-    'x-user-access-classes': 'agency:agency-trigger-routes,packets:*',
-    ...extra,
-  };
+  // Default authorized actor holds qapi_chair (trigger authority).
+  return testAuthHeaders(extra);
 }
 
 function jsonObject(value: unknown): Record<string, unknown> {
@@ -269,7 +266,9 @@ describe('/api/packets workflow-trigger routes', () => {
         evaluation,
         rationale: 'Attempted activation by an unauthorized viewer.',
       },
-      { 'x-user-roles': 'viewer' },
+      // Authenticate as a real 'viewer' actor (lacks trigger authority) —
+      // identity/role comes from the verified token, not a forged header.
+      { authorization: VIEWER_BEARER },
     );
 
     expect(response.status).toBe(403);

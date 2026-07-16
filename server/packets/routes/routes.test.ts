@@ -7,6 +7,10 @@ import express, { type ErrorRequestHandler, type Express } from 'express';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ApiError } from '../../errors.js';
 import { identityMiddleware } from '../../identity/middleware.js';
+import {
+  mountTestAuthBoundary, testAuthHeaders,
+  EXPIRED_BEARER, WRONG_ISSUER_BEARER, ID_TOKEN_BEARER, SUSPENDED_BEARER, MALFORMED_BEARER,
+} from '../../auth/testAuthHarness.js';
 import type { AuditEvent } from '../../audit/writer.js';
 import { packetAuditStreamKey } from '../auditEvents.js';
 import {
@@ -62,6 +66,7 @@ function buildApp(store: FileLocalPacketStore): Express {
   const app = express();
   app.use(express.json({ limit: '1mb' }));
   app.use('/api', identityMiddleware);
+  mountTestAuthBoundary(app); // same requireApiAuth boundary as production
   app.use('/api/packet-templates', createPacketTemplatesRouter());
   app.use('/api/packets', createPacketLifecycleRouter({ store }));
   app.use('/api/packets', createPacketSourcesRouter({ store }));
@@ -70,13 +75,7 @@ function buildApp(store: FileLocalPacketStore): Express {
 }
 
 function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
-  return {
-    'content-type': 'application/json',
-    'x-user-id': 'route-user',
-    'x-user-roles': 'compliance_officer',
-    'x-user-access-classes': 'agency:agency-routes,packets:*',
-    ...extra,
-  };
+  return testAuthHeaders(extra);
 }
 
 function jsonObject(value: unknown): Record<string, unknown> {
@@ -524,5 +523,50 @@ describe('/api/packets route package', () => {
     expect(reloaded.attachmentInstances).toHaveLength(1);
     expect(reloaded.attachmentInstances[0]?.contentHash).toBe(source.contentHash);
     expect(reloaded.attachmentInstances[0]?.contentHash).not.toBe(clientHash);
+  });
+
+  // ── Negative authentication (verified boundary rejects bad/absent tokens) ──
+  // Every request goes through the production requireApiAuth boundary. A create
+  // POST that succeeds (201) as the authorized actor must be denied when the
+  // bearer is absent, malformed, expired, wrong-issuer, an id token, or bound
+  // to a suspended user. Forged x-user-* headers cannot authenticate.
+  it('denies packet creation without a bearer token (401)', async () => {
+    const res = await requestJson(app, 'POST', '/api/packets', baseInput(), { authorization: '' });
+    expect(res.status).toBe(401);
+  });
+
+  it('denies a malformed bearer token (401)', async () => {
+    const res = await requestJson(app, 'POST', '/api/packets', baseInput(), { authorization: MALFORMED_BEARER });
+    expect(res.status).toBe(401);
+  });
+
+  it('denies an expired bearer token (401)', async () => {
+    const res = await requestJson(app, 'POST', '/api/packets', baseInput(), { authorization: EXPIRED_BEARER });
+    expect(res.status).toBe(401);
+  });
+
+  it('denies a wrong-issuer bearer token (401)', async () => {
+    const res = await requestJson(app, 'POST', '/api/packets', baseInput(), { authorization: WRONG_ISSUER_BEARER });
+    expect(res.status).toBe(401);
+  });
+
+  it('denies an id token (wrong token_use) (401)', async () => {
+    const res = await requestJson(app, 'POST', '/api/packets', baseInput(), { authorization: ID_TOKEN_BEARER });
+    expect(res.status).toBe(401);
+  });
+
+  it('denies a suspended/inactive user even with a valid token (403)', async () => {
+    const res = await requestJson(app, 'POST', '/api/packets', baseInput(), { authorization: SUSPENDED_BEARER });
+    expect(res.status).toBe(403);
+  });
+
+  it('ignores forged x-user-* headers (no anonymous fallback) (401)', async () => {
+    const res = await requestJson(app, 'POST', '/api/packets', baseInput(), {
+      authorization: '',
+      'x-user-id': 'forged-admin',
+      'x-user-roles': 'super_admin,administrator',
+      'x-user-access-classes': 'packets:*',
+    });
+    expect(res.status).toBe(401);
   });
 });
