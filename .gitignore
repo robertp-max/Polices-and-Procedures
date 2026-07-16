@@ -91,3 +91,6 @@ public/advanced-training/oasis-e2-soc/assets/*.wav
 
 # Real approved-users allowlist (PII) — image build copies it; never commit
 config/approved-users.csv
+
+# Runtime audit ledger (JSONL backend writes here at runtime/tests) — never commit
+server/audit/data/
