@@ -192,7 +192,7 @@ function HomeLandingView({ openWorkspace }: { openWorkspace: () => void }) {
             CES Overview
           </span>
           <h1 className="mb-6 max-w-3xl font-montserrat text-4xl font-bold leading-tight tracking-tight text-[#007970] md:text-5xl">
-            Care Indeed
+            Care Indeed{' '}
             <br />
             Compliance Execution Sprint
           </h1>

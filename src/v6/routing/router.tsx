@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { V6Shell } from '../shell/V6Shell';
 import { RouteErrorBoundary } from './RouteErrorBoundary';
-import { routeToChildPath, V6_ROUTES } from './routeRegistry';
+import { routeToChildPath, type V6RouteDefinition, V6_ROUTES } from './routeRegistry';
 import { RepresentativeScreen } from '../screens';
 import { NotFoundScreen } from '../screens/pageviews';
 import { RequireAuth } from '../../auth/RequireAuth';
@@ -17,6 +17,14 @@ if (!loginRoute) {
   throw new Error('V6 route registry is missing login-page.');
 }
 
+function routeElement(route: V6RouteDefinition) {
+  if (route.path === '/packet-studio') {
+    return <Navigate replace to="/evidence/packet-studio" />;
+  }
+
+  return <RepresentativeScreen route={route} />;
+}
+
 export const v6Router = createBrowserRouter([
   {
     path: '/',
@@ -30,7 +38,7 @@ export const v6Router = createBrowserRouter([
       { index: true, element: <Navigate replace to="/compliance" /> },
       ...shellRoutes.map((route) => ({
         path: routeToChildPath(route.path),
-        element: <RepresentativeScreen route={route} />,
+        element: routeElement(route),
         errorElement: <RouteErrorBoundary />,
       })),
       {
@@ -41,7 +49,7 @@ export const v6Router = createBrowserRouter([
   },
   ...authRoutes.map((route) => ({
     path: routeToChildPath(route.path),
-    element: <RepresentativeScreen route={route} />,
+    element: routeElement(route),
     errorElement: <RouteErrorBoundary />,
   })),
 ]);

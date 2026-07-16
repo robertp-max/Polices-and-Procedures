@@ -1794,6 +1794,7 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
     case 'admission-packet-preview':
       child = <AdmissionPacketPreviewScreen />;
       break;
+    case 'ai-compliance-review':
     case 'ai-review':
       child = <AIComplianceReviewScreen />;
       break;
