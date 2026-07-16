@@ -8,6 +8,7 @@
  * Pages: 7 instructional | Quiz: 10 | Pass: 80%
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { LVNLessonNavigation, LVNNarrationFooter } from './shared/LVNModuleShell';
 
 const MODULE_META = {
   id: 'LVN-008',
@@ -1036,11 +1037,11 @@ const LVN008FallPrevention: React.FC = () => {
   }, [pageIndex, activeHotspot, animPhase]);
 
   const page = PAGES[pageIndex];
-  const progressLearn = ((pageIndex + 1) / PAGES.length) * 100;
   const answeredCount = Object.keys(answers).length;
 
   return (
     <div
+      className="lvn-module-shell"
       style={{
         fontFamily: 'Inter, system-ui, Segoe UI, Roboto, sans-serif',
         color: THEME.dark,
@@ -1051,66 +1052,15 @@ const LVN008FallPrevention: React.FC = () => {
       }}
     >
       {/* Header */}
-      <header
-        style={{
-          background: `linear-gradient(90deg, ${THEME.primaryDark}, ${THEME.primary})`,
-          color: '#FFF',
-          padding: '12px 18px',
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 10,
-          alignItems: 'center',
-          justifyContent: 'space-between',
+            <LVNLessonNavigation
+        lessons={PAGES}
+        activeIndex={mode !== 'learn' ? -1 : pageIndex}
+        onLessonChange={(index) => {
+          setMode('learn');
+          setPageIndex(index);
+          setActiveHotspot(null);
         }}
-      >
-        <div>
-          <div style={{ fontSize: 11, opacity: 0.9, letterSpacing: 0.4 }}>
-            {MODULE_META.id} · v{MODULE_META.version} · {MODULE_META.track}
-          </div>
-          <div style={{ fontSize: 18, fontWeight: 800 }}>{MODULE_META.title}</div>
-          <div style={{ fontSize: 11, opacity: 0.92 }}>
-            {MODULE_META.policies[0]} · {MODULE_META.cms.join(' · ')} · Pass {MODULE_META.passing}%
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span
-            style={{
-              background: 'rgba(255,255,255,0.2)',
-              padding: '6px 10px',
-              borderRadius: 999,
-              fontSize: 11,
-              fontWeight: 600,
-            }}
-          >
-            {MODULE_META.status}
-          </span>
-          <button
-            type="button"
-            onClick={() => {
-              setMode(mode === 'learn' ? 'quiz' : 'learn');
-            }}
-            style={{
-              border: 'none',
-              background: '#FFF',
-              color: THEME.primaryDark,
-              fontWeight: 700,
-              borderRadius: 8,
-              padding: '8px 14px',
-              cursor: 'pointer',
-              fontSize: 12,
-            }}
-          >
-            {mode === 'learn' ? 'Take Quiz →' : '← Back to Lessons'}
-          </button>
-        </div>
-      </header>
-
-      {/* Progress */}
-      {mode === 'learn' && (
-        <div style={{ height: 6, background: '#FDE68A' }}>
-          <div style={{ height: '100%', width: `${progressLearn}%`, background: THEME.primaryDark, transition: 'width 0.25s' }} />
-        </div>
-      )}
+      />
 
       {/* Body */}
       <div
@@ -1400,89 +1350,22 @@ const LVN008FallPrevention: React.FC = () => {
 
       {/* Footer nav */}
       {mode === 'learn' && (
-        <footer
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '10px 16px',
-            borderTop: `1px solid ${THEME.border}`,
-            background: '#FFF',
-            gap: 8,
-            flexWrap: 'wrap',
+                <LVNNarrationFooter
+          currentIndex={pageIndex}
+          total={PAGES.length}
+          onPrevious={() => setPageIndex((p) => Math.max(0, p - 1))}
+          previousDisabled={pageIndex === 0}
+          onNext={() => {
+            if (pageIndex < PAGES.length - 1) {
+              setPageIndex((p) => p + 1);
+              setActiveHotspot(null);
+            } else {
+              setMode('quiz');
+            }
           }}
-        >
-          <button
-            type="button"
-            disabled={pageIndex === 0}
-            onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
-            style={{
-              padding: '8px 16px',
-              borderRadius: 8,
-              border: '1px solid #E2E8F0',
-              background: '#F8FAFC',
-              cursor: pageIndex === 0 ? 'not-allowed' : 'pointer',
-              opacity: pageIndex === 0 ? 0.45 : 1,
-              fontWeight: 600,
-              fontSize: 13,
-            }}
-          >
-            ← Previous
-          </button>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
-            {PAGES.map((p, i) => (
-              <button
-                key={p.id}
-                type="button"
-                title={p.title}
-                onClick={() => setPageIndex(i)}
-                style={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: '50%',
-                  border: 'none',
-                  background: i === pageIndex ? THEME.primaryDark : '#FCD34D',
-                  cursor: 'pointer',
-                }}
-              />
-            ))}
-          </div>
-          {pageIndex < PAGES.length - 1 ? (
-            <button
-              type="button"
-              onClick={() => setPageIndex((p) => Math.min(PAGES.length - 1, p + 1))}
-              style={{
-                padding: '8px 16px',
-                borderRadius: 8,
-                border: 'none',
-                background: THEME.primary,
-                color: '#FFF',
-                cursor: 'pointer',
-                fontWeight: 700,
-                fontSize: 13,
-              }}
-            >
-              Next →
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setMode('quiz')}
-              style={{
-                padding: '8px 16px',
-                borderRadius: 8,
-                border: 'none',
-                background: THEME.dark,
-                color: '#FFF',
-                cursor: 'pointer',
-                fontWeight: 700,
-                fontSize: 13,
-              }}
-            >
-              Take Quiz →
-            </button>
-          )}
-        </footer>
+          nextLabel={pageIndex < PAGES.length - 1 ? 'Next Lesson →' : 'Start Quiz →'}
+          centerLabel={'Lesson ' + (pageIndex + 1) + ' of ' + PAGES.length}
+        />
       )}
     </div>
   );

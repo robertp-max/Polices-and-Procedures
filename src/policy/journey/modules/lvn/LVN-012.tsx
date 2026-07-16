@@ -15,7 +15,8 @@
  * sign-off remain separate requirements for practical competency.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { LVNLessonNavigation, LVNNarrationFooter } from './shared/LVNModuleShell';
 
 // ─── MODULE META ─────────────────────────────────────────────────────────────
 const MODULE_META = {
@@ -1351,10 +1352,6 @@ const LVN012SkillsCheckoffs: React.FC = () => {
   const isLastLearn = pageIndex >= totalLearnPages - 1;
   const page = PAGES[Math.min(pageIndex, totalLearnPages - 1)];
 
-  const progressPct = useMemo(() => {
-    if (mode === 'quiz' || mode === 'results') return 100;
-    return Math.round(((pageIndex + 1) / totalLearnPages) * 100);
-  }, [mode, pageIndex, totalLearnPages]);
 
   const answeredCount = Object.keys(answers).length;
 
@@ -1391,6 +1388,7 @@ const LVN012SkillsCheckoffs: React.FC = () => {
   if (mode === 'quiz') {
     return (
       <div
+        className="lvn-module-shell"
         style={{
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
           color: THEME.dark,
@@ -1399,30 +1397,15 @@ const LVN012SkillsCheckoffs: React.FC = () => {
           padding: 16,
         }}
       >
-        <header
-          style={{
-            background: THEME.card,
-            borderRadius: 12,
-            padding: '14px 18px',
-            border: `1px solid ${THEME.border}`,
-            marginBottom: 16,
+                <LVNLessonNavigation
+          lessons={PAGES}
+          activeIndex={-1}
+          onLessonChange={(index) => {
+            setMode('learn');
+            setPageIndex(index);
+            setActiveHotspot(null);
           }}
-        >
-          <div style={{ fontSize: 12, color: THEME.muted, fontWeight: 600 }}>
-            {MODULE_META.id} · v{MODULE_META.version} · Knowledge Check
-          </div>
-          <h1 style={{ margin: '4px 0 0', fontSize: 20, color: THEME.primaryDark }}>
-            {MODULE_META.title}
-          </h1>
-          <p style={{ margin: '8px 0 0', fontSize: 13, color: THEME.muted, lineHeight: 1.45 }}>
-            10 application questions · 80% (8/10) to pass · Validates <strong>knowledge only</strong>.
-            Observed skills demonstration and authorized sign-off remain separate for practical
-            competency.
-          </p>
-          <div style={{ marginTop: 10, fontSize: 12, color: THEME.accent }}>
-            Answered {answeredCount}/{QUIZ.length}
-          </div>
-        </header>
+        />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 900, margin: '0 auto' }}>
           {QUIZ.map((q) => (
@@ -1514,6 +1497,7 @@ const LVN012SkillsCheckoffs: React.FC = () => {
     const pct = score * 10;
     return (
       <div
+        className="lvn-module-shell"
         style={{
           fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
           color: THEME.dark,
@@ -1522,6 +1506,16 @@ const LVN012SkillsCheckoffs: React.FC = () => {
           padding: 16,
         }}
       >
+        <LVNLessonNavigation
+          lessons={PAGES}
+          activeIndex={-1}
+          onLessonChange={(index) => {
+            setMode('learn');
+            setPageIndex(index);
+            setActiveHotspot(null);
+          }}
+        />
+
         <div
           style={{
             maxWidth: 900,
@@ -1637,6 +1631,7 @@ const LVN012SkillsCheckoffs: React.FC = () => {
   // ── Learn view ──
   return (
     <div
+      className="lvn-module-shell"
       style={{
         fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
         color: THEME.dark,
@@ -1647,57 +1642,15 @@ const LVN012SkillsCheckoffs: React.FC = () => {
       }}
     >
       {/* Top bar */}
-      <header
-        style={{
-          background: THEME.card,
-          borderBottom: `2px solid ${THEME.border}`,
-          padding: '12px 18px',
+            <LVNLessonNavigation
+        lessons={PAGES}
+        activeIndex={pageIndex}
+        onLessonChange={(index) => {
+          setMode('learn');
+          setPageIndex(index);
+          setActiveHotspot(null);
         }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            gap: 12,
-            flexWrap: 'wrap',
-            alignItems: 'baseline',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: 12, color: THEME.muted, fontWeight: 600 }}>
-              {MODULE_META.id} · {MODULE_META.track} · v{MODULE_META.version}
-            </div>
-            <h1 style={{ margin: '2px 0 0', fontSize: 18, color: THEME.primaryDark }}>
-              {MODULE_META.title}
-            </h1>
-          </div>
-          <div style={{ fontSize: 12, color: THEME.muted, textAlign: 'right' }}>
-            Page {pageIndex + 1} of {totalLearnPages}
-            <div style={{ color: THEME.accent, fontWeight: 600 }}>{MODULE_META.status}</div>
-          </div>
-        </div>
-        <div
-          style={{
-            marginTop: 10,
-            height: 8,
-            background: '#FDE68A',
-            borderRadius: 99,
-            overflow: 'hidden',
-          }}
-        >
-          <div
-            style={{
-              width: `${progressPct}%`,
-              height: '100%',
-              background: THEME.primary,
-              transition: 'width 0.25s ease',
-            }}
-          />
-        </div>
-        <div style={{ marginTop: 8, fontSize: 11, color: THEME.muted }}>
-          42 CFR § 484.115 · CA B&P § 2859 · Agency HR-TC-001 · Skills demonstration pathway
-        </div>
-      </header>
+      />
 
       {/* Split panels */}
       <div
@@ -1828,62 +1781,22 @@ const LVN012SkillsCheckoffs: React.FC = () => {
       </div>
 
       {/* Footer nav */}
-      <footer
-        style={{
-          borderTop: `2px solid ${THEME.border}`,
-          background: THEME.card,
-          padding: '12px 18px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          gap: 10,
-          flexWrap: 'wrap',
-          alignItems: 'center',
-        }}
-      >
-        <button
-          type="button"
-          disabled={pageIndex === 0}
-          onClick={() => {
-            setPageIndex((p) => Math.max(0, p - 1));
+            <LVNNarrationFooter
+        currentIndex={pageIndex}
+        total={totalLearnPages}
+        onPrevious={() => setPageIndex((p) => Math.max(0, p - 1))}
+        previousDisabled={pageIndex === 0}
+        onNext={() => {
+          if (isLastLearn) {
+            setMode('quiz');
+          } else {
+            setPageIndex((p) => p + 1);
             setActiveHotspot(null);
-          }}
-          style={{
-            ...btnSecondary,
-            opacity: pageIndex === 0 ? 0.45 : 1,
-            cursor: pageIndex === 0 ? 'not-allowed' : 'pointer',
-          }}
-        >
-          ← Previous
-        </button>
-
-        <div style={{ fontSize: 12, color: THEME.muted }}>
-          {pageIndex + 1}/{totalLearnPages} content pages · then 10-question knowledge check
-        </div>
-
-        {!isLastLearn ? (
-          <button
-            type="button"
-            onClick={() => {
-              setPageIndex((p) => Math.min(totalLearnPages - 1, p + 1));
-              setActiveHotspot(null);
-            }}
-            style={btnPrimary}
-          >
-            Next →
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setMode('quiz');
-              setActiveHotspot(null);
-            }}
-            style={btnPrimary}
-          >
-            Start knowledge check →
-          </button>
-        )}
-      </footer>
+          }
+        }}
+        nextLabel={isLastLearn ? 'Start Quiz →' : 'Next Lesson →'}
+        centerLabel={'Lesson ' + (pageIndex + 1) + ' of ' + totalLearnPages}
+      />
 
       <style>{`
         @media (max-width: 900px) {

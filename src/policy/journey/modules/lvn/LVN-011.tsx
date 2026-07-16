@@ -7,6 +7,7 @@
  */
 
 import React, { useCallback, useMemo, useState } from 'react';
+import { LVNLessonNavigation, LVNNarrationFooter } from './shared/LVNModuleShell';
 
 // ─── MODULE META ─────────────────────────────────────────────────────────────
 const MODULE_META = {
@@ -1254,7 +1255,6 @@ const LVN011PatientIdentification: React.FC = () => {
 
   const page = PAGES[pageIndex];
   const totalPages = PAGES.length;
-  const progress = quizMode ? 100 : Math.round(((pageIndex + 1) / totalPages) * 100);
 
   const activeDetail = useMemo(() => {
     if (!page || !activeHotspot) return null;
@@ -1301,6 +1301,7 @@ const LVN011PatientIdentification: React.FC = () => {
 
   return (
     <div
+      className="lvn-module-shell"
       style={{
         fontFamily: 'Inter, system-ui, Segoe UI, Roboto, sans-serif',
         color: THEME.dark,
@@ -1313,43 +1314,15 @@ const LVN011PatientIdentification: React.FC = () => {
       <style>{pulseStyle}</style>
 
       {/* Header */}
-      <header
-        style={{
-          background: `linear-gradient(135deg, ${THEME.primary} 0%, ${THEME.primaryDark} 100%)`,
-          color: '#fff',
-          padding: '14px 20px',
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 12,
-          alignItems: 'center',
-          justifyContent: 'space-between',
+            <LVNLessonNavigation
+        lessons={PAGES}
+        activeIndex={quizMode ? -1 : pageIndex}
+        onLessonChange={(index) => {
+          setQuizMode(false);
+          setPageIndex(index);
+          setActiveHotspot(null);
         }}
-      >
-        <div>
-          <div style={{ fontSize: 12, opacity: 0.9, fontWeight: 600 }}>
-            {MODULE_META.id} · v{MODULE_META.version} · {MODULE_META.track}
-          </div>
-          <div style={{ fontSize: 18, fontWeight: 800 }}>{MODULE_META.title}</div>
-          <div style={{ fontSize: 11, opacity: 0.9, marginTop: 2 }}>
-            {MODULE_META.cms} · {MODULE_META.policy} · Competency method: {MODULE_META.method}
-          </div>
-        </div>
-        <div style={{ minWidth: 180 }}>
-          <div style={{ fontSize: 11, marginBottom: 4 }}>
-            {quizMode ? 'Knowledge check' : `Page ${pageIndex + 1} of ${totalPages}`} · {progress}%
-          </div>
-          <div style={{ height: 8, background: 'rgba(255,255,255,0.25)', borderRadius: 99, overflow: 'hidden' }}>
-            <div
-              style={{
-                width: `${progress}%`,
-                height: '100%',
-                background: THEME.accent,
-                transition: 'width 0.3s ease',
-              }}
-            />
-          </div>
-        </div>
-      </header>
+      />
 
       {/* Body */}
       <div
@@ -1717,58 +1690,15 @@ const LVN011PatientIdentification: React.FC = () => {
       </div>
 
       {/* Footer nav */}
-      <footer
-        style={{
-          borderTop: `1px solid ${THEME.border}`,
-          background: THEME.surface,
-          padding: '12px 20px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: 12,
-          flexWrap: 'wrap',
-        }}
-      >
-        <button
-          type="button"
-          onClick={goPrev}
-          disabled={!quizMode && pageIndex === 0}
-          style={{
-            padding: '10px 18px',
-            borderRadius: 8,
-            border: `1px solid ${THEME.primary}`,
-            background: '#fff',
-            color: THEME.primary,
-            fontWeight: 700,
-            cursor: !quizMode && pageIndex === 0 ? 'not-allowed' : 'pointer',
-            opacity: !quizMode && pageIndex === 0 ? 0.4 : 1,
-          }}
-        >
-          ← Previous
-        </button>
-        <div style={{ fontSize: 12, color: THEME.muted }}>
-          {MODULE_META.id} · Record {MODULE_META.recordId}
-        </div>
-        {!quizMode ? (
-          <button
-            type="button"
-            onClick={goNext}
-            style={{
-              padding: '10px 18px',
-              borderRadius: 8,
-              border: 'none',
-              background: THEME.primary,
-              color: '#fff',
-              fontWeight: 700,
-              cursor: 'pointer',
-            }}
-          >
-            {pageIndex < totalPages - 1 ? 'Next →' : 'Start quiz →'}
-          </button>
-        ) : (
-          <div style={{ width: 120 }} />
-        )}
-      </footer>
+            <LVNNarrationFooter
+        currentIndex={quizMode ? totalPages - 1 : pageIndex}
+        total={totalPages}
+        onPrevious={goPrev}
+        previousDisabled={!quizMode && pageIndex === 0}
+        onNext={quizMode ? () => setQuizMode(false) : goNext}
+        nextLabel={!quizMode ? (pageIndex < totalPages - 1 ? 'Next Lesson →' : 'Start Quiz →') : 'Back to Content'}
+        centerLabel={quizMode ? 'Knowledge Check' : 'Lesson ' + (pageIndex + 1) + ' of ' + totalPages}
+      />
     </div>
   );
 };

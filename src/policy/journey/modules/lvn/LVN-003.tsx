@@ -8,6 +8,7 @@
  */
 
 import React, { useCallback, useMemo, useState } from 'react';
+import { LVNLessonNavigation } from './shared/LVNModuleShell';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -1302,9 +1303,6 @@ export default function LVN003CoSignatureModule() {
   const [completed, setCompleted] = useState(false);
 
   const page = PAGES[pageIndex];
-  const progress = quizMode
-    ? 100
-    : Math.round(((pageIndex + 1) / PAGES.length) * 100);
 
   const score = useMemo(() => {
     return QUIZ.reduce((acc, q) => acc + (answers[q.id] === q.correct ? 1 : 0), 0);
@@ -1365,54 +1363,17 @@ export default function LVN003CoSignatureModule() {
   };
 
   return (
-    <div style={shell} data-module={MODULE_META.id} data-version={MODULE_META.version}>
+    <div className="lvn-module-shell" style={shell} data-module={MODULE_META.id} data-version={MODULE_META.version}>
       {/* Header */}
-      <header
-        style={{
-          background: `linear-gradient(90deg, ${blue}, ${indigo})`,
-          color: '#FFFFFF',
-          padding: '14px 20px',
-          boxShadow: '0 2px 8px rgba(37,99,235,0.25)',
+            <LVNLessonNavigation
+        lessons={PAGES}
+        activeIndex={quizMode ? -1 : pageIndex}
+        onLessonChange={(index) => {
+          setQuizMode(false);
+          setPageIndex(index);
+          setActiveHotspot(null);
         }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <div>
-            <div style={{ fontSize: 12, opacity: 0.9, letterSpacing: 0.4 }}>
-              {MODULE_META.track} · {MODULE_META.id} · v{MODULE_META.version}
-            </div>
-            <h1 style={{ margin: '4px 0 0', fontSize: 20, fontWeight: 700 }}>{MODULE_META.title}</h1>
-            <div style={{ fontSize: 12, opacity: 0.9, marginTop: 4 }}>
-              CMS: {MODULE_META.cms} · Policy: {MODULE_META.policy} · Pass: {MODULE_META.passing}%
-            </div>
-          </div>
-          <div style={{ textAlign: 'right', fontSize: 12, opacity: 0.95 }}>
-            <div>{MODULE_META.status}</div>
-            <div style={{ marginTop: 6 }}>
-              {quizMode ? 'Knowledge check' : `Page ${pageIndex + 1} of ${PAGES.length}`}
-            </div>
-          </div>
-        </div>
-        <div
-          style={{
-            marginTop: 12,
-            height: 8,
-            background: 'rgba(255,255,255,0.25)',
-            borderRadius: 999,
-            overflow: 'hidden',
-          }}
-          aria-label={`Progress ${progress}%`}
-        >
-          <div
-            style={{
-              width: `${progress}%`,
-              height: '100%',
-              background: '#FFFFFF',
-              borderRadius: 999,
-              transition: 'width 0.3s ease',
-            }}
-          />
-        </div>
-      </header>
+      />
 
       {/* Body */}
       <main style={{ flex: 1, padding: 16, maxWidth: 1200, width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
@@ -1675,75 +1636,95 @@ export default function LVN003CoSignatureModule() {
       </main>
 
       {/* Footer nav */}
-      <footer
-        style={{
-          borderTop: '1px solid #E2E8F0',
-          background: '#FFFFFF',
-          padding: '12px 16px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          gap: 10,
-          flexWrap: 'wrap',
-          alignItems: 'center',
-        }}
-      >
+      <footer className="lvn-shared-footer" aria-label="LVN lesson player navigation">
         {!quizMode ? (
           <>
-            <button type="button" onClick={goPrev} disabled={pageIndex === 0} style={btnStyle(pageIndex === 0)}>
-              Previous
+            <button
+              type="button"
+              className="lvn-shared-footer-button lvn-shared-footer-button--previous"
+              onClick={goPrev}
+              disabled={pageIndex === 0}
+            >
+              Previous Lesson
             </button>
-            <div style={{ fontSize: 12, color: muted }}>
-              Hotspots explored on this page:{' '}
-              {page.hotspots.length === 0
-                ? 'n/a'
-                : `${activeHotspot ? 1 : 0}+ (tap icons)`}
-              {completed ? ' · Knowledge check previously passed' : ''}
+            <div className="lvn-shared-footer-center">
+              <button type="button" className="lvn-shared-play-button" aria-label="Play narration">
+                ▶
+              </button>
+              <div className="lvn-shared-time-pill">00:00 / 00:00</div>
+              <div className="lvn-shared-lesson-count">
+                {completed ? 'Knowledge check previously passed' : `Lesson ${pageIndex + 1} of ${PAGES.length}`}
+              </div>
             </div>
             {pageIndex < PAGES.length - 1 ? (
-              <button type="button" onClick={goNext} style={btnStyle(false, true)}>
-                Next page
+              <button
+                type="button"
+                className="lvn-shared-footer-button lvn-shared-footer-button--next"
+                onClick={goNext}
+              >
+                Next Lesson →
               </button>
             ) : (
-              <button type="button" onClick={startQuiz} style={btnStyle(false, true)}>
-                Start knowledge check
+              <button
+                type="button"
+                className="lvn-shared-footer-button lvn-shared-footer-button--next"
+                onClick={startQuiz}
+              >
+                Start Knowledge Check →
               </button>
             )}
           </>
         ) : (
           <>
-            <button type="button" onClick={backToContent} style={btnStyle(false)}>
-              Back to content
+            <button
+              type="button"
+              className="lvn-shared-footer-button lvn-shared-footer-button--previous"
+              onClick={backToContent}
+            >
+              Back to Content
             </button>
-            <div style={{ fontSize: 12, color: muted }}>
-              Answered {Object.keys(answers).length}/{QUIZ.length}
-              {submitted ? ` · Score ${percent}%` : ''}
+            <div className="lvn-shared-footer-center">
+              <button type="button" className="lvn-shared-play-button" aria-label="Play narration">
+                ▶
+              </button>
+              <div className="lvn-shared-time-pill">Answered {Object.keys(answers).length}/{QUIZ.length}</div>
+              <div className="lvn-shared-lesson-count">{submitted ? `Score ${percent}%` : 'Knowledge Check'}</div>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {!submitted ? (
-                <button type="button" onClick={submitQuiz} disabled={!allAnswered} style={btnStyle(!allAnswered, true)}>
-                  Submit answers
+                <button
+                  type="button"
+                  className="lvn-shared-footer-button lvn-shared-footer-button--next"
+                  onClick={submitQuiz}
+                  disabled={!allAnswered}
+                >
+                  Submit Answers
                 </button>
               ) : (
                 <>
                   <button
                     type="button"
+                    className="lvn-shared-footer-button lvn-shared-footer-button--previous"
                     onClick={() => setReviewMode((r) => !r)}
-                    style={btnStyle(false)}
                   >
-                    {reviewMode ? 'Hide review' : 'Review rationales'}
+                    {reviewMode ? 'Hide Review' : 'Review Rationales'}
                   </button>
                   {!passed && (
-                    <button type="button" onClick={retryQuiz} style={btnStyle(false, true)}>
-                      Retry quiz
+                    <button
+                      type="button"
+                      className="lvn-shared-footer-button lvn-shared-footer-button--next"
+                      onClick={retryQuiz}
+                    >
+                      Retry Quiz
                     </button>
                   )}
                   {passed && (
                     <button
                       type="button"
+                      className="lvn-shared-footer-button lvn-shared-footer-button--next"
                       onClick={() => setQuizMode(false)}
-                      style={btnStyle(false, true)}
                     >
-                      Complete module
+                      Complete Module
                     </button>
                   )}
                 </>
@@ -1762,19 +1743,4 @@ export default function LVN003CoSignatureModule() {
       `}</style>
     </div>
   );
-}
-
-function btnStyle(disabled: boolean, primary = false): React.CSSProperties {
-  return {
-    appearance: 'none',
-    border: primary ? 'none' : '1px solid #CBD5E1',
-    background: disabled ? '#E2E8F0' : primary ? blue : '#FFFFFF',
-    color: disabled ? '#94A3B8' : primary ? '#FFFFFF' : ink,
-    borderRadius: 10,
-    padding: '10px 16px',
-    fontWeight: 700,
-    fontSize: 13,
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    boxShadow: primary && !disabled ? '0 1px 2px rgba(37,99,235,0.3)' : 'none',
-  };
 }

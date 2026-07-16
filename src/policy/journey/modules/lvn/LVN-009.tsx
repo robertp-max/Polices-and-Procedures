@@ -13,6 +13,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { LVNLessonNavigation, LVNNarrationFooter } from './shared/LVNModuleShell';
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
@@ -1165,8 +1166,6 @@ const LVN009PainAssessment: React.FC = () => {
     setMode('quiz');
   }, []);
 
-  const progressPct =
-    mode === 'learn' ? ((pageIndex + 1) / totalPages) * 100 : mode === 'quiz' ? 100 : 100;
 
   const renderScene = () => {
     const common = { activeId: activeHotspot, setActiveId: setActiveHotspot, phase: animPhase };
@@ -1193,6 +1192,7 @@ const LVN009PainAssessment: React.FC = () => {
   if (mode === 'learn') {
     return (
       <div
+        className="lvn-module-shell"
         style={{
           minHeight: '100vh',
           background: THEME.bg,
@@ -1201,42 +1201,15 @@ const LVN009PainAssessment: React.FC = () => {
         }}
       >
         {/* Header */}
-        <header
-          style={{
-            background: `linear-gradient(135deg, ${THEME.primaryDark}, ${THEME.primary})`,
-            color: THEME.white,
-            padding: '14px 20px',
-            boxShadow: '0 4px 20px rgba(91,33,182,0.25)',
+                <LVNLessonNavigation
+          lessons={PAGES}
+          activeIndex={pageIndex}
+          onLessonChange={(index) => {
+            setMode('learn');
+            setPageIndex(index);
+            setActiveHotspot(null);
           }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-            <div>
-              <div style={{ fontSize: 12, opacity: 0.85, fontWeight: 600 }}>
-                {MODULE_META.id} · {MODULE_META.track} · v{MODULE_META.version}
-              </div>
-              <h1 style={{ margin: '4px 0 0', fontSize: 20, fontWeight: 800 }}>{MODULE_META.title}</h1>
-            </div>
-            <div style={{ textAlign: 'right', fontSize: 11, opacity: 0.9 }}>
-              <div>{MODULE_META.cms}</div>
-              <div>{MODULE_META.policy}</div>
-              <div style={{ marginTop: 4, color: '#DDD6FE' }}>{MODULE_META.status}</div>
-            </div>
-          </div>
-          <div style={{ marginTop: 12, height: 8, background: 'rgba(255,255,255,0.2)', borderRadius: 999 }}>
-            <div
-              style={{
-                width: `${progressPct}%`,
-                height: '100%',
-                borderRadius: 999,
-                background: `linear-gradient(90deg, ${THEME.accent}, #FDE68A)`,
-                transition: 'width 0.3s ease',
-              }}
-            />
-          </div>
-          <div style={{ marginTop: 6, fontSize: 12, opacity: 0.9 }}>
-            Page {pageIndex + 1} of {totalPages} · Knowledge quiz {MODULE_META.quizCount} items · Pass {MODULE_META.passing}%
-          </div>
-        </header>
+        />
 
         {/* Split panel */}
         <div
@@ -1372,75 +1345,23 @@ const LVN009PainAssessment: React.FC = () => {
         </div>
 
         {/* Footer nav */}
-        <footer
-          style={{
-            maxWidth: 1280,
-            margin: '0 auto',
-            padding: '0 16px 24px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: 12,
-            flexWrap: 'wrap',
+                <LVNNarrationFooter
+          currentIndex={pageIndex}
+          total={totalPages}
+          onPrevious={() => setPageIndex((p) => Math.max(0, p - 1))}
+          previousDisabled={pageIndex === 0}
+          onNext={() => {
+            if (pageIndex < totalPages - 1) {
+              setPageIndex((p) => p + 1);
+            } else {
+              setMode('quiz');
+              setSubmitted(false);
+              setShowReview(false);
+            }
           }}
-        >
-          <button
-            type="button"
-            onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
-            disabled={pageIndex === 0}
-            style={{
-              padding: '10px 18px',
-              borderRadius: 10,
-              border: 'none',
-              background: pageIndex === 0 ? '#CBD5E1' : THEME.dark,
-              color: '#fff',
-              fontWeight: 700,
-              cursor: pageIndex === 0 ? 'not-allowed' : 'pointer',
-            }}
-          >
-            ← Previous
-          </button>
-          <div style={{ fontSize: 13, color: THEME.muted, fontWeight: 600 }}>
-            Interactive scene {pageIndex + 1}/{totalPages} · hotspots reveal guidance
-          </div>
-          {pageIndex < totalPages - 1 ? (
-            <button
-              type="button"
-              onClick={() => setPageIndex((p) => p + 1)}
-              style={{
-                padding: '10px 18px',
-                borderRadius: 10,
-                border: 'none',
-                background: THEME.primary,
-                color: '#fff',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              Next →
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                setMode('quiz');
-                setSubmitted(false);
-                setShowReview(false);
-              }}
-              style={{
-                padding: '10px 18px',
-                borderRadius: 10,
-                border: 'none',
-                background: THEME.success,
-                color: '#fff',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              Take Knowledge Quiz →
-            </button>
-          )}
-        </footer>
+          nextLabel={pageIndex < totalPages - 1 ? 'Next Lesson →' : 'Start Quiz →'}
+          centerLabel={'Lesson ' + (pageIndex + 1) + ' of ' + totalPages}
+        />
       </div>
     );
   }
@@ -1450,6 +1371,7 @@ const LVN009PainAssessment: React.FC = () => {
     const allAnswered = Object.keys(answers).length === QUIZ.length;
     return (
       <div
+        className="lvn-module-shell"
         style={{
           minHeight: '100vh',
           background: THEME.bg,
@@ -1457,6 +1379,16 @@ const LVN009PainAssessment: React.FC = () => {
           padding: 20,
         }}
       >
+        <LVNLessonNavigation
+          lessons={PAGES}
+          activeIndex={-1}
+          onLessonChange={(index) => {
+            setMode('learn');
+            setPageIndex(index);
+            setActiveHotspot(null);
+          }}
+        />
+
         <div style={{ maxWidth: 820, margin: '0 auto' }}>
           <div
             style={{
@@ -1569,6 +1501,7 @@ const LVN009PainAssessment: React.FC = () => {
   // ── RESULTS UI ──
   return (
     <div
+      className="lvn-module-shell"
       style={{
         minHeight: '100vh',
         background: THEME.bg,
@@ -1576,6 +1509,16 @@ const LVN009PainAssessment: React.FC = () => {
         padding: 20,
       }}
     >
+      <LVNLessonNavigation
+        lessons={PAGES}
+        activeIndex={-1}
+        onLessonChange={(index) => {
+          setMode('learn');
+          setPageIndex(index);
+          setActiveHotspot(null);
+        }}
+      />
+
       <div style={{ maxWidth: 820, margin: '0 auto' }}>
         <div
           style={{

@@ -6,6 +6,7 @@
  * Critical scope: LVN works UNDER existing RN/physician POC — never develops/modifies independently.
  */
 import React, { useCallback, useMemo, useState } from 'react';
+import { LVNLessonNavigation, LVNNarrationFooter } from './shared/LVNModuleShell';
 
 const MODULE_META = {
   id: 'LVN-005',
@@ -593,23 +594,6 @@ function Badge({ kind, children }: { kind: string; children: React.ReactNode }) 
         {label}
       </strong>
       {children}
-    </div>
-  );
-}
-
-function ProgressBar({ pageIndex, total, mode }: { pageIndex: number; total: number; mode: 'learn' | 'quiz' | 'results' }) {
-  const pct =
-    mode === 'results' ? 100 : mode === 'quiz' ? 92 : Math.round(((pageIndex + 1) / total) * 85);
-  return (
-    <div style={{ height: 6, background: '#E2E8F0', borderRadius: 99, overflow: 'hidden' }}>
-      <div
-        style={{
-          width: `${pct}%`,
-          height: '100%',
-          background: `linear-gradient(90deg, ${THEME.primary}, ${THEME.teal})`,
-          transition: 'width 0.35s ease',
-        }}
-      />
     </div>
   );
 }
@@ -1398,6 +1382,7 @@ export default function LVN005PlanOfCare() {
 
   return (
     <div
+      className="lvn-module-shell"
       style={{
         minHeight: '100vh',
         background: THEME.bg,
@@ -1408,32 +1393,15 @@ export default function LVN005PlanOfCare() {
       data-version={MODULE_META.version}
       data-quiz-dist={`A${dist[0]}-B${dist[1]}-C${dist[2]}-D${dist[3]}`}
     >
-      <header
-        style={{
-          background: THEME.surface,
-          borderBottom: `1px solid ${THEME.border}`,
-          padding: '12px 20px',
-          position: 'sticky',
-          top: 0,
-          zIndex: 10,
+            <LVNLessonNavigation
+        lessons={PAGES}
+        activeIndex={mode !== 'learn' ? -1 : pageIndex}
+        onLessonChange={(index) => {
+          setMode('learn');
+          setPageIndex(index);
+          setActiveHotspot(PAGES[index].hotspots[0]?.id ?? null);
         }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-          <div>
-            <div style={{ fontSize: 12, color: THEME.muted, fontWeight: 600 }}>
-              {MODULE_META.id} · {MODULE_META.track} · v{MODULE_META.version}
-            </div>
-            <div style={{ fontSize: 16, fontWeight: 800 }}>{MODULE_META.title}</div>
-          </div>
-          <div style={{ fontSize: 12, color: THEME.muted, textAlign: 'right' }}>
-            {mode === 'learn' ? `Page ${pageIndex + 1} of ${PAGES.length}` : mode === 'quiz' ? 'Quiz' : 'Results'} · Pass {MODULE_META.passing}%
-            <div style={{ fontSize: 11, color: '#94A3B8' }}>{MODULE_META.status}</div>
-          </div>
-        </div>
-        <div style={{ marginTop: 10 }}>
-          <ProgressBar pageIndex={pageIndex} total={PAGES.length} mode={mode === 'results' ? 'results' : mode} />
-        </div>
-      </header>
+      />
 
       {mode === 'learn' ? (
         <div
@@ -1490,43 +1458,15 @@ export default function LVN005PlanOfCare() {
         />
       )}
 
-      <footer
-        style={{
-          position: 'sticky',
-          bottom: 0,
-          background: 'rgba(255,255,255,0.96)',
-          borderTop: `1px solid ${THEME.border}`,
-          padding: '12px 20px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          gap: 12,
-          flexWrap: 'wrap',
-        }}
-      >
-        <button type="button" onClick={goPrev} disabled={mode === 'learn' && pageIndex === 0} style={secondaryBtnStyle}>
-          ← Back
-        </button>
-        <div style={{ fontSize: 12, color: THEME.muted, alignSelf: 'center', textAlign: 'center' }}>
-          Critical rule: LVN works <strong>under</strong> the RN/physician POC — never develops or modifies the POC independently.
-        </div>
-        {mode === 'learn' ? (
-          <button type="button" onClick={goNext} style={primaryBtnStyle(false)}>
-            {pageIndex < PAGES.length - 1 ? 'Next page →' : 'Start quiz →'}
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setMode('learn');
-              setPageIndex(0);
-              setActiveHotspot(PAGES[0].hotspots[0].id);
-            }}
-            style={secondaryBtnStyle}
-          >
-            Return to learning
-          </button>
-        )}
-      </footer>
+            <LVNNarrationFooter
+        currentIndex={mode === 'learn' ? pageIndex : PAGES.length - 1}
+        total={PAGES.length}
+        onPrevious={goPrev}
+        previousDisabled={mode === 'learn' && pageIndex === 0}
+        onNext={mode === 'learn' ? goNext : () => setMode('learn')}
+        nextLabel={mode === 'learn' ? (pageIndex < PAGES.length - 1 ? 'Next Lesson →' : 'Start Quiz →') : 'Back to Lessons'}
+        centerLabel={mode === 'learn' ? 'Lesson ' + (pageIndex + 1) + ' of ' + PAGES.length : 'Knowledge Check'}
+      />
     </div>
   );
 }

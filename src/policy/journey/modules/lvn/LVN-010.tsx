@@ -9,6 +9,7 @@
  * Quiz validates knowledge only — observed demonstration and authorized sign-off remain separate.
  */
 import React, { useCallback, useMemo, useState } from 'react';
+import { LVNLessonNavigation, LVNNarrationFooter } from './shared/LVNModuleShell';
 
 // ─── MODULE META ─────────────────────────────────────────────────────────────
 const MODULE_META = {
@@ -1360,10 +1361,6 @@ const LVN010InfectionPrevention: React.FC = () => {
   const totalPages = PAGES.length;
   const passCount = Math.ceil((MODULE_META.passing / 100) * MODULE_META.quizCount);
 
-  const progressPct = quizMode
-    ? 100
-    : Math.round(((pageIndex + 1) / totalPages) * 100);
-
   const activeInfo = useMemo(() => {
     if (!page || !activeHotspot) return undefined;
     return page.hotspots.find((h) => h.id === activeHotspot);
@@ -1442,30 +1439,17 @@ const LVN010InfectionPrevention: React.FC = () => {
   };
 
   return (
-    <div style={styles.root} data-module={MODULE_META.id} data-version={MODULE_META.version}>
+    <div className="lvn-module-shell" style={styles.root} data-module={MODULE_META.id} data-version={MODULE_META.version}>
       {/* Header */}
-      <header style={styles.header}>
-        <div style={styles.headerLeft}>
-          <div style={{ fontSize: 12, opacity: 0.9, fontWeight: 600 }}>
-            {MODULE_META.id} · {MODULE_META.track}
-          </div>
-          <div style={{ fontSize: 18, fontWeight: 700 }}>{MODULE_META.title}</div>
-          <div style={styles.badgeRow}>
-            <span style={styles.badge}>{MODULE_META.cms}</span>
-            <span style={styles.badge}>Policy {MODULE_META.policy}</span>
-            <span style={styles.badge}>v{MODULE_META.version}</span>
-            <span style={styles.badge}>{MODULE_META.status}</span>
-          </div>
-        </div>
-        <div style={styles.progressWrap}>
-          <div style={{ fontSize: 12, fontWeight: 600 }}>
-            {quizMode ? 'Quiz' : `Page ${pageIndex + 1} of ${totalPages}`}
-          </div>
-          <div style={styles.progressBar}>
-            <div style={{ ...styles.progressFill, width: `${progressPct}%` }} />
-          </div>
-        </div>
-      </header>
+            <LVNLessonNavigation
+        lessons={PAGES}
+        activeIndex={quizMode ? -1 : pageIndex}
+        onLessonChange={(index) => {
+          setQuizMode(false);
+          setPageIndex(index);
+          setActiveHotspot(null);
+        }}
+      />
 
       {/* Body */}
       <div style={styles.body} className="lvn010-body">
@@ -1683,39 +1667,15 @@ const LVN010InfectionPrevention: React.FC = () => {
       </div>
 
       {/* Footer nav */}
-      <footer style={styles.footer}>
-        <button
-          type="button"
-          onClick={goPrev}
-          disabled={!quizMode && pageIndex === 0}
-          style={{
-            ...styles.btn,
-            ...styles.btnSecondary,
-            ...(!quizMode && pageIndex === 0 ? styles.btnDisabled : {}),
-          }}
-        >
-          ← Previous
-        </button>
-        <div style={{ fontSize: 12, color: THEME.muted, textAlign: 'center' }}>
-          {MODULE_META.cms} · {MODULE_META.policy} · Record {MODULE_META.recordId}
-        </div>
-        {!quizMode ? (
-          <button type="button" onClick={goNext} style={{ ...styles.btn, ...styles.btnPrimary }}>
-            {pageIndex < totalPages - 1 ? 'Next →' : 'Start Quiz →'}
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setQuizMode(false);
-              setPageIndex(totalPages - 1);
-            }}
-            style={{ ...styles.btn, ...styles.btnSecondary }}
-          >
-            Back to Content
-          </button>
-        )}
-      </footer>
+            <LVNNarrationFooter
+        currentIndex={quizMode ? totalPages - 1 : pageIndex}
+        total={totalPages}
+        onPrevious={goPrev}
+        previousDisabled={!quizMode && pageIndex === 0}
+        onNext={quizMode ? () => setQuizMode(false) : goNext}
+        nextLabel={!quizMode ? (pageIndex < totalPages - 1 ? 'Next Lesson →' : 'Start Quiz →') : 'Back to Content'}
+        centerLabel={quizMode ? 'Knowledge Check' : 'Lesson ' + (pageIndex + 1) + ' of ' + totalPages}
+      />
 
       <style>{`
         @media (max-width: 900px) {

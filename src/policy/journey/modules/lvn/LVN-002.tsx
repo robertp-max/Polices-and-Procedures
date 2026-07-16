@@ -12,6 +12,7 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { LVNLessonNavigation, LVNNarrationFooter } from './shared/LVNModuleShell';
 
 // ─── META ───────────────────────────────────────────────────────────────────
 
@@ -1363,9 +1364,6 @@ const LVN002ScopeOfPractice: React.FC = () => {
 
   const passed = score >= MODULE_META.passing;
   const answeredCount = Object.keys(quizAnswers).length;
-  const progressPct = quizMode
-    ? 100
-    : Math.round(((currentPage + 1) / PAGES.length) * 100);
 
   const selectHotspot = (id: string) => {
     setActiveHotspot((prev) => (prev === id ? null : id));
@@ -1390,24 +1388,17 @@ const LVN002ScopeOfPractice: React.FC = () => {
   if (quizMode) {
     if (quizSubmitted) {
       return (
-        <div style={shell}>
-          <header
-            style={{
-              padding: '16px 20px',
-              background: MODULE_META.gradient,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+        <div className="lvn-module-shell" style={shell}>
+                    <LVNLessonNavigation
+            lessons={PAGES}
+            activeIndex={quizMode ? -1 : currentPage}
+            onLessonChange={(index) => {
+              setQuizMode(false);
+              setQuizSubmitted(false);
+              setCurrentPage(index);
+              setActiveHotspot(null);
             }}
-          >
-            <div>
-              <div style={{ fontWeight: 800, fontSize: 16 }}>LVN-002 · Knowledge Assessment Results</div>
-              <div style={{ fontSize: 12, opacity: 0.9 }}>
-                Knowledge only — not practical competency certification
-              </div>
-            </div>
-            <div style={{ fontWeight: 800, fontSize: 22 }}>{score}%</div>
-          </header>
+          />
 
           <main style={{ flex: 1, padding: 20, maxWidth: 900, margin: '0 auto', width: '100%' }}>
             <div
@@ -1517,13 +1508,17 @@ const LVN002ScopeOfPractice: React.FC = () => {
     }
 
     return (
-      <div style={shell}>
-        <header style={{ padding: '16px 20px', background: MODULE_META.gradient }}>
-          <div style={{ fontWeight: 800, fontSize: 16 }}>LVN-002 — Knowledge Assessment</div>
-          <div style={{ fontSize: 12, opacity: 0.9 }}>
-            10 questions · {MODULE_META.passing}% pass · scope knowledge only (not skills sign-off)
-          </div>
-        </header>
+      <div className="lvn-module-shell" style={shell}>
+                <LVNLessonNavigation
+          lessons={PAGES}
+          activeIndex={quizMode ? -1 : currentPage}
+          onLessonChange={(index) => {
+            setQuizMode(false);
+            setQuizSubmitted(false);
+            setCurrentPage(index);
+            setActiveHotspot(null);
+          }}
+        />
         <main style={{ flex: 1, padding: 20, maxWidth: 900, margin: '0 auto', width: '100%' }}>
           {QUIZ.map((q, i) => (
             <div key={q.id} style={{ ...card, marginBottom: 14 }}>
@@ -1618,60 +1613,17 @@ const LVN002ScopeOfPractice: React.FC = () => {
 
   // ─── CONTENT UI ─────────────────────────────────────────────────────────
   return (
-    <div style={shell}>
-      <header
-        style={{
-          padding: '12px 16px',
-          background: MODULE_META.gradient,
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 12,
-          alignItems: 'center',
-          justifyContent: 'space-between',
+    <div className="lvn-module-shell" style={shell}>
+            <LVNLessonNavigation
+        lessons={PAGES}
+        activeIndex={quizMode ? -1 : currentPage}
+        onLessonChange={(index) => {
+          setQuizMode(false);
+          setQuizSubmitted(false);
+          setCurrentPage(index);
+          setActiveHotspot(null);
         }}
-      >
-        <div>
-          <div style={{ fontWeight: 800, fontSize: 15 }}>
-            {MODULE_META.id} | {MODULE_META.title}
-          </div>
-          <div style={{ fontSize: 11, opacity: 0.92 }}>
-            v{MODULE_META.version} · {MODULE_META.track} · {MODULE_META.cms} · {MODULE_META.policy}
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {PAGES.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              title={`Page ${i + 1}`}
-              onClick={() => setCurrentPage(i)}
-              style={{
-                width: i === currentPage ? 18 : 8,
-                height: 8,
-                borderRadius: 99,
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                background: i === currentPage ? '#F8FAFC' : i < currentPage ? '#A78BFA' : 'rgba(255,255,255,0.35)',
-                transition: 'all 0.2s',
-              }}
-            />
-          ))}
-          <span style={{ fontSize: 11, fontWeight: 700, marginLeft: 6 }}>{progressPct}%</span>
-        </div>
-      </header>
-
-      {/* progress bar */}
-      <div style={{ height: 3, background: '#1E293B' }}>
-        <div
-          style={{
-            height: '100%',
-            width: `${progressPct}%`,
-            background: 'linear-gradient(90deg,#A78BFA,#34D399)',
-            transition: 'width 0.25s',
-          }}
-        />
-      </div>
+      />
 
       <div
         style={{
@@ -1785,79 +1737,21 @@ const LVN002ScopeOfPractice: React.FC = () => {
       </div>
 
       {/* FOOTER NAV */}
-      <footer
-        style={{
-          position: 'sticky',
-          bottom: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 12,
-          padding: '12px 16px',
-          background: 'rgba(15,23,42,0.96)',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
-          backdropFilter: 'blur(8px)',
+            <LVNNarrationFooter
+        currentIndex={currentPage}
+        total={PAGES.length}
+        onPrevious={() => setCurrentPage((p) => Math.max(0, p - 1))}
+        previousDisabled={currentPage === 0}
+        onNext={() => {
+          if (currentPage < PAGES.length - 1) {
+            setCurrentPage((p) => p + 1);
+          } else {
+            setQuizMode(true);
+          }
         }}
-      >
-        <button
-          type="button"
-          onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-          disabled={currentPage === 0}
-          style={{
-            padding: '8px 18px',
-            background: currentPage === 0 ? '#374151' : '#4F46E5',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            cursor: currentPage === 0 ? 'not-allowed' : 'pointer',
-            fontWeight: 700,
-            fontSize: 13,
-          }}
-        >
-          ← Prev
-        </button>
-        <div style={{ fontSize: 11, color: '#94A3B8', textAlign: 'center' }}>
-          {MODULE_META.cms} · {MODULE_META.policy}
-          <div style={{ color: '#64748B' }}>
-            Status: {MODULE_META.status}
-          </div>
-        </div>
-        {currentPage < PAGES.length - 1 ? (
-          <button
-            type="button"
-            onClick={() => setCurrentPage((p) => p + 1)}
-            style={{
-              padding: '8px 18px',
-              background: '#7C3AED',
-              color: 'white',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontWeight: 700,
-              fontSize: 13,
-            }}
-          >
-            Next →
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setQuizMode(true)}
-            style={{
-              padding: '8px 18px',
-              background: '#059669',
-              color: 'white',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontWeight: 700,
-              fontSize: 13,
-            }}
-          >
-            Take Quiz ✓
-          </button>
-        )}
-      </footer>
+        nextLabel={currentPage < PAGES.length - 1 ? 'Next Lesson →' : 'Start Quiz →'}
+        centerLabel={'Lesson ' + (currentPage + 1) + ' of ' + PAGES.length}
+      />
 
       <style>{`
         @media (max-width: 960px) {

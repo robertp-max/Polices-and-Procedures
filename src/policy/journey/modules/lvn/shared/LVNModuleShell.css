@@ -1,0 +1,352 @@
+:root {
+  --lvn-shell-bg: #FAFBF8;
+  --lvn-shell-panel: #FFFFFF;
+  --lvn-shell-border: #E5E4E3;
+  --lvn-shell-text: var(--text-primary, #1C2422);
+  --lvn-shell-secondary: var(--text-secondary, #524D4B);
+  --lvn-shell-muted: var(--text-muted, #6F7775);
+  --lvn-shell-teal: var(--brand-teal, #00797D);
+  --lvn-shell-teal-deep: var(--brand-teal-deep, #004142);
+  --lvn-shell-teal-soft: var(--tone-teal-bg, #F7FEFF);
+  --lvn-shell-teal-border: var(--tone-teal-border, #C4F4F5);
+  --lvn-shell-orange: var(--brand-orange, #C74601);
+  --lvn-shell-shadow: var(--shadow-rest, 0 18px 44px rgba(0, 47, 48, 0.08), 0 2px 12px rgba(0, 47, 48, 0.04));
+  --lvn-shell-soft-shadow: 0 8px 28px rgba(31, 28, 27, 0.05);
+}
+
+.lvn-module-shell,
+.lvn-module-shell * {
+  box-sizing: border-box;
+}
+
+.lvn-module-shell {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9998;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  background: var(--lvn-shell-bg) !important;
+  color: var(--lvn-shell-text) !important;
+  font-family: var(--font-family, 'Roboto', system-ui, -apple-system, Segoe UI, sans-serif) !important;
+  padding: 0 !important;
+}
+
+.lvn-shared-topbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--lvn-shell-border);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--lvn-shell-soft-shadow);
+  color: var(--lvn-shell-text);
+}
+
+.lvn-shared-pill-scroller {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  padding-bottom: 1px;
+}
+
+.lvn-shared-lesson-pill {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  max-width: 220px;
+  min-height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--lvn-shell-border);
+  background: #FFFFFF;
+  color: var(--lvn-shell-secondary);
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.lvn-shared-lesson-pill.is-active {
+  border-color: var(--lvn-shell-teal);
+  background: var(--lvn-shell-teal);
+  color: #FFFFFF;
+  box-shadow: 0 8px 18px rgba(0, 121, 125, 0.18);
+}
+
+.lvn-shared-pill-marker {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  background: #C9C6C5;
+}
+
+.lvn-shared-lesson-pill.is-active .lvn-shared-pill-marker {
+  background: var(--lvn-shell-orange);
+}
+
+.lvn-shared-pill-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lvn-shared-save-exit {
+  appearance: none;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 1px solid var(--lvn-shell-border);
+  background: #FFFFFF;
+  color: var(--lvn-shell-orange);
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.lvn-shared-topbar button:focus-visible,
+.lvn-shared-footer button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring, 0 0 0 2px #fff, 0 0 0 4px var(--lvn-shell-teal));
+}
+
+.lvn-module-shell > main,
+.lvn-module-shell > div:not(.lvn-shared-topbar):not(.lvn-shared-footer),
+.lvn-module-shell > main {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  background: var(--lvn-shell-bg) !important;
+}
+
+.lvn-module-shell > main {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 20px !important;
+  gap: 20px !important;
+  background: var(--lvn-shell-bg) !important;
+  overflow: hidden !important;
+}
+
+.lvn-module-shell > div:not(.lvn-shared-topbar):not(.lvn-shared-footer) {
+  overflow: auto !important;
+}
+
+.lvn-module-shell > main > section:first-child,
+.lvn-module-shell > main > main:first-child,
+.lvn-module-shell > main > aside:first-child,
+.lvn-module-shell > div > main:first-child,
+.lvn-module-shell > div > section:first-child,
+.lvn-module-shell > div[class*="split"] > section:first-child,
+.lvn-module-shell .lvn002-split > section:first-child,
+.lvn-module-shell .lvn003-split > section:first-child,
+.lvn-module-shell .lvn012-split > section:first-child {
+  border-radius: 22px !important;
+  border: 1px solid var(--lvn-shell-border) !important;
+  background: var(--lvn-shell-panel) !important;
+  color: var(--lvn-shell-text) !important;
+  box-shadow: var(--lvn-shell-shadow) !important;
+  padding: 20px !important;
+}
+
+.lvn-module-shell > main > aside,
+.lvn-module-shell > main > section:nth-child(2),
+.lvn-module-shell > div > aside,
+.lvn-module-shell > div > section:nth-child(2),
+.lvn-module-shell .lvn002-split > section:nth-child(2),
+.lvn-module-shell .lvn003-split > section:nth-child(2),
+.lvn-module-shell .lvn012-split > section:nth-child(2) {
+  border-radius: 24px !important;
+  border: 1px solid var(--lvn-shell-border) !important;
+  background: var(--lvn-shell-panel) !important;
+  color: var(--lvn-shell-text) !important;
+  box-shadow: var(--lvn-shell-shadow) !important;
+  padding: 20px !important;
+  overflow: hidden !important;
+}
+
+.lvn-module-shell h1,
+.lvn-module-shell h2,
+.lvn-module-shell h3 {
+  color: var(--lvn-shell-teal-deep) !important;
+  font-family: inherit !important;
+}
+
+.lvn-module-shell p,
+.lvn-module-shell li,
+.lvn-module-shell td,
+.lvn-module-shell label,
+.lvn-module-shell span,
+.lvn-module-shell div {
+  font-family: inherit;
+}
+
+.lvn-shared-footer {
+  flex: 0 0 auto;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--lvn-shell-border);
+  background: #FFFFFF;
+  box-shadow: 0 -8px 28px rgba(31, 28, 27, 0.05);
+  color: var(--lvn-shell-text);
+}
+
+.lvn-shared-footer-button {
+  appearance: none;
+  min-height: 42px;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.lvn-shared-footer-button--previous {
+  border: 1px solid var(--lvn-shell-border);
+  background: #FFFFFF;
+  color: var(--lvn-shell-secondary);
+}
+
+.lvn-shared-footer-button--next {
+  border: none;
+  background: var(--lvn-shell-orange);
+  color: #FFFFFF;
+  box-shadow: 0 10px 24px rgba(199, 70, 1, 0.20);
+}
+
+.lvn-shared-footer-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+  box-shadow: none;
+}
+
+.lvn-shared-footer-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-width: 260px;
+  flex: 1 1 auto;
+}
+
+.lvn-shared-play-button {
+  appearance: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--lvn-shell-teal);
+  background: var(--lvn-shell-teal);
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0, 121, 125, 0.18);
+}
+
+.lvn-shared-time-pill {
+  border-radius: 999px;
+  border: 1px solid var(--lvn-shell-border);
+  background: var(--lvn-shell-bg);
+  padding: 8px 16px;
+  color: var(--lvn-shell-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lvn-shared-lesson-count {
+  color: var(--lvn-shell-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@media (max-width: 1024px) {
+  .lvn-module-shell {
+    position: relative !important;
+    inset: auto !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
+  }
+
+  .lvn-module-shell > main {
+    overflow: visible !important;
+    flex-direction: column !important;
+    grid-template-columns: 1fr !important;
+    padding: 16px !important;
+  }
+
+  .lvn-shared-topbar {
+    align-items: flex-start;
+  }
+
+  .lvn-shared-save-exit {
+    align-self: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .lvn-shared-topbar {
+    padding: 10px 12px;
+  }
+
+  .lvn-shared-lesson-pill {
+    max-width: 180px;
+    min-height: 36px;
+  }
+
+  .lvn-shared-footer {
+    padding: 12px;
+  }
+
+  .lvn-shared-footer-center {
+    order: -1;
+    flex-basis: 100%;
+    min-width: 0;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .lvn-shared-footer-button {
+    flex: 1 1 140px;
+  }
+}
