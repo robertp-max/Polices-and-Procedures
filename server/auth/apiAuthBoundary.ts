@@ -37,7 +37,14 @@ export interface ApiAuthBoundaryOptions {
 }
 
 function hostPart(value: string | undefined): string {
-  return String(value ?? '').split(',')[0].trim().split(':')[0].toLowerCase();
+  const raw = String(value ?? '').split(',')[0].trim().toLowerCase();
+  // Bracketed IPv6, with or without a port: [::1] / [::1]:5180 → ::1
+  const bracket = raw.match(/^\[([^\]]+)\]/);
+  if (bracket) return bracket[1];
+  // Bare IPv6 (more than one colon, e.g. ::1) — never strip a "port".
+  if ((raw.match(/:/g) ?? []).length > 1) return raw;
+  // hostname[:port] → hostname
+  return raw.split(':')[0];
 }
 
 function isLocalDevHost(req: Parameters<RequestHandler>[0]): boolean {
@@ -50,8 +57,20 @@ function isLocalDevHost(req: Parameters<RequestHandler>[0]): boolean {
   return hosts.some((host) => host === 'localhost' || host === '127.0.0.1' || host === '::1');
 }
 
+/**
+ * The local demo actor is DENIED unless every condition holds:
+ *   - explicit opt-in: ENABLE_LOCAL_DEMO_AUTH === "true" (exact; malformed → deny)
+ *   - NODE_ENV !== "production"
+ *   - no injected auth deps and the fallback is not disabled by the caller
+ *   - Cognito configuration is absent (a configured pool/client → real auth only)
+ *   - the request host is localhost / 127.0.0.1 / ::1
+ * Missing/absent Cognito configuration alone NEVER activates it — the opt-in
+ * flag is required. Fail-closed on any error.
+ */
 function shouldUseLocalDemoFallback(req: Parameters<RequestHandler>[0], options: ApiAuthBoundaryOptions): boolean {
   if (options.disableLocalDemoFallback || options.deps) return false;
+  // Explicit opt-in is mandatory — never activated by missing configuration.
+  if (process.env.ENABLE_LOCAL_DEMO_AUTH !== 'true') return false;
   if (process.env.NODE_ENV === 'production') return false;
   if (process.env.COGNITO_USER_POOL_ID && process.env.COGNITO_CLIENT_ID) return false;
   try {
