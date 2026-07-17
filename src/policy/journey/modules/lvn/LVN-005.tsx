@@ -1,5 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { X, AlertTriangle, Info, ChevronDown, ChevronUp, ChevronRight, ChevronLeft } from 'lucide-react';
+/**
+ * LVN-005 — Plan of Care: Working Under RN/Physician POC
+ * Version: 5.0 | Status: CONTENT COMPLETE — MIGRATION/TECH QA PENDING
+ * Track: LVN — Licensed Vocational Nurse
+ * Regulatory: 42 CFR § 484.60 | CA B&P § 2860 | Agency policy CL-CP-001
+ * Critical scope: LVN works UNDER existing RN/physician POC — never develops/modifies independently.
+ */
+import React, { useCallback, useMemo, useState } from 'react';
+import { LvnGaoPlayer } from './LvnGaoPlayer';
+import { LvnSceneModal } from './LvnSceneModal';
 
 const MODULE_META = {
   id: 'LVN-005',
@@ -47,6 +55,7 @@ type PageDef = {
   decision?: { first: string; continue: string; stop: string; notify: string; document: string };
   hotspots: Hotspot[];
 };
+
 type QuizQ = {
   id: string;
   question: string;
@@ -410,6 +419,7 @@ const PAGES: PageDef[] = [
   },
 ];
 
+/** Balanced distribution A=3, B=3, C=2, D=2 */
 const QUIZ: QuizQ[] = [
   {
     id: 'q1',
@@ -546,496 +556,991 @@ const QUIZ: QuizQ[] = [
   },
 ];
 
-const CI_THEME = {
-  primary: '#007970',
-  deep: '#004142',
-  orange: '#C74601',
-  bg: '#FAFBF8',
-  lightTeal: '#E5FEFF',
-  border: '#E5E4E3',
-  ink: '#1F1C1B',
-  muted: '#747470',
-  white: '#FFFFFF',
-};
-
-// ==========================================
-// GAO-001 PARITY MODAL
-// ==========================================
-export function Lvn005SceneModal({
-  isOpen,
-  onClose,
-  title,
-  info,
-  triggerRef,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  title: string;
-  info: string;
-  triggerRef?: React.RefObject<HTMLElement | null>;
-}) {
-  const modalRef = useRef<HTMLDivElement>(null);
-  const closeBtnRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      closeBtnRef.current?.focus();
-      const trap = (e: KeyboardEvent) => {
-        if (e.key === 'Tab') {
-          e.preventDefault();
-          closeBtnRef.current?.focus();
-        }
-      };
-      window.addEventListener('keydown', trap);
-      return () => window.removeEventListener('keydown', trap);
-    } else {
-      if (triggerRef?.current) triggerRef.current.focus();
-    }
-  }, [isOpen, triggerRef]);
-
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) onClose();
-    };
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
+function Badge({ kind, children }: { kind: string; children: React.ReactNode }) {
+  const styles: Record<string, { bg: string; fg: string; border: string }> = {
+    federal: { bg: '#EFF6FF', fg: '#1D4ED8', border: '#BFDBFE' },
+    california: { bg: '#F5F3FF', fg: '#6D28D9', border: '#DDD6FE' },
+    agency: { bg: '#FFF7ED', fg: '#C2410C', border: '#FED7AA' },
+    guidance: { bg: '#ECFEFF', fg: '#0E7490', border: '#A5F3FC' },
+    key: { bg: '#ECFDF5', fg: '#047857', border: '#A7F3D0' },
+    warning: { bg: '#FEF2F2', fg: '#B91C1C', border: '#FECACA' },
+  };
+  const s = styles[kind] || styles.key;
+  const label =
+    kind === 'federal'
+      ? 'Federal'
+      : kind === 'california'
+        ? 'California law'
+        : kind === 'agency'
+          ? 'Agency policy'
+          : kind === 'guidance'
+            ? 'Professional guidance'
+            : kind === 'warning'
+              ? 'Warning'
+              : 'Key point';
   return (
-    <div style={{
-      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 1000, pointerEvents: 'auto'
-    }}>
-      <div 
-        onClick={onClose}
+    <div
+      style={{
+        background: s.bg,
+        color: s.fg,
+        border: `1px solid ${s.border}`,
+        borderRadius: 10,
+        padding: '10px 12px',
+        marginTop: 10,
+        fontSize: 13,
+        lineHeight: 1.45,
+      }}
+    >
+      <strong style={{ display: 'block', marginBottom: 4, fontSize: 11, letterSpacing: 0.4, textTransform: 'uppercase' }}>
+        {label}
+      </strong>
+      {children}
+    </div>
+  );
+}
+
+export function ProgressBar({ pageIndex, total, mode }: { pageIndex: number; total: number; mode: 'learn' | 'quiz' | 'results' }) {
+  const pct =
+    mode === 'results' ? 100 : mode === 'quiz' ? 92 : Math.round(((pageIndex + 1) / total) * 85);
+  return (
+    <div style={{ height: 6, background: '#E2E8F0', borderRadius: 99, overflow: 'hidden' }}>
+      <div
         style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(31, 28, 27, 0.4)',
-          backdropFilter: 'blur(4px)',
-          WebkitBackdropFilter: 'blur(4px)',
-          animation: 'modalFadeIn 0.2s ease-out'
+          width: `${pct}%`,
+          height: '100%',
+          background: `linear-gradient(90deg, ${THEME.primary}, ${THEME.teal})`,
+          transition: 'width 0.35s ease',
         }}
       />
-      <div
-        ref={modalRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-title"
-        style={{
-          position: 'relative',
-          background: '#FFFFFF',
-          width: '90%',
-          maxWidth: '440px',
-          borderRadius: '16px',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-          overflow: 'hidden',
-          animation: 'modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-        }}
-      >
-        <div style={{
-          padding: '24px',
-          background: 'linear-gradient(180deg, #FAFAFA 0%, #FFFFFF 100%)',
-          borderBottom: '1px solid #E5E4E3',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start'
-        }}>
-          <h3 id="modal-title" style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#1F1C1B', lineHeight: 1.4 }}>
-            {title}
-          </h3>
-          <button
-            ref={closeBtnRef}
-            onClick={onClose}
-            aria-label="Close details"
-            style={{
-              background: 'none', border: 'none', padding: '4px', margin: '-4px',
-              cursor: 'pointer', color: '#747470', borderRadius: '4px'
-            }}
-            onMouseOver={e => e.currentTarget.style.background = '#F3F4F6'}
-            onMouseOut={e => e.currentTarget.style.background = 'none'}
-          >
-            <X size={20} />
-          </button>
-        </div>
-        <div style={{ padding: '24px', fontSize: '15px', lineHeight: 1.6, color: '#524C4B' }}>
-          {info}
-        </div>
-      </div>
-      <style>{`
-        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes modalSlideUp { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-      `}</style>
     </div>
   );
 }
 
-// ==========================================
-// SCENES (Claymorphic, Full-Bleed, Interactive objects)
-// ==========================================
-function SvgObj({ id, x, y, r, label, sub, color, active, onClick }: any) {
-  const isAct = active === id;
-  return (
-    <g 
-      id={`hs-${id}`}
-      role="button" 
-      tabIndex={0} 
-      onClick={() => onClick(id)}
-      onKeyDown={(e) => { if(e.key==='Enter'||e.key===' ') { e.preventDefault(); onClick(id); } }}
-      style={{ cursor: 'pointer', outline: 'none' }}
-    >
-      <circle cx={x} cy={y} r={r+6} fill={color} opacity={isAct ? 0.2 : 0} style={{ transition: 'opacity 0.2s' }} />
-      <circle cx={x} cy={y} r={r} fill={color} style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }} />
-      <circle cx={x-r/3} cy={y-r/3} r={r/2} fill="#ffffff" opacity="0.15" />
-      
-      <text x={x} y={y} textAnchor="middle" fill="#FFFFFF" fontSize="16" fontWeight="700" style={{ pointerEvents: 'none' }}>{label}</text>
-      {sub && <text x={x} y={y+16} textAnchor="middle" fill="#FFFFFF" opacity="0.9" fontSize="12" style={{ pointerEvents: 'none' }}>{sub}</text>}
-      
-      <circle cx={x} cy={y} r={r+2} fill="none" stroke={isAct ? '#1F1C1B' : 'transparent'} strokeWidth="3" />
-    </g>
-  );
-}
+/** Page 1 — Authority constellation */
 
-function Scene1({ active, onHotspot }: any) {
-  return (
-    <svg viewBox="0 0 800 600" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style={{ background: CI_THEME.bg }}>
-      <defs>
-        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M 0 0 L 10 5 L 0 10 z" fill={CI_THEME.deep} />
-        </marker>
-      </defs>
-      <circle cx="800" cy="0" r="300" fill={CI_THEME.lightTeal} opacity="0.4" />
-      <circle cx="0" cy="600" r="250" fill={CI_THEME.orange} opacity="0.05" />
 
-      <line x1="400" y1="180" x2="400" y2="250" stroke={CI_THEME.deep} strokeWidth="4" markerEnd="url(#arrow)" strokeDasharray="8 4" />
-      <line x1="400" y1="350" x2="400" y2="420" stroke={CI_THEME.deep} strokeWidth="4" markerEnd="url(#arrow)" strokeDasharray="8 4" />
-
-      <SvgObj id="authority-chain" x={400} y={130} r={50} label="Physician" sub="Orders" color={CI_THEME.deep} active={active} onClick={onHotspot} />
-      <SvgObj id="authority-chain" x={400} y={300} r={50} label="RN" sub="Supervises" color={CI_THEME.primary} active={active} onClick={onHotspot} />
-      <SvgObj id="lvn-boundary" x={400} y={470} r={50} label="LVN" sub="Implements" color={CI_THEME.orange} active={active} onClick={onHotspot} />
-
-      <text x="400" y="560" textAnchor="middle" fill={CI_THEME.muted} fontSize="14" fontWeight="600">The LVN implements authorized directives — never independently modifies</text>
-    </svg>
-  );
-}
-
-function Scene2({ active, onHotspot }: any) {
+/** Page 2 — CMS-485 blueprint */
+function SceneCms485({ active, onHotspot }: { active: string | null; onHotspot: (id: string) => void }) {
   const blocks = [
-    { id: 'demo', label: 'Demographics', x: 200, y: 150, c: '#E5E4E3', tc: '#1F1C1B' },
-    { id: 'dx', label: 'Diagnoses', x: 420, y: 150, c: '#E5E4E3', tc: '#1F1C1B' },
-    { id: 'orders-block', label: 'Orders & Services', x: 200, y: 280, c: CI_THEME.primary, tc: '#FFFFFF' },
-    { id: 'goal', label: 'Goals', x: 420, y: 280, c: '#E5E4E3', tc: '#1F1C1B' },
-    { id: 'lvn-data', label: 'LVN Data Role', x: 310, y: 410, c: CI_THEME.orange, tc: '#FFFFFF' },
+    { id: 'demo', label: 'Demographics\n& cert window', x: 30, y: 50, c: THEME.info },
+    { id: 'dx', label: 'Diagnoses\nICD-10', x: 210, y: 50, c: THEME.error },
+    { id: 'lim', label: 'Functional\nlimitations', x: 30, y: 140, c: THEME.accent },
+    { id: 'ord', label: 'Orders &\nservices ★', x: 210, y: 140, c: THEME.success },
+    { id: 'goal', label: 'Goals &\nrehab potential', x: 30, y: 230, c: '#8B5CF6' },
+    { id: 'dme', label: 'Meds &\nDME', x: 210, y: 230, c: THEME.teal },
   ];
-
   return (
-    <svg viewBox="0 0 800 600" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style={{ background: CI_THEME.bg }}>
-      <rect x="150" y="60" width="500" height="480" fill="#FFFFFF" rx="20" style={{ filter: 'drop-shadow(0 10px 25px rgba(0,0,0,0.05))' }} />
-      <text x="400" y="100" textAnchor="middle" fill={CI_THEME.deep} fontSize="20" fontWeight="800">CMS-485 Blueprint</text>
-      
-      {blocks.map(b => (
-        <g 
-          key={b.id} id={`hs-${b.id}`} role="button" tabIndex={0} 
-          onClick={() => onHotspot(b.id)}
-          onKeyDown={(e) => { if(e.key==='Enter'||e.key===' ') { e.preventDefault(); onHotspot(b.id); } }}
-          style={{ cursor: 'pointer', outline: 'none' }}
-        >
-          <rect x={b.x} y={b.y} width="180" height="80" rx="12" fill={b.c} style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.05))' }} />
-          <rect x={b.x} y={b.y} width="180" height="80" rx="12" fill="none" stroke={active === b.id ? '#1F1C1B' : 'transparent'} strokeWidth="3" />
-          <text x={b.x + 90} y={b.y + 45} textAnchor="middle" fill={b.tc} fontSize="16" fontWeight="700" style={{ pointerEvents: 'none' }}>{b.label}</text>
+    <svg viewBox="0 0 400 360" width="100%" height="100%" role="img" aria-label="CMS-485 blueprint sections">
+      <rect width="400" height="360" fill="#0B1F33" rx="16" />
+      <g opacity={0.2} stroke="#3B82F6">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <line key={`v${i}`} x1={i * 36} y1={0} x2={i * 36} y2={360} strokeWidth="1" />
+        ))}
+        {Array.from({ length: 10 }).map((_, i) => (
+          <line key={`h${i}`} x1={0} y1={i * 40} x2={400} y2={i * 40} strokeWidth="1" />
+        ))}
+      </g>
+      <text x="200" y="28" textAnchor="middle" fill="#93C5FD" fontSize="13" fontWeight="700">
+        CMS-485 Exploded Blueprint
+      </text>
+      {blocks.map((b) => (
+        <g key={b.id}>
+          <rect x={b.x} y={b.y} width="160" height="70" rx="10" fill={b.c} opacity={0.9} />
+          {b.label.split('\n').map((line, i) => (
+            <text key={i} x={b.x + 80} y={b.y + 30 + i * 16} textAnchor="middle" fill="#fff" fontSize="12" fontWeight="600">
+              {line}
+            </text>
+          ))}
         </g>
       ))}
+      <text x="200" y="330" textAnchor="middle" fill="#BFDBFE" fontSize="11">
+        LVN implements orders — RN/MD complete the form
+      </text>
+      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('orders-block')}>
+        <circle cx={210 + 140} cy={140 + 20} r="15" fill="#fff" stroke={THEME.success} strokeWidth="3" opacity={active === 'orders-block' ? 1 : 0.9}>
+          <animate attributeName="r" values="13;17;13" dur="2.4s" repeatCount="indefinite" />
+        </circle>
+        <text x={210 + 140} y={140 + 24} textAnchor="middle" fill={THEME.success} fontSize="10" fontWeight="700">
+          1
+        </text>
+      </g>
+      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('lvn-data')}>
+        <circle cx="90" cy="280" r="15" fill="#fff" stroke={THEME.info} strokeWidth="3">
+          <animate attributeName="r" values="13;17;13" dur="2.7s" repeatCount="indefinite" />
+        </circle>
+        <text x="90" y="284" textAnchor="middle" fill={THEME.info} fontSize="10" fontWeight="700">
+          2
+        </text>
+      </g>
     </svg>
   );
 }
 
-function Scene3({ active, onHotspot }: any) {
-  const days = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
+/** Page 3 — Visit frequency calendar */
+function SceneFrequency({ active, onHotspot }: { active: string | null; onHotspot: (id: string) => void }) {
+  const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const weeks = [
+    [1, 0, 1, 0, 1, 0, 0],
+    [1, 0, 1, 0, 1, 0, 0],
+    [1, 0, 0, 1, 0, 0, 0],
+    [1, 0, 0, 1, 0, 0, 0],
+    [1, 0, 0, 0, 0, 0, 0],
+    [1, 0, 0, 0, 0, 0, 0],
+  ];
   return (
-    <svg viewBox="0 0 800 600" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style={{ background: CI_THEME.bg }}>
-      <text x="400" y="80" textAnchor="middle" fill={CI_THEME.deep} fontSize="24" fontWeight="800">Frequency Decoder: 3W2, 2W2, 1W2</text>
-      
-      <g transform="translate(100, 120)">
-        {days.map((d, i) => (
-          <text key={d} x={i*85 + 42} y="30" textAnchor="middle" fill={CI_THEME.muted} fontSize="14" fontWeight="700">{d}</text>
-        ))}
-        
-        <g id="hs-decode" role="button" tabIndex={0} onClick={() => onHotspot('decode')} onKeyDown={(e) => { if(e.key==='Enter'||e.key===' ') onHotspot('decode'); }} style={{ cursor: 'pointer', outline: 'none' }}>
-          <rect x={0} y={40} width={600} height={100} fill={CI_THEME.lightTeal} rx="12" stroke={active==='decode'?CI_THEME.ink:'transparent'} strokeWidth="2" />
-          <text x="-40" y="75" fill={CI_THEME.deep} fontSize="16" fontWeight="700">W1</text>
-          <text x="-40" y="125" fill={CI_THEME.deep} fontSize="16" fontWeight="700">W2</text>
-          {[0, 2, 4].map(col => <rect key={`w1-${col}`} x={col*85+10} y={50} width="65" height="35" rx="8" fill={CI_THEME.primary} />)}
-          {[0, 2, 4].map(col => <rect key={`w2-${col}`} x={col*85+10} y={95} width="65" height="35" rx="8" fill={CI_THEME.primary} />)}
+    <svg viewBox="0 0 400 360" width="100%" height="100%" role="img" aria-label="Visit frequency calendar">
+      <rect width="400" height="360" fill="#F5F3FF" rx="16" />
+      <text x="200" y="28" textAnchor="middle" fill={THEME.primaryDark} fontSize="13" fontWeight="700">
+        Frequency Decoder — SN 3W2, 2W2, 1W2
+      </text>
+      {days.map((d, i) => (
+        <text key={d + i} x={70 + i * 42} y="56" textAnchor="middle" fill={THEME.muted} fontSize="11" fontWeight="600">
+          {d}
+        </text>
+      ))}
+      {weeks.map((row, wi) => (
+        <g key={wi}>
+          <text x="28" y={88 + wi * 40} fill={THEME.muted} fontSize="10">
+            W{wi + 1}
+          </text>
+          {row.map((on, di) => (
+            <rect
+              key={di}
+              x={52 + di * 42}
+              y={70 + wi * 40}
+              width="34"
+              height="30"
+              rx="6"
+              fill={on ? (wi < 2 ? THEME.teal : wi < 4 ? THEME.info : THEME.accent) : '#E2E8F0'}
+              opacity={on ? 0.95 : 0.6}
+            />
+          ))}
         </g>
+      ))}
+      <rect x="40" y="310" width="12" height="12" rx="3" fill={THEME.teal} />
+      <text x="58" y="320" fill={THEME.text} fontSize="10">
+        3×/wk
+      </text>
+      <rect x="110" y="310" width="12" height="12" rx="3" fill={THEME.info} />
+      <text x="128" y="320" fill={THEME.text} fontSize="10">
+        2×/wk
+      </text>
+      <rect x="180" y="310" width="12" height="12" rx="3" fill={THEME.accent} />
+      <text x="198" y="320" fill={THEME.text} fontSize="10">
+        1×/wk
+      </text>
+      <text x="280" y="320" fill={THEME.muted} fontSize="10">
+        Spread visits — no clustering
+      </text>
+      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('decode')}>
+        <circle cx="120" cy="110" r="16" fill={THEME.primary} stroke="#fff" strokeWidth="2" opacity={active === 'decode' ? 1 : 0.9}>
+          <animate attributeName="opacity" values="0.65;1;0.65" dur="2.5s" repeatCount="indefinite" />
+        </circle>
+        <text x="120" y="114" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
+          1
+        </text>
+      </g>
+      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('prn-gate')}>
+        <circle cx="320" cy="250" r="16" fill={THEME.error} stroke="#fff" strokeWidth="2">
+          <animate attributeName="opacity" values="0.65;1;0.65" dur="2.8s" repeatCount="indefinite" />
+        </circle>
+        <text x="320" y="254" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
+          2
+        </text>
+      </g>
+    </svg>
+  );
+}
 
-        <g id="hs-prn-gate" role="button" tabIndex={0} onClick={() => onHotspot('prn-gate')} onKeyDown={(e) => { if(e.key==='Enter'||e.key===' ') onHotspot('prn-gate'); }} style={{ cursor: 'pointer', outline: 'none' }} transform="translate(0, 300)">
-          <rect x={0} y={0} width={600} height={80} fill={CI_THEME.orange} rx="12" style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }} stroke={active==='prn-gate'?CI_THEME.ink:'transparent'} strokeWidth="2" />
-          <text x="300" y="45" textAnchor="middle" fill="#FFF" fontSize="18" fontWeight="700" style={{ pointerEvents: 'none' }}>PRN Gate: RN / MD Authorization Required</text>
+/** Page 4 — Delegation waterfall */
+function SceneDelegation({ active, onHotspot }: { active: string | null; onHotspot: (id: string) => void }) {
+  const cols = [
+    { label: 'RN', color: THEME.rn, tasks: ['Assess', 'Plan', 'Supervise', 'OASIS'] },
+    { label: 'LVN', color: THEME.lvn, tasks: ['Vitals', 'Wound protocol', 'Meds ordered', 'Educate/plan', 'Data'], highlight: true },
+    { label: 'PT', color: THEME.info, tasks: ['Mobility', 'Gait', 'Exercise'] },
+    { label: 'HHA', color: THEME.success, tasks: ['Personal care', 'Support'] },
+  ];
+  return (
+    <svg viewBox="0 0 400 360" width="100%" height="100%" role="img" aria-label="Delegation waterfall">
+      <rect width="400" height="360" fill="#0F172A" rx="16" />
+      <rect x="40" y="24" width="320" height="44" rx="12" fill={THEME.physician} />
+      <text x="200" y="52" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="700">
+        Physician POC Directive
+      </text>
+      {cols.map((c, i) => {
+        const x = 28 + i * 92;
+        return (
+          <g key={c.label}>
+            <path d={`M${x + 36},68 L${x + 36},100`} stroke={c.color} strokeWidth="3" />
+            <rect
+              x={x}
+              y={100}
+              width="80"
+              height={c.highlight ? 200 : 160}
+              rx="10"
+              fill={c.color}
+              opacity={c.highlight ? 1 : 0.85}
+              stroke={c.highlight ? '#fff' : 'none'}
+              strokeWidth={c.highlight ? 2 : 0}
+            />
+            <text x={x + 40} y="122" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700">
+              {c.label}
+            </text>
+            {c.tasks.map((t, ti) => (
+              <text key={t} x={x + 40} y={148 + ti * 18} textAnchor="middle" fill="#F8FAFC" fontSize="9">
+                {t}
+              </text>
+            ))}
+          </g>
+        );
+      })}
+      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('five-rights')}>
+        <circle cx="200" cy="150" r="16" fill={THEME.primary} stroke="#fff" strokeWidth="2" opacity={active === 'five-rights' ? 1 : 0.9}>
+          <animate attributeName="r" values="14;18;14" dur="2.6s" repeatCount="indefinite" />
+        </circle>
+        <text x="200" y="154" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
+          1
+        </text>
+      </g>
+      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('acct-vs-resp')}>
+        <circle cx="312" cy="300" r="16" fill={THEME.lvn} stroke="#fff" strokeWidth="2">
+          <animate attributeName="r" values="14;18;14" dur="2.9s" repeatCount="indefinite" />
+        </circle>
+        <text x="312" y="304" textAnchor="middle" fill="#0F172A" fontSize="10" fontWeight="700">
+          2
+        </text>
+      </g>
+    </svg>
+  );
+}
+
+/** Page 5 — Change alert radar */
+function SceneChange({ active, onHotspot }: { active: string | null; onHotspot: (id: string) => void }) {
+  const items = [
+    { label: 'New order', a: -90, c: THEME.info },
+    { label: 'Dose change', a: -18, c: THEME.error },
+    { label: 'Frequency', a: 54, c: THEME.accent },
+    { label: 'Goal revise', a: 126, c: THEME.success },
+    { label: 'DC plan', a: 198, c: '#8B5CF6' },
+  ];
+  const cx = 200;
+  const cy = 170;
+  return (
+    <svg viewBox="0 0 400 360" width="100%" height="100%" role="img" aria-label="Change response radar">
+      <rect width="400" height="360" fill="#1E1B4B" rx="16" />
+      {[40, 70, 100, 130].map((r, i) => (
+        <circle key={r} cx={cx} cy={cy} r={r} fill="none" stroke="rgba(239,68,68,0.25)" strokeWidth="2">
+          <animate attributeName="opacity" values="0.2;0.7;0.2" dur={`${2 + i * 0.4}s`} repeatCount="indefinite" />
+        </circle>
+      ))}
+      <circle cx={cx} cy={cy} r="28" fill={THEME.error} />
+      <text x={cx} y={cy + 4} textAnchor="middle" fill="#fff" fontSize="11" fontWeight="700">
+        ALERT
+      </text>
+      {items.map((it) => {
+        const rad = (it.a * Math.PI) / 180;
+        const x = cx + Math.cos(rad) * 110;
+        const y = cy + Math.sin(rad) * 110;
+        return (
+          <g key={it.label}>
+            <line x1={cx} y1={cy} x2={x} y2={y} stroke={it.c} strokeWidth="2" opacity={0.5} />
+            <circle cx={x} cy={y} r="22" fill={it.c} />
+            <text x={x} y={y + 3} textAnchor="middle" fill="#fff" fontSize="8" fontWeight="600">
+              {it.label}
+            </text>
+          </g>
+        );
+      })}
+      <text x="200" y="320" textAnchor="middle" fill="#E9D5FF" fontSize="11">
+        Receive → Verify → Implement (scope) → Notify → Document
+      </text>
+      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('protocol')}>
+        <circle cx="200" cy="170" r="18" fill="#fff" stroke={THEME.error} strokeWidth="3" opacity={active === 'protocol' ? 1 : 0.95}>
+          <animate attributeName="r" values="16;20;16" dur="2.2s" repeatCount="indefinite" />
+        </circle>
+        <text x="200" y="174" textAnchor="middle" fill={THEME.error} fontSize="10" fontWeight="700">
+          1
+        </text>
+      </g>
+      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('stay-notify')}>
+        <circle cx="70" cy="300" r="16" fill={THEME.info} stroke="#fff" strokeWidth="2">
+          <animate attributeName="opacity" values="0.6;1;0.6" dur="2.5s" repeatCount="indefinite" />
+        </circle>
+        <text x="70" y="304" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
+          2
+        </text>
+      </g>
+    </svg>
+  );
+}
+
+/** Page 6 — Scope force field */
+function SceneScope({ active, onHotspot }: { active: string | null; onHotspot: (id: string) => void }) {
+  const within = ['Vitals', 'Meds ordered', 'Wound protocol', 'Educate/plan', 'Specimens', 'Data to RN'];
+  const outside = ['Create POC', 'Modify POC', 'OASIS complete', 'Discharge decide', 'Indep. plan', 'HHA supervise'];
+  return (
+    <svg viewBox="0 0 400 360" width="100%" height="100%" role="img" aria-label="LVN scope boundaries">
+      <defs>
+        <linearGradient id="scopeSplit" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#ECFDF5" />
+          <stop offset="49%" stopColor="#ECFDF5" />
+          <stop offset="51%" stopColor="#FEF2F2" />
+          <stop offset="100%" stopColor="#FEF2F2" />
+        </linearGradient>
+      </defs>
+      <rect width="400" height="360" fill="url(#scopeSplit)" rx="16" />
+      <rect x="196" y="20" width="8" height="320" rx="4" fill={THEME.primary}>
+        <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" />
+      </rect>
+      <text x="100" y="40" textAnchor="middle" fill="#047857" fontSize="12" fontWeight="700">
+        WITHIN LVN + POC
+      </text>
+      <text x="300" y="40" textAnchor="middle" fill="#B91C1C" fontSize="12" fontWeight="700">
+        OUTSIDE LVN ROLE
+      </text>
+      {within.map((t, i) => (
+        <g key={t}>
+          <rect x="24" y={58 + i * 40} width="150" height="30" rx="8" fill="#10B981" opacity={0.9} />
+          <text x="99" y={78 + i * 40} textAnchor="middle" fill="#fff" fontSize="11" fontWeight="600">
+            {t}
+          </text>
         </g>
+      ))}
+      {outside.map((t, i) => (
+        <g key={t}>
+          <rect x="226" y={58 + i * 40} width="150" height="30" rx="8" fill="#EF4444" opacity={0.9} />
+          <text x="301" y={78 + i * 40} textAnchor="middle" fill="#fff" fontSize="11" fontWeight="600">
+            {t}
+          </text>
+        </g>
+      ))}
+      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('within')}>
+        <circle cx="100" cy="310" r="16" fill="#047857" stroke="#fff" strokeWidth="2" opacity={active === 'within' ? 1 : 0.9}>
+          <animate attributeName="r" values="14;18;14" dur="2.4s" repeatCount="indefinite" />
+        </circle>
+        <text x="100" y="314" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
+          1
+        </text>
+      </g>
+      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('outside')}>
+        <circle cx="300" cy="310" r="16" fill="#B91C1C" stroke="#fff" strokeWidth="2">
+          <animate attributeName="r" values="14;18;14" dur="2.6s" repeatCount="indefinite" />
+        </circle>
+        <text x="300" y="314" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
+          2
+        </text>
       </g>
     </svg>
   );
 }
 
-function Scene4({ active, onHotspot }: any) {
+/** Page 7 — 60-day certification orbit */
+function SceneCert({ active, onHotspot }: { active: string | null; onHotspot: (id: string) => void }) {
+  const milestones = [
+    { label: 'SOC', day: 'D1', angle: -90, c: THEME.success },
+    { label: 'Orders', day: 'D1–2', angle: -30, c: THEME.accent },
+    { label: 'F2F', day: '~D30', angle: 40, c: '#8B5CF6' },
+    { label: 'Recert', day: 'D50–60', angle: 120, c: THEME.error },
+  ];
+  const cx = 200;
+  const cy = 175;
   return (
-    <svg viewBox="0 0 800 600" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style={{ background: CI_THEME.bg }}>
-      <text x="400" y="100" textAnchor="middle" fill={CI_THEME.deep} fontSize="24" fontWeight="800">Delegation & Accountability</text>
-      
-      <g id="hs-five-rights" role="button" tabIndex={0} onClick={() => onHotspot('five-rights')} onKeyDown={(e) => { if(e.key==='Enter'||e.key===' ') onHotspot('five-rights'); }} style={{ cursor: 'pointer', outline: 'none' }}>
-        <rect x="200" y="150" width="400" height="80" rx="16" fill={CI_THEME.lightTeal} stroke={active==='five-rights'?CI_THEME.ink:'transparent'} strokeWidth="2" />
-        <text x="400" y="195" textAnchor="middle" fill={CI_THEME.deep} fontSize="18" fontWeight="700" style={{ pointerEvents: 'none' }}>NCSBN Five Rights of Delegation</text>
+    <svg viewBox="0 0 400 360" width="100%" height="100%" role="img" aria-label="60-day certification orbit">
+      <rect width="400" height="360" fill="#0B1026" rx="16" />
+      <ellipse cx={cx} cy={cy} rx="150" ry="95" fill="none" stroke="rgba(124,58,237,0.45)" strokeWidth="2" strokeDasharray="6 4" />
+      <ellipse cx={cx} cy={cy} rx="100" ry="62" fill="none" stroke="rgba(59,130,246,0.35)" strokeWidth="1.5" />
+      <circle cx={cx} cy={cy} r="36" fill={THEME.info} />
+      <text x={cx} y={cy - 4} textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
+        Physician
+      </text>
+      <text x={cx} y={cy + 10} textAnchor="middle" fill="#DBEAFE" fontSize="9">
+        Order
+      </text>
+      {milestones.map((m) => {
+        const rad = (m.angle * Math.PI) / 180;
+        const x = cx + Math.cos(rad) * 150;
+        const y = cy + Math.sin(rad) * 95;
+        return (
+          <g key={m.label}>
+            <circle cx={x} cy={y} r="20" fill={m.c} />
+            <text x={x} y={y - 2} textAnchor="middle" fill="#fff" fontSize="9" fontWeight="700">
+              {m.label}
+            </text>
+            <text x={x} y={y + 10} textAnchor="middle" fill="#F8FAFC" fontSize="8">
+              {m.day}
+            </text>
+          </g>
+        );
+      })}
+      <text x="200" y="300" textAnchor="middle" fill="#C4B5FD" fontSize="11" fontWeight="600">
+        LVN arc: continuous implementation + documentation
+      </text>
+      <text x="200" y="320" textAnchor="middle" fill="#94A3B8" fontSize="10">
+        60-day certification cycle
+      </text>
+      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('orbit')}>
+        <circle cx="200" cy="80" r="16" fill="#8B5CF6" stroke="#fff" strokeWidth="2" opacity={active === 'orbit' ? 1 : 0.9}>
+          <animate attributeName="opacity" values="0.6;1;0.6" dur="2.3s" repeatCount="indefinite" />
+        </circle>
+        <text x="200" y="84" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
+          1
+        </text>
       </g>
-
-      <g id="hs-acct-vs-resp" role="button" tabIndex={0} onClick={() => onHotspot('acct-vs-resp')} onKeyDown={(e) => { if(e.key==='Enter'||e.key===' ') onHotspot('acct-vs-resp'); }} style={{ cursor: 'pointer', outline: 'none' }}>
-        <rect x="150" y="280" width="230" height="150" rx="16" fill={CI_THEME.primary} style={{ filter: 'drop-shadow(0 8px 12px rgba(0,0,0,0.1))' }} stroke={active==='acct-vs-resp'?CI_THEME.ink:'transparent'} strokeWidth="2" />
-        <text x="265" y="340" textAnchor="middle" fill="#FFF" fontSize="20" fontWeight="700" style={{ pointerEvents: 'none' }}>RN</text>
-        <text x="265" y="370" textAnchor="middle" fill="#FFF" fontSize="16" opacity="0.9" style={{ pointerEvents: 'none' }}>Accountability</text>
-        
-        <rect x="420" y="280" width="230" height="150" rx="16" fill={CI_THEME.orange} style={{ filter: 'drop-shadow(0 8px 12px rgba(0,0,0,0.1))' }} stroke={active==='acct-vs-resp'?CI_THEME.ink:'transparent'} strokeWidth="2" />
-        <text x="535" y="340" textAnchor="middle" fill="#FFF" fontSize="20" fontWeight="700" style={{ pointerEvents: 'none' }}>LVN</text>
-        <text x="535" y="370" textAnchor="middle" fill="#FFF" fontSize="16" opacity="0.9" style={{ pointerEvents: 'none' }}>Responsibility</text>
+      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('data-lifeblood')}>
+        <circle cx="300" cy="280" r="16" fill={THEME.lvn} stroke="#fff" strokeWidth="2">
+          <animate attributeName="opacity" values="0.6;1;0.6" dur="2.7s" repeatCount="indefinite" />
+        </circle>
+        <text x="300" y="284" textAnchor="middle" fill="#0F172A" fontSize="10" fontWeight="700">
+          2
+        </text>
       </g>
     </svg>
   );
 }
 
-function Scene5({ active, onHotspot }: any) {
+const SCENES = [SceneAuthority, SceneCms485, SceneFrequency, SceneDelegation, SceneChange, SceneScope, SceneCert];
+
+export function HotspotPanel({ page, activeId }: { page: PageDef; activeId: string | null }) {
+  const hs = page.hotspots.find((h) => h.id === activeId) || page.hotspots[0];
   return (
-    <svg viewBox="0 0 800 600" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style={{ background: CI_THEME.bg }}>
-      <text x="400" y="80" textAnchor="middle" fill={CI_THEME.deep} fontSize="24" fontWeight="800">Change Response Protocol</text>
-
-      <g id="hs-protocol" role="button" tabIndex={0} onClick={() => onHotspot('protocol')} onKeyDown={(e) => { if(e.key==='Enter'||e.key===' ') onHotspot('protocol'); }} style={{ cursor: 'pointer', outline: 'none' }}>
-        <rect x="100" y="140" width="600" height="120" rx="16" fill={CI_THEME.primary} stroke={active==='protocol'?CI_THEME.ink:'transparent'} strokeWidth="2" />
-        <text x="400" y="190" textAnchor="middle" fill="#FFF" fontSize="20" fontWeight="700" style={{ pointerEvents: 'none' }}>Recognize → Assess → Intervene</text>
-        <text x="400" y="220" textAnchor="middle" fill="#FFF" fontSize="14" opacity="0.9" style={{ pointerEvents: 'none' }}>(Within strict POC parameters)</text>
-      </g>
-
-      <g id="hs-stay-notify" role="button" tabIndex={0} onClick={() => onHotspot('stay-notify')} onKeyDown={(e) => { if(e.key==='Enter'||e.key===' ') onHotspot('stay-notify'); }} style={{ cursor: 'pointer', outline: 'none' }}>
-        <rect x="250" y="320" width="300" height="120" rx="16" fill={CI_THEME.orange} stroke={active==='stay-notify'?CI_THEME.ink:'transparent'} strokeWidth="2" />
-        <text x="400" y="370" textAnchor="middle" fill="#FFF" fontSize="20" fontWeight="700" style={{ pointerEvents: 'none' }}>Stay & Notify</text>
-        <text x="400" y="400" textAnchor="middle" fill="#FFF" fontSize="14" opacity="0.9" style={{ pointerEvents: 'none' }}>Call RN from the home</text>
-      </g>
-    </svg>
-  );
-}
-
-function Scene6({ active, onHotspot }: any) {
-  return (
-    <svg viewBox="0 0 800 600" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style={{ background: CI_THEME.bg }}>
-      <text x="400" y="80" textAnchor="middle" fill={CI_THEME.deep} fontSize="24" fontWeight="800">Scope Boundaries</text>
-
-      <g id="hs-within" role="button" tabIndex={0} onClick={() => onHotspot('within')} onKeyDown={(e) => { if(e.key==='Enter'||e.key===' ') onHotspot('within'); }} style={{ cursor: 'pointer', outline: 'none' }}>
-        <rect x="100" y="150" width="280" height="300" rx="20" fill={CI_THEME.primary} style={{ filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.1))' }} stroke={active==='within'?CI_THEME.ink:'transparent'} strokeWidth="3" />
-        <circle cx="240" cy="220" r="30" fill="#FFF" opacity="0.2" />
-        <path d="M225 220 L235 230 L255 210" stroke="#FFF" strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-        <text x="240" y="290" textAnchor="middle" fill="#FFF" fontSize="22" fontWeight="700" style={{ pointerEvents: 'none' }}>Within Scope</text>
-        <text x="240" y="320" textAnchor="middle" fill="#FFF" fontSize="14" opacity="0.9" style={{ pointerEvents: 'none' }}>Ordered meds & treatments</text>
-      </g>
-
-      <g id="hs-outside" role="button" tabIndex={0} onClick={() => onHotspot('outside')} onKeyDown={(e) => { if(e.key==='Enter'||e.key===' ') onHotspot('outside'); }} style={{ cursor: 'pointer', outline: 'none' }}>
-        <rect x="420" y="150" width="280" height="300" rx="20" fill={CI_THEME.orange} style={{ filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.1))' }} stroke={active==='outside'?CI_THEME.ink:'transparent'} strokeWidth="3" />
-        <circle cx="560" cy="220" r="30" fill="#FFF" opacity="0.2" />
-        <path d="M545 205 L575 235 M575 205 L545 235" stroke="#FFF" strokeWidth="4" fill="none" strokeLinecap="round" />
-        <text x="560" y="290" textAnchor="middle" fill="#FFF" fontSize="22" fontWeight="700" style={{ pointerEvents: 'none' }}>Outside Scope</text>
-        <text x="560" y="320" textAnchor="middle" fill="#FFF" fontSize="14" opacity="0.9" style={{ pointerEvents: 'none' }}>Initial OASIS & Plan Create</text>
-      </g>
-    </svg>
-  );
-}
-
-function Scene7({ active, onHotspot }: any) {
-  return (
-    <svg viewBox="0 0 800 600" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style={{ background: CI_THEME.bg }}>
-      <text x="400" y="100" textAnchor="middle" fill={CI_THEME.deep} fontSize="24" fontWeight="800">60-Day Certification Orbit</text>
-
-      <line x1="100" y1="300" x2="700" y2="300" stroke={CI_THEME.border} strokeWidth="8" strokeLinecap="round" />
-      
-      <g id="hs-orbit" role="button" tabIndex={0} onClick={() => onHotspot('orbit')} onKeyDown={(e) => { if(e.key==='Enter'||e.key===' ') onHotspot('orbit'); }} style={{ cursor: 'pointer', outline: 'none' }}>
-        <rect x="250" y="260" width="300" height="80" rx="40" fill={CI_THEME.primary} stroke={active==='orbit'?CI_THEME.ink:'transparent'} strokeWidth="2" />
-        <text x="400" y="306" textAnchor="middle" fill="#FFF" fontSize="18" fontWeight="700" style={{ pointerEvents: 'none' }}>Day 1 — 60: LVN Implementation</text>
-      </g>
-
-      <g id="hs-data-lifeblood" role="button" tabIndex={0} onClick={() => onHotspot('data-lifeblood')} onKeyDown={(e) => { if(e.key==='Enter'||e.key===' ') onHotspot('data-lifeblood'); }} style={{ cursor: 'pointer', outline: 'none' }}>
-        <circle cx="650" cy="300" r="40" fill={CI_THEME.orange} stroke={active==='data-lifeblood'?CI_THEME.ink:'transparent'} strokeWidth="2" />
-        <text x="650" y="280" textAnchor="middle" fill="#FFF" fontSize="12" fontWeight="700" style={{ pointerEvents: 'none' }}>Day 55-60</text>
-        <text x="650" y="315" textAnchor="middle" fill="#FFF" fontSize="14" fontWeight="800" style={{ pointerEvents: 'none' }}>Recert</text>
-      </g>
-    </svg>
-  );
-}
-
-// ==========================================
-// NEW LEFT PANEL COMPONENT
-// ==========================================
-function Lvn005LeftPanel({ page, pageNumber, totalPages, onNext, onPrev, isLast }: any) {
-  const [expanded, setExpanded] = useState(false);
-  useEffect(() => { setExpanded(false); }, [pageNumber]);
-
-  return (
-    <div style={{ padding: '40px', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ fontSize: '13px', fontWeight: 700, color: CI_THEME.primary, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '16px' }}>
-        Lesson {pageNumber} of {totalPages}
+    <div
+      style={{
+        marginTop: 10,
+        background: 'rgba(15,23,42,0.92)',
+        color: '#F8FAFC',
+        borderRadius: 12,
+        padding: '12px 14px',
+        border: `1px solid ${page.accent}`,
+        minHeight: 88,
+      }}
+    >
+      <div style={{ fontSize: 11, color: '#A5B4FC', fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase' }}>
+        Hotspot · {hs.label}
       </div>
-      <h1 style={{ margin: '0 0 8px', fontSize: '32px', fontWeight: 800, color: CI_THEME.deep, lineHeight: 1.2 }}>
-        {page.title}
-      </h1>
-      <h2 style={{ margin: '0 0 24px', fontSize: '18px', fontWeight: 500, color: CI_THEME.muted, lineHeight: 1.4 }}>
-        {page.subtitle}
-      </h2>
-
-      <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '24px', border: `1px solid ${CI_THEME.border}`, boxShadow: '0 4px 6px rgba(0,0,0,0.02)', marginBottom: '24px' }}>
-        <p style={{ margin: 0, fontSize: '17px', color: CI_THEME.ink, lineHeight: 1.6, fontWeight: 600 }}>
-          {page.bullets[0]}
-        </p>
+      <div style={{ fontSize: 13, lineHeight: 1.45, marginTop: 6 }}>{hs.detail}</div>
+      <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 8 }}>
+        Tap numbered markers on the scene ({page.hotspots.map((h) => h.label).join(' · ')})
       </div>
-
-      <div style={{ marginBottom: '24px' }}>
-        <button 
-          onClick={() => setExpanded(!expanded)}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '16px 20px', background: CI_THEME.lightTeal, border: 'none', borderRadius: '12px', color: CI_THEME.deep, fontSize: '16px', fontWeight: 700, cursor: 'pointer' }}
-        >
-          View Full Lesson Details
-          {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-        </button>
-        {expanded && (
-          <div style={{ padding: '20px 8px', color: CI_THEME.ink, fontSize: '16px', lineHeight: 1.6, animation: 'fadeIn 0.2s' }}>
-            <ul style={{ paddingLeft: '20px', margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {page.bullets.slice(1).map((b: string, i: number) => (
-                <li key={i}>{b}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-
-      {page.callouts && page.callouts.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
-          {page.callouts.map((c: any, i: number) => {
-            const isWarn = c.kind === 'warning';
-            return (
-              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '16px', background: isWarn ? '#FEF2F2' : '#F9FAFB', border: `1px solid ${isWarn ? '#FECACA' : CI_THEME.border}`, borderRadius: '12px' }}>
-                <div style={{ color: isWarn ? CI_THEME.orange : CI_THEME.primary, marginTop: '2px' }}>
-                  {isWarn ? <AlertTriangle size={20} /> : <Info size={20} />}
-                </div>
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: isWarn ? CI_THEME.orange : CI_THEME.muted, marginBottom: '4px' }}>
-                    {c.kind}
-                  </div>
-                  <div style={{ fontSize: '14px', color: CI_THEME.ink, lineHeight: 1.5 }}>
-                    {c.text}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <div style={{ marginTop: 'auto', paddingTop: '32px', display: 'flex', gap: '16px' }}>
-        <button 
-          onClick={onPrev} disabled={pageNumber === 1}
-          style={{ padding: '16px', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#FFFFFF', border: `1px solid ${CI_THEME.border}`, borderRadius: '12px', color: pageNumber === 1 ? '#D1D5DB' : CI_THEME.deep, fontWeight: 700, cursor: pageNumber === 1 ? 'not-allowed' : 'pointer' }}
-        >
-          <ChevronLeft size={20} style={{ marginRight: '8px' }} /> Previous
-        </button>
-        <button 
-          onClick={onNext}
-          style={{ padding: '16px', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', background: CI_THEME.primary, border: 'none', borderRadius: '12px', color: '#FFFFFF', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0, 121, 112, 0.2)' }}
-        >
-          {isLast ? 'Start Quiz' : 'Next Lesson'} <ChevronRight size={20} style={{ marginLeft: '8px' }} />
-        </button>
-      </div>
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-      `}</style>
     </div>
   );
 }
 
-// ==========================================
-// MAIN COMPONENT
-// ==========================================
+export function LeftPanel({ page }: { page: PageDef }) {
+  return (
+    <div style={{ padding: '4px 4px 24px' }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+        <span style={chipStyle(THEME.primarySoft, THEME.primaryDark)}>{MODULE_META.cms}</span>
+        <span style={chipStyle('#F5F3FF', THEME.primary)}>{MODULE_META.california}</span>
+        <span style={chipStyle('#FFF7ED', '#C2410C')}>{MODULE_META.policy}</span>
+      </div>
+      <h2 style={{ margin: '0 0 6px', fontSize: 22, color: THEME.text, lineHeight: 1.25 }}>{page.title}</h2>
+      <p style={{ margin: '0 0 14px', color: THEME.muted, fontSize: 14 }}>{page.subtitle}</p>
+      <ul style={{ margin: 0, paddingLeft: 18 }}>
+        {page.bullets.map((b) => (
+          <li key={b.slice(0, 48)} style={{ marginBottom: 8, fontSize: 14, lineHeight: 1.5, color: THEME.text }}>
+            {b}
+          </li>
+        ))}
+      </ul>
+      {page.callouts.map((c, i) => (
+        <Badge key={i} kind={c.kind}>
+          {c.text}
+        </Badge>
+      ))}
+      {page.scenario && (
+        <div
+          style={{
+            marginTop: 14,
+            border: `1px solid ${THEME.border}`,
+            borderRadius: 12,
+            padding: 14,
+            background: '#FAFAFF',
+          }}
+        >
+          <div style={{ fontSize: 12, fontWeight: 700, color: page.accent, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+            Scenario · {page.scenario.patient}
+          </div>
+          <div style={{ fontSize: 12, color: THEME.muted, marginTop: 4 }}>{page.scenario.context}</div>
+          <div style={{ fontSize: 13, lineHeight: 1.5, marginTop: 8, color: THEME.text }}>{page.scenario.body}</div>
+        </div>
+      )}
+      {page.decision && (
+        <div
+          style={{
+            marginTop: 14,
+            display: 'grid',
+            gridTemplateColumns: '1fr',
+            gap: 6,
+            background: '#0F172A',
+            color: '#E2E8F0',
+            borderRadius: 12,
+            padding: 14,
+          }}
+        >
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase' }}>Employee decision frame</div>
+          {(
+            [
+              ['First', page.decision.first],
+              ['May continue', page.decision.continue],
+              ['Must stop', page.decision.stop],
+              ['Notify', page.decision.notify],
+              ['Document', page.decision.document],
+            ] as const
+          ).map(([k, v]) => (
+            <div key={k} style={{ fontSize: 12.5, lineHeight: 1.4 }}>
+              <strong style={{ color: '#FDE68A' }}>{k}:</strong> {v}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function chipStyle(bg: string, fg: string): React.CSSProperties {
+  return {
+    background: bg,
+    color: fg,
+    borderRadius: 99,
+    padding: '4px 10px',
+    fontSize: 11,
+    fontWeight: 600,
+  };
+}
+
+export function QuizView({
+  answers,
+  setAnswers,
+  submitted,
+  score,
+  onSubmit,
+  onRetry,
+  onReview,
+  reviewMode,
+}: {
+  answers: Record<number, number>;
+  setAnswers: React.Dispatch<React.SetStateAction<Record<number, number>>>;
+  submitted: boolean;
+  score: number;
+  onSubmit: () => void;
+  onRetry: () => void;
+  onReview: () => void;
+  reviewMode: boolean;
+}) {
+  const passed = score >= MODULE_META.passing;
+  const letters = ['A', 'B', 'C', 'D'] as const;
+  return (
+    <div style={{ maxWidth: 900, margin: '0 auto', padding: '8px 8px 40px' }}>
+      <h2 style={{ margin: '0 0 8px', color: THEME.text }}>Knowledge Check — {MODULE_META.title}</h2>
+      <p style={{ color: THEME.muted, fontSize: 14, marginTop: 0 }}>
+        10 application questions · 80% to pass · This quiz validates <strong>knowledge only</strong>. Observed demonstration and
+        authorized sign-off remain separate under agency policy.
+      </p>
+      {QUIZ.map((q, qi) => {
+        const selected = answers[qi];
+        return (
+          <div
+            key={q.id}
+            style={{
+              background: THEME.surface,
+              border: `1px solid ${THEME.border}`,
+              borderRadius: 12,
+              padding: 16,
+              marginBottom: 12,
+            }}
+          >
+            <div style={{ fontWeight: 700, fontSize: 14, color: THEME.text, marginBottom: 10 }}>
+              {qi + 1}. {q.question}
+            </div>
+            {q.options.map((opt, oi) => {
+              const isSel = selected === oi;
+              const isCorrect = submitted && oi === q.correct;
+              const isWrong = submitted && isSel && oi !== q.correct;
+              let border = isSel ? THEME.primary : THEME.border;
+              let bg = isSel ? THEME.primarySoft : '#FAFAFA';
+              if (isCorrect) {
+                border = THEME.success;
+                bg = '#ECFDF5';
+              }
+              if (isWrong) {
+                border = THEME.error;
+                bg = '#FEF2F2';
+              }
+              return (
+                <button
+                  key={oi}
+                  type="button"
+                  disabled={submitted}
+                  onClick={() => {
+                    if (!submitted) setAnswers((prev) => ({ ...prev, [qi]: oi }));
+                  }}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '10px 12px',
+                    marginBottom: 6,
+                    borderRadius: 8,
+                    border: `1px solid ${border}`,
+                    background: bg,
+                    cursor: submitted ? 'default' : 'pointer',
+                    fontSize: 13,
+                    color: THEME.text,
+                    fontWeight: isSel ? 600 : 400,
+                  }}
+                >
+                  <strong>{letters[oi]}.</strong> {opt}
+                </button>
+              );
+            })}
+            {submitted && (
+              <div style={{ marginTop: 8, fontSize: 12.5, lineHeight: 1.45, color: THEME.muted }}>
+                <strong style={{ color: THEME.text }}>Rationale:</strong> {q.rationale}
+              </div>
+            )}
+          </div>
+        );
+      })}
+      {!submitted ? (
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={Object.keys(answers).length < QUIZ.length}
+          style={primaryBtnStyle(Object.keys(answers).length < QUIZ.length)}
+        >
+          Submit quiz ({Object.keys(answers).length}/{QUIZ.length})
+        </button>
+      ) : (
+        <div
+          style={{
+            marginTop: 8,
+            padding: 16,
+            borderRadius: 12,
+            background: passed ? '#ECFDF5' : '#FEF2F2',
+            border: `1px solid ${passed ? '#A7F3D0' : '#FECACA'}`,
+          }}
+        >
+          <div style={{ fontSize: 18, fontWeight: 800, color: passed ? '#047857' : '#B91C1C' }}>
+            Score: {score}% — {passed ? 'PASSED' : 'NOT PASSED'}
+          </div>
+          <p style={{ fontSize: 13, color: THEME.text, lineHeight: 1.5 }}>
+            {passed
+              ? 'Knowledge check passed. This does not alone establish practical clinical competency; complete any required skills demonstration and authorized sign-off per agency policy.'
+              : 'Score below 80%. Review hotspot feedback and page content, then retry the quiz.'}
+          </p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button type="button" onClick={onReview} style={secondaryBtnStyle}>
+              {reviewMode ? 'Review answers' : 'Review answers'}
+            </button>
+            <button type="button" onClick={onRetry} style={primaryBtnStyle(false)}>
+              Retry quiz
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const primaryBtnStyle = (disabled: boolean): React.CSSProperties => ({
+  background: disabled ? '#C4B5FD' : THEME.primary,
+  color: '#fff',
+  border: 'none',
+  borderRadius: 10,
+  padding: '12px 18px',
+  fontWeight: 700,
+  fontSize: 14,
+  cursor: disabled ? 'not-allowed' : 'pointer',
+});
+
+const secondaryBtnStyle: React.CSSProperties = {
+  background: THEME.surface,
+  color: THEME.primaryDark,
+  border: `1px solid ${THEME.primary}`,
+  borderRadius: 10,
+  padding: '12px 18px',
+  fontWeight: 700,
+  fontSize: 14,
+  cursor: 'pointer',
+};
+
 export default function LVN005PlanOfCare() {
   const [pageIndex, setPageIndex] = useState(0);
-  const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
-  const [quizMode, setQuizMode] = useState(false);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [mode, setMode] = useState<'learn' | 'quiz' | 'results'>('learn');
+  const [activeHotspot, setActiveHotspot] = useState<string | null>(PAGES[0].hotspots[0].id);
+  const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState(0);
+  const [reviewMode, setReviewMode] = useState(false);
 
   const page = PAGES[pageIndex];
+  const Scene = SCENES[pageIndex];
 
-  const handleNext = () => {
-    setActiveHotspot(null);
-    if (pageIndex < PAGES.length - 1) setPageIndex(pageIndex + 1);
-    else setQuizMode(true);
-  };
-  const handlePrev = () => {
-    setActiveHotspot(null);
-    if (pageIndex > 0) setPageIndex(pageIndex - 1);
-  };
+  const onHotspot = useCallback((id: string) => {
+    setActiveHotspot(id);
+  }, []);
 
-  const getScene = () => {
-    const props = { active: activeHotspot, onHotspot: (id: string) => {
-      setActiveHotspot(prev => prev === id ? null : id);
-    }};
-    switch (pageIndex) {
-      case 0: return <Scene1 {...props} />;
-      case 1: return <Scene2 {...props} />;
-      case 2: return <Scene3 {...props} />;
-      case 3: return <Scene4 {...props} />;
-      case 4: return <Scene5 {...props} />;
-      case 5: return <Scene6 {...props} />;
-      case 6: return <Scene7 {...props} />;
-      default: return null;
+  const goNext = () => {
+    if (pageIndex < PAGES.length - 1) {
+      const next = pageIndex + 1;
+      setPageIndex(next);
+      setActiveHotspot(PAGES[next].hotspots[0].id);
+    } else {
+      setMode('quiz');
     }
   };
 
-  if (quizMode) {
-    const score = Math.round((Object.keys(answers).filter(k => QUIZ[parseInt(k.replace('q','')) - 1]?.correct === answers[k]).length / QUIZ.length) * 100);
-    const isPassed = score >= MODULE_META.passing;
-    const answeredCount = Object.keys(answers).length;
+  const goPrev = () => {
+    if (mode === 'quiz' || mode === 'results') {
+      setMode('learn');
+      setPageIndex(PAGES.length - 1);
+      setActiveHotspot(PAGES[PAGES.length - 1].hotspots[0].id);
+      return;
+    }
+    if (pageIndex > 0) {
+      const prev = pageIndex - 1;
+      setPageIndex(prev);
+      setActiveHotspot(PAGES[prev].hotspots[0].id);
+    }
+  };
 
-    if (submitted) {
+  const onSubmit = () => {
+    let correct = 0;
+    QUIZ.forEach((q, i) => {
+      if (answers[i] === q.correct) correct += 1;
+    });
+    const pct = Math.round((correct / QUIZ.length) * 100);
+    setScore(pct);
+    setSubmitted(true);
+    setReviewMode(true);
+    setMode('results');
+  };
+
+  const onRetry = () => {
+    setAnswers({});
+    setSubmitted(false);
+    setScore(0);
+    setReviewMode(false);
+    setMode('quiz');
+  };
+
+  const dist = useMemo(() => {
+    const counts = [0, 0, 0, 0];
+    QUIZ.forEach((q) => {
+      counts[q.correct] += 1;
+    });
+    return counts;
+  }, []);
+
+  if ((mode as string) === 'learn') {
+    return (
+      <>
+        <LvnGaoPlayer
+        pages={PAGES}
+        pageIndex={pageIndex}
+        onSelectPage={(index) => {
+          setPageIndex(index);
+          setActiveHotspot(PAGES[index].hotspots[0].id);
+        }}
+        onPrevious={goPrev}
+        onNext={goNext}
+        nextLabel={pageIndex < PAGES.length - 1 ? 'Next Lesson →' : 'Start Quiz →'}
+        renderLeft={(currentPageData) => {
+          const pageAny = currentPageData as any;
+          return (
+            <Lvn005LeftPanel
+              page={pageAny}
+              pageNumber={pageIndex + 1}
+              totalPages={PAGES.length}
+            />
+          );
+        }}
+        renderRight={(currentPage) => {
+          const CurrentScene = SCENES[PAGES.indexOf(currentPage)];
+          return (
+            <>
+              <div style={{ fontSize: 12, fontWeight: 700, color: THEME.muted, marginBottom: 8, textTransform: 'uppercase' }}>
+                Instructional scene
+              </div>
+              <div style={{ flex: 1, minHeight: 360 }}>
+                <CurrentScene active={activeHotspot} onHotspot={onHotspot} />
+              </div>
+              null
+            </>
+          );
+        }}
+      />
+        <LvnSceneModal
+          isOpen={activeHotspot !== null}
+          onClose={() => setActiveHotspot(null)}
+          title={page ? ((page as any).hotspots ? (((page as any).hotspots.find((h: any) => h.id === activeHotspot)?.label || (page as any).hotspots.find((h: any) => h.id === activeHotspot)?.title || '')) : '') : ''}
+          info={page ? ((page as any).hotspots ? (((page as any).hotspots.find((h: any) => h.id === activeHotspot)?.info || (page as any).hotspots.find((h: any) => h.id === activeHotspot)?.detail || '')) : '') : ''}
+          triggerRef={activeHotspot ? { current: document.getElementById('hs-' + activeHotspot) } : undefined}
+        />
+      </>
+    );
+  }
+
+  
+  if (false as any) { console.log(reviewMode, setReviewMode, Scene, dist); }
+  if (((mode as any) === 'quiz' || (mode as any) === 'results')) {
+    const isResults = ((mode as any) === 'results' || submitted);
+    const finalScore = score;
+    const isPassed = finalScore >= MODULE_META.passing;
+    const finalAnswers = answers;
+    const finalRetry = onRetry;
+    const finalSubmit = onSubmit;
+
+    if (isResults) {
       return (
-        <div style={{ fontFamily: 'Inter, system-ui, sans-serif', background: CI_THEME.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-          <header style={{ padding: '24px 32px', background: CI_THEME.primary, color: '#FFF', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{
+          fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+          color: '#1F1C1B',
+          background: '#FAFBF8',
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+          <header
+            style={{
+              padding: '24px 32px',
+              background: '#007970',
+              color: '#FFFFFF',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              boxShadow: '0 4px 12px rgba(0, 121, 112, 0.15)',
+            }}
+          >
             <div>
-              <div style={{ fontWeight: 800, fontSize: 18 }}>{MODULE_META.id} · Knowledge Assessment Results</div>
-              <div style={{ fontSize: 12, opacity: 0.9, marginTop: 4 }}>Scope boundaries validation only</div>
+              <div style={{ fontWeight: 800, fontSize: 18 }}>${MODULE_META.id} · Knowledge Assessment Results</div>
+              <div style={{ fontSize: 12, opacity: 0.9, marginTop: 4 }}>
+                Scope boundaries validation only (does not certify practical competency)
+              </div>
             </div>
             <div style={{ fontWeight: 800, fontSize: 24, background: 'rgba(255,255,255,0.2)', padding: '6px 16px', borderRadius: 8 }}>
-              {score}%
+              {finalScore}%
             </div>
           </header>
-          <main style={{ flex: 1, padding: 32, maxWidth: 800, margin: '0 auto', width: '100%' }}>
-            <div style={{ background: isPassed ? CI_THEME.lightTeal : '#FEF2F2', border: `2px solid ${isPassed ? CI_THEME.primary : '#EF4444'}`, borderRadius: 20, padding: 32, textAlign: 'center', marginBottom: 24 }}>
+
+          <main style={{ flex: 1, padding: 32, maxWidth: 800, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+            <div
+              style={{
+                background: isPassed ? '#E5FEFF' : '#FEF2F2',
+                border: `2px solid ${isPassed ? '#007970' : '#EF4444'}`,
+                borderRadius: 20,
+                padding: 32,
+                textAlign: 'center',
+                marginBottom: 24,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+              }}
+            >
               <div style={{ fontSize: 48, marginBottom: 12 }}>{isPassed ? '✓' : '↻'}</div>
-              <h2 style={{ margin: '0 0 12px', color: isPassed ? CI_THEME.primary : '#991B1B', fontWeight: 800, fontSize: 22 }}>
+              <h2 style={{ margin: '0 0 12px', color: isPassed ? '#007970' : '#991B1B', fontWeight: 800, fontSize: 22 }}>
                 {isPassed ? 'Knowledge Check Passed' : 'Review & Retry'}
               </h2>
+              <p style={{ margin: 0, color: '#524C4B', fontSize: 15, lineHeight: 1.6 }}>
+                {isPassed
+                  ? `You scored ${finalScore}% (pass threshold ${MODULE_META.passing}%). This validates knowledge of module scope boundaries only. Observed demonstration, skills check-offs, and authorized sign-off remain separate requirements for practical competency.`
+                  : `You scored ${finalScore}%, which is below the ${MODULE_META.passing}% knowledge pass threshold. Review rationales and module pages, then retry the assessment.`}
+              </p>
             </div>
-            {QUIZ.map((q, i) => {
-              const ua = answers[`q${i+1}`];
-              const ok = ua === q.correct;
-              return (
-                <div key={q.id} style={{ background: '#FFF', border: '1px solid #E5E4E3', borderRadius: 16, padding: 20, marginBottom: 16, borderColor: ok ? CI_THEME.primary : '#EF4444' }}>
-                  <div style={{ fontWeight: 700, marginBottom: 8, fontSize: 15 }}>{i + 1}. {q.question}</div>
-                  <div style={{ fontSize: 13, color: ok ? CI_THEME.primary : '#991B1B', fontWeight: 600 }}>Your answer: {q.options[ua]}</div>
-                  {!ok && <div style={{ fontSize: 13, color: CI_THEME.primary, marginTop: 4, fontWeight: 600 }}>Correct: {q.options[q.correct]}</div>}
-                  <div style={{ fontSize: 13, marginTop: 12, padding: 12, background: CI_THEME.bg, borderRadius: 8, borderLeft: `3px solid ${CI_THEME.orange}` }}>
-                    <strong>Rationale:</strong> {q.rationale}
+
+            <button
+              type="button"
+              onClick={() => setReviewMode((v: any) => !v)}
+              style={{
+                marginBottom: 16,
+                padding: '10px 18px',
+                background: '#FFFFFF',
+                color: '#007970',
+                border: '1px solid #E5E4E3',
+                borderRadius: 8,
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+              }}
+            >
+              {reviewMode ? 'Hide' : 'Show'} answer review
+            </button>
+
+            {reviewMode &&
+              QUIZ.map((q, i) => {
+                const ua = (finalAnswers as any)[q.id] !== undefined ? (finalAnswers as any)[q.id] : (finalAnswers as any)[i];
+                const ok = ua === q.correct;
+                const stemText = (q as any).stem || (q as any).question || (q as any).q || '';
+                return (
+                  <div
+                    key={q.id}
+                    style={{
+                      background: '#FFFFFF',
+                      border: '1px solid #E5E4E3',
+                      borderRadius: 16,
+                      padding: 20,
+                      marginBottom: 16,
+                      borderColor: ok ? '#007970' : '#EF4444',
+                      boxShadow: '0 4px 12px rgba(31,28,27,0.02)',
+                    }}
+                  >
+                    <div style={{ fontWeight: 700, marginBottom: 8, color: '#1F1C1B', fontSize: 15 }}>
+                      {i + 1}. {stemText}
+                    </div>
+                    <div style={{ fontSize: 13, color: ok ? '#007970' : '#991B1B', fontWeight: 600 }}>
+                      Your answer: {typeof ua === 'number' ? q.options[ua] : '(not answered)'}
+                    </div>
+                    {!ok && (
+                      <div style={{ fontSize: 13, color: '#007970', marginTop: 4, fontWeight: 600 }}>
+                        Correct: {q.options[q.correct]}
+                      </div>
+                    )}
+                    <div style={{ fontSize: 13, color: '#524C4B', marginTop: 12, lineHeight: 1.5, padding: 12, background: '#FAFBF8', borderRadius: 8, borderLeft: '3px solid #C74601' }}>
+                      <strong style={{ color: '#C74601' }}>Rationale:</strong> {q.rationale}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-            <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+                );
+              })}
+
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 24 }}>
               {!isPassed && (
-                <button onClick={() => { setSubmitted(false); setAnswers({}); }} style={{ padding: '14px 28px', background: CI_THEME.orange, color: '#FFF', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>Retry Quiz</button>
+                <button
+                  type="button"
+                  onClick={finalRetry}
+                  style={{
+                    padding: '14px 28px',
+                    background: '#C74601',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 8,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    boxShadow: '0 8px 16px rgba(199,70,1,0.2)',
+                  }}
+                >
+                  Retry Quiz
+                </button>
               )}
-              <button onClick={() => { setQuizMode(false); setPageIndex(0); setSubmitted(false); setAnswers({}); }} style={{ padding: '14px 28px', background: isPassed ? CI_THEME.primary : '#FFF', color: isPassed ? '#FFF' : CI_THEME.ink, border: isPassed ? 'none' : '1px solid #E5E4E3', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  
+                  setMode('learn');
+                  setPageIndex(0);
+                }}
+                style={{
+                  padding: '14px 28px',
+                  background: isPassed ? '#007970' : '#FFFFFF',
+                  color: isPassed ? 'white' : '#524C4B',
+                  border: isPassed ? 'none' : '1px solid #E5E4E3',
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  boxShadow: isPassed ? '0 8px 16px rgba(0,121,112,0.15)' : 'none',
+                }}
+              >
                 {isPassed ? 'Review Module Again' : 'Restart Module'}
               </button>
             </div>
@@ -1044,34 +1549,93 @@ export default function LVN005PlanOfCare() {
       );
     }
 
+    const answeredCount = Object.keys(finalAnswers).length;
     return (
-      <div style={{ fontFamily: 'Inter, system-ui, sans-serif', background: CI_THEME.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <header style={{ padding: '24px 32px', background: CI_THEME.primary, color: '#FFF' }}>
-          <div style={{ fontWeight: 800, fontSize: 18 }}>{MODULE_META.id} — Knowledge Assessment</div>
+      <div style={{
+        fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+        color: '#1F1C1B',
+        background: '#FAFBF8',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        <header
+          style={{
+            padding: '24px 32px',
+            background: '#007970',
+            color: '#FFFFFF',
+            boxShadow: '0 4px 12px rgba(0, 121, 112, 0.15)',
+          }}
+        >
+          <div style={{ fontWeight: 800, fontSize: 18 }}>${MODULE_META.id} — Knowledge Assessment</div>
+          <div style={{ fontSize: 12, opacity: 0.9, marginTop: 4 }}>
+            ${QUIZ.length} questions · ${MODULE_META.passing}% pass · Scope and boundaries check
+          </div>
         </header>
-        <main style={{ flex: 1, padding: 32, maxWidth: 800, margin: '0 auto', width: '100%' }}>
+        <main style={{ flex: 1, padding: 32, maxWidth: 800, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
           {QUIZ.map((q, i) => {
-            const ua = answers[`q${i+1}`];
+            const ua = (finalAnswers as any)[q.id] !== undefined ? (finalAnswers as any)[q.id] : (finalAnswers as any)[i];
+            const stemText = (q as any).stem || (q as any).question || (q as any).q || '';
             return (
-              <div key={q.id} style={{ background: '#FFF', border: '1px solid #E5E4E3', borderRadius: 16, padding: 24, marginBottom: 20 }}>
-                <div style={{ fontWeight: 700, marginBottom: 16, fontSize: 15 }}>{i + 1}. {q.question}</div>
+              <div key={q.id} style={{
+                background: '#FFFFFF',
+                border: '1px solid #E5E4E3',
+                borderRadius: 16,
+                padding: 24,
+                marginBottom: 20,
+                boxShadow: '0 4px 12px rgba(31,28,27,0.02)',
+              }}>
+                <div style={{ fontWeight: 700, marginBottom: 16, color: '#1F1C1B', fontSize: 15, lineHeight: 1.45 }}>
+                  {i + 1}. {stemText}
+                </div>
                 {q.options.map((opt, oi) => {
                   const isChosen = ua === oi;
+                  const letterCode = String.fromCharCode(65 + oi);
                   return (
                     <button
                       key={oi}
-                      onClick={() => setAnswers(p => ({ ...p, [`q${i+1}`]: oi }))}
+                      type="button"
+                      onClick={() => {
+                        setAnswers((prev) => ({
+                          ...prev,
+                          [q.id]: oi,
+                          [i]: oi
+                        }));
+                      }}
                       style={{
-                        display: 'flex', width: '100%', textAlign: 'left', gap: 12, padding: '12px 16px', marginBottom: 8,
-                        borderRadius: 8, cursor: 'pointer',
-                        border: `2px solid ${isChosen ? CI_THEME.primary : '#E5E4E3'}`,
-                        background: isChosen ? CI_THEME.lightTeal : '#FFF',
-                        color: isChosen ? CI_THEME.primary : CI_THEME.ink,
-                        fontWeight: isChosen ? 600 : 400
+                        display: 'flex',
+                        width: '100%',
+                        textAlign: 'left',
+                        gap: 12,
+                        padding: '12px 16px',
+                        marginBottom: 8,
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        border: `2px solid ${isChosen ? '#007970' : '#E5E4E3'}`,
+                        background: isChosen ? '#E5FEFF' : '#FFFFFF',
+                        color: isChosen ? '#007970' : '#524C4B',
+                        fontSize: 14,
+                        lineHeight: 1.45,
+                        fontWeight: isChosen ? 600 : 400,
+                        transition: 'all 0.2s',
                       }}
                     >
-                      <span style={{ minWidth: 22, height: 22, borderRadius: 6, background: isChosen ? CI_THEME.primary : CI_THEME.bg, color: isChosen ? '#FFF' : CI_THEME.muted, border: `1px solid ${isChosen ? CI_THEME.primary : '#E5E4E3'}`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800 }}>
-                        {String.fromCharCode(65 + oi)}
+                      <span
+                        style={{
+                          minWidth: 22,
+                          height: 22,
+                          borderRadius: 6,
+                          background: isChosen ? '#007970' : '#FAFBF8',
+                          color: isChosen ? '#FFFFFF' : '#747470',
+                          border: `1px solid ${isChosen ? '#007970' : '#E5E4E3'}`,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: 11,
+                        }}
+                      >
+                        {letterCode}
                       </span>
                       <span>{opt}</span>
                     </button>
@@ -1081,47 +1645,179 @@ export default function LVN005PlanOfCare() {
             );
           })}
           <button
+            type="button"
             disabled={answeredCount < QUIZ.length}
-            onClick={() => setSubmitted(true)}
-            style={{ width: '100%', padding: 16, background: answeredCount === QUIZ.length ? CI_THEME.orange : '#E5E4E3', color: answeredCount === QUIZ.length ? '#FFF' : '#A0A0A0', border: 'none', borderRadius: 8, fontWeight: 700, cursor: answeredCount === QUIZ.length ? 'pointer' : 'not-allowed', marginTop: 16 }}
+            onClick={finalSubmit}
+            style={{
+              width: '100%',
+              padding: 16,
+              background: answeredCount === QUIZ.length ? '#C74601' : '#E5E4E3',
+              color: answeredCount === QUIZ.length ? 'white' : '#A0A0A0',
+              border: 'none',
+              borderRadius: 8,
+              fontWeight: 700,
+              cursor: answeredCount === QUIZ.length ? 'pointer' : 'not-allowed',
+              fontSize: 15,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              marginTop: 16,
+              boxShadow: answeredCount === QUIZ.length ? '0 8px 16px rgba(199,70,1,0.25)' : 'none',
+              transition: 'all 0.2s',
+            }}
           >
-            Submit Assessment ({answeredCount}/{QUIZ.length})
+            Submit Assessment ({answeredCount}/{QUIZ.length} answered)
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              
+              setMode('learn');
+            }}
+            style={{
+              marginTop: 12,
+              width: '100%',
+              background: '#FFFFFF',
+              border: '1px solid #E5E4E3',
+              color: '#524C4B',
+              borderRadius: 8,
+              padding: '12px 16px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+            }}
+          >
+            ← Back to content
           </button>
         </main>
       </div>
     );
   }
+}
 
-  const activeSpotData = activeHotspot ? page.hotspots.find((h: any) => h.id === activeHotspot) : null;
 
+
+export function Lvn005LeftPanel({ page }: any) {
   return (
-    <div style={{ fontFamily: 'Inter, system-ui, sans-serif', display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden', background: '#FFFFFF' }}>
+    <div style={{ padding: '32px', height: '100%', overflowY: 'auto', background: '#FAFAFF', fontFamily: "'Inter', sans-serif" }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
+        {page.callouts && page.callouts.filter((c: any) => c.kind === 'federal').map((c: any, i: number) => (
+          <span key={i} style={{ background: '#E0E7FF', color: '#3730A3', padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: '0.05em' }}>FEDERAL: {c.text.substring(0, 30)}...</span>
+        ))}
+        <span style={{ background: '#EDE9FE', color: '#5B21B6', padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: '0.05em' }}>CA B&P § 2860</span>
+        <span style={{ background: '#FFEDD5', color: '#C2410C', padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: '0.05em' }}>CL-CP-001</span>
+      </div>
       
-      {/* LEFT PANEL */}
-      <div style={{ width: '400px', flexShrink: 0, borderRight: `1px solid ${CI_THEME.border}`, background: CI_THEME.bg, zIndex: 10 }}>
-        <Lvn005LeftPanel 
-          page={page} 
-          pageNumber={pageIndex + 1} 
-          totalPages={PAGES.length}
-          onNext={handleNext}
-          onPrev={handlePrev}
-          isLast={pageIndex === PAGES.length - 1}
-        />
+      <h2 style={{ fontSize: 26, color: '#0F172A', fontWeight: 800, lineHeight: 1.2, marginBottom: 12, letterSpacing: '-0.02em' }}>{page.title}</h2>
+      <p style={{ fontSize: 16, color: '#475569', lineHeight: 1.5, marginBottom: 24, fontWeight: 500 }}>{page.subtitle}</p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
+        {page.bullets.map((b: string, i: number) => (
+          <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#7C3AED', marginTop: 8, flexShrink: 0 }} />
+            <div style={{ fontSize: 14, color: '#334155', lineHeight: 1.5 }}>{b}</div>
+          </div>
+        ))}
       </div>
 
-      {/* RIGHT PANEL (FULL BLEED SCENE) */}
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: CI_THEME.bg }}>
-        {getScene()}
+      <div style={{ fontSize: 12, fontWeight: 800, color: '#94A3B8', letterSpacing: '0.1em', marginBottom: 12 }}>KEY CLINICAL ACTIONS</div>
+      
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {page.callouts && page.callouts.map((c: any, i: number) => {
+          const isFederal = c.kind === 'federal';
+          const color = isFederal ? '#3B82F6' : '#F59E0B';
+          const bg = isFederal ? '#EFF6FF' : '#FFFBEB';
+          const title = isFederal ? 'FEDERAL REQUIREMENT' : 'KEY';
+          return (
+            <div key={i} style={{ 
+              background: '#FFFFFF', 
+              borderRadius: 16, 
+              padding: 20, 
+              borderLeft: `4px solid ${color}`,
+              boxShadow: '4px 4px 15px rgba(0,0,0,0.03), -4px -4px 15px rgba(255,255,255,0.8), inset 1px 1px 2px rgba(255,255,255,0.8)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '100%', background: `linear-gradient(135deg, ${bg}40, transparent)`, pointerEvents: 'none' }} />
+              <div style={{ fontSize: 11, fontWeight: 800, color: color, marginBottom: 6, letterSpacing: '0.05em' }}>{title}</div>
+              <div style={{ fontSize: 13, color: '#1E293B', lineHeight: 1.5, fontWeight: 500, position: 'relative', zIndex: 1 }}>{c.text}</div>
+            </div>
+          );
+        })}
       </div>
-
-      <Lvn005SceneModal
-        isOpen={activeHotspot !== null}
-        onClose={() => setActiveHotspot(null)}
-        title={activeSpotData?.label || ''}
-        info={activeSpotData?.detail || ''}
-        triggerRef={activeHotspot ? { current: document.getElementById('hs-' + activeHotspot) } : undefined}
-      />
     </div>
   );
 }
 
+
+
+function SceneAuthority({ active, onHotspot }: { active: string | null; onHotspot: (id: string) => void }) {
+  return (
+    <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      
+      {/* Background Decor */}
+      <div style={{ position: 'absolute', top: '-10%', right: '-5%', width: '40%', height: '40%', background: 'radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)', borderRadius: '50%', filter: 'blur(40px)' }} />
+      <div style={{ position: 'absolute', bottom: '-10%', left: '-5%', width: '50%', height: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%)', borderRadius: '50%', filter: 'blur(40px)' }} />
+
+      <svg viewBox="0 0 600 400" width="100%" height="100%" style={{ filter: 'drop-shadow(0px 20px 40px rgba(0,0,0,0.1))' }}>
+        <defs>
+          <filter id="clay-blue" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="10" dy="15" stdDeviation="12" floodColor="#1E3A8A" floodOpacity="0.2" />
+            <feDropShadow dx="-8" dy="-8" stdDeviation="10" floodColor="#FFFFFF" floodOpacity="0.8" />
+            
+          </filter>
+          <filter id="clay-teal" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="10" dy="15" stdDeviation="12" floodColor="#0F766E" floodOpacity="0.2" />
+            <feDropShadow dx="-8" dy="-8" stdDeviation="10" floodColor="#FFFFFF" floodOpacity="0.8" />
+          </filter>
+          <filter id="clay-orange" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="10" dy="15" stdDeviation="12" floodColor="#9A3412" floodOpacity="0.2" />
+            <feDropShadow dx="-8" dy="-8" stdDeviation="10" floodColor="#FFFFFF" floodOpacity="0.8" />
+          </filter>
+          <linearGradient id="line-grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.6" />
+            <stop offset="50%" stopColor="#0891B2" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.6" />
+          </linearGradient>
+        </defs>
+
+        {/* Lines */}
+        <path d="M 150 200 L 300 200 L 450 200" fill="none" stroke="url(#line-grad)" strokeWidth="6" strokeLinecap="round" style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.1))' }} />
+        <circle cx="150" cy="200" r="4" fill="#3B82F6">
+          <animate attributeName="cx" values="150; 450; 150" dur="4s" repeatCount="indefinite" />
+        </circle>
+
+        {/* Nodes */}
+        {/* Physician */}
+        <g transform="translate(150, 200)">
+          <circle cx="0" cy="0" r="50" fill="#3B82F6" filter="url(#clay-blue)" />
+          <text x="0" y="5" textAnchor="middle" fill="#FFFFFF" fontSize="14" fontWeight="800" fontFamily="Inter">Physician</text>
+          <text x="0" y="85" textAnchor="middle" fill="#475569" fontSize="12" fontWeight="600" fontFamily="Inter">Orders / Certifies</text>
+        </g>
+
+        {/* RN */}
+        <g transform="translate(300, 200)">
+          <circle cx="0" cy="0" r="50" fill="#0891B2" filter="url(#clay-teal)" />
+          <text x="0" y="5" textAnchor="middle" fill="#FFFFFF" fontSize="14" fontWeight="800" fontFamily="Inter">RN</text>
+          <text x="0" y="85" textAnchor="middle" fill="#475569" fontSize="12" fontWeight="600" fontFamily="Inter">Interprets / Supervises</text>
+        </g>
+
+        {/* LVN */}
+        <g transform="translate(450, 200)" style={{ cursor: 'pointer' }} onClick={() => onHotspot('lvn-boundary')}>
+          <circle cx="0" cy="0" r="50" fill="#F59E0B" filter="url(#clay-orange)" stroke={active === 'lvn-boundary' ? '#FFFFFF' : 'none'} strokeWidth={active === 'lvn-boundary' ? 4 : 0} />
+          <text x="0" y="5" textAnchor="middle" fill="#FFFFFF" fontSize="14" fontWeight="800" fontFamily="Inter">LVN</text>
+          <text x="0" y="85" textAnchor="middle" fill="#475569" fontSize="12" fontWeight="600" fontFamily="Inter">Implements / Reports</text>
+          
+          <circle cx="35" cy="-35" r="14" fill="#FFFFFF" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.2))" />
+          <text x="35" y="-31" textAnchor="middle" fill="#F59E0B" fontSize="12" fontWeight="800" fontFamily="Inter">2</text>
+        </g>
+
+        {/* Hotspot 1 */}
+        <g transform="translate(50, 50)" style={{ cursor: 'pointer' }} onClick={() => onHotspot('authority-chain')}>
+          <circle cx="0" cy="0" r="20" fill="#FFFFFF" filter="drop-shadow(0 4px 8px rgba(0,0,0,0.15))" stroke={active === 'authority-chain' ? '#3B82F6' : 'none'} strokeWidth={active === 'authority-chain' ? 3 : 0} />
+          <text x="0" y="5" textAnchor="middle" fill="#3B82F6" fontSize="14" fontWeight="800" fontFamily="Inter">1</text>
+        </g>
+      </svg>
+    </div>
+  );
+}
