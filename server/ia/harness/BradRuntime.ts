@@ -8,10 +8,13 @@ import { MockBradAdapter } from './modelAdapters/MockBradAdapter.js';
 import { ClaudeCliBradAdapter } from './modelAdapters/ClaudeCliBradAdapter.js';
 import { CodexCliBradAdapter } from './modelAdapters/CodexCliBradAdapter.js';
 import { VertexBradAdapter } from './modelAdapters/VertexBradAdapter.js';
+import { OllamaBradAdapter } from './modelAdapters/OllamaBradAdapter.js';
 import { evaluateBradPhiReadiness } from './BradPhiReadinessGate.js';
 import { scanForPhiEgress } from './PhiEgressGuard.js';
 import { BradNolanRelay, type BradResearchIntent } from './BradNolanRelay.js';
 import { agentAuditLog } from './AgentAuditLogger.js';
+import { routeCriticalIncident } from '../brad/criticalIncidentRouter.js';
+import { composeInternalBradAnswer } from '../brad/bradInternalResponder.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Brad Runtime — internal operations agent.
@@ -40,6 +43,8 @@ export interface BradRuntimeDescription {
   effectiveMode: BradRuntimeMode;
   badge: RuntimeBadge;
   phiPermitted: boolean;
+  /** Configured inference provider (mock | claude | codex | ollama | vertex). */
+  provider: string;
   modelId: string;
   readiness: BradPhiReadinessResult;
   nolanEnabled: boolean;
@@ -55,11 +60,13 @@ export class BradRuntime {
     const mode = this.cfg.brad.runtimeMode;
     this.adapter = mode === 'mock'
       ? new MockBradAdapter(this.cfg.brad.modelId)
-      : mode === 'cli-nonphi'
-        ? this.cfg.brad.provider === 'codex'
-          ? new CodexCliBradAdapter(this.cfg.brad)
-          : new ClaudeCliBradAdapter(this.cfg.brad)
-        : new VertexBradAdapter(this.cfg.brad);
+      : mode === 'oss-nonphi'
+        ? new OllamaBradAdapter(this.cfg.brad)
+        : mode === 'cli-nonphi'
+          ? this.cfg.brad.provider === 'codex'
+            ? new CodexCliBradAdapter(this.cfg.brad)
+            : new ClaudeCliBradAdapter(this.cfg.brad)
+          : new VertexBradAdapter(this.cfg.brad);
     this.relay = new BradNolanRelay(this.cfg); // relay owns Nolan (capability-gated bridge)
   }
 
@@ -92,6 +99,9 @@ export class BradRuntime {
     } else if (configuredMode === 'cli-nonphi') {
       effectiveMode = 'cli-nonphi';
       badge = this.cfg.brad.provider === 'codex' ? 'Codex CLI — PHI Disabled' : 'Claude CLI — PHI Disabled';
+    } else if (configuredMode === 'oss-nonphi') {
+      effectiveMode = 'oss-nonphi';
+      badge = 'Open-Source (Ollama) — PHI Disabled';
     } else if (configuredMode === 'vertex-phi' && readiness.ready) {
       effectiveMode = 'vertex-phi';
       badge = 'Vertex Connected — PHI Enabled';
@@ -104,6 +114,7 @@ export class BradRuntime {
 
     return {
       configuredMode, effectiveMode, badge, phiPermitted,
+      provider: this.cfg.brad.provider,
       modelId: this.cfg.brad.modelId, readiness, nolanEnabled: this.relay.isNolanEnabled(),
     };
   }
@@ -134,6 +145,22 @@ export class BradRuntime {
         phiMode: false, result: 'blocked: PHI present, PHI mode not verified-ready',
       });
       return { text: 'This request contains PHI and cannot be processed in the current mode (PHI mode is not verified-ready). It was not sent to any model.', synthetic: true, blocked: true, reason: 'phi-not-permitted' };
+    }
+
+    // ── SAFETY ROUTING PRECEDES MODEL INFERENCE (agency-wide, provider-agnostic).
+    // A critical incident (violence, clinical emergency, worker safety, abuse…)
+    // bypasses the model ENTIRELY and returns deterministic, safety-first
+    // guidance. The OSS/LLM (or any provider) is never consulted for an
+    // emergency, so an unavailable or slow model can never delay a 911 answer.
+    const route = routeCriticalIncident(userText);
+    if (route.urgent) {
+      const safe = composeInternalBradAnswer(userText);
+      agentAuditLog.logBrad({
+        requestId: crypto.randomUUID(), actorId, role, action: 'safety-bypass',
+        modelId: this.cfg.brad.modelId, promptVersion: this.cfg.brad.promptVersion,
+        phiMode: phiPermitted, result: `urgent:${route.track} — model inference bypassed`,
+      });
+      return { text: safe.text, synthetic: false, blocked: false, references: safe.references, track: safe.track ?? route.track };
     }
 
     const res = await this.adapter.chat({ system: BRAD_SYSTEM_PROMPT, user: userText, requestId: crypto.randomUUID() });

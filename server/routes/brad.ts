@@ -83,6 +83,7 @@ export function createBradRouter(): Router {
       effectiveMode: desc.effectiveMode,
       badge: desc.badge,
       phiPermitted: desc.phiPermitted,
+      provider: desc.provider,
       modelId: desc.modelId,
       canReachInternet: rt.canReachInternet,
       nolanEnabled: desc.nolanEnabled,
