@@ -1,7 +1,12 @@
 /**
- * JsonlAuditEventStore — the current default backend (byte-compatible with the
- * original writer): append-only JSONL, per-stream hash chain, idempotency,
- * PHI guard, single-process write serialization.
+ * JsonlAuditEventStore — the current default backend. Preserves the existing
+ * JSONL storage location and public facade (append-only JSONL, per-stream hash
+ * chain, idempotency, PHI guard, single-process write serialization) while
+ * using version-2 round-trip-stable canonical hashing for new events. It is
+ * NOT byte-identical to the pre-P1-B writer: v2 omits undefined-valued keys
+ * from the hash (a fix), so hashes for events with unset optional fields differ
+ * from the old writer, and pre-P1-B events with dropped undefined fields remain
+ * legacy-unverifiable (see ADR-0001 / eventModel canon_version).
  *
  * NOTE: durable only on a single persistent filesystem. Not multi-instance
  * safe on Cloud Run — this is why the Firestore backend exists (see ADR-0001).

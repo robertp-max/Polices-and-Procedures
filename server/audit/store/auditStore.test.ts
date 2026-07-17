@@ -16,7 +16,7 @@ import type { AuditEventInput, EventGenerators } from './eventModel.js';
 import { AuditWriteError } from './eventModel.js';
 import { InMemoryAuditEventStore } from './inMemoryStore.js';
 import { JsonlAuditEventStore } from './jsonlStore.js';
-import { FirestoreAuditEventStore, streamHeadDocId, idempotencyDocId } from './firestoreStore.js';
+import { FirestoreAuditEventStore, streamDocId, idempotencyDocId, eventsCollectionPath, zeroPadSequence, AUDIT_STREAMS_COLLECTION } from './firestoreStore.js';
 import { InMemoryFirestore } from './firestorePort.js';
 import {
   resolveAuditBackend, getAuditEventStore, configureFirestoreBinding, setAuditEventStoreForTesting,
@@ -127,20 +127,37 @@ describe('concurrency — no duplicate sequence / no chain break', () => {
       if (fired) return;
       fired = true;
       firestore.onAfterReads = undefined;
-      firestore._rawSet('audit_stream_heads', streamHeadDocId('c4'), { last_hash: 'x', sequence: 99 });
+      firestore._rawSet(AUDIT_STREAMS_COLLECTION, streamDocId('c4'), { stream: 'c4', last_hash: 'x', sequence: 99 });
     };
     const e = await store.append(input('c4')); // must retry, observe seq 99 head
     expect(e.sequence).toBe(100);
+  });
+
+  it('create-only event docs enforce immutability (duplicate sequence collides)', async () => {
+    const firestore = new InMemoryFirestore();
+    const store = new FirestoreAuditEventStore(firestore, { generators: counterGenerators() });
+    const first = await store.append(input('imm'));
+    // A rogue direct create at the same sequence path must not be silently overwritten
+    // by a normal append; the transaction create() collides and the chain stays intact.
+    expect(first.sequence).toBe(1);
+    const second = await store.append(input('imm'));
+    expect(second.sequence).toBe(2); // new event took the next sequence, did not overwrite seq 1
+    const events = await store.readAll();
+    expect(events.filter(e => e.stream === 'imm').map(e => e.sequence).sort((a, b) => a - b)).toEqual([1, 2]);
+    expect((await store.verifyChainsDetailed('imm')).ok).toBe(true);
   });
 });
 
 describe('firestore doc-path safety', () => {
   it('uses hashed, path-safe ids — never the raw stream or key', () => {
     const stream = 'events/patient@example.com/PHI';
-    expect(streamHeadDocId(stream)).toMatch(/^[0-9a-f]{64}$/);
-    expect(streamHeadDocId(stream)).not.toContain('@');
-    expect(streamHeadDocId(stream)).not.toContain('/');
+    expect(streamDocId(stream)).toMatch(/^[0-9a-f]{64}$/);
+    expect(streamDocId(stream)).not.toContain('@');
+    expect(streamDocId(stream)).not.toContain('/');
     expect(idempotencyDocId(stream, 'k')).toMatch(/^[0-9a-f]{64}$/);
+    // Event doc id is a zero-padded sequence; the raw stream is only in the hashed path.
+    expect(zeroPadSequence(7)).toBe('000000000007');
+    expect(eventsCollectionPath(stream)).not.toContain('@');
   });
 });
 
@@ -166,11 +183,15 @@ describe('audit-store factory', () => {
     expect(() => resolveAuditBackend({ AUDIT_STORE_BACKEND: 'sqlite' } as NodeJS.ProcessEnv)).toThrow(/Unknown AUDIT_STORE_BACKEND/);
   });
 
-  it('firestore selected without a provisioned binding fails closed (no silent JSONL fallback)', () => {
+  it('firestore selection yields a Firestore store — never a silent JSONL fallback', () => {
     process.env.AUDIT_STORE_BACKEND = 'firestore';
-    configureFirestoreBinding(null);
+    // Inject a fake binding so we do not need real credentials; the point is
+    // that the factory returns the Firestore-backed store, not JSONL.
+    configureFirestoreBinding(new InMemoryFirestore());
     setAuditEventStoreForTesting(null);
-    expect(() => getAuditEventStore()).toThrow(/no Firestore binding is provisioned/);
+    const store = getAuditEventStore();
+    expect(store).toBeInstanceOf(FirestoreAuditEventStore);
+    expect(store).not.toBeInstanceOf(JsonlAuditEventStore);
   });
 
   it('default getAuditEventStore returns a JSONL store (no write to the real ledger here)', () => {

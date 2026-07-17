@@ -100,6 +100,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "firebase-admin": "^14.2.0",
     "framer-motion": "^12.42.0",
     "googleapis": "^144.0.0",
     "gradflow": "^0.1.0",

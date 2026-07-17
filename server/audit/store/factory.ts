@@ -14,6 +14,7 @@ import type { AuditEventStore } from './auditEventStore.js';
 import { JsonlAuditEventStore } from './jsonlStore.js';
 import { FirestoreAuditEventStore } from './firestoreStore.js';
 import type { FirestoreLike } from './firestorePort.js';
+import { initAdminFirestore } from './firebaseAdmin.js';
 
 export type AuditStoreBackend = 'jsonl' | 'firestore';
 
@@ -44,15 +45,10 @@ export function getAuditEventStore(): AuditEventStore {
     singleton = new JsonlAuditEventStore();
     return singleton;
   }
-  // firestore
-  if (!firestoreBinding) {
-    throw new Error(
-      'AUDIT_STORE_BACKEND=firestore but no Firestore binding is provisioned. '
-      + 'Refusing to start the audit store (will NOT silently fall back to JSONL). '
-      + 'Provision Firestore and call configureFirestoreBinding() first.',
-    );
-  }
-  singleton = new FirestoreAuditEventStore(firestoreBinding);
+  // firestore — use an injected binding (tests/emulator) or initialize the real
+  // Admin SDK adapter. Any init failure throws (fail closed; never JSONL).
+  const binding = firestoreBinding ?? initAdminFirestore();
+  singleton = new FirestoreAuditEventStore(binding);
   return singleton;
 }
 

@@ -1,16 +1,21 @@
 /**
  * FirestoreAuditEventStore — transactional, multi-instance-safe audit backend.
  *
- * Every append runs in one Firestore transaction that atomically: reads the
- * stream head, allocates the next sequence, preserves the prior hash,
- * constructs + hashes the canonical event, writes the event, updates the head,
- * and reserves the idempotency key (returning the existing event on a repeat).
- * Firestore's optimistic concurrency guarantees two concurrent Cloud Run
- * instances cannot assign duplicate sequences, duplicate an idempotency key,
- * break a chain, or overwrite an event.
+ * Each append runs in ONE transaction that: reads the idempotency reservation
+ * (returns the existing event on a repeat), reads the stream head, allocates
+ * the next sequence, preserves the prior hash, constructs the canonical v2
+ * event with RETRY-STABLE input (event_id/timestamp/correlation fixed before
+ * the transaction), computes the hash, CREATE-only writes the event doc and the
+ * idempotency reservation, and updates the stream head — committed atomically.
  *
- * Document paths use SAFE DETERMINISTIC ids only (sha256 of the stream /
- * idempotency key, ulid event ids) — never raw stream names, emails, or PHI.
+ * create() (not set) on the event doc means two concurrent instances that
+ * allocate the same sequence collide -> retry, so no duplicate sequence, no
+ * overwrite, and append-only immutability is enforced at the database layer.
+ *
+ * Layout (safe, hashed, path-safe ids — never raw stream/email/PHI):
+ *   audit_streams/{sha256(stream)}                       -> stream head
+ *   audit_streams/{sha256(stream)}/events/{zeroPad(seq)} -> immutable event
+ *   audit_idempotency/{sha256(stream::key)}              -> reservation
  */
 import type { AuditEventStore } from './auditEventStore.js';
 import type { FirestoreLike, Transaction } from './firestorePort.js';
@@ -21,69 +26,103 @@ import {
   type EventGenerators, type QueryFilter,
 } from './eventModel.js';
 
-export const AUDIT_EVENTS_COLLECTION = 'audit_events';
-export const AUDIT_STREAM_HEADS_COLLECTION = 'audit_stream_heads';
+export const AUDIT_STREAMS_COLLECTION = 'audit_streams';
 export const AUDIT_IDEMPOTENCY_COLLECTION = 'audit_idempotency';
+export const EVENTS_SUBCOLLECTION = 'events';
+const SEQ_PAD = 12;
+const DEFAULT_PAGE_SIZE = 500;
 
-/** Deterministic, path-safe doc id for a stream head (never the raw stream). */
-export function streamHeadDocId(stream: string): string {
-  return sha256(stream);
+export function streamDocId(stream: string): string { return sha256(stream); }
+export function idempotencyDocId(stream: string, key: string): string { return sha256(`${stream}::${key}`); }
+export function eventsCollectionPath(stream: string): string {
+  return `${AUDIT_STREAMS_COLLECTION}/${streamDocId(stream)}/${EVENTS_SUBCOLLECTION}`;
 }
-/** Deterministic, path-safe doc id for an idempotency reservation. */
-export function idempotencyDocId(stream: string, key: string): string {
-  return sha256(`${stream}::${key}`);
-}
+export function zeroPadSequence(seq: number): string { return String(seq).padStart(SEQ_PAD, '0'); }
 
-interface IdempotencyDoc { event_id: string }
+interface StreamHeadDoc extends ChainHead { stream: string }
+interface IdempotencyDoc { stream: string; sequence: number }
 
 export class FirestoreAuditEventStore implements AuditEventStore {
   private readonly fs: FirestoreLike;
   private readonly gen: EventGenerators;
+  private readonly pageSize: number;
 
-  constructor(firestore: FirestoreLike, opts: { generators?: EventGenerators } = {}) {
+  constructor(firestore: FirestoreLike, opts: { generators?: EventGenerators; pageSize?: number } = {}) {
     this.fs = firestore;
     this.gen = opts.generators ?? defaultGenerators();
+    this.pageSize = opts.pageSize ?? DEFAULT_PAGE_SIZE;
   }
 
   async append(input: AuditEventInput): Promise<AuditEvent> {
     assertNoPhi(input);
+    // Retry-stable input: fixed once, reused across transaction retries so the
+    // event_id/timestamp/correlation do not change between attempts.
+    const stableId = this.gen.id();
+    const stableNow = this.gen.now();
+    const stableCorrelation = input.correlation_id ?? this.gen.id();
+    const stableGen: EventGenerators = { id: () => stableId, now: () => stableNow };
+    const stableInput: AuditEventInput = { ...input, correlation_id: stableCorrelation };
+
     return this.fs.runTransaction(async (txn: Transaction) => {
-      // (1) Idempotency: return the existing event for a repeated key.
+      // (1) idempotency reservation → return existing event on repeat.
       if (input.idempotency_key) {
         const idemRef = this.fs.doc(AUDIT_IDEMPOTENCY_COLLECTION, idempotencyDocId(input.stream, input.idempotency_key));
         const idemSnap = await txn.get<IdempotencyDoc>(idemRef);
-        if (idemSnap.exists && idemSnap.data()?.event_id) {
-          const existing = await txn.get<AuditEvent>(this.fs.doc(AUDIT_EVENTS_COLLECTION, idemSnap.data()!.event_id));
-          if (existing.exists && existing.data()) return existing.data() as AuditEvent;
+        if (idemSnap.exists && idemSnap.data()) {
+          const { sequence } = idemSnap.data()!;
+          const evSnap = await txn.get<AuditEvent>(this.fs.doc(eventsCollectionPath(input.stream), zeroPadSequence(sequence)));
+          if (evSnap.exists && evSnap.data()) return evSnap.data() as AuditEvent;
         }
       }
-      // (2) Read stream head; (3) allocate seq + (3) preserve prior hash.
-      const headRef = this.fs.doc(AUDIT_STREAM_HEADS_COLLECTION, streamHeadDocId(input.stream));
-      const headSnap = await txn.get<ChainHead>(headRef);
-      const head = headSnap.exists && headSnap.data() ? (headSnap.data() as ChainHead) : GENESIS_HEAD;
-      // (4)+(5) construct canonical event + compute hash.
-      const event = constructEvent(input, head, this.gen);
-      // (6) write event; (7) update head; (8) reserve idempotency — all atomic.
-      txn.set(this.fs.doc(AUDIT_EVENTS_COLLECTION, event.event_id), event as unknown as Record<string, unknown>);
-      txn.set(headRef, { last_hash: event.event_hash, sequence: event.sequence });
+      // (2) read head; (3) allocate seq; (3) preserve prior hash.
+      const headRef = this.fs.doc(AUDIT_STREAMS_COLLECTION, streamDocId(input.stream));
+      const headSnap = await txn.get<StreamHeadDoc>(headRef);
+      const head: ChainHead = headSnap.exists && headSnap.data()
+        ? { last_hash: headSnap.data()!.last_hash, sequence: headSnap.data()!.sequence }
+        : GENESIS_HEAD;
+      // (4)+(5) construct canonical v2 event (retry-stable) + hash.
+      const event = constructEvent(stableInput, head, stableGen);
+      // (6) CREATE-only event doc; (7) CREATE-only idempotency; (8) update head.
+      txn.create(this.fs.doc(eventsCollectionPath(input.stream), zeroPadSequence(event.sequence)), event as unknown as Record<string, unknown>);
       if (input.idempotency_key) {
-        txn.set(
+        txn.create(
           this.fs.doc(AUDIT_IDEMPOTENCY_COLLECTION, idempotencyDocId(input.stream, input.idempotency_key)),
-          { event_id: event.event_id },
+          { stream: input.stream, sequence: event.sequence } satisfies IdempotencyDoc,
         );
       }
+      txn.set(headRef, { stream: input.stream, last_hash: event.event_hash, sequence: event.sequence } satisfies StreamHeadDoc);
       return event;
     });
   }
 
+  /** Enumerate stream names from the (bounded) stream-head collection. */
+  private async listStreams(): Promise<string[]> {
+    const heads = await this.fs.listCollection<StreamHeadDoc>(AUDIT_STREAMS_COLLECTION);
+    return heads.map(h => h.stream).filter((s): s is string => typeof s === 'string');
+  }
+
+  /** Bounded, ordered-by-sequence read of one stream's events. */
+  private async readStreamEvents(stream: string): Promise<AuditEvent[]> {
+    const out: AuditEvent[] = [];
+    let startAfterId: string | undefined;
+    for (;;) {
+      const page = await this.fs.listCollectionPaged<AuditEvent>(eventsCollectionPath(stream), { pageSize: this.pageSize, startAfterId });
+      out.push(...page.docs);
+      if (!page.lastId) break;
+      startAfterId = page.lastId;
+    }
+    return out;
+  }
+
   async readAll(): Promise<AuditEvent[]> {
-    const all = await this.fs.listCollection<AuditEvent>(AUDIT_EVENTS_COLLECTION);
-    return all.slice().sort((a, b) => (a.stream === b.stream
-      ? a.sequence - b.sequence
-      : a.occurred_at_utc < b.occurred_at_utc ? -1 : 1));
+    const streams = await this.listStreams();
+    const all: AuditEvent[] = [];
+    for (const s of streams) all.push(...await this.readStreamEvents(s));
+    return all;
   }
 
   async queryEvents(filter: QueryFilter): Promise<AuditEvent[]> {
+    if (filter.stream) return filterEvents(await this.readStreamEvents(filter.stream), filter);
     return filterEvents(await this.readAll(), filter);
   }
 
@@ -92,10 +131,12 @@ export class FirestoreAuditEventStore implements AuditEventStore {
   }
 
   async verifyChains(stream?: string): Promise<ChainVerifyResult> {
-    return verifyChainList(await this.readAll(), stream);
+    const events = stream ? await this.readStreamEvents(stream) : await this.readAll();
+    return verifyChainList(events, stream);
   }
 
   async verifyChainsDetailed(stream?: string): Promise<ChainIntegrityReport> {
-    return verifyChainDetailed(await this.readAll(), stream);
+    const events = stream ? await this.readStreamEvents(stream) : await this.readAll();
+    return verifyChainDetailed(events, stream);
   }
 }
