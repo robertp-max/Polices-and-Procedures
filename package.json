@@ -39,6 +39,7 @@
     "verify:ui": "tsx --tsconfig tsconfig.app.json scripts/verifyUiDesignSystem.ts",
     "verify:v3-pre-rollout": "tsx --tsconfig tsconfig.app.json scripts/verifyV3PreRollout.ts",
     "verify:brad-scenario": "tsx --tsconfig tsconfig.app.json scripts/verifyBradScenarioActionLayer.ts",
+    "verify:brad-protection": "tsx --tsconfig tsconfig.app.json scripts/verifyBradOssProtection.ts",
     "verify:brad-home": "tsx --tsconfig tsconfig.app.json scripts/verifyBradDefaultHomeNav.ts",
     "verify:brad-builder": "tsx scripts/verifyBradBuilder.ts",
     "verify:brad-chat": "tsx scripts/verifyBradChatNoHarness.ts",
