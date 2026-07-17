@@ -8,6 +8,7 @@ import { qapiModule, qapiQuizzes } from "./advancedTraining/qapi.data";
 import { oasisE2SocModule } from "./advancedTraining/oasisE2Soc.data";
 import { documentationMattersModule } from "./advancedTraining/documentationMatters.data";
 import { finalAssessment as documentationMattersFinalAssessment } from "./advancedTraining/documentationMatters/quizContent";
+import { buildGaoContentModuleDef } from "./gaoContentAdapter";
 
 type AssessmentChoice = { id: string; label: string };
 type ModuleAssessmentQuestion = {
@@ -399,6 +400,9 @@ function withCanonicalJourneyMetadata(def: ModuleDef, mod: JourneyModule): Modul
 }
 
 function canonicalJourneyToModuleDef(mod: JourneyModule): ModuleDef {
+  const gaoContentOverride = buildGaoContentModuleDef(mod);
+  if (gaoContentOverride) return gaoContentOverride;
+
   const authored = authoredOnboardingById.get(mod.id.toLowerCase());
   return authored ? withCanonicalJourneyMetadata(onboardingToModuleDef(authored), mod) : catalogToModuleDef(mod);
 }

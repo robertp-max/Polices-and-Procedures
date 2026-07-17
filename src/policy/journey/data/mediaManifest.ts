@@ -8,8 +8,61 @@
 
 export const MEDIA_ASSET_BASE = "/assets/media";
 
+const MEDIA_PATH_OVERRIDES: Readonly<Record<string, string>> = {
+  "GAO-002.lesson.l1.delivery": "gao/gao-002-l01-why-structure-matters.png",
+  "GAO-002.lesson.l2.delivery": "gao/gao-002-l02-governing-body.png",
+  "GAO-002.lesson.l3.delivery": "gao/gao-002-l03-administrator-role.png",
+  "GAO-002.lesson.l4.delivery": "gao/gao-002-l04-clinical-manager-don.png",
+  "GAO-002.lesson.l5.delivery": "gao/gao-002-l05-clinical-staff-structure.png",
+  "GAO-002.lesson.l6.delivery": "gao/gao-002-l06-reporting-chain.png",
+  "GAO-002.lesson.l7.delivery": "gao/gao-002-l07-communication-pathways.png",
+  "GAO-002.lesson.l8.delivery": "gao/gao-002-l08-module-summary.png",
+
+  "GAO-003.lesson.l1.delivery": "gao/gao-003-l01-what-home-health-care-is.png",
+  "GAO-003.lesson.l2.delivery": "gao/gao-003-l02-services-we-provide.png",
+  "GAO-003.lesson.l3.delivery": "gao/gao-003-l03-scope-boundaries.png",
+  "GAO-003.lesson.l4.delivery": "gao/gao-003-l04-interdisciplinary-team.png",
+  "GAO-003.lesson.l5.delivery": "gao/gao-003-l05-module-summary.png",
+
+  "GAO-004.lesson.l1.delivery": "gao/gao-004-l01-why-compliance-matters.png",
+  "GAO-004.lesson.l2.delivery": "gao/gao-004-l02-seven-elements-of-compliance.png",
+  "GAO-004.lesson.l3.delivery": "gao/gao-004-l03-compliance-obligations.png",
+  "GAO-004.lesson.l4.delivery": "gao/gao-004-l04-fraud-waste-abuse.png",
+  "GAO-004.lesson.l5.delivery": "gao/gao-004-l05-reporting-protections.png",
+  "GAO-004.lesson.l6.delivery": "gao/gao-004-l06-corporate-compliance-summary.png",
+
+  "GAO-005.lesson.l1.delivery": "gao/gao-005-l01-compliance-hotline.png",
+  "GAO-005.lesson.l2.delivery": "gao/gao-005-l02-what-to-report-and-how.png",
+  "GAO-005.lesson.l3.delivery": "gao/gao-005-l03-after-you-report.png",
+  "GAO-005.lesson.l4.delivery": "gao/gao-005-l04-whistleblower-protections.png",
+  "GAO-005.lesson.l5.delivery": "gao/gao-005-l05-module-summary.png",
+
+  "GAO-007.lesson.l1.delivery": "gao/gao-007-l01-workplace-safety-infection-control.png",
+  "GAO-007.lesson.l2.delivery": "gao/gao-007-extra-workplace-safety-option-a.png",
+  "GAO-007.lesson.l3.delivery": "gao/gao-007-l03-infection-control.png",
+  "GAO-007.lesson.l4.delivery": "gao/gao-007-extra-workplace-safety-option-b.png",
+  "GAO-007.lesson.l5.delivery": "gao/gao-007-extra-workplace-safety-option-c.png",
+  "GAO-007.lesson.l6.delivery": "gao/gao-007-l06-facility-environment-safety.png",
+  "GAO-007.lesson.l8.delivery": "gao/gao-007-l08-putting-it-all-together.png",
+
+  "GAO-008.lesson.l1.delivery": "gao/gao-008-l01-emergency-readiness.png",
+
+  "GAO-009.lesson.l3.delivery": "gao/gao-009-l03-equipment-safety.png",
+  "GAO-009.lesson.l4.delivery": "gao/gao-009-l04-home-safety-hazards.png",
+  "GAO-009.lesson.l5.delivery": "gao/gao-009-l05-fall-prevention.png",
+
+  "GAO-015.lesson.l1.delivery": "gao/gao-015-l01-agency-emergency-preparedness-plan.png",
+  "GAO-015.lesson.l2.delivery": "gao/gao-015-l02-role-during-emergency.png",
+  "GAO-015.lesson.l3.delivery": "gao/gao-015-l03-communication-reporting-emergency.png",
+  "GAO-015.lesson.l4.delivery": "gao/gao-015-l04-training-testing-plan-updates.png",
+};
+
 export function mediaAssetPath(appLocation: string): string {
   const loc = appLocation.trim();
+
+  if (MEDIA_PATH_OVERRIDES[loc]) {
+    return `${MEDIA_ASSET_BASE}/${MEDIA_PATH_OVERRIDES[loc]}`;
+  }
 
   // Noon mode app screenshots
   if (loc.includes('noon-brad')) return `${MEDIA_ASSET_BASE}/noon-brad-workspace.png`;
@@ -36,6 +89,7 @@ export function mediaAssetPath(appLocation: string): string {
 
 /** app.locations that have an approved image file present on disk. */
 export const availableMedia: ReadonlySet<string> = new Set<string>([
+  ...Object.keys(MEDIA_PATH_OVERRIDES),
   '/assets/media/gao-mission-values.jpg',
   '/assets/media/hipaa-privacy.jpg',
   '/assets/media/infection-ppe.jpg',
