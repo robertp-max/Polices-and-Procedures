@@ -7,7 +7,7 @@
  * transaction semantics differ.
  */
 import type {
-  AuditEvent, AuditEventInput, ChainVerifyResult, QueryFilter,
+  AuditEvent, AuditEventInput, ChainIntegrityReport, ChainVerifyResult, QueryFilter,
 } from './eventModel.js';
 
 export interface AuditEventStore {
@@ -17,5 +17,8 @@ export interface AuditEventStore {
   readAll(): Promise<AuditEvent[]>;
   queryEvents(filter: QueryFilter): Promise<AuditEvent[]>;
   getEvent(eventId: string): Promise<AuditEvent | null>;
+  /** Backward-compatible chain verification (ok/first_break shape). */
   verifyChains(stream?: string): Promise<ChainVerifyResult>;
+  /** Version-aware, per-event integrity report with explicit states. */
+  verifyChainsDetailed(stream?: string): Promise<ChainIntegrityReport>;
 }

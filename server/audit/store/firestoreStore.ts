@@ -15,9 +15,9 @@
 import type { AuditEventStore } from './auditEventStore.js';
 import type { FirestoreLike, Transaction } from './firestorePort.js';
 import {
-  assertNoPhi, constructEvent, defaultGenerators, filterEvents, sha256, verifyChainList,
+  assertNoPhi, constructEvent, defaultGenerators, filterEvents, sha256, verifyChainList, verifyChainDetailed,
   GENESIS_HEAD,
-  type AuditEvent, type AuditEventInput, type ChainHead, type ChainVerifyResult,
+  type AuditEvent, type AuditEventInput, type ChainHead, type ChainIntegrityReport, type ChainVerifyResult,
   type EventGenerators, type QueryFilter,
 } from './eventModel.js';
 
@@ -93,5 +93,9 @@ export class FirestoreAuditEventStore implements AuditEventStore {
 
   async verifyChains(stream?: string): Promise<ChainVerifyResult> {
     return verifyChainList(await this.readAll(), stream);
+  }
+
+  async verifyChainsDetailed(stream?: string): Promise<ChainIntegrityReport> {
+    return verifyChainDetailed(await this.readAll(), stream);
   }
 }

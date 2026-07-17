@@ -15,17 +15,18 @@
  */
 import { getAuditEventStore } from './store/factory.js';
 import type {
-  AuditEvent, AuditEventInput, ChainVerifyResult, QueryFilter,
+  AuditEvent, AuditEventInput, ChainIntegrityReport, ChainVerifyResult, QueryFilter,
 } from './store/eventModel.js';
 
 // Re-export the model surface so `import { ... } from '../audit/writer.js'`
 // keeps working for every existing caller.
 export {
-  canonical, containsPhiKey, constructEvent, verifyChainList, AuditWriteError,
+  canonical, canonicalV1, canonicalForVersion, containsPhiKey, constructEvent,
+  verifyChainList, verifyChainDetailed, CANON_VERSION, AuditWriteError,
 } from './store/eventModel.js';
 export type {
   Severity, RetentionClass, ActorType, Actor, ResourceRef, Environment, Decision,
-  AuditEventInput, AuditEvent, QueryFilter,
+  AuditEventInput, AuditEvent, QueryFilter, IntegrityState, EventIntegrity, ChainIntegrityReport,
 } from './store/eventModel.js';
 
 /** Append a new AuditEvent through the configured backend. */
@@ -47,4 +48,9 @@ export async function getEvent(event_id: string): Promise<AuditEvent | null> {
 
 export async function verifyChains(stream?: string): Promise<ChainVerifyResult> {
   return getAuditEventStore().verifyChains(stream);
+}
+
+/** Version-aware, per-event integrity report with explicit states. */
+export async function verifyChainsDetailed(stream?: string): Promise<ChainIntegrityReport> {
+  return getAuditEventStore().verifyChainsDetailed(stream);
 }

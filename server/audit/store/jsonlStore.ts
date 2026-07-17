@@ -11,9 +11,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { AuditEventStore } from './auditEventStore.js';
 import {
-  assertNoPhi, constructEvent, defaultGenerators, filterEvents, verifyChainList,
+  assertNoPhi, constructEvent, defaultGenerators, filterEvents, verifyChainList, verifyChainDetailed,
   GENESIS_HEAD,
-  type AuditEvent, type AuditEventInput, type ChainHead, type ChainVerifyResult,
+  type AuditEvent, type AuditEventInput, type ChainHead, type ChainIntegrityReport, type ChainVerifyResult,
   type EventGenerators, type QueryFilter,
 } from './eventModel.js';
 
@@ -105,5 +105,9 @@ export class JsonlAuditEventStore implements AuditEventStore {
 
   async verifyChains(stream?: string): Promise<ChainVerifyResult> {
     return verifyChainList(await this.readAll(), stream);
+  }
+
+  async verifyChainsDetailed(stream?: string): Promise<ChainIntegrityReport> {
+    return verifyChainDetailed(await this.readAll(), stream);
   }
 }

@@ -63,6 +63,8 @@ export interface AuditEventInput {
   policy_refs?: Array<{ policy_id: string; version: number; content_hash: string }>;
   payload?: Record<string, unknown>;
   schema_version?: number;
+  /** Set by constructEvent; callers should not supply it. */
+  canon_version?: number;
 }
 
 export interface AuditEvent {
@@ -99,10 +101,27 @@ export interface AuditEvent {
   payload: Record<string, unknown>;
   schema_version: number;
   idempotency_key?: string;
+  /**
+   * Canonicalization version whose rules were used to compute event_hash.
+   * Present (>=2) on all events created from P1-B onward; absent on legacy
+   * (v1) events created before versioning existed.
+   */
+  canon_version?: number;
 }
 
 export interface ChainHead { last_hash: string; sequence: number }
 export const GENESIS_HEAD: ChainHead = { last_hash: 'GENESIS', sequence: 0 };
+
+/**
+ * Current canonicalization version stamped on every new event and included in
+ * its hashed content.
+ *   v1 (pre-P1-B, unstamped): undefined-valued object properties counted as
+ *      null in the hash, but JSON.stringify dropped them on write — so v1
+ *      events with unset optional fields are not always reconstructable.
+ *   v2 (this and later): undefined-valued object properties are OMITTED, making
+ *      the canonical form stable across JSON write/read round trips.
+ */
+export const CANON_VERSION = 2 as const;
 
 export class AuditWriteError extends Error {
   constructor(public code: string, msg: string) { super(msg); this.name = 'AuditWriteError'; }
@@ -138,6 +157,26 @@ export function canonical(v: unknown): string {
   const obj = v as Record<string, unknown>;
   const keys = Object.keys(obj).filter(k => obj[k] !== undefined).sort();
   return '{' + keys.map(k => JSON.stringify(k) + ':' + canonical(obj[k])).join(',') + '}';
+}
+
+/**
+ * Legacy (v1) canonicalization: undefined-valued object properties are INCLUDED
+ * as null. Retained ONLY to attempt verification of pre-P1-B events. It is not
+ * round-trip stable (JSON.stringify drops undefined keys), so v1 events with
+ * unset optional fields cannot always be reproduced from disk.
+ */
+export function canonicalV1(v: unknown): string {
+  if (v === null || v === undefined) return 'null';
+  if (typeof v !== 'object') return JSON.stringify(v);
+  if (Array.isArray(v)) return '[' + v.map(canonicalV1).join(',') + ']';
+  const obj = v as Record<string, unknown>;
+  const keys = Object.keys(obj).sort();
+  return '{' + keys.map(k => JSON.stringify(k) + ':' + canonicalV1(obj[k])).join(',') + '}';
+}
+
+/** Canonicalizer for a given version (v2 = current/omit-undefined; v1 = legacy). */
+export function canonicalForVersion(version: number, v: unknown): string {
+  return version <= 1 ? canonicalV1(v) : canonical(v);
 }
 
 const PHI_FIELD_KEYS = new Set([
@@ -207,6 +246,9 @@ export function constructEvent(input: AuditEventInput, head: ChainHead, gen: Eve
     payload: input.payload ?? {},
     schema_version: input.schema_version ?? 1,
     idempotency_key: input.idempotency_key,
+    // Stamped and included in the hash so verification is version-aware. Never
+    // inferred at read time.
+    canon_version: CANON_VERSION,
   };
   const event_hash = sha256(prev_hash + '|' + canonical(candidate));
   return { ...candidate, event_hash };
@@ -246,15 +288,58 @@ export function filterEvents(all: AuditEvent[], f: QueryFilter): AuditEvent[] {
   return filtered.slice(offset, offset + limit);
 }
 
-export interface ChainVerifyResult {
-  ok: boolean;
-  streams_verified: number;
-  events_verified: number;
-  first_break?: { stream: string; event_id: string; reason: string };
+/** Distinct integrity outcomes for a single audit event. */
+export type IntegrityState =
+  | 'VERIFIED'                       // hash + chain reproduce under the event's canon version
+  | 'HASH_MISMATCH'                  // versioned event whose recompute fails (tamper/corruption)
+  | 'CHAIN_BREAK'                    // sequence gap or prev_hash link mismatch
+  | 'UNSUPPORTED_CANON_VERSION'      // canon_version newer than this verifier understands
+  | 'LEGACY_UNVERIFIABLE_JSON_DROP'  // pre-versioning event whose original hash input cannot be reproduced
+  | 'MALFORMED_EVENT';               // missing required fields / not a well-formed event
+
+export interface EventIntegrity {
+  stream: string;
+  event_id: string;
+  sequence: number;
+  canon_version: number | null;
+  state: IntegrityState;
+  detail?: string;
 }
 
-/** Verify per-stream sequence + hash chain over an event list. */
-export function verifyChainList(all: AuditEvent[], stream?: string): ChainVerifyResult {
+export interface ChainIntegrityReport {
+  ok: boolean;                       // true only if EVERY event is VERIFIED
+  streams: number;
+  results: EventIntegrity[];
+  counts: Record<IntegrityState, number>;
+  first_problem?: EventIntegrity;    // first non-VERIFIED event, if any
+}
+
+const HIGHEST_SUPPORTED_CANON = CANON_VERSION;
+
+function emptyCounts(): Record<IntegrityState, number> {
+  return {
+    VERIFIED: 0, HASH_MISMATCH: 0, CHAIN_BREAK: 0,
+    UNSUPPORTED_CANON_VERSION: 0, LEGACY_UNVERIFIABLE_JSON_DROP: 0, MALFORMED_EVENT: 0,
+  };
+}
+
+function isMalformed(evt: AuditEvent): boolean {
+  return !evt || typeof evt !== 'object'
+    || typeof evt.event_id !== 'string'
+    || typeof evt.event_hash !== 'string'
+    || typeof evt.prev_hash !== 'string'
+    || typeof evt.sequence !== 'number'
+    || typeof evt.stream !== 'string';
+}
+
+/**
+ * Version-aware integrity report. Never rewrites events, never recalculates or
+ * replaces a stored hash, and never guesses which absent fields were originally
+ * undefined. The prev_hash link is always checked against the prior event's
+ * STORED hash, so a valid event that follows a legacy-unverifiable one is still
+ * reported as link-consistent while the earlier segment stays unverifiable.
+ */
+export function verifyChainDetailed(all: AuditEvent[], stream?: string): ChainIntegrityReport {
   const byStream = new Map<string, AuditEvent[]>();
   for (const e of all) {
     if (stream && e.stream !== stream) continue;
@@ -262,34 +347,74 @@ export function verifyChainList(all: AuditEvent[], stream?: string): ChainVerify
     arr.push(e);
     byStream.set(e.stream, arr);
   }
-  let events_verified = 0;
+  const results: EventIntegrity[] = [];
+  const counts = emptyCounts();
+
   for (const [s, events] of byStream) {
     events.sort((a, b) => a.sequence - b.sequence);
     let prev = 'GENESIS';
     let expected_seq = 1;
     for (const evt of events) {
+      const cv = typeof evt.canon_version === 'number' ? evt.canon_version : null;
+      const record = (state: IntegrityState, detail?: string): void => {
+        results.push({ stream: s, event_id: evt?.event_id ?? '(unknown)', sequence: evt?.sequence ?? -1, canon_version: cv, state, detail });
+        counts[state] += 1;
+      };
+
+      if (isMalformed(evt)) { record('MALFORMED_EVENT', 'missing required event fields'); continue; }
+
+      // Chain position (uses stored prev hashes only).
       if (evt.sequence !== expected_seq) {
-        return { ok: false, streams_verified: 0, events_verified, first_break: {
-          stream: s, event_id: evt.event_id, reason: `sequence_gap: expected ${expected_seq}, got ${evt.sequence}`,
-        } };
+        record('CHAIN_BREAK', `sequence gap: expected ${expected_seq}, got ${evt.sequence}`);
+      } else if (evt.prev_hash !== prev) {
+        record('CHAIN_BREAK', 'prev_hash does not match prior stored event_hash');
+      } else {
+        const candidate: Record<string, unknown> = { ...evt };
+        delete candidate.event_hash;
+        if (cv === null) {
+          // Legacy (pre-versioning): try to reproduce with either canonical rule.
+          const okV1 = evt.event_hash === sha256(prev + '|' + canonicalV1(candidate));
+          const okV2 = evt.event_hash === sha256(prev + '|' + canonical(candidate));
+          if (okV1 || okV2) record('VERIFIED', 'legacy event reproduced from disk');
+          else record('LEGACY_UNVERIFIABLE_JSON_DROP', 'original hash input not reproducible from persisted bytes (pre-versioning JSON-drop)');
+        } else if (cv > HIGHEST_SUPPORTED_CANON) {
+          record('UNSUPPORTED_CANON_VERSION', `canon_version ${cv} > supported ${HIGHEST_SUPPORTED_CANON}`);
+        } else {
+          const recomputed = sha256(prev + '|' + canonicalForVersion(cv, candidate));
+          record(evt.event_hash === recomputed ? 'VERIFIED' : 'HASH_MISMATCH', cv === 1 ? 'v1 recompute' : undefined);
+        }
       }
-      if (evt.prev_hash !== prev) {
-        return { ok: false, streams_verified: 0, events_verified, first_break: {
-          stream: s, event_id: evt.event_id, reason: 'prev_hash_mismatch',
-        } };
-      }
-      const candidate: Record<string, unknown> = { ...evt };
-      delete candidate.event_hash;
-      const recomputed = sha256(prev + '|' + canonical(candidate));
-      if (evt.event_hash !== recomputed) {
-        return { ok: false, streams_verified: 0, events_verified, first_break: {
-          stream: s, event_id: evt.event_id, reason: 'event_hash_mismatch',
-        } };
-      }
+      // Advance the chain by the STORED hash regardless of content verifiability,
+      // so later events' links can still be checked.
       prev = evt.event_hash;
       expected_seq += 1;
-      events_verified += 1;
     }
   }
-  return { ok: true, streams_verified: byStream.size, events_verified };
+
+  const first_problem = results.find(r => r.state !== 'VERIFIED');
+  return { ok: !first_problem, streams: byStream.size, results, counts, first_problem };
+}
+
+export interface ChainVerifyResult {
+  ok: boolean;
+  streams_verified: number;
+  events_verified: number;
+  first_break?: { stream: string; event_id: string; reason: string };
+}
+
+/**
+ * Backward-compatible chain verification (original shape). Derived from the
+ * version-aware report; `ok` is true only when every event is VERIFIED, and
+ * first_break.reason carries the precise integrity state.
+ */
+export function verifyChainList(all: AuditEvent[], stream?: string): ChainVerifyResult {
+  const report = verifyChainDetailed(all, stream);
+  return {
+    ok: report.ok,
+    streams_verified: report.ok ? report.streams : 0,
+    events_verified: report.counts.VERIFIED,
+    first_break: report.first_problem
+      ? { stream: report.first_problem.stream, event_id: report.first_problem.event_id, reason: report.first_problem.state }
+      : undefined,
+  };
 }
