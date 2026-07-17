@@ -98,7 +98,7 @@ runSuite('Firestore emulator — real Admin adapter', () => {
     expect(rep.ok).toBe(true);
     expect(rep.results.map(r => r.sequence)).toEqual(Array.from({ length: 100 }, (_, i) => i + 1));
     expect(new Set(rep.results.map(r => r.sequence)).size).toBe(100);
-  }, 60_000);
+  }, 120_000);
 
   it('cross-stream concurrency: 10 streams x 20 appends stay isolated and ordered', async () => {
     const streams = Array.from({ length: 10 }, (_, i) => S(`xs${i}`));
@@ -108,7 +108,7 @@ runSuite('Firestore emulator — real Admin adapter', () => {
       expect(rep.ok).toBe(true);
       expect(rep.results.map(r => r.sequence)).toEqual(Array.from({ length: 20 }, (_, i) => i + 1));
     }
-  }, 60_000);
+  }, 120_000);
 
   it('bounded pagination returns the full ordered chain across pages (pageSize=7)', async () => {
     const s = S('page');

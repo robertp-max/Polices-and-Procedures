@@ -30,7 +30,7 @@ export class AdminFirestoreAdapter implements FirestoreLike {
   private ref(ref: DocRef) { return this.db.doc(`${ref.collection}/${ref.id}`); }
 
   async runTransaction<T>(fn: (txn: Transaction) => Promise<T>): Promise<T> {
-    return this.db.runTransaction(async (t) => {
+    const runOnce = () => this.db.runTransaction(async (t) => {
       const wrapper: Transaction = {
         get: async <G = Record<string, unknown>>(ref: DocRef): Promise<DocSnapshot<G>> => {
           const snap = await t.get(this.ref(ref));
@@ -40,7 +40,29 @@ export class AdminFirestoreAdapter implements FirestoreLike {
         set: (ref: DocRef, data: Record<string, unknown>) => { t.set(this.ref(ref), data); },
       };
       return fn(wrapper);
-    });
+    }, { maxAttempts: 1 });
+
+    // Contention retry: a hot stream-head document under heavy concurrency
+    // surfaces ABORTED / "Transaction lock timeout" that the SDK does not
+    // classify as transient. We own the retry here with SHORT backoff + jitter
+    // so contending appends re-submit promptly and the per-document lock cycles
+    // quickly (long backoffs idle the herd and balloon latency). The callback's
+    // inputs are retry-stable (event_id/timestamp fixed by the caller before
+    // the transaction), so a retry re-derives the same event for its allocated
+    // sequence + prior hash.
+    const maxOuter = 60;
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        return await runOnce();
+      } catch (e) {
+        const code = (e as { code?: number }).code;
+        const msg = String((e as Error).message ?? '');
+        const retryable = code === 10 /* ABORTED */ || /aborted|lock timeout|contention|deadline exceeded/i.test(msg);
+        if (!retryable || attempt >= maxOuter) throw e;
+        const backoff = Math.min(150, 5 + 3 * attempt) + Math.floor(Math.random() * 20);
+        await new Promise((r) => setTimeout(r, backoff));
+      }
+    }
   }
 
   async listCollection<T = Record<string, unknown>>(collection: string): Promise<T[]> {
@@ -78,6 +100,11 @@ export function initAdminFirestore(env: NodeJS.ProcessEnv = process.env): AdminF
       cachedApp = existing ?? initializeApp({ credential: applicationDefault(), projectId }, APP_NAME);
     }
     const db = databaseId ? getFirestore(cachedApp, databaseId) : getFirestore(cachedApp);
+    // Firestore rejects undefined field values. Optional audit-event fields are
+    // undefined when unset; omitting them matches the v2 canonical hash (which
+    // omits undefined) and JSONL's JSON.stringify semantics, so the stored doc
+    // round-trips to the same hash. Must be set once, before first use.
+    db.settings({ ignoreUndefinedProperties: true });
     cachedAdapter = new AdminFirestoreAdapter(db);
     return cachedAdapter;
   } catch (e) {

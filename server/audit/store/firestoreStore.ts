@@ -46,11 +46,33 @@ export class FirestoreAuditEventStore implements AuditEventStore {
   private readonly fs: FirestoreLike;
   private readonly gen: EventGenerators;
   private readonly pageSize: number;
+  /**
+   * Per-stream in-process serialization. Appends to one stream are inherently
+   * serial (each event's prev_hash chains off the previous), so firing many
+   * same-stream appends concurrently from ONE process would only make them
+   * collide on the stream-head document and retry — an O(n^2) abort storm that
+   * we inflict on ourselves. We serialize same-stream appends locally so each
+   * transaction commits first-try. Genuine cross-instance contention (two
+   * processes racing the same stream) is NOT coalesced here — it is still
+   * resolved by the create-only transaction + contention retry in the adapter,
+   * and is exercised by the cross-process emulator test.
+   */
+  private readonly streamLocks = new Map<string, Promise<unknown>>();
 
   constructor(firestore: FirestoreLike, opts: { generators?: EventGenerators; pageSize?: number } = {}) {
     this.fs = firestore;
     this.gen = opts.generators ?? defaultGenerators();
     this.pageSize = opts.pageSize ?? DEFAULT_PAGE_SIZE;
+  }
+
+  /** Run `task` after any in-flight append to the same stream settles. */
+  private runSerializedPerStream<T>(stream: string, task: () => Promise<T>): Promise<T> {
+    const prev = this.streamLocks.get(stream) ?? Promise.resolve();
+    const run = prev.then(task, task); // proceed regardless of the prior result
+    const tail = run.then(() => undefined, () => undefined); // next waiter never sees a rejection
+    this.streamLocks.set(stream, tail);
+    void tail.then(() => { if (this.streamLocks.get(stream) === tail) this.streamLocks.delete(stream); });
+    return run;
   }
 
   async append(input: AuditEventInput): Promise<AuditEvent> {
@@ -63,7 +85,7 @@ export class FirestoreAuditEventStore implements AuditEventStore {
     const stableGen: EventGenerators = { id: () => stableId, now: () => stableNow };
     const stableInput: AuditEventInput = { ...input, correlation_id: stableCorrelation };
 
-    return this.fs.runTransaction(async (txn: Transaction) => {
+    return this.runSerializedPerStream(input.stream, () => this.fs.runTransaction(async (txn: Transaction) => {
       // (1) idempotency reservation → return existing event on repeat.
       if (input.idempotency_key) {
         const idemRef = this.fs.doc(AUDIT_IDEMPOTENCY_COLLECTION, idempotencyDocId(input.stream, input.idempotency_key));
@@ -92,7 +114,7 @@ export class FirestoreAuditEventStore implements AuditEventStore {
       }
       txn.set(headRef, { stream: input.stream, last_hash: event.event_hash, sequence: event.sequence } satisfies StreamHeadDoc);
       return event;
-    });
+    }));
   }
 
   /** Enumerate stream names from the (bounded) stream-head collection. */
