@@ -7,6 +7,8 @@
  */
 import React, { useCallback, useMemo, useState } from 'react';
 import { LvnGaoPlayer } from './LvnGaoPlayer';
+import { LvnSceneModal } from './LvnSceneModal';
+import { InteractiveGroup } from './InteractiveGroup';
 
 const MODULE_META = {
   id: 'LVN-005',
@@ -826,16 +828,20 @@ function SceneDelegation({ active, onHotspot }: { active: string | null; onHotsp
     { label: 'HHA', color: THEME.success, tasks: ['Personal care', 'Support'] },
   ];
   return (
-    <svg viewBox="0 0 400 360" width="100%" height="100%" role="img" aria-label="Delegation waterfall">
-      <rect width="400" height="360" fill="#0F172A" rx="16" />
+    <svg viewBox="0 0 400 360" width="100%" height="100%" role="img" aria-label="Delegation waterfall" style={{ display: 'block', background: '#FAFBF8' }}>
+      <rect width="400" height="360" fill="#FAFBF8" rx="16" stroke="#E5E4E3" strokeWidth="1" />
       <rect x="40" y="24" width="320" height="44" rx="12" fill={THEME.physician} />
       <text x="200" y="52" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="700">
-        Physician POC Directive
+        Physician Plan of Care Directives
       </text>
+      
       {cols.map((c, i) => {
         const x = 28 + i * 92;
-        return (
-          <g key={c.label}>
+        const isRn = c.label === 'RN';
+        const isLvn = c.label === 'LVN';
+        
+        const colContent = (
+          <>
             <path d={`M${x + 36},68 L${x + 36},100`} stroke={c.color} strokeWidth="3" />
             <rect
               x={x}
@@ -845,41 +851,56 @@ function SceneDelegation({ active, onHotspot }: { active: string | null; onHotsp
               rx="10"
               fill={c.color}
               opacity={c.highlight ? 1 : 0.85}
-              stroke={c.highlight ? '#fff' : 'none'}
+              stroke={c.highlight ? '#C74601' : 'none'}
               strokeWidth={c.highlight ? 2 : 0}
             />
             <text x={x + 40} y="122" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700">
               {c.label}
             </text>
             {c.tasks.map((t, ti) => (
-              <text key={t} x={x + 40} y={148 + ti * 18} textAnchor="middle" fill="#F8FAFC" fontSize="9">
+              <text key={t} x={x + 40} y={148 + ti * 18} textAnchor="middle" fill="#FAFBF8" fontSize="10" fontWeight="600">
                 {t}
               </text>
             ))}
-          </g>
+          </>
         );
+        
+        if (isRn) {
+          return (
+            <InteractiveGroup
+              key={c.label}
+              id="hs-five-rights"
+              label="RN Delegation: Five Rights of Delegation"
+              isActive={active === 'five-rights'}
+              onActivate={() => onHotspot('five-rights')}
+            >
+              {colContent}
+            </InteractiveGroup>
+          );
+        } else if (isLvn) {
+          return (
+            <InteractiveGroup
+              key={c.label}
+              id="hs-acct-vs-resp"
+              label="LVN Practice: Accountability vs Responsibility"
+              isActive={active === 'acct-vs-resp'}
+              onActivate={() => onHotspot('acct-vs-resp')}
+            >
+              {colContent}
+            </InteractiveGroup>
+          );
+        } else {
+          return (
+            <g key={c.label}>
+              {colContent}
+            </g>
+          );
+        }
       })}
-      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('five-rights')}>
-        <circle cx="200" cy="150" r="16" fill={THEME.primary} stroke="#fff" strokeWidth="2" opacity={active === 'five-rights' ? 1 : 0.9}>
-          <animate attributeName="r" values="14;18;14" dur="2.6s" repeatCount="indefinite" />
-        </circle>
-        <text x="200" y="154" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
-          1
-        </text>
-      </g>
-      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('acct-vs-resp')}>
-        <circle cx="312" cy="300" r="16" fill={THEME.lvn} stroke="#fff" strokeWidth="2">
-          <animate attributeName="r" values="14;18;14" dur="2.9s" repeatCount="indefinite" />
-        </circle>
-        <text x="312" y="304" textAnchor="middle" fill="#0F172A" fontSize="10" fontWeight="700">
-          2
-        </text>
-      </g>
     </svg>
   );
 }
 
-/** Page 5 — Change alert radar */
 function SceneChange({ active, onHotspot }: { active: string | null; onHotspot: (id: string) => void }) {
   const items = [
     { label: 'New order', a: -90, c: THEME.info },
@@ -1064,31 +1085,6 @@ function SceneCert({ active, onHotspot }: { active: string | null; onHotspot: (i
 }
 
 const SCENES = [SceneAuthority, SceneCms485, SceneFrequency, SceneDelegation, SceneChange, SceneScope, SceneCert];
-
-function HotspotPanel({ page, activeId }: { page: PageDef; activeId: string | null }) {
-  const hs = page.hotspots.find((h) => h.id === activeId) || page.hotspots[0];
-  return (
-    <div
-      style={{
-        marginTop: 10,
-        background: 'rgba(15,23,42,0.92)',
-        color: '#F8FAFC',
-        borderRadius: 12,
-        padding: '12px 14px',
-        border: `1px solid ${page.accent}`,
-        minHeight: 88,
-      }}
-    >
-      <div style={{ fontSize: 11, color: '#A5B4FC', fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase' }}>
-        Hotspot · {hs.label}
-      </div>
-      <div style={{ fontSize: 13, lineHeight: 1.45, marginTop: 6 }}>{hs.detail}</div>
-      <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 8 }}>
-        Tap numbered markers on the scene ({page.hotspots.map((h) => h.label).join(' · ')})
-      </div>
-    </div>
-  );
-}
 
 function LeftPanel({ page }: { page: PageDef }) {
   return (
@@ -1332,7 +1328,7 @@ const secondaryBtnStyle: React.CSSProperties = {
 export default function LVN005PlanOfCare() {
   const [pageIndex, setPageIndex] = useState(0);
   const [mode, setMode] = useState<'learn' | 'quiz' | 'results'>('learn');
-  const [activeHotspot, setActiveHotspot] = useState<string | null>(PAGES[0].hotspots[0].id);
+  const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
@@ -1349,7 +1345,7 @@ export default function LVN005PlanOfCare() {
     if (pageIndex < PAGES.length - 1) {
       const next = pageIndex + 1;
       setPageIndex(next);
-      setActiveHotspot(PAGES[next].hotspots[0].id);
+      setActiveHotspot(null);
     } else {
       setMode('quiz');
     }
@@ -1359,13 +1355,13 @@ export default function LVN005PlanOfCare() {
     if (mode === 'quiz' || mode === 'results') {
       setMode('learn');
       setPageIndex(PAGES.length - 1);
-      setActiveHotspot(PAGES[PAGES.length - 1].hotspots[0].id);
+      setActiveHotspot(null);
       return;
     }
     if (pageIndex > 0) {
       const prev = pageIndex - 1;
       setPageIndex(prev);
-      setActiveHotspot(PAGES[prev].hotspots[0].id);
+      setActiveHotspot(null);
     }
   };
 
@@ -1399,12 +1395,13 @@ export default function LVN005PlanOfCare() {
 
   if ((mode as string) === 'learn') {
     return (
-      <LvnGaoPlayer
+      <>
+        <LvnGaoPlayer
         pages={PAGES}
         pageIndex={pageIndex}
         onSelectPage={(index) => {
           setPageIndex(index);
-          setActiveHotspot(PAGES[index].hotspots[0].id);
+          setActiveHotspot(null);
         }}
         onPrevious={goPrev}
         onNext={goNext}
@@ -1420,11 +1417,19 @@ export default function LVN005PlanOfCare() {
               <div style={{ flex: 1, minHeight: 360 }}>
                 <CurrentScene active={activeHotspot} onHotspot={onHotspot} />
               </div>
-              <HotspotPanel page={currentPage} activeId={activeHotspot} />
+              
             </>
           );
         }}
       />
+        <LvnSceneModal
+          isOpen={activeHotspot !== null}
+          onClose={() => setActiveHotspot(null)}
+          title={page.hotspots.find(h => h.id === activeHotspot)?.label || ''}
+          info={page.hotspots.find(h => h.id === activeHotspot)?.detail || ''}
+          triggerRef={activeHotspot ? { current: document.getElementById('hs-' + activeHotspot) } : undefined}
+        />
+      </>
     );
   }
 
@@ -1506,7 +1511,7 @@ export default function LVN005PlanOfCare() {
             <div style={{ flex: 1, minHeight: 360 }}>
               <Scene active={activeHotspot} onHotspot={onHotspot} />
             </div>
-            <HotspotPanel page={page} activeId={activeHotspot} />
+            
           </aside>
         </div>
       ) : (
@@ -1551,7 +1556,7 @@ export default function LVN005PlanOfCare() {
             onClick={() => {
               setMode('learn');
               setPageIndex(0);
-              setActiveHotspot(PAGES[0].hotspots[0].id);
+              setActiveHotspot(null);
             }}
             style={secondaryBtnStyle}
           >

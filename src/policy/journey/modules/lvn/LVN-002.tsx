@@ -13,6 +13,8 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { LvnGaoPlayer } from './LvnGaoPlayer';
+import { LvnSceneModal } from './LvnSceneModal';
+import { InteractiveGroup } from './InteractiveGroup';
 
 // ─── META ───────────────────────────────────────────────────────────────────
 
@@ -846,43 +848,6 @@ const card: React.CSSProperties = {
 
 // ─── SCENE COMPONENTS ───────────────────────────────────────────────────────
 
-function FeedbackBanner({
-  title,
-  body,
-  zone,
-}: {
-  title: string;
-  body: string;
-  zone?: Hotspot['zone'];
-}) {
-  const colors: Record<string, string> = {
-    authorized: '#10B981',
-    conditional: '#F59E0B',
-    prohibited: '#EF4444',
-    neutral: '#8B5CF6',
-  };
-  const c = colors[zone || 'neutral'];
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        left: 12,
-        right: 12,
-        bottom: 12,
-        background: 'rgba(15,23,42,0.94)',
-        border: `1px solid ${c}`,
-        borderRadius: 10,
-        padding: '10px 12px',
-        boxShadow: `0 0 24px ${c}33`,
-        zIndex: 5,
-      }}
-    >
-      <div style={{ fontSize: 12, fontWeight: 800, color: c, marginBottom: 4 }}>{title}</div>
-      <div style={{ fontSize: 12, lineHeight: 1.45, color: '#E5E7EB' }}>{body}</div>
-    </div>
-  );
-}
-
 function HotspotDot({
   hs,
   active,
@@ -976,7 +941,7 @@ function SceneFrame({
 }
 
 function LicenseAuthorityScene({
-  hotspots,
+  hotspots: _hotspots,
   activeId,
   onSelect,
 }: {
@@ -984,47 +949,78 @@ function LicenseAuthorityScene({
   activeId: string | null;
   onSelect: (id: string) => void;
 }) {
-  const active = hotspots.find((h) => h.id === activeId);
   return (
     <SceneFrame title="Scope Boundary Stack">
-      <svg viewBox="0 0 500 320" width="100%" height="100%" style={{ display: 'block' }}>
-        <defs>
-          <linearGradient id="stackGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#7C3AED" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#4F46E5" stopOpacity="0.9" />
-          </linearGradient>
-        </defs>
-        {/* Authority pillars */}
-        <rect x="40" y="50" width="140" height="200" rx="12" fill="url(#stackGrad)" opacity="0.35" />
-        <rect x="180" y="50" width="140" height="200" rx="12" fill="#1E293B" stroke="#6366F1" />
-        <rect x="320" y="50" width="140" height="200" rx="12" fill="#1E293B" stroke="#10B981" />
-        <text x="110" y="75" textAnchor="middle" fill="#DDD6FE" fontSize="11" fontWeight="700">
-          Law
-        </text>
-        <text x="250" y="75" textAnchor="middle" fill="#A5B4FC" fontSize="11" fontWeight="700">
-          Federal CoP
-        </text>
-        <text x="390" y="75" textAnchor="middle" fill="#6EE7B7" fontSize="11" fontWeight="700">
-          Agency + Zones
-        </text>
-        {/* Connecting flow */}
-        <path
-          d="M110 180 H390"
-          stroke="#A78BFA"
-          strokeWidth="2"
-          strokeDasharray="6 4"
-          fill="none"
+      <svg viewBox="0 0 500 320" width="100%" height="100%" style={{ display: 'block', background: '#FAFBF8' }}>
+        {/* Connection flow or background design */}
+        <rect x="15" y="15" width="470" height="290" rx="16" fill="#FAFBF8" stroke="#E5E4E3" strokeWidth="1" />
+        
+        {/* Law Pillar */}
+        <InteractiveGroup
+          id="hs-law"
+          label="CA B&P § 2859: Law Pillar"
+          isActive={activeId === 'law'}
+          onActivate={() => onSelect('law')}
         >
-          <animate attributeName="stroke-dashoffset" values="0;20" dur="2s" repeatCount="indefinite" />
-        </path>
-        <text x="250" y="300" textAnchor="middle" fill="#94A3B8" fontSize="10">
-          Tap markers — stricter rule wins when layers differ
+          <rect x="35" y="50" width="100" height="200" rx="12" fill="#FFFFFF" stroke="#FAFBF8" strokeWidth="2" />
+          <path d="M70 90 H100 M70 100 H100 M70 110 H90 M70 120 H100" stroke="#747470" strokeWidth="2" strokeLinecap="round" />
+          <path d="M50 85 h10 v45 h-10 z" fill="#007970" opacity="0.8" />
+          <text x="85" y="170" textAnchor="middle" fill="#1F1C1B" fontSize="13" fontWeight="800">CA B&P</text>
+          <text x="85" y="190" textAnchor="middle" fill="#007970" fontSize="13" fontWeight="800">§ 2859</text>
+          <text x="85" y="225" textAnchor="middle" fill="#747470" fontSize="11" fontWeight="700">LAW BASE</text>
+        </InteractiveGroup>
+
+        {/* Federal CoP Pillar */}
+        <InteractiveGroup
+          id="hs-cop"
+          label="42 CFR § 484.115(c): Federal Conditions of Participation"
+          isActive={activeId === 'cop'}
+          onActivate={() => onSelect('cop')}
+        >
+          <rect x="145" y="50" width="100" height="200" rx="12" fill="#FFFFFF" stroke="#FAFBF8" strokeWidth="2" />
+          <path d="M195 85 l15 8 -15 25 -15 -25 z" fill="#004142" opacity="0.8" />
+          <path d="M195 95 l8 4 -8 13 -8 -13 z" fill="#E5FEFF" />
+          <text x="195" y="170" textAnchor="middle" fill="#1F1C1B" fontSize="13" fontWeight="800">Federal</text>
+          <text x="195" y="190" textAnchor="middle" fill="#004142" fontSize="13" fontWeight="800">CoP</text>
+          <text x="195" y="225" textAnchor="middle" fill="#747470" fontSize="11" fontWeight="700">MEDICARE</text>
+        </InteractiveGroup>
+
+        {/* Agency Policy Pillar */}
+        <InteractiveGroup
+          id="hs-agency"
+          label="Agency Policy: Care Indeed Protocols"
+          isActive={activeId === 'agency'}
+          onActivate={() => onSelect('agency')}
+        >
+          <rect x="255" y="50" width="100" height="200" rx="12" fill="#FFFFFF" stroke="#FAFBF8" strokeWidth="2" />
+          <path d="M290 85 h30 v10 h-30 z M290 100 h30 v25 h-30 z" fill="#747470" opacity="0.2" />
+          <circle cx="305" cy="112" r="8" fill="#C74601" opacity="0.85" />
+          <path d="M302 112 l2 2 4 -4" stroke="#FFFFFF" strokeWidth="2" fill="none" strokeLinecap="round" />
+          <text x="305" y="170" textAnchor="middle" fill="#1F1C1B" fontSize="13" fontWeight="800">Agency</text>
+          <text x="305" y="190" textAnchor="middle" fill="#C74601" fontSize="13" fontWeight="800">Policy</text>
+          <text x="305" y="225" textAnchor="middle" fill="#747470" fontSize="11" fontWeight="700">STANDARDS</text>
+        </InteractiveGroup>
+
+        {/* Practice Zones Pillar */}
+        <InteractiveGroup
+          id="hs-zones"
+          label="Three Zones of LVN Practice"
+          isActive={activeId === 'zones'}
+          onActivate={() => onSelect('zones')}
+        >
+          <rect x="365" y="50" width="100" height="200" rx="12" fill="#FFFFFF" stroke="#FAFBF8" strokeWidth="2" />
+          <circle cx="415" cy="105" r="22" fill="#FEF2F2" stroke="#991B1B" strokeWidth="1.5" />
+          <circle cx="415" cy="105" r="14" fill="#FFF7ED" stroke="#C74601" strokeWidth="1.5" />
+          <circle cx="415" cy="105" r="6" fill="#E5FEFF" stroke="#007970" strokeWidth="1.5" />
+          <text x="415" y="170" textAnchor="middle" fill="#1F1C1B" fontSize="13" fontWeight="800">Three</text>
+          <text x="415" y="190" textAnchor="middle" fill="#007970" fontSize="13" fontWeight="800">Zones</text>
+          <text x="415" y="225" textAnchor="middle" fill="#747470" fontSize="11" fontWeight="700">COMPETENCY</text>
+        </InteractiveGroup>
+
+        <text x="250" y="285" textAnchor="middle" fill="#747470" fontSize="12" fontWeight="700">
+          Stricter rule always wins when layers differ
         </text>
-        {hotspots.map((hs) => (
-          <HotspotDot key={hs.id} hs={hs} active={activeId === hs.id} onSelect={onSelect} pulse />
-        ))}
       </svg>
-      {active && <FeedbackBanner title={active.label} body={active.info} zone={active.zone} />}
     </SceneFrame>
   );
 }
@@ -1038,7 +1034,7 @@ function CompetencyConstellationScene({
   activeId: string | null;
   onSelect: (id: string) => void;
 }) {
-  const active = hotspots.find((h) => h.id === activeId);
+  
   const cx = 250;
   const cy = 160;
   return (
@@ -1073,7 +1069,7 @@ function CompetencyConstellationScene({
           Green zone = implement with order + competency — not invent
         </text>
       </svg>
-      {active && <FeedbackBanner title={active.label} body={active.info} zone={active.zone} />}
+      
     </SceneFrame>
   );
 }
@@ -1087,7 +1083,7 @@ function ProhibitedZoneScene({
   activeId: string | null;
   onSelect: (id: string) => void;
 }) {
-  const active = hotspots.find((h) => h.id === activeId);
+  
   return (
     <SceneFrame title="RN-Only / Prohibited Map">
       <svg viewBox="0 0 500 320" width="100%" height="100%" style={{ display: 'block' }}>
@@ -1131,7 +1127,7 @@ function ProhibitedZoneScene({
           Staffing pressure never rewrites B&P § 2859 or CoPs
         </text>
       </svg>
-      {active && <FeedbackBanner title={active.label} body={active.info} zone={active.zone} />}
+      
     </SceneFrame>
   );
 }
@@ -1145,7 +1141,7 @@ function ConditionalZoneScene({
   activeId: string | null;
   onSelect: (id: string) => void;
 }) {
-  const active = hotspots.find((h) => h.id === activeId);
+  
   return (
     <SceneFrame title="Conditional Oversight Circuit">
       <svg viewBox="0 0 500 320" width="100%" height="100%" style={{ display: 'block' }}>
@@ -1170,7 +1166,7 @@ function ConditionalZoneScene({
           Amber = proceed only with required oversight controls
         </text>
       </svg>
-      {active && <FeedbackBanner title={active.label} body={active.info} zone={active.zone} />}
+      
     </SceneFrame>
   );
 }
@@ -1184,7 +1180,7 @@ function DelegationTreeScene({
   activeId: string | null;
   onSelect: (id: string) => void;
 }) {
-  const active = hotspots.find((h) => h.id === activeId);
+  
   return (
     <SceneFrame title="Five-Check Delegation Gate">
       <svg viewBox="0 0 500 320" width="100%" height="100%" style={{ display: 'block' }}>
@@ -1211,7 +1207,7 @@ function DelegationTreeScene({
           <HotspotDot key={hs.id} hs={hs} active={activeId === hs.id} onSelect={onSelect} pulse />
         ))}
       </svg>
-      {active && <FeedbackBanner title={active.label} body={active.info} zone={active.zone} />}
+      
     </SceneFrame>
   );
 }
@@ -1225,7 +1221,7 @@ function ConsequencesMapScene({
   activeId: string | null;
   onSelect: (id: string) => void;
 }) {
-  const active = hotspots.find((h) => h.id === activeId);
+  
   return (
     <SceneFrame title="Violation Impact Triangle">
       <svg viewBox="0 0 500 320" width="100%" height="100%" style={{ display: 'block' }}>
@@ -1249,7 +1245,7 @@ function ConsequencesMapScene({
           Regulatory · Civil · Institutional — protect with refuse/document/escalate
         </text>
       </svg>
-      {active && <FeedbackBanner title={active.label} body={active.info} zone={active.zone} />}
+      
     </SceneFrame>
   );
 }
@@ -1263,7 +1259,7 @@ function ScenarioFieldLabScene({
   activeId: string | null;
   onSelect: (id: string) => void;
 }) {
-  const active = hotspots.find((h) => h.id === activeId);
+  
   const panels = [
     { x: 40, label: 'A', color: '#F59E0B', title: 'Wound' },
     { x: 190, label: 'B', color: '#EF4444', title: 'PCA' },
@@ -1300,7 +1296,7 @@ function ScenarioFieldLabScene({
           <HotspotDot key={hs.id} hs={hs} active={activeId === hs.id} onSelect={onSelect} pulse />
         ))}
       </svg>
-      {active && <FeedbackBanner title={active.label} body={active.info} zone={active.zone} />}
+      
     </SceneFrame>
   );
 }
@@ -1364,9 +1360,7 @@ const LVN002ScopeOfPractice: React.FC = () => {
 
   const passed = score >= MODULE_META.passing;
   const answeredCount = Object.keys(quizAnswers).length;
-  const progressPct = quizMode
-    ? 100
-    : Math.round(((currentPage + 1) / PAGES.length) * 100);
+  
 
   const selectHotspot = (id: string) => {
     setActiveHotspot((prev) => (prev === id ? null : id));
@@ -1619,6 +1613,8 @@ const LVN002ScopeOfPractice: React.FC = () => {
 
   // ─── CONTENT UI ─────────────────────────────────────────────────────────
   return (
+    <>
+      
     <LvnGaoPlayer
       pages={PAGES}
       pageIndex={currentPage}
@@ -1725,259 +1721,18 @@ const LVN002ScopeOfPractice: React.FC = () => {
         </>
       )}
     />
+  
+      <LvnSceneModal
+        isOpen={activeHotspot !== null}
+        onClose={() => setActiveHotspot(null)}
+        title={page.hotspots.find(h => h.id === activeHotspot)?.label || ''}
+        info={page.hotspots.find(h => h.id === activeHotspot)?.info || ''}
+        zone={page.hotspots.find(h => h.id === activeHotspot)?.zone}
+        triggerRef={activeHotspot ? { current: document.getElementById('hs-' + activeHotspot) } : undefined}
+      />
+    </>
   );
 
-  return (
-    <div style={shell}>
-      <header
-        style={{
-          padding: '12px 16px',
-          background: MODULE_META.gradient,
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 12,
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <div>
-          <div style={{ fontWeight: 800, fontSize: 15 }}>
-            {MODULE_META.id} | {MODULE_META.title}
-          </div>
-          <div style={{ fontSize: 11, opacity: 0.92 }}>
-            v{MODULE_META.version} · {MODULE_META.track} · {MODULE_META.cms} · {MODULE_META.policy}
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {PAGES.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              title={`Page ${i + 1}`}
-              onClick={() => setCurrentPage(i)}
-              style={{
-                width: i === currentPage ? 18 : 8,
-                height: 8,
-                borderRadius: 99,
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                background: i === currentPage ? '#F8FAFC' : i < currentPage ? '#A78BFA' : 'rgba(255,255,255,0.35)',
-                transition: 'all 0.2s',
-              }}
-            />
-          ))}
-          <span style={{ fontSize: 11, fontWeight: 700, marginLeft: 6 }}>{progressPct}%</span>
-        </div>
-      </header>
-
-      {/* progress bar */}
-      <div style={{ height: 3, background: '#1E293B' }}>
-        <div
-          style={{
-            height: '100%',
-            width: `${progressPct}%`,
-            background: 'linear-gradient(90deg,#A78BFA,#34D399)',
-            transition: 'width 0.25s',
-          }}
-        />
-      </div>
-
-      <div
-        style={{
-          flex: 1,
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0, 55fr) minmax(0, 45fr)',
-          gap: 0,
-          minHeight: 0,
-        }}
-        className="lvn002-split"
-      >
-        {/* LEFT */}
-        <section
-          style={{
-            padding: '18px 20px 88px',
-            overflow: 'auto',
-            borderRight: '1px solid rgba(255,255,255,0.06)',
-            background: 'linear-gradient(180deg, #0B1020 0%, #111827 100%)',
-          }}
-        >
-          <div style={{ fontSize: 11, color: '#A78BFA', fontWeight: 700, marginBottom: 6 }}>
-            Page {currentPage + 1} of {PAGES.length}
-          </div>
-          <h1 style={{ margin: '0 0 6px', fontSize: 22, lineHeight: 1.25, color: '#F8FAFC' }}>
-            {page.title}
-          </h1>
-          <p style={{ margin: '0 0 14px', color: '#C4B5FD', fontSize: 14 }}>{page.subtitle}</p>
-
-          {page.narration.map((para, i) => (
-            <p
-              key={i}
-              style={{
-                margin: '0 0 12px',
-                fontSize: 14,
-                lineHeight: 1.6,
-                color: '#D1D5DB',
-              }}
-            >
-              {para}
-            </p>
-          ))}
-
-          <h3 style={{ margin: '18px 0 10px', fontSize: 13, color: '#A78BFA', letterSpacing: 0.4 }}>
-            KEY POINTS
-          </h3>
-          <div style={{ display: 'grid', gap: 8 }}>
-            {page.keyPoints.map((kp) => (
-              <div key={kp.title} style={{ ...card, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <span style={{ fontSize: 18 }} aria-hidden>
-                  {kp.icon}
-                </span>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: '#F1F5F9' }}>{kp.title}</div>
-                  <div style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.45 }}>{kp.detail}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div
-            style={{
-              marginTop: 14,
-              padding: 12,
-              borderRadius: 12,
-              background: 'rgba(16,185,129,0.08)',
-              border: '1px solid rgba(16,185,129,0.35)',
-            }}
-          >
-            <div style={{ fontSize: 11, fontWeight: 800, color: '#6EE7B7', marginBottom: 4 }}>
-              CLINICAL TIP
-            </div>
-            <div style={{ fontSize: 13, color: '#D1FAE5', lineHeight: 1.5 }}>{page.clinicalTip}</div>
-          </div>
-
-          <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {page.sourceLabels.map((s) => (
-              <span
-                key={s.kind + s.text}
-                style={{
-                  fontSize: 10,
-                  padding: '4px 8px',
-                  borderRadius: 99,
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#CBD5E1',
-                }}
-              >
-                <strong style={{ color: '#C4B5FD' }}>{s.kind}:</strong> {s.text}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        {/* RIGHT */}
-        <section
-          style={{
-            padding: '16px',
-            background: '#020617',
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: 400,
-          }}
-        >
-          <div style={{ flex: 1, minHeight: 360 }}>
-            {renderScene(page.scene, page.hotspots, activeHotspot, selectHotspot)}
-          </div>
-          <div style={{ marginTop: 10, fontSize: 11, color: '#64748B', textAlign: 'center' }}>
-            Interactive hotspots reveal zone-specific instructional feedback
-          </div>
-        </section>
-      </div>
-
-      {/* FOOTER NAV */}
-      <footer
-        style={{
-          position: 'sticky',
-          bottom: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 12,
-          padding: '12px 16px',
-          background: 'rgba(15,23,42,0.96)',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
-          backdropFilter: 'blur(8px)',
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-          disabled={currentPage === 0}
-          style={{
-            padding: '8px 18px',
-            background: currentPage === 0 ? '#374151' : '#4F46E5',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            cursor: currentPage === 0 ? 'not-allowed' : 'pointer',
-            fontWeight: 700,
-            fontSize: 13,
-          }}
-        >
-          ← Prev
-        </button>
-        <div style={{ fontSize: 11, color: '#94A3B8', textAlign: 'center' }}>
-          {MODULE_META.cms} · {MODULE_META.policy}
-          <div style={{ color: '#64748B' }}>
-            Status: {MODULE_META.status}
-          </div>
-        </div>
-        {currentPage < PAGES.length - 1 ? (
-          <button
-            type="button"
-            onClick={() => setCurrentPage((p) => p + 1)}
-            style={{
-              padding: '8px 18px',
-              background: '#7C3AED',
-              color: 'white',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontWeight: 700,
-              fontSize: 13,
-            }}
-          >
-            Next →
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setQuizMode(true)}
-            style={{
-              padding: '8px 18px',
-              background: '#059669',
-              color: 'white',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontWeight: 700,
-              fontSize: 13,
-            }}
-          >
-            Take Quiz ✓
-          </button>
-        )}
-      </footer>
-
-      <style>{`
-        @media (max-width: 960px) {
-          .lvn002-split {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
-    </div>
-  );
 };
 
 export default LVN002ScopeOfPractice;

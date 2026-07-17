@@ -15,8 +15,10 @@
  * sign-off remain separate requirements for practical competency.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { LvnGaoPlayer } from './LvnGaoPlayer';
+import { LvnSceneModal } from './LvnSceneModal';
+import { InteractiveGroup } from './InteractiveGroup';
 
 // ─── MODULE META ─────────────────────────────────────────────────────────────
 const MODULE_META = {
@@ -725,49 +727,6 @@ const QUIZ: QuizQuestion[] = [
 // Expected distribution: A=2, B=3, C=3, D=2 (indices 0,1,2,3)
 
 // ─── SHARED UI BITS ──────────────────────────────────────────────────────────
-function FeedbackBanner({
-  activeId,
-  hotspots,
-}: {
-  activeId: string | null;
-  hotspots: Hotspot[];
-}) {
-  const hs = hotspots.find((h) => h.id === activeId);
-  if (!hs) {
-    return (
-      <div
-        style={{
-          marginTop: 8,
-          padding: '10px 12px',
-          borderRadius: 8,
-          background: '#F1F5F9',
-          color: THEME.muted,
-          fontSize: 13,
-          border: '1px dashed #CBD5E1',
-        }}
-      >
-        Click a numbered hotspot on the diagram for instructional detail.
-      </div>
-    );
-  }
-  return (
-    <div
-      style={{
-        marginTop: 8,
-        padding: '12px 14px',
-        borderRadius: 8,
-        background: '#EEF2FF',
-        border: `2px solid ${THEME.accent}`,
-        color: THEME.dark,
-        fontSize: 13,
-        lineHeight: 1.45,
-      }}
-    >
-      <strong style={{ color: THEME.accent }}>{hs.label}:</strong> {hs.info}
-    </div>
-  );
-}
-
 function HotspotDot({
   hs,
   index,
@@ -824,7 +783,7 @@ function HotspotDot({
 
 // ─── SCENES ──────────────────────────────────────────────────────────────────
 function SceneCompetencyWheel({
-  hotspots,
+  hotspots: _hotspots,
   activeHotspot,
   onSelect,
   phase,
@@ -850,7 +809,7 @@ function SceneCompetencyWheel({
   const pulse = 1 + Math.sin(phase * 0.05) * 0.03;
 
   return (
-    <svg viewBox="0 0 400 380" width="100%" height="100%" style={{ maxHeight: 420 }}>
+    <svg viewBox="0 0 400 380" width="100%" height="100%" style={{ display: 'block', background: THEME.secondary }}>
       <rect width="400" height="380" rx="16" fill={THEME.secondary} />
       <text x="200" y="28" textAnchor="middle" fill={THEME.dark} fontSize="14" fontWeight="700">
         Core LVN Skills — Competency Wheel
@@ -863,23 +822,39 @@ function SceneCompetencyWheel({
       <text x={cx} y={cy + 12} textAnchor="middle" fill="#FFF7ED" fontSize="9">
         Skills
       </text>
+      
       {skills.map((s, i) => {
         const ang = (i / skills.length) * Math.PI * 2 - Math.PI / 2;
         const x = cx + Math.cos(ang) * r;
         const y = cy + Math.sin(ang) * r;
+        
+        let hsId = '';
+        if (i === 0) hsId = 'vs';
+        else if (i === 1) hsId = 'wound';
+        else if (i === 2) hsId = 'med';
+        else if (i === 3) hsId = 'cath';
+        else if (i === 4) hsId = 'spec';
+        else if (i === 5) hsId = 'inj';
+        else if (i === 6) hsId = 'trach';
+        else if (i === 7) hsId = 'bg';
+
         return (
-          <g key={s.name}>
-            <line x1={cx} y1={cy} x2={x} y2={y} stroke={s.color} strokeWidth="2" opacity={0.5} />
-            <circle cx={x} cy={y} r={22} fill={s.color} opacity={0.9} />
-            <text x={x} y={y + 3} textAnchor="middle" fill="#fff" fontSize="8" fontWeight="700">
+          <InteractiveGroup
+            key={s.name}
+            id={'hs-' + hsId}
+            label={s.name}
+            isActive={activeHotspot === hsId}
+            onActivate={() => onSelect(hsId)}
+          >
+            <line x1={cx} y1={cy} x2={x} y2={y} stroke={s.color} strokeWidth={activeHotspot === hsId ? 3.5 : 2} opacity={activeHotspot === hsId ? 1 : 0.5} />
+            <circle cx={x} cy={y} r={22} fill={activeHotspot === hsId ? '#FEF3C7' : s.color} stroke={activeHotspot === hsId ? '#C74601' : 'none'} strokeWidth={activeHotspot === hsId ? 2 : 0} opacity={activeHotspot === hsId ? 1 : 0.9} />
+            <text x={x} y={y + 3} textAnchor="middle" fill={activeHotspot === hsId ? '#C74601' : '#fff'} fontSize="8" fontWeight="800">
               {s.name.split(' ')[0]}
             </text>
-          </g>
+          </InteractiveGroup>
         );
       })}
-      {hotspots.map((hs, i) => (
-        <HotspotDot key={hs.id} hs={hs} index={i} active={activeHotspot === hs.id} onSelect={onSelect} />
-      ))}
+      
       <text x="200" y="368" textAnchor="middle" fill={THEME.muted} fontSize="10">
         Each spoke = skill-specific validation (not universal)
       </text>
@@ -1352,11 +1327,6 @@ const LVN012SkillsCheckoffs: React.FC = () => {
   const isLastLearn = pageIndex >= totalLearnPages - 1;
   const page = PAGES[Math.min(pageIndex, totalLearnPages - 1)];
 
-  const progressPct = useMemo(() => {
-    if (mode === 'quiz' || mode === 'results') return 100;
-    return Math.round(((pageIndex + 1) / totalLearnPages) * 100);
-  }, [mode, pageIndex, totalLearnPages]);
-
   const answeredCount = Object.keys(answers).length;
 
   const submitQuiz = useCallback(() => {
@@ -1637,7 +1607,8 @@ const LVN012SkillsCheckoffs: React.FC = () => {
 
   // ── Learn view ──
   return (
-    <LvnGaoPlayer
+      <>
+        <LvnGaoPlayer
       pages={PAGES}
       pageIndex={pageIndex}
       onSelectPage={(index) => {
@@ -1756,271 +1727,27 @@ const LVN012SkillsCheckoffs: React.FC = () => {
             onSelect={selectHotspot}
             phase={phase}
           />
-          <FeedbackBanner activeId={activeHotspot} hotspots={currentPage.hotspots} />
+          <LvnSceneModal
+            isOpen={activeHotspot !== null}
+            onClose={() => setActiveHotspot(null)}
+            title={currentPage.hotspots.find(h => h.id === activeHotspot)?.label || ''}
+            info={currentPage.hotspots.find(h => h.id === activeHotspot)?.info || ''}
+            triggerRef={activeHotspot ? { current: document.getElementById('hs-' + activeHotspot) } : undefined}
+          />
         </>
       )}
     />
-  );
+        <LvnSceneModal
+          isOpen={activeHotspot !== null}
+          onClose={() => setActiveHotspot(null)}
+          title={page.hotspots.find(h => h.id === activeHotspot)?.label || ''}
+          info={page.hotspots.find(h => h.id === activeHotspot)?.info || ''}
+          triggerRef={activeHotspot ? { current: document.getElementById('hs-' + activeHotspot) } : undefined}
+        />
+      </>
+    );
 
-  return (
-    <div
-      style={{
-        fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
-        color: THEME.dark,
-        background: THEME.panel,
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      {/* Top bar */}
-      <header
-        style={{
-          background: THEME.card,
-          borderBottom: `2px solid ${THEME.border}`,
-          padding: '12px 18px',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            gap: 12,
-            flexWrap: 'wrap',
-            alignItems: 'baseline',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: 12, color: THEME.muted, fontWeight: 600 }}>
-              {MODULE_META.id} · {MODULE_META.track} · v{MODULE_META.version}
-            </div>
-            <h1 style={{ margin: '2px 0 0', fontSize: 18, color: THEME.primaryDark }}>
-              {MODULE_META.title}
-            </h1>
-          </div>
-          <div style={{ fontSize: 12, color: THEME.muted, textAlign: 'right' }}>
-            Page {pageIndex + 1} of {totalLearnPages}
-            <div style={{ color: THEME.accent, fontWeight: 600 }}>{MODULE_META.status}</div>
-          </div>
-        </div>
-        <div
-          style={{
-            marginTop: 10,
-            height: 8,
-            background: '#FDE68A',
-            borderRadius: 99,
-            overflow: 'hidden',
-          }}
-        >
-          <div
-            style={{
-              width: `${progressPct}%`,
-              height: '100%',
-              background: THEME.primary,
-              transition: 'width 0.25s ease',
-            }}
-          />
-        </div>
-        <div style={{ marginTop: 8, fontSize: 11, color: THEME.muted }}>
-          42 CFR § 484.115 · CA B&P § 2859 · Agency HR-TC-001 · Skills demonstration pathway
-        </div>
-      </header>
-
-      {/* Split panels */}
-      <div
-        style={{
-          flex: 1,
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0, 55fr) minmax(0, 45fr)',
-          gap: 0,
-          minHeight: 0,
-        }}
-        className="lvn012-split"
-      >
-        {/* LEFT — narration */}
-        <main
-          style={{
-            padding: '18px 20px 28px',
-            overflow: 'auto',
-            background: THEME.card,
-            borderRight: `1px solid ${THEME.border}`,
-          }}
-        >
-          <div
-            style={{
-              display: 'inline-block',
-              background: '#FEF3C7',
-              color: THEME.primaryDark,
-              fontSize: 11,
-              fontWeight: 700,
-              padding: '4px 10px',
-              borderRadius: 99,
-              marginBottom: 8,
-            }}
-          >
-            Page {page.id} · Instructional
-          </div>
-          <h2 style={{ margin: '0 0 6px', fontSize: 22, lineHeight: 1.25 }}>{page.title}</h2>
-          <p style={{ margin: '0 0 14px', color: THEME.muted, fontSize: 14 }}>{page.subtitle}</p>
-
-          {page.narration.map((para, i) => (
-            <p key={i} style={{ fontSize: 14.5, lineHeight: 1.6, margin: '0 0 12px' }}>
-              {para}
-            </p>
-          ))}
-
-          <div
-            style={{
-              display: 'grid',
-              gap: 10,
-              marginTop: 8,
-              marginBottom: 14,
-            }}
-          >
-            {page.keyPoints.map((kp) => (
-              <div
-                key={kp.title}
-                style={{
-                  display: 'flex',
-                  gap: 10,
-                  padding: 12,
-                  borderRadius: 10,
-                  background: THEME.secondary,
-                  border: `1px solid ${THEME.border}`,
-                }}
-              >
-                <div style={{ fontSize: 20, lineHeight: 1 }}>{kp.icon}</div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 14 }}>{kp.title}</div>
-                  <div style={{ fontSize: 13, color: THEME.muted, lineHeight: 1.45 }}>{kp.detail}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div
-            style={{
-              padding: 12,
-              borderRadius: 10,
-              background: '#ECFDF5',
-              border: `1px solid ${THEME.success}`,
-              fontSize: 13,
-              lineHeight: 1.5,
-            }}
-          >
-            <strong style={{ color: '#065F46' }}>Field tip: </strong>
-            {page.clinicalTip}
-          </div>
-
-          {page.id === 7 && (
-            <div
-              style={{
-                marginTop: 14,
-                padding: 12,
-                borderRadius: 10,
-                background: '#EEF2FF',
-                border: `1px solid ${THEME.accent}`,
-                fontSize: 13,
-                lineHeight: 1.5,
-              }}
-            >
-              Ready for the knowledge check? Remember: 80% passes the <em>quiz</em>. Skills
-              competency still requires observed demonstration and authorized sign-off under HR-TC-001.
-            </div>
-          )}
-        </main>
-
-        {/* RIGHT — scene */}
-        <aside
-          style={{
-            padding: '16px 14px 24px',
-            background: THEME.panel,
-            overflow: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          <div style={{ fontSize: 12, fontWeight: 700, color: THEME.muted, marginBottom: 8 }}>
-            Interactive scene — tap hotspots
-          </div>
-          <InstructionalScene
-            scene={page.scene}
-            hotspots={page.hotspots}
-            activeHotspot={activeHotspot}
-            onSelect={selectHotspot}
-            phase={phase}
-          />
-          <FeedbackBanner activeId={activeHotspot} hotspots={page.hotspots} />
-        </aside>
-      </div>
-
-      {/* Footer nav */}
-      <footer
-        style={{
-          borderTop: `2px solid ${THEME.border}`,
-          background: THEME.card,
-          padding: '12px 18px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          gap: 10,
-          flexWrap: 'wrap',
-          alignItems: 'center',
-        }}
-      >
-        <button
-          type="button"
-          disabled={pageIndex === 0}
-          onClick={() => {
-            setPageIndex((p) => Math.max(0, p - 1));
-            setActiveHotspot(null);
-          }}
-          style={{
-            ...btnSecondary,
-            opacity: pageIndex === 0 ? 0.45 : 1,
-            cursor: pageIndex === 0 ? 'not-allowed' : 'pointer',
-          }}
-        >
-          ← Previous
-        </button>
-
-        <div style={{ fontSize: 12, color: THEME.muted }}>
-          {pageIndex + 1}/{totalLearnPages} content pages · then 10-question knowledge check
-        </div>
-
-        {!isLastLearn ? (
-          <button
-            type="button"
-            onClick={() => {
-              setPageIndex((p) => Math.min(totalLearnPages - 1, p + 1));
-              setActiveHotspot(null);
-            }}
-            style={btnPrimary}
-          >
-            Next →
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setMode('quiz');
-              setActiveHotspot(null);
-            }}
-            style={btnPrimary}
-          >
-            Start knowledge check →
-          </button>
-        )}
-      </footer>
-
-      <style>{`
-        @media (max-width: 900px) {
-          .lvn012-split {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
-    </div>
-  );
+  
 };
 
 const btnPrimary: React.CSSProperties = {

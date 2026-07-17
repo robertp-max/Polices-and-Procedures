@@ -11,6 +11,8 @@
  */
 import React, { useCallback, useMemo, useState } from 'react';
 import { LvnGaoPlayer } from './LvnGaoPlayer';
+import { LvnSceneModal } from './LvnSceneModal';
+import { InteractiveGroup } from './InteractiveGroup';
 
 // ─── MODULE META ─────────────────────────────────────────────────────────────
 const MODULE_META = {
@@ -1036,7 +1038,7 @@ function SceneClassify({ hotspots, activeId, onHotspot }: SceneProps) {
   );
 }
 
-function SceneBwat({ hotspots, activeId, onHotspot }: SceneProps) {
+function SceneBwat({ hotspots: _hotspots, activeId, onHotspot }: SceneProps) {
   const dims = [
     'Size',
     'Depth',
@@ -1053,7 +1055,7 @@ function SceneBwat({ hotspots, activeId, onHotspot }: SceneProps) {
     'Epithelialization',
   ];
   return (
-    <svg viewBox="0 0 400 340" width="100%" height="100%" style={{ maxHeight: 420 }}>
+    <svg viewBox="0 0 400 340" width="100%" height="100%" style={{ display: 'block', background: '#F0FDFA' }}>
       <rect width="400" height="340" rx="16" fill="#F0FDFA" />
       <text x="200" y="24" textAnchor="middle" fontSize="14" fontWeight="700" fill={THEME.dark}>
         Measurement & BWAT Dashboard
@@ -1061,43 +1063,90 @@ function SceneBwat({ hotspots, activeId, onHotspot }: SceneProps) {
       <text x="200" y="42" textAnchor="middle" fontSize="10" fill={THEME.muted}>
         Clock method · 1 = healthier · 5 = more impaired
       </text>
-      {/* Clock graphic */}
-      <circle cx="90" cy="120" r="48" fill="#fff" stroke={THEME.teal} strokeWidth="2" />
-      <text x="90" y="100" textAnchor="middle" fontSize="9" fontWeight="700" fill={THEME.teal}>
-        12
-      </text>
-      <text x="125" y="125" textAnchor="middle" fontSize="9" fontWeight="700" fill={THEME.teal}>
-        3
-      </text>
-      <text x="90" y="148" textAnchor="middle" fontSize="9" fontWeight="700" fill={THEME.teal}>
-        6
-      </text>
-      <text x="55" y="125" textAnchor="middle" fontSize="9" fontWeight="700" fill={THEME.teal}>
-        9
-      </text>
-      <line x1="90" y1="88" x2="90" y2="152" stroke={THEME.danger} strokeWidth="2" />
-      <line x1="55" y1="120" x2="125" y2="120" stroke={THEME.blue} strokeWidth="2" />
-      <text x="90" y="185" textAnchor="middle" fontSize="10" fontWeight="700" fill={THEME.dark}>
-        L 12→6 · W 3→9
-      </text>
+      
+      <InteractiveGroup
+        id="hs-size"
+        label="Clock Method Measurement"
+        isActive={activeId === 'size'}
+        onActivate={() => onHotspot('size')}
+      >
+        {/* Clock graphic */}
+        <circle cx="90" cy="120" r="48" fill={activeId === 'size' ? '#FEF3C7' : '#fff'} stroke={activeId === 'size' ? '#C74601' : THEME.teal} strokeWidth="2" />
+        <text x="90" y="100" textAnchor="middle" fontSize="9" fontWeight="700" fill={THEME.teal}>
+          12
+        </text>
+        <text x="125" y="125" textAnchor="middle" fontSize="9" fontWeight="700" fill={THEME.teal}>
+          3
+        </text>
+        <text x="90" y="148" textAnchor="middle" fontSize="9" fontWeight="700" fill={THEME.teal}>
+          6
+        </text>
+        <text x="55" y="125" textAnchor="middle" fontSize="9" fontWeight="700" fill={THEME.teal}>
+          9
+        </text>
+        <line x1="90" y1="88" x2="90" y2="152" stroke={THEME.danger} strokeWidth="2" />
+        <line x1="55" y1="120" x2="125" y2="120" stroke={THEME.blue} strokeWidth="2" />
+        <text x="90" y="185" textAnchor="middle" fontSize="10" fontWeight="700" fill={THEME.dark}>
+          L 12→6 · W 3→9
+        </text>
+      </InteractiveGroup>
+      
       {/* Dimension chips */}
       {dims.map((d, i) => {
         const col = i % 4;
         const row = Math.floor(i / 4);
         const x = 160 + col * 58;
         const y = 70 + row * 48;
-        return (
-          <g key={d}>
-            <rect x={x} y={y} width="52" height="36" rx="8" fill="#fff" stroke={THEME.teal} strokeWidth="1.2" />
+        
+        let hsId: string | null = null;
+        if (i === 0) hsId = 'size';
+        else if (i === 1) hsId = 'depth';
+        else if (i === 4 || i === 5) hsId = 'necrotic';
+        else if (i === 6 || i === 7) hsId = 'exudate';
+        else if (i === 11) hsId = 'granulation';
+
+        const chipContent = (
+          <>
+            <rect
+              x={x}
+              y={y}
+              width="52"
+              height="36"
+              rx="8"
+              fill={hsId && activeId === hsId ? '#FEF3C7' : '#fff'}
+              stroke={hsId && activeId === hsId ? '#C74601' : THEME.teal}
+              strokeWidth={hsId && activeId === hsId ? 1.8 : 1.2}
+            />
             <text x={x + 26} y={y + 15} textAnchor="middle" fontSize="7.5" fontWeight="700" fill={THEME.dark}>
               {d.split(' ')[0]}
             </text>
             <text x={x + 26} y={y + 27} textAnchor="middle" fontSize="7" fill={THEME.muted}>
               {d.split(' ').slice(1).join(' ') || '1–5'}
             </text>
+          </>
+        );
+
+        if (hsId) {
+          return (
+            <InteractiveGroup
+              key={d}
+              id={'hs-' + hsId + '-' + i}
+              label={d}
+              isActive={activeId === hsId}
+              onActivate={() => onHotspot(hsId!)}
+            >
+              {chipContent}
+            </InteractiveGroup>
+          );
+        }
+
+        return (
+          <g key={d}>
+            {chipContent}
           </g>
         );
       })}
+      
       <rect x="40" y="270" width="320" height="44" rx="10" fill="#ECFDF5" stroke={THEME.success} />
       <text x="200" y="290" textAnchor="middle" fontSize="11" fontWeight="700" fill={THEME.green}>
         Consistent technique each visit
@@ -1105,16 +1154,6 @@ function SceneBwat({ hotspots, activeId, onHotspot }: SceneProps) {
       <text x="200" y="306" textAnchor="middle" fontSize="10" fill={THEME.muted}>
         Scores inform RN/MD decisions — not independent POC edits
       </text>
-      {hotspots.map((h, i) => (
-        <HotspotDot
-          key={h.id}
-          hx={h.x}
-          hy={h.y}
-          active={activeId === h.id}
-          label={String(i + 1)}
-          onClick={() => onHotspot(h.id)}
-        />
-      ))}
     </svg>
   );
 }
@@ -1453,7 +1492,8 @@ const LVN007WoundCare: React.FC = () => {
 
   if (!quizMode) {
     return (
-      <LvnGaoPlayer
+      <>
+        <LvnGaoPlayer
         pages={PAGES}
         pageIndex={pageIndex}
         onSelectPage={(index) => {
@@ -1536,10 +1576,19 @@ const LVN007WoundCare: React.FC = () => {
           </div>
         )}
       />
+        <LvnSceneModal
+          isOpen={activeHotspot !== null}
+          onClose={() => setActiveHotspot(null)}
+          title={page.hotspots.find(h => h.id === activeHotspot)?.label || ''}
+          info={page.hotspots.find(h => h.id === activeHotspot)?.info || ''}
+          triggerRef={activeHotspot ? { current: document.getElementById('hs-' + activeHotspot) } : undefined}
+        />
+      </>
     );
   }
 
-  return (
+  if (quizMode) {
+    return (
     <div style={styles.root} data-module={MODULE_META.id} data-version={MODULE_META.version}>
       <header style={styles.header}>
         <div style={styles.headerLeft}>
@@ -1846,6 +1895,8 @@ const LVN007WoundCare: React.FC = () => {
       `}</style>
     </div>
   );
+  }
+
 };
 
 export default LVN007WoundCare;

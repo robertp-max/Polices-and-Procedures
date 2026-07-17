@@ -136,7 +136,9 @@ export function LvnGaoPlayer<Page extends LvnGaoPage>({
         </aside>
 
         <section className="lvn-gao-right" style={rightPanelStyle}>
-          {renderRight(page)}
+          <div className="lvn-gao-right-content" style={rightContentStyle}>
+            {renderRight(page)}
+          </div>
         </section>
       </main>
 
@@ -226,6 +228,89 @@ export function LvnGaoPlayer<Page extends LvnGaoPage>({
             align-self: auto !important;
           }
         }
+
+        .lvn-gao-right-content > svg,
+        .lvn-gao-right-content > div:has(svg) {
+          flex: 1 1 auto !important;
+          min-height: 0 !important;
+          height: auto !important;
+        }
+
+        .lvn-gao-right-content svg {
+          display: block !important;
+          width: 100% !important;
+          height: 100% !important;
+          max-height: none !important;
+        }
+
+        /* SVG Hotspot Interaction Styles */
+        .lvn-interactive-group {
+          outline: none;
+          transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.2s ease;
+        }
+        
+        .lvn-interactive-group:focus-visible {
+          outline: none;
+        }
+
+        /* Focus & Hover states on shapes within the group */
+        .lvn-interactive-group:focus-visible rect,
+        .lvn-interactive-group:focus-visible circle,
+        .lvn-interactive-group:focus-visible polygon,
+        .lvn-interactive-group:focus-visible path,
+        .lvn-interactive-group:focus-visible ellipse {
+          stroke: #007970 !important;
+          stroke-width: 2.5px !important;
+          stroke-dasharray: none !important;
+          filter: drop-shadow(0 0 8px rgba(0, 121, 112, 0.6)) !important;
+        }
+
+        .lvn-interactive-group:hover rect,
+        .lvn-interactive-group:hover circle,
+        .lvn-interactive-group:hover polygon,
+        .lvn-interactive-group:hover path,
+        .lvn-interactive-group:hover ellipse {
+          filter: brightness(1.06) !important;
+          stroke: #007970 !important;
+          stroke-width: 2px !important;
+        }
+        
+        /* Edge glow on text shadow for focus */
+        .lvn-interactive-group:focus-visible text {
+          fill: #007970 !important;
+          font-weight: 800 !important;
+        }
+
+        .lvn-interactive-group:hover text {
+          fill: #007970 !important;
+        }
+
+        /* Selected/Active states */
+        .lvn-interactive-group.active rect,
+        .lvn-interactive-group.active circle,
+        .lvn-interactive-group.active polygon,
+        .lvn-interactive-group.active path,
+        .lvn-interactive-group.active ellipse {
+          stroke: #C74601 !important;
+          stroke-width: 3px !important;
+          stroke-dasharray: none !important;
+          filter: drop-shadow(0 0 8px rgba(199, 70, 1, 0.5)) !important;
+        }
+
+        .lvn-interactive-group.active text {
+          fill: #C74601 !important;
+          font-weight: 800 !important;
+        }
+
+        /* Completed state - soft green glow or indicator */
+        .lvn-interactive-group.completed rect,
+        .lvn-interactive-group.completed circle,
+        .lvn-interactive-group.completed polygon,
+        .lvn-interactive-group.completed path,
+        .lvn-interactive-group.completed ellipse {
+          stroke: #007970 !important;
+          stroke-width: 2px !important;
+        }
       `}</style>
     </div>
   );
@@ -284,6 +369,16 @@ const rightPanelStyle: React.CSSProperties = {
   background: '#fff',
   padding: 20,
   boxShadow: '0 18px 50px rgba(31,28,27,0.08)',
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+};
+
+const rightContentStyle: React.CSSProperties = {
+  flex: 1,
+  minHeight: 0,
+  width: '100%',
+  height: '100%',
   display: 'flex',
   flexDirection: 'column',
 };

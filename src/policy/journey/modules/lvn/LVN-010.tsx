@@ -10,6 +10,8 @@
  */
 import React, { useCallback, useMemo, useState } from 'react';
 import { LvnGaoPlayer } from './LvnGaoPlayer';
+import { LvnSceneModal } from './LvnSceneModal';
+import { InteractiveGroup } from './InteractiveGroup';
 
 // ─── MODULE META ─────────────────────────────────────────────────────────────
 const MODULE_META = {
@@ -858,7 +860,7 @@ function HotspotDot({
 
 // ─── SCENES ──────────────────────────────────────────────────────────────────
 function SceneChain({
-  hotspots,
+  hotspots: _hotspots,
   activeId,
   onHotspot,
 }: {
@@ -879,7 +881,7 @@ function SceneChain({
   const cy = 170;
   const r = 110;
   return (
-    <svg viewBox="0 0 400 340" width="100%" height="100%" style={{ maxHeight: 420 }}>
+    <svg viewBox="0 0 400 340" width="100%" height="100%" style={{ display: 'block', background: '#ECFDF5' }}>
       <defs>
         <radialGradient id="chainBg" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#ECFDF5" />
@@ -898,29 +900,38 @@ function SceneChain({
       <text x={cx} y={cy + 12} textAnchor="middle" fontSize="10" fill={THEME.primaryDark}>
         THE CHAIN
       </text>
+      
       {links.map((label, i) => {
         const angle = (Math.PI * 2 * i) / links.length - Math.PI / 2;
         const x = cx + Math.cos(angle) * r;
         const y = cy + Math.sin(angle) * r;
+        
+        let hsId: string = '';
+        if (i === 0) hsId = 'pathogen';
+        else if (i === 1) hsId = 'reservoir';
+        else if (i === 2) hsId = 'exit';
+        else if (i === 3) hsId = 'transmission';
+        else if (i === 4) hsId = 'entry';
+        else if (i === 5) hsId = 'host';
+
         return (
-          <g key={label}>
-            <circle cx={x} cy={y} r={34} fill={colors[i]} opacity={0.9} />
-            <text x={x} y={y + 4} textAnchor="middle" fontSize="9" fontWeight="700" fill="#fff">
+          <InteractiveGroup
+            key={label}
+            id={'hs-' + hsId}
+            label={label}
+            isActive={activeId === hsId}
+            onActivate={() => onHotspot(hsId)}
+          >
+            <circle cx={x} cy={y} r={34} fill={activeId === hsId ? '#FEF3C7' : colors[i]} stroke={activeId === hsId ? '#C74601' : 'none'} strokeWidth={activeId === hsId ? 2 : 0} opacity={activeId === hsId ? 1 : 0.9} />
+            <text x={x} y={y - 4} textAnchor="middle" fontSize="10" fontWeight="800" fill={activeId === hsId ? '#C74601' : '#fff'}>
               {i + 1}
             </text>
-          </g>
+            <text x={x} y={y + 10} textAnchor="middle" fontSize="7" fontWeight="700" fill={activeId === hsId ? '#1F1C1B' : '#fff'}>
+              {label.split(' ')[0]}
+            </text>
+          </InteractiveGroup>
         );
       })}
-      {hotspots.map((h) => (
-        <HotspotDot
-          key={h.id}
-          hx={h.x}
-          hy={h.y}
-          active={activeId === h.id}
-          label={String(hotspots.indexOf(h) + 1)}
-          onClick={() => onHotspot(h.id)}
-        />
-      ))}
     </svg>
   );
 }
@@ -1444,7 +1455,8 @@ const LVN010InfectionPrevention: React.FC = () => {
 
   if (!quizMode) {
     return (
-      <LvnGaoPlayer
+      <>
+        <LvnGaoPlayer
         pages={PAGES}
         pageIndex={pageIndex}
         onSelectPage={(index) => {
@@ -1493,35 +1505,33 @@ const LVN010InfectionPrevention: React.FC = () => {
           </>
         )}
         renderRight={() => (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            {renderScene()}
-            {activeInfo && (
-              <div style={styles.feedback} role="status" aria-live="polite">
-                <div style={{ fontWeight: 700, color: THEME.primaryDark, marginBottom: 4 }}>
-                  {activeInfo.label}
-                </div>
-                {activeInfo.info}
-              </div>
-            )}
-            {!activeInfo && (
-              <div
-                style={{
-                  marginTop: 12,
-                  fontSize: 12,
-                  color: THEME.muted,
-                  textAlign: 'center',
-                }}
-              >
-                Tap numbered hotspots on the scene for clinical detail.
-              </div>
-            )}
-          </div>
+          <>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+              {renderScene()}
+            </div>
+            <LvnSceneModal
+              isOpen={activeHotspot !== null}
+              onClose={() => setActiveHotspot(null)}
+              title={page.hotspots.find(h => h.id === activeHotspot)?.label || ''}
+              info={page.hotspots.find(h => h.id === activeHotspot)?.info || ''}
+              triggerRef={activeHotspot ? { current: document.getElementById('hs-' + activeHotspot) } : undefined}
+            />
+          </>
         )}
       />
+        <LvnSceneModal
+          isOpen={activeHotspot !== null}
+          onClose={() => setActiveHotspot(null)}
+          title={page.hotspots.find(h => h.id === activeHotspot)?.label || ''}
+          info={page.hotspots.find(h => h.id === activeHotspot)?.info || ''}
+          triggerRef={activeHotspot ? { current: document.getElementById('hs-' + activeHotspot) } : undefined}
+        />
+      </>
     );
   }
 
-  return (
+  if (quizMode) {
+    return (
     <div style={styles.root} data-module={MODULE_META.id} data-version={MODULE_META.version}>
       {/* Header */}
       <header style={styles.header}>
@@ -1811,6 +1821,8 @@ const LVN010InfectionPrevention: React.FC = () => {
       `}</style>
     </div>
   );
+  }
+
 };
 
 export default LVN010InfectionPrevention;
