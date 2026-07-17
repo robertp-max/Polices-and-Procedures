@@ -97,11 +97,11 @@ describe('legacy verification — honest states', () => {
     expect(stateOf(rep, e.event_id)).toBe('VERIFIED');
   });
 
-  it('legacy event affected by JSON-drop is LEGACY_UNVERIFIABLE_JSON_DROP (never VERIFIED)', () => {
+  it('legacy event affected by JSON-drop is LEGACY_UNVERIFIABLE (never VERIFIED)', () => {
     const g = gens();
     const e = legacyOnDiskEvent(input('leg2', { decision: 'permit' }), GENESIS_HEAD, g); // many undefined optionals
     const rep = verifyChainDetailed([e], 'leg2');
-    expect(stateOf(rep, e.event_id)).toBe('LEGACY_UNVERIFIABLE_JSON_DROP');
+    expect(stateOf(rep, e.event_id)).toBe('LEGACY_UNVERIFIABLE');
     expect(rep.ok).toBe(false);
   });
 
@@ -111,7 +111,7 @@ describe('legacy verification — honest states', () => {
     // A v2 event that chains off the legacy event's STORED hash.
     const v2 = constructEvent(input('mix', { decision: 'deny' }), { last_hash: legacy.event_hash, sequence: legacy.sequence }, g);
     const rep = verifyChainDetailed([legacy, v2], 'mix');
-    expect(stateOf(rep, legacy.event_id)).toBe('LEGACY_UNVERIFIABLE_JSON_DROP');
+    expect(stateOf(rep, legacy.event_id)).toBe('LEGACY_UNVERIFIABLE');
     expect(stateOf(rep, v2.event_id)).toBe('VERIFIED'); // link matched prior stored hash + own hash verified
     expect(rep.ok).toBe(false); // overall not fully verified — earlier segment unverifiable
   });

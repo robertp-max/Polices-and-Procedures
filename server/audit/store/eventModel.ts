@@ -290,12 +290,22 @@ export function filterEvents(all: AuditEvent[], f: QueryFilter): AuditEvent[] {
 
 /** Distinct integrity outcomes for a single audit event. */
 export type IntegrityState =
-  | 'VERIFIED'                       // hash + chain reproduce under the event's canon version
-  | 'HASH_MISMATCH'                  // versioned event whose recompute fails (tamper/corruption)
-  | 'CHAIN_BREAK'                    // sequence gap or prev_hash link mismatch
-  | 'UNSUPPORTED_CANON_VERSION'      // canon_version newer than this verifier understands
-  | 'LEGACY_UNVERIFIABLE_JSON_DROP'  // pre-versioning event whose original hash input cannot be reproduced
-  | 'MALFORMED_EVENT';               // missing required fields / not a well-formed event
+  | 'VERIFIED'                   // hash + chain reproduce under the event's canon version
+  | 'HASH_MISMATCH'             // VERSIONED event whose recompute fails — definitive tamper/corruption
+  | 'CHAIN_BREAK'               // sequence gap or prev_hash link mismatch
+  | 'UNSUPPORTED_CANON_VERSION' // canon_version newer than this verifier understands
+  | 'LEGACY_UNVERIFIABLE'       // pre-versioning event whose stored hash cannot be reproduced; cause indeterminate
+  | 'MALFORMED_EVENT';          // missing required fields / not a well-formed event
+
+/**
+ * Non-binding diagnostic hint for a LEGACY_UNVERIFIABLE event. It is NEVER an
+ * integrity conclusion — the event remains unverified regardless of the hint.
+ *   JSON_DROP           — the event matches the expected audit shape, so its
+ *                         failure is CONSISTENT WITH (not proof of) the known
+ *                         undefined/JSON.stringify drop defect.
+ *   UNKNOWN_LEGACY_SHAPE — the event does not match the expected audit shape.
+ */
+export type LegacySuspectedReason = 'JSON_DROP' | 'UNKNOWN_LEGACY_SHAPE';
 
 export interface EventIntegrity {
   stream: string;
@@ -303,6 +313,14 @@ export interface EventIntegrity {
   sequence: number;
   canon_version: number | null;
   state: IntegrityState;
+  /** True only when the stored event_hash was reproduced from persisted bytes. */
+  hash_verified: boolean;
+  /** True when prev_hash links to the prior stored event_hash and sequence is contiguous. */
+  chain_link_verified: boolean;
+  /** Always true — verification never rewrites or replaces the stored hash. */
+  stored_hash_preserved: true;
+  /** Diagnostic only; present for LEGACY_UNVERIFIABLE. Never an integrity verdict. */
+  suspected_reason?: LegacySuspectedReason;
   detail?: string;
 }
 
@@ -319,7 +337,7 @@ const HIGHEST_SUPPORTED_CANON = CANON_VERSION;
 function emptyCounts(): Record<IntegrityState, number> {
   return {
     VERIFIED: 0, HASH_MISMATCH: 0, CHAIN_BREAK: 0,
-    UNSUPPORTED_CANON_VERSION: 0, LEGACY_UNVERIFIABLE_JSON_DROP: 0, MALFORMED_EVENT: 0,
+    UNSUPPORTED_CANON_VERSION: 0, LEGACY_UNVERIFIABLE: 0, MALFORMED_EVENT: 0,
   };
 }
 
@@ -330,6 +348,19 @@ function isMalformed(evt: AuditEvent): boolean {
     || typeof evt.prev_hash !== 'string'
     || typeof evt.sequence !== 'number'
     || typeof evt.stream !== 'string';
+}
+
+/**
+ * True when a legacy (unversioned) event carries the structural fields of a
+ * genuine audit event. Used ONLY to pick a non-binding suspected_reason hint —
+ * it never upgrades an unverifiable event to verified.
+ */
+function hasExpectedAuditShape(evt: AuditEvent): boolean {
+  return typeof evt.event_type === 'string'
+    && typeof evt.occurred_at_utc === 'string'
+    && typeof evt.action === 'string'
+    && !!evt.actor && typeof evt.actor === 'object'
+    && !!evt.resource && typeof evt.resource === 'object';
 }
 
 /**
@@ -356,32 +387,53 @@ export function verifyChainDetailed(all: AuditEvent[], stream?: string): ChainIn
     let expected_seq = 1;
     for (const evt of events) {
       const cv = typeof evt.canon_version === 'number' ? evt.canon_version : null;
-      const record = (state: IntegrityState, detail?: string): void => {
-        results.push({ stream: s, event_id: evt?.event_id ?? '(unknown)', sequence: evt?.sequence ?? -1, canon_version: cv, state, detail });
+      const record = (
+        state: IntegrityState,
+        opts: { hash_verified: boolean; chain_link_verified: boolean; suspected_reason?: LegacySuspectedReason; detail?: string },
+      ): void => {
+        results.push({
+          stream: s, event_id: evt?.event_id ?? '(unknown)', sequence: evt?.sequence ?? -1, canon_version: cv, state,
+          hash_verified: opts.hash_verified, chain_link_verified: opts.chain_link_verified,
+          stored_hash_preserved: true, suspected_reason: opts.suspected_reason, detail: opts.detail,
+        });
         counts[state] += 1;
       };
 
-      if (isMalformed(evt)) { record('MALFORMED_EVENT', 'missing required event fields'); continue; }
+      if (isMalformed(evt)) {
+        record('MALFORMED_EVENT', { hash_verified: false, chain_link_verified: false, detail: 'missing required event fields' });
+        continue;
+      }
 
       // Chain position (uses stored prev hashes only).
       if (evt.sequence !== expected_seq) {
-        record('CHAIN_BREAK', `sequence gap: expected ${expected_seq}, got ${evt.sequence}`);
+        record('CHAIN_BREAK', { hash_verified: false, chain_link_verified: false, detail: `sequence gap: expected ${expected_seq}, got ${evt.sequence}` });
       } else if (evt.prev_hash !== prev) {
-        record('CHAIN_BREAK', 'prev_hash does not match prior stored event_hash');
+        record('CHAIN_BREAK', { hash_verified: false, chain_link_verified: false, detail: 'prev_hash does not match prior stored event_hash' });
       } else {
         const candidate: Record<string, unknown> = { ...evt };
         delete candidate.event_hash;
         if (cv === null) {
-          // Legacy (pre-versioning): try to reproduce with either canonical rule.
+          // Legacy (pre-versioning). Reproduce the stored hash if possible; if
+          // not, we CANNOT distinguish the known JSON-drop defect from
+          // corruption or tampering, so we stay conservative: never VERIFIED,
+          // never benign. suspected_reason is a diagnostic hint only.
           const okV1 = evt.event_hash === sha256(prev + '|' + canonicalV1(candidate));
           const okV2 = evt.event_hash === sha256(prev + '|' + canonical(candidate));
-          if (okV1 || okV2) record('VERIFIED', 'legacy event reproduced from disk');
-          else record('LEGACY_UNVERIFIABLE_JSON_DROP', 'original hash input not reproducible from persisted bytes (pre-versioning JSON-drop)');
+          if (okV1 || okV2) {
+            record('VERIFIED', { hash_verified: true, chain_link_verified: true, detail: 'legacy event reproduced from persisted bytes' });
+          } else {
+            record('LEGACY_UNVERIFIABLE', {
+              hash_verified: false, chain_link_verified: true,
+              suspected_reason: hasExpectedAuditShape(evt) ? 'JSON_DROP' : 'UNKNOWN_LEGACY_SHAPE',
+              detail: 'stored hash not reproducible from persisted bytes; cause indeterminate (JSON-drop vs tamper) — treated as unverifiable',
+            });
+          }
         } else if (cv > HIGHEST_SUPPORTED_CANON) {
-          record('UNSUPPORTED_CANON_VERSION', `canon_version ${cv} > supported ${HIGHEST_SUPPORTED_CANON}`);
+          record('UNSUPPORTED_CANON_VERSION', { hash_verified: false, chain_link_verified: true, detail: `canon_version ${cv} > supported ${HIGHEST_SUPPORTED_CANON}` });
         } else {
           const recomputed = sha256(prev + '|' + canonicalForVersion(cv, candidate));
-          record(evt.event_hash === recomputed ? 'VERIFIED' : 'HASH_MISMATCH', cv === 1 ? 'v1 recompute' : undefined);
+          const ok = evt.event_hash === recomputed;
+          record(ok ? 'VERIFIED' : 'HASH_MISMATCH', { hash_verified: ok, chain_link_verified: true, detail: cv === 1 ? 'v1 recompute' : undefined });
         }
       }
       // Advance the chain by the STORED hash regardless of content verifiability,

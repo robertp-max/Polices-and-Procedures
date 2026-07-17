@@ -10,7 +10,7 @@ The JSONL backend preserves the existing JSONL storage location and public
 facade while using **version-2 round-trip-stable canonical hashing** for new
 events (`canon_version: 2`, undefined-valued object keys omitted). It is **not**
 byte-identical to the pre-P1-B writer; pre-versioning events whose undefined
-fields were dropped by `JSON.stringify` are reported `LEGACY_UNVERIFIABLE_JSON_DROP`
+fields were dropped by `JSON.stringify` are reported `LEGACY_UNVERIFIABLE` (suspected_reason: JSON_DROP, diagnostic only)
 and are never rewritten.
 
 ## Backend selection (fail-closed)
