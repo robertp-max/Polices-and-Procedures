@@ -12,6 +12,7 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { LvnLeftPanel } from './LvnLeftPanel';
 import { LvnGaoPlayer } from './LvnGaoPlayer';
 import { LvnSceneModal } from './LvnSceneModal';
 import { InteractiveGroup } from './InteractiveGroup';
@@ -830,21 +831,7 @@ if (typeof console !== 'undefined') {
 
 // ─── STYLES ─────────────────────────────────────────────────────────────────
 
-const shell: React.CSSProperties = {
-  fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif',
-  color: '#E5E7EB',
-  background: '#0B1020',
-  minHeight: '100vh',
-  display: 'flex',
-  flexDirection: 'column',
-};
 
-const card: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.08)',
-  borderRadius: 12,
-  padding: 14,
-};
 
 // ─── SCENE COMPONENTS ───────────────────────────────────────────────────────
 
@@ -952,7 +939,6 @@ function LicenseAuthorityScene({
   return (
     <SceneFrame title="Scope Boundary Stack">
       <svg viewBox="0 0 500 320" width="100%" height="100%" style={{ display: 'block', background: '#FAFBF8' }}>
-        {/* Connection flow or background design */}
         <rect x="15" y="15" width="470" height="290" rx="16" fill="#FAFBF8" stroke="#E5E4E3" strokeWidth="1" />
         
         {/* Law Pillar */}
@@ -962,7 +948,7 @@ function LicenseAuthorityScene({
           isActive={activeId === 'law'}
           onActivate={() => onSelect('law')}
         >
-          <rect x="35" y="50" width="100" height="200" rx="12" fill="#FFFFFF" stroke="#FAFBF8" strokeWidth="2" />
+          <rect x="35" y="50" width="100" height="200" rx="12" fill="#FFFFFF" stroke="#E5E4E3" strokeWidth="1" />
           <path d="M70 90 H100 M70 100 H100 M70 110 H90 M70 120 H100" stroke="#747470" strokeWidth="2" strokeLinecap="round" />
           <path d="M50 85 h10 v45 h-10 z" fill="#007970" opacity="0.8" />
           <text x="85" y="170" textAnchor="middle" fill="#1F1C1B" fontSize="13" fontWeight="800">CA B&P</text>
@@ -977,7 +963,7 @@ function LicenseAuthorityScene({
           isActive={activeId === 'cop'}
           onActivate={() => onSelect('cop')}
         >
-          <rect x="145" y="50" width="100" height="200" rx="12" fill="#FFFFFF" stroke="#FAFBF8" strokeWidth="2" />
+          <rect x="145" y="50" width="100" height="200" rx="12" fill="#FFFFFF" stroke="#E5E4E3" strokeWidth="1" />
           <path d="M195 85 l15 8 -15 25 -15 -25 z" fill="#004142" opacity="0.8" />
           <path d="M195 95 l8 4 -8 13 -8 -13 z" fill="#E5FEFF" />
           <text x="195" y="170" textAnchor="middle" fill="#1F1C1B" fontSize="13" fontWeight="800">Federal</text>
@@ -992,7 +978,7 @@ function LicenseAuthorityScene({
           isActive={activeId === 'agency'}
           onActivate={() => onSelect('agency')}
         >
-          <rect x="255" y="50" width="100" height="200" rx="12" fill="#FFFFFF" stroke="#FAFBF8" strokeWidth="2" />
+          <rect x="255" y="50" width="100" height="200" rx="12" fill="#FFFFFF" stroke="#E5E4E3" strokeWidth="1" />
           <path d="M290 85 h30 v10 h-30 z M290 100 h30 v25 h-30 z" fill="#747470" opacity="0.2" />
           <circle cx="305" cy="112" r="8" fill="#C74601" opacity="0.85" />
           <path d="M302 112 l2 2 4 -4" stroke="#FFFFFF" strokeWidth="2" fill="none" strokeLinecap="round" />
@@ -1008,7 +994,7 @@ function LicenseAuthorityScene({
           isActive={activeId === 'zones'}
           onActivate={() => onSelect('zones')}
         >
-          <rect x="365" y="50" width="100" height="200" rx="12" fill="#FFFFFF" stroke="#FAFBF8" strokeWidth="2" />
+          <rect x="365" y="50" width="100" height="200" rx="12" fill="#FFFFFF" stroke="#E5E4E3" strokeWidth="1" />
           <circle cx="415" cy="105" r="22" fill="#FEF2F2" stroke="#991B1B" strokeWidth="1.5" />
           <circle cx="415" cy="105" r="14" fill="#FFF7ED" stroke="#C74601" strokeWidth="1.5" />
           <circle cx="415" cy="105" r="6" fill="#E5FEFF" stroke="#007970" strokeWidth="1.5" />
@@ -1385,42 +1371,56 @@ const LVN002ScopeOfPractice: React.FC = () => {
   if (quizMode) {
     if (quizSubmitted) {
       return (
-        <div style={shell}>
+        <div style={{
+          fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+          color: '#1F1C1B',
+          background: '#FAFBF8',
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
           <header
             style={{
-              padding: '16px 20px',
-              background: MODULE_META.gradient,
+              padding: '24px 32px',
+              background: '#007970',
+              color: '#FFFFFF',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
+              boxShadow: '0 4px 12px rgba(0, 121, 112, 0.15)',
             }}
           >
             <div>
-              <div style={{ fontWeight: 800, fontSize: 16 }}>LVN-002 · Knowledge Assessment Results</div>
-              <div style={{ fontSize: 12, opacity: 0.9 }}>
-                Knowledge only — not practical competency certification
+              <div style={{ fontWeight: 800, fontSize: 18 }}>LVN-002 · Knowledge Assessment Results</div>
+              <div style={{ fontSize: 12, opacity: 0.9, marginTop: 4 }}>
+                Scope boundaries validation only (does not certify practical competency)
               </div>
             </div>
-            <div style={{ fontWeight: 800, fontSize: 22 }}>{score}%</div>
+            <div style={{ fontWeight: 800, fontSize: 24, background: 'rgba(255,255,255,0.2)', padding: '6px 16px', borderRadius: 8 }}>
+              {score}%
+            </div>
           </header>
 
-          <main style={{ flex: 1, padding: 20, maxWidth: 900, margin: '0 auto', width: '100%' }}>
+          <main style={{ flex: 1, padding: 32, maxWidth: 800, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
             <div
               style={{
-                ...card,
+                background: passed ? '#E5FEFF' : '#FEF2F2',
+                border: `2px solid ${passed ? '#007970' : '#EF4444'}`,
+                borderRadius: 20,
+                padding: 32,
                 textAlign: 'center',
-                marginBottom: 16,
-                borderColor: passed ? 'rgba(16,185,129,0.5)' : 'rgba(245,158,11,0.5)',
+                marginBottom: 24,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
               }}
             >
-              <div style={{ fontSize: 36, marginBottom: 8 }}>{passed ? '✓' : '↻'}</div>
-              <h2 style={{ margin: '0 0 8px', color: '#F8FAFC' }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>{passed ? '✓' : '↻'}</div>
+              <h2 style={{ margin: '0 0 12px', color: passed ? '#007970' : '#991B1B', fontWeight: 800, fontSize: 22 }}>
                 {passed ? 'Knowledge Check Passed' : 'Review & Retry'}
               </h2>
-              <p style={{ margin: 0, color: '#CBD5E1', fontSize: 14, lineHeight: 1.5 }}>
+              <p style={{ margin: 0, color: '#524C4B', fontSize: 15, lineHeight: 1.6 }}>
                 {passed
                   ? `You scored ${score}% (pass threshold ${MODULE_META.passing}%). This validates knowledge of LVN scope boundaries only. Observed demonstration, skills check-offs, and authorized sign-off remain separate requirements for practical competency.`
-                  : `Score ${score}% is below the ${MODULE_META.passing}% knowledge pass threshold. Review rationales and module pages, then retry the assessment.`}
+                  : `You scored ${score}%, which is below the ${MODULE_META.passing}% knowledge pass threshold. Review rationales and module pages, then retry the assessment.`}
               </p>
             </div>
 
@@ -1428,14 +1428,15 @@ const LVN002ScopeOfPractice: React.FC = () => {
               type="button"
               onClick={() => setReviewOpen((v) => !v)}
               style={{
-                marginBottom: 12,
-                padding: '8px 14px',
-                background: 'rgba(124,58,237,0.25)',
-                color: '#E9D5FF',
-                border: '1px solid #7C3AED',
+                marginBottom: 16,
+                padding: '10px 18px',
+                background: '#FFFFFF',
+                color: '#007970',
+                border: '1px solid #E5E4E3',
                 borderRadius: 8,
                 fontWeight: 700,
                 cursor: 'pointer',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
               }}
             >
               {reviewOpen ? 'Hide' : 'Show'} answer review
@@ -1449,42 +1450,49 @@ const LVN002ScopeOfPractice: React.FC = () => {
                   <div
                     key={q.id}
                     style={{
-                      ...card,
-                      marginBottom: 10,
-                      borderColor: ok ? 'rgba(16,185,129,0.35)' : 'rgba(239,68,68,0.35)',
+                      background: '#FFFFFF',
+                      border: '1px solid #E5E4E3',
+                      borderRadius: 16,
+                      padding: 20,
+                      marginBottom: 16,
+                      borderColor: ok ? '#007970' : '#EF4444',
+                      boxShadow: '0 4px 12px rgba(31,28,27,0.02)',
                     }}
                   >
-                    <div style={{ fontWeight: 700, marginBottom: 6, color: '#F1F5F9' }}>
+                    <div style={{ fontWeight: 700, marginBottom: 8, color: '#1F1C1B', fontSize: 15 }}>
                       {i + 1}. {q.stem}
                     </div>
-                    <div style={{ fontSize: 13, color: ok ? '#6EE7B7' : '#FCA5A5' }}>
+                    <div style={{ fontSize: 13, color: ok ? '#007970' : '#991B1B', fontWeight: 600 }}>
                       Your answer: {typeof ua === 'number' ? q.options[ua] : '(not answered)'}
                     </div>
                     {!ok && (
-                      <div style={{ fontSize: 13, color: '#6EE7B7', marginTop: 4 }}>
+                      <div style={{ fontSize: 13, color: '#007970', marginTop: 4, fontWeight: 600 }}>
                         Correct: {q.options[q.correct]}
                       </div>
                     )}
-                    <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 8, lineHeight: 1.45 }}>
-                      <strong style={{ color: '#C4B5FD' }}>Rationale:</strong> {q.rationale}
+                    <div style={{ fontSize: 13, color: '#524C4B', marginTop: 12, lineHeight: 1.5, padding: 12, background: '#FAFBF8', borderRadius: 8, borderLeft: '3px solid #C74601' }}>
+                      <strong style={{ color: '#C74601' }}>Rationale:</strong> {q.rationale}
                     </div>
                   </div>
                 );
               })}
 
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 24 }}>
               {!passed && (
                 <button
                   type="button"
                   onClick={retryQuiz}
                   style={{
-                    padding: '12px 24px',
-                    background: '#7C3AED',
+                    padding: '14px 28px',
+                    background: '#C74601',
                     color: 'white',
                     border: 'none',
                     borderRadius: 8,
-                    fontWeight: 800,
+                    fontWeight: 700,
                     cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    boxShadow: '0 8px 16px rgba(199,70,1,0.2)',
                   }}
                 >
                   Retry Quiz
@@ -1494,13 +1502,16 @@ const LVN002ScopeOfPractice: React.FC = () => {
                 type="button"
                 onClick={restartModule}
                 style={{
-                  padding: '12px 24px',
-                  background: passed ? '#059669' : '#334155',
-                  color: 'white',
-                  border: 'none',
+                  padding: '14px 28px',
+                  background: passed ? '#007970' : '#FFFFFF',
+                  color: passed ? 'white' : '#524C4B',
+                  border: passed ? 'none' : '1px solid #E5E4E3',
                   borderRadius: 8,
-                  fontWeight: 800,
+                  fontWeight: 700,
                   cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  boxShadow: passed ? '0 8px 16px rgba(0,121,112,0.15)' : 'none',
                 }}
               >
                 {passed ? 'Review Module Again' : 'Restart Module'}
@@ -1512,17 +1523,38 @@ const LVN002ScopeOfPractice: React.FC = () => {
     }
 
     return (
-      <div style={shell}>
-        <header style={{ padding: '16px 20px', background: MODULE_META.gradient }}>
-          <div style={{ fontWeight: 800, fontSize: 16 }}>LVN-002 — Knowledge Assessment</div>
-          <div style={{ fontSize: 12, opacity: 0.9 }}>
+      <div style={{
+        fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+        color: '#1F1C1B',
+        background: '#FAFBF8',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        <header
+          style={{
+            padding: '24px 32px',
+            background: '#007970',
+            color: '#FFFFFF',
+            boxShadow: '0 4px 12px rgba(0, 121, 112, 0.15)',
+          }}
+        >
+          <div style={{ fontWeight: 800, fontSize: 18 }}>LVN-002 — Knowledge Assessment</div>
+          <div style={{ fontSize: 12, opacity: 0.9, marginTop: 4 }}>
             10 questions · {MODULE_META.passing}% pass · scope knowledge only (not skills sign-off)
           </div>
         </header>
-        <main style={{ flex: 1, padding: 20, maxWidth: 900, margin: '0 auto', width: '100%' }}>
+        <main style={{ flex: 1, padding: 32, maxWidth: 800, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
           {QUIZ.map((q, i) => (
-            <div key={q.id} style={{ ...card, marginBottom: 14 }}>
-              <div style={{ fontWeight: 700, marginBottom: 10, color: '#F8FAFC' }}>
+            <div key={q.id} style={{
+              background: '#FFFFFF',
+              border: '1px solid #E5E4E3',
+              borderRadius: 16,
+              padding: 24,
+              marginBottom: 20,
+              boxShadow: '0 4px 12px rgba(31,28,27,0.02)',
+            }}>
+              <div style={{ fontWeight: 700, marginBottom: 16, color: '#1F1C1B', fontSize: 15, lineHeight: 1.45 }}>
                 {i + 1}. {q.stem}
               </div>
               {q.options.map((opt, oi) => {
@@ -1537,16 +1569,18 @@ const LVN002ScopeOfPractice: React.FC = () => {
                       display: 'flex',
                       width: '100%',
                       textAlign: 'left',
-                      gap: 10,
-                      padding: '10px 12px',
-                      marginBottom: 6,
+                      gap: 12,
+                      padding: '12px 16px',
+                      marginBottom: 8,
                       borderRadius: 8,
                       cursor: 'pointer',
-                      border: `1px solid ${selected ? '#7C3AED' : 'rgba(255,255,255,0.1)'}`,
-                      background: selected ? 'rgba(124,58,237,0.28)' : 'rgba(255,255,255,0.03)',
-                      color: '#E5E7EB',
-                      fontSize: 13,
-                      lineHeight: 1.4,
+                      border: `2px solid ${selected ? '#007970' : '#E5E4E3'}`,
+                      background: selected ? '#E5FEFF' : '#FFFFFF',
+                      color: selected ? '#007970' : '#524C4B',
+                      fontSize: 14,
+                      lineHeight: 1.45,
+                      fontWeight: selected ? 600 : 400,
+                      transition: 'all 0.2s',
                     }}
                   >
                     <span
@@ -1554,7 +1588,9 @@ const LVN002ScopeOfPractice: React.FC = () => {
                         minWidth: 22,
                         height: 22,
                         borderRadius: 6,
-                        background: selected ? '#7C3AED' : '#334155',
+                        background: selected ? '#007970' : '#FAFBF8',
+                        color: selected ? '#FFFFFF' : '#747470',
+                        border: `1px solid ${selected ? '#007970' : '#E5E4E3'}`,
                         display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -1579,14 +1615,18 @@ const LVN002ScopeOfPractice: React.FC = () => {
             style={{
               width: '100%',
               padding: 16,
-              background: answeredCount === QUIZ.length ? '#7C3AED' : '#374151',
-              color: 'white',
+              background: answeredCount === QUIZ.length ? '#C74601' : '#E5E4E3',
+              color: answeredCount === QUIZ.length ? 'white' : '#A0A0A0',
               border: 'none',
-              borderRadius: 10,
-              fontWeight: 800,
+              borderRadius: 8,
+              fontWeight: 700,
               cursor: answeredCount === QUIZ.length ? 'pointer' : 'not-allowed',
-              fontSize: 16,
-              marginTop: 8,
+              fontSize: 15,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              marginTop: 16,
+              boxShadow: answeredCount === QUIZ.length ? '0 8px 16px rgba(199,70,1,0.2)' : 'none',
+              transition: 'all 0.2s',
             }}
           >
             Submit Assessment ({answeredCount}/{QUIZ.length} answered)
@@ -1595,13 +1635,17 @@ const LVN002ScopeOfPractice: React.FC = () => {
             type="button"
             onClick={() => setQuizMode(false)}
             style={{
-              marginTop: 10,
-              background: 'transparent',
-              border: '1px solid #475569',
-              color: '#94A3B8',
+              marginTop: 12,
+              width: '100%',
+              background: '#FFFFFF',
+              border: '1px solid #E5E4E3',
+              color: '#524C4B',
               borderRadius: 8,
-              padding: '8px 14px',
+              padding: '12px 16px',
+              fontWeight: 700,
               cursor: 'pointer',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
             }}
           >
             ← Back to content
@@ -1613,8 +1657,6 @@ const LVN002ScopeOfPractice: React.FC = () => {
 
   // ─── CONTENT UI ─────────────────────────────────────────────────────────
   return (
-    <>
-      
     <LvnGaoPlayer
       pages={PAGES}
       pageIndex={currentPage}
@@ -1636,79 +1678,16 @@ const LVN002ScopeOfPractice: React.FC = () => {
       }}
       nextLabel={currentPage < PAGES.length - 1 ? 'Next Lesson →' : 'Take Quiz →'}
       renderLeft={(currentPageData) => (
-        <>
-          <div style={{ fontSize: 11, color: '#A78BFA', fontWeight: 700, marginBottom: 6 }}>
-            Page {currentPage + 1} of {PAGES.length}
-          </div>
-          <h1 style={{ margin: '0 0 6px', fontSize: 22, lineHeight: 1.25, color: '#F8FAFC' }}>
-            {currentPageData.title}
-          </h1>
-          <p style={{ margin: '0 0 14px', color: '#C4B5FD', fontSize: 14 }}>{currentPageData.subtitle}</p>
-
-          {currentPageData.narration.map((para, i) => (
-            <p
-              key={i}
-              style={{
-                margin: '0 0 12px',
-                fontSize: 14,
-                lineHeight: 1.6,
-                color: '#D1D5DB',
-              }}
-            >
-              {para}
-            </p>
-          ))}
-
-          <h3 style={{ margin: '18px 0 10px', fontSize: 13, color: '#A78BFA', letterSpacing: 0.4 }}>
-            KEY POINTS
-          </h3>
-          <div style={{ display: 'grid', gap: 8 }}>
-            {currentPageData.keyPoints.map((kp) => (
-              <div key={kp.title} style={{ ...card, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <span style={{ fontSize: 18 }} aria-hidden>
-                  {kp.icon}
-                </span>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: '#F1F5F9' }}>{kp.title}</div>
-                  <div style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.45 }}>{kp.detail}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div
-            style={{
-              marginTop: 14,
-              padding: 12,
-              borderRadius: 12,
-              background: 'rgba(16,185,129,0.08)',
-              border: '1px solid rgba(16,185,129,0.35)',
-            }}
-          >
-            <div style={{ fontSize: 11, fontWeight: 800, color: '#6EE7B7', marginBottom: 4 }}>
-              CLINICAL TIP
-            </div>
-            <div style={{ fontSize: 13, color: '#D1FAE5', lineHeight: 1.5 }}>{currentPageData.clinicalTip}</div>
-          </div>
-
-          <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {currentPageData.sourceLabels.map((s) => (
-              <span
-                key={s.kind + s.text}
-                style={{
-                  fontSize: 10,
-                  padding: '4px 8px',
-                  borderRadius: 99,
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#CBD5E1',
-                }}
-              >
-                <strong style={{ color: '#C4B5FD' }}>{s.kind}:</strong> {s.text}
-              </span>
-            ))}
-          </div>
-        </>
+        <LvnLeftPanel
+          pageNumber={currentPage + 1}
+          totalPages={PAGES.length}
+          title={currentPageData.title}
+          subtitle={currentPageData.subtitle}
+          narration={currentPageData.narration}
+          keyPoints={currentPageData.keyPoints}
+          clinicalTip={currentPageData.clinicalTip}
+          sourceLabels={currentPageData.sourceLabels}
+        />
       )}
       renderRight={(currentPageData) => (
         <>
@@ -1721,7 +1700,53 @@ const LVN002ScopeOfPractice: React.FC = () => {
         </>
       )}
     />
-  
+  );
+
+    return (
+    <>
+      <LvnGaoPlayer
+        pages={PAGES}
+        pageIndex={currentPage}
+        onSelectPage={(index) => {
+          setCurrentPage(index);
+          setActiveHotspot(null);
+        }}
+        onPrevious={() => {
+          setCurrentPage((p) => Math.max(0, p - 1));
+          setActiveHotspot(null);
+        }}
+        onNext={() => {
+          if (currentPage < PAGES.length - 1) {
+            setCurrentPage((p) => p + 1);
+            setActiveHotspot(null);
+          } else {
+            setQuizMode(true);
+          }
+        }}
+        nextLabel={currentPage < PAGES.length - 1 ? 'Next Lesson →' : 'Take Quiz →'}
+        renderLeft={(currentPageData) => (
+          <LvnLeftPanel
+            pageNumber={currentPage + 1}
+            totalPages={PAGES.length}
+            title={currentPageData.title}
+            subtitle={currentPageData.subtitle}
+            narration={currentPageData.narration}
+            keyPoints={currentPageData.keyPoints}
+            clinicalTip={currentPageData.clinicalTip}
+            sourceLabels={currentPageData.sourceLabels}
+          />
+        )}
+        renderRight={(currentPageData) => (
+          <>
+            <div style={{ flex: 1, minHeight: 360 }}>
+              {renderScene(currentPageData.scene, currentPageData.hotspots, activeHotspot, selectHotspot)}
+            </div>
+            <div style={{ marginTop: 10, fontSize: 11, color: '#64748B', textAlign: 'center' }}>
+              Interactive hotspots reveal zone-specific instructional feedback
+            </div>
+          </>
+        )}
+      />
       <LvnSceneModal
         isOpen={activeHotspot !== null}
         onClose={() => setActiveHotspot(null)}

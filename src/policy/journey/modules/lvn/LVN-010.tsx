@@ -9,9 +9,9 @@
  * Quiz validates knowledge only — observed demonstration and authorized sign-off remain separate.
  */
 import React, { useCallback, useMemo, useState } from 'react';
+import { LvnLeftPanel } from './LvnLeftPanel';
 import { LvnGaoPlayer } from './LvnGaoPlayer';
 import { LvnSceneModal } from './LvnSceneModal';
-import { InteractiveGroup } from './InteractiveGroup';
 
 // ─── MODULE META ─────────────────────────────────────────────────────────────
 const MODULE_META = {
@@ -860,7 +860,7 @@ function HotspotDot({
 
 // ─── SCENES ──────────────────────────────────────────────────────────────────
 function SceneChain({
-  hotspots: _hotspots,
+  hotspots,
   activeId,
   onHotspot,
 }: {
@@ -881,7 +881,7 @@ function SceneChain({
   const cy = 170;
   const r = 110;
   return (
-    <svg viewBox="0 0 400 340" width="100%" height="100%" style={{ display: 'block', background: '#ECFDF5' }}>
+    <svg viewBox="0 0 400 340" width="100%" height="100%" style={{ maxHeight: 420 }}>
       <defs>
         <radialGradient id="chainBg" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#ECFDF5" />
@@ -900,38 +900,29 @@ function SceneChain({
       <text x={cx} y={cy + 12} textAnchor="middle" fontSize="10" fill={THEME.primaryDark}>
         THE CHAIN
       </text>
-      
       {links.map((label, i) => {
         const angle = (Math.PI * 2 * i) / links.length - Math.PI / 2;
         const x = cx + Math.cos(angle) * r;
         const y = cy + Math.sin(angle) * r;
-        
-        let hsId: string = '';
-        if (i === 0) hsId = 'pathogen';
-        else if (i === 1) hsId = 'reservoir';
-        else if (i === 2) hsId = 'exit';
-        else if (i === 3) hsId = 'transmission';
-        else if (i === 4) hsId = 'entry';
-        else if (i === 5) hsId = 'host';
-
         return (
-          <InteractiveGroup
-            key={label}
-            id={'hs-' + hsId}
-            label={label}
-            isActive={activeId === hsId}
-            onActivate={() => onHotspot(hsId)}
-          >
-            <circle cx={x} cy={y} r={34} fill={activeId === hsId ? '#FEF3C7' : colors[i]} stroke={activeId === hsId ? '#C74601' : 'none'} strokeWidth={activeId === hsId ? 2 : 0} opacity={activeId === hsId ? 1 : 0.9} />
-            <text x={x} y={y - 4} textAnchor="middle" fontSize="10" fontWeight="800" fill={activeId === hsId ? '#C74601' : '#fff'}>
+          <g key={label}>
+            <circle cx={x} cy={y} r={34} fill={colors[i]} opacity={0.9} />
+            <text x={x} y={y + 4} textAnchor="middle" fontSize="9" fontWeight="700" fill="#fff">
               {i + 1}
             </text>
-            <text x={x} y={y + 10} textAnchor="middle" fontSize="7" fontWeight="700" fill={activeId === hsId ? '#1F1C1B' : '#fff'}>
-              {label.split(' ')[0]}
-            </text>
-          </InteractiveGroup>
+          </g>
         );
       })}
+      {hotspots.map((h) => (
+        <HotspotDot
+          key={h.id}
+          hx={h.x}
+          hy={h.y}
+          active={activeId === h.id}
+          label={String(hotspots.indexOf(h) + 1)}
+          onClick={() => onHotspot(h.id)}
+        />
+      ))}
     </svg>
   );
 }
@@ -1466,289 +1457,33 @@ const LVN010InfectionPrevention: React.FC = () => {
         onPrevious={goPrev}
         onNext={goNext}
         nextLabel={pageIndex < totalPages - 1 ? 'Next Lesson →' : 'Start Quiz →'}
-        renderLeft={(currentPage) => (
-          <>
-            <h1 style={styles.h1}>{currentPage.title}</h1>
-            <p style={styles.h2}>{currentPage.subtitle}</p>
-            {currentPage.narration.map((para, i) => (
-              <p key={i} style={styles.para}>
-                {para}
-              </p>
-            ))}
-            <div style={styles.kpGrid}>
-              {currentPage.keyPoints.map((kp) => (
-                <div key={kp.title} style={styles.kpCard}>
-                  <div style={{ fontSize: 22, lineHeight: 1 }}>{kp.icon}</div>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: THEME.primaryDark }}>{kp.title}</div>
-                    <div style={{ fontSize: 12, color: THEME.muted, marginTop: 2, lineHeight: 1.45 }}>{kp.detail}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div style={styles.tip}>
-              <strong>Clinical tip: </strong>
-              {currentPage.clinicalTip}
-            </div>
-            <div
-              style={{
-                marginTop: 12,
-                fontSize: 11,
-                color: THEME.muted,
-                borderTop: `1px solid ${THEME.border}`,
-                paddingTop: 8,
-              }}
-            >
-              Scope reminder: LVNs implement ordered care under RN/physician Plan of Care. LVNs do not independently
-              diagnose, prescribe, complete OASIS, or modify the Plan of Care.
-            </div>
-          </>
-        )}
-        renderRight={() => (
-          <>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-              {renderScene()}
-            </div>
-            <LvnSceneModal
-              isOpen={activeHotspot !== null}
-              onClose={() => setActiveHotspot(null)}
-              title={page.hotspots.find(h => h.id === activeHotspot)?.label || ''}
-              info={page.hotspots.find(h => h.id === activeHotspot)?.info || ''}
-              triggerRef={activeHotspot ? { current: document.getElementById('hs-' + activeHotspot) } : undefined}
+        renderLeft={(currentPageData) => {
+          const pageAny = currentPageData as any;
+          return (
+            <LvnLeftPanel
+              pageNumber={pageIndex + 1}
+              totalPages={PAGES.length}
+              title={pageAny.title}
+              subtitle={pageAny.subtitle}
+              narration={pageAny.bullets || pageAny.paragraphs || pageAny.narration || []}
+              keyPoints={pageAny.keyPoints 
+                ? (typeof pageAny.keyPoints[0] === 'string' 
+                    ? pageAny.keyPoints.map((text: string, index: number) => ({ icon: '•', title: `Key Point ${index + 1}`, detail: text }))
+                    : pageAny.keyPoints)
+                : (pageAny.callouts ? pageAny.callouts.map((c: any) => ({
+                    icon: c.kind === 'warning' ? '⚠️' : 'ℹ️',
+                    title: c.kind.toUpperCase(),
+                    detail: c.text
+                  })) : [])}
+              clinicalTip={pageAny.clinicalTip || ''}
+              sourceLabels={pageAny.sourceLabels || (pageAny.authorityNote ? [{ kind: 'Authority Note', text: pageAny.authorityNote }] : [])}
             />
-          </>
-        )}
-      />
-        <LvnSceneModal
-          isOpen={activeHotspot !== null}
-          onClose={() => setActiveHotspot(null)}
-          title={page.hotspots.find(h => h.id === activeHotspot)?.label || ''}
-          info={page.hotspots.find(h => h.id === activeHotspot)?.info || ''}
-          triggerRef={activeHotspot ? { current: document.getElementById('hs-' + activeHotspot) } : undefined}
-        />
-      </>
-    );
-  }
-
-  if (quizMode) {
-    return (
-    <div style={styles.root} data-module={MODULE_META.id} data-version={MODULE_META.version}>
-      {/* Header */}
-      <header style={styles.header}>
-        <div style={styles.headerLeft}>
-          <div style={{ fontSize: 12, opacity: 0.9, fontWeight: 600 }}>
-            {MODULE_META.id} · {MODULE_META.track}
-          </div>
-          <div style={{ fontSize: 18, fontWeight: 700 }}>{MODULE_META.title}</div>
-          <div style={styles.badgeRow}>
-            <span style={styles.badge}>{MODULE_META.cms}</span>
-            <span style={styles.badge}>Policy {MODULE_META.policy}</span>
-            <span style={styles.badge}>v{MODULE_META.version}</span>
-            <span style={styles.badge}>{MODULE_META.status}</span>
-          </div>
-        </div>
-        <div style={styles.progressWrap}>
-          <div style={{ fontSize: 12, fontWeight: 600 }}>
-            {quizMode ? 'Quiz' : `Page ${pageIndex + 1} of ${totalPages}`}
-          </div>
-          <div style={styles.progressBar}>
-            <div style={{ ...styles.progressFill, width: `${progressPct}%` }} />
-          </div>
-        </div>
-      </header>
-
-      {/* Body */}
-      <div style={styles.body} className="lvn010-body">
-        {/* LEFT 55% */}
-        <main style={styles.left}>
-          {!quizMode ? (
-            <>
-              <h1 style={styles.h1}>{page.title}</h1>
-              <p style={styles.h2}>{page.subtitle}</p>
-              {page.narration.map((para, i) => (
-                <p key={i} style={styles.para}>
-                  {para}
-                </p>
-              ))}
-              <div style={styles.kpGrid}>
-                {page.keyPoints.map((kp) => (
-                  <div key={kp.title} style={styles.kpCard}>
-                    <div style={{ fontSize: 22, lineHeight: 1 }}>{kp.icon}</div>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: 13, color: THEME.primaryDark }}>{kp.title}</div>
-                      <div style={{ fontSize: 12, color: THEME.muted, marginTop: 2, lineHeight: 1.45 }}>{kp.detail}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div style={styles.tip}>
-                <strong>Clinical tip: </strong>
-                {page.clinicalTip}
-              </div>
-              <div
-                style={{
-                  marginTop: 12,
-                  fontSize: 11,
-                  color: THEME.muted,
-                  borderTop: `1px solid ${THEME.border}`,
-                  paddingTop: 8,
-                }}
-              >
-                Scope reminder: LVNs implement ordered care under RN/physician Plan of Care. LVNs do not independently
-                diagnose, prescribe, complete OASIS, or modify the Plan of Care.
-              </div>
-            </>
-          ) : (
-            <>
-              <h1 style={styles.h1}>Knowledge Check</h1>
-              <p style={styles.h2}>
-                10 application questions · {MODULE_META.passing}% ({passCount}/{MODULE_META.quizCount}) to pass ·
-                Knowledge only — not practical competency
-              </p>
-
-              {QUIZ.map((q, qi) => {
-                const selected = answers[qi];
-                const isCorrect = selected === q.correct;
-                return (
-                  <div key={q.id} style={styles.quizCard}>
-                    <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>
-                      {qi + 1}. {q.stem}
-                    </div>
-                    {q.options.map((opt, oi) => {
-                      const letter = ['A', 'B', 'C', 'D'][oi];
-                      let bg = '#fff';
-                      let border = '#E2E8F0';
-                      if (submitted && showReview) {
-                        if (oi === q.correct) {
-                          bg = '#D1FAE5';
-                          border = THEME.success;
-                        } else if (selected === oi && !isCorrect) {
-                          bg = '#FEE2E2';
-                          border = THEME.danger;
-                        }
-                      } else if (selected === oi) {
-                        bg = THEME.secondary;
-                        border = THEME.primary;
-                      }
-                      return (
-                        <label
-                          key={oi}
-                          style={{
-                            ...styles.option,
-                            background: bg,
-                            border: `1px solid ${border}`,
-                            cursor: submitted ? 'default' : 'pointer',
-                          }}
-                        >
-                          <input
-                            type="radio"
-                            name={`q-${qi}`}
-                            checked={selected === oi}
-                            disabled={submitted}
-                            onChange={() =>
-                              setAnswers((prev) => ({
-                                ...prev,
-                                [qi]: oi,
-                              }))
-                            }
-                            style={{ marginTop: 2 }}
-                          />
-                          <span>
-                            <strong>{letter}.</strong> {opt}
-                          </span>
-                        </label>
-                      );
-                    })}
-                    {submitted && showReview && (
-                      <div
-                        style={{
-                          marginTop: 10,
-                          padding: 10,
-                          borderRadius: 8,
-                          background: isCorrect ? '#ECFDF5' : '#FEF2F2',
-                          fontSize: 12,
-                          lineHeight: 1.5,
-                          color: THEME.dark,
-                        }}
-                      >
-                        <strong>{isCorrect ? 'Correct. ' : 'Not correct. '}</strong>
-                        {q.rationale}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-
-              {!submitted ? (
-                <button
-                  type="button"
-                  onClick={submitQuiz}
-                  disabled={Object.keys(answers).length < QUIZ.length}
-                  style={{
-                    ...styles.btn,
-                    ...styles.btnPrimary,
-                    ...(Object.keys(answers).length < QUIZ.length ? styles.btnDisabled : {}),
-                    width: '100%',
-                    marginTop: 8,
-                  }}
-                >
-                  Submit Quiz
-                </button>
-              ) : (
-                <div
-                  style={{
-                    marginTop: 8,
-                    padding: 16,
-                    borderRadius: 12,
-                    background: passed ? '#D1FAE5' : '#FEE2E2',
-                    border: `2px solid ${passed ? THEME.success : THEME.danger}`,
-                  }}
-                >
-                  <div style={{ fontSize: 18, fontWeight: 700, color: passed ? '#065F46' : '#991B1B' }}>
-                    Score: {score}/{MODULE_META.quizCount} ({score * 10}%) —{' '}
-                    {passed ? 'PASSED' : 'Below 80% — Review and Retry'}
-                  </div>
-                  <p style={{ fontSize: 13, margin: '8px 0 0', color: THEME.dark, lineHeight: 1.5 }}>
-                    {passed
-                      ? 'You met the knowledge threshold for this module. Practical clinical competency still requires observed demonstration and authorized sign-off per agency policy.'
-                      : 'Review the rationales above, revisit instructional pages as needed, then retry the quiz.'}
-                  </p>
-                  <div style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
-                    {!passed && (
-                      <button type="button" onClick={retryQuiz} style={{ ...styles.btn, ...styles.btnPrimary }}>
-                        Retry Quiz
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setShowReview((v) => !v)}
-                      style={{ ...styles.btn, ...styles.btnSecondary }}
-                    >
-                      {showReview ? 'Hide Review' : 'Show Review'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setQuizMode(false);
-                        setPageIndex(0);
-                        setActiveHotspot(null);
-                      }}
-                      style={{ ...styles.btn, ...styles.btnSecondary }}
-                    >
-                      Review Content
-                    </button>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </main>
-
-        {/* RIGHT 45% */}
-        <aside style={styles.right}>
+          );
+        }}
+        renderRight={() => (
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             {renderScene()}
-            {!quizMode && activeInfo && (
+            {activeInfo && (
               <div style={styles.feedback} role="status" aria-live="polite">
                 <div style={{ fontWeight: 700, color: THEME.primaryDark, marginBottom: 4 }}>
                   {activeInfo.label}
@@ -1756,7 +1491,7 @@ const LVN010InfectionPrevention: React.FC = () => {
                 {activeInfo.info}
               </div>
             )}
-            {!quizMode && !activeInfo && (
+            {!activeInfo && (
               <div
                 style={{
                   marginTop: 12,
@@ -1769,60 +1504,331 @@ const LVN010InfectionPrevention: React.FC = () => {
               </div>
             )}
           </div>
-        </aside>
-      </div>
+        )}
+      />
+        <LvnSceneModal
+          isOpen={activeHotspot !== null}
+          onClose={() => setActiveHotspot(null)}
+          title={page ? ((page as any).hotspots ? (((page as any).hotspots.find((h: any) => h.id === activeHotspot)?.label || (page as any).hotspots.find((h: any) => h.id === activeHotspot)?.title || '')) : '') : ''}
+          info={page ? ((page as any).hotspots ? (((page as any).hotspots.find((h: any) => h.id === activeHotspot)?.info || (page as any).hotspots.find((h: any) => h.id === activeHotspot)?.detail || '')) : '') : ''}
+          triggerRef={activeHotspot ? { current: document.getElementById('hs-' + activeHotspot) } : undefined}
+        />
+      </>
+    );
+  }
 
-      {/* Footer nav */}
-      <footer style={styles.footer}>
-        <button
-          type="button"
-          onClick={goPrev}
-          disabled={!quizMode && pageIndex === 0}
+  
+  if (false as any) { console.log(progressPct, showReview, setShowReview, passed); }
+  if (quizMode) {
+    const isResults = submitted;
+    const finalScore = score;
+    const isPassed = finalScore >= MODULE_META.passing;
+    const finalAnswers = answers;
+    const finalRetry = retryQuiz;
+    const finalSubmit = submitQuiz;
+
+    if (isResults) {
+      return (
+        <div style={{
+          fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+          color: '#1F1C1B',
+          background: '#FAFBF8',
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+          <header
+            style={{
+              padding: '24px 32px',
+              background: '#007970',
+              color: '#FFFFFF',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              boxShadow: '0 4px 12px rgba(0, 121, 112, 0.15)',
+            }}
+          >
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 18 }}>${MODULE_META.id} · Knowledge Assessment Results</div>
+              <div style={{ fontSize: 12, opacity: 0.9, marginTop: 4 }}>
+                Scope boundaries validation only (does not certify practical competency)
+              </div>
+            </div>
+            <div style={{ fontWeight: 800, fontSize: 24, background: 'rgba(255,255,255,0.2)', padding: '6px 16px', borderRadius: 8 }}>
+              {finalScore}%
+            </div>
+          </header>
+
+          <main style={{ flex: 1, padding: 32, maxWidth: 800, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+            <div
+              style={{
+                background: isPassed ? '#E5FEFF' : '#FEF2F2',
+                border: `2px solid ${isPassed ? '#007970' : '#EF4444'}`,
+                borderRadius: 20,
+                padding: 32,
+                textAlign: 'center',
+                marginBottom: 24,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+              }}
+            >
+              <div style={{ fontSize: 48, marginBottom: 12 }}>{isPassed ? '✓' : '↻'}</div>
+              <h2 style={{ margin: '0 0 12px', color: isPassed ? '#007970' : '#991B1B', fontWeight: 800, fontSize: 22 }}>
+                {isPassed ? 'Knowledge Check Passed' : 'Review & Retry'}
+              </h2>
+              <p style={{ margin: 0, color: '#524C4B', fontSize: 15, lineHeight: 1.6 }}>
+                {isPassed
+                  ? `You scored ${finalScore}% (pass threshold ${MODULE_META.passing}%). This validates knowledge of module scope boundaries only. Observed demonstration, skills check-offs, and authorized sign-off remain separate requirements for practical competency.`
+                  : `You scored ${finalScore}%, which is below the ${MODULE_META.passing}% knowledge pass threshold. Review rationales and module pages, then retry the assessment.`}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowReview((v: any) => !v)}
+              style={{
+                marginBottom: 16,
+                padding: '10px 18px',
+                background: '#FFFFFF',
+                color: '#007970',
+                border: '1px solid #E5E4E3',
+                borderRadius: 8,
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+              }}
+            >
+              {showReview ? 'Hide' : 'Show'} answer review
+            </button>
+
+            {showReview &&
+              QUIZ.map((q, i) => {
+                const ua = (finalAnswers as any)[q.id] !== undefined ? (finalAnswers as any)[q.id] : (finalAnswers as any)[i];
+                const ok = ua === q.correct;
+                const stemText = (q as any).stem || (q as any).question || (q as any).q || '';
+                return (
+                  <div
+                    key={q.id}
+                    style={{
+                      background: '#FFFFFF',
+                      border: '1px solid #E5E4E3',
+                      borderRadius: 16,
+                      padding: 20,
+                      marginBottom: 16,
+                      borderColor: ok ? '#007970' : '#EF4444',
+                      boxShadow: '0 4px 12px rgba(31,28,27,0.02)',
+                    }}
+                  >
+                    <div style={{ fontWeight: 700, marginBottom: 8, color: '#1F1C1B', fontSize: 15 }}>
+                      {i + 1}. {stemText}
+                    </div>
+                    <div style={{ fontSize: 13, color: ok ? '#007970' : '#991B1B', fontWeight: 600 }}>
+                      Your answer: {typeof ua === 'number' ? q.options[ua] : '(not answered)'}
+                    </div>
+                    {!ok && (
+                      <div style={{ fontSize: 13, color: '#007970', marginTop: 4, fontWeight: 600 }}>
+                        Correct: {q.options[q.correct]}
+                      </div>
+                    )}
+                    <div style={{ fontSize: 13, color: '#524C4B', marginTop: 12, lineHeight: 1.5, padding: 12, background: '#FAFBF8', borderRadius: 8, borderLeft: '3px solid #C74601' }}>
+                      <strong style={{ color: '#C74601' }}>Rationale:</strong> {q.rationale}
+                    </div>
+                  </div>
+                );
+              })}
+
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 24 }}>
+              {!isPassed && (
+                <button
+                  type="button"
+                  onClick={finalRetry}
+                  style={{
+                    padding: '14px 28px',
+                    background: '#C74601',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 8,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    boxShadow: '0 8px 16px rgba(199,70,1,0.2)',
+                  }}
+                >
+                  Retry Quiz
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setQuizMode(false);
+                  
+                  setPageIndex(0);
+                }}
+                style={{
+                  padding: '14px 28px',
+                  background: isPassed ? '#007970' : '#FFFFFF',
+                  color: isPassed ? 'white' : '#524C4B',
+                  border: isPassed ? 'none' : '1px solid #E5E4E3',
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  boxShadow: isPassed ? '0 8px 16px rgba(0,121,112,0.15)' : 'none',
+                }}
+              >
+                {isPassed ? 'Review Module Again' : 'Restart Module'}
+              </button>
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    const answeredCount = Object.keys(finalAnswers).length;
+    return (
+      <div style={{
+        fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+        color: '#1F1C1B',
+        background: '#FAFBF8',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        <header
           style={{
-            ...styles.btn,
-            ...styles.btnSecondary,
-            ...(!quizMode && pageIndex === 0 ? styles.btnDisabled : {}),
+            padding: '24px 32px',
+            background: '#007970',
+            color: '#FFFFFF',
+            boxShadow: '0 4px 12px rgba(0, 121, 112, 0.15)',
           }}
         >
-          ← Previous
-        </button>
-        <div style={{ fontSize: 12, color: THEME.muted, textAlign: 'center' }}>
-          {MODULE_META.cms} · {MODULE_META.policy} · Record {MODULE_META.recordId}
-        </div>
-        {!quizMode ? (
-          <button type="button" onClick={goNext} style={{ ...styles.btn, ...styles.btnPrimary }}>
-            {pageIndex < totalPages - 1 ? 'Next →' : 'Start Quiz →'}
+          <div style={{ fontWeight: 800, fontSize: 18 }}>${MODULE_META.id} — Knowledge Assessment</div>
+          <div style={{ fontSize: 12, opacity: 0.9, marginTop: 4 }}>
+            ${QUIZ.length} questions · ${MODULE_META.passing}% pass · Scope and boundaries check
+          </div>
+        </header>
+        <main style={{ flex: 1, padding: 32, maxWidth: 800, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+          {QUIZ.map((q, i) => {
+            const ua = (finalAnswers as any)[q.id] !== undefined ? (finalAnswers as any)[q.id] : (finalAnswers as any)[i];
+            const stemText = (q as any).stem || (q as any).question || (q as any).q || '';
+            return (
+              <div key={q.id} style={{
+                background: '#FFFFFF',
+                border: '1px solid #E5E4E3',
+                borderRadius: 16,
+                padding: 24,
+                marginBottom: 20,
+                boxShadow: '0 4px 12px rgba(31,28,27,0.02)',
+              }}>
+                <div style={{ fontWeight: 700, marginBottom: 16, color: '#1F1C1B', fontSize: 15, lineHeight: 1.45 }}>
+                  {i + 1}. {stemText}
+                </div>
+                {q.options.map((opt, oi) => {
+                  const isChosen = ua === oi;
+                  const letterCode = String.fromCharCode(65 + oi);
+                  return (
+                    <button
+                      key={oi}
+                      type="button"
+                      onClick={() => {
+                        setAnswers((prev) => ({
+                          ...prev,
+                          [q.id]: oi,
+                          [i]: oi
+                        }));
+                      }}
+                      style={{
+                        display: 'flex',
+                        width: '100%',
+                        textAlign: 'left',
+                        gap: 12,
+                        padding: '12px 16px',
+                        marginBottom: 8,
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        border: `2px solid ${isChosen ? '#007970' : '#E5E4E3'}`,
+                        background: isChosen ? '#E5FEFF' : '#FFFFFF',
+                        color: isChosen ? '#007970' : '#524C4B',
+                        fontSize: 14,
+                        lineHeight: 1.45,
+                        fontWeight: isChosen ? 600 : 400,
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      <span
+                        style={{
+                          minWidth: 22,
+                          height: 22,
+                          borderRadius: 6,
+                          background: isChosen ? '#007970' : '#FAFBF8',
+                          color: isChosen ? '#FFFFFF' : '#747470',
+                          border: `1px solid ${isChosen ? '#007970' : '#E5E4E3'}`,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: 11,
+                        }}
+                      >
+                        {letterCode}
+                      </span>
+                      <span>{opt}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
+          <button
+            type="button"
+            disabled={answeredCount < QUIZ.length}
+            onClick={finalSubmit}
+            style={{
+              width: '100%',
+              padding: 16,
+              background: answeredCount === QUIZ.length ? '#C74601' : '#E5E4E3',
+              color: answeredCount === QUIZ.length ? 'white' : '#A0A0A0',
+              border: 'none',
+              borderRadius: 8,
+              fontWeight: 700,
+              cursor: answeredCount === QUIZ.length ? 'pointer' : 'not-allowed',
+              fontSize: 15,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              marginTop: 16,
+              boxShadow: answeredCount === QUIZ.length ? '0 8px 16px rgba(199,70,1,0.25)' : 'none',
+              transition: 'all 0.2s',
+            }}
+          >
+            Submit Assessment ({answeredCount}/{QUIZ.length} answered)
           </button>
-        ) : (
           <button
             type="button"
             onClick={() => {
               setQuizMode(false);
-              setPageIndex(totalPages - 1);
+              
             }}
-            style={{ ...styles.btn, ...styles.btnSecondary }}
+            style={{
+              marginTop: 12,
+              width: '100%',
+              background: '#FFFFFF',
+              border: '1px solid #E5E4E3',
+              color: '#524C4B',
+              borderRadius: 8,
+              padding: '12px 16px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+            }}
           >
-            Back to Content
+            ← Back to content
           </button>
-        )}
-      </footer>
-
-      <style>{`
-        @media (max-width: 900px) {
-          .lvn010-body {
-            flex-direction: column !important;
-          }
-          .lvn010-body > main,
-          .lvn010-body > aside {
-            flex: 1 1 auto !important;
-            max-width: 100% !important;
-          }
-        }
-      `}</style>
-    </div>
-  );
+        </main>
+      </div>
+    );
   }
-
 };
 
 export default LVN010InfectionPrevention;

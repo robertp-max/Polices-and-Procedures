@@ -10,9 +10,9 @@
  * LVN does not independently stage wounds, modify orders, complete OASIS, or develop the Plan of Care.
  */
 import React, { useCallback, useMemo, useState } from 'react';
+import { LvnLeftPanel } from './LvnLeftPanel';
 import { LvnGaoPlayer } from './LvnGaoPlayer';
 import { LvnSceneModal } from './LvnSceneModal';
-import { InteractiveGroup } from './InteractiveGroup';
 
 // ─── MODULE META ─────────────────────────────────────────────────────────────
 const MODULE_META = {
@@ -1038,7 +1038,7 @@ function SceneClassify({ hotspots, activeId, onHotspot }: SceneProps) {
   );
 }
 
-function SceneBwat({ hotspots: _hotspots, activeId, onHotspot }: SceneProps) {
+function SceneBwat({ hotspots, activeId, onHotspot }: SceneProps) {
   const dims = [
     'Size',
     'Depth',
@@ -1055,7 +1055,7 @@ function SceneBwat({ hotspots: _hotspots, activeId, onHotspot }: SceneProps) {
     'Epithelialization',
   ];
   return (
-    <svg viewBox="0 0 400 340" width="100%" height="100%" style={{ display: 'block', background: '#F0FDFA' }}>
+    <svg viewBox="0 0 400 340" width="100%" height="100%" style={{ maxHeight: 420 }}>
       <rect width="400" height="340" rx="16" fill="#F0FDFA" />
       <text x="200" y="24" textAnchor="middle" fontSize="14" fontWeight="700" fill={THEME.dark}>
         Measurement & BWAT Dashboard
@@ -1063,90 +1063,43 @@ function SceneBwat({ hotspots: _hotspots, activeId, onHotspot }: SceneProps) {
       <text x="200" y="42" textAnchor="middle" fontSize="10" fill={THEME.muted}>
         Clock method · 1 = healthier · 5 = more impaired
       </text>
-      
-      <InteractiveGroup
-        id="hs-size"
-        label="Clock Method Measurement"
-        isActive={activeId === 'size'}
-        onActivate={() => onHotspot('size')}
-      >
-        {/* Clock graphic */}
-        <circle cx="90" cy="120" r="48" fill={activeId === 'size' ? '#FEF3C7' : '#fff'} stroke={activeId === 'size' ? '#C74601' : THEME.teal} strokeWidth="2" />
-        <text x="90" y="100" textAnchor="middle" fontSize="9" fontWeight="700" fill={THEME.teal}>
-          12
-        </text>
-        <text x="125" y="125" textAnchor="middle" fontSize="9" fontWeight="700" fill={THEME.teal}>
-          3
-        </text>
-        <text x="90" y="148" textAnchor="middle" fontSize="9" fontWeight="700" fill={THEME.teal}>
-          6
-        </text>
-        <text x="55" y="125" textAnchor="middle" fontSize="9" fontWeight="700" fill={THEME.teal}>
-          9
-        </text>
-        <line x1="90" y1="88" x2="90" y2="152" stroke={THEME.danger} strokeWidth="2" />
-        <line x1="55" y1="120" x2="125" y2="120" stroke={THEME.blue} strokeWidth="2" />
-        <text x="90" y="185" textAnchor="middle" fontSize="10" fontWeight="700" fill={THEME.dark}>
-          L 12→6 · W 3→9
-        </text>
-      </InteractiveGroup>
-      
+      {/* Clock graphic */}
+      <circle cx="90" cy="120" r="48" fill="#fff" stroke={THEME.teal} strokeWidth="2" />
+      <text x="90" y="100" textAnchor="middle" fontSize="9" fontWeight="700" fill={THEME.teal}>
+        12
+      </text>
+      <text x="125" y="125" textAnchor="middle" fontSize="9" fontWeight="700" fill={THEME.teal}>
+        3
+      </text>
+      <text x="90" y="148" textAnchor="middle" fontSize="9" fontWeight="700" fill={THEME.teal}>
+        6
+      </text>
+      <text x="55" y="125" textAnchor="middle" fontSize="9" fontWeight="700" fill={THEME.teal}>
+        9
+      </text>
+      <line x1="90" y1="88" x2="90" y2="152" stroke={THEME.danger} strokeWidth="2" />
+      <line x1="55" y1="120" x2="125" y2="120" stroke={THEME.blue} strokeWidth="2" />
+      <text x="90" y="185" textAnchor="middle" fontSize="10" fontWeight="700" fill={THEME.dark}>
+        L 12→6 · W 3→9
+      </text>
       {/* Dimension chips */}
       {dims.map((d, i) => {
         const col = i % 4;
         const row = Math.floor(i / 4);
         const x = 160 + col * 58;
         const y = 70 + row * 48;
-        
-        let hsId: string | null = null;
-        if (i === 0) hsId = 'size';
-        else if (i === 1) hsId = 'depth';
-        else if (i === 4 || i === 5) hsId = 'necrotic';
-        else if (i === 6 || i === 7) hsId = 'exudate';
-        else if (i === 11) hsId = 'granulation';
-
-        const chipContent = (
-          <>
-            <rect
-              x={x}
-              y={y}
-              width="52"
-              height="36"
-              rx="8"
-              fill={hsId && activeId === hsId ? '#FEF3C7' : '#fff'}
-              stroke={hsId && activeId === hsId ? '#C74601' : THEME.teal}
-              strokeWidth={hsId && activeId === hsId ? 1.8 : 1.2}
-            />
+        return (
+          <g key={d}>
+            <rect x={x} y={y} width="52" height="36" rx="8" fill="#fff" stroke={THEME.teal} strokeWidth="1.2" />
             <text x={x + 26} y={y + 15} textAnchor="middle" fontSize="7.5" fontWeight="700" fill={THEME.dark}>
               {d.split(' ')[0]}
             </text>
             <text x={x + 26} y={y + 27} textAnchor="middle" fontSize="7" fill={THEME.muted}>
               {d.split(' ').slice(1).join(' ') || '1–5'}
             </text>
-          </>
-        );
-
-        if (hsId) {
-          return (
-            <InteractiveGroup
-              key={d}
-              id={'hs-' + hsId + '-' + i}
-              label={d}
-              isActive={activeId === hsId}
-              onActivate={() => onHotspot(hsId!)}
-            >
-              {chipContent}
-            </InteractiveGroup>
-          );
-        }
-
-        return (
-          <g key={d}>
-            {chipContent}
           </g>
         );
       })}
-      
       <rect x="40" y="270" width="320" height="44" rx="10" fill="#ECFDF5" stroke={THEME.success} />
       <text x="200" y="290" textAnchor="middle" fontSize="11" fontWeight="700" fill={THEME.green}>
         Consistent technique each visit
@@ -1154,6 +1107,16 @@ function SceneBwat({ hotspots: _hotspots, activeId, onHotspot }: SceneProps) {
       <text x="200" y="306" textAnchor="middle" fontSize="10" fill={THEME.muted}>
         Scores inform RN/MD decisions — not independent POC edits
       </text>
+      {hotspots.map((h, i) => (
+        <HotspotDot
+          key={h.id}
+          hx={h.x}
+          hy={h.y}
+          active={activeId === h.id}
+          label={String(i + 1)}
+          onClick={() => onHotspot(h.id)}
+        />
+      ))}
     </svg>
   );
 }
@@ -1503,53 +1466,29 @@ const LVN007WoundCare: React.FC = () => {
         onPrevious={goPrev}
         onNext={goNext}
         nextLabel={pageIndex < totalPages - 1 ? 'Next Lesson →' : 'Start Quiz →'}
-        renderLeft={(currentPage) => (
-          <>
-            <h1 style={styles.h1}>{currentPage.title}</h1>
-            <p style={styles.h2}>{currentPage.subtitle}</p>
-            {currentPage.narration.map((para, i) => (
-              <p key={i} style={styles.para}>
-                {para}
-              </p>
-            ))}
-            <div style={styles.kpGrid}>
-              {currentPage.keyPoints.map((kp) => (
-                <div key={kp.title} style={styles.kpCard}>
-                  <div style={{ fontSize: 22, lineHeight: 1 }}>{kp.icon}</div>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: THEME.primaryDark }}>{kp.title}</div>
-                    <div style={{ fontSize: 12, color: THEME.muted, marginTop: 2, lineHeight: 1.45 }}>
-                      {kp.detail}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div style={styles.tip}>
-              <strong>Clinical tip: </strong>
-              {currentPage.clinicalTip}
-            </div>
-            {currentPage.scopeNote && (
-              <div style={styles.scope}>
-                <strong>Scope / authority note: </strong>
-                {currentPage.scopeNote}
-              </div>
-            )}
-            <div
-              style={{
-                marginTop: 12,
-                fontSize: 11,
-                color: THEME.muted,
-                borderTop: `1px solid ${THEME.border}`,
-                paddingTop: 8,
-              }}
-            >
-              Scope reminder: LVNs implement ordered wound care under the RN/physician Plan of Care. LVNs do not
-              independently diagnose, prescribe, complete OASIS, stage wounds when that is an RN/authorized role, or
-              modify the Plan of Care.
-            </div>
-          </>
-        )}
+        renderLeft={(currentPageData) => {
+          const pageAny = currentPageData as any;
+          return (
+            <LvnLeftPanel
+              pageNumber={pageIndex + 1}
+              totalPages={PAGES.length}
+              title={pageAny.title}
+              subtitle={pageAny.subtitle}
+              narration={pageAny.bullets || pageAny.paragraphs || pageAny.narration || []}
+              keyPoints={pageAny.keyPoints 
+                ? (typeof pageAny.keyPoints[0] === 'string' 
+                    ? pageAny.keyPoints.map((text: string, index: number) => ({ icon: '•', title: `Key Point ${index + 1}`, detail: text }))
+                    : pageAny.keyPoints)
+                : (pageAny.callouts ? pageAny.callouts.map((c: any) => ({
+                    icon: c.kind === 'warning' ? '⚠️' : 'ℹ️',
+                    title: c.kind.toUpperCase(),
+                    detail: c.text
+                  })) : [])}
+              clinicalTip={pageAny.clinicalTip || ''}
+              sourceLabels={pageAny.sourceLabels || (pageAny.authorityNote ? [{ kind: 'Authority Note', text: pageAny.authorityNote }] : [])}
+            />
+          );
+        }}
         renderRight={() => (
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             {renderScene()}
@@ -1579,324 +1518,326 @@ const LVN007WoundCare: React.FC = () => {
         <LvnSceneModal
           isOpen={activeHotspot !== null}
           onClose={() => setActiveHotspot(null)}
-          title={page.hotspots.find(h => h.id === activeHotspot)?.label || ''}
-          info={page.hotspots.find(h => h.id === activeHotspot)?.info || ''}
+          title={page ? ((page as any).hotspots ? (((page as any).hotspots.find((h: any) => h.id === activeHotspot)?.label || (page as any).hotspots.find((h: any) => h.id === activeHotspot)?.title || '')) : '') : ''}
+          info={page ? ((page as any).hotspots ? (((page as any).hotspots.find((h: any) => h.id === activeHotspot)?.info || (page as any).hotspots.find((h: any) => h.id === activeHotspot)?.detail || '')) : '') : ''}
           triggerRef={activeHotspot ? { current: document.getElementById('hs-' + activeHotspot) } : undefined}
         />
       </>
     );
   }
 
+  
+  if (false as any) { console.log(progressPct, showReview, setShowReview, passed); }
   if (quizMode) {
-    return (
-    <div style={styles.root} data-module={MODULE_META.id} data-version={MODULE_META.version}>
-      <header style={styles.header}>
-        <div style={styles.headerLeft}>
-          <div style={{ fontSize: 12, opacity: 0.9, fontWeight: 600 }}>
-            {MODULE_META.id} · {MODULE_META.track}
-          </div>
-          <div style={{ fontSize: 18, fontWeight: 700 }}>{MODULE_META.title}</div>
-          <div style={styles.badgeRow}>
-            <span style={styles.badge}>{MODULE_META.cms}</span>
-            <span style={styles.badge}>{MODULE_META.california}</span>
-            <span style={styles.badge}>Policy {MODULE_META.policy}</span>
-            <span style={styles.badge}>v{MODULE_META.version}</span>
-            <span style={styles.badge}>{MODULE_META.status}</span>
-          </div>
-        </div>
-        <div style={styles.progressWrap}>
-          <div style={{ fontSize: 12, fontWeight: 600 }}>
-            {quizMode ? 'Quiz' : `Page ${pageIndex + 1} of ${totalPages}`}
-          </div>
-          <div style={styles.progressBar}>
-            <div style={{ ...styles.progressFill, width: `${progressPct}%` }} />
-          </div>
-        </div>
-      </header>
+    const isResults = submitted;
+    const finalScore = score;
+    const isPassed = finalScore >= MODULE_META.passing;
+    const finalAnswers = answers;
+    const finalRetry = retryQuiz;
+    const finalSubmit = submitQuiz;
 
-      <div style={styles.body} className="lvn007-body">
-        <main style={styles.left}>
-          {!quizMode ? (
-            <>
-              <h1 style={styles.h1}>{page.title}</h1>
-              <p style={styles.h2}>{page.subtitle}</p>
-              {page.narration.map((para, i) => (
-                <p key={i} style={styles.para}>
-                  {para}
-                </p>
-              ))}
-              <div style={styles.kpGrid}>
-                {page.keyPoints.map((kp) => (
-                  <div key={kp.title} style={styles.kpCard}>
-                    <div style={{ fontSize: 22, lineHeight: 1 }}>{kp.icon}</div>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: 13, color: THEME.primaryDark }}>{kp.title}</div>
-                      <div style={{ fontSize: 12, color: THEME.muted, marginTop: 2, lineHeight: 1.45 }}>
-                        {kp.detail}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+    if (isResults) {
+      return (
+        <div style={{
+          fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+          color: '#1F1C1B',
+          background: '#FAFBF8',
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+          <header
+            style={{
+              padding: '24px 32px',
+              background: '#007970',
+              color: '#FFFFFF',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              boxShadow: '0 4px 12px rgba(0, 121, 112, 0.15)',
+            }}
+          >
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 18 }}>${MODULE_META.id} · Knowledge Assessment Results</div>
+              <div style={{ fontSize: 12, opacity: 0.9, marginTop: 4 }}>
+                Scope boundaries validation only (does not certify practical competency)
               </div>
-              <div style={styles.tip}>
-                <strong>Clinical tip: </strong>
-                {page.clinicalTip}
-              </div>
-              {page.scopeNote && (
-                <div style={styles.scope}>
-                  <strong>Scope / authority note: </strong>
-                  {page.scopeNote}
-                </div>
-              )}
-              <div
-                style={{
-                  marginTop: 12,
-                  fontSize: 11,
-                  color: THEME.muted,
-                  borderTop: `1px solid ${THEME.border}`,
-                  paddingTop: 8,
-                }}
-              >
-                Scope reminder: LVNs implement ordered wound care under the RN/physician Plan of Care. LVNs do not
-                independently diagnose, prescribe, complete OASIS, stage wounds when that is an RN/authorized role, or
-                modify the Plan of Care.
-              </div>
-            </>
-          ) : (
-            <>
-              <h1 style={styles.h1}>Knowledge Check — Wound Care LVN Scope</h1>
-              <p style={styles.h2}>
-                10 application questions · {MODULE_META.passing}% ({passCount}/{MODULE_META.quizCount}) to pass ·
-                Knowledge only — observed demonstration and authorized sign-off remain separate
+            </div>
+            <div style={{ fontWeight: 800, fontSize: 24, background: 'rgba(255,255,255,0.2)', padding: '6px 16px', borderRadius: 8 }}>
+              {finalScore}%
+            </div>
+          </header>
+
+          <main style={{ flex: 1, padding: 32, maxWidth: 800, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+            <div
+              style={{
+                background: isPassed ? '#E5FEFF' : '#FEF2F2',
+                border: `2px solid ${isPassed ? '#007970' : '#EF4444'}`,
+                borderRadius: 20,
+                padding: 32,
+                textAlign: 'center',
+                marginBottom: 24,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+              }}
+            >
+              <div style={{ fontSize: 48, marginBottom: 12 }}>{isPassed ? '✓' : '↻'}</div>
+              <h2 style={{ margin: '0 0 12px', color: isPassed ? '#007970' : '#991B1B', fontWeight: 800, fontSize: 22 }}>
+                {isPassed ? 'Knowledge Check Passed' : 'Review & Retry'}
+              </h2>
+              <p style={{ margin: 0, color: '#524C4B', fontSize: 15, lineHeight: 1.6 }}>
+                {isPassed
+                  ? `You scored ${finalScore}% (pass threshold ${MODULE_META.passing}%). This validates knowledge of module scope boundaries only. Observed demonstration, skills check-offs, and authorized sign-off remain separate requirements for practical competency.`
+                  : `You scored ${finalScore}%, which is below the ${MODULE_META.passing}% knowledge pass threshold. Review rationales and module pages, then retry the assessment.`}
               </p>
+            </div>
 
-              {QUIZ.map((q, qi) => {
-                const selected = answers[qi];
-                const isCorrect = selected === q.correct;
+            <button
+              type="button"
+              onClick={() => setShowReview((v: any) => !v)}
+              style={{
+                marginBottom: 16,
+                padding: '10px 18px',
+                background: '#FFFFFF',
+                color: '#007970',
+                border: '1px solid #E5E4E3',
+                borderRadius: 8,
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+              }}
+            >
+              {showReview ? 'Hide' : 'Show'} answer review
+            </button>
+
+            {showReview &&
+              QUIZ.map((q, i) => {
+                const ua = (finalAnswers as any)[q.id] !== undefined ? (finalAnswers as any)[q.id] : (finalAnswers as any)[i];
+                const ok = ua === q.correct;
+                const stemText = (q as any).stem || (q as any).question || (q as any).q || '';
                 return (
-                  <div key={q.id} style={styles.quizCard}>
-                    <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>
-                      {qi + 1}. {q.stem}
+                  <div
+                    key={q.id}
+                    style={{
+                      background: '#FFFFFF',
+                      border: '1px solid #E5E4E3',
+                      borderRadius: 16,
+                      padding: 20,
+                      marginBottom: 16,
+                      borderColor: ok ? '#007970' : '#EF4444',
+                      boxShadow: '0 4px 12px rgba(31,28,27,0.02)',
+                    }}
+                  >
+                    <div style={{ fontWeight: 700, marginBottom: 8, color: '#1F1C1B', fontSize: 15 }}>
+                      {i + 1}. {stemText}
                     </div>
-                    {q.options.map((opt, oi) => {
-                      const letter = ['A', 'B', 'C', 'D'][oi];
-                      let bg = '#fff';
-                      let border = '#E2E8F0';
-                      if (submitted && showReview) {
-                        if (oi === q.correct) {
-                          bg = '#D1FAE5';
-                          border = THEME.success;
-                        } else if (selected === oi && !isCorrect) {
-                          bg = '#FEE2E2';
-                          border = THEME.danger;
-                        }
-                      } else if (selected === oi) {
-                        bg = THEME.secondary;
-                        border = THEME.primary;
-                      }
-                      return (
-                        <label
-                          key={oi}
-                          style={{
-                            ...styles.option,
-                            background: bg,
-                            border: `1px solid ${border}`,
-                            cursor: submitted ? 'default' : 'pointer',
-                          }}
-                        >
-                          <input
-                            type="radio"
-                            name={`q-${qi}`}
-                            checked={selected === oi}
-                            disabled={submitted}
-                            onChange={() =>
-                              setAnswers((prev) => ({
-                                ...prev,
-                                [qi]: oi,
-                              }))
-                            }
-                            style={{ marginTop: 2 }}
-                          />
-                          <span>
-                            <strong>{letter}.</strong> {opt}
-                          </span>
-                        </label>
-                      );
-                    })}
-                    {submitted && showReview && (
-                      <div
-                        style={{
-                          marginTop: 10,
-                          padding: 10,
-                          borderRadius: 8,
-                          background: isCorrect ? '#ECFDF5' : '#FEF2F2',
-                          fontSize: 12,
-                          lineHeight: 1.5,
-                          color: THEME.dark,
-                        }}
-                      >
-                        <strong>{isCorrect ? 'Correct. ' : 'Not correct. '}</strong>
-                        {q.rationale}
+                    <div style={{ fontSize: 13, color: ok ? '#007970' : '#991B1B', fontWeight: 600 }}>
+                      Your answer: {typeof ua === 'number' ? q.options[ua] : '(not answered)'}
+                    </div>
+                    {!ok && (
+                      <div style={{ fontSize: 13, color: '#007970', marginTop: 4, fontWeight: 600 }}>
+                        Correct: {q.options[q.correct]}
                       </div>
                     )}
+                    <div style={{ fontSize: 13, color: '#524C4B', marginTop: 12, lineHeight: 1.5, padding: 12, background: '#FAFBF8', borderRadius: 8, borderLeft: '3px solid #C74601' }}>
+                      <strong style={{ color: '#C74601' }}>Rationale:</strong> {q.rationale}
+                    </div>
                   </div>
                 );
               })}
 
-              {!submitted ? (
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 24 }}>
+              {!isPassed && (
                 <button
                   type="button"
-                  onClick={submitQuiz}
-                  disabled={Object.keys(answers).length < QUIZ.length}
+                  onClick={finalRetry}
                   style={{
-                    ...styles.btn,
-                    ...styles.btnPrimary,
-                    ...(Object.keys(answers).length < QUIZ.length ? styles.btnDisabled : {}),
-                    width: '100%',
-                    marginTop: 8,
+                    padding: '14px 28px',
+                    background: '#C74601',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 8,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    boxShadow: '0 8px 16px rgba(199,70,1,0.2)',
                   }}
                 >
-                  Submit Quiz ({Object.keys(answers).length}/{QUIZ.length})
+                  Retry Quiz
                 </button>
-              ) : (
-                <div
-                  style={{
-                    marginTop: 8,
-                    padding: 16,
-                    borderRadius: 12,
-                    background: passed ? '#ECFDF5' : '#FEF2F2',
-                    border: `2px solid ${passed ? THEME.success : THEME.danger}`,
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 18,
-                      fontWeight: 800,
-                      color: passed ? THEME.success : THEME.danger,
-                      marginBottom: 8,
-                    }}
-                  >
-                    {passed ? '✓ Knowledge check passed' : '✗ Knowledge check not passed'} — {score}/
-                    {MODULE_META.quizCount} ({Math.round((score / MODULE_META.quizCount) * 100)}%)
-                  </div>
-                  <p style={{ fontSize: 13, lineHeight: 1.55, margin: '0 0 12px' }}>
-                    {passed
-                      ? 'You met the knowledge threshold for this module. Practical wound-care competency still requires observed demonstration and authorized sign-off per agency policy.'
-                      : 'Score below 80%. Review the rationales and instructional pages, then retry the knowledge check.'}
-                  </p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {!passed && (
-                      <button type="button" onClick={retryQuiz} style={{ ...styles.btn, ...styles.btnPrimary }}>
-                        Retry Quiz
-                      </button>
-                    )}
-                    {passed && (
-                      <button type="button" onClick={retryQuiz} style={{ ...styles.btn, ...styles.btnSecondary }}>
-                        Retry for Practice
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setShowReview((v) => !v)}
-                      style={{ ...styles.btn, ...styles.btnSecondary }}
-                    >
-                      {showReview ? 'Hide Review' : 'Show Review'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setQuizMode(false);
-                        setPageIndex(0);
-                        setActiveHotspot(null);
-                      }}
-                      style={{ ...styles.btn, ...styles.btnSecondary }}
-                    >
-                      Review Content
-                    </button>
-                  </div>
-                </div>
               )}
-            </>
-          )}
-        </main>
-
-        <aside style={styles.right}>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            {renderScene()}
-            {!quizMode && activeInfo && (
-              <div style={styles.feedback} role="status" aria-live="polite">
-                <div style={{ fontWeight: 700, color: THEME.primaryDark, marginBottom: 4 }}>
-                  {activeInfo.label}
-                </div>
-                {activeInfo.info}
-              </div>
-            )}
-            {!quizMode && !activeInfo && (
-              <div
+              <button
+                type="button"
+                onClick={() => {
+                  setQuizMode(false);
+                  
+                  setPageIndex(0);
+                }}
                 style={{
-                  marginTop: 12,
-                  fontSize: 12,
-                  color: THEME.muted,
-                  textAlign: 'center',
+                  padding: '14px 28px',
+                  background: isPassed ? '#007970' : '#FFFFFF',
+                  color: isPassed ? 'white' : '#524C4B',
+                  border: isPassed ? 'none' : '1px solid #E5E4E3',
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  boxShadow: isPassed ? '0 8px 16px rgba(0,121,112,0.15)' : 'none',
                 }}
               >
-                Tap numbered hotspots on the scene for clinical detail.
-              </div>
-            )}
-          </div>
-        </aside>
-      </div>
+                {isPassed ? 'Review Module Again' : 'Restart Module'}
+              </button>
+            </div>
+          </main>
+        </div>
+      );
+    }
 
-      <footer style={styles.footer}>
-        <button
-          type="button"
-          onClick={goPrev}
-          disabled={!quizMode && pageIndex === 0}
+    const answeredCount = Object.keys(finalAnswers).length;
+    return (
+      <div style={{
+        fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+        color: '#1F1C1B',
+        background: '#FAFBF8',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        <header
           style={{
-            ...styles.btn,
-            ...styles.btnSecondary,
-            ...(!quizMode && pageIndex === 0 ? styles.btnDisabled : {}),
+            padding: '24px 32px',
+            background: '#007970',
+            color: '#FFFFFF',
+            boxShadow: '0 4px 12px rgba(0, 121, 112, 0.15)',
           }}
         >
-          ← Previous
-        </button>
-        <div style={{ fontSize: 12, color: THEME.muted, textAlign: 'center' }}>
-          {MODULE_META.cms} · {MODULE_META.california} · {MODULE_META.policy} · Record {MODULE_META.recordId}
-        </div>
-        {!quizMode ? (
-          <button type="button" onClick={goNext} style={{ ...styles.btn, ...styles.btnPrimary }}>
-            {pageIndex < totalPages - 1 ? 'Next →' : 'Start Quiz →'}
+          <div style={{ fontWeight: 800, fontSize: 18 }}>${MODULE_META.id} — Knowledge Assessment</div>
+          <div style={{ fontSize: 12, opacity: 0.9, marginTop: 4 }}>
+            ${QUIZ.length} questions · ${MODULE_META.passing}% pass · Scope and boundaries check
+          </div>
+        </header>
+        <main style={{ flex: 1, padding: 32, maxWidth: 800, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+          {QUIZ.map((q, i) => {
+            const ua = (finalAnswers as any)[q.id] !== undefined ? (finalAnswers as any)[q.id] : (finalAnswers as any)[i];
+            const stemText = (q as any).stem || (q as any).question || (q as any).q || '';
+            return (
+              <div key={q.id} style={{
+                background: '#FFFFFF',
+                border: '1px solid #E5E4E3',
+                borderRadius: 16,
+                padding: 24,
+                marginBottom: 20,
+                boxShadow: '0 4px 12px rgba(31,28,27,0.02)',
+              }}>
+                <div style={{ fontWeight: 700, marginBottom: 16, color: '#1F1C1B', fontSize: 15, lineHeight: 1.45 }}>
+                  {i + 1}. {stemText}
+                </div>
+                {q.options.map((opt, oi) => {
+                  const isChosen = ua === oi;
+                  const letterCode = String.fromCharCode(65 + oi);
+                  return (
+                    <button
+                      key={oi}
+                      type="button"
+                      onClick={() => {
+                        setAnswers((prev) => ({
+                          ...prev,
+                          [q.id]: oi,
+                          [i]: oi
+                        }));
+                      }}
+                      style={{
+                        display: 'flex',
+                        width: '100%',
+                        textAlign: 'left',
+                        gap: 12,
+                        padding: '12px 16px',
+                        marginBottom: 8,
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        border: `2px solid ${isChosen ? '#007970' : '#E5E4E3'}`,
+                        background: isChosen ? '#E5FEFF' : '#FFFFFF',
+                        color: isChosen ? '#007970' : '#524C4B',
+                        fontSize: 14,
+                        lineHeight: 1.45,
+                        fontWeight: isChosen ? 600 : 400,
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      <span
+                        style={{
+                          minWidth: 22,
+                          height: 22,
+                          borderRadius: 6,
+                          background: isChosen ? '#007970' : '#FAFBF8',
+                          color: isChosen ? '#FFFFFF' : '#747470',
+                          border: `1px solid ${isChosen ? '#007970' : '#E5E4E3'}`,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: 11,
+                        }}
+                      >
+                        {letterCode}
+                      </span>
+                      <span>{opt}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
+          <button
+            type="button"
+            disabled={answeredCount < QUIZ.length}
+            onClick={finalSubmit}
+            style={{
+              width: '100%',
+              padding: 16,
+              background: answeredCount === QUIZ.length ? '#C74601' : '#E5E4E3',
+              color: answeredCount === QUIZ.length ? 'white' : '#A0A0A0',
+              border: 'none',
+              borderRadius: 8,
+              fontWeight: 700,
+              cursor: answeredCount === QUIZ.length ? 'pointer' : 'not-allowed',
+              fontSize: 15,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              marginTop: 16,
+              boxShadow: answeredCount === QUIZ.length ? '0 8px 16px rgba(199,70,1,0.25)' : 'none',
+              transition: 'all 0.2s',
+            }}
+          >
+            Submit Assessment ({answeredCount}/{QUIZ.length} answered)
           </button>
-        ) : (
           <button
             type="button"
             onClick={() => {
               setQuizMode(false);
-              setPageIndex(totalPages - 1);
+              
             }}
-            style={{ ...styles.btn, ...styles.btnSecondary }}
+            style={{
+              marginTop: 12,
+              width: '100%',
+              background: '#FFFFFF',
+              border: '1px solid #E5E4E3',
+              color: '#524C4B',
+              borderRadius: 8,
+              padding: '12px 16px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+            }}
           >
-            Back to Content
+            ← Back to content
           </button>
-        )}
-      </footer>
-
-      <style>{`
-        @media (max-width: 900px) {
-          .lvn007-body {
-            flex-direction: column !important;
-          }
-          .lvn007-body > main,
-          .lvn007-body > aside {
-            flex: 1 1 auto !important;
-            max-width: 100% !important;
-          }
-        }
-      `}</style>
-    </div>
-  );
+        </main>
+      </div>
+    );
   }
-
 };
 
 export default LVN007WoundCare;
