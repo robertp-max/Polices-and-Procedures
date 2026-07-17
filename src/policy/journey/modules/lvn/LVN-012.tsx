@@ -16,6 +16,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { LvnGaoPlayer } from './LvnGaoPlayer';
 
 // ─── MODULE META ─────────────────────────────────────────────────────────────
 const MODULE_META = {
@@ -1635,6 +1636,132 @@ const LVN012SkillsCheckoffs: React.FC = () => {
   }
 
   // ── Learn view ──
+  return (
+    <LvnGaoPlayer
+      pages={PAGES}
+      pageIndex={pageIndex}
+      onSelectPage={(index) => {
+        setPageIndex(index);
+        setActiveHotspot(null);
+      }}
+      onPrevious={() => {
+        setPageIndex((p) => Math.max(0, p - 1));
+        setActiveHotspot(null);
+      }}
+      onNext={() => {
+        if (!isLastLearn) {
+          setPageIndex((p) => Math.min(totalLearnPages - 1, p + 1));
+          setActiveHotspot(null);
+        } else {
+          setMode('quiz');
+          setActiveHotspot(null);
+        }
+      }}
+      nextLabel={!isLastLearn ? 'Next Lesson →' : 'Start knowledge check →'}
+      renderLeft={(currentPage) => (
+        <>
+          <div
+            style={{
+              display: 'inline-block',
+              background: '#FEF3C7',
+              color: THEME.primaryDark,
+              fontSize: 11,
+              fontWeight: 700,
+              padding: '4px 10px',
+              borderRadius: 99,
+              marginBottom: 8,
+            }}
+          >
+            Page {currentPage.id} · Instructional
+          </div>
+          <h2 style={{ margin: '0 0 6px', fontSize: 22, lineHeight: 1.25 }}>{currentPage.title}</h2>
+          <p style={{ margin: '0 0 14px', color: THEME.muted, fontSize: 14 }}>{currentPage.subtitle}</p>
+
+          {currentPage.narration.map((para, i) => (
+            <p key={i} style={{ fontSize: 14.5, lineHeight: 1.6, margin: '0 0 12px' }}>
+              {para}
+            </p>
+          ))}
+
+          <div
+            style={{
+              display: 'grid',
+              gap: 10,
+              marginTop: 8,
+              marginBottom: 14,
+            }}
+          >
+            {currentPage.keyPoints.map((kp) => (
+              <div
+                key={kp.title}
+                style={{
+                  display: 'flex',
+                  gap: 10,
+                  padding: 12,
+                  borderRadius: 10,
+                  background: THEME.secondary,
+                  border: `1px solid ${THEME.border}`,
+                }}
+              >
+                <div style={{ fontSize: 20, lineHeight: 1 }}>{kp.icon}</div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 14 }}>{kp.title}</div>
+                  <div style={{ fontSize: 13, color: THEME.muted, lineHeight: 1.45 }}>{kp.detail}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div
+            style={{
+              padding: 12,
+              borderRadius: 10,
+              background: '#ECFDF5',
+              border: `1px solid ${THEME.success}`,
+              fontSize: 13,
+              lineHeight: 1.5,
+            }}
+          >
+            <strong style={{ color: '#065F46' }}>Field tip: </strong>
+            {currentPage.clinicalTip}
+          </div>
+
+          {currentPage.id === 7 && (
+            <div
+              style={{
+                marginTop: 14,
+                padding: 12,
+                borderRadius: 10,
+                background: '#EEF2FF',
+                border: `1px solid ${THEME.accent}`,
+                fontSize: 13,
+                lineHeight: 1.5,
+              }}
+            >
+              Ready for the knowledge check? Remember: 80% passes the <em>quiz</em>. Skills
+              competency still requires observed demonstration and authorized sign-off under HR-TC-001.
+            </div>
+          )}
+        </>
+      )}
+      renderRight={(currentPage) => (
+        <>
+          <div style={{ fontSize: 12, fontWeight: 700, color: THEME.muted, marginBottom: 8 }}>
+            Interactive scene — tap hotspots
+          </div>
+          <InstructionalScene
+            scene={currentPage.scene}
+            hotspots={currentPage.hotspots}
+            activeHotspot={activeHotspot}
+            onSelect={selectHotspot}
+            phase={phase}
+          />
+          <FeedbackBanner activeId={activeHotspot} hotspots={currentPage.hotspots} />
+        </>
+      )}
+    />
+  );
+
   return (
     <div
       style={{

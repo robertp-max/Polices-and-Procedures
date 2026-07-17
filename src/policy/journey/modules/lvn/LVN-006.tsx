@@ -9,6 +9,7 @@
  * Quiz validates knowledge only — practical competency requires observed skills check-off
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { LvnGaoPlayer } from './LvnGaoPlayer';
 
 // ─── MODULE METADATA ─────────────────────────────────────────────────────────
 const MODULE_META = {
@@ -1266,6 +1267,130 @@ const LVN006MedicationManagement: React.FC = () => {
   const progressPct = quizMode
     ? 100
     : Math.round(((pageIndex + 1) / (PAGES.length + 1)) * 100);
+
+  if (!quizMode) {
+    return (
+      <LvnGaoPlayer
+        pages={PAGES}
+        pageIndex={pageIndex}
+        onSelectPage={setPageIndex}
+        onPrevious={goPrev}
+        onNext={goNext}
+        nextLabel={pageIndex < PAGES.length - 1 ? 'Next Lesson →' : 'Start Quiz →'}
+        renderLeft={(currentPage) => (
+          <>
+            <h2 style={{ margin: '0 0 6px', fontSize: 22, color: THEME.primaryDark }}>
+              {currentPage.title}
+            </h2>
+            <p style={{ margin: '0 0 16px', color: THEME.muted, fontSize: 14 }}>
+              {currentPage.subtitle}
+            </p>
+
+            {currentPage.narration.map((para, i) => (
+              <p
+                key={i}
+                style={{
+                  margin: '0 0 12px',
+                  lineHeight: 1.6,
+                  fontSize: 14.5,
+                  color: THEME.dark,
+                }}
+              >
+                {para}
+              </p>
+            ))}
+
+            <div style={{ display: 'grid', gap: 10, margin: '18px 0' }}>
+              {currentPage.keyPoints.map((kp) => (
+                <div
+                  key={kp.title}
+                  style={{
+                    display: 'flex',
+                    gap: 12,
+                    padding: 12,
+                    borderRadius: 10,
+                    background: THEME.secondary,
+                    border: '1px solid #FECACA',
+                  }}
+                >
+                  <div style={{ fontSize: 22, lineHeight: 1 }}>{kp.icon}</div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 14 }}>{kp.title}</div>
+                    <div style={{ fontSize: 13, color: THEME.muted, marginTop: 2 }}>
+                      {kp.detail}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div
+              style={{
+                padding: 12,
+                borderRadius: 10,
+                background: '#FFFBEB',
+                border: `1px solid ${THEME.accent}`,
+                fontSize: 13,
+                lineHeight: 1.5,
+                marginBottom: 12,
+              }}
+            >
+              <strong style={{ color: '#B45309' }}>Clinical tip: </strong>
+              {currentPage.clinicalTip}
+            </div>
+
+            {currentPage.scopeNote && (
+              <div
+                style={{
+                  padding: 12,
+                  borderRadius: 10,
+                  background: '#F0FDF4',
+                  border: '1px solid #86EFAC',
+                  fontSize: 12.5,
+                  lineHeight: 1.5,
+                  color: '#14532D',
+                }}
+              >
+                <strong>Scope / regulatory note: </strong>
+                {currentPage.scopeNote}
+              </div>
+            )}
+          </>
+        )}
+        renderRight={(currentPage) => {
+          const CurrentScene = SCENES[PAGES.indexOf(currentPage)];
+          return (
+            <>
+              <div
+                style={{
+                  flex: 1,
+                  width: '100%',
+                  borderRadius: 18,
+                  border: `1px solid ${THEME.border}`,
+                  background: THEME.white,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  minHeight: 0,
+                }}
+              >
+                {CurrentScene && (
+                  <CurrentScene
+                    activeHotspot={activeHotspot}
+                    setActiveHotspot={setActiveHotspot}
+                    hotspots={currentPage.hotspots}
+                    animPhase={animPhase}
+                  />
+                )}
+              </div>
+              <p style={{ margin: '10px 4px 0', fontSize: 12, color: THEME.muted }}>
+                Interactive scene {pageIndex + 1}/7 — select hotspots for instructional feedback.
+              </p>
+            </>
+          );
+        }}
+      />
+    );
+  }
 
   return (
     <div

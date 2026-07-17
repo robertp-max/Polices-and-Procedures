@@ -9,6 +9,7 @@
  * Quiz validates knowledge only — observed demonstration and authorized sign-off remain separate.
  */
 import React, { useCallback, useMemo, useState } from 'react';
+import { LvnGaoPlayer } from './LvnGaoPlayer';
 
 // ─── MODULE META ─────────────────────────────────────────────────────────────
 const MODULE_META = {
@@ -1440,6 +1441,85 @@ const LVN010InfectionPrevention: React.FC = () => {
         return <SceneQuizActive />;
     }
   };
+
+  if (!quizMode) {
+    return (
+      <LvnGaoPlayer
+        pages={PAGES}
+        pageIndex={pageIndex}
+        onSelectPage={(index) => {
+          setPageIndex(index);
+          setActiveHotspot(null);
+        }}
+        onPrevious={goPrev}
+        onNext={goNext}
+        nextLabel={pageIndex < totalPages - 1 ? 'Next Lesson →' : 'Start Quiz →'}
+        renderLeft={(currentPage) => (
+          <>
+            <h1 style={styles.h1}>{currentPage.title}</h1>
+            <p style={styles.h2}>{currentPage.subtitle}</p>
+            {currentPage.narration.map((para, i) => (
+              <p key={i} style={styles.para}>
+                {para}
+              </p>
+            ))}
+            <div style={styles.kpGrid}>
+              {currentPage.keyPoints.map((kp) => (
+                <div key={kp.title} style={styles.kpCard}>
+                  <div style={{ fontSize: 22, lineHeight: 1 }}>{kp.icon}</div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: THEME.primaryDark }}>{kp.title}</div>
+                    <div style={{ fontSize: 12, color: THEME.muted, marginTop: 2, lineHeight: 1.45 }}>{kp.detail}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={styles.tip}>
+              <strong>Clinical tip: </strong>
+              {currentPage.clinicalTip}
+            </div>
+            <div
+              style={{
+                marginTop: 12,
+                fontSize: 11,
+                color: THEME.muted,
+                borderTop: `1px solid ${THEME.border}`,
+                paddingTop: 8,
+              }}
+            >
+              Scope reminder: LVNs implement ordered care under RN/physician Plan of Care. LVNs do not independently
+              diagnose, prescribe, complete OASIS, or modify the Plan of Care.
+            </div>
+          </>
+        )}
+        renderRight={() => (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            {renderScene()}
+            {activeInfo && (
+              <div style={styles.feedback} role="status" aria-live="polite">
+                <div style={{ fontWeight: 700, color: THEME.primaryDark, marginBottom: 4 }}>
+                  {activeInfo.label}
+                </div>
+                {activeInfo.info}
+              </div>
+            )}
+            {!activeInfo && (
+              <div
+                style={{
+                  marginTop: 12,
+                  fontSize: 12,
+                  color: THEME.muted,
+                  textAlign: 'center',
+                }}
+              >
+                Tap numbered hotspots on the scene for clinical detail.
+              </div>
+            )}
+          </div>
+        )}
+      />
+    );
+  }
 
   return (
     <div style={styles.root} data-module={MODULE_META.id} data-version={MODULE_META.version}>

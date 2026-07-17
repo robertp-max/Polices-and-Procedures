@@ -8,6 +8,7 @@
  * Pages: 7 instructional | Quiz: 10 | Pass: 80%
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { LvnGaoPlayer } from './LvnGaoPlayer';
 
 const MODULE_META = {
   id: 'LVN-008',
@@ -1038,6 +1039,106 @@ const LVN008FallPrevention: React.FC = () => {
   const page = PAGES[pageIndex];
   const progressLearn = ((pageIndex + 1) / PAGES.length) * 100;
   const answeredCount = Object.keys(answers).length;
+
+  if ((mode as string) === 'learn') {
+    return (
+      <LvnGaoPlayer
+        pages={PAGES}
+        pageIndex={pageIndex}
+        onSelectPage={(index) => {
+          setPageIndex(index);
+          setActiveHotspot(null);
+        }}
+        onPrevious={() => {
+          setPageIndex((p) => Math.max(0, p - 1));
+          setActiveHotspot(null);
+        }}
+        onNext={() => {
+          if (pageIndex < PAGES.length - 1) {
+            setPageIndex((p) => Math.min(PAGES.length - 1, p + 1));
+            setActiveHotspot(null);
+          } else {
+            setMode('quiz');
+          }
+        }}
+        nextLabel={pageIndex < PAGES.length - 1 ? 'Next Lesson →' : 'Take Quiz →'}
+        renderLeft={(currentPage) => (
+          <>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10, flexWrap: 'wrap' }}>
+              <span
+                style={{
+                  background: THEME.softAmber,
+                  color: '#92400E',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: '4px 10px',
+                  borderRadius: 999,
+                }}
+              >
+                {currentPage.badge}
+              </span>
+              <span style={{ fontSize: 12, color: THEME.muted }}>
+                Page {pageIndex + 1} of {PAGES.length}
+              </span>
+            </div>
+            <h1 style={{ fontSize: 22, margin: '0 0 12px', lineHeight: 1.25 }}>{currentPage.title}</h1>
+            {currentPage.paragraphs.map((para, i) => (
+              <p key={i} style={{ fontSize: 14, lineHeight: 1.6, margin: '0 0 12px', color: '#334155' }}>
+                {para}
+              </p>
+            ))}
+            <div
+              style={{
+                background: THEME.secondary,
+                border: `1px solid ${THEME.border}`,
+                borderRadius: 10,
+                padding: 12,
+                marginBottom: 12,
+              }}
+            >
+              <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 8, color: THEME.primaryDark }}>Key Points</div>
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                {currentPage.keyPoints.map((kp, i) => (
+                  <li key={i} style={{ fontSize: 13, lineHeight: 1.5, marginBottom: 6, color: THEME.dark }}>
+                    {kp}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div
+              style={{
+                background: THEME.softBlue,
+                borderRadius: 10,
+                padding: 12,
+                marginBottom: 12,
+                border: '1px solid #BAE6FD',
+              }}
+            >
+              <div style={{ fontWeight: 800, fontSize: 12, color: '#075985', marginBottom: 4 }}>Clinical Tip</div>
+              <div style={{ fontSize: 13, lineHeight: 1.5, color: '#0C4A6E' }}>{currentPage.clinicalTip}</div>
+            </div>
+            {currentPage.scopeNote && (
+              <div
+                style={{
+                  background: '#F8FAFC',
+                  borderLeft: `4px solid ${THEME.info}`,
+                  padding: '10px 12px',
+                  fontSize: 12,
+                  lineHeight: 1.5,
+                  color: THEME.muted,
+                  marginBottom: 12,
+                }}
+              >
+                <strong style={{ color: THEME.dark }}>Scope note: </strong>
+                {currentPage.scopeNote}
+              </div>
+            )}
+          </>
+        )}
+        renderRight={() => scene}
+      />
+    );
+  }
 
   return (
     <div

@@ -2299,15 +2299,12 @@ export function ModulePlayerScreen() {
     if (isOasisSocModule(dispatchModuleId)) {
       return <OasisSocTrainingPanel moduleId={dispatchModuleId!} />;
     }
-    // LVN V5 standalone SC04 modules (full interactive players — not placeholder lesson shell)
+    // LVN V5 modules keep their authored left content panel and animated SVG right panel.
     if (dispatchModuleId && isLvnStandaloneModule(dispatchModuleId)) {
       const LvnModule = getLvnStandaloneModule(dispatchModuleId);
       if (LvnModule) {
         return (
           <div className="min-h-[70vh] w-full" data-lvn-standalone={dispatchModuleId}>
-            <div className="mb-3 px-2 sm:px-4 pt-2">
-              <BackLink to="/journey?tab=onboarding&path=lvn">Back to LVN path</BackLink>
-            </div>
             <LvnModule />
           </div>
         );

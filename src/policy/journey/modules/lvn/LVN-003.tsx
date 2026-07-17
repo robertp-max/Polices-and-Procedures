@@ -8,6 +8,7 @@
  */
 
 import React, { useCallback, useMemo, useState } from 'react';
+import { LvnGaoPlayer } from './LvnGaoPlayer';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -1354,6 +1355,129 @@ export default function LVN003CoSignatureModule() {
     setQuizMode(false);
     setActiveHotspot(null);
   }, []);
+
+  if (!quizMode) {
+    return (
+      <LvnGaoPlayer
+        pages={PAGES}
+        pageIndex={pageIndex}
+        onSelectPage={(index) => {
+          setPageIndex(index);
+          setActiveHotspot(null);
+        }}
+        onPrevious={goPrev}
+        onNext={pageIndex < PAGES.length - 1 ? goNext : startQuiz}
+        nextLabel={pageIndex < PAGES.length - 1 ? 'Next Lesson →' : 'Start Quiz →'}
+        renderLeft={(currentPage) => (
+          <>
+            <div style={{ fontSize: 12, color: blue, fontWeight: 700, letterSpacing: 0.3 }}>
+              PAGE {currentPage.id} · {currentPage.subtitle}
+            </div>
+            <h2 style={{ margin: '6px 0 12px', fontSize: 22, lineHeight: 1.25 }}>{currentPage.title}</h2>
+
+            {currentPage.authorityNote && (
+              <div
+                style={{
+                  background: '#F0F9FF',
+                  border: '1px solid #BAE6FD',
+                  borderRadius: 8,
+                  padding: '8px 10px',
+                  fontSize: 12,
+                  color: slate,
+                  marginBottom: 12,
+                }}
+              >
+                {currentPage.authorityNote}
+              </div>
+            )}
+
+            {currentPage.narration.map((para, i) => (
+              <p key={i} style={{ fontSize: 14.5, lineHeight: 1.6, color: slate, margin: '0 0 12px' }}>
+                {para}
+              </p>
+            ))}
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 10,
+                marginTop: 8,
+                marginBottom: 14,
+              }}
+            >
+              {currentPage.keyPoints.map((kp) => (
+                <div
+                  key={kp.title}
+                  style={{
+                    border: '1px solid #E2E8F0',
+                    borderRadius: 10,
+                    padding: 10,
+                    background: '#F8FAFC',
+                  }}
+                >
+                  <div style={{ fontWeight: 700, fontSize: 13, color: ink, marginBottom: 4 }}>
+                    <span style={{ marginRight: 6 }}>{kp.icon}</span>
+                    {kp.title}
+                  </div>
+                  <div style={{ fontSize: 12.5, color: muted, lineHeight: 1.45 }}>{kp.detail}</div>
+                </div>
+              ))}
+            </div>
+
+            <div
+              style={{
+                background: '#ECFDF5',
+                border: `1px solid #A7F3D0`,
+                borderRadius: 10,
+                padding: 12,
+                fontSize: 13,
+                color: '#065F46',
+                lineHeight: 1.5,
+              }}
+            >
+              <strong>Clinical tip: </strong>
+              {currentPage.clinicalTip}
+            </div>
+          </>
+        )}
+        renderRight={(currentPage) => {
+          const CurrentScene = SCENE_MAP[currentPage.scene];
+          const currentHotspot = currentPage.hotspots.find((h) => h.id === activeHotspot) ?? null;
+          return (
+            <>
+              <div
+                style={{
+                  flex: 1,
+                  width: '100%',
+                  borderRadius: 18,
+                  border: '1px solid #E5E4E3',
+                  background: svgBg,
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minHeight: 0,
+                }}
+              >
+                <div style={{ flex: 1, minHeight: 0 }}>
+                  {CurrentScene ? (
+                    <CurrentScene
+                      activeHotspot={activeHotspot}
+                      onHotspot={setActiveHotspot}
+                      hotspots={currentPage.hotspots}
+                    />
+                  ) : (
+                    <div style={{ padding: 24 }}>Scene unavailable</div>
+                  )}
+                </div>
+                <FeedbackBanner hotspot={currentHotspot} />
+              </div>
+            </>
+          );
+        }}
+      />
+    );
+  }
 
   const shell: React.CSSProperties = {
     fontFamily: 'Inter, Segoe UI, system-ui, -apple-system, sans-serif',

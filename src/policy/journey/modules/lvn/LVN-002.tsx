@@ -12,6 +12,7 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { LvnGaoPlayer } from './LvnGaoPlayer';
 
 // ─── META ───────────────────────────────────────────────────────────────────
 
@@ -1617,6 +1618,115 @@ const LVN002ScopeOfPractice: React.FC = () => {
   }
 
   // ─── CONTENT UI ─────────────────────────────────────────────────────────
+  return (
+    <LvnGaoPlayer
+      pages={PAGES}
+      pageIndex={currentPage}
+      onSelectPage={(index) => {
+        setCurrentPage(index);
+        setActiveHotspot(null);
+      }}
+      onPrevious={() => {
+        setCurrentPage((p) => Math.max(0, p - 1));
+        setActiveHotspot(null);
+      }}
+      onNext={() => {
+        if (currentPage < PAGES.length - 1) {
+          setCurrentPage((p) => p + 1);
+          setActiveHotspot(null);
+        } else {
+          setQuizMode(true);
+        }
+      }}
+      nextLabel={currentPage < PAGES.length - 1 ? 'Next Lesson →' : 'Take Quiz →'}
+      renderLeft={(currentPageData) => (
+        <>
+          <div style={{ fontSize: 11, color: '#A78BFA', fontWeight: 700, marginBottom: 6 }}>
+            Page {currentPage + 1} of {PAGES.length}
+          </div>
+          <h1 style={{ margin: '0 0 6px', fontSize: 22, lineHeight: 1.25, color: '#F8FAFC' }}>
+            {currentPageData.title}
+          </h1>
+          <p style={{ margin: '0 0 14px', color: '#C4B5FD', fontSize: 14 }}>{currentPageData.subtitle}</p>
+
+          {currentPageData.narration.map((para, i) => (
+            <p
+              key={i}
+              style={{
+                margin: '0 0 12px',
+                fontSize: 14,
+                lineHeight: 1.6,
+                color: '#D1D5DB',
+              }}
+            >
+              {para}
+            </p>
+          ))}
+
+          <h3 style={{ margin: '18px 0 10px', fontSize: 13, color: '#A78BFA', letterSpacing: 0.4 }}>
+            KEY POINTS
+          </h3>
+          <div style={{ display: 'grid', gap: 8 }}>
+            {currentPageData.keyPoints.map((kp) => (
+              <div key={kp.title} style={{ ...card, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <span style={{ fontSize: 18 }} aria-hidden>
+                  {kp.icon}
+                </span>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: '#F1F5F9' }}>{kp.title}</div>
+                  <div style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.45 }}>{kp.detail}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div
+            style={{
+              marginTop: 14,
+              padding: 12,
+              borderRadius: 12,
+              background: 'rgba(16,185,129,0.08)',
+              border: '1px solid rgba(16,185,129,0.35)',
+            }}
+          >
+            <div style={{ fontSize: 11, fontWeight: 800, color: '#6EE7B7', marginBottom: 4 }}>
+              CLINICAL TIP
+            </div>
+            <div style={{ fontSize: 13, color: '#D1FAE5', lineHeight: 1.5 }}>{currentPageData.clinicalTip}</div>
+          </div>
+
+          <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {currentPageData.sourceLabels.map((s) => (
+              <span
+                key={s.kind + s.text}
+                style={{
+                  fontSize: 10,
+                  padding: '4px 8px',
+                  borderRadius: 99,
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#CBD5E1',
+                }}
+              >
+                <strong style={{ color: '#C4B5FD' }}>{s.kind}:</strong> {s.text}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
+      renderRight={(currentPageData) => (
+        <>
+          <div style={{ flex: 1, minHeight: 360 }}>
+            {renderScene(currentPageData.scene, currentPageData.hotspots, activeHotspot, selectHotspot)}
+          </div>
+          <div style={{ marginTop: 10, fontSize: 11, color: '#64748B', textAlign: 'center' }}>
+            Interactive hotspots reveal zone-specific instructional feedback
+          </div>
+        </>
+      )}
+    />
+  );
+
   return (
     <div style={shell}>
       <header

@@ -13,6 +13,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { LvnGaoPlayer } from './LvnGaoPlayer';
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
@@ -1190,6 +1191,132 @@ const LVN009PainAssessment: React.FC = () => {
   };
 
   // ── LEARNING UI ──
+  if ((mode as string) === 'learn') {
+    return (
+      <LvnGaoPlayer
+        pages={PAGES}
+        pageIndex={pageIndex}
+        onSelectPage={(index) => {
+          setPageIndex(index);
+          setActiveHotspot(null);
+        }}
+        onPrevious={() => {
+          setPageIndex((p) => Math.max(0, p - 1));
+          setActiveHotspot(null);
+        }}
+        onNext={() => {
+          if (pageIndex < totalPages - 1) {
+            setPageIndex((p) => p + 1);
+            setActiveHotspot(null);
+          } else {
+            setMode('quiz');
+            setSubmitted(false);
+            setShowReview(false);
+          }
+        }}
+        nextLabel={pageIndex < totalPages - 1 ? 'Next Lesson →' : 'Take Knowledge Quiz →'}
+        renderLeft={(currentPage) => (
+          <>
+            <div
+              style={{
+                display: 'inline-block',
+                background: THEME.secondary,
+                color: THEME.primaryDark,
+                fontSize: 11,
+                fontWeight: 700,
+                padding: '4px 10px',
+                borderRadius: 999,
+                marginBottom: 10,
+              }}
+            >
+              {currentPage.subtitle}
+            </div>
+            <h2 style={{ margin: '0 0 12px', fontSize: 22, color: THEME.primaryDark }}>{currentPage.title}</h2>
+            {currentPage.paragraphs.map((p, i) => (
+              <p key={i} style={{ margin: '0 0 12px', lineHeight: 1.6, fontSize: 14, color: '#334155' }}>
+                {p}
+              </p>
+            ))}
+
+            <div
+              style={{
+                background: '#F5F3FF',
+                borderLeft: `4px solid ${THEME.primary}`,
+                borderRadius: 8,
+                padding: 12,
+                marginTop: 8,
+              }}
+            >
+              <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 6, color: THEME.primaryDark }}>
+                Key Points
+              </div>
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                {currentPage.keyPoints.map((kp, i) => (
+                  <li key={i} style={{ marginBottom: 6, fontSize: 13, lineHeight: 1.45, color: '#334155' }}>
+                    {kp}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div
+              style={{
+                marginTop: 12,
+                background: '#FFFBEB',
+                border: '1px solid #FDE68A',
+                borderRadius: 8,
+                padding: 12,
+              }}
+            >
+              <div style={{ fontWeight: 800, fontSize: 13, color: '#92400E', marginBottom: 4 }}>Clinical Tip</div>
+              <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: '#78350F' }}>{currentPage.clinicalTip}</p>
+            </div>
+
+            <div
+              style={{
+                marginTop: 12,
+                background: '#ECFDF5',
+                border: '1px solid #A7F3D0',
+                borderRadius: 8,
+                padding: 12,
+              }}
+            >
+              <div style={{ fontWeight: 800, fontSize: 13, color: '#065F46', marginBottom: 6 }}>
+                Decision frame (First / Continue / Stop / Notify / Document)
+              </div>
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                {currentPage.decisionFrame.map((d, i) => (
+                  <li key={i} style={{ fontSize: 12.5, lineHeight: 1.45, color: '#064E3B', marginBottom: 4 }}>
+                    {d}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {currentPage.scopeNote && (
+              <div
+                style={{
+                  marginTop: 12,
+                  background: '#FEF2F2',
+                  border: '1px solid #FECACA',
+                  borderRadius: 8,
+                  padding: 10,
+                  fontSize: 12.5,
+                  color: '#7F1D1D',
+                  lineHeight: 1.45,
+                }}
+              >
+                <strong>Scope note: </strong>
+                {currentPage.scopeNote}
+              </div>
+            )}
+          </>
+        )}
+        renderRight={() => <div style={{ height: '100%', minHeight: 500 }}>{renderScene()}</div>}
+      />
+    );
+  }
+
   if (mode === 'learn') {
     return (
       <div

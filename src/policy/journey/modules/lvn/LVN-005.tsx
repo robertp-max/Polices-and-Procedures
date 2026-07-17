@@ -6,6 +6,7 @@
  * Critical scope: LVN works UNDER existing RN/physician POC — never develops/modifies independently.
  */
 import React, { useCallback, useMemo, useState } from 'react';
+import { LvnGaoPlayer } from './LvnGaoPlayer';
 
 const MODULE_META = {
   id: 'LVN-005',
@@ -1395,6 +1396,37 @@ export default function LVN005PlanOfCare() {
     });
     return counts;
   }, []);
+
+  if ((mode as string) === 'learn') {
+    return (
+      <LvnGaoPlayer
+        pages={PAGES}
+        pageIndex={pageIndex}
+        onSelectPage={(index) => {
+          setPageIndex(index);
+          setActiveHotspot(PAGES[index].hotspots[0].id);
+        }}
+        onPrevious={goPrev}
+        onNext={goNext}
+        nextLabel={pageIndex < PAGES.length - 1 ? 'Next Lesson →' : 'Start Quiz →'}
+        renderLeft={(currentPage) => <LeftPanel page={currentPage} />}
+        renderRight={(currentPage) => {
+          const CurrentScene = SCENES[PAGES.indexOf(currentPage)];
+          return (
+            <>
+              <div style={{ fontSize: 12, fontWeight: 700, color: THEME.muted, marginBottom: 8, textTransform: 'uppercase' }}>
+                Instructional scene
+              </div>
+              <div style={{ flex: 1, minHeight: 360 }}>
+                <CurrentScene active={activeHotspot} onHotspot={onHotspot} />
+              </div>
+              <HotspotPanel page={currentPage} activeId={activeHotspot} />
+            </>
+          );
+        }}
+      />
+    );
+  }
 
   return (
     <div

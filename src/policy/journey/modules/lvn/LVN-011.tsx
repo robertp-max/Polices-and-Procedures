@@ -7,6 +7,7 @@
  */
 
 import React, { useCallback, useMemo, useState } from 'react';
+import { LvnGaoPlayer } from './LvnGaoPlayer';
 
 // ─── MODULE META ─────────────────────────────────────────────────────────────
 const MODULE_META = {
@@ -1298,6 +1299,172 @@ const LVN011PatientIdentification: React.FC = () => {
   const allAnswered = QUIZ.every((_, i) => typeof answers[i] === 'number');
 
   const Scene = page ? SCENE_MAP[page.scene] : null;
+
+  if (!quizMode && page && Scene) {
+    return (
+      <LvnGaoPlayer
+        pages={PAGES}
+        pageIndex={pageIndex}
+        onSelectPage={(index) => {
+          setPageIndex(index);
+          setActiveHotspot(null);
+        }}
+        onPrevious={goPrev}
+        onNext={goNext}
+        nextLabel={pageIndex < totalPages - 1 ? 'Next Lesson →' : 'Start quiz →'}
+        renderLeft={(currentPage) => (
+          <>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+              {currentPage.badges.map((b) => (
+                <span
+                  key={b}
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    padding: '4px 8px',
+                    borderRadius: 99,
+                    background: THEME.primarySoft,
+                    color: THEME.primaryDark,
+                    border: `1px solid ${THEME.border}`,
+                  }}
+                >
+                  {b}
+                </span>
+              ))}
+            </div>
+            <h1 style={{ margin: '0 0 4px', fontSize: 22, lineHeight: 1.25 }}>{currentPage.title}</h1>
+            <p style={{ margin: '0 0 16px', color: THEME.muted, fontSize: 14 }}>{currentPage.subtitle}</p>
+
+            {currentPage.narration.map((para, i) => (
+              <p key={i} style={{ fontSize: 14.5, lineHeight: 1.65, margin: '0 0 12px' }}>
+                {para}
+              </p>
+            ))}
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                gap: 10,
+                margin: '16px 0',
+              }}
+            >
+              {currentPage.keyPoints.map((kp) => (
+                <div
+                  key={kp.title}
+                  style={{
+                    border: `1px solid ${THEME.border}`,
+                    borderRadius: 12,
+                    padding: 12,
+                    background: THEME.primarySoft,
+                  }}
+                >
+                  <div style={{ fontSize: 16, marginBottom: 4 }}>{kp.icon}</div>
+                  <div style={{ fontWeight: 700, fontSize: 13 }}>{kp.title}</div>
+                  <div style={{ fontSize: 12, color: THEME.muted, marginTop: 4, lineHeight: 1.45 }}>{kp.detail}</div>
+                </div>
+              ))}
+            </div>
+
+            {currentPage.decision && (
+              <div
+                style={{
+                  border: `1px solid #BFDBFE`,
+                  borderRadius: 12,
+                  padding: 14,
+                  background: '#F8FAFC',
+                  marginBottom: 14,
+                }}
+              >
+                <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 8, color: THEME.primaryDark }}>
+                  LVN decision frame
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, lineHeight: 1.55 }}>
+                  <li>
+                    <strong>First:</strong> {currentPage.decision.first}
+                  </li>
+                  <li>
+                    <strong>May continue if:</strong> {currentPage.decision.continueIf}
+                  </li>
+                  <li>
+                    <strong>Must stop if:</strong> {currentPage.decision.stopIf}
+                  </li>
+                  <li>
+                    <strong>Notify:</strong> {currentPage.decision.notify}
+                  </li>
+                  <li>
+                    <strong>Document:</strong> {currentPage.decision.document}
+                  </li>
+                </ul>
+              </div>
+            )}
+
+            <div
+              style={{
+                background: '#FFFBEB',
+                border: '1px solid #FDE68A',
+                borderRadius: 12,
+                padding: 12,
+                fontSize: 13,
+                lineHeight: 1.5,
+              }}
+            >
+              <strong>Clinical tip:</strong> {currentPage.clinicalTip}
+            </div>
+
+            {activeDetail && (
+              <div
+                style={{
+                  marginTop: 14,
+                  background: '#ECFDF5',
+                  border: '1px solid #6EE7B7',
+                  borderRadius: 12,
+                  padding: 12,
+                }}
+              >
+                <div style={{ fontWeight: 800, fontSize: 13, color: '#065F46' }}>{activeDetail.label}</div>
+                <div style={{ fontSize: 13, marginTop: 4, lineHeight: 1.5 }}>{activeDetail.detail}</div>
+              </div>
+            )}
+          </>
+        )}
+        renderRight={(currentPage) => {
+          const CurrentScene = SCENE_MAP[currentPage.scene];
+          return (
+            <>
+              <style>{pulseStyle}</style>
+              <div style={{ fontSize: 12, fontWeight: 700, color: THEME.primaryDark, marginBottom: 10 }}>
+                Interactive scene · tap hotspots for coaching
+              </div>
+              <div
+                style={{
+                  flex: 1,
+                  background: '#fff',
+                  borderRadius: 16,
+                  border: `1px solid ${THEME.border}`,
+                  boxShadow: '0 8px 24px rgba(15,23,42,0.06)',
+                  overflow: 'hidden',
+                  minHeight: 300,
+                }}
+                onClick={() => setActiveHotspot(null)}
+              >
+                <CurrentScene
+                  activeHotspot={activeHotspot}
+                  onHotspot={setActiveHotspot}
+                  hotspots={currentPage.hotspots}
+                  phase={phase}
+                />
+              </div>
+              <div style={{ fontSize: 11, color: THEME.muted, lineHeight: 1.45, marginTop: 10 }}>
+                Status: {MODULE_META.status}. Federal requirements, agency policy, and professional guidance are labeled
+                in the left panel badges.
+              </div>
+            </>
+          );
+        }}
+      />
+    );
+  }
 
   return (
     <div
