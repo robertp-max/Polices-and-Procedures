@@ -1131,6 +1131,7 @@ function LessonPlayerPage() {
     const mediaTitle = currentCard.media_prompt_placeholder?.scene_title || currentCard.display_title || lesson.title;
     const canMovePrevious = currentIdx > 0 || Boolean(prevLesson);
     const textFirstGaoModule = isGAOTextFirstModule(moduleId);
+    const useGao002LvnShell = moduleId.toUpperCase() === 'GAO-002';
 
     return (
       <div className="fixed inset-0 z-[9998] flex flex-col text-[#1F1C1B]" style={onboardingDotBg}>
@@ -1154,9 +1155,13 @@ function LessonPlayerPage() {
           </div>
         )}
 
-        <header className="shrink-0 border-b border-[#E5E4E3] bg-white/96 px-4 py-3 shadow-[0_8px_28px_rgba(31,28,27,0.05)] md:px-6">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-            {textFirstGaoModule && (
+        <header
+          className={`shrink-0 border-b border-[#E5E4E3] bg-white/96 shadow-[0_8px_28px_rgba(31,28,27,0.05)] ${
+            useGao002LvnShell ? 'flex h-16 items-center px-6 py-0' : 'px-4 py-3 md:px-6'
+          }`}
+        >
+          <div className={`${useGao002LvnShell ? 'flex w-full min-w-0 items-center gap-4' : 'flex flex-col gap-3 lg:flex-row lg:items-center'}`}>
+            {textFirstGaoModule && !useGao002LvnShell && (
               <div className="min-w-[260px]">
                 <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#007970]">{moduleId}</div>
                 <h1 className="truncate text-lg font-bold leading-tight text-[#004142]">{moduleDef?.title || lesson.title}</h1>
@@ -1198,14 +1203,24 @@ function LessonPlayerPage() {
 
         {/* GAO-002+ keeps the same right-side visual workspace while using the markdown lesson copy. */}
         <main
-          className="flex min-h-0 flex-1 flex-col gap-[20px] p-0 lg:flex-row lg:items-stretch"
+          className={
+            useGao002LvnShell
+              ? 'flex min-h-0 flex-1 overflow-hidden bg-[#FAFBF8]'
+              : 'flex min-h-0 flex-1 flex-col gap-[20px] p-0 lg:flex-row lg:items-stretch'
+          }
         >
           <aside
-            className={`flex min-h-0 min-w-0 flex-1 flex-col border border-[#E5E4E3] bg-white shadow-[0_18px_50px_rgba(31,28,27,0.08)] ${
-              textFirstGaoModule ? 'rounded-none p-7 md:p-9' : 'rounded-[22px] p-[20px]'
+            className={`flex min-h-0 min-w-0 flex-col bg-white ${
+              useGao002LvnShell
+                ? 'h-full flex-1 overflow-y-auto border-r border-[#E5E4E3] px-8 py-8 shadow-none'
+                : `flex-1 border border-[#E5E4E3] shadow-[0_18px_50px_rgba(31,28,27,0.08)] ${
+                    textFirstGaoModule ? 'rounded-none p-7 md:p-9' : 'rounded-[22px] p-[20px]'
+                  }`
             }`}
             style={
-              textFirstGaoModule
+              useGao002LvnShell
+                ? { minWidth: 0, flex: '1 1 0%' }
+                : textFirstGaoModule
                 ? { minWidth: 0, flex: '1 1 0%' }
                 : { minWidth: 'calc(420px * 1.0777)', flex: '1 1 auto' }
             }
@@ -1224,12 +1239,24 @@ function LessonPlayerPage() {
 
           <section
             className={`flex min-h-0 flex-col bg-white ${
-              /^GAO-001_L\d+_DELIVERY$/.test(currentCard.card_id)
+              useGao002LvnShell
+                ? 'h-full overflow-hidden rounded-none border-l border-[#E5E4E3] p-0 shadow-none'
+                : /^GAO-001_L\d+_DELIVERY$/.test(currentCard.card_id)
                 ? 'rounded-none border-0 p-0 shadow-none overflow-hidden'
                 : 'rounded-[24px] border border-[#E5E4E3] p-[20px] shadow-[0_18px_50px_rgba(31,28,27,0.08)]'
             }`}
             style={
-              textFirstGaoModule
+              useGao002LvnShell
+                ? {
+                    flex: '0 0 auto',
+                    alignSelf: 'stretch',
+                    height: '100%',
+                    aspectRatio: '16 / 13',
+                    width: 'auto',
+                    maxWidth: '100%',
+                    minWidth: 0,
+                  }
+                : textFirstGaoModule
                 ? {
                     flex: '0 0 auto',
                     alignSelf: 'stretch',
@@ -1252,7 +1279,9 @@ function LessonPlayerPage() {
           >
             <div
               className={`flex min-h-0 h-full w-full flex-1 flex-col overflow-hidden ${
-                /^GAO-001_L\d+_DELIVERY$/.test(currentCard.card_id)
+                useGao002LvnShell
+                  ? 'rounded-none border-0 bg-[#F8FAFC]'
+                  : /^GAO-001_L\d+_DELIVERY$/.test(currentCard.card_id)
                   ? 'rounded-none border-0 bg-black'
                   : 'rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8]'
               }`}
@@ -1328,8 +1357,12 @@ function LessonPlayerPage() {
           </section>
         </main>
 
-        <footer className="shrink-0 border-t border-[#E5E4E3] bg-white px-4 py-4 shadow-[0_-8px_28px_rgba(31,28,27,0.05)] md:px-6">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <footer
+          className={`shrink-0 border-t border-[#E5E4E3] bg-white shadow-[0_-8px_28px_rgba(31,28,27,0.05)] ${
+            useGao002LvnShell ? 'flex h-24 items-center px-6 py-0' : 'px-4 py-4 md:px-6'
+          }`}
+        >
+          <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <button
               onClick={() => {
                 if (currentIdx > 0) {
