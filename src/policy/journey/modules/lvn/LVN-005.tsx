@@ -1,1823 +1,1183 @@
-/**
- * LVN-005 — Plan of Care: Working Under RN/Physician POC
- * Version: 5.0 | Status: CONTENT COMPLETE — MIGRATION/TECH QA PENDING
- * Track: LVN — Licensed Vocational Nurse
- * Regulatory: 42 CFR § 484.60 | CA B&P § 2860 | Agency policy CL-CP-001
- * Critical scope: LVN works UNDER existing RN/physician POC — never develops/modifies independently.
- */
-import React, { useCallback, useMemo, useState } from 'react';
-import { LvnGaoPlayer } from './LvnGaoPlayer';
-import { LvnSceneModal } from './LvnSceneModal';
+import { useState } from 'react';
+import { 
+  Play, Pause, ChevronRight, ChevronLeft, 
+  FileText, CheckCircle2, X, AlertCircle, Volume2, ShieldCheck,
+  MessageSquare, ClipboardEdit, Compass
+, Calendar, Users } from 'lucide-react';
 
-const MODULE_META = {
-  id: 'LVN-005',
-  title: 'Plan of Care: Working Under RN/Physician POC',
-  track: 'LVN — Licensed Vocational Nurse',
-  version: '5.0',
-  status: 'CONTENT COMPLETE — MIGRATION/TECH QA PENDING',
-  pages: 7,
-  passing: 80,
-  quizCount: 10,
-  cms: '42 CFR § 484.60',
-  california: 'CA B&P § 2860 / § 2860.5',
-  policy: 'CL-CP-001 (agency care-planning policy)',
-  guidance: 'NCSBN Five Rights of Delegation (professional guidance)',
-};
+const GlobalStyles = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-const THEME = {
-  primary: '#7C3AED',
-  primaryDark: '#6D28D9',
-  primarySoft: '#EDE9FE',
-  accent: '#F59E0B',
-  success: '#10B981',
-  error: '#EF4444',
-  info: '#3B82F6',
-  teal: '#0891B2',
-  bg: '#F5F3FF',
-  surface: '#FFFFFF',
-  text: '#0F172A',
-  muted: '#64748B',
-  border: '#E2E8F0',
-  physician: '#3B82F6',
-  rn: '#0891B2',
-  lvn: '#F59E0B',
-};
-
-type Hotspot = { id: string; label: string; x: number; y: number; detail: string };
-type PageDef = {
-  id: string;
-  title: string;
-  subtitle: string;
-  accent: string;
-  bullets: string[];
-  callouts: { kind: 'federal' | 'california' | 'agency' | 'guidance' | 'key' | 'warning'; text: string }[];
-  scenario?: { patient: string; context: string; body: string };
-  decision?: { first: string; continue: string; stop: string; notify: string; document: string };
-  hotspots: Hotspot[];
-};
-
-type QuizQ = {
-  id: string;
-  question: string;
-  options: [string, string, string, string];
-  correct: 0 | 1 | 2 | 3;
-  rationale: string;
-};
-
-const PAGES: PageDef[] = [
-  {
-    id: 'authority',
-    title: 'The Plan of Care — Your Clinical Compass',
-    subtitle: 'Why the POC governs every LVN action in the home',
-    accent: THEME.primary,
-    bullets: [
-      'The Plan of Care is the physician-authorized directive for every service, visit, and intervention in the patient home.',
-      'As an LVN, the POC is your clinical compass: it defines what you may do, when, and how — you do not operate outside it.',
-      'Critical scope rule: the LVN does not create, modify, or independently re-write the Plan of Care. You IMPLEMENT authorized directives under RN direction.',
-      'Every LVN task during a home visit must trace back to a specific POC directive. If it is not in the plan (or a valid order updating it), it is not authorized.',
-      'Federal care-planning rules require services to be furnished in accordance with an individualized plan of care (42 CFR § 484.60).',
-      'Clinical decisions flow Physician → RN → LVN. The LVN identifies, reports, documents, then implements the authorized response — never improvises a new plan.',
-    ],
-    callouts: [
-      {
-        kind: 'federal',
-        text: 'Federal requirement (42 CFR § 484.60 / § 484.60(a)): home health services must be furnished in accordance with an individualized plan of care.',
-      },
-      {
-        kind: 'key',
-        text: 'The LVN works UNDER an existing RN/physician POC. Developing or independently modifying the POC is outside LVN role. Crossing that line is a practice and compliance violation.',
-      },
-    ],
-    scenario: {
-      patient: 'Mr. Abramov',
-      context: '78yo, bilateral knee replacement, Day 8 post-discharge',
-      body:
-        'Mr. Abramov asks you to change his wound dressing from dry gauze (specified in the POC) to a hydrocolloid “like the hospital used.” Do not accommodate the request on your own. Continue the authorized protocol; document the request and wound findings; contact the supervising RN. Only after RN/physician evaluation and an authorized POC update may the dressing type change. This is the authority chain in action.',
-    },
-    decision: {
-      first: 'Confirm what the current POC orders for this task.',
-      continue: 'Perform only interventions already authorized in the POC (or valid verbal/written order).',
-      stop: 'Do not change treatment type, frequency, or goals because a patient/family request “seems reasonable.”',
-      notify: 'Supervising RN immediately when a change is requested or clinically suggested.',
-      document: 'Request, assessment findings, notifications, instructions received, and what you implemented.',
-    },
-    hotspots: [
-      {
-        id: 'authority-chain',
-        label: 'Authority Chain',
-        x: 50,
-        y: 38,
-        detail:
-          'POC authority is hierarchical: Physician (orders/certifies) → RN (interprets, assesses, supervises, coordinates modifications) → LVN (implements and reports). The LVN never independently modifies the plan.',
-      },
-      {
-        id: 'lvn-boundary',
-        label: 'LVN Boundary',
-        x: 72,
-        y: 72,
-        detail:
-          'Within scope under POC: vitals, meds as ordered, wound care per protocol, education per plan, specimens, data collection. Outside: comprehensive assessment, POC create/modify, OASIS completion, discharge decisions, independent clinical plan changes.',
-      },
-    ],
-  },
-  {
-    id: 'cms485',
-    title: 'The CMS-485: Home Health Master Blueprint',
-    subtitle: 'Know the form you implement — you do not complete it',
-    accent: THEME.info,
-    bullets: [
-      'The CMS-485 (Home Health Certification and Plan of Care) is the legal authorization vehicle for Medicare home health services.',
-      'It is completed/coordinated by the RN with physician review and signature. The LVN does NOT complete the CMS-485.',
-      'Section map to know: demographics & certification window; diagnoses/ICD-10; discipline orders & treatments; goals & rehab potential; medications & DME; physician signature/date.',
-      'Orders for discipline & treatment are your playbook: frequency, wound protocols, med administration, vital parameters, activity/diet orders.',
-      'LVN documentation quality feeds the accuracy of the 485 and supports timely physician review — but completing the form is RN/physician work.',
-      'Request/review each patient’s current POC/485 before your first visit. Clarify unclear orders with the RN before arriving.',
-    ],
-    callouts: [
-      {
-        kind: 'federal',
-        text: 'Federal requirement (42 CFR § 484.60(b)): the individualized plan of care must specify necessary services, frequency/duration, and measurable outcomes/goals.',
-      },
-      {
-        kind: 'key',
-        text: 'LVN role on the 485: supply accurate visit data (vitals trends, functional observations, med adherence, wound findings). Not form completion, diagnosis assignment, or independent order writing.',
-      },
-    ],
-    hotspots: [
-      {
-        id: 'orders-block',
-        label: 'Orders Block',
-        x: 68,
-        y: 48,
-        detail:
-          'Orders & services are the LVN playbook. Map every visit action to a listed order. If an order is unclear, stop and ask the RN before the visit — never guess physician intent.',
-      },
-      {
-        id: 'lvn-data',
-        label: 'LVN Data Role',
-        x: 28,
-        y: 70,
-        detail:
-          'You populate the clinical story through visit notes; the RN/physician complete certification paperwork. High-quality LVN data improves plan accuracy without expanding LVN authority.',
-      },
-    ],
-  },
-  {
-    id: 'frequency',
-    title: 'Visit Frequency & Scheduling Compliance',
-    subtitle: 'Decode authorized frequency — never invent extra visits',
-    accent: THEME.teal,
-    bullets: [
-      'Frequency notation: [Visits]W[Weeks]. Example: “SN 3W2, 2W2, 1W2” = skilled nursing 3×/week for 2 weeks, then 2×/week for 2 weeks, then 1×/week for 2 weeks (12 SN visits across that pattern).',
-      'Know which phase of the order you are in each week. Exceeding authorized frequency without a new order is a compliance problem and may yield non-billable visits.',
-      'Front-loading (more visits early, taper later) is common and reflects temporary, goal-directed home health services — not indefinite standing schedules.',
-      'Agency policy (CL-CP-001) expects visits to be reasonably distributed across the week (e.g., M-W-F pattern for 3×/week), not clustered for clinician convenience unless clinically justified and documented.',
-      'Missed visits: attempt make-up per agency policy/same-week expectations, document reason, and notify the RN when make-up is impossible.',
-      'PRN / additional visits beyond frequency require physician authorization (typically coordinated by the RN) BEFORE you go. Urgency accelerates the chain; it does not erase authorization.',
-    ],
-    callouts: [
-      {
-        kind: 'agency',
-        text: 'Agency policy (CL-CP-001 §3.4 area): distribute visits reasonably across the week; document missed visits and escalate per agency procedure. Exact make-up windows follow current agency policy.',
-      },
-      {
-        kind: 'warning',
-        text: 'Never perform a visit that is not authorized by the current POC or a valid verbal/written order. Unauthorized visits create compliance liability and practice-outside-plan risk under 42 CFR § 484.60.',
-      },
-    ],
-    scenario: {
-      patient: 'Mrs. Johnson',
-      context: 'SN frequency: 2W4 (2 visits/week for 4 weeks); Week 2 Tuesday after Monday visit',
-      body:
-        'Patient calls feeling dizzy and wants a visit today. Your second authorized visit is Thursday. Do not self-authorize a PRN visit. Perform phone triage within scope/agency script, notify the RN of the clinical concern, and go only if a physician-authorized PRN/order pathway is completed. Urgency speeds the process — it does not bypass it.',
-    },
-    decision: {
-      first: 'Verify the authorized frequency phase for this week.',
-      continue: 'Complete only visits within authorized frequency (or authorized PRN).',
-      stop: 'Do not add visits because the patient “needs one more.”',
-      notify: 'RN for clinical concerns and for any PRN/order request.',
-      document: 'Clinical concern, notifications, order received (if any), and visit or non-visit outcome.',
-    },
-    hotspots: [
-      {
-        id: 'decode',
-        label: 'Notation Decode',
-        x: 32,
-        y: 30,
-        detail:
-          '“3W2” = 3 visits per week for 2 weeks. Always compute total authorized visits and current phase before scheduling or accepting add-ons.',
-      },
-      {
-        id: 'prn-gate',
-        label: 'PRN Gate',
-        x: 74,
-        y: 68,
-        detail:
-          'Extra visits need physician authorization coordinated through the RN before the visit. Document order content, time, physician, and read-back confirmation per agency policy.',
-      },
-    ],
-  },
-  {
-    id: 'delegation',
-    title: 'Delegation Chain & LVN Implementation',
-    subtitle: 'Physician orders → RN direction → LVN execution',
-    accent: THEME.accent,
-    bullets: [
-      'Every LVN action traces a chain: physician orders it; RN interprets, assesses appropriateness, and delegates; LVN implements exactly as directed and reports findings.',
-      'California law (B&P § 2860): LVNs perform services requiring technical/manual skills under the direction of a physician or RN — not as independent planners.',
-      'NCSBN Five Rights of Delegation (professional guidance): Right Task, Right Circumstance, Right Person, Right Supervision, Right Direction/Communication.',
-      'Example: physician orders wet-to-dry RLE dressing 3×/week; RN confirms wound is appropriate for LVN-level care, provides protocol, and assigns you; you perform care per protocol and report changes.',
-      'Accountability vs responsibility: the delegating RN retains accountability for the decision to delegate and overall outcome oversight; the LVN assumes responsibility for correct execution.',
-      'If a task exceeds your competency, training, or safe patient condition, decline the delegation, state why, and escalate — “the RN told me” is not a legal shield.',
-    ],
-    callouts: [
-      {
-        kind: 'california',
-        text: 'California law (B&P § 2860 / § 2860.5): LVN practice is directed by a physician or registered nurse. “Directed” means explicit authorization, not assumed permission.',
-      },
-      {
-        kind: 'guidance',
-        text: 'Professional guidance (NCSBN Five Rights): Task, Circumstance, Person, Supervision, Direction. Use them as a safety check before accepting delegated work.',
-      },
-      {
-        kind: 'warning',
-        text: 'Never accept a delegation you are not competent to perform. Patient safety and license protection supersede pressure to “just do it.”',
-      },
-    ],
-    hotspots: [
-      {
-        id: 'five-rights',
-        label: 'Five Rights',
-        x: 50,
-        y: 42,
-        detail:
-          'Right Task (LVN scope) · Right Circumstance (stable enough) · Right Person (documented competency) · Right Supervision (RN available/defined) · Right Direction (clear outcomes).',
-      },
-      {
-        id: 'acct-vs-resp',
-        label: 'Acct vs Resp',
-        x: 78,
-        y: 72,
-        detail:
-          'RN accountability = answerable for choosing to delegate. LVN responsibility = answerable for performing the delegated task correctly. Both exist at once.',
-      },
-    ],
-  },
-  {
-    id: 'change-response',
-    title: 'Responding to Patient Changes',
-    subtitle: 'Recognize → assess within scope → intervene within authority → notify → document',
-    accent: THEME.error,
-    bullets: [
-      'You are often the clinician in the home when vitals deviate, wounds worsen, new symptoms appear, falls occur, or med side effects emerge.',
-      'RECOGNIZE: compare findings to prior visit data, POC parameters (e.g., notify thresholds), and normal vs abnormal clinical knowledge.',
-      'ASSESS within scope: recheck vitals, pain, wound characteristics, adherence, safety environment — collect data the RN/physician need.',
-      'INTERVENE only within authority: comfort, positioning, safety measures, ordered meds, ordered dressing. Do not invent new treatments.',
-      'NOTIFY: contact supervising RN for urgent changes; follow agency escalation (DON/on-call) if RN unavailable. Stay with the patient when required by urgency/policy.',
-      'DOCUMENT: findings, comparison, interventions, time/method of notification, RN instructions, actions taken, status at departure.',
-    ],
-    callouts: [
-      {
-        kind: 'agency',
-        text: 'Agency policy (CL-CP-001 §5.1 area): for urgent condition changes, notify the RN before leaving the patient’s home when required by current agency procedure. Call from the home and document in real time.',
-      },
-      {
-        kind: 'key',
-        text: 'Condition change does not authorize the LVN to rewrite the POC. You stabilize within scope, escalate, and implement only newly authorized orders.',
-      },
-    ],
-    scenario: {
-      patient: 'Mrs. Park',
-      context: '68yo diabetes; weekly wound care; wound enlarged with purulent drainage and low-grade fever',
-      body:
-        'Document detailed wound measurements/appearance (and photo if agency policy allows). Recheck vitals. Continue current dressing only as authorized. Call RN from the home with concise data (size change, drainage, cellulitis signs, temp). Remain as directed while RN contacts physician. Implement only new orders received (e.g., culture, antibiotics, RN reassess). Document the full chain.',
-    },
-    decision: {
-      first: 'Recognize and recheck; compare to baseline/POC parameters.',
-      continue: 'Within-scope comfort, safety, and ordered treatments.',
-      stop: 'Do not start new meds/treatments or change goals on your own.',
-      notify: 'RN before leaving for urgent findings (per agency policy); escalate if RN unavailable.',
-      document: 'Data, urgency, notification, response, and patient status at leave.',
-    },
-    hotspots: [
-      {
-        id: 'protocol',
-        label: 'Change Protocol',
-        x: 50,
-        y: 50,
-        detail:
-          'Receive/identify → Verify vs POC & prior data → Implement within-scope response → Notify RN → Document fully. Escalation is not optional when findings are urgent.',
-      },
-      {
-        id: 'stay-notify',
-        label: 'Notify in Home',
-        x: 22,
-        y: 78,
-        detail:
-          'Agency expectation for urgent change: notify before leaving. “I called after I left” is not acceptable for urgent findings under CL-CP-001 procedures.',
-      },
-    ],
-  },
-  {
-    id: 'scope-boundaries',
-    title: 'Scope Boundaries — The Bright Lines',
-    subtitle: 'License scope AND patient-specific POC authorization must both be present',
-    accent: '#8B5CF6',
-    bullets: [
-      'Two simultaneous gates: (1) California LVN license authorizes the skill; (2) this patient’s POC authorizes the task. Missing either gate = unauthorized.',
-      'WITHIN (typical, when ordered): vital signs; medication administration as ordered; wound care per protocol; education topics in the POC; specimen collection; data for RN assessment; reinforce existing teaching; report changes; document visit findings.',
-      'OUTSIDE (even if clinically tempting): initial comprehensive assessment; care plan creation/independent modification; OASIS completion; discharge decisions; HHA supervisory visits; independent triage that changes the care trajectory; POC changes without RN/MD order.',
-      'GRAY ZONE → RN consult: teaching new topics not in POC; wound presentation outside protocol parameters; vitals beyond notify thresholds; family requests beyond orders; med questions beyond administration (interactions/alternatives).',
-      'Most violations are well-intentioned improvisation. Teaching a new med topic without an education order still crosses the line — document need, notify RN, wait for authorized plan update.',
-      'If uncertain: stop, call RN, document the consultation. “When in doubt, call out.”',
-    ],
-    callouts: [
-      {
-        kind: 'california',
-        text: 'California law: LVN services are performed as directed by a physician or RN (B&P § 2860.5 framing). Direction is explicit, not implied.',
-      },
-      {
-        kind: 'federal',
-        text: 'Federal requirement: comprehensive assessment / OASIS-type assessment functions are RN (or authorized clinician) responsibilities under the CoPs (see 42 CFR § 484.55). LVNs contribute data; they do not complete these assessments.',
-      },
-      {
-        kind: 'key',
-        text: 'Licensed skill + POC order = authorized practice. Example: IV med skill does not authorize IV administration for a patient whose POC has no IV medication orders.',
-      },
-    ],
-    hotspots: [
-      {
-        id: 'within',
-        label: 'Within Scope',
-        x: 28,
-        y: 48,
-        detail:
-          'Implement ordered vitals, meds, wound protocols, education-per-plan, specimens, data collection, reporting, and documentation.',
-      },
-      {
-        id: 'outside',
-        label: 'Outside Scope',
-        x: 72,
-        y: 48,
-        detail:
-          'No independent POC creation/modification, no OASIS completion, no comprehensive initial assessment, no discharge decisions, no unsupervised plan changes.',
-      },
-    ],
-  },
-  {
-    id: 'cert-cycle',
-    title: '60-Day Certification Cycle & Module Summary',
-    subtitle: 'LVN documentation fuels recert decisions — it does not replace RN/physician authority',
-    accent: THEME.success,
-    bullets: [
-      'Home health commonly operates in 60-day certification periods requiring physician authorization/review for continued services (see 42 CFR § 484.60(c) framing).',
-      'SOC / recert assessment and OASIS are RN functions. LVN visits may begin only after authorized SOC processes and per the current POC.',
-      'Verbal orders obtained during care must be documented with date/time, physician, content, and read-back, and transmitted for signature per agency policy timelines (CL-CP-001 area).',
-      'Physician face-to-face / encounter timing is a physician/qualified non-physician practitioner responsibility; if you learn it has not occurred, notify the RN rather than managing certification yourself.',
-      'Days ~50–60 (illustrative window): if services continue, RN performs recert assessment. Your cumulative notes (vitals trends, wound trajectory, function, adherence) are critical evidence.',
-      'Summary: authority chain, 485 structure, frequency notation, delegation rights, change protocol, dual-gate scope, and certification data role. When in doubt, return to the POC and your RN.',
-    ],
-    callouts: [
-      {
-        kind: 'federal',
-        text: 'Federal framing (42 CFR § 484.60(c)): plan of care review/revision expectations support periodic physician involvement for continuing services. Exact operational calendars follow CoPs + agency policy.',
-      },
-      {
-        kind: 'agency',
-        text: 'Agency policy governs verbal-order transmission windows, escalation trees, and documentation templates. Follow current CL-CP-001 (and related policies), not memory of old deadlines.',
-      },
-      {
-        kind: 'key',
-        text: 'Quiz success validates knowledge only. Practical competency still requires observed demonstration, competency check-offs, and authorized sign-off under agency policy.',
-      },
-    ],
-    decision: {
-      first: 'Confirm you are working from the current signed/authorized POC for this episode.',
-      continue: 'Deliver ordered visits; document goal progress accurately (neither over- nor under-state).',
-      stop: 'Do not complete OASIS, decide discharge, or extend services without RN/physician process.',
-      notify: 'RN for certification barriers, missing orders, or clinical plateaus needing plan review.',
-      document: 'Objective trends that support recert, revision, or discharge decisions by authorized clinicians.',
-    },
-    hotspots: [
-      {
-        id: 'orbit',
-        label: '60-Day Orbit',
-        x: 50,
-        y: 42,
-        detail:
-          'SOC → orders window → ongoing LVN implementation → recert window. LVN notes are the continuous clinical evidence base; RN/physician own certification paperwork and plan authority.',
-      },
-      {
-        id: 'data-lifeblood',
-        label: 'Doc Lifeblood',
-        x: 70,
-        y: 74,
-        detail:
-          'Incomplete LVN documentation can weaken recert support. Document accurately — overstating progress risks premature discharge; understating without clinical basis creates integrity risk.',
-      },
-    ],
-  },
-];
-
-/** Balanced distribution A=3, B=3, C=2, D=2 */
-const QUIZ: QuizQ[] = [
-  {
-    id: 'q1',
-    question: 'What is the LVN’s role regarding the Plan of Care?',
-    options: [
-      'Implement POC directives as delegated under RN supervision, and document findings',
-      'Create the POC based on patient assessment findings',
-      'Modify the POC independently when the patient condition changes',
-      'Approve the POC after the physician signs it',
-    ],
-    correct: 0,
-    rationale:
-      'The LVN implements the existing RN/physician POC — does not create, modify, or approve it. Every action must trace to an authorized directive under RN direction.',
-  },
-  {
-    id: 'q2',
-    question: 'What does visit frequency notation “SN 3W2, 2W2, 1W2” mean?',
-    options: [
-      'Skilled nursing for 3 patients in 2 weeks, then 2 patients, then 1 patient',
-      'Skilled nursing 3 visits/week for 2 weeks, then 2/week for 2 weeks, then 1/week for 2 weeks (12 visits in that pattern)',
-      'Skilled nursing 3 hours twice weekly for 2 months',
-      'Skilled nursing every 3 weeks for 2 certification periods',
-    ],
-    correct: 1,
-    rationale:
-      '“3W2” means 3 visits per week for 2 weeks. Front-loaded patterns taper as goals progress. Total in this pattern: (3×2)+(2×2)+(1×2) = 12 visits.',
-  },
-  {
-    id: 'q3',
-    question:
-      'A patient asks you to change wound dressing type from what the POC orders because “the hospital used something better.” What do you do first?',
-    options: [
-      'Decline the independent change, continue the authorized protocol, document the request, and notify the RN',
-      'Change the dressing if you believe it is clinically appropriate',
-      'Tell the patient to call the physician themselves and leave the issue undocumented',
-      'Change the dressing and note the reason after the visit',
-    ],
-    correct: 0,
-    rationale:
-      'LVNs do not independently modify the POC. Continue authorized care, document, and escalate to the RN who coordinates any physician order/plan update.',
-  },
-  {
-    id: 'q4',
-    question: 'Which list correctly states the NCSBN Five Rights of Delegation (professional guidance)?',
-    options: [
-      'Right Patient, Right Drug, Right Dose, Right Route, Right Time',
-      'Right Assessment, Right Plan, Right Implementation, Right Evaluation, Right Documentation',
-      'Right Task, Right Circumstance, Right Person, Right Supervision, Right Direction',
-      'Right License, Right Training, Right Chart, Right Outcome, Right Billing',
-    ],
-    correct: 2,
-    rationale:
-      'Five Rights: Task (scope), Circumstance (appropriate conditions), Person (competent LVN), Supervision (RN oversight), Direction (clear instructions/outcomes).',
-  },
-  {
-    id: 'q5',
-    question:
-      'Per agency care-planning policy (CL-CP-001 area), when should you notify the RN of an urgent patient condition change found during a visit?',
-    options: [
-      'Within 24 hours of the visit',
-      'At the end of your shift',
-      'At the next interdisciplinary team meeting',
-      'Before leaving the patient’s home (call from the home and document)',
-    ],
-    correct: 3,
-    rationale:
-      'Agency policy expects urgent RN notification before leaving the home. Stay with the patient as needed, call from the home, and document notification and response.',
-  },
-  {
-    id: 'q6',
-    question: 'Which activity is outside LVN scope in home health even if you have strong clinical instincts?',
-    options: [
-      'Completing the initial comprehensive assessment and OASIS',
-      'Administering medications as ordered in the POC',
-      'Performing wound care per an established protocol',
-      'Collecting specimens as ordered',
-    ],
-    correct: 0,
-    rationale:
-      'Initial comprehensive assessment/OASIS is an RN (authorized clinician) function under the CoPs. LVNs contribute data; they do not complete these assessments or independently develop the POC.',
-  },
-  {
-    id: 'q7',
-    question: 'How long is a standard home health certification period referenced in federal care-planning practice?',
-    options: [
-      '30 days',
-      '60 days',
-      '90 days',
-      '120 days',
-    ],
-    correct: 1,
-    rationale:
-      'Home health commonly uses 60-day certification periods with physician involvement for continuing authorization (42 CFR § 484.60(c) framing).',
-  },
-  {
-    id: 'q8',
-    question:
-      'Your patient needs a visit beyond the authorized weekly frequency (PRN). What is the correct sequence?',
-    options: [
-      'Perform the visit now — patient need always comes first',
-      'Skip any clinical response and tell the patient only to go to the ER',
-      'Notify the RN so a physician verbal/written order can be obtained BEFORE you perform the extra visit',
-      'Perform the visit and notify the RN afterward so billing can catch up',
-    ],
-    correct: 2,
-    rationale:
-      'Extra visits require authorization before they occur. Urgency accelerates RN/physician contact; it does not authorize the LVN to invent visits outside the POC.',
-  },
-  {
-    id: 'q9',
-    question: 'In the delegation chain, how do accountability and responsibility differ?',
-    options: [
-      'They are identical terms for documentation',
-      'The delegating RN retains accountability for the decision to delegate; the LVN assumes responsibility for proper execution',
-      'The LVN is accountable for the plan; the RN is only responsible for staffing',
-      'Accountability means billing accuracy; responsibility means arrival on time',
-    ],
-    correct: 1,
-    rationale:
-      'RN accountability covers the decision to delegate and oversight of appropriateness. LVN responsibility covers performing the delegated task correctly within scope and orders.',
-  },
-  {
-    id: 'q10',
-    question: 'How does LVN documentation contribute to the 60-day recertification process?',
-    options: [
-      'It does not — recertification is only an office clerical task',
-      'The LVN completes the recertification OASIS independently',
-      'LVN notes are used only for payroll and not for clinical decisions',
-      'Cumulative LVN visit data (vitals trends, wound trajectory, function, adherence) supports the RN’s recertification assessment and physician plan decisions',
-    ],
-    correct: 3,
-    rationale:
-      'LVN documentation is clinical evidence for recert/revision/discharge decisions made by authorized clinicians. Incomplete notes can undermine safe continuity of services.',
-  },
-];
-
-function Badge({ kind, children }: { kind: string; children: React.ReactNode }) {
-  const styles: Record<string, { bg: string; fg: string; border: string }> = {
-    federal: { bg: '#EFF6FF', fg: '#1D4ED8', border: '#BFDBFE' },
-    california: { bg: '#F5F3FF', fg: '#6D28D9', border: '#DDD6FE' },
-    agency: { bg: '#FFF7ED', fg: '#C2410C', border: '#FED7AA' },
-    guidance: { bg: '#ECFEFF', fg: '#0E7490', border: '#A5F3FC' },
-    key: { bg: '#ECFDF5', fg: '#047857', border: '#A7F3D0' },
-    warning: { bg: '#FEF2F2', fg: '#B91C1C', border: '#FECACA' },
-  };
-  const s = styles[kind] || styles.key;
-  const label =
-    kind === 'federal'
-      ? 'Federal'
-      : kind === 'california'
-        ? 'California law'
-        : kind === 'agency'
-          ? 'Agency policy'
-          : kind === 'guidance'
-            ? 'Professional guidance'
-            : kind === 'warning'
-              ? 'Warning'
-              : 'Key point';
-  return (
-    <div
-      style={{
-        background: s.bg,
-        color: s.fg,
-        border: `1px solid ${s.border}`,
-        borderRadius: 10,
-        padding: '10px 12px',
-        marginTop: 10,
-        fontSize: 13,
-        lineHeight: 1.45,
-      }}
-    >
-      <strong style={{ display: 'block', marginBottom: 4, fontSize: 11, letterSpacing: 0.4, textTransform: 'uppercase' }}>
-        {label}
-      </strong>
-      {children}
-    </div>
-  );
-}
-
-export function ProgressBar({ pageIndex, total, mode }: { pageIndex: number; total: number; mode: 'learn' | 'quiz' | 'results' }) {
-  const pct =
-    mode === 'results' ? 100 : mode === 'quiz' ? 92 : Math.round(((pageIndex + 1) / total) * 85);
-  return (
-    <div style={{ height: 6, background: '#E2E8F0', borderRadius: 99, overflow: 'hidden' }}>
-      <div
-        style={{
-          width: `${pct}%`,
-          height: '100%',
-          background: `linear-gradient(90deg, ${THEME.primary}, ${THEME.teal})`,
-          transition: 'width 0.35s ease',
-        }}
-      />
-    </div>
-  );
-}
-
-/** Page 1 — Authority constellation */
-
-
-/** Page 2 — CMS-485 blueprint */
-function SceneCms485({ active, onHotspot }: { active: string | null; onHotspot: (id: string) => void }) {
-  const blocks = [
-    { id: 'demo', label: 'Demographics\n& cert window', x: 30, y: 50, c: THEME.info },
-    { id: 'dx', label: 'Diagnoses\nICD-10', x: 210, y: 50, c: THEME.error },
-    { id: 'lim', label: 'Functional\nlimitations', x: 30, y: 140, c: THEME.accent },
-    { id: 'ord', label: 'Orders &\nservices ★', x: 210, y: 140, c: THEME.success },
-    { id: 'goal', label: 'Goals &\nrehab potential', x: 30, y: 230, c: '#8B5CF6' },
-    { id: 'dme', label: 'Meds &\nDME', x: 210, y: 230, c: THEME.teal },
-  ];
-  return (
-    <svg viewBox="0 0 400 360" width="100%" height="100%" role="img" aria-label="CMS-485 blueprint sections">
-      <rect width="400" height="360" fill="#0B1F33" rx="16" />
-      <g opacity={0.2} stroke="#3B82F6">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <line key={`v${i}`} x1={i * 36} y1={0} x2={i * 36} y2={360} strokeWidth="1" />
-        ))}
-        {Array.from({ length: 10 }).map((_, i) => (
-          <line key={`h${i}`} x1={0} y1={i * 40} x2={400} y2={i * 40} strokeWidth="1" />
-        ))}
-      </g>
-      <text x="200" y="28" textAnchor="middle" fill="#93C5FD" fontSize="13" fontWeight="700">
-        CMS-485 Exploded Blueprint
-      </text>
-      {blocks.map((b) => (
-        <g key={b.id}>
-          <rect x={b.x} y={b.y} width="160" height="70" rx="10" fill={b.c} opacity={0.9} />
-          {b.label.split('\n').map((line, i) => (
-            <text key={i} x={b.x + 80} y={b.y + 30 + i * 16} textAnchor="middle" fill="#fff" fontSize="12" fontWeight="600">
-              {line}
-            </text>
-          ))}
-        </g>
-      ))}
-      <text x="200" y="330" textAnchor="middle" fill="#BFDBFE" fontSize="11">
-        LVN implements orders — RN/MD complete the form
-      </text>
-      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('orders-block')}>
-        <circle cx={210 + 140} cy={140 + 20} r="15" fill="#fff" stroke={THEME.success} strokeWidth="3" opacity={active === 'orders-block' ? 1 : 0.9}>
-          <animate attributeName="r" values="13;17;13" dur="2.4s" repeatCount="indefinite" />
-        </circle>
-        <text x={210 + 140} y={140 + 24} textAnchor="middle" fill={THEME.success} fontSize="10" fontWeight="700">
-          1
-        </text>
-      </g>
-      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('lvn-data')}>
-        <circle cx="90" cy="280" r="15" fill="#fff" stroke={THEME.info} strokeWidth="3">
-          <animate attributeName="r" values="13;17;13" dur="2.7s" repeatCount="indefinite" />
-        </circle>
-        <text x="90" y="284" textAnchor="middle" fill={THEME.info} fontSize="10" fontWeight="700">
-          2
-        </text>
-      </g>
-    </svg>
-  );
-}
-
-/** Page 3 — Visit frequency calendar */
-function SceneFrequency({ active, onHotspot }: { active: string | null; onHotspot: (id: string) => void }) {
-  const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  const weeks = [
-    [1, 0, 1, 0, 1, 0, 0],
-    [1, 0, 1, 0, 1, 0, 0],
-    [1, 0, 0, 1, 0, 0, 0],
-    [1, 0, 0, 1, 0, 0, 0],
-    [1, 0, 0, 0, 0, 0, 0],
-    [1, 0, 0, 0, 0, 0, 0],
-  ];
-  return (
-    <svg viewBox="0 0 400 360" width="100%" height="100%" role="img" aria-label="Visit frequency calendar">
-      <rect width="400" height="360" fill="#F5F3FF" rx="16" />
-      <text x="200" y="28" textAnchor="middle" fill={THEME.primaryDark} fontSize="13" fontWeight="700">
-        Frequency Decoder — SN 3W2, 2W2, 1W2
-      </text>
-      {days.map((d, i) => (
-        <text key={d + i} x={70 + i * 42} y="56" textAnchor="middle" fill={THEME.muted} fontSize="11" fontWeight="600">
-          {d}
-        </text>
-      ))}
-      {weeks.map((row, wi) => (
-        <g key={wi}>
-          <text x="28" y={88 + wi * 40} fill={THEME.muted} fontSize="10">
-            W{wi + 1}
-          </text>
-          {row.map((on, di) => (
-            <rect
-              key={di}
-              x={52 + di * 42}
-              y={70 + wi * 40}
-              width="34"
-              height="30"
-              rx="6"
-              fill={on ? (wi < 2 ? THEME.teal : wi < 4 ? THEME.info : THEME.accent) : '#E2E8F0'}
-              opacity={on ? 0.95 : 0.6}
-            />
-          ))}
-        </g>
-      ))}
-      <rect x="40" y="310" width="12" height="12" rx="3" fill={THEME.teal} />
-      <text x="58" y="320" fill={THEME.text} fontSize="10">
-        3×/wk
-      </text>
-      <rect x="110" y="310" width="12" height="12" rx="3" fill={THEME.info} />
-      <text x="128" y="320" fill={THEME.text} fontSize="10">
-        2×/wk
-      </text>
-      <rect x="180" y="310" width="12" height="12" rx="3" fill={THEME.accent} />
-      <text x="198" y="320" fill={THEME.text} fontSize="10">
-        1×/wk
-      </text>
-      <text x="280" y="320" fill={THEME.muted} fontSize="10">
-        Spread visits — no clustering
-      </text>
-      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('decode')}>
-        <circle cx="120" cy="110" r="16" fill={THEME.primary} stroke="#fff" strokeWidth="2" opacity={active === 'decode' ? 1 : 0.9}>
-          <animate attributeName="opacity" values="0.65;1;0.65" dur="2.5s" repeatCount="indefinite" />
-        </circle>
-        <text x="120" y="114" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
-          1
-        </text>
-      </g>
-      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('prn-gate')}>
-        <circle cx="320" cy="250" r="16" fill={THEME.error} stroke="#fff" strokeWidth="2">
-          <animate attributeName="opacity" values="0.65;1;0.65" dur="2.8s" repeatCount="indefinite" />
-        </circle>
-        <text x="320" y="254" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
-          2
-        </text>
-      </g>
-    </svg>
-  );
-}
-
-/** Page 4 — Delegation waterfall */
-function SceneDelegation({ active, onHotspot }: { active: string | null; onHotspot: (id: string) => void }) {
-  const cols = [
-    { label: 'RN', color: THEME.rn, tasks: ['Assess', 'Plan', 'Supervise', 'OASIS'] },
-    { label: 'LVN', color: THEME.lvn, tasks: ['Vitals', 'Wound protocol', 'Meds ordered', 'Educate/plan', 'Data'], highlight: true },
-    { label: 'PT', color: THEME.info, tasks: ['Mobility', 'Gait', 'Exercise'] },
-    { label: 'HHA', color: THEME.success, tasks: ['Personal care', 'Support'] },
-  ];
-  return (
-    <svg viewBox="0 0 400 360" width="100%" height="100%" role="img" aria-label="Delegation waterfall">
-      <rect width="400" height="360" fill="#0F172A" rx="16" />
-      <rect x="40" y="24" width="320" height="44" rx="12" fill={THEME.physician} />
-      <text x="200" y="52" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="700">
-        Physician POC Directive
-      </text>
-      {cols.map((c, i) => {
-        const x = 28 + i * 92;
-        return (
-          <g key={c.label}>
-            <path d={`M${x + 36},68 L${x + 36},100`} stroke={c.color} strokeWidth="3" />
-            <rect
-              x={x}
-              y={100}
-              width="80"
-              height={c.highlight ? 200 : 160}
-              rx="10"
-              fill={c.color}
-              opacity={c.highlight ? 1 : 0.85}
-              stroke={c.highlight ? '#fff' : 'none'}
-              strokeWidth={c.highlight ? 2 : 0}
-            />
-            <text x={x + 40} y="122" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700">
-              {c.label}
-            </text>
-            {c.tasks.map((t, ti) => (
-              <text key={t} x={x + 40} y={148 + ti * 18} textAnchor="middle" fill="#F8FAFC" fontSize="9">
-                {t}
-              </text>
-            ))}
-          </g>
-        );
-      })}
-      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('five-rights')}>
-        <circle cx="200" cy="150" r="16" fill={THEME.primary} stroke="#fff" strokeWidth="2" opacity={active === 'five-rights' ? 1 : 0.9}>
-          <animate attributeName="r" values="14;18;14" dur="2.6s" repeatCount="indefinite" />
-        </circle>
-        <text x="200" y="154" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
-          1
-        </text>
-      </g>
-      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('acct-vs-resp')}>
-        <circle cx="312" cy="300" r="16" fill={THEME.lvn} stroke="#fff" strokeWidth="2">
-          <animate attributeName="r" values="14;18;14" dur="2.9s" repeatCount="indefinite" />
-        </circle>
-        <text x="312" y="304" textAnchor="middle" fill="#0F172A" fontSize="10" fontWeight="700">
-          2
-        </text>
-      </g>
-    </svg>
-  );
-}
-
-/** Page 5 — Change alert radar */
-function SceneChange({ active, onHotspot }: { active: string | null; onHotspot: (id: string) => void }) {
-  const items = [
-    { label: 'New order', a: -90, c: THEME.info },
-    { label: 'Dose change', a: -18, c: THEME.error },
-    { label: 'Frequency', a: 54, c: THEME.accent },
-    { label: 'Goal revise', a: 126, c: THEME.success },
-    { label: 'DC plan', a: 198, c: '#8B5CF6' },
-  ];
-  const cx = 200;
-  const cy = 170;
-  return (
-    <svg viewBox="0 0 400 360" width="100%" height="100%" role="img" aria-label="Change response radar">
-      <rect width="400" height="360" fill="#1E1B4B" rx="16" />
-      {[40, 70, 100, 130].map((r, i) => (
-        <circle key={r} cx={cx} cy={cy} r={r} fill="none" stroke="rgba(239,68,68,0.25)" strokeWidth="2">
-          <animate attributeName="opacity" values="0.2;0.7;0.2" dur={`${2 + i * 0.4}s`} repeatCount="indefinite" />
-        </circle>
-      ))}
-      <circle cx={cx} cy={cy} r="28" fill={THEME.error} />
-      <text x={cx} y={cy + 4} textAnchor="middle" fill="#fff" fontSize="11" fontWeight="700">
-        ALERT
-      </text>
-      {items.map((it) => {
-        const rad = (it.a * Math.PI) / 180;
-        const x = cx + Math.cos(rad) * 110;
-        const y = cy + Math.sin(rad) * 110;
-        return (
-          <g key={it.label}>
-            <line x1={cx} y1={cy} x2={x} y2={y} stroke={it.c} strokeWidth="2" opacity={0.5} />
-            <circle cx={x} cy={y} r="22" fill={it.c} />
-            <text x={x} y={y + 3} textAnchor="middle" fill="#fff" fontSize="8" fontWeight="600">
-              {it.label}
-            </text>
-          </g>
-        );
-      })}
-      <text x="200" y="320" textAnchor="middle" fill="#E9D5FF" fontSize="11">
-        Receive → Verify → Implement (scope) → Notify → Document
-      </text>
-      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('protocol')}>
-        <circle cx="200" cy="170" r="18" fill="#fff" stroke={THEME.error} strokeWidth="3" opacity={active === 'protocol' ? 1 : 0.95}>
-          <animate attributeName="r" values="16;20;16" dur="2.2s" repeatCount="indefinite" />
-        </circle>
-        <text x="200" y="174" textAnchor="middle" fill={THEME.error} fontSize="10" fontWeight="700">
-          1
-        </text>
-      </g>
-      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('stay-notify')}>
-        <circle cx="70" cy="300" r="16" fill={THEME.info} stroke="#fff" strokeWidth="2">
-          <animate attributeName="opacity" values="0.6;1;0.6" dur="2.5s" repeatCount="indefinite" />
-        </circle>
-        <text x="70" y="304" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
-          2
-        </text>
-      </g>
-    </svg>
-  );
-}
-
-/** Page 6 — Scope force field */
-function SceneScope({ active, onHotspot }: { active: string | null; onHotspot: (id: string) => void }) {
-  const within = ['Vitals', 'Meds ordered', 'Wound protocol', 'Educate/plan', 'Specimens', 'Data to RN'];
-  const outside = ['Create POC', 'Modify POC', 'OASIS complete', 'Discharge decide', 'Indep. plan', 'HHA supervise'];
-  return (
-    <svg viewBox="0 0 400 360" width="100%" height="100%" role="img" aria-label="LVN scope boundaries">
-      <defs>
-        <linearGradient id="scopeSplit" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#ECFDF5" />
-          <stop offset="49%" stopColor="#ECFDF5" />
-          <stop offset="51%" stopColor="#FEF2F2" />
-          <stop offset="100%" stopColor="#FEF2F2" />
-        </linearGradient>
-      </defs>
-      <rect width="400" height="360" fill="url(#scopeSplit)" rx="16" />
-      <rect x="196" y="20" width="8" height="320" rx="4" fill={THEME.primary}>
-        <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" />
-      </rect>
-      <text x="100" y="40" textAnchor="middle" fill="#047857" fontSize="12" fontWeight="700">
-        WITHIN LVN + POC
-      </text>
-      <text x="300" y="40" textAnchor="middle" fill="#B91C1C" fontSize="12" fontWeight="700">
-        OUTSIDE LVN ROLE
-      </text>
-      {within.map((t, i) => (
-        <g key={t}>
-          <rect x="24" y={58 + i * 40} width="150" height="30" rx="8" fill="#10B981" opacity={0.9} />
-          <text x="99" y={78 + i * 40} textAnchor="middle" fill="#fff" fontSize="11" fontWeight="600">
-            {t}
-          </text>
-        </g>
-      ))}
-      {outside.map((t, i) => (
-        <g key={t}>
-          <rect x="226" y={58 + i * 40} width="150" height="30" rx="8" fill="#EF4444" opacity={0.9} />
-          <text x="301" y={78 + i * 40} textAnchor="middle" fill="#fff" fontSize="11" fontWeight="600">
-            {t}
-          </text>
-        </g>
-      ))}
-      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('within')}>
-        <circle cx="100" cy="310" r="16" fill="#047857" stroke="#fff" strokeWidth="2" opacity={active === 'within' ? 1 : 0.9}>
-          <animate attributeName="r" values="14;18;14" dur="2.4s" repeatCount="indefinite" />
-        </circle>
-        <text x="100" y="314" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
-          1
-        </text>
-      </g>
-      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('outside')}>
-        <circle cx="300" cy="310" r="16" fill="#B91C1C" stroke="#fff" strokeWidth="2">
-          <animate attributeName="r" values="14;18;14" dur="2.6s" repeatCount="indefinite" />
-        </circle>
-        <text x="300" y="314" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
-          2
-        </text>
-      </g>
-    </svg>
-  );
-}
-
-/** Page 7 — 60-day certification orbit */
-function SceneCert({ active, onHotspot }: { active: string | null; onHotspot: (id: string) => void }) {
-  const milestones = [
-    { label: 'SOC', day: 'D1', angle: -90, c: THEME.success },
-    { label: 'Orders', day: 'D1–2', angle: -30, c: THEME.accent },
-    { label: 'F2F', day: '~D30', angle: 40, c: '#8B5CF6' },
-    { label: 'Recert', day: 'D50–60', angle: 120, c: THEME.error },
-  ];
-  const cx = 200;
-  const cy = 175;
-  return (
-    <svg viewBox="0 0 400 360" width="100%" height="100%" role="img" aria-label="60-day certification orbit">
-      <rect width="400" height="360" fill="#0B1026" rx="16" />
-      <ellipse cx={cx} cy={cy} rx="150" ry="95" fill="none" stroke="rgba(124,58,237,0.45)" strokeWidth="2" strokeDasharray="6 4" />
-      <ellipse cx={cx} cy={cy} rx="100" ry="62" fill="none" stroke="rgba(59,130,246,0.35)" strokeWidth="1.5" />
-      <circle cx={cx} cy={cy} r="36" fill={THEME.info} />
-      <text x={cx} y={cy - 4} textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
-        Physician
-      </text>
-      <text x={cx} y={cy + 10} textAnchor="middle" fill="#DBEAFE" fontSize="9">
-        Order
-      </text>
-      {milestones.map((m) => {
-        const rad = (m.angle * Math.PI) / 180;
-        const x = cx + Math.cos(rad) * 150;
-        const y = cy + Math.sin(rad) * 95;
-        return (
-          <g key={m.label}>
-            <circle cx={x} cy={y} r="20" fill={m.c} />
-            <text x={x} y={y - 2} textAnchor="middle" fill="#fff" fontSize="9" fontWeight="700">
-              {m.label}
-            </text>
-            <text x={x} y={y + 10} textAnchor="middle" fill="#F8FAFC" fontSize="8">
-              {m.day}
-            </text>
-          </g>
-        );
-      })}
-      <text x="200" y="300" textAnchor="middle" fill="#C4B5FD" fontSize="11" fontWeight="600">
-        LVN arc: continuous implementation + documentation
-      </text>
-      <text x="200" y="320" textAnchor="middle" fill="#94A3B8" fontSize="10">
-        60-day certification cycle
-      </text>
-      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('orbit')}>
-        <circle cx="200" cy="80" r="16" fill="#8B5CF6" stroke="#fff" strokeWidth="2" opacity={active === 'orbit' ? 1 : 0.9}>
-          <animate attributeName="opacity" values="0.6;1;0.6" dur="2.3s" repeatCount="indefinite" />
-        </circle>
-        <text x="200" y="84" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">
-          1
-        </text>
-      </g>
-      <g style={{ cursor: 'pointer' }} onClick={() => onHotspot('data-lifeblood')}>
-        <circle cx="300" cy="280" r="16" fill={THEME.lvn} stroke="#fff" strokeWidth="2">
-          <animate attributeName="opacity" values="0.6;1;0.6" dur="2.7s" repeatCount="indefinite" />
-        </circle>
-        <text x="300" y="284" textAnchor="middle" fill="#0F172A" fontSize="10" fontWeight="700">
-          2
-        </text>
-      </g>
-    </svg>
-  );
-}
-
-const SCENES = [SceneAuthority, SceneCms485, SceneFrequency, SceneDelegation, SceneChange, SceneScope, SceneCert];
-
-export function HotspotPanel({ page, activeId }: { page: PageDef; activeId: string | null }) {
-  const hs = page.hotspots.find((h) => h.id === activeId) || page.hotspots[0];
-  return (
-    <div
-      style={{
-        marginTop: 10,
-        background: 'rgba(15,23,42,0.92)',
-        color: '#F8FAFC',
-        borderRadius: 12,
-        padding: '12px 14px',
-        border: `1px solid ${page.accent}`,
-        minHeight: 88,
-      }}
-    >
-      <div style={{ fontSize: 11, color: '#A5B4FC', fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase' }}>
-        Hotspot · {hs.label}
-      </div>
-      <div style={{ fontSize: 13, lineHeight: 1.45, marginTop: 6 }}>{hs.detail}</div>
-      <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 8 }}>
-        Tap numbered markers on the scene ({page.hotspots.map((h) => h.label).join(' · ')})
-      </div>
-    </div>
-  );
-}
-
-export function LeftPanel({ page }: { page: PageDef }) {
-  return (
-    <div style={{ padding: '4px 4px 24px' }}>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-        <span style={chipStyle(THEME.primarySoft, THEME.primaryDark)}>{MODULE_META.cms}</span>
-        <span style={chipStyle('#F5F3FF', THEME.primary)}>{MODULE_META.california}</span>
-        <span style={chipStyle('#FFF7ED', '#C2410C')}>{MODULE_META.policy}</span>
-      </div>
-      <h2 style={{ margin: '0 0 6px', fontSize: 22, color: THEME.text, lineHeight: 1.25 }}>{page.title}</h2>
-      <p style={{ margin: '0 0 14px', color: THEME.muted, fontSize: 14 }}>{page.subtitle}</p>
-      <ul style={{ margin: 0, paddingLeft: 18 }}>
-        {page.bullets.map((b) => (
-          <li key={b.slice(0, 48)} style={{ marginBottom: 8, fontSize: 14, lineHeight: 1.5, color: THEME.text }}>
-            {b}
-          </li>
-        ))}
-      </ul>
-      {page.callouts.map((c, i) => (
-        <Badge key={i} kind={c.kind}>
-          {c.text}
-        </Badge>
-      ))}
-      {page.scenario && (
-        <div
-          style={{
-            marginTop: 14,
-            border: `1px solid ${THEME.border}`,
-            borderRadius: 12,
-            padding: 14,
-            background: '#FAFAFF',
-          }}
-        >
-          <div style={{ fontSize: 12, fontWeight: 700, color: page.accent, textTransform: 'uppercase', letterSpacing: 0.4 }}>
-            Scenario · {page.scenario.patient}
-          </div>
-          <div style={{ fontSize: 12, color: THEME.muted, marginTop: 4 }}>{page.scenario.context}</div>
-          <div style={{ fontSize: 13, lineHeight: 1.5, marginTop: 8, color: THEME.text }}>{page.scenario.body}</div>
-        </div>
-      )}
-      {page.decision && (
-        <div
-          style={{
-            marginTop: 14,
-            display: 'grid',
-            gridTemplateColumns: '1fr',
-            gap: 6,
-            background: '#0F172A',
-            color: '#E2E8F0',
-            borderRadius: 12,
-            padding: 14,
-          }}
-        >
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase' }}>Employee decision frame</div>
-          {(
-            [
-              ['First', page.decision.first],
-              ['May continue', page.decision.continue],
-              ['Must stop', page.decision.stop],
-              ['Notify', page.decision.notify],
-              ['Document', page.decision.document],
-            ] as const
-          ).map(([k, v]) => (
-            <div key={k} style={{ fontSize: 12.5, lineHeight: 1.4 }}>
-              <strong style={{ color: '#FDE68A' }}>{k}:</strong> {v}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function chipStyle(bg: string, fg: string): React.CSSProperties {
-  return {
-    background: bg,
-    color: fg,
-    borderRadius: 99,
-    padding: '4px 10px',
-    fontSize: 11,
-    fontWeight: 600,
-  };
-}
-
-export function QuizView({
-  answers,
-  setAnswers,
-  submitted,
-  score,
-  onSubmit,
-  onRetry,
-  onReview,
-  reviewMode,
-}: {
-  answers: Record<number, number>;
-  setAnswers: React.Dispatch<React.SetStateAction<Record<number, number>>>;
-  submitted: boolean;
-  score: number;
-  onSubmit: () => void;
-  onRetry: () => void;
-  onReview: () => void;
-  reviewMode: boolean;
-}) {
-  const passed = score >= MODULE_META.passing;
-  const letters = ['A', 'B', 'C', 'D'] as const;
-  return (
-    <div style={{ maxWidth: 900, margin: '0 auto', padding: '8px 8px 40px' }}>
-      <h2 style={{ margin: '0 0 8px', color: THEME.text }}>Knowledge Check — {MODULE_META.title}</h2>
-      <p style={{ color: THEME.muted, fontSize: 14, marginTop: 0 }}>
-        10 application questions · 80% to pass · This quiz validates <strong>knowledge only</strong>. Observed demonstration and
-        authorized sign-off remain separate under agency policy.
-      </p>
-      {QUIZ.map((q, qi) => {
-        const selected = answers[qi];
-        return (
-          <div
-            key={q.id}
-            style={{
-              background: THEME.surface,
-              border: `1px solid ${THEME.border}`,
-              borderRadius: 12,
-              padding: 16,
-              marginBottom: 12,
-            }}
-          >
-            <div style={{ fontWeight: 700, fontSize: 14, color: THEME.text, marginBottom: 10 }}>
-              {qi + 1}. {q.question}
-            </div>
-            {q.options.map((opt, oi) => {
-              const isSel = selected === oi;
-              const isCorrect = submitted && oi === q.correct;
-              const isWrong = submitted && isSel && oi !== q.correct;
-              let border = isSel ? THEME.primary : THEME.border;
-              let bg = isSel ? THEME.primarySoft : '#FAFAFA';
-              if (isCorrect) {
-                border = THEME.success;
-                bg = '#ECFDF5';
-              }
-              if (isWrong) {
-                border = THEME.error;
-                bg = '#FEF2F2';
-              }
-              return (
-                <button
-                  key={oi}
-                  type="button"
-                  disabled={submitted}
-                  onClick={() => {
-                    if (!submitted) setAnswers((prev) => ({ ...prev, [qi]: oi }));
-                  }}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    textAlign: 'left',
-                    padding: '10px 12px',
-                    marginBottom: 6,
-                    borderRadius: 8,
-                    border: `1px solid ${border}`,
-                    background: bg,
-                    cursor: submitted ? 'default' : 'pointer',
-                    fontSize: 13,
-                    color: THEME.text,
-                    fontWeight: isSel ? 600 : 400,
-                  }}
-                >
-                  <strong>{letters[oi]}.</strong> {opt}
-                </button>
-              );
-            })}
-            {submitted && (
-              <div style={{ marginTop: 8, fontSize: 12.5, lineHeight: 1.45, color: THEME.muted }}>
-                <strong style={{ color: THEME.text }}>Rationale:</strong> {q.rationale}
-              </div>
-            )}
-          </div>
-        );
-      })}
-      {!submitted ? (
-        <button
-          type="button"
-          onClick={onSubmit}
-          disabled={Object.keys(answers).length < QUIZ.length}
-          style={primaryBtnStyle(Object.keys(answers).length < QUIZ.length)}
-        >
-          Submit quiz ({Object.keys(answers).length}/{QUIZ.length})
-        </button>
-      ) : (
-        <div
-          style={{
-            marginTop: 8,
-            padding: 16,
-            borderRadius: 12,
-            background: passed ? '#ECFDF5' : '#FEF2F2',
-            border: `1px solid ${passed ? '#A7F3D0' : '#FECACA'}`,
-          }}
-        >
-          <div style={{ fontSize: 18, fontWeight: 800, color: passed ? '#047857' : '#B91C1C' }}>
-            Score: {score}% — {passed ? 'PASSED' : 'NOT PASSED'}
-          </div>
-          <p style={{ fontSize: 13, color: THEME.text, lineHeight: 1.5 }}>
-            {passed
-              ? 'Knowledge check passed. This does not alone establish practical clinical competency; complete any required skills demonstration and authorized sign-off per agency policy.'
-              : 'Score below 80%. Review hotspot feedback and page content, then retry the quiz.'}
-          </p>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button type="button" onClick={onReview} style={secondaryBtnStyle}>
-              {reviewMode ? 'Review answers' : 'Review answers'}
-            </button>
-            <button type="button" onClick={onRetry} style={primaryBtnStyle(false)}>
-              Retry quiz
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-const primaryBtnStyle = (disabled: boolean): React.CSSProperties => ({
-  background: disabled ? '#C4B5FD' : THEME.primary,
-  color: '#fff',
-  border: 'none',
-  borderRadius: 10,
-  padding: '12px 18px',
-  fontWeight: 700,
-  fontSize: 14,
-  cursor: disabled ? 'not-allowed' : 'pointer',
-});
-
-const secondaryBtnStyle: React.CSSProperties = {
-  background: THEME.surface,
-  color: THEME.primaryDark,
-  border: `1px solid ${THEME.primary}`,
-  borderRadius: 10,
-  padding: '12px 18px',
-  fontWeight: 700,
-  fontSize: 14,
-  cursor: 'pointer',
-};
-
-export default function LVN005PlanOfCare() {
-  const [pageIndex, setPageIndex] = useState(0);
-  const [mode, setMode] = useState<'learn' | 'quiz' | 'results'>('learn');
-  const [activeHotspot, setActiveHotspot] = useState<string | null>(PAGES[0].hotspots[0].id);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [submitted, setSubmitted] = useState(false);
-  const [score, setScore] = useState(0);
-  const [reviewMode, setReviewMode] = useState(false);
-
-  const page = PAGES[pageIndex];
-  const Scene = SCENES[pageIndex];
-
-  const onHotspot = useCallback((id: string) => {
-    setActiveHotspot(id);
-  }, []);
-
-  const goNext = () => {
-    if (pageIndex < PAGES.length - 1) {
-      const next = pageIndex + 1;
-      setPageIndex(next);
-      setActiveHotspot(PAGES[next].hotspots[0].id);
-    } else {
-      setMode('quiz');
-    }
-  };
-
-  const goPrev = () => {
-    if (mode === 'quiz' || mode === 'results') {
-      setMode('learn');
-      setPageIndex(PAGES.length - 1);
-      setActiveHotspot(PAGES[PAGES.length - 1].hotspots[0].id);
-      return;
-    }
-    if (pageIndex > 0) {
-      const prev = pageIndex - 1;
-      setPageIndex(prev);
-      setActiveHotspot(PAGES[prev].hotspots[0].id);
-    }
-  };
-
-  const onSubmit = () => {
-    let correct = 0;
-    QUIZ.forEach((q, i) => {
-      if (answers[i] === q.correct) correct += 1;
-    });
-    const pct = Math.round((correct / QUIZ.length) * 100);
-    setScore(pct);
-    setSubmitted(true);
-    setReviewMode(true);
-    setMode('results');
-  };
-
-  const onRetry = () => {
-    setAnswers({});
-    setSubmitted(false);
-    setScore(0);
-    setReviewMode(false);
-    setMode('quiz');
-  };
-
-  const dist = useMemo(() => {
-    const counts = [0, 0, 0, 0];
-    QUIZ.forEach((q) => {
-      counts[q.correct] += 1;
-    });
-    return counts;
-  }, []);
-
-  if ((mode as string) === 'learn') {
-    return (
-      <>
-        <LvnGaoPlayer
-        pages={PAGES}
-        pageIndex={pageIndex}
-        onSelectPage={(index) => {
-          setPageIndex(index);
-          setActiveHotspot(PAGES[index].hotspots[0].id);
-        }}
-        onPrevious={goPrev}
-        onNext={goNext}
-        nextLabel={pageIndex < PAGES.length - 1 ? 'Next Lesson →' : 'Start Quiz →'}
-        renderLeft={(currentPageData) => {
-          const pageAny = currentPageData as any;
-          return (
-            <Lvn005LeftPanel
-              page={pageAny}
-              pageNumber={pageIndex + 1}
-              totalPages={PAGES.length}
-            />
-          );
-        }}
-        renderRight={(currentPage) => {
-          const CurrentScene = SCENES[PAGES.indexOf(currentPage)];
-          return (
-            <>
-              <div style={{ fontSize: 12, fontWeight: 700, color: THEME.muted, marginBottom: 8, textTransform: 'uppercase' }}>
-                Instructional scene
-              </div>
-              <div style={{ flex: 1, minHeight: 360 }}>
-                <CurrentScene active={activeHotspot} onHotspot={onHotspot} />
-              </div>
-              null
-            </>
-          );
-        }}
-      />
-        <LvnSceneModal
-          isOpen={activeHotspot !== null}
-          onClose={() => setActiveHotspot(null)}
-          title={page ? ((page as any).hotspots ? (((page as any).hotspots.find((h: any) => h.id === activeHotspot)?.label || (page as any).hotspots.find((h: any) => h.id === activeHotspot)?.title || '')) : '') : ''}
-          info={page ? ((page as any).hotspots ? (((page as any).hotspots.find((h: any) => h.id === activeHotspot)?.info || (page as any).hotspots.find((h: any) => h.id === activeHotspot)?.detail || '')) : '') : ''}
-          triggerRef={activeHotspot ? { current: document.getElementById('hs-' + activeHotspot) } : undefined}
-        />
-      </>
-    );
-  }
-
-  
-  if (false as any) { console.log(reviewMode, setReviewMode, Scene, dist); }
-  if (((mode as any) === 'quiz' || (mode as any) === 'results')) {
-    const isResults = ((mode as any) === 'results' || submitted);
-    const finalScore = score;
-    const isPassed = finalScore >= MODULE_META.passing;
-    const finalAnswers = answers;
-    const finalRetry = onRetry;
-    const finalSubmit = onSubmit;
-
-    if (isResults) {
-      return (
-        <div style={{
-          fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
-          color: '#1F1C1B',
-          background: '#FAFBF8',
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-        }}>
-          <header
-            style={{
-              padding: '24px 32px',
-              background: '#007970',
-              color: '#FFFFFF',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              boxShadow: '0 4px 12px rgba(0, 121, 112, 0.15)',
-            }}
-          >
-            <div>
-              <div style={{ fontWeight: 800, fontSize: 18 }}>${MODULE_META.id} · Knowledge Assessment Results</div>
-              <div style={{ fontSize: 12, opacity: 0.9, marginTop: 4 }}>
-                Scope boundaries validation only (does not certify practical competency)
-              </div>
-            </div>
-            <div style={{ fontWeight: 800, fontSize: 24, background: 'rgba(255,255,255,0.2)', padding: '6px 16px', borderRadius: 8 }}>
-              {finalScore}%
-            </div>
-          </header>
-
-          <main style={{ flex: 1, padding: 32, maxWidth: 800, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
-            <div
-              style={{
-                background: isPassed ? '#E5FEFF' : '#FEF2F2',
-                border: `2px solid ${isPassed ? '#007970' : '#EF4444'}`,
-                borderRadius: 20,
-                padding: 32,
-                textAlign: 'center',
-                marginBottom: 24,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
-              }}
-            >
-              <div style={{ fontSize: 48, marginBottom: 12 }}>{isPassed ? '✓' : '↻'}</div>
-              <h2 style={{ margin: '0 0 12px', color: isPassed ? '#007970' : '#991B1B', fontWeight: 800, fontSize: 22 }}>
-                {isPassed ? 'Knowledge Check Passed' : 'Review & Retry'}
-              </h2>
-              <p style={{ margin: 0, color: '#524C4B', fontSize: 15, lineHeight: 1.6 }}>
-                {isPassed
-                  ? `You scored ${finalScore}% (pass threshold ${MODULE_META.passing}%). This validates knowledge of module scope boundaries only. Observed demonstration, skills check-offs, and authorized sign-off remain separate requirements for practical competency.`
-                  : `You scored ${finalScore}%, which is below the ${MODULE_META.passing}% knowledge pass threshold. Review rationales and module pages, then retry the assessment.`}
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setReviewMode((v: any) => !v)}
-              style={{
-                marginBottom: 16,
-                padding: '10px 18px',
-                background: '#FFFFFF',
-                color: '#007970',
-                border: '1px solid #E5E4E3',
-                borderRadius: 8,
-                fontWeight: 700,
-                cursor: 'pointer',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
-              }}
-            >
-              {reviewMode ? 'Hide' : 'Show'} answer review
-            </button>
-
-            {reviewMode &&
-              QUIZ.map((q, i) => {
-                const ua = (finalAnswers as any)[q.id] !== undefined ? (finalAnswers as any)[q.id] : (finalAnswers as any)[i];
-                const ok = ua === q.correct;
-                const stemText = (q as any).stem || (q as any).question || (q as any).q || '';
-                return (
-                  <div
-                    key={q.id}
-                    style={{
-                      background: '#FFFFFF',
-                      border: '1px solid #E5E4E3',
-                      borderRadius: 16,
-                      padding: 20,
-                      marginBottom: 16,
-                      borderColor: ok ? '#007970' : '#EF4444',
-                      boxShadow: '0 4px 12px rgba(31,28,27,0.02)',
-                    }}
-                  >
-                    <div style={{ fontWeight: 700, marginBottom: 8, color: '#1F1C1B', fontSize: 15 }}>
-                      {i + 1}. {stemText}
-                    </div>
-                    <div style={{ fontSize: 13, color: ok ? '#007970' : '#991B1B', fontWeight: 600 }}>
-                      Your answer: {typeof ua === 'number' ? q.options[ua] : '(not answered)'}
-                    </div>
-                    {!ok && (
-                      <div style={{ fontSize: 13, color: '#007970', marginTop: 4, fontWeight: 600 }}>
-                        Correct: {q.options[q.correct]}
-                      </div>
-                    )}
-                    <div style={{ fontSize: 13, color: '#524C4B', marginTop: 12, lineHeight: 1.5, padding: 12, background: '#FAFBF8', borderRadius: 8, borderLeft: '3px solid #C74601' }}>
-                      <strong style={{ color: '#C74601' }}>Rationale:</strong> {q.rationale}
-                    </div>
-                  </div>
-                );
-              })}
-
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 24 }}>
-              {!isPassed && (
-                <button
-                  type="button"
-                  onClick={finalRetry}
-                  style={{
-                    padding: '14px 28px',
-                    background: '#C74601',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: 8,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    boxShadow: '0 8px 16px rgba(199,70,1,0.2)',
-                  }}
-                >
-                  Retry Quiz
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  
-                  setMode('learn');
-                  setPageIndex(0);
-                }}
-                style={{
-                  padding: '14px 28px',
-                  background: isPassed ? '#007970' : '#FFFFFF',
-                  color: isPassed ? 'white' : '#524C4B',
-                  border: isPassed ? 'none' : '1px solid #E5E4E3',
-                  borderRadius: 8,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  boxShadow: isPassed ? '0 8px 16px rgba(0,121,112,0.15)' : 'none',
-                }}
-              >
-                {isPassed ? 'Review Module Again' : 'Restart Module'}
-              </button>
-            </div>
-          </main>
-        </div>
-      );
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    const answeredCount = Object.keys(finalAnswers).length;
-    return (
-      <div style={{
-        fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
-        color: '#1F1C1B',
-        background: '#FAFBF8',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
-        <header
-          style={{
-            padding: '24px 32px',
-            background: '#007970',
-            color: '#FFFFFF',
-            boxShadow: '0 4px 12px rgba(0, 121, 112, 0.15)',
-          }}
-        >
-          <div style={{ fontWeight: 800, fontSize: 18 }}>${MODULE_META.id} — Knowledge Assessment</div>
-          <div style={{ fontSize: 12, opacity: 0.9, marginTop: 4 }}>
-            ${QUIZ.length} questions · ${MODULE_META.passing}% pass · Scope and boundaries check
-          </div>
-        </header>
-        <main style={{ flex: 1, padding: 32, maxWidth: 800, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
-          {QUIZ.map((q, i) => {
-            const ua = (finalAnswers as any)[q.id] !== undefined ? (finalAnswers as any)[q.id] : (finalAnswers as any)[i];
-            const stemText = (q as any).stem || (q as any).question || (q as any).q || '';
-            return (
-              <div key={q.id} style={{
-                background: '#FFFFFF',
-                border: '1px solid #E5E4E3',
-                borderRadius: 16,
-                padding: 24,
-                marginBottom: 20,
-                boxShadow: '0 4px 12px rgba(31,28,27,0.02)',
-              }}>
-                <div style={{ fontWeight: 700, marginBottom: 16, color: '#1F1C1B', fontSize: 15, lineHeight: 1.45 }}>
-                  {i + 1}. {stemText}
-                </div>
-                {q.options.map((opt, oi) => {
-                  const isChosen = ua === oi;
-                  const letterCode = String.fromCharCode(65 + oi);
-                  return (
-                    <button
-                      key={oi}
-                      type="button"
-                      onClick={() => {
-                        setAnswers((prev) => ({
-                          ...prev,
-                          [q.id]: oi,
-                          [i]: oi
-                        }));
-                      }}
-                      style={{
-                        display: 'flex',
-                        width: '100%',
-                        textAlign: 'left',
-                        gap: 12,
-                        padding: '12px 16px',
-                        marginBottom: 8,
-                        borderRadius: 8,
-                        cursor: 'pointer',
-                        border: `2px solid ${isChosen ? '#007970' : '#E5E4E3'}`,
-                        background: isChosen ? '#E5FEFF' : '#FFFFFF',
-                        color: isChosen ? '#007970' : '#524C4B',
-                        fontSize: 14,
-                        lineHeight: 1.45,
-                        fontWeight: isChosen ? 600 : 400,
-                        transition: 'all 0.2s',
-                      }}
-                    >
-                      <span
-                        style={{
-                          minWidth: 22,
-                          height: 22,
-                          borderRadius: 6,
-                          background: isChosen ? '#007970' : '#FAFBF8',
-                          color: isChosen ? '#FFFFFF' : '#747470',
-                          border: `1px solid ${isChosen ? '#007970' : '#E5E4E3'}`,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 800,
-                          fontSize: 11,
-                        }}
-                      >
-                        {letterCode}
-                      </span>
-                      <span>{opt}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            );
-          })}
-          <button
-            type="button"
-            disabled={answeredCount < QUIZ.length}
-            onClick={finalSubmit}
-            style={{
-              width: '100%',
-              padding: 16,
-              background: answeredCount === QUIZ.length ? '#C74601' : '#E5E4E3',
-              color: answeredCount === QUIZ.length ? 'white' : '#A0A0A0',
-              border: 'none',
-              borderRadius: 8,
-              fontWeight: 700,
-              cursor: answeredCount === QUIZ.length ? 'pointer' : 'not-allowed',
-              fontSize: 15,
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              marginTop: 16,
-              boxShadow: answeredCount === QUIZ.length ? '0 8px 16px rgba(199,70,1,0.25)' : 'none',
-              transition: 'all 0.2s',
-            }}
-          >
-            Submit Assessment ({answeredCount}/{QUIZ.length} answered)
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              
-              setMode('learn');
-            }}
-            style={{
-              marginTop: 12,
-              width: '100%',
-              background: '#FFFFFF',
-              border: '1px solid #E5E4E3',
-              color: '#524C4B',
-              borderRadius: 8,
-              padding: '12px 16px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-            }}
-          >
-            ← Back to content
-          </button>
-        </main>
-      </div>
-    );
-  }
-}
+    /* Ambient Background Pattern */
+    .bg-dots {
+      background-image: radial-gradient(rgba(148, 163, 184, 0.25) 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+    }
 
+    /* Flow Animations for SVG Paths */
+    @keyframes flow-dash {
+      to { stroke-dashoffset: -24; }
+    }
+    @keyframes flow-dash-reverse {
+      to { stroke-dashoffset: 24; }
+    }
+    .animate-flow-teal {
+      stroke-dasharray: 8 8;
+      animation: flow-dash 1s linear infinite;
+    }
+    .animate-flow-orange {
+      stroke-dasharray: 8 8;
+      animation: flow-dash 1s linear infinite;
+    }
+    .animate-flow-orange-reverse {
+      stroke-dasharray: 8 8;
+      animation: flow-dash-reverse 1s linear infinite;
+    }
 
+    /* Node & Card Pop-in Animations */
+    @keyframes pop-in {
+      0% { opacity: 0; transform: scale(0.85) translateY(15px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .node-animate {
+      opacity: 0;
+      animation: pop-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
 
-export function Lvn005LeftPanel({ page }: any) {
+    /* Staggered Fade In for Left Panel */
+    @keyframes fade-in-up {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .stagger-1 { opacity: 0; animation: fade-in-up 0.6s ease-out 0.1s forwards; }
+    .stagger-2 { opacity: 0; animation: fade-in-up 0.6s ease-out 0.2s forwards; }
+    .stagger-3 { opacity: 0; animation: fade-in-up 0.6s ease-out 0.3s forwards; }
+    .stagger-4 { opacity: 0; animation: fade-in-up 0.6s ease-out 0.4s forwards; }
+
+    /* Button Pulses and Shines */
+    @keyframes pulse-soft {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(234, 88, 12, 0); }
+    }
+    .btn-pulse {
+      animation: pulse-soft 2.5s infinite;
+    }
+    
+    .btn-shine {
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-shine::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-25deg);
+      animation: shine 4s infinite;
+    }
+    @keyframes shine {
+      0%, 20% { left: -100%; }
+      20%, 100% { left: 200%; }
+    }
+
+    /* Compass Rotation */
+    @keyframes rotate-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .animate-spin-slow {
+      animation: rotate-slow 40s linear infinite;
+    }
+
+    .scroll-hide::-webkit-scrollbar { display: none; }
+    .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Custom Scrollbar for Nav */
+    .nav-scroll::-webkit-scrollbar { height: 6px; }
+    .nav-scroll::-webkit-scrollbar-track { background: transparent; }
+    .nav-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .nav-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  `}</style>
+);
+
+const TopNav = ({ activeLesson, setActiveLesson }: { activeLesson: number; setActiveLesson: (id: number) => void }) => {
+  const lessons = [
+    { id: 1, title: "1. The Plan of Care" },
+    { id: 2, title: "2. The CMS-485: Home Health M..." },
+    { id: 3, title: "3. Visit Frequency & Scheduling" },
+    { id: 4, title: "4. Delegation Chain & LVN" },
+    { id: 5, title: "5. Responding to Patient Changes" },
+  ].map(l => ({ ...l, active: l.id === activeLesson }));
+
   return (
-    <div style={{ padding: '32px', height: '100%', overflowY: 'auto', background: '#FAFAFF', fontFamily: "'Inter', sans-serif" }}>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
-        {page.callouts && page.callouts.filter((c: any) => c.kind === 'federal').map((c: any, i: number) => (
-          <span key={i} style={{ background: '#E0E7FF', color: '#3730A3', padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: '0.05em' }}>FEDERAL: {c.text.substring(0, 30)}...</span>
+    <div className="flex items-center justify-between w-full h-[64px] bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-4 z-30 shrink-0 select-none">
+      <div className="flex items-center space-x-1 overflow-x-auto nav-scroll w-full h-full pr-4 pb-1">
+        {lessons.map((lesson) => (
+          <div 
+            key={lesson.id} 
+            onClick={() => setActiveLesson(lesson.id)}
+            className={`flex items-center space-x-1.5 whitespace-nowrap px-3 py-1.5 rounded-full text-[12px] font-bold transition-all cursor-pointer duration-300
+              ${lesson.active 
+                ? 'bg-[#0f766e] text-white shadow-[0_4px_12px_rgba(15,118,110,0.25)]' 
+                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'}`}
+          >
+            <div className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${lesson.active ? 'bg-[#f97316]' : 'bg-slate-300'}`}></div>
+            <span className="tracking-wide">{lesson.title}</span>
+          </div>
         ))}
-        <span style={{ background: '#EDE9FE', color: '#5B21B6', padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: '0.05em' }}>CA B&P § 2860</span>
-        <span style={{ background: '#FFEDD5', color: '#C2410C', padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: '0.05em' }}>CL-CP-001</span>
       </div>
       
-      <h2 style={{ fontSize: 26, color: '#0F172A', fontWeight: 800, lineHeight: 1.2, marginBottom: 12, letterSpacing: '-0.02em' }}>{page.title}</h2>
-      <p style={{ fontSize: 16, color: '#475569', lineHeight: 1.5, marginBottom: 24, fontWeight: 500 }}>{page.subtitle}</p>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
-        {page.bullets.map((b: string, i: number) => (
-          <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#7C3AED', marginTop: 8, flexShrink: 0 }} />
-            <div style={{ fontSize: 14, color: '#334155', lineHeight: 1.5 }}>{b}</div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ fontSize: 12, fontWeight: 800, color: '#94A3B8', letterSpacing: '0.1em', marginBottom: 12 }}>KEY CLINICAL ACTIONS</div>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {page.callouts && page.callouts.map((c: any, i: number) => {
-          const isFederal = c.kind === 'federal';
-          const color = isFederal ? '#3B82F6' : '#F59E0B';
-          const bg = isFederal ? '#EFF6FF' : '#FFFBEB';
-          const title = isFederal ? 'FEDERAL REQUIREMENT' : 'KEY';
-          return (
-            <div key={i} style={{ 
-              background: '#FFFFFF', 
-              borderRadius: 16, 
-              padding: 20, 
-              borderLeft: `4px solid ${color}`,
-              boxShadow: '4px 4px 15px rgba(0,0,0,0.03), -4px -4px 15px rgba(255,255,255,0.8), inset 1px 1px 2px rgba(255,255,255,0.8)',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '100%', background: `linear-gradient(135deg, ${bg}40, transparent)`, pointerEvents: 'none' }} />
-              <div style={{ fontSize: 11, fontWeight: 800, color: color, marginBottom: 6, letterSpacing: '0.05em' }}>{title}</div>
-              <div style={{ fontSize: 13, color: '#1E293B', lineHeight: 1.5, fontWeight: 500, position: 'relative', zIndex: 1 }}>{c.text}</div>
-            </div>
-          );
-        })}
+      <div className="flex items-center space-x-2 pl-4 border-l border-slate-200 h-full shrink-0 cursor-pointer hover:opacity-70 transition-opacity">
+        <div className="w-2 h-2 rounded-full bg-[#0f766e]"></div>
+        <span className="text-[#ea580c] text-[11px] font-bold tracking-widest uppercase">Save & Exit</span>
       </div>
     </div>
   );
-}
+};
 
-
-
-function SceneAuthority({ active, onHotspot }: { active: string | null; onHotspot: (id: string) => void }) {
+const LeftContentLesson1 = () => {
   return (
-    <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-      
-      {/* Background Decor */}
-      <div style={{ position: 'absolute', top: '-10%', right: '-5%', width: '40%', height: '40%', background: 'radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)', borderRadius: '50%', filter: 'blur(40px)' }} />
-      <div style={{ position: 'absolute', bottom: '-10%', left: '-5%', width: '50%', height: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%)', borderRadius: '50%', filter: 'blur(40px)' }} />
-
-      <svg viewBox="0 0 600 400" width="100%" height="100%" style={{ filter: 'drop-shadow(0px 20px 40px rgba(0,0,0,0.1))' }}>
-        <defs>
-          <filter id="clay-blue" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="10" dy="15" stdDeviation="12" floodColor="#1E3A8A" floodOpacity="0.2" />
-            <feDropShadow dx="-8" dy="-8" stdDeviation="10" floodColor="#FFFFFF" floodOpacity="0.8" />
-            
-          </filter>
-          <filter id="clay-teal" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="10" dy="15" stdDeviation="12" floodColor="#0F766E" floodOpacity="0.2" />
-            <feDropShadow dx="-8" dy="-8" stdDeviation="10" floodColor="#FFFFFF" floodOpacity="0.8" />
-          </filter>
-          <filter id="clay-orange" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="10" dy="15" stdDeviation="12" floodColor="#9A3412" floodOpacity="0.2" />
-            <feDropShadow dx="-8" dy="-8" stdDeviation="10" floodColor="#FFFFFF" floodOpacity="0.8" />
-          </filter>
-          <linearGradient id="line-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.6" />
-            <stop offset="50%" stopColor="#0891B2" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.6" />
-          </linearGradient>
-        </defs>
-
-        {/* Lines */}
-        <path d="M 150 200 L 300 200 L 450 200" fill="none" stroke="url(#line-grad)" strokeWidth="6" strokeLinecap="round" style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.1))' }} />
-        <circle cx="150" cy="200" r="4" fill="#3B82F6">
-          <animate attributeName="cx" values="150; 450; 150" dur="4s" repeatCount="indefinite" />
-        </circle>
-
-        {/* Nodes */}
-        {/* Physician */}
-        <g transform="translate(150, 200)">
-          <circle cx="0" cy="0" r="50" fill="#3B82F6" filter="url(#clay-blue)" />
-          <text x="0" y="5" textAnchor="middle" fill="#FFFFFF" fontSize="14" fontWeight="800" fontFamily="Inter">Physician</text>
-          <text x="0" y="85" textAnchor="middle" fill="#475569" fontSize="12" fontWeight="600" fontFamily="Inter">Orders / Certifies</text>
-        </g>
-
-        {/* RN */}
-        <g transform="translate(300, 200)">
-          <circle cx="0" cy="0" r="50" fill="#0891B2" filter="url(#clay-teal)" />
-          <text x="0" y="5" textAnchor="middle" fill="#FFFFFF" fontSize="14" fontWeight="800" fontFamily="Inter">RN</text>
-          <text x="0" y="85" textAnchor="middle" fill="#475569" fontSize="12" fontWeight="600" fontFamily="Inter">Interprets / Supervises</text>
-        </g>
-
-        {/* LVN */}
-        <g transform="translate(450, 200)" style={{ cursor: 'pointer' }} onClick={() => onHotspot('lvn-boundary')}>
-          <circle cx="0" cy="0" r="50" fill="#F59E0B" filter="url(#clay-orange)" stroke={active === 'lvn-boundary' ? '#FFFFFF' : 'none'} strokeWidth={active === 'lvn-boundary' ? 4 : 0} />
-          <text x="0" y="5" textAnchor="middle" fill="#FFFFFF" fontSize="14" fontWeight="800" fontFamily="Inter">LVN</text>
-          <text x="0" y="85" textAnchor="middle" fill="#475569" fontSize="12" fontWeight="600" fontFamily="Inter">Implements / Reports</text>
+    <div className="w-1/2 flex flex-col h-full overflow-y-auto bg-gradient-to-b from-white to-slate-50 scroll-hide relative z-10 px-8 py-8">
+      <div className="max-w-[95%]">
+        
+        <div className="stagger-1">
+          <h3 className="text-[11px] font-extrabold text-[#0f766e] tracking-[0.2em] uppercase mb-4 opacity-80 flex items-center">
+            <span className="w-6 h-[2px] bg-[#0f766e] mr-3 rounded-full"></span>
+            Module Content
+          </h3>
           
-          <circle cx="35" cy="-35" r="14" fill="#FFFFFF" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.2))" />
-          <text x="35" y="-31" textAnchor="middle" fill="#F59E0B" fontSize="12" fontWeight="800" fontFamily="Inter">2</text>
-        </g>
+          <h1 className="text-[40px] font-extrabold text-[#064e3b] mb-4 tracking-tight leading-[1.1]">
+            The Plan of Care —<br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0f766e] to-[#047857]">Your Clinical Compass</span>
+          </h1>
+          
+          <p className="text-[#ea580c] font-bold text-[17px] mb-8 tracking-wide flex items-center">
+            <Compass size={20} className="mr-2 opacity-80" />
+            Why the POC governs every LVN action in the home
+          </p>
+        </div>
 
-        {/* Hotspot 1 */}
-        <g transform="translate(50, 50)" style={{ cursor: 'pointer' }} onClick={() => onHotspot('authority-chain')}>
-          <circle cx="0" cy="0" r="20" fill="#FFFFFF" filter="drop-shadow(0 4px 8px rgba(0,0,0,0.15))" stroke={active === 'authority-chain' ? '#3B82F6' : 'none'} strokeWidth={active === 'authority-chain' ? 3 : 0} />
-          <text x="0" y="5" textAnchor="middle" fill="#3B82F6" fontSize="14" fontWeight="800" fontFamily="Inter">1</text>
-        </g>
-      </svg>
+        <div className="space-y-6 text-slate-600 text-[16px] leading-[1.8] mb-10 pr-4 stagger-2 font-medium">
+          <p>
+            As a Licensed Vocational Nurse (LVN), the individual Plan of Care (POC) is the physician-authorized directive specifying every service, visit, and clinical intervention in the patient's home. 
+          </p>
+          <p className="p-5 bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-2xl text-slate-700">
+            Critical Scope of Practice rules mandate that, under RN direction, the LVN must <span className="font-bold text-[#0f766e] bg-teal-50 px-1.5 py-0.5 rounded">only</span> implement authorized directives. The LVN does not create, modify, or independently rewrite the Plan of Care.
+          </p>
+          <p>
+            Every task during a home visit must trace directly back to a specific POC directive. If it is not in the plan (or a valid order updating it), it is not authorized.
+          </p>
+        </div>
+
+        {/* Info Blocks - Staggered */}
+        <div className="space-y-5 mb-8">
+          <div className="stagger-3 group">
+            <div className="bg-gradient-to-br from-[#f0fdf4] to-white border border-[#bbf7d0] rounded-[1.25rem] p-5 flex items-start space-x-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <div className="bg-white p-2.5 rounded-2xl text-[#16a34a] shadow-[0_4px_10px_rgba(22,163,74,0.15)] shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <ShieldCheck size={22} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h4 className="font-bold text-[#166534] text-[13px] tracking-wider mb-1.5 uppercase">Federal Requirement</h4>
+                <p className="text-[14.5px] text-[#15803d] leading-relaxed font-medium">
+                  42 CFR § 484.60: Home health services must be furnished in accordance with an individualized plan of care.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="stagger-4 group">
+            <div className="bg-gradient-to-br from-[#fff7ed] to-white border border-[#fed7aa] rounded-[1.25rem] p-5 flex items-start space-x-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <div className="bg-white p-2.5 rounded-2xl text-[#ea580c] shadow-[0_4px_10px_rgba(234,88,12,0.15)] shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <AlertCircle size={22} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h4 className="font-bold text-[#9a3412] text-[13px] tracking-wider mb-1.5 uppercase">Key Clinical Rule</h4>
+                <p className="text-[14.5px] text-[#c2410c] leading-relaxed font-medium">
+                  The LVN works UNDER an existing RN/physician POC. Developing or independently modifying the POC is outside LVN role and is a compliance violation.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+const DiagramNode = ({ label, subLabel, icon, gradientClass, size = 'large' }: { label: any; subLabel?: any; icon?: any; gradientClass?: any; size?: string }) => {
+  const isLarge = size === 'large';
+  const sizeClassOuter = isLarge ? 'w-[124px] h-[124px]' : 'w-[56px] h-[56px]';
+  const sizeClassInner = isLarge ? 'w-[96px] h-[96px]' : 'w-[42px] h-[42px]';
+  const textClass = isLarge ? 'text-[17px]' : 'text-[20px]';
+  
+  return (
+    <div className={`relative flex items-center justify-center rounded-full bg-white/40 backdrop-blur-sm shadow-[0_15px_35px_rgba(0,0,0,0.08),0_5px_15px_rgba(0,0,0,0.04)] z-10 border border-white/60 p-2 ${sizeClassOuter}`}>
+      <div className={`rounded-full flex flex-col items-center justify-center text-white font-bold tracking-wide shadow-[inset_0_-4px_12px_rgba(0,0,0,0.2),inset_0_2px_6px_rgba(255,255,255,0.5)] ${gradientClass} ${sizeClassInner}`}>
+        {icon && <div className="mb-1 opacity-95">{icon}</div>}
+        <span className={`${textClass} leading-tight drop-shadow-md`}>{label}</span>
+        {subLabel && <span className="text-[10px] font-semibold opacity-90 -mt-0.5 mt-1 tracking-wide">{subLabel}</span>}
+      </div>
+    </div>
+  );
+};
+
+const RightPanelLesson1 = ({ isPlaying, setShowChallenge }: { isPlaying: boolean; setShowChallenge: any }) => {
+  const playState = isPlaying ? 'running' : 'paused';
+
+  return (
+    <div className="w-1/2 bg-[#f8fafc] relative overflow-hidden flex flex-col border-l border-slate-200 shadow-[inset_0_4px_20px_rgba(0,0,0,0.03)] group">
+      
+      {/* Decorative Background Motif - The Clinical Compass */}
+      <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none opacity-40">
+        <div className="relative w-[600px] h-[600px] animate-spin-slow">
+          <div className="absolute inset-0 border-[2px] border-dashed border-slate-300 rounded-full"></div>
+          <div className="absolute inset-8 border-[1px] border-slate-200 rounded-full"></div>
+          <div className="absolute inset-16 border-[4px] border-slate-100 rounded-full"></div>
+          <div className="absolute top-0 bottom-0 left-1/2 w-px bg-gradient-to-b from-transparent via-slate-300 to-transparent"></div>
+          <div className="absolute left-0 right-0 top-1/2 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
+        </div>
+      </div>
+      
+      {/* Header Area */}
+      <div className="absolute top-6 left-8 z-20">
+        <div className="text-[11px] font-extrabold tracking-widest text-[#0f766e] uppercase bg-white/80 backdrop-blur-md px-4 py-2 rounded-full inline-block shadow-sm border border-teal-100">
+          Interactive Diagram
+        </div>
+      </div>
+
+      {/* Main Diagram Area */}
+      <div className="flex-1 relative flex items-center justify-center z-10 w-full h-full">
+        <div className="relative w-[500px] h-[500px] scale-[0.98] origin-center">
+          
+          {/* Animated SVG Connections */}
+          <svg className="absolute inset-0 w-full h-full z-0 pointer-events-none" viewBox="0 0 500 500" style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.08))'}}>
+            <defs>
+              <marker id="arrow-teal" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" fill="#0d9488" />
+              </marker>
+              <marker id="arrow-orange" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" fill="#ea580c" />
+              </marker>
+              
+              <filter id="glow-teal" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+
+            {/* Downward Flow - Authorization */}
+            <line x1="250" y1="120" x2="250" y2="190" stroke="#0d9488" strokeWidth="5" className="animate-flow-teal" style={{ animationPlayState: playState }} markerEnd="url(#arrow-teal)" filter={isPlaying ? "url(#glow-teal)" : ""} />
+            <line x1="250" y1="290" x2="250" y2="360" stroke="#0d9488" strokeWidth="5" className="animate-flow-teal" style={{ animationPlayState: playState }} markerEnd="url(#arrow-teal)" filter={isPlaying ? "url(#glow-teal)" : ""} />
+
+            
+            {/* Feedback / Reporting Loops */}
+            <path d="M 290 250 L 380 250" fill="none" stroke="#ea580c" strokeWidth="3" className="animate-flow-orange" style={{ animationPlayState: playState }} markerEnd="url(#arrow-orange)" />
+            <line x1="410" y1="276" x2="410" y2="384" stroke="#ea580c" strokeWidth="3" className="animate-flow-orange" style={{ animationPlayState: playState }} markerEnd="url(#arrow-orange)" />
+            <line x1="384" y1="410" x2="300" y2="410" stroke="#ea580c" strokeWidth="3" className="animate-flow-orange-reverse" style={{ animationPlayState: playState }} markerEnd="url(#arrow-orange)" />
+            
+            {/* Reverse loop indication */}
+            <path d="M 300 90 C 410 90, 410 160, 410 224" fill="none" stroke="#ea580c" strokeWidth="3" className="animate-flow-orange" style={{ animationPlayState: playState }} markerEnd="url(#arrow-orange)" />
+          </svg>
+
+          {/* Nodes */}
+          <div className="absolute inset-0 z-10">
+            {/* Physician Node */}
+            <div className="absolute top-[70px] left-[250px] -translate-x-1/2 -translate-y-1/2 group">
+              <div className="node-animate" style={{ animationDelay: '0.1s' }}>
+                <DiagramNode label="Physician" subLabel="Orders / Certifies" gradientClass="bg-gradient-to-br from-[#3b82f6] to-[#1e3a8a]" />
+              </div>
+            </div>
+            
+            {/* RN Node */}
+            <div className="absolute top-[250px] left-[250px] -translate-x-1/2 -translate-y-1/2 group">
+               <div className="node-animate" style={{ animationDelay: '0.3s' }}>
+                <DiagramNode label="RN" subLabel="Interprets / Directs" gradientClass="bg-gradient-to-br from-[#14b8a6] to-[#0f766e]" />
+              </div>
+            </div>
+            
+            {/* LVN Node */}
+            <div className="absolute top-[410px] left-[250px] -translate-x-1/2 -translate-y-1/2 group">
+               <div className="node-animate" style={{ animationDelay: '0.5s' }}>
+                <DiagramNode label="LVN" subLabel="Implements Only" gradientClass="bg-gradient-to-br from-[#f97316] to-[#c2410c]" />
+              </div>
+            </div>
+
+            {/* Loop Indicators with descriptive icons instead of numbers */}
+            <div className="absolute top-[250px] left-[410px] -translate-x-1/2 -translate-y-1/2 group cursor-help z-20">
+               <div className="node-animate" style={{ animationDelay: '0.7s' }}>
+                <DiagramNode label={<ClipboardEdit size={22} />} size="small" gradientClass="bg-gradient-to-br from-[#fb923c] to-[#ea580c]" />
+                
+                {/* Tooltip */}
+                <div className="absolute left-[50px] top-1/2 -translate-y-1/2 bg-slate-800 text-white px-3 py-2 rounded-lg text-[12px] font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap pointer-events-none shadow-xl transform translate-x-2 group-hover:translate-x-0">
+                  <div className="font-bold text-[#fdba74] mb-0.5">Step 2: Update</div>
+                  RN/Physician update official orders based on reports.
+                  <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="absolute top-[410px] left-[410px] -translate-x-1/2 -translate-y-1/2 group cursor-help z-20">
+               <div className="node-animate" style={{ animationDelay: '0.9s' }}>
+                <DiagramNode label={<MessageSquare size={22} />} size="small" gradientClass="bg-gradient-to-br from-[#fb923c] to-[#ea580c]" />
+                
+                {/* Tooltip */}
+                <div className="absolute left-[50px] top-1/2 -translate-y-1/2 bg-slate-800 text-white px-3 py-2 rounded-lg text-[12px] font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap pointer-events-none shadow-xl transform translate-x-2 group-hover:translate-x-0">
+                  <div className="font-bold text-[#fdba74] mb-0.5">Step 1: Report</div>
+                  LVN identifies changes and reports to RN immediately.
+                  <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Interactive Trigger Area */}
+      <div className="absolute bottom-0 left-0 w-full p-8 flex flex-col items-center justify-end bg-gradient-to-t from-slate-100 via-slate-50/90 to-transparent pt-24 z-20 pointer-events-none">
+        
+        <div className="node-animate pointer-events-auto flex flex-col items-center" style={{ animationDelay: '1.2s' }}>
+          <p className="text-[#0f766e] font-bold text-[15px] mb-5 bg-white/90 px-6 py-2.5 rounded-full shadow-[0_8px_20px_rgba(15,118,110,0.1)] backdrop-blur-md border border-teal-100/50 flex items-center">
+            Physician <ChevronRight size={16} className="mx-1" /> RN <ChevronRight size={16} className="mx-1" /> LVN 
+            <span className="text-slate-400 font-semibold ml-2 italic text-[13px]">(No reverse plan writing)</span>
+          </p>
+          
+          <button 
+            onClick={() => setShowChallenge(true)}
+            className="btn-pulse btn-shine bg-[#ea580c] text-white px-10 py-3.5 rounded-full font-extrabold text-[15px] tracking-wider shadow-[0_8px_20px_rgba(234,88,12,0.3)] hover:bg-[#c2410c] hover:-translate-y-1 transition-all duration-300 flex items-center space-x-2.5"
+          >
+            <FileText size={18} strokeWidth={2.5} />
+            <span>CHALLENGE</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ChallengeModalLesson1 = ({ onClose }: { onClose: () => void }) => {
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const answers = [
+    { id: 'a', text: 'Independently modify the Plan of Care if you notice a severe change in the patient\'s condition.', correct: false },
+    { id: 'b', text: 'Implement authorized directives exactly as written and immediately report condition changes to the supervising RN.', correct: true },
+    { id: 'c', text: 'Create a temporary, undocumented care plan to address new symptoms until the physician can be reached.', correct: false },
+  ];
+
+  const handleSelect = (id: string) => {
+    if (!isSubmitted) setSelectedAnswer(id);
+  };
+
+  const handleSubmit = () => {
+    if (selectedAnswer) setIsSubmitted(true);
+  };
+
+  const isCorrect = selectedAnswer === 'b';
+
+  return (
+    <div className="absolute inset-0 z-50 flex items-center justify-center p-8 bg-slate-900/60 backdrop-blur-lg transition-all duration-500 opacity-100">
+      
+      <div className="w-full max-w-[1050px] flex space-x-6 relative">
+        
+        {/* Close Button */}
+        <button 
+          onClick={onClose}
+          className="absolute -top-14 right-0 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-all duration-300 hover:rotate-90 border border-white/20"
+        >
+          <X size={24} strokeWidth={2.5} />
+        </button>
+
+        {/* Left Card: Context */}
+        <div className="flex-1 bg-white rounded-[2rem] p-10 shadow-2xl transform translate-y-2 node-animate border border-slate-100" style={{animationDelay: '0s'}}>
+          <div className="flex items-center space-x-4 mb-8">
+            <div className="w-12 h-12 bg-teal-50 text-[#0f766e] rounded-2xl flex items-center justify-center shadow-inner">
+              <FileText size={24} strokeWidth={2.5} />
+            </div>
+            <div>
+              <div className="text-[11px] font-extrabold text-[#ea580c] tracking-[0.15em] uppercase mb-0.5">Clinical Context</div>
+              <h2 className="text-[#064e3b] text-[24px] font-bold">Field Application</h2>
+            </div>
+          </div>
+          
+          <div className="bg-slate-50 border border-slate-200 p-8 rounded-[1.5rem] mb-8 relative shadow-sm">
+            <div className="absolute -left-3 top-10 w-6 h-6 bg-white border-[3px] border-[#0f766e] rounded-full shadow-md"></div>
+            <p className="text-slate-700 text-[17px] leading-relaxed italic font-medium">
+              "You arrive at Mr. Smith's home for a routine wound care visit. While there, you notice his blood pressure is significantly elevated and he complains of a new, severe headache. The current Plan of Care only authorizes wound care and standard vitals checking."
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-4 bg-[#f8fafc] p-4 rounded-2xl border border-slate-200">
+             <button className="bg-[#0f766e] text-white px-5 py-2.5 rounded-full text-[14px] font-bold flex items-center shadow-md hover:bg-[#0d9488] transition-colors">
+               <Volume2 size={18} className="mr-2.5" />
+               Listen to Scenario
+             </button>
+             <span className="text-slate-500 text-[14px] font-semibold cursor-pointer hover:text-slate-800 transition-colors">View Transcript</span>
+          </div>
+        </div>
+
+        {/* Right Card: Quiz */}
+        <div className="flex-1 bg-white rounded-[2rem] p-10 shadow-2xl flex flex-col node-animate border border-slate-100" style={{animationDelay: '0.1s'}}>
+          <div className="text-[11px] font-extrabold text-[#0f766e] tracking-[0.15em] uppercase mb-4">
+            Knowledge Check
+          </div>
+          
+          <h3 className="text-slate-800 text-[19px] font-bold mb-8 leading-snug">
+            Based on Scope of Practice rules and the Plan of Care, what is your required course of action?
+          </h3>
+
+          <div className="space-y-4 flex-1">
+            {answers.map((answer) => (
+              <div 
+                key={answer.id}
+                onClick={() => handleSelect(answer.id)}
+                className={`p-5 rounded-2xl border-2 transition-all duration-300 cursor-pointer flex items-start space-x-4 relative overflow-hidden
+                  ${isSubmitted 
+                    ? (answer.correct 
+                        ? 'bg-[#ecfdf5] border-[#10b981] text-[#065f46] shadow-[0_4px_15px_rgba(16,185,129,0.15)]' 
+                        : (selectedAnswer === answer.id ? 'bg-[#fef2f2] border-[#ef4444] text-[#991b1b]' : 'border-slate-100 opacity-40'))
+                    : (selectedAnswer === answer.id 
+                        ? 'border-[#0f766e] bg-[#f0fdfa] shadow-[0_4px_15px_rgba(15,118,110,0.1)] transform -translate-y-1' 
+                        : 'border-slate-200 hover:border-[#0f766e]/40 hover:bg-slate-50')}
+                `}
+              >
+                {/* Checkbox indicator */}
+                <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-colors duration-300
+                  ${isSubmitted
+                    ? (answer.correct ? 'border-[#10b981] bg-[#10b981]' : (selectedAnswer === answer.id ? 'border-[#ef4444] bg-[#ef4444]' : 'border-slate-300'))
+                    : (selectedAnswer === answer.id ? 'border-[#0f766e] border-[7px]' : 'border-slate-300')}
+                `}>
+                  {isSubmitted && answer.correct && <CheckCircle2 size={14} className="text-white" strokeWidth={3} />}
+                  {isSubmitted && !answer.correct && selectedAnswer === answer.id && <X size={14} className="text-white" strokeWidth={3} />}
+                </div>
+                
+                <span className="text-[15px] font-semibold leading-relaxed pt-0.5">{answer.text}</span>
+
+                {/* Subtle highlight animation when correct */}
+                {isSubmitted && answer.correct && selectedAnswer === answer.id && (
+                  <div className="absolute inset-0 bg-white/20 pointer-events-none animate-pulse"></div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-8 mt-4 border-t border-slate-100">
+            <button 
+              onClick={isSubmitted ? onClose : handleSubmit}
+              disabled={!selectedAnswer && !isSubmitted}
+              className={`w-full py-4 rounded-2xl font-extrabold text-[15px] tracking-wide transition-all duration-300 shadow-md
+                ${!selectedAnswer && !isSubmitted 
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none' 
+                  : isSubmitted
+                    ? (isCorrect ? 'bg-[#10b981] text-white hover:bg-[#059669] hover:shadow-lg hover:-translate-y-0.5' : 'bg-[#0f766e] text-white hover:bg-[#0d9488]')
+                    : 'bg-[#ea580c] text-white hover:bg-[#d94a08] hover:shadow-lg hover:-translate-y-0.5'}
+              `}
+            >
+              {isSubmitted 
+                ? (isCorrect ? 'CORRECT - CONTINUE LESSON' : 'REVIEW CONCEPT & RETRY') 
+                : 'SUBMIT ANSWER'}
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+const BottomNav = ({ activeLesson, setActiveLesson, isPlaying, setIsPlaying }: { activeLesson: number; setActiveLesson: (id: number) => void; isPlaying: boolean; setIsPlaying: any }) => {
+  return (
+    <div className="h-[96px] w-full bg-white px-10 flex items-center justify-between border-t border-slate-200 relative z-30 shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
+      
+      <div className="w-1/4 flex items-center">
+        <button onClick={() => activeLesson > 1 && setActiveLesson(activeLesson - 1)} className={`text-[12px] font-extrabold tracking-[0.15em] uppercase transition-colors flex items-center group ${activeLesson === 1 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-400 hover:text-slate-700'}`} disabled={activeLesson === 1}>
+          <ChevronLeft size={18} className="mr-2 group-hover:-translate-x-1 transition-transform duration-300" />
+          Previous Lesson
+        </button>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center space-x-8">
+        <button 
+          onClick={() => setIsPlaying(!isPlaying)}
+          className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 
+            ${isPlaying ? 'bg-[#0f766e] text-white hover:bg-[#0d9488]' : 'bg-white text-[#0f766e] border-2 border-[#0f766e] hover:bg-teal-50'}`}
+        >
+          {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" className="ml-1" />}
+        </button>
+        
+        <div className="flex flex-col space-y-2">
+          {/* Visual Progress Bar */}
+          <div className="w-48 h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-inner relative">
+             <div className="absolute left-0 top-0 bottom-0 w-[58%] bg-[#0f766e] rounded-full relative overflow-hidden">
+               {/* Shine effect on progress bar */}
+               <div className="absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 translate-x-full animate-[shine_2s_infinite]"></div>
+             </div>
+          </div>
+          
+          <div className="flex items-center justify-between w-full">
+            <span className="text-[13px] font-bold text-slate-700 tabular-nums tracking-wide">01:10 / 02:00</span>
+            <span className="text-[11px] text-slate-400 uppercase tracking-[0.15em] font-extrabold">Lesson {activeLesson} of 5</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="w-1/4 flex justify-end">
+        <button onClick={() => activeLesson < 5 && setActiveLesson(activeLesson + 1)} className={`px-8 py-4 rounded-full text-[14px] font-extrabold tracking-wider flex items-center space-x-2 transition-all duration-300 ${activeLesson === 5 ? 'bg-slate-300 text-white cursor-not-allowed shadow-none' : 'bg-[#ea580c] text-white shadow-[0_8px_20px_rgba(234,88,12,0.25)] hover:bg-[#c2410c] hover:shadow-[0_10px_25px_rgba(234,88,12,0.35)] hover:-translate-y-0.5 group'}`} disabled={activeLesson === 5}>
+          <span>NEXT LESSON</span>
+          <ChevronRight size={20} strokeWidth={3} className="group-hover:translate-x-1 transition-transform duration-300" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+
+const LeftContentLesson2 = () => {
+  return (
+    <div className="w-1/2 flex flex-col h-full overflow-y-auto bg-gradient-to-b from-white to-slate-50 scroll-hide relative z-10 px-8 py-8">
+      <div className="max-w-[95%]">
+        
+        <div className="stagger-1">
+          <h3 className="text-[11px] font-extrabold text-[#0f766e] tracking-[0.2em] uppercase mb-4 opacity-80 flex items-center">
+            <span className="w-6 h-[2px] bg-[#0f766e] mr-3 rounded-full"></span>
+            Module Content
+          </h3>
+          
+          <h1 className="text-[40px] font-extrabold text-[#064e3b] mb-4 tracking-tight leading-[1.1]">
+            The CMS-485 —<br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0f766e] to-[#047857]">Home Health Medical Plan of Care</span>
+          </h1>
+          
+          <p className="text-[#ea580c] font-bold text-[17px] mb-8 tracking-wide flex items-center">
+            <FileText size={20} className="mr-2 opacity-80" />
+            The official document driving your care
+          </p>
+        </div>
+
+        <div className="space-y-6 text-slate-600 text-[16px] leading-[1.8] mb-10 pr-4 stagger-2 font-medium">
+          <p>
+            The <span className="font-bold text-slate-800">CMS-485</span> is the foundational document in home health. It serves as both the physician's medical orders and the certification that the patient qualifies for home health services under Medicare or other insurance guidelines.
+          </p>
+          <p className="p-5 bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-2xl text-slate-700 relative overflow-hidden">
+            <div className="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-[#0f766e] to-[#0d9488]"></div>
+            For the LVN, the CMS-485 is the <span className="font-bold text-[#0f766e]">ultimate authority</span>. It specifies the exact types of services, the frequency of visits, and the specific clinical interventions authorized for the patient's home episode (typically a 60-day certification period).
+          </p>
+          <p>
+            If a patient or family member requests a service that is not explicitly detailed in the CMS-485, the LVN cannot provide it without an updated, physician-signed verbal order processed by the supervising RN.
+          </p>
+        </div>
+
+        {/* Info Blocks - Staggered */}
+        <div className="space-y-5 mb-8">
+          <div className="stagger-3 group">
+            <div className="bg-gradient-to-br from-[#f0fdf4] to-white border border-[#bbf7d0] rounded-[1.25rem] p-5 flex items-start space-x-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <div className="bg-white p-2.5 rounded-2xl text-[#16a34a] shadow-[0_4px_10px_rgba(22,163,74,0.15)] shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <ShieldCheck size={22} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h4 className="font-bold text-[#166534] text-[13px] tracking-wider mb-1.5 uppercase">Scope Boundary</h4>
+                <p className="text-[14.5px] text-[#15803d] leading-relaxed font-medium">
+                  The LVN executes the interventions on the CMS-485. The RN is responsible for completing the comprehensive assessment (OASIS) that generates the CMS-485.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+const RightPanelLesson2 = ({ isPlaying, setShowChallenge }: { isPlaying: boolean; setShowChallenge: any }) => {
+  const playState = isPlaying ? 'running' : 'paused';
+
+  return (
+    <div className="w-1/2 bg-[#f8fafc] relative overflow-hidden flex flex-col border-l border-slate-200 shadow-[inset_0_4px_20px_rgba(0,0,0,0.03)] group">
+      
+      {/* Decorative Background */}
+      <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none opacity-40">
+        <div className="w-[500px] h-[500px] bg-slate-200/50 rounded-full blur-[80px]"></div>
+      </div>
+      
+      {/* Header Area */}
+      <div className="absolute top-6 left-8 z-20">
+        <div className="text-[11px] font-extrabold tracking-widest text-[#0f766e] uppercase bg-white/80 backdrop-blur-md px-4 py-2 rounded-full inline-block shadow-sm border border-teal-100">
+          Form Lifecycle
+        </div>
+      </div>
+
+      {/* Main Diagram Area */}
+      <div className="flex-1 relative flex items-center justify-center z-10 w-full h-full">
+        <div className="relative w-[500px] h-[500px] scale-[0.95] origin-center">
+          
+          <svg className="absolute inset-0 w-full h-full z-0 pointer-events-none" viewBox="0 0 500 500" style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.08))'}}>
+            <defs>
+              <marker id="arrow-teal" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" fill="#0d9488" />
+              </marker>
+              <filter id="glow-teal" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+
+            {/* Linear Flow */}
+            <line x1="150" y1="250" x2="230" y2="250" stroke="#0d9488" strokeWidth="5" className="animate-flow-teal" style={{ animationPlayState: playState }} markerEnd="url(#arrow-teal)" filter={isPlaying ? "url(#glow-teal)" : ""} />
+            <line x1="330" y1="250" x2="410" y2="250" stroke="#0d9488" strokeWidth="5" className="animate-flow-teal" style={{ animationPlayState: playState }} markerEnd="url(#arrow-teal)" filter={isPlaying ? "url(#glow-teal)" : ""} />
+          </svg>
+
+          <div className="absolute inset-0 z-10 flex items-center justify-center">
+            {/* Physician */}
+            <div className="absolute left-[100px] top-[250px] -translate-x-1/2 -translate-y-1/2 group">
+              <div className="node-animate" style={{ animationDelay: '0.1s' }}>
+                <DiagramNode label="Physician" subLabel="Certifies Need" gradientClass="bg-gradient-to-br from-[#3b82f6] to-[#1e3a8a]" />
+              </div>
+            </div>
+            
+            {/* CMS 485 Form */}
+            <div className="absolute left-[280px] top-[250px] -translate-x-1/2 -translate-y-1/2 group z-20">
+               <div className="node-animate bg-white rounded-xl shadow-2xl border-2 border-teal-500 p-4 w-[140px] transform hover:scale-105 transition-transform" style={{ animationDelay: '0.3s' }}>
+                 <div className="h-2 bg-teal-100 rounded w-1/2 mb-3"></div>
+                 <div className="h-1 bg-slate-100 rounded w-full mb-1.5"></div>
+                 <div className="h-1 bg-slate-100 rounded w-3/4 mb-1.5"></div>
+                 <div className="h-1 bg-slate-100 rounded w-full mb-4"></div>
+                 <div className="text-center font-black text-teal-700 text-lg uppercase tracking-widest">CMS-485</div>
+                 <div className="text-center text-[10px] text-teal-600 font-bold uppercase tracking-wide mt-1">Plan of Care</div>
+              </div>
+            </div>
+            
+            {/* LVN */}
+            <div className="absolute left-[460px] top-[250px] -translate-x-1/2 -translate-y-1/2 group">
+               <div className="node-animate" style={{ animationDelay: '0.5s' }}>
+                <DiagramNode label="LVN" subLabel="Executes" gradientClass="bg-gradient-to-br from-[#f97316] to-[#c2410c]" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Interactive Trigger Area */}
+      <div className="absolute bottom-0 left-0 w-full p-8 flex flex-col items-center justify-end bg-gradient-to-t from-slate-100 via-slate-50/90 to-transparent pt-24 z-20 pointer-events-none">
+        <div className="node-animate pointer-events-auto flex flex-col items-center" style={{ animationDelay: '0.8s' }}>
+          <button 
+            onClick={() => setShowChallenge(true)}
+            className="btn-pulse btn-shine bg-[#ea580c] text-white px-10 py-3.5 rounded-full font-extrabold text-[15px] tracking-wider shadow-[0_8px_20px_rgba(234,88,12,0.3)] hover:bg-[#c2410c] hover:-translate-y-1 transition-all duration-300 flex items-center space-x-2.5"
+          >
+            <FileText size={18} strokeWidth={2.5} />
+            <span>CHALLENGE</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ChallengeModalLesson2 = ({ onClose }: { onClose: () => void }) => {
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const answers = [
+    { id: 'a', text: 'The LVN can add a new service to the 485 if the patient strongly requests it.', correct: false },
+    { id: 'b', text: 'The CMS-485 is authorized by the physician and binds the LVN to only perform the listed interventions.', correct: true },
+    { id: 'c', text: 'The LVN can independently discharge the patient once the 485 interventions are complete.', correct: false },
+  ];
+
+  const handleSelect = (id: string) => { if (!isSubmitted) setSelectedAnswer(id); };
+  const handleSubmit = () => { if (selectedAnswer) setIsSubmitted(true); };
+  const isCorrect = selectedAnswer === 'b';
+
+  return (
+    <div className="absolute inset-0 z-50 flex items-center justify-center p-8 bg-slate-900/60 backdrop-blur-lg transition-all duration-500">
+      <div className="w-full max-w-[900px] bg-white rounded-[2rem] p-10 shadow-2xl relative node-animate">
+        <button onClick={onClose} className="absolute top-6 right-6 w-10 h-10 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-full flex items-center justify-center transition-colors">
+          <X size={20} strokeWidth={2.5} />
+        </button>
+        
+        <div className="text-[11px] font-extrabold text-[#0f766e] tracking-[0.15em] uppercase mb-4">Knowledge Check</div>
+        <h3 className="text-slate-800 text-[20px] font-bold mb-8">What is the LVN's relationship to the CMS-485 Plan of Care?</h3>
+
+        <div className="space-y-4 mb-8">
+          {answers.map((answer) => (
+            <div 
+              key={answer.id}
+              onClick={() => handleSelect(answer.id)}
+              className={`p-5 rounded-2xl border-2 transition-all duration-300 cursor-pointer flex items-center space-x-4
+                ${isSubmitted ? (answer.correct ? 'bg-[#ecfdf5] border-[#10b981] text-[#065f46]' : (selectedAnswer === answer.id ? 'bg-[#fef2f2] border-[#ef4444] text-[#991b1b]' : 'border-slate-100 opacity-40')) : (selectedAnswer === answer.id ? 'border-[#0f766e] bg-[#f0fdfa]' : 'border-slate-200 hover:bg-slate-50')}
+              `}
+            >
+              <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${isSubmitted ? (answer.correct ? 'border-[#10b981] bg-[#10b981]' : (selectedAnswer === answer.id ? 'border-[#ef4444] bg-[#ef4444]' : 'border-slate-300')) : (selectedAnswer === answer.id ? 'border-[#0f766e] border-[7px]' : 'border-slate-300')}`}>
+                {isSubmitted && answer.correct && <CheckCircle2 size={14} className="text-white" />}
+                {isSubmitted && !answer.correct && selectedAnswer === answer.id && <X size={14} className="text-white" />}
+              </div>
+              <span className="text-[15px] font-semibold">{answer.text}</span>
+            </div>
+          ))}
+        </div>
+
+        <button 
+          onClick={isSubmitted ? onClose : handleSubmit}
+          disabled={!selectedAnswer && !isSubmitted}
+          className={`w-full py-4 rounded-2xl font-extrabold text-[15px] tracking-wide transition-all shadow-md ${!selectedAnswer && !isSubmitted ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none' : isSubmitted ? (isCorrect ? 'bg-[#10b981] text-white hover:bg-[#059669]' : 'bg-[#0f766e] text-white hover:bg-[#0d9488]') : 'bg-[#ea580c] text-white hover:bg-[#d94a08]'}`}
+        >
+          {isSubmitted ? (isCorrect ? 'CORRECT - CONTINUE LESSON' : 'REVIEW CONCEPT & RETRY') : 'SUBMIT ANSWER'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+
+// ==================== LESSON 3 ====================
+
+const LeftContentLesson3 = () => {
+  return (
+    <div className="w-1/2 flex flex-col h-full overflow-y-auto bg-gradient-to-b from-white to-slate-50 scroll-hide relative z-10 px-8 py-8">
+      <div className="max-w-[95%]">
+        
+        <div className="stagger-1">
+          <h3 className="text-[11px] font-extrabold text-[#0f766e] tracking-[0.2em] uppercase mb-4 opacity-80 flex items-center">
+            <span className="w-6 h-[2px] bg-[#0f766e] mr-3 rounded-full"></span>
+            Module Content
+          </h3>
+          <h1 className="text-[40px] font-extrabold text-[#064e3b] mb-4 tracking-tight leading-[1.1]">
+            Visit Frequency <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0f766e] to-[#047857]">& Scheduling</span>
+          </h1>
+          <p className="text-[#ea580c] font-bold text-[17px] mb-8 tracking-wide flex items-center">
+            <Calendar size={20} className="mr-2 opacity-80" />
+            Adhering strictly to authorized dates
+          </p>
+        </div>
+
+        <div className="space-y-6 text-slate-600 text-[16px] leading-[1.8] mb-10 pr-4 stagger-2 font-medium">
+          <p>
+            The Plan of Care dictates not only what you do, but <span className="font-bold text-slate-800">when</span> you do it. Visit frequencies are physician-ordered using shorthand notation (e.g., <span className="font-bold text-[#0f766e] bg-teal-50 px-1.5 py-0.5 rounded">2w9</span> means two visits per week for nine weeks). These frequencies are tied directly to the 60-day certification period on the CMS-485.
+          </p>
+          <p className="p-5 bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-2xl text-slate-700 relative overflow-hidden">
+            <div className="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-[#0f766e] to-[#0d9488]"></div>
+            LVNs are strictly prohibited from altering the visit frequency. If a patient asks you to &quot;skip a visit&quot; or &quot;come an extra day,&quot; you <span className="font-bold text-[#ea580c]">cannot</span> agree to this independently. Any missed visit or added visit requires RN coordination and a physician order.
+          </p>
+          <p>
+            Each visit must be <span className="font-bold text-slate-800">documented on the exact date it occurred</span>. Backdating, pre-dating, or clustering visits into a single week to &quot;catch up&quot; is a federal compliance violation that can trigger audits, payment recoupment, and potential fraud investigations.
+          </p>
+          <p>
+            If a patient is not home for a scheduled visit, the LVN must document the attempted visit, immediately notify the supervising RN, and <span className="font-bold text-slate-800">never</span> independently reschedule to a different day. The RN will determine whether a make-up visit is clinically appropriate and will coordinate a new order if needed.
+          </p>
+        </div>
+
+        {/* Info Blocks - Staggered */}
+        <div className="space-y-5 mb-8">
+          <div className="stagger-3 group">
+            <div className="bg-gradient-to-br from-[#f0fdf4] to-white border border-[#bbf7d0] rounded-[1.25rem] p-5 flex items-start space-x-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <div className="bg-white p-2.5 rounded-2xl text-[#16a34a] shadow-[0_4px_10px_rgba(22,163,74,0.15)] shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <ShieldCheck size={22} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h4 className="font-bold text-[#166534] text-[13px] tracking-wider mb-1.5 uppercase">CMS Condition of Participation</h4>
+                <p className="text-[14.5px] text-[#15803d] leading-relaxed font-medium">
+                  42 CFR § 484.60(a): Services must be furnished in accordance with physician orders, including the type, frequency, and duration of each service as specified on the individualized plan of care.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="stagger-4 group">
+            <div className="bg-gradient-to-br from-[#fff7ed] to-white border border-[#fed7aa] rounded-[1.25rem] p-5 flex items-start space-x-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <div className="bg-white p-2.5 rounded-2xl text-[#ea580c] shadow-[0_4px_10px_rgba(234,88,12,0.15)] shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <AlertCircle size={22} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h4 className="font-bold text-[#9a3412] text-[13px] tracking-wider mb-1.5 uppercase">Missed Visit Protocol</h4>
+                <p className="text-[14.5px] text-[#c2410c] leading-relaxed font-medium">
+                  A missed visit is never &quot;made up&quot; without authorization. Document the missed visit in the clinical record, notify the RN Case Manager within the same business day, and await instruction. Unauthorized rescheduling is a compliance violation.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+const RightPanelLesson3 = ({ setShowChallenge }: { isPlaying: boolean; setShowChallenge: any }) => {
+  return (
+    <div className="w-1/2 bg-[#f8fafc] relative overflow-hidden flex flex-col border-l border-slate-200 shadow-[inset_0_4px_20px_rgba(0,0,0,0.03)] group">
+      <div className="absolute top-6 left-8 z-20">
+        <div className="text-[11px] font-extrabold tracking-widest text-[#0f766e] uppercase bg-white/80 backdrop-blur-md px-4 py-2 rounded-full inline-block shadow-sm border border-teal-100">
+          Timeline Protocol
+        </div>
+      </div>
+      <div className="flex-1 relative flex items-center justify-center z-10 w-full h-full">
+         <div className="node-animate bg-white rounded-2xl p-6 shadow-xl border border-slate-200 w-[400px]">
+           <div className="flex justify-between items-center mb-6">
+             <div className="font-bold text-slate-700">Week 1 Schedule</div>
+             <div className="text-teal-600 font-bold bg-teal-50 px-2 py-1 rounded">Freq: 2w1</div>
+           </div>
+           
+           <div className="flex items-center space-x-4 mb-4 opacity-100 relative">
+             <div className="w-12 h-12 bg-teal-100 text-teal-700 font-bold rounded-lg flex items-center justify-center">Mon</div>
+             <div className="flex-1 bg-slate-50 border border-slate-200 p-3 rounded-lg flex items-center justify-between">
+               <span className="font-bold text-slate-700 text-sm">Wound Care Visit</span>
+               <CheckCircle2 className="text-teal-500" size={18} />
+             </div>
+           </div>
+           
+           <div className="flex items-center space-x-4 opacity-100 relative group">
+             <div className="w-12 h-12 bg-orange-100 text-orange-700 font-bold rounded-lg flex items-center justify-center">Thu</div>
+             <div className="flex-1 bg-red-50 border border-red-200 p-3 rounded-lg flex items-center justify-between relative overflow-hidden">
+               <span className="font-bold text-red-700 text-sm">Patient Not Home</span>
+               <X className="text-red-500" size={18} />
+             </div>
+             
+             {/* Alert tooltip */}
+             <div className="absolute right-[-140px] top-1/2 -translate-y-1/2 bg-slate-800 text-white p-3 rounded shadow-lg text-xs font-bold w-[130px] opacity-0 group-hover:opacity-100 transition-opacity z-20">
+               Must notify RN immediately. Do not just move to Friday.
+             </div>
+           </div>
+         </div>
+      </div>
+      <div className="absolute bottom-0 left-0 w-full p-8 flex flex-col items-center justify-end bg-gradient-to-t from-slate-100 via-slate-50/90 to-transparent pt-24 z-20 pointer-events-none">
+        <div className="node-animate pointer-events-auto flex flex-col items-center" style={{ animationDelay: '0.4s' }}>
+          <button onClick={() => setShowChallenge(true)} className="btn-pulse btn-shine bg-[#ea580c] text-white px-10 py-3.5 rounded-full font-extrabold text-[15px] tracking-wider shadow-[0_8px_20px_rgba(234,88,12,0.3)] hover:bg-[#c2410c] hover:-translate-y-1 transition-all flex items-center space-x-2.5">
+            <FileText size={18} strokeWidth={2.5} />
+            <span>CHALLENGE</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ChallengeModalLesson3 = ({ onClose }: { onClose: () => void }) => {
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const answers = [
+    { id: 'a', text: 'Reschedule the visit for tomorrow since the frequency is 2 times a week anyway.', correct: false },
+    { id: 'b', text: 'Document it as missed and notify the supervising RN so they can contact the physician if required.', correct: true },
+    { id: 'c', text: 'Just skip it and do an extra visit next week to make up for it.', correct: false },
+  ];
+  const isCorrect = selectedAnswer === 'b';
+  return (
+    <div className="absolute inset-0 z-50 flex items-center justify-center p-8 bg-slate-900/60 backdrop-blur-lg">
+      <div className="w-full max-w-[900px] bg-white rounded-[2rem] p-10 shadow-2xl relative node-animate">
+        <button onClick={onClose} className="absolute top-6 right-6 w-10 h-10 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center"><X size={20} /></button>
+        <div className="text-[11px] font-extrabold text-[#0f766e] tracking-[0.15em] uppercase mb-4">Knowledge Check</div>
+        <h3 className="text-slate-800 text-[20px] font-bold mb-8">What should you do if a patient refuses a visit?</h3>
+        <div className="space-y-4 mb-8">
+          {answers.map((a) => (
+            <div key={a.id} onClick={() => !isSubmitted && setSelectedAnswer(a.id)} className={`p-5 rounded-2xl border-2 cursor-pointer flex items-center space-x-4 ${isSubmitted ? (a.correct ? 'bg-[#ecfdf5] border-[#10b981]' : (selectedAnswer === a.id ? 'bg-[#fef2f2] border-[#ef4444]' : 'border-slate-100 opacity-40')) : (selectedAnswer === a.id ? 'border-[#0f766e] bg-[#f0fdfa]' : 'border-slate-200')} `}>
+              <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${isSubmitted ? (a.correct ? 'border-[#10b981] bg-[#10b981]' : (selectedAnswer === a.id ? 'border-[#ef4444] bg-[#ef4444]' : 'border-slate-300')) : (selectedAnswer === a.id ? 'border-[#0f766e] border-[7px]' : 'border-slate-300')}`}>{isSubmitted && a.correct && <CheckCircle2 size={14} className="text-white"/>}{isSubmitted && !a.correct && selectedAnswer === a.id && <X size={14} className="text-white"/>}</div>
+              <span className="text-[15px] font-semibold">{a.text}</span>
+            </div>
+          ))}
+        </div>
+        <button onClick={isSubmitted ? onClose : () => selectedAnswer && setIsSubmitted(true)} disabled={!selectedAnswer && !isSubmitted} className={`w-full py-4 rounded-2xl font-extrabold shadow-md ${!selectedAnswer && !isSubmitted ? 'bg-slate-100 text-slate-400' : isSubmitted ? (isCorrect ? 'bg-[#10b981] text-white' : 'bg-[#0f766e] text-white') : 'bg-[#ea580c] text-white'}`}>{isSubmitted ? (isCorrect ? 'CORRECT - CONTINUE' : 'RETRY') : 'SUBMIT'}</button>
+      </div>
+    </div>
+  );
+};
+
+// ==================== LESSON 4 ====================
+
+const LeftContentLesson4 = () => {
+  return (
+    <div className="w-1/2 flex flex-col h-full overflow-y-auto bg-gradient-to-b from-white to-slate-50 scroll-hide relative z-10 px-8 py-8">
+      <div className="max-w-[95%]">
+        <div className="stagger-1">
+          <h3 className="text-[11px] font-extrabold text-[#0f766e] tracking-[0.2em] uppercase mb-4 opacity-80 flex items-center">
+            <span className="w-6 h-[2px] bg-[#0f766e] mr-3 rounded-full"></span>
+            Module Content
+          </h3>
+          <h1 className="text-[40px] font-extrabold text-[#064e3b] mb-4 tracking-tight leading-[1.1]">
+            Delegation Chain <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0f766e] to-[#047857]">& The LVN</span>
+          </h1>
+          <p className="text-[#ea580c] font-bold text-[17px] mb-8 tracking-wide flex items-center">
+            <Users size={20} className="mr-2 opacity-80" />
+            Who directs your work?
+          </p>
+        </div>
+
+        <div className="space-y-6 text-slate-600 text-[16px] leading-[1.8] mb-10 pr-4 stagger-2 font-medium">
+          <p>
+            LVNs practice under the direction of a <span className="font-bold text-slate-800">Registered Nurse (RN) or Physician</span>. In the home health setting, the RN Case Manager is primarily responsible for delegating clinical tasks to the LVN and ensuring that all care provided remains within the authorized Plan of Care.
+          </p>
+          <p className="p-5 bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-2xl text-slate-700 relative overflow-hidden">
+            <div className="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-[#0f766e] to-[#0d9488]"></div>
+            The LVN is responsible for the <span className="font-bold text-[#0f766e] bg-teal-50 px-1.5 py-0.5 rounded">execution</span> of delegated tasks, but the RN retains responsibility for the overall assessment, care planning, and evaluation of the patient&apos;s progress. This is not optional — it is a legal requirement.
+          </p>
+          <p>
+            Key tasks the LVN <span className="font-bold text-[#0f766e]">can</span> perform under delegation include: wound care, medication administration, vital signs collection, catheter care, and patient/caregiver education as specified on the POC. Tasks the LVN <span className="font-bold text-[#ea580c]">cannot</span> perform include: initial patient assessments (OASIS), care plan development or modification, and discharge planning.
+          </p>
+          <p>
+            The delegation chain also means the LVN must <span className="font-bold text-slate-800">communicate upward, never laterally</span>. If a Home Health Aide (HHA) reports a concern to you, you must escalate it to the supervising RN — you cannot independently act on an HHA&apos;s report to change the care plan.
+          </p>
+        </div>
+
+        {/* Info Blocks - Staggered */}
+        <div className="space-y-5 mb-8">
+          <div className="stagger-3 group">
+            <div className="bg-gradient-to-br from-[#f0fdf4] to-white border border-[#bbf7d0] rounded-[1.25rem] p-5 flex items-start space-x-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <div className="bg-white p-2.5 rounded-2xl text-[#16a34a] shadow-[0_4px_10px_rgba(22,163,74,0.15)] shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <ShieldCheck size={22} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h4 className="font-bold text-[#166534] text-[13px] tracking-wider mb-1.5 uppercase">California BPC § 2859.5</h4>
+                <p className="text-[14.5px] text-[#15803d] leading-relaxed font-medium">
+                  The LVN/LPN functions under the direction and supervision of a licensed physician, dentist, or registered nurse. The LVN scope does not include independent assessment, diagnosis, or modification of the plan of treatment.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="stagger-4 group">
+            <div className="bg-gradient-to-br from-[#fff7ed] to-white border border-[#fed7aa] rounded-[1.25rem] p-5 flex items-start space-x-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <div className="bg-white p-2.5 rounded-2xl text-[#ea580c] shadow-[0_4px_10px_rgba(234,88,12,0.15)] shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <AlertCircle size={22} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h4 className="font-bold text-[#9a3412] text-[13px] tracking-wider mb-1.5 uppercase">Key Clinical Rule</h4>
+                <p className="text-[14.5px] text-[#c2410c] leading-relaxed font-medium">
+                  If you are unsure whether a task falls within your scope, <span className="font-bold">do not perform it</span>. Contact the supervising RN for clarification. Performing a task outside the delegation chain is a scope-of-practice violation and may result in disciplinary action by the Board of Vocational Nursing.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+const RightPanelLesson4 = ({ setShowChallenge }: { isPlaying: boolean; setShowChallenge: any }) => {
+  return (
+    <div className="w-1/2 bg-[#f8fafc] relative overflow-hidden flex flex-col border-l border-slate-200 shadow-[inset_0_4px_20px_rgba(0,0,0,0.03)] group">
+      <div className="absolute top-6 left-8 z-20"><div className="text-[11px] font-extrabold tracking-widest text-[#0f766e] uppercase bg-white/80 backdrop-blur-md px-4 py-2 rounded-full inline-block shadow-sm border border-teal-100">Chain of Command</div></div>
+      <div className="flex-1 relative flex items-center justify-center z-10 w-full h-full">
+         <div className="relative w-[300px] h-[400px]">
+           <div className="absolute inset-x-1/2 top-10 bottom-10 w-1 bg-slate-200"></div>
+           <div className="absolute top-0 left-1/2 -translate-x-1/2 node-animate" style={{animationDelay:'0.1s'}}>
+             <div className="bg-[#3b82f6] text-white px-6 py-3 rounded-full font-bold shadow-lg text-center w-[180px]">Physician</div>
+           </div>
+           <div className="absolute top-[130px] left-1/2 -translate-x-1/2 node-animate" style={{animationDelay:'0.3s'}}>
+             <div className="bg-[#14b8a6] text-white px-6 py-3 rounded-full font-bold shadow-lg text-center w-[180px]">Supervising RN</div>
+           </div>
+           <div className="absolute top-[260px] left-1/2 -translate-x-1/2 node-animate" style={{animationDelay:'0.5s'}}>
+             <div className="bg-[#ea580c] text-white px-6 py-3 rounded-full font-bold shadow-lg text-center w-[180px]">LVN / LPN</div>
+           </div>
+         </div>
+      </div>
+      <div className="absolute bottom-0 left-0 w-full p-8 flex flex-col items-center justify-end bg-gradient-to-t from-slate-100 via-slate-50/90 to-transparent pt-24 z-20 pointer-events-none">
+        <div className="node-animate pointer-events-auto flex flex-col items-center" style={{ animationDelay: '0.4s' }}><button onClick={() => setShowChallenge(true)} className="btn-pulse btn-shine bg-[#ea580c] text-white px-10 py-3.5 rounded-full font-extrabold text-[15px] tracking-wider shadow-[0_8px_20px_rgba(234,88,12,0.3)] hover:bg-[#c2410c] hover:-translate-y-1 transition-all flex items-center space-x-2.5"><FileText size={18} strokeWidth={2.5} /><span>CHALLENGE</span></button></div>
+      </div>
+    </div>
+  );
+};
+
+const ChallengeModalLesson4 = ({ onClose }: { onClose: () => void }) => {
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const answers = [
+    { id: 'a', text: 'The LVN functions completely independently in the home.', correct: false },
+    { id: 'b', text: 'The LVN practices under the direction of an RN or Physician.', correct: true },
+    { id: 'c', text: 'The LVN delegates complex assessments to the Home Health Aide.', correct: false },
+  ];
+  const isCorrect = selectedAnswer === 'b';
+  return (
+    <div className="absolute inset-0 z-50 flex items-center justify-center p-8 bg-slate-900/60 backdrop-blur-lg">
+      <div className="w-full max-w-[900px] bg-white rounded-[2rem] p-10 shadow-2xl relative node-animate">
+        <button onClick={onClose} className="absolute top-6 right-6 w-10 h-10 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center"><X size={20} /></button>
+        <div className="text-[11px] font-extrabold text-[#0f766e] tracking-[0.15em] uppercase mb-4">Knowledge Check</div>
+        <h3 className="text-slate-800 text-[20px] font-bold mb-8">Who does the LVN practice under?</h3>
+        <div className="space-y-4 mb-8">
+          {answers.map((a) => (
+            <div key={a.id} onClick={() => !isSubmitted && setSelectedAnswer(a.id)} className={`p-5 rounded-2xl border-2 cursor-pointer flex items-center space-x-4 ${isSubmitted ? (a.correct ? 'bg-[#ecfdf5] border-[#10b981]' : (selectedAnswer === a.id ? 'bg-[#fef2f2] border-[#ef4444]' : 'border-slate-100 opacity-40')) : (selectedAnswer === a.id ? 'border-[#0f766e] bg-[#f0fdfa]' : 'border-slate-200')} `}>
+              <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${isSubmitted ? (a.correct ? 'border-[#10b981] bg-[#10b981]' : (selectedAnswer === a.id ? 'border-[#ef4444] bg-[#ef4444]' : 'border-slate-300')) : (selectedAnswer === a.id ? 'border-[#0f766e] border-[7px]' : 'border-slate-300')}`}>{isSubmitted && a.correct && <CheckCircle2 size={14} className="text-white"/>}{isSubmitted && !a.correct && selectedAnswer === a.id && <X size={14} className="text-white"/>}</div>
+              <span className="text-[15px] font-semibold">{a.text}</span>
+            </div>
+          ))}
+        </div>
+        <button onClick={isSubmitted ? onClose : () => selectedAnswer && setIsSubmitted(true)} disabled={!selectedAnswer && !isSubmitted} className={`w-full py-4 rounded-2xl font-extrabold shadow-md ${!selectedAnswer && !isSubmitted ? 'bg-slate-100 text-slate-400' : isSubmitted ? (isCorrect ? 'bg-[#10b981] text-white' : 'bg-[#0f766e] text-white') : 'bg-[#ea580c] text-white'}`}>{isSubmitted ? (isCorrect ? 'CORRECT - CONTINUE' : 'RETRY') : 'SUBMIT'}</button>
+      </div>
+    </div>
+  );
+};
+
+// ==================== LESSON 5 ====================
+
+const LeftContentLesson5 = () => {
+  return (
+    <div className="w-1/2 flex flex-col h-full overflow-y-auto bg-gradient-to-b from-white to-slate-50 scroll-hide relative z-10 px-8 py-8">
+      <div className="max-w-[95%]">
+        <div className="stagger-1">
+          <h3 className="text-[11px] font-extrabold text-[#0f766e] tracking-[0.2em] uppercase mb-4 opacity-80 flex items-center">
+            <span className="w-6 h-[2px] bg-[#0f766e] mr-3 rounded-full"></span>
+            Module Content
+          </h3>
+          <h1 className="text-[40px] font-extrabold text-[#064e3b] mb-4 tracking-tight leading-[1.1]">
+            Responding to <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0f766e] to-[#047857]">Patient Changes</span>
+          </h1>
+          <p className="text-[#ea580c] font-bold text-[17px] mb-8 tracking-wide flex items-center">
+            <AlertCircle size={20} className="mr-2 opacity-80" />
+            Recognizing, documenting, and escalating
+          </p>
+        </div>
+
+        <div className="space-y-6 text-slate-600 text-[16px] leading-[1.8] mb-10 pr-4 stagger-2 font-medium">
+          <p>
+            If you encounter a change in the patient&apos;s condition that falls outside the parameters of the Plan of Care — such as <span className="font-bold text-slate-800">abnormal vitals, new wounds, sudden confusion, increased pain, or signs of infection</span> — you cannot independently change the medical interventions.
+          </p>
+          <p className="p-5 bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-2xl text-slate-700 relative overflow-hidden">
+            <div className="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-[#ea580c] to-[#c2410c]"></div>
+            You must <span className="font-bold text-[#ea580c]">report the change immediately</span> to the Supervising RN. The RN will evaluate the clinical significance, coordinate with the physician, and determine whether an updated order or an emergency response is needed.
+          </p>
+          <p>
+            Your documentation of the change must be <span className="font-bold text-slate-800">objective, specific, and time-stamped</span>. Record the exact vital signs, the patient&apos;s verbal complaints, and any observable physical changes. Avoid subjective language like &quot;patient seems worse&quot; — instead, document measurable data: &quot;BP 178/102 at 10:15 AM, patient reports new onset frontal headache rated 7/10.&quot;
+          </p>
+          <p>
+            In a <span className="font-bold text-[#ea580c]">life-threatening emergency</span> (chest pain, stroke symptoms, severe respiratory distress, unresponsive patient), call 911 first, then immediately notify the supervising RN. Do not wait for RN instruction before calling emergency services when a patient&apos;s life is in danger.
+          </p>
+        </div>
+
+        {/* Info Blocks - Staggered */}
+        <div className="space-y-5 mb-8">
+          <div className="stagger-3 group">
+            <div className="bg-gradient-to-br from-[#f0fdf4] to-white border border-[#bbf7d0] rounded-[1.25rem] p-5 flex items-start space-x-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <div className="bg-white p-2.5 rounded-2xl text-[#16a34a] shadow-[0_4px_10px_rgba(22,163,74,0.15)] shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <ShieldCheck size={22} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h4 className="font-bold text-[#166534] text-[13px] tracking-wider mb-1.5 uppercase">Federal Reporting Requirement</h4>
+                <p className="text-[14.5px] text-[#15803d] leading-relaxed font-medium">
+                  42 CFR § 484.50(c): The home health agency must promptly alert the physician to any changes that suggest a need to alter the plan of care. Failure to report constitutes a Condition of Participation deficiency.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="stagger-4 group">
+            <div className="bg-gradient-to-br from-[#fff7ed] to-white border border-[#fed7aa] rounded-[1.25rem] p-5 flex items-start space-x-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <div className="bg-white p-2.5 rounded-2xl text-[#ea580c] shadow-[0_4px_10px_rgba(234,88,12,0.15)] shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <AlertCircle size={22} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h4 className="font-bold text-[#9a3412] text-[13px] tracking-wider mb-1.5 uppercase">Clinical Boundary</h4>
+                <p className="text-[14.5px] text-[#c2410c] leading-relaxed font-medium">
+                  The LVN may <span className="font-bold">never</span> initiate a new medication, discontinue an existing one, or change a treatment protocol based on observed changes. These actions require a physician order communicated through the supervising RN. The LVN&apos;s role is to detect, document, and report.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+const RightPanelLesson5 = ({ setShowChallenge }: { isPlaying: boolean; setShowChallenge: any }) => {
+  return (
+    <div className="w-1/2 bg-[#f8fafc] relative overflow-hidden flex flex-col border-l border-slate-200 shadow-[inset_0_4px_20px_rgba(0,0,0,0.03)] group">
+      <div className="absolute top-6 left-8 z-20"><div className="text-[11px] font-extrabold tracking-widest text-[#0f766e] uppercase bg-white/80 backdrop-blur-md px-4 py-2 rounded-full inline-block shadow-sm border border-teal-100">Escalation Path</div></div>
+      <div className="flex-1 relative flex items-center justify-center z-10 w-full h-full">
+         <div className="node-animate bg-white rounded-2xl p-6 shadow-xl border border-slate-200 w-[400px]">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="bg-red-100 text-red-600 p-4 rounded-full"><AlertCircle size={32} /></div>
+              <h3 className="font-bold text-slate-800 text-lg">Abnormal Finding Detected</h3>
+              <div className="h-8 w-1 bg-slate-200"></div>
+              <div className="bg-orange-100 text-orange-600 font-bold px-6 py-3 rounded-lg border border-orange-200 w-full">Call Supervising RN</div>
+              <div className="h-8 w-1 bg-slate-200"></div>
+              <div className="bg-teal-100 text-teal-700 font-bold px-6 py-3 rounded-lg border border-teal-200 w-full">RN contacts Physician</div>
+            </div>
+         </div>
+      </div>
+      <div className="absolute bottom-0 left-0 w-full p-8 flex flex-col items-center justify-end bg-gradient-to-t from-slate-100 via-slate-50/90 to-transparent pt-24 z-20 pointer-events-none">
+        <div className="node-animate pointer-events-auto flex flex-col items-center" style={{ animationDelay: '0.4s' }}><button onClick={() => setShowChallenge(true)} className="btn-pulse btn-shine bg-[#ea580c] text-white px-10 py-3.5 rounded-full font-extrabold text-[15px] tracking-wider shadow-[0_8px_20px_rgba(234,88,12,0.3)] hover:bg-[#c2410c] hover:-translate-y-1 transition-all flex items-center space-x-2.5"><FileText size={18} strokeWidth={2.5} /><span>CHALLENGE</span></button></div>
+      </div>
+    </div>
+  );
+};
+
+const ChallengeModalLesson5 = ({ onClose }: { onClose: () => void }) => {
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const answers = [
+    { id: 'a', text: 'Give an unprescribed over-the-counter medication to help.', correct: false },
+    { id: 'b', text: 'Document it and wait for the next visit to see if it improves.', correct: false },
+    { id: 'c', text: 'Immediately notify the supervising RN and wait for further instruction.', correct: true },
+  ];
+  const isCorrect = selectedAnswer === 'c';
+  return (
+    <div className="absolute inset-0 z-50 flex items-center justify-center p-8 bg-slate-900/60 backdrop-blur-lg">
+      <div className="w-full max-w-[900px] bg-white rounded-[2rem] p-10 shadow-2xl relative node-animate">
+        <button onClick={onClose} className="absolute top-6 right-6 w-10 h-10 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center"><X size={20} /></button>
+        <div className="text-[11px] font-extrabold text-[#0f766e] tracking-[0.15em] uppercase mb-4">Knowledge Check</div>
+        <h3 className="text-slate-800 text-[20px] font-bold mb-8">What do you do if a patient has abnormal vitals?</h3>
+        <div className="space-y-4 mb-8">
+          {answers.map((a) => (
+            <div key={a.id} onClick={() => !isSubmitted && setSelectedAnswer(a.id)} className={`p-5 rounded-2xl border-2 cursor-pointer flex items-center space-x-4 ${isSubmitted ? (a.correct ? 'bg-[#ecfdf5] border-[#10b981]' : (selectedAnswer === a.id ? 'bg-[#fef2f2] border-[#ef4444]' : 'border-slate-100 opacity-40')) : (selectedAnswer === a.id ? 'border-[#0f766e] bg-[#f0fdfa]' : 'border-slate-200')} `}>
+              <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${isSubmitted ? (a.correct ? 'border-[#10b981] bg-[#10b981]' : (selectedAnswer === a.id ? 'border-[#ef4444] bg-[#ef4444]' : 'border-slate-300')) : (selectedAnswer === a.id ? 'border-[#0f766e] border-[7px]' : 'border-slate-300')}`}>{isSubmitted && a.correct && <CheckCircle2 size={14} className="text-white"/>}{isSubmitted && !a.correct && selectedAnswer === a.id && <X size={14} className="text-white"/>}</div>
+              <span className="text-[15px] font-semibold">{a.text}</span>
+            </div>
+          ))}
+        </div>
+        <button onClick={isSubmitted ? onClose : () => selectedAnswer && setIsSubmitted(true)} disabled={!selectedAnswer && !isSubmitted} className={`w-full py-4 rounded-2xl font-extrabold shadow-md ${!selectedAnswer && !isSubmitted ? 'bg-slate-100 text-slate-400' : isSubmitted ? (isCorrect ? 'bg-[#10b981] text-white' : 'bg-[#0f766e] text-white') : 'bg-[#ea580c] text-white'}`}>{isSubmitted ? (isCorrect ? 'CORRECT - CONTINUE' : 'RETRY') : 'SUBMIT'}</button>
+      </div>
+    </div>
+  );
+};
+
+export default function LVN005() {
+  const [activeLesson, setActiveLesson] = useState(1);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [showChallenge, setShowChallenge] = useState(false);
+
+  return (
+    <div className="fixed inset-0 w-full h-full overflow-hidden bg-white font-sans antialiased flex flex-col z-[9999]">
+      <GlobalStyles />
+      
+      {/* Radial vignette mask for the background */}
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-radial from-transparent to-slate-200/50 mix-blend-multiply z-0"></div>
+      
+      {/* Main Window Container */}
+      <div className="w-full h-full flex flex-col relative z-10">
+        
+        <TopNav activeLesson={activeLesson} setActiveLesson={setActiveLesson} />
+        
+        <div className="flex-1 flex overflow-hidden relative min-h-0">
+          {activeLesson === 1 && <LeftContentLesson1 />}
+          {activeLesson === 2 && <LeftContentLesson2 />}
+          {activeLesson === 3 && <LeftContentLesson3 />}
+          {activeLesson === 4 && <LeftContentLesson4 />}
+          {activeLesson === 5 && <LeftContentLesson5 />}
+          {activeLesson === 1 && <RightPanelLesson1 isPlaying={isPlaying} setShowChallenge={setShowChallenge} />}
+          {activeLesson === 2 && <RightPanelLesson2 isPlaying={isPlaying} setShowChallenge={setShowChallenge} />}
+          {activeLesson === 3 && <RightPanelLesson3 isPlaying={isPlaying} setShowChallenge={setShowChallenge} />}
+          {activeLesson === 4 && <RightPanelLesson4 isPlaying={isPlaying} setShowChallenge={setShowChallenge} />}
+          {activeLesson === 5 && <RightPanelLesson5 isPlaying={isPlaying} setShowChallenge={setShowChallenge} />}
+          {activeLesson === 1 && showChallenge && <ChallengeModalLesson1 onClose={() => setShowChallenge(false)} />}
+          {activeLesson === 2 && showChallenge && <ChallengeModalLesson2 onClose={() => setShowChallenge(false)} />}
+          {activeLesson === 3 && showChallenge && <ChallengeModalLesson3 onClose={() => setShowChallenge(false)} />}
+          {activeLesson === 4 && showChallenge && <ChallengeModalLesson4 onClose={() => setShowChallenge(false)} />}
+          {activeLesson === 5 && showChallenge && <ChallengeModalLesson5 onClose={() => setShowChallenge(false)} />}
+        </div>
+
+        <BottomNav activeLesson={activeLesson} setActiveLesson={setActiveLesson} isPlaying={isPlaying} setIsPlaying={setIsPlaying} />
+      </div>
     </div>
   );
 }

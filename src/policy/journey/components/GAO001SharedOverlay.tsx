@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, HelpCircle, X, FileCheck, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Check, HelpCircle, X, FileCheck, ArrowRight, ShieldCheck, Volume2, CheckCircle2 } from 'lucide-react';
 import SceneNarrationPlayer from './SceneNarrationPlayer';
 
 export interface HotspotQuestionChoice {
@@ -177,6 +177,7 @@ export default function GAO001SharedOverlay({
   const [mounted, setMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  const [showIncorrectFeedback, setShowIncorrectFeedback] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -222,14 +223,22 @@ export default function GAO001SharedOverlay({
     setActiveModalNodeId(h.id);
     setSelectedChoiceId(null);
     setShowSuccessScreen(false);
+    setShowIncorrectFeedback(false);
   };
 
   const closeDrawer = () => {
     setActiveModalNodeId(null);
     setSelectedChoiceId(null);
+    setShowIncorrectFeedback(false);
   };
 
   const handleSubmit = () => {
+    const selectedChoice = activeHotspot?.question?.choices.find((choice) => choice.id === selectedChoiceId);
+    if (!selectedChoice) return;
+    if (!selectedChoice.isCorrect) {
+      setShowIncorrectFeedback(true);
+      return;
+    }
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);
@@ -245,6 +254,7 @@ export default function GAO001SharedOverlay({
     setShowSuccessScreen(false);
     setActiveModalNodeId(null);
     setSelectedChoiceId(null);
+    setShowIncorrectFeedback(false);
   };
 
   const activeHotspot = activeModalNodeId ? hotspots.find(h => h.id === activeModalNodeId) : null;
@@ -256,6 +266,7 @@ export default function GAO001SharedOverlay({
     setShowSuccessScreen(false);
     setActiveModalNodeId(null);
     setSelectedChoiceId(null);
+    setShowIncorrectFeedback(false);
   };
   const customModal = activeHotspot
     ? renderCustomModal?.({
@@ -264,6 +275,8 @@ export default function GAO001SharedOverlay({
         complete: completeActiveHotspot,
       }) ?? null
     : null;
+  const selectedChoice = activeHotspot?.question?.choices.find((choice) => choice.id === selectedChoiceId);
+  const selectedChoiceIsCorrect = Boolean(selectedChoice?.isCorrect);
 
   return (
     <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden bg-white font-sans">
@@ -401,135 +414,159 @@ export default function GAO001SharedOverlay({
                         </button>
                     </div>
                 ) : (
-                    <div className="w-full max-w-7xl flex flex-col lg:flex-row gap-6 relative px-4 md:px-8 max-h-[100dvh] my-auto">
-                        {/* Close Button placed outside cards for clear visibility */}
-                        <button
-                            onClick={closeDrawer}
-                            className="absolute -top-12 right-4 lg:right-8 xl:-right-4 text-white hover:text-[#F06923] transition-colors duration-300 p-2 rounded-full bg-black/40 hover:bg-white shadow-sm z-[110]"
-                        >
-                            <X size={24} strokeWidth={2.5} />
-                        </button>
+                    <div
+                        className={`flex h-[min(550px,calc(100dvh-32px))] w-[min(900px,calc(100vw-32px))] overflow-hidden rounded-[1.5rem] bg-white shadow-[0_32px_90px_rgba(15,23,42,0.28)] animate-modal-spring ${
+                          activeHotspot.question ? 'flex-col md:flex-row' : 'flex-col'
+                        }`}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={`${activeHotspot.fieldNotes.title} knowledge check`}
+                    >
+                        <div className={`${activeHotspot.question ? 'md:w-[45%]' : 'w-full'} relative flex min-h-0 flex-col border-r border-[#E5E4E3] bg-[#F8FAFC] p-7 md:p-10`}>
+                            <button
+                                onClick={closeDrawer}
+                                className="absolute left-5 top-5 grid h-10 w-10 place-items-center rounded-full bg-white text-[#747470] shadow-sm transition hover:text-[#1F1C1B] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#007970]"
+                                aria-label="Close modal"
+                            >
+                                <X size={20} strokeWidth={2.5} />
+                            </button>
 
-                        {/* LEFT CARD: Field Notes */}
-                        <div className="flex-1 bg-white rounded-[32px] shadow-[0_32px_80px_rgba(0,0,0,0.2)] border border-[#E5E4E3] overflow-hidden flex flex-col max-h-[85vh] animate-modal-spring">
-                            {/* Card 1 Header */}
-                            <div className="px-8 md:px-10 pt-10 pb-6 flex items-start gap-5 shrink-0 border-b border-[#E5E4E3]">
-                                <div className="w-16 h-16 rounded-[20px] bg-[#E5FEFF] flex items-center justify-center shrink-0 border border-[#b2f5f7] shadow-[0_8px_16px_rgba(0,121,112,0.12)]">
-                                    <FileCheck className="text-[#007970]" size={32} strokeWidth={2} />
+                            <div className="mt-10 flex items-center gap-3">
+                                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#E5FEFF] text-[#007970]">
+                                    <FileCheck size={24} strokeWidth={2} />
                                 </div>
-                                <div className="pt-1.5">
-                                    <span className="text-[#F06923] text-[10px] font-montserrat font-bold uppercase tracking-widest block mb-2">
-                                        Field Observation Check
-                                    </span>
-                                    <h2 className="text-3xl md:text-4xl font-montserrat font-bold text-[#007970] tracking-tight leading-none">
+                                <div className="min-w-0">
+                                    <div className="mb-1 text-[10px] font-montserrat font-bold uppercase tracking-widest text-[#C74601]">
+                                        Observation Check
+                                    </div>
+                                    <h2 className="truncate text-[22px] font-montserrat font-bold leading-tight text-[#004142]">
                                         {activeHotspot.fieldNotes.title}
                                     </h2>
                                 </div>
                             </div>
 
-                            {/* Card 1 Body */}
-                            <div className="px-8 md:px-10 py-8 overflow-y-auto flex-1 space-y-8 bg-[#FAFAF7]">
-                                <div className="bg-white rounded-[24px] p-6 md:p-8 border-l-[6px] border-[#007970] shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow duration-300">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#E5FEFF] to-transparent opacity-50 rounded-bl-[100px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
-                                    <div className="text-lg md:text-xl text-[#52404B] font-roboto leading-relaxed italic z-10">
-                                        {activeHotspot.fieldNotes.content}
-                                    </div>
+                            <div className="mt-6 min-h-0 flex-1 overflow-y-auto rounded-xl border border-[#E5E4E3] bg-white p-5 shadow-sm">
+                                <div className="font-roboto text-[15px] leading-relaxed text-[#524C4B]">
+                                    {activeHotspot.fieldNotes.content}
                                 </div>
+                            </div>
 
-                                {activeHotspot.narration && (
+                            <div className="mt-5 shrink-0 space-y-3">
+                                {activeHotspot.narration ? (
                                     <SceneNarrationPlayer
                                         key={activeHotspot.id}
                                         src={activeHotspot.narration.src}
                                         transcript={activeHotspot.narration.transcript}
                                         pauseRequested={Boolean(selectedChoiceId) || showSuccessScreen || isSubmitting}
                                     />
+                                ) : (
+                                    <div className="flex items-center gap-3 text-[12px] font-medium text-[#747470]">
+                                        <div className="inline-flex items-center rounded-full bg-[#007970] px-4 py-2 text-white shadow-sm">
+                                            <Volume2 size={15} className="mr-2" />
+                                            Field note
+                                        </div>
+                                        <span>Review the note, then answer the check.</span>
+                                    </div>
                                 )}
                             </div>
                         </div>
 
-                        {/* RIGHT CARD: Knowledge Check */}
-                        {activeHotspot.question && (
-                            <div className="flex-1 bg-white rounded-[32px] shadow-[0_32px_80px_rgba(0,0,0,0.2)] border border-[#E5E4E3] overflow-hidden flex flex-col max-h-[85vh] animate-modal-spring" style={{ animationDelay: '100ms' }}>
-                                {/* Card 2 Body */}
-                                <div className="px-8 md:px-10 pt-10 pb-8 overflow-y-auto flex-1 flex flex-col space-y-6">
-                                    <div>
-                                        <p className="text-[14px] font-montserrat font-bold text-[#007970] tracking-widest uppercase mb-3">
-                                            Knowledge Check
-                                        </p>
-                                        <p className="text-[18px] font-montserrat font-semibold text-[#52404B] leading-relaxed">
-                                            {activeHotspot.question.prompt}
-                                        </p>
+                        {activeHotspot.question ? (
+                            <div className="flex min-h-0 flex-1 flex-col bg-white p-7 md:w-[55%] md:p-10">
+                                <div className="min-h-0 flex-1 overflow-y-auto">
+                                    <div className="mb-5 text-[11px] font-montserrat font-bold uppercase tracking-widest text-[#007970]">
+                                        Knowledge Check
                                     </div>
+                                    <h3 className="mb-6 text-[19px] font-montserrat font-semibold leading-snug text-[#1F1C1B]">
+                                        {activeHotspot.question.prompt}
+                                    </h3>
 
-                                    <div className="flex flex-col gap-4 mt-2">
-                                        {activeHotspot.question.choices.map((option, index) => {
+                                    <div className="space-y-3">
+                                        {activeHotspot.question.choices.map((option) => {
                                             const isSelected = selectedChoiceId === option.id;
                                             return (
                                                 <button
                                                     key={option.id}
-                                                    onClick={() => !isSubmitting && setSelectedChoiceId(option.id)}
-                                                    style={{ animationDelay: `${index * 150}ms` }}
-                                                    className={`animate-slide-item w-full text-left p-5 rounded-[20px] border-2 transition-all duration-300 flex items-start gap-5 group relative overflow-hidden ${
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (isSubmitting) return;
+                                                        setSelectedChoiceId(option.id);
+                                                        setShowIncorrectFeedback(false);
+                                                    }}
+                                                    className={`w-full rounded-xl border-2 p-4 text-left transition-all duration-200 ${
                                                         isSelected
-                                                        ? 'bg-[#E5FEFF] border-[#007970] shadow-[0_8px_24px_rgba(0,121,112,0.15)] -translate-y-1'
-                                                        : 'bg-[#FAFAF7] border-[#E5E4E3] hover:border-[#007970]/40 hover:bg-[#F7FEFF] hover:-translate-y-0.5 hover:shadow-sm'
+                                                          ? 'border-[#007970] bg-[#E5FEFF] shadow-sm'
+                                                          : 'border-[#E5E4E3] bg-[#FAFBF8] hover:border-[#C4F4F5] hover:bg-white'
                                                     }`}
                                                 >
-                                                    <div className={`w-6 h-6 rounded-full border-2 mt-0.5 flex shrink-0 items-center justify-center transition-colors duration-300 ${
-                                                        isSelected ? 'border-[#007970] bg-[#007970]' : 'border-[#D9D6D5] group-hover:border-[#007970]/50'
-                                                    }`}>
-                                                        {isSelected && <Check size={14} strokeWidth={3} className="text-white animate-pop" />}
+                                                    <div className="flex items-start">
+                                                        <div className={`mr-4 mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
+                                                            isSelected ? 'border-[#007970]' : 'border-[#C9C6C5]'
+                                                        }`}>
+                                                            {isSelected && <div className="h-2.5 w-2.5 rounded-full bg-[#007970]" />}
+                                                        </div>
+                                                        <span className={`font-roboto text-[14.5px] leading-relaxed ${
+                                                            isSelected ? 'font-medium text-[#004142]' : 'text-[#524C4B]'
+                                                        }`}>
+                                                            {option.text}
+                                                        </span>
                                                     </div>
-
-                                                    <span className={`text-[15px] font-roboto leading-relaxed pt-0.5 transition-colors duration-300 ${
-                                                        isSelected ? 'text-[#007970] font-medium' : 'text-[#747470] group-hover:text-[#52404B]'
-                                                    }`}>
-                                                        {option.text}
-                                                    </span>
                                                 </button>
                                             );
                                         })}
                                     </div>
 
-                                    {/* Feedback */}
-                                    {selectedChoiceId && (
-                                        <div className={`mt-2 p-5 rounded-[16px] text-[15px] font-roboto leading-relaxed border-l-4 animate-slide-item ${
-                                            activeHotspot.question.choices.find(c => c.id === selectedChoiceId)?.isCorrect
-                                            ? 'bg-[#E8F5E9] border-[#4CAF50] text-[#1B5E20]'
-                                            : 'bg-[#FFF3E0] border-[#FF9800] text-[#E65100]'
+                                    {(showIncorrectFeedback || selectedChoiceIsCorrect) && selectedChoice && (
+                                        <div className={`mt-4 rounded-xl border px-4 py-3 font-roboto text-sm leading-relaxed ${
+                                            selectedChoice.isCorrect
+                                              ? 'border-[#8AD6C8] bg-[#E8F5F3] text-[#004142]'
+                                              : 'border-[#F4C6AA] bg-[#FFF0E5] text-[#8A3A09]'
                                         }`}>
-                                            {activeHotspot.question.choices.find(c => c.id === selectedChoiceId)?.feedback}
+                                            <div className="mb-1 flex items-center gap-2 font-montserrat text-xs font-bold uppercase tracking-wider">
+                                                {selectedChoice.isCorrect ? <CheckCircle2 size={15} /> : <HelpCircle size={15} />}
+                                                {selectedChoice.isCorrect ? 'Correct' : 'Review and try again'}
+                                            </div>
+                                            {selectedChoice.feedback}
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Card 2 Footer */}
-                                <div className="px-8 md:px-10 py-6 bg-[#FAFAF7] border-t border-[#E5E4E3] flex flex-col justify-center items-center shrink-0">
-                                    <button
-                                        disabled={!selectedChoiceId || isSubmitting}
-                                        onClick={handleSubmit}
-                                        className={`w-full py-4 rounded-[16px] font-montserrat font-bold text-[13px] tracking-widest uppercase transition-all duration-300 flex items-center justify-center group ${
+                                <button
+                                    disabled={!selectedChoiceId || isSubmitting}
+                                    onClick={handleSubmit}
+                                    className={`mt-6 flex w-full items-center justify-center rounded-xl py-4 font-montserrat text-[13px] font-bold uppercase tracking-widest transition-all ${
                                         selectedChoiceId
-                                            ? 'animate-shimmer text-white shadow-[0_8px_24px_rgba(240,105,35,0.3)] hover:shadow-[0_12px_32px_rgba(240,105,35,0.4)] hover:-translate-y-1'
-                                            : 'bg-[#E5E4E3] text-[#A0A0A0] cursor-not-allowed'
-                                        }`}
-                                    >
-                                        {isSubmitting ? (
+                                          ? 'bg-[#C74601] text-white shadow-[0_10px_24px_rgba(199,70,1,0.22)] hover:bg-[#A63A01]'
+                                          : 'cursor-not-allowed bg-[#E5E4E3] text-[#A0A0A0]'
+                                    }`}
+                                >
+                                    {isSubmitting ? (
                                         <span className="flex items-center gap-3">
-                                            <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                            <svg className="h-5 w-5 animate-spin text-white" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                             </svg>
-                                            PROCESSING...
+                                            Recording...
                                         </span>
-                                        ) : (
+                                    ) : selectedChoiceIsCorrect ? (
                                         <span className="flex items-center gap-2">
-                                            I UNDERSTAND THIS POINT
-                                            {selectedChoiceId && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
+                                            I understand this point
+                                            <ArrowRight size={18} />
                                         </span>
-                                        )}
-                                    </button>
-                                </div>
+                                    ) : (
+                                        'Submit Answer'
+                                    )}
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="border-t border-[#E5E4E3] bg-white p-6">
+                                <button
+                                    type="button"
+                                    onClick={completeActiveHotspot}
+                                    className="w-full rounded-xl bg-[#C74601] px-6 py-4 font-montserrat text-[13px] font-bold uppercase tracking-widest text-white shadow-[0_10px_24px_rgba(199,70,1,0.22)] hover:bg-[#A63A01]"
+                                >
+                                    I understand this point
+                                </button>
                             </div>
                         )}
                     </div>
