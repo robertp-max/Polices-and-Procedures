@@ -1668,6 +1668,7 @@ export default function LVN007() {
   // In actual implementation, QUIZ might be an array or QUIZZES object.
   // @ts-ignore
   // @ts-ignore
+  // @ts-ignore
   const quizData = typeof QUIZ !== 'undefined' ? QUIZ : (typeof QUIZZES !== 'undefined' ? QUIZZES : []);
 
   return (
