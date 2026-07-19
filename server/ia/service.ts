@@ -30,7 +30,8 @@ import { buildContextEnvelope } from './session/envelope.js';
 import { recordAuditEntry } from './session/audit.js';
 import { buildChatSystemPrompt } from './prompt.js';
 import type { SessionSummary } from './session/types.js';
-import type { ScenarioMapping } from './types.js';
+// Canonical ScenarioMapping is the one classifyScenario() actually returns.
+import type { ScenarioMapping } from './scenarioClassifier.js';
 
 /* ═══════════════════════════════════════════════════════════════
    Top-level service. Owns:
