@@ -17,12 +17,13 @@ import {
   GetUserCommand, AdminGetUserCommand, AdminCreateUserCommand,
   AdminSetUserPasswordCommand, AdminUpdateUserAttributesCommand, AdminEnableUserCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
-import { buildDemoAuthServiceFromEnv } from './service.js';
+import { buildDemoAuthServiceFromEnv, assertRegistrationActiveForSession } from './service.js';
 import {
   reloadApprovedUsers, findApprovedUser, loadApprovedUsers, isAllowlistAvailable,
 } from './approvedUsers.js';
 import {
-  buildDirectSetupAuditEvent, recordSetupSuccessAudit, recordDirectSetupAuditBestEffort,
+  buildDirectSetupAuditEvent, makeDirectSetupAuditSink, recordDirectSetupAuditBestEffort,
+  type DirectSetupAuditSink,
 } from './directSetupAudit.js';
 import { ApiError } from '../errors.js';
 import type { AuditEventInput } from '../audit/writer.js';
@@ -39,6 +40,9 @@ const LOWEST_ROLE = 'Pending User'; // canonical lowest-privilege (grp-pending-u
 const row = (email: string, code: string, status = 'active', role = LOWEST_ROLE) =>
   `${email},Test User,${code},${role},UAT,${status},fixture`;
 
+/** A passing audit sink (module scope) for the reconciliation suite. */
+const okSink: DirectSetupAuditSink = async () => { /* audit succeeds */ };
+
 let tmpDir: string;
 beforeAll(() => { tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ciallow-')); });
 afterAll(() => {
@@ -51,7 +55,7 @@ afterAll(() => {
 });
 
 /** Write a fixture CSV, point the loader at it, and force a reload. */
-function useAllowlist(...lines: string[]) {
+function loadAllowlistFixture(...lines: string[]) {
   const p = path.join(tmpDir, `allow-${Math.random().toString(36).slice(2)}.csv`);
   fs.writeFileSync(p, [HEADER, ...lines].join('\n') + '\n', 'utf-8');
   process.env.APPROVED_USERS_CSV_PATH = p;
@@ -70,6 +74,7 @@ function buildService(opts: { registrations?: Record<string, RegistrationRecord>
   } as NodeJS.ProcessEnv);
 
   const sent: unknown[] = [];
+  const cognitoUsers = new Set<string>(); // track created users so AdminGetUser reflects real state
   const send = vi.fn(async (cmd: unknown) => {
     sent.push(cmd);
     if (cmd instanceof GetUserCommand) {
@@ -80,9 +85,13 @@ function buildService(opts: { registrations?: Record<string, RegistrationRecord>
         { Name: 'email', Value: email }, { Name: 'sub', Value: `sub-${email}` }, { Name: 'email_verified', Value: 'true' },
       ] };
     }
-    if (cmd instanceof AdminGetUserCommand) { const e = new Error('nf') as Error & { name: string }; e.name = 'UserNotFoundException'; throw e; }
-    if (cmd instanceof AdminCreateUserCommand
-      || cmd instanceof AdminSetUserPasswordCommand
+    if (cmd instanceof AdminGetUserCommand) {
+      const u = (cmd as AdminGetUserCommand).input.Username ?? '';
+      if (cognitoUsers.has(u)) return { Username: u };
+      const e = new Error('nf') as Error & { name: string }; e.name = 'UserNotFoundException'; throw e;
+    }
+    if (cmd instanceof AdminCreateUserCommand) { cognitoUsers.add((cmd as AdminCreateUserCommand).input.Username ?? ''); return {}; }
+    if (cmd instanceof AdminSetUserPasswordCommand
       || cmd instanceof AdminUpdateUserAttributesCommand
       || cmd instanceof AdminEnableUserCommand) return {};
     throw new Error(`unexpected ${(cmd as { constructor: { name: string } })?.constructor?.name}`);
@@ -100,43 +109,43 @@ function buildService(opts: { registrations?: Record<string, RegistrationRecord>
 /* ─────────────────────────── CSV parser ─────────────────────────── */
 describe('approved-users parser (real fixtures)', () => {
   it('matches an exact active email + activation code', () => {
-    useAllowlist(row(TARGET, CODE));
+    loadAllowlistFixture(row(TARGET, CODE));
     expect(isAllowlistAvailable()).toBe(true);
     expect(findApprovedUser(TARGET, CODE)?.email).toBe(TARGET);
   });
   it('denies an unlisted email', () => {
-    useAllowlist(row(TARGET, CODE));
+    loadAllowlistFixture(row(TARGET, CODE));
     expect(findApprovedUser('stranger@careindeed.com', CODE)).toBeNull();
   });
   it('denies a same-domain but unlisted email', () => {
-    useAllowlist(row(TARGET, CODE));
+    loadAllowlistFixture(row(TARGET, CODE));
     expect(findApprovedUser('someoneelse@careindeed.com', CODE)).toBeNull();
   });
   it('denies an inactive row', () => {
-    useAllowlist(row(TARGET, CODE, 'inactive'));
+    loadAllowlistFixture(row(TARGET, CODE, 'inactive'));
     expect(findApprovedUser(TARGET, CODE)).toBeNull();
     expect(isAllowlistAvailable()).toBe(false); // no active rows
   });
   it('denies a wrong activation code', () => {
-    useAllowlist(row(TARGET, CODE));
+    loadAllowlistFixture(row(TARGET, CODE));
     expect(findApprovedUser(TARGET, CODE2)).toBeNull();
   });
   it('denies a missing activation code', () => {
-    useAllowlist(row(TARGET, CODE));
+    loadAllowlistFixture(row(TARGET, CODE));
     expect(findApprovedUser(TARGET, '')).toBeNull();
   });
   it('skips a malformed row (missing code) but loads the valid rows', () => {
-    useAllowlist(`bad@careindeed.com,No Code,,${LOWEST_ROLE},UAT,active,`, row(TARGET, CODE));
+    loadAllowlistFixture(`bad@careindeed.com,No Code,,${LOWEST_ROLE},UAT,active,`, row(TARGET, CODE));
     const users = loadApprovedUsers();
     expect(users.some(u => u.email === 'bad@careindeed.com')).toBe(false);
     expect(findApprovedUser(TARGET, CODE)?.email).toBe(TARGET);
   });
   it('handles duplicate rows deterministically (first active match wins)', () => {
-    useAllowlist(row(TARGET, CODE), row(TARGET, CODE2));
+    loadAllowlistFixture(row(TARGET, CODE), row(TARGET, CODE2));
     expect(findApprovedUser(TARGET, CODE)?.email).toBe(TARGET); // first row matches its code
   });
   it('preserves the plus tag and keeps base vs plus-tagged distinct', () => {
-    useAllowlist(row(TARGET, CODE));
+    loadAllowlistFixture(row(TARGET, CODE));
     expect(findApprovedUser(TARGET, CODE)?.email).toBe(TARGET);
     expect(findApprovedUser(BASE, CODE)).toBeNull(); // base is a different identity, not listed
     expect(TARGET).not.toBe(BASE);
@@ -147,33 +156,34 @@ describe('approved-users parser (real fixtures)', () => {
 describe('verifyRegistration + setupAccountDirect', () => {
   const setup = (email: string, code: string) =>
     ({ email, sfOrgId: code, firstName: 'Phase7', lastName: 'Uat', password: 'Str0ng!Passw0rd' });
+  const okAudit: DirectSetupAuditSink = async () => { /* audit succeeds */ };
 
   it('a pending approved user can verify then complete setup (account becomes active)', async () => {
-    useAllowlist(row(TARGET, CODE));
+    loadAllowlistFixture(row(TARGET, CODE));
     const { svc, send, regs } = buildService();
     await expect(svc.verifyRegistration(TARGET, CODE)).resolves.toMatchObject({ verified: true });
-    await expect(svc.setupAccountDirect(setup(TARGET, CODE))).resolves.toEqual({ success: true });
+    await expect(svc.setupAccountDirect(setup(TARGET, CODE), okAudit)).resolves.toEqual({ success: true });
     expect(regs.get(TARGET)?.status).toBe('active');
     expect(send.mock.calls.some(([c]) => c instanceof AdminSetUserPasswordCommand)).toBe(true);
   });
 
   it('re-verification runs on the server (client verification is not authorization)', async () => {
-    useAllowlist(row(TARGET, CODE));
+    loadAllowlistFixture(row(TARGET, CODE));
     const { svc } = buildService();
     // A caller who skips verify and posts a wrong code straight to setup is denied.
-    await expect(svc.setupAccountDirect(setup(TARGET, CODE2))).rejects.toMatchObject({ status: 403 });
+    await expect(svc.setupAccountDirect(setup(TARGET, CODE2), okAudit)).rejects.toMatchObject({ status: 403 });
   });
 
   it('a different email cannot use another user’s activation code', async () => {
-    useAllowlist(row(TARGET, CODE));
+    loadAllowlistFixture(row(TARGET, CODE));
     const { svc } = buildService();
-    await expect(svc.setupAccountDirect(setup('intruder@careindeed.com', CODE))).rejects.toMatchObject({ status: 403 });
+    await expect(svc.setupAccountDirect(setup('intruder@careindeed.com', CODE), okAudit)).rejects.toMatchObject({ status: 403 });
   });
 
   it('an already-active user cannot replay setup', async () => {
-    useAllowlist(row(TARGET, CODE));
+    loadAllowlistFixture(row(TARGET, CODE));
     const { svc } = buildService({ registrations: { [TARGET]: { status: 'active', email: TARGET } as RegistrationRecord } });
-    await expect(svc.setupAccountDirect(setup(TARGET, CODE))).rejects.toMatchObject({ status: 409 });
+    await expect(svc.setupAccountDirect(setup(TARGET, CODE), okAudit)).rejects.toMatchObject({ status: 409 });
     await expect(svc.verifyRegistration(TARGET, CODE)).rejects.toMatchObject({ status: 409 });
   });
 
@@ -181,7 +191,7 @@ describe('verifyRegistration + setupAccountDirect', () => {
     process.env.APPROVED_USERS_CSV_PATH = path.join(tmpDir, 'does-not-exist.csv');
     reloadApprovedUsers();
     const { svc } = buildService();
-    await expect(svc.setupAccountDirect(setup(TARGET, CODE))).rejects.toMatchObject({ status: 403 });
+    await expect(svc.setupAccountDirect(setup(TARGET, CODE), okAudit)).rejects.toMatchObject({ status: 403 });
     await expect(svc.verifyRegistration(TARGET, CODE)).rejects.toMatchObject({ status: 403 });
   });
 
@@ -192,10 +202,10 @@ describe('verifyRegistration + setupAccountDirect', () => {
   });
 
   it('never returns a secret from verify or setup responses', async () => {
-    useAllowlist(row(TARGET, CODE));
+    loadAllowlistFixture(row(TARGET, CODE));
     const { svc } = buildService();
     const v = JSON.stringify(await svc.verifyRegistration(TARGET, CODE)).toLowerCase();
-    const s = JSON.stringify(await svc.setupAccountDirect(setup(TARGET, CODE))).toLowerCase();
+    const s = JSON.stringify(await svc.setupAccountDirect(setup(TARGET, CODE), okAudit)).toLowerCase();
     for (const forbidden of ['password', 'token', 'sub', 'secret', CODE.toLowerCase(), 'str0ng']) {
       expect(v).not.toContain(forbidden);
       expect(s).not.toContain(forbidden);
@@ -224,20 +234,26 @@ describe('direct-setup audit', () => {
     expect(buildDirectSetupAuditEvent(TARGET, 'verify_denied').decision).toBe('deny');
     expect(buildDirectSetupAuditEvent(TARGET, 'setup_replay_denied').decision).toBe('deny');
   });
-  it('records exactly one success event when the write succeeds', async () => {
+  it('the sink writes the phase event when the audit succeeds', async () => {
     const append = vi.fn(async (_e: AuditEventInput) => undefined);
-    await recordSetupSuccessAudit(TARGET, 'c1', append);
-    expect(append).toHaveBeenCalledTimes(1);
-    expect(append.mock.calls[0][0]).toMatchObject({ action: 'auth.direct_setup.complete', actor: { user_id: TARGET } });
+    const sink = makeDirectSetupAuditSink(TARGET, 'c1', append);
+    await sink('setup_started');
+    await sink('setup_complete');
+    expect(append).toHaveBeenCalledTimes(2);
+    expect(append.mock.calls[1][0]).toMatchObject({ action: 'auth.direct_setup.complete', actor: { user_id: TARGET } });
   });
-  it('fails a successful activation with a classified 500 (no secret) if audit cannot persist', async () => {
-    const append = vi.fn(async () => { throw new Error('jsonl down'); });
-    let caught: unknown;
-    try { await recordSetupSuccessAudit(TARGET, 'c1', append); } catch (e) { caught = e; }
-    expect(caught).toBeInstanceOf(ApiError);
-    expect((caught as ApiError).status).toBe(500);
-    const msg = (caught as ApiError).message.toLowerCase();
-    for (const forbidden of ['password', 'token', 'secret', 'jsonl down']) expect(msg).not.toContain(forbidden);
+  it('intent-audit failure throws 503 (no secret); success-audit failure throws 500 (no secret)', async () => {
+    const failAppend = vi.fn(async () => { throw new Error('jsonl down'); });
+    const sink = makeDirectSetupAuditSink(TARGET, 'c1', failAppend);
+    await expect(sink('setup_started')).rejects.toMatchObject({ status: 503 });
+    await expect(sink('setup_complete')).rejects.toMatchObject({ status: 500 });
+    // Neither classified error leaks a secret.
+    for (const phase of ['setup_started', 'setup_complete'] as const) {
+      try { await sink(phase); } catch (e) {
+        const msg = (e as ApiError).message.toLowerCase();
+        for (const f of ['password', 'token', 'secret', 'jsonl down']) expect(msg).not.toContain(f);
+      }
+    }
   });
   it('best-effort audit never throws even when the write fails', async () => {
     const append = vi.fn(async () => { throw new Error('down'); });
@@ -245,10 +261,82 @@ describe('direct-setup audit', () => {
   });
 });
 
+/* ─────────────────────── audit reconciliation ─────────────────────── */
+describe('setupAccountDirect — audit reconciliation invariant', () => {
+  const input = () => ({ email: TARGET, sfOrgId: CODE, firstName: 'Phase7', lastName: 'Uat', password: 'Str0ng!Passw0rd' });
+
+  it('intent-audit failure aborts BEFORE any Cognito mutation', async () => {
+    loadAllowlistFixture(row(TARGET, CODE));
+    const { svc, send, regs } = buildService();
+    const sink: DirectSetupAuditSink = async (phase) => { if (phase === 'setup_started') throw new ApiError('internal_error', 'audit down', 503); };
+    await expect(svc.setupAccountDirect(input(), sink)).rejects.toMatchObject({ status: 503 });
+    expect(send.mock.calls.some(([c]) => c instanceof AdminSetUserPasswordCommand)).toBe(false); // no mutation
+    expect(regs.has(TARGET)).toBe(false);                                                        // no registration
+  });
+
+  it('success-audit failure leaves the account NON-active (login denied) and reconcilable', async () => {
+    loadAllowlistFixture(row(TARGET, CODE));
+    const { svc, send, regs } = buildService();
+    const sink: DirectSetupAuditSink = async (phase) => { if (phase === 'setup_complete') throw new ApiError('internal_error', 'audit down', 500); };
+    await expect(svc.setupAccountDirect(input(), sink)).rejects.toMatchObject({ status: 500 });
+    // Cognito mutation happened, but registration is pending_setup — NOT active.
+    expect(send.mock.calls.some(([c]) => c instanceof AdminSetUserPasswordCommand)).toBe(true);
+    expect(regs.get(TARGET)?.status).toBe('pending_setup');
+    // The session gate denies a non-active account → not normally usable.
+    expect(() => assertRegistrationActiveForSession(regs.get(TARGET))).toThrow();
+  });
+
+  it('retry after a partial (audit-pending) activation reconciles without duplicating the user', async () => {
+    loadAllowlistFixture(row(TARGET, CODE));
+    const { svc, send, regs } = buildService();
+    const failOnce: DirectSetupAuditSink = async (phase) => { if (phase === 'setup_complete') throw new ApiError('internal_error', 'audit down', 500); };
+    await expect(svc.setupAccountDirect(input(), failOnce)).rejects.toMatchObject({ status: 500 });
+    expect(regs.get(TARGET)?.status).toBe('pending_setup');
+    const createsAfterFirst = send.mock.calls.filter(([c]) => c instanceof AdminCreateUserCommand).length;
+    // Retry with a working audit: account activates; no second Cognito user created.
+    await expect(svc.setupAccountDirect(input(), okSink)).resolves.toEqual({ success: true });
+    expect(regs.get(TARGET)?.status).toBe('active');
+    const createsAfterRetry = send.mock.calls.filter(([c]) => c instanceof AdminCreateUserCommand).length;
+    expect(createsAfterRetry).toBe(createsAfterFirst); // idempotent — no duplicate user
+  });
+
+  it('a fully-activated account is replay-safe (409) on a later setup attempt', async () => {
+    loadAllowlistFixture(row(TARGET, CODE));
+    const { svc } = buildService();
+    await expect(svc.setupAccountDirect(input(), okSink)).resolves.toEqual({ success: true });
+    await expect(svc.setupAccountDirect(input(), okSink)).rejects.toMatchObject({ status: 409 });
+  });
+});
+
+/* ─────────────────────── server password policy ─────────────────────── */
+describe('setupAccountDirect — server-enforced password policy (UI-bypass)', () => {
+  const withPw = (password: string) => ({ email: TARGET, sfOrgId: CODE, firstName: 'P', lastName: 'U', password });
+
+  it('rejects weak passwords before any Cognito mutation; accepts a compliant one', async () => {
+    for (const weak of ['', 'short', 'alllowercase1!', 'ALLUPPERCASE1!', 'NoDigits!!', 'NoSymbol123', 'a'.repeat(300) + 'A1!']) {
+      loadAllowlistFixture(row(TARGET, CODE));
+      const { svc, send } = buildService();
+      await expect(svc.setupAccountDirect(withPw(weak), okSink)).rejects.toMatchObject({ status: 400 });
+      expect(send.mock.calls.some(([c]) => c instanceof AdminSetUserPasswordCommand)).toBe(false); // no partial activation
+    }
+    loadAllowlistFixture(row(TARGET, CODE));
+    const { svc } = buildService();
+    await expect(svc.setupAccountDirect(withPw('Str0ng!Passw0rd'), okSink)).resolves.toEqual({ success: true });
+  });
+
+  it('never echoes the password in the validation error', async () => {
+    loadAllowlistFixture(row(TARGET, CODE));
+    const { svc } = buildService();
+    try { await svc.setupAccountDirect(withPw('secretweak'), okSink); } catch (e) {
+      expect((e as ApiError).message.toLowerCase()).not.toContain('secretweak');
+    }
+  });
+});
+
 /* ─────────────────────── least-privilege lifecycle ─────────────────────── */
 describe('activated user is least-privilege (Phase 8 lifecycle)', () => {
   it('the synthetic Phase 7 identity gets no admin authority', async () => {
-    useAllowlist(row(TARGET, CODE));
+    loadAllowlistFixture(row(TARGET, CODE));
     const { svc } = buildService({
       registrations: { [TARGET]: { status: 'active', email: TARGET } as RegistrationRecord },
       tokenEmail: { 'target-token': TARGET },

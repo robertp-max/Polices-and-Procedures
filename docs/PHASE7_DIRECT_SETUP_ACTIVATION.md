@@ -89,6 +89,56 @@ for record expiry exists — none was invented). Mitigations:
 - Deploy the cleanup revision if required.
 - Preserve the JSONL audit evidence; document completion.
 
+## Environment gate (server-authoritative)
+Direct setup is **disabled by default** and fails closed. Both public endpoints
+are gated by `requireDirectSetupEnabled` middleware:
+- `DIRECT_SETUP_MODE=dev_allowlist` — enabled (controlled dev/UAT only).
+- missing / `disabled` / any other value — **disabled** → safe `404`, no allowlist
+  detail, no mutation. Authorization is never inferred from hostname, browser
+  state, storage, query params, or `x-user-*` headers. The client only *reflects*
+  availability (it renders an "unavailable" state on `404`); the gate is the boundary.
+- **Future dev deployment:** set `DIRECT_SETUP_MODE=dev_allowlist` on the dev
+  Cloud Run revision only. Never set it in a production-like environment.
+
+## Rate limiting (abuse protection)
+No repository-native limiter existed, so a narrowly-scoped in-memory limiter guards
+both endpoints (`directSetupRateLimit`), with **separate** windows for verification
+and final setup and **independent IP and identity** dimensions. The activation code
+and password are never used as keys or logged. Over-limit → `429` + `Retry-After`,
+with a non-enumerating message. Windows reset automatically (no permanent lockout).
+Residual risk: single-instance in-memory only — distributed abuse and DoS against a
+known identity across many IPs are out of scope and require an infra-level limiter.
+
+## Audit event policy (Phase 8)
+| Event | Level | Rationale |
+| --- | --- | --- |
+| `setup_started` (intent) | **required** | written before the irreversible mutation; failure aborts (503) with no mutation |
+| `setup_complete` | **required** | written after the Cognito mutation, before activation; failure keeps the account non-active (login denied) and is reconciled on retry |
+| `verify_approved` / `verify_denied` | best-effort | a verification attempt is not an identity mutation |
+| `setup_denied` / `setup_replay_denied` | best-effort | denial visibility; must never block the user-facing denial |
+
+- **Retention destination:** the configured audit store (JSONL default; hash-chained).
+- **Failure behavior:** required-event failures fail the request (503/500) so no
+  usable account exists without its activation evidence; best-effort failures are
+  swallowed after an upstream store log.
+- **Sensitive exclusions:** no activation code, password, request body, JWT, cookie,
+  or Cognito subject appears in any event payload (unit-tested).
+
+## Secret creation procedure (Phase 9) — operator-assisted; do NOT execute here
+1. Generate the activation code with ≥128 bits from a CSPRNG **locally**, without
+   echoing it: e.g. capture directly into a variable, `openssl rand -hex 16`
+   (128-bit) or `-base64 24`. Never print it to a terminal, chat, or report.
+2. Write the one-row CSV to a **protected temporary file** (not under the repo),
+   using the canonical header, the approved synthetic email, the code, role
+   `Pending User`, `status=active`, and a dev-only note.
+3. Create the Secret Manager version **from that file** (e.g. `--data-file=<tmp>`),
+   so the value is never a command argument or shell-history entry.
+4. **Securely delete** the temporary file immediately after the version is created.
+5. Never read the secret value back into a terminal/transcript. Grant only
+   `secretAccessor` on this secret to the runner SA; keep the mount read-only.
+6. `.gitignore` continues to exclude `config/approved-users.csv`; the real code is
+   never committed, logged, or screenshotted.
+
 ## Guardrails
 - `.gitignore` already excludes `config/approved-users.csv` (real allowlist).
 - Do not create the real Secret Manager secret, mount, or live user during code review.

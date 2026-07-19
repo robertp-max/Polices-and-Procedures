@@ -15,6 +15,7 @@ import { log } from '../logger.js';
 export type DirectSetupOutcome =
   | 'verify_approved'
   | 'verify_denied'
+  | 'setup_started'
   | 'setup_complete'
   | 'setup_denied'
   | 'setup_replay_denied';
@@ -25,7 +26,11 @@ export function buildDirectSetupAuditEvent(
   correlationId?: string,
 ): AuditEventInput {
   const denied = outcome.endsWith('_denied');
-  const action = outcome.startsWith('verify') ? 'auth.direct_setup.verify' : 'auth.direct_setup.complete';
+  const action = outcome.startsWith('verify')
+    ? 'auth.direct_setup.verify'
+    : outcome === 'setup_started'
+      ? 'auth.direct_setup.start'
+      : 'auth.direct_setup.complete';
   return {
     event_type: 'account_activation',
     stream: `account-activation:${emailNormalized}`,
@@ -41,33 +46,50 @@ export function buildDirectSetupAuditEvent(
   };
 }
 
+/** Interleaved, required audit for the two reconciliation checkpoints. */
+export type DirectSetupAuditSink = (phase: 'setup_started' | 'setup_complete') => Promise<void>;
+
 /**
- * Durably record a SUCCESSFUL activation, or fail the request. Activation is an
- * identity mutation, so its audit evidence is not optional: if the account was
- * activated but the audit write fails, surface a classified 500 (no secret)
- * rather than a silent success. The account is already active (Cognito password
- * set), so the operator must reconcile — re-running setup would be rejected as a
- * duplicate.
+ * Build a phase-aware, REQUIRED audit sink for direct setup so activation cannot
+ * become usable while its audit evidence is permanently absent:
+ *
+ *  - `setup_started` (intent) is written BEFORE any irreversible mutation. A
+ *    failure throws 503 and no Cognito mutation occurs.
+ *  - `setup_complete` is written AFTER the Cognito mutation but BEFORE the
+ *    registration is marked active. A failure throws a classified 500; the
+ *    account stays non-active (login gate denies it) and a retry reconciles.
+ *
+ * No activation code, password, token, cookie, or Cognito subject is recorded.
  */
-export async function recordSetupSuccessAudit(
+export function makeDirectSetupAuditSink(
   emailNormalized: string,
   correlationId: string | undefined,
   append: (event: AuditEventInput) => Promise<unknown>,
-): Promise<void> {
-  try {
-    await append(buildDirectSetupAuditEvent(emailNormalized, 'setup_complete', correlationId));
-  } catch (auditErr) {
-    log.error('auth.direct_setup.audit_write_failed', {
-      email: emailNormalized,
-      errMessage: (auditErr as Error)?.message || 'unknown',
-    });
-    throw new ApiError(
-      'internal_error',
-      'Your account was activated, but its activation audit record could not be written. '
-      + 'Please contact your administrator — do not re-run setup.',
-      500,
-    );
-  }
+): DirectSetupAuditSink {
+  return async (phase) => {
+    try {
+      await append(buildDirectSetupAuditEvent(emailNormalized, phase, correlationId));
+    } catch (auditErr) {
+      log.error('auth.direct_setup.audit_write_failed', {
+        email: emailNormalized,
+        phase,
+        errMessage: (auditErr as Error)?.message || 'unknown',
+      });
+      if (phase === 'setup_started') {
+        throw new ApiError(
+          'internal_error',
+          'Account setup is temporarily unavailable (audit subsystem). No changes were made — please try again.',
+          503,
+        );
+      }
+      throw new ApiError(
+        'internal_error',
+        'Your account activation could not be finalized because its audit record failed to write. '
+        + 'The account is not yet usable; please retry — retrying is safe and will not create a duplicate.',
+        500,
+      );
+    }
+  };
 }
 
 /**

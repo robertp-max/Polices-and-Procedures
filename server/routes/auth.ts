@@ -2,7 +2,9 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import { ApiError } from '../errors.js';
 import { appendEvent } from '../audit/writer.js';
 import { recordInviteAudit, inviteResultMessage } from '../auth/inviteAudit.js';
-import { recordSetupSuccessAudit, recordDirectSetupAuditBestEffort } from '../auth/directSetupAudit.js';
+import { makeDirectSetupAuditSink, recordDirectSetupAuditBestEffort } from '../auth/directSetupAudit.js';
+import { requireDirectSetupEnabled } from '../auth/directSetupGate.js';
+import { directSetupRateLimit, VERIFY_LIMIT, SETUP_LIMIT } from '../auth/directSetupRateLimit.js';
 import { buildDemoAuthServiceFromEnv } from '../auth/service.js';
 import {
   getAllowlistStatus,
@@ -20,7 +22,7 @@ export const authRouter: Router = Router();
 
 // ─── New allowlist-gated registration (SF Org ID) ────────────────────────────
 
-authRouter.post('/verify-registration', asyncHandler(async (req, res) => {
+authRouter.post('/verify-registration', requireDirectSetupEnabled, directSetupRateLimit('verify', VERIFY_LIMIT), asyncHandler(async (req, res) => {
   const service = buildDemoAuthServiceFromEnv(process.env);
   const email   = String(req.body?.email   || '');
   const sfOrgId = String(req.body?.sfOrgId || '');
@@ -37,11 +39,13 @@ authRouter.post('/verify-registration', asyncHandler(async (req, res) => {
   }
 }));
 
-authRouter.post('/setup-account-direct', asyncHandler(async (req, res) => {
+authRouter.post('/setup-account-direct', requireDirectSetupEnabled, directSetupRateLimit('setup', SETUP_LIMIT), asyncHandler(async (req, res) => {
   const service = buildDemoAuthServiceFromEnv(process.env);
   const { email, sfOrgId, firstName, lastName, password } = req.body ?? {};
   const emailNorm = String(email || '').trim().toLowerCase();
   const corr = req.header('x-correlation-id') || req.header('x-request-id') || undefined;
+  // Interleaved required audit: intent before mutation, success before activation.
+  const auditSink = makeDirectSetupAuditSink(emailNorm, corr, appendEvent);
   let result: { success: true };
   try {
     result = await service.setupAccountDirect({
@@ -50,14 +54,17 @@ authRouter.post('/setup-account-direct', asyncHandler(async (req, res) => {
       firstName: String(firstName || ''),
       lastName:  String(lastName  || ''),
       password:  String(password  || ''),
-    });
+    }, auditSink);
   } catch (e) {
-    const outcome = (e instanceof ApiError && e.status === 409) ? 'setup_replay_denied' : 'setup_denied';
-    await recordDirectSetupAuditBestEffort(emailNorm, outcome, corr, appendEvent);
+    // Best-effort denial audit for eligibility/validation failures only. Do NOT
+    // re-audit audit-subsystem failures (the sink already logged those as 503/500).
+    const isAuditFailure = e instanceof ApiError && (e.status === 503 || e.status === 500);
+    if (!isAuditFailure) {
+      const outcome = (e instanceof ApiError && e.status === 409) ? 'setup_replay_denied' : 'setup_denied';
+      await recordDirectSetupAuditBestEffort(emailNorm, outcome, corr, appendEvent);
+    }
     throw e;
   }
-  // Successful activation is an identity mutation: its audit is not optional.
-  await recordSetupSuccessAudit(emailNorm, corr, appendEvent);
   res.json(result);
 }));
 

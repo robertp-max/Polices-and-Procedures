@@ -26,6 +26,7 @@ import { ApiError } from '../errors.js';
 import { log } from '../logger.js';
 import type { AuthSession, DemoUser, RegistrationRecord, RegistrationStatus, TokenRecord } from './types.js';
 import { findApprovedUser, findApprovedUserByEmail, getLoadError, isAllowlistAvailable, normalizeEmail as normalizeApprovedEmail, normalizeSfOrgId } from './approvedUsers.js';
+import type { DirectSetupAuditSink } from './directSetupAudit.js';
 
 interface DemoAuthConfig {
   region: string;
@@ -156,8 +157,18 @@ export class DemoAuthService {
   }
 
   private validatePassword(password: string): void {
-    if (!password || password.length < 8) {
-      throw new ApiError('validation_error', 'Password must be at least 8 characters.', 400);
+    // Server-authoritative password policy (single source of truth; the setup UI
+    // displays the same rules). The password value is never echoed in the error.
+    const pw = String(password ?? '');
+    const problems: string[] = [];
+    if (pw.length < 8) problems.push('at least 8 characters');
+    if (!/[a-z]/.test(pw)) problems.push('a lowercase letter');
+    if (!/[A-Z]/.test(pw)) problems.push('an uppercase letter');
+    if (!/[0-9]/.test(pw)) problems.push('a number');
+    if (!/[^A-Za-z0-9]/.test(pw)) problems.push('a symbol');
+    if (pw.length > 256) problems.push('no more than 256 characters'); // oversized-payload guard
+    if (problems.length > 0) {
+      throw new ApiError('validation_error', `Password must include ${problems.join(', ')}.`, 400);
     }
   }
 
@@ -985,13 +996,26 @@ export class DemoAuthService {
     };
   }
 
+  /**
+   * Complete allowlist + activation-code account setup with audit reconciliation.
+   *
+   * `audit` is a REQUIRED, phase-aware sink: `setup_started` is written before any
+   * irreversible mutation (a failure aborts before Cognito), and `setup_complete`
+   * is written AFTER the Cognito mutation but BEFORE the registration is marked
+   * active. The registration is persisted as `pending_setup` before the success
+   * audit, so if that audit fails the account stays non-active — the session gate
+   * (`assertRegistrationActiveForSession`) denies login, and a retry re-ensures
+   * (never duplicates) the user and reconciles the audit + activation. No
+   * distributed transaction is claimed across Cognito and JSONL; the invariant is
+   * "no activated account is normally usable while its activation audit is absent".
+   */
   async setupAccountDirect(input: {
     email: string;
     sfOrgId: string;
     firstName: string;
     lastName: string;
     password: string;
-  }): Promise<{ success: true }> {
+  }, audit: DirectSetupAuditSink): Promise<{ success: true }> {
     // Fail closed if allowlist not loaded.
     if (!isAllowlistAvailable()) {
       log.error('auth.setup_account_direct.allowlist_unavailable', { error: getLoadError() });
@@ -1009,7 +1033,7 @@ export class DemoAuthService {
       throw new ApiError('auth_error', 'Registration verification failed. Please contact your administrator.', 403);
     }
 
-    // Prevent duplicate account creation.
+    // Prevent duplicate account creation (fully completed activation is replay-safe).
     const existing = await this.getRegistration(email);
     if (existing?.status === 'active') {
       log.warn('auth.setup_account_direct.duplicate', { email });
@@ -1024,15 +1048,18 @@ export class DemoAuthService {
     // validatePassword never logs the password value.
     this.validatePassword(input.password);
 
-    await this.ensureCognitoUser(email);
+    // (1) Durable intent audit BEFORE any irreversible mutation. A failure here
+    // throws (503) and no Cognito mutation occurs.
+    await audit('setup_started');
 
+    // (2) Irreversible identity mutation (ensureCognitoUser is idempotent).
+    await this.ensureCognitoUser(email);
     await this.cognito.send(new AdminSetUserPasswordCommand({
       UserPoolId: this.cfg.userPoolId,
       Username: email,
       Password: input.password,
       Permanent: true,
     }));
-
     await this.cognito.send(new AdminUpdateUserAttributesCommand({
       UserPoolId: this.cfg.userPoolId,
       Username: email,
@@ -1043,7 +1070,6 @@ export class DemoAuthService {
         { Name: 'email_verified', Value: 'true' },
       ],
     }));
-
     await this.cognito.send(new AdminEnableUserCommand({
       UserPoolId: this.cfg.userPoolId,
       Username: email,
@@ -1051,22 +1077,29 @@ export class DemoAuthService {
 
     const now = this.nowIso();
     const emailDomain = this.emailDomain(email);
-
-    const record: RegistrationRecord = {
+    const base: RegistrationRecord = {
       ...(existing?.pk ? existing : this.registrationKey(email)),
       email,
       emailDomain,
       cognitoUsername: email,
-      status: 'active' as RegistrationStatus,
-      setupCompletedAt: now,
+      status: 'pending_setup' as RegistrationStatus,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
       approvedBy: 'sf-org-id-verification',
     };
-    delete (record as Partial<RegistrationRecord>).setupTokenHash;
-    delete (record as Partial<RegistrationRecord>).setupTokenExpiresAt;
+    delete (base as Partial<RegistrationRecord>).setupTokenHash;
+    delete (base as Partial<RegistrationRecord>).setupTokenExpiresAt;
 
-    await this.writeRegistration(record);
+    // (3) Persist a NON-active record first: a crash or audit failure now leaves
+    // the account not-normally-usable (session gate denies non-active).
+    await this.writeRegistration({ ...base, status: 'pending_setup' });
+
+    // (4) Required success audit AFTER mutation, BEFORE activation. A failure here
+    // throws (500); the account stays pending_setup and a retry reconciles.
+    await audit('setup_complete');
+
+    // (5) Only now mark the account active / normally usable.
+    await this.writeRegistration({ ...base, status: 'active' as RegistrationStatus, setupCompletedAt: now });
 
     // Log outcome only: email + role. Never log SF Org ID or password.
     log.info('auth.setup_account_direct.complete', { email, role: approved.role });

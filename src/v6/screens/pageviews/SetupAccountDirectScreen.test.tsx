@@ -94,6 +94,17 @@ describe('SetupAccountDirectScreen', () => {
     expect(screen.queryByLabelText('Confirm password')).toBeNull();
   });
 
+  it('shows an unavailable state (no password step) when the server gate is disabled (404)', async () => {
+    verifyRegistration.mockRejectedValueOnce(new AuthApiError('unavailable', 404));
+    renderScreen();
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'robertp+phase7uat@careindeed.com' } });
+    fireEvent.change(screen.getByLabelText('Activation code'), { target: { value: CODE } });
+    fireEvent.click(screen.getByRole('button', { name: /verify eligibility/i }));
+    await waitFor(() => expect(screen.getByText(/currently unavailable/i)).toBeTruthy());
+    expect(screen.queryByLabelText('Confirm password')).toBeNull();
+    expect((screen.getByLabelText('Activation code') as HTMLInputElement).value).toBe('');
+  });
+
   it('never writes the activation code or password to browser storage', async () => {
     setupAccountDirect.mockResolvedValueOnce({ success: true });
     renderScreen();

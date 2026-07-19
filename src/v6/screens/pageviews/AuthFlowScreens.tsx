@@ -283,7 +283,8 @@ export function SetupAccountScreen() {
 /* ─── Direct account setup (allowlist + activation code; no emailed token) ──── */
 type DirectStatus =
   | 'idle' | 'verifying' | 'approved' | 'not_approved' | 'already_active'
-  | 'disabled' | 'setting_up' | 'complete' | 'retryable_error' | 'terminal_error';
+  | 'disabled' | 'unavailable' | 'throttled' | 'setting_up' | 'complete'
+  | 'retryable_error' | 'terminal_error';
 
 export function SetupAccountDirectScreen() {
   const navigate = useNavigate();
@@ -314,7 +315,13 @@ export function SetupAccountDirectScreen() {
       setStatus('approved');
       setPhase('password'); // password form unlocks only AFTER server verification
     } catch (e) {
-      if (e instanceof AuthApiError && e.status === 409) {
+      if (e instanceof AuthApiError && e.status === 404) {
+        setStatus('unavailable'); clearActivationCode();
+        setError('Account setup is currently unavailable. Please contact your administrator.');
+      } else if (e instanceof AuthApiError && e.status === 429) {
+        setStatus('throttled'); clearActivationCode();
+        setError('Too many attempts. Please wait a moment and try again.');
+      } else if (e instanceof AuthApiError && e.status === 409) {
         setStatus('already_active'); clearActivationCode();
         setError('This account is already set up. Please sign in instead.');
       } else if (e instanceof AuthApiError && (e.status === 403 || e.status === 400)) {
@@ -343,7 +350,13 @@ export function SetupAccountDirectScreen() {
       clearActivationCode(); clearPasswords(); // clear all sensitive state on success
       window.setTimeout(() => navigate('/login', { replace: true }), 1200);
     } catch (e) {
-      if (e instanceof AuthApiError && e.status === 409) {
+      if (e instanceof AuthApiError && e.status === 404) {
+        setStatus('unavailable'); clearActivationCode(); clearPasswords();
+        setError('Account setup is currently unavailable. Please contact your administrator.');
+      } else if (e instanceof AuthApiError && e.status === 429) {
+        setStatus('throttled'); clearPasswords();
+        setError('Too many attempts. Please wait a moment and try again.');
+      } else if (e instanceof AuthApiError && e.status === 409) {
         setStatus('already_active'); clearActivationCode(); clearPasswords();
         setError('This account is already set up. Please sign in instead.');
       } else if (e instanceof AuthApiError && (e.status === 403 || e.status === 400 || e.status === 422)) {
