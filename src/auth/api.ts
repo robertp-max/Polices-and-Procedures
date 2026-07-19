@@ -46,10 +46,17 @@ export interface CapabilitiesResponse {
   authorization: { capabilities: { manageUsers: boolean } };
 }
 
+export type AdminInviteStatus =
+  | 'invited_and_delivered'
+  | 'created_delivery_pending'
+  | 'already_pending'
+  | 'already_active';
+
 export interface AdminInviteResponse {
-  status: 'invited' | 'already_active';
+  status: AdminInviteStatus;
   email: string;
   emailDelivered: boolean;
+  provisioned: boolean;
   message: string;
 }
 

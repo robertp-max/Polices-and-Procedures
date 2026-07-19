@@ -51,16 +51,32 @@ interface RegisterResult {
 }
 
 /**
+ * Typed outcome of an administrator-initiated invitation. The status is explicit
+ * so callers/UI never conflate "created" with "delivered":
+ *   - invited_and_delivered  — new user created AND the setup link was delivered
+ *   - created_delivery_pending — new user created but delivery did not occur
+ *   - already_pending        — target already had a pending invitation (re-sent)
+ *   - already_active         — target already has an active account (no-op)
+ */
+export type AdminInviteStatus =
+  | 'invited_and_delivered'
+  | 'created_delivery_pending'
+  | 'already_pending'
+  | 'already_active';
+
+/**
  * Result of an administrator-initiated invitation. Deliberately carries NO
  * credential, setup token, or setup link — only the resolved actor (for audit
- * attribution at the route layer), the normalized target, the outcome, and
- * whether setup-link delivery succeeded.
+ * attribution at the route layer), the normalized target, the typed outcome,
+ * whether setup-link delivery succeeded, and whether a Cognito user was
+ * provisioned/ensured by this call.
  */
 export interface AdminInviteResult {
   actorEmail: string;
   targetEmail: string;
-  status: 'invited' | 'already_active';
+  status: AdminInviteStatus;
   emailDelivered: boolean;
+  provisioned: boolean;
 }
 
 type LoginResult =
@@ -870,8 +886,9 @@ export class DemoAuthService {
       // duplicated. Report the existing state so the caller can surface a
       // conflict-style message.
       log.info('auth.admin_invite.already_active', { actorEmail, targetEmail });
-      return { actorEmail, targetEmail, status: 'already_active', emailDelivered: false };
+      return { actorEmail, targetEmail, status: 'already_active', emailDelivered: false, provisioned: false };
     }
+    const wasPending = existing?.status === 'pending_setup';
 
     const now = this.nowIso();
     const { token, tokenHash, expiresAt } = this.generateSetupToken();
@@ -879,6 +896,8 @@ export class DemoAuthService {
       await this.deleteToken(existing.setupTokenHash);
     }
 
+    // ensureCognitoUser is idempotent (AdminGetUser → create only if absent), so a
+    // retry after a partial failure re-ensures rather than duplicating the user.
     await this.ensureCognitoUser(targetEmail);
 
     const record: RegistrationRecord = {
@@ -911,8 +930,11 @@ export class DemoAuthService {
       });
     }
 
-    log.info('auth.admin_invite.success', { actorEmail, targetEmail, emailDelivered });
-    return { actorEmail, targetEmail, status: 'invited', emailDelivered };
+    const status: AdminInviteStatus = wasPending
+      ? 'already_pending'
+      : (emailDelivered ? 'invited_and_delivered' : 'created_delivery_pending');
+    log.info('auth.admin_invite.result', { actorEmail, targetEmail, status, emailDelivered });
+    return { actorEmail, targetEmail, status, emailDelivered, provisioned: true };
   }
 
   async verifyRegistration(emailRaw: string, sfOrgIdRaw: string): Promise<{

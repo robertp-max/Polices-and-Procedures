@@ -1,8 +1,7 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { ApiError } from '../errors.js';
-import { log } from '../logger.js';
 import { appendEvent } from '../audit/writer.js';
-import { buildInviteAuditEvent } from '../auth/inviteAudit.js';
+import { recordInviteAudit, inviteResultMessage } from '../auth/inviteAudit.js';
 import { buildDemoAuthServiceFromEnv } from '../auth/service.js';
 import {
   getAllowlistStatus,
@@ -311,25 +310,20 @@ authRouter.post('/admin/users/invite', asyncHandler(async (req, res) => {
   const result = await service.adminInviteUser(accessToken, email);
 
   // Audit the administrator-attributed action. The actor comes from the verified
-  // token (adminInviteUser → assertAdminAccessToken), never the request body.
-  // No credential, setup token, or link is recorded.
+  // token (adminInviteUser → assertAdminAccessToken), never the request body. No
+  // credential, setup token, or link is recorded. Audit is NOT optional for this
+  // identity mutation: a write failure yields a classified 500 (no success the
+  // trail cannot corroborate), and a retry safely reconciles without duplicating.
   const correlationId = req.header('x-correlation-id') || req.header('x-request-id') || undefined;
-  try {
-    await appendEvent(buildInviteAuditEvent(result, correlationId));
-  } catch (auditErr) {
-    log.warn('auth.admin_invite.audit_write_failed', {
-      actorEmail: result.actorEmail,
-      targetEmail: result.targetEmail,
-      errMessage: (auditErr as Error)?.message || 'unknown',
-    });
-  }
+  await recordInviteAudit(result, correlationId, appendEvent);
 
-  const message = result.status === 'already_active'
-    ? 'An active account already exists for that email.'
-    : (result.emailDelivered
-      ? 'Invitation sent. The user will receive a setup link to finish creating their account.'
-      : 'Invitation created. Setup-link delivery is pending; re-invite once delivery is available.');
-  res.json({ status: result.status, email: result.targetEmail, emailDelivered: result.emailDelivered, message });
+  res.json({
+    status: result.status,
+    email: result.targetEmail,
+    emailDelivered: result.emailDelivered,
+    provisioned: result.provisioned,
+    message: inviteResultMessage(result),
+  });
 }));
 
 authRouter.get('/me', asyncHandler(async (req, res) => {

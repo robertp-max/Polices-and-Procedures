@@ -32,7 +32,7 @@ describe('AccountProvisioningCard invite', () => {
   beforeEach(() => { adminInviteUser.mockReset(); registerRequest.mockReset(); });
 
   it('invites through the authenticated admin endpoint with the access token; never register-request', async () => {
-    adminInviteUser.mockResolvedValue({ status: 'invited', email: 'robertp+phase7uat@careindeed.com', emailDelivered: true, message: 'Invitation sent.' });
+    adminInviteUser.mockResolvedValue({ status: 'invited_and_delivered', email: 'robertp+phase7uat@careindeed.com', emailDelivered: true, provisioned: true, message: 'Invitation sent.' });
     render(<AccountProvisioningCard />);
 
     fireEvent.change(screen.getByPlaceholderText('name@careindeed.com'), {

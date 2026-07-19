@@ -9,8 +9,11 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   GetUserCommand, AdminGetUserCommand, AdminCreateUserCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
+import { ApiError } from '../errors.js';
 import { buildDemoAuthServiceFromEnv } from './service.js';
-import { buildInviteAuditEvent } from './inviteAudit.js';
+import { buildInviteAuditEvent, recordInviteAudit, inviteResultMessage } from './inviteAudit.js';
+import type { AdminInviteResult } from './service.js';
+import type { AuditEventInput } from '../audit/writer.js';
 import type { RegistrationRecord } from './types.js';
 
 const ADMIN = 'admin@careindeed.com';
@@ -22,9 +25,10 @@ const BASE = 'robertp@careindeed.com';
 const TOKEN_EMAIL: Record<string, string> = {
   'admin-token': ADMIN,
   'user-token': ORDINARY,
+  'target-token': TARGET,
 };
 
-function buildService(opts: { deliverEmail?: boolean; seed?: Array<[string, RegistrationRecord]> } = {}) {
+function buildService(opts: { deliverEmail?: boolean; seed?: Array<[string, RegistrationRecord]>; cognitoUserExists?: boolean } = {}) {
   const svc = buildDemoAuthServiceFromEnv({
     AWS_REGION: 'us-west-1',
     COGNITO_USER_POOL_ID: 'us-west-1_TEST',
@@ -52,6 +56,7 @@ function buildService(opts: { deliverEmail?: boolean; seed?: Array<[string, Regi
       ] };
     }
     if (cmd instanceof AdminGetUserCommand) {
+      if (opts.cognitoUserExists) return { Username: 'existing' }; // already provisioned → no create
       const err = new Error('user not found') as Error & { name: string };
       err.name = 'UserNotFoundException';
       throw err; // force ensureCognitoUser to create
@@ -134,12 +139,13 @@ describe('adminInviteUser — administrator-only invitation', () => {
   it('lets an admin invite a new user; actor derives from the token, plus-tag preserved', async () => {
     const { svc, send, regs, setupEmails } = buildService();
     const result = await svc.adminInviteUser('admin-token', TARGET);
-    expect(result.status).toBe('invited');
+    expect(result.status).toBe('invited_and_delivered');
+    expect(result.provisioned).toBe(true);
     expect(result.actorEmail).toBe(ADMIN);          // from token, not body
     expect(result.targetEmail).toBe(TARGET);        // plus-tag preserved
     expect(result.emailDelivered).toBe(true);
     // NO credential/token/link on the result surface.
-    expect(Object.keys(result).sort()).toEqual(['actorEmail', 'emailDelivered', 'status', 'targetEmail']);
+    expect(Object.keys(result).sort()).toEqual(['actorEmail', 'emailDelivered', 'provisioned', 'status', 'targetEmail']);
     // Cognito user created; registration is pending_setup; base email untouched.
     expect(send.mock.calls.some(([c]) => c instanceof AdminCreateUserCommand)).toBe(true);
     expect(regs.get(TARGET)?.status).toBe('pending_setup');
@@ -164,16 +170,32 @@ describe('adminInviteUser — administrator-only invitation', () => {
     const { svc, send } = buildService({ seed: [[TARGET, { status: 'active', email: TARGET } as RegistrationRecord]] });
     const result = await svc.adminInviteUser('admin-token', TARGET);
     expect(result.status).toBe('already_active');
+    expect(result.provisioned).toBe(false);
     expect(result.emailDelivered).toBe(false);
     expect(send.mock.calls.some(([c]) => c instanceof AdminCreateUserCommand)).toBe(false);
   });
 
-  it('still records the invitation when setup-link delivery fails (no throw, no leak)', async () => {
+  it('reports created_delivery_pending (never "sent") when setup-link delivery fails', async () => {
     const { svc, regs } = buildService({ deliverEmail: false });
     const result = await svc.adminInviteUser('admin-token', TARGET);
-    expect(result.status).toBe('invited');
+    expect(result.status).toBe('created_delivery_pending');
     expect(result.emailDelivered).toBe(false);
-    expect(regs.get(TARGET)?.status).toBe('pending_setup');
+    expect(result.provisioned).toBe(true);
+    expect(regs.get(TARGET)?.status).toBe('pending_setup'); // invitation still stands
+    // The operator-facing message must not claim the link was sent.
+    expect(inviteResultMessage(result).toLowerCase()).not.toContain('sent');
+  });
+
+  it('reports already_pending and re-sends when the target already has a pending invitation', async () => {
+    const { svc, send } = buildService({
+      cognitoUserExists: true,
+      seed: [[TARGET, { status: 'pending_setup', email: TARGET, pk: `EMAIL#${TARGET}`, sk: 'REGISTRATION' } as RegistrationRecord]],
+    });
+    const result = await svc.adminInviteUser('admin-token', TARGET);
+    expect(result.status).toBe('already_pending');
+    expect(result.emailDelivered).toBe(true);
+    // ensureCognitoUser is idempotent — AdminGetUser succeeds so no duplicate create.
+    expect(send.mock.calls.some(([c]) => c instanceof AdminCreateUserCommand)).toBe(false);
   });
 
   it('rejects an invalid target email with 400', async () => {
@@ -183,7 +205,9 @@ describe('adminInviteUser — administrator-only invitation', () => {
 });
 
 describe('buildInviteAuditEvent — attribution + no-leak', () => {
-  const result = { actorEmail: ADMIN, targetEmail: TARGET, status: 'invited' as const, emailDelivered: true };
+  const result: AdminInviteResult = {
+    actorEmail: ADMIN, targetEmail: TARGET, status: 'invited_and_delivered', emailDelivered: true, provisioned: true,
+  };
 
   it('attributes the action to the verified admin actor and the target resource', () => {
     const ev = buildInviteAuditEvent(result, 'corr-123');
@@ -200,5 +224,54 @@ describe('buildInviteAuditEvent — attribution + no-leak', () => {
     for (const forbidden of ['token', 'password', 'setuplink', 'setup-link', 'secret', 'bearer', 'code']) {
       expect(serialized).not.toContain(forbidden);
     }
+  });
+});
+
+describe('recordInviteAudit — audit atomicity for identity mutation', () => {
+  const result: AdminInviteResult = {
+    actorEmail: ADMIN, targetEmail: TARGET, status: 'invited_and_delivered', emailDelivered: true, provisioned: true,
+  };
+
+  it('writes exactly one audit event on success', async () => {
+    const append = vi.fn(async (_e: AuditEventInput) => undefined);
+    await recordInviteAudit(result, 'corr-1', append);
+    expect(append).toHaveBeenCalledTimes(1);
+    expect(append.mock.calls[0][0]).toMatchObject({
+      action: 'admin.user.invite',
+      actor: { user_id: ADMIN },
+      resource: { id: TARGET },
+    });
+  });
+
+  it('fails the request with a classified 500 (no secret) when the audit write fails', async () => {
+    const append = vi.fn(async () => { throw new Error('jsonl write failed'); });
+    let caught: unknown;
+    try { await recordInviteAudit(result, 'corr-1', append); } catch (e) { caught = e; }
+    expect(caught).toBeInstanceOf(ApiError);
+    expect((caught as ApiError).status).toBe(500);
+    const msg = (caught as ApiError).message.toLowerCase();
+    // Classified partial-failure with safe retry guidance; no secret material.
+    expect(msg).toContain('retry');
+    for (const forbidden of ['token', 'password', 'secret', 'bearer', 'jsonl write failed']) {
+      expect(msg).not.toContain(forbidden);
+    }
+  });
+});
+
+describe('invited user is least-privilege (end to end, service-level)', () => {
+  it('creates robertp+phase7uat@ as a NON-administrator with no admin capability or route access', async () => {
+    // Seed the invited target as an already-active account so getCurrentUser's
+    // active-registration gate passes for its own token.
+    const { svc, regs } = buildService({ seed: [[TARGET, { status: 'active', email: TARGET } as RegistrationRecord]] });
+    void regs;
+    // Not in the admin allowlist (only ADMIN is), and distinct from the base admin.
+    expect(svc.isAdminEmail(TARGET)).toBe(false);
+    expect(svc.isAdminEmail(BASE)).toBe(false);   // base admin is not itself in this test's allowlist
+    // Its capability contract denies admin.
+    await expect(svc.resolveCapabilities('target-token')).resolves.toEqual({ manageUsers: false });
+    // It cannot invoke the admin-only invitation endpoint.
+    await expect(svc.adminInviteUser('target-token', 'someone@careindeed.com')).rejects.toMatchObject({ status: 403 });
+    // Plus-tagged identity stays distinct from the base administrator identity.
+    expect(TARGET).not.toBe(BASE);
   });
 });
