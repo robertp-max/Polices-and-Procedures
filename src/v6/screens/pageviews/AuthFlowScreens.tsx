@@ -1,6 +1,6 @@
 import { type FormEvent, type ReactNode, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { CheckCircle2, LoaderCircle, LockKeyhole, Mail, ShieldAlert, UserRound } from 'lucide-react';
+import { CheckCircle2, KeyRound, LoaderCircle, LockKeyhole, Mail, ShieldAlert, ShieldCheck, UserRound } from 'lucide-react';
 import { AuthApi, AuthApiError } from '@/auth/api';
 
 /**
@@ -276,6 +276,171 @@ export function SetupAccountScreen() {
           </button>
         </div>
       </form>
+    </AuthCard>
+  );
+}
+
+/* ─── Direct account setup (allowlist + activation code; no emailed token) ──── */
+type DirectStatus =
+  | 'idle' | 'verifying' | 'approved' | 'not_approved' | 'already_active'
+  | 'disabled' | 'setting_up' | 'complete' | 'retryable_error' | 'terminal_error';
+
+export function SetupAccountDirectScreen() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [activationCode, setActivationCode] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [phase, setPhase] = useState<'verify' | 'password'>('verify');
+  const [status, setStatus] = useState<DirectStatus>('idle');
+  const [error, setError] = useState<string | null>(null);
+
+  const busy = status === 'verifying' || status === 'setting_up';
+  const done = status === 'complete';
+
+  // Never keep the activation code or password in state longer than needed.
+  function clearActivationCode() { setActivationCode(''); }
+  function clearPasswords() { setPassword(''); setConfirm(''); }
+
+  async function handleVerify(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    if (!email.trim() || !activationCode.trim()) { setStatus('idle'); setError('Enter your email and activation code.'); return; }
+    setStatus('verifying');
+    try {
+      await AuthApi.verifyRegistration(email.trim(), activationCode.trim());
+      setStatus('approved');
+      setPhase('password'); // password form unlocks only AFTER server verification
+    } catch (e) {
+      if (e instanceof AuthApiError && e.status === 409) {
+        setStatus('already_active'); clearActivationCode();
+        setError('This account is already set up. Please sign in instead.');
+      } else if (e instanceof AuthApiError && (e.status === 403 || e.status === 400)) {
+        // Do not reveal whether any other identity exists.
+        setStatus('not_approved'); clearActivationCode();
+        setError('We couldn’t verify those details. Check your email and activation code, or contact your administrator.');
+      } else {
+        setStatus('retryable_error');
+        setError(SERVICE_ERROR);
+      }
+    }
+  }
+
+  async function handleSetup(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    if (!firstName.trim() || !lastName.trim()) { setError('Enter your first and last name.'); return; }
+    if (password.length < 8) { setError('Choose a password of at least 8 characters, with upper and lower case, a number, and a symbol.'); return; }
+    if (password !== confirm) { setError('Those passwords don’t match.'); return; }
+    setStatus('setting_up');
+    try {
+      // The server independently re-verifies email + activation code — client
+      // verification is not authorization.
+      await AuthApi.setupAccountDirect(email.trim(), activationCode.trim(), firstName.trim(), lastName.trim(), password);
+      setStatus('complete');
+      clearActivationCode(); clearPasswords(); // clear all sensitive state on success
+      window.setTimeout(() => navigate('/login', { replace: true }), 1200);
+    } catch (e) {
+      if (e instanceof AuthApiError && e.status === 409) {
+        setStatus('already_active'); clearActivationCode(); clearPasswords();
+        setError('This account is already set up. Please sign in instead.');
+      } else if (e instanceof AuthApiError && (e.status === 403 || e.status === 400 || e.status === 422)) {
+        setStatus('terminal_error'); clearPasswords();
+        setError('We couldn’t complete setup. Re-check your details, or contact your administrator.');
+      } else {
+        setStatus('retryable_error'); clearPasswords();
+        setError(SERVICE_ERROR);
+      }
+    }
+  }
+
+  const notice = done
+    ? 'Account ready. Taking you to sign in…'
+    : status === 'approved' || phase === 'password'
+      ? 'Verified. Create your password to finish.'
+      : null;
+
+  return (
+    <AuthCard
+      route="/setup-account-direct" hashId="setup-account-direct-page"
+      title="Set Up Your Account"
+      subtitle="Approved users can activate their account with an activation code."
+      error={error}
+      notice={notice}
+    >
+      <p className="mb-lg flex items-start gap-sm rounded-2xl border border-tone-teal-border bg-tone-teal-bg px-md py-sm text-xs font-light text-ink" role="note">
+        <ShieldCheck aria-hidden="true" className="mt-0.5 h-icon-sm w-icon-sm shrink-0 text-brand-teal" />
+        <span>Account setup requires approval. Completing setup does <strong>not</strong> grant administrator access. Never share your activation code or password.</span>
+      </p>
+
+      {phase === 'verify' ? (
+        <form className="space-y-5" noValidate onSubmit={handleVerify} aria-label="Verify eligibility">
+          <label className="grid gap-sm">
+            <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Email</span>
+            <span className={fieldShell}>
+              <Mail aria-hidden="true" className="absolute left-md h-icon-sm w-icon-sm" />
+              <input autoComplete="email" className={fieldInput} disabled={busy} inputMode="email" onChange={(e) => setEmail(e.target.value)} placeholder="name@careindeed.com" type="email" value={email} />
+            </span>
+          </label>
+          <label className="grid gap-sm">
+            <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Activation code</span>
+            <span className={fieldShell}>
+              <KeyRound aria-hidden="true" className="absolute left-md h-icon-sm w-icon-sm" />
+              <input autoComplete="one-time-code" className={fieldInput} disabled={busy} onChange={(e) => setActivationCode(e.target.value)} placeholder="Provided by your administrator" type="password" value={activationCode} />
+            </span>
+          </label>
+          <div className="pt-2">
+            <button className={primaryButton} disabled={busy} type="submit">
+              <span>{status === 'verifying' ? 'Verifying eligibility' : 'Verify eligibility'}</span>
+              {status === 'verifying' ? <LoaderCircle aria-hidden="true" className="h-icon-sm w-icon-sm animate-spin" /> : null}
+            </button>
+          </div>
+        </form>
+      ) : (
+        <form className="space-y-5" noValidate onSubmit={handleSetup} aria-label="Create password">
+          <div className="grid grid-cols-2 gap-md">
+            <label className="grid gap-sm">
+              <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">First name</span>
+              <span className={fieldShell}>
+                <UserRound aria-hidden="true" className="absolute left-md h-icon-sm w-icon-sm" />
+                <input autoComplete="given-name" className={fieldInput} disabled={busy || done} onChange={(e) => setFirstName(e.target.value)} value={firstName} />
+              </span>
+            </label>
+            <label className="grid gap-sm">
+              <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Last name</span>
+              <span className={fieldShell}>
+                <UserRound aria-hidden="true" className="absolute left-md h-icon-sm w-icon-sm" />
+                <input autoComplete="family-name" className={fieldInput} disabled={busy || done} onChange={(e) => setLastName(e.target.value)} value={lastName} />
+              </span>
+            </label>
+          </div>
+          <p className="text-xs font-light text-secondary" id="pw-policy">
+            Use at least 8 characters with upper and lower case letters, a number, and a symbol.
+          </p>
+          <label className="grid gap-sm">
+            <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Password</span>
+            <span className={fieldShell}>
+              <LockKeyhole aria-hidden="true" className="absolute left-md h-icon-sm w-icon-sm" />
+              <input aria-describedby="pw-policy" autoComplete="new-password" className={fieldInput} disabled={busy || done} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••••••" type="password" value={password} />
+            </span>
+          </label>
+          <label className="grid gap-sm">
+            <span className="text-tag font-medium uppercase tracking-tag text-brand-teal-deep">Confirm password</span>
+            <span className={fieldShell}>
+              <LockKeyhole aria-hidden="true" className="absolute left-md h-icon-sm w-icon-sm" />
+              <input autoComplete="new-password" className={fieldInput} disabled={busy || done} onChange={(e) => setConfirm(e.target.value)} placeholder="••••••••••••" type="password" value={confirm} />
+            </span>
+          </label>
+          <div className="pt-2">
+            <button className={primaryButton} disabled={busy || done} type="submit">
+              <span>{status === 'setting_up' ? 'Creating account' : 'Create account'}</span>
+              {status === 'setting_up' ? <LoaderCircle aria-hidden="true" className="h-icon-sm w-icon-sm animate-spin" /> : null}
+            </button>
+          </div>
+        </form>
+      )}
     </AuthCard>
   );
 }

@@ -2,6 +2,7 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import { ApiError } from '../errors.js';
 import { appendEvent } from '../audit/writer.js';
 import { recordInviteAudit, inviteResultMessage } from '../auth/inviteAudit.js';
+import { recordSetupSuccessAudit, recordDirectSetupAuditBestEffort } from '../auth/directSetupAudit.js';
 import { buildDemoAuthServiceFromEnv } from '../auth/service.js';
 import {
   getAllowlistStatus,
@@ -23,20 +24,40 @@ authRouter.post('/verify-registration', asyncHandler(async (req, res) => {
   const service = buildDemoAuthServiceFromEnv(process.env);
   const email   = String(req.body?.email   || '');
   const sfOrgId = String(req.body?.sfOrgId || '');
-  const result  = await service.verifyRegistration(email, sfOrgId);
-  res.json(result);
+  const emailNorm = email.trim().toLowerCase();
+  const corr = req.header('x-correlation-id') || req.header('x-request-id') || undefined;
+  try {
+    const result = await service.verifyRegistration(email, sfOrgId);
+    // Best-effort: a verification attempt is not an identity mutation.
+    await recordDirectSetupAuditBestEffort(emailNorm, 'verify_approved', corr, appendEvent);
+    res.json(result);
+  } catch (e) {
+    await recordDirectSetupAuditBestEffort(emailNorm, 'verify_denied', corr, appendEvent);
+    throw e;
+  }
 }));
 
 authRouter.post('/setup-account-direct', asyncHandler(async (req, res) => {
   const service = buildDemoAuthServiceFromEnv(process.env);
   const { email, sfOrgId, firstName, lastName, password } = req.body ?? {};
-  const result = await service.setupAccountDirect({
-    email:     String(email     || ''),
-    sfOrgId:   String(sfOrgId   || ''),
-    firstName: String(firstName || ''),
-    lastName:  String(lastName  || ''),
-    password:  String(password  || ''),
-  });
+  const emailNorm = String(email || '').trim().toLowerCase();
+  const corr = req.header('x-correlation-id') || req.header('x-request-id') || undefined;
+  let result: { success: true };
+  try {
+    result = await service.setupAccountDirect({
+      email:     String(email     || ''),
+      sfOrgId:   String(sfOrgId   || ''),
+      firstName: String(firstName || ''),
+      lastName:  String(lastName  || ''),
+      password:  String(password  || ''),
+    });
+  } catch (e) {
+    const outcome = (e instanceof ApiError && e.status === 409) ? 'setup_replay_denied' : 'setup_denied';
+    await recordDirectSetupAuditBestEffort(emailNorm, outcome, corr, appendEvent);
+    throw e;
+  }
+  // Successful activation is an identity mutation: its audit is not optional.
+  await recordSetupSuccessAudit(emailNorm, corr, appendEvent);
   res.json(result);
 }));
 

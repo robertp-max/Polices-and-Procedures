@@ -1,0 +1,2 @@
+email,fullName,sfOrgId,role,department,status,notes
+you+phase7uat@example.com,Phase7 UAT,REPLACE-WITH-RANDOM-128-BIT-CODE,Pending User,UAT,active,Phase 7 synthetic dev UAT identity - non-PHI; remove after UAT
