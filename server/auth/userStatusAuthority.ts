@@ -1,35 +1,70 @@
 /**
  * COG-2 hotfix — server-authoritative authority to manage user *status*
- * (suspend / reactivate).
+ * (suspend / reactivate), reconciled with account status.
  *
- * Reconciles the two admin authority sources so they agree: the approved
- * administrator email allowlist (the same source behind `manageUsers` /
- * `assertAdminAccessToken`) AND a canonical administrator group in the server
- * identity registry. Either grants the authority; neither is ever derived from
- * client headers, localStorage, query params, or a request-body actor.
+ * Wraps the pure {@link evaluateUserStatusAuthority} algorithm with the impure
+ * seams (verified Cognito identity + canonical registry lookup) and exposes:
+ *  - resolveUserStatusAuthority(): used by the route handlers, returns the
+ *    verified actor + authority result (or throws a typed 401/403);
+ *  - requireUserStatusAuthority(): the Express PEP for the mount, which runs
+ *    before the /api boundary and therefore self-resolves the actor.
  *
- * The middleware self-resolves the verified Cognito actor (it is mounted before
- * the `/api` boundary, so `req.actor` is not yet populated), authorizes, then
- * attaches the verified actor for the downstream router.
+ * Authority may originate from an approved administrator email (even when the
+ * canonical record is pending/absent) OR an active canonical administrator
+ * group — but a suspended/disabled canonical record is ALWAYS denied. Identity
+ * is only ever the verified token: never body actor data, headers, storage, or
+ * client role values.
  */
 import type { RequestHandler } from 'express';
 import { ApiError } from '../errors.js';
 import type { Actor } from '../identity/session.js';
-import { actorHasAnyRole, PRIVILEGED_GROUP_IDS } from './actorResolver.js';
-import { resolveVerifiedActor, mergeAuthDeps, type RequireAuthDeps } from './requireCognitoAuth.js';
+import { findCanonicalUser, activeRoleGroupIds } from './actorResolver.js';
+import { resolveVerifiedIdentity, mergeAuthDeps, type RequireAuthDeps } from './requireCognitoAuth.js';
 import { buildDemoAuthServiceFromEnv } from './service.js';
+import { evaluateUserStatusAuthority, type UserStatusAuthorityResult } from './userStatusAuthorityCore.js';
+
+export type { UserStatusAuthorityResult, UserStatusAuthoritySource } from './userStatusAuthorityCore.js';
+
+/** Build a minimal audit actor from an allowed authority result. */
+function actorFromAuthority(result: UserStatusAuthorityResult): Actor {
+  return {
+    type: 'user',
+    user_id: result.actorUserId!,
+    display_name: result.actorEmail!,
+    email: result.actorEmail!,
+    roles: [],
+    attributes: { branches: [], service_lines: [], access_classes: [] },
+    mfa_enrolled: false,
+    identity_assurance: 1,
+  };
+}
 
 /**
- * True when the verified actor may manage user status: an approved-admin email
- * OR a canonical administrator group. `isAdminEmail` is injected (the same
- * server allowlist predicate used for `manageUsers`) so the algorithm is not
- * duplicated.
+ * Resolve + authorize the caller for user-status administration. Returns the
+ * verified actor and the authority result (with source + canonical status), or
+ * throws a typed ApiError (401 for auth failures, 403 for denied authority).
  */
-export function actorMayManageUserStatus(
-  actor: Actor,
-  isAdminEmail: (email?: string | null) => boolean,
-): boolean {
-  return isAdminEmail(actor.email) || actorHasAnyRole(actor, PRIVILEGED_GROUP_IDS);
+export async function resolveUserStatusAuthority(
+  authorizationHeader: string | undefined,
+  deps: RequireAuthDeps,
+  isApprovedAdminEmail: (email?: string | null) => boolean,
+): Promise<{ actor: Actor; result: UserStatusAuthorityResult }> {
+  const { sub, email } = await resolveVerifiedIdentity(authorizationHeader, deps);
+  const registry = await deps.loadRegistry();
+  const canonicalUser = findCanonicalUser(registry, { sub, email });
+  const canonicalRoles = canonicalUser ? activeRoleGroupIds(registry, canonicalUser.id, deps.nowIso()) : [];
+  const result = evaluateUserStatusAuthority({
+    verifiedEmail: email,
+    isApprovedAdminEmail: isApprovedAdminEmail(email),
+    canonicalUser: canonicalUser
+      ? { id: canonicalUser.id, email: canonicalUser.email, status: canonicalUser.status }
+      : null,
+    canonicalRoles,
+  });
+  if (!result.allowed) {
+    throw new ApiError('permission_denied', result.denyReason ?? 'You do not have permission to manage user status.', 403);
+  }
+  return { actor: actorFromAuthority(result), result };
 }
 
 /** PEP for the user-access mount: verify the actor, then require status authority. */
@@ -38,12 +73,10 @@ export function requireUserStatusAuthority(depsOverride?: Partial<RequireAuthDep
     let deps: RequireAuthDeps;
     try { deps = mergeAuthDeps(depsOverride); } catch (e) { return next(e); }
     const service = buildDemoAuthServiceFromEnv(process.env);
-    resolveVerifiedActor(req.header('authorization'), deps)
-      .then((actor) => {
-        if (!actorMayManageUserStatus(actor, (e) => service.isAdminEmail(e ?? ''))) {
-          throw new ApiError('permission_denied', 'You do not have permission to manage user status.', 403);
-        }
+    resolveUserStatusAuthority(req.header('authorization'), deps, (e) => service.isAdminEmail(e ?? ''))
+      .then(({ actor, result }) => {
         req.actor = actor;
+        req.userStatusAuthority = result;
         if (req.session) { req.session.actor = actor; req.session.authenticated = true; }
         next();
       })

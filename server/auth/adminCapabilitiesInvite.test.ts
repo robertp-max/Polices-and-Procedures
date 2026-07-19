@@ -75,6 +75,9 @@ function buildService(opts: { deliverEmail?: boolean; seed?: Array<[string, Regi
   const setupEmails: Array<{ email: string; token: string }> = [];
 
   (svc as unknown as { cognito: { send: typeof send } }).cognito = { send } as never;
+  // Empty canonical registry: capability then reflects the approved-email verdict.
+  (svc as unknown as { loadIdentityRegistry: () => Promise<{ users: []; assignments: [] }> })
+    .loadIdentityRegistry = async () => ({ users: [], assignments: [] });
   (svc as unknown as { getRegistration: (e: string) => Promise<RegistrationRecord | null> })
     .getRegistration = async (e: string) => regs.get(e) ?? null;
   (svc as unknown as { writeRegistration: (r: RegistrationRecord) => Promise<void> })

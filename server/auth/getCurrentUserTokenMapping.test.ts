@@ -30,7 +30,7 @@ function buildService(adminEmails = ADMIN_EMAIL) {
 }
 
 /** Wire a GetUser response for `email`; other commands throw `getUserError` if set. */
-function stubCognito(svc: ReturnType<typeof buildService>, opts: { email?: string; getUserError?: unknown }) {
+function stubCognito(svc: ReturnType<typeof buildService>, opts: { email?: string; getUserError?: unknown; registry?: unknown }) {
   const send = vi.fn(async (cmd: unknown) => {
     if (cmd instanceof GetUserCommand) {
       if (opts.getUserError) throw opts.getUserError;
@@ -48,6 +48,9 @@ function stubCognito(svc: ReturnType<typeof buildService>, opts: { email?: strin
   (svc as unknown as { cognito: { send: typeof send } }).cognito = { send } as never;
   (svc as unknown as { getRegistration: (email: string) => Promise<RegistrationRecord | null> })
     .getRegistration = async () => ({ status: 'active' } as RegistrationRecord);
+  // Canonical registry seam: default empty; opts.registry overrides.
+  (svc as unknown as { loadIdentityRegistry: () => Promise<unknown> })
+    .loadIdentityRegistry = async () => opts.registry ?? { users: [], assignments: [] };
   return send;
 }
 
@@ -100,5 +103,31 @@ describe('resolveCapabilities — manageUserStatus projection', () => {
     const send = stubCognito(svc, { email: ADMIN_EMAIL });
     await expect(svc.resolveCapabilities('   ')).rejects.toMatchObject({ status: 401 });
     expect(send).not.toHaveBeenCalled();
+  });
+
+  it('DENIES an approved-admin email whose canonical record is SUSPENDED', async () => {
+    const svc = buildService();
+    stubCognito(svc, {
+      email: ADMIN_EMAIL,
+      registry: {
+        users: [{ id: 'u1', email: ADMIN_EMAIL, name: 'A', status: 'suspended', authSubject: 'sub-1' }],
+        assignments: [],
+      },
+    });
+    const caps = await svc.resolveCapabilities('admin-token');
+    expect(caps).toEqual({ manageUsers: false, manageUserStatus: false });
+  });
+
+  it('grants an approved-admin email whose canonical record is PENDING', async () => {
+    const svc = buildService();
+    stubCognito(svc, {
+      email: ADMIN_EMAIL,
+      registry: {
+        users: [{ id: 'u1', email: ADMIN_EMAIL, name: 'A', status: 'pending', authSubject: 'sub-1' }],
+        assignments: [],
+      },
+    });
+    const caps = await svc.resolveCapabilities('admin-token');
+    expect(caps).toEqual({ manageUsers: true, manageUserStatus: true });
   });
 });

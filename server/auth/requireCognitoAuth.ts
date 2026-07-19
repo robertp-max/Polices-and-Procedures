@@ -77,10 +77,17 @@ function extractBearer(header: string | undefined): string {
  * Resolve the verified server actor for a request, or throw. Exposed for reuse
  * and testing; the middleware is a thin wrapper that also mutates the request.
  */
-export async function resolveVerifiedActor(
+/**
+ * Verified Cognito identity WITHOUT the canonical-active gate: token claim
+ * checks + Cognito authenticity + the COG-1 registration/session-active gate
+ * (inside getCurrentUser), yielding the verified sub + email. Callers that must
+ * honor an authority source other than an active canonical record (e.g. the
+ * approved-admin-email path) resolve the identity here and decide separately.
+ */
+export async function resolveVerifiedIdentity(
   authorizationHeader: string | undefined,
   deps: RequireAuthDeps,
-): Promise<Actor> {
+): Promise<{ sub: string; email: string }> {
   const token = extractBearer(authorizationHeader);
   // (2) cheap, deterministic claim checks first.
   const payload = decodeJwtPayload(token);
@@ -89,9 +96,17 @@ export async function resolveVerifiedActor(
   const verified = await deps.getCurrentUser(token);
   const sub = verified.authSubject || verified.id || '';
   if (!sub) throw new ApiError('auth_error', 'Verified token has no subject.', 401);
+  return { sub, email: verified.email };
+}
+
+export async function resolveVerifiedActor(
+  authorizationHeader: string | undefined,
+  deps: RequireAuthDeps,
+): Promise<Actor> {
+  const { sub, email } = await resolveVerifiedIdentity(authorizationHeader, deps);
   // (4) canonical resolution — roles + status from the server registry.
   const registry = await deps.loadRegistry();
-  return resolveServerActor({ sub, email: verified.email }, registry, deps.nowIso());
+  return resolveServerActor({ sub, email }, registry, deps.nowIso());
 }
 
 /** Middleware factory: attaches the verified server actor or denies. */

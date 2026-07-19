@@ -27,6 +27,9 @@ import { log } from '../logger.js';
 import type { AuthSession, DemoUser, RegistrationRecord, RegistrationStatus, TokenRecord } from './types.js';
 import { findApprovedUser, findApprovedUserByEmail, getLoadError, isAllowlistAvailable, normalizeEmail as normalizeApprovedEmail, normalizeSfOrgId } from './approvedUsers.js';
 import type { DirectSetupAuditSink } from './directSetupAudit.js';
+import { getAppIdentityPersistence, type AppIdentityRegistry } from './appIdentityPersistence.js';
+import { findCanonicalUser, activeRoleGroupIds } from './actorResolver.js';
+import { evaluateUserStatusAuthority } from './userStatusAuthorityCore.js';
 
 interface DemoAuthConfig {
   region: string;
@@ -714,16 +717,47 @@ export class DemoAuthService {
    * client-supplied role, header, or browser-stored value. Exposes no admin
    * allowlist contents and no Cognito subject.
    */
+  /**
+   * Load the canonical AppIdentityRegistry (a seam so tests can inject one).
+   * Fails soft to an empty registry so the capability contract degrades to the
+   * email-allowlist verdict rather than erroring if persistence is unavailable.
+   */
+  protected async loadIdentityRegistry(): Promise<AppIdentityRegistry> {
+    try {
+      return await getAppIdentityPersistence().getAll();
+    } catch {
+      return { users: [], assignments: [] };
+    }
+  }
+
   async resolveCapabilities(actorAccessToken: string): Promise<{ manageUsers: boolean; manageUserStatus: boolean }> {
     const accessToken = String(actorAccessToken || '').trim();
     if (!accessToken) {
       throw new ApiError('auth_error', 'Not authenticated.', 401);
     }
-    const actor = await this.getCurrentUser(accessToken);
-    const isAdmin = this.isAdminEmail(actor.email);
-    // manageUserStatus (suspend/reactivate) shares the approved-admin authority;
-    // the server endpoint additionally honors canonical admin-group actors.
-    return { manageUsers: isAdmin, manageUserStatus: isAdmin };
+    // Same authority algorithm as the enforcement boundary, so the UI capability
+    // and the /api/admin/user-access boundary cannot disagree. getCurrentUser
+    // enforces authenticity + the COG-1 registration/session-active gate; the
+    // shared evaluator then applies the status-deny-first rule and both authority
+    // sources. A suspended/disabled canonical record yields false here too.
+    const verified = await this.getCurrentUser(accessToken);
+    const registry = await this.loadIdentityRegistry();
+    const canonicalUser = findCanonicalUser(registry, {
+      sub: verified.authSubject || verified.id || '',
+      email: verified.email,
+    });
+    const canonicalRoles = canonicalUser
+      ? activeRoleGroupIds(registry, canonicalUser.id, new Date().toISOString())
+      : [];
+    const result = evaluateUserStatusAuthority({
+      verifiedEmail: verified.email,
+      isApprovedAdminEmail: this.isAdminEmail(verified.email),
+      canonicalUser: canonicalUser
+        ? { id: canonicalUser.id, email: canonicalUser.email, status: canonicalUser.status }
+        : null,
+      canonicalRoles,
+    });
+    return { manageUsers: result.allowed, manageUserStatus: result.allowed };
   }
 
   async forgotPassword(emailRaw: string): Promise<{ message: string }> {
