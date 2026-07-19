@@ -421,7 +421,9 @@ export function createPacketLifecycleRouter(
   const store = options.store ?? defaultStore;
 
   router.post('/', asyncH(async (req, res) => {
-    const body = asRecord(req.body) as CreatePacketBody;
+    // asRecord() yields a Record; the intersection keeps both the typed
+    // CreatePacketBody view (idempotencyKey) and the Record view (field extractors).
+    const body = asRecord(req.body) as CreatePacketBody & Record<string, unknown>;
     const key = idempotencyKey(req, body);
     const input = toCreateInput(req, body);
     assertAgencyScope(req, input.agencyId);

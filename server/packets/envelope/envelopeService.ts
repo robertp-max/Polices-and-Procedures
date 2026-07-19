@@ -824,7 +824,7 @@ function readEnvelopeStatus(envelope: PacketEnvelope): string | undefined {
 
 function withEnvelopePatch(envelope: PacketEnvelope, patch: EnvelopePatch): PacketEnvelope {
   return {
-    ...(envelope as object),
+    ...envelope,
     ...patch,
   } as PacketEnvelope;
 }
