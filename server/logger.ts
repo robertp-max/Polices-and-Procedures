@@ -25,7 +25,7 @@ function redact(obj: unknown): unknown {
   return out;
 }
 
-function emit(level: Level, message: string, fields?: Record<string, unknown>) {
+function emit(level: Level, message: string, fields?: object) {
   if (LEVELS[level] < currentLevel) return;
   const line = {
     t: new Date().toISOString(),
@@ -37,8 +37,8 @@ function emit(level: Level, message: string, fields?: Record<string, unknown>) {
 }
 
 export const log = {
-  debug: (m: string, f?: Record<string, unknown>) => emit('debug', m, f),
-  info:  (m: string, f?: Record<string, unknown>) => emit('info',  m, f),
-  warn:  (m: string, f?: Record<string, unknown>) => emit('warn',  m, f),
-  error: (m: string, f?: Record<string, unknown>) => emit('error', m, f),
+  debug: (m: string, f?: object) => emit('debug', m, f),
+  info:  (m: string, f?: object) => emit('info',  m, f),
+  warn:  (m: string, f?: object) => emit('warn',  m, f),
+  error: (m: string, f?: object) => emit('error', m, f),
 };
