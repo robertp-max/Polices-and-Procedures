@@ -50,6 +50,19 @@ interface RegisterResult {
   };
 }
 
+/**
+ * Result of an administrator-initiated invitation. Deliberately carries NO
+ * credential, setup token, or setup link — only the resolved actor (for audit
+ * attribution at the route layer), the normalized target, the outcome, and
+ * whether setup-link delivery succeeded.
+ */
+export interface AdminInviteResult {
+  actorEmail: string;
+  targetEmail: string;
+  status: 'invited' | 'already_active';
+  emailDelivered: boolean;
+}
+
 type LoginResult =
   | { session: AuthSession; user: DemoUser }
   | { challenge: 'NEW_PASSWORD_REQUIRED'; challengeName: 'NEW_PASSWORD_REQUIRED'; session: string; email: string };
@@ -616,6 +629,19 @@ export class DemoAuthService {
     };
   }
 
+  /**
+   * Server-authoritative administrator predicate — the SINGLE source of truth
+   * for "is this email an administrator": membership in the configured admin
+   * allowlist (ADMIN_MANUAL_PASSWORD_EMAILS). Both `assertAdminAccessToken`
+   * (route guards) and `resolveCapabilities` (the /capabilities contract) derive
+   * admin authority from here, so the UI capability and the enforced server
+   * boundary cannot drift. Never consults client-supplied role/headers/storage.
+   */
+  isAdminEmail(emailRaw: string | null | undefined): boolean {
+    const email = this.normalizeEmail(emailRaw ?? '');
+    return !!email && this.cfg.adminManualPasswordEmails.includes(email);
+  }
+
   async assertAdminAccessToken(actorAccessToken: string): Promise<string> {
     const accessToken = String(actorAccessToken || '').trim();
     if (!accessToken) {
@@ -624,12 +650,29 @@ export class DemoAuthService {
 
     const actor = await this.getCurrentUser(accessToken);
     const actorEmail = this.normalizeEmail(actor.email);
-    if (!this.cfg.adminManualPasswordEmails.includes(actorEmail)) {
+    if (!this.isAdminEmail(actorEmail)) {
       log.warn('auth.admin_access.forbidden', { actorEmail });
       throw new ApiError('forbidden', 'You do not have permission to manage user access.', 403);
     }
 
     return actorEmail;
+  }
+
+  /**
+   * Server-derived capability contract for the authenticated actor. Requires a
+   * valid access token — `getCurrentUser` throws 401 for a missing, malformed,
+   * expired, or revoked token. `manageUsers` is derived from the SAME server
+   * authority as the admin route guards (`isAdminEmail`), never from a
+   * client-supplied role, header, or browser-stored value. Exposes no admin
+   * allowlist contents and no Cognito subject.
+   */
+  async resolveCapabilities(actorAccessToken: string): Promise<{ manageUsers: boolean }> {
+    const accessToken = String(actorAccessToken || '').trim();
+    if (!accessToken) {
+      throw new ApiError('auth_error', 'Not authenticated.', 401);
+    }
+    const actor = await this.getCurrentUser(accessToken);
+    return { manageUsers: this.isAdminEmail(actor.email) };
   }
 
   async forgotPassword(emailRaw: string): Promise<{ message: string }> {
@@ -798,6 +841,78 @@ export class DemoAuthService {
     });
 
     return { message: 'Access granted successfully.' };
+  }
+
+  /**
+   * Administrator-only user invitation. Distinct from the unauthenticated,
+   * self-service `registerRequest` path: the caller MUST present a valid admin
+   * access token, the administrator actor is derived from that token (never from
+   * the request body), and the target email is only the invitation target. The
+   * Cognito user is created idempotently and a pending_setup registration is
+   * written, then the approved setup-link is sent via the existing SES mechanism
+   * (best-effort). This method NEVER returns a setup token, setup link, or any
+   * credential. Email normalization is trim+lowercase only, so a plus-tagged
+   * address (e.g. `robertp+phase7uat@…`) stays distinct from the base address
+   * (`robertp@…`) — no identity collapse. An already-active account is not
+   * re-provisioned and no duplicate canonical user is created.
+   */
+  async adminInviteUser(actorAccessToken: string, targetEmailRaw: string): Promise<AdminInviteResult> {
+    const actorEmail = await this.assertAdminAccessToken(actorAccessToken);
+    const targetEmail = this.normalizeEmail(targetEmailRaw);
+    if (!targetEmail || !targetEmail.includes('@')) {
+      throw new ApiError('validation_error', 'Please enter a valid user email address.', 400);
+    }
+    this.assertNotProtectedAuthEmail(actorEmail, targetEmail, 'admin_invite');
+
+    const existing = await this.getRegistration(targetEmail);
+    if (existing?.status === 'active') {
+      // Idempotent: an already-active account is neither re-invited nor
+      // duplicated. Report the existing state so the caller can surface a
+      // conflict-style message.
+      log.info('auth.admin_invite.already_active', { actorEmail, targetEmail });
+      return { actorEmail, targetEmail, status: 'already_active', emailDelivered: false };
+    }
+
+    const now = this.nowIso();
+    const { token, tokenHash, expiresAt } = this.generateSetupToken();
+    if (existing?.setupTokenHash) {
+      await this.deleteToken(existing.setupTokenHash);
+    }
+
+    await this.ensureCognitoUser(targetEmail);
+
+    const record: RegistrationRecord = {
+      ...(existing?.pk ? existing : this.registrationKey(targetEmail)),
+      email: targetEmail,
+      emailDomain: this.emailDomain(targetEmail),
+      cognitoUsername: targetEmail,
+      status: 'pending_setup',
+      setupTokenHash: tokenHash,
+      setupTokenExpiresAt: expiresAt,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      approvedAt: existing?.approvedAt ?? now,
+      approvedBy: actorEmail,
+    };
+    await this.writeRegistration(record);
+    await this.writeTokenRecord(tokenHash, targetEmail, now, expiresAt);
+
+    let emailDelivered = false;
+    try {
+      await this.sendSetupEmail(targetEmail, token);
+      emailDelivered = true;
+    } catch (sesErr) {
+      // Delivery may be unavailable (e.g. SES not yet approved for this account).
+      // The invitation still stands as pending_setup; never surface the token/link.
+      log.warn('auth.admin_invite.email_send_failed', {
+        actorEmail,
+        targetEmail,
+        errCode: String((sesErr as { name?: string; code?: string })?.name || (sesErr as { code?: string })?.code || 'unknown'),
+      });
+    }
+
+    log.info('auth.admin_invite.success', { actorEmail, targetEmail, emailDelivered });
+    return { actorEmail, targetEmail, status: 'invited', emailDelivered };
   }
 
   async verifyRegistration(emailRaw: string, sfOrgIdRaw: string): Promise<{

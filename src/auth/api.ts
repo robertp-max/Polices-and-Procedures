@@ -41,6 +41,18 @@ export interface VerifyRegistrationResponse {
   };
 }
 
+export interface CapabilitiesResponse {
+  authenticated: boolean;
+  authorization: { capabilities: { manageUsers: boolean } };
+}
+
+export interface AdminInviteResponse {
+  status: 'invited' | 'already_active';
+  email: string;
+  emailDelivered: boolean;
+  message: string;
+}
+
 interface LoginResponse {
   session: AuthSession;
   user: DemoUser;
@@ -221,6 +233,23 @@ export const AuthApi = {
     return call('/me', {
       method: 'GET',
       headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  },
+
+  /** Server-authoritative capability contract for the authenticated actor. */
+  getCapabilities(accessToken: string): Promise<CapabilitiesResponse> {
+    return call('/capabilities', {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /** Administrator-only user invitation. Requires an admin access token. */
+  adminInviteUser(accessToken: string, email: string): Promise<AdminInviteResponse> {
+    return call('/admin/users/invite', {
+      method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      body: JSON.stringify({ email }),
     });
   },
 

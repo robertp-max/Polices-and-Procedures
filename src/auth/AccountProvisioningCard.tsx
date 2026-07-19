@@ -68,9 +68,12 @@ export function AccountProvisioningCard() {
 
   async function handleInvite(event: FormEvent) {
     event.preventDefault();
+    // Administrator-only invitation. Uses the authenticated /admin/users/invite
+    // endpoint (verified admin actor, audited) — NOT the unauthenticated,
+    // domain-gated /register-request self-service path.
     await run('invite', async () => {
-      const result = await AuthApi.registerRequest(normalized);
-      return result.message || 'Invitation processed. The user will receive a setup link if the email is approved.';
+      const result = await AuthApi.adminInviteUser(requireToken(), normalized);
+      return result.message || 'Invitation processed. The user will receive a setup link.';
     });
   }
 

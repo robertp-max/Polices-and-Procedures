@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import {
   BadgeCheck,
   ClipboardCheck,
@@ -32,7 +32,7 @@ import {
 } from '../../components';
 import { Button, FormField, Input, Select, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
-import { canManageAdminUsers } from '../../utils/adminRoleHelper';
+import { useManageUsersCapability } from '@/auth/useAdminCapabilities';
 import { cx } from '../../utils/classNames';
 import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabInactiveClass } from './workspaceTabChrome';
 
@@ -250,6 +250,7 @@ type UserPanelTabId = (typeof userPanelTabs)[number]['id'];
 
 export function AdminUsersScreen() {
   const { user: authUser } = useAuth();
+  const { state: capabilityState, manageUsers, refetch: refetchCapability } = useManageUsersCapability();
   const users = useUserAssignmentsStore(s => s.users);
   const assignments = useUserAssignmentsStore(s => s.assignments);
   const setupAssignments = useUserAssignmentsStore(s => s.setupAssignments);
@@ -612,27 +613,57 @@ export function AdminUsersScreen() {
 
   const fieldClass = 'grid gap-md tablet-l:grid-cols-2';
 
-  // Soft demo gate — AuthProvider always returns Administrator until Phase 2F.
-  // Placed after all hooks to satisfy rules-of-hooks.
-  if (!canManageAdminUsers(authUser)) {
-    return (
-      <section
-        className="grid gap-xl"
-        data-group="Admin"
-        data-hash-id="admin-users"
-        data-route="/admin/users"
-        data-template="matrix"
-      >
-        <div className="rounded-2xl border border-hairline bg-white p-8 text-center">
-          <h1 className="text-xl font-medium text-ink mb-2">Access denied</h1>
-          <p className="text-sm text-muted">
-            Only administrators can manage the demo user directory.
-          </p>
-          <p className="text-xs text-muted mt-4">
-            Demo gate via role string — not a production security boundary (Phase 2F).
-          </p>
-        </div>
-      </section>
+  // Server-authoritative capability gate (COG). `manageUsers` is derived from
+  // the SAME server authority as the protected admin endpoints (never a
+  // client-side role string), so an authenticated Cognito administrator is
+  // correctly allowed while ordinary users are denied. Enforcement still happens
+  // server-side on every mutation; this only decides what to render. Placed
+  // after all hooks to satisfy rules-of-hooks.
+  const gateShell = (children: ReactNode) => (
+    <section
+      className="grid gap-xl"
+      data-group="Admin"
+      data-hash-id="admin-users"
+      data-route="/admin/users"
+      data-template="matrix"
+    >
+      <div className="rounded-2xl border border-hairline bg-white p-8 text-center">{children}</div>
+    </section>
+  );
+
+  if (capabilityState === 'idle' || capabilityState === 'loading') {
+    return gateShell(
+      <>
+        <h1 className="text-xl font-medium text-ink mb-2">Checking access…</h1>
+        <p className="text-sm text-muted">Verifying your administrator permissions.</p>
+      </>,
+    );
+  }
+
+  if (capabilityState === 'error') {
+    return gateShell(
+      <>
+        <h1 className="text-xl font-medium text-ink mb-2">Couldn’t verify access</h1>
+        <p className="text-sm text-muted mb-4">
+          We couldn’t confirm your administrator permissions. This is not a grant of access — please retry.
+        </p>
+        <button
+          type="button"
+          className="inline-flex min-h-tap items-center rounded-2xl border border-tone-teal-border bg-tone-teal-bg px-lg text-xs font-medium uppercase tracking-tag text-ink hover:bg-surface-hover"
+          onClick={refetchCapability}
+        >
+          Retry
+        </button>
+      </>,
+    );
+  }
+
+  if (!manageUsers) {
+    return gateShell(
+      <>
+        <h1 className="text-xl font-medium text-ink mb-2">Access denied</h1>
+        <p className="text-sm text-muted">You need administrator permissions to manage users.</p>
+      </>,
     );
   }
 

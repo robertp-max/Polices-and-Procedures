@@ -1,5 +1,8 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { ApiError } from '../errors.js';
+import { log } from '../logger.js';
+import { appendEvent } from '../audit/writer.js';
+import { buildInviteAuditEvent } from '../auth/inviteAudit.js';
 import { buildDemoAuthServiceFromEnv } from '../auth/service.js';
 import {
   getAllowlistStatus,
@@ -278,6 +281,55 @@ authRouter.post('/logout', asyncHandler(async (req, res) => {
   const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
   await service.logout(accessToken);
   res.status(204).end();
+}));
+
+// ─── Server-authoritative capability contract ────────────────────────────────
+// Display/navigation authority for the authenticated actor. Enforcement still
+// happens on each protected endpoint; this only tells the UI what to render.
+
+authRouter.get('/capabilities', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  if (!accessToken) {
+    throw new ApiError('auth_error', 'Not authenticated.', 401);
+  }
+  const capabilities = await service.resolveCapabilities(accessToken);
+  res.json({ authenticated: true, authorization: { capabilities } });
+}));
+
+// ─── Administrator-only user invitation (authenticated; actor from token) ─────
+// Distinct from the unauthenticated legacy /register-request. The admin actor is
+// derived from the verified token, and the action is audited. Never returns a
+// setup token or link.
+
+authRouter.post('/admin/users/invite', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  const email = String(req.body?.email || '');
+  const result = await service.adminInviteUser(accessToken, email);
+
+  // Audit the administrator-attributed action. The actor comes from the verified
+  // token (adminInviteUser → assertAdminAccessToken), never the request body.
+  // No credential, setup token, or link is recorded.
+  const correlationId = req.header('x-correlation-id') || req.header('x-request-id') || undefined;
+  try {
+    await appendEvent(buildInviteAuditEvent(result, correlationId));
+  } catch (auditErr) {
+    log.warn('auth.admin_invite.audit_write_failed', {
+      actorEmail: result.actorEmail,
+      targetEmail: result.targetEmail,
+      errMessage: (auditErr as Error)?.message || 'unknown',
+    });
+  }
+
+  const message = result.status === 'already_active'
+    ? 'An active account already exists for that email.'
+    : (result.emailDelivered
+      ? 'Invitation sent. The user will receive a setup link to finish creating their account.'
+      : 'Invitation created. Setup-link delivery is pending; re-invite once delivery is available.');
+  res.json({ status: result.status, email: result.targetEmail, emailDelivered: result.emailDelivered, message });
 }));
 
 authRouter.get('/me', asyncHandler(async (req, res) => {
