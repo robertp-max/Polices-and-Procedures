@@ -14,7 +14,6 @@ import {
   Award,
   CheckCircle2,
   AlertTriangle,
-  CircleAlert,
   BookOpenCheck,
   ListChecks,
   Play,
@@ -164,93 +163,6 @@ function MediaSlot({ appLocation, sceneTitle, className = '' }: { appLocation: s
   );
 }
 
-export function LessonVisualWorkspace({
-  currentCard,
-  mediaTitle,
-  useGaoLvnShell = false,
-}: {
-  currentCard: any;
-  mediaTitle: string;
-  useGaoLvnShell?: boolean;
-}) {
-  return (
-    <div
-      className={`flex min-h-0 h-full w-full flex-1 flex-col overflow-hidden ${
-        useGaoLvnShell
-          ? 'rounded-none border-0 bg-[#F8FAFC]'
-          : /^GAO-001_L\d+_DELIVERY$/.test(currentCard.card_id)
-          ? 'rounded-none border-0 bg-black'
-          : 'rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8]'
-      }`}
-    >
-      {currentCard.card_id === 'GAO-001_L1_DELIVERY' ? (
-        <GAO001Scene01WelcomeDesk
-          onComplete={() => console.info('[GAO-001 Scene 1] completed')}
-        />
-      ) : currentCard.card_id === 'GAO-001_L2_DELIVERY' ? (
-        <GAO001Scene02MissionBriefing
-          onComplete={() => console.info('[GAO-001 Scene 2] completed')}
-        />
-      ) : currentCard.card_id === 'GAO-001_L3_DELIVERY' ? (
-        <GAO001Scene03VisionPillars
-          onComplete={() => console.info('[GAO-001 Scene 3] completed')}
-        />
-      ) : currentCard.card_id === 'GAO-001_L4_DELIVERY' ? (
-        <CoreValuesInteractiveViewer
-          onComplete={() => {
-            console.info('[GAO Core Values] Interactive scene completed');
-          }}
-        />
-      ) : currentCard.card_id === 'GAO-001_L5_DELIVERY' ? (
-        <GAO001Scene05HomeHealthDifference
-          onComplete={() => console.info('[GAO-001 Scene 5] completed')}
-        />
-      ) : currentCard.card_id === 'GAO-001_L6_DELIVERY' ? (
-        <GAO001Scene06ReportingEscalation
-          onComplete={() => console.info('[GAO-001 Scene 6] completed')}
-        />
-      ) : currentCard.card_id === 'GAO-001_L7_DELIVERY' ? (
-        <GAO001Scene07PatientRefusal
-          onComplete={() => console.info('[GAO-001 Scene 7] completed')}
-        />
-      ) : currentCard.card_id === 'GAO-001_L8_DELIVERY' ? (
-        <GAO001Scene08EscalationPractice
-          onComplete={() => console.info('[GAO-001 Scene 8] completed')}
-        />
-      ) : currentCard.card_id === 'GAO-001_L9_DELIVERY' ? (
-        <GAO001Scene09ReadinessMap
-          onComplete={() => console.info('[GAO-001 Scene 9] completed')}
-        />
-      ) : hasMedia(currentCard.app.location) ? (
-        <MediaSlot
-          appLocation={currentCard.app.location}
-          sceneTitle={mediaTitle}
-          className="h-full"
-        />
-      ) : (
-        <>
-          <div className="flex-1 flex items-center justify-center w-full p-6">
-            <div className="text-center z-10 flex flex-col items-center">
-              <svg className="w-20 h-20 text-[#007970] mb-6" fill="currentColor" viewBox="0 0 24 24" stroke="none">
-                <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3ZM5 5H19V19H5V5Z" fill="currentColor"/>
-                <path d="M8.5 11.5C9.88071 11.5 11 10.3807 11 9C11 7.61929 9.88071 6.5 8.5 6.5C7.11929 6.5 6 7.61929 6 9C6 10.3807 7.11929 11.5 8.5 11.5Z" fill="currentColor"/>
-                <path d="M5.5 18L10.5 12L13 14.5L16 11L18.5 14V18H5.5Z" fill="currentColor"/>
-              </svg>
-              <h2 className="text-xl font-semibold tracking-[0.08em] text-[#007970] uppercase">{mediaTitle}</h2>
-            </div>
-          </div>
-
-          <div className="bg-[#E5FEFF] w-full py-2.5 text-center border-t border-[#C4F4F5]">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#747470]">
-              Training Visual &bull; No PHI
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
 function isCareIndeedOnboardingModule(moduleId?: string): boolean {
   if (!moduleId) return false;
   const id = moduleId.toUpperCase();
@@ -331,275 +243,11 @@ function OnboardingCoreValuesContent() {
   );
 }
 
-const onboardingLessonTemplates = [
-  { name: "clinical-compass", subtitle: "Knowing who reports to whom and when to escalate", greenLabel: "Federal Reporting Requirement", orangeLabel: "Clinical Boundary" },
-  { name: "survey-ready", subtitle: "Recognizing accountability, authority, and survey risk", greenLabel: "Federal Requirement", orangeLabel: "Survey Readiness Rule" },
-  { name: "authority-map", subtitle: "Following the correct path for direction and decisions", greenLabel: "Authority Requirement", orangeLabel: "Chain of Command" },
-  { name: "field-escalation", subtitle: "Documenting concerns and routing them to the right role", greenLabel: "Compliance Requirement", orangeLabel: "Escalation Boundary" },
-  { name: "role-clarity", subtitle: "Understanding responsibilities before action is needed", greenLabel: "Role Requirement", orangeLabel: "Practice Boundary" },
-  { name: "operations-brief", subtitle: "Connecting daily work to agency oversight", greenLabel: "Operational Requirement", orangeLabel: "Accountability Rule" },
-  { name: "patient-safety", subtitle: "Protecting patient safety through clear reporting lines", greenLabel: "Patient Safety Requirement", orangeLabel: "Immediate Action Rule" },
-  { name: "policy-lens", subtitle: "Applying policy expectations in real situations", greenLabel: "Policy Requirement", orangeLabel: "Documentation Boundary" },
-  { name: "leadership-path", subtitle: "Identifying leaders, supervisors, and escalation routes", greenLabel: "Leadership Requirement", orangeLabel: "Reporting Boundary" },
-  { name: "quick-reference", subtitle: "Remembering the rule, the risk, and the next step", greenLabel: "Core Requirement", orangeLabel: "Key Boundary" },
-];
-
-function stableTemplateIndex(seed: string, count: number): number {
-  let hash = 0;
-  for (let index = 0; index < seed.length; index += 1) {
-    hash = (hash * 31 + seed.charCodeAt(index)) >>> 0;
-  }
-  return hash % count;
-}
-
-function decodeLessonText(text: string): string {
-  return text
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, "\"")
-    .replace(/&#39;/g, "'")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function stripLessonTags(text: string): string {
-  return decodeLessonText(text.replace(/<[^>]*>/g, " "));
-}
-
-function splitLessonSentences(text: string): string[] {
-  return stripLessonTags(text)
-    .split(/(?<=[.!?])\s+(?=[A-Z0-9"'])/)
-    .map((sentence) => sentence.trim())
-    .filter(Boolean);
-}
-
-function chunkLessonSentences(sentences: string[], targetWords = 58): string[] {
-  const chunks: string[] = [];
-  let current: string[] = [];
-  let words = 0;
-  sentences.forEach((sentence) => {
-    const sentenceWords = sentence.split(/\s+/).filter(Boolean).length;
-    if (current.length > 0 && words + sentenceWords > targetWords) {
-      chunks.push(current.join(" "));
-      current = [];
-      words = 0;
-    }
-    current.push(sentence);
-    words += sentenceWords;
-  });
-  if (current.length > 0) chunks.push(current.join(" "));
-  return chunks;
-}
-
-function splitTitleForGradient(title: string): { lead: string; highlight: string } {
-  const slashParts = title.split(/\s+\/\s+/).map((part) => part.trim()).filter(Boolean);
-  if (slashParts.length === 2 && slashParts[1].length <= 4) {
-    return { lead: `${slashParts[0]} /`, highlight: slashParts[1] };
-  }
-
-  const dashParts = title.split(/\s+[—-]\s+/).map((part) => part.trim()).filter(Boolean);
-  if (dashParts.length > 1) {
-    return { lead: `${dashParts[0]} —`, highlight: dashParts.slice(1).join(" — ") };
-  }
-
-  const words = title.split(/\s+/).filter(Boolean);
-  if (words.length <= 3) {
-    return { lead: title, highlight: "" };
-  }
-
-  const highlightLength = words.length > 6 ? 3 : 2;
-  return {
-    lead: words.slice(0, -highlightLength).join(" "),
-    highlight: words.slice(-highlightLength).join(" "),
-  };
-}
-
-function emphasizeLessonText(text: string): React.ReactNode {
-  const patterns = [
-    /\b(must|never|only|cannot|required|required by law|not optional|immediately|directly|document|report|escalate|protect)\b/gi,
-    /\b(42\s*CFR\s*(?:Section\s*)?[\d.()a-z-]+)\b/gi,
-  ];
-
-  let fragments: Array<string | React.ReactElement> = [text];
-  patterns.forEach((pattern) => {
-    fragments = fragments.flatMap((fragment) => {
-      if (typeof fragment !== "string") return [fragment];
-      const parts = fragment.split(pattern);
-      return parts.map((part, index) => {
-        const isMatch = index % 2 === 1;
-        if (!isMatch) return part;
-        return (
-          <span key={`${part}-${index}`} className="font-bold text-slate-800">
-            {part}
-          </span>
-        );
-      });
-    });
-  });
-
-  return fragments;
-}
-
-function titleCaseVisualSlug(slug: string): string {
-  const acronymMap: Record<string, string> = {
-    cms: "CMS",
-    cfr: "CFR",
-    don: "DON",
-    gao: "GAO",
-    hha: "HHA",
-    lvn: "LVN",
-    oig: "OIG",
-    phi: "PHI",
-    qapi: "QAPI",
-    rn: "RN",
-  };
-
-  const words = slug.split("-").filter(Boolean);
-  if (words.length >= 3 && words.at(-3) === "clinical" && words.at(-2) === "manager" && words.at(-1) === "don") {
-    return "Clinical Manager / DON";
-  }
-
-  return words
-    .map((word) => acronymMap[word.toLowerCase()] || `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
-    .join(" ");
-}
-
-function visualTitleFromMediaAsset(appLocation: string, fallbackTitle: string): string {
-  const assetPath = mediaAssetPath(appLocation);
-  const fileName = assetPath.split(/[\\/]/).pop() || "";
-  const slug = fileName
-    .replace(/\.(png|jpe?g|webp|gif|mp4|webm|mov)$/i, "")
-    .replace(/^gao-\d{3}-l\d{2}-/i, "");
-
-  if (!slug || slug === fileName) return fallbackTitle;
-  return titleCaseVisualSlug(slug);
-}
-
-function parseOnboardingHtml(html: string, fallbackTitle: string) {
-  const titleMatch = html.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
-  const parsedTitle = titleMatch ? stripLessonTags(titleMatch[1]) : fallbackTitle;
-  const withoutTitle = titleMatch ? html.replace(titleMatch[0], "") : html;
-  const listItems = Array.from(withoutTitle.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)).map((match) => stripLessonTags(match[1]));
-  const paragraphSources = Array.from(withoutTitle.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)).map((match) => match[1]);
-  const sectionSources = Array.from(withoutTitle.matchAll(/<section[^>]*>([\s\S]*?)<\/section>/gi)).map((match) => match[1]);
-  const blockSources = paragraphSources.length > 0 ? paragraphSources : sectionSources;
-  const sentences = blockSources.flatMap(splitLessonSentences);
-  const chunks = chunkLessonSentences(sentences);
-  const regulatoryIndex = chunks.findIndex((chunk) => /42\s*CFR|must|required|not optional|survey|deficien|condition of participation|compliance|risk/i.test(chunk));
-  const callout = regulatoryIndex >= 0 ? chunks.splice(regulatoryIndex, 1)[0] : undefined;
-  const secondaryIndex = chunks.findIndex((chunk) => /do not|never|must|report|document|escalat|protect/i.test(chunk));
-  const secondaryCallout = secondaryIndex >= 0 ? chunks.splice(secondaryIndex, 1)[0] : undefined;
-  return { title: parsedTitle, chunks, listItems, callout, secondaryCallout };
-}
-
-function OnboardingLessonHtml({
-  card,
-  useTemplateSet = false,
-  visualTitle,
-}: {
-  card: any;
-  useTemplateSet?: boolean;
-  visualTitle?: string;
-}) {
+function OnboardingLessonHtml({ card }: { card: any }) {
   const title = String(card?.display_title || "");
   const html = String(card?.learner_facing_content || "");
   if (/core values/i.test(title) || /Our Core Values/i.test(html)) {
     return <OnboardingCoreValuesContent />;
-  }
-  if (useTemplateSet) {
-    const seed = `${card?.module_id || ""}:${card?.lesson_id || ""}:${card?.card_id || ""}`;
-    const template = onboardingLessonTemplates[stableTemplateIndex(seed, onboardingLessonTemplates.length)];
-    const parsed = parseOnboardingHtml(html, title);
-    const titleParts = splitTitleForGradient(visualTitle || parsed.title);
-    const emphasisChunk = parsed.chunks[1];
-    const regularChunks = parsed.chunks.filter((_, index) => index !== 1);
-    return (
-      <div className="max-w-[95%]" data-lesson-template={template.name}>
-        <div className="stagger-1">
-          <h1 className="text-[40px] font-extrabold text-[#064e3b] mb-4 tracking-tight leading-[1.1]">
-            {titleParts.lead}
-            {titleParts.highlight && (
-              <>
-                <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0f766e] to-[#047857]">
-                  {titleParts.highlight}
-                </span>
-              </>
-            )}
-          </h1>
-          <p className="text-[#ea580c] font-bold text-[17px] mb-8 tracking-wide flex items-center">
-            <CircleAlert size={20} className="mr-2 opacity-80" />
-            {template.subtitle}
-          </p>
-        </div>
-
-        <div className="space-y-6 text-slate-600 text-[16px] leading-[1.8] mb-10 pr-4 stagger-2 font-medium">
-          {regularChunks.slice(0, 2).map((chunk, index) => (
-            <p key={`intro-${index}`}>
-              {emphasizeLessonText(chunk)}
-            </p>
-          ))}
-
-          {emphasisChunk && (
-            <div className="p-5 bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-2xl text-slate-700 relative overflow-hidden">
-              <div className="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-[#ea580c] to-[#c2410c]" />
-              <span>{emphasizeLessonText(emphasisChunk)}</span>
-            </div>
-          )}
-
-          {regularChunks.slice(2).map((chunk, index) => (
-            <p key={`body-${index}`}>
-              {emphasizeLessonText(chunk)}
-            </p>
-          ))}
-        </div>
-
-        <div className="space-y-5 mb-8">
-          {(parsed.callout || parsed.chunks[0]) && (
-            <div className="stagger-3 group">
-              <div className="bg-gradient-to-br from-[#f0fdf4] to-white border border-[#bbf7d0] rounded-[1.25rem] p-5 flex items-start space-x-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                <div className="bg-white p-2.5 rounded-2xl text-[#16a34a] shadow-[0_4px_10px_rgba(22,163,74,0.15)] shrink-0 group-hover:scale-110 transition-transform duration-300">
-                  <ShieldCheck size={22} strokeWidth={2.5} />
-                </div>
-                <div>
-                  <h4 className="font-bold text-[#166534] text-[13px] tracking-wider mb-1.5 uppercase">{template.greenLabel}</h4>
-                  <p className="text-[14.5px] text-[#15803d] leading-relaxed font-medium">
-                    {emphasizeLessonText(parsed.callout || parsed.chunks[0])}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {(parsed.secondaryCallout || emphasisChunk) && (
-            <div className="stagger-4 group">
-              <div className="bg-gradient-to-br from-[#fff7ed] to-white border border-[#fed7aa] rounded-[1.25rem] p-5 flex items-start space-x-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                <div className="bg-white p-2.5 rounded-2xl text-[#ea580c] shadow-[0_4px_10px_rgba(234,88,12,0.15)] shrink-0 group-hover:scale-110 transition-transform duration-300">
-                  <CircleAlert size={22} strokeWidth={2.5} />
-                </div>
-                <div>
-                  <h4 className="font-bold text-[#9a3412] text-[13px] tracking-wider mb-1.5 uppercase">{template.orangeLabel}</h4>
-                  <p className="text-[14.5px] text-[#c2410c] leading-relaxed font-medium">
-                    {emphasizeLessonText(parsed.secondaryCallout || emphasisChunk)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {parsed.listItems.length > 0 && (
-            <ul className="grid gap-3 stagger-5">
-              {parsed.listItems.map((item) => (
-                <li key={item} className="rounded-[1.25rem] border border-slate-100 bg-white px-5 py-4 text-[15px] font-semibold leading-relaxed text-slate-600 shadow-sm">
-                  {emphasizeLessonText(item)}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
-    );
   }
   return (
     <div
@@ -1488,10 +1136,8 @@ function LessonPlayerPage() {
     const mediaTitle = currentCard.media_prompt_placeholder?.scene_title || currentCard.display_title || lesson.title;
     const canMovePrevious = currentIdx > 0 || Boolean(prevLesson);
     const textFirstGaoModule = isGAOTextFirstModule(moduleId);
-    const useGaoLvnShell = textFirstGaoModule;
-    const leftPanelTitle = useGaoLvnShell
-      ? visualTitleFromMediaAsset(currentCard.app.location, currentCard.display_title || lesson.title)
-      : undefined;
+    const useGao002LvnShell = moduleId.toUpperCase() === 'GAO-002';
+    const usesFinalGaoOverlay = /^GAO-(00[6-9]|01\d|02[0-7])$/i.test(moduleId);
 
     return (
       <div className="fixed inset-0 z-[9998] flex flex-col text-[#1F1C1B]" style={onboardingDotBg}>
@@ -1517,11 +1163,11 @@ function LessonPlayerPage() {
 
         <header
           className={`shrink-0 border-b border-[#E5E4E3] bg-white/96 shadow-[0_8px_28px_rgba(31,28,27,0.05)] ${
-            useGaoLvnShell ? 'flex h-16 items-center px-6 py-0' : 'px-4 py-3 md:px-6'
+            useGao002LvnShell ? 'flex h-16 items-center px-6 py-0' : 'px-4 py-3 md:px-6'
           }`}
         >
-          <div className={`${useGaoLvnShell ? 'flex w-full min-w-0 items-center gap-4' : 'flex flex-col gap-3 lg:flex-row lg:items-center'}`}>
-            {textFirstGaoModule && !useGaoLvnShell && (
+          <div className={`${useGao002LvnShell ? 'flex w-full min-w-0 items-center gap-4' : 'flex flex-col gap-3 lg:flex-row lg:items-center'}`}>
+            {textFirstGaoModule && !useGao002LvnShell && (
               <div className="min-w-[260px]">
                 <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#007970]">{moduleId}</div>
                 <h1 className="truncate text-lg font-bold leading-tight text-[#004142]">{moduleDef?.title || lesson.title}</h1>
@@ -1564,51 +1210,61 @@ function LessonPlayerPage() {
         {/* GAO-002+ keeps the same right-side visual workspace while using the markdown lesson copy. */}
         <main
           className={
-            useGaoLvnShell
-              ? 'flex min-h-0 flex-1 flex-col overflow-y-auto bg-[#FAFBF8] lg:flex-row lg:overflow-hidden'
+            useGao002LvnShell
+              ? 'flex min-h-0 flex-1 overflow-hidden bg-[#FAFBF8]'
               : 'flex min-h-0 flex-1 flex-col gap-[20px] p-0 lg:flex-row lg:items-stretch'
           }
         >
           <aside
             className={`flex min-h-0 min-w-0 flex-col bg-white ${
-              useGaoLvnShell
-                ? 'w-full flex-none overflow-visible border-r border-[#E5E4E3] px-8 py-8 shadow-none lg:h-full lg:flex-1 lg:overflow-y-auto'
+              useGao002LvnShell
+                ? 'h-full flex-1 overflow-y-auto border-r border-[#E5E4E3] px-8 py-8 shadow-none'
                 : `flex-1 border border-[#E5E4E3] shadow-[0_18px_50px_rgba(31,28,27,0.08)] ${
                     textFirstGaoModule ? 'rounded-none p-7 md:p-9' : 'rounded-[22px] p-[20px]'
                   }`
             }`}
             style={
-              useGaoLvnShell
-                ? { minWidth: 0 }
+              useGao002LvnShell
+                ? { minWidth: 0, flex: '1 1 0%' }
                 : textFirstGaoModule
                 ? { minWidth: 0, flex: '1 1 0%' }
                 : { minWidth: 'calc(420px * 1.0777)', flex: '1 1 auto' }
             }
           >
             {/* Narration tab removed for all onboarding scenes — main audio is the footer play button only */}
-            {!useGaoLvnShell && (
-              <div className="mb-3">
-                <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#007970]">
-                  Content
-                </div>
+            <div className="mb-3">
+              <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#007970]">
+                Content
               </div>
-            )}
+            </div>
 
             <div className="min-h-0 flex-1 overflow-auto pr-1">
-              <OnboardingLessonHtml card={currentCard} useTemplateSet={useGaoLvnShell} visualTitle={leftPanelTitle} />
+              <OnboardingLessonHtml card={currentCard} />
             </div>
           </aside>
 
           <section
             className={`flex min-h-0 flex-col bg-white ${
-              useGaoLvnShell
-                ? 'w-full flex-none overflow-hidden rounded-none border-l border-[#E5E4E3] p-0 shadow-none lg:h-full lg:w-auto'
+              useGao002LvnShell
+                ? 'h-full overflow-hidden rounded-none border-l border-[#E5E4E3] p-0 shadow-none'
+                : usesFinalGaoOverlay
+                ? 'w-full flex-none overflow-hidden rounded-[24px] border border-[#E5E4E3] bg-white p-0 shadow-[0_18px_50px_rgba(31,28,27,0.08)] lg:h-full lg:w-auto'
                 : /^GAO-001_L\d+_DELIVERY$/.test(currentCard.card_id)
                 ? 'rounded-none border-0 p-0 shadow-none overflow-hidden'
                 : 'rounded-[24px] border border-[#E5E4E3] p-[20px] shadow-[0_18px_50px_rgba(31,28,27,0.08)]'
             }`}
             style={
-              useGaoLvnShell
+              useGao002LvnShell
+                ? {
+                    flex: '0 0 auto',
+                    alignSelf: 'stretch',
+                    height: '100%',
+                    aspectRatio: '16 / 13',
+                    width: 'auto',
+                    maxWidth: '100%',
+                    minWidth: 0,
+                  }
+                : usesFinalGaoOverlay
                 ? {
                     aspectRatio: '16 / 13',
                     maxWidth: '100%',
@@ -1637,8 +1293,10 @@ function LessonPlayerPage() {
           >
             <div
               className={`flex min-h-0 h-full w-full flex-1 flex-col overflow-hidden ${
-                useGaoLvnShell
+                useGao002LvnShell
                   ? 'rounded-none border-0 bg-[#F8FAFC]'
+                  : usesFinalGaoOverlay
+                  ? 'rounded-[24px] border-0 bg-[#FAFBF8]'
                   : /^GAO-001_L\d+_DELIVERY$/.test(currentCard.card_id)
                   ? 'rounded-none border-0 bg-black'
                   : 'rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8]'
@@ -1717,7 +1375,7 @@ function LessonPlayerPage() {
 
         <footer
           className={`shrink-0 border-t border-[#E5E4E3] bg-white shadow-[0_-8px_28px_rgba(31,28,27,0.05)] ${
-            useGaoLvnShell ? 'flex h-24 items-center px-6 py-0' : 'px-4 py-4 md:px-6'
+            useGao002LvnShell ? 'flex h-24 items-center px-6 py-0' : 'px-4 py-4 md:px-6'
           }`}
         >
           <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">

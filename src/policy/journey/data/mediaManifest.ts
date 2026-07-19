@@ -1,10 +1,8 @@
 // Media asset manifest (visual readiness).
 //
-// No final media assets are generated for the MVP. Every card still gets a safe,
-// polished 16:9 placeholder ("Training Visual Placeholder" / "Visual Aid
-// Pending") with alt text — never an empty black box and never a broken-image
-// icon. `availableMedia` lists app.locations that have an approved image file on
-// disk; it stays empty until approved, PHI-free media is produced.
+// Approved, PHI-free lesson media is registered here by app.location. Lessons
+// without an approved asset continue to receive the standard visual placeholder
+// rather than an empty or broken media panel.
 
 export const MEDIA_ASSET_BASE = "/assets/media";
 
