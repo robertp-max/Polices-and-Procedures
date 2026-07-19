@@ -13,6 +13,22 @@ export type BradRuntimeMode = 'mock' | 'cli-nonphi' | 'oss-nonphi' | 'vertex-non
 export type NolanRuntimeMode = 'disabled' | 'mock' | 'vertex-public-web';
 export type BradProvider = 'mock' | 'claude' | 'codex' | 'vertex' | 'ollama';
 
+/* Runtime health of the SELECTED provider. `effectiveMode` still names the
+   provider mode that was chosen (e.g. 'oss-nonphi'); `runtimeStatus` says
+   whether that provider actually initialized. An explicitly-selected engine
+   that cannot initialize is 'configuration-error'/'unavailable' + failClosed —
+   it is NEVER relabeled 'mock' (no mock response is served; normal requests
+   throw). 'ready' means the selected provider validated available. */
+export type BradRuntimeStatus = 'ready' | 'configuration-error' | 'unavailable';
+
+/** Typed, safe diagnostic code for an unavailable/misconfigured engine. */
+export type BradDiagnosticCode =
+  | 'OK'
+  | 'ENGINE_UNREACHABLE'
+  | 'MODEL_NOT_PULLED'
+  | 'PROVIDER_MISMATCH'
+  | 'ENGINE_UNAVAILABLE';
+
 export type RuntimeBadge =
   | 'MVP Harness — Mock Data'
   | 'Claude CLI — PHI Disabled'

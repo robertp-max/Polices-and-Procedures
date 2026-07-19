@@ -81,11 +81,15 @@ export function createBradRouter(): Router {
     res.json({
       configuredMode: desc.configuredMode,
       effectiveMode: desc.effectiveMode,
+      runtimeStatus: desc.runtimeStatus,
       badge: desc.badge,
       phiPermitted: desc.phiPermitted,
       provider: desc.provider,
       modelId: desc.modelId,
       canReachInternet: rt.canReachInternet,
+      failClosed: desc.failClosed,
+      diagnosticCode: desc.diagnosticCode,
+      diagnosticReason: desc.diagnosticReason,
       nolanEnabled: desc.nolanEnabled,
     });
   }));

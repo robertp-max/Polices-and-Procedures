@@ -52,10 +52,17 @@ async function bradFetch<T>(path: string, init?: RequestInit): Promise<T> {
 export interface RuntimeInfo {
   configuredMode: string;
   effectiveMode: string;
+  /** Health of the selected provider — 'ready' | 'configuration-error' | 'unavailable'. */
+  runtimeStatus?: 'ready' | 'configuration-error' | 'unavailable';
   badge: string;
   phiPermitted: boolean;
+  provider?: string;
   modelId: string;
   canReachInternet: boolean;
+  /** True when a selected live engine could not initialize (requests fail closed). */
+  failClosed?: boolean;
+  diagnosticCode?: string;
+  diagnosticReason?: string;
   nolanEnabled: boolean;
 }
 

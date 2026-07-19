@@ -21,7 +21,7 @@ process.env.OLLAMA_TIMEOUT_MS = '3000';
 process.env.BRAD_SYNTHETIC_DATA_ONLY = 'true'; // avoid PHI-gate noise for benign prompts
 
 const { readHarnessConfig } = await import('../server/ia/harness/config.js');
-const { BradRuntime } = await import('../server/ia/harness/BradRuntime.js');
+const { BradRuntime, computeRuntimeDiagnostics, sanitizeDiagnosticReason } = await import('../server/ia/harness/BradRuntime.js');
 const { routeCriticalIncident } = await import('../server/ia/brad/criticalIncidentRouter.js');
 const { OllamaBradAdapter } = await import('../server/ia/harness/modelAdapters/OllamaBradAdapter.js');
 
@@ -54,6 +54,55 @@ add('diagnostics expose provider=ollama', desc.provider === 'ollama', `provider=
 add('diagnostics expose the OSS model id', desc.modelId === cfg.brad.ollamaChatModel, `modelId=${desc.modelId}`);
 add('unreachable engine → fail-closed badge (no silent live claim)',
   desc.badge === 'Configuration Error — Fail Closed', `badge=${desc.badge}`);
+
+// 3b) TYPED FAILURE DIAGNOSTICS — the unavailable engine is NEVER labeled 'mock'.
+//     (Live describe() here runs against the dead loopback URL.)
+add('unavailable engine keeps effectiveMode=oss-nonphi (NOT mock)',
+  desc.effectiveMode === 'oss-nonphi', `effectiveMode=${desc.effectiveMode}`);
+add('unavailable engine effectiveMode is never "mock"',
+  (desc.effectiveMode as string) !== 'mock');
+add('unavailable engine exposes typed runtimeStatus (unavailable|configuration-error)',
+  desc.runtimeStatus === 'unavailable' || desc.runtimeStatus === 'configuration-error', `runtimeStatus=${desc.runtimeStatus}`);
+add('unavailable engine declares failClosed=true', desc.failClosed === true, `failClosed=${desc.failClosed}`);
+add('unavailable engine exposes a typed diagnosticCode (not OK)',
+  !!desc.diagnosticCode && desc.diagnosticCode !== 'OK', `code=${desc.diagnosticCode}`);
+add('unavailable engine exposes a sanitized diagnosticReason', !!desc.diagnosticReason, desc.diagnosticReason);
+add('diagnostics expose canReachInternet=false', desc.canReachInternet === false);
+add('unavailable engine still names the model id (when known)',
+  desc.modelId === cfg.brad.ollamaChatModel, `modelId=${desc.modelId}`);
+
+// 3c) HEALTHY contract — proven via the PURE diagnostic derivation (no live
+//     Ollama needed): an available oss-nonphi selection reports ready.
+const healthy = computeRuntimeDiagnostics({
+  configuredMode: 'oss-nonphi', provider: 'ollama', available: true, reason: undefined, readinessReady: false,
+});
+add('healthy oss: effectiveMode=oss-nonphi', healthy.effectiveMode === 'oss-nonphi');
+add('healthy oss: runtimeStatus=ready', healthy.runtimeStatus === 'ready');
+add('healthy oss: badge=Open-Source (Ollama) — PHI Disabled',
+  healthy.badge === 'Open-Source (Ollama) — PHI Disabled');
+add('healthy oss: failClosed=false + diagnosticCode=OK',
+  healthy.failClosed === false && healthy.diagnosticCode === 'OK');
+
+// 3d) TYPED CLASSIFICATION of failure reasons + sanitization.
+const unreach = computeRuntimeDiagnostics({
+  configuredMode: 'oss-nonphi', provider: 'ollama', available: false,
+  reason: 'Ollama unreachable at http://127.0.0.1:1: fetch failed', readinessReady: false,
+});
+add('unreachable reason → runtimeStatus=unavailable + ENGINE_UNREACHABLE',
+  unreach.runtimeStatus === 'unavailable' && unreach.diagnosticCode === 'ENGINE_UNREACHABLE');
+add('unreachable case is NOT mock', unreach.effectiveMode === 'oss-nonphi');
+const notPulled = computeRuntimeDiagnostics({
+  configuredMode: 'oss-nonphi', provider: 'ollama', available: false,
+  reason: "Ollama chat model 'llama3.1:8b' is not pulled (available: qwen3:8b)", readinessReady: false,
+});
+add('model-not-pulled reason → configuration-error + MODEL_NOT_PULLED',
+  notPulled.runtimeStatus === 'configuration-error' && notPulled.diagnosticCode === 'MODEL_NOT_PULLED');
+const sanitized = sanitizeDiagnosticReason(
+  'boom Authorization: Bearer sk-secret-abc.def at C:\\Users\\razer\\secret\\key.ts:12:3',
+);
+add('diagnostic reason sanitizer redacts secrets, paths, and stack frames',
+  !!sanitized && !/sk-secret-abc\.def/.test(sanitized) && !/key\.ts:12:3/.test(sanitized) && /redacted/i.test(sanitized),
+  sanitized);
 
 // 4) Adapter-level fail-closed: wrong provider + unreachable both refuse.
 const adapter = new OllamaBradAdapter(cfg.brad);
