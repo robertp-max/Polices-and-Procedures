@@ -10,6 +10,7 @@ import {
 import { dedupePlannerEvents } from '../cesCalendarDedup.js';
 import { ApiError } from '../errors.js';
 import { log } from '../logger.js';
+import { isDemoIdentityRuntime, verifiedActor } from '../auth/verifiedSignerIdentity.js';
 import type { PlannerEventPayload } from '../mappers.js';
 import {
   syncEvent, syncEvents, deleteSyncedEvent, cleanupDuplicates,
@@ -996,9 +997,16 @@ function validatePayload(raw: unknown): PlannerEventPayload {
 }
 
 function resolveActor(req: Request): string {
-  return (req.header('x-actor')
-       ?? req.header('x-user-id')
-       ?? 'service-account');
+  // Security containment (ADR-0002 Phase 1): evidence/workflow actor attribution
+  // comes from the SERVER-VERIFIED canonical actor, never client-supplied
+  // x-actor/x-user-id headers. Header fallback is honored only in an explicit
+  // local demo runtime; otherwise attribute to the service account.
+  const verified = verifiedActor(req);
+  if (verified?.user_id) return verified.user_id;
+  if (isDemoIdentityRuntime()) {
+    return (req.header('x-actor') ?? req.header('x-user-id') ?? 'service-account');
+  }
+  return 'service-account';
 }
 
 function strOrEmpty(v: unknown): string {

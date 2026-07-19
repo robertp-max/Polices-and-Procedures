@@ -28,35 +28,68 @@ import {
   type ProductionSignerTier,
   type SignatureCompletion,
 } from '../../src/policy/ecign/signerAuthority.ts';
+import {
+  isDemoIdentityRuntime,
+  verifiedActor,
+  signerFromVerifiedActor,
+  requiredSignersMissing,
+} from '../auth/verifiedSignerIdentity.js';
 
 export const ecignRouter: Router = Router();
 
-// ── Demo session middleware ────────────────────────────────────────────────
-// In production replace with real auth. Fail-closed: requires X-User header.
+// ── Signer identity middleware (security containment, ADR-0002 Phase 1) ──────
+// Identity is the SERVER-VERIFIED canonical actor (req.actor, populated by the
+// requireApiAuth boundary this router is mounted behind) — never client-supplied
+// x-user-* headers. Signer tier is least-privilege (never defaulted to a
+// privileged value); MFA is recorded truthfully. Client identity headers are
+// honored ONLY in an explicitly opted-in local demo runtime. If a verified actor
+// cannot be derived in a non-demo runtime, the signing surface is unavailable.
 interface SessionUser { user_id: string; name: string; role: string; email: string; tier: number; authorityDomains: AuthorityDomain[] }
 declare module 'express-serve-static-core' {
-  interface Request { user?: SessionUser; mfaToken?: string }
+  interface Request { user?: SessionUser; mfaVerified?: boolean }
 }
 
 ecignRouter.use((req, _res, next) => {
-  const uid = req.header('x-user-id');
-  if (!uid) return next(new ApiError('auth_error', 'NOT_AUTHENTICATED', 401));
-  req.user = {
-    user_id: uid,
-    name:    req.header('x-user-name')  ?? uid,
-    role:    req.header('x-user-role')  ?? 'unknown',
-    email:   req.header('x-user-email') ?? `${uid}@careindeed.com`,
-    tier:    Number(req.header('x-user-tier') ?? 4),
-    authorityDomains: parseAuthorityDomains(req.header('x-user-authority-domains')),
-  };
-  req.mfaToken = req.header('x-mfa-token') ?? undefined;
-  next();
+  const actor = verifiedActor(req);
+  if (actor) {
+    const signer = signerFromVerifiedActor(actor);
+    req.user = {
+      user_id: signer.user_id,
+      name: signer.name,
+      role: signer.role,
+      email: signer.email,
+      tier: signer.tier,
+      authorityDomains: signer.authorityDomains
+        .map((value) => normalizeAuthorityDomain(value))
+        .filter((value): value is AuthorityDomain => Boolean(value)),
+    };
+    req.mfaVerified = signer.mfaVerified;
+    return next();
+  }
+  // No verified actor. Only an explicit local demo runtime may fall back to the
+  // legacy client-supplied identity headers (clearly demo, never production).
+  if (isDemoIdentityRuntime()) {
+    const uid = req.header('x-user-id');
+    if (!uid) return next(new ApiError('auth_error', 'NOT_AUTHENTICATED', 401));
+    req.user = {
+      user_id: uid,
+      name:    req.header('x-user-name')  ?? uid,
+      role:    req.header('x-user-role')  ?? 'unknown',
+      email:   req.header('x-user-email') ?? `${uid}@careindeed.com`,
+      tier:    Number(req.header('x-user-tier') ?? 1), // demo: no privileged default
+      authorityDomains: parseAuthorityDomains(req.header('x-user-authority-domains')),
+    };
+    req.mfaVerified = false; // demo header identity is never treated as MFA-verified
+    return next();
+  }
+  // Non-demo runtime with no verified actor: signing identity cannot be derived.
+  return next(new ApiError('auth_error', 'NOT_AUTHENTICATED', 401));
 });
 
 const HIGH_IMPACT_FORMS = new Set(['EN-FM-485', 'EN-FM-033']); // POC, mandatory events
-function requireStepUp(formId: string, mfa?: string) {
-  if (HIGH_IMPACT_FORMS.has(formId) && !mfa) {
-    throw new EcignError('STEP_UP_REQUIRED', 'MFA step-up required for this form.', 403);
+function requireStepUp(formId: string, mfaVerified?: boolean) {
+  if (HIGH_IMPACT_FORMS.has(formId) && !mfaVerified) {
+    throw new EcignError('STEP_UP_REQUIRED', 'Verified MFA step-up required for this form.', 403);
   }
 }
 
@@ -165,8 +198,10 @@ function toNetworkInfoResponse(networkLocation: {
 
 function actorOf(req: Request, method: 'session'|'otp'|'sso' = 'session') {
   const u = req.user!;
+  // Truthful MFA: only stamp mfa_verified_at when the identity was actually
+  // MFA-verified by the provider — never from a client-supplied token header.
   return { user_id: u.user_id, name: u.name, role: u.role, email: u.email,
-    auth_method: method, mfa_verified_at: req.mfaToken ? new Date().toISOString() : undefined };
+    auth_method: method, mfa_verified_at: req.mfaVerified ? new Date().toISOString() : undefined };
 }
 
 // ── Disclosures & consent ──────────────────────────────────────────────────
@@ -195,13 +230,19 @@ ecignRouter.post('/consents', asyncH(async (req, res) => {
   res.json(row);
 }));
 
-// ── Identity step-up (mock OTP; production wires SMS/email/SSO) ────────────
+// ── Identity step-up ────────────────────────────────────────────────────────
+// Real MFA step-up is not wired. Do NOT mint a token that downstream would treat
+// as verified MFA. Available only in an explicit local demo runtime, where it is
+// labeled as unverified; otherwise fail closed.
 ecignRouter.post('/identity/step-up', asyncH(async (req, res) => {
+  if (!isDemoIdentityRuntime()) {
+    throw new EcignError('STEP_UP_UNAVAILABLE', 'Identity step-up (MFA) is not available in this runtime.', 501);
+  }
   const token = ulid();
   await appendAudit({ actor: actorOf(req, 'otp'), network: networkOf(req),
     subject: { kind: 'session', id: req.user!.user_id },
-    action: 'identity.verified', payload: { method: req.body?.method ?? 'otp', token } });
-  res.json({ mfa_token: token, expires_at: new Date(Date.now() + 600_000).toISOString() });
+    action: 'identity.verified', payload: { method: req.body?.method ?? 'otp', token, mfa_verified: false } });
+  res.json({ mfa_token: token, mfa_verified: false, expires_at: new Date(Date.now() + 600_000).toISOString() });
 }));
 
 ecignRouter.get('/identity/me', (req, res) => res.json(req.user));
@@ -313,10 +354,10 @@ ecignRouter.post('/instances/:id/disclose', asyncH(async (req, res) => {
 ecignRouter.post('/instances/:id/verify', asyncH(async (req, res) => {
   const cur = await store.getInstance(req.params.id);
   if (!cur) throw new EcignError('NOT_FOUND', 'Instance not found', 404);
-  requireStepUp(cur.form_id, req.mfaToken);
+  requireStepUp(cur.form_id, req.mfaVerified);
   assertTransition(cur.state, 'verified');
   const next = await store.updateInstance(cur.instance_id,
-    { state: 'verified', mfa_verified_at: req.mfaToken ? new Date().toISOString() : undefined });
+    { state: 'verified', mfa_verified_at: req.mfaVerified ? new Date().toISOString() : undefined });
   res.json(next);
 }));
 
@@ -342,7 +383,7 @@ ecignRouter.post('/instances/:id/signatures', asyncH(async (req, res) => {
   assert(consents.some(c => c.disclosure_version === CURRENT_DISCLOSURE_VERSION),
     'CONSENT_REQUIRED', 'Consent missing for current disclosure version.', 409);
   // G2: high-impact step-up
-  requireStepUp(cur.form_id, req.mfaToken);
+  requireStepUp(cur.form_id, req.mfaVerified);
   // G7: out-of-order
   assert(cur.state === 'reviewed' || cur.state === 'attested',
     'INVALID_STATE_TRANSITION',
@@ -359,6 +400,17 @@ ecignRouter.post('/instances/:id/signatures', asyncH(async (req, res) => {
     'VALIDATION', 'field_id, signature_png_b64, attestation_text_hash required', 400);
 
   const requirements = requirementsForInstance(cur);
+  // Fail-closed (ADR-0002 Phase 1): a signature is being applied but the instance
+  // defines no required signers. An empty required-signer set must NOT silently
+  // skip eligibility/order/self-approval checks — refuse the signature.
+  if (requiredSignersMissing(requirements.length)) {
+    await appendAudit({ actor: actorOf(req), network: networkOf(req),
+      subject: { kind: 'form_instance', id: cur.instance_id },
+      action: 'access.denied',
+      payload: { reason: 'SIGNER_REQUIREMENTS_MISSING', field_id } });
+    throw new EcignError('SIGNER_REQUIREMENTS_MISSING',
+      'This form instance defines no required signers; signing is refused (fail-closed).', 409);
+  }
   const matchingRequirement = requirements.find(requirement => requirement.slotFieldId === field_id);
   if (requirements.length > 0) {
     if (!matchingRequirement) {
