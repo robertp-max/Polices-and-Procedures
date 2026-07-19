@@ -9,7 +9,7 @@
 import http, { type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import express, { type ErrorRequestHandler, type Request } from 'express';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ecignRouter } from './ecign.js';
 import { store } from '../ecign/store.js';
 import { CURRENT_DISCLOSURE_VERSION } from '../ecign/disclosures.js';
@@ -43,7 +43,7 @@ beforeEach(async () => {
   // Neutral non-demo baseline; individual tests override.
   delete process.env.ENABLE_LOCAL_DEMO_AUTH;
   process.env.NODE_ENV = 'test';
-  for (const m of ['appendAudit', 'listAudit', 'getInstance', 'listSignatures', 'listConsents']) {
+  for (const m of ['appendAudit', 'listAudit', 'getInstance', 'listSignatures', 'listConsents', 'insertSignature', 'updateInstance']) {
     storeOriginal[m] = (store as Record<string, unknown>)[m];
   }
   (store as Record<string, unknown>).appendAudit = async () => undefined;
@@ -149,7 +149,11 @@ describe('eCIgn containment — signer authority is server-owned', () => {
 });
 
 describe('eCIgn containment — empty requirements fail closed', () => {
-  it('cannot lock an instance with no required signers → 409', async () => {
+  it('demo: cannot lock an instance with no required signers → 409', async () => {
+    // In non-demo the lock route 503s before this guard; the empty-requirement
+    // fail-closed guard is exercised in the demo path.
+    process.env.NODE_ENV = 'development';
+    process.env.ENABLE_LOCAL_DEMO_AUTH = 'true';
     currentActor = verified();
     (store as Record<string, unknown>).getInstance = async () => ({
       instance_id: 'i1', form_id: 'F', document_version_id: 'v1', state: 'reviewed',
@@ -159,6 +163,47 @@ describe('eCIgn containment — empty requirements fail closed', () => {
     const r = await call('POST', '/api/ecign/instances/i1/lock', { body: {} });
     expect(r.status).toBe(409);
     expect(codeOf(r.body)).toBe('SIGNER_REQUIREMENTS_MISSING');
+  });
+
+  it('non-demo: signature is unavailable even with a permissive stored requirement (no insert)', async () => {
+    currentActor = verified();
+    const insertSpy = vi.fn();
+    (store as Record<string, unknown>).insertSignature = insertSpy;
+    (store as Record<string, unknown>).getInstance = async () => ({
+      instance_id: 'i1', form_id: 'F', document_version_id: 'v1', state: 'reviewed',
+      required_signers: [{ field_id: 'f1', role: 'unknown', min_tier: 1 }], field_values: {},
+    });
+    (store as Record<string, unknown>).listConsents = async () => [{ disclosure_version: CURRENT_DISCLOSURE_VERSION }];
+    (store as Record<string, unknown>).listSignatures = async () => [];
+    const r = await call('POST', '/api/ecign/instances/i1/signatures', {
+      body: { field_id: 'f1', signature_png_b64: 'AAAA', attestation_text_hash: 'h' },
+    });
+    expect(r.status).toBe(503);
+    expect(codeOf(r.body)).toBe('SIGNATURE_AUTHORITY_UNAVAILABLE');
+    expect(insertSpy).not.toHaveBeenCalled();
+  });
+
+  it('non-demo: lock is unavailable even with non-empty requirements + matching signatures (no state write)', async () => {
+    currentActor = verified();
+    const updateSpy = vi.fn();
+    (store as Record<string, unknown>).updateInstance = updateSpy;
+    (store as Record<string, unknown>).getInstance = async () => ({
+      instance_id: 'i1', form_id: 'F', document_version_id: 'v1', state: 'attested',
+      required_signers: [{ field_id: 'f1', role: 'unknown', min_tier: 1 }], field_values: {},
+      document_hash: 'd', manifest_hash: 'm',
+    });
+    (store as Record<string, unknown>).listSignatures = async () => [{ field_id: 'f1' }];
+    const r = await call('POST', '/api/ecign/instances/i1/lock', { body: {} });
+    expect(r.status).toBe(503);
+    expect(codeOf(r.body)).toBe('SIGNATURE_AUTHORITY_UNAVAILABLE');
+    expect(updateSpy).not.toHaveBeenCalled();
+  });
+
+  it('non-demo: signed-bundle generation is unavailable → 503', async () => {
+    currentActor = verified();
+    const r = await call('GET', '/api/ecign/instances/i1/bundle');
+    expect(r.status).toBe(503);
+    expect(codeOf(r.body)).toBe('SIGNED_BUNDLE_UNAVAILABLE');
   });
 
   it('cannot apply a signature when no required signers are defined → 409', async () => {

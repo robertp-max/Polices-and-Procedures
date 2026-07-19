@@ -389,6 +389,15 @@ ecignRouter.post('/instances/:id/review-ack', asyncH(async (req, res) => {
 
 // ── Signature application ──────────────────────────────────────────────────
 ecignRouter.post('/instances/:id/signatures', asyncH(async (req, res) => {
+  // Containment (ADR-0002 Phase 1): stored required_signers have no trusted
+  // provenance (they may predate containment / have been client-defined), and no
+  // server-owned authority resolver exists yet. Block ALL non-demo signature
+  // application — before consent lookup, eligibility, insertion, hashing, or state
+  // mutation — rather than run eligibility against a permissive legacy requirement.
+  if (!isDemoIdentityRuntime()) {
+    throw new EcignError('SIGNATURE_AUTHORITY_UNAVAILABLE',
+      'Server-owned signer requirements/authority are not yet available; signature application is temporarily unavailable (fail-closed).', 503);
+  }
   const cur = await store.getInstance(req.params.id);
   if (!cur) throw new EcignError('NOT_FOUND', 'Instance not found', 404);
   // G1: consent
@@ -552,6 +561,13 @@ ecignRouter.post('/instances/:id/signatures', asyncH(async (req, res) => {
 }));
 
 ecignRouter.post('/instances/:id/lock', asyncH(async (req, res) => {
+  // Containment (ADR-0002 Phase 1): a non-empty stored requirement set has no
+  // trusted provenance; block ALL non-demo locking (before any read/hash/state
+  // mutation) rather than lock on legacy client-defined requirements.
+  if (!isDemoIdentityRuntime()) {
+    throw new EcignError('SIGNATURE_AUTHORITY_UNAVAILABLE',
+      'Server-owned signer requirements/authority are not yet available; document lock is temporarily unavailable (fail-closed).', 503);
+  }
   const cur = await store.getInstance(req.params.id);
   if (!cur) throw new EcignError('NOT_FOUND', 'Instance not found', 404);
   if (cur.state === 'signed_locked') return res.json(cur);
@@ -702,6 +718,14 @@ ecignRouter.post('/instances/:id/void', asyncH(async (req, res) => {
 
 // ── Outputs ────────────────────────────────────────────────────────────────
 ecignRouter.get('/instances/:id/bundle', asyncH(async (req, res) => {
+  // Containment (ADR-0002 Phase 1): a signed bundle is a legal-looking artifact.
+  // Block ALL non-demo bundle generation until server-owned requirements/authority
+  // exist. In demo, buildSignedDocumentBundle enforces the full signed-lock
+  // lifecycle (defense-in-depth — it refuses unlocked/unsigned instances too).
+  if (!isDemoIdentityRuntime()) {
+    throw new EcignError('SIGNED_BUNDLE_UNAVAILABLE',
+      'Server-owned signer requirements/authority are not yet available; signed-bundle generation is temporarily unavailable (fail-closed).', 503);
+  }
   const certId = `CERT-${req.params.id}`;
   const bundle = await buildSignedDocumentBundle(req.params.id, certId);
   await appendAudit({ actor: actorOf(req), network: networkOf(req),

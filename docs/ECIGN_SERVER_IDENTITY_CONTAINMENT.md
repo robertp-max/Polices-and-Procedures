@@ -54,6 +54,34 @@ are refused outside an explicit demo runtime rather than approximated.
 8. **Route unavailable without a verified actor.** Non-demo runtime with no
    verified actor → `401` rather than accepting client-asserted identity.
 
+## Non-demo signature surface is temporarily unavailable
+
+Stored `required_signers` have no trusted provenance (they may predate
+containment or have been client-defined), and no server-owned requirement/
+authority resolver exists yet. So in a non-demo runtime the entire signature
+surface fails closed — not just new client-defined requirements:
+
+- `POST /instances` with client `required_signers` → `503 SIGNATURE_REQUIREMENTS_UNAVAILABLE`
+- `POST /instances/:id/signatures` → `503 SIGNATURE_AUTHORITY_UNAVAILABLE`
+- `POST /instances/:id/lock` → `503 SIGNATURE_AUTHORITY_UNAVAILABLE`
+- `POST /instances/:id/second-signature` → `503 SIGNATURE_ASSIGNMENT_UNAVAILABLE`
+- `GET /instances/:id/bundle` → `503 SIGNED_BUNDLE_UNAVAILABLE`
+
+These checks run before any consent lookup, eligibility evaluation, signature
+insertion, document hashing, or state mutation — trust is never inferred from a
+non-empty requirement array, role labels, tier values, authority domains,
+existing signatures, or instance age. **Signer authority has NOT been
+implemented** — these operations are disabled until control-plane Phase 5
+provides the canonical server-owned requirement + authority resolver (requirement
+source id/version/hash, server-owned signature policy, canonical authority
+assignment, eligibility, scope, effective dates, prerequisites, SoD).
+
+Safe disclosure, consent, document review, field preparation, and read
+operations remain available. `buildSignedDocumentBundle` additionally enforces
+the full signed-lock lifecycle itself (state `signed_locked`, non-empty
+requirements, all required signatures present, document + manifest hash + lock
+time present) as defense-in-depth, independent of the HTTP route.
+
 ## Demo runtime
 
 Client `x-user-*` / `x-actor` headers are honored **only** when
