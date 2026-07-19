@@ -1,5 +1,6 @@
 node_modules
 dist
+do-not-merge/
 *.mov
 *.mp4
 *.mp3
