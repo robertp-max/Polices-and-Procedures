@@ -12,13 +12,13 @@ import {
   listMappedEventFamilyIds,
 } from '@/policy/packets/registries/eventPacketMap';
 
-type AsyncRoute = (req: Request, res: Response, next: NextFunction) => Promise<void>;
+type AsyncRoute = (req: Request<Record<string, string>>, res: Response, next: NextFunction) => Promise<void>;
 
 function asyncH(fn: AsyncRoute) {
-  return (req: Request, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
+  return (req: Request<Record<string, string>>, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
 }
 
-function queryString(req: Request, key: string): string | undefined {
+function queryString(req: Request<Record<string, string>>, key: string): string | undefined {
   const value = req.query[key];
   if (typeof value === 'string' && value.trim().length > 0) return value.trim();
   return undefined;

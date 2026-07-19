@@ -28,7 +28,7 @@ import type {
   QapiWorkflowSnapshot,
 } from '@/policy/packets/contracts';
 
-type AsyncRoute = (req: Request, res: Response, next: NextFunction) => Promise<void>;
+type AsyncRoute = (req: Request<Record<string, string>>, res: Response, next: NextFunction) => Promise<void>;
 
 type PacketActorRequest = Request & {
   session?: { authenticated?: boolean; correlation_id?: string };
@@ -59,7 +59,7 @@ interface CommonMutationBody {
 const defaultStore = new FileLocalPacketStore();
 
 function asyncH(fn: AsyncRoute) {
-  return (req: Request, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
+  return (req: Request<Record<string, string>>, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -153,7 +153,7 @@ function sourceClassificationField(body: Record<string, unknown>): 'production' 
   );
 }
 
-function idempotencyKey(req: Request, body: Record<string, unknown>): string {
+function idempotencyKey(req: Request<Record<string, string>>, body: Record<string, unknown>): string {
   const fromHeader = req.header('idempotency-key') ?? req.header('x-idempotency-key');
   const fromBody = optionalString(body, 'idempotencyKey');
   const key = (fromHeader ?? fromBody ?? '').trim();
@@ -168,7 +168,7 @@ function idempotencyKey(req: Request, body: Record<string, unknown>): string {
   return key;
 }
 
-function requireActor(req: Request): PacketAuditActor {
+function requireActor(req: Request<Record<string, string>>): PacketAuditActor {
   const packetReq = req as PacketActorRequest;
   const actor = packetReq.actor;
   if (!packetReq.session?.authenticated || !actor) {
@@ -373,7 +373,7 @@ export function createPacketPostLockRouter(options: PacketPostLockRouterOptions 
     });
   }));
 
-  router.use((err: unknown, _req: Request, _res: Response, next: NextFunction) => {
+  router.use((err: unknown, _req: Request<Record<string, string>>, _res: Response, next: NextFunction) => {
     next(mapPostLockError(err));
   });
 

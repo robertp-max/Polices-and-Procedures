@@ -22,7 +22,7 @@ import type {
   PacketValidationResult,
 } from '@/policy/packets/contracts';
 
-type AsyncRoute = (req: Request, res: Response, next: NextFunction) => Promise<void>;
+type AsyncRoute = (req: Request<Record<string, string>>, res: Response, next: NextFunction) => Promise<void>;
 
 type PacketActorRequest = Request & {
   session?: { authenticated?: boolean; correlation_id?: string };
@@ -62,7 +62,7 @@ const HASH_FIELDS = new Set(['contentHash', 'clientHash', 'trustedHash', 'hash']
 const defaultStore = new FileLocalPacketStore();
 
 function asyncH(fn: AsyncRoute) {
-  return (req: Request, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
+  return (req: Request<Record<string, string>>, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -131,7 +131,7 @@ function optionalNumberField(body: Record<string, unknown>, field: string): numb
   return value;
 }
 
-function idempotencyKey(req: Request, body: CreatePacketBody): string {
+function idempotencyKey(req: Request<Record<string, string>>, body: CreatePacketBody): string {
   const fromHeader = req.header('idempotency-key') ?? req.header('x-idempotency-key');
   const fromBody = typeof body.idempotencyKey === 'string' ? body.idempotencyKey : '';
   const key = (fromHeader ?? fromBody).trim();
@@ -159,7 +159,7 @@ function expectedRevision(body: PacketMutationBody): number {
   return value;
 }
 
-function requireActor(req: Request): PacketAuditActor {
+function requireActor(req: Request<Record<string, string>>): PacketAuditActor {
   const packetReq = req as PacketActorRequest;
   const actor = packetReq.actor;
   if (!packetReq.session?.authenticated || !actor) {
@@ -179,7 +179,7 @@ function requireActor(req: Request): PacketAuditActor {
   throw new ApiError('auth_error', 'Authenticated user or service identity required.', 401);
 }
 
-function assertAgencyScope(req: Request, agencyId: string): void {
+function assertAgencyScope(req: Request<Record<string, string>>, agencyId: string): void {
   const packetReq = req as PacketActorRequest;
   const scopes = packetReq.actor?.attributes?.access_classes ?? [];
   if (scopes.length === 0) return;
@@ -195,7 +195,7 @@ function assertAgencyScope(req: Request, agencyId: string): void {
   });
 }
 
-function requirePacketScope(req: Request, packet: PacketStoreDocument): void {
+function requirePacketScope(req: Request<Record<string, string>>, packet: PacketStoreDocument): void {
   assertAgencyScope(req, packet.agencyId);
 }
 
@@ -330,7 +330,7 @@ function mapPacketError(error: unknown): ApiError {
     : new ApiError('internal_error', 'Internal error', 500);
 }
 
-function toCreateInput(req: Request, body: Record<string, unknown>): CreatePacketInstanceInput {
+function toCreateInput(req: Request<Record<string, string>>, body: Record<string, unknown>): CreatePacketInstanceInput {
   const actor = requireActor(req);
   const packetTemplateId = stringField(body, 'packetTemplateId');
   const archetypeId = stringField(body, 'archetypeId');
@@ -360,7 +360,7 @@ function toCreateInput(req: Request, body: Record<string, unknown>): CreatePacke
   return input;
 }
 
-function sanitizedPatch(req: Request): {
+function sanitizedPatch(req: Request<Record<string, string>>): {
   patch: PacketInstancePatch;
   ignoredClientFields: string[];
 } {
@@ -404,7 +404,7 @@ function sanitizedPatch(req: Request): {
 
 async function getScopedPacket(
   store: PacketMetadataStore,
-  req: Request,
+  req: Request<Record<string, string>>,
   packetInstanceId: string,
 ): Promise<PacketStoreDocument> {
   requireActor(req);
@@ -541,7 +541,7 @@ export function createPacketLifecycleRouter(
     res.json({ status: 'ok', packet });
   }));
 
-  router.use((err: unknown, _req: Request, _res: Response, next: NextFunction) => {
+  router.use((err: unknown, _req: Request<Record<string, string>>, _res: Response, next: NextFunction) => {
     next(mapPacketError(err));
   });
 

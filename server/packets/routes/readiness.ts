@@ -14,7 +14,7 @@ import {
   type PacketStoreDocument,
 } from '../store.js';
 
-type AsyncRoute = (req: Request, res: Response, next: NextFunction) => Promise<void>;
+type AsyncRoute = (req: Request<Record<string, string>>, res: Response, next: NextFunction) => Promise<void>;
 
 type PacketActorRequest = Request & {
   actor?: {
@@ -178,7 +178,7 @@ const VIEW_OR_AMEND_STATUSES = new Set<PacketLifecycleStatus>([
 ]);
 
 function asyncH(fn: AsyncRoute) {
-  return (req: Request, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
+  return (req: Request<Record<string, string>>, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
 }
 
 function validationError(code: string, message: string, path = 'query'): ApiError {
@@ -194,7 +194,7 @@ function validationError(code: string, message: string, path = 'query'): ApiErro
   });
 }
 
-function singleQueryValue(req: Request, camelName: string, snakeName?: string): string | undefined {
+function singleQueryValue(req: Request<Record<string, string>>, camelName: string, snakeName?: string): string | undefined {
   const raw = req.query[camelName] ?? (snakeName ? req.query[snakeName] : undefined);
   if (raw === undefined) return undefined;
   if (typeof raw === 'string') return raw.trim() || undefined;
@@ -209,7 +209,7 @@ function singleQueryValue(req: Request, camelName: string, snakeName?: string): 
   );
 }
 
-function requireQueryValue(req: Request, camelName: string, snakeName?: string): string {
+function requireQueryValue(req: Request<Record<string, string>>, camelName: string, snakeName?: string): string {
   const value = singleQueryValue(req, camelName, snakeName);
   if (!value) {
     throw validationError(
@@ -225,7 +225,7 @@ function valueOrUnknown(value: string | null | undefined): string | 'unknown' {
   return value && value.trim().length > 0 ? value.trim() : 'unknown';
 }
 
-function assertAgencyScope(req: Request, agencyId: string): void {
+function assertAgencyScope(req: Request<Record<string, string>>, agencyId: string): void {
   const packetReq = req as PacketActorRequest;
   const scopes = packetReq.actor?.attributes?.access_classes ?? [];
   if (scopes.length === 0) return;
@@ -530,7 +530,7 @@ export function buildPacketReadinessResponse(
   };
 }
 
-function identityFromRequest(req: Request): PacketReadinessIdentity {
+function identityFromRequest(req: Request<Record<string, string>>): PacketReadinessIdentity {
   const eventInstanceId = req.params.eventInstanceId?.trim()
     || requireQueryValue(req, 'eventInstanceId', 'event_instance_id');
   return {
@@ -576,7 +576,7 @@ export function createPacketReadinessRouter(
   router.get('/events/:eventInstanceId/packet-readiness', handleReadiness);
   router.get('/:eventInstanceId/packet-readiness', handleReadiness);
 
-  router.use((err: unknown, _req: Request, _res: Response, next: NextFunction) => {
+  router.use((err: unknown, _req: Request<Record<string, string>>, _res: Response, next: NextFunction) => {
     next(mapReadinessError(err));
   });
 

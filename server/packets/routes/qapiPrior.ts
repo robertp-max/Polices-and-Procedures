@@ -22,7 +22,7 @@ const COMPARABILITY_STATE_VALUES = new Set<string>(COMPARABILITY_STATES);
 const TREND_SNAPSHOT_PACKET_STATUSES = new Set<string>(['certified', 'published', 'locked']);
 const TREND_SNAPSHOT_SOURCE_CLASSIFICATIONS = new Set<string>(['production', 'synthetic']);
 
-type AsyncRoute = (req: Request, res: Response, next: NextFunction) => Promise<void>;
+type AsyncRoute = (req: Request<Record<string, string>>, res: Response, next: NextFunction) => Promise<void>;
 
 type PacketActorRequest = Request & {
   actor?: {
@@ -124,10 +124,10 @@ function queryForIdentity(identity: QapiPriorPeriodIdentity): PriorPacketQuery {
 }
 
 function asyncH(fn: AsyncRoute) {
-  return (req: Request, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
+  return (req: Request<Record<string, string>>, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
 }
 
-function priorIdentityFromQuery(req: Request): QapiPriorPeriodIdentity {
+function priorIdentityFromQuery(req: Request<Record<string, string>>): QapiPriorPeriodIdentity {
   return {
     agencyId: requiredQueryValue(req, 'agencyId', 'agency_id'),
     cadence: normalizeCadence(requiredQueryValue(req, 'cadence')),
@@ -358,7 +358,7 @@ function assertGovernedPriorSnapshot(
   }
 }
 
-function requiredQueryValue(req: Request, camelName: string, snakeName?: string): string {
+function requiredQueryValue(req: Request<Record<string, string>>, camelName: string, snakeName?: string): string {
   const value = singleQueryValue(req, camelName, snakeName);
   if (!value) {
     throw validationError(
@@ -370,7 +370,7 @@ function requiredQueryValue(req: Request, camelName: string, snakeName?: string)
   return value;
 }
 
-function singleQueryValue(req: Request, camelName: string, snakeName?: string): string | undefined {
+function singleQueryValue(req: Request<Record<string, string>>, camelName: string, snakeName?: string): string | undefined {
   const raw = req.query[camelName] ?? (snakeName ? req.query[snakeName] : undefined);
   if (raw === undefined) return undefined;
   if (typeof raw === 'string') return raw.trim() || undefined;
@@ -385,7 +385,7 @@ function singleQueryValue(req: Request, camelName: string, snakeName?: string): 
   );
 }
 
-function requiredParam(req: Request, paramName: string): string {
+function requiredParam(req: Request<Record<string, string>>, paramName: string): string {
   const value = req.params[paramName];
   if (!value || value.trim().length === 0) {
     throw validationError(
@@ -453,7 +453,7 @@ function asRecord(value: unknown, path: string): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-function assertAgencyScope(req: Request, agencyId: string): void {
+function assertAgencyScope(req: Request<Record<string, string>>, agencyId: string): void {
   const packetReq = req as PacketActorRequest;
   const scopes = packetReq.actor?.attributes?.access_classes ?? [];
   if (scopes.length === 0) return;

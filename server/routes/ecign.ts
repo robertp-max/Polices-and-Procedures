@@ -127,8 +127,8 @@ function signatureCompletionFromRow(sig: SignatureRow, requirement: CanonicalSig
   };
 }
 
-function asyncH(fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) {
-  return (req: Request, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
+function asyncH(fn: (req: Request<Record<string, string>>, res: Response, next?: NextFunction) => Promise<unknown>) {
+  return (req: Request, res: Response, next: NextFunction) => fn(req as Request<Record<string, string>>, res, next).catch(next);
 }
 
 function networkOf(req: Request) {
