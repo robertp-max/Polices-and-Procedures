@@ -343,7 +343,7 @@ describe('activated user is least-privilege (Phase 8 lifecycle)', () => {
     });
     // Not an admin-email; capability denies; admin invitation endpoint denies.
     expect(svc.isAdminEmail(TARGET)).toBe(false);
-    await expect(svc.resolveCapabilities('target-token')).resolves.toEqual({ manageUsers: false });
+    await expect(svc.resolveCapabilities('target-token')).resolves.toEqual({ manageUsers: false, manageUserStatus: false });
     await expect(svc.adminInviteUser('target-token', 'x@careindeed.com')).rejects.toMatchObject({ status: 403 });
     // The chosen CSV role is not admin-ish (isAdminRole substrings) — sanity on the label.
     expect(LOWEST_ROLE.toLowerCase()).not.toMatch(/admin|owner|security|super_admin|system_admin|sys_admin/);

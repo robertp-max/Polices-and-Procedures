@@ -119,11 +119,11 @@ describe('isAdminEmail — shared server authority', () => {
 describe('resolveCapabilities — /capabilities contract', () => {
   it('grants manageUsers for an authenticated admin token', async () => {
     const { svc } = buildService();
-    await expect(svc.resolveCapabilities('admin-token')).resolves.toEqual({ manageUsers: true });
+    await expect(svc.resolveCapabilities('admin-token')).resolves.toEqual({ manageUsers: true, manageUserStatus: true });
   });
   it('denies manageUsers for an authenticated ordinary token', async () => {
     const { svc } = buildService();
-    await expect(svc.resolveCapabilities('user-token')).resolves.toEqual({ manageUsers: false });
+    await expect(svc.resolveCapabilities('user-token')).resolves.toEqual({ manageUsers: false, manageUserStatus: false });
   });
   it('rejects a missing token with 401', async () => {
     const { svc } = buildService();
@@ -268,7 +268,7 @@ describe('invited user is least-privilege (end to end, service-level)', () => {
     expect(svc.isAdminEmail(TARGET)).toBe(false);
     expect(svc.isAdminEmail(BASE)).toBe(false);   // base admin is not itself in this test's allowlist
     // Its capability contract denies admin.
-    await expect(svc.resolveCapabilities('target-token')).resolves.toEqual({ manageUsers: false });
+    await expect(svc.resolveCapabilities('target-token')).resolves.toEqual({ manageUsers: false, manageUserStatus: false });
     // It cannot invoke the admin-only invitation endpoint.
     await expect(svc.adminInviteUser('target-token', 'someone@careindeed.com')).rejects.toMatchObject({ status: 403 });
     // Plus-tagged identity stays distinct from the base administrator identity.

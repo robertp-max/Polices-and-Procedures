@@ -15,10 +15,10 @@ import { resolveVerifiedActor, type RequireAuthDeps } from '../auth/requireCogni
 import { buildDemoAuthServiceFromEnv } from '../auth/service.js';
 import { expectedIssuer } from '../auth/accessTokenClaims.js';
 import { env } from '../env.js';
-import { assertActorRole } from '../auth/actorResolver.js';
+import { actorMayManageUserStatus } from '../auth/userStatusAuthority.js';
 import {
   listAccessState, suspendUser, reactivateUser, assignRole, removeRole,
-  USER_ACCESS_ADMIN_ROLES, type AccessChange,
+  type AccessChange,
 } from '../auth/userAccessAdmin.js';
 
 export const userAccessRouter: Router = Router();
@@ -35,10 +35,13 @@ function authDeps(): RequireAuthDeps {
   };
 }
 
-/** Resolve + role-gate the caller as a user-access admin, or throw 401/403. */
+/** Resolve + gate the caller by the unified user-status authority, or throw 401/403. */
 async function requireUserAccessAdmin(req: Request): Promise<Actor> {
   const actor = await resolveVerifiedActor(req.header('authorization'), authDeps());
-  assertActorRole(actor, USER_ACCESS_ADMIN_ROLES);
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  if (!actorMayManageUserStatus(actor, (e) => service.isAdminEmail(e ?? ''))) {
+    throw new ApiError('permission_denied', 'You do not have permission to manage user status.', 403);
+  }
   return actor;
 }
 

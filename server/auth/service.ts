@@ -625,7 +625,28 @@ export class DemoAuthService {
   }
 
   async getCurrentUser(accessToken: string): Promise<DemoUser> {
-    const me = await this.cognito.send(new GetUserCommand({ AccessToken: accessToken }));
+    let me;
+    try {
+      me = await this.cognito.send(new GetUserCommand({ AccessToken: accessToken }));
+    } catch (err) {
+      // A rejected token is a 401, not a 500. Cognito reports missing / malformed
+      // / expired / revoked / wrong-issuer / invalid-signature access tokens via
+      // these client faults. Anything else (provider outage, throttling, network)
+      // is a genuine upstream failure and must surface as a 5xx — rethrown as-is.
+      // The 401 leaks no stack, token, or header — only a generic message.
+      const name = (err as { name?: string })?.name ?? '';
+      const TOKEN_FAULTS = new Set([
+        'NotAuthorizedException',
+        'UserNotFoundException',
+        'TokenExpiredException',
+        'InvalidParameterException',
+        'ExpiredTokenException',
+      ]);
+      if (TOKEN_FAULTS.has(name)) {
+        throw new ApiError('auth_error', 'Not authenticated.', 401);
+      }
+      throw err;
+    }
     const attrs = Object.fromEntries((me.UserAttributes ?? []).map(a => [a.Name ?? '', a.Value ?? '']));
     const firstName = attrs.given_name;
     const lastName = attrs.family_name;
@@ -693,13 +714,16 @@ export class DemoAuthService {
    * client-supplied role, header, or browser-stored value. Exposes no admin
    * allowlist contents and no Cognito subject.
    */
-  async resolveCapabilities(actorAccessToken: string): Promise<{ manageUsers: boolean }> {
+  async resolveCapabilities(actorAccessToken: string): Promise<{ manageUsers: boolean; manageUserStatus: boolean }> {
     const accessToken = String(actorAccessToken || '').trim();
     if (!accessToken) {
       throw new ApiError('auth_error', 'Not authenticated.', 401);
     }
     const actor = await this.getCurrentUser(accessToken);
-    return { manageUsers: this.isAdminEmail(actor.email) };
+    const isAdmin = this.isAdminEmail(actor.email);
+    // manageUserStatus (suspend/reactivate) shares the approved-admin authority;
+    // the server endpoint additionally honors canonical admin-group actors.
+    return { manageUsers: isAdmin, manageUserStatus: isAdmin };
   }
 
   async forgotPassword(emailRaw: string): Promise<{ message: string }> {

@@ -21,7 +21,8 @@ import { startAnomalyScheduler } from './audit/anomaly.js';
 import { authRouter } from './routes/auth.js';
 import { userAccessRouter } from './routes/userAccess.js';
 import { requireApiAuth, requireRole } from './auth/apiAuthBoundary.js';
-import { ADMIN_ROLE_GROUPS, AUDIT_ADMIN_ROLES } from './auth/routeAccessMatrix.js';
+import { AUDIT_ADMIN_ROLES } from './auth/routeAccessMatrix.js';
+import { requireUserStatusAuthority } from './auth/userStatusAuthority.js';
 import { pmRouter } from './routes/pm.js';
 import { createBradRouter } from './routes/brad.js';
 import { packetTemplatesRouter, packetsRouter } from './packets/routes/index.js';
@@ -96,7 +97,10 @@ app.use('/api', (req, _res, next) => {
 // admin user-access router resolves the verified actor and role-gates each
 // endpoint internally; it is additionally role-gated at the mount below.
 app.use('/api/auth', authRouter);
-app.use('/api/admin/user-access', requireRole(ADMIN_ROLE_GROUPS), userAccessRouter);
+// User-status mutations authorize on the unified capability (approved-admin
+// email OR canonical admin group), self-resolving the verified actor since this
+// mount runs before the /api boundary.
+app.use('/api/admin/user-access', requireUserStatusAuthority(), userAccessRouter);
 
 // ── COG-2 authentication boundary ─────────────────────────────────────────
 // One consistent authentication path for every business router: a verified,

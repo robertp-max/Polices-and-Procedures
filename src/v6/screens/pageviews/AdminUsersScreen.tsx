@@ -15,6 +15,7 @@ import type { User } from '@/policy/security/identity/types';
 import { USER_GROUPS, USER_GROUP_BY_ID } from '@/policy/security/identity/userGroups';
 import { useUserAssignmentsStore } from '@/policy/security/identity/userAssignmentsStore';
 import { AccountProvisioningCard } from '@/auth/AccountProvisioningCard';
+import { ServerUserAccessPanel } from '@/auth/ServerUserAccessPanel';
 import {
   buildOnboardingTrackForRole,
   type UserSetupFieldsPayload,
@@ -567,7 +568,7 @@ export function AdminUsersScreen() {
       return;
     }
     setFormError(null);
-    setFormSuccess('User soft-deactivated (status suspended, setup.active = false).');
+    setFormSuccess('Demo directory only — marked deactivated in localStorage. This does NOT suspend a real login; use “User status (server-authoritative)” on the Security tab to suspend access.');
     const user = useUserAssignmentsStore.getState().getUserById(selectedUserId);
     const setup = useUserAssignmentsStore.getState().getSetupAssignment(selectedUserId);
     const groupId = activeGroupId(useUserAssignmentsStore.getState().assignments, selectedUserId);
@@ -1073,8 +1074,9 @@ export function AdminUsersScreen() {
                   variant="secondary"
                   disabled={isProtected || selectedUser.status === 'suspended'}
                   onClick={handleDeactivate}
+                  title="Demo directory only — does not suspend a real login."
                 >
-                  Deactivate
+                  Deactivate (demo)
                 </Button>
                 <Button
                   className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange/95 font-light"
@@ -1133,6 +1135,10 @@ export function AdminUsersScreen() {
               {securityCards.map((card) => (
                 <SurfaceCard card={card} key={card.title} />
               ))}
+
+              {/* Phase COG-2: server-authoritative suspend/reactivate — the only
+                  control that changes a real login's access. */}
+              <ServerUserAccessPanel />
 
               {/* Phase COG-1: real Cognito account provisioning via the existing auth backend. */}
               <AccountProvisioningCard />
