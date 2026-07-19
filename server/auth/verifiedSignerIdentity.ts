@@ -41,22 +41,29 @@ export function verifiedActor(req: { actor?: Actor }): Actor | null {
 }
 
 /**
- * Derive a signer identity from the VERIFIED canonical actor.
- * - identity (user_id/name/email/role) comes only from the verified actor;
- * - tier is NEVER taken from client input and NEVER defaulted to a privileged
- *   value — it starts least-privilege (1) until Phase 5 server-side derivation;
- * - MFA is truthful: verified only if the provider actually enrolled/verified it.
+ * Derive a signer *identity* — and only identity — from the VERIFIED canonical
+ * actor. A verified identity is NOT verified signing authority: this helper
+ * deliberately implies no business/legal signature capacity, no authority
+ * domain, and no privileged tier.
+ * - user_id / name / email come only from the verified actor;
+ * - `role` is fixed to 'unknown' — a security group is not a signature capacity;
+ * - `tier` is least-privilege (1) — never from client input, never privileged;
+ * - `authorityDomains` is empty — identity implies no authority domain;
+ * - `mfaVerified` is false — enrollment is not current-session MFA proof, and no
+ *   verified step-up signal exists (control-plane Phase 5). Real signer-authority
+ *   and MFA resolution arrive with the server-owned resolver; until then
+ *   signature *mutations* fail closed rather than run on approximated authority.
  */
 export function signerFromVerifiedActor(actor: Actor): VerifiedSigner {
   const userId = actor.user_id as string;
   return {
     user_id: userId,
     name: actor.display_name || actor.email || userId,
-    role: actor.roles?.[0] ?? 'unknown',
+    role: 'unknown',
     email: actor.email ?? '',
     tier: 1,
-    authorityDomains: ['operations'],
-    mfaVerified: actor.mfa_enrolled === true,
+    authorityDomains: [],
+    mfaVerified: false,
   };
 }
 

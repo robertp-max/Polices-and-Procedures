@@ -999,14 +999,18 @@ function validatePayload(raw: unknown): PlannerEventPayload {
 function resolveActor(req: Request): string {
   // Security containment (ADR-0002 Phase 1): evidence/workflow actor attribution
   // comes from the SERVER-VERIFIED canonical actor, never client-supplied
-  // x-actor/x-user-id headers. Header fallback is honored only in an explicit
-  // local demo runtime; otherwise attribute to the service account.
+  // x-actor/x-user-id headers. A verified service principal uses its own
+  // authenticated service_id. No synthetic 'service-account' fallback: a
+  // user-originated mutation with no verified actor must fail (401) rather than
+  // silently misattribute evidence and hide a boundary failure. Header fallback
+  // is honored only in an explicit local demo runtime.
   const verified = verifiedActor(req);
   if (verified?.user_id) return verified.user_id;
+  if (req.actor?.service_id) return req.actor.service_id;
   if (isDemoIdentityRuntime()) {
     return (req.header('x-actor') ?? req.header('x-user-id') ?? 'service-account');
   }
-  return 'service-account';
+  throw new ApiError('auth_error', 'Not authenticated.', 401);
 }
 
 function strOrEmpty(v: unknown): string {

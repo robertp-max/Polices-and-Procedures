@@ -62,22 +62,23 @@ describe('verifiedActor', () => {
 });
 
 describe('signerFromVerifiedActor', () => {
-  it('derives identity from the verified actor and never defaults a privileged tier', () => {
-    const s = signerFromVerifiedActor(actor());
+  it('derives identity only; never a privileged tier and never an invented authority', () => {
+    const s = signerFromVerifiedActor(actor({ roles: ['grp-admin', 'grp-super-admin'] }));
     expect(s.user_id).toBe('usr-1');
     expect(s.email).toBe('nurse@careindeed.com');
-    expect(s.role).toBe('grp-rn');
-    expect(s.tier).toBe(1);              // least-privilege, NOT the old default of 4
-    expect(s.authorityDomains).toEqual(['operations']);
-  });
-  it('reports MFA truthfully (only when the provider enrolled it)', () => {
-    expect(signerFromVerifiedActor(actor({ mfa_enrolled: false })).mfaVerified).toBe(false);
-    expect(signerFromVerifiedActor(actor({ mfa_enrolled: true })).mfaVerified).toBe(true);
-  });
-  it('falls back name → email → user_id and role → unknown', () => {
-    const s = signerFromVerifiedActor(actor({ display_name: undefined, roles: [] }));
-    expect(s.name).toBe('nurse@careindeed.com');
+    // A security group is NOT a signature capacity; no capacity/domain is implied.
     expect(s.role).toBe('unknown');
+    expect(s.authorityDomains).toEqual([]);
+    expect(s.tier).toBe(1);              // least-privilege, NOT the old default of 4
+  });
+  it('never treats MFA enrollment as current-session MFA verification', () => {
+    // Enrollment is not proof the current session completed step-up.
+    expect(signerFromVerifiedActor(actor({ mfa_enrolled: true })).mfaVerified).toBe(false);
+    expect(signerFromVerifiedActor(actor({ mfa_enrolled: false })).mfaVerified).toBe(false);
+  });
+  it('falls back name → email → user_id', () => {
+    const s = signerFromVerifiedActor(actor({ display_name: undefined }));
+    expect(s.name).toBe('nurse@careindeed.com');
   });
 });
 

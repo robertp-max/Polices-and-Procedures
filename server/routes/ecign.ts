@@ -238,10 +238,14 @@ ecignRouter.post('/identity/step-up', asyncH(async (req, res) => {
   if (!isDemoIdentityRuntime()) {
     throw new EcignError('STEP_UP_UNAVAILABLE', 'Identity step-up (MFA) is not available in this runtime.', 501);
   }
+  // Demo only, and never verified. Do NOT record the token in the audit payload,
+  // and do NOT label the auth method as a verified OTP — no MFA was verified.
   const token = ulid();
-  await appendAudit({ actor: actorOf(req, 'otp'), network: networkOf(req),
+  const eventId = ulid();
+  await appendAudit({ actor: actorOf(req, 'session'), network: networkOf(req),
     subject: { kind: 'session', id: req.user!.user_id },
-    action: 'identity.verified', payload: { method: req.body?.method ?? 'otp', token, mfa_verified: false } });
+    action: 'identity.step_up_issued_demo',
+    payload: { event_id: eventId, method: req.body?.method ?? 'otp', mfa_verified: false, result: 'issued_demo' } });
   res.json({ mfa_token: token, mfa_verified: false, expires_at: new Date(Date.now() + 600_000).toISOString() });
 }));
 
@@ -280,6 +284,15 @@ ecignRouter.get('/network-info', async (req, res) => {
 ecignRouter.post('/instances', asyncH(async (req, res) => {
   const { form_id, document_version_id, required_signers, form_instance_id, workflow_instance_id, event_id } = req.body ?? {};
   assert(form_id && document_version_id, 'VALIDATION', 'form_id + document_version_id required', 400);
+  // Containment (ADR-0002 Phase 1): required_signers are authority-bearing
+  // (role/tier/domain/order/self-approval/delegation). They must come from a
+  // server-owned form/workflow snapshot, never the request body. No server-owned
+  // resolver exists yet, so refuse client-defined signer requirements outside an
+  // explicit demo runtime (fail-closed) rather than persist client authority.
+  if (Array.isArray(required_signers) && required_signers.length > 0 && !isDemoIdentityRuntime()) {
+    throw new EcignError('SIGNATURE_REQUIREMENTS_UNAVAILABLE',
+      'Server-owned signer requirements are not yet available; client-defined required signers are refused (fail-closed).', 503);
+  }
   if (form_instance_id) {
     const existing = await store.getInstance(String(form_instance_id));
     if (existing) return res.json(existing);
@@ -542,6 +555,17 @@ ecignRouter.post('/instances/:id/lock', asyncH(async (req, res) => {
   const cur = await store.getInstance(req.params.id);
   if (!cur) throw new EcignError('NOT_FOUND', 'Instance not found', 404);
   if (cur.state === 'signed_locked') return res.json(cur);
+  // Containment (ADR-0002 Phase 1): an unexplained empty required-signer set must
+  // NOT be lockable — that would produce a signed_locked document with no
+  // signatures. A genuinely unsigned form needs an explicit server-owned
+  // signature policy (deferred to Phase 5); until then, fail closed.
+  if (requiredSignersMissing(cur.required_signers.length)) {
+    await appendAudit({ actor: actorOf(req), network: networkOf(req),
+      subject: { kind: 'form_instance', id: cur.instance_id },
+      action: 'access.denied', payload: { reason: 'SIGNER_REQUIREMENTS_MISSING', op: 'lock' } });
+    throw new EcignError('SIGNER_REQUIREMENTS_MISSING',
+      'Cannot lock: this instance defines no required signers (fail-closed).', 409);
+  }
   assertTransition(cur.state, 'signed_locked');
   // G3: all required signers present
   const sigs = await store.listSignatures(cur.instance_id);
@@ -589,10 +613,24 @@ ecignRouter.post('/instances/:id/lock', asyncH(async (req, res) => {
 }));
 
 ecignRouter.post('/instances/:id/second-signature', asyncH(async (req, res) => {
+  // Containment (ADR-0002 Phase 1): second-signer eligibility must be resolved
+  // from server-owned canonical identity + signature authority — never from a
+  // client-supplied assigned_user.role/tier/authorityDomains. No server-owned
+  // resolver exists yet, so refuse signer-assignment outside an explicit demo
+  // runtime (fail-closed) rather than trust a browser-supplied signer profile.
+  if (!isDemoIdentityRuntime()) {
+    throw new EcignError('SIGNATURE_ASSIGNMENT_UNAVAILABLE',
+      'Server-owned signer-authority resolution is not yet available; client-supplied assignee authority is refused (fail-closed).', 503);
+  }
   const cur = await store.getInstance(req.params.id);
   if (!cur) throw new EcignError('NOT_FOUND', 'Instance not found', 404);
   const { assigned_to, due_date, assigned_user } = req.body ?? {};
   assert(assigned_to, 'VALIDATION', 'assigned_to required', 400);
+  // Empty required-signer set must not route a downstream signer (fail-closed).
+  if (requiredSignersMissing(cur.required_signers.length)) {
+    throw new EcignError('SIGNER_REQUIREMENTS_MISSING',
+      'Cannot assign a second signer: this instance defines no required signers (fail-closed).', 409);
+  }
   const requirements = requirementsForInstance(cur);
   if (requirements.length > 0) {
     const sigs = await store.listSignatures(cur.instance_id);
