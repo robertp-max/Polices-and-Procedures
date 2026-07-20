@@ -86,9 +86,11 @@ describe('planAdvanceOperation — ordering & status', () => {
   });
 });
 
+const afterCanonical: SemanticLifecycleStep[] = ['intent_recorded', 'global_deny_committed', 'canonical_transition_projected'];
+
 describe('planMarkReconciliationRequired', () => {
   it('keeps reservation, sets failedStep/failureCode, bumps versions', () => {
-    const p = planMarkReconciliationRequired(life(), op(), 'provider_disabled', 'COGNITO_DISABLE_FAILED');
+    const p = planMarkReconciliationRequired(life(), op({ completedSteps: afterCanonical }), 'provider_disabled', 'COGNITO_DISABLE_FAILED');
     expect(p.effect).toBe('reconcile');
     expect(p.writes.lifecycleStatus).toBe('reconciliation_required');
     expect(p.writes.currentOperationId).toEqual({ action: 'preserve' }); // stays reserved
@@ -98,8 +100,8 @@ describe('planMarkReconciliationRequired', () => {
   it('rejects a wrong-action failedStep', () => {
     throwsCode(() => planMarkReconciliationRequired(life(), op(), 'provider_enabled', 'X'), /FAILED_STEP_WRONG_ACTION/);
   });
-  it('rejects an empty/control-char failure code', () => {
-    throwsCode(() => planMarkReconciliationRequired(life(), op(), 'provider_disabled', '   '), /FAILURE_CODE_INVALID/);
+  it('rejects an empty/control-char failure code (once the step is the valid next step)', () => {
+    throwsCode(() => planMarkReconciliationRequired(life(), op({ completedSteps: afterCanonical }), 'provider_disabled', '   '), /FAILURE_CODE_INVALID/);
   });
 });
 
@@ -145,9 +147,45 @@ describe('FIX 3 — reconciliation failedStep restrictions', () => {
   it('rejects reactivate + provider_disabled', () => {
     throwsCode(() => planMarkReconciliationRequired(life({ status: 'reactivating' }), op({ action: 'reactivate', transitionalStatus: 'reactivating', desiredStatus: 'active' }), 'provider_disabled', 'X'), /FAILED_STEP_WRONG_ACTION/);
   });
-  it('permits final_state_committed as a failed final durable transaction', () => {
-    const p = planMarkReconciliationRequired(life(), op(), 'final_state_committed', 'FINAL_COMMIT_FAILED');
+  it('permits final_state_committed only after every pre-final step is complete', () => {
+    const p = planMarkReconciliationRequired(life(), op({ completedSteps: suspendBeforeFinal }), 'final_state_committed', 'FINAL_COMMIT_FAILED');
     expect(p.writes.failedStep).toEqual({ action: 'set', value: 'final_state_committed' });
+  });
+});
+
+describe('FIX (progression) — failedStep must be the next uncompleted step', () => {
+  it('suspend provider_disabled fails when canonical_transition_projected is missing', () => {
+    throwsCode(() => planMarkReconciliationRequired(life(), op(), 'provider_disabled', 'X'), /FAILED_STEP_OUT_OF_ORDER/);
+  });
+  it('suspend provider_disabled is accepted when prerequisites are complete', () => {
+    const p = planMarkReconciliationRequired(life(), op({ completedSteps: afterCanonical }), 'provider_disabled', 'X');
+    expect(p.writes.failedStep).toEqual({ action: 'set', value: 'provider_disabled' });
+  });
+  it('reactivate provider_enabled is accepted only after canonical_transition_projected', () => {
+    const react = (steps: SemanticLifecycleStep[]) => op({ action: 'reactivate', transitionalStatus: 'reactivating', desiredStatus: 'active', completedSteps: steps });
+    throwsCode(() => planMarkReconciliationRequired(life({ status: 'reactivating' }), react(['intent_recorded', 'global_deny_committed']), 'provider_enabled', 'X'), /FAILED_STEP_OUT_OF_ORDER/);
+    const ok = planMarkReconciliationRequired(life({ status: 'reactivating' }), react(afterCanonical), 'provider_enabled', 'X');
+    expect(ok.writes.failedStep).toEqual({ action: 'set', value: 'provider_enabled' });
+  });
+  it('rejects a failedStep already listed as completed', () => {
+    throwsCode(() => planMarkReconciliationRequired(life(), op({ completedSteps: [...afterCanonical, 'provider_disabled'] }), 'provider_disabled', 'X'), /FAILED_STEP_ALREADY_COMPLETED/);
+  });
+  it('rejects a failedStep when a LATER step is already completed', () => {
+    // provider_disabled failing, but provider_sessions_revoked already completed → sequence invalid
+    throwsCode(() => planMarkReconciliationRequired(life(), op({ completedSteps: ['intent_recorded', 'global_deny_committed', 'canonical_transition_projected', 'provider_sessions_revoked'] }), 'provider_disabled', 'X'), /FAILED_STEP_SEQUENCE_INVALID/);
+  });
+  it('final_state_committed failure is rejected when pre-final steps are incomplete', () => {
+    throwsCode(() => planMarkReconciliationRequired(life(), op({ completedSteps: afterCanonical }), 'final_state_committed', 'X'), /FAILED_STEP_OUT_OF_ORDER/);
+  });
+});
+
+describe('FIX (frozen policy order)', () => {
+  it('exported step-order arrays are runtime frozen and cannot be mutated', () => {
+    expect(Object.isFrozen(SUSPEND_STEP_ORDER)).toBe(true);
+    expect(Object.isFrozen(REACTIVATE_STEP_ORDER)).toBe(true);
+    const before = [...SUSPEND_STEP_ORDER];
+    expect(() => { (SUSPEND_STEP_ORDER as SemanticLifecycleStep[]).push('final_state_committed'); }).toThrow();
+    expect([...SUSPEND_STEP_ORDER]).toEqual(before); // unchanged
   });
 });
 

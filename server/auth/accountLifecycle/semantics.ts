@@ -31,17 +31,18 @@ export type SemanticLifecycleStep =
   | 'transition_ready_audited'
   | 'final_state_committed';
 
-/** Exact ordered step sequence per action (index = dependency order). */
-export const SUSPEND_STEP_ORDER: readonly SemanticLifecycleStep[] = [
+/** Exact ordered step sequence per action (index = dependency order). Runtime-
+ *  frozen so the central policy order cannot be mutated through a cast. */
+export const SUSPEND_STEP_ORDER: readonly SemanticLifecycleStep[] = Object.freeze([
   'intent_recorded', 'global_deny_committed', 'canonical_transition_projected',
   'provider_disabled', 'provider_sessions_revoked', 'registration_projected',
   'canonical_final_projected', 'transition_ready_audited', 'final_state_committed',
-];
-export const REACTIVATE_STEP_ORDER: readonly SemanticLifecycleStep[] = [
+] as SemanticLifecycleStep[]);
+export const REACTIVATE_STEP_ORDER: readonly SemanticLifecycleStep[] = Object.freeze([
   'intent_recorded', 'global_deny_committed', 'canonical_transition_projected',
   'provider_enabled', 'registration_projected', 'canonical_final_projected',
   'transition_ready_audited', 'final_state_committed',
-];
+] as SemanticLifecycleStep[]);
 /** Steps the store commits itself (begin / complete), never advanced manually. */
 const BOUNDARY_STEPS: ReadonlySet<SemanticLifecycleStep> = new Set(['intent_recorded', 'global_deny_committed', 'final_state_committed']);
 /** Steps committed atomically by beginTransition — never eligible as a failedStep. */
@@ -244,8 +245,19 @@ export function planMarkReconciliationRequired(life: LifecycleView, op: Operatio
   if (!order.includes(failedStep)) throw planError('LIFECYCLE_FAILED_STEP_WRONG_ACTION', `failedStep '${failedStep}' does not belong to action '${op.action}'.`);
   // The atomic beginning steps are committed by beginTransition; they can never be
   // an unresolved downstream failure. (final_state_committed IS eligible — it
-  // represents a failed final durable transaction.)
+  // represents a failed final durable transaction, once all prior steps are done.)
   if (BEGIN_STEPS.has(failedStep)) throw planError('LIFECYCLE_FAILED_STEP_ILLEGAL', `failedStep '${failedStep}' is committed by beginTransition and cannot fail downstream.`);
+  // The failed step must be the NEXT uncompleted step: not already completed, all
+  // prerequisites completed, and no later step completed. This keeps the journal
+  // truthful and stops reconciliation from skipping never-done work.
+  const failedIdx = order.indexOf(failedStep);
+  if (op.completedSteps.includes(failedStep)) throw planError('LIFECYCLE_FAILED_STEP_ALREADY_COMPLETED', `failedStep '${failedStep}' is already completed.`, 409);
+  for (let i = 0; i < failedIdx; i += 1) {
+    if (!op.completedSteps.includes(order[i])) throw planError('LIFECYCLE_FAILED_STEP_OUT_OF_ORDER', `failedStep '${failedStep}' requires '${order[i]}' first.`, 409);
+  }
+  for (let i = failedIdx + 1; i < order.length; i += 1) {
+    if (op.completedSteps.includes(order[i])) throw planError('LIFECYCLE_FAILED_STEP_SEQUENCE_INVALID', `A later step '${order[i]}' is already completed.`, 409);
+  }
   const code = validateFailureCode(failureCode);
   return freezePlan({
     effect: 'reconcile',
