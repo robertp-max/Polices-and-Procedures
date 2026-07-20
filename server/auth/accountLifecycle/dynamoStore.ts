@@ -1,0 +1,246 @@
+/**
+ * DynamoDB account-lifecycle store (ADR-0002 2B).
+ *
+ * Durable, multi-instance-safe lifecycle + operation records as ADDITIONAL items
+ * in the existing registration table — never the AppIdentityRegistry blob, never
+ * email as identity. Concurrency safety is via conditional expressions and
+ * TransactWrite (not read-then-unconditional-write, not last-write-wins Put, not
+ * a process-local mutex). The document client + command constructors + clock are
+ * injected so tests exercise command/condition contracts without live AWS.
+ */
+import {
+  ERR, computeRequestFingerprint, hashIdempotencyKey, validateIdempotencyKey,
+  validateReason, validateTransitionRequest, DYNAMO_LIFECYCLE_CAPS,
+  type AccountLifecycleStore, type AccountLifecycleStoreCapabilities, type LifecycleStoreDeps,
+  type InitializeLifecycleInput, type BeginLifecycleTransitionInput, type BeginLifecycleTransitionResult,
+  type AdvanceLifecycleOperationInput, type MarkReconciliationRequiredInput, type CompleteLifecycleTransitionInput,
+} from './store.js';
+import type { AccountLifecycleRecord, LifecycleOperationRecord } from './types.js';
+
+export interface LifecycleDynamoClient {
+  send(cmd: unknown): Promise<unknown>;
+  cmds: {
+    Get: new (input: unknown) => unknown;
+    Put: new (input: unknown) => unknown;
+    Update: new (input: unknown) => unknown;
+    TransactWrite: new (input: unknown) => unknown;
+  };
+}
+
+const pk = (id: string) => `ACCOUNT#${id}`;
+const SK_LIFECYCLE = 'LIFECYCLE';
+const skOp = (opId: string) => `OPERATION#${opId}`;
+const skIdem = (hash: string) => `IDEMPOTENCY#${hash}`;
+
+function isConditionalFailure(e: unknown): boolean {
+  const name = (e as { name?: string })?.name ?? '';
+  return name === 'ConditionalCheckFailedException' || name === 'TransactionCanceledException';
+}
+
+export class DynamoAccountLifecycleStore implements AccountLifecycleStore {
+  constructor(private table: string, private client: LifecycleDynamoClient, private deps: LifecycleStoreDeps) {}
+
+  capabilities(): AccountLifecycleStoreCapabilities { return DYNAMO_LIFECYCLE_CAPS; }
+
+  private async getItem(sk: string, id: string): Promise<Record<string, unknown> | null> {
+    const res = (await this.client.send(new this.client.cmds.Get({
+      TableName: this.table, Key: { pk: pk(id), sk }, ConsistentRead: true,
+    }))) as { Item?: Record<string, unknown> };
+    return res.Item ?? null;
+  }
+
+  async getLifecycle(id: string): Promise<AccountLifecycleRecord | null> {
+    const item = await this.getItem(SK_LIFECYCLE, id);
+    return (item?.record as AccountLifecycleRecord) ?? null;
+  }
+  async getOperation(id: string, opId: string): Promise<LifecycleOperationRecord | null> {
+    const item = await this.getItem(skOp(opId), id);
+    return (item?.record as LifecycleOperationRecord) ?? null;
+  }
+
+  async initializeLifecycle(input: InitializeLifecycleInput): Promise<AccountLifecycleRecord> {
+    const now = this.deps.nowIso();
+    const record: AccountLifecycleRecord = {
+      canonicalUserId: input.canonicalUserId, provider: 'cognito',
+      providerUsername: input.providerUsername, normalizedEmail: input.normalizedEmail,
+      status: input.initialStatus, version: 1, initializationSource: input.initializationSource,
+      createdAt: now, createdBy: input.actorUserId, updatedAt: now, updatedBy: input.actorUserId,
+    };
+    try {
+      await this.client.send(new this.client.cmds.Put({
+        TableName: this.table,
+        Item: { pk: pk(input.canonicalUserId), sk: SK_LIFECYCLE, record },
+        ConditionExpression: 'attribute_not_exists(sk)', // no overwrite
+      }));
+    } catch (e) {
+      if (isConditionalFailure(e)) throw ERR.alreadyExists();
+      throw e;
+    }
+    return record;
+  }
+
+  async beginTransition(input: BeginLifecycleTransitionInput): Promise<BeginLifecycleTransitionResult> {
+    validateTransitionRequest(input);
+    validateIdempotencyKey(input.idempotencyKey);
+    const reason = validateReason(input.reason);
+    const idemHash = hashIdempotencyKey(input.idempotencyKey);
+    const fingerprint = computeRequestFingerprint({
+      action: input.action, targetUserId: input.canonicalUserId, actorUserId: input.actorUserId,
+      reason, expectedFromStatus: input.expectedFromStatus, transitionalStatus: input.transitionalStatus,
+    });
+
+    const replay = await this.tryReplay(input.canonicalUserId, idemHash, fingerprint);
+    if (replay) return replay;
+
+    const now = this.deps.nowIso();
+    const life = await this.getLifecycle(input.canonicalUserId);
+    if (!life) throw ERR.lifecycleNotFound();
+    const op: LifecycleOperationRecord = {
+      operationId: input.operationId, idempotencyKey: '(stored as hash)', requestFingerprint: fingerprint,
+      action: input.action, targetUserId: input.canonicalUserId, actorUserId: input.actorUserId,
+      actorEmailSnapshot: input.actorEmailSnapshot, reason, status: 'intent_recorded',
+      operationVersion: 1, expectedLifecycleVersion: input.expectedLifecycleVersion,
+      beforeStatus: input.expectedFromStatus, desiredStatus: input.desiredFinalStatus,
+      completedSteps: ['intent_recorded', 'global_deny_committed'],
+      correlationId: input.correlationId, createdAt: now, updatedAt: now,
+    };
+    // Atomic: claim idempotency + write operation intent + reserve/transition lifecycle.
+    try {
+      await this.client.send(new this.client.cmds.TransactWrite({
+        TransactItems: [
+          { Put: { TableName: this.table, Item: { pk: pk(input.canonicalUserId), sk: skIdem(idemHash), operationId: op.operationId, requestFingerprint: fingerprint }, ConditionExpression: 'attribute_not_exists(sk)' } },
+          { Put: { TableName: this.table, Item: { pk: pk(input.canonicalUserId), sk: skOp(op.operationId), record: op }, ConditionExpression: 'attribute_not_exists(sk)' } },
+          { Update: {
+            TableName: this.table, Key: { pk: pk(input.canonicalUserId), sk: SK_LIFECYCLE },
+            ConditionExpression: 'record.version = :ev AND attribute_not_exists(record.currentOperationId) AND record.#s = :from',
+            UpdateExpression: 'SET record.#s = :mid, record.currentOperationId = :opid, record.version = :nv, record.updatedAt = :now, record.updatedBy = :actor',
+            ExpressionAttributeNames: { '#s': 'status' },
+            ExpressionAttributeValues: {
+              ':ev': input.expectedLifecycleVersion, ':from': input.expectedFromStatus, ':mid': input.transitionalStatus,
+              ':opid': op.operationId, ':nv': input.expectedLifecycleVersion + 1, ':now': now, ':actor': input.actorUserId,
+            },
+          } },
+        ],
+      }));
+    } catch (e) {
+      if (isConditionalFailure(e)) {
+        const late = await this.tryReplay(input.canonicalUserId, idemHash, fingerprint);
+        if (late) return late;
+        const cur = await this.getLifecycle(input.canonicalUserId);
+        if (cur?.currentOperationId) throw ERR.operationInProgress();
+        throw ERR.versionConflict();
+      }
+      throw e;
+    }
+    return { lifecycle: { ...life, status: input.transitionalStatus, currentOperationId: op.operationId, version: input.expectedLifecycleVersion + 1, updatedAt: now, updatedBy: input.actorUserId }, operation: op, idempotentReplay: false };
+  }
+
+  private async tryReplay(id: string, idemHash: string, fingerprint: string): Promise<BeginLifecycleTransitionResult | null> {
+    const claim = await this.getItem(skIdem(idemHash), id);
+    if (!claim) return null;
+    if (claim.requestFingerprint !== fingerprint) throw ERR.idempotencyConflict();
+    const op = await this.getOperation(id, String(claim.operationId));
+    const life = await this.getLifecycle(id);
+    if (!op || !life) throw ERR.operationNotFound();
+    return { lifecycle: life, operation: op, idempotentReplay: true };
+  }
+
+  async advanceOperation(input: AdvanceLifecycleOperationInput): Promise<LifecycleOperationRecord> {
+    const op = await this.getOperation(input.canonicalUserId, input.operationId);
+    if (!op) throw ERR.operationNotFound();
+    if (op.operationVersion !== input.expectedOperationVersion) throw ERR.operationVersionConflict();
+    if (op.status === 'completed') throw ERR.operationVersionConflict();
+    const steps = op.completedSteps.includes(input.step) ? op.completedSteps : [...op.completedSteps, input.step];
+    const now = this.deps.nowIso();
+    const nextStatus = input.nextStatus ?? 'running';
+    try {
+      await this.client.send(new this.client.cmds.Update({
+        TableName: this.table, Key: { pk: pk(input.canonicalUserId), sk: skOp(input.operationId) },
+        ConditionExpression: 'record.operationVersion = :ev',
+        UpdateExpression: 'SET record.#s = :st, record.operationVersion = :nv, record.completedSteps = :steps, record.updatedAt = :now',
+        ExpressionAttributeNames: { '#s': 'status' },
+        ExpressionAttributeValues: { ':ev': input.expectedOperationVersion, ':st': nextStatus, ':nv': op.operationVersion + 1, ':steps': steps, ':now': now },
+      }));
+    } catch (e) {
+      if (isConditionalFailure(e)) throw ERR.operationVersionConflict();
+      throw e;
+    }
+    return { ...op, status: nextStatus, operationVersion: op.operationVersion + 1, completedSteps: steps, updatedAt: now };
+  }
+
+  async markReconciliationRequired(input: MarkReconciliationRequiredInput) {
+    const op = await this.getOperation(input.canonicalUserId, input.operationId);
+    const life = await this.getLifecycle(input.canonicalUserId);
+    if (!op) throw ERR.operationNotFound();
+    if (!life) throw ERR.lifecycleNotFound();
+    const now = this.deps.nowIso();
+    try {
+      await this.client.send(new this.client.cmds.TransactWrite({
+        TransactItems: [
+          { Update: {
+            TableName: this.table, Key: { pk: pk(input.canonicalUserId), sk: skOp(input.operationId) },
+            ConditionExpression: 'record.operationVersion = :ev',
+            UpdateExpression: 'SET record.#s = :st, record.failedStep = :fs, record.failureCode = :fc, record.operationVersion = :nv, record.updatedAt = :now',
+            ExpressionAttributeNames: { '#s': 'status' },
+            ExpressionAttributeValues: { ':ev': input.expectedOperationVersion, ':st': 'reconciliation_required', ':fs': input.failedStep, ':fc': input.failureCode, ':nv': op.operationVersion + 1, ':now': now },
+          } },
+          { Update: {
+            TableName: this.table, Key: { pk: pk(input.canonicalUserId), sk: SK_LIFECYCLE },
+            ConditionExpression: 'record.version = :elv AND record.currentOperationId = :opid',
+            UpdateExpression: 'SET record.#s = :st, record.version = :nlv, record.updatedAt = :now',
+            ExpressionAttributeNames: { '#s': 'status' },
+            ExpressionAttributeValues: { ':elv': input.expectedLifecycleVersion, ':opid': input.operationId, ':st': 'reconciliation_required', ':nlv': input.expectedLifecycleVersion + 1, ':now': now },
+          } },
+        ],
+      }));
+    } catch (e) {
+      if (isConditionalFailure(e)) throw ERR.versionConflict();
+      throw e;
+    }
+    return {
+      lifecycle: { ...life, status: 'reconciliation_required', version: input.expectedLifecycleVersion + 1, updatedAt: now },
+      operation: { ...op, status: 'reconciliation_required', failedStep: input.failedStep, failureCode: input.failureCode, operationVersion: op.operationVersion + 1, updatedAt: now },
+    };
+  }
+
+  async completeTransition(input: CompleteLifecycleTransitionInput) {
+    const op = await this.getOperation(input.canonicalUserId, input.operationId);
+    const life = await this.getLifecycle(input.canonicalUserId);
+    if (!op) throw ERR.operationNotFound();
+    if (!life) throw ERR.lifecycleNotFound();
+    if (input.finalStatus !== op.desiredStatus) throw ERR.invalidTransition('finalStatus does not match desiredStatus.');
+    for (const step of input.requiredSteps) {
+      if (!op.completedSteps.includes(step)) throw ERR.invalidTransition(`required step not completed: ${step}`);
+    }
+    const now = this.deps.nowIso();
+    try {
+      await this.client.send(new this.client.cmds.TransactWrite({
+        TransactItems: [
+          { Update: {
+            TableName: this.table, Key: { pk: pk(input.canonicalUserId), sk: skOp(input.operationId) },
+            ConditionExpression: 'record.operationVersion = :ev',
+            UpdateExpression: 'SET record.#s = :done, record.operationVersion = :nv, record.updatedAt = :now',
+            ExpressionAttributeNames: { '#s': 'status' },
+            ExpressionAttributeValues: { ':ev': input.expectedOperationVersion, ':done': 'completed', ':nv': op.operationVersion + 1, ':now': now },
+          } },
+          { Update: {
+            TableName: this.table, Key: { pk: pk(input.canonicalUserId), sk: SK_LIFECYCLE },
+            ConditionExpression: 'record.version = :elv AND record.currentOperationId = :opid',
+            UpdateExpression: 'SET record.#s = :fin, record.lastCompletedOperationId = :opid, record.version = :nlv, record.updatedAt = :now REMOVE record.currentOperationId',
+            ExpressionAttributeNames: { '#s': 'status' },
+            ExpressionAttributeValues: { ':elv': input.expectedLifecycleVersion, ':opid': input.operationId, ':fin': input.finalStatus, ':nlv': input.expectedLifecycleVersion + 1, ':now': now },
+          } },
+        ],
+      }));
+    } catch (e) {
+      if (isConditionalFailure(e)) throw ERR.versionConflict();
+      throw e;
+    }
+    const { currentOperationId, ...restLife } = life;
+    void currentOperationId;
+    return {
+      lifecycle: { ...restLife, status: input.finalStatus, lastCompletedOperationId: input.operationId, version: input.expectedLifecycleVersion + 1, updatedAt: now },
+      operation: { ...op, status: 'completed', operationVersion: op.operationVersion + 1, updatedAt: now },
+    };
+  }
+}

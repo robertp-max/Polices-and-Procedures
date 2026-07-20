@@ -37,7 +37,14 @@ export function lifecycleAllowsAccess(status: AccountLifecycleStatus): boolean {
  *  (not queried) are distinct defects — an unread provider is never proof. */
 export type ProviderAccountState = 'enabled' | 'disabled' | 'not_found' | 'unknown';
 
-/** Durable per-user lifecycle record (persisted in Phase 2B; contract defined here). */
+/** How a durable lifecycle record came to exist. */
+export type LifecycleInitializationSource =
+  | 'verified_legacy_active'
+  | 'manual_reconciliation'
+  | 'account_provisioning';
+
+/** Durable per-user lifecycle record. Identity is `canonicalUserId`; email and
+ *  providerUsername are mutable projections, never the record identity. */
 export interface AccountLifecycleRecord {
   canonicalUserId: string;
   provider: 'cognito';
@@ -48,6 +55,9 @@ export interface AccountLifecycleRecord {
   currentOperationId?: string;
   lastCompletedOperationId?: string;
   reasonCode?: string;
+  initializationSource: LifecycleInitializationSource;
+  createdAt: string;
+  createdBy: string;
   updatedAt: string;
   updatedBy: string;
 }
