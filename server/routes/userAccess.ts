@@ -26,6 +26,10 @@ import { computeEffectiveAccess } from '../auth/authorization/evaluator.js';
 import { computePageAccessProjection, parseOverrideRecord } from '../auth/authorization/pageAccess.js';
 import { getPageAccessPersistence } from '../auth/pageAccessPersistence.js';
 import { computeAccessChangeImpact } from '../auth/authorization/impactPreview.js';
+import {
+  assignmentsForUser, getSignatureAssignmentStore, grantAssignment, primeAssignmentCache, revokeAssignment,
+} from '../auth/authorization/signatureAssignmentStore.js';
+import type { AuthorityBasis } from '../auth/authorization/signatureAuthority.js';
 import { getAccountLifecycleService } from '../auth/accountLifecycle/serviceFactory.js';
 import { performAdminLifecycleTransition } from '../auth/accountLifecycle/adminTransition.js';
 import type { LifecycleAction } from '../auth/accountLifecycle/service.js';
@@ -205,6 +209,73 @@ userAccessRouter.post('/:userId/impact-preview', asyncHandler(async (req, res) =
     nowIso,
   });
   res.json({ impact });
+}));
+
+const AUTHORITY_BASES = new Set<AuthorityBasis>([
+  'job_appointment', 'organizational_assignment', 'license', 'competency',
+  'governing_body_action', 'delegation', 'policy_assignment',
+]);
+
+async function auditSignatureAuthority(actor: Actor, req: Request, action: string, userId: string, after: unknown, reason: string): Promise<void> {
+  await appendEvent({
+    event_type: 'signature_authority', stream: 'user-access', actor, action,
+    resource: { type: 'user', id: userId }, decision: 'permit', decision_reason: reason, after,
+    correlation_id: req.session?.correlation_id, request_id: req.session?.request_id, session_id: req.session?.session_id,
+  });
+}
+
+/** GET /admin/user-access/:userId/signature-authority — a user's assignments (Phase 5B). */
+userAccessRouter.get('/:userId/signature-authority', asyncHandler(async (req, res) => {
+  await requireUserAccessAdmin(req);
+  const userId = String(req.params.userId || '').trim();
+  if (!userId) throw new ApiError('validation_error', 'userId is required.', 400);
+  const all = await getSignatureAssignmentStore().getAll();
+  primeAssignmentCache(all);
+  res.json({ assignments: assignmentsForUser(all, userId) });
+}));
+
+/** POST /admin/user-access/:userId/signature-authority — grant an assignment (Phase 5B). */
+userAccessRouter.post('/:userId/signature-authority', asyncHandler(async (req, res) => {
+  const actor = await requireUserAccessAdmin(req);
+  const userId = String(req.params.userId || '').trim();
+  if (!userId) throw new ApiError('validation_error', 'userId is required.', 400);
+  const body = (req.body ?? {}) as {
+    signatureRoleId?: unknown; authorityBasis?: unknown; reason?: unknown;
+    scope?: { organizationId?: unknown; branchId?: unknown }; effectiveFrom?: unknown; effectiveUntil?: unknown;
+  };
+  const signatureRoleId = String(body.signatureRoleId ?? '').trim();
+  if (!signatureRoleId) throw new ApiError('validation_error', 'signatureRoleId is required.', 400);
+  const basisRaw = String(body.authorityBasis ?? '');
+  const authorityBasis: AuthorityBasis = AUTHORITY_BASES.has(basisRaw as AuthorityBasis) ? (basisRaw as AuthorityBasis) : 'job_appointment';
+  const reason = String(body.reason ?? '').trim() || 'admin grant';
+  const nowIso = new Date().toISOString();
+  const store = getSignatureAssignmentStore();
+  const current = await store.getAll();
+  const { list, assignment } = grantAssignment(current, {
+    userId, signatureRoleId, authorityBasis,
+    scope: { organizationId: String(body.scope?.organizationId ?? 'careindeed'), branchId: body.scope?.branchId ? String(body.scope.branchId) : undefined },
+    effectiveFrom: String(body.effectiveFrom ?? nowIso),
+    effectiveUntil: body.effectiveUntil ? String(body.effectiveUntil) : undefined,
+    grantedBy: actor.user_id, reason,
+  }, randomUUID());
+  await store.putAll(list);
+  primeAssignmentCache(list);
+  await auditSignatureAuthority(actor, req, 'signature_authority.grant', userId, { assignmentId: assignment.assignmentId, capacity: assignment.signatureRoleId }, reason);
+  res.json({ assignment });
+}));
+
+/** POST /admin/user-access/:userId/signature-authority/:assignmentId/revoke (Phase 5B). */
+userAccessRouter.post('/:userId/signature-authority/:assignmentId/revoke', asyncHandler(async (req, res) => {
+  const actor = await requireUserAccessAdmin(req);
+  const userId = String(req.params.userId || '').trim();
+  const assignmentId = String(req.params.assignmentId || '').trim();
+  if (!userId || !assignmentId) throw new ApiError('validation_error', 'userId and assignmentId are required.', 400);
+  const store = getSignatureAssignmentStore();
+  const updated = revokeAssignment(await store.getAll(), assignmentId);
+  await store.putAll(updated);
+  primeAssignmentCache(updated);
+  await auditSignatureAuthority(actor, req, 'signature_authority.revoke', userId, { assignmentId, status: 'revoked' }, 'admin revoke');
+  res.json({ ok: true });
 }));
 
 function targetId(req: Request): string {
