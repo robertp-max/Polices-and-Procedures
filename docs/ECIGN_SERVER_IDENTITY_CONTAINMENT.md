@@ -88,8 +88,9 @@ The **central `requireApiAuth` boundary is the sole authority** for a request's
 authentication mode. It attaches `req.authenticationContext = { mode }` where
 `mode ∈ 'cognito' | 'service' | 'local_demo'`. `local_demo` is set only when the
 boundary's complete local-demo fallback activates: exact `ENABLE_LOCAL_DEMO_AUTH`
-opt-in **and** non-production **and** localhost host/origin **and** Cognito
-unconfigured **and** fallback not disabled **and** no injected auth deps.
+opt-in **and** non-production **and** a loopback canonical host **and** a loopback
+network peer **and** Cognito unconfigured **and** fallback not disabled **and** no
+injected auth deps.
 
 Locality is proven from the **connection**, not caller headers: the boundary
 requires BOTH a loopback canonical host (`localhost`/`127.0.0.1`/`::1`) AND a
@@ -118,14 +119,27 @@ only and must not gate request behavior.
 
 ## Tests
 
-`server/auth/verifiedSignerIdentity.test.ts` covers: demo-runtime gating
-(fail-closed; production never demo; malformed flag), verified-actor selection,
-least-privilege tier (never `4`), truthful MFA mapping, and the empty
-required-signers guard.
+- `server/auth/requestAuthenticationContext.test.ts` — central boundary via an
+  HTTP-style harness: loopback-proof (spoofed `Origin`/`X-Forwarded-Host` and
+  localhost-host-from-remote-peer are non-demo; loopback host + peer is demo),
+  partial-Cognito fail-closed, verified bearer → `cognito`, and the
+  `authenticationModeForActor` (user/service/system-throws) + `requestIsLocalDemo`
+  helper units.
+- `server/auth/localDemoFallback.test.ts` — the real `requireApiAuth` opt-in
+  matrix (flag/host/Cognito/deps/disable conditions).
+- `server/routes/ecignContainment.route.test.ts` — eCIgn route contracts:
+  verified-actor identity, hostile-header rejection, non-demo 503s for
+  signature/lock/second-signer/bundle/instances, empty-requirement guards, and
+  that env flags alone cannot self-enable demo.
+- `server/ecign/pdfBundleGuard.test.ts` — bundle builder defense-in-depth
+  (state/requirements/integrity/mandatory-vs-optional signer completion).
+- `server/auth/verifiedSignerIdentity.test.ts` — verified-actor selection,
+  least-privilege tier (never `4`), truthful MFA, empty required-signers guard.
 
 ## Scope boundary / follow-ups (later control-plane phases)
 
 - Real server-side signer-tier and authority-domain derivation → Phase 5.
 - Real MFA step-up integration → Phase 5 (high-impact forms fail closed until then).
-- Lock/final-package hardening for empty required-signers and broader
-  evidence/workflow actor paths → later phases.
+- Canonical server-owned signer requirements, signature-authority assignments,
+  verified step-up, and safe re-enablement of non-demo signature operations →
+  Phase 5.
