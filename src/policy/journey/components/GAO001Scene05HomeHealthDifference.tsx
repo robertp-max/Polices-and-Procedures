@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Home, Building2, CheckCircle2, ArrowRight, X } from 'lucide-react';
 import GAO001SharedOverlay from './GAO001SharedOverlay';
+import { defineGao001Hotspots } from '../data/gaoNodes/gao001HotspotContract';
 import { gao001SceneArt } from '../data/gao001SceneArt';
 
 interface GAO001Scene05HomeHealthDifferenceProps {
@@ -371,7 +372,7 @@ export default function GAO001Scene05HomeHealthDifference({ onComplete }: GAO001
           activeLabel={hotspot.label}
         />
       )}
-      hotspots={[
+      hotspots={defineGao001Hotspots("GAO-001.lesson.l5.delivery", [
         {
           id: 'observe', x: 20, y: 50, label: 'Observe',
           fieldNotes: {
@@ -407,7 +408,7 @@ export default function GAO001Scene05HomeHealthDifference({ onComplete }: GAO001
             content: 'Never assume. "Patient has a 2-inch bruise on left arm" is a fact. "Patient fell" is an assumption if you didn\'t see it.'
           },
         }
-      ]}
+      ])}
     />
   );
 }

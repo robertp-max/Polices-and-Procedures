@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ShieldAlert, CheckCircle2, Lock, UserCheck, ArrowRight, X } from 'lucide-react';
 import GAO001SharedOverlay from './GAO001SharedOverlay';
+import { defineGao001Hotspots } from '../data/gaoNodes/gao001HotspotContract';
 import { gao001SceneArt } from '../data/gao001SceneArt';
 
 interface GAO001Scene06ReportingEscalationProps {
@@ -386,7 +387,7 @@ export default function GAO001Scene06ReportingEscalation({ onComplete }: GAO001S
           activeLabel={hotspot.label}
         />
       )}
-      hotspots={[
+      hotspots={defineGao001Hotspots("GAO-001.lesson.l6.delivery", [
         {
           id: 'rights', x: 25, y: 35, label: 'Patient rights',
           fieldNotes: {
@@ -415,7 +416,7 @@ export default function GAO001Scene06ReportingEscalation({ onComplete }: GAO001S
             content: 'Notify the physician and clinical manager when a refusal significantly impacts the care plan.'
           },
         }
-      ]}
+      ])}
     />
   );
 }

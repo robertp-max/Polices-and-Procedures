@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Map, ArrowRight, CheckCircle2, ShieldAlert, Lock, BookOpen, Star, ShieldCheck, HeartPulse, Award, X } from 'lucide-react';
 import GAO001SharedOverlay, { type Hotspot } from './GAO001SharedOverlay';
+import { defineGao001Hotspots } from '../data/gaoNodes/gao001HotspotContract';
 import { gao001SceneArt } from '../data/gao001SceneArt';
 
 interface GAO001Scene09ReadinessMapProps {
@@ -391,7 +392,7 @@ export default function GAO001Scene09ReadinessMap({ onComplete }: GAO001Scene09R
             complete={complete}
           />
         )}
-        hotspots={[
+        hotspots={defineGao001Hotspots("GAO-001.lesson.l9.delivery", [
           {
             id: 'mission', x: 20, y: 30, label: 'Mission',
             fieldNotes: {
@@ -512,7 +513,7 @@ export default function GAO001Scene09ReadinessMap({ onComplete }: GAO001Scene09R
               ]
             }
           }
-        ]}
+        ])}
       />
     );
   }

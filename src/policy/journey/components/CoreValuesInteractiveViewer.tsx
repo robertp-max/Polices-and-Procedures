@@ -18,6 +18,7 @@ import {
   X,
   } from 'lucide-react';
 import GAO001SharedOverlay, { type Hotspot } from './GAO001SharedOverlay';
+import { defineGao001Hotspots } from '../data/gaoNodes/gao001HotspotContract';
 import { gao001SceneArt } from '../data/gao001SceneArt';
 
 // Web Audio API Synthesizer for self-contained interaction sounds
@@ -220,7 +221,9 @@ const CORE_VALUE_NODE_POSITIONS: Record<string, { x: number; y: number }> = {
   compliance: { x: 28, y: 83 },
 };
 
-const CORE_VALUE_HOTSPOTS: Hotspot[] = CORE_VALUES.map((value) => ({
+const CORE_VALUE_HOTSPOTS: Hotspot[] = defineGao001Hotspots(
+  "GAO-001.lesson.l4.delivery",
+  CORE_VALUES.map((value) => ({
   id: value.id,
   x: CORE_VALUE_NODE_POSITIONS[value.id].x,
   y: CORE_VALUE_NODE_POSITIONS[value.id].y,
@@ -229,7 +232,8 @@ const CORE_VALUE_HOTSPOTS: Hotspot[] = CORE_VALUES.map((value) => ({
     title: value.name,
     content: value.desc,
   },
-}));
+  })),
+);
 
 type CoreValueScenario = typeof CORE_VALUE_SCENARIOS[number];
 

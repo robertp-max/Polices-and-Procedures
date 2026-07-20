@@ -1,6 +1,7 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { Activity, CheckCircle2, ChevronRight, Heart, HelpCircle, ShieldCheck, Users, X } from 'lucide-react';
 import GAO001SharedOverlay, { type Hotspot } from './GAO001SharedOverlay';
+import { defineGao001Hotspots } from '../data/gaoNodes/gao001HotspotContract';
 import { gao001SceneArt } from '../data/gao001SceneArt';
 
 interface GAO001Scene02MissionBriefingProps {
@@ -374,7 +375,7 @@ export default function GAO001Scene02MissionBriefing({ onComplete }: GAO001Scene
         renderCustomModal={({ hotspot, close, complete }) => (
           <MissionBriefingModal hotspot={hotspot} close={close} complete={complete} />
         )}
-        hotspots={[
+        hotspots={defineGao001Hotspots("GAO-001.lesson.l2.delivery", [
           {
             id: 'mission', x: 25, y: 35, label: 'Mission card',
             fieldNotes: {
@@ -435,7 +436,7 @@ export default function GAO001Scene02MissionBriefing({ onComplete }: GAO001Scene
               ]
             }
           }
-        ]}
+        ])}
       />
     );
   }

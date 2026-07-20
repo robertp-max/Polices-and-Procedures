@@ -11,20 +11,23 @@ type FrozenRecord = {
   appLocation: string;
   moduleId: string;
   lessonId: string;
-  title: string;
+  lessonTitle: string;
   transcriptText: string;
   transcriptSha256: string;
   wordCount: number;
-  expectedDurationSeconds: number;
+  estimatedDurationSeconds: number;
   outputPath: string;
+  audioFormat: string;
   voiceId: string;
   model: string;
   speakingRate: number;
   sourceCommit: string;
   policySensitive: boolean;
   approvalStatus: string;
+  sourceType: string;
   ttsGenerationAllowed: boolean;
   pronunciationNotes: string[];
+  pronunciationKeys: string[];
 };
 
 type FrozenManifest = {
@@ -33,6 +36,15 @@ type FrozenManifest = {
   sourceCommit: string;
   moduleCount: number;
   recordCount: number;
+  durationWordsPerMinute: number;
+  gao001ExistingAudioVerification: Array<{
+    appLocation: string;
+    audioPath: string;
+    readable: boolean;
+    durationSeconds: number;
+    segmentTranscriptMatch: boolean;
+    status: string;
+  }>;
   records: FrozenRecord[];
 };
 
@@ -82,13 +94,25 @@ describe("GAO TTS source freeze", () => {
     for (const record of manifest.records) {
       const runtime = runtimeCards.get(record.appLocation);
       expect(runtime, record.appLocation).toBeDefined();
-      expect(record.title, record.appLocation).toBe(runtime?.title);
+      expect(record.lessonTitle, record.appLocation).toBe(runtime?.title);
       expect(record.transcriptText, record.appLocation).toBe(runtime?.transcriptText);
-      expect(record.expectedDurationSeconds, record.appLocation).toBe(runtime?.duration);
+      expect(record.estimatedDurationSeconds, record.appLocation).toBeGreaterThan(0);
+      expect(record.estimatedDurationSeconds, record.appLocation).toBe(
+        Math.ceil(record.wordCount * 60 / manifest.durationWordsPerMinute),
+      );
       expect(record.transcriptSha256, record.appLocation).toBe(sha256(record.transcriptText));
       expect(record.wordCount, record.appLocation).toBe(record.transcriptText.split(/\s+/).length);
       expect(record.outputPath, record.appLocation).toBe(narrationAssetPath(record.appLocation));
+      expect(record.audioFormat, record.appLocation).toBe("mp3");
+      expect(record.sourceType, record.appLocation).toBe("runtime-transcript-text");
     }
+
+    expect(manifest.records.map((record) => record.appLocation)).toEqual(
+      [...manifest.records]
+        .sort((a, b) => a.moduleId.localeCompare(b.moduleId, undefined, { numeric: true })
+          || Number(a.lessonId.slice(1)) - Number(b.lessonId.slice(1)))
+        .map((record) => record.appLocation),
+    );
   });
 
   it("keeps generation blocked until voice and policy approvals are assigned", () => {
@@ -100,7 +124,7 @@ describe("GAO TTS source freeze", () => {
       expect(record.voiceId, record.appLocation).toBe("PENDING_OWNER_SELECTION");
       expect(record.model, record.appLocation).toBe("PENDING_OWNER_SELECTION");
       expect(record.speakingRate, record.appLocation).toBe(0.95);
-      expect(record.approvalStatus, record.appLocation).toMatch(/^pending-/);
+      expect(record.approvalStatus, record.appLocation).toMatch(/^(PENDING|CORRECTION REQUIRED|NOT POLICY SENSITIVE)$/);
     }
   });
 
@@ -111,5 +135,22 @@ describe("GAO TTS source freeze", () => {
     expect(complianceLesson).toBeDefined();
     expect(complianceLesson?.transcriptText).not.toMatch(/CORDORATE/i);
     expect(complianceLesson?.pronunciationNotes.join(" ")).toMatch(/Corporate Compliance Program/i);
+  });
+
+  it("verifies all nine existing GAO-001 WAV files without claiming an unproven source match", () => {
+    expect(manifest.gao001ExistingAudioVerification).toHaveLength(9);
+    expect(new Set(manifest.gao001ExistingAudioVerification.map((record) => record.audioPath)).size).toBe(9);
+
+    for (const record of manifest.gao001ExistingAudioVerification) {
+      expect(record.readable, record.appLocation).toBe(true);
+      expect(record.durationSeconds, record.appLocation).toBeGreaterThan(0);
+      expect(record.status, record.appLocation).not.toBe("APPROVED AND MATCHED");
+    }
+
+    expect(manifest.gao001ExistingAudioVerification.filter((record) => !record.segmentTranscriptMatch)
+      .map((record) => record.appLocation)).toEqual([
+        "GAO-001.lesson.l1.delivery",
+        "GAO-001.lesson.l9.delivery",
+      ]);
   });
 });

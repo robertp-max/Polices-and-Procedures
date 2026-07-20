@@ -301,6 +301,7 @@ export default function GAO001SharedOverlay({
                 >
                   <button
                     type="button"
+                    data-node-id={spot.id}
                     onClick={(event) => openHotspot(spot, index, event.currentTarget)}
                     aria-label={isComplete ? `${spot.label} — observed` : `Review ${spot.label}`}
                     className={`relative z-40 -ml-6 -mt-6 flex h-12 w-12 items-center justify-center rounded-full border-[3px] border-white text-white shadow-lg transition-transform duration-300 hover:scale-110 ${colorClass} ${

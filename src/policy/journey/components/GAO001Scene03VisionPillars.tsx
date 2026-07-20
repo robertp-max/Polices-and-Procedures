@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { AlertCircle, Building, CheckCircle2, Eye, FileText, Heart, Shield, Star, TrendingUp, Users, X, type LucideIcon } from 'lucide-react';
 import GAO001SharedOverlay, { type Hotspot, type HotspotQuestionChoice } from './GAO001SharedOverlay';
+import { defineGao001Hotspots } from '../data/gaoNodes/gao001HotspotContract';
 import { gao001SceneArt } from '../data/gao001SceneArt';
 
 interface GAO001Scene03VisionPillarsProps {
@@ -408,7 +409,7 @@ export default function GAO001Scene03VisionPillars({ onComplete }: GAO001Scene03
         renderCustomModal={({ hotspot, close, complete }) => (
           <VisionPillarModal hotspot={hotspot} close={close} complete={complete} />
         )}
-        hotspots={[
+        hotspots={defineGao001Hotspots("GAO-001.lesson.l3.delivery", [
           {
             id: 'compassion', x: 25, y: 50, label: VISION_PILLARS[0].shortLabel,
             fieldNotes: {
@@ -453,7 +454,7 @@ export default function GAO001Scene03VisionPillars({ onComplete }: GAO001Scene03
               choices: VISION_PILLARS[3].options
             }
           }
-        ]}
+        ])}
       />
     );
   }

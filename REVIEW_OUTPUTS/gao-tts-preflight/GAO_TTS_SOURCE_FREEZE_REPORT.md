@@ -1,0 +1,279 @@
+# GAO TTS Source Freeze Report
+
+> Generation status: **HOLD**. This task generated no audio and registered no future audio paths.
+
+## Summary
+
+- Modules: 26
+- Lessons: 120
+- Total words: 55676
+- Estimated duration at 130 WPM: 25755 seconds (429.3 minutes)
+- Policy-sensitive records: 120
+- Pending approval: 47
+- Correction required: 73
+- Duplicate transcript groups: 0
+- Malformed transcript findings after runtime sanitation: 0
+
+## Blocked Records
+
+- `GAO-002.lesson.l1.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-002.lesson.l2.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-002.lesson.l3.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-002.lesson.l4.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-002.lesson.l5.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-002.lesson.l6.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-002.lesson.l7.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-002.lesson.l8.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-003.lesson.l1.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-003.lesson.l2.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-003.lesson.l3.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-003.lesson.l4.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-003.lesson.l5.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-004.lesson.l1.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-004.lesson.l2.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-004.lesson.l3.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-004.lesson.l4.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-004.lesson.l5.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-004.lesson.l6.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-005.lesson.l1.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-005.lesson.l2.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-005.lesson.l3.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-005.lesson.l4.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-005.lesson.l5.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-006.lesson.l1.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-006.lesson.l2.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-006.lesson.l3.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-006.lesson.l4.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-006.lesson.l5.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-006.lesson.l6.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-006.lesson.l7.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-006.lesson.l8.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-007.lesson.l1.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-007.lesson.l2.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-007.lesson.l3.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-007.lesson.l4.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-007.lesson.l5.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-007.lesson.l6.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-007.lesson.l7.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-007.lesson.l8.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-008.lesson.l1.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-008.lesson.l2.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-008.lesson.l3.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-008.lesson.l4.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-008.lesson.l5.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-008.lesson.l6.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-008.lesson.l7.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-009.lesson.l1.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-009.lesson.l2.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-009.lesson.l3.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-009.lesson.l4.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-009.lesson.l5.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-009.lesson.l6.delivery` — PENDING; Clinical and compliance policy owner
+- `GAO-010.lesson.l1.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-010.lesson.l2.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-010.lesson.l3.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-010.lesson.l4.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-010.lesson.l5.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-010.lesson.l6.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-010.lesson.l7.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-010.lesson.l8.delivery` — CORRECTION REQUIRED; Clinical and compliance policy owner
+- `GAO-011.lesson.l1.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-011.lesson.l2.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-011.lesson.l3.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-011.lesson.l4.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-011.lesson.l5.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-011.lesson.l6.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-011.lesson.l7.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-012.lesson.l1.delivery` — PENDING; Applicable policy owner
+- `GAO-012.lesson.l2.delivery` — PENDING; Applicable policy owner
+- `GAO-012.lesson.l3.delivery` — PENDING; Applicable policy owner
+- `GAO-012.lesson.l4.delivery` — PENDING; Applicable policy owner
+- `GAO-012.lesson.l5.delivery` — PENDING; Applicable policy owner
+- `GAO-012.lesson.l6.delivery` — PENDING; Applicable policy owner
+- `GAO-012.lesson.l7.delivery` — PENDING; Applicable policy owner
+- `GAO-013.lesson.l1.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-013.lesson.l2.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-013.lesson.l3.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-013.lesson.l4.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-013.lesson.l5.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-013.lesson.l6.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-013.lesson.l7.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-014.lesson.l1.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-014.lesson.l2.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-014.lesson.l3.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-014.lesson.l4.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-014.lesson.l5.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-014.lesson.l6.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-015.lesson.l1.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-015.lesson.l2.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-015.lesson.l3.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-015.lesson.l4.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-016.lesson.l1.delivery` — PENDING; Applicable policy owner
+- `GAO-016.lesson.l2.delivery` — PENDING; Applicable policy owner
+- `GAO-016.lesson.l3.delivery` — PENDING; Applicable policy owner
+- `GAO-016.lesson.l4.delivery` — PENDING; Applicable policy owner
+- `GAO-017.lesson.l1.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-017.lesson.l2.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-017.lesson.l3.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-018.lesson.l1.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-018.lesson.l2.delivery` — CORRECTION REQUIRED; Applicable policy owner
+- `GAO-019.lesson.l1.delivery` — PENDING; HR and employee-relations policy owner
+- `GAO-019.lesson.l2.delivery` — PENDING; HR and employee-relations policy owner
+- `GAO-019.lesson.l3.delivery` — PENDING; HR and employee-relations policy owner
+- `GAO-020.lesson.l1.delivery` — CORRECTION REQUIRED; HR and employee-relations policy owner
+- `GAO-020.lesson.l2.delivery` — CORRECTION REQUIRED; HR and employee-relations policy owner
+- `GAO-021.lesson.l1.delivery` — PENDING; HR and employee-relations policy owner
+- `GAO-021.lesson.l2.delivery` — PENDING; HR and employee-relations policy owner
+- `GAO-022.lesson.l1.delivery` — CORRECTION REQUIRED; HR and employee-relations policy owner
+- `GAO-022.lesson.l2.delivery` — CORRECTION REQUIRED; HR and employee-relations policy owner
+- `GAO-023.lesson.l1.delivery` — CORRECTION REQUIRED; Privacy, security, and documentation policy owner
+- `GAO-023.lesson.l2.delivery` — CORRECTION REQUIRED; Privacy, security, and documentation policy owner
+- `GAO-024.lesson.l1.delivery` — PENDING; Privacy, security, and documentation policy owner
+- `GAO-024.lesson.l2.delivery` — PENDING; Privacy, security, and documentation policy owner
+- `GAO-025.lesson.l1.delivery` — CORRECTION REQUIRED; Privacy, security, and documentation policy owner
+- `GAO-025.lesson.l2.delivery` — CORRECTION REQUIRED; Privacy, security, and documentation policy owner
+- `GAO-026.lesson.l1.delivery` — CORRECTION REQUIRED; HR, payroll, and benefits policy owner
+- `GAO-026.lesson.l2.delivery` — CORRECTION REQUIRED; HR, payroll, and benefits policy owner
+- `GAO-027.lesson.l1.delivery` — CORRECTION REQUIRED; HR, payroll, and benefits policy owner
+- `GAO-027.lesson.l2.delivery` — CORRECTION REQUIRED; HR, payroll, and benefits policy owner
+
+## Duplicate Content
+
+- None detected.
+
+## Pronunciation Exceptions
+
+- `GAO-002.lesson.l1.delivery`: CMS, CFR, DAR, Care Indeed, Governing Body, Clinical Manager, Director of Nursing
+- `GAO-002.lesson.l2.delivery`: CMS, CFR, QAPI, Care Indeed, Governing Body
+- `GAO-002.lesson.l3.delivery`: CMS, CFR, QAPI, HIPAA, OSHA, Care Indeed, Governing Body, DON
+- `GAO-002.lesson.l4.delivery`: CMS, CFR, QAPI, OASIS, DAR, Care Indeed, Clinical Manager, Director of Nursing, DON, HHA, LVN
+- `GAO-002.lesson.l5.delivery`: CMS, CFR, OASIS, DON, HHA, LVN, PTA, COTA
+- `GAO-002.lesson.l6.delivery`: CMS, CFR, HIPAA, Care Indeed, Governing Body, Clinical Manager, DON
+- `GAO-002.lesson.l7.delivery`: OIG, HIPAA, Care Indeed, Governing Body, DON, PPE
+- `GAO-002.lesson.l8.delivery`: CMS, CFR, QAPI, Care Indeed, Governing Body, Clinical Manager, DON, HHA, LVN, PTA, COTA, SLP, MSW
+- `GAO-003.lesson.l1.delivery`: CMS, CFR, DAR, Care Indeed
+- `GAO-003.lesson.l2.delivery`: CMS, CFR, Care Indeed, Director of Nursing, HHA, LVN, PTA, COTA, SLP, MSW, PPE
+- `GAO-003.lesson.l3.delivery`: PHI, PTO, Care Indeed
+- `GAO-003.lesson.l4.delivery`: DAR, Director of Nursing, DON, HHA, SLP, MSW
+- `GAO-003.lesson.l5.delivery`: CMS, DAR, Care Indeed, DON, HHA, LVN, PTA, COTA, SLP, MSW
+- `GAO-004.lesson.l1.delivery`: OASIS, Care Indeed, Corporate Compliance Program
+- `GAO-004.lesson.l2.delivery`: OIG, DAR, Care Indeed, Governing Body
+- `GAO-004.lesson.l3.delivery`: DAR, Care Indeed, PTA, PPE
+- `GAO-004.lesson.l4.delivery`: OASIS
+- `GAO-004.lesson.l5.delivery`: OIG, Care Indeed, PPE
+- `GAO-004.lesson.l6.delivery`: OIG, DAR, Care Indeed, Corporate Compliance Program, PPE
+- `GAO-005.lesson.l1.delivery`: CMS, OIG, DAR, Care Indeed, Corporate Compliance Program, DON, PPE
+- `GAO-005.lesson.l2.delivery`: HIPAA, DAR, PPE
+- `GAO-005.lesson.l3.delivery`: CMS, OIG, Care Indeed, Governing Body, DON, PPE
+- `GAO-005.lesson.l4.delivery`: Care Indeed
+- `GAO-005.lesson.l5.delivery`: OIG, HIPAA, Care Indeed, Governing Body
+- `GAO-006.lesson.l2.delivery`: DON, PPE
+- `GAO-006.lesson.l3.delivery`: APS, Care Indeed, EADACPA, PPE
+- `GAO-006.lesson.l4.delivery`: ACHC, CMS, CFR, DAR, Care Indeed
+- `GAO-006.lesson.l5.delivery`: APS, Care Indeed
+- `GAO-006.lesson.l6.delivery`: DAR, Care Indeed, PPE
+- `GAO-006.lesson.l7.delivery`: APS
+- `GAO-006.lesson.l8.delivery`: APS, DAR, Care Indeed
+- `GAO-007.lesson.l1.delivery`: ACHC, CMS, CFR, OSHA, DAR, Care Indeed
+- `GAO-007.lesson.l2.delivery`: PTO, PPE
+- `GAO-007.lesson.l3.delivery`: DAR, SOAP, PTA
+- `GAO-007.lesson.l4.delivery`: DAR, DON, PTA, PPE, N95
+- `GAO-007.lesson.l5.delivery`: DAR, PPE, N95
+- `GAO-007.lesson.l6.delivery`: PTA
+- `GAO-007.lesson.l7.delivery`: CFR, OSHA, DAR, SOAP, Care Indeed, HIV, PEP
+- `GAO-007.lesson.l8.delivery`: DAR, PPE
+- `GAO-008.lesson.l1.delivery`: ACHC, CMS, CFR, Care Indeed
+- `GAO-008.lesson.l3.delivery`: Care Indeed
+- `GAO-008.lesson.l5.delivery`: PTO, EAP, Care Indeed, PPE, N95
+- `GAO-008.lesson.l6.delivery`: SBAR, Care Indeed, PPE
+- `GAO-008.lesson.l7.delivery`: Care Indeed, PPE
+- `GAO-009.lesson.l1.delivery`: DAR
+- `GAO-009.lesson.l3.delivery`: Care Indeed
+- `GAO-009.lesson.l4.delivery`: PTA
+- `GAO-009.lesson.l5.delivery`: Care Indeed
+- `GAO-010.lesson.l1.delivery`: CMS, OASIS, Care Indeed
+- `GAO-010.lesson.l2.delivery`: PTO, DAR, Care Indeed, PPE
+- `GAO-010.lesson.l4.delivery`: PTO, DAR
+- `GAO-010.lesson.l5.delivery`: CMS, DAR
+- `GAO-010.lesson.l6.delivery`: PTO, Care Indeed, PPE
+- `GAO-010.lesson.l7.delivery`: CMS, DAR, Care Indeed, DON, HHA
+- `GAO-010.lesson.l8.delivery`: CMS
+- `GAO-011.lesson.l1.delivery`: SBAR, Care Indeed
+- `GAO-011.lesson.l2.delivery`: PTO
+- `GAO-011.lesson.l3.delivery`: SBAR, DAR, Care Indeed, LVN, PPE
+- `GAO-011.lesson.l4.delivery`: DAR
+- `GAO-011.lesson.l5.delivery`: CMS
+- `GAO-011.lesson.l6.delivery`: CMS, DAR, Care Indeed, PPE
+- `GAO-011.lesson.l7.delivery`: SBAR
+- `GAO-012.lesson.l1.delivery`: ACHC, CMS, CFR, LGBTQ+, DAR
+- `GAO-012.lesson.l2.delivery`: PTO, DAR, HHA
+- `GAO-012.lesson.l3.delivery`: HIPAA, Care Indeed
+- `GAO-012.lesson.l5.delivery`: LGBTQ+, Care Indeed, PPE
+- `GAO-012.lesson.l6.delivery`: DAR, PPE
+- `GAO-012.lesson.l7.delivery`: LGBTQ+, DAR, HHA
+- `GAO-013.lesson.l1.delivery`: CMS, CFR, OASIS, DAR, PPE
+- `GAO-013.lesson.l2.delivery`: ACHC, CMS, DAR, Care Indeed
+- `GAO-013.lesson.l3.delivery`: PTO, DAR, SOAP, Care Indeed, PPE
+- `GAO-013.lesson.l4.delivery`: Care Indeed, DON, PPE
+- `GAO-013.lesson.l5.delivery`: CMS, EHR, DAR, Care Indeed
+- `GAO-013.lesson.l6.delivery`: ACHC, CMS, OASIS
+- `GAO-013.lesson.l7.delivery`: EHR, DAR, SOAP, PTA
+- `GAO-014.lesson.l1.delivery`: PHI, PTA
+- `GAO-014.lesson.l2.delivery`: DAR
+- `GAO-014.lesson.l3.delivery`: HIPAA, DAR, Care Indeed
+- `GAO-014.lesson.l4.delivery`: DAR
+- `GAO-014.lesson.l5.delivery`: CMS, DAR
+- `GAO-014.lesson.l6.delivery`: APS, DAR, MSW
+- `GAO-015.lesson.l1.delivery`: CMS, CFR, Care Indeed
+- `GAO-015.lesson.l2.delivery`: Care Indeed
+- `GAO-015.lesson.l3.delivery`: HIPAA, EHR, DAR, Care Indeed, Clinical Manager, PPE
+- `GAO-015.lesson.l4.delivery`: CMS, EHR, APS, DAR, Care Indeed, PPE
+- `GAO-016.lesson.l1.delivery`: EHR, PTO, EAP, Care Indeed
+- `GAO-016.lesson.l2.delivery`: EHR, EAP, Care Indeed, DON, PPE
+- `GAO-016.lesson.l3.delivery`: EHR, PTO, EAP, DAR, Care Indeed
+- `GAO-016.lesson.l4.delivery`: EHR, EAP, Care Indeed, PPE
+- `GAO-017.lesson.l1.delivery`: EAP, OSHA, DAR, Care Indeed, PPE
+- `GAO-017.lesson.l2.delivery`: PTO, EAP, Care Indeed
+- `GAO-017.lesson.l3.delivery`: EHR, EAP, OSHA, Care Indeed
+- `GAO-018.lesson.l1.delivery`: OSHA, DAR, SOAP, Care Indeed, PPE, HIV, PEP
+- `GAO-018.lesson.l2.delivery`: OSHA, Care Indeed, PPE
+- `GAO-019.lesson.l1.delivery`: Care Indeed, PPE
+- `GAO-019.lesson.l2.delivery`: EHR, LGBTQ+, DAR, Care Indeed, DON, PPE
+- `GAO-019.lesson.l3.delivery`: APS, DAR, Care Indeed
+- `GAO-020.lesson.l1.delivery`: Care Indeed, DON, PTA
+- `GAO-020.lesson.l2.delivery`: CFR, EAP, APS, FMLA, CFRA, Care Indeed, DON, LVN, SLP, PPE
+- `GAO-021.lesson.l1.delivery`: HIPAA, DAR, Care Indeed, DON
+- `GAO-021.lesson.l2.delivery`: HIPAA, EHR, EAP, APS, FMLA, DAR, Care Indeed, DON, NCEA, PPE
+- `GAO-022.lesson.l1.delivery`: DAR, Care Indeed, PTA, PPE
+- `GAO-022.lesson.l2.delivery`: EHR, APS, OSHA, DAR, Care Indeed, PPE
+- `GAO-023.lesson.l1.delivery`: HIPAA, PHI, EHR, PTO, DAR, Care Indeed, PTA
+- `GAO-023.lesson.l2.delivery`: HIPAA, PHI, PTO, DAR, Care Indeed, PTA, PPE
+- `GAO-024.lesson.l1.delivery`: PHI, EHR, DAR, Care Indeed, PPE
+- `GAO-024.lesson.l2.delivery`: HIPAA, PHI, EHR, MFA, PTO, DAR, Care Indeed, NCEA, PPE
+- `GAO-025.lesson.l1.delivery`: ACHC, CFR, PTO, DAR, SOAP, Care Indeed, PPE
+- `GAO-025.lesson.l2.delivery`: ACHC, CMS, HIPAA, EHR, DAR, Care Indeed, LVN, PPE
+- `GAO-026.lesson.l1.delivery`: DAR, Care Indeed
+- `GAO-026.lesson.l2.delivery`: PHI, PTO, APS, DAR, Care Indeed
+- `GAO-027.lesson.l1.delivery`: Care Indeed
+- `GAO-027.lesson.l2.delivery`: CFR, PTO, EAP, FMLA, CFRA, Care Indeed
+
+## GAO-001 Existing Audio Verification
+
+The nine registered GAO-001 WAV paths remain unchanged. Files were inspected without regeneration. Historical source hashes are unavailable, so valid files still require manual approval.
+
+- `GAO-001.lesson.l1.delivery` — `/training/gao-001/audio/main/l01-delivery.wav`; readable=true; bytes=2753324; duration=57.36s; segment transcript match=false; current transcript SHA-256=4beb6fd29ea7a2c330f888f7fd07a12cd4d414f0aed8934ce1f27eed0be5b1da; **REVIEW REQUIRED — TRANSCRIPT DRIFT**
+- `GAO-001.lesson.l2.delivery` — `/training/gao-001/audio/main/l02-delivery.wav`; readable=true; bytes=2304044; duration=48s; segment transcript match=true; current transcript SHA-256=fe26ded6a62cf0a27d667886d4b64c4c7f84dc5c64e2268342975adbb13533a0; **SOURCE HASH NOT PREVIOUSLY RECORDED — MANUAL APPROVAL REQUIRED**
+- `GAO-001.lesson.l3.delivery` — `/training/gao-001/audio/main/l03-delivery.wav`; readable=true; bytes=1808684; duration=37.68s; segment transcript match=true; current transcript SHA-256=9d910aacfdfdff852aaaf5e794e906ae17b139ca520cff5814f170b9e9e0fc1d; **SOURCE HASH NOT PREVIOUSLY RECORDED — MANUAL APPROVAL REQUIRED**
+- `GAO-001.lesson.l4.delivery` — `/training/gao-001/audio/main/l04-delivery.wav`; readable=true; bytes=1774124; duration=36.96s; segment transcript match=true; current transcript SHA-256=0ee59acd18aadd98af37a58f002153a20019b6f232bc5d21ebd3f14c701096f2; **SOURCE HASH NOT PREVIOUSLY RECORDED — MANUAL APPROVAL REQUIRED**
+- `GAO-001.lesson.l5.delivery` — `/training/gao-001/audio/main/l05-delivery.wav`; readable=true; bytes=1966124; duration=40.96s; segment transcript match=true; current transcript SHA-256=d6fd06b7cde5622a15ab2d906804cfed8bb1453770c8a144ff0dfe7aecd4dff4; **SOURCE HASH NOT PREVIOUSLY RECORDED — MANUAL APPROVAL REQUIRED**
+- `GAO-001.lesson.l6.delivery` — `/training/gao-001/audio/main/l06-delivery.wav`; readable=true; bytes=2300204; duration=47.92s; segment transcript match=true; current transcript SHA-256=7a7387b8e14f14051de29438c6b7bda71fcd06413e21b98c47f7705d1cd9a99a; **SOURCE HASH NOT PREVIOUSLY RECORDED — MANUAL APPROVAL REQUIRED**
+- `GAO-001.lesson.l7.delivery` — `/training/gao-001/audio/main/l07-delivery.wav`; readable=true; bytes=787244; duration=16.4s; segment transcript match=true; current transcript SHA-256=5906351ec2941142f74694ab9a5c98116766f6807d64a454a9a07ad8e586ee20; **SOURCE HASH NOT PREVIOUSLY RECORDED — MANUAL APPROVAL REQUIRED**
+- `GAO-001.lesson.l8.delivery` — `/training/gao-001/audio/main/l08-delivery.wav`; readable=true; bytes=1217324; duration=25.36s; segment transcript match=true; current transcript SHA-256=380857ccf036e563d2df5a4a160f502fd5410719097a65aa566b0cb2928e2a0b; **SOURCE HASH NOT PREVIOUSLY RECORDED — MANUAL APPROVAL REQUIRED**
+- `GAO-001.lesson.l9.delivery` — `/training/gao-001/audio/main/l09-delivery.wav`; readable=true; bytes=2208044; duration=46s; segment transcript match=false; current transcript SHA-256=84fa9224108f8257cfe513e188ebf1cbab41529d9d1996a52ae775ec1fc03435; **REVIEW REQUIRED — TRANSCRIPT DRIFT**
+
+## Output Path Summary
+
+- Pattern: `/assets/narration/gao-NNN.lesson.lN.delivery.mp3`
+- Unique expected paths: 120
+- Files generated: 0
+

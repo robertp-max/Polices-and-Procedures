@@ -1,3 +1,5 @@
+import { GAO001_REQUIRED_NODE_IDS } from "./gao001HotspotContract";
+
 export interface Gao001NodeSceneRegistration {
   appLocation: string;
   cardId: string;
@@ -10,55 +12,55 @@ export const gao001NodeSceneRegistrations: readonly Gao001NodeSceneRegistration[
     appLocation: "GAO-001.lesson.l1.delivery",
     cardId: "GAO-001_L1_DELIVERY",
     sceneLabel: "Welcome Desk",
-    requiredNodeIds: ["email", "checklist", "packet", "badge", "notebook"],
+    requiredNodeIds: GAO001_REQUIRED_NODE_IDS["GAO-001.lesson.l1.delivery"],
   },
   {
     appLocation: "GAO-001.lesson.l2.delivery",
     cardId: "GAO-001_L2_DELIVERY",
     sceneLabel: "Mission Briefing",
-    requiredNodeIds: ["mission", "vision", "icons", "notes"],
+    requiredNodeIds: GAO001_REQUIRED_NODE_IDS["GAO-001.lesson.l2.delivery"],
   },
   {
     appLocation: "GAO-001.lesson.l3.delivery",
     cardId: "GAO-001_L3_DELIVERY",
     sceneLabel: "Vision Pillars",
-    requiredNodeIds: ["compassion", "integrity", "excellence", "teamwork"],
+    requiredNodeIds: GAO001_REQUIRED_NODE_IDS["GAO-001.lesson.l3.delivery"],
   },
   {
     appLocation: "GAO-001.lesson.l4.delivery",
     cardId: "GAO-001_L4_DELIVERY",
     sceneLabel: "Core Values",
-    requiredNodeIds: ["observe", "routines", "safety", "person"],
+    requiredNodeIds: GAO001_REQUIRED_NODE_IDS["GAO-001.lesson.l4.delivery"],
   },
   {
     appLocation: "GAO-001.lesson.l5.delivery",
     cardId: "GAO-001_L5_DELIVERY",
     sceneLabel: "Home Health Difference",
-    requiredNodeIds: ["observe", "document", "report", "escalate", "facts"],
+    requiredNodeIds: GAO001_REQUIRED_NODE_IDS["GAO-001.lesson.l5.delivery"],
   },
   {
     appLocation: "GAO-001.lesson.l6.delivery",
     cardId: "GAO-001_L6_DELIVERY",
     sceneLabel: "Reporting and Escalation",
-    requiredNodeIds: ["rights", "refusal", "document", "responsibilities"],
+    requiredNodeIds: GAO001_REQUIRED_NODE_IDS["GAO-001.lesson.l6.delivery"],
   },
   {
     appLocation: "GAO-001.lesson.l7.delivery",
     cardId: "GAO-001_L7_DELIVERY",
     sceneLabel: "Patient Refusal",
-    requiredNodeIds: ["assess", "supervisor", "manager", "after-hours"],
+    requiredNodeIds: GAO001_REQUIRED_NODE_IDS["GAO-001.lesson.l7.delivery"],
   },
   {
     appLocation: "GAO-001.lesson.l8.delivery",
     cardId: "GAO-001_L8_DELIVERY",
     sceneLabel: "Escalation Practice",
-    requiredNodeIds: ["professionalism", "documentation", "dignity", "reporting", "checklist"],
+    requiredNodeIds: GAO001_REQUIRED_NODE_IDS["GAO-001.lesson.l8.delivery"],
   },
   {
     appLocation: "GAO-001.lesson.l9.delivery",
     cardId: "GAO-001_L9_DELIVERY",
     sceneLabel: "Readiness Map",
-    requiredNodeIds: ["mission", "vision", "core-values", "home-health-diff", "reporting", "rights", "escalation", "survey"],
+    requiredNodeIds: GAO001_REQUIRED_NODE_IDS["GAO-001.lesson.l9.delivery"],
   },
 ];
 

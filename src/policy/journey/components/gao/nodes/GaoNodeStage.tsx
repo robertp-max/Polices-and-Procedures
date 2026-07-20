@@ -150,6 +150,7 @@ export function GaoNodeStage({
 
         {activeNode ? (
           <GaoNodeDrawer
+            key={activeNode.id}
             node={activeNode}
             trigger={activeTrigger}
             onClose={() => {

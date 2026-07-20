@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, type PanInfo } from 'framer-motion';
 import { useAuth } from '@/auth/AuthProvider';
 import GAO001SharedOverlay from './GAO001SharedOverlay';
+import { defineGao001Hotspots } from '../data/gaoNodes/gao001HotspotContract';
 import {
   gao001SceneArt,
   resolveGao001Scene01Cover,
@@ -952,7 +953,7 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
           return null;
         }}
         // Main scene narration plays from the shell footer play button (not an in-scene strip).
-        hotspots={[
+        hotspots={defineGao001Hotspots("GAO-001.lesson.l1.delivery", [
           {
             id: 'email', x: 66, y: 22, label: 'Survey readiness cues', tooltipPos: 'bottom-left',
             fieldNotes: {
@@ -1047,7 +1048,7 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
               ]
             }
           }
-        ]}
+        ])}
       />
     );
   }

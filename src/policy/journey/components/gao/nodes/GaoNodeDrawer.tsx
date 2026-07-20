@@ -25,7 +25,12 @@ export function GaoNodeDrawer({ node, trigger, onClose, onComplete }: GaoNodeDra
   const titleId = useId();
   const descriptionId = useId();
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [incorrectAttempts, setIncorrectAttempts] = useState(0);
   const selectedOption = node.microCheck?.options.find((option) => option.id === selectedOptionId);
+  const maxAttempts = node.microCheck?.maxAttempts && node.microCheck.maxAttempts > 0
+    ? node.microCheck.maxAttempts
+    : null;
+  const remediationRequired = maxAttempts !== null && incorrectAttempts >= maxAttempts;
   const canComplete = !node.microCheck || selectedOption?.isSafest === true;
 
   const close = useCallback(() => {
@@ -127,7 +132,12 @@ export function GaoNodeDrawer({ node, trigger, onClose, onComplete }: GaoNodeDra
                       name={`gao-node-${node.id}`}
                       value={option.id}
                       checked={selectedOptionId === option.id}
-                      onChange={() => setSelectedOptionId(option.id)}
+                      onChange={() => {
+                        setSelectedOptionId(option.id);
+                        if (!option.isSafest) {
+                          setIncorrectAttempts((current) => current + 1);
+                        }
+                      }}
                     />
                     <span>{option.label}</span>
                   </label>
@@ -136,6 +146,11 @@ export function GaoNodeDrawer({ node, trigger, onClose, onComplete }: GaoNodeDra
               {selectedOption ? (
                 <p className={`gao-node-feedback ${selectedOption.isSafest ? "gao-node-feedback-safe" : "gao-node-feedback-retry"}`}>
                   {selectedOption.feedback}
+                </p>
+              ) : null}
+              {remediationRequired && !selectedOption?.isSafest ? (
+                <p role="alert" className="gao-node-feedback gao-node-feedback-retry">
+                  Attempt limit reached. Review the teaching point and select the safest response before completion.
                 </p>
               ) : null}
             </fieldset>

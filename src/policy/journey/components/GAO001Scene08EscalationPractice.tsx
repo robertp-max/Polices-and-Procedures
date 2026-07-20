@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Users, AlertTriangle, ArrowRight, CheckCircle2, XCircle, PhoneCall, } from 'lucide-react';
 import GAO001SharedOverlay, { type Hotspot } from './GAO001SharedOverlay';
+import { defineGao001Hotspots } from '../data/gaoNodes/gao001HotspotContract';
 import { gao001SceneArt } from '../data/gao001SceneArt';
 
 interface GAO001Scene08EscalationPracticeProps {
@@ -494,7 +495,7 @@ export default function GAO001Scene08EscalationPractice({ onComplete }: GAO001Sc
             )
             : null
         )}
-        hotspots={[
+        hotspots={defineGao001Hotspots("GAO-001.lesson.l8.delivery", [
           {
             id: 'professionalism', x: 20, y: 50, label: 'Urgency level',
             fieldNotes: {
@@ -565,7 +566,7 @@ export default function GAO001Scene08EscalationPractice({ onComplete }: GAO001Sc
               ]
             }
           }
-        ]}
+        ])}
       />
     );
   }

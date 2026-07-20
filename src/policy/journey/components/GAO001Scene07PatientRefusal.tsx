@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { UserX, CheckCircle2, ArrowRight, MessageSquareWarning, XCircle, FileWarning } from 'lucide-react';
 import GAO001SharedOverlay, { type Hotspot } from './GAO001SharedOverlay';
+import { defineGao001Hotspots } from '../data/gaoNodes/gao001HotspotContract';
 import { gao001SceneArt } from '../data/gao001SceneArt';
 
 interface GAO001Scene07PatientRefusalProps {
@@ -468,7 +469,7 @@ export default function GAO001Scene07PatientRefusal({ onComplete }: GAO001Scene0
             )
             : null
         )}
-        hotspots={[
+        hotspots={defineGao001Hotspots("GAO-001.lesson.l7.delivery", [
           {
             id: 'assess', x: 20, y: 50, label: 'Patient right',
             fieldNotes: {
@@ -525,7 +526,7 @@ export default function GAO001Scene07PatientRefusal({ onComplete }: GAO001Scene0
               ]
             }
           }
-        ]}
+        ])}
       />
     );
   }

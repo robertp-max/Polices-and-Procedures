@@ -45,6 +45,32 @@ const testScene: GaoNodeScene = {
   ],
 };
 
+const decisionOptions = [
+  { id: "risk-a", label: "Risk A", isSafest: false, feedback: "Review the first risk." },
+  { id: "risk-b", label: "Risk B", isSafest: false, feedback: "Review the second risk." },
+  { id: "safe", label: "Safe", isSafest: true, feedback: "That is the safest response." },
+];
+
+function decisionScene(maxAttempts?: number, includeSecondNode = false): GaoNodeScene {
+  const first = {
+    ...testScene.nodes[0],
+    microCheck: {
+      prompt: "Choose the safest response",
+      options: decisionOptions,
+      ...(maxAttempts === undefined ? {} : { maxAttempts }),
+    },
+  };
+  const second = {
+    ...testScene.nodes[1],
+    microCheck: {
+      prompt: "Choose the second safest response",
+      options: decisionOptions.map((option) => ({ ...option, id: `second-${option.id}` })),
+      maxAttempts: 2,
+    },
+  };
+  return { ...testScene, nodes: includeSecondNode ? [first, second] : [first] };
+}
+
 function Harness({ initial = [] }: { initial?: string[] }) {
   const [completed, setCompleted] = useState(initial);
   return (
@@ -120,6 +146,123 @@ describe("GaoNodeStage", () => {
     expect((complete as HTMLButtonElement).disabled).toBe(false);
     fireEvent.click(complete);
     expect(onProgressChange).toHaveBeenCalledWith(["first"]);
+  });
+
+  it("shows authored feedback after the first incorrect attempt without entering remediation", () => {
+    render(
+      <GaoNodeStage
+        scene={decisionScene(2)}
+        imageSrc="/test.png"
+        imageAlt="Test"
+        completedNodeIds={[]}
+        onProgressChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Review First teaching point" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Risk A" }));
+    expect(screen.getByText("Review the first risk.")).toBeTruthy();
+    expect(screen.queryByText(/Attempt limit reached/i)).toBeNull();
+    expect((screen.getByRole("button", { name: "Complete teaching point" }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("enters remediation after the maximum number of incorrect attempts", () => {
+    render(
+      <GaoNodeStage
+        scene={decisionScene(2)}
+        imageSrc="/test.png"
+        imageAlt="Test"
+        completedNodeIds={[]}
+        onProgressChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Review First teaching point" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Risk A" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Risk B" }));
+    expect(screen.getByRole("alert").textContent).toMatch(/select the safest response/i);
+    expect((screen.getByRole("button", { name: "Complete teaching point" }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("allows the safest response after remediation and then completes", () => {
+    const onProgressChange = vi.fn();
+    render(
+      <GaoNodeStage
+        scene={decisionScene(2)}
+        imageSrc="/test.png"
+        imageAlt="Test"
+        completedNodeIds={[]}
+        onProgressChange={onProgressChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Review First teaching point" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Risk A" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Risk B" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Safe" }));
+    expect(screen.queryByRole("alert")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Complete teaching point" }));
+    expect(onProgressChange).toHaveBeenCalledWith(["first"]);
+  });
+
+  it("completes after a correct first attempt without remediation", () => {
+    const onProgressChange = vi.fn();
+    render(
+      <GaoNodeStage
+        scene={decisionScene(2)}
+        imageSrc="/test.png"
+        imageAlt="Test"
+        completedNodeIds={[]}
+        onProgressChange={onProgressChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Review First teaching point" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Safe" }));
+    expect(screen.queryByRole("alert")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Complete teaching point" }));
+    expect(onProgressChange).toHaveBeenCalledWith(["first"]);
+  });
+
+  it("resets attempt and selection state when a different node opens", () => {
+    render(
+      <GaoNodeStage
+        scene={decisionScene(2, true)}
+        imageSrc="/test.png"
+        imageAlt="Test"
+        completedNodeIds={[]}
+        onProgressChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Review First teaching point" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Risk A" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Risk B" }));
+    expect(screen.getByRole("alert")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Close teaching point" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Review Second teaching point" }));
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getAllByRole("radio").every((radio) => !(radio as HTMLInputElement).checked)).toBe(true);
+  });
+
+  it("allows unlimited teaching retries when maxAttempts is omitted", () => {
+    render(
+      <GaoNodeStage
+        scene={decisionScene()}
+        imageSrc="/test.png"
+        imageAlt="Test"
+        completedNodeIds={[]}
+        onProgressChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Review First teaching point" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Risk A" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Risk B" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Risk A" }));
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getByText("Review the first risk.")).toBeTruthy();
   });
 
   it("disables guided pulse and entrance transitions for reduced motion", () => {
