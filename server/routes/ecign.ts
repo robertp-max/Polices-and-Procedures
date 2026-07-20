@@ -30,9 +30,9 @@ import {
 } from '../../src/policy/ecign/signerAuthority.ts';
 import {
   verifiedActor,
-  signerFromVerifiedActor,
   requiredSignersMissing,
 } from '../auth/verifiedSignerIdentity.js';
+import { resolveVerifiedSigner } from '../auth/authorization/signerResolution.js';
 import { requestIsLocalDemo } from '../auth/requestAuthenticationContext.js';
 
 export const ecignRouter: Router = Router();
@@ -52,7 +52,10 @@ declare module 'express-serve-static-core' {
 ecignRouter.use((req, _res, next) => {
   const actor = verifiedActor(req);
   if (actor) {
-    const signer = signerFromVerifiedActor(actor);
+    // Phase 5C: server-owned authority resolution (capacities/tier/domains from
+    // explicit signature-authority assignments) — not the least-privilege stub,
+    // never client input or group membership. No assignments → least-privilege.
+    const signer = resolveVerifiedSigner(actor, new Date().toISOString());
     req.user = {
       user_id: signer.user_id,
       name: signer.name,
