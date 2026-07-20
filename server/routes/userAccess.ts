@@ -25,6 +25,7 @@ import { activeRoleGroupIds } from '../auth/actorResolver.js';
 import { computeEffectiveAccess } from '../auth/authorization/evaluator.js';
 import { computePageAccessProjection, parseOverrideRecord } from '../auth/authorization/pageAccess.js';
 import { getPageAccessPersistence } from '../auth/pageAccessPersistence.js';
+import { computeAccessChangeImpact } from '../auth/authorization/impactPreview.js';
 import { getAccountLifecycleService } from '../auth/accountLifecycle/serviceFactory.js';
 import { performAdminLifecycleTransition } from '../auth/accountLifecycle/adminTransition.js';
 import type { LifecycleAction } from '../auth/accountLifecycle/service.js';
@@ -175,6 +176,35 @@ userAccessRouter.get('/:userId/page-access', asyncHandler(async (req, res) => {
     nowIso,
   });
   res.json({ pageAccess });
+}));
+
+/**
+ * POST /admin/user-access/:userId/impact-preview — server-derived before/after
+ * effective-access diff for a proposed group change (ADR §B10). MUTATION-FREE:
+ * it never persists. Body: { addGroupIds?: string[], removeGroupIds?: string[] }.
+ */
+userAccessRouter.post('/:userId/impact-preview', asyncHandler(async (req, res) => {
+  await requireUserAccessAdmin(req);
+  const userId = String(req.params.userId || '').trim();
+  if (!userId) throw new ApiError('validation_error', 'userId is required.', 400);
+  const registry = await getAppIdentityPersistence().getAll();
+  const nowIso = new Date().toISOString();
+  const user = registry.users.find((u) => u.id === userId);
+  if (!user) throw new ApiError('user_not_found', 'User not found.', 404);
+  const strArr = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
+  const addGroupIds = strArr((req.body as { addGroupIds?: unknown })?.addGroupIds);
+  const removeGroupIds = new Set(strArr((req.body as { removeGroupIds?: unknown })?.removeGroupIds));
+  const currentGroupIds = activeRoleGroupIds(registry, userId, nowIso);
+  const proposedGroupIds = [...new Set([...currentGroupIds.filter((id) => !removeGroupIds.has(id)), ...addGroupIds])];
+  const toAssign = (ids: string[]) => ids.map((groupId) => ({ groupId, scope: { organizationId: '' } }));
+  const impact = computeAccessChangeImpact({
+    principalUserId: userId,
+    accountStatus: user.status,
+    currentAssignments: toAssign(currentGroupIds),
+    proposedAssignments: toAssign(proposedGroupIds),
+    nowIso,
+  });
+  res.json({ impact });
 }));
 
 function targetId(req: Request): string {
