@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   BadgeCheck,
   ClipboardCheck,
@@ -502,6 +503,8 @@ export function AdminUsersScreen() {
   const selectedSetup = selectedUserId ? setupAssignments[selectedUserId] : undefined;
   const isProtected = selectedUserId ? PROTECTED_USER_IDS.has(selectedUserId) : false;
 
+  const navigate = useNavigate();
+
   const openEdit = (userId: string) => {
     const user = userById.get(userId);
     if (!user) return;
@@ -514,15 +517,10 @@ export function AdminUsersScreen() {
     setShowCreate(false);
   };
 
+  // ADR-0002 Phase 6: a directory row opens the server-authoritative control-plane
+  // detail surface (/admin/users/:userId). Inline create still uses openEdit().
   const handleRowClick = (row: AdminUserRow) => {
-    if (row.userId === selectedUserId) {
-      setSelectedUserId(null);
-      setEditForm(null);
-      setFormError(null);
-      setFormSuccess(null);
-      return;
-    }
-    openEdit(row.userId);
+    navigate(`/admin/users/${row.userId}`);
   };
 
   const handleSaveEdit = () => {
