@@ -11,6 +11,7 @@
 import type { RequestHandler } from 'express';
 import { resolveVerifiedActor, mergeAuthDeps, type RequireAuthDeps } from './requireCognitoAuth.js';
 import { publicApiPaths } from './routeAccessMatrix.js';
+import { authenticationModeForActor } from './verifiedSignerIdentity.js';
 import type { Actor } from '../identity/session.js';
 
 /** Exact paths that bypass the boundary (health checks). */
@@ -108,6 +109,9 @@ export function requireApiAuth(options: ApiAuthBoundaryOptions = {}): RequestHan
       deps = mergeAuthDeps(options.deps);
     } catch (e) {
       if (shouldUseLocalDemoFallback(req, options)) {
+        // The boundary — and only the boundary — decides local-demo authority,
+        // after all host / Cognito-config / injected-deps checks.
+        req.authenticationContext = { mode: 'local_demo' };
         attachActor(req, LOCAL_DEMO_ACTOR);
         return next();
       }
@@ -115,6 +119,7 @@ export function requireApiAuth(options: ApiAuthBoundaryOptions = {}): RequestHan
     }
     resolveVerifiedActor(req.header('authorization'), deps)
       .then((actor) => {
+        req.authenticationContext = { mode: authenticationModeForActor(actor) };
         attachActor(req, actor);
         next();
       })

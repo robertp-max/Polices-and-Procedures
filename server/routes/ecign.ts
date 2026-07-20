@@ -29,7 +29,7 @@ import {
   type SignatureCompletion,
 } from '../../src/policy/ecign/signerAuthority.ts';
 import {
-  isDemoIdentityRuntime,
+  requestIsLocalDemo,
   verifiedActor,
   signerFromVerifiedActor,
   requiredSignersMissing,
@@ -68,7 +68,7 @@ ecignRouter.use((req, _res, next) => {
   }
   // No verified actor. Only an explicit local demo runtime may fall back to the
   // legacy client-supplied identity headers (clearly demo, never production).
-  if (isDemoIdentityRuntime()) {
+  if (requestIsLocalDemo(req)) {
     const uid = req.header('x-user-id');
     if (!uid) return next(new ApiError('auth_error', 'NOT_AUTHENTICATED', 401));
     req.user = {
@@ -235,7 +235,7 @@ ecignRouter.post('/consents', asyncH(async (req, res) => {
 // as verified MFA. Available only in an explicit local demo runtime, where it is
 // labeled as unverified; otherwise fail closed.
 ecignRouter.post('/identity/step-up', asyncH(async (req, res) => {
-  if (!isDemoIdentityRuntime()) {
+  if (!requestIsLocalDemo(req)) {
     throw new EcignError('STEP_UP_UNAVAILABLE', 'Identity step-up (MFA) is not available in this runtime.', 501);
   }
   // Demo only, and never verified. Do NOT record the token in the audit payload,
@@ -289,7 +289,7 @@ ecignRouter.post('/instances', asyncH(async (req, res) => {
   // server-owned form/workflow snapshot, never the request body. No server-owned
   // resolver exists yet, so refuse client-defined signer requirements outside an
   // explicit demo runtime (fail-closed) rather than persist client authority.
-  if (Array.isArray(required_signers) && required_signers.length > 0 && !isDemoIdentityRuntime()) {
+  if (Array.isArray(required_signers) && required_signers.length > 0 && !requestIsLocalDemo(req)) {
     throw new EcignError('SIGNATURE_REQUIREMENTS_UNAVAILABLE',
       'Server-owned signer requirements are not yet available; client-defined required signers are refused (fail-closed).', 503);
   }
@@ -394,7 +394,7 @@ ecignRouter.post('/instances/:id/signatures', asyncH(async (req, res) => {
   // server-owned authority resolver exists yet. Block ALL non-demo signature
   // application — before consent lookup, eligibility, insertion, hashing, or state
   // mutation — rather than run eligibility against a permissive legacy requirement.
-  if (!isDemoIdentityRuntime()) {
+  if (!requestIsLocalDemo(req)) {
     throw new EcignError('SIGNATURE_AUTHORITY_UNAVAILABLE',
       'Server-owned signer requirements/authority are not yet available; signature application is temporarily unavailable (fail-closed).', 503);
   }
@@ -564,7 +564,7 @@ ecignRouter.post('/instances/:id/lock', asyncH(async (req, res) => {
   // Containment (ADR-0002 Phase 1): a non-empty stored requirement set has no
   // trusted provenance; block ALL non-demo locking (before any read/hash/state
   // mutation) rather than lock on legacy client-defined requirements.
-  if (!isDemoIdentityRuntime()) {
+  if (!requestIsLocalDemo(req)) {
     throw new EcignError('SIGNATURE_AUTHORITY_UNAVAILABLE',
       'Server-owned signer requirements/authority are not yet available; document lock is temporarily unavailable (fail-closed).', 503);
   }
@@ -634,7 +634,7 @@ ecignRouter.post('/instances/:id/second-signature', asyncH(async (req, res) => {
   // client-supplied assigned_user.role/tier/authorityDomains. No server-owned
   // resolver exists yet, so refuse signer-assignment outside an explicit demo
   // runtime (fail-closed) rather than trust a browser-supplied signer profile.
-  if (!isDemoIdentityRuntime()) {
+  if (!requestIsLocalDemo(req)) {
     throw new EcignError('SIGNATURE_ASSIGNMENT_UNAVAILABLE',
       'Server-owned signer-authority resolution is not yet available; client-supplied assignee authority is refused (fail-closed).', 503);
   }
@@ -722,7 +722,7 @@ ecignRouter.get('/instances/:id/bundle', asyncH(async (req, res) => {
   // Block ALL non-demo bundle generation until server-owned requirements/authority
   // exist. In demo, buildSignedDocumentBundle enforces the full signed-lock
   // lifecycle (defense-in-depth — it refuses unlocked/unsigned instances too).
-  if (!isDemoIdentityRuntime()) {
+  if (!requestIsLocalDemo(req)) {
     throw new EcignError('SIGNED_BUNDLE_UNAVAILABLE',
       'Server-owned signer requirements/authority are not yet available; signed-bundle generation is temporarily unavailable (fail-closed).', 503);
   }

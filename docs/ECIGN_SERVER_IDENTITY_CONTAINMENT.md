@@ -82,12 +82,28 @@ the full signed-lock lifecycle itself (state `signed_locked`, non-empty
 requirements, all required signatures present, document + manifest hash + lock
 time present) as defense-in-depth, independent of the HTTP route.
 
-## Demo runtime
+## Demo authority is request-scoped (decided by the central boundary)
 
-Client `x-user-*` / `x-actor` headers are honored **only** when
-`ENABLE_LOCAL_DEMO_AUTH === 'true'` **and** `NODE_ENV !== 'production'`
-(`isDemoIdentityRuntime()`), clearly labeled as demo and never MFA-verified. In
-any other runtime the verified actor is the sole identity source.
+The **central `requireApiAuth` boundary is the sole authority** for a request's
+authentication mode. It attaches `req.authenticationContext = { mode }` where
+`mode ∈ 'cognito' | 'service' | 'local_demo'`. `local_demo` is set only when the
+boundary's complete local-demo fallback activates: exact `ENABLE_LOCAL_DEMO_AUTH`
+opt-in **and** non-production **and** localhost host/origin **and** Cognito
+unconfigured **and** fallback not disabled **and** no injected auth deps.
+
+eCIgn and Calendar consume that decision via `requestIsLocalDemo(req)` — they
+**never** re-derive demo authority from environment variables. Consequences:
+- a Cognito- or service-authenticated request is never demo, even with
+  `NODE_ENV=development` and `ENABLE_LOCAL_DEMO_AUTH=true`;
+- a public (Cloud Run / Vercel / non-local) request is never demo even with the
+  flag enabled;
+- a request that never passed the boundary (e.g. a direct router mount in a test)
+  is never demo — demo behavior cannot be self-enabled by setting env vars.
+
+Client `x-user-*` / `x-actor` headers and the mock step-up are honored only for a
+boundary-marked `local_demo` request, clearly labeled as demo and never
+MFA-verified. `isDemoIdentityRuntime()` remains as a startup-diagnostics helper
+only and must not gate request behavior.
 
 ## Tests
 

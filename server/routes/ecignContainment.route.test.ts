@@ -17,6 +17,9 @@ import type { Actor } from '../identity/session.js';
 
 const ENV = { ...process.env };
 let currentActor: Actor | null = null;
+// The request authentication mode the CENTRAL boundary would attach. Tests set
+// this explicitly; env vars must never enable demo behavior on their own.
+let currentAuthMode: 'cognito' | 'service' | 'local_demo' | null = null;
 let server: Server;
 let baseUrl = '';
 const storeOriginal: Record<string, unknown> = {};
@@ -40,6 +43,7 @@ function codeOf(body: unknown): string | undefined {
 
 beforeEach(async () => {
   currentActor = null;
+  currentAuthMode = null;
   // Neutral non-demo baseline; individual tests override.
   delete process.env.ENABLE_LOCAL_DEMO_AUTH;
   process.env.NODE_ENV = 'test';
@@ -51,7 +55,14 @@ beforeEach(async () => {
 
   const app = express();
   app.use(express.json());
-  app.use((req, _res, next) => { if (currentActor) (req as Request).actor = currentActor; next(); });
+  app.use((req, _res, next) => {
+    // Simulate the central boundary: attach actor + the request auth mode it
+    // decided. A verified actor defaults to 'cognito' unless a test overrides.
+    if (currentActor) (req as Request).actor = currentActor;
+    const mode = currentAuthMode ?? (currentActor ? 'cognito' : null);
+    if (mode) (req as Request).authenticationContext = { mode };
+    next();
+  });
   app.use('/api/ecign', ecignRouter);
   app.use(errorHandler);
   server = http.createServer(app);
@@ -102,23 +113,39 @@ describe('eCIgn containment — signer identity', () => {
     expect(r.status).toBe(401);
   });
 
-  it('production ignores demo headers even when ENABLE_LOCAL_DEMO_AUTH=true → 401', async () => {
-    process.env.NODE_ENV = 'production';
-    process.env.ENABLE_LOCAL_DEMO_AUTH = 'true';
-    currentActor = null;
-    const r = await call('GET', '/api/ecign/identity/me', { headers: { 'x-user-id': 'demo-1' } });
-    expect(r.status).toBe(401);
-  });
-
-  it('explicit demo runtime: header identity is honored (isolated to non-production)', async () => {
+  it('env demo flags alone do NOT enable demo when the boundary marked the request cognito', async () => {
+    // The boundary authenticated this request as 'cognito'; even with the env
+    // demo flags set, hostile headers must not change the signer.
     process.env.NODE_ENV = 'development';
     process.env.ENABLE_LOCAL_DEMO_AUTH = 'true';
+    currentActor = verified();            // mode defaults to 'cognito'
+    const r = await call('GET', '/api/ecign/identity/me', { headers: { 'x-user-id': 'forged', 'x-user-tier': '5' } });
+    expect(r.status).toBe(200);
+    const u = r.body as { user_id: string; tier: number };
+    expect(u.user_id).toBe('usr-1');       // verified actor, not the header
+    expect(u.tier).toBe(1);
+  });
+
+  it('boundary-marked local_demo: header identity is honored', async () => {
     currentActor = null;
+    currentAuthMode = 'local_demo';        // only the boundary can set this
     const r = await call('GET', '/api/ecign/identity/me', { headers: { 'x-user-id': 'demo-1' } });
     expect(r.status).toBe(200);
     const u = r.body as { user_id: string; tier: number };
     expect(u.user_id).toBe('demo-1');
     expect(u.tier).toBe(1);                // demo also has no privileged default
+  });
+
+  it('direct router mount + env demo flags cannot self-enable demo (no boundary context) → 503', async () => {
+    process.env.NODE_ENV = 'development';
+    process.env.ENABLE_LOCAL_DEMO_AUTH = 'true';
+    currentActor = verified();
+    currentAuthMode = 'cognito';           // boundary did NOT mark local_demo
+    const r = await call('POST', '/api/ecign/instances', {
+      body: { form_id: 'F', document_version_id: 'v1', required_signers: [{ field_id: 'f1', role: 'Administrator', min_tier: 5 }] },
+    });
+    expect(r.status).toBe(503);
+    expect(codeOf(r.body)).toBe('SIGNATURE_REQUIREMENTS_UNAVAILABLE');
   });
 });
 
@@ -151,10 +178,9 @@ describe('eCIgn containment — signer authority is server-owned', () => {
 describe('eCIgn containment — empty requirements fail closed', () => {
   it('demo: cannot lock an instance with no required signers → 409', async () => {
     // In non-demo the lock route 503s before this guard; the empty-requirement
-    // fail-closed guard is exercised in the demo path.
-    process.env.NODE_ENV = 'development';
-    process.env.ENABLE_LOCAL_DEMO_AUTH = 'true';
+    // fail-closed guard is exercised in the boundary-marked demo path.
     currentActor = verified();
+    currentAuthMode = 'local_demo';
     (store as Record<string, unknown>).getInstance = async () => ({
       instance_id: 'i1', form_id: 'F', document_version_id: 'v1', state: 'reviewed',
       required_signers: [], field_values: {},
@@ -206,9 +232,8 @@ describe('eCIgn containment — empty requirements fail closed', () => {
     expect(codeOf(r.body)).toBe('SIGNED_BUNDLE_UNAVAILABLE');
   });
 
-  it('cannot apply a signature when no required signers are defined → 409', async () => {
-    process.env.NODE_ENV = 'development';
-    process.env.ENABLE_LOCAL_DEMO_AUTH = 'true';       // reach the guard via demo identity
+  it('demo: cannot apply a signature when no required signers are defined → 409', async () => {
+    currentAuthMode = 'local_demo';       // reach the guard via boundary-marked demo identity
     currentActor = null;
     (store as Record<string, unknown>).getInstance = async () => ({
       instance_id: 'i1', form_id: 'EN-FM-TEST', document_version_id: 'v1', state: 'reviewed',

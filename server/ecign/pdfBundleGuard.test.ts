@@ -67,4 +67,27 @@ describe('buildSignedDocumentBundle — fail-closed', () => {
     expect(bundle.appended.length).toBeGreaterThan(0);
     expect(bundle.watermark).toContain('CERT-i1');
   });
+
+  it('a missing OPTIONAL signer does not block a bundle once every required signer is present', async () => {
+    const inst = lockedInstance({
+      required_signers: [
+        { field_id: 'f1', role: 'unknown', slot_order: 1 },                 // required (default)
+        { field_id: 'f2', role: 'unknown', slot_order: 2, required: false }, // optional, unsigned
+      ],
+    });
+    patch(inst, [signatureRow()]); // only f1 signed
+    const bundle = await buildSignedDocumentBundle('i1', 'CERT-i1');
+    expect(bundle.instance.instance_id).toBe('i1');
+  });
+
+  it('a missing REQUIRED signer still blocks the bundle', async () => {
+    const inst = lockedInstance({
+      required_signers: [
+        { field_id: 'f1', role: 'unknown', slot_order: 1, required: false }, // optional, signed
+        { field_id: 'f2', role: 'unknown', slot_order: 2 },                   // required, unsigned
+      ],
+    });
+    patch(inst, [{ ...signatureRow(), field_id: 'f1' }]); // f2 (required) missing
+    await expect(buildSignedDocumentBundle('i1', 'C')).rejects.toMatchObject({ code: 'SIGNATURES_INCOMPLETE' });
+  });
 });

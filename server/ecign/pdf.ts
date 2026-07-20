@@ -237,7 +237,10 @@ export async function buildSignedDocumentBundle(instanceId: string, certId: stri
   }
   const signatures = await store.listSignatures(instanceId);
   const signedFields = new Set(signatures.map((s) => s.field_id));
-  if (!instance.required_signers.every((r) => signedFields.has(r.field_id))) {
+  // Only mandatory slots (required !== false) must be signed; optional slots may
+  // be absent once every mandatory slot is complete.
+  const mandatory = instance.required_signers.filter((r) => r.required !== false);
+  if (!mandatory.every((r) => signedFields.has(r.field_id))) {
     throw new EcignError('SIGNATURES_INCOMPLETE',
       'Cannot generate a signed bundle: one or more required signatures are missing.', 409);
   }

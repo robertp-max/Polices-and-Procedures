@@ -10,7 +10,7 @@ import {
 import { dedupePlannerEvents } from '../cesCalendarDedup.js';
 import { ApiError } from '../errors.js';
 import { log } from '../logger.js';
-import { isDemoIdentityRuntime, verifiedActor } from '../auth/verifiedSignerIdentity.js';
+import { requestIsLocalDemo, verifiedActor } from '../auth/verifiedSignerIdentity.js';
 import type { PlannerEventPayload } from '../mappers.js';
 import {
   syncEvent, syncEvents, deleteSyncedEvent, cleanupDuplicates,
@@ -1007,7 +1007,7 @@ function resolveActor(req: Request): string {
   const verified = verifiedActor(req);
   if (verified?.user_id) return verified.user_id;
   if (req.actor?.service_id) return req.actor.service_id;
-  if (isDemoIdentityRuntime()) {
+  if (requestIsLocalDemo(req)) {
     return (req.header('x-actor') ?? req.header('x-user-id') ?? 'service-account');
   }
   throw new ApiError('auth_error', 'Not authenticated.', 401);
