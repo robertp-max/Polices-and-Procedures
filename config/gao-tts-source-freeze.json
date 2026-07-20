@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "3c081fefd90fedb474f8c3fad09ab93da7858d71",
+  "generationStatus": "hold",
+  "policyApprovalStatus": "pending",
+  "voiceId": "PENDING_OWNER_SELECTION",
+  "model": "PENDING_OWNER_SELECTION",
+  "speakingRate": 0.95,
+  "policySensitiveModules": [
+    "GAO-006",
+    "GAO-007",
+    "GAO-008",
+    "GAO-009",
+    "GAO-010",
+    "GAO-019",
+    "GAO-020",
+    "GAO-021",
+    "GAO-022",
+    "GAO-023",
+    "GAO-024",
+    "GAO-025",
+    "GAO-026",
+    "GAO-027"
+  ]
+}

@@ -12,11 +12,98 @@ function normalizeMarkdownHeadings(text: string): string {
   return text
     .replace(/\r\n/g, "\n")
     .replace(/[ \t]+(#{1,6}\s+)/g, "\n$1")
+    .replace(/((?:^|\n)#{2,3}\s*(?:PAGE|Page)\s+\d+\s*[:—-]\s*[^#\n]*?)\s+\*\*Narration:\*\*\s*/g, "$1\n")
+    .replace(/((?:^|\n)#{2,3}\s*(?:PAGE|Page)\s+\d+\s*[:—-]\s*[^#\n]*?\(\s*~?[\d,]+\s*words?\s*\))\s+/g, "$1\n")
     .replace(/[ \t]+(---)/g, "\n$1")
     .replace(/[ \t]+(###\s*(?:PAGE|Page)\s+\d+)/g, "\n$1")
     .replace(/[ \t]+(##\s*(?:PAGE|Page)\s+\d+)/g, "\n$1")
     .replace(/(#{2,3}\s*(?:PAGE|Page)\s+\d+\s*[:—-]\s*"[^"]+")\s+/g, "$1\n");
 }
+
+const canonicalLessonTitles: Readonly<Record<string, readonly string[]>> = {
+  "GAO-006": [
+    "Understanding Abuse, Neglect & Exploitation",
+    "Recognizing the Signs",
+    "California Mandatory Reporting Requirements",
+    "Federal Regulatory Framework",
+    "Internal Reporting Protocol",
+    "Preventing Abuse in Practice",
+    "Scenarios and Application",
+    "Summary & Key Takeaways",
+  ],
+  "GAO-007": [
+    "Infection Control in Home Health",
+    "Chain of Infection",
+    "Hand Hygiene",
+    "Personal Protective Equipment",
+    "Standard and Transmission-Based Precautions",
+    "Environmental Safety in the Home",
+    "Bloodborne Pathogen Exposure Protocol",
+    "Module Summary",
+  ],
+  "GAO-008": [
+    "Introduction to Emergency Preparedness",
+    "Patient Medical Emergencies",
+    "Earthquake",
+    "Fire & Power Outage",
+    "Operational Emergencies & Personal Safety",
+    "Communication During Emergencies",
+    "Module Summary",
+  ],
+  "GAO-009": [
+    "Why Body Mechanics Matter",
+    "Principles of Proper Body Mechanics",
+    "Safe Patient Handling Techniques",
+    "Ergonomics in the Home",
+    "Injury Prevention Program",
+    "Module Summary",
+  ],
+  "GAO-010": [
+    "Vital Signs in Home Health",
+    "Blood Pressure",
+    "Heart Rate & Respiratory Rate",
+    "Temperature & Oxygen Saturation",
+    "Pain Assessment",
+    "Critical Value Reporting",
+    "Common Errors & Documentation",
+    "Module Summary",
+  ],
+  "GAO-011": [
+    "Why Communication Matters",
+    "Active Listening",
+    "SBAR",
+    "Cognitive Impairment",
+    "Family & Caregiver Communication",
+    "Documentation as Communication",
+    "Module Summary / Application",
+  ],
+  "GAO-012": [
+    "Cultural Competency",
+    "Health Beliefs & Practices",
+    "Language Access",
+    "Religious & Spiritual Care",
+    "LGBTQ+ Inclusive Care",
+    "Implicit Bias",
+    "Module Summary",
+  ],
+  "GAO-013": [
+    "Why Documentation Matters",
+    "Documentation Standards",
+    "SOAP & DAR Formats",
+    "Incident Reporting",
+    "EHR Best Practices",
+    "Survey-Defensible Documentation",
+    "Module Summary",
+  ],
+  "GAO-014": [
+    "Time Management",
+    "Professional Boundaries Defined",
+    "Common Boundary Challenges",
+    "Warning Signs of Boundary Drift",
+    "Consequences of Boundary Violations",
+    "Module Summary",
+  ],
+};
 
 const normalizedGaoContent = normalizeMarkdownHeadings(gaoContentRaw);
 const gaoSections = new Map<string, string>();
@@ -109,7 +196,7 @@ function parsePages(section: string): ParsedGaoPage[] {
   const lessonSection = expandedStart >= 0 ? section.slice(expandedStart) : section;
   const cleanSection = lessonSection
     .replace(/\r\n/g, "\n")
-    .replace(/\n##\s+EXAM[\s\S]*$/i, "")
+    .replace(/\n##\s+(?:EXAM|COMPETENCY ASSESSMENT|MODULE QA SUMMARY)[\s\S]*$/i, "")
     .replace(/\n---\s*##\s+EXAM[\s\S]*$/i, "")
     .replace(/\n##\s+QA[\s\S]*$/i, "")
     .replace(/\n(?:UPDATED PAGE-LEVEL QA|ADDENDUM:|FINAL MODULE-LEVEL QA|FINAL PAGE-LEVEL WORD COUNTS)[\s\S]*$/i, "");
@@ -155,18 +242,21 @@ export function buildGaoContentModuleDef(mod: JourneyModule): ModuleDef | undefi
   const pages = parsePages(section);
   if (pages.length === 0) return undefined;
 
+  const auditedTitles = canonicalLessonTitles[mod.id.toUpperCase()];
+
   const lessons: ModuleLesson[] = pages.map((page, pageIndex) => {
+    const pageTitle = auditedTitles?.[pageIndex] ?? page.title;
     const lessonId = `l${pageIndex + 1}`;
-    const html = toLearnerHtml({ ...page, index: pageIndex + 1 });
+    const html = toLearnerHtml({ ...page, index: pageIndex + 1, title: pageTitle });
     const narration = page.body;
     const estimatedSeconds = Math.max(30, Math.round((narration.split(/\s+/).length / 130) * 60));
 
     return {
       id: lessonId,
       index: pageIndex + 1,
-      title: page.title,
+      title: pageTitle,
       estMinutes: Math.max(3, Math.round(estimatedSeconds / 60)),
-      learningGoal: page.title,
+      learningGoal: pageTitle,
       scenario: narration.slice(0, 220),
       keyConcept: html,
       whyItMatters: mod.cmsRefs.length ? mod.cmsRefs : mod.policyRefs,
@@ -181,7 +271,7 @@ export function buildGaoContentModuleDef(mod: JourneyModule): ModuleDef | undefi
         card_id: `${mod.id}_L${pageIndex + 1}_DELIVERY`,
         card_type: "delivery",
         app: { location: `${mod.id}.lesson.${lessonId}.delivery` },
-        display_title: page.title,
+        display_title: pageTitle,
         learner_facing_content: html,
         cna_practice_example: "",
         key_terms: [],
@@ -191,7 +281,7 @@ export function buildGaoContentModuleDef(mod: JourneyModule): ModuleDef | undefi
         estimated_narration_seconds: estimatedSeconds,
         media_prompt_placeholder: {
           app_location: `${mod.id}.lesson.${lessonId}.delivery`,
-          scene_title: page.title,
+          scene_title: pageTitle,
         },
       }],
     };
