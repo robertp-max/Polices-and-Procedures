@@ -41,9 +41,28 @@ export interface VerifyRegistrationResponse {
   };
 }
 
+/** Server-computed effective-access projection (ADR-0002 Phase 3C). The UI
+ *  renders this; it never reconstructs the permission decision locally. */
+export interface EffectiveAccessProjection {
+  principalUserId: string;
+  accountActive: boolean;
+  accountStatus: string;
+  groupIds: string[];
+  privileged: boolean;
+  permissions: string[];
+  policyVersion: string;
+  evaluatedAt: string;
+}
+
 export interface CapabilitiesResponse {
   authenticated: boolean;
-  authorization: { capabilities: { manageUsers: boolean; manageUserStatus?: boolean } };
+  authorization: {
+    capabilities: {
+      manageUsers: boolean;
+      manageUserStatus?: boolean;
+      effectiveAccess?: EffectiveAccessProjection;
+    };
+  };
 }
 
 export interface UserAccessMutationResponse {

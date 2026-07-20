@@ -30,6 +30,8 @@ import type { DirectSetupAuditSink } from './directSetupAudit.js';
 import { getAppIdentityPersistence, type AppIdentityRegistry } from './appIdentityPersistence.js';
 import { findCanonicalUser, activeRoleGroupIds } from './actorResolver.js';
 import { evaluateUserStatusAuthority } from './userStatusAuthorityCore.js';
+import { computeEffectiveAccess } from './authorization/evaluator.js';
+import type { EffectiveAccess } from './authorization/evaluator.js';
 
 interface DemoAuthConfig {
   region: string;
@@ -746,7 +748,7 @@ export class DemoAuthService {
     }
   }
 
-  async resolveCapabilities(actorAccessToken: string): Promise<{ manageUsers: boolean; manageUserStatus: boolean }> {
+  async resolveCapabilities(actorAccessToken: string): Promise<{ manageUsers: boolean; manageUserStatus: boolean; effectiveAccess: EffectiveAccess }> {
     const accessToken = String(actorAccessToken || '').trim();
     if (!accessToken) {
       throw new ApiError('auth_error', 'Not authenticated.', 401);
@@ -773,7 +775,16 @@ export class DemoAuthService {
         : null,
       canonicalRoles,
     });
-    return { manageUsers: result.allowed, manageUserStatus: result.allowed };
+    // Phase 3C: emit the server-computed effective-access projection so the admin
+    // UI RENDERS (never reconstructs) the permission set. Permissions come from
+    // group expansion; a non-allowed status yields the empty, fail-closed set.
+    const effectiveAccess = computeEffectiveAccess({
+      principalUserId: canonicalUser?.id ?? verified.id ?? verified.email,
+      accountStatus: result.allowed ? 'active' : (result.canonicalStatus ?? 'suspended'),
+      assignments: canonicalRoles.map((groupId) => ({ groupId, scope: { organizationId: '' } })),
+      nowIso: new Date().toISOString(),
+    });
+    return { manageUsers: result.allowed, manageUserStatus: result.allowed, effectiveAccess };
   }
 
   async forgotPassword(emailRaw: string): Promise<{ message: string }> {
