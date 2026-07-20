@@ -10,6 +10,7 @@
 import type {
   AccountLifecycleRecord, LifecycleOperationRecord, LifecycleStep,
 } from './types.js';
+import { LIFECYCLE_SCHEMA_VERSION } from './types.js';
 import {
   ERR, IN_MEMORY_LIFECYCLE_CAPS, computeRequestFingerprint, hashIdempotencyKey,
   validateIdempotencyKey, validateReason, validateTransitionRequest, validateIdentifier,
@@ -49,6 +50,7 @@ export class InMemoryAccountLifecycleStore implements AccountLifecycleStore {
     if (this.cells.get(input.canonicalUserId)) throw ERR.alreadyExists(); // conditional: no overwrite
     const now = this.deps.nowIso();
     const rec: AccountLifecycleRecord = {
+      schemaVersion: LIFECYCLE_SCHEMA_VERSION,
       canonicalUserId: input.canonicalUserId, provider: 'cognito',
       providerUsername: input.providerUsername, normalizedEmail: normalizeIdentityEmail(input.normalizedEmail),
       status: input.initialStatus, version: 1, initializationSource: input.initializationSource,
@@ -88,12 +90,14 @@ export class InMemoryAccountLifecycleStore implements AccountLifecycleStore {
 
     const now = this.deps.nowIso();
     const op: LifecycleOperationRecord = {
+      schemaVersion: LIFECYCLE_SCHEMA_VERSION,
       operationId: input.operationId, idempotencyKeyHash: idemHash, requestFingerprint: fingerprint,
       action: input.action, targetUserId: input.canonicalUserId, actorUserId: input.actorUserId,
       actorEmailSnapshot: input.actorEmailSnapshot, reason, status: 'intent_recorded',
       operationVersion: 1, expectedLifecycleVersion: input.expectedLifecycleVersion,
       beforeStatus: input.expectedFromStatus, transitionalStatus: input.transitionalStatus, desiredStatus: input.desiredFinalStatus,
       completedSteps: ['intent_recorded', 'global_deny_committed'],
+      postCommitAuditStatus: 'not_required_yet',
       correlationId: input.correlationId, createdAt: now, updatedAt: now,
     };
     cell.operations.set(op.operationId, op);

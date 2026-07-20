@@ -27,7 +27,7 @@ const suspendInput = (over: Partial<BeginLifecycleTransitionInput> = {}): BeginL
   desiredFinalStatus: 'suspended', expectedLifecycleVersion: 1, idempotencyKey: 'idem-key-1', operationId: 'op-1',
   actorUserId: 'admin-1', actorEmailSnapshot: 'admin@careindeed.com', reason: 'policy violation', correlationId: 'corr-1', ...over,
 });
-const SUSPEND_ADVANCE: LifecycleStep[] = ['canonical_transition_projected', 'provider_disabled', 'provider_sessions_revoked', 'registration_projected', 'canonical_final_projected', 'completion_audited'];
+const SUSPEND_ADVANCE: LifecycleStep[] = ['canonical_transition_projected', 'provider_disabled', 'provider_sessions_revoked', 'registration_projected', 'canonical_final_projected', 'transition_ready_audited'];
 
 /** Advance an op through all required suspend steps (except final). Returns last op version. */
 async function advanceSuspend(s: AccountLifecycleStore, opId = 'op-1', lifeV = 2): Promise<number> {
@@ -169,7 +169,7 @@ describe('completion is store-owned', () => {
 });
 
 describe('record validation (fail-closed)', () => {
-  const good: AccountLifecycleRecord = { canonicalUserId: UID, provider: 'cognito', providerUsername: 'c1', normalizedEmail: 'a@b.com', status: 'active', version: 1, initializationSource: 'verified_legacy_active', createdAt: 't', createdBy: 'x', updatedAt: 't', updatedBy: 'x' };
+  const good: AccountLifecycleRecord = { schemaVersion: 1, canonicalUserId: UID, provider: 'cognito', providerUsername: 'c1', normalizedEmail: 'a@b.com', status: 'active', version: 1, initializationSource: 'verified_legacy_active', createdAt: 't', createdBy: 'x', updatedAt: 't', updatedBy: 'x' };
   it('parseLifecycleRecord accepts a valid record, rejects malformed → 503', () => {
     expect(parseLifecycleRecord(good, UID).status).toBe('active');
     expect(() => parseLifecycleRecord({ ...good, status: 'weird' }, UID)).toThrow(/RECORD_INVALID|malformed/i);

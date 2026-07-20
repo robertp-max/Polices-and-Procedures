@@ -93,7 +93,7 @@ describe('DynamoAccountLifecycleStore — command contracts', () => {
   });
 
   it('completeTransition refuses before required steps, then transactionally appends final_state_committed + clears reservation', async () => {
-    const allButFinal = ['intent_recorded', 'global_deny_committed', 'canonical_transition_projected', 'provider_disabled', 'provider_sessions_revoked', 'registration_projected', 'canonical_final_projected', 'completion_audited'];
+    const allButFinal = ['intent_recorded', 'global_deny_committed', 'canonical_transition_projected', 'provider_disabled', 'provider_sessions_revoked', 'registration_projected', 'canonical_final_projected', 'transition_ready_audited'];
     // missing steps → 400 before any write
     const missing = recordingClient((kind, input) => { if (kind === 'Get') { const sk = (input as { Key?: { sk?: string } }).Key?.sk ?? ''; if (sk.startsWith('OPERATION#')) return { Item: { record: opRec({ operationVersion: 2 }) } }; if (sk === 'LIFECYCLE') return { Item: { record: lifeRec({ status: 'suspending', currentOperationId: 'op-1', version: 2 }) } }; } return {}; });
     await expect(new DynamoAccountLifecycleStore(TABLE, missing.client, deps).completeTransition({ canonicalUserId: UID, operationId: 'op-1', expectedOperationVersion: 2, expectedLifecycleVersion: 2, finalStatus: 'suspended' })).rejects.toMatchObject({ status: 400 });

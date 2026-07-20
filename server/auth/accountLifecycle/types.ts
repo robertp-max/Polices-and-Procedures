@@ -46,6 +46,7 @@ export type LifecycleInitializationSource =
 /** Durable per-user lifecycle record. Identity is `canonicalUserId`; email and
  *  providerUsername are mutable projections, never the record identity. */
 export interface AccountLifecycleRecord {
+  schemaVersion: LifecycleSchemaVersion;
   canonicalUserId: string;
   provider: 'cognito';
   providerUsername: string;
@@ -64,16 +65,30 @@ export interface AccountLifecycleRecord {
 
 export type LifecycleAction = 'suspend' | 'reactivate';
 
+// `failed_without_mutation` removed (2B closure): a failure before durable
+// beginTransition intent is a denied/failed admin attempt for the audit stream,
+// not a journal state.
 export type LifecycleOperationStatus =
   | 'intent_recorded'
   | 'running'
   | 'reconciliation_required'
+  | 'completed';
+
+/** Post-commit audit recovery marker (Phase 2C orchestrates the retry). Phase 2B
+ *  only reserves the field; NO cross-store atomicity is claimed. */
+export type PostCommitAuditStatus =
+  | 'not_required_yet'
+  | 'pending'
   | 'completed'
-  | 'failed_without_mutation';
+  | 'reconciliation_required';
+
+export type LifecycleSchemaVersion = 1;
+export const LIFECYCLE_SCHEMA_VERSION: LifecycleSchemaVersion = 1;
 
 /**
- * Closed step vocabulary for the durable operation journal. A typed union
- * prevents a typo from making reconciliation silently repeat or skip a step.
+ * Closed step vocabulary for the durable operation journal. `transition_ready_audited`
+ * is the PRE-commit evidence step; `final_state_committed` is appended only at
+ * completion. (Matches the frozen semantic-core vocabulary.)
  */
 export type LifecycleStep =
   | 'intent_recorded'
@@ -84,11 +99,19 @@ export type LifecycleStep =
   | 'provider_enabled'
   | 'registration_projected'
   | 'canonical_final_projected'
-  | 'completion_audited'
+  | 'transition_ready_audited'
   | 'final_state_committed';
+
+/** Durable idempotency claim (its own record; raw key never stored). */
+export interface LifecycleIdempotencyClaim {
+  schemaVersion: LifecycleSchemaVersion;
+  operationId: string;
+  requestFingerprint: string;
+}
 
 /** Durable operation journal record. */
 export interface LifecycleOperationRecord {
+  schemaVersion: LifecycleSchemaVersion;
   operationId: string;
   /** sha256 of the idempotency key. The raw key is never persisted. */
   idempotencyKeyHash: string;
@@ -111,6 +134,8 @@ export interface LifecycleOperationRecord {
   completedSteps: LifecycleStep[];
   failedStep?: LifecycleStep;
   failureCode?: string;
+  /** Reserved for Phase 2C post-commit audit orchestration. */
+  postCommitAuditStatus: PostCommitAuditStatus;
   correlationId: string;
   createdAt: string;
   updatedAt: string;

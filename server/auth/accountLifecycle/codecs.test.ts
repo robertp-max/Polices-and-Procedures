@@ -48,7 +48,7 @@ describe('lifecycle codec', () => {
   it('12. invalid version rejected', () => { expect(() => decodeLifecycleRecord(lifeV1({ version: 0 }), UID)).toThrow(); expect(() => decodeLifecycleRecord(lifeV1({ version: 1.5 }), UID)).toThrow(); });
   it('13. invalid timestamp rejected', () => { expect(() => decodeLifecycleRecord(lifeV1({ createdAt: 'not-a-date' }), UID)).toThrow(); expect(() => decodeLifecycleRecord(lifeV1({ createdAt: '2027-01-01' }), UID)).toThrow(); });
   it('14. createdAt after updatedAt rejected', () => { expect(() => decodeLifecycleRecord(lifeV1({ createdAt: T1, updatedAt: T0 }), UID)).toThrow(); });
-  it('15. unknown property not returned', () => { const d = decodeLifecycleRecord(lifeV1({ extraJunk: 'x' }), UID); expect((d as Record<string, unknown>).extraJunk).toBeUndefined(); });
+  it('15. unknown property not returned', () => { const d = decodeLifecycleRecord(lifeV1({ extraJunk: 'x' }), UID); expect((d as unknown as Record<string, unknown>).extraJunk).toBeUndefined(); });
   it('16. prohibited credential key rejected', () => {
     expect(() => decodeLifecycleRecord(lifeV1({ accessToken: 'x' }), UID)).toThrow();
     expect(() => decodeLifecycleRecord(lifeV1({ access_token: 'x' }), UID)).toThrow();
@@ -86,7 +86,7 @@ describe('operation codec', () => {
   it('38. completed retaining failure markers rejected', () => { expect(() => decodeLifecycleOperation(opV1({ status: 'completed', completedSteps: SUSPEND_FULL, failedStep: 'provider_disabled', failureCode: 'X' }), UID, 'op-1')).toThrow(); });
   it('39. failed_without_mutation rejected', () => { expect(() => decodeLifecycleOperation(opV1({ status: 'failed_without_mutation' }), UID, 'op-1')).toThrow(); });
   it('40. old completion_audited step rejected', () => { expect(() => decodeLifecycleOperation(opV1({ completedSteps: ['intent_recorded', 'global_deny_committed', 'completion_audited'] }), UID, 'op-1')).toThrow(); });
-  it('41. unknown property not returned', () => { const d = decodeLifecycleOperation(opV1({ extra: 'x' }), UID, 'op-1'); expect((d as Record<string, unknown>).extra).toBeUndefined(); });
+  it('41. unknown property not returned', () => { const d = decodeLifecycleOperation(opV1({ extra: 'x' }), UID, 'op-1'); expect((d as unknown as Record<string, unknown>).extra).toBeUndefined(); });
   it('42. prohibited credential key rejected', () => { expect(() => decodeLifecycleOperation(opV1({ refreshToken: 'x' }), UID, 'op-1')).toThrow(); });
 });
 
@@ -97,7 +97,7 @@ describe('idempotency claim codec', () => {
   it('46. invalid operationId rejected', () => { expect(() => decodeLifecycleIdempotencyClaim(claimV1({ operationId: '' })).toString()).toThrow(); });
   it('47. malformed fingerprint rejected', () => { expect(() => decodeLifecycleIdempotencyClaim(claimV1({ requestFingerprint: 'short' }))).toThrow(); });
   it('48. malformed claim does not become a 404', () => { let s: number | undefined; try { decodeLifecycleIdempotencyClaim(claimV1({ requestFingerprint: 'x' })); } catch (e) { s = (e as { status?: number }).status; } expect(s).toBe(503); });
-  it('49. unknown property not returned', () => { const d = decodeLifecycleIdempotencyClaim(claimV1({ foo: 'bar' })); expect((d as Record<string, unknown>).foo).toBeUndefined(); });
+  it('49. unknown property not returned', () => { const d = decodeLifecycleIdempotencyClaim(claimV1({ foo: 'bar' })); expect((d as unknown as Record<string, unknown>).foo).toBeUndefined(); });
   it('50. prohibited credential key rejected', () => { expect(() => decodeLifecycleIdempotencyClaim(claimV1({ sessionToken: 'x' }))).toThrow(); });
 });
 

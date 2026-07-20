@@ -18,6 +18,7 @@ import {
   type AdvanceLifecycleOperationInput, type MarkReconciliationRequiredInput, type CompleteLifecycleTransitionInput,
 } from './store.js';
 import { normalizeIdentityEmail } from './identityEmail.js';
+import { LIFECYCLE_SCHEMA_VERSION } from './types.js';
 import type { AccountLifecycleRecord, LifecycleOperationRecord, LifecycleStep } from './types.js';
 
 export interface LifecycleDynamoClient {
@@ -62,6 +63,7 @@ export class DynamoAccountLifecycleStore implements AccountLifecycleStore {
     validateIdentifier('actorUserId', input.actorUserId);
     const now = this.deps.nowIso();
     const record: AccountLifecycleRecord = {
+      schemaVersion: LIFECYCLE_SCHEMA_VERSION,
       canonicalUserId: input.canonicalUserId, provider: 'cognito',
       providerUsername: input.providerUsername, normalizedEmail: normalizeIdentityEmail(input.normalizedEmail),
       status: input.initialStatus, version: 1, initializationSource: input.initializationSource,
@@ -100,12 +102,14 @@ export class DynamoAccountLifecycleStore implements AccountLifecycleStore {
     const life = await this.getLifecycle(input.canonicalUserId);
     if (!life) throw ERR.lifecycleNotFound();
     const op: LifecycleOperationRecord = {
+      schemaVersion: LIFECYCLE_SCHEMA_VERSION,
       operationId: input.operationId, idempotencyKeyHash: idemHash, requestFingerprint: fingerprint,
       action: input.action, targetUserId: input.canonicalUserId, actorUserId: input.actorUserId,
       actorEmailSnapshot: input.actorEmailSnapshot, reason, status: 'intent_recorded',
       operationVersion: 1, expectedLifecycleVersion: input.expectedLifecycleVersion,
       beforeStatus: input.expectedFromStatus, transitionalStatus: input.transitionalStatus, desiredStatus: input.desiredFinalStatus,
       completedSteps: ['intent_recorded', 'global_deny_committed'],
+      postCommitAuditStatus: 'not_required_yet',
       correlationId: input.correlationId, createdAt: now, updatedAt: now,
     };
     try {
@@ -173,7 +177,7 @@ export class DynamoAccountLifecycleStore implements AccountLifecycleStore {
     return { ...op, status: 'running', operationVersion: op.operationVersion + 1, completedSteps: steps, updatedAt: now };
   }
 
-  async markReconciliationRequired(input: MarkReconciliationRequiredInput) {
+  async markReconciliationRequired(input: MarkReconciliationRequiredInput): Promise<{ lifecycle: AccountLifecycleRecord; operation: LifecycleOperationRecord }> {
     const op = await this.getOperation(input.canonicalUserId, input.operationId);
     const life = await this.getLifecycle(input.canonicalUserId);
     if (!op) throw ERR.operationNotFound();
@@ -207,7 +211,7 @@ export class DynamoAccountLifecycleStore implements AccountLifecycleStore {
     };
   }
 
-  async completeTransition(input: CompleteLifecycleTransitionInput) {
+  async completeTransition(input: CompleteLifecycleTransitionInput): Promise<{ lifecycle: AccountLifecycleRecord; operation: LifecycleOperationRecord }> {
     const op = await this.getOperation(input.canonicalUserId, input.operationId);
     const life = await this.getLifecycle(input.canonicalUserId);
     if (!op) throw ERR.operationNotFound();
@@ -219,7 +223,7 @@ export class DynamoAccountLifecycleStore implements AccountLifecycleStore {
       if (!op.completedSteps.includes(step)) throw ERR.invalidTransition(`required step not completed: ${step}`);
     }
     const now = this.deps.nowIso();
-    const finalSteps = op.completedSteps.includes('final_state_committed') ? op.completedSteps : [...op.completedSteps, 'final_state_committed'];
+    const finalSteps: LifecycleStep[] = op.completedSteps.includes('final_state_committed') ? op.completedSteps : [...op.completedSteps, 'final_state_committed'];
     try {
       await this.client.send(new this.client.cmds.TransactWrite({
         TransactItems: [

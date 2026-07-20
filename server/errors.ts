@@ -16,12 +16,17 @@ export type ApiErrorCode =
   | 'upstream_error'
   | 'internal_error';
 
+// Known codes get autocomplete/checking; `(string & {})` lets domain modules
+// (e.g. account-lifecycle, eCIgn) use descriptive codes without bloating this
+// shared union. The error handler only serializes `code`, so this is safe.
+export type ApiErrorCodeInput = ApiErrorCode | (string & {});
+
 export class ApiError extends Error {
-  code: ApiErrorCode;
+  code: ApiErrorCodeInput;
   status: number;
   details?: unknown;
 
-  constructor(code: ApiErrorCode, message: string, status = 400, details?: unknown) {
+  constructor(code: ApiErrorCodeInput, message: string, status = 400, details?: unknown) {
     super(message);
     this.code = code;
     this.status = status;

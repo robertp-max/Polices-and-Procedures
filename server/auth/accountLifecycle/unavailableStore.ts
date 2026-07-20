@@ -10,16 +10,19 @@
 import {
   ERR, UNAVAILABLE_LIFECYCLE_CAPS,
   type AccountLifecycleStore, type AccountLifecycleStoreCapabilities,
+  type InitializeLifecycleInput, type BeginLifecycleTransitionInput,
+  type AdvanceLifecycleOperationInput, type MarkReconciliationRequiredInput,
+  type CompleteLifecycleTransitionInput,
 } from './store.js';
 import type { AccountLifecycleRecord, LifecycleOperationRecord } from './types.js';
 
 export class UnavailableAccountLifecycleStore implements AccountLifecycleStore {
   capabilities(): AccountLifecycleStoreCapabilities { return UNAVAILABLE_LIFECYCLE_CAPS; }
-  async getLifecycle(): Promise<AccountLifecycleRecord | null> { return null; }
-  async getOperation(): Promise<LifecycleOperationRecord | null> { return null; }
-  async initializeLifecycle(): Promise<never> { throw ERR.mutationUnavailable(); }
-  async beginTransition(): Promise<never> { throw ERR.mutationUnavailable(); }
-  async advanceOperation(): Promise<never> { throw ERR.mutationUnavailable(); }
-  async markReconciliationRequired(): Promise<never> { throw ERR.mutationUnavailable(); }
-  async completeTransition(): Promise<never> { throw ERR.mutationUnavailable(); }
+  async getLifecycle(_canonicalUserId: string): Promise<AccountLifecycleRecord | null> { return null; }
+  async getOperation(_canonicalUserId: string, _operationId: string): Promise<LifecycleOperationRecord | null> { return null; }
+  async initializeLifecycle(_input: InitializeLifecycleInput): Promise<never> { throw ERR.mutationUnavailable(); }
+  async beginTransition(_input: BeginLifecycleTransitionInput): Promise<never> { throw ERR.mutationUnavailable(); }
+  async advanceOperation(_input: AdvanceLifecycleOperationInput): Promise<never> { throw ERR.mutationUnavailable(); }
+  async markReconciliationRequired(_input: MarkReconciliationRequiredInput): Promise<never> { throw ERR.mutationUnavailable(); }
+  async completeTransition(_input: CompleteLifecycleTransitionInput): Promise<never> { throw ERR.mutationUnavailable(); }
 }

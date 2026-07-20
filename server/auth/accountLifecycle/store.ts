@@ -154,12 +154,12 @@ export function validateTransitionRequest(input: {
 export const SUSPEND_REQUIRED_STEPS: readonly LifecycleStep[] = [
   'intent_recorded', 'global_deny_committed', 'canonical_transition_projected',
   'provider_disabled', 'provider_sessions_revoked', 'registration_projected',
-  'canonical_final_projected', 'completion_audited', 'final_state_committed',
+  'canonical_final_projected', 'transition_ready_audited', 'final_state_committed',
 ];
 export const REACTIVATE_REQUIRED_STEPS: readonly LifecycleStep[] = [
   'intent_recorded', 'global_deny_committed', 'canonical_transition_projected',
   'provider_enabled', 'registration_projected', 'canonical_final_projected',
-  'completion_audited', 'final_state_committed',
+  'transition_ready_audited', 'final_state_committed',
 ];
 export function requiredStepsForAction(action: LifecycleAction): readonly LifecycleStep[] {
   return action === 'suspend' ? SUSPEND_REQUIRED_STEPS : REACTIVATE_REQUIRED_STEPS;
@@ -191,12 +191,12 @@ const LIFECYCLE_STATUSES: ReadonlySet<string> = new Set<AccountLifecycleStatus>(
   'pending', 'activating', 'active', 'suspending', 'suspended', 'reactivating', 'disabled', 'reconciliation_required',
 ]);
 const OP_STATUSES: ReadonlySet<string> = new Set<LifecycleOperationStatus>([
-  'intent_recorded', 'running', 'reconciliation_required', 'completed', 'failed_without_mutation',
+  'intent_recorded', 'running', 'reconciliation_required', 'completed',
 ]);
 const ALL_STEPS: ReadonlySet<string> = new Set<LifecycleStep>([
   'intent_recorded', 'global_deny_committed', 'canonical_transition_projected', 'provider_disabled',
   'provider_sessions_revoked', 'provider_enabled', 'registration_projected', 'canonical_final_projected',
-  'completion_audited', 'final_state_committed',
+  'transition_ready_audited', 'final_state_committed',
 ]);
 const INIT_SOURCES: ReadonlySet<string> = new Set<LifecycleInitializationSource>([
   'verified_legacy_active', 'manual_reconciliation', 'account_provisioning',
