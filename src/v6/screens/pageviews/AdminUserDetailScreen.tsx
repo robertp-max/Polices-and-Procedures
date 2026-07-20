@@ -5,7 +5,7 @@ import {
   KeyRound, LayoutGrid, ShieldAlert, ShieldCheck, UserRound,
 } from 'lucide-react';
 import { useAuth } from '@/auth/AuthProvider';
-import { AuthApi, type EffectiveAccessProjection, type PageAccessProjectionResponse } from '@/auth/api';
+import { AuthApi, type EffectiveAccessProjection, type PageAccessProjectionResponse, type SignatureAuthorityAssignmentRow } from '@/auth/api';
 import { SurfaceCard, ToneTag } from '../../components';
 import { Button, ToneBadge } from '../../primitives';
 import { cx } from '../../utils/classNames';
@@ -79,6 +79,7 @@ export function AdminUserDetailScreen() {
   const [rows, setRows] = useState<AccessUserRow[] | null>(null);
   const [effAccess, setEffAccess] = useState<EffectiveAccessProjection | null>(null);
   const [pageAccess, setPageAccess] = useState<PageAccessProjectionResponse | null>(null);
+  const [sigAuthority, setSigAuthority] = useState<SignatureAuthorityAssignmentRow[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [actionNote, setActionNote] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
@@ -103,6 +104,12 @@ export function AdminUserDetailScreen() {
         setPageAccess(pa.pageAccess);
       } catch {
         setPageAccess(null);
+      }
+      try {
+        const sa = await AuthApi.getUserSignatureAuthority(token, userId);
+        setSigAuthority(sa.assignments);
+      } catch {
+        setSigAuthority(null);
       }
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : 'Unable to load the server user directory.');
@@ -366,7 +373,47 @@ export function AdminUserDetailScreen() {
               <li><strong>Business capacity</strong> — DON · Administrator · Compliance Officer · Governing Body Chair · Supervisor · clinician · witness</li>
             </ul>
           </div>
-          <PendingProjection phase="Phase 5" title="Signature capacities, scope & delegation" detail="Catalog derived from forms/workflows/policies/eCIgn (never job titles); authority assignments with scope, prerequisites, delegation, and separation of duties. eCIgn enforcement re-keyed from client headers to the verified actor." />
+          {sigAuthority ? (
+            <div className="rounded-2xl border border-hairline bg-white p-lg shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-sm">
+                <h2 className="text-h3 font-medium text-ink">Signature capacities</h2>
+                <span className="rounded-full border border-tone-teal-border bg-tone-teal-bg px-sm py-[2px] text-[10px] font-medium uppercase tracking-wider text-tone-teal-text">
+                  server-authoritative · {sigAuthority.filter((a) => a.status === 'active').length} active
+                </span>
+              </div>
+              {sigAuthority.length === 0 ? (
+                <p className="mt-sm text-sm text-muted">
+                  No signature-authority assignments. This user is least-privilege and cannot sign until an active
+                  assignment is granted (fail-closed). eCIgn enforcement is keyed to the verified actor, never client input.
+                </p>
+              ) : (
+                <div className="mt-md overflow-x-auto rounded-lg border border-hairline">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-surface-glass text-tag uppercase tracking-tag text-muted">
+                      <tr><th className="px-md py-sm">Capacity</th><th className="px-md py-sm">Basis</th><th className="px-md py-sm">Scope</th><th className="px-md py-sm">Effective</th><th className="px-md py-sm">Status</th></tr>
+                    </thead>
+                    <tbody className="divide-y divide-hairline">
+                      {sigAuthority.map((a) => (
+                        <tr key={a.assignmentId} className={a.status === 'active' ? '' : 'opacity-55'}>
+                          <td className="px-md py-sm text-ink">{a.signatureRoleId}</td>
+                          <td className="px-md py-sm text-secondary">{a.authorityBasis}</td>
+                          <td className="px-md py-sm text-secondary">{a.scope.organizationId}{a.scope.branchId ? ` / ${a.scope.branchId}` : ''}</td>
+                          <td className="px-md py-sm text-secondary">{a.effectiveFrom.slice(0, 10)}{a.effectiveUntil ? ` → ${a.effectiveUntil.slice(0, 10)}` : ''}</td>
+                          <td className="px-md py-sm"><ToneTag tone={a.status === 'active' ? 'teal' : a.status === 'revoked' ? 'orange' : 'slate'}>{a.status}</ToneTag></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <p className="mt-md text-xs text-muted">
+                Capacities are derived from forms/workflows/policies/eCIgn (never job titles); unknown labels fail closed.
+                Delegation + prerequisites (license/competency) + separation-of-duties enforcement land in Phase 5D.
+              </p>
+            </div>
+          ) : (
+            <PendingProjection phase="Phase 5" title="Signature capacities, scope & delegation" detail="Server signature-authority assignments unavailable (not loaded)." />
+          )}
         </div>
       )}
 

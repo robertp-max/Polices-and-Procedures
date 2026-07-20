@@ -72,6 +72,21 @@ export interface PageAccessProjectionResponse {
   evaluatedAt: string;
 }
 
+/** A signature-authority assignment as surfaced to the admin UI (ADR-0002 §B7). */
+export interface SignatureAuthorityAssignmentRow {
+  assignmentId: string;
+  userId: string;
+  signatureRoleId: string;
+  authorityBasis: string;
+  scope: { organizationId: string; branchId?: string };
+  effectiveFrom: string;
+  effectiveUntil?: string;
+  status: 'active' | 'expired' | 'revoked';
+  version: number;
+  grantedBy: string;
+  reason: string;
+}
+
 export interface CapabilitiesResponse {
   authenticated: boolean;
   authorization: {
@@ -452,6 +467,14 @@ export const AuthApi = {
   /** Server-authoritative page-visibility projection for a target user (Phase 4). */
   getUserPageAccess(accessToken: string, userId: string): Promise<{ pageAccess: PageAccessProjectionResponse }> {
     return callAt(USER_ACCESS_BASE, `/${encodeURIComponent(userId)}/page-access`, {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /** A target user's signature-authority assignments (ADR-0002 Phase 5B). */
+  getUserSignatureAuthority(accessToken: string, userId: string): Promise<{ assignments: SignatureAuthorityAssignmentRow[] }> {
+    return callAt(USER_ACCESS_BASE, `/${encodeURIComponent(userId)}/signature-authority`, {
       method: 'GET',
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
     });
