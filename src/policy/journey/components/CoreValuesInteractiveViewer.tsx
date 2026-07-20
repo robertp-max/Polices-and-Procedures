@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ShieldCheck,
   Heart,
@@ -17,7 +17,7 @@ import {
   RotateCcw,
   X,
   } from 'lucide-react';
-import GAO001SharedOverlay from './GAO001SharedOverlay';
+import GAO001SharedOverlay, { type Hotspot } from './GAO001SharedOverlay';
 import { gao001SceneArt } from '../data/gao001SceneArt';
 
 // Web Audio API Synthesizer for self-contained interaction sounds
@@ -176,6 +176,315 @@ const SCENE_HOTSPOTS = [
     feedback: "Accountability means owning your mistakes and never compromising patient care to cover them up. Using incorrect supplies violates the physician's orders."
   }
 ];
+
+const CORE_VALUE_SCENARIOS = [
+  {
+    id: 'compassion_scenario',
+    title: 'Compassion',
+    icon: Heart,
+    position: { top: '46%', left: '28%' },
+    dialogue: 'The patient seems anxious and says they are afraid of being a burden on their family.',
+    actor: 'Patient Conversation',
+    targetValueId: 'compassion',
+    question2: 'What response best reflects this value?',
+    options: [
+      { id: 'a', text: 'Rush through the visit so the patient does not have time to worry.', isCorrect: false },
+      { id: 'b', text: 'Listen with empathy, acknowledge the concern, and keep care respectful and professional.', isCorrect: true },
+    ],
+    feedback: 'Compassion means leading with kindness while keeping professional boundaries and patient dignity intact.'
+  },
+  ...SCENE_HOTSPOTS,
+  {
+    id: 'excellence_scenario',
+    title: 'Excellence',
+    icon: Award,
+    position: { top: '64%', left: '46%' },
+    dialogue: 'You are unsure whether a new visit process applies to this patient and the visit schedule is tight.',
+    actor: 'Clinical Standard',
+    targetValueId: 'excellence',
+    question2: 'What behavior best reflects this value?',
+    options: [
+      { id: 'a', text: 'Proceed from memory so the visit stays on schedule.', isCorrect: false },
+      { id: 'b', text: 'Pause, verify the current standard, and ask for guidance before acting.', isCorrect: true },
+    ],
+    feedback: 'Excellence means using the correct standard, asking for help when needed, and improving the quality of every visit.'
+  },
+];
+
+const CORE_VALUE_NODE_POSITIONS: Record<string, { x: number; y: number }> = {
+  compassion: { x: 8, y: 44 },
+  integrity: { x: 27, y: 44 },
+  excellence: { x: 8, y: 64 },
+  teamwork: { x: 27, y: 64 },
+  accountability: { x: 8, y: 83 },
+  compliance: { x: 28, y: 83 },
+};
+
+const CORE_VALUE_HOTSPOTS: Hotspot[] = CORE_VALUES.map((value) => ({
+  id: value.id,
+  x: CORE_VALUE_NODE_POSITIONS[value.id].x,
+  y: CORE_VALUE_NODE_POSITIONS[value.id].y,
+  label: value.name,
+  fieldNotes: {
+    title: value.name,
+    content: value.desc,
+  },
+}));
+
+type CoreValueScenario = typeof CORE_VALUE_SCENARIOS[number];
+
+function CoreValuesActivityModal({
+  scenario,
+  close,
+  complete,
+}: {
+  scenario: CoreValueScenario;
+  close: () => void;
+  complete: () => void;
+}) {
+  const [interactionPhase, setInteractionPhase] = useState(1);
+  const [selectedValue, setSelectedValue] = useState<string | null>(null);
+  const [selectedAction, setSelectedAction] = useState<string | null>(null);
+  const [shakeId, setShakeId] = useState<string | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const focusable = dialog.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    );
+    focusable[0]?.focus();
+  }, [scenario.id, interactionPhase]);
+
+  const handleDialogKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      close();
+      return;
+    }
+
+    if (event.key !== 'Tab') return;
+
+    const focusable = dialogRef.current
+      ? Array.from(
+          dialogRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+          ),
+        )
+      : [];
+    if (!focusable.length) return;
+
+    const first = focusable[0]!;
+    const last = focusable[focusable.length - 1]!;
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
+  const triggerShake = (id: string) => {
+    synth.playError();
+    setShakeId(id);
+    window.setTimeout(() => setShakeId(null), 400);
+  };
+
+  const handleValueSelect = (valueId: string) => {
+    if (interactionPhase !== 1) return;
+    setSelectedValue(valueId);
+
+    if (valueId === scenario.targetValueId) {
+      synth.playClick();
+      window.setTimeout(() => setInteractionPhase(2), 550);
+    } else {
+      triggerShake(valueId);
+      window.setTimeout(() => setSelectedValue(null), 850);
+    }
+  };
+
+  const handleActionSelect = (action: CoreValueScenario['options'][number]) => {
+    if (interactionPhase !== 2) return;
+    setSelectedAction(action.id);
+
+    if (action.isCorrect) {
+      synth.playChime();
+      window.setTimeout(() => setInteractionPhase(3), 550);
+    } else {
+      triggerShake(action.id);
+      window.setTimeout(() => setSelectedAction(null), 850);
+    }
+  };
+
+  const finishAndClose = () => {
+    synth.playClick();
+    complete();
+  };
+
+  return (
+    <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#0F5B54]/60 p-4 backdrop-blur-sm sm:p-6">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`core-values-dialog-title-${scenario.id}`}
+        aria-describedby={`core-values-dialog-desc-${scenario.id}`}
+        onKeyDown={handleDialogKeyDown}
+        className="animate-pop-in flex max-h-full w-full max-w-lg flex-col overflow-y-auto rounded-2xl border-2 border-[#EEF4F3] bg-white shadow-2xl"
+      >
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E2E8F0] bg-white/95 p-5 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-[#EEF4F3] p-2 text-[#0F5B54]">
+              <scenario.icon className="h-5 w-5" />
+            </div>
+            <div>
+              <h3
+                id={`core-values-dialog-title-${scenario.id}`}
+                className="text-[15px] font-bold leading-tight text-[#0F5B54]"
+              >
+                {scenario.title}
+              </h3>
+              <span className="text-xs font-medium uppercase tracking-wider text-[#64748B]">
+                Core Values Practice
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={close}
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-full text-[#64748B] transition-colors hover:bg-[#EEF4F3] hover:text-[#0F5B54]"
+            aria-label="Close Core Values practice"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div id={`core-values-dialog-desc-${scenario.id}`} className="flex flex-col gap-6 p-6">
+          <div className="relative rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-5">
+            <div className="absolute -top-3 left-4 flex items-center gap-1.5 rounded-full border border-[#C74601]/30 bg-white px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#C74601] shadow-sm">
+              <MessageCircle className="h-3 w-3 text-[#C74601]" /> {scenario.actor}
+            </div>
+            <p className="mt-2 text-[14px] leading-relaxed text-[#2D3748]">
+              "{scenario.dialogue}"
+            </p>
+          </div>
+
+          <div className="transition-all duration-500">
+            <h4 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#2D3748]">
+              <span className={`flex h-5 w-5 items-center justify-center rounded-full text-white ${interactionPhase > 1 ? 'bg-[#007970]' : 'bg-[#C74601]'}`}>
+                {interactionPhase > 1 ? <Check className="h-3 w-3" /> : '1'}
+              </span>
+              Which Core Value applies here?
+            </h4>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {CORE_VALUES.map((cv) => {
+                const isSelected = selectedValue === cv.id;
+                const isCorrect = isSelected && cv.id === scenario.targetValueId;
+                const isWrong = isSelected && !isCorrect;
+                const isShaking = shakeId === cv.id;
+                const disabled = interactionPhase > 1;
+
+                let btnClass = "border-[#E2E8F0] bg-white text-[#64748B] hover:border-[#007970]/30 hover:bg-[#E5FEFF]";
+                if (isCorrect || (disabled && cv.id === scenario.targetValueId)) {
+                  btnClass = "border-[#007970] bg-[#E5FEFF] text-[#007970] shadow-sm ring-1 ring-[#007970]";
+                } else if (isWrong) {
+                  btnClass = "border-[#EF4444] bg-[#FEF2F2] text-[#EF4444]";
+                } else if (disabled) {
+                  btnClass += " opacity-40 grayscale";
+                }
+
+                return (
+                  <button
+                    key={cv.id}
+                    type="button"
+                    onClick={() => handleValueSelect(cv.id)}
+                    disabled={disabled}
+                    className={`flex min-h-12 items-center gap-3 rounded-xl border-2 p-3 text-left transition-all duration-200 ${btnClass} ${isShaking ? 'animate-shake' : ''}`}
+                  >
+                    <cv.icon className="h-4 w-4 flex-shrink-0" strokeWidth={2.5} />
+                    <span className="text-[13px] font-semibold">{cv.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {interactionPhase >= 2 && (
+            <div className="animate-slide-up border-t border-[#E2E8F0] pt-6">
+              <h4 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#2D3748]">
+                <span className={`flex h-5 w-5 items-center justify-center rounded-full text-white ${interactionPhase > 2 ? 'bg-[#007970]' : 'bg-[#C74601]'}`}>
+                  {interactionPhase > 2 ? <Check className="h-3 w-3" /> : '2'}
+                </span>
+                {scenario.question2}
+              </h4>
+              <div className="space-y-3">
+                {scenario.options.map((opt) => {
+                  const isSelected = selectedAction === opt.id;
+                  const isCorrect = isSelected && opt.isCorrect;
+                  const isWrong = isSelected && !isCorrect;
+                  const isShaking = shakeId === opt.id;
+                  const disabled = interactionPhase > 2;
+
+                  let btnClass = "border-[#E2E8F0] bg-white text-[#4A5568] hover:border-[#007970]/30 hover:bg-[#E5FEFF]";
+                  let iconColor = "text-[#A0AEC0]";
+
+                  if (isCorrect) {
+                    btnClass = "border-[#007970] bg-[#E5FEFF] text-[#007970] shadow-sm ring-1 ring-[#007970]";
+                    iconColor = "text-[#007970]";
+                  } else if (isWrong) {
+                    btnClass = "border-[#EF4444] bg-[#FEF2F2] text-[#EF4444]";
+                    iconColor = "text-[#EF4444]";
+                  } else if (disabled) {
+                    btnClass += " opacity-40";
+                  }
+
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => handleActionSelect(opt)}
+                      disabled={disabled}
+                      className={`flex min-h-12 w-full items-start gap-3 rounded-xl border-2 p-4 text-left transition-all duration-200 ${btnClass} ${isShaking ? 'animate-shake' : ''}`}
+                    >
+                      <div className={`mt-0.5 flex-shrink-0 ${iconColor}`}>
+                        {isCorrect ? <CheckCircle2 className="h-5 w-5" /> :
+                        isWrong ? <XCircle className="h-5 w-5" /> :
+                        <div className="h-5 w-5 rounded-full border-2 border-current opacity-30" />}
+                      </div>
+                      <span className="text-[13px] leading-relaxed">{opt.text}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {interactionPhase === 3 && (
+            <div className="animate-slide-up flex flex-col gap-4 rounded-xl border border-[#004142] bg-[#007970] p-5 text-white shadow-lg">
+              <div className="flex items-start gap-3">
+                <ShieldCheck className="mt-0.5 h-6 w-6 flex-shrink-0 text-[#E5FEFF]" />
+                <div>
+                  <h4 className="mb-1 text-[14px] font-bold text-white">Behavior Aligned</h4>
+                  <p className="text-[13px] leading-relaxed text-[#E5FEFF] opacity-90">{scenario.feedback}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={finishAndClose}
+                className="min-h-12 w-full rounded-lg bg-[#C74601] py-3 text-[13px] font-bold uppercase tracking-widest text-white shadow-sm transition-colors hover:bg-[#A63A01]"
+              >
+                Return to Scene
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const brandStyles = `
   @keyframes subtleShake {
@@ -722,47 +1031,29 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
     return () => { document.head.removeChild(styleSheet); };
   }, []);
 
-  const showLegacyArt = false;
-  if (!showLegacyArt) {
-    return (
-      <GAO001SharedOverlay
-        imageSrc={gao001SceneArt['scene-04'].src}
-        altText={gao001SceneArt['scene-04'].alt}
-        objective="Learn what makes home health different."
-        onComplete={onComplete}
-        hotspots={[
-          {
-            id: 'observe', x: 25, y: 40, label: 'Observe the home',
-            fieldNotes: {
-              title: 'Observe the Home',
-              content: 'In home health, the patient\'s environment provides critical context for their care and recovery.'
-            }
-          },
-          {
-            id: 'routines', x: 75, y: 40, label: 'Respect routines',
-            fieldNotes: {
-              title: 'Respect Routines',
-              content: 'We are guests in their home. Adapt your care delivery to respect their established routines when safe.'
-            }
-          },
-          {
-            id: 'safety', x: 25, y: 60, label: 'Notice safety context',
-            fieldNotes: {
-              title: 'Safety Context',
-              content: 'Identify fall risks, medication storage issues, or environmental hazards that might not be visible in a facility.'
-            }
-          },
-          {
-            id: 'person', x: 75, y: 60, label: 'See the whole person',
-            fieldNotes: {
-              title: 'See the Whole Person',
-              content: 'Home care allows us to understand the patient holistically—their family dynamics, resources, and daily life.'
-            }
-          }
-        ]}
-      />
-    );
-  }
+  return (
+    <GAO001SharedOverlay
+      imageSrc={gao001SceneArt['scene-03'].src}
+      altText={gao001SceneArt['scene-03'].alt}
+      objective="Explore how Integrity, Compassion, Excellence, Teamwork, Accountability, and Compliance shape daily behavior."
+      onComplete={onComplete}
+      hotspots={CORE_VALUE_HOTSPOTS}
+      renderCustomModal={({ hotspot, close, complete }) => {
+        const scenario = CORE_VALUE_SCENARIOS.find(
+          (candidate) => candidate.targetValueId === hotspot.id,
+        );
+        if (!scenario) return null;
+        return (
+          <CoreValuesActivityModal
+            key={scenario.id}
+            scenario={scenario}
+            close={close}
+            complete={complete}
+          />
+        );
+      }}
+    />
+  );
 
   // Auto Blinking Logic for characters
   useEffect(() => {
@@ -781,7 +1072,8 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
     return () => clearTimeout(blinkTimeout);
   }, []);
 
-  const activeHotspot = SCENE_HOTSPOTS.find(h => h.id === activeHotspotId);
+  const activeHotspot = SCENE_HOTSPOTS.find(h => h.id === activeHotspotId) ?? null;
+  const legacyActiveHotspot = activeHotspot ?? SCENE_HOTSPOTS[0]!;
   const isFullyComplete = completedHotspots.length === SCENE_HOTSPOTS.length;
 
   useEffect(() => {
@@ -933,10 +1225,10 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
               <div className="p-5 border-b border-[#E2E8F0] flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur-sm z-10">
                 <div className="flex items-center gap-3">
                   <div className="bg-[#EEF4F3] p-2 rounded-lg text-[#0F5B54]">
-                    <activeHotspot.icon className="w-5 h-5" />
+                    {React.createElement(legacyActiveHotspot.icon, { className: 'w-5 h-5' })}
                   </div>
                   <div>
-                    <h3 className="font-bold text-[#0F5B54] text-[15px] leading-tight">{activeHotspot.title}</h3>
+                    <h3 className="font-bold text-[#0F5B54] text-[15px] leading-tight">{legacyActiveHotspot.title}</h3>
                     <span className="text-[#64748B] text-xs font-medium uppercase tracking-wider">Field Observation</span>
                   </div>
                 </div>
@@ -950,10 +1242,10 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
               <div className="p-6 flex flex-col gap-6">
                 <div className="bg-[#F8FAFC] p-5 rounded-xl border border-[#E2E8F0] relative">
                   <div className="absolute -top-3 left-4 bg-white px-3 py-0.5 text-[10px] font-bold text-[#C74601] uppercase tracking-widest border border-[#C74601]/30 rounded-full flex items-center gap-1.5 shadow-sm">
-                    <MessageCircle className="w-3 h-3 text-[#C74601]" /> {activeHotspot.actor}
+                    <MessageCircle className="w-3 h-3 text-[#C74601]" /> {legacyActiveHotspot.actor}
                   </div>
                   <p className="text-[#2D3748] text-[14px] leading-relaxed mt-2">
-                    "{activeHotspot.dialogue}"
+                    "{legacyActiveHotspot.dialogue}"
                   </p>
                 </div>
 
@@ -967,13 +1259,13 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
                   <div className="grid grid-cols-2 gap-2">
                     {CORE_VALUES.map((cv) => {
                       const isSelected = selectedValue === cv.id;
-                      const isCorrect = isSelected && cv.id === activeHotspot.targetValueId;
+                      const isCorrect = isSelected && cv.id === legacyActiveHotspot.targetValueId;
                       const isWrong = isSelected && !isCorrect;
                       const isShaking = shakeId === cv.id;
                       const disabled = interactionPhase > 1;
 
                       let btnClass = "bg-white border-[#E2E8F0] text-[#64748B] hover:border-[#007970]/30 hover:bg-[#E5FEFF]";
-                      if (isCorrect || (disabled && cv.id === activeHotspot.targetValueId)) {
+                      if (isCorrect || (disabled && cv.id === legacyActiveHotspot.targetValueId)) {
                         btnClass = "bg-[#E5FEFF] border-[#007970] text-[#007970] shadow-sm ring-1 ring-[#007970]";
                       } else if (isWrong) {
                         btnClass = "bg-[#FEF2F2] border-[#EF4444] text-[#EF4444]";
@@ -1002,10 +1294,10 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
                       <span className={`w-5 h-5 rounded-full flex items-center justify-center text-white ${interactionPhase > 2 ? 'bg-[#007970]' : 'bg-[#C74601]'}`}>
                         {interactionPhase > 2 ? <Check className="w-3 h-3" /> : '2'}
                       </span>
-                      {activeHotspot.question2}
+                      {legacyActiveHotspot.question2}
                     </h4>
                     <div className="space-y-3">
-                      {activeHotspot.options.map((opt: any) => {
+                      {legacyActiveHotspot.options.map((opt: any) => {
                         const isSelected = selectedAction === opt.id;
                         const isCorrect = isSelected && opt.isCorrect;
                         const isWrong = isSelected && !isCorrect;
@@ -1051,7 +1343,7 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
                       <ShieldCheck className="w-6 h-6 text-[#E5FEFF] flex-shrink-0 mt-0.5" />
                       <div>
                         <h4 className="font-bold text-[14px] mb-1 text-white">Behavior Aligned</h4>
-                        <p className="text-[13px] leading-relaxed text-[#E5FEFF] opacity-90">{activeHotspot.feedback}</p>
+                        <p className="text-[13px] leading-relaxed text-[#E5FEFF] opacity-90">{legacyActiveHotspot.feedback}</p>
                       </div>
                     </div>
                     <button

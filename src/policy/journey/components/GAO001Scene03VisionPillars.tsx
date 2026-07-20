@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Eye, TrendingUp, Star, FileText, Building, Shield } from 'lucide-react';
-import GAO001SharedOverlay from './GAO001SharedOverlay';
+import { useEffect, useId, useRef, useState } from 'react';
+import { AlertCircle, Building, CheckCircle2, Eye, FileText, Heart, Shield, Star, TrendingUp, Users, X, type LucideIcon } from 'lucide-react';
+import GAO001SharedOverlay, { type Hotspot, type HotspotQuestionChoice } from './GAO001SharedOverlay';
 import { gao001SceneArt } from '../data/gao001SceneArt';
 
 interface GAO001Scene03VisionPillarsProps {
@@ -13,7 +13,11 @@ class InteractiveAudioSynth {
 
   private init() {
     if (!this.ctx) {
-      this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextCtor =
+        window.AudioContext ??
+        (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextCtor) return;
+      this.ctx = new AudioContextCtor();
     }
   }
 
@@ -58,6 +62,9 @@ class InteractiveAudioSynth {
 
 const synth = new InteractiveAudioSynth();
 
+const FOCUSABLE =
+  'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])';
+
 const brandStyles = `
   @keyframes slideUpFade {
     0% { transform: translateY(20px); opacity: 0; }
@@ -78,6 +85,306 @@ const brandStyles = `
   }
 `;
 
+type VisionPillarId = 'compassion' | 'integrity' | 'excellence' | 'teamwork';
+
+interface VisionPillarDefinition {
+  id: VisionPillarId;
+  title: string;
+  shortLabel: string;
+  Icon: LucideIcon;
+  behavior: string;
+  question: string;
+  options: HotspotQuestionChoice[];
+  fieldNote: string;
+}
+
+const VISION_PILLARS: VisionPillarDefinition[] = [
+  {
+    id: 'compassion',
+    title: 'Clinical Excellence',
+    shortLabel: 'Clin Excellence',
+    Icon: Shield,
+    behavior: 'Outcomes above national benchmarks, accurate OASIS coding, evidence-based care plans, and timely interventions.',
+    question: 'Which daily behavior belongs to Clinical Excellence?',
+    options: [
+      { id: 'a', text: 'Ensure documentation is complete today, not next week.', isCorrect: false, feedback: 'Documentation timeliness matters, but in this set it is the Regulatory Leadership behavior.' },
+      { id: 'b', text: 'Pursue OASIS coding accuracy and care plans built on evidence, never rushing assessments.', isCorrect: true, feedback: 'Correct. Clinical Excellence is about accurate clinical judgment, evidence, and outcomes.' },
+      { id: 'c', text: 'Build trust with referral sources one visit at a time.', isCorrect: false, feedback: 'That belongs to Community Trust. Clinical Excellence focuses on evidence-based care and outcomes.' },
+      { id: 'd', text: 'Complete role-specific training and annual refreshers on schedule.', isCorrect: false, feedback: 'That belongs to Workforce Growth. Clinical Excellence is the outcomes-and-accuracy pillar.' },
+    ],
+    fieldNote: 'Clinical Excellence means outcomes and accuracy. Documentation timeliness is Regulatory Leadership. Referral relationships are Community Trust. Training is Workforce Growth.',
+  },
+  {
+    id: 'integrity',
+    title: 'Workforce Growth',
+    shortLabel: 'Workforce Growth',
+    Icon: Users,
+    behavior: 'Role-specific training, annual competency refreshers, cross-training, and internal mentorship programs.',
+    question: 'Which behavior belongs to Workforce Growth?',
+    options: [
+      { id: 'a', text: 'Complete annual competency refreshers and seek role-specific training proactively.', isCorrect: true, feedback: 'Correct. Workforce Growth is about developing people and keeping competency current.' },
+      { id: 'b', text: 'Ensure every patient interaction upholds regulatory standards.', isCorrect: false, feedback: 'That belongs to Regulatory Leadership. Workforce Growth focuses on training and competency development.' },
+      { id: 'c', text: 'Advocate for the agency with every quality interaction in the community.', isCorrect: false, feedback: 'That belongs to Community Trust. Workforce Growth is about staff development.' },
+      { id: 'd', text: 'Document clinical findings accurately and within the required timeframe.', isCorrect: false, feedback: 'That is closer to Clinical Excellence and Regulatory Leadership than Workforce Growth.' },
+    ],
+    fieldNote: 'Workforce Growth is about developing people. Clinical Excellence is outcomes-driven. Regulatory Leadership is standards-driven. Community Trust is relationship-driven.',
+  },
+  {
+    id: 'excellence',
+    title: 'Regulatory Leadership',
+    shortLabel: 'Regulatory Lead',
+    Icon: FileText,
+    behavior: 'Survey-ready every single day. Complete documentation on time. Zero tolerance for compliance gaps.',
+    question: 'Which behavior belongs to Regulatory Leadership?',
+    options: [
+      { id: 'a', text: 'Improve OASIS scoring accuracy by reviewing clinical evidence before each assessment.', isCorrect: false, feedback: 'That supports Clinical Excellence. Regulatory Leadership is the daily survey-ready standard.' },
+      { id: 'b', text: 'Stay survey-ready every day, not just when a survey is expected.', isCorrect: true, feedback: 'Correct. Regulatory Leadership means defensible work all the time.' },
+      { id: 'c', text: 'Attend internal mentorship sessions and complete annual refresher trainings.', isCorrect: false, feedback: 'That belongs to Workforce Growth. Regulatory Leadership is standards-driven.' },
+      { id: 'd', text: 'Represent the agency with professionalism at community health events.', isCorrect: false, feedback: 'That belongs to Community Trust. Regulatory Leadership focuses on survey readiness and compliance.' },
+    ],
+    fieldNote: '"Survey-ready every single day" is the Regulatory Leadership standard. A surveyor can arrive unannounced, so the work has to be defensible always.',
+  },
+  {
+    id: 'teamwork',
+    title: 'Community Trust',
+    shortLabel: 'Community Trust',
+    Icon: Heart,
+    behavior: 'Referral relationships, community presence, reputation built visit by visit, and patient advocacy.',
+    question: 'Which behavior belongs to Community Trust?',
+    options: [
+      { id: 'a', text: 'Build referral relationships and represent Care Indeed with integrity in every community interaction.', isCorrect: true, feedback: 'Correct. Community Trust is built through reliable, professional representation over time.' },
+      { id: 'b', text: 'Achieve accurate clinical outcomes through evidence-based care.', isCorrect: false, feedback: 'That belongs to Clinical Excellence. Community Trust focuses on reputation and relationships.' },
+      { id: 'c', text: 'Complete competency refreshers before the deadline.', isCorrect: false, feedback: 'That belongs to Workforce Growth. Community Trust is the relationship pillar.' },
+      { id: 'd', text: 'Keep survey files current only when a survey is scheduled.', isCorrect: false, feedback: 'That misses Regulatory Leadership. Survey readiness must be continuous, not event-based.' },
+    ],
+    fieldNote: 'Community Trust is the reputation Care Indeed earns in homes, referral relationships, and community interactions. It is built one defensible action at a time.',
+  },
+];
+
+const VISION_PILLAR_BY_ID = new Map(VISION_PILLARS.map((pillar) => [pillar.id, pillar]));
+
+interface VisionPillarModalProps {
+  hotspot: Hotspot;
+  close: () => void;
+  complete: () => void;
+}
+
+function VisionPillarModal({ hotspot, close, complete }: VisionPillarModalProps) {
+  const titleId = useId();
+  const descriptionId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const [revealedIds, setRevealedIds] = useState<Set<VisionPillarId>>(new Set());
+  const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
+
+  const activePillar = VISION_PILLAR_BY_ID.get(hotspot.id as VisionPillarId) ?? VISION_PILLARS[0];
+  const activeRevealed = revealedIds.has(activePillar.id);
+  const selectedChoice = hotspot.question?.choices.find((choice) => choice.id === selectedChoiceId);
+  const canComplete = activeRevealed && selectedChoice?.isCorrect === true;
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.requestAnimationFrame(() => {
+      dialogRef.current?.querySelector<HTMLButtonElement>('.gao001-custom-close')?.focus();
+    });
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+        return;
+      }
+
+      if (event.key !== 'Tab' || !dialogRef.current) return;
+      const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE));
+      if (!focusable.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [close]);
+
+  return (
+    <div
+      className="gao-node-drawer-backdrop"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) close();
+      }}
+    >
+      <div
+        ref={dialogRef}
+        className="max-h-[min(88vh,780px)] w-[min(94vw,980px)] overflow-hidden rounded-[22px] border border-[#E5E4E3] bg-white shadow-[0_24px_72px_rgba(15,91,84,0.2)]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+      >
+        <header className="flex items-start justify-between gap-4 border-b border-[#E5E4E3] bg-[#F8FAFC] px-5 py-4">
+          <div>
+            <h2 id={titleId} className="text-lg font-bold leading-tight text-[#0F5B54]">
+              Vision Pillars: {activePillar.title}
+            </h2>
+            <p className="mt-1 text-[12px] font-bold uppercase tracking-[0.16em] text-[#F06923]">
+              Reveal the pillar, then apply it to the field decision
+            </p>
+          </div>
+          <button
+            type="button"
+            className="gao001-custom-close flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#DAD7D4] bg-white text-[#475569] transition hover:border-[#0F5B54] hover:text-[#0F5B54]"
+            aria-label="Close vision pillars"
+            onClick={close}
+          >
+            <X size={22} />
+          </button>
+        </header>
+
+        <div className="max-h-[calc(min(88vh,780px)-76px)] overflow-y-auto p-5">
+          <p id={descriptionId} className="max-w-3xl text-[15.5px] font-semibold leading-relaxed text-[#2D3748]">
+            Tap the highlighted pillar to reveal the field behavior, then choose the action that matches it.
+          </p>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {VISION_PILLARS.map((pillar) => {
+              const isActive = pillar.id === activePillar.id;
+              const isRevealed = revealedIds.has(pillar.id);
+              const PillarIcon = pillar.Icon;
+              return (
+                <button
+                  key={pillar.id}
+                  type="button"
+                  className={`min-h-[160px] rounded-[18px] border-2 p-4 text-left transition ${
+                    isActive
+                      ? 'border-[#0F5B54] bg-[#EEF4F3] shadow-[0_12px_28px_rgba(15,91,84,0.12)]'
+                      : 'border-[#E5E4E3] bg-white opacity-70 hover:opacity-100'
+                  }`}
+                  aria-pressed={isRevealed}
+                  onClick={() => {
+                    synth.playClick();
+                    setRevealedIds((previous) => new Set(previous).add(pillar.id));
+                  }}
+                >
+                  <span className={`mb-3 flex h-11 w-11 items-center justify-center rounded-full ${
+                    isRevealed ? 'bg-[#0F5B54] text-white' : 'bg-[#F1F5F9] text-[#94A3B8]'
+                  }`}>
+                    <PillarIcon size={22} />
+                  </span>
+                  <span className="block text-sm font-bold text-[#0F5B54]">{pillar.title}</span>
+                  <span className={`mt-3 block text-[13px] font-medium leading-relaxed text-[#475569] transition ${
+                    isRevealed ? 'opacity-100' : 'opacity-0'
+                  }`}>
+                    {pillar.behavior}
+                  </span>
+                  {!isRevealed ? (
+                    <span className="mt-3 block text-[11px] font-bold uppercase tracking-[0.14em] text-[#F06923]">
+                      Tap to reveal
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-5 grid gap-5 lg:grid-cols-[0.85fr_1.15fr]">
+            <section className="rounded-[18px] border border-[#D6E7E4] bg-[#FAFBF8] p-5">
+              <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#0F5B54]">
+                Field Note
+              </div>
+              <h3 className="mt-2 text-lg font-bold text-[#1E3A3A]">{hotspot.fieldNotes.title}</h3>
+              <div className="mt-2 text-[15.5px] leading-relaxed text-[#2D3748]">
+                {hotspot.fieldNotes.content}
+              </div>
+              <p className="mt-4 rounded-[14px] bg-[#EEF4F3] p-4 text-[14px] font-semibold leading-relaxed text-[#0F5B54]">
+                {activePillar.fieldNote}
+              </p>
+            </section>
+
+            <section className={`${activeRevealed ? '' : 'opacity-45'}`}>
+              <fieldset disabled={!activeRevealed}>
+                <legend className="mb-3 text-[15.5px] font-bold text-[#1E3A3A]">
+                  {hotspot.question?.prompt ?? activePillar.question}
+                </legend>
+                <div className="flex flex-col gap-3">
+                  {hotspot.question?.choices.map((choice) => {
+                    const isSelected = selectedChoiceId === choice.id;
+                    const isCorrectSelection = isSelected && choice.isCorrect;
+                    const isIncorrectSelection = isSelected && !choice.isCorrect;
+                    return (
+                      <button
+                        key={choice.id}
+                        type="button"
+                        className={`min-h-12 rounded-[14px] border-2 px-4 py-3 text-left text-[15px] font-semibold leading-relaxed transition ${
+                          isCorrectSelection
+                            ? 'border-[#0F5B54] bg-[#EEF4F3] text-[#0F5B54]'
+                            : isIncorrectSelection
+                              ? 'border-[#E45A27] bg-[#FFF3EC] text-[#C74601]'
+                              : 'border-[#E5E4E3] bg-white text-[#334155] hover:border-[#0F5B54]'
+                        }`}
+                        aria-pressed={isSelected}
+                        onClick={() => {
+                          synth.playClick();
+                          setSelectedChoiceId(choice.id);
+                          if (choice.isCorrect) synth.playSuccess();
+                        }}
+                      >
+                        {choice.text}
+                      </button>
+                    );
+                  })}
+                </div>
+                {selectedChoice ? (
+                  <p
+                    className={`mt-4 rounded-[14px] border p-4 text-[15px] leading-relaxed ${
+                      selectedChoice.isCorrect
+                        ? 'border-[#C8DFDC] bg-[#EEF4F3] text-[#0F5B54]'
+                        : 'border-[#F4D3C2] bg-[#FFF8F3] text-[#C74601]'
+                    }`}
+                    role="status"
+                  >
+                    <span className="mb-1 flex items-center gap-2 font-bold">
+                      {selectedChoice.isCorrect ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+                      {selectedChoice.isCorrect ? 'Correct pillar match' : 'Try again'}
+                    </span>
+                    {selectedChoice.feedback}
+                  </p>
+                ) : null}
+              </fieldset>
+
+              {!activeRevealed ? (
+                <p className="mt-3 text-[13px] font-semibold text-[#C74601]" role="status">
+                  Reveal {activePillar.title} first to unlock the field decision.
+                </p>
+              ) : null}
+
+              <button
+                type="button"
+                className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#F06923] px-5 py-3 text-sm font-bold uppercase tracking-[0.14em] text-white shadow-[0_12px_28px_rgba(240,105,35,0.26)] transition hover:bg-[#d95a1a] disabled:cursor-not-allowed disabled:opacity-45"
+                disabled={!canComplete}
+                onClick={complete}
+              >
+                <CheckCircle2 size={18} />
+                Complete teaching point
+              </button>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function GAO001Scene03VisionPillars({ onComplete }: GAO001Scene03VisionPillarsProps) {
   const [revealed, setRevealed] = useState<string[]>([]);
   const [showCompletion, setShowCompletion] = useState(false);
@@ -96,67 +403,54 @@ export default function GAO001Scene03VisionPillars({ onComplete }: GAO001Scene03
       <GAO001SharedOverlay
         imageSrc={gao001SceneArt['scene-03'].src}
         altText={gao001SceneArt['scene-03'].alt}
-        objective="Reveal the 3 pillars of excellence."
+        objective="Apply the vision pillars to field behavior."
         onComplete={onComplete}
+        renderCustomModal={({ hotspot, close, complete }) => (
+          <VisionPillarModal hotspot={hotspot} close={close} complete={complete} />
+        )}
         hotspots={[
           {
-            id: 'compassion', x: 25, y: 50, label: 'Compassion',
+            id: 'compassion', x: 25, y: 50, label: VISION_PILLARS[0].shortLabel,
             fieldNotes: {
-              title: 'Compassion',
-              content: 'Treating patients with empathy, understanding their challenges in the home environment.'
+              title: VISION_PILLARS[0].title,
+              content: VISION_PILLARS[0].behavior
             },
             question: {
-              prompt: 'How is compassion best demonstrated during a home visit?',
-              choices: [
-                { id: 'c1', text: 'By feeling sorry for the patient and doing tasks they can do themselves.', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because doing tasks the patient can do reduces their independence.' },
-                { id: 'c2', text: 'By actively listening to their concerns and adjusting care within safe boundaries.', isCorrect: true, feedback: 'Correct. Compassion means understanding their perspective while maintaining clinical safety.' },
-                { id: 'c3', text: 'By sharing your own personal problems to build a connection.', isCorrect: false, feedback: 'Not quite. The safer answer is to maintain professional boundaries while showing empathy for their situation.' }
-              ]
+              prompt: VISION_PILLARS[0].question,
+              choices: VISION_PILLARS[0].options
             }
           },
           {
-            id: 'integrity', x: 45, y: 50, label: 'Integrity',
+            id: 'integrity', x: 45, y: 50, label: VISION_PILLARS[1].shortLabel,
             fieldNotes: {
-              title: 'Integrity',
-              content: 'Documenting accurately, maintaining confidentiality, and doing what is right even when unsupervised.'
+              title: VISION_PILLARS[1].title,
+              content: VISION_PILLARS[1].behavior
             },
             question: {
-              prompt: 'Which scenario best demonstrates integrity in home health?',
-              choices: [
-                { id: 'c1', text: 'Documenting a visit as 45 minutes long when you were only there for 15 minutes.', isCorrect: false, feedback: 'Not quite. Falsifying documentation is fraud and a severe violation of integrity and law.' },
-                { id: 'c2', text: 'Reporting a medication error you made immediately to the physician and supervisor.', isCorrect: true, feedback: 'Good choice. Integrity means owning mistakes and prioritizing patient safety over avoiding discipline.' },
-                { id: 'c3', text: 'Discussing a patient\'s condition with your friends to get their advice.', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because it violates HIPAA privacy rules.' }
-              ]
+              prompt: VISION_PILLARS[1].question,
+              choices: VISION_PILLARS[1].options
             }
           },
           {
-            id: 'excellence', x: 65, y: 50, label: 'Excellence',
+            id: 'excellence', x: 65, y: 50, label: VISION_PILLARS[2].shortLabel,
             fieldNotes: {
-              title: 'Excellence',
-              content: 'Striving for the best clinical outcomes and continually updating your skills.'
+              title: VISION_PILLARS[2].title,
+              content: VISION_PILLARS[2].behavior
             },
             question: {
-              prompt: 'How do you pursue excellence when faced with an unfamiliar clinical procedure?',
-              choices: [
-                { id: 'c1', text: 'Perform the procedure anyway so the patient doesn\'t lose confidence in you.', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because performing unfamiliar procedures can harm the patient.' },
-                { id: 'c2', text: 'Refuse to see the patient ever again.', isCorrect: false, feedback: 'Not quite. The safer answer is to seek guidance and training to handle the patient\'s needs.' },
-                { id: 'c3', text: 'Review the policy manual, consult with your supervisor, and request training before proceeding.', isCorrect: true, feedback: 'Correct. Excellence involves recognizing limits and actively improving your skills.' }
-              ]
+              prompt: VISION_PILLARS[2].question,
+              choices: VISION_PILLARS[2].options
             }
           },
           {
-            id: 'teamwork', x: 85, y: 50, label: 'Teamwork',
+            id: 'teamwork', x: 85, y: 50, label: VISION_PILLARS[3].shortLabel,
             fieldNotes: {
-              title: 'Teamwork',
-              content: 'Collaborating seamlessly with supervisors, physicians, and families to support the patient.'
+              title: VISION_PILLARS[3].title,
+              content: VISION_PILLARS[3].behavior
             },
             question: {
-              prompt: 'A patient asks you to change their wound care schedule to a different day, which affects the physical therapist\'s schedule. What is the best teamwork approach?',
-              choices: [
-                { id: 'c1', text: 'Change the schedule immediately and let the PT find out when they arrive.', isCorrect: false, feedback: 'Not quite. Failing to communicate disrupts care and undermines teamwork.' },
-                { id: 'c2', text: 'Tell the patient that the schedule cannot be changed under any circumstances.', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because patient needs may warrant a schedule change if coordinated properly.' },
-                { id: 'c3', text: 'Coordinate with the physical therapist and the clinical manager to adjust the schedule safely.', isCorrect: true, feedback: 'Good choice. Teamwork means proactive communication to ensure all disciplines are aligned.' }
-              ]
+              prompt: VISION_PILLARS[3].question,
+              choices: VISION_PILLARS[3].options
             }
           }
         ]}

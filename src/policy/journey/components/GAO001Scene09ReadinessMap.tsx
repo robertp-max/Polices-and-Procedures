@@ -1,11 +1,16 @@
-import { useState, useEffect } from 'react';
-import { Map, ArrowRight, CheckCircle2, ShieldAlert, Lock, BookOpen, Star, ShieldCheck, HeartPulse } from 'lucide-react';
-import GAO001SharedOverlay from './GAO001SharedOverlay';
+import { useState, useEffect, useRef } from 'react';
+import { Map, ArrowRight, CheckCircle2, ShieldAlert, Lock, BookOpen, Star, ShieldCheck, HeartPulse, Award, X } from 'lucide-react';
+import GAO001SharedOverlay, { type Hotspot } from './GAO001SharedOverlay';
 import { gao001SceneArt } from '../data/gao001SceneArt';
 
 interface GAO001Scene09ReadinessMapProps {
   onComplete?: () => void;
 }
+
+type WindowWithWebkitAudio = Window &
+  typeof globalThis & {
+    webkitAudioContext?: typeof AudioContext;
+  };
 
 class InteractiveAudioSynth {
   private ctx: AudioContext | null = null;
@@ -13,7 +18,9 @@ class InteractiveAudioSynth {
 
   private init() {
     if (!this.ctx) {
-      this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextCtor = window.AudioContext || (window as WindowWithWebkitAudio).webkitAudioContext;
+      if (!AudioContextCtor) return;
+      this.ctx = new AudioContextCtor();
     }
   }
 
@@ -85,6 +92,267 @@ const brandStyles = `
   }
 `;
 
+const READINESS_JOURNEY_POINTS = [
+  { id: 'mission', label: 'Mission' },
+  { id: 'vision', label: 'Vision' },
+  { id: 'core-values', label: 'Core Values' },
+  { id: 'home-health-diff', label: 'Home Health Difference' },
+  { id: 'reporting', label: 'Reporting Protocol' },
+  { id: 'rights', label: 'Patient Rights / Refusal' },
+  { id: 'escalation', label: 'Escalation Practice' },
+  { id: 'survey', label: 'Survey Readiness' },
+];
+
+function ReadinessMapActivity({
+  hotspot,
+  close,
+  complete,
+}: {
+  hotspot: Hotspot;
+  close: () => void;
+  complete: () => void;
+}) {
+  const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
+  const dialogRef = useRef<HTMLElement>(null);
+  const question = hotspot.question;
+  const selectedChoice = question?.choices.find((choice) => choice.id === selectedChoiceId);
+  const safeSelectionMade = selectedChoice?.isCorrect === true;
+  const canComplete = question ? safeSelectionMade : true;
+  const activeIndex = Math.max(
+    0,
+    READINESS_JOURNEY_POINTS.findIndex((point) => point.id === hotspot.id),
+  );
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const focusableSelector = [
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[href]',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(',');
+    const focusables = () => Array.from(dialog?.querySelectorAll<HTMLElement>(focusableSelector) ?? []);
+    window.setTimeout(() => (focusables()[0] ?? dialog)?.focus(), 20);
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const items = focusables();
+      if (!items.length) {
+        event.preventDefault();
+        dialog?.focus();
+        return;
+      }
+
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [close]);
+
+  const handleChoice = (choice: NonNullable<Hotspot['question']>['choices'][number]) => {
+    setSelectedChoiceId(choice.id);
+    if (choice.isCorrect) {
+      synth.playUnlock();
+    } else {
+      synth.playClick();
+    }
+  };
+
+  return (
+    <div className="absolute inset-0 z-50 flex items-center justify-center overflow-hidden bg-[#1F1C1B]/55 p-3 backdrop-blur-[2px] lg:p-5">
+      <section
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`gao001-readiness-${hotspot.id}-title`}
+        aria-describedby={`gao001-readiness-${hotspot.id}-description`}
+        tabIndex={-1}
+        className="relative flex max-h-[min(92cqh,680px)] w-full max-w-[1040px] flex-col overflow-hidden rounded-[22px] border border-[#E5E4E3] bg-[#FDF8F3] shadow-[0_28px_90px_rgba(15,91,84,0.26)] outline-none"
+      >
+        <button
+          type="button"
+          onClick={close}
+          aria-label="Close readiness map activity"
+          className="absolute right-4 top-4 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-[#E9E4E0] bg-white text-[#1E3A3A] shadow-md transition hover:border-[#007970] hover:bg-[#EEFBF6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F5B54]"
+        >
+          <X className="h-5 w-5" />
+        </button>
+
+        <div className="border-b border-[#E5E4E3] bg-white px-5 py-4 pr-20 lg:px-8">
+          <p className="font-montserrat text-[11px] font-bold uppercase tracking-[0.22em] text-[#F06923]">
+            {hotspot.label}
+          </p>
+          <h2
+            id={`gao001-readiness-${hotspot.id}-title`}
+            className="mt-2 font-montserrat text-2xl font-bold leading-tight text-[#0F5B54] lg:text-3xl"
+          >
+            Wrap-Up & Post-Test Prep
+          </h2>
+          <p
+            id={`gao001-readiness-${hotspot.id}-description`}
+            className="mt-2 max-w-3xl font-roboto text-[15.5px] leading-relaxed text-[#475569]"
+          >
+            Alex has navigated the first week. Use this readiness map to connect the current teaching point to the safest field behavior before the post-test.
+          </p>
+        </div>
+
+        <div className="grid min-h-0 flex-1 gap-5 overflow-y-auto p-5 lg:grid-cols-[0.9fr_1.35fr] lg:gap-6 lg:p-6">
+          <div className="rounded-[18px] border border-[#E5E4E3] bg-white p-5 shadow-sm">
+            <div className="mb-5 flex items-center border-b border-[#E5E4E3] pb-4">
+              <Map className="mr-3 h-6 w-6 text-[#0F5B54]" />
+              <h3 className="font-montserrat text-sm font-bold uppercase tracking-[0.14em] text-[#1E3A3A]">
+                Alex's GAO-001 Journey
+              </h3>
+            </div>
+
+            <ol className="space-y-3">
+              {READINESS_JOURNEY_POINTS.map((point, index) => {
+                const isActive = point.id === hotspot.id;
+                const isPast = index < activeIndex;
+                return (
+                  <li key={point.id} className="relative flex items-center">
+                    {index < READINESS_JOURNEY_POINTS.length - 1 ? (
+                      <div className="absolute left-3 top-7 h-[calc(100%+0.75rem)] w-0.5 bg-[#0F5B54]/18" />
+                    ) : null}
+                    <div
+                      className={`z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold ${
+                        isActive
+                          ? 'border-[#F06923] bg-[#F06923] text-white shadow-[0_0_0_4px_rgba(240,105,35,0.14)]'
+                          : isPast
+                            ? 'border-[#0F5B54] bg-[#0F5B54] text-white'
+                            : 'border-[#C9D6D2] bg-[#FAFBF8] text-[#64748B]'
+                      }`}
+                    >
+                      {isPast ? <CheckCircle2 className="h-4 w-4" /> : index + 1}
+                    </div>
+                    <span
+                      className={`ml-3 font-roboto text-sm ${
+                        isActive ? 'font-bold text-[#0F5B54]' : 'font-semibold text-[#334155]'
+                      }`}
+                    >
+                      {point.label}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+
+            <div className="mt-6 rounded-[14px] border border-[#E2E8F0] bg-[#F8FAFC] p-4 text-center text-xs leading-relaxed text-[#475569]">
+              <Award className="mx-auto mb-2 h-6 w-6 text-[#D89E39]" />
+              <p className="font-montserrat font-bold uppercase tracking-[0.14em] text-[#1E3A3A]">
+                Post-test readiness
+              </p>
+              <p className="mt-1">
+                Readiness means choosing the safe field behavior without needing story scaffolding.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex min-h-0 flex-col rounded-[18px] border border-[#E5E4E3] bg-white shadow-sm">
+            <div className="border-l-4 border-[#0F5B54] bg-[#0F5B54]/10 p-5">
+              <h3 className="font-montserrat text-xl font-bold text-[#1E3A3A]">
+                {hotspot.fieldNotes.title}
+              </h3>
+              <div className="mt-2 font-roboto text-[15.5px] leading-relaxed text-[#334155]">
+                {hotspot.fieldNotes.content}
+              </div>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto p-5">
+              {question ? (
+                <>
+                  <p className="font-roboto text-[15.5px] font-semibold leading-relaxed text-[#1E3A3A]">
+                    {question.prompt}
+                  </p>
+
+                  <div className="mt-4 grid gap-3">
+                    {question.choices.map((choice) => {
+                      const isSelected = selectedChoiceId === choice.id;
+                      const selectedClass = choice.isCorrect
+                        ? 'border-[#0F5B54] bg-[#EEFBF6] text-[#0F5B54]'
+                        : 'border-[#E74C3C] bg-[#FFF7F4] text-[#A64028]';
+                      return (
+                        <button
+                          key={choice.id}
+                          type="button"
+                          aria-pressed={isSelected}
+                          onClick={() => handleChoice(choice)}
+                          className={`min-h-12 rounded-[14px] border-2 px-4 py-3 text-left font-roboto text-[15.5px] font-semibold leading-relaxed transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F5B54] ${
+                            isSelected
+                              ? selectedClass
+                              : 'border-[#E5E4E3] bg-[#FAFAF7] text-[#2D3748] hover:border-[#007970]'
+                          }`}
+                        >
+                          {choice.text}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {selectedChoice ? (
+                    <div
+                      role="status"
+                      className={`mt-5 rounded-[16px] border px-4 py-3 font-roboto text-[15.5px] leading-relaxed ${
+                        selectedChoice.isCorrect
+                          ? 'border-[#BFE8DD] bg-[#F1FBF8] text-[#0F5B54]'
+                          : 'border-[#F4B7B0] bg-[#FFF7F4] text-[#A64028]'
+                      }`}
+                    >
+                      {selectedChoice.feedback}
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <div className="rounded-[16px] border border-[#E9E4E0] bg-[#FAFAF7] px-4 py-3 font-roboto text-[15.5px] leading-relaxed text-[#2D3748]">
+                  Review this readiness point, then mark it observed.
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-[#E5E4E3] p-5">
+              <button
+                type="button"
+                disabled={!canComplete}
+                onClick={() => {
+                  synth.playClick();
+                  complete();
+                }}
+                className="flex min-h-11 w-full items-center justify-center rounded-[12px] bg-[#F06923] px-4 py-3 font-montserrat text-xs font-bold uppercase tracking-[0.16em] text-white transition hover:bg-[#D95A1A] disabled:cursor-not-allowed disabled:bg-[#CBD5E1]"
+              >
+                Complete readiness point
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export default function GAO001Scene09ReadinessMap({ onComplete }: GAO001Scene09ReadinessMapProps) {
   const [isUnlocked, setIsUnlocked] = useState(false);
 
@@ -116,6 +384,13 @@ export default function GAO001Scene09ReadinessMap({ onComplete }: GAO001Scene09R
         objective="Review Alex’s first-week learning map."
         onComplete={onComplete}
         linear={true}
+        renderCustomModal={({ hotspot, close, complete }) => (
+          <ReadinessMapActivity
+            hotspot={hotspot}
+            close={close}
+            complete={complete}
+          />
+        )}
         hotspots={[
           {
             id: 'mission', x: 20, y: 30, label: 'Mission',

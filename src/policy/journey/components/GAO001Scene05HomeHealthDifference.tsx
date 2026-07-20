@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Home, Building2, CheckCircle2, ArrowRight } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Home, Building2, CheckCircle2, ArrowRight, X } from 'lucide-react';
 import GAO001SharedOverlay from './GAO001SharedOverlay';
 import { gao001SceneArt } from '../data/gao001SceneArt';
 
@@ -102,138 +102,108 @@ interface Item {
   correctCategory: Category;
 }
 
-export default function GAO001Scene05HomeHealthDifference({ onComplete }: GAO001Scene05HomeHealthDifferenceProps) {
-  const [items] = useState<Item[]>([
-    { id: '1', text: 'Highly controlled, sterile environment', correctCategory: 'facility' },
-    { id: '2', text: 'Unpredictable, personalized environment', correctCategory: 'home' },
-    { id: '3', text: 'Constant peer support & backup nearby', correctCategory: 'facility' },
-    { id: '4', text: 'Independent, autonomous clinical judgment', correctCategory: 'home' },
-    { id: '5', text: 'Standardized equipment and layouts', correctCategory: 'facility' },
-    { id: '6', text: 'Adapting to the patient\'s unique living situation', correctCategory: 'home' },
-  ]);
+const HOME_HEALTH_ITEMS: Item[] = [
+  { id: '1', text: 'Highly controlled, sterile environment', correctCategory: 'facility' },
+  { id: '2', text: 'Unpredictable, personalized environment', correctCategory: 'home' },
+  { id: '3', text: 'Constant peer support & backup nearby', correctCategory: 'facility' },
+  { id: '4', text: 'Independent, autonomous clinical judgment', correctCategory: 'home' },
+  { id: '5', text: 'Standardized equipment and layouts', correctCategory: 'facility' },
+  { id: '6', text: 'Adapting to the patient\'s unique living situation', correctCategory: 'home' },
+];
 
+function HomeHealthDifferenceActivity({
+  close,
+  complete,
+  activeLabel,
+}: {
+  close: () => void;
+  complete: () => void;
+  activeLabel: string;
+}) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [placedItems, setPlacedItems] = useState<Record<string, Category>>({});
   const [errorCategory, setErrorCategory] = useState<Category | null>(null);
-
-  useEffect(() => {
-    const styleSheet = document.createElement("style");
-    styleSheet.type = "text/css";
-    styleSheet.innerText = brandStyles;
-    document.head.appendChild(styleSheet);
-    return () => { document.head.removeChild(styleSheet); };
-  }, []);
-
-  const showLegacyArt = false;
-  if (!showLegacyArt) {
-    return (
-      <GAO001SharedOverlay
-        imageSrc={gao001SceneArt['scene-05'].src}
-        altText={gao001SceneArt['scene-05'].alt}
-        objective="Sort the characteristics of care."
-        onComplete={onComplete}
-        linear={true}
-        hotspots={[
-          {
-            id: 'observe', x: 20, y: 50, label: 'Observe',
-            fieldNotes: {
-              title: 'Observe',
-              content: 'Notice the environment and the patient\'s condition without bias.'
-            },
-            question: {
-              prompt: 'When entering a patient\'s home, what should you observe first?',
-              choices: [
-                { id: 'c1', text: 'The patient\'s overall safety and any immediate environmental hazards.', isCorrect: true, feedback: 'Correct. Safety is always the first priority upon entry.' },
-                { id: 'c2', text: 'Whether the home is messy so you can report it to social services.', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because a messy home isn\'t necessarily a safety hazard unless it impacts care or poses a risk to the patient.' },
-                { id: 'c3', text: 'Where you can sit comfortably.', isCorrect: false, feedback: 'Not quite. The safer answer is to scan for patient and clinician safety before settling in.' }
-              ]
-            }
-          },
-          {
-            id: 'document', x: 40, y: 50, label: 'Document',
-            fieldNotes: {
-              title: 'Document',
-              content: 'Write down exactly what you see and hear. Keep it factual and objective.'
-            },
-            question: {
-              prompt: 'Which documentation is the most objective?',
-              choices: [
-                { id: 'c1', text: '"Patient is non-compliant with their medication regimen again."', isCorrect: false, feedback: 'Not quite. "Non-compliant" is an assumption. Document what you actually observed.' },
-                { id: 'c2', text: '"Found 4 missed doses of Lisinopril in the pill box for Monday through Thursday."', isCorrect: true, feedback: 'Good choice. This is a clear, factual observation without judgment.' },
-                { id: 'c3', text: '"Patient is confusing their medications because they are getting older."', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because it makes an unsupported medical diagnosis regarding their cognitive state.' }
-              ]
-            }
-          },
-          {
-            id: 'report', x: 60, y: 50, label: 'Report',
-            fieldNotes: {
-              title: 'Report',
-              content: 'Communicate your findings clearly to the appropriate team member.'
-            },
-            question: {
-              prompt: 'If you notice a new, non-emergency symptom, when should you report it?',
-              choices: [
-                { id: 'c1', text: 'Wait until the next scheduled visit to see if it resolves.', isCorrect: false, feedback: 'Not quite. Delayed reporting can lead to a worsening condition.' },
-                { id: 'c2', text: 'Document it in the EHR and inform the clinical supervisor or physician according to protocol.', isCorrect: true, feedback: 'Correct. Timely communication ensures the care team can adjust the plan of care.' },
-                { id: 'c3', text: 'Tell the patient to call their doctor if it gets worse.', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because you are responsible for reporting clinical findings while you are there.' }
-              ]
-            }
-          },
-          {
-            id: 'escalate', x: 80, y: 50, label: 'Escalate',
-            fieldNotes: {
-              title: 'Escalate',
-              content: 'If the situation requires immediate attention or is unsafe, escalate to your supervisor.'
-            },
-            question: {
-              prompt: 'You arrive at a home and find the patient unresponsive. What is the escalation path?',
-              choices: [
-                { id: 'c1', text: 'Call the agency supervisor first for permission to act.', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because emergency medical care takes precedence.' },
-                { id: 'c2', text: 'Call 911 immediately, begin emergency procedures if qualified, and notify the agency as soon as it is safe.', isCorrect: true, feedback: 'Good choice. In an emergency, life-saving measures and 911 are the immediate priority.' },
-                { id: 'c3', text: 'Call the patient\'s emergency contact to ask what they want you to do.', isCorrect: false, feedback: 'Not quite. The safer answer is to call 911 first for an unresponsive patient.' }
-              ]
-            }
-          },
-          {
-            id: 'facts', x: 50, y: 70, label: 'Facts not interpretation',
-            fieldNotes: {
-              title: 'Facts not Interpretation',
-              content: 'Never assume. "Patient has a 2-inch bruise on left arm" is a fact. "Patient fell" is an assumption if you didn\'t see it.'
-            },
-            question: {
-              prompt: 'A patient complains of a headache and you notice they are slurring their words. How do you document this?',
-              choices: [
-                { id: 'c1', text: '"Patient is having a stroke; reported headache and slurred speech."', isCorrect: false, feedback: 'Not quite. Diagnosing a stroke is outside the scope of home health observation; stick to the symptoms.' },
-                { id: 'c2', text: '"Patient stated \'I have a headache\' and exhibited slurred speech during the visit."', isCorrect: true, feedback: 'Correct. This documents exactly what you heard and observed without making a medical diagnosis.' },
-                { id: 'c3', text: '"Patient seems intoxicated because their speech is slurred."', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because it makes a dangerous assumption about the cause of the slurred speech.' }
-              ]
-            }
-          }
-        ]}
-      />
-    );
-  }
   const [showCompletion, setShowCompletion] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const existingStyle = document.getElementById('gao001-scene05-custom-styles');
+    if (existingStyle) return;
     const styleSheet = document.createElement("style");
+    styleSheet.id = 'gao001-scene05-custom-styles';
     styleSheet.type = "text/css";
-    styleSheet.innerText = brandStyles;
+    styleSheet.innerText = `${brandStyles}
+      @media (prefers-reduced-motion: reduce) {
+        .animate-slide-in-up,
+        .animate-shake-error {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+    `;
     document.head.appendChild(styleSheet);
     return () => { document.head.removeChild(styleSheet); };
   }, []);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const focusableSelector = [
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[href]',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(',');
+    const focusables = () => Array.from(dialog?.querySelectorAll<HTMLElement>(focusableSelector) ?? []);
+    (focusables()[0] ?? dialog)?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const items = focusables();
+      if (!items.length) {
+        event.preventDefault();
+        dialog?.focus();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [close]);
 
   const handlePlace = (category: Category) => {
-    if (currentIndex >= items.length) return;
+    if (currentIndex >= HOME_HEALTH_ITEMS.length) return;
 
-    const currentItem = items[currentIndex];
+    const currentItem = HOME_HEALTH_ITEMS[currentIndex];
 
     if (currentItem.correctCategory === category) {
       synth.playClick();
       setPlacedItems(prev => ({ ...prev, [currentItem.id]: category }));
       setErrorCategory(null);
 
-      if (currentIndex + 1 === items.length) {
+      if (currentIndex + 1 === HOME_HEALTH_ITEMS.length) {
         setTimeout(() => {
           synth.playSuccess();
           setShowCompletion(true);
@@ -247,16 +217,36 @@ export default function GAO001Scene05HomeHealthDifference({ onComplete }: GAO001
     }
   };
 
-  const facilityItems = items.filter(i => placedItems[i.id] === 'facility');
-  const homeItems = items.filter(i => placedItems[i.id] === 'home');
-  const activeItem = items[currentIndex];
+  const facilityItems = HOME_HEALTH_ITEMS.filter(i => placedItems[i.id] === 'facility');
+  const homeItems = HOME_HEALTH_ITEMS.filter(i => placedItems[i.id] === 'home');
+  const activeItem = HOME_HEALTH_ITEMS[currentIndex];
 
   return (
-    <div className="h-full w-full bg-[#FAFBF8] flex flex-col p-4 lg:p-8 relative overflow-hidden animate-fade-in">
+    <div className="absolute inset-0 z-50 overflow-hidden bg-[#FAFBF8]">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="gao001-home-health-difference-title"
+        aria-describedby="gao001-home-health-difference-description"
+        tabIndex={-1}
+        className="relative flex h-full w-full flex-col overflow-hidden p-4 outline-none lg:p-8"
+      >
+      <button
+        type="button"
+        onClick={close}
+        aria-label="Close home health difference activity"
+        className="absolute right-4 top-4 z-30 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#1E3A3A] shadow-md transition hover:bg-[#EEFBF6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F5B54]"
+      >
+        <X className="h-5 w-5" />
+      </button>
 
       <div className="text-center mb-6 z-10">
-        <h2 className="text-2xl font-bold text-[#1E3A3A] mb-2">The Home Health Difference</h2>
-        <p className="text-[#524C4B] max-w-2xl mx-auto text-sm lg:text-base">
+        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#F06923]">
+          {activeLabel}
+        </p>
+        <h2 id="gao001-home-health-difference-title" className="text-2xl font-bold text-[#1E3A3A] mb-2">The Home Health Difference</h2>
+        <p id="gao001-home-health-difference-description" className="text-[#524C4B] max-w-2xl mx-auto text-sm lg:text-base">
           Working in home health requires a different mindset than working in a facility.
           Sort the following characteristics into their correct setting.
         </p>
@@ -265,10 +255,13 @@ export default function GAO001Scene05HomeHealthDifference({ onComplete }: GAO001
       <div className="flex-1 w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 z-10">
 
         {/* Left Column: Facility */}
-        <div
+        <button
+          type="button"
           onClick={() => handlePlace('facility')}
+          disabled={showCompletion}
           className={`
-            relative flex flex-col rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden
+            relative flex flex-col rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden text-left
+            focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F5B54]
             ${errorCategory === 'facility' ? 'bg-[#FEF2F2] border-[#F87171] animate-shake-error' : 'bg-white border-[#E5E7EB] hover:border-[#0F5B54] hover:shadow-md'}
           `}
         >
@@ -289,13 +282,16 @@ export default function GAO001Scene05HomeHealthDifference({ onComplete }: GAO001
               </div>
             )}
           </div>
-        </div>
+        </button>
 
         {/* Right Column: Home Health */}
-        <div
+        <button
+          type="button"
           onClick={() => handlePlace('home')}
+          disabled={showCompletion}
           className={`
-            relative flex flex-col rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden
+            relative flex flex-col rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden text-left
+            focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F5B54]
             ${errorCategory === 'home' ? 'bg-[#FEF2F2] border-[#F87171] animate-shake-error' : 'bg-white border-[#E5E7EB] hover:border-[#0F5B54] hover:shadow-md'}
           `}
         >
@@ -316,7 +312,7 @@ export default function GAO001Scene05HomeHealthDifference({ onComplete }: GAO001
               </div>
             )}
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Floating Active Item */}
@@ -346,7 +342,7 @@ export default function GAO001Scene05HomeHealthDifference({ onComplete }: GAO001
             <button
               onClick={() => {
                 synth.playClick();
-                onComplete?.();
+                complete();
               }}
               className="w-full py-3 bg-[#0F5B54] hover:bg-[#0A3D38] text-white font-bold rounded-xl shadow-md transition-colors uppercase tracking-wider text-sm"
             >
@@ -355,6 +351,63 @@ export default function GAO001Scene05HomeHealthDifference({ onComplete }: GAO001
           </div>
         </div>
       )}
+      </div>
     </div>
+  );
+}
+
+export default function GAO001Scene05HomeHealthDifference({ onComplete }: GAO001Scene05HomeHealthDifferenceProps) {
+  return (
+    <GAO001SharedOverlay
+      imageSrc={gao001SceneArt['scene-05'].src}
+      altText={gao001SceneArt['scene-05'].alt}
+      objective="Sort the characteristics of care."
+      onComplete={onComplete}
+      linear
+      renderCustomModal={({ hotspot, close, complete }) => (
+        <HomeHealthDifferenceActivity
+          close={close}
+          complete={complete}
+          activeLabel={hotspot.label}
+        />
+      )}
+      hotspots={[
+        {
+          id: 'observe', x: 20, y: 50, label: 'Observe',
+          fieldNotes: {
+            title: 'Observe',
+            content: 'Notice the environment and the patient\'s condition without bias.'
+          },
+        },
+        {
+          id: 'document', x: 40, y: 50, label: 'Document',
+          fieldNotes: {
+            title: 'Document',
+            content: 'Write down exactly what you see and hear. Keep it factual and objective.'
+          },
+        },
+        {
+          id: 'report', x: 60, y: 50, label: 'Report',
+          fieldNotes: {
+            title: 'Report',
+            content: 'Communicate your findings clearly to the appropriate team member.'
+          },
+        },
+        {
+          id: 'escalate', x: 80, y: 50, label: 'Escalate',
+          fieldNotes: {
+            title: 'Escalate',
+            content: 'If the situation requires immediate attention or is unsafe, escalate to your supervisor.'
+          },
+        },
+        {
+          id: 'facts', x: 50, y: 70, label: 'Facts not interpretation',
+          fieldNotes: {
+            title: 'Facts not Interpretation',
+            content: 'Never assume. "Patient has a 2-inch bruise on left arm" is a fact. "Patient fell" is an assumption if you didn\'t see it.'
+          },
+        }
+      ]}
+    />
   );
 }

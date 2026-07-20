@@ -57,7 +57,12 @@ import { withLessonCompleted, withModuleAssessment, moduleAssessmentPassed } fro
 import { buildLessonRemediation, buildModuleRemediation, buildFinalRemediation } from "@/policy/journey/data/remediation";
 import type { LessonRemediation, ModuleRemediation, RemediationChallenge } from "@/policy/journey/data/remediation";
 import { hasMedia, mediaAltText, mediaAssetPath } from "@/policy/journey/data/mediaManifest";
+import { getGaoNodeScene } from "@/policy/journey/data/gaoNodes";
+import { getGao001NodeSceneRegistration } from "@/policy/journey/data/gaoNodes/GAO-001";
 import { hasNarrationAudio, narrationAssetPath } from "@/policy/journey/data/narrationManifest";
+import { GaoNodeStage } from "@/policy/journey/components/gao/nodes/GaoNodeStage";
+import { GaoLegacyNodeProgressProvider } from "@/policy/journey/components/gao/nodes/GaoLegacyNodeProgressContext";
+import { isGaoNodeSceneComplete } from "@/policy/journey/lib/gaoNodeProgress";
 import { getTermsForSection } from "@/policy/journey/data/advancedTraining/cms485Terminology";
 import { TRAINING_CARDS } from "@/policy/journey/data/advancedTraining/cms485SourceCards";
 import { isAdvancedModule, getAdvancedVariant } from "@/policy/journey/data/advancedTraining/advancedTrainingContract";
@@ -936,7 +941,12 @@ function buildStepLabels(cards: readonly { card_type?: string; internal_challeng
 function LessonPlayerPage() {
   const navigate = useNavigate();
   const { moduleId = "m1", lessonId = "l1" } = useParams();
-  const { state: learnerState, setState } = useLearner();
+  const {
+    state: learnerState,
+    setState,
+    setGaoNodeProgress,
+    resetGaoNodeProgress,
+  } = useLearner();
   const { demoSeconds, reviewerOpen } = useUiState();
   const lesson = getGeneratedLesson(moduleId, lessonId);
   const cards = useMemo(() => lesson?.cards ?? [], [lesson]);
@@ -1077,6 +1087,20 @@ function LessonPlayerPage() {
   const isDebriefCard = currentCard.card_type === "debrief";
   const isLast = currentIdx === cards.length - 1;
   const narrationAudioReady = hasNarrationAudio(currentCard.app.location);
+  const gao001NodeScene = getGao001NodeSceneRegistration(currentCard.app.location);
+  const gao001NodeCompletedIds = gao001NodeScene
+    ? learnerState.nodeProgressByAppLocation[gao001NodeScene.appLocation]?.completedNodeIds ?? []
+    : [];
+  const gao001NodeSceneComplete = gao001NodeScene
+    ? gao001NodeScene.requiredNodeIds.every((nodeId) => gao001NodeCompletedIds.includes(nodeId))
+    : true;
+  const gaoNodeScene = getGaoNodeScene(currentCard.app.location);
+  const gaoNodeCompletedIds = gaoNodeScene
+    ? learnerState.nodeProgressByAppLocation[gaoNodeScene.appLocation]?.completedNodeIds ?? []
+    : [];
+  const gaoNodeSceneComplete = gaoNodeScene
+    ? isGaoNodeSceneComplete(gaoNodeScene, gaoNodeCompletedIds)
+    : true;
 
   const isCms485 = moduleId === "cms-485";
   const terms = getTermsForSection(lesson.title);
@@ -1089,7 +1113,7 @@ function LessonPlayerPage() {
     : [];
   const debriefReadDone = requiredReads.every((id) => openedOptions.includes(id));
 
-  const canContinue = isChallengeCard
+  const canContinueWithoutNodes = isChallengeCard
     ? submitted
     : isDebriefCard
     ? debriefReadDone
@@ -1098,6 +1122,8 @@ function LessonPlayerPage() {
     : isLast
     ? meetsLessonMinimum
     : true;
+  const nodeGateBlocked = !gao001NodeSceneComplete || !gaoNodeSceneComplete;
+  const canContinue = canContinueWithoutNodes && !nodeGateBlocked;
 
   const continueLabel = useMemo(() => {
     if (!isCms485) {
@@ -1114,6 +1140,7 @@ function LessonPlayerPage() {
   }, [isCms485, currentCard, isLast, isDebriefCard, isChallengeCard, remediation, nextLesson]);
 
   const handleNext = () => {
+    if (!canContinue) return;
     if (currentIdx < cards.length - 1) {
       setCurrentIdx((idx) => idx + 1);
       return;
@@ -1211,14 +1238,14 @@ function LessonPlayerPage() {
         <main
           className={
             useGao002LvnShell
-              ? 'flex min-h-0 flex-1 overflow-hidden bg-[#FAFBF8]'
+              ? 'flex min-h-0 flex-1 flex-col overflow-y-auto bg-[#FAFBF8] lg:flex-row lg:overflow-hidden'
               : 'flex min-h-0 flex-1 flex-col gap-[20px] p-0 lg:flex-row lg:items-stretch'
           }
         >
           <aside
             className={`flex min-h-0 min-w-0 flex-col bg-white ${
               useGao002LvnShell
-                ? 'h-full flex-1 overflow-y-auto border-r border-[#E5E4E3] px-8 py-8 shadow-none'
+                ? 'min-h-[280px] max-h-[48vh] flex-none overflow-y-auto border-b border-[#E5E4E3] px-5 py-6 shadow-none sm:px-8 sm:py-8 lg:h-full lg:min-h-0 lg:max-h-none lg:flex-1 lg:border-b-0 lg:border-r'
                 : `flex-1 border border-[#E5E4E3] shadow-[0_18px_50px_rgba(31,28,27,0.08)] ${
                     textFirstGaoModule ? 'rounded-none p-7 md:p-9' : 'rounded-[22px] p-[20px]'
                   }`
@@ -1246,7 +1273,7 @@ function LessonPlayerPage() {
           <section
             className={`flex min-h-0 flex-col bg-white ${
               useGao002LvnShell
-                ? 'h-full overflow-hidden rounded-none border-l border-[#E5E4E3] p-0 shadow-none'
+                ? 'w-full flex-none overflow-hidden rounded-none border-t border-[#E5E4E3] p-0 shadow-none lg:h-full lg:w-auto lg:border-l lg:border-t-0'
                 : usesFinalGaoOverlay
                 ? 'w-full flex-none overflow-hidden rounded-[24px] border border-[#E5E4E3] bg-white p-0 shadow-[0_18px_50px_rgba(31,28,27,0.08)] lg:h-full lg:w-auto'
                 : /^GAO-001_L\d+_DELIVERY$/.test(currentCard.card_id)
@@ -1258,7 +1285,6 @@ function LessonPlayerPage() {
                 ? {
                     flex: '0 0 auto',
                     alignSelf: 'stretch',
-                    height: '100%',
                     aspectRatio: '16 / 13',
                     width: 'auto',
                     maxWidth: '100%',
@@ -1302,43 +1328,63 @@ function LessonPlayerPage() {
                   : 'rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8]'
               }`}
             >
-              {currentCard.card_id === 'GAO-001_L1_DELIVERY' ? (
-                <GAO001Scene01WelcomeDesk
-                  onComplete={() => console.info('[GAO-001 Scene 1] completed')}
-                />
-              ) : currentCard.card_id === 'GAO-001_L2_DELIVERY' ? (
-                <GAO001Scene02MissionBriefing
-                  onComplete={() => console.info('[GAO-001 Scene 2] completed')}
-                />
-              ) : currentCard.card_id === 'GAO-001_L3_DELIVERY' ? (
-                <GAO001Scene03VisionPillars
-                  onComplete={() => console.info('[GAO-001 Scene 3] completed')}
-                />
-              ) : currentCard.card_id === 'GAO-001_L4_DELIVERY' ? (
-                <CoreValuesInteractiveViewer
-                  onComplete={() => {
-                    console.info('[GAO Core Values] Interactive scene completed');
+              {gao001NodeScene ? (
+                <GaoLegacyNodeProgressProvider
+                  value={{
+                    appLocation: gao001NodeScene.appLocation,
+                    completedNodeIds: gao001NodeCompletedIds,
+                    onProgressChange: (completedNodeIds) => {
+                      if (completedNodeIds.length) {
+                        setGaoNodeProgress(gao001NodeScene.appLocation, completedNodeIds);
+                      } else {
+                        resetGaoNodeProgress(gao001NodeScene.appLocation);
+                      }
+                    },
+                    onReset: () => resetGaoNodeProgress(gao001NodeScene.appLocation),
+                    onNodeOpen: () => {
+                      stopNarrationAudio();
+                      stopNarrationSpeech();
+                    },
                   }}
-                />
-              ) : currentCard.card_id === 'GAO-001_L5_DELIVERY' ? (
-                <GAO001Scene05HomeHealthDifference
-                  onComplete={() => console.info('[GAO-001 Scene 5] completed')}
-                />
-              ) : currentCard.card_id === 'GAO-001_L6_DELIVERY' ? (
-                <GAO001Scene06ReportingEscalation
-                  onComplete={() => console.info('[GAO-001 Scene 6] completed')}
-                />
-              ) : currentCard.card_id === 'GAO-001_L7_DELIVERY' ? (
-                <GAO001Scene07PatientRefusal
-                  onComplete={() => console.info('[GAO-001 Scene 7] completed')}
-                />
-              ) : currentCard.card_id === 'GAO-001_L8_DELIVERY' ? (
-                <GAO001Scene08EscalationPractice
-                  onComplete={() => console.info('[GAO-001 Scene 8] completed')}
-                />
-              ) : currentCard.card_id === 'GAO-001_L9_DELIVERY' ? (
-                <GAO001Scene09ReadinessMap
-                  onComplete={() => console.info('[GAO-001 Scene 9] completed')}
+                >
+                  {currentCard.card_id === 'GAO-001_L1_DELIVERY' ? (
+                    <GAO001Scene01WelcomeDesk onComplete={() => console.info('[GAO-001 Scene 1] completed')} />
+                  ) : currentCard.card_id === 'GAO-001_L2_DELIVERY' ? (
+                    <GAO001Scene02MissionBriefing onComplete={() => console.info('[GAO-001 Scene 2] completed')} />
+                  ) : currentCard.card_id === 'GAO-001_L3_DELIVERY' ? (
+                    <GAO001Scene03VisionPillars onComplete={() => console.info('[GAO-001 Scene 3] completed')} />
+                  ) : currentCard.card_id === 'GAO-001_L4_DELIVERY' ? (
+                    <CoreValuesInteractiveViewer onComplete={() => console.info('[GAO Core Values] Interactive scene completed')} />
+                  ) : currentCard.card_id === 'GAO-001_L5_DELIVERY' ? (
+                    <GAO001Scene05HomeHealthDifference onComplete={() => console.info('[GAO-001 Scene 5] completed')} />
+                  ) : currentCard.card_id === 'GAO-001_L6_DELIVERY' ? (
+                    <GAO001Scene06ReportingEscalation onComplete={() => console.info('[GAO-001 Scene 6] completed')} />
+                  ) : currentCard.card_id === 'GAO-001_L7_DELIVERY' ? (
+                    <GAO001Scene07PatientRefusal onComplete={() => console.info('[GAO-001 Scene 7] completed')} />
+                  ) : currentCard.card_id === 'GAO-001_L8_DELIVERY' ? (
+                    <GAO001Scene08EscalationPractice onComplete={() => console.info('[GAO-001 Scene 8] completed')} />
+                  ) : (
+                    <GAO001Scene09ReadinessMap onComplete={() => console.info('[GAO-001 Scene 9] completed')} />
+                  )}
+                </GaoLegacyNodeProgressProvider>
+              ) : gaoNodeScene && hasMedia(currentCard.app.location) ? (
+                <GaoNodeStage
+                  scene={gaoNodeScene}
+                  imageSrc={mediaAssetPath(currentCard.app.location)}
+                  imageAlt={mediaAltText(mediaTitle)}
+                  completedNodeIds={gaoNodeCompletedIds}
+                  onProgressChange={(completedNodeIds) => {
+                    if (completedNodeIds.length) {
+                      setGaoNodeProgress(gaoNodeScene.appLocation, completedNodeIds);
+                    } else {
+                      resetGaoNodeProgress(gaoNodeScene.appLocation);
+                    }
+                  }}
+                  onPauseNarration={() => {
+                    stopNarrationAudio();
+                    stopNarrationSpeech();
+                  }}
+                  debug={import.meta.env.DEV && new URLSearchParams(window.location.search).has('gaoNodeDebug')}
                 />
               ) : hasMedia(currentCard.app.location) ? (
                 <MediaSlot
@@ -1412,12 +1458,21 @@ function LessonPlayerPage() {
               </div>
             </div>
 
-            <button
-              onClick={handleNext}
-              className="rounded-lg bg-[#C74601] px-6 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[0_10px_24px_rgba(199,70,1,0.20)] transition hover:bg-[#A63A01]"
-            >
-              {nextLesson || currentIdx < cards.length - 1 ? "Next Lesson" : "Complete Theory"} →
-            </button>
+            <div className="flex flex-col items-stretch gap-1 md:items-end">
+              {nodeGateBlocked ? (
+                <div id="gao-node-gate-message" className="text-center text-[11px] font-semibold text-[#9A3412] md:text-right">
+                  Review all required scene nodes to continue.
+                </div>
+              ) : null}
+              <button
+                onClick={handleNext}
+                disabled={!canContinue}
+                aria-describedby={nodeGateBlocked ? 'gao-node-gate-message' : undefined}
+                className="rounded-lg bg-[#C74601] px-6 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[0_10px_24px_rgba(199,70,1,0.20)] transition hover:bg-[#A63A01] disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                {nextLesson || currentIdx < cards.length - 1 ? "Next Lesson" : "Complete Theory"} →
+              </button>
+            </div>
           </div>
         </footer>
 

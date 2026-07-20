@@ -1,11 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { UserX, CheckCircle2, ArrowRight, MessageSquareWarning, XCircle, FileWarning } from 'lucide-react';
-import GAO001SharedOverlay from './GAO001SharedOverlay';
+import GAO001SharedOverlay, { type Hotspot } from './GAO001SharedOverlay';
 import { gao001SceneArt } from '../data/gao001SceneArt';
 
 interface GAO001Scene07PatientRefusalProps {
   onComplete?: () => void;
 }
+
+type WindowWithWebkitAudio = Window &
+  typeof globalThis & {
+    webkitAudioContext?: typeof AudioContext;
+  };
 
 class InteractiveAudioSynth {
   private ctx: AudioContext | null = null;
@@ -13,7 +18,9 @@ class InteractiveAudioSynth {
 
   private init() {
     if (!this.ctx) {
-      this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextCtor = window.AudioContext || (window as WindowWithWebkitAudio).webkitAudioContext;
+      if (!AudioContextCtor) return;
+      this.ctx = new AudioContextCtor();
     }
   }
 
@@ -96,6 +103,318 @@ const brandStyles = `
 
 type Stage = 'prompt' | 'error' | 'success';
 
+type RefusalDecisionOption = {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+  feedback: string;
+};
+
+type RefusalDecisionConfig = {
+  eyebrow: string;
+  title: string;
+  scenario: string;
+  prompt: string;
+  options: RefusalDecisionOption[];
+  teachingPoint: string;
+  reference: string;
+};
+
+const REFUSAL_DECISIONS: Record<string, RefusalDecisionConfig> = {
+  assess: {
+    eyebrow: 'Patient refusal',
+    title: 'Patient Right',
+    scenario:
+      'Mr. Torres is tired and refuses his ordered wound dressing change today.',
+    prompt: "What is Alex's first obligation?",
+    options: [
+      {
+        id: 'force',
+        text: 'Proceed anyway because the dressing change is ordered by the physician.',
+        isCorrect: false,
+        feedback:
+          'Not quite. Ordered care does not override the patient right to refuse care.',
+      },
+      {
+        id: 'respect',
+        text: 'Respect his refusal immediately and step back.',
+        isCorrect: true,
+        feedback:
+          'Correct. The patient has the right to refuse care, even when the care is ordered.',
+      },
+    ],
+    teachingPoint:
+      'A refusal is not a failure of care. The first safe decision is to acknowledge the choice without arguing, forcing, or pressuring.',
+    reference: '42 CFR § 484.50',
+  },
+  supervisor: {
+    eyebrow: 'Patient refusal',
+    title: 'Explain Risk',
+    scenario:
+      'Alex respects the refusal and has a calm moment to explain the clinical risk.',
+    prompt: 'What should Alex say next?',
+    options: [
+      {
+        id: 'ignore',
+        text: '"Okay, no problem. I will leave you to rest and see you tomorrow."',
+        isCorrect: false,
+        feedback:
+          'Not quite. Leaving without risk education does not support informed refusal.',
+      },
+      {
+        id: 'educate',
+        text:
+          '"I understand you are tired. I do need to explain that skipping this dressing change increases the risk of infection..."',
+        isCorrect: true,
+        feedback:
+          'Correct. Education should be clear, calm, and non-coercive so the patient can make an informed choice.',
+      },
+    ],
+    teachingPoint:
+      'Explain the risk and any practical alternatives without pressure. The patient still decides.',
+    reference: 'Patient rights and informed participation',
+  },
+  manager: {
+    eyebrow: 'Patient refusal',
+    title: 'Notify Care Team',
+    scenario:
+      'Mr. Torres still refuses after Alex explains the risk and alternatives.',
+    prompt: 'What is the safest next action before leaving the visit?',
+    options: [
+      {
+        id: 'secret',
+        text: 'Keep it between Alex and Mr. Torres so the patient does not get labeled difficult.',
+        isCorrect: false,
+        feedback:
+          'Not quite. The refusal can change the care risk, so the care team needs timely notice.',
+      },
+      {
+        id: 'notify',
+        text:
+          'Assess for immediate concern, notify the clinical team per process, and follow any instructions received.',
+        isCorrect: true,
+        feedback:
+          'Correct. Notification keeps the care team aligned while preserving the patient right to refuse.',
+      },
+    ],
+    teachingPoint:
+      'A refusal belongs in the care coordination path. Escalate through the clinical process so follow-up is not delayed.',
+    reference: 'Agency escalation process',
+  },
+  'after-hours': {
+    eyebrow: 'Patient refusal',
+    title: 'Document Refusal',
+    scenario:
+      'The patient refusal is unresolved, and Alex must leave a defensible record.',
+    prompt: 'What must Alex document?',
+    options: [
+      {
+        id: 'omit',
+        text: 'Leave the refusal out of the chart so Mr. Torres is not labeled noncompliant.',
+        isCorrect: false,
+        feedback:
+          'Not quite. Omitting the refusal hides a care risk and weakens continuity of care.',
+      },
+      {
+        id: 'document',
+        text:
+          'Document the specific care refused, the patient statement, risk education, notification, and follow-up instructions.',
+        isCorrect: true,
+        feedback:
+          'Correct. Objective documentation protects the patient, the team, and the record.',
+      },
+    ],
+    teachingPoint:
+      "The final note should include what was refused, the education provided, Mr. Torres' response, who was notified, and any follow-up instructions.",
+    reference: '42 CFR § 484.50',
+  },
+};
+
+function PatientRefusalDecisionModal({
+  hotspot,
+  close,
+  complete,
+}: {
+  hotspot: Hotspot;
+  close: () => void;
+  complete: () => void;
+}) {
+  const decision = REFUSAL_DECISIONS[hotspot.id];
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const dialogRef = useRef<HTMLElement>(null);
+  const selectedOption = decision.options.find((option) => option.id === selectedId);
+  const safeSelectionMade = selectedOption?.isCorrect === true;
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const focusableSelector = [
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[href]',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(',');
+    const focusables = () => Array.from(dialog?.querySelectorAll<HTMLElement>(focusableSelector) ?? []);
+    window.setTimeout(() => (focusables()[0] ?? dialog)?.focus(), 20);
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const items = focusables();
+      if (!items.length) {
+        event.preventDefault();
+        dialog?.focus();
+        return;
+      }
+
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [close]);
+
+  const chooseOption = (option: RefusalDecisionOption) => {
+    setSelectedId(option.id);
+    if (option.isCorrect) {
+      synth.playSuccess();
+    } else {
+      synth.playError();
+    }
+  };
+
+  if (!decision) return null;
+
+  return (
+    <div className="absolute inset-0 z-50 flex items-center justify-center overflow-hidden bg-[#1F1C1B]/58 p-4 backdrop-blur-[2px]">
+      <section
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`gao001-refusal-${hotspot.id}-title`}
+        aria-describedby={`gao001-refusal-${hotspot.id}-description`}
+        tabIndex={-1}
+        className="relative flex max-h-[min(88cqh,640px)] w-full max-w-[500px] flex-col overflow-hidden rounded-[18px] border border-[#E9E4E0] bg-white shadow-[0_28px_80px_rgba(15,91,84,0.22)] outline-none"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-[#E9E4E0] px-6 py-5">
+          <div>
+            <p className="font-montserrat text-[11px] font-bold uppercase tracking-[0.22em] text-[#F06923]">
+              {decision.eyebrow}
+            </p>
+            <h2
+              id={`gao001-refusal-${hotspot.id}-title`}
+              className="mt-2 font-montserrat text-2xl font-bold leading-tight text-[#007970]"
+            >
+              {decision.title}
+            </h2>
+            <p
+              id={`gao001-refusal-${hotspot.id}-description`}
+              className="mt-2 font-roboto text-[15.5px] leading-relaxed text-[#524C4B]"
+            >
+              {decision.scenario}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={close}
+            className="min-h-11 min-w-11 rounded-full border border-[#E9E4E0] bg-[#FAFAF7] px-3 py-2 font-montserrat text-xs font-bold uppercase tracking-[0.16em] text-[#004142] transition hover:border-[#007970]"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+          <div className="rounded-[16px] border-l-4 border-[#007970] bg-[#F1FBF8] px-4 py-3">
+            <p className="font-roboto text-[15.5px] font-semibold leading-relaxed text-[#1E3A3A]">
+              {decision.prompt}
+            </p>
+          </div>
+
+          <div className="mt-5 grid gap-3">
+            {decision.options.map((option) => {
+              const isSelected = selectedId === option.id;
+              const selectedClass = option.isCorrect
+                ? 'border-[#007970] bg-[#EEF9F6] text-[#0F5B54]'
+                : 'border-[#E74C3C] bg-[#FEF2F2] text-[#991B1B]';
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => chooseOption(option)}
+                  className={`min-h-12 rounded-[14px] border-2 px-4 py-3 text-left font-roboto text-[15.5px] font-semibold leading-relaxed transition ${
+                    isSelected
+                      ? selectedClass
+                      : 'border-[#E5E4E3] bg-[#FAFAF7] text-[#2D3748] hover:border-[#007970]'
+                  }`}
+                >
+                  {option.text}
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedOption ? (
+            <div
+              role="status"
+              className={`mt-5 rounded-[16px] border px-4 py-3 font-roboto text-[15.5px] leading-relaxed ${
+                selectedOption.isCorrect
+                  ? 'border-[#BFE8DD] bg-[#F1FBF8] text-[#0F5B54]'
+                  : 'border-[#F4B7B0] bg-[#FFF7F4] text-[#A64028]'
+              }`}
+            >
+              {selectedOption.feedback}
+            </div>
+          ) : null}
+
+          <div className="mt-5 rounded-[16px] border border-[#E9E4E0] bg-white px-4 py-3">
+            <p className="font-roboto text-[15.5px] leading-relaxed text-[#2D3748]">
+              {decision.teachingPoint}
+            </p>
+            <p className="mt-3 font-montserrat text-[11px] font-bold uppercase tracking-[0.16em] text-[#007970]">
+              {decision.reference}
+            </p>
+          </div>
+        </div>
+
+        <div className="border-t border-[#E9E4E0] px-6 py-4">
+          <button
+            type="button"
+            disabled={!safeSelectionMade}
+            onClick={() => {
+              synth.playClick();
+              complete();
+            }}
+            className="min-h-11 w-full rounded-[12px] bg-[#F06923] px-4 py-3 font-montserrat text-xs font-bold uppercase tracking-[0.16em] text-white transition hover:bg-[#D95A1A] disabled:cursor-not-allowed disabled:bg-[#CBD5E1]"
+          >
+            Complete teaching point
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export default function GAO001Scene07PatientRefusal({ onComplete }: GAO001Scene07PatientRefusalProps) {
   const [stage, setStage] = useState<Stage>('prompt');
 
@@ -138,64 +457,71 @@ export default function GAO001Scene07PatientRefusal({ onComplete }: GAO001Scene0
         objective="Address the patient refusal."
         onComplete={onComplete}
         linear={true}
+        renderCustomModal={({ hotspot, close, complete }) => (
+          REFUSAL_DECISIONS[hotspot.id]
+            ? (
+              <PatientRefusalDecisionModal
+                hotspot={hotspot}
+                close={close}
+                complete={complete}
+              />
+            )
+            : null
+        )}
         hotspots={[
           {
-            id: 'assess', x: 20, y: 50, label: 'Assess the situation',
+            id: 'assess', x: 20, y: 50, label: 'Patient right',
             fieldNotes: {
-              title: 'Assess the Situation',
-              content: 'Determine the severity and urgency of the issue before escalating.'
+              title: 'Patient Right',
+              content: 'Ordered care does not override the patient right to refuse care.'
             },
             question: {
-              prompt: 'Before calling your supervisor about a clinical issue, what should you do first?',
+              prompt: "Mr. Torres refuses his ordered wound dressing change. What is Alex's first obligation?",
               choices: [
-                { id: 'c1', text: 'Tell the patient you are leaving to get help.', isCorrect: false, feedback: 'Not quite. Leaving the patient can create a severe safety risk.' },
-                { id: 'c2', text: 'Gather all relevant vital signs, patient complaints, and immediate observations.', isCorrect: true, feedback: 'Correct. A clear assessment allows your supervisor to give you the best guidance.' },
-                { id: 'c3', text: 'Wait an hour to see if the problem resolves itself.', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because waiting could allow a critical situation to worsen.' }
+                { id: 'c1', text: 'Proceed anyway because the dressing change is ordered.', isCorrect: false, feedback: 'Not quite. Ordered care does not override refusal rights.' },
+                { id: 'c2', text: 'Respect the refusal immediately and step back.', isCorrect: true, feedback: 'Correct. Start by respecting the patient choice.' }
               ]
             }
           },
           {
-            id: 'supervisor', x: 40, y: 50, label: 'Immediate supervisor',
+            id: 'supervisor', x: 40, y: 50, label: 'Explain risk',
             fieldNotes: {
-              title: 'Immediate Supervisor',
-              content: 'Your first point of contact for clinical or scheduling issues.'
+              title: 'Explain Risk',
+              content: 'Explain the risk and alternatives without coercion so the refusal is informed.'
             },
             question: {
-              prompt: 'Who is your primary point of contact for clinical or scheduling issues?',
+              prompt: 'After respecting the refusal, what should Alex do next?',
               choices: [
-                { id: 'c1', text: 'The Human Resources department.', isCorrect: false, feedback: 'HR handles employment matters, not daily clinical/scheduling escalations.' },
-                { id: 'c2', text: 'My immediate supervisor.', isCorrect: true, feedback: 'Correct. Your immediate supervisor is your primary contact for these issues.' },
-                { id: 'c3', text: 'The CEO of the agency.', isCorrect: false, feedback: 'This would not be appropriate for routine clinical or scheduling concerns.' }
+                { id: 'c1', text: 'Leave without discussing risk.', isCorrect: false, feedback: 'Not quite. The patient needs risk education.' },
+                { id: 'c2', text: 'Explain the risk and practical alternatives calmly.', isCorrect: true, feedback: 'Correct. This supports informed refusal.' }
               ]
             }
           },
           {
-            id: 'manager', x: 60, y: 50, label: 'Clinical manager',
+            id: 'manager', x: 60, y: 50, label: 'Notify care team',
             fieldNotes: {
-              title: 'Clinical Manager',
-              content: 'Escalate to the clinical manager if the supervisor is unavailable or the issue is severe.'
+              title: 'Notify Care Team',
+              content: 'Notify the clinical team per process when refusal changes the care risk.'
             },
             question: {
-              prompt: 'If you cannot reach your immediate supervisor regarding an urgent patient need, what is your next step?',
+              prompt: 'Mr. Torres still refuses after risk education. What is the safest next action?',
               choices: [
-                { id: 'c1', text: 'Leave a voicemail and wait for them to call back.', isCorrect: false, feedback: 'Not quite. Urgent needs require immediate contact with someone in the chain of command.' },
-                { id: 'c2', text: 'Escalate the issue to the Clinical Manager or the next designated person on the call tree.', isCorrect: true, feedback: 'Correct. Knowing the chain of command ensures patient care is never delayed.' },
-                { id: 'c3', text: 'Call 911 immediately, even if it\'s not a life-threatening emergency.', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because 911 should only be used for true medical emergencies, not routine escalations.' }
+                { id: 'c1', text: 'Keep it between Alex and the patient.', isCorrect: false, feedback: 'Not quite. The care team needs timely notice.' },
+                { id: 'c2', text: 'Notify the clinical team per process and follow instructions.', isCorrect: true, feedback: 'Correct. Notification preserves continuity of care.' }
               ]
             }
           },
           {
-            id: 'after-hours', x: 80, y: 50, label: 'After hours protocol',
+            id: 'after-hours', x: 80, y: 50, label: 'Document refusal',
             fieldNotes: {
-              title: 'After Hours Protocol',
-              content: 'Know who is on call and how to reach them outside of regular business hours.'
+              title: 'Document Refusal',
+              content: 'Document the refused care, patient statement, education, notification, and follow-up instructions.'
             },
             question: {
-              prompt: 'How does the escalation path change during a weekend or after hours?',
+              prompt: 'What makes the refusal note defensible?',
               choices: [
-                { id: 'c1', text: 'It doesn\'t; you should still call your regular supervisor\'s desk phone.', isCorrect: false, feedback: 'Not quite. They may not be working, which would delay necessary care.' },
-                { id: 'c2', text: 'You must use the designated on-call roster and protocol to reach the clinician or supervisor covering that shift.', isCorrect: true, feedback: 'Good choice. Our agency provides 24/7 support through the on-call system.' },
-                { id: 'c3', text: 'There is no escalation path after hours unless it is a 911 emergency.', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because we are required to provide continuous care and support.' }
+                { id: 'c1', text: 'Omit the refusal so the patient is not labeled noncompliant.', isCorrect: false, feedback: 'Not quite. Omitting the refusal hides care risk.' },
+                { id: 'c2', text: 'Document refusal, education, response, notification, and follow-up.', isCorrect: true, feedback: 'Correct. That preserves the care record.' }
               ]
             }
           }

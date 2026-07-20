@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Activity, Heart, CheckCircle2, Users, ChevronRight } from 'lucide-react';
-import GAO001SharedOverlay from './GAO001SharedOverlay';
+import React, { useEffect, useId, useRef, useState } from 'react';
+import { Activity, CheckCircle2, ChevronRight, Heart, HelpCircle, ShieldCheck, Users, X } from 'lucide-react';
+import GAO001SharedOverlay, { type Hotspot } from './GAO001SharedOverlay';
 import { gao001SceneArt } from '../data/gao001SceneArt';
 
 interface GAO001Scene02MissionBriefingProps {
@@ -14,7 +14,11 @@ class InteractiveAudioSynth {
 
   private init() {
     if (!this.ctx) {
-      this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextCtor =
+        window.AudioContext ??
+        (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextCtor) return;
+      this.ctx = new AudioContextCtor();
     }
   }
 
@@ -76,6 +80,9 @@ class InteractiveAudioSynth {
 
 const synth = new InteractiveAudioSynth();
 
+const FOCUSABLE =
+  'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])';
+
 const brandStyles = `
   @keyframes slideInRight {
     0% { transform: translateX(20px); opacity: 0; }
@@ -118,6 +125,230 @@ interface Decision {
   text: string;
 }
 
+const MISSION_ACTIVITY_BY_HOTSPOT: Record<string, {
+  phrase: string;
+  fieldDecision: string;
+  Icon: typeof ShieldCheck;
+}> = {
+  mission: {
+    phrase: 'Deliver safe, dignified, evidence-based care',
+    fieldDecision: 'Protect privacy, follow ordered care, and never shortcut safety for speed.',
+    Icon: ShieldCheck,
+  },
+  vision: {
+    phrase: 'Be the standard for compassionate, reliable home health care',
+    fieldDecision: 'Arrive prepared, communicate delays, and keep promises the care team can honor.',
+    Icon: Heart,
+  },
+  icons: {
+    phrase: 'Restore independence',
+    fieldDecision: 'Teach and coach within the plan of care instead of doing every task for the patient.',
+    Icon: Activity,
+  },
+  notes: {
+    phrase: 'Support patients, families, and caregivers as partners',
+    fieldDecision: 'Listen, document facts, and route questions through the approved care process.',
+    Icon: Users,
+  },
+};
+
+interface MissionBriefingModalProps {
+  hotspot: Hotspot;
+  close: () => void;
+  complete: () => void;
+}
+
+function MissionBriefingModal({ hotspot, close, complete }: MissionBriefingModalProps) {
+  const titleId = useId();
+  const descriptionId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
+
+  const activity = MISSION_ACTIVITY_BY_HOTSPOT[hotspot.id] ?? MISSION_ACTIVITY_BY_HOTSPOT.mission;
+  const ActivityIcon = activity.Icon;
+  const selectedChoice = hotspot.question?.choices.find((choice) => choice.id === selectedChoiceId);
+  const canComplete = !hotspot.question || selectedChoice?.isCorrect === true;
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.requestAnimationFrame(() => {
+      dialogRef.current?.querySelector<HTMLButtonElement>('.gao001-custom-close')?.focus();
+    });
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+        return;
+      }
+
+      if (event.key !== 'Tab' || !dialogRef.current) return;
+      const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE));
+      if (!focusable.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [close]);
+
+  return (
+    <div
+      className="gao-node-drawer-backdrop"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) close();
+      }}
+    >
+      <div
+        ref={dialogRef}
+        className="max-h-[min(88vh,760px)] w-[min(94vw,920px)] overflow-hidden rounded-[22px] border border-[#E5E4E3] bg-white shadow-[0_24px_72px_rgba(15,91,84,0.2)]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+      >
+        <header className="flex items-start justify-between gap-4 border-b border-[#E5E4E3] bg-[#F8FAFC] px-5 py-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#0F5B54] text-white shadow-sm" aria-hidden="true">
+              <ActivityIcon size={22} />
+            </span>
+            <div>
+              <h2 id={titleId} className="text-lg font-bold leading-tight text-[#0F5B54]">
+                Mission Briefing: {hotspot.label}
+              </h2>
+              <p className="mt-1 text-[12px] font-bold uppercase tracking-[0.16em] text-[#F06923]">
+                Connect the mission to a field decision
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="gao001-custom-close flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#DAD7D4] bg-white text-[#475569] transition hover:border-[#0F5B54] hover:text-[#0F5B54]"
+            aria-label="Close mission briefing"
+            onClick={close}
+          >
+            <X size={22} />
+          </button>
+        </header>
+
+        <div className="grid max-h-[calc(min(88vh,760px)-76px)] overflow-y-auto bg-white md:grid-cols-[0.9fr_1.1fr]">
+          <section className="border-b border-[#E5E4E3] bg-[#FFF8F3] p-5 md:border-b-0 md:border-r">
+            <p id={descriptionId} className="text-[15.5px] font-semibold leading-relaxed text-[#2D3748]">
+              Review the mission phrase, then choose the safest field decision.
+            </p>
+
+            <div className="mt-5 rounded-[18px] border border-[#F4D3C2] bg-white p-5 shadow-sm">
+              <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-[#C74601]">
+                Mission Phrase
+              </div>
+              <p className="text-xl font-bold leading-snug text-[#0F5B54]">
+                {activity.phrase}
+              </p>
+            </div>
+
+            <div className="mt-4 rounded-[18px] border border-[#D6E7E4] bg-[#EEF4F3] p-5">
+              <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-[#0F5B54]">
+                Field Translation
+              </div>
+              <p className="text-[15.5px] font-semibold leading-relaxed text-[#2D3748]">
+                {activity.fieldDecision}
+              </p>
+            </div>
+          </section>
+
+          <section className="p-5">
+            <div className="rounded-[16px] border border-[#E5E4E3] bg-[#FAFBF8] p-4">
+              <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#0F5B54]">
+                Why it matters
+              </div>
+              <h3 className="mt-2 text-base font-bold text-[#1E3A3A]">{hotspot.fieldNotes.title}</h3>
+              <div className="mt-2 text-[15.5px] leading-relaxed text-[#2D3748]">
+                {hotspot.fieldNotes.content}
+              </div>
+            </div>
+
+            {hotspot.question ? (
+              <fieldset className="mt-5">
+                <legend className="mb-3 text-[15.5px] font-bold text-[#1E3A3A]">
+                  {hotspot.question.prompt}
+                </legend>
+                <div className="flex flex-col gap-3">
+                  {hotspot.question.choices.map((choice) => {
+                    const isSelected = selectedChoiceId === choice.id;
+                    const isCorrectSelection = isSelected && choice.isCorrect;
+                    const isIncorrectSelection = isSelected && !choice.isCorrect;
+                    return (
+                      <button
+                        key={choice.id}
+                        type="button"
+                        className={`min-h-12 rounded-[14px] border-2 px-4 py-3 text-left text-[15px] font-semibold leading-relaxed transition ${
+                          isCorrectSelection
+                            ? 'border-[#0F5B54] bg-[#EEF4F3] text-[#0F5B54]'
+                            : isIncorrectSelection
+                              ? 'border-[#E45A27] bg-[#FFF3EC] text-[#C74601]'
+                              : 'border-[#E5E4E3] bg-white text-[#334155] hover:border-[#0F5B54]'
+                        }`}
+                        aria-pressed={isSelected}
+                        onClick={() => {
+                          synth.playClick();
+                          setSelectedChoiceId(choice.id);
+                          if (choice.isCorrect) synth.playSuccess();
+                          else synth.playError();
+                        }}
+                      >
+                        {choice.text}
+                      </button>
+                    );
+                  })}
+                </div>
+                {selectedChoice ? (
+                  <p
+                    className={`mt-4 rounded-[14px] border p-4 text-[15px] leading-relaxed ${
+                      selectedChoice.isCorrect
+                        ? 'border-[#C8DFDC] bg-[#EEF4F3] text-[#0F5B54]'
+                        : 'border-[#F4D3C2] bg-[#FFF8F3] text-[#C74601]'
+                    }`}
+                    role="status"
+                  >
+                    <span className="mb-1 flex items-center gap-2 font-bold">
+                      {selectedChoice.isCorrect ? <CheckCircle2 size={18} /> : <HelpCircle size={18} />}
+                      {selectedChoice.isCorrect ? 'Correct mission alignment' : 'Try again'}
+                    </span>
+                    {selectedChoice.feedback}
+                  </p>
+                ) : null}
+              </fieldset>
+            ) : null}
+
+            <button
+              type="button"
+              className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#F06923] px-5 py-3 text-sm font-bold uppercase tracking-[0.14em] text-white shadow-[0_12px_28px_rgba(240,105,35,0.26)] transition hover:bg-[#d95a1a] disabled:cursor-not-allowed disabled:opacity-45"
+              disabled={!canComplete}
+              onClick={complete}
+            >
+              <CheckCircle2 size={18} />
+              Complete teaching point
+            </button>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function GAO001Scene02MissionBriefing({ onComplete }: GAO001Scene02MissionBriefingProps) {
   const [activePhrase, setActivePhrase] = useState<string | null>(null);
   const [matchedPairs, setMatchedPairs] = useState<string[]>([]);
@@ -140,6 +371,9 @@ export default function GAO001Scene02MissionBriefing({ onComplete }: GAO001Scene
         altText={gao001SceneArt['scene-02'].alt}
         objective="Connect the mission to field decisions."
         onComplete={onComplete}
+        renderCustomModal={({ hotspot, close, complete }) => (
+          <MissionBriefingModal hotspot={hotspot} close={close} complete={complete} />
+        )}
         hotspots={[
           {
             id: 'mission', x: 25, y: 35, label: 'Mission card',

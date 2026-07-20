@@ -319,6 +319,7 @@ function BadgeBuilderModal({
   const [snapVector, setSnapVector] = useState<{ x: number; y: number; rotate: number } | null>(null);
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
+  const dialogRef = React.useRef<HTMLElement>(null);
 
   const stopCamera = () => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -329,6 +330,55 @@ function BadgeBuilderModal({
   };
 
   useEffect(() => stopCamera, []);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const focusableSelector = [
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[href]',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(',');
+    const focusables = () => Array.from(dialog?.querySelectorAll<HTMLElement>(focusableSelector) ?? []);
+    (focusables()[0] ?? dialog)?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        stopCamera();
+        close();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const items = focusables();
+      if (!items.length) {
+        event.preventDefault();
+        dialog?.focus();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [close]);
 
   useEffect(() => {
     if (!cameraActive || !streamRef.current || !videoRef.current) return;
@@ -418,7 +468,15 @@ function BadgeBuilderModal({
 
   return (
     <div className="absolute inset-0 z-50 overflow-hidden bg-[#1F1C1B]/58 backdrop-blur-[2px]">
-      <section className="absolute inset-0 grid h-full w-full grid-cols-1 gap-0 overflow-hidden bg-white lg:grid-cols-[minmax(0,1fr)_280px]">
+      <section
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="gao001-badge-builder-title"
+        aria-describedby="gao001-badge-builder-description"
+        tabIndex={-1}
+        className="absolute inset-0 grid h-full w-full grid-cols-1 gap-0 overflow-hidden bg-white outline-none lg:grid-cols-[minmax(0,1fr)_280px]"
+      >
         <button
           type="button"
           onClick={() => {
@@ -432,8 +490,8 @@ function BadgeBuilderModal({
 
         <div className="flex min-h-0 flex-col justify-center overflow-y-auto px-8 py-8">
           <p className="font-montserrat text-[11px] font-bold uppercase tracking-[0.22em] text-[#F06923]">Field Observation Check</p>
-          <h2 className="mt-3 font-montserrat text-3xl font-bold leading-tight text-[#007970]">Create Your Clinician ID Badge</h2>
-          <p className="mt-4 font-roboto text-sm leading-relaxed text-[#52404B]">
+          <h2 id="gao001-badge-builder-title" className="mt-3 font-montserrat text-3xl font-bold leading-tight text-[#007970]">Create Your Clinician ID Badge</h2>
+          <p id="gao001-badge-builder-description" className="mt-4 font-roboto text-sm leading-relaxed text-[#52404B]">
             Your badge is the first piece of trust patients see at the door. Add your photo directly inside the badge, upload one, or use the Care Indeed logo.
           </p>
 
@@ -537,6 +595,154 @@ function BadgeBuilderModal({
             </motion.div>
           </div>
         )}
+      </section>
+    </div>
+  );
+}
+
+function OrientationChecklistModal({
+  close,
+  complete,
+  checkedItems,
+  toggleItem,
+}: {
+  close: () => void;
+  complete: () => void;
+  checkedItems: Record<string, boolean>;
+  toggleItem: (item: string) => void;
+}) {
+  const dialogRef = React.useRef<HTMLElement>(null);
+  const completedCount = ORIENTATION_ITEMS.filter((_, index) => checkedItems[`item-${index}`]).length;
+  const allChecked = completedCount === ORIENTATION_ITEMS.length;
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const focusableSelector = [
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[href]',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(',');
+    const focusables = () => Array.from(dialog?.querySelectorAll<HTMLElement>(focusableSelector) ?? []);
+    window.setTimeout(() => (focusables()[0] ?? dialog)?.focus(), 20);
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const items = focusables();
+      if (!items.length) {
+        event.preventDefault();
+        dialog?.focus();
+        return;
+      }
+
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [close]);
+
+  return (
+    <div className="absolute inset-0 z-50 overflow-hidden bg-[#1F1C1B]/58 backdrop-blur-[2px]">
+      <section
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="gao001-orientation-checklist-title"
+        aria-describedby="gao001-orientation-checklist-description"
+        tabIndex={-1}
+        className="absolute inset-0 flex h-full w-full items-center justify-center overflow-hidden bg-white/96 p-5 outline-none"
+      >
+        <div className="relative flex max-h-full w-full max-w-[620px] flex-col overflow-hidden rounded-[24px] border border-[#E9E4E0] bg-white shadow-[0_28px_80px_rgba(15,91,84,0.2)]">
+          <div className="flex items-start justify-between gap-4 border-b border-[#E9E4E0] px-6 py-5">
+            <div>
+              <p className="font-montserrat text-[11px] font-bold uppercase tracking-[0.22em] text-[#F06923]">Day 1 Orientation</p>
+              <h2 id="gao001-orientation-checklist-title" className="mt-2 font-montserrat text-2xl font-bold leading-tight text-[#007970]">
+                Orientation Checklist
+              </h2>
+              <p id="gao001-orientation-checklist-description" className="mt-2 font-roboto text-sm leading-relaxed text-[#52404B]">
+                Review the nine orientation areas before continuing.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={close}
+              className="rounded-full border border-[#E9E4E0] bg-[#FAFAF7] px-3 py-2 font-montserrat text-xs font-bold uppercase tracking-[0.16em] text-[#004142] transition hover:border-[#007970]"
+            >
+              Close
+            </button>
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+            <div className="mb-4 rounded-[18px] border border-[#D8ECE7] bg-[#F1FBF8] px-4 py-3 font-roboto text-sm font-semibold text-[#0F5B54]">
+              {completedCount} of {ORIENTATION_ITEMS.length} areas reviewed
+            </div>
+            <div className="grid gap-2.5">
+              {ORIENTATION_ITEMS.map((item, index) => {
+                const key = `item-${index}`;
+                const checked = !!checkedItems[key];
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-pressed={checked}
+                    onClick={() => toggleItem(key)}
+                    className={`flex min-h-[48px] items-start gap-3 rounded-[16px] border px-4 py-3 text-left transition ${
+                      checked
+                        ? 'border-[#0F5B54] bg-[#EEF4F3] text-[#0F5B54]'
+                        : 'border-[#E9E4E0] bg-[#FAFAF7] text-[#2D3748] hover:border-[#0F5B54]'
+                    }`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded border text-xs font-bold ${
+                        checked
+                          ? 'border-[#0F5B54] bg-[#0F5B54] text-white'
+                          : 'border-[#9CA3AF] bg-white text-transparent'
+                      }`}
+                    >
+                      ✓
+                    </span>
+                    <span className="font-roboto text-sm font-medium leading-relaxed">{item}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="border-t border-[#E9E4E0] bg-[#FAFAF7] px-6 py-4">
+            <button
+              type="button"
+              onClick={complete}
+              disabled={!allChecked}
+              className="w-full rounded-[18px] bg-[#F06923] px-6 py-4 font-montserrat text-sm font-bold uppercase tracking-[0.2em] text-white shadow-[0_12px_30px_rgba(240,105,35,0.24)] transition hover:bg-[#D95A1A] disabled:cursor-not-allowed disabled:bg-[#DAD7D4] disabled:text-[#746C68] disabled:shadow-none"
+            >
+              {allChecked ? 'Complete Checklist' : 'Review All Areas'}
+            </button>
+          </div>
+        </div>
       </section>
     </div>
   );
@@ -719,9 +925,9 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
         objective="Review the survey readiness cues."
         onComplete={onComplete}
         fillPanel
-        renderCustomModal={({ hotspot, close, complete }) => (
-          hotspot.id === 'badge'
-            ? (
+        renderCustomModal={({ hotspot, close, complete }) => {
+          if (hotspot.id === 'badge') {
+            return (
               <BadgeBuilderModal
                 close={close}
                 complete={complete}
@@ -729,9 +935,22 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
                 role={learnerRole}
                 email={learnerEmail}
               />
-            )
-            : null
-        )}
+            );
+          }
+
+          if (hotspot.id === 'checklist') {
+            return (
+              <OrientationChecklistModal
+                close={close}
+                complete={complete}
+                checkedItems={orientationChecks}
+                toggleItem={toggleOrientationCheck}
+              />
+            );
+          }
+
+          return null;
+        }}
         // Main scene narration plays from the shell footer play button (not an in-scene strip).
         hotspots={[
           {
