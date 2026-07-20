@@ -65,6 +65,8 @@ import { AdvancedTrainingPlayer } from "@/policy/journey/components/advanced/Adv
 import { OasisSocTrainingPanel } from "@/policy/journey/components/advanced/OasisSocTrainingPanel";
 import { isOasisSocModule, OASIS_SOC_MODULE_TITLE } from "@/policy/journey/components/advanced/oasisSocModule";
 import { getLvnStandaloneModule, isLvnStandaloneModule } from "@/policy/journey/modules/lvn";
+import { getRnStandaloneModule, isRnStandaloneModule } from "@/policy/journey/modules/rn";
+import { getAdmStandaloneModule, isAdmStandaloneModule } from "@/policy/journey/modules/adm";
 import { Cms485AssessmentQuizPage } from "./Cms485AssessmentQuizPage";
 import CoreValuesInteractiveViewer from "@/policy/journey/components/CoreValuesInteractiveViewer";
 import GAO001Scene01WelcomeDesk from "@/policy/journey/components/GAO001Scene01WelcomeDesk";
@@ -2313,6 +2315,34 @@ export function ModulePlayerScreen() {
         );
       }
     }
+    // RN corrected standalone modules share the same clean Journey player shell as LVN.
+    if (dispatchModuleId && isRnStandaloneModule(dispatchModuleId)) {
+      const RnModule = getRnStandaloneModule(dispatchModuleId);
+      if (RnModule) {
+        return (
+          <div className="min-h-[70vh] w-full" data-rn-standalone={dispatchModuleId}>
+            <div className="mb-3 px-2 sm:px-4 pt-2">
+              <BackLink to="/journey?tab=onboarding&path=rn">Back to RN path</BackLink>
+            </div>
+            <RnModule />
+          </div>
+        );
+      }
+    }
+    // Administrator corrected standalone modules use the same clean Journey player shell.
+    if (dispatchModuleId && isAdmStandaloneModule(dispatchModuleId)) {
+      const AdmModule = getAdmStandaloneModule(dispatchModuleId);
+      if (AdmModule) {
+        return (
+          <div className="min-h-[70vh] w-full" data-adm-standalone={dispatchModuleId}>
+            <div className="mb-3 px-2 sm:px-4 pt-2">
+              <BackLink to="/journey?tab=onboarding&path=adm">Back to Administrator path</BackLink>
+            </div>
+            <AdmModule />
+          </div>
+        );
+      }
+    }
     if (dispatchModuleId && isAdvancedModule(dispatchModuleId) && !isGAO002Interactive(dispatchModuleId)) {
       const variant = getAdvancedVariant(dispatchModuleId) || 'plan_of_care';
       const title = getModuleDef(dispatchModuleId)?.title || dispatchModuleId;
@@ -2349,7 +2379,7 @@ export function ModulePlayerScreen() {
     );
   }, [pathname, params.moduleId, params.lessonId]);
 
-  if (rawModuleId && !journeyMod && !isOasisSocModule(rawModuleId) && !isAdvancedModule(rawModuleId) && !isLvnStandaloneModule(rawModuleId) && !isGAO002Interactive(rawModuleId) && !['m0'].includes(rawModuleId)) {
+  if (rawModuleId && !journeyMod && !isOasisSocModule(rawModuleId) && !isAdvancedModule(rawModuleId) && !isLvnStandaloneModule(rawModuleId) && !isRnStandaloneModule(rawModuleId) && !isAdmStandaloneModule(rawModuleId) && !isGAO002Interactive(rawModuleId) && !['m0'].includes(rawModuleId)) {
     // Unknown module - bypass for RN-ADV modules (registered in adapter/courseModules)
     return (
       <section className="p-8">
