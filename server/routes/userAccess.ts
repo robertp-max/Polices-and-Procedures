@@ -16,10 +16,14 @@ import { buildDemoAuthServiceFromEnv } from '../auth/service.js';
 import { expectedIssuer } from '../auth/accessTokenClaims.js';
 import { env } from '../env.js';
 import { resolveUserStatusAuthority } from '../auth/userStatusAuthority.js';
+import { randomUUID } from 'node:crypto';
 import {
-  listAccessState, suspendUser, reactivateUser, assignRole, removeRole,
+  listAccessState, assignRole, removeRole,
   type AccessChange,
 } from '../auth/userAccessAdmin.js';
+import { getAccountLifecycleService } from '../auth/accountLifecycle/serviceFactory.js';
+import { performAdminLifecycleTransition } from '../auth/accountLifecycle/adminTransition.js';
+import type { LifecycleAction } from '../auth/accountLifecycle/service.js';
 
 export const userAccessRouter: Router = Router();
 
@@ -118,28 +122,59 @@ async function applyChange(req: Request, actor: Actor, change: AccessChange): Pr
   await auditAccess(actor, req, change, 'permit', source ? `authority:${source}` : undefined);
 }
 
-userAccessRouter.post('/suspend', asyncHandler(async (req, res) => {
-  let actor: Actor;
+/** Reason falls back to a non-empty audit string when the admin UI omits one. */
+function normalizeReason(raw: unknown, action: LifecycleAction): string {
+  const r = String(raw ?? '').trim();
+  return r || `Administrative ${action} via user-access console`;
+}
+
+/**
+ * Suspend/reactivate via the durable global-deny lifecycle (ADR-0002 Phase 2E,
+ * hard cut). Policy guards run first; the transition is a durable, multi-plane
+ * operation (durable deny → Cognito disable+sign-out → plane projections →
+ * complete). If the durable store is unavailable the service returns 503 — this
+ * route NEVER falls back to a canonical-only mutation (the two-plane defect).
+ */
+async function handleLifecycleTransition(req: Request, res: Response, action: LifecycleAction): Promise<void> {
   const id = targetId(req);
+  let actor: Actor;
   try {
     actor = await requireUserAccessAdmin(req);
   } catch (e) {
-    await auditDenied(req, 'user_access.suspend', id, (e as Error).message);
+    await auditDenied(req, `user_access.${action}`, id, (e as Error).message);
     throw e;
   }
   const registry = await getAppIdentityPersistence().getAll();
-  const change = suspendUser(registry, actor, id, new Date().toISOString());
-  await applyChange(req, actor, change);
-  res.json({ ok: true, targetUserId: id, after: change.after });
+  const beforeStatus = registry.users.find((u) => u.id === id)?.status;
+  const reason = normalizeReason(req.body?.reason, action);
+  const idempotencyKey = String(req.header('idempotency-key') || '').trim() || randomUUID();
+
+  try {
+    const result = await performAdminLifecycleTransition({
+      service: getAccountLifecycleService(),
+      registry, action, actorUserId: actor.user_id, actorEmail: actor.email,
+      targetUserId: id, reason, idempotencyKey, nowIso: new Date().toISOString(),
+    });
+    const afterStatus = action === 'suspend' ? 'suspended' : 'active';
+    await auditAccess(
+      actor, req,
+      { action: `user_access.${action}`, targetUserId: id, before: { status: beforeStatus }, after: { status: afterStatus } },
+      'permit',
+      req.userStatusAuthority?.source ? `authority:${req.userStatusAuthority.source}` : undefined,
+    );
+    res.json({ ok: true, targetUserId: id, after: { status: afterStatus }, operationId: result.operationId, postCommitAudit: result.postCommitAudit });
+  } catch (e) {
+    await auditDenied(req, `user_access.${action}`, id, (e as Error).message);
+    throw e;
+  }
+}
+
+userAccessRouter.post('/suspend', asyncHandler(async (req, res) => {
+  await handleLifecycleTransition(req, res, 'suspend');
 }));
 
 userAccessRouter.post('/reactivate', asyncHandler(async (req, res) => {
-  const id = targetId(req);
-  const actor = await requireUserAccessAdmin(req);
-  const registry = await getAppIdentityPersistence().getAll();
-  const change = reactivateUser(registry, actor, id);
-  await applyChange(req, actor, change);
-  res.json({ ok: true, targetUserId: id, after: change.after });
+  await handleLifecycleTransition(req, res, 'reactivate');
 }));
 
 userAccessRouter.post('/assign-role', asyncHandler(async (req, res) => {

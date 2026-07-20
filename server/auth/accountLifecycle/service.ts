@@ -29,6 +29,7 @@
 import { ApiError } from '../../errors.js';
 import { stepOrderForAction, type SemanticLifecycleStep } from './semantics.js';
 import type { AccountLifecycleStatus, LifecycleAction, LifecycleOperationRecord } from './types.js';
+export type { LifecycleAction } from './types.js';
 import {
   assertLifecycleMutationAvailable, validateReason, validateIdempotencyKey,
   type AccountLifecycleStore,
