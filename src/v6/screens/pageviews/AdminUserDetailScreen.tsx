@@ -5,7 +5,7 @@ import {
   KeyRound, LayoutGrid, ShieldAlert, ShieldCheck, UserRound,
 } from 'lucide-react';
 import { useAuth } from '@/auth/AuthProvider';
-import { AuthApi, type EffectiveAccessProjection } from '@/auth/api';
+import { AuthApi, type EffectiveAccessProjection, type PageAccessProjectionResponse } from '@/auth/api';
 import { SurfaceCard, ToneTag } from '../../components';
 import { Button, ToneBadge } from '../../primitives';
 import { cx } from '../../utils/classNames';
@@ -78,6 +78,7 @@ export function AdminUserDetailScreen() {
   const [tab, setTab] = useState<TabId>('overview');
   const [rows, setRows] = useState<AccessUserRow[] | null>(null);
   const [effAccess, setEffAccess] = useState<EffectiveAccessProjection | null>(null);
+  const [pageAccess, setPageAccess] = useState<PageAccessProjectionResponse | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [actionNote, setActionNote] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
@@ -96,6 +97,12 @@ export function AdminUserDetailScreen() {
         setEffAccess(ea.effectiveAccess);
       } catch {
         setEffAccess(null);
+      }
+      try {
+        const pa = await AuthApi.getUserPageAccess(token, userId);
+        setPageAccess(pa.pageAccess);
+      } catch {
+        setPageAccess(null);
       }
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : 'Unable to load the server user directory.');
@@ -314,7 +321,37 @@ export function AdminUserDetailScreen() {
           ) : (
             <PendingProjection phase="Phase 3" title="Effective permissions" detail="Server evaluator projection is unavailable (not loaded)." />
           )}
-          <PendingProjection phase="Phase 4" title="Page access (visibility projection)" detail="Server-generated, non-authorizing page projection with deny reasons. Hiding a page is never security; every API authorizes independently." />
+          {pageAccess ? (
+            <div className="rounded-2xl border border-hairline bg-white p-lg shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-sm">
+                <h2 className="text-h3 font-medium text-ink">Page access <span className="text-sm font-normal text-muted">(visibility projection)</span></h2>
+                <span className="rounded-full border border-tone-teal-border bg-tone-teal-bg px-sm py-[2px] text-[10px] font-medium uppercase tracking-wider text-tone-teal-text">
+                  server-derived · non-authorizing · {pageAccess.pages.filter((p) => p.visible).length}/{pageAccess.pages.length} visible
+                </span>
+              </div>
+              <p className="mt-xs text-xs text-muted">
+                Hiding a page is never security — every API authorizes independently (ADR §B6).
+              </p>
+              <div className="mt-md max-h-80 overflow-y-auto rounded-lg border border-hairline">
+                <table className="w-full text-left text-xs">
+                  <thead className="sticky top-0 bg-surface-glass text-tag uppercase tracking-tag text-muted">
+                    <tr><th className="px-md py-sm">Page</th><th className="px-md py-sm">Access</th><th className="px-md py-sm">Reason</th></tr>
+                  </thead>
+                  <tbody className="divide-y divide-hairline">
+                    {pageAccess.pages.map((p) => (
+                      <tr key={p.pageId} className={p.visible ? '' : 'opacity-55'}>
+                        <td className="px-md py-sm text-ink">{p.label}</td>
+                        <td className="px-md py-sm"><ToneTag tone={p.access === 'write' ? 'teal' : p.access === 'read' ? 'slate' : 'orange'}>{p.access}</ToneTag></td>
+                        <td className="px-md py-sm font-mono text-[10px] text-secondary">{p.reason}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <PendingProjection phase="Phase 4" title="Page access (visibility projection)" detail="Server-generated, non-authorizing page projection with deny reasons. Hiding a page is never security; every API authorizes independently." />
+          )}
           <PendingProjection phase="Phase 3" title="Administrator capabilities" detail="Granular admin capabilities evaluated server-side, distinct from business permissions and page visibility." />
         </div>
       )}

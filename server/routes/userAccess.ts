@@ -23,6 +23,8 @@ import {
 } from '../auth/userAccessAdmin.js';
 import { activeRoleGroupIds } from '../auth/actorResolver.js';
 import { computeEffectiveAccess } from '../auth/authorization/evaluator.js';
+import { computePageAccessProjection, parseOverrideRecord } from '../auth/authorization/pageAccess.js';
+import { getPageAccessPersistence } from '../auth/pageAccessPersistence.js';
 import { getAccountLifecycleService } from '../auth/accountLifecycle/serviceFactory.js';
 import { performAdminLifecycleTransition } from '../auth/accountLifecycle/adminTransition.js';
 import type { LifecycleAction } from '../auth/accountLifecycle/service.js';
@@ -133,6 +135,46 @@ userAccessRouter.get('/:userId/effective-access', asyncHandler(async (req, res) 
     nowIso,
   });
   res.json({ effectiveAccess });
+}));
+
+/**
+ * GET /admin/user-access/:userId/page-access — server-authoritative page-
+ * VISIBILITY projection for a target user (ADR-0002 Phase 4, non-authorizing).
+ * Derived from account status + privilege + explicit overrides; a non-active
+ * account hides every page. This never authorizes an operation — every API
+ * still authorizes independently via the Phase-3 evaluator.
+ */
+userAccessRouter.get('/:userId/page-access', asyncHandler(async (req, res) => {
+  await requireUserAccessAdmin(req);
+  const userId = String(req.params.userId || '').trim();
+  if (!userId) throw new ApiError('validation_error', 'userId is required.', 400);
+  const registry = await getAppIdentityPersistence().getAll();
+  const nowIso = new Date().toISOString();
+  const user = registry.users.find((u) => u.id === userId);
+  if (!user) throw new ApiError('user_not_found', 'User not found.', 404);
+  const groupIds = activeRoleGroupIds(registry, userId, nowIso);
+  const ea = computeEffectiveAccess({
+    principalUserId: userId,
+    accountStatus: user.status,
+    assignments: groupIds.map((groupId) => ({ groupId, scope: { organizationId: '' } })),
+    nowIso,
+  });
+  let override = null;
+  try {
+    const map = await getPageAccessPersistence().getAll();
+    const emailKey = typeof user.email === 'string' ? user.email.toLowerCase() : '';
+    override = parseOverrideRecord(map[userId] ?? map[emailKey], userId);
+  } catch {
+    override = null; // overrides are best-effort; fail closed to defaults.
+  }
+  const pageAccess = computePageAccessProjection({
+    principalUserId: userId,
+    accountActive: ea.accountActive,
+    privileged: ea.privileged,
+    override,
+    nowIso,
+  });
+  res.json({ pageAccess });
 }));
 
 function targetId(req: Request): string {

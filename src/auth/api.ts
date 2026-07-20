@@ -54,6 +54,24 @@ export interface EffectiveAccessProjection {
   evaluatedAt: string;
 }
 
+/** One page's server-derived visibility (ADR-0002 Phase 4, non-authorizing). */
+export interface PageVisibilityRow {
+  pageId: string;
+  componentGroup: string;
+  label: string;
+  access: 'none' | 'read' | 'write';
+  visible: boolean;
+  reason: string;
+}
+export interface PageAccessProjectionResponse {
+  principalUserId: string;
+  accountActive: boolean;
+  privileged: boolean;
+  pages: PageVisibilityRow[];
+  policyVersion: string;
+  evaluatedAt: string;
+}
+
 export interface CapabilitiesResponse {
   authenticated: boolean;
   authorization: {
@@ -426,6 +444,14 @@ export const AuthApi = {
   /** Server-computed effective access for a target user (ADR-0002 Phase 3/4). */
   getUserEffectiveAccess(accessToken: string, userId: string): Promise<{ effectiveAccess: EffectiveAccessProjection }> {
     return callAt(USER_ACCESS_BASE, `/${encodeURIComponent(userId)}/effective-access`, {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /** Server-authoritative page-visibility projection for a target user (Phase 4). */
+  getUserPageAccess(accessToken: string, userId: string): Promise<{ pageAccess: PageAccessProjectionResponse }> {
+    return callAt(USER_ACCESS_BASE, `/${encodeURIComponent(userId)}/page-access`, {
       method: 'GET',
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
     });
