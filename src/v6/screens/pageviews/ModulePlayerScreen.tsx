@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
 import { useJourneyStore } from "@/policy/journey/stores/journeyStore";
 import { moduleById } from "@/policy/journey/data/modules";
+import { getLvnStandaloneModule } from "@/policy/journey/modules/lvn";
 import {
   getAssignedModuleIdsForEmployee,
   isModuleAssignedToEmployee,
@@ -2271,6 +2272,13 @@ export function ModulePlayerScreen() {
 
   // HOIST useMemo here so it is ALWAYS called (P0-002 fix for hook order)
   const element = useMemo(() => {
+    // LVN-001…LVN-012 and LVN-SUP ship as self-contained course players.
+    // Render the registered player on the canonical module route instead of
+    // falling through to the generic two-lesson ContentV2 overview.
+    if (params.moduleId && pathname === `/journey/module/${params.moduleId}`) {
+      const LvnStandaloneModule = getLvnStandaloneModule(params.moduleId);
+      if (LvnStandaloneModule) return <LvnStandaloneModule />;
+    }
     // Dispatch ADV modules to domain player for main module view (fixes runtime for RN-ADV)
     // OASIS-E2 SOC renders its own self-contained panel — resolved FIRST and
     // independently of the shared advanced-training contract (see oasisSocModule.ts).

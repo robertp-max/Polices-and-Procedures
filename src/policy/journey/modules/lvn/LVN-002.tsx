@@ -1,683 +1,398 @@
 /**
  * LVN-002 — LVN Scope of Practice — CA B&P § 2859
- * Version: 5.0
- * Status: CONTENT COMPLETE — MIGRATION/TECH QA PENDING
- * Record ID: 6a5589133463cd690af8d62d
- * Track: LVN — Licensed Vocational Nurse
- * CMS: 42 CFR § 484.115(c) | CA: B&P § 2859 | 16 CCR § 2518
- * Shell: SC04 split-panel (rich content ~55% / instructional SVG ~45%)
- * Pages: 7 | Quiz: 10 | Pass: 80%
- *
- * Knowledge assessment only — does not certify practical clinical competency.
+ * Version: 5.3.5 — Final node placement & micro-QA
+ * Narrow patch: strict TS colors, 11px/44px minima, quiz reconciliation, PICC wording,
+ * quiz persistence, radio focus, reduced-motion, no runtime fonts, brand mark, abstract nodes
+ * Pages: 7 scenes + Knowledge Check | Hotspots: 34 | Quiz: 10 | Pass: 80%
  */
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import {
+  AlertTriangle, Check, CheckCircle2, ChevronLeft, ChevronRight,
+  Compass, Eye, FileText, Phone, RotateCcw,
+  ShieldCheck, Sparkles, X, XCircle,
+} from 'lucide-react';
+import img01 from './assets/lesson-01-authority.png';
+import img02 from './assets/lesson-02-authorized.png';
+import img03 from './assets/lesson-03-prohibited.png';
+import img04 from './assets/lesson-04-conditional.png';
+import img05 from './assets/lesson-05-decision.png';
+import img06 from './assets/lesson-06-accountability.png';
+import img07 from './assets/lesson-07-complete.png';
 
-import React, { useEffect, useMemo, useState } from 'react';
+const CI = {
+  teal: '#0F5B54', tealSoft: '#EEF4F3', tealMuted: '#C8DFDC',
+  orange: '#F26D33', orangeDark: '#E05922', ink: '#2D3748',
+  muted: '#64748B', border: '#E2E8F0', red: '#EF4444',
+  white: '#FFFFFF', bg: '#F8FAFC', gold: '#C9A227',
+} as const;
 
-// ─── META ───────────────────────────────────────────────────────────────────
-
-const MODULE_META = {
-  id: 'LVN-002',
-  title: 'LVN Scope of Practice — CA B&P § 2859',
-  track: 'LVN — Licensed Vocational Nurse',
-  version: '5.0',
-  status: 'CONTENT COMPLETE — MIGRATION/TECH QA PENDING',
-  pages: 7,
-  passing: 80,
-  quizCount: 10,
-  cms: '42 CFR § 484.115(c)',
-  policy: 'CA B&P Code § 2859 | 16 CCR § 2518',
-  duration: '~35 min',
-  themeColor: '#7C3AED',
-  gradient: 'linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)',
-  recordId: '6a5589133463cd690af8d62d',
-};
-
-// ─── TYPES ──────────────────────────────────────────────────────────────────
-
-interface KeyPoint {
-  icon: string;
-  title: string;
-  detail: string;
-}
-
+type ZoneKind = 'authorized' | 'conditional' | 'prohibited' | 'neutral';
 interface Hotspot {
   id: string;
-  label: string;
-  cx: number;
-  cy: number;
-  r?: number;
-  info: string;
-  zone?: 'authorized' | 'conditional' | 'prohibited' | 'neutral';
+  label: string;       // full name (aria + panel)
+  shortLabel: string;  // visible chip (≥11px, concise)
+  x: number; y: number; zone: ZoneKind;
+  info: string; meaning: string; action: string; notify?: string; document: string; policyRefs: string[];
 }
-
+interface KeyPoint { icon: string; title: string; detail: string; }
 interface PageData {
-  id: number;
-  title: string;
-  subtitle: string;
-  narration: string[];
-  keyPoints: KeyPoint[];
-  clinicalTip: string;
-  scene: string;
-  hotspots: Hotspot[];
-  sourceLabels: { kind: string; text: string }[];
+  id: number; shortName: string; title: string; subtitle: string;
+  narration: string[]; keyPoints: KeyPoint[]; clinicalTip: string;
+  sourceLabels: { kind: string; text: string }[]; sceneImage: string; hotspots: Hotspot[];
 }
+interface QuizQuestion { id: number; stem: string; options: string[]; correct: number; rationale: string; }
 
-interface QuizQuestion {
-  id: number;
-  stem: string;
-  options: string[];
-  correct: number;
-  rationale: string;
-}
+const ZONE: Record<ZoneKind, { label: string; color: string; soft: string }> = {
+  authorized: { label: 'Authorized', color: CI.teal, soft: CI.tealSoft },
+  conditional: { label: 'Conditional', color: CI.orange, soft: '#FFF3EC' },
+  prohibited: { label: 'Prohibited', color: CI.red, soft: '#FEF2F2' },
+  neutral: { label: 'Guidance', color: CI.muted, soft: '#F1F5F9' },
+};
 
-// ─── CONTENT PAGES ──────────────────────────────────────────────────────────
+const MODULE_META = { id: 'LVN-002', title: 'LVN Scope of Practice — CA B&P § 2859', pages: 7, quizCount: 10, passing: 80 };
 
 const PAGES: PageData[] = [
   {
     id: 0,
+    shortName: 'Authority',
     title: 'The LVN License: Authority, Boundaries & Accountability',
     subtitle: 'Understanding what your license authorizes — and what it does not',
     narration: [
-      'Your Licensed Vocational Nurse credential is a state-issued grant of authority. It defines what you are legally permitted to do in direct patient care — and just as precisely, what you are not. In California home health, LVN practice is codified in Business & Professions Code § 2859, further elaborated in 16 CCR § 2518, and operationalized through agency policy and federal Conditions of Participation at 42 CFR § 484.115(c).',
-      'The LVN scope in home health is narrower in operational risk than many acute-care settings because the home environment demands a different accountability framework. You will often be the only clinician in the patient\'s home. The RN who co-signs your documentation is not physically present. The physician who ordered the Plan of Care is not on site. Scope adherence is therefore not only a regulatory obligation — it is a primary patient-safety control.',
-      'This module maps four layers of guidance that must stay distinct in your daily reasoning: (1) California law (B&P § 2859 / BVNPT rules), (2) federal CoP requirements for home health personnel qualifications, (3) agency policy (authorization matrices, co-signature workflows, escalation paths), and (4) professional judgment within those boundaries. Law and CoPs set hard floors; agency policy may be stricter; judgment never expands legal scope.',
-      'By the end of this module you will apply a real-time three-zone analysis — authorized, conditional, or prohibited — and know what to do first, when you may continue, when you must stop, whom to notify, and what to document. Passing the knowledge quiz confirms understanding only; observed demonstration and authorized sign-off remain separate competency steps.',
+      'Your LVN credential is a state-issued grant of authority defined by CA B&P § 2859 and 16 CCR § 2518.5, operationalized through agency policy and federal Conditions of Participation.',
+      'Map four layers before acting: California law, federal personnel qualifications (42 CFR § 484.115(e)), agency policy, and judgment within those boundaries. Law sets the ceiling; policy may be stricter; judgment never expands legal scope.'
     ],
     keyPoints: [
-      {
-        icon: '⚖️',
-        title: 'Legal authority source',
-        detail:
-          'CA B&P § 2859 grants LVN practice authority. Scope violations risk license action and patient harm.',
-      },
-      {
-        icon: '🏠',
-        title: 'Home health context',
-        detail:
-          'Solo visits elevate accountability — no on-site RN backup changes the risk calculus, not the legal scope itself.',
-      },
-      {
-        icon: '📋',
-        title: 'Three practice zones',
-        detail:
-          'Authorized (within license + orders + competency), Conditional (RN oversight/co-signature/agency gate), Prohibited (RN/NP/MD only).',
-      },
-      {
-        icon: '🔗',
-        title: 'Federal overlay',
-        detail:
-          '42 CFR § 484.115(c) requires agencies to ensure personnel practice only within authorized qualifications — CoP deficiency risk if violated.',
-      },
+      { icon: '⚖️', title: 'Legal authority source', detail: 'CA B&P § 2859 sets the legal ceiling for LVN practice.' },
+      { icon: '🔗', title: 'Federal overlay', detail: '42 CFR § 484.115(e) — LPN/LVN qualifications under RN supervision.' },
+      { icon: '🏠', title: 'Home health context', detail: 'Solo visits elevate accountability, not legal scope.' },
+      { icon: '📋', title: 'Three practice zones', detail: 'Authorized · Conditional · Prohibited — map every task.' }
     ],
-    clinicalTip:
-      'Safety-first rule: if you must ask whether something is within your scope, treat it as conditional — contact the supervising RN before proceeding. Never invent authority from urgency alone.',
-    scene: 'license-authority',
+    clinicalTip: 'If you must ask whether something is in scope, treat it as conditional and call the RN first.',
+    sourceLabels: [
+      { kind: 'CA law', text: 'B&P § 2859; 16 CCR § 2518.5' },
+      { kind: 'Federal', text: '42 CFR § 484.115(e)' }
+    ],
+    sceneImage: img01,
     hotspots: [
       {
-        id: 'law',
-        label: 'CA B&P § 2859',
-        cx: 90,
-        cy: 120,
-        info: 'California law defines LVN authorized services. Statute + BVNPT regulations set the legal ceiling for practice.',
-        zone: 'neutral',
+        id: 'law', label: 'CA B&P § 2859', shortLabel: 'CA Law', x: 48, y: 56, zone: 'neutral',
+        info: 'Tablet shows the care plan — statute defines what the LVN may implement.', meaning: 'California law is the hard ceiling. Policy may be stricter; urgency never expands scope.', action: 'Classify every non-routine task against statute, order, competency, and policy before acting.',
+        notify: 'Supervising RN when classification is unclear.', document: 'Objective findings, authority basis, action taken or withheld, RN notification.', policyRefs: ['CA B&P § 2859', '16 CCR § 2518.5'],
       },
       {
-        id: 'cop',
-        label: '42 CFR § 484.115(c)',
-        cx: 250,
-        cy: 90,
-        info: 'Federal CoP: agencies must use personnel who meet qualifications and practice within authorized roles.',
-        zone: 'neutral',
+        id: 'cop', label: '42 CFR § 484.115(e)', shortLabel: 'Federal CoP', x: 40, y: 88, zone: 'neutral',
+        info: 'Clipboard and vitals gear on the table — federal rules require qualified personnel under RN supervision.', meaning: 'Services must be furnished under qualified RN supervision structures.', action: 'Confirm order, competency, and supervision conditions before proceeding.',
+        notify: 'RN when supervision or scope alignment is unclear.', document: 'Service performed, parameters, supervisory communication when required.', policyRefs: ['42 CFR § 484.115(e)'],
       },
       {
-        id: 'agency',
-        label: 'Agency policy',
-        cx: 250,
-        cy: 200,
-        info: 'Agency P&P may be stricter than law (competency lists, co-signature timers, escalation trees). Follow the stricter rule.',
-        zone: 'conditional',
+        id: 'agency', label: 'Agency policy', shortLabel: 'Agency', x: 16, y: 72, zone: 'conditional',
+        info: 'Nursing bag holds agency supplies and the authorization matrix in practice.', meaning: 'Agency policy can tighten, not expand, legal scope.', action: 'Verify matrix and competency before a conditional task.',
+        notify: 'RN when policy gate is not met.', document: 'Policy condition checked, RN direction, final action.', policyRefs: ['Agency authorization matrix'],
       },
       {
-        id: 'zones',
-        label: 'Three zones',
-        cx: 410,
-        cy: 150,
-        info: 'Authorized / Conditional / Prohibited. Map every field task into one zone before you act.',
-        zone: 'authorized',
-      },
-    ],
-    sourceLabels: [
-      { kind: 'California law', text: 'B&P § 2859; 16 CCR § 2518' },
-      { kind: 'Federal', text: '42 CFR § 484.115(c)' },
-      { kind: 'Agency policy', text: 'LVN authorization matrix & escalation protocol' },
+        id: 'zones', label: 'Three zones', shortLabel: 'Three Zones', x: 86, y: 18, zone: 'authorized',
+        info: 'The shared decision space between nurse and patient — every task maps to a zone before action.', meaning: 'Authorized = order + competency + expected condition. Conditional = RN oversight. Prohibited = RN-only.', action: 'Proceed only after zone classification is clear.',
+        notify: 'RN for any mismatch.', document: 'Zone classification, findings, action, outcome.', policyRefs: ['CA B&P § 2859'],
+      }
     ],
   },
   {
+
     id: 1,
+    shortName: 'Authorized',
     title: 'Authorized Practice: The LVN Competency Constellation',
     subtitle: 'Skills you may perform — with orders, competency, and accountability',
     narration: [
-      'California Business & Professions Code § 2859 authorizes LVNs to perform defined nursing services under the direction of a licensed physician or registered nurse. In home health, “general supervision” typically means the supervising RN has reviewed the Plan of Care, is available for consultation, and performs supervisory activities required by regulation and agency policy — physical presence during every visit is not required for all authorized skills.',
-      'Common authorized home health skills (when ordered, within competency, and not otherwise restricted) include: vital sign assessment and trending; wound care under established orders (dressing changes, irrigation, measurement and documentation, ostomy care as ordered); medication administration by oral, topical, subcutaneous, and intramuscular routes when authorized; catheter care and catheterization per order and policy; specimen collection; gastric tube feeding management under established protocols; ADL support when clinically indicated; and patient/family education on ordered regimens.',
-      'Critical qualifier: LVNs implement a current Plan of Care — they do not independently develop or revise it. If a wound changes and needs a different approach, you document findings, notify the RN, and await updated orders before changing the intervention. You do not independently complete the OASIS comprehensive assessment, formulate nursing diagnoses, prescribe, stage wounds when staging is reserved to the RN/authorized clinician, change medication orders, or make discharge judgments.',
-      'Competency is the second pillar. Legal authorization ≠ validated skill. If a skill is legally within LVN scope but not on your agency competency checklist (or you lack current IV certification where required), you must decline and escalate. Knowledge from this module does not replace skills check-offs.',
+      'Authorized skills require a current order, validated competency, and expected patient condition. LVNs implement the Plan of Care — they do not independently develop or revise it.',
+      'Common authorized activities include ordered wound care, medication administration within route limits, vital signs and data collection, catheter care, patient education that reinforces the POC, and specimen collection per order.'
     ],
     keyPoints: [
-      {
-        icon: '💉',
-        title: 'Medication administration',
-        detail:
-          'Oral, topical, SQ, IM per order and policy. IV push and central-line management remain outside LVN home-health authority.',
-      },
-      {
-        icon: '🩹',
-        title: 'Wound care (implement, not plan)',
-        detail:
-          'Dressing changes, irrigation, measurement, ostomy care per written orders. New protocol changes and care-plan revisions require RN/physician process.',
-      },
-      {
-        icon: '🩺',
-        title: 'Assessment vs evaluation',
-        detail:
-          'LVNs collect data and assess status. Initial comprehensive evaluation, nursing diagnosis, and POC development/modification are RN-led.',
-      },
-      {
-        icon: '📊',
-        title: 'OASIS boundary',
-        detail:
-          'LVNs may contribute observations under direction. Independent completion of OASIS start-of-care / comprehensive assessment is not LVN scope.',
-      },
+      { icon: '🩹', title: 'Wound care (implement, not plan)', detail: 'Ordered dressing care under competency. Do not redesign the protocol.' },
+      { icon: '💉', title: 'Medication administration', detail: 'Oral/topical/SQ/IM per order. Never alter dose or route.' },
+      { icon: '🩺', title: 'Assessment vs evaluation', detail: 'Collect and trend data; comprehensive evaluation remains RN-led.' },
+      { icon: '📋', title: 'Three-yes gate', detail: 'Order? Competency? Expected condition? Any no → stop and call RN.' }
     ],
-    clinicalTip:
-      'Three-yes gate before acting: (1) written order / current POC? (2) skill on my validated competency list? (3) patient condition still within expected parameters? Any “no” → stop and call RN.',
-    scene: 'competency-constellation',
+    clinicalTip: 'Three-yes gate: order? competency? expected condition? Any no → stop and call RN.',
+    sourceLabels: [
+      { kind: 'CA law', text: 'B&P § 2859' },
+      { kind: 'Clinical', text: 'CL-SD series' }
+    ],
+    sceneImage: img02,
     hotspots: [
       {
-        id: 'wound',
-        label: 'Wound care',
-        cx: 250,
-        cy: 55,
-        info: 'Authorized when ordered: dressing change, measure, document. Do not independently stage or redesign the plan.',
-        zone: 'authorized',
+        id: 'wound', label: 'Wound care', shortLabel: 'Wound Care', x: 56, y: 46, zone: 'authorized',
+        info: 'Dressing on the lower leg — ordered wound care in progress.', meaning: 'Implement the ordered plan. Do not independently select a new protocol.', action: 'Perform ordered care; escalate deterioration.',
+        notify: 'RN for infection signs or findings outside protocol.', document: 'Location, measurements, tissue/drainage, care performed, response.', policyRefs: ['CL-SD-011', '16 CCR § 2518.5'],
       },
       {
-        id: 'meds',
-        label: 'Med admin',
-        cx: 380,
-        cy: 110,
-        info: 'Oral/topical/SQ/IM per order. Never change dose/route/frequency without a new authorized order.',
-        zone: 'authorized',
+        id: 'meds', label: 'Med admin', shortLabel: 'Med Admin', x: 68, y: 80, zone: 'authorized',
+        info: 'Medication bottle on the sterile tray.', meaning: 'Administer exactly as ordered after verification.', action: 'Verify and administer; do not alter dose/route/frequency.',
+        notify: 'RN for adverse effects or discrepancy.', document: 'Drug, dose, route, time, parameters, response.', policyRefs: ['CL-SD-012'],
       },
       {
-        id: 'vitals',
-        label: 'Vital signs',
-        cx: 400,
-        cy: 220,
-        info: 'Assess and trend. Significant variance from baseline → document + escalate per agency protocol.',
-        zone: 'authorized',
+        id: 'vitals', label: 'Vital signs', shortLabel: 'Vitals', x: 18, y: 78, zone: 'authorized',
+        info: 'BP cuff at the edge of the work surface — data collection tools.', meaning: 'Collect data and compare to baseline; do not independently diagnose.', action: 'Collect, compare, escalate significant variance.',
+        notify: 'RN for unexpected findings.', document: 'Values, conditions, baseline comparison, action.', policyRefs: ['CL-SD-001', 'CL-CD-003'],
       },
       {
-        id: 'cath',
-        label: 'Catheter care',
-        cx: 250,
-        cy: 285,
-        info: 'Per order and competency. Unexpected obstruction, trauma, or infection signs → RN notification.',
-        zone: 'authorized',
+        id: 'cath', label: 'Catheter care', shortLabel: 'Catheter', x: 14, y: 72, zone: 'authorized',
+        info: 'Lower extremity care zone — ordered catheter/related care when competency validated.', meaning: 'Ordered catheter care is authorized when competency is validated.', action: 'Perform ordered care; do not independently change catheter type/plan.',
+        notify: 'RN for obstruction, infection signs, or unexpected findings.', document: 'Care performed, urine character, patient response, escalation if any.', policyRefs: ['CL-SD-008'],
       },
       {
-        id: 'edu',
-        label: 'Education',
-        cx: 100,
-        cy: 220,
-        info: 'Teach ordered regimens and reinforce the POC. Do not invent new treatments or discharge plans.',
-        zone: 'authorized',
+        id: 'edu', label: 'Education', shortLabel: 'Education', x: 14, y: 56, zone: 'authorized',
+        info: 'Patient education space — reinforce the existing plan of care.', meaning: 'Patient education supports the existing plan of care.', action: 'Teach ordered regimens; use teach-back; do not invent new treatment plans.',
+        notify: 'RN if barriers prevent safe self-management.', document: 'Topics taught, teach-back result, materials provided.', policyRefs: ['CL-SD-017 — Patient Education & Self-Management'],
       },
       {
-        id: 'spec',
-        label: 'Specimens',
-        cx: 100,
-        cy: 110,
-        info: 'Collect specimens per order/protocol. Interpretation that changes the plan remains RN/physician.',
-        zone: 'authorized',
-      },
-    ],
-    sourceLabels: [
-      { kind: 'California law', text: 'B&P § 2859 authorized vocational nursing services' },
-      { kind: 'Agency policy', text: 'Competency checklist & skills matrix' },
-      { kind: 'Professional guidance', text: 'Implement POC; do not invent orders' },
+        id: 'spec', label: 'Specimens', shortLabel: 'Specimens', x: 14, y: 88, zone: 'authorized',
+        info: 'Gauze and specimen supplies on the tray.', meaning: 'Specimen collection is authorized when ordered and protocol is followed.', action: 'Collect per order; label and handle correctly; do not order tests independently.',
+        notify: 'RN for collection barriers or unexpected findings.', document: 'Specimen type, time, method, patient tolerance.', policyRefs: ['CL-SD-006'],
+      }
     ],
   },
   {
+
     id: 2,
+    shortName: 'Prohibited',
     title: 'Prohibited Territory: The RN-Only Practice Zone',
     subtitle: 'Hard boundaries — no exceptions for staffing pressure',
     narration: [
-      'California’s nursing practice framework draws a hard line between LVN and RN practice because certain functions require the advanced assessment synthesis, independent clinical judgment, and legal accountability conferred by the RN license. These are not bureaucratic niceties — they reflect education, reasoning scope, and liability design.',
-      'In home health, RN-only (or physician/advanced practitioner) territory includes: comprehensive initial nursing assessment and start-of-care evaluation; formulation of nursing diagnoses; development, revision, and closure of the nursing Plan of Care; independent OASIS comprehensive assessment completion; IV push medications; blood product administration; PICC/central venous device insertion and management; complex debridement beyond LVN authorization; and clinical triage/decision-making for new, unresolved, or rapidly unstable conditions.',
-      'OASIS start-of-care is not “just paperwork.” It is a comprehensive assessment that establishes the clinical baseline, quality measures, and care trajectory for the episode. Completing it requires RN (or other CMS-qualified clinician) accountability. An LVN who independently completes OASIS, stages wounds when staging is reserved, changes medication orders, diagnoses, or makes discharge judgments is practicing outside license.',
-      'When you encounter an RN-only need: do not attempt the task even if you believe you have the technical skill. Document findings, notify the supervising RN (or on-call/DON per agency escalation), and communicate what you observed and why escalation is required. That is professional accountability — not a failure of competence.',
+      'RN-only territory includes independent OASIS/comprehensive assessment, Plan of Care development/modification, formulating nursing diagnoses, independent IV push in this training, independent central-line management, and independent discharge judgments.',
+      'Staffing pressure does not create exceptions. When asked to perform an RN-only task: decline, explain the boundary, notify the RN, and continue only authorized care.'
     ],
     keyPoints: [
-      {
-        icon: '🚫',
-        title: 'Initial assessment & OASIS',
-        detail:
-          'Start-of-care comprehensive assessment and independent OASIS completion are not LVN functions. No staffing workaround.',
-      },
-      {
-        icon: '🩸',
-        title: 'IV / central lines',
-        detail:
-          'IV push, transfusions, PICC/central management are outside LVN home-health scope. Do not accept informal workarounds.',
-      },
-      {
-        icon: '🧠',
-        title: 'Care plan authority',
-        detail:
-          'Only authorized clinicians develop/modify/close the POC. LVNs contribute data and implement ordered interventions.',
-      },
-      {
-        icon: '⚠️',
-        title: 'Unstable / new conditions',
-        detail:
-          'Triage and care-planning for unstable change = escalate. Your role: safety measures within orders, document, notify RN.',
-      },
+      { icon: '🚫', title: 'Initial assessment & OASIS', detail: 'Contribute observations under direction; do not independently complete or authenticate.' },
+      { icon: '🧠', title: 'Care plan authority', detail: 'Only authorized clinicians develop/modify/close the POC.' },
+      { icon: '🩸', title: 'IV / central lines', detail: 'Independent IV push is not authorized in this module.' },
+      { icon: '🚪', title: 'Discharge judgment', detail: 'Not an independent LVN decision.' }
     ],
-    clinicalTip:
-      'If a patient or family asks for an RN-only task, be direct: “That is outside the scope of my license. I am contacting my supervising nurse now to arrange the right care.” Never apologize for scope adherence.',
-    scene: 'prohibited-zone-map',
+    clinicalTip: 'If asked for an RN-only task: “That is outside my license. I am contacting my supervising nurse now.”',
+    sourceLabels: [
+      { kind: 'Federal', text: '42 CFR § 484.55; § 484.60' }
+    ],
+    sceneImage: img03,
     hotspots: [
       {
-        id: 'oasis',
-        label: 'OASIS SOC',
-        cx: 120,
-        cy: 90,
-        info: 'PROHIBITED for independent LVN completion. Comprehensive start-of-care assessment requires qualified clinician accountability.',
-        zone: 'prohibited',
+        id: 'oasis', label: 'OASIS SOC', shortLabel: 'OASIS', x: 54, y: 74, zone: 'prohibited',
+        info: 'Assessment form on the tablet — comprehensive assessment is not independent LVN work.', meaning: 'LVN may contribute observations under direction but may not independently complete or authenticate OASIS.', action: 'Stop. Route observations to the qualified RN.',
+        notify: 'Supervising RN if workflow requests independent completion.', document: 'Observations contributed, RN notified, reassigned workflow.', policyRefs: ['42 CFR § 484.55', 'CL-CA-001'],
       },
       {
-        id: 'poc',
-        label: 'POC develop',
-        cx: 250,
-        cy: 70,
-        info: 'PROHIBITED: developing or modifying the Plan of Care. LVN implements and reports; RN/physician process revises.',
-        zone: 'prohibited',
+        id: 'poc', label: 'POC develop', shortLabel: 'POC Change', x: 42, y: 62, zone: 'prohibited',
+        info: 'Care-plan fields on the tablet — plan development is RN/authorized clinician territory.', meaning: 'LVN does not independently develop or modify the Plan of Care.', action: 'Continue current authorized order when safe; escalate the request.',
+        notify: 'Supervising RN for authorized order workflow.', document: 'Patient request, findings, care held or provided, RN instructions.', policyRefs: ['42 CFR § 484.60', 'CL-CP-001'],
       },
       {
-        id: 'dx',
-        label: 'Nursing diagnosis',
-        cx: 380,
-        cy: 90,
-        info: 'PROHIBITED: formulating nursing diagnoses. Report objective findings; do not assign diagnostic labels that drive plan changes.',
-        zone: 'prohibited',
+        id: 'dx', label: 'Nursing diagnosis', shortLabel: 'Diagnosis', x: 16, y: 88, zone: 'prohibited',
+        info: 'Clinical judgment zone on the chart — formulating nursing diagnoses is outside LVN scope here.', meaning: 'Formulating nursing diagnoses is outside LVN scope in this structure.', action: 'Report objective findings; do not independently assign nursing diagnoses.',
+        notify: 'RN with objective findings for evaluation.', document: 'Objective findings reported; no independent diagnostic statement.', policyRefs: ['CA B&P § 2859'],
       },
       {
-        id: 'ivpush',
-        label: 'IV push / blood',
-        cx: 140,
-        cy: 220,
-        info: 'PROHIBITED in LVN home-health practice. Escalate and protect patient safety within current orders.',
-        zone: 'prohibited',
+        id: 'ivpush', label: 'IV push / blood', shortLabel: 'IV Push', x: 48, y: 16, zone: 'prohibited',
+        info: 'IV bag on the pole — independent IV-push medication and blood-product administration are prohibited.', meaning: 'IV push medication, blood-product administration, and PICC insertion are prohibited as independent LVN actions in this module.', action: 'Do not perform. Protect the patient, notify the supervising RN, and document the conflict.',
+        notify: 'Supervising RN immediately.', document: 'Order presented, conflict, who was notified, disposition.', policyRefs: ['CL-SD-010', 'HR-TD-003'],
       },
       {
-        id: 'picc',
-        label: 'PICC / central',
-        cx: 250,
-        cy: 250,
-        info: 'PROHIBITED: PICC insertion/management as LVN. Family LVN license does not create on-site authority for you to facilitate.',
-        zone: 'prohibited',
+        id: 'picc', label: 'PICC / central', shortLabel: 'PICC / Central', x: 52, y: 34, zone: 'prohibited',
+        info: 'IV tubing / central access path — independent/autonomous PICC management is prohibited.', meaning: 'PICC insertion and autonomous central-line management are prohibited. Conditional IV-related tasks require every prerequisite: legal authorization, certification, current order, agency authorization, validated competency, and required RN supervision.', action: 'If any prerequisite is missing: stop, protect the line/patient, notify the RN, and document. Do not independently manage the line.',
+        notify: 'RN for any line issues.', document: 'Observations, RN notification, instructions.', policyRefs: ['CL-SD-010'],
       },
       {
-        id: 'dc',
-        label: 'Discharge judgment',
-        cx: 370,
-        cy: 220,
-        info: 'PROHIBITED: independent discharge decisions. Contribute observations; authorized clinicians determine discharge.',
-        zone: 'prohibited',
-      },
-    ],
-    sourceLabels: [
-      { kind: 'California law', text: 'LVN vs RN practice boundaries (B&P framework)' },
-      { kind: 'Federal', text: 'Qualified clinician requirements for comprehensive assessment' },
-      { kind: 'Clinical judgment', text: 'Escalate; never improvise RN-only acts' },
+        id: 'dc', label: 'Discharge judgment', shortLabel: 'Discharge', x: 88, y: 22, zone: 'prohibited',
+        info: 'Patient resting on the sofa — discharge readiness is not an independent LVN decision.', meaning: 'Discharge readiness judgments are not independent LVN decisions.', action: 'Report status; do not independently discharge.',
+        notify: 'RN / case manager for discharge pathway.', document: 'Status reported; no independent discharge action.', policyRefs: ['42 CFR § 484.60'],
+      }
     ],
   },
   {
+
     id: 3,
+    shortName: 'Conditional',
     title: 'Conditional Practice: Supervised & Co-Signature Zone',
     subtitle: 'Skills you perform — but not without RN oversight structures',
     narration: [
-      'Between clearly authorized and clearly prohibited work sits the conditional zone: functions LVNs may perform only with defined RN oversight — co-signature, consultation, supervisory visit, or agency-specific gate. Rules here are contextual; agency policy often sets the operational clock and workflow.',
-      'In California home health practice, LVN clinical documentation commonly requires RN co-signature as the supervisory review mechanism. The co-signature affirms that documented care is consistent with the Plan of Care and that findings needing evaluation have been recognized. Exact timing windows (for example, same-day vs next-business-day review) are agency policy — not universal free-standing law. Follow your agency’s documented standard; if policy is silent, escalate rather than invent a deadline.',
-      'Supervisory structures also include RN availability for consultation and in-home supervisory activities required by federal CoPs and agency policy for skilled services and aide oversight. Treat stated intervals in training materials as guidance that must be reconciled to current agency policy and applicable Medicare CoP requirements — do not invent a personal schedule.',
-      'Complex procedures (certain wound technologies, high-risk meds, rarely performed skills) may sit in the conditional zone via the agency authorization matrix even when generically within vocational nursing. When in doubt: assess, document, call before you leave the home if findings are unexpected.',
+      'Conditional practice requires defined RN oversight: co-signature, consultation, supervisory contact, or agency gate. Unexpected findings are a classic trigger for consultation before leaving the home.',
+      'Co-signature timing is agency policy (CL-CD-003/004). Write notes as if the co-signing RN will challenge every conclusion.'
     ],
     keyPoints: [
-      {
-        icon: '✍️',
-        title: 'Co-signature workflow',
-        detail:
-          'RN review of LVN documentation is an oversight control. Exact timeframes = agency policy — follow the published standard.',
-      },
-      {
-        icon: '👁️',
-        title: 'Supervisory structures',
-        detail:
-          'RN consultation availability + required supervisory activities per CoP and agency policy. Confirm current intervals in P&P.',
-      },
-      {
-        icon: '📞',
-        title: 'Consultation protocol',
-        detail:
-          'Change from baseline, unexpected finding, or patient-expressed concern → contact supervising RN before leaving when clinically indicated.',
-      },
-      {
-        icon: '📁',
-        title: 'Authorization matrix',
-        detail:
-          'Agency P&P lists conditional procedures and who may perform them after competency. Review at onboarding and annually.',
-      },
+      { icon: '✍️', title: 'Co-signature workflow', detail: 'RN review is an oversight control. Timing is agency policy.' },
+      { icon: '📞', title: 'Consultation protocol', detail: 'Unexpected finding → contact RN before leaving when indicated.' },
+      { icon: '👁️', title: 'Supervisory structures', detail: 'Know the supervision model for each case type.' },
+      { icon: '📊', title: 'Authorization matrix', detail: 'Operational map of conditional skills and required gates.' }
     ],
-    clinicalTip:
-      'Write notes as if the co-signing RN will ask: “What did you see? What did you do? Why? What needs follow-up?” Complete documentation protects the patient, the RN, and you.',
-    scene: 'conditional-zone',
+    clinicalTip: 'Write notes as if the co-signing RN will ask: What did you see? What did you do? Why? What needs follow-up?',
+    sourceLabels: [
+      { kind: 'Documentation', text: 'CL-CD-003; CL-CD-004' }
+    ],
+    sceneImage: img04,
     hotspots: [
       {
-        id: 'cosign',
-        label: 'RN co-sign',
-        cx: 120,
-        cy: 140,
-        info: 'Conditional control: documentation review. Time window is agency policy — never skip because you are “experienced.”',
-        zone: 'conditional',
+        id: 'cosign', label: 'RN co-sign', shortLabel: 'RN Co-sign', x: 42, y: 86, zone: 'conditional',
+        info: 'Clipboard with the visit note awaiting RN review.', meaning: 'Co-signature is supervisory review, not a rubber stamp.', action: 'Submit complete notes promptly. Do not lock before required review.',
+        notify: 'Escalate if co-signature delayed beyond policy.', document: 'Submission timestamp, RN feedback, final co-signature status.', policyRefs: ['CL-CD-003', 'CL-CD-004', '42 CFR § 484.115(e)'],
       },
       {
-        id: 'consult',
-        label: 'RN consult',
-        cx: 250,
-        cy: 90,
-        info: 'Unexpected findings → call before improvising. Use on-call/DON if primary RN unreachable (agency escalation).',
-        zone: 'conditional',
+        id: 'consult', label: 'RN consult', shortLabel: 'RN Consult', x: 84, y: 70, zone: 'conditional',
+        info: 'Desk phone — real-time RN consultation path.', meaning: 'Conditional practice includes defined consultation structures.', action: 'Protect patient within current orders, contact RN, follow instructions.',
+        notify: 'Supervising RN (or on-call per escalation tree).', document: 'Findings, notification time, who was reached, instructions, action.', policyRefs: ['CL-CD-003', 'Agency escalation protocol'],
       },
       {
-        id: 'super',
-        label: 'Supervisory visit',
-        cx: 380,
-        cy: 140,
-        info: 'In-home supervisory activities follow CoP + agency policy. Purpose is care quality/safety review, not peer gossip.',
-        zone: 'conditional',
+        id: 'supervisory', label: 'Supervisory visit', shortLabel: 'Supervision', x: 64, y: 56, zone: 'conditional',
+        info: 'Laptop with clinical documentation — supervision structures live in the record.', meaning: 'Supervision is a structural requirement, not optional courtesy.', action: 'Know the supervision model for each case type before the visit.',
+        notify: 'RN when supervisory contact is required by policy.', document: 'Supervision contact completed when required; outcome documented.', policyRefs: ['42 CFR § 484.115(e)'],
       },
       {
-        id: 'matrix',
-        label: 'Auth matrix',
-        cx: 250,
-        cy: 240,
-        info: 'Conditional skills may require extra competency or dual presence. Check matrix before rare procedures.',
-        zone: 'conditional',
-      },
-    ],
-    sourceLabels: [
-      { kind: 'Agency policy', text: 'Co-signature timeframe & escalation tree' },
-      { kind: 'Federal', text: 'Home health supervision / personnel CoPs' },
-      { kind: 'California law', text: 'Practice under direction of RN/physician' },
+        id: 'matrix', label: 'Auth matrix', shortLabel: 'Auth Matrix', x: 50, y: 50, zone: 'conditional',
+        info: 'Tablet with the authorization workflow on the desk.', meaning: 'The authorization matrix is the operational map of conditional skills.', action: 'Check matrix before performing a borderline skill.',
+        notify: 'RN when matrix requires prior authorization.', document: 'Matrix condition checked; authorization status; action taken.', policyRefs: ['Agency authorization matrix'],
+      }
     ],
   },
   {
-    id: 4,
-    title: 'Delegation Principles: What You May Assign and to Whom',
-    subtitle: 'LVN authority over unlicensed personnel — and its strict limits',
-    narration: [
-      'Delegation is a regulated clinical function. LVNs may assign certain non-nursing assistive tasks to unlicensed personnel such as Home Health Aides — only when conditions are met, and only for tasks that are not reserved nursing acts.',
-      'Use a five-check framework before any delegation: (1) the task is within the UAP/HHA authorized role and the patient’s plan; (2) the aide is trained and currently competent for that task; (3) the patient’s condition is stable and predictable; (4) the outcome is reasonably foreseeable; (5) you remain available for supervision and follow-up appropriate to the setting. If any check fails, do not delegate — perform the task yourself or escalate to the RN.',
-      'Common home health pattern: HHA performs personal care, bathing, and exercise programs under the plan while the LVN assigns, observes when possible, and documents outcomes. LVNs do not delegate assessment, medication administration (except narrow self-administration frameworks under policy — never casual “they know how”), wound care, IV-related tasks, or any work requiring clinical judgment.',
-      'Practical rule: LVNs delegate tasks, not judgment. If correct performance requires a clinical decision — even a small one — the task stays with the licensed nurse. When an HHA reports a finding, the LVN evaluates the information and determines the clinical response.',
-    ],
-    keyPoints: [
-      {
-        icon: '✅',
-        title: 'Delegatable tasks',
-        detail:
-          'Personal hygiene, bathing, exercise programs, positioning, ambulation assistance — to trained, competent HHA per plan.',
-      },
-      {
-        icon: '❌',
-        title: 'Non-delegatable',
-        detail:
-          'Assessment, med administration, wound care, IV-related care, clinical decision-making — licensed nurse minimum.',
-      },
-      {
-        icon: '5️⃣',
-        title: 'Five-check rule',
-        detail:
-          'Role scope ✓ | Competency ✓ | Stability ✓ | Predictability ✓ | Supervision available ✓ — all required.',
-      },
-      {
-        icon: '📝',
-        title: 'Document delegation',
-        detail:
-          'Record task, to whom, patient status, and outcome. Silence in the note is a risk, not efficiency.',
-      },
-    ],
-    clinicalTip:
-      'Never feel pressured to delegate because of time constraints. If you cannot safely supervise a delegation, perform the task yourself and notify your supervisor about the workload concern.',
-    scene: 'delegation-tree',
-    hotspots: [
-      {
-        id: 'c1',
-        label: '1 Scope',
-        cx: 80,
-        cy: 100,
-        info: 'Is the task within HHA role and the patient plan? Nursing acts fail this check immediately.',
-        zone: 'neutral',
-      },
-      {
-        id: 'c2',
-        label: '2 Competency',
-        cx: 165,
-        cy: 100,
-        info: 'Is this aide currently competent for THIS task? Longevity on service ≠ universal competence.',
-        zone: 'neutral',
-      },
-      {
-        id: 'c3',
-        label: '3 Stability',
-        cx: 250,
-        cy: 100,
-        info: 'Is the patient stable and predictable today? Unstable patients stop delegation.',
-        zone: 'conditional',
-      },
-      {
-        id: 'c4',
-        label: '4 Predictable',
-        cx: 335,
-        cy: 100,
-        info: 'Is the outcome reasonably foreseeable? High uncertainty → licensed nurse performs.',
-        zone: 'neutral',
-      },
-      {
-        id: 'c5',
-        label: '5 Supervise',
-        cx: 420,
-        cy: 100,
-        info: 'Are you available for appropriate supervision/follow-up? If not, do not delegate.',
-        zone: 'neutral',
-      },
-      {
-        id: 'block',
-        label: 'Judgment block',
-        cx: 250,
-        cy: 240,
-        info: 'If the task requires clinical judgment, delegation is inappropriate even when other checks pass.',
-        zone: 'prohibited',
-      },
-    ],
-    sourceLabels: [
-      { kind: 'California law / BVNPT', text: 'Limits on LVN delegation to UAPs' },
-      { kind: 'Agency policy', text: 'HHA assignment & supervision procedures' },
-      { kind: 'Professional guidance', text: 'Delegate tasks, never judgment' },
-    ],
-  },
-  {
-    id: 5,
-    title: 'Scope Violations: Consequences, Reporting & Recovery',
-    subtitle: 'What happens when boundaries are crossed — and how to respond',
-    narration: [
-      'Scope violations create simultaneous regulatory, legal, and institutional risk. Understanding all three is not about fear — it is about making scope adherence a non-negotiable professional standard.',
-      'Regulatory: The California Board of Vocational Nursing and Psychiatric Technicians (BVNPT) investigates complaints and may impose discipline ranging from reprimand to probation, suspension, or license revocation. Scope violations causing patient harm are treated with maximum seriousness. Public license records can reflect board actions.',
-      'Legal: Performing an act outside your scope — even if you are “technically capable” — is practicing beyond your license. Patient harm can create personal malpractice exposure; professional liability coverage may exclude out-of-scope acts. Agency carriers may also disclaim coverage for unauthorized practice.',
-      'Institutional: Agencies conduct incident review, corrective action, and mandatory reporting where required. Federal survey risk attaches when personnel practice outside qualifications (CoP). Self-protection protocol under pressure: refuse clearly → document the request and your refusal → notify supervisor/DON → leave a complete clinical record. Do not silently comply and hope no one notices.',
-    ],
-    keyPoints: [
-      {
-        icon: '🏛️',
-        title: 'BVNPT discipline',
-        detail:
-          'Reprimand through revocation. Harm-linked scope violations carry highest license risk.',
-      },
-      {
-        icon: '⚖️',
-        title: 'Malpractice exposure',
-        detail:
-          'Out-of-scope acts may be uninsured. Stay inside license and orders.',
-      },
-      {
-        icon: '📢',
-        title: 'Reporting pathways',
-        detail:
-          'Agency incident systems; board reporting when required; survey implications for CoP personnel standards.',
-      },
-      {
-        icon: '🛡️',
-        title: 'Self-protection protocol',
-        detail:
-          'Refuse → Document → Notify → Clear clinical record. Documentation is your defense.',
-      },
-    ],
-    clinicalTip:
-      'If a supervisor or family member pressures an out-of-scope act, state: “I cannot safely perform that within my scope of practice. I will document this and notify my DON.” Then do exactly that.',
-    scene: 'consequences-map',
-    hotspots: [
-      {
-        id: 'bvnpt',
-        label: 'BVNPT',
-        cx: 110,
-        cy: 120,
-        info: 'California licensing board for LVNs — investigation and discipline authority for scope violations.',
-        zone: 'prohibited',
-      },
-      {
-        id: 'civil',
-        label: 'Civil risk',
-        cx: 250,
-        cy: 80,
-        info: 'Personal liability risk if patient harm follows out-of-scope practice; coverage may not apply.',
-        zone: 'prohibited',
-      },
-      {
-        id: 'agency',
-        label: 'Agency action',
-        cx: 390,
-        cy: 120,
-        info: 'Incident report, RCA, corrective action, possible termination, and required external reports.',
-        zone: 'conditional',
-      },
-      {
-        id: 'shield',
-        label: 'Protect path',
-        cx: 250,
-        cy: 230,
-        info: 'Refuse + document + escalate. Protects patient, license, and organization simultaneously.',
-        zone: 'authorized',
-      },
-    ],
-    sourceLabels: [
-      { kind: 'California law', text: 'BVNPT disciplinary authority' },
-      { kind: 'Federal', text: 'CoP personnel qualification enforcement' },
-      { kind: 'Agency policy', text: 'Incident reporting & chain of command' },
-    ],
-  },
-  {
-    id: 6,
-    title: 'Field Application: Scope Analysis in Real Scenarios',
-    subtitle: 'Putting the boundary map to work — case-by-case practice',
-    narration: [
-      'Clinical competence in scope means rapid, accurate determinations in real field conditions — patient in front of you, family asking questions, status changing. Practice the three-zone analysis on every unexpected request.',
-      'Scenario A — Changed wound: You arrive for ordered dressing change and find marked deterioration (depth, extent, malodorous exudate new since last visit). Family wants “more aggressive” products from the bag. Analysis: performing the ordered dressing may be authorized, but significant change requires RN notification before modifying the protocol. Assess and document parameters, call supervising RN, await guidance. Do not redesign wound care or stage beyond your authorized role.',
-      'Scenario B — PCA request: Family asks you to adjust morphine PCA because “it keeps beeping and pain is uncontrolled.” Analysis: categorically prohibited. Assess pain, airway, and respiratory status; silence alarm only as device policy allows for safety; document; escalate immediately to RN/physician. Do not change controlled-analgesia programming.',
-      'Scenario C — HHA med request: Long-term HHA asks to apply prescribed topical antibiotic “because she knows how.” Analysis: medication application is a nursing act — not delegated casually. Decline, perform the application yourself, document the request and response, and coach the HHA on role limits. Passing a knowledge quiz never replaces observed competency for high-risk skills.',
-    ],
-    keyPoints: [
-      {
-        icon: '🔍',
-        title: 'Scenario A: changed wound',
-        detail:
-          'Authorized to assess/document ordered care. Prohibited from modifying orders. Required to escalate change.',
-      },
-      {
-        icon: '💊',
-        title: 'Scenario B: PCA adjustment',
-        detail:
-          'Prohibited. Safety assessment → document → escalate to RN/MD immediately.',
-      },
-      {
-        icon: '🤝',
-        title: 'Scenario C: HHA request',
-        detail:
-          'Topical medication = nursing act. Cannot delegate. Perform, document, explain scope.',
-      },
-      {
-        icon: '🎯',
-        title: 'Universal field rule',
-        detail:
-          'When in doubt → Assess → Document → Escalate. Never improvise outside the authorized zone.',
-      },
-    ],
-    clinicalTip:
-      'Field three-question check: (1) Do I have a written order/current POC item? (2) Is this skill on my validated competency list? (3) Is the patient still within expected/stable parameters? All yes → proceed. Any no → stop and call.',
-    scene: 'scenario-field-lab',
-    hotspots: [
-      {
-        id: 'sa',
-        label: 'A Wound change',
-        cx: 100,
-        cy: 150,
-        info: 'Document + RN call before changing protocol. Implement only ordered care pending guidance.',
-        zone: 'conditional',
-      },
-      {
-        id: 'sb',
-        label: 'B PCA request',
-        cx: 250,
-        cy: 150,
-        info: 'Refuse adjustment. Assess safety, document, escalate. Medication order changes are not LVN acts.',
-        zone: 'prohibited',
-      },
-      {
-        id: 'sc',
-        label: 'C HHA meds',
-        cx: 400,
-        cy: 150,
-        info: 'Decline delegation of topical antibiotic. LVN performs and documents teaching about role limits.',
-        zone: 'authorized',
-      },
-      {
-        id: 'rule',
-        label: '3-question gate',
-        cx: 250,
-        cy: 260,
-        info: 'Order? Competency? Stability? Missing any one → stop / escalate.',
-        zone: 'neutral',
-      },
-    ],
-    sourceLabels: [
-      { kind: 'Clinical judgment', text: 'Three-zone field analysis' },
-      { kind: 'Agency policy', text: 'Escalation & on-call procedures' },
-      { kind: 'California law', text: 'Stay within B&P § 2859 authority' },
-    ],
-  },
-];
 
-// ─── QUIZ (balanced A3 B3 C2 D2) ─────────────────────────────────────────────
-// correct indices: 0,2,0,1,1,0,2,3,3,1 → A=3 B=3 C=2 D=2
+    id: 4,
+    shortName: 'Decision',
+    title: 'Decision Frame: First / Continue / Stop / Notify / Document',
+    subtitle: 'A practical five-step checklist for every field decision',
+    narration: [
+      'First: current order? Continue: competency + expected condition? Stop: any mismatch. Notify: supervising RN. Document: objective findings, actions, instructions.',
+      'When steps conflict, the answer is always stop and notify. The three-question gate (order / competency / condition) is the operational heart of the frame.'
+    ],
+    keyPoints: [
+      { icon: '1', title: 'First', detail: 'Confirm current order / POC authorization' },
+      { icon: '2', title: 'Continue', detail: 'Competency + expected condition' },
+      { icon: '3', title: 'Stop', detail: 'Mismatch or unexpected finding' },
+      { icon: '4', title: 'Notify + Document', detail: 'RN path + objective note' }
+    ],
+    clinicalTip: 'When steps conflict, the answer is always stop and notify.',
+    sourceLabels: [
+      { kind: 'Clinical judgment', text: 'Five-step field decision frame' }
+    ],
+    sceneImage: img05,
+    hotspots: [
+      {
+        id: 'first', label: 'First', shortLabel: 'First', x: 48, y: 68, zone: 'neutral',
+        info: 'Tablet showing the vitals trend — confirm the current order first.', meaning: 'First step always verifies current authorization.', action: 'Check order/POC item before any non-routine action.',
+        notify: 'RN if order is missing or ambiguous.', document: 'Order verified or gap identified.', policyRefs: ['CL-CD-001'],
+      },
+      {
+        id: 'continue', label: 'Continue', shortLabel: 'Continue', x: 78, y: 62, zone: 'authorized',
+        info: 'BP cuff on the patient’s arm — continue only if skill and condition still fit.', meaning: 'Continue only when competency and expected condition are both true.', action: 'Proceed with ordered care when the three-yes gate passes.',
+        notify: 'RN if condition is not expected.', document: 'Care continued under current authorization.', policyRefs: ['CL-SD-001'],
+      },
+      {
+        id: 'stop', label: 'Stop', shortLabel: 'Stop', x: 40, y: 52, zone: 'prohibited',
+        info: 'Sphygmomanometer in the nurse’s hands — stop if readings or findings mismatch the plan.', meaning: 'Stop is a safety action, not a failure.', action: 'Interrupt the action path when any gate fails.',
+        notify: 'RN with the specific mismatch.', document: 'What was stopped, why, when, who was notified.', policyRefs: ['CL-CD-003'],
+      },
+      {
+        id: 'notify', label: 'Notify', shortLabel: 'Notify', x: 12, y: 78, zone: 'conditional',
+        info: 'Open path toward escalation — contact the supervising RN.', meaning: 'Notification must be timely and objective.', action: 'Call with findings, current status, and what you need.',
+        notify: 'Supervising RN / on-call.', document: 'Time called, who reached, content of report, instructions.', policyRefs: ['CL-CD-003'],
+      },
+      {
+        id: 'document', label: 'Document', shortLabel: 'Document', x: 58, y: 82, zone: 'neutral',
+        info: 'Tablet workspace for the contemporaneous note.', meaning: 'Documentation closes the clinical loop.', action: 'Write objective findings, actions, notifications, and response.',
+        notify: 'N/A — documentation is always required.', document: 'Complete contemporaneous note with all required elements.', policyRefs: ['CL-CD-004'],
+      },
+      {
+        id: 'gate', label: '3-question gate', shortLabel: '3-Q Gate', x: 50, y: 94, zone: 'conditional',
+        info: 'Shared clinical space — run Order? Competency? Expected condition?', meaning: 'Three yes answers are required before continuing non-routine care.', action: 'Run the gate on every change-in-condition moment.',
+        notify: 'RN when any answer is no or uncertain.', document: 'Gate answers and resulting action path.', policyRefs: ['CL-CD-001', 'CL-CD-003'],
+      }
+    ],
+  },
+  {
+
+    id: 5,
+    shortName: 'Accountable',
+    title: 'Consequences & Professional Accountability',
+    subtitle: 'Why scope adherence protects patients, your license, and the agency',
+    narration: [
+      'Scope violations can produce patient harm, Board action, survey deficiencies, and personal liability. Documented competence, POC adherence, and timely escalation are the three practical defenses.',
+      'If pressured to perform an out-of-scope task, document the request and refusal, then escalate through the chain of command.'
+    ],
+    keyPoints: [
+      { icon: '🛡️', title: 'Patient protection', detail: 'Scope limits exist to protect patients.' },
+      { icon: '📜', title: 'License protection', detail: 'Practicing outside B&P § 2859 risks Board action.' },
+      { icon: '🏢', title: 'Agency protection', detail: 'Surveyors examine personnel qualification compliance.' },
+      { icon: '✅', title: 'Protect path', detail: 'Competence + POC adherence + timely escalation.' }
+    ],
+    clinicalTip: 'If pressured to perform an out-of-scope task, document the request and refusal, then escalate.',
+    sourceLabels: [
+      { kind: 'CA law', text: 'B&P § 2859 enforcement' },
+      { kind: 'Federal', text: '42 CFR § 484.115(e)' }
+    ],
+    sceneImage: img06,
+    hotspots: [
+      {
+        id: 'patient', label: 'Patient safety', shortLabel: 'Patient Safety', x: 72, y: 88, zone: 'authorized',
+        info: 'Patient resting on the sofa — primary purpose of scope limits.', meaning: 'Scope boundaries exist to prevent harm.', action: 'Choose the safer authorized path over speed.',
+        notify: 'RN whenever safety and scope conflict.', document: 'Safety concern, action taken, notification.', policyRefs: ['CA B&P § 2859'],
+      },
+      {
+        id: 'license', label: 'LVN license', shortLabel: 'LVN License', x: 28, y: 88, zone: 'conditional',
+        info: 'Phone at the nurse’s ear — the path that protects the license is escalation, not silence.', meaning: 'Unauthorized practice risks Board action against the license.', action: 'Stay inside B&P § 2859 and agency policy.',
+        notify: 'Supervisor if pressured to act outside scope.', document: 'Request refused if out of scope; escalation documented.', policyRefs: ['CA B&P § 2859', 'BVNPT'],
+      },
+      {
+        id: 'agency', label: 'Agency survey', shortLabel: 'Agency Survey', x: 18, y: 88, zone: 'neutral',
+        info: 'Home environment under survey standards — agencies are judged on personnel qualifications.', meaning: 'Scope violations can create survey deficiencies for the agency.', action: 'Follow qualified-role rules and documentation standards.',
+        notify: 'Clinical leadership for systemic pressure issues.', document: 'Practice stayed within assigned role; exceptions escalated.', policyRefs: ['42 CFR § 484.115(e)'],
+      },
+      {
+        id: 'protect', label: 'Protect path', shortLabel: 'Safe Path', x: 82, y: 88, zone: 'authorized',
+        info: 'Raised hand — the deliberate stop that restores the safe path.', meaning: 'Competence, POC adherence, and timely escalation protect patient, license, and agency.', action: 'Stay competent, follow the POC, escalate early.',
+        notify: 'RN early when findings drift from expected.', document: 'Competence applied, POC followed, escalation completed when needed.', policyRefs: ['CA B&P § 2859', '42 CFR § 484.115(e)'],
+      }
+    ],
+  },
+  {
+
+    id: 6,
+    shortName: 'Practice',
+    title: 'Module Practice Complete',
+    subtitle: 'Classify cases — then take the knowledge check',
+    narration: [
+      'Classify tasks into authorized, conditional, or prohibited; apply the five-step decision frame; escalate when findings exceed LVN scope.',
+      'The knowledge check is a separate page. It validates knowledge only. Practical competency remains a separate skills sign-off.'
+    ],
+    keyPoints: [
+      { icon: '✓', title: 'Three zones', detail: 'Authorized / Conditional / Prohibited' },
+      { icon: '✓', title: 'Decision frame', detail: 'First → Continue → Stop → Notify → Document' },
+      { icon: '✓', title: 'Quiz ≠ competency', detail: 'Knowledge only. Practical sign-off is separate.' },
+      { icon: '✓', title: 'When in doubt', detail: 'Stop and call the RN.' }
+    ],
+    clinicalTip: 'When in doubt, stop and call the RN.',
+    sourceLabels: [
+      { kind: 'Module', text: 'LVN-002 knowledge complete' }
+    ],
+    sceneImage: img07,
+    hotspots: [
+      {
+        id: 'a', label: 'Authorized', shortLabel: 'Authorized', x: 42, y: 48, zone: 'authorized',
+        info: 'Left column on the teaching card — ordered care with expected findings.', meaning: 'Order + competency + expected condition = authorized implementation.', action: 'Perform ordered care; document; escalate only if variance.',
+        notify: 'RN only if findings are unexpected.', document: 'Care performed, measurements, response.', policyRefs: ['CL-SD-011'],
+      },
+      {
+        id: 'b', label: 'Conditional', shortLabel: 'Conditional', x: 52, y: 48, zone: 'conditional',
+        info: 'Center column — unexpected symptom or request needing RN direction.', meaning: 'Conditional path requires consultation.', action: 'Protect within current orders; notify RN; follow instructions.',
+        notify: 'Supervising RN before leaving when indicated.', document: 'Findings, notification time, instructions, action.', policyRefs: ['CL-CD-003'],
+      },
+      {
+        id: 'c', label: 'Prohibited', shortLabel: 'Prohibited', x: 62, y: 48, zone: 'prohibited',
+        info: 'Right column — independent POC change or OASIS completion.', meaning: 'Hard stop — outside LVN authority.', action: 'Decline, explain boundary, notify RN, continue only authorized care.',
+        notify: 'Supervising RN immediately.', document: 'Request, boundary explained, RN notification, authorized care continued.', policyRefs: ['42 CFR § 484.55', '42 CFR § 484.60', 'CA B&P § 2859'],
+      },
+      {
+        id: 'gate', label: '3-question gate', shortLabel: '3-Q Gate', x: 50, y: 92, zone: 'neutral',
+        info: 'Nursing bag on the sofa — gear is ready; judgment still runs the gate.', meaning: 'Always re-run order / competency / condition before acting.', action: 'If any answer is no → stop and notify.',
+        notify: 'RN when uncertain.', document: 'Gate result and chosen path.', policyRefs: ['CL-CD-001'],
+      }
+    ],
+  }
+];
 
 const QUIZ: QuizQuestion[] = [
   {
@@ -721,29 +436,29 @@ const QUIZ: QuizQuestion[] = [
   },
   {
     id: 3,
-    stem: 'An LVN considers delegating a task to an HHA. Which condition must be met BEFORE delegation is appropriate?',
+    stem: 'Before continuing a non-routine intervention during a home visit, which three-yes gate must the LVN confirm?',
     options: [
-      'The LVN has worked with the HHA for at least six months',
-      'The patient’s condition is stable and predictable',
-      'The task requires clinical judgment appropriate to LVN level',
-      'The RN has pre-approved each individual minute of the visit',
+      'Patient preference, family consent, and travel time remaining',
+      'Current order, validated competency, and expected patient condition',
+      'Prior identical visit, available supplies, and a signed waiver',
+      'Verbal approval from any licensed clinician on the care team',
     ],
     correct: 1,
     rationale:
-      'One of the five required delegation conditions is that the patient’s condition is stable and predictable. Tasks requiring clinical judgment are not delegable to unlicensed personnel. Tenure with an aide and blanket RN “pre-approval” of every minute are not substitutes for the five-check framework.',
+      'The field decision frame taught in this module requires three yes answers before continuing: a current order/POC authorization, validated competency for the skill, and an expected patient condition. Any no → stop and notify the RN.',
   },
   {
     id: 4,
     stem: 'A patient’s family member — who is also a licensed LVN — asks to manage the patient’s PICC line during the home visit. The visiting agency LVN should:',
     options: [
       'Allow it since both parties are LVNs and the family knows the patient best',
-      'Decline — PICC line management is outside LVN home-health authority and cannot be authorized by informal family license status',
+      'Decline independent/autonomous PICC management; protect the line, notify the supervising RN, and document — family license status does not authorize the agency LVN to facilitate out-of-scope care',
       'Allow it if the family LVN shows a current wallet card',
       'Obtain a verbal physician OK by phone and then hand supplies to the family LVN',
     ],
     correct: 1,
     rationale:
-      'PICC/central line management is outside LVN home-health scope. A relative’s LVN license does not create an employment/practice relationship that authorizes the agency LVN to facilitate out-of-scope care. Verbal workarounds do not expand license.',
+      'Independent PICC insertion and autonomous central-line management are prohibited. Narrowly defined IV-related tasks are conditional only when every prerequisite exists (legal authorization, certification, current order, agency authorization, validated competency, required RN supervision). A relative’s LVN license does not create those prerequisites for the agency visit. Stop, protect the patient, notify the RN, and document.',
   },
   {
     id: 5,
@@ -799,1075 +514,719 @@ const QUIZ: QuizQuestion[] = [
   },
   {
     id: 9,
-    stem: 'Under the five-check delegation framework, which scenario makes delegation to an HHA INAPPROPRIATE even if other conditions appear met?',
+    stem: 'A patient asks the LVN to increase the frequency of a medication that is already on the current Plan of Care. What is the correct action?',
     options: [
-      'The patient has been on service for less than 30 days',
-      'Completing the task correctly requires the HHA to make a clinical judgment',
-      'The LVN will be in the home at the time of the task',
-      'The patient prefers the HHA to perform the task',
+      'Adjust the frequency because the patient requested it and appears stable',
+      'Document the request, continue the ordered frequency when safe, and notify the supervising RN',
+      'Tell the patient a decision will be made at the next supervisory visit only',
+      'Discontinue the medication until a new written order arrives',
     ],
     correct: 1,
     rationale:
-      'Delegation covers tasks, not judgment. If performance requires clinical assessment or decision-making, the task stays with the licensed nurse regardless of patient preference, length of stay, or LVN presence.',
+      'LVNs implement the Plan of Care; they do not independently modify orders or the POC. Document the request, continue authorized care when safe, and escalate to the RN for the order workflow.',
   },
 ];
 
-// Verify distribution at module load (dev safety)
-const _dist = QUIZ.reduce(
-  (acc, q) => {
-    acc[q.correct] = (acc[q.correct] || 0) + 1;
-    return acc;
-  },
-  {} as Record<number, number>,
-);
-if (typeof console !== 'undefined') {
-  // A3 B3 C2 D2 expected
-  void _dist;
+const STYLES = `
+.lvn002,.lvn002 *{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;box-sizing:border-box}
+@keyframes lvn002-pop{0%{transform:scale(.96);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes lvn002-ping{75%,100%{transform:scale(1.75);opacity:0}}
+@keyframes lvn002-slide{0%{transform:translateX(24px);opacity:0}100%{transform:translateX(0);opacity:1}}
+.lvn002-shell{position:fixed;inset:0;display:flex;flex-direction:column;background:#F8FAFC;color:#2D3748;z-index:40}
+.lvn002-top{height:64px;background:#fff;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
+.lvn002-brand{display:flex;align-items:center;gap:8px;color:#0F5B54;font-weight:800;font-size:12px;letter-spacing:.12em;text-transform:uppercase;flex-shrink:0}
+.lvn002-tabs{display:flex;gap:6px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none}
+.lvn002-tabs::-webkit-scrollbar{display:none}
+.lvn002-tab{border:0;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;background:transparent;color:#64748B;min-height:44px}
+.lvn002-tab.active{background:#0F5B54;color:#fff;box-shadow:0 6px 16px rgba(15,91,84,.2)}
+.lvn002-tab.quiz-tab{border:1px solid #F26D33;color:#F26D33}
+.lvn002-tab.quiz-tab.active{background:#F26D33;color:#fff;border-color:#F26D33}
+.lvn002-exit{flex-shrink:0;border-radius:10px;border:1px solid #F26D33;background:#fff;color:#F26D33;padding:8px 16px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;min-height:44px}
+.lvn002-work{flex:1;min-height:0;display:flex;gap:0;padding:16px}
+.lvn002-left{width:42%;min-width:280px;max-width:520px;overflow:auto;background:#fff;border:1px solid #E2E8F0;border-radius:16px 0 0 16px;padding:22px}
+.lvn002-right{flex:1;min-width:0;background:#fff;border:1px solid #E2E8F0;border-left:0;border-radius:0 16px 16px 0;padding:12px;display:flex}
+.lvn002-stage-wrap{width:100%;height:100%;min-height:0;display:grid;place-items:center}
+.lvn002-stage{position:relative;width:min(100%,calc(100cqh * 16 / 13));max-width:100%;max-height:100%;aspect-ratio:16/13;overflow:hidden;border-radius:14px;border:1px solid #E2E8F0;background:#fff;box-shadow:0 12px 36px rgba(15,91,84,.1)}
+@supports not (width:1cqh){.lvn002-stage{width:100%;height:auto;aspect-ratio:16/13;max-height:100%}}
+.lvn002-stage img.scene{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.lvn002-hotspot{position:absolute;z-index:10;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:5px;border:0;background:transparent;cursor:pointer;padding:0;min-width:48px;min-height:48px}
+.lvn002-hotspot .orb{position:relative;width:48px;height:48px;min-width:48px;min-height:48px;border-radius:50%;display:grid;place-items:center;border:3px solid #fff;box-shadow:0 8px 18px rgba(0,0,0,.18);color:#fff;font-weight:800}
+.lvn002-hotspot .ping{position:absolute;inset:0;border-radius:50%;background:#F26D33;animation:lvn002-ping 1.2s cubic-bezier(0,0,.2,1) 2;opacity:.5;pointer-events:none}
+.lvn002-hotspot .tag{background:rgba(255,255,255,.96);padding:5px 9px;border-radius:8px;font-size:11px;font-weight:800;color:#0F5B54;border:1px solid #EEF4F3;box-shadow:0 3px 10px rgba(0,0,0,.08);white-space:nowrap;letter-spacing:.02em;max-width:140px;line-height:1.2}
+.lvn002-hotspot:not(.done).guided{/* only next incomplete gets guided class */}
+.lvn002-hotspot:focus-visible .orb{outline:3px solid #fff;outline-offset:3px;box-shadow:0 0 0 7px rgba(15,91,84,.4)}
+.lvn002-drawer-bg{position:absolute;inset:0;z-index:30;background:rgba(15,91,84,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:14px;animation:lvn002-pop .3s cubic-bezier(.16,1,.3,1)}
+.lvn002-drawer{width:min(460px,100%);max-height:min(88%,620px);overflow:auto;background:#fff;border-radius:16px;border:2px solid #EEF4F3;box-shadow:0 24px 60px rgba(0,0,0,.22)}
+.lvn002-bot{height:80px;background:#fff;border-top:1px solid #E2E8F0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;gap:12px}
+.lvn002-bot button.nav{border:0;background:transparent;color:#64748B;font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 8px}
+.lvn002-bot button.nav:disabled{opacity:.35;cursor:not-allowed}
+.lvn002-bot button.next{background:#F26D33;color:#fff;border:0;border-radius:10px;padding:12px 20px;font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(242,109,51,.28);min-height:44px}
+.lvn002-quiz-page{flex:1;min-height:0;overflow:auto;padding:20px;display:flex;justify-content:center}
+.lvn002-quiz-card{width:min(760px,100%);animation:lvn002-slide .35s cubic-bezier(.16,1,.3,1)}
+@media (max-width:900px){
+  .lvn002-work{flex-direction:column;overflow:auto;padding:10px;gap:10px}
+  .lvn002-left,.lvn002-right{width:100%;max-width:none;border-radius:12px;border:1px solid #E2E8F0}
+  .lvn002-right{min-height:360px}
+  .lvn002-left{max-height:42vh}
+  .lvn002-top{padding:0 10px;gap:8px}
+  .lvn002-tab{padding:8px 10px;font-size:12px}
+  .lvn002-bot{padding:0 12px;height:72px}
+  .lvn002-hotspot .tag{font-size:11px;max-width:110px}
 }
+@media (max-width:420px){
+  .lvn002-brand span.brand-text{display:none}
+  .lvn002-exit{padding:8px 10px;font-size:11px}
+  .lvn002-stage{border-radius:10px}
+}
+@media (prefers-reduced-motion:reduce){
+  .lvn002-hotspot .ping,.lvn002-drawer-bg,.lvn002-quiz-card,.lvn002-path-step{animation:none!important}
+  .lvn002-quiz-card{animation:none!important}
+  .lvn002-rm-transition,.lvn002-complete-overlay{transition:none!important;animation:none!important}
+}
+.lvn002-path-overlay{position:absolute;left:8px;bottom:52px;z-index:9;display:flex;flex-direction:column;gap:6px;width:min(200px,42%);pointer-events:none}
+.lvn002-path-card{padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.96);border:1px solid #E2E8F0;box-shadow:0 4px 14px rgba(0,0,0,.1);font-size:11px;line-height:1.35}
+.lvn002-path-card strong{display:block;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px}
+.lvn002-process-rail{position:absolute;left:8px;top:52px;z-index:7;display:flex;flex-direction:column;gap:6px;width:min(148px,36%);pointer-events:none}
+.lvn002-zone-legend{position:absolute;left:50%;bottom:44px;transform:translateX(-50%);z-index:9;display:flex;gap:6px;justify-content:center;pointer-events:none;flex-wrap:wrap;max-width:94%}
+.lvn002-zone-legend{position:absolute;left:10px;right:10px;bottom:48px;z-index:9;display:flex;gap:8px;justify-content:center;pointer-events:none;flex-wrap:wrap}
+.lvn002-zone-chip{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.95);border:1px solid #E2E8F0;font-size:11px;font-weight:800;display:inline-flex;align-items:center;gap:6px}
 
-// ─── STYLES ─────────────────────────────────────────────────────────────────
+.lvn002-process-node{position:absolute;z-index:7;transform:translate(-50%,-50%);pointer-events:none;max-width:150px;padding:7px 9px;border-radius:10px;background:rgba(255,255,255,.96);border:1px solid #E2E8F0;box-shadow:0 4px 12px rgba(0,0,0,.1);font-size:12px;line-height:1.35;color:#2D3748;text-align:left}
+.lvn002-process-node strong{display:block;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px;color:#0F5B54}
+.lvn002-process-node ul{margin:0;padding-left:14px}
+.lvn002-process-node li{margin:0}
+.lvn002-gate-node{position:absolute;z-index:7;left:50%;bottom:8px;transform:translateX(-50%);pointer-events:none;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:92%}
+.lvn002-gate-chip{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.96);border:1px solid #C8DFDC;font-size:11px;font-weight:800;color:#0F5B54;box-shadow:0 3px 10px rgba(0,0,0,.08)}
+.lvn002-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.lvn002-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+`;
 
-const shell: React.CSSProperties = {
-  fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif',
-  color: '#E5E7EB',
-  background: '#0B1020',
-  minHeight: '100vh',
-  display: 'flex',
-  flexDirection: 'column',
-};
-
-const card: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.08)',
-  borderRadius: 12,
-  padding: 14,
-};
-
-// ─── SCENE COMPONENTS ───────────────────────────────────────────────────────
-
-function FeedbackBanner({
-  title,
-  body,
-  zone,
-}: {
-  title: string;
-  body: string;
-  zone?: Hotspot['zone'];
-}) {
-  const colors: Record<string, string> = {
-    authorized: '#10B981',
-    conditional: '#F59E0B',
-    prohibited: '#EF4444',
-    neutral: '#8B5CF6',
-  };
-  const c = colors[zone || 'neutral'];
+function FeedbackBlock({ label, body, accent, icon }: { label: string; body: string; accent?: boolean; icon?: React.ReactNode }) {
   return (
-    <div
-      style={{
-        position: 'absolute',
-        left: 12,
-        right: 12,
-        bottom: 12,
-        background: 'rgba(15,23,42,0.94)',
-        border: `1px solid ${c}`,
-        borderRadius: 10,
-        padding: '10px 12px',
-        boxShadow: `0 0 24px ${c}33`,
-        zIndex: 5,
-      }}
-    >
-      <div style={{ fontSize: 12, fontWeight: 800, color: c, marginBottom: 4 }}>{title}</div>
-      <div style={{ fontSize: 12, lineHeight: 1.45, color: '#E5E7EB' }}>{body}</div>
+    <div style={{ padding: 12, borderRadius: 12, border: `1px solid ${accent ? CI.tealMuted : CI.border}`, background: accent ? CI.tealSoft : CI.bg }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', color: accent ? CI.teal : CI.muted, marginBottom: 6 }}>{icon}{label}</div>
+      <div style={{ fontSize: 15.5, lineHeight: 1.6, color: CI.ink }}>{body}</div>
     </div>
   );
 }
 
-function HotspotDot({
-  hs,
-  active,
-  onSelect,
-  pulse,
-}: {
-  hs: Hotspot;
-  active: boolean;
-  onSelect: (id: string) => void;
-  pulse?: boolean;
+function ClinicalFeedbackOverlay({ hotspot, onClose, onComplete, triggerRef }: {
+  hotspot: Hotspot; onClose: () => void; onComplete: () => void; triggerRef: React.RefObject<HTMLButtonElement | null>;
 }) {
-  const zoneColor: Record<string, string> = {
-    authorized: '#10B981',
-    conditional: '#F59E0B',
-    prohibited: '#EF4444',
-    neutral: '#A78BFA',
-  };
-  const fill = zoneColor[hs.zone || 'neutral'];
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const descId = useId();
+  const z = ZONE[hotspot.zone];
+  useEffect(() => { const t = window.setTimeout(() => closeRef.current?.focus(), 20); return () => window.clearTimeout(t); }, [hotspot.id]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); onClose(); triggerRef.current?.focus(); } };
+    document.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow; document.body.style.overflow = 'hidden';
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prev; };
+  }, [onClose, triggerRef]);
+  useEffect(() => {
+    const root = dialogRef.current; if (!root) return;
+    const trap = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const nodes = root.querySelectorAll<HTMLElement>('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
+      if (!nodes.length) return;
+      const first = nodes[0], last = nodes[nodes.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    root.addEventListener('keydown', trap); return () => root.removeEventListener('keydown', trap);
+  }, []);
   return (
-    <g
-      onClick={() => onSelect(hs.id)}
-      style={{ cursor: 'pointer' }}
-      role="button"
-      aria-label={hs.label}
-    >
-      <circle
-        cx={hs.cx}
-        cy={hs.cy}
-        r={(hs.r || 16) + (active ? 4 : 0)}
-        fill={`${fill}33`}
-        stroke={fill}
-        strokeWidth={active ? 3 : 2}
-      >
-        {pulse ? (
-          <animate attributeName="r" values="14;20;14" dur="2.2s" repeatCount="indefinite" />
-        ) : null}
-      </circle>
-      <circle cx={hs.cx} cy={hs.cy} r={5} fill={fill} />
-      <text
-        x={hs.cx}
-        y={hs.cy + 28}
-        textAnchor="middle"
-        fill="#F8FAFC"
-        fontSize={10}
-        fontWeight={700}
-      >
-        {hs.label}
-      </text>
-    </g>
-  );
-}
-
-function SceneFrame({
-  children,
-  title,
-}: {
-  children: React.ReactNode;
-  title: string;
-}) {
-  return (
-    <div
-      style={{
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        minHeight: 360,
-        background:
-          'radial-gradient(ellipse at 30% 20%, rgba(124,58,237,0.25), transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(79,70,229,0.2), transparent 45%), #0F172A',
-        borderRadius: 16,
-        border: '1px solid rgba(167,139,250,0.25)',
-        overflow: 'hidden',
-      }}
-    >
-      <div
-        style={{
-          position: 'absolute',
-          top: 10,
-          left: 12,
-          fontSize: 11,
-          fontWeight: 800,
-          letterSpacing: 0.6,
-          color: '#C4B5FD',
-          textTransform: 'uppercase',
-        }}
-      >
-        {title}
+    <div className="lvn002-drawer-bg" onClick={(e) => { if (e.target === e.currentTarget) { onClose(); triggerRef.current?.focus(); } }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descId} className="lvn002-drawer">
+        <div style={{ padding: 16, borderBottom: `1px solid ${CI.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, position: 'sticky', top: 0, background: 'rgba(255,255,255,.96)', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: z.color, color: '#fff', display: 'grid', placeItems: 'center' }}>
+              {hotspot.zone === 'prohibited' ? <XCircle size={18} /> : hotspot.zone === 'conditional' ? <AlertTriangle size={18} /> : <CheckCircle2 size={18} />}
+            </div>
+            <div>
+              <h2 id={titleId} style={{ margin: 0, fontSize: 15, fontWeight: 800, color: CI.teal }}>{hotspot.label}</h2>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: CI.muted }}>{z.label} practice</div>
+            </div>
+          </div>
+          <button ref={closeRef} type="button" aria-label="Close" onClick={() => { onClose(); triggerRef.current?.focus(); }} style={{ width: 44, height: 44, minWidth: 44, minHeight: 44, borderRadius: '50%', border: `1px solid ${CI.border}`, background: CI.bg, cursor: 'pointer', display: 'grid', placeItems: 'center' }}><X size={18} color={CI.muted} /></button>
+        </div>
+        <p id={descId} style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>Clinical feedback</p>
+        <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <FeedbackBlock label="What you observed" body={hotspot.info} />
+          <FeedbackBlock label="What it means" body={hotspot.meaning} />
+          <FeedbackBlock label="What the LVN should do" body={hotspot.action} accent />
+          {hotspot.notify && <FeedbackBlock label="Who must be notified" body={hotspot.notify} icon={<Phone size={14} />} />}
+          <FeedbackBlock label="What must be documented" body={hotspot.document} icon={<FileText size={14} />} />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {hotspot.policyRefs.map((r) => (
+              <span key={r} style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.04em', textTransform: 'uppercase', padding: '4px 8px', borderRadius: 6, background: CI.tealSoft, color: CI.teal, border: `1px solid ${CI.tealMuted}` }}>{r}</span>
+            ))}
+          </div>
+          <button type="button" onClick={() => { onComplete(); triggerRef.current?.focus(); }} style={{ width: '100%', minHeight: 44, border: 0, borderRadius: 10, background: CI.orange, color: '#fff', fontWeight: 800, fontSize: 12, letterSpacing: '.1em', textTransform: 'uppercase', cursor: 'pointer' }}>Mark observed</button>
+        </div>
       </div>
-      {children}
     </div>
   );
 }
 
-function LicenseAuthorityScene({
-  hotspots,
-  activeId,
-  onSelect,
-}: {
-  hotspots: Hotspot[];
-  activeId: string | null;
-  onSelect: (id: string) => void;
-}) {
-  const active = hotspots.find((h) => h.id === activeId);
+function LeftPanel({ page, pageIndex, total }: { page: PageData; pageIndex: number; total: number }) {
+  const more = page.narration.length > 1;
   return (
-    <SceneFrame title="Scope Boundary Stack">
-      <svg viewBox="0 0 500 320" width="100%" height="100%" style={{ display: 'block' }}>
-        <defs>
-          <linearGradient id="stackGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#7C3AED" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#4F46E5" stopOpacity="0.9" />
-          </linearGradient>
-        </defs>
-        {/* Authority pillars */}
-        <rect x="40" y="50" width="140" height="200" rx="12" fill="url(#stackGrad)" opacity="0.35" />
-        <rect x="180" y="50" width="140" height="200" rx="12" fill="#1E293B" stroke="#6366F1" />
-        <rect x="320" y="50" width="140" height="200" rx="12" fill="#1E293B" stroke="#10B981" />
-        <text x="110" y="75" textAnchor="middle" fill="#DDD6FE" fontSize="11" fontWeight="700">
-          Law
-        </text>
-        <text x="250" y="75" textAnchor="middle" fill="#A5B4FC" fontSize="11" fontWeight="700">
-          Federal CoP
-        </text>
-        <text x="390" y="75" textAnchor="middle" fill="#6EE7B7" fontSize="11" fontWeight="700">
-          Agency + Zones
-        </text>
-        {/* Connecting flow */}
-        <path
-          d="M110 180 H390"
-          stroke="#A78BFA"
-          strokeWidth="2"
-          strokeDasharray="6 4"
-          fill="none"
-        >
-          <animate attributeName="stroke-dashoffset" values="0;20" dur="2s" repeatCount="indefinite" />
-        </path>
-        <text x="250" y="300" textAnchor="middle" fill="#94A3B8" fontSize="10">
-          Tap markers — stricter rule wins when layers differ
-        </text>
-        {hotspots.map((hs) => (
-          <HotspotDot key={hs.id} hs={hs} active={activeId === hs.id} onSelect={onSelect} pulse />
+    <div>
+      <div style={{ display: 'inline-block', fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: CI.teal, background: CI.tealSoft, border: `1px solid ${CI.tealMuted}`, borderRadius: 999, padding: '4px 10px', marginBottom: 14 }}>{page.shortName} · {pageIndex + 1} of {total}</div>
+      <h1 style={{ margin: '0 0 6px', fontSize: 24, fontWeight: 800, lineHeight: 1.25, color: '#1F1C1B' }}>{page.title}</h1>
+      <p style={{ margin: '0 0 16px', color: CI.orange, fontSize: 15, fontWeight: 600 }}>{page.subtitle}</p>
+      <p style={{ margin: '0 0 12px', fontSize: 17, lineHeight: 1.65, color: '#524C4B' }}>{page.narration[0]}</p>
+      {more && (
+        <details style={{ border: `1px solid ${CI.border}`, borderRadius: 12, background: '#FAFBF8', marginBottom: 16 }}>
+          <summary style={{ padding: '12px 14px', fontWeight: 700, fontSize: 13, color: CI.teal, cursor: 'pointer' }}>View Full Lesson Details</summary>
+          <div style={{ padding: 14, borderTop: `1px solid ${CI.border}`, background: '#fff' }}>
+            {page.narration.slice(1).map((p, i) => <p key={i} style={{ margin: '0 0 10px', fontSize: 16, lineHeight: 1.65, color: '#524C4B' }}>{p}</p>)}
+          </div>
+        </details>
+      )}
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: CI.muted, marginBottom: 10 }}>Key Clinical Actions</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+        {page.keyPoints.map((kp) => (
+          <div key={kp.title} style={{ background: '#fff', border: `1px solid ${CI.border}`, borderRadius: 12, padding: 12, display: 'flex', gap: 10 }}>
+            <span style={{ fontSize: 18 }} aria-hidden>{kp.icon}</span>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 13, color: '#1F1C1B', marginBottom: 2 }}>{kp.title}</div>
+              <div style={{ fontSize: 14, color: CI.muted, lineHeight: 1.45 }}>{kp.detail}</div>
+            </div>
+          </div>
         ))}
-      </svg>
-      {active && <FeedbackBanner title={active.label} body={active.info} zone={active.zone} />}
-    </SceneFrame>
+      </div>
+      <div style={{ padding: 14, borderRadius: 12, background: '#FAFBF8', border: `1px solid ${CI.border}`, borderLeft: `4px solid ${CI.orangeDark}`, marginBottom: 14 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: CI.orangeDark, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 6 }}>Clinical Tip</div>
+        <div style={{ fontSize: 15, color: '#524C4B', lineHeight: 1.55 }}>{page.clinicalTip}</div>
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {page.sourceLabels.map((s) => (
+          <span key={s.kind + s.text} style={{ fontSize: 11, padding: '5px 8px', borderRadius: 6, background: '#FAFBF8', border: `1px solid ${CI.border}`, color: CI.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em' }}>{s.kind}: {s.text}</span>
+        ))}
+      </div>
+    </div>
   );
 }
 
-function CompetencyConstellationScene({
-  hotspots,
-  activeId,
-  onSelect,
-}: {
-  hotspots: Hotspot[];
-  activeId: string | null;
-  onSelect: (id: string) => void;
+function RightPanel({ page, completed, setCompleted, onGoQuiz }: {
+  page: PageData; completed: string[]; setCompleted: (ids: string[]) => void; onGoQuiz?: () => void;
 }) {
-  const active = hotspots.find((h) => h.id === activeId);
-  const cx = 250;
-  const cy = 160;
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const active = page.hotspots.find((h) => h.id === activeId) ?? null;
+  const done = page.hotspots.length > 0 && completed.length === page.hotspots.length;
+  useEffect(() => { setActiveId(null); }, [page.id]);
   return (
-    <SceneFrame title="Authorized Skill Constellation">
-      <svg viewBox="0 0 500 320" width="100%" height="100%" style={{ display: 'block' }}>
-        <circle cx={cx} cy={cy} r="36" fill="#7C3AED" opacity="0.9" />
-        <text x={cx} y={cy + 4} textAnchor="middle" fill="white" fontSize="12" fontWeight="800">
-          LVN
-        </text>
-        {hotspots.map((hs, i) => (
-          <g key={hs.id}>
-            <line
-              x1={cx}
-              y1={cy}
-              x2={hs.cx}
-              y2={hs.cy}
-              stroke="#34D399"
-              strokeWidth="1.5"
-              opacity="0.55"
-            >
-              <animate
-                attributeName="opacity"
-                values="0.25;0.8;0.25"
-                dur={`${2 + (i % 3)}s`}
-                repeatCount="indefinite"
-              />
-            </line>
-            <HotspotDot hs={hs} active={activeId === hs.id} onSelect={onSelect} pulse />
-          </g>
-        ))}
-        <text x="250" y="310" textAnchor="middle" fill="#94A3B8" fontSize="10">
-          Green zone = implement with order + competency — not invent
-        </text>
-      </svg>
-      {active && <FeedbackBanner title={active.label} body={active.info} zone={active.zone} />}
-    </SceneFrame>
+    <div className="lvn002-stage-wrap">
+      <div className="lvn002-stage" role="region" aria-label={`${page.title} interactive scene`}>
+        <img className="scene" src={page.sceneImage} alt="" aria-hidden draggable={false} />
+        <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 8, maxWidth: 'min(50%, 320px)', padding: '8px 10px', borderRadius: 12, background: 'rgba(255,255,255,.94)', border: `1px solid ${CI.border}`, pointerEvents: 'none' }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: CI.orange }}>{page.shortName}</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: CI.teal }}>{page.title.split(':')[0]}</div>
+        </div>
+        <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 8, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 999, background: 'rgba(255,255,255,.94)', border: `1px solid ${CI.border}`, fontSize: 11, fontWeight: 800, color: CI.teal, pointerEvents: 'none' }} aria-hidden="true">
+          <Eye size={14} /> {completed.length} / {page.hotspots.length} observed
+        </div>
+        {page.hotspots.map((hs) => {
+          const isDone = completed.includes(hs.id);
+          const color = ZONE[hs.zone].color;
+          const nextIncomplete = page.hotspots.find((h) => !completed.includes(h.id));
+          const isGuided = !isDone && nextIncomplete?.id === hs.id;
+          return (
+            <button key={hs.id} type="button" className={`lvn002-hotspot ${isDone ? 'done' : ''} ${isGuided ? 'guided' : ''}`}
+              style={{ left: `${hs.x}%`, top: `${hs.y}%` }}
+              aria-label={isDone ? `${hs.label} — observed` : `Investigate ${hs.label}`}
+              aria-describedby={[`lvn002-progress-${page.id}`, ({ zones: 'pn-zones', edu: 'pn-edu', cath: 'pn-cath', spec: 'pn-spec', dx: 'pn-dx', dc: 'pn-dc', picc: 'pn-picc', notify: 'pn-notify', gate: page.id === 4 ? 'pn-gate' : page.id === 6 ? 'pn-gate7' : undefined, agency: 'pn-unsafe', license: 'pn-unsafe', patient: 'pn-safe', protect: 'pn-safe' } as Record<string, string | undefined>)[hs.id]].filter(Boolean).join(' ') || undefined}
+              onClick={(e) => { triggerRef.current = e.currentTarget; setActiveId(hs.id); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  triggerRef.current = e.currentTarget;
+                  setActiveId(hs.id);
+                }
+              }}>
+              <div className="orb" style={{ background: isDone ? CI.teal : (hs.zone === 'neutral' ? CI.orange : color) }}>
+                {isGuided && !isDone && <span className="ping" aria-hidden />}
+                {isDone ? <Check size={16} strokeWidth={3} aria-hidden /> : <span style={{ fontSize: 15 }} aria-hidden>?</span>}
+              </div>
+              <span className="tag">{hs.shortLabel}</span>
+              {isDone && <span className="lvn002-sr-only">Completed</span>}
+            </button>
+          );
+        })}
+        <div id={`lvn002-progress-${page.id}`} className="lvn002-live" aria-live="polite">
+          {completed.length} of {page.hotspots.length} nodes observed
+        </div>
+        {/* Accessible HTML process nodes — instructional, non-blocking, edge-docked */}
+        {page.id === 0 && (
+          <div id="pn-zones" className="lvn002-process-node" style={{ left: '86%', top: '18%' }} role="note">
+            <strong>Three Zones</strong>
+            Authorized · Conditional · Prohibited
+          </div>
+        )}
+        {page.id === 1 && (
+          <div className="lvn002-process-rail" role="group" aria-label="Additional authorized skills">
+            <div id="pn-edu" className="lvn002-process-node" style={{ position: 'relative', left: 'auto', top: 'auto', transform: 'none' }} role="note">
+              <strong>Education</strong>
+              Reinforce the existing plan of care
+            </div>
+            <div id="pn-cath" className="lvn002-process-node" style={{ position: 'relative', left: 'auto', top: 'auto', transform: 'none' }} role="note">
+              <strong>Catheter Care</strong>
+              Ordered care when competency validated
+            </div>
+            <div id="pn-spec" className="lvn002-process-node" style={{ position: 'relative', left: 'auto', top: 'auto', transform: 'none' }} role="note">
+              <strong>Specimens</strong>
+              Collect only with current order
+            </div>
+          </div>
+        )}
+        {page.id === 2 && (
+          <>
+            <div id="pn-dx" className="lvn002-process-node" style={{ left: '16%', top: '88%' }} role="note">
+              <strong>Nursing Diagnosis</strong>
+              Report findings — do not independently diagnose
+            </div>
+            <div id="pn-dc" className="lvn002-process-node" style={{ left: '88%', top: '22%' }} role="note">
+              <strong>Discharge</strong>
+              Not an independent LVN decision
+            </div>
+            <div id="pn-picc" className="lvn002-process-node" style={{ left: '68%', top: '34%' }} role="note">
+              <strong>PICC / Central</strong>
+              No autonomous line management
+            </div>
+          </>
+        )}
+        {page.id === 4 && (
+          <>
+            <div id="pn-notify" className="lvn002-process-node" style={{ left: '12%', top: '78%' }} role="note">
+              <strong>Notify RN</strong>
+              Timely · objective · escalate
+            </div>
+            <div id="pn-gate" className="lvn002-gate-node" role="group" aria-label="Three-question gate">
+              <span className="lvn002-gate-chip">Current order?</span>
+              <span className="lvn002-gate-chip">Validated competency?</span>
+              <span className="lvn002-gate-chip">Expected condition?</span>
+            </div>
+          </>
+        )}
+        {page.id === 5 && (
+          <div className="lvn002-path-overlay" role="group" aria-label="Accountability pathways">
+            <div id="pn-unsafe" className="lvn002-path-card" style={{ borderLeft: `3px solid ${CI.red}` }} role="note">
+              <strong style={{ color: CI.red }}>Unsafe shortcut</strong>
+              Ignore finding → unauthorized action → weak record → patient / license risk
+            </div>
+            <div id="pn-safe" className="lvn002-path-card" style={{ borderLeft: `3px solid ${CI.teal}` }} role="note">
+              <strong style={{ color: CI.teal }}>Safe path</strong>
+              Stop → protect → notify RN → authorized direction → document
+            </div>
+          </div>
+        )}
+        {page.id === 6 && (
+          <>
+            <div className="lvn002-zone-legend" role="group" aria-label="Practice zones">
+              <span className="lvn002-zone-chip"><span style={{ width: 8, height: 8, borderRadius: '50%', background: CI.teal }} /> Authorized</span>
+              <span className="lvn002-zone-chip"><span style={{ width: 8, height: 8, borderRadius: '50%', background: CI.orange }} /> Conditional</span>
+              <span className="lvn002-zone-chip"><span style={{ width: 8, height: 8, borderRadius: '50%', background: CI.red }} /> Prohibited</span>
+            </div>
+            <div id="pn-gate7" className="lvn002-process-node" style={{ left: '50%', top: '92%' }} role="note">
+              <strong>3-Question Gate</strong>
+              Order? Competency? Expected?
+            </div>
+          </>
+        )}
+        <button type="button" aria-label="Reset lesson progress" onClick={() => setCompleted([])}
+          style={{ position: 'absolute', right: 10, bottom: 10, zIndex: 12, minHeight: 44, padding: '0 12px', borderRadius: 999, border: `1px solid ${CI.border}`, background: 'rgba(255,255,255,.94)', color: CI.teal, fontSize: 11, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+          <RotateCcw size={13} /> Reset
+        </button>
+        {done && !activeId && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 25, background: 'rgba(15,91,84,.78)', backdropFilter: 'blur(8px)', display: 'grid', placeItems: 'center', padding: 20, animation: 'lvn002-pop .3s cubic-bezier(.16,1,.3,1)' }} className="lvn002-rm-transition">
+            <div style={{ background: '#fff', borderRadius: 16, padding: 24, maxWidth: 380, width: '100%', textAlign: 'center', border: `4px solid ${CI.tealSoft}` }}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: CI.tealSoft, display: 'grid', placeItems: 'center', margin: '0 auto 12px' }}><ShieldCheck size={32} color={CI.teal} /></div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: CI.teal, marginBottom: 6 }}>Scene Complete</div>
+              <div style={{ fontSize: 13, color: CI.muted, lineHeight: 1.5, marginBottom: 14 }}>Scenario Practice Complete. Knowledge practice only — Practical Competency Remains Separate.</div>
+              {onGoQuiz && page.id === PAGES.length - 1 && (
+                <button type="button" onClick={onGoQuiz} style={{ width: '100%', minHeight: 44, border: 0, borderRadius: 12, background: CI.orange, color: '#fff', fontWeight: 800, fontSize: 12, letterSpacing: '.1em', textTransform: 'uppercase', cursor: 'pointer' }}>Go to Knowledge Check</button>
+              )}
+            </div>
+          </div>
+        )}
+        {active && (
+          <ClinicalFeedbackOverlay hotspot={active} onClose={() => setActiveId(null)}
+            onComplete={() => { if (!completed.includes(active.id)) setCompleted([...completed, active.id]); setActiveId(null); }}
+            triggerRef={triggerRef} />
+        )}
+      </div>
+    </div>
   );
 }
 
-function ProhibitedZoneScene({
-  hotspots,
-  activeId,
-  onSelect,
+/** Dedicated single-panel Knowledge Check — progressive field cards + scope compass result */
+function QuizPage({
+  onBack,
+  initialAnswers,
+  initialIdx,
+  initialFinished,
+  initialSelected,
+  initialSubmitted,
+  onPersist,
 }: {
-  hotspots: Hotspot[];
-  activeId: string | null;
-  onSelect: (id: string) => void;
+  onBack: () => void;
+  initialAnswers?: (number | null)[];
+  initialIdx?: number;
+  initialFinished?: boolean;
+  initialSelected?: number | null;
+  initialSubmitted?: boolean;
+  onPersist: (state: { answers: (number | null)[]; idx: number; finished: boolean; selected: number | null; submitted: boolean }) => void;
 }) {
-  const active = hotspots.find((h) => h.id === activeId);
-  return (
-    <SceneFrame title="RN-Only / Prohibited Map">
-      <svg viewBox="0 0 500 320" width="100%" height="100%" style={{ display: 'block' }}>
-        <rect
-          x="50"
-          y="45"
-          width="400"
-          height="230"
-          rx="16"
-          fill="rgba(239,68,68,0.08)"
-          stroke="#EF4444"
-          strokeDasharray="8 6"
-        >
-          <animate
-            attributeName="stroke-opacity"
-            values="0.4;1;0.4"
-            dur="1.8s"
-            repeatCount="indefinite"
-          />
-        </rect>
-        <text x="250" y="38" textAnchor="middle" fill="#FCA5A5" fontSize="12" fontWeight="800">
-          DO NOT CROSS — license boundary
-        </text>
-        {/* Barrier bars */}
-        {[0, 1, 2, 3].map((i) => (
-          <rect
-            key={i}
-            x={80 + i * 90}
-            y="160"
-            width="50"
-            height="10"
-            rx="3"
-            fill="#EF4444"
-            opacity="0.7"
-          />
-        ))}
-        {hotspots.map((hs) => (
-          <HotspotDot key={hs.id} hs={hs} active={activeId === hs.id} onSelect={onSelect} pulse />
-        ))}
-        <text x="250" y="300" textAnchor="middle" fill="#94A3B8" fontSize="10">
-          Staffing pressure never rewrites B&P § 2859 or CoPs
-        </text>
-      </svg>
-      {active && <FeedbackBanner title={active.label} body={active.info} zone={active.zone} />}
-    </SceneFrame>
+  const [idx, setIdx] = useState(initialIdx ?? 0);
+  const [selected, setSelected] = useState<number | null>(() => {
+    if (initialSelected !== undefined) return initialSelected;
+    if (initialAnswers && initialAnswers[initialIdx ?? 0] != null) return initialAnswers[initialIdx ?? 0];
+    return null;
+  });
+  const [submitted, setSubmitted] = useState<boolean>(() => {
+    if (initialSubmitted !== undefined) return !!initialSubmitted;
+    return !!(initialAnswers && initialAnswers[initialIdx ?? 0] != null);
+  });
+  const [answers, setAnswers] = useState<(number | null)[]>(
+    () => initialAnswers ?? Array(QUIZ.length).fill(null),
   );
-}
-
-function ConditionalZoneScene({
-  hotspots,
-  activeId,
-  onSelect,
-}: {
-  hotspots: Hotspot[];
-  activeId: string | null;
-  onSelect: (id: string) => void;
-}) {
-  const active = hotspots.find((h) => h.id === activeId);
-  return (
-    <SceneFrame title="Conditional Oversight Circuit">
-      <svg viewBox="0 0 500 320" width="100%" height="100%" style={{ display: 'block' }}>
-        <rect x="70" y="60" width="360" height="180" rx="18" fill="rgba(245,158,11,0.08)" stroke="#F59E0B" />
-        <path
-          d="M120 140 C180 60, 320 60, 380 140 C320 220, 180 220, 120 140"
-          fill="none"
-          stroke="#FBBF24"
-          strokeWidth="2"
-          strokeDasharray="5 5"
-        >
-          <animate attributeName="stroke-dashoffset" values="0;30" dur="2.5s" repeatCount="indefinite" />
-        </path>
-        <circle cx="250" cy="140" r="28" fill="#78350F" stroke="#F59E0B" strokeWidth="2" />
-        <text x="250" y="144" textAnchor="middle" fill="#FDE68A" fontSize="10" fontWeight="800">
-          LVN+RN
-        </text>
-        {hotspots.map((hs) => (
-          <HotspotDot key={hs.id} hs={hs} active={activeId === hs.id} onSelect={onSelect} pulse />
-        ))}
-        <text x="250" y="300" textAnchor="middle" fill="#94A3B8" fontSize="10">
-          Amber = proceed only with required oversight controls
-        </text>
-      </svg>
-      {active && <FeedbackBanner title={active.label} body={active.info} zone={active.zone} />}
-    </SceneFrame>
+  const [finished, setFinished] = useState(!!initialFinished);
+  const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const q = QUIZ[idx];
+  const isCorrect = selected === q.correct;
+  const score = useMemo(
+    () => answers.reduce<number>((n, a, i) => n + (a === QUIZ[i].correct ? 1 : 0), 0),
+    [answers],
   );
-}
-
-function DelegationTreeScene({
-  hotspots,
-  activeId,
-  onSelect,
-}: {
-  hotspots: Hotspot[];
-  activeId: string | null;
-  onSelect: (id: string) => void;
-}) {
-  const active = hotspots.find((h) => h.id === activeId);
-  return (
-    <SceneFrame title="Five-Check Delegation Gate">
-      <svg viewBox="0 0 500 320" width="100%" height="100%" style={{ display: 'block' }}>
-        <rect x="30" y="55" width="440" height="90" rx="12" fill="rgba(99,102,241,0.12)" stroke="#818CF8" />
-        <text x="250" y="48" textAnchor="middle" fill="#C7D2FE" fontSize="11" fontWeight="700">
-          All five checks must pass
-        </text>
-        {/* Flow arrow to outcome */}
-        <path d="M250 150 L250 200" stroke="#A78BFA" strokeWidth="3" markerEnd="url(#arrow)" />
-        <defs>
-          <marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
-            <path d="M0,0 L8,4 L0,8 Z" fill="#A78BFA" />
-          </marker>
-        </defs>
-        <rect x="150" y="205" width="200" height="50" rx="10" fill="rgba(16,185,129,0.15)" stroke="#10B981" />
-        <text x="250" y="235" textAnchor="middle" fill="#6EE7B7" fontSize="12" fontWeight="700">
-          Delegate task only
-        </text>
-        <rect x="150" y="265" width="200" height="28" rx="8" fill="rgba(239,68,68,0.15)" stroke="#EF4444" />
-        <text x="250" y="284" textAnchor="middle" fill="#FCA5A5" fontSize="11" fontWeight="700">
-          Never delegate judgment
-        </text>
-        {hotspots.map((hs) => (
-          <HotspotDot key={hs.id} hs={hs} active={activeId === hs.id} onSelect={onSelect} pulse />
-        ))}
-      </svg>
-      {active && <FeedbackBanner title={active.label} body={active.info} zone={active.zone} />}
-    </SceneFrame>
-  );
-}
-
-function ConsequencesMapScene({
-  hotspots,
-  activeId,
-  onSelect,
-}: {
-  hotspots: Hotspot[];
-  activeId: string | null;
-  onSelect: (id: string) => void;
-}) {
-  const active = hotspots.find((h) => h.id === activeId);
-  return (
-    <SceneFrame title="Violation Impact Triangle">
-      <svg viewBox="0 0 500 320" width="100%" height="100%" style={{ display: 'block' }}>
-        <polygon
-          points="250,50 420,240 80,240"
-          fill="rgba(239,68,68,0.08)"
-          stroke="#F87171"
-          strokeWidth="2"
-        />
-        <circle cx="250" cy="160" r="40" fill="#7C3AED" opacity="0.85" />
-        <text x="250" y="156" textAnchor="middle" fill="white" fontSize="11" fontWeight="800">
-          Scope
-        </text>
-        <text x="250" y="172" textAnchor="middle" fill="white" fontSize="11" fontWeight="800">
-          breach
-        </text>
-        {hotspots.map((hs) => (
-          <HotspotDot key={hs.id} hs={hs} active={activeId === hs.id} onSelect={onSelect} pulse />
-        ))}
-        <text x="250" y="300" textAnchor="middle" fill="#94A3B8" fontSize="10">
-          Regulatory · Civil · Institutional — protect with refuse/document/escalate
-        </text>
-      </svg>
-      {active && <FeedbackBanner title={active.label} body={active.info} zone={active.zone} />}
-    </SceneFrame>
-  );
-}
-
-function ScenarioFieldLabScene({
-  hotspots,
-  activeId,
-  onSelect,
-}: {
-  hotspots: Hotspot[];
-  activeId: string | null;
-  onSelect: (id: string) => void;
-}) {
-  const active = hotspots.find((h) => h.id === activeId);
-  const panels = [
-    { x: 40, label: 'A', color: '#F59E0B', title: 'Wound' },
-    { x: 190, label: 'B', color: '#EF4444', title: 'PCA' },
-    { x: 340, label: 'C', color: '#10B981', title: 'HHA' },
-  ];
-  return (
-    <SceneFrame title="Field Scenario Lab">
-      <svg viewBox="0 0 500 320" width="100%" height="100%" style={{ display: 'block' }}>
-        {panels.map((p) => (
-          <g key={p.label}>
-            <rect
-              x={p.x}
-              y="70"
-              width="120"
-              height="120"
-              rx="14"
-              fill={`${p.color}22`}
-              stroke={p.color}
-              strokeWidth="2"
-            />
-            <text x={p.x + 60} y="100" textAnchor="middle" fill={p.color} fontSize="22" fontWeight="800">
-              {p.label}
-            </text>
-            <text x={p.x + 60} y="125" textAnchor="middle" fill="#E2E8F0" fontSize="12" fontWeight="700">
-              {p.title}
-            </text>
-          </g>
-        ))}
-        <rect x="120" y="230" width="260" height="40" rx="10" fill="rgba(124,58,237,0.2)" stroke="#A78BFA" />
-        <text x="250" y="255" textAnchor="middle" fill="#DDD6FE" fontSize="12" fontWeight="700">
-          Order · Competency · Stability
-        </text>
-        {hotspots.map((hs) => (
-          <HotspotDot key={hs.id} hs={hs} active={activeId === hs.id} onSelect={onSelect} pulse />
-        ))}
-      </svg>
-      {active && <FeedbackBanner title={active.label} body={active.info} zone={active.zone} />}
-    </SceneFrame>
-  );
-}
-
-function renderScene(
-  scene: string,
-  hotspots: Hotspot[],
-  activeId: string | null,
-  onSelect: (id: string) => void,
-) {
-  switch (scene) {
-    case 'license-authority':
-      return <LicenseAuthorityScene hotspots={hotspots} activeId={activeId} onSelect={onSelect} />;
-    case 'competency-constellation':
-      return (
-        <CompetencyConstellationScene hotspots={hotspots} activeId={activeId} onSelect={onSelect} />
-      );
-    case 'prohibited-zone-map':
-      return <ProhibitedZoneScene hotspots={hotspots} activeId={activeId} onSelect={onSelect} />;
-    case 'conditional-zone':
-      return <ConditionalZoneScene hotspots={hotspots} activeId={activeId} onSelect={onSelect} />;
-    case 'delegation-tree':
-      return <DelegationTreeScene hotspots={hotspots} activeId={activeId} onSelect={onSelect} />;
-    case 'consequences-map':
-      return <ConsequencesMapScene hotspots={hotspots} activeId={activeId} onSelect={onSelect} />;
-    case 'scenario-field-lab':
-      return <ScenarioFieldLabScene hotspots={hotspots} activeId={activeId} onSelect={onSelect} />;
-    default:
-      return (
-        <SceneFrame title="Instructional scene">
-          <div style={{ padding: 24, color: '#FCA5A5' }}>Scene configuration missing for: {scene}</div>
-        </SceneFrame>
-      );
-  }
-}
-
-// ─── MAIN COMPONENT ─────────────────────────────────────────────────────────
-
-const LVN002ScopeOfPractice: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState(0);
-  const [quizMode, setQuizMode] = useState(false);
-  const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
-  const [quizSubmitted, setQuizSubmitted] = useState(false);
-  const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
-  const [reviewOpen, setReviewOpen] = useState(true);
-
-  const page = PAGES[currentPage];
+  const pct = Math.round((score / QUIZ.length) * 100);
+  const passed = pct >= MODULE_META.passing;
+  const progress = ((idx + (submitted ? 1 : 0)) / QUIZ.length) * 100;
+  const letters = ['A', 'B', 'C', 'D'];
 
   useEffect(() => {
-    setActiveHotspot(null);
-  }, [currentPage, quizMode]);
+    onPersist({ answers, idx, finished, selected, submitted });
+    // intentionally omit onPersist identity to avoid re-render loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answers, idx, finished, selected, submitted]);
 
-  const score = useMemo(() => {
-    if (!quizSubmitted) return 0;
-    const correctCount = QUIZ.reduce(
-      (n, q, i) => n + (quizAnswers[i] === q.correct ? 1 : 0),
-      0,
-    );
-    return Math.round((correctCount / QUIZ.length) * 100);
-  }, [quizAnswers, quizSubmitted]);
-
-  const passed = score >= MODULE_META.passing;
-  const answeredCount = Object.keys(quizAnswers).length;
-  const progressPct = quizMode
-    ? 100
-    : Math.round(((currentPage + 1) / PAGES.length) * 100);
-
-  const selectHotspot = (id: string) => {
-    setActiveHotspot((prev) => (prev === id ? null : id));
+  const focusOption = (i: number) => {
+    setSelected(i);
+    window.requestAnimationFrame(() => optionRefs.current[i]?.focus());
   };
 
-  const restartModule = () => {
-    setQuizSubmitted(false);
-    setQuizAnswers({});
-    setQuizMode(false);
-    setCurrentPage(0);
-    setActiveHotspot(null);
-    setReviewOpen(true);
-  };
-
-  const retryQuiz = () => {
-    setQuizSubmitted(false);
-    setQuizAnswers({});
-    setReviewOpen(true);
-  };
-
-  // ─── QUIZ UI ────────────────────────────────────────────────────────────
-  if (quizMode) {
-    if (quizSubmitted) {
-      return (
-        <div style={shell}>
-          <header
-            style={{
-              padding: '16px 20px',
-              background: MODULE_META.gradient,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <div>
-              <div style={{ fontWeight: 800, fontSize: 16 }}>LVN-002 · Knowledge Assessment Results</div>
-              <div style={{ fontSize: 12, opacity: 0.9 }}>
-                Knowledge only — not practical competency certification
-              </div>
-            </div>
-            <div style={{ fontWeight: 800, fontSize: 22 }}>{score}%</div>
-          </header>
-
-          <main style={{ flex: 1, padding: 20, maxWidth: 900, margin: '0 auto', width: '100%' }}>
-            <div
-              style={{
-                ...card,
-                textAlign: 'center',
-                marginBottom: 16,
-                borderColor: passed ? 'rgba(16,185,129,0.5)' : 'rgba(245,158,11,0.5)',
-              }}
-            >
-              <div style={{ fontSize: 36, marginBottom: 8 }}>{passed ? '✓' : '↻'}</div>
-              <h2 style={{ margin: '0 0 8px', color: '#F8FAFC' }}>
-                {passed ? 'Knowledge Check Passed' : 'Review & Retry'}
-              </h2>
-              <p style={{ margin: 0, color: '#CBD5E1', fontSize: 14, lineHeight: 1.5 }}>
-                {passed
-                  ? `You scored ${score}% (pass threshold ${MODULE_META.passing}%). This validates knowledge of LVN scope boundaries only. Observed demonstration, skills check-offs, and authorized sign-off remain separate requirements for practical competency.`
-                  : `Score ${score}% is below the ${MODULE_META.passing}% knowledge pass threshold. Review rationales and module pages, then retry the assessment.`}
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setReviewOpen((v) => !v)}
-              style={{
-                marginBottom: 12,
-                padding: '8px 14px',
-                background: 'rgba(124,58,237,0.25)',
-                color: '#E9D5FF',
-                border: '1px solid #7C3AED',
-                borderRadius: 8,
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              {reviewOpen ? 'Hide' : 'Show'} answer review
-            </button>
-
-            {reviewOpen &&
-              QUIZ.map((q, i) => {
-                const ua = quizAnswers[i];
-                const ok = ua === q.correct;
-                return (
-                  <div
-                    key={q.id}
-                    style={{
-                      ...card,
-                      marginBottom: 10,
-                      borderColor: ok ? 'rgba(16,185,129,0.35)' : 'rgba(239,68,68,0.35)',
-                    }}
-                  >
-                    <div style={{ fontWeight: 700, marginBottom: 6, color: '#F1F5F9' }}>
-                      {i + 1}. {q.stem}
-                    </div>
-                    <div style={{ fontSize: 13, color: ok ? '#6EE7B7' : '#FCA5A5' }}>
-                      Your answer: {typeof ua === 'number' ? q.options[ua] : '(not answered)'}
-                    </div>
-                    {!ok && (
-                      <div style={{ fontSize: 13, color: '#6EE7B7', marginTop: 4 }}>
-                        Correct: {q.options[q.correct]}
-                      </div>
-                    )}
-                    <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 8, lineHeight: 1.45 }}>
-                      <strong style={{ color: '#C4B5FD' }}>Rationale:</strong> {q.rationale}
-                    </div>
-                  </div>
-                );
-              })}
-
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
-              {!passed && (
-                <button
-                  type="button"
-                  onClick={retryQuiz}
-                  style={{
-                    padding: '12px 24px',
-                    background: '#7C3AED',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: 8,
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Retry Quiz
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={restartModule}
-                style={{
-                  padding: '12px 24px',
-                  background: passed ? '#059669' : '#334155',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 8,
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                }}
-              >
-                {passed ? 'Review Module Again' : 'Restart Module'}
-              </button>
-            </div>
-          </main>
-        </div>
-      );
+  const submit = () => {
+    if (selected === null) return;
+    if (!submitted) {
+      const next = [...answers];
+      next[idx] = selected;
+      setAnswers(next);
+      setSubmitted(true);
+      return;
     }
+    if (idx >= QUIZ.length - 1) {
+      setFinished(true);
+      return;
+    }
+    const nextIdx = idx + 1;
+    setIdx(nextIdx);
+    setSelected(answers[nextIdx] != null ? answers[nextIdx] : null);
+    setSubmitted(answers[nextIdx] != null);
+  };
 
+  if (finished) {
+    const circumference = 2 * Math.PI * 45;
+    const offset = circumference - (pct / 100) * circumference;
     return (
-      <div style={shell}>
-        <header style={{ padding: '16px 20px', background: MODULE_META.gradient }}>
-          <div style={{ fontWeight: 800, fontSize: 16 }}>LVN-002 — Knowledge Assessment</div>
-          <div style={{ fontSize: 12, opacity: 0.9 }}>
-            10 questions · {MODULE_META.passing}% pass · scope knowledge only (not skills sign-off)
-          </div>
-        </header>
-        <main style={{ flex: 1, padding: 20, maxWidth: 900, margin: '0 auto', width: '100%' }}>
-          {QUIZ.map((q, i) => (
-            <div key={q.id} style={{ ...card, marginBottom: 14 }}>
-              <div style={{ fontWeight: 700, marginBottom: 10, color: '#F8FAFC' }}>
-                {i + 1}. {q.stem}
+      <div className="lvn002-quiz-page">
+        <div className="lvn002-quiz-card" style={{ background: '#fff', borderRadius: 24, border: `1px solid ${CI.border}`, boxShadow: '0 24px 60px rgba(15,91,84,.12)', padding: 32, textAlign: 'center' }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.16em', textTransform: 'uppercase', color: CI.teal, marginBottom: 8 }}>Knowledge Check Complete</div>
+          <div style={{ position: 'relative', width: 140, height: 140, margin: '12px auto 18px' }}>
+            <svg width="140" height="140" viewBox="0 0 120 120" style={{ transform: 'rotate(-90deg)' }} aria-hidden>
+              <circle cx="60" cy="60" r="45" fill="none" stroke={CI.tealSoft} strokeWidth="10" />
+              <circle cx="60" cy="60" r="45" fill="none" stroke={passed ? CI.teal : CI.orange} strokeWidth="10" strokeLinecap="round"
+                strokeDasharray={circumference} strokeDashoffset={offset} className="lvn002-rm-transition" />
+            </svg>
+            <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 28, fontWeight: 800, color: passed ? CI.teal : CI.orange }}>{pct}%</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: CI.muted }}>{score}/{QUIZ.length}</div>
               </div>
-              {q.options.map((opt, oi) => {
-                const selected = quizAnswers[i] === oi;
-                const letter = String.fromCharCode(65 + oi);
-                return (
-                  <button
-                    key={oi}
-                    type="button"
-                    onClick={() => setQuizAnswers((prev) => ({ ...prev, [i]: oi }))}
-                    style={{
-                      display: 'flex',
-                      width: '100%',
-                      textAlign: 'left',
-                      gap: 10,
-                      padding: '10px 12px',
-                      marginBottom: 6,
-                      borderRadius: 8,
-                      cursor: 'pointer',
-                      border: `1px solid ${selected ? '#7C3AED' : 'rgba(255,255,255,0.1)'}`,
-                      background: selected ? 'rgba(124,58,237,0.28)' : 'rgba(255,255,255,0.03)',
-                      color: '#E5E7EB',
-                      fontSize: 13,
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    <span
-                      style={{
-                        minWidth: 22,
-                        height: 22,
-                        borderRadius: 6,
-                        background: selected ? '#7C3AED' : '#334155',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 800,
-                        fontSize: 11,
-                      }}
-                    >
-                      {letter}
-                    </span>
-                    <span>{opt}</span>
-                  </button>
-                );
-              })}
             </div>
-          ))}
-          <button
-            type="button"
-            disabled={answeredCount < QUIZ.length}
-            onClick={() => {
-              if (answeredCount === QUIZ.length) setQuizSubmitted(true);
-            }}
-            style={{
-              width: '100%',
-              padding: 16,
-              background: answeredCount === QUIZ.length ? '#7C3AED' : '#374151',
-              color: 'white',
-              border: 'none',
-              borderRadius: 10,
-              fontWeight: 800,
-              cursor: answeredCount === QUIZ.length ? 'pointer' : 'not-allowed',
-              fontSize: 16,
-              marginTop: 8,
-            }}
-          >
-            Submit Assessment ({answeredCount}/{QUIZ.length} answered)
-          </button>
-          <button
-            type="button"
-            onClick={() => setQuizMode(false)}
-            style={{
-              marginTop: 10,
-              background: 'transparent',
-              border: '1px solid #475569',
-              color: '#94A3B8',
-              borderRadius: 8,
-              padding: '8px 14px',
-              cursor: 'pointer',
-            }}
-          >
-            ← Back to content
-          </button>
-        </main>
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: CI.teal, marginBottom: 6 }}>{passed ? 'Knowledge Check Complete' : 'Keep sharpening judgment'}</div>
+          <div style={{ fontSize: 14, color: CI.muted, lineHeight: 1.55, marginBottom: 22, maxWidth: 440, marginInline: 'auto' }}>
+            Scenario Practice Complete. Practical Competency Remains Separate.
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 22 }}>
+            {[
+              { label: 'Authorized', color: CI.teal, tip: 'Order + competency + expected' },
+              { label: 'Conditional', color: CI.orange, tip: 'RN oversight required' },
+              { label: 'Prohibited', color: CI.red, tip: 'Hard stop · escalate' },
+            ].map((z) => (
+              <div key={z.label} style={{ padding: 14, borderRadius: 14, background: CI.bg, border: `1px solid ${CI.border}` }}>
+                <div style={{ width: 10, height: 10, borderRadius: '50%', background: z.color, margin: '0 auto 8px' }} />
+                <div style={{ fontSize: 12, fontWeight: 800, color: CI.ink }}>{z.label}</div>
+                <div style={{ fontSize: 11, color: CI.muted, marginTop: 4 }}>{z.tip}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button type="button" onClick={onBack} style={{ minHeight: 44, padding: '0 20px', borderRadius: 12, border: `1px solid ${CI.border}`, background: '#fff', color: CI.teal, fontWeight: 800, fontSize: 12, letterSpacing: '.08em', textTransform: 'uppercase', cursor: 'pointer' }}>Back to Practice</button>
+            <button type="button" onClick={() => {
+              setIdx(0); setSelected(null); setSubmitted(false);
+              setAnswers(Array(QUIZ.length).fill(null)); setFinished(false);
+            }} style={{ minHeight: 44, padding: '0 20px', borderRadius: 12, border: 0, background: CI.orange, color: '#fff', fontWeight: 800, fontSize: 12, letterSpacing: '.08em', textTransform: 'uppercase', cursor: 'pointer' }}>Retake Check</button>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // ─── CONTENT UI ─────────────────────────────────────────────────────────
   return (
-    <div style={shell}>
-      <header
-        style={{
-          padding: '12px 16px',
-          background: MODULE_META.gradient,
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 12,
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <div>
-          <div style={{ fontWeight: 800, fontSize: 15 }}>
-            {MODULE_META.id} | {MODULE_META.title}
-          </div>
-          <div style={{ fontSize: 11, opacity: 0.92 }}>
-            v{MODULE_META.version} · {MODULE_META.track} · {MODULE_META.cms} · {MODULE_META.policy}
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {PAGES.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              title={`Page ${i + 1}`}
-              onClick={() => setCurrentPage(i)}
-              style={{
-                width: i === currentPage ? 18 : 8,
-                height: 8,
-                borderRadius: 99,
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                background: i === currentPage ? '#F8FAFC' : i < currentPage ? '#A78BFA' : 'rgba(255,255,255,0.35)',
-                transition: 'all 0.2s',
-              }}
-            />
-          ))}
-          <span style={{ fontSize: 11, fontWeight: 700, marginLeft: 6 }}>{progressPct}%</span>
-        </div>
-      </header>
-
-      {/* progress bar */}
-      <div style={{ height: 3, background: '#1E293B' }}>
-        <div
-          style={{
-            height: '100%',
-            width: `${progressPct}%`,
-            background: 'linear-gradient(90deg,#A78BFA,#34D399)',
-            transition: 'width 0.25s',
-          }}
-        />
-      </div>
-
-      <div
-        style={{
-          flex: 1,
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0, 55fr) minmax(0, 45fr)',
-          gap: 0,
-          minHeight: 0,
-        }}
-        className="lvn002-split"
-      >
-        {/* LEFT */}
-        <section
-          style={{
-            padding: '18px 20px 88px',
-            overflow: 'auto',
-            borderRight: '1px solid rgba(255,255,255,0.06)',
-            background: 'linear-gradient(180deg, #0B1020 0%, #111827 100%)',
-          }}
-        >
-          <div style={{ fontSize: 11, color: '#A78BFA', fontWeight: 700, marginBottom: 6 }}>
-            Page {currentPage + 1} of {PAGES.length}
-          </div>
-          <h1 style={{ margin: '0 0 6px', fontSize: 22, lineHeight: 1.25, color: '#F8FAFC' }}>
-            {page.title}
-          </h1>
-          <p style={{ margin: '0 0 14px', color: '#C4B5FD', fontSize: 14 }}>{page.subtitle}</p>
-
-          {page.narration.map((para, i) => (
-            <p
-              key={i}
-              style={{
-                margin: '0 0 12px',
-                fontSize: 14,
-                lineHeight: 1.6,
-                color: '#D1D5DB',
-              }}
-            >
-              {para}
-            </p>
-          ))}
-
-          <h3 style={{ margin: '18px 0 10px', fontSize: 13, color: '#A78BFA', letterSpacing: 0.4 }}>
-            KEY POINTS
-          </h3>
-          <div style={{ display: 'grid', gap: 8 }}>
-            {page.keyPoints.map((kp) => (
-              <div key={kp.title} style={{ ...card, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <span style={{ fontSize: 18 }} aria-hidden>
-                  {kp.icon}
-                </span>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: '#F1F5F9' }}>{kp.title}</div>
-                  <div style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.45 }}>{kp.detail}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div
-            style={{
-              marginTop: 14,
-              padding: 12,
-              borderRadius: 12,
-              background: 'rgba(16,185,129,0.08)',
-              border: '1px solid rgba(16,185,129,0.35)',
-            }}
-          >
-            <div style={{ fontSize: 11, fontWeight: 800, color: '#6EE7B7', marginBottom: 4 }}>
-              CLINICAL TIP
+    <div className="lvn002-quiz-page">
+      <div className="lvn002-quiz-card" style={{ background: '#fff', borderRadius: 24, border: `1px solid ${CI.border}`, boxShadow: '0 24px 60px rgba(15,91,84,.12)', overflow: 'hidden' }}>
+        <div style={{ padding: '16px 22px', background: `linear-gradient(135deg, ${CI.teal} 0%, #0a3d39 100%)`, color: '#fff' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Compass size={18} />
+              <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase' }}>Field Judgment Check</span>
             </div>
-            <div style={{ fontSize: 13, color: '#D1FAE5', lineHeight: 1.5 }}>{page.clinicalTip}</div>
+            <span style={{ fontSize: 12, fontWeight: 700, opacity: .9 }}>{idx + 1} / {QUIZ.length}</span>
           </div>
-
-          <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {page.sourceLabels.map((s) => (
-              <span
-                key={s.kind + s.text}
-                style={{
-                  fontSize: 10,
-                  padding: '4px 8px',
-                  borderRadius: 99,
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#CBD5E1',
-                }}
-              >
-                <strong style={{ color: '#C4B5FD' }}>{s.kind}:</strong> {s.text}
-              </span>
-            ))}
+          <div style={{ height: 8, borderRadius: 999, background: 'rgba(255,255,255,.18)', overflow: 'hidden' }}>
+            <div className="lvn002-rm-transition" style={{ height: '100%', width: `${Math.max(progress, 6)}%`, borderRadius: 999, background: `linear-gradient(90deg, ${CI.orange}, #FFB088)`, transition: 'width .35s ease' }} />
           </div>
-        </section>
-
-        {/* RIGHT */}
-        <section
-          style={{
-            padding: '16px',
-            background: '#020617',
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: 400,
-          }}
-        >
-          <div style={{ flex: 1, minHeight: 360 }}>
-            {renderScene(page.scene, page.hotspots, activeHotspot, selectHotspot)}
-          </div>
-          <div style={{ marginTop: 10, fontSize: 11, color: '#64748B', textAlign: 'center' }}>
-            Interactive hotspots reveal zone-specific instructional feedback
-          </div>
-        </section>
-      </div>
-
-      {/* FOOTER NAV */}
-      <footer
-        style={{
-          position: 'sticky',
-          bottom: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 12,
-          padding: '12px 16px',
-          background: 'rgba(15,23,42,0.96)',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
-          backdropFilter: 'blur(8px)',
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-          disabled={currentPage === 0}
-          style={{
-            padding: '8px 18px',
-            background: currentPage === 0 ? '#374151' : '#4F46E5',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            cursor: currentPage === 0 ? 'not-allowed' : 'pointer',
-            fontWeight: 700,
-            fontSize: 13,
-          }}
-        >
-          ← Prev
-        </button>
-        <div style={{ fontSize: 11, color: '#94A3B8', textAlign: 'center' }}>
-          {MODULE_META.cms} · {MODULE_META.policy}
-          <div style={{ color: '#64748B' }}>
-            Status: {MODULE_META.status}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 11, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', opacity: .85 }}>
+            <span>Observe</span><span>Classify</span><span>Decide</span><span>Defend</span>
           </div>
         </div>
-        {currentPage < PAGES.length - 1 ? (
-          <button
-            type="button"
-            onClick={() => setCurrentPage((p) => p + 1)}
-            style={{
-              padding: '8px 18px',
-              background: '#7C3AED',
-              color: 'white',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontWeight: 700,
-              fontSize: 13,
-            }}
-          >
-            Next →
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setQuizMode(true)}
-            style={{
-              padding: '8px 18px',
-              background: '#059669',
-              color: 'white',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontWeight: 700,
-              fontSize: 13,
-            }}
-          >
-            Take Quiz ✓
-          </button>
-        )}
-      </footer>
 
-      <style>{`
-        @media (max-width: 960px) {
-          .lvn002-split {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
+        <div style={{ padding: 24 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 999, background: CI.tealSoft, color: CI.teal, fontSize: 11, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 12 }}>
+            <Sparkles size={13} /> Scenario {idx + 1}
+          </div>
+          <h2 style={{ margin: '0 0 18px', fontSize: 20, fontWeight: 800, color: CI.ink, lineHeight: 1.45 }}>{q.stem}</h2>
+
+          <div role="radiogroup" aria-label="Answer choices" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+            onKeyDown={(e) => {
+              if (submitted) return;
+              const max = q.options.length - 1;
+              const cur = selected ?? 0;
+              if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); focusOption(Math.min(max, cur + 1)); }
+              else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); focusOption(Math.max(0, cur - 1)); }
+              else if (e.key === 'Home') { e.preventDefault(); focusOption(0); }
+              else if (e.key === 'End') { e.preventDefault(); focusOption(max); }
+              else if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); if (selected !== null) submit(); }
+            }}>
+            {q.options.map((opt, i) => {
+              const on = selected === i;
+              let border: string = CI.border;
+              let bg: string = '#fff';
+              let letterBg: string = CI.bg;
+              let letterColor: string = CI.muted;
+              if (submitted && i === q.correct) { border = CI.teal; bg = CI.tealSoft; letterBg = CI.teal; letterColor = '#fff'; }
+              else if (submitted && on && !isCorrect) { border = CI.red; bg = '#FEF2F2'; letterBg = CI.red; letterColor = '#fff'; }
+              else if (on) { border = CI.teal; bg = '#F3FBFA'; letterBg = CI.teal; letterColor = '#fff'; }
+              return (
+                <button key={i} type="button" role="radio" aria-checked={on}
+                  ref={(el) => { optionRefs.current[i] = el; }}
+                  tabIndex={on || (selected === null && i === 0) ? 0 : -1}
+                  disabled={submitted}
+                  onClick={() => setSelected(i)}
+                  style={{ padding: 14, borderRadius: 14, border: `2px solid ${border}`, background: bg, textAlign: 'left', cursor: submitted ? 'default' : 'pointer', display: 'flex', gap: 12, alignItems: 'flex-start', transition: 'all .15s', minHeight: 48 }}>
+                  <span style={{ width: 28, height: 28, borderRadius: 8, background: letterBg, color: letterColor, display: 'grid', placeItems: 'center', fontWeight: 800, fontSize: 12, flexShrink: 0 }}>{letters[i]}</span>
+                  <span style={{ fontWeight: 600, color: CI.ink, fontSize: 16, lineHeight: 1.5, paddingTop: 3 }}>{opt}</span>
+                  {submitted && i === q.correct && <CheckCircle2 size={18} color={CI.teal} style={{ marginLeft: 'auto', flexShrink: 0 }} />}
+                  {submitted && on && !isCorrect && <XCircle size={18} color={CI.red} style={{ marginLeft: 'auto', flexShrink: 0 }} />}
+                </button>
+              );
+            })}
+          </div>
+
+          {submitted && (
+            <div style={{ marginTop: 14, padding: 14, borderRadius: 14, background: isCorrect ? CI.tealSoft : '#FFF3EC', border: `1px solid ${isCorrect ? CI.tealMuted : '#F6C7A8'}` }}>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: isCorrect ? CI.teal : CI.orangeDark, marginBottom: 6 }}>
+                {isCorrect ? 'Correct judgment' : 'Recalibrate'}
+              </div>
+              <div style={{ fontSize: 15.5, lineHeight: 1.6, color: CI.ink }}>{q.rationale}</div>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 18, flexWrap: 'wrap' }}>
+            <button type="button" onClick={onBack} style={{ minHeight: 44, padding: '0 16px', borderRadius: 12, border: `1px solid ${CI.border}`, background: '#fff', color: CI.muted, fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>Exit</button>
+            <button type="button" onClick={submit} disabled={selected === null}
+              style={{ flex: 1, minHeight: 48, border: 0, borderRadius: 12, background: CI.orange, color: '#fff', fontWeight: 800, fontSize: 13, letterSpacing: '.1em', textTransform: 'uppercase', cursor: selected === null ? 'not-allowed' : 'pointer', opacity: selected === null ? 0.5 : 1 }}>
+              {submitted ? (idx >= QUIZ.length - 1 ? 'See scope results' : 'Next scenario') : 'Lock in answer'}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
+}
+
+
+const STORAGE_KEY = 'lvn-002-progress-v535';
+
+type Persisted = {
+  pageIndex: number;
+  mode: 'lessons' | 'quiz';
+  completedByPage: Record<number, string[]>;
+  quizAnswers?: (number | null)[];
+  quizIdx?: number;
+  quizFinished?: boolean;
+  quizSelected?: number | null;
+  quizSubmitted?: boolean;
 };
 
-export default LVN002ScopeOfPractice;
+function loadProgress(): Persisted | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as Persisted;
+  } catch {
+    return null;
+  }
+}
+
+function saveProgress(data: Persisted) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    /* private mode / quota */
+  }
+}
+
+/** Official Care Indeed navigation mark (non-interactive, non-animated). */
+function BrandMark({ size = 28 }: { size?: number }) {
+  return (
+    <img
+      src="/assets/navigation/logo-careindeed-orange.png"
+      alt=""
+      aria-hidden="true"
+      width={size}
+      height={size}
+      style={{ width: size, height: size, objectFit: 'contain', flexShrink: 0, pointerEvents: 'none', userSelect: 'none' }}
+    />
+  );
+}
+
+export default function LVN002() {
+  const initial = loadProgress();
+  const [mode, setMode] = useState<'lessons' | 'quiz'>(initial?.mode ?? 'lessons');
+  const [pageIndex, setPageIndex] = useState(initial?.pageIndex ?? 0);
+  const [completedByPage, setCompletedByPage] = useState<Record<number, string[]>>(initial?.completedByPage ?? {});
+  const [quizAnswers, setQuizAnswers] = useState<(number | null)[]>(initial?.quizAnswers ?? Array(QUIZ.length).fill(null));
+  const [quizIdx, setQuizIdx] = useState(initial?.quizIdx ?? 0);
+  const [quizFinished, setQuizFinished] = useState(!!initial?.quizFinished);
+  const [quizSelected, setQuizSelected] = useState<number | null>(initial?.quizSelected ?? null);
+  const [quizSubmitted, setQuizSubmitted] = useState(!!initial?.quizSubmitted);
+  const page = PAGES[Math.min(pageIndex, PAGES.length - 1)];
+  const completed = completedByPage[page.id] ?? [];
+
+  const persistAll = (patch?: Partial<Persisted>) => {
+    saveProgress({
+      pageIndex,
+      mode,
+      completedByPage,
+      quizAnswers,
+      quizIdx,
+      quizFinished,
+      quizSelected,
+      quizSubmitted,
+      ...patch,
+    });
+  };
+
+  useEffect(() => {
+    persistAll();
+  }, [pageIndex, mode, completedByPage, quizAnswers, quizIdx, quizFinished, quizSelected, quizSubmitted]);
+
+  const handleSaveExit = () => {
+    persistAll();
+    window.history.back();
+  };
+
+  const handleQuizPersist = useCallback((state: { answers: (number | null)[]; idx: number; finished: boolean; selected: number | null; submitted: boolean }) => {
+    setQuizAnswers(state.answers);
+    setQuizIdx(state.idx);
+    setQuizFinished(state.finished);
+    setQuizSelected(state.selected);
+    setQuizSubmitted(state.submitted);
+  }, []);
+
+  return (
+    <div className="lvn002 lvn002-shell">
+      <style>{STYLES}</style>
+      <header className="lvn002-top">
+        <div className="lvn002-brand">
+          <BrandMark size={28} />
+          <span className="brand-text">LVN Scope</span>
+        </div>
+        <div className="lvn002-tabs" role="tablist" aria-label="Lessons">
+          {PAGES.map((p, i) => (
+            <button key={p.id} type="button" role="tab" aria-selected={mode === 'lessons' && i === pageIndex}
+              className={`lvn002-tab ${mode === 'lessons' && i === pageIndex ? 'active' : ''}`}
+              onClick={() => { setMode('lessons'); setPageIndex(i); }}>
+              {p.shortName}
+            </button>
+          ))}
+          <button type="button" role="tab" aria-selected={mode === 'quiz'}
+            className={`lvn002-tab quiz-tab ${mode === 'quiz' ? 'active' : ''}`}
+            onClick={() => setMode('quiz')}>
+            Knowledge Check
+          </button>
+        </div>
+        <button type="button" className="lvn002-exit" onClick={handleSaveExit}>Save &amp; Exit</button>
+      </header>
+
+      {mode === 'quiz' ? (
+        <QuizPage
+          onBack={() => setMode('lessons')}
+          initialAnswers={quizAnswers}
+          initialIdx={quizIdx}
+          initialFinished={quizFinished}
+          initialSelected={quizSelected}
+          initialSubmitted={quizSubmitted}
+          onPersist={handleQuizPersist}
+        />
+      ) : (
+        <div className="lvn002-work">
+          <aside className="lvn002-left"><LeftPanel page={page} pageIndex={pageIndex} total={PAGES.length} /></aside>
+          <section className="lvn002-right">
+            <RightPanel page={page} completed={completed}
+              setCompleted={(ids) => setCompletedByPage((prev) => ({ ...prev, [page.id]: ids }))}
+              onGoQuiz={() => setMode('quiz')} />
+          </section>
+        </div>
+      )}
+
+      <footer className="lvn002-bot">
+        <button type="button" className="nav" disabled={mode === 'lessons' && pageIndex === 0}
+          onClick={() => {
+            if (mode === 'quiz') setMode('lessons');
+            else setPageIndex((i) => Math.max(0, i - 1));
+          }}>
+          <ChevronLeft size={16} /> Prev
+        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: CI.teal, background: CI.tealSoft, border: `1px solid ${CI.tealMuted}`, borderRadius: 8, padding: '8px 12px' }}>
+            {mode === 'quiz' ? 'Knowledge Check · 10 items · 80% pass' : `Lesson ${pageIndex + 1} of ${PAGES.length} · ${page.shortName}`}
+          </span>
+        </div>
+        {mode === 'quiz' ? (
+          <button type="button" className="next" onClick={() => setMode('lessons')}>Back to Lessons <ChevronRight size={16} /></button>
+        ) : pageIndex === PAGES.length - 1 ? (
+          <button type="button" className="next" onClick={() => setMode('quiz')}>Knowledge Check <ChevronRight size={16} /></button>
+        ) : (
+          <button type="button" className="next" onClick={() => setPageIndex((i) => Math.min(PAGES.length - 1, i + 1))}>Next · {PAGES[pageIndex + 1]?.shortName} <ChevronRight size={16} /></button>
+        )}
+      </footer>
+    </div>
+  );
+}
