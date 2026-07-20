@@ -178,13 +178,10 @@ export class AccountLifecycleService {
       if (op.status === 'completed') {
         return { action: shape.action, canonicalUserId, finalStatus: shape.desired, operationId: op.operationId, resumed: true, postCommitAudit: 'completed' };
       }
-      if (op.status === 'reconciliation_required') {
-        // Recovery from a reconciliation-required record (re-arm + complete) is
-        // Phase 2D. Never guess here — the account stays reserved AND denied.
-        throw svcError('ACCOUNT_LIFECYCLE_RECONCILIATION_REQUIRED',
-          'This account has a lifecycle operation awaiting manual reconciliation.', 409,
-          { failedStep: op.failedStep, failureCode: op.failureCode });
-      }
+      // In-flight (intent_recorded / running) OR reconciliation_required: drive to
+      // completion. Recovery re-attempts the failed step (side effects are
+      // idempotent) and finishes; the account stays denied throughout. The
+      // account is never left half-transitioned or falsely reported done.
       return this.drive(shape, op, life.version, life.providerUsername, req, /* resumed */ true);
     }
 
@@ -210,11 +207,7 @@ export class AccountLifecycleService {
       if (op.status === 'completed') {
         return { action: shape.action, canonicalUserId, finalStatus: shape.desired, operationId: op.operationId, resumed: true, postCommitAudit: 'completed' };
       }
-      if (op.status === 'reconciliation_required') {
-        throw svcError('ACCOUNT_LIFECYCLE_RECONCILIATION_REQUIRED',
-          'This account has a lifecycle operation awaiting manual reconciliation.', 409,
-          { failedStep: op.failedStep, failureCode: op.failureCode });
-      }
+      // In-flight or reconciliation_required → drive/resume to completion.
       return this.drive(shape, op, begin.lifecycle.version, begin.lifecycle.providerUsername, req, true);
     }
     return this.drive(shape, begin.operation, begin.lifecycle.version, begin.lifecycle.providerUsername, req, false);

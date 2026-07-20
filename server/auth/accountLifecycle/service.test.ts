@@ -191,6 +191,33 @@ describe('partial failure → reconciliation (never false success)', () => {
   });
 });
 
+describe('reconciliation recovery (Phase 2D)', () => {
+  it('re-running the same action recovers a reconciliation_required op to completion', async () => {
+    const fail: FailMap = { 'provider.globalSignOut': () => Object.assign(new Error('x'), { name: 'SignOutFailed' }) };
+    const { store, svc, calls } = build({ fail });
+    await seedActive(store);
+    await expect(svc.suspend(REQ)).rejects.toMatchObject({ code: 'ACCOUNT_LIFECYCLE_RECONCILIATION_REQUIRED' });
+    expect((await store.getLifecycle(UID))?.status).toBe('reconciliation_required');
+
+    delete fail['provider.globalSignOut']; // operator fixes the underlying cause
+    calls.length = 0;
+    const res = await svc.suspend(REQ); // operator re-clicks suspend → recovery
+
+    expect(res).toMatchObject({ finalStatus: 'suspended', resumed: true });
+    const life = await store.getLifecycle(UID);
+    expect(life?.status).toBe('suspended');
+    expect(life?.currentOperationId).toBeUndefined();
+    const op = await store.getOperation(UID, res.operationId);
+    expect(op?.status).toBe('completed');
+    expect(op?.failedStep).toBeUndefined(); // markers cleared on completion
+    expect(op?.failureCode).toBeUndefined();
+    // Recovery re-attempts the failed step then finishes; already-done work is not re-run.
+    expect(calls).toContain('provider.globalSignOut');
+    expect(calls).toContain('audit.completed');
+    expect(calls).not.toContain('provider.disableUser');
+  });
+});
+
 describe('post-commit audit is best-effort', () => {
   it('a failed post-commit audit does not reopen or falsify the committed suspension', async () => {
     const { store, svc } = build({ fail: { 'audit.completed': () => new Error('audit down') } });

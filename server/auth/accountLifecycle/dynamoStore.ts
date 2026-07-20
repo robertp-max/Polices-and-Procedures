@@ -230,16 +230,21 @@ export class DynamoAccountLifecycleStore implements AccountLifecycleStore {
           { Update: {
             TableName: this.table, Key: { pk: pk(input.canonicalUserId), sk: skOp(input.operationId) },
             ConditionExpression: 'record.operationVersion = :ev AND record.#s <> :done',
-            UpdateExpression: 'SET record.#s = :done, record.completedSteps = :steps, record.operationVersion = :nv, record.updatedAt = :now',
+            // Clear reconciliation markers: recovery from reconciliation_required
+            // completes here, and a completed op must not retain failedStep/code.
+            UpdateExpression: 'SET record.#s = :done, record.completedSteps = :steps, record.operationVersion = :nv, record.updatedAt = :now REMOVE record.failedStep, record.failureCode',
             ExpressionAttributeNames: { '#s': 'status' },
             ExpressionAttributeValues: { ':ev': input.expectedOperationVersion, ':done': 'completed', ':steps': finalSteps, ':nv': op.operationVersion + 1, ':now': now },
           } },
           { Update: {
             TableName: this.table, Key: { pk: pk(input.canonicalUserId), sk: SK_LIFECYCLE },
-            ConditionExpression: 'record.version = :elv AND record.currentOperationId = :opid AND record.#s = :mid',
+            // Accept completing from the transitional state OR from
+            // reconciliation_required (Phase 2D recovery). Reservation + version
+            // are still strictly enforced, so this is not a weaker check.
+            ConditionExpression: 'record.version = :elv AND record.currentOperationId = :opid AND (record.#s = :mid OR record.#s = :recon)',
             UpdateExpression: 'SET record.#s = :fin, record.lastCompletedOperationId = :opid, record.version = :nlv, record.updatedAt = :now REMOVE record.currentOperationId',
             ExpressionAttributeNames: { '#s': 'status' },
-            ExpressionAttributeValues: { ':elv': input.expectedLifecycleVersion, ':opid': input.operationId, ':mid': op.transitionalStatus, ':fin': input.finalStatus, ':nlv': input.expectedLifecycleVersion + 1, ':now': now },
+            ExpressionAttributeValues: { ':elv': input.expectedLifecycleVersion, ':opid': input.operationId, ':mid': op.transitionalStatus, ':recon': 'reconciliation_required', ':fin': input.finalStatus, ':nlv': input.expectedLifecycleVersion + 1, ':now': now },
           } },
         ],
       }));
@@ -248,9 +253,11 @@ export class DynamoAccountLifecycleStore implements AccountLifecycleStore {
     }
     const { currentOperationId, ...restLife } = life;
     void currentOperationId;
+    const { failedStep, failureCode, ...restOp } = op;
+    void failedStep; void failureCode;
     return {
       lifecycle: { ...restLife, status: input.finalStatus, lastCompletedOperationId: input.operationId, version: input.expectedLifecycleVersion + 1, updatedAt: now },
-      operation: { ...op, status: 'completed', completedSteps: finalSteps, operationVersion: op.operationVersion + 1, updatedAt: now },
+      operation: { ...restOp, status: 'completed', completedSteps: finalSteps, operationVersion: op.operationVersion + 1, updatedAt: now },
     };
   }
 }

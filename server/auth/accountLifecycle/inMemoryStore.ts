@@ -161,6 +161,9 @@ export class InMemoryAccountLifecycleStore implements AccountLifecycleStore {
     const now = this.deps.nowIso();
     if (!op.completedSteps.includes('final_state_committed')) op.completedSteps.push('final_state_committed'); // atomic with the state change
     op.status = 'completed'; op.operationVersion += 1; op.updatedAt = now;
+    // A completed op must not retain reconciliation markers (recovery from
+    // reconciliation_required completes here). Clearing keeps the record truthful.
+    delete op.failedStep; delete op.failureCode;
     cell.lifecycle = {
       ...cell.lifecycle, status: input.finalStatus, currentOperationId: undefined,
       lastCompletedOperationId: op.operationId, version: cell.lifecycle.version + 1, updatedAt: now,
