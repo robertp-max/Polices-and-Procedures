@@ -87,10 +87,11 @@ export type LifecycleStep =
   | 'completion_audited'
   | 'final_state_committed';
 
-/** Durable operation journal record (persisted in Phase 2B; contract defined here). */
+/** Durable operation journal record. */
 export interface LifecycleOperationRecord {
   operationId: string;
-  idempotencyKey: string;
+  /** sha256 of the idempotency key. The raw key is never persisted. */
+  idempotencyKeyHash: string;
   /** Immutable fingerprint of the intent inputs — detects same-key/different-request. */
   requestFingerprint: string;
   action: LifecycleAction;
@@ -104,6 +105,8 @@ export interface LifecycleOperationRecord {
   operationVersion: number;
   expectedLifecycleVersion: number;
   beforeStatus: AccountLifecycleStatus;
+  /** The transitional lifecycle state this operation reserved (suspending/reactivating). */
+  transitionalStatus: AccountLifecycleStatus;
   desiredStatus: AccountLifecycleStatus;
   completedSteps: LifecycleStep[];
   failedStep?: LifecycleStep;

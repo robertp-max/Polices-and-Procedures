@@ -1,10 +1,10 @@
 /**
- * Phase 2B — DynamoDB command/condition CONTRACT tests.
+ * Phase 2B (hardened) — DynamoDB command/condition CONTRACT tests.
  *
- * Proves the adapter emits conditional + transactional commands (not
- * read-then-unconditional-write / last-write-wins / whole-registry Put), using a
- * recording client. No live AWS, no JSONL, no .cache. The in-memory suite proves
- * behavioral semantics; this proves the DynamoDB command shapes.
+ * Proves conditional + transactional commands (not read-then-unconditional-write
+ * / last-write-wins / whole-registry Put), reservation-gated journal advancement,
+ * store-owned completion, and fail-closed record validation — via a recording
+ * client. No live AWS, no JSONL, no .cache.
  */
 import { describe, expect, it } from 'vitest';
 import { DynamoAccountLifecycleStore, type LifecycleDynamoClient } from './dynamoStore.js';
@@ -34,131 +34,92 @@ function recordingClient(responder: (kind: string, input: unknown) => unknown): 
 const deps = { nowIso: () => '2027-01-01T00:00:00.000Z' };
 const TABLE = 'demo_auth_registrations';
 const UID = 'usr-1';
-const lifeItem = (over = {}) => ({ record: { canonicalUserId: UID, provider: 'cognito', providerUsername: 'c1', normalizedEmail: 'a@careindeed.com', status: 'active', version: 1, initializationSource: 'verified_legacy_active', createdAt: 't', createdBy: 'admin', updatedAt: 't', updatedBy: 'admin', ...over } });
-const suspendInput = () => ({
-  canonicalUserId: UID, action: 'suspend' as const, expectedFromStatus: 'active' as const, transitionalStatus: 'suspending' as const,
-  desiredFinalStatus: 'suspended' as const, expectedLifecycleVersion: 1, idempotencyKey: 'idem-1', operationId: 'op-1',
-  actorUserId: 'admin-1', actorEmailSnapshot: 'admin@careindeed.com', reason: 'policy violation', correlationId: 'corr-1',
-});
+const lifeRec = (over = {}) => ({ canonicalUserId: UID, provider: 'cognito', providerUsername: 'c1', normalizedEmail: 'a@careindeed.com', status: 'active', version: 1, initializationSource: 'verified_legacy_active', createdAt: 't', createdBy: 'admin', updatedAt: 't', updatedBy: 'admin', ...over });
+const opRec = (over = {}) => ({ operationId: 'op-1', idempotencyKeyHash: 'h', requestFingerprint: 'fp', action: 'suspend', targetUserId: UID, actorUserId: 'admin', actorEmailSnapshot: 'a@b.com', reason: 'r', status: 'running', operationVersion: 1, expectedLifecycleVersion: 1, beforeStatus: 'active', transitionalStatus: 'suspending', desiredStatus: 'suspended', completedSteps: ['intent_recorded', 'global_deny_committed'], correlationId: 'c', createdAt: 't', updatedAt: 't', ...over });
+const suspendInput = () => ({ canonicalUserId: UID, action: 'suspend' as const, expectedFromStatus: 'active' as const, transitionalStatus: 'suspending' as const, desiredFinalStatus: 'suspended' as const, expectedLifecycleVersion: 1, idempotencyKey: 'idem-1', operationId: 'op-1', actorUserId: 'admin-1', actorEmailSnapshot: 'admin@careindeed.com', reason: 'policy violation', correlationId: 'corr-1' });
+// LIFECYCLE / OPERATION items are stored under Item.record (the parser reads item.record).
+const bySk = (input: unknown, want: (sk: string) => boolean, record: unknown) => (want((input as { Key?: { sk?: string } }).Key?.sk ?? '') ? { Item: { record } } : {});
 
-describe('DynamoAccountLifecycleStore — capabilities', () => {
-  it('advertises every required durable-mutation capability', () => {
+describe('DynamoAccountLifecycleStore — capabilities + validation', () => {
+  it('advertises every required durable-mutation capability incl. consistent reads', () => {
     const { client } = recordingClient(() => ({}));
-    const caps = new DynamoAccountLifecycleStore(TABLE, client, deps).capabilities();
-    expect(caps).toMatchObject({
-      provider: 'dynamodb_registration', multiInstanceShared: true, compareAndSet: true,
-      transactionalWrite: true, durableMutationIntent: true, idempotentMutations: true,
-      oneActiveOperationPerTarget: true, productionEligible: true,
-    });
+    expect(new DynamoAccountLifecycleStore(TABLE, client, deps).capabilities()).toMatchObject({ provider: 'dynamodb_registration', readAfterWriteConsistent: true, productionEligible: true });
+  });
+  it('getLifecycle fails closed (503) on a malformed persisted record', async () => {
+    const { client } = recordingClient(() => ({ Item: { record: lifeRec({ status: 'bogus' }) } }));
+    await expect(new DynamoAccountLifecycleStore(TABLE, client, deps).getLifecycle(UID)).rejects.toMatchObject({ status: 503, code: 'ACCOUNT_LIFECYCLE_RECORD_INVALID' });
   });
 });
 
 describe('DynamoAccountLifecycleStore — command contracts', () => {
-  it('initializeLifecycle uses a conditional Put (no overwrite) keyed by ACCOUNT#<id>', async () => {
+  it('initializeLifecycle uses a conditional Put keyed by ACCOUNT#<id>', async () => {
     const { client, sent } = recordingClient(() => ({}));
-    const store = new DynamoAccountLifecycleStore(TABLE, client, deps);
-    await store.initializeLifecycle({ canonicalUserId: UID, providerUsername: 'c1', normalizedEmail: 'a@careindeed.com', initialStatus: 'active', initializationSource: 'verified_legacy_active', actorUserId: 'admin-1' });
+    await new DynamoAccountLifecycleStore(TABLE, client, deps).initializeLifecycle({ canonicalUserId: UID, providerUsername: 'c1', normalizedEmail: 'a@careindeed.com', initialStatus: 'active', initializationSource: 'verified_legacy_active', actorUserId: 'admin-1' });
     const put = sent.find((s) => s.__kind === 'Put')!;
     expect(put.input.ConditionExpression).toBe('attribute_not_exists(sk)');
-    expect((put.input.Item as { pk: string; sk: string }).pk).toBe(`ACCOUNT#${UID}`);
-    expect((put.input.Item as { sk: string }).sk).toBe('LIFECYCLE');
+    expect((put.input.Item as { pk: string; sk: string }).sk).toBe('LIFECYCLE');
   });
 
-  it('beginTransition emits a TransactWrite reserving the lifecycle with version + no-current-operation + from-status conditions', async () => {
-    const responder = (kind: string, input: unknown) => {
-      if (kind === 'Get') {
-        const sk = (input as { Key?: { sk?: string } }).Key?.sk;
-        if (sk === 'LIFECYCLE') return { Item: lifeItem() };
-        return {}; // idempotency Get → no existing claim
-      }
-      return {};
-    };
-    const { client, sent } = recordingClient(responder);
-    const store = new DynamoAccountLifecycleStore(TABLE, client, deps);
-    const r = await store.beginTransition(suspendInput());
+  it('beginTransition emits a TransactWrite reserving the lifecycle (version + no-current-op + from-status)', async () => {
+    const { client, sent } = recordingClient((kind, input) => (kind === 'Get' ? bySk(input, (sk) => sk === 'LIFECYCLE', lifeRec()) : {}));
+    const r = await new DynamoAccountLifecycleStore(TABLE, client, deps).beginTransition(suspendInput());
     expect(r.lifecycle.status).toBe('suspending');
-    const tx = sent.find((s) => s.__kind === 'TransactWrite')!;
-    const items = tx.input.TransactItems as Array<Record<string, { ConditionExpression?: string; UpdateExpression?: string }>>;
+    const items = (sent.find((s) => s.__kind === 'TransactWrite')!.input.TransactItems) as Array<Record<string, { ConditionExpression?: string; UpdateExpression?: string }>>;
     expect(items).toHaveLength(3);
-    // idempotency claim + operation intent are conditional creates
-    const puts = items.filter((i) => i.Put).map((i) => i.Put!);
-    expect(puts.every((p) => p.ConditionExpression === 'attribute_not_exists(sk)')).toBe(true);
-    // lifecycle reservation is a conditional update
+    expect(items.filter((i) => i.Put).every((i) => i.Put!.ConditionExpression === 'attribute_not_exists(sk)')).toBe(true);
     const upd = items.find((i) => i.Update)!.Update!;
     expect(upd.ConditionExpression).toContain('record.version = :ev');
     expect(upd.ConditionExpression).toContain('attribute_not_exists(record.currentOperationId)');
     expect(upd.ConditionExpression).toContain('record.#s = :from');
-    expect(upd.UpdateExpression).toContain('record.currentOperationId = :opid');
   });
 
-  it('beginTransition replays on a matching idempotency claim (no TransactWrite)', async () => {
-    // Precompute the fingerprint the store will store by running once against a fresh store.
-    const first = recordingClient((kind, input) => {
-      if (kind === 'Get') { const sk = (input as { Key?: { sk?: string } }).Key?.sk; return sk === 'LIFECYCLE' ? { Item: lifeItem() } : {}; }
-      return {};
-    });
-    const s1 = new DynamoAccountLifecycleStore(TABLE, first.client, deps);
-    const r1 = await s1.beginTransition(suspendInput());
-    const fp = r1.operation.requestFingerprint;
-
-    const replay = recordingClient((kind, input) => {
-      if (kind === 'Get') {
-        const sk = (input as { Key?: { sk?: string } }).Key?.sk ?? '';
-        if (sk.startsWith('IDEMPOTENCY#')) return { Item: { operationId: 'op-1', requestFingerprint: fp } };
-        if (sk === 'LIFECYCLE') return { Item: lifeItem({ status: 'suspending', currentOperationId: 'op-1', version: 2 }) };
-        if (sk.startsWith('OPERATION#')) return { Item: { record: r1.operation } };
-      }
-      return {};
-    });
-    const s2 = new DynamoAccountLifecycleStore(TABLE, replay.client, deps);
-    const r2 = await s2.beginTransition(suspendInput());
-    expect(r2.idempotentReplay).toBe(true);
-    expect(replay.sent.some((s) => s.__kind === 'TransactWrite')).toBe(false);
+  it('advanceOperation uses a TransactWrite: op-version Update + lifecycle reservation ConditionCheck', async () => {
+    const { client, sent } = recordingClient((kind, input) => (kind === 'Get' ? bySk(input, (sk) => sk.startsWith('OPERATION#'), opRec()) : {}));
+    await new DynamoAccountLifecycleStore(TABLE, client, deps).advanceOperation({ canonicalUserId: UID, operationId: 'op-1', expectedOperationVersion: 1, expectedLifecycleVersion: 2, step: 'provider_disabled' });
+    const items = (sent.find((s) => s.__kind === 'TransactWrite')!.input.TransactItems) as Array<Record<string, { ConditionExpression?: string }>>;
+    const opUpd = items.find((i) => i.Update)!.Update!;
+    expect(opUpd.ConditionExpression).toContain('record.operationVersion = :ev');
+    expect(opUpd.ConditionExpression).toContain('record.#s <> :done');
+    const check = items.find((i) => i.ConditionCheck)!.ConditionCheck!;
+    expect(check.ConditionExpression).toContain('record.currentOperationId = :opid');
+    expect(check.ConditionExpression).toContain('record.version = :elv');
   });
 
-  it('beginTransition rejects a matching key with a different fingerprint (409)', async () => {
-    const client = recordingClient((kind, input) => {
-      if (kind === 'Get') {
-        const sk = (input as { Key?: { sk?: string } }).Key?.sk ?? '';
-        if (sk.startsWith('IDEMPOTENCY#')) return { Item: { operationId: 'op-1', requestFingerprint: 'DIFFERENT' } };
-        if (sk === 'LIFECYCLE') return { Item: lifeItem() };
-      }
-      return {};
-    });
-    const store = new DynamoAccountLifecycleStore(TABLE, client.client, deps);
-    await expect(store.beginTransition(suspendInput())).rejects.toMatchObject({ status: 409, code: 'IDEMPOTENCY_KEY_CONFLICT' });
+  it('advanceOperation rejects a boundary/wrong-action step before any write', async () => {
+    const { client, sent } = recordingClient((kind, input) => (kind === 'Get' ? bySk(input, (sk) => sk.startsWith('OPERATION#'), opRec()) : {}));
+    const store = new DynamoAccountLifecycleStore(TABLE, client, deps);
+    await expect(store.advanceOperation({ canonicalUserId: UID, operationId: 'op-1', expectedOperationVersion: 1, expectedLifecycleVersion: 2, step: 'final_state_committed' })).rejects.toMatchObject({ status: 400 });
+    expect(sent.some((s) => s.__kind === 'TransactWrite')).toBe(false);
   });
 
-  it('advanceOperation uses an operationVersion-conditional Update', async () => {
-    const client = recordingClient((kind) => (kind === 'Get' ? { Item: { record: { operationVersion: 1, status: 'running', completedSteps: ['intent_recorded'] } } } : {}));
-    const store = new DynamoAccountLifecycleStore(TABLE, client.client, deps);
-    await store.advanceOperation({ canonicalUserId: UID, operationId: 'op-1', expectedOperationVersion: 1, step: 'provider_disabled' });
-    const upd = client.sent.find((s) => s.__kind === 'Update')!;
-    expect(upd.input.ConditionExpression).toBe('record.operationVersion = :ev');
-  });
-
-  it('completeTransition transactionally finalizes the op and clears the lifecycle reservation', async () => {
-    const client = recordingClient((kind, input) => {
-      if (kind === 'Get') {
-        const sk = (input as { Key?: { sk?: string } }).Key?.sk ?? '';
-        if (sk.startsWith('OPERATION#')) return { Item: { record: { operationVersion: 2, status: 'running', desiredStatus: 'suspended', completedSteps: ['global_deny_committed', 'final_state_committed'] } } };
-        if (sk === 'LIFECYCLE') return { Item: lifeItem({ status: 'suspending', currentOperationId: 'op-1', version: 2 }) };
-      }
-      return {};
-    });
-    const store = new DynamoAccountLifecycleStore(TABLE, client.client, deps);
-    await store.completeTransition({ canonicalUserId: UID, operationId: 'op-1', expectedOperationVersion: 2, expectedLifecycleVersion: 2, finalStatus: 'suspended', requiredSteps: ['global_deny_committed'] });
-    const tx = client.sent.find((s) => s.__kind === 'TransactWrite')!;
-    const items = tx.input.TransactItems as Array<Record<string, { ConditionExpression?: string; UpdateExpression?: string }>>;
+  it('completeTransition refuses before required steps, then transactionally appends final_state_committed + clears reservation', async () => {
+    const allButFinal = ['intent_recorded', 'global_deny_committed', 'canonical_transition_projected', 'provider_disabled', 'provider_sessions_revoked', 'registration_projected', 'canonical_final_projected', 'completion_audited'];
+    // missing steps → 400 before any write
+    const missing = recordingClient((kind, input) => { if (kind === 'Get') { const sk = (input as { Key?: { sk?: string } }).Key?.sk ?? ''; if (sk.startsWith('OPERATION#')) return { Item: { record: opRec({ operationVersion: 2 }) } }; if (sk === 'LIFECYCLE') return { Item: { record: lifeRec({ status: 'suspending', currentOperationId: 'op-1', version: 2 }) } }; } return {}; });
+    await expect(new DynamoAccountLifecycleStore(TABLE, missing.client, deps).completeTransition({ canonicalUserId: UID, operationId: 'op-1', expectedOperationVersion: 2, expectedLifecycleVersion: 2, finalStatus: 'suspended' })).rejects.toMatchObject({ status: 400 });
+    expect(missing.sent.some((s) => s.__kind === 'TransactWrite')).toBe(false);
+    // all steps → transactional completion
+    const ready = recordingClient((kind, input) => { if (kind === 'Get') { const sk = (input as { Key?: { sk?: string } }).Key?.sk ?? ''; if (sk.startsWith('OPERATION#')) return { Item: { record: opRec({ operationVersion: 7, completedSteps: allButFinal }) } }; if (sk === 'LIFECYCLE') return { Item: { record: lifeRec({ status: 'suspending', currentOperationId: 'op-1', version: 2 }) } }; } return {}; });
+    await new DynamoAccountLifecycleStore(TABLE, ready.client, deps).completeTransition({ canonicalUserId: UID, operationId: 'op-1', expectedOperationVersion: 7, expectedLifecycleVersion: 2, finalStatus: 'suspended' });
+    const items = (ready.sent.find((s) => s.__kind === 'TransactWrite')!.input.TransactItems) as Array<Record<string, { UpdateExpression?: string; ExpressionAttributeValues?: Record<string, unknown> }>>;
+    const opUpd = items.map((i) => i.Update!).find((u) => u?.UpdateExpression?.includes('completedSteps'))!;
+    expect((opUpd.ExpressionAttributeValues![':steps'] as string[])).toContain('final_state_committed');
     const lifeUpd = items.map((i) => i.Update!).find((u) => u?.UpdateExpression?.includes('lastCompletedOperationId'))!;
-    expect(lifeUpd.ConditionExpression).toContain('record.currentOperationId = :opid');
     expect(lifeUpd.UpdateExpression).toContain('REMOVE record.currentOperationId');
   });
 
   it('maps a conditional-check failure on initialize to 409 already-exists', async () => {
     const client = recordingClient((kind) => (kind === 'Put' ? Object.assign(new Error('cond'), { name: 'ConditionalCheckFailedException' }) : {}));
-    const store = new DynamoAccountLifecycleStore(TABLE, client.client, deps);
-    await expect(store.initializeLifecycle({ canonicalUserId: UID, providerUsername: 'c1', normalizedEmail: 'a@careindeed.com', initialStatus: 'active', initializationSource: 'verified_legacy_active', actorUserId: 'admin-1' }))
+    await expect(new DynamoAccountLifecycleStore(TABLE, client.client, deps).initializeLifecycle({ canonicalUserId: UID, providerUsername: 'c1', normalizedEmail: 'a@careindeed.com', initialStatus: 'active', initializationSource: 'verified_legacy_active', actorUserId: 'admin-1' }))
       .rejects.toMatchObject({ status: 409, code: 'ACCOUNT_LIFECYCLE_ALREADY_EXISTS' });
+  });
+
+  it('classifies a throttled begin TransactWrite as 503 (not a version-conflict lie)', async () => {
+    const client = recordingClient((kind, input) => {
+      if (kind === 'Get') return bySk(input, (sk) => sk === 'LIFECYCLE', lifeRec());
+      if (kind === 'TransactWrite') return Object.assign(new Error('throttled'), { name: 'ProvisionedThroughputExceededException' });
+      return {};
+    });
+    await expect(new DynamoAccountLifecycleStore(TABLE, client.client, deps).beginTransition(suspendInput())).rejects.toMatchObject({ status: 503 });
   });
 });

@@ -17,6 +17,7 @@ import type {
   LifecycleAction,
   LifecycleInitializationSource,
   LifecycleOperationRecord,
+  LifecycleOperationStatus,
   LifecycleStep,
 } from './types.js';
 import type { LegacyLifecycleAssessment } from './types.js';
@@ -71,6 +72,11 @@ export const ERR = {
   idempotencyConflict: () => lifecycleError('IDEMPOTENCY_KEY_CONFLICT', 'Idempotency key reused with a different request.', 409),
   alreadyExists: () => lifecycleError('ACCOUNT_LIFECYCLE_ALREADY_EXISTS', 'Account lifecycle record already exists.', 409),
   invalidTransition: (m: string) => lifecycleError('validation_error', m, 400),
+  recordInvalid: () => lifecycleError('ACCOUNT_LIFECYCLE_RECORD_INVALID', 'Persisted account lifecycle record is malformed.', 503),
+  operationRecordInvalid: () => lifecycleError('LIFECYCLE_OPERATION_RECORD_INVALID', 'Persisted lifecycle operation record is malformed.', 503),
+  contended: () => lifecycleError('ACCOUNT_LIFECYCLE_CONTENDED', 'Account lifecycle transaction contended; retry.', 409),
+  throttled: () => lifecycleError('ACCOUNT_LIFECYCLE_STORE_UNAVAILABLE', 'Account lifecycle store is throttled/unavailable; retry.', 503),
+  storeError: () => lifecycleError('ACCOUNT_LIFECYCLE_STORE_ERROR', 'Account lifecycle store failure.', 500),
 };
 
 /* ── idempotency + request fingerprint ────────────────────────────────────── */
@@ -141,6 +147,129 @@ export function validateTransitionRequest(input: {
   throw ERR.invalidTransition(`Unsupported lifecycle transition: ${action} ${from}→${mid}→${fin}.`);
 }
 
+/* ── store-owned step vocabulary ──────────────────────────────────────────── */
+
+// The COMPLETE set of steps required to finish each action, in order. The store
+// — not the caller — owns these; completion is refused unless all are present.
+export const SUSPEND_REQUIRED_STEPS: readonly LifecycleStep[] = [
+  'intent_recorded', 'global_deny_committed', 'canonical_transition_projected',
+  'provider_disabled', 'provider_sessions_revoked', 'registration_projected',
+  'canonical_final_projected', 'completion_audited', 'final_state_committed',
+];
+export const REACTIVATE_REQUIRED_STEPS: readonly LifecycleStep[] = [
+  'intent_recorded', 'global_deny_committed', 'canonical_transition_projected',
+  'provider_enabled', 'registration_projected', 'canonical_final_projected',
+  'completion_audited', 'final_state_committed',
+];
+export function requiredStepsForAction(action: LifecycleAction): readonly LifecycleStep[] {
+  return action === 'suspend' ? SUSPEND_REQUIRED_STEPS : REACTIVATE_REQUIRED_STEPS;
+}
+
+// Steps `advanceOperation` may append: the required set MINUS the store-committed
+// boundary steps (intent/global-deny are set by begin; final_state_committed only
+// by completeTransition).
+const NON_ADVANCEABLE: ReadonlySet<LifecycleStep> = new Set<LifecycleStep>([
+  'intent_recorded', 'global_deny_committed', 'final_state_committed',
+]);
+export function assertAdvanceableStep(action: LifecycleAction, step: LifecycleStep): void {
+  if (NON_ADVANCEABLE.has(step)) throw ERR.invalidTransition(`Step '${step}' cannot be advanced manually.`);
+  if (!requiredStepsForAction(action).includes(step)) throw ERR.invalidTransition(`Step '${step}' does not belong to action '${action}'.`);
+}
+
+/* ── identifier + record validation (fail-closed) ─────────────────────────── */
+
+const ID_MAX = 256;
+/** Validate a required key-bearing identifier: nonempty, bounded, no control chars. */
+export function validateIdentifier(name: string, value: unknown): string {
+  if (typeof value !== 'string' || value.length === 0) throw lifecycleError('validation_error', `${name} is required.`, 400);
+  if (value.length > ID_MAX) throw lifecycleError('validation_error', `${name} is too long.`, 400);
+  if (CONTROL_CHARS.test(value)) throw lifecycleError('validation_error', `${name} contains control characters.`, 400);
+  return value;
+}
+
+const LIFECYCLE_STATUSES: ReadonlySet<string> = new Set<AccountLifecycleStatus>([
+  'pending', 'activating', 'active', 'suspending', 'suspended', 'reactivating', 'disabled', 'reconciliation_required',
+]);
+const OP_STATUSES: ReadonlySet<string> = new Set<LifecycleOperationStatus>([
+  'intent_recorded', 'running', 'reconciliation_required', 'completed', 'failed_without_mutation',
+]);
+const ALL_STEPS: ReadonlySet<string> = new Set<LifecycleStep>([
+  'intent_recorded', 'global_deny_committed', 'canonical_transition_projected', 'provider_disabled',
+  'provider_sessions_revoked', 'provider_enabled', 'registration_projected', 'canonical_final_projected',
+  'completion_audited', 'final_state_committed',
+]);
+const INIT_SOURCES: ReadonlySet<string> = new Set<LifecycleInitializationSource>([
+  'verified_legacy_active', 'manual_reconciliation', 'account_provisioning',
+]);
+const isPosInt = (n: unknown): n is number => typeof n === 'number' && Number.isInteger(n) && n > 0;
+
+/**
+ * Parse an untrusted persisted lifecycle record. Malformed data fails CLOSED
+ * (503) — it is never returned, and never interpreted as active.
+ */
+export function parseLifecycleRecord(raw: unknown, expectedId: string): AccountLifecycleRecord {
+  const r = raw as Partial<AccountLifecycleRecord> | null | undefined;
+  if (!r || typeof r !== 'object') throw ERR.recordInvalid();
+  if (r.canonicalUserId !== expectedId) throw ERR.recordInvalid();
+  if (r.provider !== 'cognito') throw ERR.recordInvalid();
+  if (!LIFECYCLE_STATUSES.has(r.status as string)) throw ERR.recordInvalid();
+  if (!isPosInt(r.version)) throw ERR.recordInvalid();
+  if (!INIT_SOURCES.has(r.initializationSource as string)) throw ERR.recordInvalid();
+  if (typeof r.providerUsername !== 'string' || typeof r.normalizedEmail !== 'string') throw ERR.recordInvalid();
+  if (r.currentOperationId !== undefined && typeof r.currentOperationId !== 'string') throw ERR.recordInvalid();
+  return r as AccountLifecycleRecord;
+}
+
+/**
+ * Parse an untrusted persisted operation record. Malformed data fails CLOSED (503).
+ */
+export function parseOperationRecord(raw: unknown, expectedTargetId: string, expectedOperationId: string): LifecycleOperationRecord {
+  const r = raw as Partial<LifecycleOperationRecord> | null | undefined;
+  if (!r || typeof r !== 'object') throw ERR.operationRecordInvalid();
+  if (r.operationId !== expectedOperationId) throw ERR.operationRecordInvalid();
+  if (r.targetUserId !== expectedTargetId) throw ERR.operationRecordInvalid();
+  if (r.action !== 'suspend' && r.action !== 'reactivate') throw ERR.operationRecordInvalid();
+  if (!OP_STATUSES.has(r.status as string)) throw ERR.operationRecordInvalid();
+  if (!isPosInt(r.operationVersion)) throw ERR.operationRecordInvalid();
+  if (!Array.isArray(r.completedSteps) || !r.completedSteps.every((s) => ALL_STEPS.has(s as string))) throw ERR.operationRecordInvalid();
+  if (!LIFECYCLE_STATUSES.has(r.transitionalStatus as string) || !LIFECYCLE_STATUSES.has(r.desiredStatus as string)) throw ERR.operationRecordInvalid();
+  if (typeof r.requestFingerprint !== 'string' || typeof r.idempotencyKeyHash !== 'string') throw ERR.operationRecordInvalid();
+  return r as LifecycleOperationRecord;
+}
+
+/* ── DynamoDB transaction-cancellation classification ─────────────────────── */
+
+interface CancellationReason { Code?: string }
+/**
+ * Classify a DynamoDB error into a typed lifecycle error. A conditional check
+ * failure on a specific item maps to a precise 409; contention/throttling map to
+ * retryable/503; validation/IAM/infra map to 500; unknown fails closed (500).
+ * `slots` names each TransactItems index so a ConditionalCheckFailed can be
+ * attributed (e.g. ['idempotency','operation','lifecycle']).
+ */
+export function classifyDynamoError(e: unknown, slots: string[] = []): ApiError {
+  const name = (e as { name?: string })?.name ?? '';
+  if (name === 'ConditionalCheckFailedException') return ERR.versionConflict();
+  if (name === 'ProvisionedThroughputExceededException' || name === 'ThrottlingException' || name === 'RequestLimitExceeded') return ERR.throttled();
+  if (name === 'TransactionCanceledException') {
+    const reasons = ((e as { CancellationReasons?: CancellationReason[] }).CancellationReasons) ?? [];
+    const codes = reasons.map((r) => r?.Code ?? 'None');
+    const condIdx = codes.findIndex((c) => c === 'ConditionalCheckFailed');
+    if (condIdx >= 0) {
+      const slot = slots[condIdx];
+      if (slot === 'idempotency') return ERR.idempotencyConflict();
+      if (slot === 'operation') return ERR.operationVersionConflict();
+      return ERR.versionConflict(); // lifecycle reservation
+    }
+    if (codes.some((c) => c === 'TransactionConflict')) return ERR.contended();
+    if (codes.some((c) => c === 'ProvisionedThroughputExceeded' || c === 'ThrottlingError' || c === 'RequestLimitExceeded')) return ERR.throttled();
+    if (codes.some((c) => c === 'ValidationError' || c === 'AccessDenied')) return ERR.storeError();
+    return ERR.storeError(); // unknown cancellation → fail closed
+  }
+  if (name === 'ValidationException' || name === 'AccessDeniedException' || name === 'ResourceNotFoundException') return ERR.storeError();
+  return ERR.storeError();
+}
+
 /* ── store interface + input types ────────────────────────────────────────── */
 
 export interface InitializeLifecycleInput {
@@ -176,8 +305,9 @@ export interface AdvanceLifecycleOperationInput {
   canonicalUserId: string;
   operationId: string;
   expectedOperationVersion: number;
+  /** Reservation check: the lifecycle must still be reserved by this operation. */
+  expectedLifecycleVersion: number;
   step: LifecycleStep;
-  nextStatus?: LifecycleOperationRecord['status'];
 }
 export interface MarkReconciliationRequiredInput {
   canonicalUserId: string;
@@ -193,7 +323,7 @@ export interface CompleteLifecycleTransitionInput {
   expectedOperationVersion: number;
   expectedLifecycleVersion: number;
   finalStatus: AccountLifecycleStatus;
-  requiredSteps: LifecycleStep[];
+  // No caller-supplied required steps: the store derives them from operation.action.
 }
 
 export interface AccountLifecycleStore {
@@ -215,8 +345,8 @@ export interface LifecycleStoreDeps {
 /* ── capability gate ──────────────────────────────────────────────────────── */
 
 const REQUIRED_MUTATION_CAPS: (keyof AccountLifecycleStoreCapabilities)[] = [
-  'multiInstanceShared', 'compareAndSet', 'transactionalWrite',
-  'durableMutationIntent', 'idempotentMutations', 'oneActiveOperationPerTarget', 'productionEligible',
+  'multiInstanceShared', 'compareAndSet', 'transactionalWrite', 'durableMutationIntent',
+  'idempotentMutations', 'oneActiveOperationPerTarget', 'readAfterWriteConsistent', 'productionEligible',
 ];
 
 /** Throw 503 ACCOUNT_LIFECYCLE_MUTATION_UNAVAILABLE unless every required capability holds. */
