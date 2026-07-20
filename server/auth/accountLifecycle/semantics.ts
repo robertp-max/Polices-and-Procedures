@@ -44,6 +44,8 @@ export const REACTIVATE_STEP_ORDER: readonly SemanticLifecycleStep[] = [
 ];
 /** Steps the store commits itself (begin / complete), never advanced manually. */
 const BOUNDARY_STEPS: ReadonlySet<SemanticLifecycleStep> = new Set(['intent_recorded', 'global_deny_committed', 'final_state_committed']);
+/** Steps committed atomically by beginTransition — never eligible as a failedStep. */
+const BEGIN_STEPS: ReadonlySet<SemanticLifecycleStep> = new Set(['intent_recorded', 'global_deny_committed']);
 
 export function stepOrderForAction(action: LifecycleAction): readonly SemanticLifecycleStep[] {
   return action === 'suspend' ? SUSPEND_STEP_ORDER : REACTIVATE_STEP_ORDER;
@@ -150,11 +152,34 @@ function validateFailureCode(code: string): string {
   return c;
 }
 
+/** Defense-in-depth: the operation's transitional/desired pair must match its action. */
+function assertOperationShape(op: OperationView): void {
+  const ok = op.action === 'suspend'
+    ? op.transitionalStatus === 'suspending' && op.desiredStatus === 'suspended'
+    : op.transitionalStatus === 'reactivating' && op.desiredStatus === 'active';
+  if (!ok) throw planError('LIFECYCLE_OP_SHAPE_INVALID', `Operation shape does not match action '${op.action}'.`, 409);
+}
+
+/** Recursively freeze a plan so returned plans are truly immutable. */
+function freezePlan(plan: LifecycleMutationPlan): LifecycleMutationPlan {
+  Object.freeze(plan.expect.lifecycleStatusIn);
+  if (plan.expect.operationStatusIn) Object.freeze(plan.expect.operationStatusIn);
+  Object.freeze(plan.expect.reservation);
+  Object.freeze(plan.expect);
+  Object.freeze(plan.writes.completedSteps);
+  Object.freeze(plan.writes.currentOperationId);
+  Object.freeze(plan.writes.lastCompletedOperationId);
+  Object.freeze(plan.writes.failedStep);
+  Object.freeze(plan.writes.failureCode);
+  Object.freeze(plan.writes);
+  return Object.freeze(plan);
+}
+
 /* ── planners ─────────────────────────────────────────────────────────────── */
 
 export function planBeginTransition(intent: BeginTransitionIntent): LifecycleMutationPlan {
   assertActionTriple(intent);
-  return {
+  return freezePlan({
     effect: 'begin',
     expect: {
       lifecycleVersion: intent.expectedLifecycleVersion,
@@ -173,10 +198,11 @@ export function planBeginTransition(intent: BeginTransitionIntent): LifecycleMut
       failedStep: { action: 'remove' },
       failureCode: { action: 'remove' },
     },
-  };
+  });
 }
 
 export function planAdvanceOperation(life: LifecycleView, op: OperationView, step: SemanticLifecycleStep): LifecycleMutationPlan {
+  assertOperationShape(op);
   if (op.status === 'completed') throw planError('LIFECYCLE_OP_TERMINAL', 'A completed operation cannot advance.', 409);
   if (!ADVANCE_STATUSES.has(op.status)) throw planError('LIFECYCLE_OP_STATUS_INVALID', `Operation status '${op.status}' cannot advance.`, 409);
   assertAdvanceStep(op.action, step, op.completedSteps);
@@ -189,7 +215,7 @@ export function planAdvanceOperation(life: LifecycleView, op: OperationView, ste
   };
   // Duplicate valid step → no-op plan that STILL carries reservation/version proof.
   if (op.completedSteps.includes(step)) {
-    return {
+    return freezePlan({
       effect: 'advance_noop',
       expect: reservationExpect,
       writes: {
@@ -197,9 +223,9 @@ export function planAdvanceOperation(life: LifecycleView, op: OperationView, ste
         lastCompletedOperationId: { action: 'preserve' }, operationStatus: op.status, operationVersion: op.operationVersion,
         completedSteps: [...op.completedSteps], failedStep: { action: 'preserve' }, failureCode: { action: 'preserve' },
       },
-    };
+    });
   }
-  return {
+  return freezePlan({
     effect: 'advance',
     expect: reservationExpect,
     writes: {
@@ -207,16 +233,21 @@ export function planAdvanceOperation(life: LifecycleView, op: OperationView, ste
       lastCompletedOperationId: { action: 'preserve' }, operationStatus: 'running', operationVersion: op.operationVersion + 1,
       completedSteps: [...op.completedSteps, step], failedStep: { action: 'preserve' }, failureCode: { action: 'preserve' },
     },
-  };
+  });
 }
 
 export function planMarkReconciliationRequired(life: LifecycleView, op: OperationView, failedStep: SemanticLifecycleStep, failureCode: string): LifecycleMutationPlan {
+  assertOperationShape(op);
   if (op.status === 'completed') throw planError('LIFECYCLE_OP_TERMINAL', 'A completed operation cannot be reconciled.', 409);
   if (!RECONCILE_STATUSES.has(op.status)) throw planError('LIFECYCLE_OP_STATUS_INVALID', `Operation status '${op.status}' cannot enter reconciliation.`, 409);
   const order = stepOrderForAction(op.action);
   if (!order.includes(failedStep)) throw planError('LIFECYCLE_FAILED_STEP_WRONG_ACTION', `failedStep '${failedStep}' does not belong to action '${op.action}'.`);
+  // The atomic beginning steps are committed by beginTransition; they can never be
+  // an unresolved downstream failure. (final_state_committed IS eligible — it
+  // represents a failed final durable transaction.)
+  if (BEGIN_STEPS.has(failedStep)) throw planError('LIFECYCLE_FAILED_STEP_ILLEGAL', `failedStep '${failedStep}' is committed by beginTransition and cannot fail downstream.`);
   const code = validateFailureCode(failureCode);
-  return {
+  return freezePlan({
     effect: 'reconcile',
     expect: {
       lifecycleVersion: life.version,
@@ -233,18 +264,23 @@ export function planMarkReconciliationRequired(life: LifecycleView, op: Operatio
       completedSteps: [...op.completedSteps], // retained
       failedStep: { action: 'set', value: failedStep }, failureCode: { action: 'set', value: code },
     },
-  };
+  });
 }
 
 export function planCompleteTransition(life: LifecycleView, op: OperationView): LifecycleMutationPlan {
+  assertOperationShape(op);
   if (op.status === 'completed') throw planError('LIFECYCLE_OP_TERMINAL', 'Operation already completed.', 409);
   if (!COMPLETE_STATUSES.has(op.status)) throw planError('LIFECYCLE_OP_STATUS_INVALID', `Operation status '${op.status}' cannot complete.`, 409);
+  // A not-yet-completed op containing the store-owned final step is contradictory:
+  // the final durable transaction is what creates it. Only completeTransition may.
+  if (op.completedSteps.includes('final_state_committed')) {
+    throw planError('LIFECYCLE_FINAL_STEP_ALREADY_COMMITTED', 'Operation already carries final_state_committed but is not completed.', 409);
+  }
   const required = stepOrderForAction(op.action).filter((s) => s !== 'final_state_committed');
   for (const step of required) {
     if (!op.completedSteps.includes(step)) throw planError('LIFECYCLE_COMPLETION_INCOMPLETE', `Cannot complete: missing step '${step}'.`, 409);
   }
-  const completedSteps = op.completedSteps.includes('final_state_committed') ? [...op.completedSteps] : [...op.completedSteps, 'final_state_committed'];
-  return {
+  return freezePlan({
     effect: 'complete',
     expect: {
       lifecycleVersion: life.version,
@@ -258,7 +294,9 @@ export function planCompleteTransition(life: LifecycleView, op: OperationView): 
       currentOperationId: { action: 'remove' }, // reservation cleared via explicit remove, never null
       lastCompletedOperationId: { action: 'set', value: op.operationId },
       operationStatus: 'completed', operationVersion: op.operationVersion + 1,
-      completedSteps, failedStep: { action: 'preserve' }, failureCode: { action: 'preserve' },
+      completedSteps: [...op.completedSteps, 'final_state_committed'], // appended exactly once
+      // A completed op must not retain unresolved reconciliation markers.
+      failedStep: { action: 'remove' }, failureCode: { action: 'remove' },
     },
-  };
+  });
 }

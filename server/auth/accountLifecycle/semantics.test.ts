@@ -104,13 +104,21 @@ describe('planMarkReconciliationRequired', () => {
 });
 
 describe('planCompleteTransition', () => {
-  it('accepts the transitional lifecycle state and appends final_state_committed once', () => {
+  it('accepts the transitional lifecycle state, appends final once, clears failure markers', () => {
     const p = planCompleteTransition(life(), op({ completedSteps: suspendBeforeFinal }));
     expect(p.effect).toBe('complete');
     expect(p.writes.lifecycleStatus).toBe('suspended');
     expect(p.writes.completedSteps.filter((s) => s === 'final_state_committed')).toHaveLength(1);
     expect(p.writes.currentOperationId).toEqual({ action: 'remove' }); // explicit remove, never null
     expect(p.writes.lastCompletedOperationId).toEqual({ action: 'set', value: 'op-1' });
+    // FIX 1: a completed op must not retain unresolved reconciliation markers.
+    expect(p.writes.failedStep).toEqual({ action: 'remove' });
+    expect(p.writes.failureCode).toEqual({ action: 'remove' });
+  });
+  it('clears failure markers when completing a reconciliation-required op', () => {
+    const p = planCompleteTransition(life({ status: 'reconciliation_required' }), op({ status: 'reconciliation_required', completedSteps: suspendBeforeFinal }));
+    expect(p.writes.failedStep).toEqual({ action: 'remove' });
+    expect(p.writes.failureCode).toEqual({ action: 'remove' });
   });
   it('accepts a reconciliation-required lifecycle + operation state', () => {
     const p = planCompleteTransition(life({ status: 'reconciliation_required' }), op({ status: 'reconciliation_required', completedSteps: suspendBeforeFinal }));
@@ -121,9 +129,45 @@ describe('planCompleteTransition', () => {
   it('rejects completion when a required step is missing', () => {
     throwsCode(() => planCompleteTransition(life(), op({ completedSteps: ['intent_recorded', 'global_deny_committed', 'provider_disabled'] })), /COMPLETION_INCOMPLETE/);
   });
-  it('does not duplicate final_state_committed if already present', () => {
-    const p = planCompleteTransition(life(), op({ completedSteps: [...suspendBeforeFinal, 'final_state_committed'] }));
-    expect(p.writes.completedSteps.filter((s) => s === 'final_state_committed')).toHaveLength(1);
+  it('FIX 2: rejects a not-yet-completed op that already carries final_state_committed', () => {
+    throwsCode(() => planCompleteTransition(life(), op({ status: 'running', completedSteps: [...suspendBeforeFinal, 'final_state_committed'] })), /FINAL_STEP_ALREADY_COMMITTED/);
+    throwsCode(() => planCompleteTransition(life({ status: 'reconciliation_required' }), op({ status: 'reconciliation_required', completedSteps: [...suspendBeforeFinal, 'final_state_committed'] })), /FINAL_STEP_ALREADY_COMMITTED/);
+  });
+});
+
+describe('FIX 3 — reconciliation failedStep restrictions', () => {
+  it.each(['intent_recorded', 'global_deny_committed'] as SemanticLifecycleStep[])('rejects a store-owned begin step %s as failedStep', (step) => {
+    throwsCode(() => planMarkReconciliationRequired(life(), op(), step, 'X'), /FAILED_STEP_ILLEGAL/);
+  });
+  it('rejects an opposite-action failedStep (suspend + provider_enabled)', () => {
+    throwsCode(() => planMarkReconciliationRequired(life(), op(), 'provider_enabled', 'X'), /FAILED_STEP_WRONG_ACTION/);
+  });
+  it('rejects reactivate + provider_disabled', () => {
+    throwsCode(() => planMarkReconciliationRequired(life({ status: 'reactivating' }), op({ action: 'reactivate', transitionalStatus: 'reactivating', desiredStatus: 'active' }), 'provider_disabled', 'X'), /FAILED_STEP_WRONG_ACTION/);
+  });
+  it('permits final_state_committed as a failed final durable transaction', () => {
+    const p = planMarkReconciliationRequired(life(), op(), 'final_state_committed', 'FINAL_COMMIT_FAILED');
+    expect(p.writes.failedStep).toEqual({ action: 'set', value: 'final_state_committed' });
+  });
+});
+
+describe('FIX 4 — contradictory operation shape rejected', () => {
+  const badShape = op({ transitionalStatus: 'reactivating', desiredStatus: 'active' }); // action=suspend, mismatched
+  it('advance rejects a mismatched op shape', () => { throwsCode(() => planAdvanceOperation(life(), badShape, 'canonical_transition_projected'), /OP_SHAPE_INVALID/); });
+  it('reconcile rejects a mismatched op shape', () => { throwsCode(() => planMarkReconciliationRequired(life(), badShape, 'provider_disabled', 'X'), /OP_SHAPE_INVALID/); });
+  it('complete rejects a mismatched op shape', () => { throwsCode(() => planCompleteTransition(life(), op({ transitionalStatus: 'reactivating', desiredStatus: 'active', completedSteps: suspendBeforeFinal })), /OP_SHAPE_INVALID/); });
+});
+
+describe('FIX 5 — plans are immutable', () => {
+  it('freezes the plan, its writes, expectations, and nested arrays', () => {
+    const p = planCompleteTransition(life(), op({ completedSteps: suspendBeforeFinal }));
+    expect(Object.isFrozen(p)).toBe(true);
+    expect(Object.isFrozen(p.writes)).toBe(true);
+    expect(Object.isFrozen(p.expect)).toBe(true);
+    expect(Object.isFrozen(p.writes.completedSteps)).toBe(true);
+    expect(Object.isFrozen(p.expect.lifecycleStatusIn)).toBe(true);
+    expect(() => { (p.writes.completedSteps as SemanticLifecycleStep[]).push('final_state_committed'); }).toThrow();
+    expect(() => { (p.writes as { operationVersion: number }).operationVersion = 99; }).toThrow();
   });
 });
 
