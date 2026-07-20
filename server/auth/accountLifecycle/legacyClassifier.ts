@@ -1,87 +1,149 @@
 /**
- * Read-only legacy-state classifier + safe read projection (ADR-0002 Phase 2A).
+ * Read-only legacy-state assessment + safe read projection (ADR-0002 Phase 2A).
  *
- * Classifies an account's cross-plane state (DynamoDB registration, canonical
+ * Assesses an account's cross-plane state (DynamoDB registration, canonical
  * registry, Cognito provider) WITHOUT mutating anything — no Cognito calls, no
- * registry writes, no identity merges. It exists to surface conflicts (e.g. the
- * known "registration active + canonical suspended" defect) for adjudication
- * before Phase 2B enables durable mutation.
+ * registry writes, no identity merges. It returns EVERY detected issue (not just
+ * the first) plus a single UI-summary `primary`, and never overclaims
+ * consistency: an unread/unknown plane is a reconciliation condition, not proof.
  */
 import type {
+  LegacyLifecycleAssessment,
   LegacyLifecycleClassification,
+  LegacyLifecycleIssue,
   LegacyStateInput,
-  ProviderState,
+  ProviderAccountState,
   ProvisioningStatus,
   AccountLifecycleStatus,
   AccountLifecycleProjection,
   LifecycleOperationStatus,
+  SanitizedRegistrationStatus,
 } from './types.js';
 
-const REG_ACTIVE = 'active';
-const REG_DISABLED = 'disabled';
-const REG_PENDING = new Set(['pending_setup', 'pending_admin_approval']);
+type RegNorm = 'pending_setup' | 'pending_admin_approval' | 'active' | 'disabled' | 'missing' | 'unknown';
+type CanonNorm = 'pending' | 'active' | 'suspended' | 'disabled' | 'missing' | 'unknown';
 
-const CANON_ACTIVE = 'active';
-const CANON_PENDING = 'pending';
-const CANON_DENIED = new Set(['suspended', 'disabled']);
+/** Explicit, fail-closed normalization of the raw registration status. */
+function normReg(s?: string | null): RegNorm {
+  switch (s) {
+    case 'pending_setup': return 'pending_setup';
+    case 'pending_admin_approval': return 'pending_admin_approval';
+    case 'active': return 'active';
+    case 'disabled': return 'disabled';
+    case null: case undefined: return 'missing';
+    default: return 'unknown';
+  }
+}
 
-function regActive(s?: string | null): boolean { return s === REG_ACTIVE; }
-function regPending(s?: string | null): boolean { return !!s && REG_PENDING.has(s); }
-function regDenied(s?: string | null): boolean { return s === REG_DISABLED; }
-function canonActive(s?: string | null): boolean { return s === CANON_ACTIVE; }
-function canonPending(s?: string | null): boolean { return s === CANON_PENDING; }
-function canonDenied(s?: string | null): boolean { return !!s && CANON_DENIED.has(s); }
+/** Explicit, fail-closed normalization of the raw canonical status. */
+function normCanon(s?: string | null): CanonNorm {
+  switch (s) {
+    case 'pending': return 'pending';
+    case 'active': return 'active';
+    case 'suspended': return 'suspended';
+    case 'disabled': return 'disabled';
+    case null: case undefined: return 'missing';
+    default: return 'unknown';
+  }
+}
 
 /**
- * Deterministic, first-match-wins classification. Ambiguous or unexpected
- * combinations fail safe to `manual_review_required` — never to a silent OK.
+ * Read-only assessment. Collects all issues, then picks a deterministic primary
+ * by precedence. `safeToAutoInitialize` is true ONLY for a fully verified active
+ * state across all three planes with no issues.
  */
-export function classifyLegacyLifecycleState(input: LegacyStateInput): LegacyLifecycleClassification {
-  const { registrationStatus = null, canonicalStatus = null } = input;
-  const providerState: ProviderState = input.providerState ?? 'unknown';
+export function assessLegacyLifecycleState(input: LegacyStateInput): LegacyLifecycleAssessment {
+  const providerState: ProviderAccountState = input.providerAccountState ?? 'unknown';
+  const reg = normReg(input.registrationStatus);
+  const canon = normCanon(input.canonicalStatus);
+  const issues: LegacyLifecycleIssue[] = [];
+  const add = (i: LegacyLifecycleIssue) => { if (!issues.includes(i)) issues.push(i); };
 
-  // Ambiguous identity resolution → never auto-resolve.
-  if ((input.duplicateEmailCandidates ?? 0) > 1) return 'manual_review_required';
-  if (input.providerBindingConflict) return 'manual_review_required';
-  if (!input.hasProviderBinding) return 'missing_provider_binding';
+  // Identity-resolution ambiguity — never auto-resolve.
+  if ((input.duplicateEmailCandidates ?? 0) > 1) add('duplicate_email_candidates');
+  if (input.providerBindingConflict) add('provider_binding_conflict');
+  if (!input.hasProviderBinding) add('missing_provider_binding');
+  else if (providerState === 'not_found') add('missing_provider_account');
 
-  // Missing planes.
-  if (registrationStatus == null) return 'missing_registration';
-  if (canonicalStatus == null) return 'missing_canonical';
+  // Plane presence / recognizability.
+  if (reg === 'missing') add('missing_registration');
+  else if (reg === 'unknown') add('unknown_registration_status');
+  if (canon === 'missing') add('missing_canonical');
+  else if (canon === 'unknown') add('unknown_canonical_status');
 
-  // Pending onboarding on either plane.
-  if (regPending(registrationStatus) || canonPending(canonicalStatus)) return 'legacy_pending';
+  // Onboarding pending on either plane.
+  if (reg === 'pending_setup' || reg === 'pending_admin_approval' || canon === 'pending') add('legacy_pending');
 
-  // Both planes aligned as active.
-  if (regActive(registrationStatus) && canonActive(canonicalStatus)) {
-    return providerState === 'disabled' ? 'provider_disabled_but_app_active' : 'consistent';
+  const regActive = reg === 'active';
+  const regDenied = reg === 'disabled';
+  const canonActive = canon === 'active';
+  const canonDenied = canon === 'suspended' || canon === 'disabled';
+
+  // Aligned-active across app planes → provider must be proven enabled.
+  if (regActive && canonActive) {
+    if (providerState === 'disabled') add('provider_disabled_but_app_active');
+    else if (providerState === 'unknown') add('provider_state_unknown');
+    // not_found already captured as missing_provider_account above
+    else if (providerState === 'not_found') add('provider_disabled_but_app_active');
+  }
+  // Aligned-denied across app planes → provider must be proven not-enabled.
+  if (regDenied && canonDenied) {
+    if (providerState === 'enabled') add('provider_enabled_but_app_denied');
+    else if (providerState === 'unknown') add('provider_state_unknown');
+  }
+  // Active on exactly one app plane → cross-plane conflict.
+  if ((regActive && canonDenied) || (regDenied && canonActive)) add('conflict_active_vs_suspended');
+
+  // Deterministic primary by precedence (most-blocking first).
+  const order: LegacyLifecycleClassification[] = [
+    'duplicate_email_candidates', 'provider_binding_conflict',
+    'missing_provider_binding', 'missing_provider_account',
+    'missing_registration', 'missing_canonical',
+    'unknown_registration_status', 'unknown_canonical_status',
+    'conflict_active_vs_suspended', 'provider_enabled_but_app_denied',
+    'provider_disabled_but_app_active', 'legacy_pending', 'provider_state_unknown',
+  ];
+  let primary: LegacyLifecycleClassification | undefined =
+    order.find((c) => issues.includes(c as LegacyLifecycleIssue));
+
+  const verifiedActive = regActive && canonActive && providerState === 'enabled' && issues.length === 0;
+  const verifiedDeny = regDenied && canonDenied && providerState === 'disabled' && issues.length === 0;
+
+  if (!primary) {
+    if (verifiedActive) primary = 'consistent';
+    else if (verifiedDeny) primary = 'consistent_deny';
+    else primary = 'manual_review_required';
   }
 
-  // Both planes aligned as denied (different vocabularies, same intent).
-  if (regDenied(registrationStatus) && canonDenied(canonicalStatus)) return 'consistent';
-
-  // Provider disabled while the app still considers the user active.
-  if (canonActive(canonicalStatus) && providerState === 'disabled') return 'provider_disabled_but_app_active';
-
-  // Active on exactly one plane → the known cross-plane conflict.
-  if (regActive(registrationStatus) !== canonActive(canonicalStatus)) return 'conflict_active_vs_suspended';
-
-  return 'manual_review_required';
+  return { primary, issues, safeToAutoInitialize: verifiedActive };
 }
 
 function toProvisioningStatus(registrationStatus?: string | null): ProvisioningStatus | 'unknown' {
-  if (registrationStatus == null) return 'unknown';
-  if (regPending(registrationStatus)) {
-    return registrationStatus === 'pending_admin_approval' ? 'pending_admin_approval' : 'pending_setup';
+  switch (registrationStatus) {
+    case 'pending_setup': return 'pending_setup';
+    case 'pending_admin_approval': return 'pending_admin_approval';
+    case 'active': return 'setup_complete';
+    case 'disabled': return 'setup_complete'; // disabled is a lifecycle concern, setup was completed
+    case null: case undefined: return 'unknown';
+    default: return 'unknown'; // unsupported/legacy value never silently becomes setup_complete
   }
-  // active / disabled both mean onboarding completed; disabled is a lifecycle concern.
-  return 'setup_complete';
+}
+
+function toSanitizedRegistrationStatus(registrationStatus?: string | null): SanitizedRegistrationStatus {
+  switch (registrationStatus) {
+    case 'pending_setup': return 'pending_setup';
+    case 'pending_admin_approval': return 'pending_admin_approval';
+    case 'active': return 'active';
+    case 'disabled': return 'disabled';
+    default: return 'unknown';
+  }
 }
 
 /**
  * Best-effort lifecycle status derived from the canonical plane for the Phase-2A
- * read projection. In Phase 2B the durable AccountLifecycleRecord.status becomes
- * authoritative and supersedes this derivation.
+ * read projection. `lifecycleStatusSource` is `legacy_canonical_derivation`
+ * until Phase 2B's durable AccountLifecycleRecord.status becomes authoritative.
+ * Unrecognized canonical values never become an active lifecycle state.
  */
 function toLifecycleStatus(canonicalStatus?: string | null): AccountLifecycleStatus | 'unknown' {
   switch (canonicalStatus) {
@@ -101,14 +163,18 @@ export interface ProjectionInput extends LegacyStateInput {
 
 /** Build the safe admin read projection (no raw subject / token / credential). */
 export function buildAccountLifecycleProjection(input: ProjectionInput): AccountLifecycleProjection {
+  const assessment = assessLegacyLifecycleState(input);
   return {
     canonicalUserId: input.canonicalUserId,
     displayEmail: input.displayEmail,
     provisioningStatus: toProvisioningStatus(input.registrationStatus),
     lifecycleStatus: toLifecycleStatus(input.canonicalStatus),
+    lifecycleStatusSource: 'legacy_canonical_derivation',
     canonicalStatus: input.canonicalStatus ?? null,
-    providerState: input.providerState ?? 'unknown',
-    reconciliationClassification: classifyLegacyLifecycleState(input),
+    registrationStatus: toSanitizedRegistrationStatus(input.registrationStatus),
+    providerState: input.providerAccountState ?? 'unknown',
+    reconciliationClassification: assessment.primary,
+    reconciliationIssues: assessment.issues,
     currentOperationStatus: input.currentOperationStatus ?? 'none',
   };
 }
