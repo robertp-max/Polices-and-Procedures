@@ -1,3 +1,9 @@
+/**
+ * 🛡️ PROTECTED (owner-loved): the right-side Personal Operations panel
+ * (Today's Focus / My Work Queue / quick-nav / profile). Keep its identity
+ * (`personal-ops-panel`) and its core sections intact. Guarded by
+ * src/v6/protectedVisuals.test.ts.
+ */
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AlertCircle, ChevronRight, FolderOpen, HelpCircle, Info, KeyRound, LogOut, MessageCircle, PenLine, BadgeCheck, ListChecks, Share2, Users, X } from 'lucide-react';
 import { ToneTag } from '../components';

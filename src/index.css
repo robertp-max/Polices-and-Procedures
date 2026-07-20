@@ -1661,6 +1661,12 @@ th {
   position: relative !important;
 }
 
+/* 🛡️ PROTECTED (owner-loved): the fixed-attachment angel watermark + the
+   frosted-glass `::before` blur below produce the "bleeding" hero effect. The
+   two paints of /watermark-angel.png with `background-attachment: fixed` are
+   what make the blurred copy align with the sharp one. Do NOT remove the
+   watermark rules, `background-attachment: fixed`, the `backdrop-filter`, or the
+   `.help-hero-glass-card::before` blur. Guarded by src/v6/protectedVisuals.test.ts. */
 #root .ci-page-hero:has(> .ci-static-header-watermark),
 #root .ci-page-hero:has(> .ci-dashboard-logo-watermark) {
   border: 0.777px solid #fff !important;
