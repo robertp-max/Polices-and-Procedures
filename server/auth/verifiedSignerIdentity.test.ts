@@ -12,8 +12,6 @@ import {
   verifiedActor,
   signerFromVerifiedActor,
   requiredSignersMissing,
-  authenticationModeForActor,
-  requestIsLocalDemo,
 } from './verifiedSignerIdentity.js';
 import type { Actor } from '../identity/session.js';
 
@@ -81,30 +79,6 @@ describe('signerFromVerifiedActor', () => {
   it('falls back name → email → user_id', () => {
     const s = signerFromVerifiedActor(actor({ display_name: undefined }));
     expect(s.name).toBe('nurse@careindeed.com');
-  });
-});
-
-describe('authenticationModeForActor', () => {
-  it('maps a verified user actor to cognito', () => {
-    expect(authenticationModeForActor(actor({ type: 'user' }))).toBe('cognito');
-  });
-  it('maps a verified service actor to service', () => {
-    expect(authenticationModeForActor(actor({ type: 'service' } as Partial<Actor>))).toBe('service');
-  });
-});
-
-describe('requestIsLocalDemo (request-scoped, not env)', () => {
-  it('true only when the boundary marked the request local_demo', () => {
-    expect(requestIsLocalDemo({ authenticationContext: { mode: 'local_demo' } })).toBe(true);
-  });
-  it('false for cognito / service / missing context', () => {
-    expect(requestIsLocalDemo({ authenticationContext: { mode: 'cognito' } })).toBe(false);
-    expect(requestIsLocalDemo({ authenticationContext: { mode: 'service' } })).toBe(false);
-    expect(requestIsLocalDemo({})).toBe(false);
-  });
-  it('is not influenced by environment variables', () => {
-    process.env.ENABLE_LOCAL_DEMO_AUTH = 'true'; process.env.NODE_ENV = 'development';
-    expect(requestIsLocalDemo({})).toBe(false); // no boundary context → never demo
   });
 });
 

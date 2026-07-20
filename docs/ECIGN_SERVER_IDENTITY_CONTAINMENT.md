@@ -91,6 +91,17 @@ boundary's complete local-demo fallback activates: exact `ENABLE_LOCAL_DEMO_AUTH
 opt-in **and** non-production **and** localhost host/origin **and** Cognito
 unconfigured **and** fallback not disabled **and** no injected auth deps.
 
+Locality is proven from the **connection**, not caller headers: the boundary
+requires BOTH a loopback canonical host (`localhost`/`127.0.0.1`/`::1`) AND a
+loopback network peer (`req.socket.remoteAddress`). `Origin`, `X-Forwarded-Host`,
+and `Forwarded` are never positive proof of locality (a public request can spoof
+them; a trusted-proxy/CIDR path would be a separate explicit design). Partial
+Cognito configuration fails closed — pool **or** client present → no demo. The
+shared contract lives in `server/auth/requestAuthenticationContext.ts`
+(`AuthenticationMode`, `RequestAuthenticationContext`, `authenticationModeForActor`
+— exhaustive: `user`→cognito, `service`→service, else 401 — and
+`requestIsLocalDemo`).
+
 eCIgn and Calendar consume that decision via `requestIsLocalDemo(req)` — they
 **never** re-derive demo authority from environment variables. Consequences:
 - a Cognito- or service-authenticated request is never demo, even with

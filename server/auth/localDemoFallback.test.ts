@@ -31,12 +31,13 @@ afterEach(() => {
   }
 });
 
-function mockReq(host: string): Request {
+function mockReq(host: string, remoteAddress = '127.0.0.1'): Request {
   return {
     method: 'GET',
     path: '/packets',
     originalUrl: '/api/packets',
     hostname: host,
+    socket: { remoteAddress } as unknown,
     header: (name: string) => (name.toLowerCase() === 'host' ? host : undefined),
   } as unknown as Request;
 }

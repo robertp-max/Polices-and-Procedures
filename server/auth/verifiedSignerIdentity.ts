@@ -15,19 +15,6 @@
  */
 import type { Actor } from '../identity/session.js';
 
-/**
- * Request authentication mode — decided EXCLUSIVELY by the central
- * `requireApiAuth` boundary and attached to the request. Downstream routers
- * (eCIgn, Calendar) consume this and must never re-derive demo authority from
- * process-wide environment variables.
- */
-export type AuthenticationMode = 'cognito' | 'service' | 'local_demo';
-export interface RequestAuthenticationContext { mode: AuthenticationMode }
-
-declare module 'express-serve-static-core' {
-  interface Request { authenticationContext?: RequestAuthenticationContext }
-}
-
 export interface VerifiedSigner {
   user_id: string;
   name: string;
@@ -47,21 +34,6 @@ export interface VerifiedSigner {
  */
 export function isDemoIdentityRuntime(): boolean {
   return process.env.ENABLE_LOCAL_DEMO_AUTH === 'true' && process.env.NODE_ENV !== 'production';
-}
-
-/** Map a verified actor to its non-demo authentication mode. */
-export function authenticationModeForActor(actor: Actor): 'cognito' | 'service' {
-  return actor.type === 'service' ? 'service' : 'cognito';
-}
-
-/**
- * Request-scoped demo authority. The central requireApiAuth boundary is the SOLE
- * decider and sets `req.authenticationContext`. A Cognito- or service-
- * authenticated request is never demo; a request that never passed the boundary
- * (e.g. a direct router mount in a test) is never demo — regardless of env vars.
- */
-export function requestIsLocalDemo(req: { authenticationContext?: RequestAuthenticationContext }): boolean {
-  return req.authenticationContext?.mode === 'local_demo';
 }
 
 /** The verified canonical actor, or null when the request has no authenticated user. */

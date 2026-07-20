@@ -10,7 +10,8 @@ import {
 import { dedupePlannerEvents } from '../cesCalendarDedup.js';
 import { ApiError } from '../errors.js';
 import { log } from '../logger.js';
-import { requestIsLocalDemo, verifiedActor } from '../auth/verifiedSignerIdentity.js';
+import { verifiedActor } from '../auth/verifiedSignerIdentity.js';
+import { requestIsLocalDemo } from '../auth/requestAuthenticationContext.js';
 import type { PlannerEventPayload } from '../mappers.js';
 import {
   syncEvent, syncEvents, deleteSyncedEvent, cleanupDuplicates,

@@ -29,11 +29,11 @@ import {
   type SignatureCompletion,
 } from '../../src/policy/ecign/signerAuthority.ts';
 import {
-  requestIsLocalDemo,
   verifiedActor,
   signerFromVerifiedActor,
   requiredSignersMissing,
 } from '../auth/verifiedSignerIdentity.js';
+import { requestIsLocalDemo } from '../auth/requestAuthenticationContext.js';
 
 export const ecignRouter: Router = Router();
 
