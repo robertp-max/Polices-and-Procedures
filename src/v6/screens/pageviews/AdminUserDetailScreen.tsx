@@ -5,7 +5,7 @@ import {
   KeyRound, LayoutGrid, ShieldAlert, ShieldCheck, UserRound,
 } from 'lucide-react';
 import { useAuth } from '@/auth/AuthProvider';
-import { AuthApi } from '@/auth/api';
+import { AuthApi, type EffectiveAccessProjection } from '@/auth/api';
 import { SurfaceCard, ToneTag } from '../../components';
 import { Button, ToneBadge } from '../../primitives';
 import { cx } from '../../utils/classNames';
@@ -77,6 +77,7 @@ export function AdminUserDetailScreen() {
 
   const [tab, setTab] = useState<TabId>('overview');
   const [rows, setRows] = useState<AccessUserRow[] | null>(null);
+  const [effAccess, setEffAccess] = useState<EffectiveAccessProjection | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [actionNote, setActionNote] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
@@ -88,11 +89,19 @@ export function AdminUserDetailScreen() {
       const token = getAccessToken() ?? '';
       const res = await AuthApi.listUserAccess(token);
       setRows((res as { users: AccessUserRow[] }).users ?? []);
+      // Phase 3/4: server-computed effective access for this target (best-effort;
+      // a failure here must not blank the whole detail page).
+      try {
+        const ea = await AuthApi.getUserEffectiveAccess(token, userId);
+        setEffAccess(ea.effectiveAccess);
+      } catch {
+        setEffAccess(null);
+      }
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : 'Unable to load the server user directory.');
       setRows([]);
     }
-  }, [getAccessToken]);
+  }, [getAccessToken, userId]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -284,7 +293,27 @@ export function AdminUserDetailScreen() {
               {roles.length ? roles.map((r) => <ToneTag key={r} tone={user.privileged ? 'amber' : 'slate'}>{r}</ToneTag>) : <span className="text-sm text-muted">No active group assignments.</span>}
             </div>
           </div>
-          <PendingProjection phase="Phase 3" title="Effective permissions" detail="A server evaluator will explain every permission decision with its source and reason code — the UI will render, not reconstruct, that decision." />
+          {effAccess ? (
+            <div className="rounded-2xl border border-hairline bg-white p-lg shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-sm">
+                <h2 className="text-h3 font-medium text-ink">Effective permissions</h2>
+                <span className="rounded-full border border-tone-teal-border bg-tone-teal-bg px-sm py-[2px] text-[10px] font-medium uppercase tracking-wider text-tone-teal-text">
+                  server-computed · {effAccess.policyVersion}
+                </span>
+              </div>
+              <p className="mt-xs text-xs text-muted">
+                Expanded from active security groups by the server evaluator (ADR §B5).
+                {effAccess.accountActive ? '' : ' Account not active — all permissions withheld (fail-closed).'}
+              </p>
+              <div className="mt-md flex flex-wrap gap-sm">
+                {effAccess.permissions.length
+                  ? effAccess.permissions.map((p) => <ToneTag key={p} tone="teal">{p}</ToneTag>)
+                  : <span className="text-sm text-muted">No effective permissions.</span>}
+              </div>
+            </div>
+          ) : (
+            <PendingProjection phase="Phase 3" title="Effective permissions" detail="Server evaluator projection is unavailable (not loaded)." />
+          )}
           <PendingProjection phase="Phase 4" title="Page access (visibility projection)" detail="Server-generated, non-authorizing page projection with deny reasons. Hiding a page is never security; every API authorizes independently." />
           <PendingProjection phase="Phase 3" title="Administrator capabilities" detail="Granular admin capabilities evaluated server-side, distinct from business permissions and page visibility." />
         </div>

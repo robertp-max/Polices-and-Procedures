@@ -423,6 +423,14 @@ export const AuthApi = {
     });
   },
 
+  /** Server-computed effective access for a target user (ADR-0002 Phase 3/4). */
+  getUserEffectiveAccess(accessToken: string, userId: string): Promise<{ effectiveAccess: EffectiveAccessProjection }> {
+    return callAt(USER_ACCESS_BASE, `/${encodeURIComponent(userId)}/effective-access`, {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
   /**
    * Server-authoritative suspend. Hits the COG-2 user-access router, which
    * verifies the Cognito actor, enforces the unified user-status authority,

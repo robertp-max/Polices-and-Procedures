@@ -21,6 +21,8 @@ import {
   listAccessState, assignRole, removeRole,
   type AccessChange,
 } from '../auth/userAccessAdmin.js';
+import { activeRoleGroupIds } from '../auth/actorResolver.js';
+import { computeEffectiveAccess } from '../auth/authorization/evaluator.js';
 import { getAccountLifecycleService } from '../auth/accountLifecycle/serviceFactory.js';
 import { performAdminLifecycleTransition } from '../auth/accountLifecycle/adminTransition.js';
 import type { LifecycleAction } from '../auth/accountLifecycle/service.js';
@@ -106,6 +108,31 @@ userAccessRouter.get('/', asyncHandler(async (req, res) => {
   await requireUserAccessAdmin(req);
   const registry = await getAppIdentityPersistence().getAll();
   res.json({ users: listAccessState(registry, new Date().toISOString()) });
+}));
+
+/**
+ * GET /admin/user-access/:userId/effective-access — server-computed effective
+ * access for a TARGET user (ADR-0002 Phase 3/4 read API). The evaluator expands
+ * the target's active groups into permissions with provenance; a non-active
+ * account yields the empty fail-closed set. The admin UI renders this and never
+ * reconstructs the permission decision locally.
+ */
+userAccessRouter.get('/:userId/effective-access', asyncHandler(async (req, res) => {
+  await requireUserAccessAdmin(req);
+  const userId = String(req.params.userId || '').trim();
+  if (!userId) throw new ApiError('validation_error', 'userId is required.', 400);
+  const registry = await getAppIdentityPersistence().getAll();
+  const nowIso = new Date().toISOString();
+  const user = registry.users.find((u) => u.id === userId);
+  if (!user) throw new ApiError('user_not_found', 'User not found.', 404);
+  const groupIds = activeRoleGroupIds(registry, userId, nowIso);
+  const effectiveAccess = computeEffectiveAccess({
+    principalUserId: userId,
+    accountStatus: user.status,
+    assignments: groupIds.map((groupId) => ({ groupId, scope: { organizationId: '' } })),
+    nowIso,
+  });
+  res.json({ effectiveAccess });
 }));
 
 function targetId(req: Request): string {
