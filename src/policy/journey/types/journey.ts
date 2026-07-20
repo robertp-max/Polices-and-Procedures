@@ -269,3 +269,168 @@ export interface JourneyProgress {
   eligibleForClearance: boolean;
   openEscalations: number;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   ONBOARDING_ARCHITECTURE v2.3 — Policy Reading as First-Class JourneyActivity
+   Source: docs/onboarding/ONBOARDING_ARCHITECTURE_v2.3.md (controlling architecture)
+   Cross-referenced with:
+     - CareIndeedOnboardingLMS.tsx (module IDs / journey structure / TrackId = GAO|ADM|DON|RN|...|HHA)
+     - allPoliciesContent.generated.ts (real policyId / title / full text)
+   Rules:
+     - No CORE-* or ROLE-* as primary IDs.
+     - P&P readings are JourneyActivity records (not a separate LMS).
+     - Every required P&P activity = full text + 10-item quiz (80% / 3 attempts) + attestation + evidence + gate.
+     - HHA gates per 42 CFR §484.80 enforced via HHAClearanceRecord + ScopeOfPracticeGuard.
+   This section adds the type scaffolding only (Phase 1).
+   ═══════════════════════════════════════════════════════════════ */
+
+/** Reference to a specific policy version for traceability. */
+export interface PolicyVersionReference {
+  policyId: string;                 // e.g. "CO-HP-101" from allPoliciesContent.generated.ts
+  title: string;
+  version: string;
+  effectiveDate: string;            // ISO
+  sourceStatus: 'verified' | 'needs_review' | 'invalid';
+  fullTextAvailable: boolean;
+  sectionsForQuiz?: string[];       // section ids usable for quiz derivation
+}
+
+/** Single quiz question derived from policy text. */
+export interface PolicyQuizQuestion {
+  id: string;
+  stem: string;
+  options: string[];
+  correctIndex: number;
+  rationale: string;
+  policySectionRef?: string;
+}
+
+/** The 10-item quiz model for a P&P reading activity (v2.3). */
+export interface PolicyReadingQuiz {
+  policyId: string;
+  versionRef: PolicyVersionReference;
+  questions: PolicyQuizQuestion[];   // exactly 10 for pilot + full
+  passScorePercent: number;          // 80
+  maxAttempts: number;               // 3
+}
+
+/** Record of one quiz attempt. */
+export interface PolicyQuizAttempt {
+  attemptNumber: number;
+  startedAt: string;
+  completedAt?: string;
+  answers: number[];                 // chosen option indexes
+  scorePercent: number;
+  passed: boolean;
+  timeSpentSec?: number;
+}
+
+/** Signed acknowledgment / attestation after quiz pass. */
+export interface PolicyAcknowledgment {
+  policyId: string;
+  signedAt: string;
+  signerId: string;
+  signerName: string;
+  signatureDataUrl?: string;         // or link to eCign record (minimal gate only)
+  attestationText: string;
+  versionRef: PolicyVersionReference;
+}
+
+/** A P&P reading activity as a first-class JourneyActivity item (v2.3). */
+export interface PolicyReadingActivity {
+  activityId: string;                // e.g. "PP-READ-GAO-CO-HP-101" or stable id
+  activityType: 'policy_reading';
+  policyRef: PolicyVersionReference;
+  title: string;
+  assignmentTier: 'TIER_1_ALL_STAFF' | 'TIER_2A_PATIENT_FACING' | 'TIER_2B_QUALIFIED_CLINICAL' | 'TIER_3_ROLE_SPECIFIC' | 'TIER_4_LEADERSHIP';
+  required: boolean;                 // vs awareness_reference
+  awarenessReferenceOnly: boolean;
+  quiz: PolicyReadingQuiz;
+  quizAttempts: PolicyQuizAttempt[];
+  acknowledgment?: PolicyAcknowledgment;
+  supervisorSignoffRequired: boolean;
+  supervisorSignedOff?: boolean;
+  supervisorSignedOffAt?: string;
+  personnelFileEvidenceRequired: boolean;
+  completionStatus: 'not_started' | 'read' | 'quiz_passed' | 'attested' | 'supervisor_signed' | 'complete' | 'blocked' | 'needs_review';
+  estimatedMinutes: number;
+  relatedModuleIds: string[];        // e.g. ["GAO-001", "GAO-005"] or role module
+  scopeWarning?: string;             // for HHA/PTA/COTA/MSW on restricted policies
+}
+
+/** Role → policy assignment record (engine will produce these). */
+export interface RolePolicyAssignment {
+  role: JourneyRole;
+  policyId: string;
+  tier: PolicyReadingActivity['assignmentTier'];
+  required: boolean;
+  awarenessReferenceOnly: boolean;
+  source: 'ALL_STAFF_GAO' | 'PATIENT_FACING' | 'QUALIFIED_CLINICAL' | 'ROLE_SPECIFIC' | 'LEADERSHIP';
+  policyRefStatus: 'verified' | 'needs_review' | 'invalid';
+}
+
+/** Certificate / readiness gate conditions (extended for v2.3). */
+export interface CertificateGate {
+  employeeId: string;
+  allRequiredModulesComplete: boolean;
+  allRequiredPolicyReadingsComplete: boolean;
+  allRequiredPolicyQuizzesPassed: boolean;
+  allRequiredAttestationsSigned: boolean;
+  allRequiredSupervisorSignoffsComplete: boolean;
+  hhaClearanceComplete?: boolean;     // only relevant for HHA
+  /** True only when every v2.3 + prior condition is met. */
+  canIssueCertificate: boolean;
+  blockingReasons: string[];
+  lastEvaluatedAt: string;
+}
+
+/** HHA clearance record per 42 CFR §484.80 (v2.3 gate). */
+export interface HHAClearanceRecord {
+  employeeId: string;
+  competencyEvalComplete: boolean;
+  supervisedVisitsComplete: number;
+  supervisedVisitsRequired: number;
+  rnOrDonSignoffComplete: boolean;
+  scopeOfPracticeAcknowledged: boolean;
+  clearedForIndependentHHA: boolean;
+  clearedAt?: string;
+  clearedBy?: string;
+  blockedReasons: string[];
+}
+
+/** Scope of practice guard for non-qualified-clinical roles (HHA, PTA, COTA, MSW). */
+export interface ScopeOfPracticeGuard {
+  role: JourneyRole;
+  policyId: string;
+  isQualifiedClinicalPolicy: boolean; // e.g. OASIS, comprehensive assessment, meds, POC
+  allowedAsAwarenessReference: boolean;
+  warningMessage: string;
+  blockedAsRequiredTraining: boolean;
+}
+
+/** Unified JourneyActivity (v2.3) — policy readings are peers to training modules. */
+export interface JourneyActivity {
+  activityId: string;
+  activityType: 'training_module' | 'policy_reading' | 'policy_quiz' | 'policy_acknowledgment' | 'supervisor_signoff';
+  title: string;
+  roleGroup: string;
+  inheritedFrom: 'ALL_STAFF' | 'ALL_DIRECT_CARE' | 'ROLE_SPECIFIC' | 'SUPERVISOR' | 'LEADERSHIP';
+  sourceMatrixRole: string;
+  sourcePolicyIdDraft?: string;
+  resolvedPolicyId?: string | null;
+  policyTitle?: string;
+  policyRefStatus?: 'verified' | 'needs_review' | 'invalid';
+  assignmentType?: 'required_read' | 'required_acknowledgment' | 'required_training' | 'role_reference' | 'supervisor_reference';
+  relatedModuleIds: string[];
+  estimatedMinutes: number;
+  required: boolean;
+  quizRequired: boolean;
+  acknowledgmentRequired: boolean;
+  competencyRequired: boolean;
+  supervisorSignoffRequired: boolean;
+  personnelFileEvidenceRequired: boolean;
+  completionStatus: 'not_started' | 'in_progress' | 'complete' | 'blocked' | 'needs_review';
+  evidenceRequirements: string[];
+  // v2.3 extensions (populated for policy_* types)
+  policyReading?: PolicyReadingActivity;
+}

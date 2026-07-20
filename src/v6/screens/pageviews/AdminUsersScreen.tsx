@@ -14,6 +14,7 @@ import type { JourneyRole } from '@/policy/journey/types/journey';
 import type { User } from '@/policy/security/identity/types';
 import { USER_GROUPS, USER_GROUP_BY_ID } from '@/policy/security/identity/userGroups';
 import { useUserAssignmentsStore } from '@/policy/security/identity/userAssignmentsStore';
+import { AccountProvisioningCard } from '@/auth/AccountProvisioningCard';
 import {
   buildOnboardingTrackForRole,
   type UserSetupFieldsPayload,
@@ -1101,6 +1102,9 @@ export function AdminUsersScreen() {
               {securityCards.map((card) => (
                 <SurfaceCard card={card} key={card.title} />
               ))}
+
+              {/* Phase COG-1: real Cognito account provisioning via the existing auth backend. */}
+              <AccountProvisioningCard />
 
               <section
                 className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest"

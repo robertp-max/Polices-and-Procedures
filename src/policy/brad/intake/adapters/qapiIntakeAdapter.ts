@@ -478,9 +478,10 @@ export function deriveQapiBundleFromRecords(parsed: ParsedFile): QapiDerivedBund
    "0 or 1" for every metric. This path scans the narrative text itself for
    labeled aggregates ("Missed visits: 106", "7 patients hospitalized",
    "Quorum: 8/8") and record-ID families (AE-001…, INF-001…, PIP-T-001…),
-   producing the same low-confidence + verbatim-quote metrics. It never
-   overrides structured-record derivation — only applies to text-only
-   parses, and fills gaps rather than inventing data. */
+   producing the same verbatim-quote metrics. Explicit labeled totals in the
+   current document are high-confidence. Loose keyword counts remain
+   low-confidence. It never overrides structured-record derivation — only
+   applies to text-only parses, and fills gaps rather than inventing data. */
 
 const uniq = <T>(arr: T[]): T[] => Array.from(new Set(arr));
 
@@ -534,25 +535,49 @@ export interface QapiTextAggregates {
   reviewQuarter: string | null;
   activeCensus: TextHit | null;
   episodesTotal: TextHit | null;
+  highAcuityCount: TextHit | null;
+  newSocAdmissions: TextHit | null;
   dischargedCount: TextHit | null;
   recertificationCount: TextHit | null;
+  resumptionsOfCare: TextHit | null;
+  oasisCms485Records: TextHit | null;
   hospitalizations: TextHit | null;
+  edUseTotal: TextHit | null;
   missedVisits: TextHit | null;
+  scheduledVisits: TextHit | null;
+  completedVisits: TextHit | null;
   complaintsCount: TextHit | null;
   infectionLineListCount: TextHit | null;
   confirmedHais: TextHit | null;
+  communityAcquiredInfections: TextHit | null;
+  unreportedToState: TextHit | null;
   adverseEventsCount: TextHit | null;
   pipTriggerCount: TextHit | null;
+  activePipCount: TextHit | null;
   /** Named PIP recommendations found in the text (e.g. "PIP — OASIS Accuracy Improvement"). */
   pipNames: Array<{ name: string; quote: string }>;
   capCount: TextHit | null;
+  openRcaCount: TextHit | null;
+  completedRcaCount: TextHit | null;
   disciplinaryCount: TextHit | null;
   quorum: { present: number; total: number; met: boolean; quote: string } | null;
   attendeePresentCount: TextHit | null;
   signoffRoles: string[];
+  chartsAudited: TextHit | null;
+  documentationCompliant: TextHit | null;
+  documentationDefects: TextHit | null;
+  documentationComplianceRate: TextHit | null;
+  documentationDefectRate: TextHit | null;
   oasisLateSoc: TextHit | null;
   lateOrMissingF2f: TextHit | null;
+  pocUnsignedOrMissingSignature: TextHit | null;
+  medicationReconciliationCompliant: TextHit | null;
+  medicationReconciliationComplianceRate: TextHit | null;
   medReconDiscrepancies: TextHit | null;
+  actionItemsCompleted: TextHit | null;
+  actionItemsDue: TextHit | null;
+  averageActionClosureDays: TextHit | null;
+  criticalLabsUnreported: TextHit | null;
   /** How many aggregate metrics were found (drives the overall note). */
   foundCount: number;
 }
@@ -582,7 +607,7 @@ export function extractQapiTextAggregates(text: string): QapiTextAggregates {
     if (!/^required$/i.test(role) && !signoffRoles.includes(role)) signoffRoles.push(role);
   }
 
-  const quorumMatch = /Quorum:\s*(\d+)\s*\/\s*(\d+)/i.exec(text);
+  const quorumMatch = /Quorum:?\s*(\d+)\s*(?:\/|of)\s*(\d+)/i.exec(text);
   const quorum = quorumMatch
     ? {
         present: Number(quorumMatch[1]),
@@ -601,6 +626,19 @@ export function extractQapiTextAggregates(text: string): QapiTextAggregates {
   const reviewQuarter = quarterMatch
     ? (/^Q/.test(quarterMatch[0]) ? `${quarterMatch[2]}-Q${quarterMatch[1]}` : `${quarterMatch[1]}-Q${quarterMatch[2]}`)
     : null;
+  const adverseSummary = /Summary:\s*(\d+)\s+hospitalizations?\s*\|\s*(\d+)\s+ED without hospitalization\s*\|\s*Total adverse events\s*=\s*(\d+)\s*\|\s*Open RCAs?\s*=\s*(\d+)[^|]*\|\s*Completed RCAs?\s*=\s*(\d+)/i.exec(text);
+  const infectionSummary = /Summary:\s*Total infections\s*=\s*(\d+)\s*\|\s*Healthcare-associated\s*=\s*(\d+)\s*\|\s*Community-acquired\s*=\s*(\d+)[^|]*\|\s*Unreported to state\s*=\s*(\d+)/i.exec(text);
+  const visitSummary = /Q\d+\s+Totals:\s*Scheduled\s*=\s*(\d+)\s*\|\s*Completed\s*=\s*(\d+)\s*\|\s*Missed\s*=\s*(\d+)/i.exec(text);
+  const documentationCompliance = /Documentation-audit compliance\s*\d+(?:\.\d+)?%\s*(\d+)\s*compliant\s*(\d+)\s*audited/i.exec(text);
+  const medicationCompliance = /Medication-reconciliation compliance\s*\d+(?:\.\d+)?%\s*(\d+)\s*compliant\s*(\d+)\s*audited/i.exec(text);
+  const missedVisitCompliance = /Missed-visit compliance\s*\d+(?:\.\d+)?%\s*(\d+)\s*kept\s*(\d+)\s*scheduled/i.exec(text);
+  const actionRegisterCompletion = /Action completion rate:\s*(\d+)\s+of\s+(\d+)\s+(?:resolved|completed)/i.exec(text);
+  const actionKpiCompletion = /QAPI action completion rate\s*\d+(?:\.\d+)?%\s*(\d+)\s*completed\s*(\d+)\s*due/i.exec(text);
+  const textHitFromMatch = (m: RegExpExecArray | null, group: number): TextHit | null => {
+    if (!m) return null;
+    const value = Number(m[group]);
+    return Number.isFinite(value) ? { value, quote: contextQuote(text, m.index, m[0].length) } : null;
+  };
 
   const agg: QapiTextAggregates = {
     promptArtifact: Boolean(promptMatch),
@@ -609,35 +647,72 @@ export function extractQapiTextAggregates(text: string): QapiTextAggregates {
     // Each metric tries the Q2-file phrasing first, then Q1/Q3/Q4 glued-table
     // phrasings ("Active at Mar 31 (Q1 close)120 patients", "Hospitalizations
     // Q15 (MOCK-…", "episodes tracked Q1127 episodes"), then ID-family counts.
-    activeCensus: firstNumber(text, /(\d+)\s+active at (?:the )?start/i) ?? firstNumber(text, /close\)\s*(\d+)\s*patients/i) ?? firstNumber(text, /active at [A-Za-z]{3} \d{1,2}[^\d]{0,20}(\d+)\s*patients/i),
-    episodesTotal: firstNumber(text, /=\s*(\d+)\s+episodes/i) ?? firstNumber(text, /episodes tracked[^\d]{0,12}(\d+)\s*episodes/i) ?? firstNumber(text, /total[^.\n]{0,40}episodes:?\s*(\d+)/i),
-    dischargedCount: firstNumber(text, /discharge\w*\s*\((\d+)\)/i) ?? firstNumber(text, /discharged\s+Q[1-4]?(\d+)\s*patients/i),
-    recertificationCount: firstNumber(text, /recert\w*\s*\((\d+)\)/i),
-    hospitalizations: firstNumber(text, /(\d+)\s+patients?\s+hospitali[sz]ed/i) ?? firstNumber(text, /hospitali[sz]ation events?:?\s*(\d+)/i) ?? firstNumber(text, /hospitali[sz]ations?\s*Q[1-4]?(\d+)\s*\(/i),
-    missedVisits: firstNumber(text, /missed visits?:?\s*(\d+)/i),
-    complaintsCount: firstNumber(text, /(\d+)\s+complaints?\s+q\d/i) ?? idFamilyCount(text, 'CMP'),
-    infectionLineListCount: idFamilyCount(text, 'INF'),
-    confirmedHais: firstNumber(text, /(\d+)\s+confirmed HAIs?/i),
-    adverseEventsCount: idFamilyCount(text, 'AE'),
+    activeCensus: firstNumber(text, /Active Census\s*(\d+)/i) ?? firstNumber(text, /(\d+)\s+active at (?:the )?start/i) ?? firstNumber(text, /close\)\s*(\d+)\s*patients/i) ?? firstNumber(text, /active at [A-Za-z]{3} \d{1,2}[^\d]{0,20}(\d+)\s*patients/i),
+    episodesTotal: firstNumber(text, /Patients\/Episodes in Scope(?:\s*\(Reviewed\))?\s*(\d+)/i) ?? firstNumber(text, /=\s*(\d+)\s+episodes/i) ?? firstNumber(text, /episodes tracked[^\d]{0,12}(\d+)\s*episodes/i) ?? firstNumber(text, /total[^.\n]{0,40}episodes:?\s*(\d+)/i),
+    highAcuityCount: firstNumber(text, /High-Acuity Patients\s*(\d+)/i),
+    newSocAdmissions: firstNumber(text, /New SOC Admissions(?:\s*\(Q[1-4]\))?\s*(\d+)/i),
+    dischargedCount: firstNumber(text, /Discharges(?:\s*\(Q[1-4]\))?\s*(\d+)/i) ?? firstNumber(text, /discharge\w*\s*\((\d+)\)/i) ?? firstNumber(text, /discharged\s+Q[1-4]?(\d+)\s*patients/i),
+    recertificationCount: firstNumber(text, /Recertifications(?:\s*\(Q[1-4]\))?\s*(\d+)/i) ?? firstNumber(text, /recert\w*\s*\((\d+)\)/i),
+    resumptionsOfCare: firstNumber(text, /Resumptions of Care(?:\s*\(Q[1-4]\))?\s*(\d+)/i),
+    oasisCms485Records: firstNumber(text, /OASIS\/CMS-485 Records[^0-9]{0,80}(\d+)/i),
+    hospitalizations: textHitFromMatch(adverseSummary, 1) ?? firstNumber(text, /(\d+)\s+patients?\s+hospitali[sz]ed/i) ?? firstNumber(text, /hospitali[sz]ation events?:?\s*(\d+)/i) ?? firstNumber(text, /hospitali[sz]ations?\s*Q[1-4]?(\d+)\s*\(/i),
+    edUseTotal:
+      firstNumber(text, /ED visits? without hospitalization\s*:?\s*(\d+)/i)
+      ?? firstNumber(text, /adverseEvents\.edUseTotalUNKNOWN\s*(\d+)\s+ED visits/i)
+      ?? firstNumber(text, /ED use rate per 100 active patients\d+(?:\.\d+)? per 100\s*(\d+)\s*100/i)
+      ?? textHitFromMatch(adverseSummary, 2),
+    missedVisits: textHitFromMatch(visitSummary, 3) ?? textHitFromMatch(missedVisitCompliance, 2) ?? firstNumber(text, /Missed visits?:?\s*(\d+)/i),
+    scheduledVisits: textHitFromMatch(visitSummary, 1) ?? textHitFromMatch(missedVisitCompliance, 2),
+    completedVisits: textHitFromMatch(visitSummary, 2) ?? textHitFromMatch(missedVisitCompliance, 1),
+    complaintsCount: firstNumber(text, /Total complaints\s*=\s*(\d+)/i) ?? firstNumber(text, /(\d+)\s+complaints?\s+q\d/i) ?? idFamilyCount(text, 'CMP'),
+    infectionLineListCount: textHitFromMatch(infectionSummary, 1) ?? idFamilyCount(text, 'INF'),
+    confirmedHais: textHitFromMatch(infectionSummary, 2) ?? firstNumber(text, /(\d+)\s+confirmed HAIs?/i),
+    communityAcquiredInfections: textHitFromMatch(infectionSummary, 3),
+    unreportedToState: textHitFromMatch(infectionSummary, 4),
+    adverseEventsCount: textHitFromMatch(adverseSummary, 3) ?? idFamilyCount(text, 'AE'),
     pipTriggerCount: firstNumber(text, /(\d+)\s+PIP triggers?/i) ?? idFamilyCount(text, 'PIP-T') ?? firstNumber(text, /PIP TRIGGERS?\s*\((\d+)\s*Required\)/i),
+    activePipCount: firstNumber(text, /Active PIPs?\s*\((\d+)\)/i),
     pipNames,
     capCount: idFamilyCount(text, 'CAP'),
-    disciplinaryCount: firstNumber(text, /(\d+)\s+disciplinary review triggers?/i) ?? idFamilyCount(text, 'DT') ?? idFamilyCount(text, 'DISC-TRIG') ?? firstNumber(text, /DISCIPLINARY ACTION TRIGGERS?\s*\((\d+)\s*Required\)/i),
+    openRcaCount: textHitFromMatch(adverseSummary, 4) ?? firstNumber(text, /Open CAPs? \/ RCAs?\s*\((\d+)\)/i),
+    completedRcaCount: textHitFromMatch(adverseSummary, 5),
+    disciplinaryCount: firstNumber(text, /Disciplinary flags:\s*(\d+)\s+total/i) ?? firstNumber(text, /(\d+)\s+disciplinary review triggers?/i) ?? idFamilyCount(text, 'DT') ?? idFamilyCount(text, 'DISC-TRIG') ?? firstNumber(text, /DISCIPLINARY ACTION TRIGGERS?\s*\((\d+)\s*Required\)/i),
     quorum,
     attendeePresentCount,
     signoffRoles,
-    oasisLateSoc: firstNumber(text, /late soc:?\s*(\d+)/i),
+    chartsAudited: textHitFromMatch(documentationCompliance, 2) ?? textHitFromMatch(medicationCompliance, 2) ?? firstNumber(text, /Audit Summary\s*\((\d+)\s+records audited/i),
+    documentationCompliant: textHitFromMatch(documentationCompliance, 1) ?? firstNumber(text, /Total compliant\s*=\s*(\d+)/i),
+    documentationDefects: firstNumber(text, /Total deficiencies\s*=\s*(\d+)/i) ?? firstNumber(text, /Documentation defect rate\d+(?:\.\d+)?%\s*(\d+)\s*defects/i),
+    documentationComplianceRate: firstNumber(text, /Documentation-audit compliance\s*(\d+(?:\.\d+)?)%/i),
+    documentationDefectRate: firstNumber(text, /Documentation defect rate\s*(\d+(?:\.\d+)?)%/i),
+    oasisLateSoc: firstNumber(text, /OASIS SOC not completed [^=]*=\s*(\d+)/i) ?? firstNumber(text, /late soc:?\s*(\d+)/i),
     lateOrMissingF2f: firstNumber(text, /(\d+)\s+late\/missing f2f/i),
-    medReconDiscrepancies: firstNumber(text, /(\d+)\s+discrepanc\w+ at soc\/roc/i),
+    pocUnsignedOrMissingSignature: firstNumber(text, /POC unsigned\/pending physician signature\s*=\s*(\d+)/i) ?? firstNumber(text, /documentation\.pocUnsignedOrMissingSignatureUNKNOWN\s*(\d+)/i),
+    medicationReconciliationCompliant: textHitFromMatch(medicationCompliance, 1),
+    medicationReconciliationComplianceRate: firstNumber(text, /Medication-reconciliation compliance\s*(\d+(?:\.\d+)?)%/i),
+    medReconDiscrepancies: firstNumber(text, /Med-reconciliation mismatch\s*=\s*(\d+)/i) ?? firstNumber(text, /(\d+)\s+discrepanc\w+ at soc\/roc/i),
+    actionItemsCompleted: textHitFromMatch(actionRegisterCompletion, 1) ?? textHitFromMatch(actionKpiCompletion, 1),
+    actionItemsDue: textHitFromMatch(actionRegisterCompletion, 2) ?? textHitFromMatch(actionKpiCompletion, 2),
+    averageActionClosureDays: firstNumber(text, /Average (?:QAPI )?action closure time\s*(?:=|:)?\s*(\d+)\s*days/i),
+    criticalLabsUnreported: firstNumber(text, /critical lab(?: reporting)?[^=]*=\s*(\d+)/i),
     foundCount: 0,
   };
 
   agg.foundCount = [
     agg.activeCensus, agg.episodesTotal, agg.dischargedCount, agg.recertificationCount,
-    agg.hospitalizations, agg.missedVisits, agg.complaintsCount, agg.infectionLineListCount,
-    agg.confirmedHais, agg.adverseEventsCount, agg.pipTriggerCount, agg.capCount,
+    agg.highAcuityCount, agg.newSocAdmissions, agg.resumptionsOfCare, agg.oasisCms485Records,
+    agg.hospitalizations, agg.edUseTotal, agg.missedVisits, agg.scheduledVisits, agg.completedVisits,
+    agg.complaintsCount, agg.infectionLineListCount, agg.confirmedHais, agg.communityAcquiredInfections,
+    agg.unreportedToState, agg.adverseEventsCount, agg.pipTriggerCount, agg.activePipCount, agg.capCount,
+    agg.openRcaCount, agg.completedRcaCount,
     agg.disciplinaryCount, agg.quorum, agg.attendeePresentCount,
-    agg.oasisLateSoc, agg.lateOrMissingF2f, agg.medReconDiscrepancies,
+    agg.chartsAudited, agg.documentationCompliant, agg.documentationDefects,
+    agg.documentationComplianceRate, agg.documentationDefectRate,
+    agg.oasisLateSoc, agg.lateOrMissingF2f, agg.pocUnsignedOrMissingSignature,
+    agg.medicationReconciliationCompliant, agg.medicationReconciliationComplianceRate,
+    agg.medReconDiscrepancies,
+    agg.actionItemsCompleted, agg.actionItemsDue, agg.averageActionClosureDays,
+    agg.criticalLabsUnreported,
   ].filter(Boolean).length + (agg.pipNames.length ? 1 : 0) + (agg.signoffRoles.length ? 1 : 0);
 
   return agg;
@@ -770,10 +845,10 @@ export function extractPriorActionFollowUps(text: string): string[] {
   return uniq([...text.matchAll(/\bQ\d Action #\d[^\n]{0,220}/g)].map((m) => m[0].replace(/\s+/g, ' ').trim()));
 }
 
-const TEXT_AGG_NOTE = 'Parsed from a narrative-text aggregate — confirm against the source before use.';
+const TEXT_AGG_NOTE = 'Parsed from an explicit labeled value in the current source document.';
 
 const textMetric = (hit: TextHit | null, fallback: QapiDerivedMetric): QapiDerivedMetric =>
-  hit ? lowConfidence(hit.value, [hit.quote], TEXT_AGG_NOTE) : fallback;
+  hit ? highConfidence(hit.value, [hit.quote]) : fallback;
 
 /** True when the parse produced no structured fields — only raw text records. */
 function isTextOnlyParse(parsed: ParsedFile): boolean {
@@ -796,7 +871,7 @@ function applyTextAggregates(bundle: QapiDerivedBundle, parsed: ParsedFile): Qap
     notes.unshift(`⚠ This source reads like an AI generation prompt/instruction file, not operating data (found: “${agg.promptQuote ?? ''}”). Double-check that the intended dataset file is selected as the source.`);
   }
   if (agg.foundCount > 0) {
-    notes.push(`Recovered ${agg.foundCount} aggregate metric group(s) directly from the narrative text (labeled totals and record-ID families) — all low-confidence, each carries its verbatim source quote.`);
+    notes.push(`Recovered ${agg.foundCount} metric group(s) by parsing the current source document. Explicit labeled totals are treated as recovered source values; record-ID-family counts remain reviewable and carry verbatim source quotes.`);
   }
 
   const pipCandidates: QapiPipTriggerCandidate[] = bundle.pipCorrectiveAction.length
@@ -828,6 +903,8 @@ function applyTextAggregates(bundle: QapiDerivedBundle, parsed: ParsedFile): Qap
       activeCensus: textMetric(agg.activeCensus ?? agg.episodesTotal, bundle.censusPopulation.activeCensus),
       dischargedCount: textMetric(agg.dischargedCount, bundle.censusPopulation.dischargedCount),
       recertificationCount: textMetric(agg.recertificationCount, bundle.censusPopulation.recertificationCount),
+      qapiRequiredCount: textMetric(agg.episodesTotal, bundle.censusPopulation.qapiRequiredCount),
+      highAcuityCount: textMetric(agg.highAcuityCount, bundle.censusPopulation.highAcuityCount),
     },
     highRiskRollup: {
       ...bundle.highRiskRollup,
@@ -838,17 +915,21 @@ function applyTextAggregates(bundle: QapiDerivedBundle, parsed: ParsedFile): Qap
       ...bundle.adverseEvents,
       hospitalizationsTotal: textMetric(agg.hospitalizations, bundle.adverseEvents.hospitalizationsTotal),
       infectionsTotal: textMetric(agg.infectionLineListCount ?? agg.confirmedHais, bundle.adverseEvents.infectionsTotal),
+      criticalLabEventsUnreported: textMetric(agg.criticalLabsUnreported, bundle.adverseEvents.criticalLabEventsUnreported),
     },
     pipCorrectiveAction: pipCandidates,
     chartAuditDocumentationIntegrity: {
       ...bundle.chartAuditDocumentationIntegrity,
       oasisLateSoc: textMetric(agg.oasisLateSoc, bundle.chartAuditDocumentationIntegrity.oasisLateSoc),
       pocMissingF2F: textMetric(agg.lateOrMissingF2f, bundle.chartAuditDocumentationIntegrity.pocMissingF2F),
+      pocUnsignedOrMissingSignature: textMetric(agg.pocUnsignedOrMissingSignature, bundle.chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature),
       medReconciliationMismatch: textMetric(agg.medReconDiscrepancies, bundle.chartAuditDocumentationIntegrity.medReconciliationMismatch),
     },
     infectionControl: {
       ...bundle.infectionControl,
       healthcareAssociated: textMetric(agg.confirmedHais, bundle.infectionControl.healthcareAssociated),
+      communityAcquired: textMetric(agg.communityAcquiredInfections, bundle.infectionControl.communityAcquired),
+      unreportedToState: textMetric(agg.unreportedToState, bundle.infectionControl.unreportedToState),
     },
   };
 }
@@ -902,8 +983,6 @@ export function deriveQapiBundle(parsed: ParsedFile, eventDateISO: string, targe
     const empty = deriveQapiBundleFromRecords(parsed);
     return { ...empty, sourceMode: 'none', overallNote: 'No parseable content in the uploaded source.' };
   }
-  const dump = reconstructClinicalDump(parsed);
-  if (dump) return deriveQapiBundleFromClinicalDump(dump, eventDateISO);
 
   // Multi-quarter dumps: narrow to exactly one quarter BEFORE any extraction,
   // so aggregates/records never cross quarter boundaries. Fail closed when the
@@ -917,6 +996,9 @@ export function deriveQapiBundle(parsed: ParsedFile, eventDateISO: string, targe
       overallNote: `SOURCE CONFLICT — packet not generated. ${resolved.reason}`,
     };
   }
+  const dump = reconstructClinicalDump(resolved.parsed);
+  if (dump) return deriveQapiBundleFromClinicalDump(dump, eventDateISO);
+
   // Narrative/plain-text uploads: enrich the record-level heuristics with
   // labeled aggregates scanned from the (quarter-narrowed) text itself (Path 3).
   return applyTextAggregates(deriveQapiBundleFromRecords(resolved.parsed), resolved.parsed);

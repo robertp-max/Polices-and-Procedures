@@ -19,7 +19,7 @@ export const CareIndeedTabs: React.FC<CareIndeedTabsProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`flex space-x-8 border-b border-card bg-transparent px-2 ${className}`}>
+    <div className={`flex space-x-8 border-b border-card bg-transparent px-2 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${className}`}>
       {tabs.map((tab) => {
         const isActive = tab.id === activeTabId;
         return (

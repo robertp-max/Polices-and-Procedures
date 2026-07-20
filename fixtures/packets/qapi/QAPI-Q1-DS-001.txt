@@ -1,0 +1,139 @@
+══════════════════════════════════════════════════════════════════════════════
+QAPI Q1 2026 — SYNTHETIC RAW DATASET
+SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION
+All names, IDs, NPIs, and clinical facts in this file are invented for UAT only.
+══════════════════════════════════════════════════════════════════════════════
+
+Dataset ID: QAPI-Q1-DS-001 | Companion Cheat Sheet: QAPI-Q1-CS-001
+Agency: Northwind Synthetic Home Health Agency (NSHHA) | NPI: 1999999999 (synthetic)
+Quarter: Q1 2026 (January 1 – March 31, 2026)
+Reporting Period: 2026-01-01 to 2026-03-31
+QAPI Meeting Date: 2026-04-09
+Workflow: QA-WF-03 — Quarterly QAPI Committee Review
+Source Classification: synthetic
+Required Sign-offs: Administrator, Clinical Manager, QAPI Committee Chair
+
+GOVERNANCE CALENDAR (post-period governance dates are valid for the Q1 event)
+- Agenda packet deadline: 2026-04-02
+- Feeder-audit close deadline: 2026-04-04
+- Governing Body package deadline: 2026-04-07
+- QAPI minutes deadline: 2026-04-16
+- QAPI Meeting (review of Q1 operations): 2026-04-09
+
+SECTION 1 — PATIENT CENSUS (Q1 close)
+Active at Jan 1: 105 patients
+SOC admissions during Q1: 22
+Discharged Q1 (14) patients
+Recert (48)
+Active at Mar 31 (Q1 close) 120 patients
+Period total = 127 episodes tracked
+Episode types: SOC (22), ROC (8), Recert (48), Continuing (35), Discharge (14)
+
+SECTION 2 — HOSPITALIZATIONS AND ED UTILIZATION
+Hospitalization events: 5 patients hospitalized during Q1 (MOCK-PT-0009, 0022, 0047, 0071, 0098)
+ED visits without hospitalization: 3 (MOCK-PT-0011, 0034, 0056)
+Missed visits: 41 (2.9% miss rate — below 3% threshold this quarter)
+
+SECTION 3 — QUALITY METRIC OBSERVATIONS (threshold evaluations — not opened PIPs)
+metric_id | indicator | month | numerator | denominator | rate | threshold | status
+QM-JAN-001 | Acute Care Hospitalization Rate | January 2026 | 2 | 98 | 2.0% | ≤4.0% | On Target
+QM-JAN-002 | OASIS Accuracy Rate | January 2026 | 76 | 90 | 84.4% | ≥90% | Below Threshold
+QM-JAN-003 | Visit Documentation Timeliness (<24h) | January 2026 | 540 | 620 | 87.1% | ≥95% | Below Threshold
+QM-JAN-004 | POC Documentation Completeness | January 2026 | 80 | 96 | 83.3% | ≥90% | Below Threshold
+QM-JAN-005 | Medication Reconciliation at SOC/ROC | January 2026 | 14 | 18 | 77.8% | ≥95% | Below Threshold
+QM-JAN-006 | Missed Visit Rate | January 2026 | 12 | 480 | 2.5% | ≤3.0% | On Target
+QM-JAN-007 | Discharge Documentation Completeness | January 2026 | 10 | 14 | 71.4% | ≥90% | Below Threshold
+QM-JAN-008 | Patient Satisfaction (Overall) | January 2026 | — | — | 81% | ≥85% | Below Threshold
+QM-FEB-001 | Acute Care Hospitalization Rate | February 2026 | 2 | 102 | 2.0% | ≤4.0% | On Target
+QM-FEB-002 | OASIS Accuracy Rate | February 2026 | 74 | 88 | 84.1% | ≥90% | Below Threshold
+QM-MAR-001 | Acute Care Hospitalization Rate | March 2026 | 1 | 105 | 1.0% | ≤4.0% | On Target
+QM-MAR-002 | OASIS Accuracy Rate | March 2026 | 78 | 92 | 84.8% | ≥90% | Below Threshold — 3rd consecutive month
+
+SECTION 4 — FEEDER AUDITS
+CL-WF-29 Medication Reconciliation Audit | Q1 2026 | sample 20 | 4 discrepancies at SOC/ROC | Complete 2026-04-01
+CL-WF-32 Timeliness Audit | Q1 2026 | sample 30 | Late SOC: 3, Late F2F: 2 | Complete 2026-04-02
+CO-WF-28 F2F Encounter Compliance | 40 episodes | 2 late/missing F2F | Complete 2026-04-03
+QA-WF-16 PIP Inventory Review | Q1 2026 | 0 open formal PIPs; 8 PIP triggers identified for evaluation | Complete 2026-04-04
+
+SECTION 5 — ADVERSE EVENTS (AE-Q1 family)
+event_id | patient | clinician | category | severity | date | status
+AE-Q1-001 | MOCK-PT-0009 | MOCK-CLIN-0009 | Unplanned Hospitalization | Level 3 | 2026-01-18 | RCA Complete
+AE-Q1-002 | MOCK-PT-0022 | MOCK-CLIN-0012 | Unplanned Hospitalization | Level 3 | 2026-02-05 | RCA Complete
+AE-Q1-003 | MOCK-PT-0047 | MOCK-CLIN-0006 | Unplanned Hospitalization | Level 2 | 2026-02-19 | Investigation complete
+AE-Q1-004 | MOCK-PT-0071 | MOCK-CLIN-0017 | Unplanned Hospitalization | Level 3 | 2026-03-08 | RCA Complete — CAP initiated
+AE-Q1-005 | MOCK-PT-0098 | MOCK-CLIN-0010 | Unplanned Hospitalization | Level 2 | 2026-03-22 | Investigation complete
+AE-Q1-006 | MOCK-PT-0011 | MOCK-CLIN-0004 | Near-Miss | marker: ed-visit-no-hospitalization | Level 1 | 2026-01-27 | Closed — no harm
+AE-Q1-007 | MOCK-PT-0034 | MOCK-CLIN-0008 | Near-Miss | marker: ed-visit-no-hospitalization | Level 1 | 2026-02-14 | Closed — no harm
+AE-Q1-008 | MOCK-PT-0056 | MOCK-CLIN-0015 | Near-Miss | marker: ed-visit-no-hospitalization | Level 1 | 2026-03-11 | Closed — no harm
+
+SECTION 6 — INFECTION SURVEILLANCE (INF-Q1 family)
+infection_id | patient | type | onset | status | HAI
+INF-Q1-001 | MOCK-PT-0006 | Wound / Surgical Site | 2026-01-14 | Closed 2026-01-28 | Yes
+INF-Q1-002 | MOCK-PT-0012 | UTI | 2026-02-03 | Closed 2026-02-18 | No
+INF-Q1-003 | MOCK-PT-0020 | Respiratory (ILI) | 2026-02-21 | Closed 2026-03-05 | No
+INF-Q1-004 | MOCK-PT-0033 | Wound / Surgical Site | 2026-03-09 | Open at Q1 close | Yes
+Infection trend: 2 confirmed HAIs Q1. No cluster declared.
+
+SECTION 7 — COMPLAINTS (CMP-Q1 family)
+complaint_id | patient | date | category | status
+CMP-Q1-001 | MOCK-PT-0009 | 2026-01-12 | Communication | Resolved
+CMP-Q1-002 | MOCK-PT-0031 | 2026-02-08 | Scheduling | Resolved
+CMP-Q1-003 | MOCK-PT-0045 | 2026-03-04 | Care Quality | Open — under review
+Complaint trend: 3 complaints Q1 (stable baseline; not a PIP trigger this quarter).
+
+SECTION 8 — PIP TRIGGER EVALUATIONS (8 threshold-breach scenarios — EVALUATIONS ONLY, not auto-opened PIPs)
+These are source evaluations for committee review. Formal PIP charters are NOT auto-created from this dataset.
+
+PIP-T-Q1-001 | OASIS Accuracy | num 78 / den 92 = 84.8% | threshold ≥90% | BREACH | evaluation open
+PIP-T-Q1-002 | POC Documentation Completeness | num 80 / den 96 = 83.3% | threshold ≥90% | BREACH | evaluation open
+PIP-T-Q1-003 | Visit Documentation Timeliness | num 540 / den 620 = 87.1% | threshold ≥95% | BREACH | evaluation open
+PIP-T-Q1-004 | Medication Reconciliation at SOC/ROC | num 14 / den 18 = 77.8% | threshold ≥95% | BREACH | evaluation open
+PIP-T-Q1-005 | Discharge Documentation Completeness | num 10 / den 14 = 71.4% | threshold ≥90% | BREACH | evaluation open
+PIP-T-Q1-006 | Patient Satisfaction (Overall) | num 81 / den 100 = 81.0% | threshold ≥85% | BREACH | evaluation open
+PIP-T-Q1-007 | Wound infection HAI rate | num 2 / den 120 = 1.67% | threshold ≤1.0% | BREACH | evaluation open
+PIP-T-Q1-008 | Documentation-to-claim accuracy sample | num 17 / den 20 = 85.0% | threshold ≥95% | BREACH | evaluation open
+
+8 PIP triggers identified for Q1 committee evaluation (threshold breaches with numerators/denominators). No formal PIP charters auto-opened.
+
+SECTION 9 — CAP ACTION ITEMS (CAP-Q1 family)
+cap_id | linked | status | opened
+CAP-Q1-001 | RCA for AE-Q1-001 | Open | 2026-01-25
+CAP-Q1-002 | RCA for AE-Q1-002 | Open | 2026-02-12
+CAP-Q1-003 | RCA for AE-Q1-004 | Open | 2026-03-15
+
+SECTION 10 — PERSONNEL REVIEW TRIGGERS (aggregate only — no employee names, no investigation facts, no discipline language)
+Per PRD §13.4 the general dataset carries category + count + policy-ref + status only.
+Personnel-review trigger total: 5 (category aggregates for restricted addendum).
+
+DT-Q1-001 | category: Documentation Timeliness Pattern | count: 1 | policy-ref: QA-CP-012 | status: Open — personnel review pending | required reviewer: Clinical Manager
+DT-Q1-002 | category: Medication Reconciliation Variance Pattern | count: 1 | policy-ref: CL-CP-029 | status: Open — personnel review pending | required reviewer: Clinical Manager
+DT-Q1-003 | category: Visit Completion Variance Pattern | count: 1 | policy-ref: CL-CP-015 | status: Open — personnel review pending | required reviewer: Administrator
+DT-Q1-004 | category: OASIS Accuracy Pattern | count: 1 | policy-ref: QA-CP-008 | status: Open — personnel review pending | required reviewer: QAPI Chair
+DT-Q1-005 | category: Care Coordination Communication Pattern | count: 1 | policy-ref: CL-CP-002 | status: Open — personnel review pending | required reviewer: Clinical Manager
+
+SECTION 11 — GOVERNING BODY ESCALATION ITEMS (4)
+GBE-001: OASIS accuracy below threshold three consecutive months — request GB oversight of evaluation.
+GBE-002: Two confirmed HAIs with one open wound case at Q1 close — request GB infection-control briefing.
+GBE-003: Three open CAP items linked to unplanned hospitalizations — request GB status review.
+GBE-004: Five personnel-review triggers aggregated for restricted addendum — notify GB of volume only (no individual facts).
+
+SECTION 12 — QAPI COMMITTEE ATTENDANCE (2026-04-09)
+MOCK-CLIN-0030 | Avery Quinn | QAPI Committee Chair | ✅ Present
+MOCK-CLIN-0026 | Jordan Blake | Clinical Manager | ✅ Present
+MOCK-CLIN-0029 | Riley Chen | Administrator | ✅ Present
+MOCK-CLIN-0011 | Sam Okonkwo | RN Rep | ✅ Present
+MOCK-CLIN-0014 | Taylor Nguyen | PT Rep | ✅ Present
+MOCK-CLIN-0018 | Morgan Patel | OT Rep | ✅ Present
+MOCK-CLIN-0021 | Casey Rivera | HHA Supervisor | ✅ Present
+MOCK-CLIN-0024 | Jamie Torres | Scheduling Rep | ✅ Present
+MOCK-CLIN-0027 | Drew Kim | Medical Director (ex officio) | ✅ Present
+Quorum: 9/9 standing members present. Quorum met.
+
+SECTION 13 — SIGN-OFFS (Q1 review meeting 2026-04-09)
+Administrator Sign-off: MOCK-CLIN-0029 — Riley Chen — 2026-04-09
+Clinical Manager Sign-off: MOCK-CLIN-0026 — Jordan Blake — 2026-04-09
+QAPI Committee Chair Sign-off: MOCK-CLIN-0030 — Avery Quinn — 2026-04-09
+
+END OF DATASET QAPI-Q1-DS-001
+SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION
+No Q2 operational, clinical, complaint, infection, metric, CAP, or sign-off records are present in this file.

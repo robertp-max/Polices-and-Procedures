@@ -16,9 +16,17 @@ import {
   Share2,
 } from 'lucide-react';
 import { ALL_MODULES, moduleById, modulesForRole } from '@/policy/journey/data/modules';
+import {
+  ROLES,
+  ROLE_ONBOARDING_PATHS,
+  type RoleDef,
+  type RoleModuleRow,
+  type RoleOnboardingPathDef,
+} from '@/policy/journey/data/roleJourneyData';
 import { RoleJourneyVisualizer } from '@/policy/journey/components/roleJourney/RoleJourneyVisualizer';
 import { useJourneyStore } from '@/policy/journey/stores/journeyStore';
-import type { ModuleAttempt } from '@/policy/journey/types/journey';
+import { canStartModule, isModulePassed, latestAttempt } from '@/policy/journey/utils/gating';
+import type { JourneyModule, JourneyRole, ModuleAttempt } from '@/policy/journey/types/journey';
 import { cx } from '../../utils/classNames';
 import {
   workspaceCompactTabClass,
@@ -31,7 +39,7 @@ import { NolanTutorPanel } from '../journey/NolanTutorPanel';
 import { getAssignedModuleIdsForEmployee } from '../../utils/journeyProfileAdapter';
 
 type AcademyTabId = 'home' | 'onboarding' | 'roleJourney' | 'appendixF' | 'achc' | 'advanced' | 'certificates';
-type OnboardingPathId = 'gao';
+type OnboardingPathId = string;
 
 interface AcademyTab {
   id: AcademyTabId;
@@ -46,6 +54,25 @@ interface AcademyCard {
   status: string;
   to: string;
 }
+
+interface RolePathSummary {
+  id: string;
+  eyebrow: string;
+  title: string;
+  body: string;
+  status: string;
+  to: string;
+  moduleCount: number;
+  completedCount: number;
+}
+
+interface ResolvedRolePathModule {
+  row: RoleModuleRow;
+  module: JourneyModule;
+  role: RoleDef;
+}
+
+const rolePathLookup = new Map(ROLE_ONBOARDING_PATHS.map((path) => [path.id, path]));
 
 const academyTabs: AcademyTab[] = [
   {
@@ -98,6 +125,54 @@ function completionForModule(moduleId: string, attempts: ModuleAttempt[]) {
   const latest = moduleAttempts[moduleAttempts.length - 1];
   if (!latest) return null;
   return latest.lessonStatus === 'passed' || latest.status === 'completed' ? '100%' : 'In Progress';
+}
+
+function isJourneyRole(value: string): value is JourneyRole {
+  return ROLES.some((role) => role.short === value);
+}
+
+function roleDefsForPath(path: RoleOnboardingPathDef): RoleDef[] {
+  return path.roleShorts
+    .filter(isJourneyRole)
+    .map((short) => ROLES.find((role) => role.short === short))
+    .filter((role): role is RoleDef => Boolean(role));
+}
+
+function resolveRolePathModules(path: RoleOnboardingPathDef): ResolvedRolePathModule[] {
+  const seen = new Set<string>();
+  return roleDefsForPath(path).flatMap((role) =>
+    role.modules.flatMap((row) => {
+      if (seen.has(row.id)) return [];
+      const module = moduleById(row.id);
+      if (!module) return [];
+      seen.add(row.id);
+      return [{ row, module, role }];
+    }),
+  );
+}
+
+function completedModuleIdSet(attempts: ModuleAttempt[], employeeId: string) {
+  const completed = new Set<string>();
+  ALL_MODULES.forEach((module) => {
+    const attempt = latestAttempt(attempts, employeeId, module.id);
+    if (isModulePassed(module, attempt)) completed.add(module.id);
+  });
+  return completed;
+}
+
+function actionForProgress(completed: number, total: number) {
+  if (completed <= 0) return 'Start Path';
+  if (completed >= total) return 'View Path';
+  return 'Continue Path';
+}
+
+function refsLine(module: JourneyModule, row?: RoleModuleRow) {
+  const refs = [
+    row?.policy,
+    module.policyRefs.length ? module.policyRefs.join(', ') : null,
+    module.cmsRefs.length ? module.cmsRefs.join(', ') : null,
+  ].filter(Boolean);
+  return refs.length ? refs.join(' - ') : 'Role competency record';
 }
 
 function AcademyTabs({
@@ -187,6 +262,85 @@ function ModuleCard({
   );
 }
 
+function RolePathCard({
+  card,
+  onClick,
+}: {
+  card: RolePathSummary;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex h-full min-h-[260px] flex-col justify-between rounded-[24px] border border-[#E5E4E3] bg-white p-8 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#007970] hover:shadow-md focus-visible:outline-none focus-visible:shadow-focus"
+    >
+      <span>
+        <span className="mb-5 flex items-center justify-between gap-4">
+          <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{card.eyebrow}</span>
+          <StatusBadge status={card.status} />
+        </span>
+        <span className="mb-4 block font-montserrat text-xl font-semibold leading-snug text-[#007970] transition-colors group-hover:text-[#F06923]">
+          {card.title}
+        </span>
+        <span className="mb-5 block font-roboto text-[15px] leading-relaxed text-[#747470]">{card.body}</span>
+      </span>
+      <span className="flex items-end justify-between gap-4 border-t border-[#E5E4E3] pt-5">
+        <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#007970]">
+          {card.moduleCount} modules
+        </span>
+        <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#F06923]">
+          {actionForProgress(card.completedCount, card.moduleCount)}
+        </span>
+      </span>
+    </button>
+  );
+}
+
+function RoleModuleCard({
+  item,
+  index,
+  status,
+  lockedReason,
+  onClick,
+}: {
+  item: ResolvedRolePathModule;
+  index: number;
+  status: string;
+  lockedReason?: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex h-full min-h-[252px] flex-col justify-between rounded-[24px] border border-[#E5E4E3] bg-white p-8 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#007970] hover:shadow-md focus-visible:outline-none focus-visible:shadow-focus"
+    >
+      <span>
+        <span className="mb-5 flex items-center justify-between gap-4">
+          <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#F06923]">
+            {String(index + 1).padStart(2, '0')} - {item.module.id}
+          </span>
+          <StatusBadge status={status} />
+        </span>
+        <span className="mb-3 block font-montserrat text-xl font-semibold leading-snug text-[#007970] transition-colors group-hover:text-[#F06923]">
+          {item.module.title}
+        </span>
+        <span className="mb-4 block font-roboto text-[15px] leading-relaxed text-[#747470]">{refsLine(item.module, item.row)}.</span>
+        {lockedReason ? (
+          <span className="block rounded-[12px] bg-[#FFF8ED] px-4 py-3 font-roboto text-xs leading-relaxed text-[#9A5B20]">
+            {lockedReason}
+          </span>
+        ) : null}
+      </span>
+      <span className="mt-6 flex items-center justify-between gap-4 border-t border-[#E5E4E3] pt-5">
+        <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#007970]">{item.row.phase}</span>
+        <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#F06923]">Open Module</span>
+      </span>
+    </button>
+  );
+}
+
 function SectionContainer({
   title,
   footer,
@@ -230,7 +384,10 @@ export function JourneyAcademyScreen() {
   const employees = useJourneyStore((state) => state.employees);
   const currentEmployee = employees.find((e) => e.id === currentEmployeeId) || employees[0];
   const requestedTab = toAcademyTabId(searchParams.get('tab'));
-  const onboardingPath = searchParams.get('path') === 'gao' ? 'gao' : null;
+  const requestedPath = searchParams.get('path');
+  const onboardingPath =
+    requestedPath === 'gao' || (requestedPath && rolePathLookup.has(requestedPath)) ? requestedPath : null;
+  const selectedRolePath = onboardingPath && onboardingPath !== 'gao' ? rolePathLookup.get(onboardingPath) ?? null : null;
   const [activeTab, setActiveTab] = useState<AcademyTabId>(() => requestedTab ?? 'home');
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -267,32 +424,54 @@ export function JourneyAcademyScreen() {
     return currentEmployee ? modulesForRole(currentEmployee.role) : ALL_MODULES;
   }, [assignedModuleIds, currentEmployee]);
 
-  const roleOnboardingCards = useMemo<AcademyCard[]>(() => {
-    // Keep GAO entry + role-specific modules from assignment (not every role path in the catalog)
-    // Role-specific tracks use group ROLE (RN-001, DON-001, …); GAO/ANN/ADV handled in other tabs
-    const roleMods = assignedModules.filter((m) => m.group === 'ROLE');
-    const cards: AcademyCard[] = [
+  const completedModuleIds = useMemo(
+    () => completedModuleIdSet(learnerAttempts, currentEmployeeId),
+    [learnerAttempts, currentEmployeeId],
+  );
+
+  const roleOnboardingCards = useMemo<RolePathSummary[]>(() => {
+    const gaoSource =
+      assignedModules.filter((module) => module.group === 'GAO').length > 0
+        ? assignedModules.filter((module) => module.group === 'GAO')
+        : ALL_MODULES.filter((module) => module.group === 'GAO');
+    const gaoCompleted = gaoSource.filter((module) => completedModuleIds.has(module.id)).length;
+    return [
       {
         id: 'GAO',
-        eyebrow: 'Path 1',
+        eyebrow: 'Path 01 - GAO',
         title: 'General Agency Orientation',
         body: 'Foundation sequence for every role: mission, compliance, HIPAA, patient rights, safety, and survey readiness.',
-        status: 'Open',
+        status: `${gaoCompleted}/${gaoSource.length}`,
         to: '/journey?tab=onboarding&path=gao',
+        moduleCount: gaoSource.length,
+        completedCount: gaoCompleted,
       },
+      ...ROLE_ONBOARDING_PATHS.map((path, index) => {
+        const modules = resolveRolePathModules(path);
+        const completedCount = modules.filter((item) => completedModuleIds.has(item.module.id)).length;
+        return {
+          id: path.id,
+          eyebrow: `Path ${String(index + 2).padStart(2, '0')} - ${path.label}`,
+          title: path.title,
+          body: path.description,
+          status: `${completedCount}/${modules.length}`,
+          to: `/journey?tab=onboarding&path=${path.id}`,
+          moduleCount: modules.length,
+          completedCount,
+        };
+      }),
     ];
-    roleMods.slice(0, 8).forEach((module, index) => {
-      cards.push({
-        id: module.id,
-        eyebrow: `Path ${index + 2}`,
-        title: module.title,
-        body: `${module.method} - ${module.policyRefs.join(', ') || module.group}${module.cmsRefs.length ? ` - ${module.cmsRefs.join(', ')}` : ''}.`,
-        status: 'Play',
-        to: `/journey/module/${module.id}`,
-      });
-    });
-    return cards;
-  }, [assignedModules]);
+  }, [assignedModules, completedModuleIds]);
+
+  const selectedRolePathModules = useMemo(
+    () => (selectedRolePath ? resolveRolePathModules(selectedRolePath) : []),
+    [selectedRolePath],
+  );
+
+  const selectedRolePathCompletedCount = useMemo(
+    () => selectedRolePathModules.filter((item) => completedModuleIds.has(item.module.id)).length,
+    [completedModuleIds, selectedRolePathModules],
+  );
 
   const achcCards = useMemo<AcademyCard[]>(
     () =>
@@ -369,20 +548,6 @@ export function JourneyAcademyScreen() {
       ).size,
     [learnerAttempts],
   );
-  const gaoCompletedCount = useMemo(
-    () =>
-      new Set(
-        learnerAttempts
-          .filter(
-            (attempt) =>
-              gaoCards.some((card) => card.id === attempt.moduleId)
-              && (attempt.lessonStatus === 'passed' || attempt.status === 'completed'),
-          )
-          .map((attempt) => attempt.moduleId),
-      ).size,
-    [learnerAttempts, gaoCards],
-  );
-
   const certificateCards = [
     {
       id: 'GAO-001',
@@ -589,6 +754,42 @@ export function JourneyAcademyScreen() {
                   ))}
                 </SectionContainer>
               </>
+            ) : selectedRolePath ? (
+              <>
+                <button
+                  type="button"
+                  onClick={closeOnboardingPath}
+                  className="inline-flex w-fit items-center gap-2 rounded-[12px] border border-[#D9E9E7] bg-white px-4 py-2 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#007970] shadow-sm transition hover:bg-[#F7FEFF]"
+                >
+                  <ArrowLeft className="h-4 w-4" aria-hidden />
+                  Back to Onboarding Paths
+                </button>
+                <PageHeader
+                  title={selectedRolePath.title}
+                  subtitle={`${selectedRolePath.description} ${selectedRolePathCompletedCount}/${selectedRolePathModules.length} modules complete for ${currentEmployee?.name || 'the current learner'}.`}
+                />
+                <SectionContainer
+                  title={`${selectedRolePath.label} Module Sequence`}
+                  footer="Modules are ordered from the canonical role assignment source and open in the existing module player."
+                >
+                  {selectedRolePathModules.map((item, index) => {
+                    const passed = completedModuleIds.has(item.module.id);
+                    const attempt = latestAttempt(learnerAttempts, currentEmployeeId, item.module.id);
+                    const gate = currentEmployee ? canStartModule(currentEmployee, item.module, attempts) : null;
+                    const status = passed ? 'Done' : attempt ? 'Continue' : gate?.unlocked === false ? 'Locked' : 'Start';
+                    return (
+                      <RoleModuleCard
+                        key={`${item.role.short}-${item.module.id}`}
+                        item={item}
+                        index={index}
+                        status={status}
+                        lockedReason={gate?.unlocked === false ? gate.reason : undefined}
+                        onClick={() => navigate(`/journey/module/${item.module.id}`)}
+                      />
+                    );
+                  })}
+                </SectionContainer>
+              </>
             ) : (
               <>
                 <PageHeader
@@ -597,15 +798,10 @@ export function JourneyAcademyScreen() {
                 />
                 <SectionContainer title="Role-Based Onboarding Paths" footer="Begin with General Agency Orientation, then open the pathway for your assigned role." action="Open New Hire Portal" onAction={() => navigate('/journey/new-hire')}>
                   {roleOnboardingCards.map((card) => (
-                    <ModuleCard
+                    <RolePathCard
                       key={card.id}
                       card={card}
-                      status={
-                        card.id === 'GAO'
-                          ? `${gaoCompletedCount}/${gaoCards.length}`
-                          : completionForModule(card.id, learnerAttempts)
-                      }
-                      onClick={() => openModule(card)}
+                      onClick={() => (card.id === 'GAO' ? openOnboardingPath('gao') : openOnboardingPath(card.id))}
                     />
                   ))}
                 </SectionContainer>

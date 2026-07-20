@@ -1,11 +1,17 @@
 /**
- * Identity middleware: attach SessionContext to req.
+ * Identity middleware: attach a request-scoped SessionContext to req.
  *
- * Mounted globally under /api so every downstream handler and PEP has access
- * to a stable `req.session` and `req.actor`.
+ * COG-2 SECURITY CHANGE: this middleware NO LONGER derives an authenticated
+ * actor, roles, MFA, or identity assurance from client-supplied `x-user-*`
+ * headers. Those headers are forgeable and must never confer identity or
+ * privilege. Every request starts ANONYMOUS here; a protected route attaches a
+ * real, server-authoritative actor only after `requireCognitoAuth` verifies a
+ * Cognito bearer token and resolves it against the canonical identity
+ * registry. Only non-identity request plumbing (correlation/session/request
+ * ids, ip, user-agent) is derived from the request.
  */
 import type { RequestHandler } from 'express';
-import { ANONYMOUS_ACTOR, parseList, ulid } from './session.js';
+import { ANONYMOUS_ACTOR, ulid } from './session.js';
 import type { Actor, SessionContext } from './session.js';
 
 declare global {
@@ -19,42 +25,22 @@ declare global {
   }
 }
 
-function asIal(v: string | undefined): 1 | 2 | 3 {
-  if (v === '3') return 3;
-  if (v === '2') return 2;
-  return 1;
-}
-
 export const identityMiddleware: RequestHandler = (req, _res, next) => {
-  const userId = req.header('x-user-id') ?? '';
   const sessionId = req.header('x-session-id') ?? `sess_${ulid()}`;
   const correlationId = req.header('x-correlation-id') ?? ulid();
   const requestId = ulid();
 
-  const authenticated = !!userId;
-  const actor: Actor = userId
-    ? {
-        type: 'user',
-        user_id: userId,
-        display_name: req.header('x-user-display-name') ?? userId,
-        roles: parseList(req.header('x-user-roles')),
-        attributes: {
-          branches: parseList(req.header('x-user-branches')),
-          service_lines: parseList(req.header('x-user-service-lines')),
-          access_classes: parseList(req.header('x-user-access-classes')),
-        },
-        mfa_enrolled: (req.header('x-user-mfa') ?? 'false').toLowerCase() === 'true',
-        identity_assurance: asIal(req.header('x-user-ial') ?? undefined),
-      }
-    : ANONYMOUS_ACTOR;
+  // Always anonymous until a verified bearer token upgrades the actor.
+  // Client identity/role/mfa headers are intentionally ignored (forgeable).
+  const actor: Actor = ANONYMOUS_ACTOR;
 
   const session: SessionContext = {
     session_id: sessionId,
     request_id: requestId,
     correlation_id: correlationId,
     actor,
-    authenticated,
-    auth_age_seconds: Number(req.header('x-auth-age-seconds') ?? 0) || 0,
+    authenticated: false,
+    auth_age_seconds: 0,
     ip: (req.ip ?? undefined) as string | undefined,
     user_agent: req.header('user-agent') ?? undefined,
     device_id: req.header('x-device-id') ?? undefined,

@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
 import { useJourneyStore } from "@/policy/journey/stores/journeyStore";
 import { moduleById } from "@/policy/journey/data/modules";
-import { getLvnStandaloneModule } from "@/policy/journey/modules/lvn";
 import {
   getAssignedModuleIdsForEmployee,
   isModuleAssignedToEmployee,
@@ -65,6 +64,7 @@ import { isAdvancedModule, getAdvancedVariant } from "@/policy/journey/data/adva
 import { AdvancedTrainingPlayer } from "@/policy/journey/components/advanced/AdvancedTrainingPlayer";
 import { OasisSocTrainingPanel } from "@/policy/journey/components/advanced/OasisSocTrainingPanel";
 import { isOasisSocModule, OASIS_SOC_MODULE_TITLE } from "@/policy/journey/components/advanced/oasisSocModule";
+import { getLvnStandaloneModule, isLvnStandaloneModule } from "@/policy/journey/modules/lvn";
 import { Cms485AssessmentQuizPage } from "./Cms485AssessmentQuizPage";
 import CoreValuesInteractiveViewer from "@/policy/journey/components/CoreValuesInteractiveViewer";
 import GAO001Scene01WelcomeDesk from "@/policy/journey/components/GAO001Scene01WelcomeDesk";
@@ -175,6 +175,8 @@ function isGAO002Interactive(moduleId?: string): boolean {
 }
 
 const isGAO002FullWorkspace = (moduleId?: string) => isGAO002Interactive(moduleId);
+const isGAO001DeliveryScene = (moduleId: string | undefined, cardId: string | undefined) =>
+  moduleId === 'GAO-001' && cardId === 'GAO-001_L1_DELIVERY';
 
 const onboardingDotBg = {
   backgroundColor: "#FAFBF8",
@@ -1052,6 +1054,7 @@ function LessonPlayerPage() {
   const nextLesson = currentLessonIdx < allLessons.length - 1 ? allLessons[currentLessonIdx + 1] : null;
 
   const currentCard = cards[currentIdx];
+  const gao001DeliveryScene = isGAO001DeliveryScene(moduleId, currentCard.card_id);
   const isChallengeCard = Boolean(currentCard.internal_challenge);
   const isDebriefCard = currentCard.card_type === "debrief";
   const isLast = currentIdx === cards.length - 1;
@@ -1185,6 +1188,8 @@ function LessonPlayerPage() {
             style={
               isGAO002FullWorkspace(moduleId)
                 ? undefined
+                : gao001DeliveryScene
+                ? { flex: '1 1 auto', minWidth: '360px' }
                 : { minWidth: 'calc(420px * 1.0777)', flex: '1 1 auto' }
             }
           >
@@ -1220,13 +1225,23 @@ function LessonPlayerPage() {
 
           <section
             className={`flex min-h-0 flex-col bg-white ${
-              /^GAO-001_L\d+_DELIVERY$/.test(currentCard.card_id)
+              gao001DeliveryScene
                 ? 'rounded-none border-0 p-0 shadow-none overflow-hidden'
                 : 'rounded-[24px] border border-[#E5E4E3] p-[20px] shadow-[0_18px_50px_rgba(31,28,27,0.08)]'
             }`}
             style={
               isGAO002FullWorkspace(moduleId)
                 ? { flex: '1 1 auto', minHeight: 0, width: '100%' }
+                : gao001DeliveryScene
+                ? {
+                    flex: '0 0 auto',
+                    alignSelf: 'stretch',
+                    height: '100%',
+                    aspectRatio: '16 / 13',
+                    width: 'auto',
+                    maxWidth: '100%',
+                    minWidth: 0,
+                  }
                 : {
                     flex: '0 0 auto',
                     alignSelf: 'stretch',
@@ -1240,9 +1255,9 @@ function LessonPlayerPage() {
           >
             <div
               className={`flex min-h-0 h-full w-full flex-1 flex-col overflow-hidden ${
-                /^GAO-001_L\d+_DELIVERY$/.test(currentCard.card_id)
+                gao001DeliveryScene
                   ? 'rounded-none border-0 bg-black'
-                  : 'rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8]'
+                  : 'rounded-[18px] border-0 bg-white'
               }`}
             >
               {currentCard.card_id === 'GAO-001_L1_DELIVERY' ? (
@@ -2272,23 +2287,36 @@ export function ModulePlayerScreen() {
 
   // HOIST useMemo here so it is ALWAYS called (P0-002 fix for hook order)
   const element = useMemo(() => {
-    // LVN-001…LVN-012 and LVN-SUP ship as self-contained course players.
-    // Render the registered player on the canonical module route instead of
-    // falling through to the generic two-lesson ContentV2 overview.
-    if (params.moduleId && pathname === `/journey/module/${params.moduleId}`) {
-      const LvnStandaloneModule = getLvnStandaloneModule(params.moduleId);
-      if (LvnStandaloneModule) return <LvnStandaloneModule />;
-    }
+    const dispatchModuleId =
+      params.moduleId
+      || (pathname.includes('/module/')
+        ? pathname.split('/module/')[1]?.split('/')[0]?.split('?')[0]
+        : undefined);
+
     // Dispatch ADV modules to domain player for main module view (fixes runtime for RN-ADV)
     // OASIS-E2 SOC renders its own self-contained panel — resolved FIRST and
     // independently of the shared advanced-training contract (see oasisSocModule.ts).
-    if (isOasisSocModule(params.moduleId)) {
-      return <OasisSocTrainingPanel moduleId={params.moduleId!} />;
+    if (isOasisSocModule(dispatchModuleId)) {
+      return <OasisSocTrainingPanel moduleId={dispatchModuleId!} />;
     }
-    if (params.moduleId && isAdvancedModule(params.moduleId) && !isGAO002Interactive(params.moduleId)) {
-      const variant = getAdvancedVariant(params.moduleId) || 'plan_of_care';
-      const title = getModuleDef(params.moduleId)?.title || params.moduleId;
-      return <AdvancedTrainingPlayer moduleId={params.moduleId} moduleTitle={title} variant={variant} />;
+    // LVN V5 standalone SC04 modules (full interactive players — not placeholder lesson shell)
+    if (dispatchModuleId && isLvnStandaloneModule(dispatchModuleId)) {
+      const LvnModule = getLvnStandaloneModule(dispatchModuleId);
+      if (LvnModule) {
+        return (
+          <div className="min-h-[70vh] w-full" data-lvn-standalone={dispatchModuleId}>
+            <div className="mb-3 px-2 sm:px-4 pt-2">
+              <BackLink to="/journey?tab=onboarding&path=lvn">Back to LVN path</BackLink>
+            </div>
+            <LvnModule />
+          </div>
+        );
+      }
+    }
+    if (dispatchModuleId && isAdvancedModule(dispatchModuleId) && !isGAO002Interactive(dispatchModuleId)) {
+      const variant = getAdvancedVariant(dispatchModuleId) || 'plan_of_care';
+      const title = getModuleDef(dispatchModuleId)?.title || dispatchModuleId;
+      return <AdvancedTrainingPlayer moduleId={dispatchModuleId} moduleTitle={title} variant={variant} />;
     }
     if (pathname === "/journey/module/m0") {
       return <Module0OrientationPage />;
@@ -2311,7 +2339,7 @@ export function ModulePlayerScreen() {
     if (params.lessonId) {
       return <LessonPlayerPage />;
     }
-    if (params.moduleId) {
+    if (dispatchModuleId) {
       return <Module1OverviewPage />;
     }
     return (
@@ -2319,9 +2347,9 @@ export function ModulePlayerScreen() {
         Route unrecognized in learning dispatcher.
       </div>
     );
-  }, [pathname, params]);
+  }, [pathname, params.moduleId, params.lessonId]);
 
-  if (rawModuleId && !journeyMod && !isOasisSocModule(rawModuleId) && !isAdvancedModule(rawModuleId) && !isGAO002Interactive(rawModuleId) && !['m0'].includes(rawModuleId)) {
+  if (rawModuleId && !journeyMod && !isOasisSocModule(rawModuleId) && !isAdvancedModule(rawModuleId) && !isLvnStandaloneModule(rawModuleId) && !isGAO002Interactive(rawModuleId) && !['m0'].includes(rawModuleId)) {
     // Unknown module - bypass for RN-ADV modules (registered in adapter/courseModules)
     return (
       <section className="p-8">

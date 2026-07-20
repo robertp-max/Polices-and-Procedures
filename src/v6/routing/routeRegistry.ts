@@ -26,6 +26,7 @@ export type V6RouteTemplate =
   | 'login'
   | 'matrix'
   | 'module-player'
+  | 'packet-studio'
   | 'profiles'
   | 'reference-viewer'
   | 'reports'
@@ -51,6 +52,7 @@ export const V6_ROUTES = [
   { path: '/iadministrator', hashId: 'brad', template: 'chat', group: 'Overview', title: 'iAdministrator', description: 'Brad decision-support workspace for policy and operations questions.' },
   { path: '/brad/builder', hashId: 'brad-builder', template: 'chat', group: 'Overview', title: 'Brad Builder', description: 'Super Admin builder tools for users, permissions, reusable reports, OTPs, cloud updates, and component requests.' },
   { path: '/ces/calendar', hashId: 'ces-calendar', template: 'calendar', group: 'CES', title: 'CES Calendar', description: 'Sprint compliance calendar for mandatory events, evidence windows, signature cutoffs, and survey packet milestones.' },
+  { path: '/compliance', hashId: 'compliance-home', template: 'dashboard', group: 'CES', title: 'Compliance Home', description: 'Compliance sprint home for open work, blockers, evidence, sign-offs, and audit readiness.' },
   { path: '/ces/board', hashId: 'ces-board', template: 'board', group: 'CES', title: 'CES Board', description: 'Operational Kanban board for sprint execution, blockers, evidence, signatures, and owner handoffs. Includes dedicated "Awaiting Action / Evidence" column for review events (QAPI, Infection Control, Incident/Adverse, Grievance, Audit).' },
   // Design cross-ref (Agent 15): All CES routes align to V6_DESIGN.html ~1308 (CES views),
   // V6_DESIGN_RECONCILIATION.md (most MATCHED_REFERENCE; see also events-board, evidence-center).
@@ -66,6 +68,7 @@ export const V6_ROUTES = [
   { path: '/evidence', hashId: 'defensible-2', template: 'evidence', group: 'CES', title: 'DefenCIble', description: 'DefenCIble evidence packet studio for source selection, packet generation, preview, export, and Drive sync.' },
   { path: '/evidence/intake', hashId: 'evidence-intake', template: 'evidence', group: 'CES', title: 'Brad Evidence Intake', description: 'Brad Evidence Intake inside Evidence Center: upload source exports, resolve created-date filing, classify and dedupe, file to Drive, run full-population review, and prepare draft forms, agendas, tasks, and packets for human approval.' },
   { path: '/evidence/packet-studio', hashId: 'evidence-packet-studio', template: 'evidence', group: 'CES', title: 'Evidence Packet Studio', description: 'Brad-assisted evidence packet generator inside Evidence Center for event packets, source mapping, preview, and export readiness.' },
+  { path: '/packet-studio', hashId: 'packet-studio', template: 'packet-studio', group: 'CES', title: 'Packet Studio', description: 'Universal mandated-event packet studio for template selection and compatible CES event selection.' },
   { path: '/evidence/defensible-2', hashId: 'defensible-2', template: 'evidence', group: 'CES', title: 'Defensible 2.0', description: 'Live cloned DefenCIble view for side-by-side iteration.' },
   { path: '/evidence/admission-packet-preview', hashId: 'admission-packet-preview', template: 'evidence', group: 'CES', title: 'Patient Admission Packet Preview', description: 'DefenCIble preview route for the fixed multi-page patient admission packet template.' },
   { path: '/ces/reports', hashId: 'ces-reports', template: 'reports', group: 'CES', title: 'CES Reports', description: 'Compliance Execution reports for posture, packets, approvals, and throughput.' },
@@ -159,6 +162,9 @@ export const V6_ROUTES = [
   { path: '/surveyor/policy/:policyId', hashId: 'surveyor-viewer', template: 'detail', group: 'Admin', title: 'Surveyor Viewer', description: 'Read-only surveyor policy viewer for external audit access.' },
   { path: '/policy-lifecycle/:policyId', hashId: 'policy-lifecycle-detail', template: 'lifecycle', group: 'Taxonomy', title: 'Policy Lifecycle Detail', description: 'Policy lifecycle deep link for a specific policy record.' },
   { path: '/login', hashId: 'login-page', template: 'login', group: 'Auth', title: 'Sign In', description: 'Authentication entry screen outside the V6 shell.' },
+  { path: '/forgot-password', hashId: 'forgot-password-page', template: 'login', group: 'Auth', title: 'Forgot Password', description: 'Request a password reset code (outside the V6 shell).' },
+  { path: '/reset-password', hashId: 'reset-password-page', template: 'login', group: 'Auth', title: 'Reset Password', description: 'Complete a password reset with an emailed code (outside the V6 shell).' },
+  { path: '/setup-account', hashId: 'setup-account-page', template: 'login', group: 'Auth', title: 'Account Setup', description: 'Invited-account setup from a secure emailed link (outside the V6 shell).' },
 ] as const satisfies readonly V6RouteDefinition[];
 
 export type V6RouteHashId = (typeof V6_ROUTES)[number]['hashId'];

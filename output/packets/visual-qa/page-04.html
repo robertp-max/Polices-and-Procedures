@@ -1,0 +1,383 @@
+<!doctype html><html><head><meta charset="utf-8"><title>QAPI-QUARTERLY-Q1-2026 2026-01-01 → 2026-03-31</title>
+  <style>
+    @page{size:letter;margin:0;}
+    *{box-sizing:border-box;}
+    body{margin:0;background:#f6f8f8;font:12px/1.55 Roboto,Arial,sans-serif;color:#1f2937;}
+    .pg{position:relative;width:8.5in;min-height:11in;background:#fff;margin:0 auto 14px;display:flex;flex-direction:column;break-after:page;page-break-after:always;overflow:hidden;}
+    .pg:empty{display:none;}
+    .accent-rail{display:none;}
+    .pg-in{position:relative;z-index:1;flex:1;padding:.34in .72in .32in;display:flex;flex-direction:column;}
+    .pg-cover .pg-in{padding:.72in .72in .32in;}
+    .pg-cover-head{display:flex;align-items:flex-start;justify-content:space-between;gap:30px;margin-bottom:1.22in;}
+    .ci-mark{display:block;width:202px;height:auto;}
+    .ci-mark-page{width:170px;}
+    .ci-logo-fallback{display:none;color:#007c7a;font-size:24px;font-weight:700;line-height:1;}
+    .ci-logo-fallback span{color:#e87722;}
+    .cover-meta{text-align:right;color:#5d6767;font-family:Roboto,Arial,sans-serif;font-size:13px;font-weight:300;letter-spacing:.14em;line-height:1.45;text-transform:uppercase;}
+    .cover-meta strong{display:block;color:#007c7a;font-size:15px;font-weight:300;letter-spacing:.18em;}
+    .pg-topline{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:34px;color:#546161;font-family:Roboto,Arial,sans-serif;font-size:13px;font-weight:300;letter-spacing:.03em;}
+    .pg-topline-right{text-align:right;}
+    .pg-h{font-size:29px;line-height:1.15;color:#043f3f;margin:0 0 0;break-after:avoid;page-break-after:avoid;font-weight:700;max-width:6.8in;}
+    .pg-cover .pg-h{font-size:45px;line-height:1.06;letter-spacing:0;text-transform:uppercase;max-width:5.9in;}
+    .cover-eyebrow{font-size:13px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:#e87722;margin:0 0 18px;}
+    .rule{width:138px;height:4px;background:linear-gradient(90deg,#e87722 0 50%,#007c7a 50% 100%);border-radius:2px;margin:22px 0 28px;}
+    .pg-cover .rule{margin:28px 0 30px;}
+    .handling{border:0;background:#fff4ed;border-left:5px solid #e87722;padding:12px 16px;margin-bottom:14px;font-size:11px;color:#5c2d12;}
+    .lock-banner{border:0;background:#fff7ed;border-left:5px solid #b35200;padding:10px 14px;margin-bottom:12px;font-size:11px;color:#7c2d12;}
+    .lock-banner.pass{background:#f0fdf4;border-color:#bbf7d0;border-left-color:#0f7b34;color:#14532d;}
+    .synthetic-banner{border:0;background:#fff7d6;border-left:5px solid #a86a00;padding:10px 14px;margin-bottom:12px;font-size:11px;color:#714d00;}
+    .panel{background:#fff;border:1px solid #d7e1e1;border-radius:0;padding:15px 17px;margin-bottom:14px;break-inside:avoid;page-break-inside:avoid;}
+    .panel-title{font-size:11px;font-weight:700;color:#e87722;text-transform:uppercase;letter-spacing:.16em;margin-bottom:10px;break-after:avoid;page-break-after:avoid;}
+    .kv-row{display:flex;justify-content:space-between;gap:18px;border-bottom:1px solid #e9eeee;padding:6px 0;font-size:11.5px;}
+    .kv-key{color:#007c7a;font-weight:600;}
+    .kv-value{color:#111;text-align:right;}
+    .data-table{width:100%;border-collapse:collapse;font-size:10.5px;margin:4px 0 8px;break-inside:auto;page-break-inside:auto;}
+    .data-table caption{text-align:left;color:#526064;font-size:10px;margin:0 0 6px;}
+    .data-table thead{display:table-header-group;}
+    .data-table th{background:rgba(0,124,122,0.06);color:#007c7a;text-align:left;padding:7px 9px;border-bottom:2px solid rgba(0,124,122,0.12);letter-spacing:.04em;text-transform:uppercase;}
+    .data-table td{padding:7px 9px;border-bottom:1px solid #e9eeee;vertical-align:top;}
+    .p{font-size:11.5px;color:#374151;margin:0 0 8px;}
+    .muted{color:#7a7470;font-size:10px;}
+    .list{margin:0 0 6px 16px;padding:0;font-size:11.5px;}
+    .list li{margin-bottom:4px;}
+    .notice{border:0;background:#f7fafa;border-left:5px solid #007c7a;padding:10px 14px;font-size:11px;color:#335154;margin-bottom:12px;break-inside:avoid;page-break-inside:avoid;}
+    .notice-warning{background:#fff7ed;border-color:#f3c4a8;border-left-color:#e87722;color:#9a3412;}
+    .notice-blocker{background:#fef2f2;border-color:#fecaca;border-left-color:#b91c1c;color:#7f1d1d;}
+    .seal{border-color:#e6b3b3;background:#fff8f8;}
+    .signature-block{margin:18px 0;break-inside:avoid;page-break-inside:avoid;}
+    .signature-line{height:30px;border-bottom:1px solid #9ca3af;width:70%;}
+    .signature-role{font-size:10px;font-weight:700;color:#007c7a;text-transform:uppercase;margin-top:4px;}
+    .pg-foot{margin-top:auto;border-top:0;padding-top:16px;display:flex;justify-content:space-between;gap:18px;font-family:Roboto,Arial,sans-serif;font-size:11px;font-weight:300;color:#697272;}
+    .print-running-header,.print-running-footer{display:none;}
+    .watermark{position:absolute;z-index:0;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0.12;font-size:34px;font-weight:800;letter-spacing:.08em;text-align:center;color:#1f2937;transform:rotate(-28deg);padding:50px;text-transform:uppercase;}
+    h1,h2,h3,.no-orphan{break-after:avoid;page-break-after:avoid;}
+    .form-page{break-before:page;page-break-before:always;}
+    @media print{@page{size:letter;margin:.5in .72in;}body{background:#fff;}.print-running-footer{display:flex;position:fixed;bottom:.18in;left:.72in;right:.72in;z-index:20;justify-content:space-between;gap:18px;color:#697272;font-family:Roboto,Arial,sans-serif;font-size:10px;font-weight:300;}.pg{width:auto;min-height:0;margin:0;display:block;break-after:page;page-break-after:always;overflow:visible;box-shadow:none;}.pg-in,.pg-cover .pg-in{padding:0;display:block;}.pg-topline,.pg-foot{display:none;}.pg-cover-head{margin-bottom:.86in;}.panel,.notice,.signature-block{break-inside:avoid;page-break-inside:avoid;}.kpi-card{break-inside:avoid;page-break-inside:avoid;}.data-table{break-inside:auto;page-break-inside:auto;}.watermark{position:fixed;}}
+  </style></head><body><section class="pg" data-module-id="qapi-rich-kpi-dashboard" data-page-number="4">
+    <div class="accent-rail" aria-hidden="true"><span></span><span></span></div>
+    <div class="watermark">SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div>
+    <div class="pg-in">
+      <header class="pg-topline">
+    <div>Care Indeed Home Health Care, Inc.</div>
+    <div class="pg-topline-right">QAPI Data Dashboard (QA-FM-020)<br>Page 4</div>
+  </header>
+      
+      <h2 class="pg-h">QAPI Data Dashboard (QA-FM-020)</h2><div class="rule"></div>
+      <div class="handling">QAPI analytical packet — classification and handling notice applies per packet confidentiality rules. SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</div><div class="lock-banner"><b>NOT LOCKABLE — draft packet-model build pending serialized orchestration gates</b></div><div class="synthetic-banner"><b>SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION</b> SYNTHETIC UAT DATA — NO REAL PHI — NOT FOR PRODUCTION Agency: Northwind Synthetic Home Health Agency (NSHHA).</div>
+    <style>
+    .kpi-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:8px;}
+    .kpi-card{border:1px solid #d7dee2;border-radius:6px;padding:10px;background:#fbfcfc;break-inside:avoid;page-break-inside:avoid;}
+    .kpi-card h3{font-size:11.5px;line-height:1.25;margin:0 0 7px;color:#111827;}
+    .kpi-card-value{font-size:19px;font-weight:800;color:#111827;margin-bottom:7px;}
+    .kpi-card-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;font-size:9.5px;color:#374151;}
+    .kpi-card-meta span{display:block;}
+    .kpi-card-source{font-size:9px;color:#4b5563;margin-top:7px;border-top:1px solid #e5e7eb;padding-top:6px;}
+    .kpi-status-line{font-weight:700;}
+    .kpi-chart-panel svg{display:block;width:100%;height:auto;margin:2px 0 8px;}
+    .kpi-chart-unknown{border-style:dashed;}
+    .kpi-chart-note{font-size:10.5px;color:#374151;margin:0 0 8px;}
+  </style>
+    <div class="panel"><div class="panel-title">KPI card grid</div><div class="kpi-card-grid"><article class="kpi-card">
+    <h3>Patients or episodes in scope</h3>
+    <div class="kpi-card-value">127</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> 127</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &gt;= 1 in scope</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">&#10003;</span> MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> censusPopulation.patientsOrEpisodesInScope</div>
+  </article><article class="kpi-card">
+    <h3>Active census</h3>
+    <div class="kpi-card-value">120</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> 120</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &gt;= 1 active patient</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">&#10003;</span> MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> censusPopulation.activeCensus</div>
+  </article><article class="kpi-card">
+    <h3>Acute-care hospitalization rate</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> ≤ 8.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> low</span>
+      <span><b>Validation</b> Provisional — human review required</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> adverseEvents.hospitalizationsTotal; censusPopulation.activeCensus</div>
+  </article><article class="kpi-card">
+    <h3>ED use rate per 100 active patients</h3>
+    <div class="kpi-card-value">2.5 per 100</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> 3</span>
+      <span><b>Denominator</b> 120</span>
+      <span><b>Target</b> &lt;= 5 per 100 patients</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">&#10003;</span> MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> adverseEvents.edUseTotal; censusPopulation.activeCensus</div>
+  </article><article class="kpi-card">
+    <h3>Adverse event rate per 100 active patients</h3>
+    <div class="kpi-card-value">6.7 per 100</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> 8</span>
+      <span><b>Denominator</b> 120</span>
+      <span><b>Target</b> &lt;= 5 per 100 patients</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">&#9888;</span> NOT_MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> adverseEvents.adverseEventsTotal; censusPopulation.activeCensus</div>
+  </article><article class="kpi-card">
+    <h3>Infection event rate</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> ≤ 2.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> low</span>
+      <span><b>Validation</b> Provisional — human review required</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> adverseEvents.infectionsTotal; censusPopulation.activeCensus</div>
+  </article><article class="kpi-card">
+    <h3>Documentation-audit compliance</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &gt;= 95.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> low</span>
+      <span><b>Validation</b> Provisional — human review required</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</div>
+  </article><article class="kpi-card">
+    <h3>Documentation defect rate</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> ≤ 5.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> low</span>
+      <span><b>Validation</b> Provisional — human review required</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</div>
+  </article><article class="kpi-card">
+    <h3>Medication-reconciliation compliance</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &gt;= 95.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> low</span>
+      <span><b>Validation</b> Provisional — human review required</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.chartsAudited</div>
+  </article><article class="kpi-card">
+    <h3>Missed-visit compliance</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &gt;= 95.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> none</span>
+      <span><b>Validation</b> Unknown — not recovered</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> visitUtilization.missedVisits; visitUtilization.scheduledVisits</div>
+  </article><article class="kpi-card">
+    <h3>Complaint rate per 100 active patients</h3>
+    <div class="kpi-card-value">2.5 per 100</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> 3</span>
+      <span><b>Denominator</b> 120</span>
+      <span><b>Target</b> ≤ 3 per 100 patients</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">&#10003;</span> MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> complaints.complaintsCount; censusPopulation.activeCensus</div>
+  </article><article class="kpi-card">
+    <h3>Active PIPs</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &lt;= 0 overdue/untriaged active PIPs</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> none</span>
+      <span><b>Validation</b> Unknown — not recovered</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> pipCorrectiveAction.activePipCount</div>
+  </article><article class="kpi-card">
+    <h3>Open CAPs or RCAs</h3>
+    <div class="kpi-card-value">3</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> 3</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &lt;= 0 overdue open CAPs/RCAs</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">&#9888;</span> NOT_MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> pipCorrectiveAction.openCapRcaCount</div>
+  </article><article class="kpi-card">
+    <h3>QAPI committee attendance rate</h3>
+    <div class="kpi-card-value">100.0%</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> 9</span>
+      <span><b>Denominator</b> 9</span>
+      <span><b>Target</b> 90% to 100%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">&#10003;</span> MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> meetingDetails.attendeesPresent; meetingDetails.attendeesExpected</div>
+  </article><article class="kpi-card">
+    <h3>QAPI action completion rate</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> ≥ 90.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> none</span>
+      <span><b>Validation</b> Unknown — not recovered</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> actionItems.actionItemsCompleted; actionItems.actionItemsDue</div>
+  </article><article class="kpi-card">
+    <h3>PIP trigger count</h3>
+    <div class="kpi-card-value">8</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> 8</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> ≤ 0 triggers</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">&#9888;</span> NOT_MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> pipCorrectiveAction.pipTriggerCount</div>
+  </article><article class="kpi-card">
+    <h3>Average QAPI action closure time</h3>
+    <div class="kpi-card-value">UNKNOWN</div>
+    <div class="kpi-card-meta">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> ≤ 14 days</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden="true">?</span> unknown</span>
+      <span class="kpi-status-line"><b>Status</b> <span aria-hidden="true">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> none</span>
+      <span><b>Validation</b> Unknown — not recovered</span>
+    </div>
+    <div class="kpi-card-source"><b>Source</b> actionItems.averageActionClosureDays</div>
+  </article></div></div>
+    <div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Monthly performance vs target</div><p class="kpi-chart-note"><b>UNKNOWN</b> QAPI KPI current values (count) cannot be rendered as a chart: Active PIPs value state is UNKNOWN.</p><table class="data-table"><caption>QAPI KPI current values (count)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Patients or episodes in scope</td><td>127</td><td>127</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 1 in scope</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>censusPopulation.patientsOrEpisodesInScope</td></tr><tr><td>Active census</td><td>120</td><td>120</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 1 active patient</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>censusPopulation.activeCensus</td></tr><tr><td>Active PIPs</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&lt;= 0 overdue/untriaged active PIPs</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown — not recovered</td><td>pipCorrectiveAction.activePipCount</td></tr><tr><td>Open CAPs or RCAs</td><td>3</td><td>3</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&lt;= 0 overdue open CAPs/RCAs</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>pipCorrectiveAction.openCapRcaCount</td></tr><tr><td>PIP trigger count</td><td>8</td><td>8</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 0 triggers</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>pipCorrectiveAction.pipTriggerCount</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Current vs prior period</div><p class="kpi-chart-note"><b>UNKNOWN</b> QAPI KPI current values (count) cannot be rendered as a chart: Patients or episodes in scope prior value is missing or malformed.</p><table class="data-table"><caption>QAPI KPI current values (count)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Patients or episodes in scope</td><td>127</td><td>127</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 1 in scope</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>censusPopulation.patientsOrEpisodesInScope</td></tr><tr><td>Active census</td><td>120</td><td>120</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 1 active patient</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>censusPopulation.activeCensus</td></tr><tr><td>Active PIPs</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&lt;= 0 overdue/untriaged active PIPs</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown — not recovered</td><td>pipCorrectiveAction.activePipCount</td></tr><tr><td>Open CAPs or RCAs</td><td>3</td><td>3</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&lt;= 0 overdue open CAPs/RCAs</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>pipCorrectiveAction.openCapRcaCount</td></tr><tr><td>PIP trigger count</td><td>8</td><td>8</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 0 triggers</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>pipCorrectiveAction.pipTriggerCount</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Monthly performance vs target</div><p class="kpi-chart-note"><b>UNKNOWN</b> QAPI KPI current values (percentage) cannot be rendered as a chart: Acute-care hospitalization rate value state is UNKNOWN.</p><table class="data-table"><caption>QAPI KPI current values (percentage)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Acute-care hospitalization rate</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 8.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>adverseEvents.hospitalizationsTotal; censusPopulation.activeCensus</td></tr><tr><td>Infection event rate</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 2.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>adverseEvents.infectionsTotal; censusPopulation.activeCensus</td></tr><tr><td>Documentation-audit compliance</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Documentation defect rate</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 5.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Medication-reconciliation compliance</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Missed-visit compliance</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown — not recovered</td><td>visitUtilization.missedVisits; visitUtilization.scheduledVisits</td></tr><tr><td>QAPI committee attendance rate</td><td>100.0%</td><td>9</td><td>9</td><td>90% to 100%</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>meetingDetails.attendeesPresent; meetingDetails.attendeesExpected</td></tr><tr><td>QAPI action completion rate</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≥ 90.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown — not recovered</td><td>actionItems.actionItemsCompleted; actionItems.actionItemsDue</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Current vs prior period</div><p class="kpi-chart-note"><b>UNKNOWN</b> QAPI KPI current values (percentage) cannot be rendered as a chart: Acute-care hospitalization rate value state is UNKNOWN.</p><table class="data-table"><caption>QAPI KPI current values (percentage)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Acute-care hospitalization rate</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 8.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>adverseEvents.hospitalizationsTotal; censusPopulation.activeCensus</td></tr><tr><td>Infection event rate</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 2.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>adverseEvents.infectionsTotal; censusPopulation.activeCensus</td></tr><tr><td>Documentation-audit compliance</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Documentation defect rate</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 5.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Medication-reconciliation compliance</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Provisional — human review required</td><td>chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Missed-visit compliance</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown — not recovered</td><td>visitUtilization.missedVisits; visitUtilization.scheduledVisits</td></tr><tr><td>QAPI committee attendance rate</td><td>100.0%</td><td>9</td><td>9</td><td>90% to 100%</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>meetingDetails.attendeesPresent; meetingDetails.attendeesExpected</td></tr><tr><td>QAPI action completion rate</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≥ 90.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown — not recovered</td><td>actionItems.actionItemsCompleted; actionItems.actionItemsDue</td></tr></tbody></table></div><div class="panel kpi-chart-panel"><div class="panel-title">Monthly performance vs target: QAPI KPI current values (rate)</div><svg role="img" aria-labelledby="kpi-chart-qapi-kpi-current-rate-title kpi-chart-qapi-kpi-current-rate-desc" viewBox="0 0 640 186" xmlns="http://www.w3.org/2000/svg">
+    <title id="kpi-chart-qapi-kpi-current-rate-title">Monthly performance vs target: QAPI KPI current values (rate)</title>
+    <desc id="kpi-chart-qapi-kpi-current-rate-desc">Current KPI values in rate with target markers from the same shared KPI data table.</desc>
+    <rect width="640" height="186" fill="#ffffff"/>
+    <text x="8" y="18" font-size="12" font-weight="700" fill="#111827">Monthly performance vs target: QAPI KPI current values (rate)</text>
+    <text x="188" y="18" font-size="9" fill="#374151">Current bar</text>
+    <text x="284" y="18" font-size="9" fill="#374151">Dashed target marker</text>
+    <g>
+      <text x="8" y="52" font-size="10" fill="#111827">ED use rate per 100 active patients</text>
+      <rect x="188" y="42" width="156.75" height="12" rx="2" fill="#2563eb"/>
+      <line x1="501.5" y1="38" x2="501.5" y2="62" stroke="#111827" stroke-width="1.5" stroke-dasharray="3 2"/>
+      <text x="349.75" y="52" font-size="9" fill="#111827">2.5 per 100</text>
+      <text x="505.5" y="65" font-size="8.5" fill="#374151">Target &lt;= 5 per 100 patients</text>
+      <text x="606" y="52" font-size="9" text-anchor="end" fill="#374151">MET</text>
+    </g><g>
+      <text x="8" y="90" font-size="10" fill="#111827">Adverse event rate per 100 active patients</text>
+      <rect x="188" y="80" width="418" height="12" rx="2" fill="#2563eb"/>
+      <line x1="501.5" y1="76" x2="501.5" y2="100" stroke="#111827" stroke-width="1.5" stroke-dasharray="3 2"/>
+      <text x="611" y="90" font-size="9" fill="#111827">6.7 per 100</text>
+      <text x="505.5" y="103" font-size="8.5" fill="#374151">Target &lt;= 5 per 100 patients</text>
+      <text x="606" y="90" font-size="9" text-anchor="end" fill="#374151">NOT_MET</text>
+    </g><g>
+      <text x="8" y="128" font-size="10" fill="#111827">Complaint rate per 100 active patients</text>
+      <rect x="188" y="118" width="156.75" height="12" rx="2" fill="#2563eb"/>
+      <line x1="376.1" y1="114" x2="376.1" y2="138" stroke="#111827" stroke-width="1.5" stroke-dasharray="3 2"/>
+      <text x="349.75" y="128" font-size="9" fill="#111827">2.5 per 100</text>
+      <text x="380.1" y="141" font-size="8.5" fill="#374151">Target ≤ 3 per 100 patients</text>
+      <text x="606" y="128" font-size="9" text-anchor="end" fill="#374151">MET</text>
+    </g>
+  </svg><table class="data-table"><caption>QAPI KPI current values (rate)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>ED use rate per 100 active patients</td><td>2.5 per 100</td><td>3</td><td>120</td><td>&lt;= 5 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>adverseEvents.edUseTotal; censusPopulation.activeCensus</td></tr><tr><td>Adverse event rate per 100 active patients</td><td>6.7 per 100</td><td>8</td><td>120</td><td>&lt;= 5 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>adverseEvents.adverseEventsTotal; censusPopulation.activeCensus</td></tr><tr><td>Complaint rate per 100 active patients</td><td>2.5 per 100</td><td>3</td><td>120</td><td>≤ 3 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>complaints.complaintsCount; censusPopulation.activeCensus</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Current vs prior period</div><p class="kpi-chart-note"><b>UNKNOWN</b> QAPI KPI current values (rate) cannot be rendered as a chart: ED use rate per 100 active patients prior value is missing or malformed.</p><table class="data-table"><caption>QAPI KPI current values (rate)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>ED use rate per 100 active patients</td><td>2.5 per 100</td><td>3</td><td>120</td><td>&lt;= 5 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>adverseEvents.edUseTotal; censusPopulation.activeCensus</td></tr><tr><td>Adverse event rate per 100 active patients</td><td>6.7 per 100</td><td>8</td><td>120</td><td>&lt;= 5 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>adverseEvents.adverseEventsTotal; censusPopulation.activeCensus</td></tr><tr><td>Complaint rate per 100 active patients</td><td>2.5 per 100</td><td>3</td><td>120</td><td>≤ 3 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>complaints.complaintsCount; censusPopulation.activeCensus</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Monthly performance vs target</div><p class="kpi-chart-note"><b>UNKNOWN</b> QAPI KPI current values (days) cannot be rendered as a chart: Average QAPI action closure time value state is UNKNOWN.</p><table class="data-table"><caption>QAPI KPI current values (days)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Average QAPI action closure time</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 14 days</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown — not recovered</td><td>actionItems.averageActionClosureDays</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Current vs prior period</div><p class="kpi-chart-note"><b>UNKNOWN</b> QAPI KPI current values (days) cannot be rendered as a chart: Average QAPI action closure time value state is UNKNOWN.</p><table class="data-table"><caption>QAPI KPI current values (days)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Average QAPI action closure time</td><td>UNKNOWN</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>≤ 14 days</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown — not recovered</td><td>actionItems.averageActionClosureDays</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Up to four prior quarters / rolling monthly history</div><p class="kpi-chart-note"><b>UNKNOWN</b> Up to four prior quarters / rolling monthly history (count) cannot be rendered as a chart: Patients or episodes in scope Prior period is Unknown — not recovered or malformed.</p><table class="data-table"><caption>Rolling KPI history from prior and current shared KPI data points.</caption><thead><tr><th>Indicator</th><th>Period</th><th>Value</th><th>Target</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Patients or episodes in scope</td><td>Prior period</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>1</td><td>Unknown — not recovered</td><td>censusPopulation.patientsOrEpisodesInScope</td></tr><tr><td>Patients or episodes in scope</td><td>Q1 2026</td><td>127</td><td>1</td><td>Validated</td><td>censusPopulation.patientsOrEpisodesInScope</td></tr><tr><td>Active census</td><td>Prior period</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>1</td><td>Unknown — not recovered</td><td>censusPopulation.activeCensus</td></tr><tr><td>Active census</td><td>Q1 2026</td><td>120</td><td>1</td><td>Validated</td><td>censusPopulation.activeCensus</td></tr><tr><td>Active PIPs</td><td>Prior period</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>0</td><td>Unknown — not recovered</td><td>pipCorrectiveAction.activePipCount</td></tr><tr><td>Active PIPs</td><td>Q1 2026</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>0</td><td>Unknown — not recovered</td><td>pipCorrectiveAction.activePipCount</td></tr><tr><td>Open CAPs or RCAs</td><td>Prior period</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>0</td><td>Unknown — not recovered</td><td>pipCorrectiveAction.openCapRcaCount</td></tr><tr><td>Open CAPs or RCAs</td><td>Q1 2026</td><td>3</td><td>0</td><td>Validated</td><td>pipCorrectiveAction.openCapRcaCount</td></tr></tbody></table></div><div class="panel kpi-chart-panel"><div class="panel-title">Adverse events by category</div><svg role="img" aria-labelledby="kpi-qapi-adverse-events-by-category-title kpi-qapi-adverse-events-by-category-desc" viewBox="0 0 640 146" xmlns="http://www.w3.org/2000/svg">
+    <title id="kpi-qapi-adverse-events-by-category-title">Adverse events by category</title>
+    <desc id="kpi-qapi-adverse-events-by-category-desc">Events by validated category or stage.</desc>
+    <rect width="640" height="146" fill="#ffffff"/>
+    <text x="8" y="18" font-size="12" font-weight="700" fill="#111827">Adverse events by category</text>
+    <g>
+      <text x="8" y="53" font-size="10" fill="#111827">Hospitalization</text>
+      <rect x="188" y="42" width="418" height="12" rx="2" fill="#2563eb"/>
+      <text x="611" y="52" font-size="9" fill="#111827">5</text>
+      <text x="606" y="52" font-size="8.5" text-anchor="end" fill="#374151">3 open RCA</text>
+      <text x="188" y="67" font-size="8.5" fill="#4b5563">Adverse event category</text>
+    </g><g>
+      <text x="8" y="91" font-size="10" fill="#111827">Ed Without Hospitalization</text>
+      <rect x="188" y="80" width="250.79999999999998" height="12" rx="2" fill="#2563eb"/>
+      <text x="443.79999999999995" y="90" font-size="9" fill="#111827">3</text>
+      <text x="606" y="90" font-size="8.5" text-anchor="end" fill="#374151">3 open RCA</text>
+      <text x="188" y="105" font-size="8.5" fill="#4b5563">Adverse event category</text>
+    </g>
+  </svg><table class="data-table"><caption>Adverse events by category from the shared QAPI rollup object.</caption><thead><tr><th>Category or stage</th><th>Events</th><th>Detail</th><th>Status</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Hospitalization</td><td>5</td><td>Adverse event category</td><td>3 open RCA</td><td>Validated</td><td>QA-FM-026</td></tr><tr><td>Ed Without Hospitalization</td><td>3</td><td>Adverse event category</td><td>3 open RCA</td><td>Validated</td><td>QA-FM-026</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Infection trends + classification</div><p class="kpi-chart-note"><b>UNKNOWN</b> Infection trend classification from the shared QAPI rollup object. cannot be rendered as a chart: Unreported to state is Unknown — not recovered or malformed.</p><table class="data-table"><caption>Infection trend classification from the shared QAPI rollup object.</caption><thead><tr><th>Category or stage</th><th>Infections</th><th>Detail</th><th>Status</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Healthcare-associated</td><td>2</td><td>Infection classification</td><td>Healthcare-associated</td><td>Validated</td><td>QA-FM-027</td></tr><tr><td>Community-acquired</td><td>0</td><td>Infection classification</td><td>Community-acquired</td><td>Validated</td><td>QA-FM-027</td></tr><tr><td>Unreported to state</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>Reporting classification</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>Unknown — not recovered</td><td>QA-FM-027</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Documentation deficiencies by type</div><p class="kpi-chart-note"><b>UNKNOWN</b> Documentation deficiency counts from the shared QAPI rollup object. cannot be rendered as a chart: POC unsigned / pending physician signature is Unknown — not recovered or malformed.</p><table class="data-table"><caption>Documentation deficiency counts from the shared QAPI rollup object.</caption><thead><tr><th>Category or stage</th><th>Deficiencies</th><th>Detail</th><th>Status</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>OASIS SOC not completed ≤5 days</td><td>3</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr><tr><td>POC missing face-to-face encounter</td><td>2</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr><tr><td>POC unsigned / pending physician signature</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>Chart audit deficiency</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>Unknown — not recovered</td><td>QA-FM-025</td></tr><tr><td>Homebound not justified</td><td>0</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr><tr><td>Med-reconciliation count mismatch (OASIS↔POC)</td><td>4</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr><tr><td>Pressure injury present, no wound orders</td><td>0</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr><tr><td>OASIS high mobility need, no therapy ordered</td><td>0</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr></tbody></table></div><div class="panel kpi-chart-panel"><div class="panel-title">PIP/CAP status by stage</div><svg role="img" aria-labelledby="kpi-qapi-pip-cap-status-by-stage-title kpi-qapi-pip-cap-status-by-stage-desc" viewBox="0 0 640 108" xmlns="http://www.w3.org/2000/svg">
+    <title id="kpi-qapi-pip-cap-status-by-stage-title">PIP/CAP status by stage</title>
+    <desc id="kpi-qapi-pip-cap-status-by-stage-desc">Items by validated category or stage.</desc>
+    <rect width="640" height="108" fill="#ffffff"/>
+    <text x="8" y="18" font-size="12" font-weight="700" fill="#111827">PIP/CAP status by stage</text>
+    <g>
+      <text x="8" y="53" font-size="10" fill="#111827">PENDING AUTHORIZED REVIEW</text>
+      <rect x="188" y="42" width="418" height="12" rx="2" fill="#2563eb"/>
+      <text x="611" y="52" font-size="9" fill="#111827">8</text>
+      <text x="606" y="52" font-size="8.5" text-anchor="end" fill="#374151">PENDING AUTHORIZED REVIEW</text>
+      <text x="188" y="67" font-size="8.5" fill="#4b5563">FR-012 workflow decision state</text>
+    </g>
+  </svg><table class="data-table"><caption>PIP, CAP, RCA, and related workflow status by stage.</caption><thead><tr><th>Category or stage</th><th>Items</th><th>Detail</th><th>Status</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>PENDING AUTHORIZED REVIEW</td><td>8</td><td>FR-012 workflow decision state</td><td>PENDING AUTHORIZED REVIEW</td><td>Validated</td><td>Trigger register</td></tr></tbody></table></div><div class="panel kpi-chart-unknown"><div class="panel-title">UNKNOWN — Chart not rendered: Complaints by category + resolution</div><p class="kpi-chart-note"><b>UNKNOWN</b> Complaint category and resolution counts from the shared QAPI data object. cannot be rendered as a chart: Complaint category is Unknown — not recovered or malformed.</p><table class="data-table"><caption>Complaint category and resolution counts from the shared QAPI data object.</caption><thead><tr><th>Category or stage</th><th>Complaints</th><th>Detail</th><th>Status</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Complaint category</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>UNKNOWN — SOURCE NOT RECOVERED</td><td>Resolution status UNKNOWN</td><td>Unknown — not recovered</td><td>complaints.complaintsCount</td></tr></tbody></table></div>
+    
+  
+      <div class="pg-foot"><span>QAPI Committee Packet - Version 1.0 Final</span><span>QAPI-QUARTERLY-Q1-2026 · 2026-01-01 → 2026-03-31 · Draft generated · SYNTHETIC UAT · Page 4 of 18</span></div>
+    </div>
+  </section></body></html>

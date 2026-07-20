@@ -1950,6 +1950,7 @@ const btnPrimary: React.CSSProperties = {
   cursor: 'pointer',
   fontFamily: 'inherit',
 };
+
 const btnSecondary: React.CSSProperties = {
   background: '#fff',
   color: theme.dark,

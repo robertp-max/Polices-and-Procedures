@@ -1,10 +1,30 @@
 # Phase COG-1 — Real Users, Cognito Login, and Minimum User Provisioning
 
-**Status:** code complete + tested; **NOT deployed**. Cognito is the **current tactical
+**Status:** code complete + tested; integration review passed; **post-review hardening
+applied**; **NOT merged, NOT deployed**. Cognito is the **current tactical
 implementation chosen for fastest working login** — the approved long-term identity
 target in `GC+Architecture.html` (Firebase Auth, §5/§20) is unchanged by this phase.
 The provider interface is deliberately IdP-agnostic so that migration replaces
 `src/auth/AuthProvider.tsx` + `src/auth/api.ts`, not every consumer.
+
+**Post-review hardening (on `integration/cog1-review`):** two Major fixes landed after
+the integration review:
+1. **Demo-bypass is gated by an absolute dev-build check.** A production build
+   (`import.meta.env.DEV === false`) can **never** activate demo auth — the explicit
+   `VITE_LOCAL_DEMO_AUTH_BYPASS` opt-in does **not** override a production build; it
+   only takes effect *inside* a dev build (where it additionally authorizes demo on a
+   non-vetoed host beyond localhost / `*.vercel.app`). Deployed hosts (CloudFront,
+   `*.run.app`, careindeed.com) are vetoed unconditionally on top of that. Hostname
+   inference alone never enables demo. (`src/auth/bypass.ts`, regression tests in
+   `src/auth/bypass.test.ts`.)
+2. **Suspended/disabled application users are rejected server-side even with a valid
+   Cognito token** via `assertRegistrationActiveForSession`, wired into the shared
+   `DemoAuthService.getCurrentUser` seam — so `/me`, admin APIs (through
+   `assertAdminAccessToken`), and both the login and **refresh** paths fail closed with
+   403. Refresh validates the newly-issued access token through `getCurrentUser`, so a
+   user suspended mid-session cannot obtain a refreshed session
+   (`server/auth/service.ts`, unit tests in `server/auth/authService.test.ts` run via
+   `vitest.server.config.ts`).
 
 ## What changed
 
@@ -51,8 +71,9 @@ the real `userId`/email/name/role through the same `useAuth()` contract as befor
 - Admin API endpoints re-validate the caller's access token server-side
   (`assertAdminAccessToken`); the UI card is convenience, not the boundary.
 - Disabled/revoked users fail the next `/me`/refresh and lose the session.
-- Local demo bypass policy is unchanged (`bypass.ts`): CloudFront production never
-  bypasses; localhost/Vercel previews may, for development.
+- Local demo bypass (`bypass.ts`): only a **dev build** can enable it — deployed hosts
+  are vetoed unconditionally, and a production build never bypasses regardless of the
+  `VITE_LOCAL_DEMO_AUTH_BYPASS` flag or hostname.
 
 ## MFA — deliberately out of scope (follow-on backlog)
 
@@ -67,18 +88,28 @@ Backlog for a future phase:
 
 ## Proposed deployment (DO NOT RUN without separate approval)
 
-The deployed Cloud Run dev service already carries the Cognito env/secrets. Ship the
-new build the same way previous revisions shipped:
+The deployed Cloud Run dev service already carries the Cognito env/secrets. The
+approved release path builds the combined API+SPA server image through
+`cloudbuild.server.yaml` (which uses `Dockerfile.server` — the full Express server
+serving `/api` + the built `dist`, NOT the web-tier-only `Dockerfile`), then deploys
+that image to `care-indeed-hh-v2-dev`. **Deployment still requires separate approval.**
 
 ```bash
-# From the repo root, after review + approval (uses the existing server Dockerfile path):
+# 1) Build + push the server image via Cloud Build (Dockerfile.server):
+gcloud builds submit --project data-hangout-500409-j4 --config cloudbuild.server.yaml
+
+# 2) Deploy the built image to the dev service (no env changes; secrets already attached):
 gcloud run deploy care-indeed-hh-v2-dev \
   --project data-hangout-500409-j4 --region us-central1 \
-  --source .   # per cloud-run-deployment memory: ALWAYS the Dockerfile.server path
+  --image <image-ref-produced-by-cloudbuild>
 ```
 
+Do **not** use `gcloud run deploy --source .` — that is not the approved path and can
+pick the wrong Dockerfile.
+
 Verify after deploy: `/login` renders; sign in with a test allowlisted account;
-`/api/auth/me` returns the allowlist role; admin invite → setup email → first login.
+`/api/auth/me` returns the allowlist role AND rejects a suspended account with 403;
+admin invite → setup email → first login.
 
 ## Rollback
 

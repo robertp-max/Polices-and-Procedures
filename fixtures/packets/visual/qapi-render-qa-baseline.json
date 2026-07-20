@@ -1,0 +1,43 @@
+{
+  "fixtureId": "QAPI-Q1-DS-001",
+  "approvedDesign": "care-indeed-letter-qapi-analytical-v1",
+  "expectedModuleOrder": [
+    "qapi-cover-page",
+    "qapi-packet-control-source-validation-readiness",
+    "qapi-executive-analysis",
+    "qapi-rich-kpi-dashboard",
+    "qapi-source-feeder-workflow-form-utilization",
+    "qapi-detailed-findings-and-trend-analysis",
+    "qapi-pip-cap-rca-personnel-review-determinations",
+    "qapi-triggered-workflow-and-dependency-register",
+    "qapi-committee-and-governing-body-decisions",
+    "qapi-action-item-workflow-accountability-register",
+    "qapi-approvals-ecign-lock-readiness",
+    "qapi-attachment-manifest",
+    "qapi-completed-source-forms",
+    "qapi-generated-pip-cap-rca-forms",
+    "qapi-triggered-workflow-execution-packages",
+    "qapi-confidential-personnel-review-addendum-reference",
+    "qapi-source-derivation-reconciliation-provenance",
+    "qapi-superseded-or-excluded-source-register"
+  ],
+  "analysisModuleIds": [
+    "qapi-executive-analysis",
+    "qapi-rich-kpi-dashboard",
+    "qapi-source-feeder-workflow-form-utilization",
+    "qapi-detailed-findings-and-trend-analysis",
+    "qapi-pip-cap-rca-personnel-review-determinations"
+  ],
+  "formModuleIds": [
+    "qapi-completed-source-forms",
+    "qapi-generated-pip-cap-rca-forms",
+    "qapi-triggered-workflow-execution-packages"
+  ],
+  "attachmentReferenceIds": [
+    "QA-FM-020",
+    "QA-FM-025",
+    "QA-FM-026",
+    "QA-FM-027",
+    "QAPI-HR-ADDENDUM-2026-Q1"
+  ]
+}

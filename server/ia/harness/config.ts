@@ -63,7 +63,7 @@ function coerceBradMode(v: string | undefined): BradRuntimeMode {
   return v === 'cli-nonphi' || v === 'vertex-nonphi' || v === 'vertex-phi' ? v : 'mock';
 }
 function coerceProvider(v: string | undefined): BradProvider {
-  return v === 'claude' || v === 'vertex' ? v : 'mock';
+  return v === 'claude' || v === 'codex' || v === 'vertex' ? v : 'mock';
 }
 function coerceNolanMode(v: string | undefined): NolanRuntimeMode {
   return v === 'mock' || v === 'vertex-public-web' ? v : 'disabled';
@@ -74,7 +74,7 @@ export function readHarnessConfig(env: NodeJS.ProcessEnv = process.env): Harness
     brad: {
       runtimeMode: coerceBradMode(env.BRAD_RUNTIME_MODE),
       provider: coerceProvider(env.BRAD_PROVIDER),
-      modelId: env.BRAD_MODEL_ID || 'gemini-3.5-flash',
+      modelId: env.BRAD_CODEX_MODEL || env.BRAD_MODEL_ID || 'gemini-3.5-flash',
       vertexProjectId: env.BRAD_VERTEX_PROJECT_ID || '',
       vertexLocation: env.BRAD_VERTEX_LOCATION || '',
       phiEnabled: env.BRAD_PHI_ENABLED === 'true',

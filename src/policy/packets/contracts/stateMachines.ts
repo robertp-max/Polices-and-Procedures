@@ -13,79 +13,91 @@ import type { SignatureLifecycleStatus } from './envelope';
    ══════════════════════════════════════════════════════════════════════ */
 
 /**
- * Allowed packet lifecycle transitions.
- * Main path is linear; alternate states fan in/out where the PRD implies
- * recovery, return-for-correction, signature failure, cancel, supersede,
- * and amendment. Terminal: LOCKED, CANCELLED, SUPERSEDED.
+ * Allowed packet lifecycle transitions — re-derived from PRD §17.1.
+ *
+ * Main path is a strict linear chain (no shortcuts that skip intermediates):
+ * SOURCE_COLLECTION → DRAFT_GENERATED → UNDER_ANALYSIS → READY_FOR_REVIEW →
+ * UNDER_REVIEW → EDITING → VALIDATION_REQUIRED → READY_FOR_APPROVAL →
+ * APPROVED_FOR_SIGNATURE → SIGNER_CONFIRMATION → ECIGN_PREPARING →
+ * SENT_FOR_SIGNATURE → PARTIALLY_SIGNED → FULLY_SIGNED →
+ * SIGNED_PACKAGE_BUILDING → CERTIFICATION_REVIEW → CERTIFIED →
+ * DRIVE_PUBLISHING → PUBLISHED → LOCKED
+ *
+ * Justified non-linear edges (each cited on the transition entry):
+ * - EDITING ↔ VALIDATION_REQUIRED (edit/revalidate cycles; FR-020 / FR-022)
+ * - RETURNED_FOR_CORRECTION entry/exit (FR-025 / FR-028 / FR-029)
+ * - SENT → PARTIALLY_SIGNED → FULLY_SIGNED (signature progress; no skip)
+ * - SIGNATURE_DECLINED / SIGNATURE_EXPIRED recovery
+ * - BLOCKED entry from work states + resume exit
+ * - CANCELLED / SUPERSEDED / AMENDMENT_REQUIRED alternates
+ *
+ * Terminal: LOCKED, CANCELLED, SUPERSEDED.
  */
 export const PACKET_LIFECYCLE_TRANSITIONS: Readonly<
   Record<PacketLifecycleStatus, readonly PacketLifecycleStatus[]>
 > = {
+  /* ── Main path (§17.1 linear chain) ─────────────────────────────── */
   SOURCE_COLLECTION: ['DRAFT_GENERATED', 'BLOCKED', 'CANCELLED'],
-  DRAFT_GENERATED: ['UNDER_ANALYSIS', 'EDITING', 'BLOCKED', 'CANCELLED'],
-  UNDER_ANALYSIS: [
-    'READY_FOR_REVIEW',
-    'VALIDATION_REQUIRED',
-    'EDITING',
-    'BLOCKED',
-    'CANCELLED',
-  ],
-  READY_FOR_REVIEW: ['UNDER_REVIEW', 'EDITING', 'BLOCKED', 'CANCELLED'],
-  UNDER_REVIEW: [
-    'EDITING',
-    'VALIDATION_REQUIRED',
-    'READY_FOR_APPROVAL',
-    'RETURNED_FOR_CORRECTION',
-    'BLOCKED',
-    'CANCELLED',
-  ],
-  EDITING: [
-    'VALIDATION_REQUIRED',
-    'UNDER_ANALYSIS',
-    'UNDER_REVIEW',
-    'READY_FOR_REVIEW',
-    'BLOCKED',
-    'CANCELLED',
-  ],
+  DRAFT_GENERATED: ['UNDER_ANALYSIS', 'BLOCKED', 'CANCELLED'],
+  UNDER_ANALYSIS: ['READY_FOR_REVIEW', 'BLOCKED', 'CANCELLED'],
+  READY_FOR_REVIEW: ['UNDER_REVIEW', 'BLOCKED', 'CANCELLED'],
+  UNDER_REVIEW: ['EDITING', 'BLOCKED', 'CANCELLED'],
+  /**
+   * EDITING → VALIDATION_REQUIRED is the main-path step.
+   * VALIDATION_REQUIRED → EDITING is the justified revalidate loop
+   * (FR-020 Direct Editing / FR-022 Edit Impact Analysis — material edits
+   * require impact analysis and revalidation before approval).
+   */
+  EDITING: ['VALIDATION_REQUIRED', 'BLOCKED', 'CANCELLED'],
   VALIDATION_REQUIRED: [
     'READY_FOR_APPROVAL',
-    'EDITING',
-    'READY_FOR_REVIEW',
+    'EDITING', // FR-020 / FR-022: failed or incomplete validation returns to editing
     'BLOCKED',
-    'RETURNED_FOR_CORRECTION',
     'CANCELLED',
   ],
+  /**
+   * FR-025 Approval Readiness Review actions include
+   * "Return for correction" and "Reject" (→ RETURNED_FOR_CORRECTION).
+   */
   READY_FOR_APPROVAL: [
     'APPROVED_FOR_SIGNATURE',
-    'RETURNED_FOR_CORRECTION',
-    'EDITING',
+    'RETURNED_FOR_CORRECTION', // FR-025: "Return for correction"
     'BLOCKED',
     'CANCELLED',
   ],
   APPROVED_FOR_SIGNATURE: [
     'SIGNER_CONFIRMATION',
-    'RETURNED_FOR_CORRECTION',
+    'RETURNED_FOR_CORRECTION', // FR-025: "Reject" / return before signer confirmation
     'BLOCKED',
     'CANCELLED',
   ],
   SIGNER_CONFIRMATION: [
     'ECIGN_PREPARING',
-    'RETURNED_FOR_CORRECTION',
+    'RETURNED_FOR_CORRECTION', // FR-025 / FR-028: return for correction
     'BLOCKED',
     'CANCELLED',
   ],
+  /**
+   * FR-029 Editing After eCIgn — Prepared but not sent:
+   * "Cancel prepared envelope, preserve audit, reopen packet, reapprove…"
+   */
   ECIGN_PREPARING: [
     'SENT_FOR_SIGNATURE',
-    'RETURNED_FOR_CORRECTION',
+    'RETURNED_FOR_CORRECTION', // FR-029: cancel prepared envelope and reopen
     'BLOCKED',
     'CANCELLED',
   ],
+  /**
+   * Signature progress is SENT → PARTIALLY_SIGNED → FULLY_SIGNED (§17.1).
+   * Decline/expiry are alternate exits (void/decline/expiry).
+   * FR-028 supports "Void" / "Return for correction"; FR-029 sent-but-not-fully-signed:
+   * "Void envelope… create a new packet version, revalidate, reapprove…"
+   */
   SENT_FOR_SIGNATURE: [
     'PARTIALLY_SIGNED',
-    'FULLY_SIGNED',
     'SIGNATURE_DECLINED',
     'SIGNATURE_EXPIRED',
-    'RETURNED_FOR_CORRECTION',
+    'RETURNED_FOR_CORRECTION', // FR-028 / FR-029: void & correct
     'BLOCKED',
     'CANCELLED',
   ],
@@ -93,11 +105,19 @@ export const PACKET_LIFECYCLE_TRANSITIONS: Readonly<
     'FULLY_SIGNED',
     'SIGNATURE_DECLINED',
     'SIGNATURE_EXPIRED',
-    'RETURNED_FOR_CORRECTION',
+    'RETURNED_FOR_CORRECTION', // FR-028 / FR-029: void & correct
     'BLOCKED',
     'CANCELLED',
   ],
-  FULLY_SIGNED: ['SIGNED_PACKAGE_BUILDING', 'BLOCKED', 'AMENDMENT_REQUIRED'],
+  /**
+   * FR-029 Fully signed: "The packet is immutable. Corrections require
+   * amendment, addendum, replacement, or superseding packet."
+   */
+  FULLY_SIGNED: [
+    'SIGNED_PACKAGE_BUILDING',
+    'BLOCKED',
+    'AMENDMENT_REQUIRED', // FR-029: post-signature corrections via amendment
+  ],
   SIGNED_PACKAGE_BUILDING: ['CERTIFICATION_REVIEW', 'BLOCKED'],
   CERTIFICATION_REVIEW: [
     'CERTIFIED',
@@ -105,10 +125,25 @@ export const PACKET_LIFECYCLE_TRANSITIONS: Readonly<
     'AMENDMENT_REQUIRED',
     'BLOCKED',
   ],
-  CERTIFIED: ['DRIVE_PUBLISHING', 'PUBLISHED', 'BLOCKED', 'AMENDMENT_REQUIRED'],
+  CERTIFIED: [
+    'DRIVE_PUBLISHING',
+    'BLOCKED',
+    'AMENDMENT_REQUIRED',
+  ],
   DRIVE_PUBLISHING: ['PUBLISHED', 'BLOCKED'],
-  PUBLISHED: ['LOCKED', 'AMENDMENT_REQUIRED', 'SUPERSEDED'],
+  PUBLISHED: [
+    'LOCKED',
+    'AMENDMENT_REQUIRED', // FR-029 / FR-032: amendment after publish
+    'SUPERSEDED',
+  ],
   LOCKED: [], // terminal
+
+  /* ── Alternate states ───────────────────────────────────────────── */
+  /**
+   * BLOCKED may be entered from any non-terminal work state (via that
+   * state's outbound list) and may resume into any non-terminal main-path
+   * or cancel.
+   */
   BLOCKED: [
     'SOURCE_COLLECTION',
     'DRAFT_GENERATED',
@@ -123,34 +158,45 @@ export const PACKET_LIFECYCLE_TRANSITIONS: Readonly<
     'ECIGN_PREPARING',
     'SENT_FOR_SIGNATURE',
     'PARTIALLY_SIGNED',
+    'FULLY_SIGNED',
     'SIGNED_PACKAGE_BUILDING',
     'CERTIFICATION_REVIEW',
+    'CERTIFIED',
     'DRIVE_PUBLISHING',
+    'PUBLISHED',
     'CANCELLED',
   ],
-  RETURNED_FOR_CORRECTION: [
-    'EDITING',
-    'VALIDATION_REQUIRED',
-    'READY_FOR_REVIEW',
-    'UNDER_REVIEW',
-    'CANCELLED',
-  ],
+  /**
+   * FR-025 / FR-029 re-entry: correction work restarts at EDITING, then
+   * re-traverses VALIDATION_REQUIRED → READY_FOR_APPROVAL → …
+   */
+  RETURNED_FOR_CORRECTION: ['EDITING', 'CANCELLED'],
+  /**
+   * Decline recovery: reopen for correction (FR-029) or re-confirm signers
+   * without content change (FR-026 / FR-028 replace signer).
+   */
   SIGNATURE_DECLINED: [
     'RETURNED_FOR_CORRECTION',
-    'EDITING',
     'SIGNER_CONFIRMATION',
     'CANCELLED',
   ],
+  /**
+   * Expiry recovery: reopen, re-confirm signers, or re-prepare envelope
+   * (FR-028 "Extend expiration" / reissue).
+   */
   SIGNATURE_EXPIRED: [
     'RETURNED_FOR_CORRECTION',
-    'EDITING',
     'SIGNER_CONFIRMATION',
     'ECIGN_PREPARING',
     'CANCELLED',
   ],
   CANCELLED: [], // terminal
   SUPERSEDED: [], // terminal
-  AMENDMENT_REQUIRED: ['EDITING', 'SOURCE_COLLECTION', 'SUPERSEDED', 'CANCELLED'],
+  /**
+   * FR-029 / FR-032: amendment path re-enters EDITING on a new version;
+   * replacement uses SUPERSEDED; abandoned amendments may CANCELLED.
+   */
+  AMENDMENT_REQUIRED: ['EDITING', 'SUPERSEDED', 'CANCELLED'],
 };
 
 export function isAllowedPacketTransition(

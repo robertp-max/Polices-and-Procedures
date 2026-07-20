@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { motion, type PanInfo } from 'framer-motion';
+import { useAuth } from '@/auth/AuthProvider';
 import GAO001SharedOverlay from './GAO001SharedOverlay';
 import {
   gao001SceneArt,
@@ -34,6 +36,12 @@ const brandStyles = `
   }
   .subtle-bob {
     animation: subtleBob 3.5s ease-in-out infinite;
+  }
+
+  @keyframes gao001BadgeConfetti {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    100% { transform: translateY(92vh) rotate(520deg); opacity: 0; }
   }
 
   .desk-clickable {
@@ -178,13 +186,370 @@ const ORIENTATION_ITEMS = [
   "Training path and post-test requirements",
 ];
 
+const CARE_INDEED_LOGO = '/assets/navigation/logo-careindeed-orange.png';
+
+function CareIndeedIdBadge({
+  photo,
+  displayName,
+  role,
+  email,
+  compact = false,
+  cameraActive = false,
+  cameraReady = false,
+  videoRef,
+  onVideoReady,
+}: {
+  photo: string | null;
+  displayName: string;
+  role: string;
+  email: string;
+  compact?: boolean;
+  cameraActive?: boolean;
+  cameraReady?: boolean;
+  videoRef?: React.RefObject<HTMLVideoElement | null>;
+  onVideoReady?: () => void;
+}) {
+  const firstLine = displayName.toUpperCase();
+  const secondLine = role.toUpperCase();
+
+  return (
+    <div
+      className={`relative mx-auto overflow-hidden rounded-[22px] border border-[#DAD7D4] bg-white shadow-[0_24px_70px_rgba(15,91,84,0.22)] ${compact ? 'h-[270px] w-[188px]' : 'h-[390px] w-[270px]'}`}
+    >
+      <div className="absolute inset-x-0 top-0 h-3 bg-[#F06923]" />
+      <div className="flex h-full flex-col px-5 pb-5 pt-6">
+        <div className="flex items-center justify-between gap-3">
+          <img src={CARE_INDEED_LOGO} alt="Care Indeed" className={compact ? 'h-9 w-auto' : 'h-12 w-auto'} draggable={false} />
+          <div className="rounded-full border border-[#E6EFEC] px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.18em] text-[#007970]">
+            Employee
+          </div>
+        </div>
+
+        <div className={`mt-5 overflow-hidden rounded-[18px] border border-[#E9E4E0] bg-[#F7FEFF] ${compact ? 'h-[110px]' : 'h-[168px]'}`}>
+          {cameraActive ? (
+            <div className="relative h-full w-full bg-black">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                onLoadedMetadata={onVideoReady}
+                onCanPlay={onVideoReady}
+                onPlaying={onVideoReady}
+                className="h-full w-full object-cover"
+              />
+              {!cameraReady && (
+                <div className="absolute inset-0 grid place-items-center bg-black/70 px-4 text-center font-roboto text-xs leading-relaxed text-white">
+                  Waiting for camera permission...
+                </div>
+              )}
+            </div>
+          ) : photo ? (
+            <img src={photo} alt={`${displayName} badge portrait`} className="h-full w-full object-cover" draggable={false} />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-[#EEF4F3]">
+              <img src={CARE_INDEED_LOGO} alt="" className="h-16 w-auto opacity-70" draggable={false} />
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4 text-center">
+          <div className={`${compact ? 'text-[18px]' : 'text-[25px]'} font-montserrat font-bold leading-tight text-[#004142]`}>
+            {firstLine}
+          </div>
+          <div className={`${compact ? 'text-[10px]' : 'text-[13px]'} mt-1 font-roboto font-medium uppercase tracking-[0.16em] text-[#667085]`}>
+            {secondLine}
+          </div>
+          <div className={`${compact ? 'text-[8px]' : 'text-[10px]'} mt-2 truncate font-roboto text-[#8A8582]`}>
+            {email}
+          </div>
+        </div>
+
+        <div className="mt-auto flex items-center justify-between rounded-[14px] bg-[#F06923] px-3 py-2 text-white">
+          <span className="font-montserrat text-[9px] font-bold uppercase tracking-[0.2em]">Care Indeed</span>
+          <span className="font-montserrat text-[9px] font-bold uppercase tracking-[0.2em]">Day One</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BadgeConfetti() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      {Array.from({ length: 26 }).map((_, index) => {
+        const left = (index * 37) % 100;
+        const delay = (index % 7) * 0.08;
+        const color = ['#F06923', '#007970', '#F7C948', '#E5FEFF'][index % 4];
+        return (
+          <span
+            key={index}
+            className="absolute top-[-18px] h-3 w-2 rounded-sm"
+            style={{
+              left: `${left}%`,
+              backgroundColor: color,
+              animation: `gao001BadgeConfetti 1.55s ${delay}s ease-out forwards`,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function BadgeBuilderModal({
+  close,
+  complete,
+  displayName,
+  role,
+  email,
+}: {
+  close: () => void;
+  complete: () => void;
+  displayName: string;
+  role: string;
+  email: string;
+}) {
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [cameraReady, setCameraReady] = useState(false);
+  const [badgeGenerated, setBadgeGenerated] = useState(false);
+  const [pullCount, setPullCount] = useState(0);
+  const [snapVector, setSnapVector] = useState<{ x: number; y: number; rotate: number } | null>(null);
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const streamRef = React.useRef<MediaStream | null>(null);
+
+  const stopCamera = () => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
+    setCameraActive(false);
+    setCameraReady(false);
+  };
+
+  useEffect(() => stopCamera, []);
+
+  useEffect(() => {
+    if (!cameraActive || !streamRef.current || !videoRef.current) return;
+    const video = videoRef.current;
+    video.srcObject = streamRef.current;
+    void video.play().catch(() => {
+      setCameraError('Camera preview is blocked. Check browser camera permission, or upload a photo.');
+      setCameraReady(false);
+    });
+    const readinessTimer = window.setInterval(() => {
+      if (video.videoWidth > 0 && video.videoHeight > 0) {
+        setCameraReady(true);
+        window.clearInterval(readinessTimer);
+      }
+    }, 120);
+    return () => window.clearInterval(readinessTimer);
+  }, [cameraActive]);
+
+  const startCamera = async () => {
+    setCameraError(null);
+    setCameraReady(false);
+    try {
+      const stream = await navigator.mediaDevices?.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+      if (!stream) throw new Error('Camera is not available in this browser.');
+      streamRef.current = stream;
+      setCameraActive(true);
+    } catch {
+      setCameraError('Camera could not open. Check browser camera permission, or upload a photo.');
+      setCameraActive(false);
+    }
+  };
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    if (!video || !cameraReady || !video.videoWidth || !video.videoHeight) {
+      setCameraError('Camera is still warming up. Please wait until the preview appears.');
+      return;
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = 480;
+    canvas.height = 480;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const size = Math.min(video.videoWidth || 480, video.videoHeight || 480);
+    const sx = ((video.videoWidth || 480) - size) / 2;
+    const sy = ((video.videoHeight || 480) - size) / 2;
+    ctx.drawImage(video, sx, sy, size, size, 0, 0, 480, 480);
+    setPhoto(canvas.toDataURL('image/jpeg', 0.9));
+    stopCamera();
+  };
+
+  const uploadPhoto = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setPhoto(typeof reader.result === 'string' ? reader.result : null);
+    reader.readAsDataURL(file);
+  };
+
+  const generateBadge = () => {
+    if (!photo) setPhoto(CARE_INDEED_LOGO);
+    stopCamera();
+    setPullCount(0);
+    setSnapVector(null);
+    setBadgeGenerated(true);
+  };
+
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (!badgeGenerated) return;
+    const distance = Math.hypot(info.offset.x, info.offset.y);
+    if (distance < 70) return;
+    setPullCount((current) => {
+      const next = current + 1;
+      if (next >= 3) {
+        const directionX = info.offset.x || 1;
+        const directionY = info.offset.y || -1;
+        setSnapVector({
+          x: directionX * 3.4,
+          y: directionY * 3.4,
+          rotate: directionX > 0 ? 30 : -30,
+        });
+        window.setTimeout(complete, 340);
+      }
+      return next;
+    });
+  };
+
+  return (
+    <div className="absolute inset-0 z-50 overflow-hidden bg-[#1F1C1B]/58 backdrop-blur-[2px]">
+      <section className="absolute inset-0 grid h-full w-full grid-cols-1 gap-0 overflow-hidden bg-white lg:grid-cols-[minmax(0,1fr)_280px]">
+        <button
+          type="button"
+          onClick={() => {
+            stopCamera();
+            close();
+          }}
+          className="absolute right-5 top-5 z-20 rounded-full bg-white/95 px-3 py-2 font-montserrat text-xs font-bold uppercase tracking-[0.16em] text-[#004142] shadow-sm transition hover:bg-[#F7FEFF]"
+        >
+          Close
+        </button>
+
+        <div className="flex min-h-0 flex-col justify-center overflow-y-auto px-8 py-8">
+          <p className="font-montserrat text-[11px] font-bold uppercase tracking-[0.22em] text-[#F06923]">Field Observation Check</p>
+          <h2 className="mt-3 font-montserrat text-3xl font-bold leading-tight text-[#007970]">Create Your Clinician ID Badge</h2>
+          <p className="mt-4 font-roboto text-sm leading-relaxed text-[#52404B]">
+            Your badge is the first piece of trust patients see at the door. Add your photo directly inside the badge, upload one, or use the Care Indeed logo.
+          </p>
+
+          <div className="mt-6 rounded-[24px] border border-[#E9E4E0] bg-[#FAFAF7] p-4">
+            {cameraActive ? (
+              <div className="space-y-3">
+                <p className="font-roboto text-sm leading-relaxed text-[#52404B]">
+                  Camera preview is on the badge. Center your face in the badge photo window, then take the photo.
+                </p>
+                <button
+                  type="button"
+                  onClick={capturePhoto}
+                  disabled={!cameraReady}
+                  className="w-full rounded-[16px] bg-[#F06923] px-4 py-3 font-montserrat text-xs font-bold uppercase tracking-[0.18em] text-white transition disabled:cursor-not-allowed disabled:bg-[#DAD7D4] disabled:text-[#746C68]"
+                >
+                  {cameraReady ? 'Take Photo' : 'Camera Warming Up'}
+                </button>
+                <button type="button" onClick={stopCamera} className="w-full rounded-[16px] border border-[#DAD7D4] bg-white px-4 py-3 font-montserrat text-xs font-bold uppercase tracking-[0.18em] text-[#007970] transition hover:border-[#007970]">
+                  Cancel Camera
+                </button>
+              </div>
+            ) : (
+              <div className="grid gap-3">
+                <button type="button" onClick={startCamera} className="rounded-[16px] bg-[#007970] px-4 py-3 font-montserrat text-xs font-bold uppercase tracking-[0.18em] text-white">
+                  Open Camera
+                </button>
+                <label className="cursor-pointer rounded-[16px] border border-[#DAD7D4] bg-white px-4 py-3 text-center font-montserrat text-xs font-bold uppercase tracking-[0.18em] text-[#007970] transition hover:border-[#007970]">
+                  Upload Image
+                  <input type="file" accept="image/*" className="hidden" onChange={uploadPhoto} />
+                </label>
+                <button type="button" onClick={() => setPhoto(CARE_INDEED_LOGO)} className="rounded-[16px] border border-[#F4D3C2] bg-[#FFF8F3] px-4 py-3 font-montserrat text-xs font-bold uppercase tracking-[0.18em] text-[#C74601]">
+                  Use Care Indeed Logo
+                </button>
+              </div>
+            )}
+            {cameraError && <p className="mt-3 text-sm text-[#C74601]">{cameraError}</p>}
+          </div>
+
+          {!badgeGenerated && (
+            <button
+              type="button"
+              onClick={generateBadge}
+              className="mt-5 w-full rounded-[18px] bg-[#F06923] px-6 py-4 font-montserrat text-sm font-bold uppercase tracking-[0.2em] text-white shadow-[0_12px_30px_rgba(240,105,35,0.28)] transition hover:bg-[#D95A1A]"
+            >
+              Generate Badge
+            </button>
+          )}
+        </div>
+
+        <div className="relative flex min-h-[395px] flex-col items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,#F7FEFF_0%,#ffffff_48%,#FFF8F3_100%)] p-5">
+          <div className="pointer-events-none absolute left-1/2 top-0 h-36 w-px -translate-x-1/2 bg-[#007970]/30" />
+          <div className="pointer-events-none absolute left-1/2 top-[136px] h-4 w-14 -translate-x-1/2 rounded-full border border-[#007970]/20 bg-white shadow-sm" />
+
+          {!badgeGenerated && (
+            <CareIndeedIdBadge
+              photo={photo}
+              displayName={displayName}
+              role={role}
+              email={email}
+              compact
+              cameraActive={cameraActive}
+              cameraReady={cameraReady}
+              videoRef={videoRef}
+              onVideoReady={() => setCameraReady(true)}
+            />
+          )}
+        </div>
+
+        {badgeGenerated && (
+          <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center overflow-hidden bg-white/94 backdrop-blur-[1px]">
+            <BadgeConfetti />
+            <div className="pointer-events-none absolute left-1/2 top-0 h-[calc(50%-150px)] min-h-[64px] w-px -translate-x-1/2 bg-[#007970]/35" />
+            <div className="pointer-events-none absolute left-1/2 top-[calc(50%-154px)] h-4 w-16 -translate-x-1/2 rounded-full border border-[#007970]/20 bg-white shadow-sm" />
+            <motion.div
+              drag
+              dragSnapToOrigin={!snapVector}
+              dragElastic={0.26}
+              onDragEnd={handleDragEnd}
+              initial={{ y: -520, rotate: -18, opacity: 0 }}
+              animate={
+                snapVector
+                  ? { x: snapVector.x, y: snapVector.y, rotate: snapVector.rotate, opacity: 0, scale: 0.82 }
+                  : { y: 0, rotate: [0, -9, 8, -5, 4, -2, 0], opacity: 1, scale: 1 }
+              }
+              transition={
+                snapVector
+                  ? { duration: 0.32, ease: 'easeIn' }
+                  : { duration: 1.55, ease: [0.22, 1, 0.36, 1] }
+              }
+              className="pointer-events-auto cursor-grab active:cursor-grabbing"
+            >
+              <CareIndeedIdBadge photo={photo ?? CARE_INDEED_LOGO} displayName={displayName} role={role} email={email} compact />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.1 }}
+              className="absolute bottom-8 left-1/2 -translate-x-1/2 rounded-full bg-[#004142] px-5 py-3 font-montserrat text-xs font-bold uppercase tracking-[0.2em] text-white shadow-[0_12px_30px_rgba(0,65,66,0.24)]"
+            >
+              Pull {Math.min(pullCount + 1, 3)} of 3 - grab me
+            </motion.div>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
 export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01WelcomeDeskProps) {
+  const { user } = useAuth();
   const [styleInjected, setStyleInjected] = useState(false);
   /** Cover page with two images, then the interactive desk scene. */
   const [coverDismissed, setCoverDismissed] = useState(false);
   const [explored, setExplored] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'desk' | 'emailOnMonitor'>('desk');
-  const [coverA, coverB] = resolveGao001Scene01Cover();
+  const [coverA] = resolveGao001Scene01Cover();
   const deskSrc = resolveGao001Scene01Desk();
   const [emailStep, setEmailStep] = useState(0);
   const [badgeZoomOpen, setBadgeZoomOpen] = useState(false);
@@ -196,6 +561,9 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
   const [cameraActive, setCameraActive] = useState(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
+  const learnerName = user?.displayName || user?.name || 'Alex Reyes';
+  const learnerRole = user?.role || user?.appRole || 'RN';
+  const learnerEmail = user?.email || 'alex.reyes@careindeed.com';
 
   // Simulated badge photo only — no device camera access for the training scene.
   const startCamera = async () => {
@@ -321,43 +689,21 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
 
   if (!coverDismissed) {
     return (
-      <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden bg-black">
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 p-3 md:gap-5 md:p-5">
-          <div className="text-center px-2">
-            <p className="font-montserrat text-[10px] font-bold uppercase tracking-[0.18em] text-[#F06923]">
-              GAO-001 · Cover
-            </p>
-            <h2 className="mt-1 font-montserrat text-xl font-bold text-white md:text-2xl">
-              Start Alex&apos;s Journey
-            </h2>
-            <p className="mt-1 text-sm text-white/70">
-              Cover page — continue into Scene 1 at the welcome desk.
-            </p>
-          </div>
-          <div className="grid w-full max-w-6xl min-h-0 flex-1 grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
-            <div className="relative min-h-0 w-full overflow-hidden rounded-xl bg-black" style={{ aspectRatio: '16 / 13' }}>
-              <img
-                src={coverA}
-                alt="Scene 1 cover image 1"
-                className="absolute inset-0 h-full w-full object-contain object-center"
-                draggable={false}
-              />
-            </div>
-            <div className="relative min-h-0 w-full overflow-hidden rounded-xl bg-black" style={{ aspectRatio: '16 / 13' }}>
-              <img
-                src={coverB}
-                alt="Scene 1 cover image 2"
-                className="absolute inset-0 h-full w-full object-contain object-center"
-                draggable={false}
-              />
-            </div>
-          </div>
+      <div className="relative h-full min-h-0 w-full overflow-hidden bg-black">
+        <img
+          src={coverA}
+          alt="Start Alex's Journey cover page"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+          draggable={false}
+        />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black/45 to-transparent" />
+        <div className="absolute inset-x-0 bottom-5 flex justify-center px-4">
           <button
             type="button"
             onClick={() => setCoverDismissed(true)}
-            className="shrink-0 rounded-xl bg-[#F06923] px-8 py-3.5 font-montserrat text-sm font-bold uppercase tracking-widest text-white shadow-[0_10px_28px_rgba(240,105,35,0.35)] transition hover:bg-[#d95a1a]"
+            className="rounded-xl bg-[#F06923] px-8 py-3 font-montserrat text-sm font-bold uppercase tracking-widest text-white shadow-[0_10px_28px_rgba(240,105,35,0.35)] transition hover:bg-[#d95a1a]"
           >
-            Enter Scene 1
+            Start Alex&apos;s Journey
           </button>
         </div>
       </div>
@@ -370,14 +716,28 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
       <GAO001SharedOverlay
         imageSrc={deskSrc}
         altText={gao001SceneArt['scene-01'].alt}
-        objective="Open the welcome email."
+        objective="Review the survey readiness cues."
         onComplete={onComplete}
+        fillPanel
+        renderCustomModal={({ hotspot, close, complete }) => (
+          hotspot.id === 'badge'
+            ? (
+              <BadgeBuilderModal
+                close={close}
+                complete={complete}
+                displayName={learnerName}
+                role={learnerRole}
+                email={learnerEmail}
+              />
+            )
+            : null
+        )}
         // Main scene narration plays from the shell footer play button (not an in-scene strip).
         hotspots={[
           {
-            id: 'email', x: 45, y: 45, label: 'Welcome email',
+            id: 'email', x: 66, y: 22, label: 'Survey readiness cues', tooltipPos: 'bottom-left',
             fieldNotes: {
-              title: 'Welcome to Care Indeed',
+              title: 'Survey Readiness Cues',
               content: GAO001_S01_OVERLAY_BY_HOTSPOT.email.transcript,
             },
             narration: {
@@ -394,7 +754,7 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
             }
           },
           {
-            id: 'checklist', x: 68, y: 60, label: 'Day 1 checklist',
+            id: 'checklist', x: 66, y: 60, label: 'Day 1 checklist', tooltipPos: 'top-left',
             fieldNotes: {
               title: 'Orientation Checklist',
               content: GAO001_S01_OVERLAY_BY_HOTSPOT.checklist.transcript,
@@ -413,7 +773,7 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
             }
           },
           {
-            id: 'packet', x: 80, y: 70, label: 'Orientation packet',
+            id: 'packet', x: 74, y: 85, label: 'Orientation packet', tooltipPos: 'top-left',
             fieldNotes: {
               title: 'Orientation Materials',
               content: GAO001_S01_OVERLAY_BY_HOTSPOT.packet.transcript,
@@ -432,7 +792,7 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
             }
           },
           {
-            id: 'badge', x: 58, y: 65, label: 'ID badge',
+            id: 'badge', x: 55, y: 63, label: 'ID badge', tooltipPos: 'top-right',
             fieldNotes: {
               title: 'Clinician ID Badge',
               content: GAO001_S01_OVERLAY_BY_HOTSPOT.badge.transcript,
@@ -450,7 +810,7 @@ export default function GAO001Scene01WelcomeDesk({ onComplete }: GAO001Scene01We
             }
           },
           {
-            id: 'notebook', x: 18, y: 65, label: 'Field notebook',
+            id: 'notebook', x: 53, y: 76, label: 'Field notebook', tooltipPos: 'top-right',
             fieldNotes: {
               title: 'Field Notebook',
               content: GAO001_S01_OVERLAY_BY_HOTSPOT.notebook.transcript,

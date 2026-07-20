@@ -6,6 +6,7 @@ import type {
 import { readHarnessConfig, BRAD_SYSTEM_PROMPT } from './config.js';
 import { MockBradAdapter } from './modelAdapters/MockBradAdapter.js';
 import { ClaudeCliBradAdapter } from './modelAdapters/ClaudeCliBradAdapter.js';
+import { CodexCliBradAdapter } from './modelAdapters/CodexCliBradAdapter.js';
 import { VertexBradAdapter } from './modelAdapters/VertexBradAdapter.js';
 import { evaluateBradPhiReadiness } from './BradPhiReadinessGate.js';
 import { scanForPhiEgress } from './PhiEgressGuard.js';
@@ -55,7 +56,9 @@ export class BradRuntime {
     this.adapter = mode === 'mock'
       ? new MockBradAdapter(this.cfg.brad.modelId)
       : mode === 'cli-nonphi'
-        ? new ClaudeCliBradAdapter(this.cfg.brad)
+        ? this.cfg.brad.provider === 'codex'
+          ? new CodexCliBradAdapter(this.cfg.brad)
+          : new ClaudeCliBradAdapter(this.cfg.brad)
         : new VertexBradAdapter(this.cfg.brad);
     this.relay = new BradNolanRelay(this.cfg); // relay owns Nolan (capability-gated bridge)
   }
@@ -88,7 +91,7 @@ export class BradRuntime {
       badge = 'Configuration Error — Fail Closed';
     } else if (configuredMode === 'cli-nonphi') {
       effectiveMode = 'cli-nonphi';
-      badge = 'Claude CLI — PHI Disabled';
+      badge = this.cfg.brad.provider === 'codex' ? 'Codex CLI — PHI Disabled' : 'Claude CLI — PHI Disabled';
     } else if (configuredMode === 'vertex-phi' && readiness.ready) {
       effectiveMode = 'vertex-phi';
       badge = 'Vertex Connected — PHI Enabled';

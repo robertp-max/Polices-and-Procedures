@@ -36,6 +36,8 @@ export interface Actor {
   user_id?: string;
   service_id?: string;
   display_name?: string;
+  /** Verified email of the canonical user (server-derived; COG-2). */
+  email?: string;
   roles: RoleId[];
   attributes: UserAttributes;
   mfa_enrolled: boolean;

@@ -15,10 +15,10 @@ const ALL_CLINICAL: JourneyRole[] = ['DON', 'RN', 'LVN', 'PT', 'PTA', 'OT', 'COT
    ───────────────────────────────────────────────────────────── */
 const GAO: JourneyModule[] = [
   { id: 'GAO-001', group: 'GAO', phase: 'GAO', title: 'Agency mission, vision, values', roles: 'ALL', policyRefs: ['EN-CM-001'], cmsRefs: [], method: 'None' },
-  { id: 'GAO-002', group: 'GAO', phase: 'GAO', title: 'Organizational structure & reporting', roles: 'ALL', policyRefs: ['GV-OG-001'], cmsRefs: [], method: 'None' },
-  { id: 'GAO-003', group: 'GAO', phase: 'GAO', title: 'Scope of Services', roles: 'ALL', policyRefs: ['GV-OG-003'], cmsRefs: [], method: 'None' },
-  { id: 'GAO-004', group: 'GAO', phase: 'GAO', title: 'Corporate Compliance Program', roles: 'ALL', policyRefs: ['CO-CP-001', 'CO-CP-004'], cmsRefs: [], method: 'Quiz', passThreshold: 0.8 },
-  { id: 'GAO-005', group: 'GAO', phase: 'GAO', title: 'Compliance Hotline & Reporting', roles: 'ALL', policyRefs: ['CO-CP-006'], cmsRefs: [], method: 'Quiz', passThreshold: 0.8 },
+  { id: 'GAO-002', group: 'GAO', phase: 'GAO', title: 'Organizational structure & reporting', roles: 'ALL', policyRefs: ['GV-OG-001'], cmsRefs: ['42 CFR 484.105(c)'], method: 'None' },
+  { id: 'GAO-003', group: 'GAO', phase: 'GAO', title: 'Scope of services', roles: 'ALL', policyRefs: ['GV-OG-003'], cmsRefs: [], method: 'None' },
+  { id: 'GAO-004', group: 'GAO', phase: 'GAO', title: 'Corporate compliance program', roles: 'ALL', policyRefs: ['CO-CP-001', 'CO-CP-004'], cmsRefs: [], method: 'Quiz', passThreshold: 0.8 },
+  { id: 'GAO-005', group: 'GAO', phase: 'GAO', title: 'Compliance hotline & reporting', roles: 'ALL', policyRefs: ['CO-CP-006'], cmsRefs: [], method: 'Quiz', passThreshold: 0.8 },
   { id: 'GAO-006', group: 'GAO', phase: 'GAO', title: 'Whistleblower protection', roles: 'ALL', policyRefs: ['CO-CP-005'], cmsRefs: [], method: 'Quiz', passThreshold: 0.8 },
   { id: 'GAO-007', group: 'GAO', phase: 'GAO', title: 'HIPAA privacy — PHI handling, minimum necessary', roles: 'ALL', policyRefs: ['CO-HP-001', 'CO-HP-004'], cmsRefs: ['45 CFR 164'], method: 'Quiz', passThreshold: 0.8 },
   { id: 'GAO-008', group: 'GAO', phase: 'GAO', title: 'HIPAA security — passwords, devices, data', roles: 'ALL', policyRefs: ['CO-HP-002'], cmsRefs: ['45 CFR 164'], method: 'Quiz', passThreshold: 0.8 },
@@ -127,20 +127,21 @@ const RN: JourneyModule[] = [
   },
 ];
 
+/** LVN track titles aligned to standalone V5 players in modules/lvn. */
 const LVN: JourneyModule[] = [
-  { id: 'LVN-001', group: 'ROLE', phase: 'ROLE', week: 1, title: 'EHR system — LVN documentation', roles: ['LVN'], policyRefs: ['CL-CD-001', 'IT-UP-001'], cmsRefs: [], method: 'ReturnDemo' },
-  { id: 'LVN-002', group: 'ROLE', phase: 'ROLE', week: 1, title: 'LVN scope of practice limitations (CA B&P §2859)', roles: ['LVN'], policyRefs: ['CO-RA-001'], cmsRefs: ['CA B&P §2859'], method: 'Quiz', passThreshold: 0.8 },
-  { id: 'LVN-003', group: 'ROLE', phase: 'ROLE', week: 1, title: 'RN co-signature/supervision requirements', roles: ['LVN'], policyRefs: ['HR-TD-003'], cmsRefs: [], method: 'Quiz', passThreshold: 0.8 },
-  { id: 'LVN-004', group: 'ROLE', phase: 'ROLE', week: 1, title: 'Clinical documentation standards', roles: ['LVN'], policyRefs: ['CL-CD-001','CL-CD-002'], cmsRefs: [], method: 'RecordReview' },
-  { id: 'LVN-005', group: 'ROLE', phase: 'ROLE', week: 2, title: 'Medication administration (LVN scope)', roles: ['LVN'], policyRefs: ['CL-SD-012','CL-SD-013'], cmsRefs: [], method: 'SkillsCheckoff' },
-  { id: 'LVN-006', group: 'ROLE', phase: 'ROLE', week: 2, title: 'Homebound status — LVN observation role', roles: ['LVN'], policyRefs: ['CL-CA-005'], cmsRefs: [], method: 'Scenario' },
-  { id: 'LVN-007', group: 'ROLE', phase: 'ROLE', week: 3, title: 'Wound care (LVN scope)', roles: ['LVN'], policyRefs: ['CL-SD-011'], cmsRefs: [], method: 'ReturnDemo' },
-  { id: 'LVN-008', group: 'ROLE', phase: 'ROLE', week: 3, title: 'Pain assessment & reporting', roles: ['LVN'], policyRefs: ['CL-SD-014'], cmsRefs: [], method: 'CaseStudy' },
-  { id: 'LVN-009', group: 'ROLE', phase: 'ROLE', week: 3, title: 'Infection prevention — clinical application', roles: ['LVN'], policyRefs: ['CL-SD-016'], cmsRefs: [], method: 'ReturnDemo' },
-  { id: 'LVN-010', group: 'ROLE', phase: 'ROLE', week: 3, title: 'Fall risk prevention — LVN role', roles: ['LVN'], policyRefs: ['CL-SD-015'], cmsRefs: [], method: 'CaseStudy' },
-  { id: 'LVN-011', group: 'ROLE', phase: 'ROLE', week: 4, title: 'LVN-specific skills check-offs per CA practice act', roles: ['LVN'], policyRefs: ['HR-TD-003'], cmsRefs: ['CA B&P §2859'], method: 'SkillsCheckoff' },
-  { id: 'LVN-012', group: 'ROLE', phase: 'ROLE', week: 4, title: 'Reporting to RN — observation, escalation', roles: ['LVN'], policyRefs: ['CL-CD-001'], cmsRefs: [], method: 'Scenario' },
-  { id: 'LVN-SUP', group: 'ROLE', phase: 'SUPERVISED', title: 'Supervised patient visits (min 3 exp / min 5 new-to-HH)', roles: ['LVN'], policyRefs: ['HR-TA-005 §6.3'], cmsRefs: [], method: 'SupervisedVisit', supervisedVisitsRequired: 3, evidenceAppendix: 'HRTA005_E', supervisorSignature: true },
+  { id: 'LVN-001', group: 'ROLE', phase: 'ROLE', week: 1, title: 'EHR System — LVN Documentation Module', roles: ['LVN'], policyRefs: ['CL-CD-001', 'IT-UP-001'], cmsRefs: ['42 CFR 484.115(c)'], method: 'ReturnDemo' },
+  { id: 'LVN-002', group: 'ROLE', phase: 'ROLE', week: 1, title: 'LVN Scope of Practice — CA B&P § 2859', roles: ['LVN'], policyRefs: ['CO-RA-001'], cmsRefs: ['CA B&P §2859'], method: 'Quiz', passThreshold: 0.8 },
+  { id: 'LVN-003', group: 'ROLE', phase: 'ROLE', week: 1, title: 'RN Co-Signature & Supervision Requirements', roles: ['LVN'], policyRefs: ['HR-TD-003', 'CL-CS-001'], cmsRefs: ['42 CFR 484.115(c)'], method: 'Quiz', passThreshold: 0.8 },
+  { id: 'LVN-004', group: 'ROLE', phase: 'ROLE', week: 1, title: 'Clinical Documentation Standards', roles: ['LVN'], policyRefs: ['CL-CD-001', 'CL-CD-002'], cmsRefs: ['42 CFR 484.110(a)'], method: 'RecordReview' },
+  { id: 'LVN-005', group: 'ROLE', phase: 'ROLE', week: 2, title: 'Plan of Care: Working Under RN/Physician POC', roles: ['LVN'], policyRefs: ['CL-CP-001'], cmsRefs: ['42 CFR 484.60'], method: 'CaseStudy' },
+  { id: 'LVN-006', group: 'ROLE', phase: 'ROLE', week: 2, title: 'Medication Management & Reconciliation', roles: ['LVN'], policyRefs: ['CL-SD-012', 'CL-SD-013'], cmsRefs: ['42 CFR 484.60(a)(2)'], method: 'SkillsCheckoff' },
+  { id: 'LVN-007', group: 'ROLE', phase: 'ROLE', week: 3, title: 'Wound Care: LVN Scope', roles: ['LVN'], policyRefs: ['CL-SD-011'], cmsRefs: [], method: 'ReturnDemo' },
+  { id: 'LVN-008', group: 'ROLE', phase: 'ROLE', week: 3, title: 'Fall Risk Assessment & Prevention', roles: ['LVN'], policyRefs: ['CL-SD-015'], cmsRefs: [], method: 'CaseStudy' },
+  { id: 'LVN-009', group: 'ROLE', phase: 'ROLE', week: 3, title: 'Pain Assessment & Management', roles: ['LVN'], policyRefs: ['CL-SD-014'], cmsRefs: [], method: 'CaseStudy' },
+  { id: 'LVN-010', group: 'ROLE', phase: 'ROLE', week: 3, title: 'Infection Prevention — Clinical Application', roles: ['LVN'], policyRefs: ['CL-SD-016'], cmsRefs: ['42 CFR 484.70'], method: 'ReturnDemo' },
+  { id: 'LVN-011', group: 'ROLE', phase: 'ROLE', week: 4, title: 'Patient Identification & Verification', roles: ['LVN'], policyRefs: ['OP-PA-002'], cmsRefs: ['42 CFR 484.60'], method: 'Scenario' },
+  { id: 'LVN-012', group: 'ROLE', phase: 'ROLE', week: 4, title: 'LVN-Specific Skills Check-offs per CA Practice Act', roles: ['LVN'], policyRefs: ['HR-TC-001', 'HR-TD-003'], cmsRefs: ['CA B&P §2859'], method: 'SkillsCheckoff' },
+  { id: 'LVN-SUP', group: 'ROLE', phase: 'SUPERVISED', title: 'Supervised Patient Visits', roles: ['LVN'], policyRefs: ['HR-TA-005 §6.3'], cmsRefs: ['42 CFR 484.115(c)'], method: 'SupervisedVisit', evidenceAppendix: 'HRTA005_E', supervisorSignature: true },
 ];
 
 const PT: JourneyModule[] = [
@@ -224,6 +225,8 @@ const MSW: JourneyModule[] = [
 ];
 
 const HHA: JourneyModule[] = [
+  { id: 'HHA-PRE-1', group: 'ROLE', phase: 'PRE_DAY_1', title: 'HHA training program completion verified', roles: ['HHA'], policyRefs: ['HR-TA-004'], cmsRefs: ['42 CFR 484.80(b)'], method: 'RecordReview', evidenceAppendix: 'B' },
+  { id: 'HHA-PRE-2', group: 'ROLE', phase: 'PRE_DAY_1', title: 'Prior competency evaluation verified (if prior HHA)', roles: ['HHA'], policyRefs: ['HR-TA-004'], cmsRefs: ['42 CFR 484.80(c)'], method: 'RecordReview', evidenceAppendix: 'B' },
   { id: 'HHA-001', group: 'ROLE', phase: 'ROLE', week: 1, title: 'Communication skills', roles: ['HHA'], policyRefs: ['HR-TD-003'], cmsRefs: ['42 CFR 484.80(h)(1)'], method: 'SkillsCheckoff', evidenceAppendix: 'HRTD003_D' },
   { id: 'HHA-002', group: 'ROLE', phase: 'ROLE', week: 1, title: 'Observation, reporting, documentation of patient status', roles: ['HHA'], policyRefs: ['CL-CD-001', 'HR-TD-003'], cmsRefs: ['42 CFR 484.80(h)(2)'], method: 'SkillsCheckoff', evidenceAppendix: 'HRTD003_D' },
   { id: 'HHA-003', group: 'ROLE', phase: 'ROLE', week: 1, title: 'Reading & recording vital signs', roles: ['HHA'], policyRefs: ['HR-TD-003'], cmsRefs: ['42 CFR 484.80(h)(3)'], method: 'SkillsCheckoff', passThreshold: 1.0, evidenceAppendix: 'HRTD003_D' },

@@ -5,7 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 /* ═══════════════════════════════════════════════════════════════
    Env loader — single source of truth for server configuration.
-   Loads `.env` from repo root. Soft-fails optional integrations so
+   Loads `.env` from repo root, then `.env.local` as an ignored local override.
+   Soft-fails optional integrations so
    each subsystem (Calendar, Compliance Intelligence) can start
    independently during local development.
    ═══════════════════════════════════════════════════════════════ */
@@ -15,6 +16,10 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
 dotenv.config({ path: path.join(repoRoot, '.env') });
+const localEnvPath = path.join(repoRoot, '.env.local');
+if (fs.existsSync(localEnvPath)) {
+  dotenv.config({ path: localEnvPath, override: true });
+}
 
 // Resolve the Google service-account path but don't hard-fail at boot.
 // The calendar router will return a typed auth error if the file is
@@ -41,6 +46,21 @@ const iaIndexRaw = process.env.IA_INDEX_ROOT ?? '.cache/ia-index';
 const iaIndexRoot = path.isAbsolute(iaIndexRaw)
   ? iaIndexRaw
   : path.resolve(repoRoot, iaIndexRaw);
+
+const packetStoreCacheRaw = process.env.PACKET_STORE_CACHE_ROOT ?? '.cache/packet-instances';
+const packetStoreCacheRoot = path.isAbsolute(packetStoreCacheRaw)
+  ? packetStoreCacheRaw
+  : path.resolve(repoRoot, packetStoreCacheRaw);
+
+const PACKET_DRIVE_CONNECTOR_VALUES = ['local', 'google'] as const;
+export type PacketDriveConnectorMode = (typeof PACKET_DRIVE_CONNECTOR_VALUES)[number];
+
+function resolvePacketDriveConnector(): PacketDriveConnectorMode {
+  const raw = (process.env.PACKET_DRIVE_CONNECTOR ?? 'local').trim().toLowerCase();
+  return PACKET_DRIVE_CONNECTOR_VALUES.includes(raw as PacketDriveConnectorMode)
+    ? (raw as PacketDriveConnectorMode)
+    : 'local';
+}
 
 /** ───── Google Drive Evidence — LOCKED canonical identity ───────────────────
  * Pinned to protect the evidence pipeline from accidental config drift (a wrong
@@ -136,6 +156,10 @@ export const env = {
   apiSharedSecret: process.env.API_SHARED_SECRET ?? '',
   logLevel: (process.env.LOG_LEVEL ?? 'info') as 'debug' | 'info' | 'warn' | 'error',
   repoRoot,
+
+  /** ───── Packet Platform ─────────────────────────────────── */
+  packetDriveConnector: resolvePacketDriveConnector(),
+  packetStoreCacheRoot,
 
   /** ───── Compliance Intelligence (IA) ─────────────────────── */
   iaIndexRoot,

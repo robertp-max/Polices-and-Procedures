@@ -4,7 +4,12 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { log } from './logger.js';
 import { extractPdf } from './pdfText.js';
-import { extractFieldsFromSource, type FieldSpec, type SourceExtractionResult } from './sourceExtraction.js';
+import {
+  extractFieldsFromSource,
+  type BradReaderLogic,
+  type FieldSpec,
+  type SourceExtractionResult,
+} from './sourceExtraction.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Source pipeline — verification-first, read-only ingest for packet generation.
@@ -64,20 +69,22 @@ export const TEMPLATE_FIELD_SPECS: Record<PacketTemplateKind, FieldSpec[]> = {
     // Advance Directives
     { key: 'advance_directive_status', label: 'Advance directive status (AHCD / POLST / DNR)', group: 'Advance Directives' },
   ],
-  // Grouped per the Brad mandated-event QAPI intake sections (Meeting Details /
-  // Census / High-Risk Rollup / Adverse Events / PIP / Chart Audit / Infection
-  // Control / Medication Safety — see src/policy/brad/intake/adapters/
-  // qapiIntakeAdapter.ts). This widens what Brad's 3x-read looks for beyond the
-  // 5 original stub fields; the adapter's deterministic ClinicalDump/heuristic
-  // paths still run independently and do not depend on these exact keys.
   qapi: [
+    { key: 'organization_name', label: 'Agency / organization legal name exactly as stated', group: 'Packet Identity' },
+    { key: 'packet_status_source', label: 'Source packet status/type, and whether source also says draft/UAT/not for production', group: 'Packet Identity' },
+    { key: 'policy_refs', label: 'Policy references explicitly stated in the source', group: 'Packet Identity' },
+    { key: 'reporting_period', label: 'Reporting period start and end dates', group: 'Packet Identity' },
+    { key: 'data_through_date', label: 'Data-through date', group: 'Packet Identity' },
+    { key: 'source_classification', label: 'Synthetic/UAT/training/production status exactly as stated', group: 'Packet Identity' },
     { key: 'event_title', label: 'QAPI event / meeting title', group: 'Meeting Details' },
     { key: 'event_date', label: 'Meeting date', group: 'Meeting Details' },
     { key: 'meeting_location', label: 'Meeting location', group: 'Meeting Details' },
     { key: 'chair', label: 'Committee chair', group: 'Meeting Details' },
     { key: 'attendees', label: 'Committee attendees / roster', group: 'Meeting Details' },
     { key: 'quorum_status', label: 'Quorum status', group: 'Meeting Details' },
+    { key: 'signoff_records', label: 'Named source sign-off records with role, signer name, and date', group: 'Meeting Details' },
     { key: 'active_census', label: 'Active census count', group: 'Census / Population' },
+    { key: 'episodes_total', label: 'Patients/episodes in scope or total reviewed episodes', group: 'Census / Population' },
     { key: 'discharged_count', label: 'Discharged count this period', group: 'Census / Population' },
     { key: 'admissions_count', label: 'Admissions during period', group: 'Census / Population' },
     { key: 'recert_count', label: 'Recertification count', group: 'Census / Population' },
@@ -86,19 +93,32 @@ export const TEMPLATE_FIELD_SPECS: Record<PacketTemplateKind, FieldSpec[]> = {
     { key: 'overloaded_clinician_count', label: 'Overloaded clinician assignment count', group: 'High-Risk Rollup' },
     { key: 'clinician_pip_or_license_flags', label: 'Clinician PIP / expired license / pending termination flags', group: 'High-Risk Rollup' },
     { key: 'hospitalizations', label: 'Hospitalizations total', group: 'Adverse Events' },
+    { key: 'ed_visits_without_hospitalization', label: 'ED visits without hospitalization count. Do not use patient IDs or record IDs as counts.', group: 'Adverse Events' },
+    { key: 'adverse_events_total', label: 'Total adverse events count', group: 'Adverse Events' },
+    { key: 'open_rca_count', label: 'Open RCA count', group: 'Adverse Events' },
+    { key: 'completed_rca_count', label: 'Completed RCA count', group: 'Adverse Events' },
     { key: 'falls_total', label: 'Falls total / falls with injury / unreported falls', group: 'Adverse Events' },
     { key: 'infections_total', label: 'Infections total (wound / CAUTI / UTI)', group: 'Adverse Events' },
     { key: 'medication_events', label: 'Medication events total / unreported', group: 'Adverse Events' },
     { key: 'critical_lab_events', label: 'Critical lab events / physician-notification failures', group: 'Adverse Events' },
     { key: 'kpis', label: 'KPIs / quality indicators reviewed', group: 'QAPI Dashboard' },
+    { key: 'pip_trigger_count', label: 'PIP trigger count explicitly supported by the source', group: 'PIP / Corrective Action' },
+    { key: 'pip_source_record_count', label: 'PIP source-record count explicitly supported by the source', group: 'PIP / Corrective Action' },
+    { key: 'active_pip_count', label: 'Active PIP count, if different from trigger/source-record count', group: 'PIP / Corrective Action' },
+    { key: 'pip_trigger_records', label: 'PIP trigger/source records with IDs, names, trigger basis, status, and source evidence', group: 'PIP / Corrective Action' },
     { key: 'pips', label: 'Performance improvement projects (PIPs) — trigger, status, remeasurement', group: 'PIP / Corrective Action' },
     { key: 'corrective_actions', label: 'Corrective actions required / owner / due date', group: 'PIP / Corrective Action' },
+    { key: 'action_items', label: 'Action items/decisions with owner, due date, basis, and status; keep records separate and readable', group: 'PIP / Corrective Action' },
     { key: 'late_documentation', label: 'Late documentation / missing recert / unsigned orders', group: 'Chart Audit' },
     { key: 'oasis_concerns', label: 'OASIS concerns / med reconciliation missing / POC not updated', group: 'Chart Audit' },
     { key: 'hha_supervision_gap', label: 'HHA supervision gap', group: 'Chart Audit' },
     { key: 'infection_line_list', label: 'Infection line list / culture obtained / reported / escalation status', group: 'Infection Control' },
     { key: 'medication_safety_gaps', label: 'Medication safety gaps (critical INR/lab, insulin error, physician notified)', group: 'Medication Safety' },
     { key: 'complaints', label: 'Patient complaints summary', group: 'Complaints' },
+    { key: 'part_a_narrative', label: 'Source-backed Part A executive narrative: what happened, why it matters, decisions needed, and limits/unknowns', group: 'Part A Narrative' },
+    { key: 'data_integrity_verdict', label: 'QA verdict: data integrity blockers, source mismatches, unknowns, and whether this can be final/clean handoff', group: 'Validation' },
+    { key: 'validation_concerns', label: 'Validation concerns such as wrong counts, unknown agency, failed chart rendering, source mismatches, and no-invention limits', group: 'Validation' },
+    { key: 'presentation_notes', label: 'Presentation requirements from source/reviewer: clean pages, no truncation, chart/infographic needs, and print polish', group: 'Validation' },
   ],
   event: [
     { key: 'event_title', label: 'Event title' },
@@ -150,6 +170,7 @@ export async function ingestSource(input: {
   bytes: Buffer;
   template: PacketTemplateKind;
   nowISO: string;            // caller stamps the time (no clock in pure layers)
+  bradLogic?: BradReaderLogic;
 }): Promise<SourcePipelineResult> {
   ensureDirs();
   const contentHash = createHash('sha256').update(input.bytes).digest('hex');
@@ -169,7 +190,7 @@ export async function ingestSource(input: {
   }
 
   const specs = TEMPLATE_FIELD_SPECS[input.template] ?? TEMPLATE_FIELD_SPECS.generic;
-  const extraction = await extractFieldsFromSource(specs, text, formFields);
+  const extraction = await extractFieldsFromSource(specs, text, formFields, input.bradLogic);
 
   // Persist the raw source into the sources folder.
   const sourceDir = path.join(SOURCES_DIR, sourceId);

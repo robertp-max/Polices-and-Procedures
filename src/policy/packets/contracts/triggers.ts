@@ -84,7 +84,7 @@ export interface PacketFinding {
   currentState: string | null;
   priorPeriodRelationship: string | null;
   riskType: string | null;
-  recommendedDecision: Fr015DeterminationOption | string | null;
+  recommendedDecision: Fr015DeterminationOption | null;
   requiredHumanReviewer: string | null;
   relatedWorkflowTriggerEvaluationIds: string[];
   attachmentReferences: string[];

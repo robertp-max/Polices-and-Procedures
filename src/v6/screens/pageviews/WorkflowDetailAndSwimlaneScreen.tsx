@@ -217,10 +217,14 @@ export function WorkflowSwimlaneScreen() {
       </section>
 
       <section className="grid gap-xl">
-        <div className="grid gap-lg desktop:grid-cols-4">
-          {lanes.map((lane) => (
-            <BoardLane key={lane.title} lane={lane} onCardClick={setSelectedCard} />
-          ))}
+        <div className="overflow-x-auto pb-sm [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="flex gap-sm min-w-full w-max">
+            {lanes.map((lane) => (
+              <div className="w-[280px] sm:w-[320px] shrink-0 desktop:flex-1" key={lane.title}>
+                <BoardLane lane={lane} onCardClick={setSelectedCard} />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

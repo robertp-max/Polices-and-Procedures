@@ -670,7 +670,7 @@ const slate = '#334155';
 function HotspotDot({
   x,
   y,
-  id,
+  id: _id,
   label,
   active,
   onClick,
@@ -682,11 +682,11 @@ function HotspotDot({
   active: boolean;
   onClick: () => void;
 }) {
+  void _id;
   return (
     <g
       role="button"
       tabIndex={0}
-      data-hotspot-id={id}
       aria-label={label}
       onClick={(e) => {
         e.stopPropagation();

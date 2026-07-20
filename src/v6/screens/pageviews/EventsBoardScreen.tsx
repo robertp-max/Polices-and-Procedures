@@ -216,10 +216,10 @@ export function EventsBoardScreen() {
 
       {activeTab === 'board' ? (
         <section className="grid gap-lg grid-cols-1">
-          <div aria-label="Events board lanes" className="min-w-0 overflow-x-auto overflow-y-hidden pb-sm" role="region" tabIndex={0}>
-            <div className="grid min-w-[920px] gap-sm tablet-l:grid-cols-2 desktop:min-w-0 desktop:grid-cols-4">
+          <div aria-label="Events board lanes" className="min-w-0 overflow-x-auto overflow-y-hidden pb-sm [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" role="region" tabIndex={0}>
+            <div className="flex gap-sm min-w-full w-max">
               {filteredLanes.map((lane) => (
-                <div className="min-w-0" key={lane.title}>
+                <div className="w-[280px] sm:w-[320px] shrink-0 desktop:flex-1" key={lane.title}>
                   <BoardLane lane={lane} onCardClick={(card) => navigate(`/evidence?control=${encodeURIComponent(card?.id || '')}`)} />
                 </div>
               ))}

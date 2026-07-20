@@ -25,7 +25,7 @@ import { SendEmailCommand, SESClient } from '@aws-sdk/client-ses';
 import { ApiError } from '../errors.js';
 import { log } from '../logger.js';
 import type { AuthSession, DemoUser, RegistrationRecord, RegistrationStatus, TokenRecord } from './types.js';
-import { findApprovedUser, getLoadError, isAllowlistAvailable, normalizeEmail as normalizeApprovedEmail, normalizeSfOrgId } from './approvedUsers.js';
+import { findApprovedUser, findApprovedUserByEmail, getLoadError, isAllowlistAvailable, normalizeEmail as normalizeApprovedEmail, normalizeSfOrgId } from './approvedUsers.js';
 
 interface DemoAuthConfig {
   region: string;
@@ -55,6 +55,22 @@ type LoginResult =
   | { challenge: 'NEW_PASSWORD_REQUIRED'; challengeName: 'NEW_PASSWORD_REQUIRED'; session: string; email: string };
 
 const DEFAULT_REGISTER_MESSAGE = 'If your email is eligible, we sent a setup link. Please check your inbox.';
+
+/**
+ * COG-1 fail-closed session gate: an authenticated Cognito token is necessary
+ * but NOT sufficient — the bound application account must also be active. A
+ * user suspended/disabled at the application level (registration status flipped
+ * away from 'active') is rejected on every token-validating call, so a session
+ * cannot outlive the account's active state until token expiry. Mirrors the
+ * active-account check that `login()` already enforces at sign-in.
+ */
+export function assertRegistrationActiveForSession(
+  registration: Pick<RegistrationRecord, 'status'> | null | undefined,
+): void {
+  if (!registration || registration.status !== 'active') {
+    throw new ApiError('auth_error', 'Account is not active.', 403);
+  }
+}
 
 export class DemoAuthService {
   private readonly cognito: CognitoIdentityProviderClient;
@@ -543,6 +559,13 @@ export class DemoAuthService {
       throw new ApiError('auth_error', 'Session refresh failed.', 401);
     }
 
+    // COG-1 fail-closed: validate the refreshed access token through the same
+    // getCurrentUser seam used by /me, which enforces the active-registration
+    // gate. A user suspended/disabled mid-session therefore cannot obtain a
+    // refreshed session (it throws 403), rather than extending access to the
+    // next token lifetime.
+    await this.getCurrentUser(auth.AccessToken);
+
     return {
       accessToken: auth.AccessToken,
       idToken: auth.IdToken,
@@ -568,15 +591,28 @@ export class DemoAuthService {
     const lastName = attrs.family_name;
     const name = attrs.name || [firstName, lastName].filter(Boolean).join(' ').trim() || undefined;
     const authSubject = attrs.sub || me.Username;
+    const email = attrs.email ?? '';
+    // COG-1 fail-closed: reject suspended/disabled application users even when
+    // the Cognito token itself is still valid. Without this, a user suspended
+    // mid-session keeps access until the access token expires.
+    const registration = email ? await this.getRegistration(email) : null;
+    assertRegistrationActiveForSession(registration);
+    // COG-1: enrich the verified Cognito identity with the server-side
+    // allowlist role/department. The client can only display this — the
+    // server derives it fresh on every /me call, so no client edit
+    // (localStorage/payload/header) can elevate a role.
+    const approved = email ? findApprovedUserByEmail(email) : null;
     return {
       id: authSubject,
       authSubject,
       provider: 'cognito',
-      email: attrs.email ?? '',
+      email,
       name,
       firstName,
       lastName,
       emailVerified: attrs.email_verified === 'true',
+      role: approved?.role,
+      department: approved?.department,
     };
   }
 

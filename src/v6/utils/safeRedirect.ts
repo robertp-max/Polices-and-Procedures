@@ -6,7 +6,7 @@
    same-origin path. Everything else falls back to Brad (the authenticated
    default landing page). This prevents open-redirect / login-loop bugs. */
 
-export const BRAD_DEFAULT_ROUTE = '/iadministrator';
+export const BRAD_DEFAULT_ROUTE = '/compliance';
 
 /**
  * Validate a candidate redirect target. Returns the candidate if it is a safe
