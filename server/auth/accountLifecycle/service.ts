@@ -52,16 +52,19 @@ export interface LifecycleProviderTarget {
 
 /** Projections that keep the two legacy planes consistent with the durable
  *  lifecycle. Idempotent: projecting the same status twice is a no-op success. */
+export interface LifecycleProjectionTarget {
+  canonicalUserId: string;
+  providerUsername: string;
+  /** Normalized email — the registration plane is keyed by email. */
+  normalizedEmail: string;
+  correlationId: string;
+}
 export interface LifecycleProjections {
   /** Canonical registry (business-route enforcement plane). `denied` true → the
    *  principal is denied; false → access restored. */
-  projectCanonicalStatus(input: {
-    canonicalUserId: string; providerUsername: string; denied: boolean; correlationId: string;
-  }): Promise<void>;
+  projectCanonicalStatus(input: LifecycleProjectionTarget & { denied: boolean }): Promise<void>;
   /** DynamoDB registration (login/refresh/`/me` gate plane). */
-  projectRegistrationStatus(input: {
-    canonicalUserId: string; providerUsername: string; disabled: boolean; correlationId: string;
-  }): Promise<void>;
+  projectRegistrationStatus(input: LifecycleProjectionTarget & { disabled: boolean }): Promise<void>;
 }
 
 export type LifecycleAuditPhase = 'transition_ready' | 'completed';
@@ -182,7 +185,7 @@ export class AccountLifecycleService {
       // completion. Recovery re-attempts the failed step (side effects are
       // idempotent) and finishes; the account stays denied throughout. The
       // account is never left half-transitioned or falsely reported done.
-      return this.drive(shape, op, life.version, life.providerUsername, req, /* resumed */ true);
+      return this.drive(shape, op, life.version, life.providerUsername, life.normalizedEmail, req, /* resumed */ true);
     }
 
     // Fresh transition. The expected "from" is the record's actual current status
@@ -208,9 +211,9 @@ export class AccountLifecycleService {
         return { action: shape.action, canonicalUserId, finalStatus: shape.desired, operationId: op.operationId, resumed: true, postCommitAudit: 'completed' };
       }
       // In-flight or reconciliation_required → drive/resume to completion.
-      return this.drive(shape, op, begin.lifecycle.version, begin.lifecycle.providerUsername, req, true);
+      return this.drive(shape, op, begin.lifecycle.version, begin.lifecycle.providerUsername, begin.lifecycle.normalizedEmail, req, true);
     }
-    return this.drive(shape, begin.operation, begin.lifecycle.version, begin.lifecycle.providerUsername, req, false);
+    return this.drive(shape, begin.operation, begin.lifecycle.version, begin.lifecycle.providerUsername, begin.lifecycle.normalizedEmail, req, false);
   }
 
   /**
@@ -223,6 +226,7 @@ export class AccountLifecycleService {
     startOp: LifecycleOperationRecord,
     lifeVersion: number,
     providerUsername: string,
+    normalizedEmail: string,
     req: LifecycleTransitionRequest,
     resumed: boolean,
   ): Promise<LifecycleTransitionResult> {
@@ -238,7 +242,7 @@ export class AccountLifecycleService {
       if (op.completedSteps.includes(step)) continue; // resume: skip already-done work
       try {
         await this.performSideEffect(shape.action, step, {
-          canonicalUserId, providerUsername, correlationId,
+          canonicalUserId, providerUsername, normalizedEmail, correlationId,
           operationId: op.operationId, actorUserId: op.actorUserId, actorEmailSnapshot: op.actorEmailSnapshot,
         });
       } catch (e) {
@@ -296,10 +300,11 @@ export class AccountLifecycleService {
   private async performSideEffect(
     action: LifecycleAction,
     step: SemanticLifecycleStep,
-    ctx: { canonicalUserId: string; providerUsername: string; correlationId: string; operationId: string; actorUserId: string; actorEmailSnapshot: string },
+    ctx: { canonicalUserId: string; providerUsername: string; normalizedEmail: string; correlationId: string; operationId: string; actorUserId: string; actorEmailSnapshot: string },
   ): Promise<void> {
     const { provider, projections, audit } = this.deps;
-    const target = { canonicalUserId: ctx.canonicalUserId, providerUsername: ctx.providerUsername, correlationId: ctx.correlationId };
+    const providerTarget = { canonicalUserId: ctx.canonicalUserId, providerUsername: ctx.providerUsername, correlationId: ctx.correlationId };
+    const target = { canonicalUserId: ctx.canonicalUserId, providerUsername: ctx.providerUsername, normalizedEmail: ctx.normalizedEmail, correlationId: ctx.correlationId };
     switch (step) {
       case 'canonical_transition_projected':
         // Deny on the business-route plane immediately (suspend), or hold the
@@ -307,13 +312,13 @@ export class AccountLifecycleService {
         await projections.projectCanonicalStatus({ ...target, denied: true });
         return;
       case 'provider_disabled':
-        await provider.disableUser(target);
+        await provider.disableUser(providerTarget);
         return;
       case 'provider_sessions_revoked':
-        await provider.globalSignOut(target);
+        await provider.globalSignOut(providerTarget);
         return;
       case 'provider_enabled':
-        await provider.enableUser(target);
+        await provider.enableUser(providerTarget);
         return;
       case 'registration_projected':
         await projections.projectRegistrationStatus({ ...target, disabled: action === 'suspend' });

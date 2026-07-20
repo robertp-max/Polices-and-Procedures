@@ -204,6 +204,22 @@ export class DemoAuthService {
     }));
   }
 
+  /**
+   * ADR-0002 Phase 2E: flip ONLY the registration access plane for a durable
+   * lifecycle transition. 'disabled' denies every token-validating call
+   * (assertRegistrationActiveForSession → login/refresh/`/me`); 'active'
+   * restores access. Idempotent. It never resurrects a pending/approval
+   * registration to active (that would bypass setup), and never touches setup
+   * tokens, approval metadata, or any other field.
+   */
+  async setRegistrationLifecycleAccess(email: string, access: 'active' | 'disabled'): Promise<void> {
+    const reg = await this.getRegistration(email);
+    if (!reg) throw new ApiError('validation_error', 'No registration exists for this account.', 404);
+    if (reg.status === access) return; // idempotent no-op
+    if (access === 'active' && reg.status !== 'disabled') return; // never resurrect pending/approval
+    await this.writeRegistration({ ...reg, status: access, updatedAt: new Date().toISOString() });
+  }
+
   private async writeTokenRecord(tokenHash: string, email: string, createdAt: string, expiresAt: number): Promise<void> {
     const tokenRecord: TokenRecord = {
       ...this.tokenKey(tokenHash),

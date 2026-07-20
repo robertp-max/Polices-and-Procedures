@@ -39,8 +39,8 @@ function makeFakes(fail: FailMap = {}) {
     async globalSignOut() { hit('provider.globalSignOut'); },
   };
   const projections: LifecycleProjections = {
-    async projectCanonicalStatus(i) { hit(`canonical.denied=${i.denied}`); },
-    async projectRegistrationStatus(i) { hit(`registration.disabled=${i.disabled}`); },
+    async projectCanonicalStatus(i) { hit(`canonical.denied=${i.denied}`); void i.normalizedEmail; },
+    async projectRegistrationStatus(i) { hit(`registration.disabled=${i.disabled}`); void i.normalizedEmail; },
   };
   const audit: LifecycleAuditSink = {
     async record(e) { hit(`audit.${e.phase}`); },
