@@ -109,6 +109,15 @@ export interface CreateAccessReviewCampaignInput {
   trigger: string;
 }
 
+export interface ReconciliationFindingsResponse {
+  duplicateEmails: Array<{ normalizedEmail: string; userIds: string[] }>;
+  orphanAssignments: Array<{ assignmentId: string; userId: string; groupId: string }>;
+  usersWithoutActiveGroup: Array<{ userId: string; email: string }>;
+  excessivePrivilege: Array<{ userId: string; email: string; privilegedGroups: string[] }>;
+  summary: { duplicateEmailGroups: number; orphanAssignments: number; usersWithoutActiveGroup: number; excessivePrivilege: number; totalFindings: number };
+  evaluatedAt: string;
+}
+
 export interface SignatureCoverageHolder { userId: string; status: string }
 export interface SignatureCoverageResponse {
   coverage: Array<{ capacity: string; holders: SignatureCoverageHolder[] }>;
@@ -519,6 +528,14 @@ export const AuthApi = {
   /** List access-review campaigns (ADR §B11). */
   listAccessReviewCampaigns(accessToken: string): Promise<{ campaigns: AccessReviewCampaignRow[] }> {
     return callAt(USER_ACCESS_BASE, '/access-review', {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /** Reconciliation findings — orphans/duplicates/excessive privilege (ADR §9). */
+  getReconciliationFindings(accessToken: string): Promise<{ findings: ReconciliationFindingsResponse }> {
+    return callAt(USER_ACCESS_BASE, '/reconciliation', {
       method: 'GET',
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
     });

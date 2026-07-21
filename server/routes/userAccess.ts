@@ -32,6 +32,7 @@ import {
 import type { AuthorityBasis } from '../auth/authorization/signatureAuthority.js';
 import { QAPI_SIGNATURE_CAPACITIES } from '../auth/authorization/signatureCatalog.js';
 import { createCampaign, getAccessReviewStore } from '../auth/authorization/accessReview.js';
+import { computeReconciliationFindings } from '../auth/authorization/reconciliation.js';
 import { getAccountLifecycleService } from '../auth/accountLifecycle/serviceFactory.js';
 import { performAdminLifecycleTransition } from '../auth/accountLifecycle/adminTransition.js';
 import type { LifecycleAction } from '../auth/accountLifecycle/service.js';
@@ -250,6 +251,13 @@ userAccessRouter.get('/signature-coverage', asyncHandler(async (req, res) => {
     return { capacity, covered: holders.length > 0, holders };
   });
   res.json({ coverage, qapiAcceptance });
+}));
+
+/** GET /admin/user-access/reconciliation — orphan/duplicate/excessive-privilege findings (§9). */
+userAccessRouter.get('/reconciliation', asyncHandler(async (req, res) => {
+  await requireUserAccessAdmin(req);
+  const registry = await getAppIdentityPersistence().getAll();
+  res.json({ findings: computeReconciliationFindings(registry, new Date().toISOString()) });
 }));
 
 /** GET /admin/user-access/access-review — list access-review campaigns (§B11). */
