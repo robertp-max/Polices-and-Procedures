@@ -28,7 +28,7 @@ import {
   type WorkflowTriggerEvaluation,
 } from '@/policy/packets/contracts';
 
-type AsyncRoute = (req: Request, res: Response, next: NextFunction) => Promise<void>;
+type AsyncRoute = (req: Request<Record<string, string>>, res: Response, next: NextFunction) => Promise<void>;
 
 type PacketActorRequest = Request & {
   session?: { authenticated?: boolean; correlation_id?: string };
@@ -124,7 +124,7 @@ const AUTHORITY_ROLES = [
 ] as const;
 
 function asyncH(fn: AsyncRoute) {
-  return (req: Request, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
+  return (req: Request<Record<string, string>>, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -175,7 +175,7 @@ function expectedRevision(body: TriggerMutationBody): number {
   return value;
 }
 
-function requireActor(req: Request): PacketAuditActor {
+function requireActor(req: Request<Record<string, string>>): PacketAuditActor {
   const packetReq = req as PacketActorRequest;
   const actor = packetReq.actor;
   if (!packetReq.session?.authenticated || !actor) {
@@ -195,7 +195,7 @@ function requireActor(req: Request): PacketAuditActor {
   throw new ApiError('auth_error', 'Authenticated user or service identity required.', 401);
 }
 
-function assertAgencyScope(req: Request, agencyId: string): void {
+function assertAgencyScope(req: Request<Record<string, string>>, agencyId: string): void {
   const packetReq = req as PacketActorRequest;
   const scopes = packetReq.actor?.attributes?.access_classes ?? [];
   if (scopes.length === 0) return;
@@ -211,11 +211,11 @@ function assertAgencyScope(req: Request, agencyId: string): void {
   });
 }
 
-function actorRoles(req: Request): string[] {
+function actorRoles(req: Request<Record<string, string>>): string[] {
   return (req as PacketActorRequest).actor?.roles ?? [];
 }
 
-function hasTriggerAuthority(req: Request, evaluation: WorkflowTriggerEvaluation): boolean {
+function hasTriggerAuthority(req: Request<Record<string, string>>, evaluation: WorkflowTriggerEvaluation): boolean {
   const roles = actorRoles(req);
   const scopedRoles = new Set([
     ...evaluation.approverRoles,
@@ -225,7 +225,7 @@ function hasTriggerAuthority(req: Request, evaluation: WorkflowTriggerEvaluation
   return roles.some((role) => scopedRoles.has(role));
 }
 
-function requireTriggerAuthority(req: Request, evaluation: WorkflowTriggerEvaluation): void {
+function requireTriggerAuthority(req: Request<Record<string, string>>, evaluation: WorkflowTriggerEvaluation): void {
   if (hasTriggerAuthority(req, evaluation)) return;
   throw new ApiError(
     'permission_denied',
@@ -241,7 +241,7 @@ function requireTriggerAuthority(req: Request, evaluation: WorkflowTriggerEvalua
 
 async function getScopedPacket(
   store: PacketMetadataStore,
-  req: Request,
+  req: Request<Record<string, string>>,
   packetInstanceId: string,
 ): Promise<PacketStoreDocument> {
   requireActor(req);
@@ -876,7 +876,7 @@ async function reloadForLink(
 
 async function handleConfirm(
   store: PacketMetadataStore,
-  req: Request,
+  req: Request<Record<string, string>>,
   res: Response,
 ): Promise<void> {
   const body = asRecord(req.body) as TriggerMutationBody;
@@ -920,7 +920,7 @@ async function handleConfirm(
 
 async function handleReject(
   store: PacketMetadataStore,
-  req: Request,
+  req: Request<Record<string, string>>,
   res: Response,
 ): Promise<void> {
   const body = asRecord(req.body) as TriggerMutationBody;
@@ -968,7 +968,7 @@ async function handleReject(
 
 async function handleActivate(
   store: PacketMetadataStore,
-  req: Request,
+  req: Request<Record<string, string>>,
   res: Response,
 ): Promise<void> {
   const body = asRecord(req.body) as TriggerMutationBody;
@@ -1116,7 +1116,7 @@ async function handleActivate(
 
 async function handleLinkExisting(
   store: PacketMetadataStore,
-  req: Request,
+  req: Request<Record<string, string>>,
   res: Response,
 ): Promise<void> {
   const body = asRecord(req.body) as TriggerMutationBody;
@@ -1259,7 +1259,7 @@ export function createWorkflowTriggersRouter(
     await handleLinkExisting(store, req, res);
   }));
 
-  router.use((err: unknown, _req: Request, _res: Response, next: NextFunction) => {
+  router.use((err: unknown, _req: Request<Record<string, string>>, _res: Response, next: NextFunction) => {
     next(mapPacketError(err));
   });
 

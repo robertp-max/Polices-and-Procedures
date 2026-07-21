@@ -1,0 +1,25 @@
+{
+  "//": "Formal type-soundness gate for the production server/** graph. The server runs via tsx (transpile-only) at runtime, so this is the permanent compiler check. Type gate — NOT a style gate: strict type-checking is ON; the two unused-symbol lint flags are off (they belong to eslint), and erasableSyntaxOnly is off (it is a Vite-bundler constraint; the tsx-run server legitimately uses parameter properties). Test/fixture files are excluded (exercised by vitest; mixing them would conflate prod-source and test-only errors).",
+  "//baseline": "KNOWN PRE-EXISTING DEBT: this branch's server/** was never under a formal tsc gate (tsx transpiles without type-checking), so full coverage currently reports pre-existing type errors concentrated in server/packets, server/routes, server/ia, and server/auth — subsystems NOT modified by the Brad/OSS work. These are burn-down items, not regressions. The Brad/OSS runtime graph (harness, brad routes/diagnostics, Ollama adapter) is type-clean under this config.",
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "composite": false,
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "noEmit": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "erasableSyntaxOnly": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["server/**/*.ts"],
+  "exclude": [
+    "server/**/*.test.ts",
+    "server/**/*.spec.ts",
+    "server/**/__tests__/**",
+    "server/**/__fixtures__/**"
+  ]
+}

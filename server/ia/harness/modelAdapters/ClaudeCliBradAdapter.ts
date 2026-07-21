@@ -50,16 +50,16 @@ export class ClaudeCliBradAdapter implements BradModelAdapter {
       const p = spawnClaude(['--model', this.cfg.modelId, '--print'], ['pipe', 'pipe', 'pipe']);
       let out = '', err = '';
       const t = setTimeout(() => { p.kill(); reject(new Error('claude CLI timed out')); }, 120_000);
-      p.stdout.on('data', (d) => { out += d.toString(); });
-      p.stderr.on('data', (d) => { err += d.toString(); });
+      p.stdout?.on('data', (d) => { out += d.toString(); });
+      p.stderr?.on('data', (d) => { err += d.toString(); });
       p.on('error', (e) => { clearTimeout(t); reject(e); });
       p.on('close', (code) => {
         clearTimeout(t);
         if (code === 0) resolve(out.trim());
         else reject(new Error(`claude CLI exit ${code}: ${err.slice(0, 200)}`));
       });
-      p.stdin.write(prompt);
-      p.stdin.end();
+      p.stdin?.write(prompt);
+      p.stdin?.end();
     });
 
     return { content, modelId: this.cfg.modelId, runtimeMode: 'cli-nonphi', synthetic: false };

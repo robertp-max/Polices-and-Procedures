@@ -24,7 +24,7 @@ import {
   type SignedPackageReferenceInput,
 } from '../signedPackage.js';
 
-type AsyncRoute = (req: Request, res: Response, next: NextFunction) => Promise<void>;
+type AsyncRoute = (req: Request<Record<string, string>>, res: Response, next: NextFunction) => Promise<void>;
 
 type PacketActorRequest = Request & {
   session?: { authenticated?: boolean; correlation_id?: string };
@@ -71,7 +71,7 @@ const SIGNED_PACKAGE_CREATED_STATUSES = new Set([
 ]);
 
 function asyncH(fn: AsyncRoute) {
-  return (req: Request, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
+  return (req: Request<Record<string, string>>, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -148,7 +148,7 @@ function optionalStringArray(body: Record<string, unknown>, field: string): read
   return value.map((item) => item.trim()).filter(Boolean);
 }
 
-function idempotencyKey(req: Request, body: Record<string, unknown>): string {
+function idempotencyKey(req: Request<Record<string, string>>, body: Record<string, unknown>): string {
   const fromHeader = req.header('idempotency-key') ?? req.header('x-idempotency-key');
   const fromBody = typeof body.idempotencyKey === 'string' ? body.idempotencyKey : '';
   const key = (fromHeader ?? fromBody).trim();
@@ -163,7 +163,7 @@ function idempotencyKey(req: Request, body: Record<string, unknown>): string {
   return key;
 }
 
-function requireActor(req: Request): PacketAuditActor {
+function requireActor(req: Request<Record<string, string>>): PacketAuditActor {
   const packetReq = req as PacketActorRequest;
   const actor = packetReq.actor;
   if (!packetReq.session?.authenticated || !actor) {
@@ -183,7 +183,7 @@ function requireActor(req: Request): PacketAuditActor {
   throw new ApiError('auth_error', 'Authenticated user or service identity required.', 401);
 }
 
-function assertAgencyScope(req: Request, agencyId: string): void {
+function assertAgencyScope(req: Request<Record<string, string>>, agencyId: string): void {
   const packetReq = req as PacketActorRequest;
   const scopes = packetReq.actor?.attributes?.access_classes ?? [];
   if (scopes.length === 0) return;
@@ -243,7 +243,7 @@ function mapSignedPackageError(error: unknown): ApiError {
     : new ApiError('internal_error', 'Internal error', 500);
 }
 
-function packetInstanceIdFrom(req: Request, body: Record<string, unknown>): string {
+function packetInstanceIdFrom(req: Request<Record<string, string>>, body: Record<string, unknown>): string {
   const paramId = req.params.packetInstanceId?.trim();
   if (paramId) return paramId;
   return stringField(body, 'packetInstanceId');
@@ -421,7 +421,7 @@ function ignoredClientHashFields(body: Record<string, unknown>): string[] {
 
 async function signedPackageInput(
   options: SignedPackageRouterOptions,
-  req: Request,
+  req: Request<Record<string, string>>,
   body: Record<string, unknown>,
 ): Promise<BuildCanonicalSignedPackageInput> {
   const actor = requireActor(req);
@@ -472,7 +472,7 @@ export function createPacketSignedPackageRouter(
   router.post('/:packetInstanceId/signed-package', handlePost);
   router.post('/signed-package', handlePost);
 
-  router.use((err: unknown, _req: Request, _res: Response, next: NextFunction) => {
+  router.use((err: unknown, _req: Request<Record<string, string>>, _res: Response, next: NextFunction) => {
     next(mapSignedPackageError(err));
   });
 

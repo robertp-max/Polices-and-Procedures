@@ -111,7 +111,12 @@ const SECOND_CHANCE: SecondChanceRule[] = [
       /\b(threaten\w*|threat\b|menac\w*|stalk\w*|harass\w*|rob\w*|mugg\w*|held me|cornered|chasing|chased|came at me|coming at me|swung at|swinging at|lunged|follow\w* me)\b/i,
       // Inherent weapons (always urgent). Ambiguous objects (bat/scissors/hammer)
       // are handled by the assault/threw/swung verbs above, not by name.
-      /\b(gun|firearm|pistol|rifle|handgun|shotgun|knife|machete|blade|weapon|brandish\w*|pointed (a|the) (gun|knife|weapon))\b/i,
+      /\b(gun|firearm|pistol|rifle|handgun|shotgun|knife(?!-?like)|machete|blade|weapon|brandish\w*|pointed (a|the) (gun|knife|weapon))\b/i,
+      // Weapon VERBS — someone shot or stabbed is a violent scene → clinician
+      // safety first, 911, aid only if the scene is safe. Guarded so "flu shot",
+      // "shooting pain", and "stabbing pain" never match.
+      /\b(gun ?shots?|gunfire|shots? fired|drive[- ]?by|(got|was|were|been|someone|somebody|they) shot\b|shot (him|her|them|me|us)|shooting(?!\s+(pain|sensation|ache|feeling)))\b/i,
+      /\b(stabbed|knifed)\b|\bstabbing (him|her|them|me|us|the)\b/i,
       /\b(in danger|my life|kill me|wants? to (hurt|kill)|going to (hurt|kill)|hurt me|trying to hurt|afraid (for|of) my (life|safety))\b/i,
     ],
   },

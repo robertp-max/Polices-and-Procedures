@@ -18,7 +18,7 @@ import type {
   PacketAuditActor,
 } from '@/policy/packets/contracts';
 
-type AsyncRoute = (req: Request, res: Response, next: NextFunction) => Promise<void>;
+type AsyncRoute = (req: Request<Record<string, string>>, res: Response, next: NextFunction) => Promise<void>;
 
 type PacketActorRequest = Request & {
   session?: { authenticated?: boolean };
@@ -60,7 +60,7 @@ const defaultStore = new FileLocalPacketStore();
 const SOURCE_BODY_FIELDS = ['sourceText', 'rawBytes', 'base64'] as const;
 
 function asyncH(fn: AsyncRoute) {
-  return (req: Request, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
+  return (req: Request<Record<string, string>>, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -109,7 +109,7 @@ function expectedRevision(body: AddPacketSourceBody): number {
   return value;
 }
 
-function requireActor(req: Request): PacketAuditActor {
+function requireActor(req: Request<Record<string, string>>): PacketAuditActor {
   const packetReq = req as PacketActorRequest;
   const actor = packetReq.actor;
   if (!packetReq.session?.authenticated || !actor) {
@@ -129,7 +129,7 @@ function requireActor(req: Request): PacketAuditActor {
   throw new ApiError('auth_error', 'Authenticated user or service identity required.', 401);
 }
 
-function assertAgencyScope(req: Request, agencyId: string): void {
+function assertAgencyScope(req: Request<Record<string, string>>, agencyId: string): void {
   const packetReq = req as PacketActorRequest;
   const scopes = packetReq.actor?.attributes?.access_classes ?? [];
   if (scopes.length === 0) return;
@@ -312,7 +312,7 @@ export function createPacketSourcesRouter(options: PacketSourcesRouterOptions = 
     });
   }));
 
-  router.use((err: unknown, _req: Request, _res: Response, next: NextFunction) => {
+  router.use((err: unknown, _req: Request<Record<string, string>>, _res: Response, next: NextFunction) => {
     next(mapPacketError(err));
   });
 

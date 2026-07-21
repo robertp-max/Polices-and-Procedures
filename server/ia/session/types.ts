@@ -77,6 +77,7 @@ export interface BradTimelineEvent {
     | 'urgency_change'
     | 'incident_detected'
     | 'life_safety_flagged'
+    | 'safety_confirmed'
     | 'task_added'
     | 'task_completed'
     | 'form_referenced'

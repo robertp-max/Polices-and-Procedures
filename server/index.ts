@@ -25,6 +25,7 @@ import { AUDIT_ADMIN_ROLES } from './auth/routeAccessMatrix.js';
 import { requireUserStatusAuthority } from './auth/userStatusAuthority.js';
 import { pmRouter } from './routes/pm.js';
 import { createBradRouter } from './routes/brad.js';
+import { createNolanRouter } from './routes/nolan.js';
 import { packetTemplatesRouter, packetsRouter } from './packets/routes/index.js';
 
 /* ═══════════════════════════════════════════════════════════════
@@ -144,6 +145,11 @@ app.use('/api/ia', createIaRouter(iaService));
 
 // Brad assistant + Super Admin guarded-action layer (append-only generated objects).
 app.use('/api/brad', createBradRouter());
+
+// Nolan tutor (Nurse Onboarding & Learning Assistant) — Training-module chatbot.
+// Local dev must match the Cloud Run entry (server/cloudrun.ts) so the tutor
+// endpoint is available in development too. No PHI, no internet on this surface.
+app.use('/api/nolan', createNolanRouter());
 
 // 404 for unknown routes under /api.
 app.use('/api', (req, _res, next) => {

@@ -544,7 +544,7 @@ function readEnvelopePacketInstanceId(envelope: PacketEnvelope): string {
 }
 
 function readEnvelopeFrozenPacketVersion(envelope: PacketEnvelope): number {
-  const value = (envelope as Record<string, unknown>).frozenPacketVersion;
+  const value: number = envelope.frozenPacketVersion;
   if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
     throw new SignedPackageBuildError(
       'signed_package.envelope_version_missing',

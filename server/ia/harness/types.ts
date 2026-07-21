@@ -9,14 +9,31 @@
    These types are imported by every harness module so boundaries stay aligned.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-export type BradRuntimeMode = 'mock' | 'cli-nonphi' | 'vertex-nonphi' | 'vertex-phi';
+export type BradRuntimeMode = 'mock' | 'cli-nonphi' | 'oss-nonphi' | 'vertex-nonphi' | 'vertex-phi';
 export type NolanRuntimeMode = 'disabled' | 'mock' | 'vertex-public-web';
-export type BradProvider = 'mock' | 'claude' | 'codex' | 'vertex';
+export type BradProvider = 'mock' | 'claude' | 'codex' | 'vertex' | 'ollama';
+
+/* Runtime health of the SELECTED provider. `effectiveMode` still names the
+   provider mode that was chosen (e.g. 'oss-nonphi'); `runtimeStatus` says
+   whether that provider actually initialized. An explicitly-selected engine
+   that cannot initialize is 'configuration-error'/'unavailable' + failClosed —
+   it is NEVER relabeled 'mock' (no mock response is served; normal requests
+   throw). 'ready' means the selected provider validated available. */
+export type BradRuntimeStatus = 'ready' | 'configuration-error' | 'unavailable';
+
+/** Typed, safe diagnostic code for an unavailable/misconfigured engine. */
+export type BradDiagnosticCode =
+  | 'OK'
+  | 'ENGINE_UNREACHABLE'
+  | 'MODEL_NOT_PULLED'
+  | 'PROVIDER_MISMATCH'
+  | 'ENGINE_UNAVAILABLE';
 
 export type RuntimeBadge =
   | 'MVP Harness — Mock Data'
   | 'Claude CLI — PHI Disabled'
   | 'Codex CLI — PHI Disabled'
+  | 'Open-Source (Ollama) — PHI Disabled'
   | 'Vertex Connected — PHI Disabled'
   | 'Vertex Connected — PHI Enabled'
   | 'Configuration Error — Fail Closed';
@@ -25,12 +42,17 @@ export type RuntimeBadge =
 
 export interface BradConfig {
   runtimeMode: BradRuntimeMode;
-  provider: BradProvider;     // BRAD_PROVIDER — 'claude'/'codex' (CLI, MVP) | 'vertex' | 'mock'
-  modelId: string;            // BRAD_MODEL_ID, e.g. 'sonnet' (claude) or 'gemini-3.5-flash' (vertex)
+  provider: BradProvider;     // BRAD_PROVIDER — 'claude'/'codex' (CLI) | 'ollama' (OSS, local) | 'vertex' | 'mock'
+  modelId: string;            // BRAD_MODEL_ID, e.g. 'sonnet' (claude), a gguf tag (ollama), 'gemini-3.5-flash' (vertex)
   vertexProjectId: string;
   vertexLocation: string;
   phiEnabled: boolean;        // BRAD_PHI_ENABLED — advisory only; gate decides
   serviceAccount?: string;    // Brad's dedicated SA email (separate from Nolan)
+  /* Open-source local inference engine (Ollama). Used only when provider==='ollama'.
+     Local HTTP only — never the internet (canReachInternet stays false). */
+  ollamaBaseUrl: string;      // OLLAMA_BASE_URL, e.g. http://127.0.0.1:11434
+  ollamaChatModel: string;    // OLLAMA_CHAT_MODEL, e.g. llama3.1:8b-instruct-q4_K_M
+  ollamaTimeoutMs: number;    // OLLAMA_TIMEOUT_MS
   promptVersion: string;
   promptHash: string;
 }

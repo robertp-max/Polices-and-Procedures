@@ -25,7 +25,7 @@ import {
   type SupplementalInformationStore,
 } from '../supplementalStore.js';
 
-type AsyncRoute = (req: Request, res: Response, next: NextFunction) => Promise<void>;
+type AsyncRoute = (req: Request<Record<string, string>>, res: Response, next: NextFunction) => Promise<void>;
 
 type PacketActorRequest = Request & {
   session?: { authenticated?: boolean };
@@ -53,7 +53,7 @@ const defaultSupplementalStore = new FileLocalSupplementalInformationStore();
 const TERMINAL_PACKET_STATUSES = new Set(['LOCKED', 'SUPERSEDED', 'CANCELLED']);
 
 function asyncH(fn: AsyncRoute) {
-  return (req: Request, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
+  return (req: Request<Record<string, string>>, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -169,7 +169,7 @@ function optionalValidationStatus(
   return body.validationStatus;
 }
 
-function requireActor(req: Request): ActorIdentity {
+function requireActor(req: Request<Record<string, string>>): ActorIdentity {
   const packetReq = req as PacketActorRequest;
   const actor = packetReq.actor;
   if (!packetReq.session?.authenticated || !actor) {
@@ -190,7 +190,7 @@ function requireActor(req: Request): ActorIdentity {
   throw new ApiError('auth_error', 'Authenticated user or service identity required.', 401);
 }
 
-function assertAgencyScope(req: Request, agencyId: string): void {
+function assertAgencyScope(req: Request<Record<string, string>>, agencyId: string): void {
   const packetReq = req as PacketActorRequest;
   const scopes = packetReq.actor?.attributes?.access_classes ?? [];
   if (scopes.length === 0) return;
@@ -236,7 +236,7 @@ function structuredBlockerError(
 }
 
 async function loadScopedPacket(
-  req: Request,
+  req: Request<Record<string, string>>,
   packetStore: PacketMetadataStore,
 ): Promise<PacketStoreDocument> {
   const packetInstanceId = req.params.packetInstanceId;
@@ -366,7 +366,7 @@ export function createPacketSupplementalRouter(
     });
   }));
 
-  router.use((err: unknown, _req: Request, _res: Response, next: NextFunction) => {
+  router.use((err: unknown, _req: Request<Record<string, string>>, _res: Response, next: NextFunction) => {
     next(mapSupplementalError(err));
   });
 

@@ -372,7 +372,7 @@ authRouter.get('/me', asyncHandler(async (req, res) => {
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 
-function asyncHandler(fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) {
+function asyncHandler(fn: (req: Request, res: Response) => Promise<void>) {
   return (req: Request, res: Response, next: NextFunction) => {
     fn(req, res).catch(next);
   };

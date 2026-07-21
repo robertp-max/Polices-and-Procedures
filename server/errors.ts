@@ -5,10 +5,15 @@
 
 export type ApiErrorCode =
   | 'validation_error'
+  | 'bad_request'
   | 'auth_error'
   | 'permission_denied'
+  | 'forbidden'
+  | 'protected_account'
   | 'calendar_not_found'
   | 'event_not_found'
+  | 'not_found'
+  | 'nolan_disabled'
   | 'duplicate'
   | 'rate_limited'
   | 'throttled'

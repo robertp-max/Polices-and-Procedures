@@ -52,8 +52,8 @@ function writeJson(file: string, data: unknown): void {
 
 const nowISO = () => new Date().toISOString();
 
-function asyncH(fn: (req: Request, res: Response) => Promise<void>) {
-  return (req: Request, res: Response) => fn(req, res).catch((err: unknown) => {
+function asyncH(fn: (req: Request<Record<string, string>>, res: Response) => Promise<void>) {
+  return (req: Request<Record<string, string>>, res: Response) => fn(req, res).catch((err: unknown) => {
     const msg = err instanceof Error ? err.message : String(err);
     res.status(500).json({ error: { code: 'pm_error', message: msg } });
   });

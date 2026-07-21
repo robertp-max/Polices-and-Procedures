@@ -8,7 +8,7 @@ import { approvalRegistry } from '../ia/brad/superadminApprovals.js';
 import { superAdminAudit } from '../ia/brad/superadminAudit.js';
 import { planCloudChangeSet } from '../ia/brad/cloudChangeSets.js';
 import { getDemoSnapshot, listDemoEventIds } from '../ia/brad/demoSnapshot.js';
-import { getUploadStore } from '../ia/brad/uploads.js';
+import { getUploadStore, type UploadMeta } from '../ia/brad/uploads.js';
 import { resolveBradSnapshot } from '../ia/brad/uploadSnapshotBridge.js';
 import type { BradObjectType, CloudChangeOp, SuperAdminPermission } from '../ia/brad/types.js';
 import {
@@ -81,10 +81,15 @@ export function createBradRouter(): Router {
     res.json({
       configuredMode: desc.configuredMode,
       effectiveMode: desc.effectiveMode,
+      runtimeStatus: desc.runtimeStatus,
       badge: desc.badge,
       phiPermitted: desc.phiPermitted,
+      provider: desc.provider,
       modelId: desc.modelId,
       canReachInternet: rt.canReachInternet,
+      failClosed: desc.failClosed,
+      diagnosticCode: desc.diagnosticCode,
+      diagnosticReason: desc.diagnosticReason,
       nolanEnabled: desc.nolanEnabled,
     });
   }));
@@ -143,7 +148,7 @@ export function createBradRouter(): Router {
     const files = Array.isArray(req.body?.files) ? req.body.files : (req.body?.filename ? [req.body] : []);
     if (!files.length) throw new ApiError('validation_error', 'No files provided.', 400);
     const store = getUploadStore();
-    const saved = files.map((f: { filename?: string; mime?: string; contentBase64?: string }) => {
+    const saved: UploadMeta[] = files.map((f: { filename?: string; mime?: string; contentBase64?: string }) => {
       if (!f?.filename || !f?.contentBase64) throw new ApiError('validation_error', 'Each file needs filename + contentBase64.', 400);
       return store.save({
         filename: String(f.filename), mime: f.mime, contentBase64: String(f.contentBase64),

@@ -60,25 +60,34 @@ function hash16(s: string): string {
 }
 
 function coerceBradMode(v: string | undefined): BradRuntimeMode {
-  return v === 'cli-nonphi' || v === 'vertex-nonphi' || v === 'vertex-phi' ? v : 'mock';
+  return v === 'cli-nonphi' || v === 'oss-nonphi' || v === 'vertex-nonphi' || v === 'vertex-phi' ? v : 'mock';
 }
 function coerceProvider(v: string | undefined): BradProvider {
-  return v === 'claude' || v === 'codex' || v === 'vertex' ? v : 'mock';
+  return v === 'claude' || v === 'codex' || v === 'vertex' || v === 'ollama' ? v : 'mock';
 }
 function coerceNolanMode(v: string | undefined): NolanRuntimeMode {
   return v === 'mock' || v === 'vertex-public-web' ? v : 'disabled';
 }
 
 export function readHarnessConfig(env: NodeJS.ProcessEnv = process.env): HarnessConfig {
+  const provider = coerceProvider(env.BRAD_PROVIDER);
+  const ollamaBaseUrl = env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434';
+  const ollamaChatModel = env.OLLAMA_CHAT_MODEL || 'llama3.1:8b-instruct-q4_K_M';
+  const ollamaTimeoutMs = Number(env.OLLAMA_TIMEOUT_MS ?? 60_000);
   return {
     brad: {
       runtimeMode: coerceBradMode(env.BRAD_RUNTIME_MODE),
-      provider: coerceProvider(env.BRAD_PROVIDER),
-      modelId: env.BRAD_CODEX_MODEL || env.BRAD_MODEL_ID || 'gemini-3.5-flash',
+      provider,
+      // For the OSS engine the model identity IS the Ollama chat tag — surface it
+      // as modelId so diagnostics show the real model in play.
+      modelId: env.BRAD_CODEX_MODEL || env.BRAD_MODEL_ID || (provider === 'ollama' ? ollamaChatModel : 'gemini-3.5-flash'),
       vertexProjectId: env.BRAD_VERTEX_PROJECT_ID || '',
       vertexLocation: env.BRAD_VERTEX_LOCATION || '',
       phiEnabled: env.BRAD_PHI_ENABLED === 'true',
       serviceAccount: env.BRAD_SERVICE_ACCOUNT,
+      ollamaBaseUrl,
+      ollamaChatModel,
+      ollamaTimeoutMs: Number.isFinite(ollamaTimeoutMs) && ollamaTimeoutMs > 0 ? ollamaTimeoutMs : 60_000,
       promptVersion: BRAD_PROMPT_VERSION,
       promptHash: hash16(BRAD_SYSTEM_PROMPT),
     },

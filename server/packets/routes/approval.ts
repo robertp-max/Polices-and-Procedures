@@ -40,7 +40,7 @@ import {
   type PacketStoreDocument,
 } from '../store.js';
 
-type AsyncRoute = (req: Request, res: Response, next: NextFunction) => Promise<void>;
+type AsyncRoute = (req: Request<Record<string, string>>, res: Response, next: NextFunction) => Promise<void>;
 
 type PacketActorRequest = Request & {
   session?: { authenticated?: boolean; correlation_id?: string };
@@ -110,7 +110,7 @@ const ACTION_LABELS = {
 const defaultStore = new FileLocalPacketStore();
 
 function asyncH(fn: AsyncRoute) {
-  return (req: Request, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
+  return (req: Request<Record<string, string>>, res: Response, next: NextFunction) => fn(req, res, next).catch(next);
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -153,7 +153,7 @@ function structuredBlockerError(
   });
 }
 
-function requireActor(req: Request): PacketAuditActor {
+function requireActor(req: Request<Record<string, string>>): PacketAuditActor {
   const packetReq = req as PacketActorRequest;
   const actor = packetReq.actor;
   if (!packetReq.session?.authenticated || !actor) {
@@ -173,7 +173,7 @@ function requireActor(req: Request): PacketAuditActor {
   throw new ApiError('auth_error', 'Authenticated user or service identity required.', 401);
 }
 
-function assertAgencyScope(req: Request, agencyId: string): void {
+function assertAgencyScope(req: Request<Record<string, string>>, agencyId: string): void {
   const packetReq = req as PacketActorRequest;
   const scopes = packetReq.actor?.attributes?.access_classes ?? [];
   if (scopes.length === 0) return;
@@ -191,7 +191,7 @@ function assertAgencyScope(req: Request, agencyId: string): void {
 
 async function getScopedPacket(
   store: PacketMetadataStore,
-  req: Request,
+  req: Request<Record<string, string>>,
   packetInstanceId: string,
 ): Promise<PacketStoreDocument> {
   requireActor(req);
@@ -825,7 +825,7 @@ export function createPacketApprovalRouter(
     });
   }));
 
-  router.use((err: unknown, _req: Request, _res: Response, next: NextFunction) => {
+  router.use((err: unknown, _req: Request<Record<string, string>>, _res: Response, next: NextFunction) => {
     next(mapPacketError(err));
   });
 
