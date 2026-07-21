@@ -57,6 +57,7 @@ export const ROUTE_ACCESS_MATRIX: RouteAccessEntry[] = [
   { mount: 'packets', access: 'AUTHENTICATED', note: 'Packet Studio packet lifecycle, readiness, sources, signing, and Brad-assisted editing. Verified user required; packet workflow state gates apply inside the router.' },
   { mount: 'ia', access: 'AUTHENTICATED', publicPaths: ['/api/ia/health'], note: 'Compliance Intelligence. /health is public; queries require a verified user.' },
   { mount: 'brad', access: 'AUTHENTICATED', note: 'Brad assistant. Verified user required; privileged /superadmin/* actions self-verify super-admin server-side (verifySuperAdmin) using the verified actor.' },
+  { mount: 'nolan', access: 'AUTHENTICATED', publicPaths: ['/api/nolan/tutor/health'], note: 'Nolan tutor (Nurse Onboarding & Learning Assistant) — learner-facing training chatbot. /tutor/health is public; tutor queries require a verified user. Deterministic, no PHI, no internet on this surface.' },
 ];
 
 /** All exact public sub-paths the boundary must let through anonymously. */
