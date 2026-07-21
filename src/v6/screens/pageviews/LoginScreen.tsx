@@ -1,8 +1,8 @@
-import { type FormEvent, type MouseEvent, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, Eye, EyeOff, LoaderCircle, Lock, Mail, ShieldAlert } from 'lucide-react';
+import { CheckCircle2, Eye, EyeOff, LoaderCircle, Lock, Mail, ShieldAlert } from 'lucide-react';
 import { cx } from '../../utils/classNames';
-import { BRAD_DEFAULT_ROUTE, safeReturnTo } from '../../utils/safeRedirect';
+import { safeReturnTo } from '../../utils/safeRedirect';
 import { useAuth } from '@/auth/AuthProvider';
 
 function BrandLogo({ inChallenge }: { inChallenge: boolean }) {
@@ -42,7 +42,6 @@ export function LoginScreen() {
   const [rememberDevice, setRememberDevice] = useState(true);
   const [loading, setLoading] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
-  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
 
   const displayError = localError ?? error;
   const inChallenge = challenge?.type === 'NEW_PASSWORD_REQUIRED';
@@ -51,12 +50,6 @@ export function LoginScreen() {
     setToastVisible(true);
     const dest = safeReturnTo(searchParams.get('returnTo') ?? searchParams.get('from'));
     window.setTimeout(() => navigate(dest, { replace: true }), 400);
-  }
-
-  function handleMouseMove(event: MouseEvent<HTMLElement>) {
-    const moveX = (event.clientX - window.innerWidth / 2) / 30;
-    const moveY = (event.clientY - window.innerHeight / 2) / 30;
-    setMouseOffset({ x: -moveX, y: -moveY });
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -112,7 +105,6 @@ export function LoginScreen() {
       data-hash-id="login-page"
       data-route="/login"
       data-template="login"
-      onMouseMove={handleMouseMove}
     >
       <div
         aria-hidden="true"
@@ -123,21 +115,11 @@ export function LoginScreen() {
         }}
       />
 
-      <Link
-        className="absolute right-4 top-4 z-20 flex items-center gap-2 rounded-full border border-white/50 bg-white/70 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-md transition-all hover:bg-white hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50"
-        to={BRAD_DEFAULT_ROUTE}
-      >
-        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-        <span>Back to Dashboard</span>
-      </Link>
-
       <img
         src="/watermark-angel.png"
         alt=""
-        className="pointer-events-none absolute left-1/2 top-1/2 z-0 w-[998px] max-w-none object-contain opacity-95 transition-transform duration-100 ease-out"
-        style={{
-          transform: `translate(calc(-30% + ${mouseOffset.x}px), calc(-65% + ${mouseOffset.y}px))`,
-        }}
+        className="pointer-events-none absolute left-1/2 top-1/2 z-0 w-[998px] max-w-none object-contain opacity-95"
+        style={{ transform: 'translate(-30%, -65%)' }}
       />
 
       <div className="relative z-10 flex flex-1 items-center justify-center p-4">
