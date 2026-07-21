@@ -13,6 +13,7 @@ import { resolveVerifiedActor, mergeAuthDeps, type RequireAuthDeps } from './req
 import { publicApiPaths } from './routeAccessMatrix.js';
 import { authenticationModeForActor } from './requestAuthenticationContext.js';
 import type { Actor } from '../identity/session.js';
+import { isE2eTestAuthAllowed, e2eActorForToken } from './e2eTestAuth.js';
 
 /** Exact paths that bypass the boundary (health checks). */
 const PUBLIC_PATHS = new Set(publicApiPaths());
@@ -121,6 +122,23 @@ export function requireApiAuth(options: ApiAuthBoundaryOptions = {}): RequestHan
     const fullPath = req.originalUrl.split('?')[0];
     const relPath = req.path.startsWith('/api') ? req.path : `/api${req.path}`;
     if (publicExact.has(fullPath) || publicExact.has(relPath)) return next();
+
+    // E2E TEST-ONLY: strictly-gated synthetic learner for local Playwright QA
+    // (production-inert — see e2eTestAuth.ts). Checked before Cognito because the
+    // synthetic token is not a real bearer. Only the ACTIVE learner token yields
+    // an actor; the suspended/unknown token falls through to real verification
+    // (and is denied). Skipped entirely when tests inject their own auth deps.
+    if (!options.deps && !options.disableLocalDemoFallback
+        && isE2eTestAuthAllowed({ hostname: req.hostname, hostHeader: req.header('host'), remoteAddress: req.socket?.remoteAddress })) {
+      const e2eAuth = req.header('authorization') ?? '';
+      const e2eToken = e2eAuth.startsWith('Bearer ') ? e2eAuth.slice('Bearer '.length) : '';
+      const e2eActor = e2eActorForToken(e2eToken);
+      if (e2eActor) {
+        req.authenticationContext = { mode: 'local_demo' };
+        attachActor(req, e2eActor);
+        return next();
+      }
+    }
 
     let deps: RequireAuthDeps;
     try {

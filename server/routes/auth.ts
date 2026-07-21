@@ -1,5 +1,6 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { ApiError } from '../errors.js';
+import { isE2eTestAuthAllowed, resolveE2eMeUser } from '../auth/e2eTestAuth.js';
 import { appendEvent } from '../audit/writer.js';
 import { recordInviteAudit, inviteResultMessage } from '../auth/inviteAudit.js';
 import { makeDirectSetupAuditSink, recordDirectSetupAuditBestEffort } from '../auth/directSetupAudit.js';
@@ -355,12 +356,26 @@ authRouter.post('/admin/users/invite', asyncHandler(async (req, res) => {
 }));
 
 authRouter.get('/me', asyncHandler(async (req, res) => {
-  const service = buildDemoAuthServiceFromEnv(process.env);
   const auth    = req.header('authorization') ?? '';
   const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
   if (!accessToken) {
     throw new ApiError('auth_error', 'Not authenticated.', 401);
   }
+  // E2E TEST-ONLY path (strictly gated, production-inert — see e2eTestAuth.ts).
+  // Runs before Cognito so local Playwright QA can establish a synthetic session
+  // without a live pool. Never activates in production or on deployed hosts.
+  if (isE2eTestAuthAllowed({ hostname: req.hostname, hostHeader: req.header('host'), remoteAddress: req.socket?.remoteAddress })) {
+    const resolved = resolveE2eMeUser(accessToken);
+    if (resolved.status === 'suspended') {
+      throw new ApiError('auth_error', 'This account is suspended.', 403);
+    }
+    if (resolved.status === 'active') {
+      res.json({ user: resolved.user });
+      return;
+    }
+    // status 'none' → not a synthetic token; fall through to real Cognito.
+  }
+  const service = buildDemoAuthServiceFromEnv(process.env);
   const user = await service.getCurrentUser(accessToken);
   try {
     await upsertAuthenticatedIdentity(user);
