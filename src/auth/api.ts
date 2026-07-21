@@ -87,6 +87,12 @@ export interface SignatureAuthorityAssignmentRow {
   reason: string;
 }
 
+export interface SignatureCoverageHolder { userId: string; status: string }
+export interface SignatureCoverageResponse {
+  coverage: Array<{ capacity: string; holders: SignatureCoverageHolder[] }>;
+  qapiAcceptance: Array<{ capacity: string; covered: boolean; holders: SignatureCoverageHolder[] }>;
+}
+
 export interface CapabilitiesResponse {
   authenticated: boolean;
   authorization: {
@@ -475,6 +481,14 @@ export const AuthApi = {
   /** A target user's signature-authority assignments (ADR-0002 Phase 5B). */
   getUserSignatureAuthority(accessToken: string, userId: string): Promise<{ assignments: SignatureAuthorityAssignmentRow[] }> {
     return callAt(USER_ACCESS_BASE, `/${encodeURIComponent(userId)}/signature-authority`, {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /** Enterprise signature-coverage view (ADR §9 / Phase 6). */
+  getSignatureCoverage(accessToken: string): Promise<SignatureCoverageResponse> {
+    return callAt(USER_ACCESS_BASE, '/signature-coverage', {
       method: 'GET',
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
     });

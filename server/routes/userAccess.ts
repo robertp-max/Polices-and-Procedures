@@ -30,6 +30,7 @@ import {
   assignmentsForUser, getSignatureAssignmentStore, grantAssignment, primeAssignmentCache, revokeAssignment,
 } from '../auth/authorization/signatureAssignmentStore.js';
 import type { AuthorityBasis } from '../auth/authorization/signatureAuthority.js';
+import { QAPI_SIGNATURE_CAPACITIES } from '../auth/authorization/signatureCatalog.js';
 import { getAccountLifecycleService } from '../auth/accountLifecycle/serviceFactory.js';
 import { performAdminLifecycleTransition } from '../auth/accountLifecycle/adminTransition.js';
 import type { LifecycleAction } from '../auth/accountLifecycle/service.js';
@@ -223,6 +224,32 @@ async function auditSignatureAuthority(actor: Actor, req: Request, action: strin
     correlation_id: req.session?.correlation_id, request_id: req.session?.request_id, session_id: req.session?.session_id,
   });
 }
+
+/**
+ * GET /admin/user-access/signature-coverage — enterprise signature-coverage view
+ * (ADR §9): which users hold each business capacity, plus the QAPI acceptance-set
+ * coverage. Registered before the /:userId routes so it is not captured as a userId.
+ */
+userAccessRouter.get('/signature-coverage', asyncHandler(async (req, res) => {
+  await requireUserAccessAdmin(req);
+  const all = await getSignatureAssignmentStore().getAll();
+  primeAssignmentCache(all);
+  const byCapacity = new Map<string, { userId: string; status: string }[]>();
+  for (const a of all) {
+    if (a.status !== 'active') continue;
+    const holders = byCapacity.get(a.signatureRoleId) ?? [];
+    holders.push({ userId: a.userId, status: a.status });
+    byCapacity.set(a.signatureRoleId, holders);
+  }
+  const coverage = [...byCapacity.entries()]
+    .map(([capacity, holders]) => ({ capacity, holders }))
+    .sort((x, y) => x.capacity.localeCompare(y.capacity));
+  const qapiAcceptance = QAPI_SIGNATURE_CAPACITIES.map((capacity) => {
+    const holders = byCapacity.get(capacity) ?? [];
+    return { capacity, covered: holders.length > 0, holders };
+  });
+  res.json({ coverage, qapiAcceptance });
+}));
 
 /** GET /admin/user-access/:userId/signature-authority — a user's assignments (Phase 5B). */
 userAccessRouter.get('/:userId/signature-authority', asyncHandler(async (req, res) => {
