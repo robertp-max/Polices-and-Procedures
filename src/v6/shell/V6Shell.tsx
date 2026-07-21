@@ -56,6 +56,8 @@ export function V6Shell() {
   const [renderPersonalPanel, setRenderPersonalPanel] = useState(isPersonalOpsOpen);
   const [personalPanelVisible, setPersonalPanelVisible] = useState(isPersonalOpsOpen);
   const isLessonPlayerRoute = /^\/journey\/module\/[^/]+\/lesson\/[^/]+\/?$/.test(pathname);
+  const isModulePlayerRoute = /^\/journey\/module\/[^/]+\/?$/.test(pathname);
+  const isPlayerRoute = isLessonPlayerRoute || isModulePlayerRoute;
   const isDocumentPrintRoute =
     /^\/print\/[^/]+\/?$/.test(pathname) ||
     /^\/library\/[^/]+\/print\/?$/.test(pathname) ||
@@ -71,12 +73,12 @@ export function V6Shell() {
     pathname !== '/library' &&
     pathname !== '/library/policies' &&
     !pathname.includes('/print');
-  const isChromeFreeRoute = isLessonPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute || isEmbedRequest || isPolicyDetailRoute;
+  const isChromeFreeRoute = isPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute || isEmbedRequest || isPolicyDetailRoute;
   // Keep the dock visible during a guided tour so its nav targets stay anchorable.
   const showDock = !isChromeFreeRoute && (!pathname.startsWith('/iadministrator') || bradLanding || tourActive);
   const showRouteChrome = !isChromeFreeRoute;
   // Policy detail gets zero shell padding (for clean header flush to top) but keeps scroll.
-  const suppressShellPadding = isDashboardRoute || isLessonPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute || isEmbedRequest || pathname.startsWith('/iadministrator') || isPolicyDetailRoute;
+  const suppressShellPadding = isDashboardRoute || isPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute || isEmbedRequest || pathname.startsWith('/iadministrator') || isPolicyDetailRoute;
   const constrainRouteWidth = showRouteChrome && !suppressShellPadding;
   const panelTop = '0px';
   const panelHeight = '100vh';
@@ -183,7 +185,7 @@ export function V6Shell() {
   }, [feedbackOpen]);
 
   return (
-    <div className={cx('theme-ci-light-orange flex h-screen overflow-hidden font-light text-ink p-0 m-0 border-0 bg-canvas', isLessonPlayerRoute ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset' : '')}>
+    <div className={cx('theme-ci-light-orange flex h-screen overflow-hidden font-light text-ink p-0 m-0 border-0 bg-canvas', isPlayerRoute ? 'bg-surface-glass backdrop-blur-md shadow-glass-inset' : '')}>
       {showRouteChrome && (
         <>
           {showDock && (

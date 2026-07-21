@@ -80,6 +80,10 @@ import GAO001Scene07PatientRefusal from "@/policy/journey/components/GAO001Scene
 import GAO001Scene08EscalationPractice from "@/policy/journey/components/GAO001Scene08EscalationPractice";
 import GAO001Scene09ReadinessMap from "@/policy/journey/components/GAO001Scene09ReadinessMap";
 import { getLvnStandaloneModule } from "@/policy/journey/modules/lvn";
+import { getAchcStandaloneModule, isAchcStandaloneModule } from "@/policy/journey/modules/achc";
+import { getRnStandaloneModule, isRnStandaloneModule } from "@/policy/journey/modules/rn";
+import { getAdmStandaloneModule, isAdmStandaloneModule } from "@/policy/journey/modules/adm";
+import { getDonStandaloneModule, isDonStandaloneModule } from "@/policy/journey/modules/don";
 /* ==========================================================================
    SHARED PRIMITIVE COMPONENTS (Light Mode adapted)
    ========================================================================== */
@@ -2376,6 +2380,58 @@ export function ModulePlayerScreen() {
       const variant = getAdvancedVariant(params.moduleId) || 'plan_of_care';
       const title = getModuleDef(params.moduleId)?.title || params.moduleId;
       return <AdvancedTrainingPlayer moduleId={params.moduleId} moduleTitle={title} variant={variant} />;
+    }
+    if (params.moduleId && isAchcStandaloneModule(params.moduleId)) {
+      const AchcModule = getAchcStandaloneModule(params.moduleId);
+      if (AchcModule) {
+        return (
+          <div className="min-h-[70vh] w-full" data-achc-standalone={params.moduleId}>
+            <div className="mb-3 px-2 sm:px-4 pt-2">
+              <BackLink to="/journey?tab=achc">Back to ACHC annual training</BackLink>
+            </div>
+            <AchcModule />
+          </div>
+        );
+      }
+    }
+    if (params.moduleId && isRnStandaloneModule(params.moduleId)) {
+      const RnModule = getRnStandaloneModule(params.moduleId);
+      if (RnModule) {
+        return (
+          <div className="min-h-[70vh] w-full" data-rn-standalone={params.moduleId}>
+            <div className="mb-3 px-2 sm:px-4 pt-2">
+              <BackLink to="/journey?tab=onboarding&path=rn">Back to RN path</BackLink>
+            </div>
+            <RnModule />
+          </div>
+        );
+      }
+    }
+    if (params.moduleId && isAdmStandaloneModule(params.moduleId)) {
+      const AdmModule = getAdmStandaloneModule(params.moduleId);
+      if (AdmModule) {
+        return (
+          <div className="min-h-[70vh] w-full" data-adm-standalone={params.moduleId}>
+            <div className="mb-3 px-2 sm:px-4 pt-2">
+              <BackLink to="/journey?tab=onboarding&path=adm">Back to Administrator path</BackLink>
+            </div>
+            <AdmModule />
+          </div>
+        );
+      }
+    }
+    if (params.moduleId && isDonStandaloneModule(params.moduleId)) {
+      const DonModule = getDonStandaloneModule(params.moduleId);
+      if (DonModule) {
+        return (
+          <div className="min-h-[70vh] w-full" data-don-standalone={params.moduleId}>
+            <div className="mb-3 px-2 sm:px-4 pt-2">
+              <BackLink to="/journey?tab=onboarding&path=don">Back to Director of Nursing path</BackLink>
+            </div>
+            <DonModule />
+          </div>
+        );
+      }
     }
     if (params.moduleId && getLvnStandaloneModule(params.moduleId)) {
       return <LvnStandaloneHost moduleId={params.moduleId} />;

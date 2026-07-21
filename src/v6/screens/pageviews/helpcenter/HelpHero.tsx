@@ -7,6 +7,12 @@ import { HelpBadge } from './HelpBadge';
  * Help Center hero — same ci-page-hero band used by Dashboard, Policy Home,
  * Compliance Home, and Training Academy (orange eyebrow, teal headline,
  * orange primary CTA, teal outline secondary CTA).
+ *
+ * 🛡️ PROTECTED (owner-loved): the `StaticCardWatermark` + `help-hero-glass-*`
+ * structure produces the "bleeding" angel watermark blurring through the frosted
+ * glass card. It is fragile and easy to destroy by accident. Do NOT remove the
+ * watermark, the glass frame/card/content wrappers, or the CSS in src/index.css.
+ * Guarded by src/v6/protectedVisuals.test.ts.
  */
 export function HelpHero({ onSearchFocus }: { onSearchFocus: () => void }) {
   const navigate = useNavigate();
