@@ -76,9 +76,12 @@ Last updated: 2026-07-20, HEAD `1a4c5aa3`.
   signature-assignment, and the identity registry all default to `.cache/*.json`.
   Cloud Run may run >1 instance → lost updates / split state. Multi-instance-durable
   adapter required before production (already an ADR §D blocker).
-- ⚙️ **No optimistic concurrency (3D not done)**: `AppIdentityRegistry` has no version
-  field; `putAll` is a full-blob overwrite → concurrent admin mutations can lose
-  updates. Same for the signature-assignment store.
+- ⚙️ **Optimistic concurrency (3D) is app-layer, not atomic on file adapter**:
+  `AppIdentityRegistry.version` + `assertVersionMatch` now guard role mutations
+  (409 on stale write, ETag round-trip). But the file adapter's read-check-write
+  is not a true atomic CAS — a genuine multi-instance CAS still needs the durable
+  adapter (§D). The signature-assignment + access-review + campaign stores do NOT
+  yet have a version guard (only the identity registry does).
 - ⚙️ **Full `vitest` server suite crashes on a worker-pool IPC flake**
   (`ERR_IPC_CHANNEL_CLOSED` via the node_modules junction). Had to run targeted
   subsets. CI reliability concern for this worktree setup.
