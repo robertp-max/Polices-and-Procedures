@@ -33,6 +33,7 @@ import type { AuthorityBasis } from '../auth/authorization/signatureAuthority.js
 import { QAPI_SIGNATURE_CAPACITIES } from '../auth/authorization/signatureCatalog.js';
 import { createCampaign, getAccessReviewStore } from '../auth/authorization/accessReview.js';
 import { computeReconciliationFindings } from '../auth/authorization/reconciliation.js';
+import { assertVersionMatch, bumpVersion } from '../auth/authorization/optimisticConcurrency.js';
 import { getAccountLifecycleService } from '../auth/accountLifecycle/serviceFactory.js';
 import { performAdminLifecycleTransition } from '../auth/accountLifecycle/adminTransition.js';
 import type { LifecycleAction } from '../auth/accountLifecycle/service.js';
@@ -117,7 +118,7 @@ function asyncHandler(fn: (req: Request, res: Response, next: NextFunction) => P
 userAccessRouter.get('/', asyncHandler(async (req, res) => {
   await requireUserAccessAdmin(req);
   const registry = await getAppIdentityPersistence().getAll();
-  res.json({ users: listAccessState(registry, new Date().toISOString()) });
+  res.json({ users: listAccessState(registry, new Date().toISOString()), version: registry.version ?? 0 });
 }));
 
 /**
@@ -346,7 +347,15 @@ function targetId(req: Request): string {
   return id;
 }
 
+/** Optional optimistic-concurrency token the admin UI round-trips (ADR 3D). */
+function expectedVersionFrom(req: Request): number | undefined {
+  const v = (req.body as { expectedVersion?: unknown })?.expectedVersion;
+  return typeof v === 'number' ? v : undefined;
+}
+
 async function applyChange(req: Request, actor: Actor, change: AccessChange): Promise<void> {
+  // Phase 3D: bump the optimistic-concurrency token on every registry mutation.
+  change.registry.version = bumpVersion(change.registry.version);
   await getAppIdentityPersistence().putAll(change.registry);
   // Record which authority granted the mutation (approved_admin_email |
   // canonical_admin_group) so the audit trail is self-explaining.
@@ -421,6 +430,7 @@ userAccessRouter.post('/assign-role', asyncHandler(async (req, res) => {
     throw e;
   }
   const registry = await getAppIdentityPersistence().getAll();
+  assertVersionMatch(expectedVersionFrom(req), registry.version);
   let change: AccessChange;
   try {
     change = assignRole(registry, actor, id, groupId, new Date().toISOString());
@@ -429,7 +439,7 @@ userAccessRouter.post('/assign-role', asyncHandler(async (req, res) => {
     throw e;
   }
   await applyChange(req, actor, change);
-  res.json({ ok: true, targetUserId: id, after: change.after });
+  res.json({ ok: true, targetUserId: id, after: change.after, version: change.registry.version });
 }));
 
 userAccessRouter.post('/remove-role', asyncHandler(async (req, res) => {
@@ -438,7 +448,8 @@ userAccessRouter.post('/remove-role', asyncHandler(async (req, res) => {
   if (!groupId) throw new ApiError('validation_error', 'groupId is required.', 400);
   const actor = await requireUserAccessAdmin(req);
   const registry = await getAppIdentityPersistence().getAll();
+  assertVersionMatch(expectedVersionFrom(req), registry.version);
   const change = removeRole(registry, actor, id, groupId, new Date().toISOString());
   await applyChange(req, actor, change);
-  res.json({ ok: true, targetUserId: id, after: change.after });
+  res.json({ ok: true, targetUserId: id, after: change.after, version: change.registry.version });
 }));
