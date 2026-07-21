@@ -1,10 +1,13 @@
 /* Brad assistant API client (frontend).
    ----------------------------------------------------------------------------
-   Talks to /api/brad/*. Identity is sent via the dev header convention
-   (x-user-id). The DEV identity picker below is a CONVENIENCE for exercising
-   the Super Admin approval flow locally — it is NOT a security control: the
-   server independently verifies Super Admin status against its own allowlist
-   keyed by stable user id, and ignores client-supplied role claims. */
+   Talks to <apiRoot>/brad/*. Authentication is the real Cognito bearer token
+   (attached via the shared auth/session abstraction); the server boundary
+   verifies it. The DEV identity picker (x-user-*) below is a DEVELOPMENT-ONLY
+   CONVENIENCE for exercising the Super Admin approval flow locally against the
+   demo fallback — it is gated to import.meta.env.DEV and is NEVER sent in a
+   production build. It is not a security control: the server independently
+   verifies Super Admin status server-side and ignores client-supplied claims. */
+import { apiRoot, bearerAuthHeader } from '@/auth/apiClient';
 
 export interface DevIdentity {
   userId: string;
@@ -31,14 +34,20 @@ export function setIdentity(userId: string): void {
   try { localStorage.setItem(LS_KEY, userId); } catch { /* ignore */ }
 }
 
-async function bradFetch<T>(path: string, init?: RequestInit): Promise<T> {
+/** Development-only identity headers — omitted entirely from production builds. */
+function devIdentityHeaders(): Record<string, string> {
+  if (!import.meta.env.DEV) return {};
   const id = getIdentity();
-  const res = await fetch(`/api/brad${path}`, {
+  return { 'x-user-id': id.userId, 'x-user-display-name': id.displayName };
+}
+
+async function bradFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${apiRoot()}/brad${path}`, {
     ...init,
     headers: {
       'Content-Type': 'application/json',
-      'x-user-id': id.userId,
-      'x-user-display-name': id.displayName,
+      ...bearerAuthHeader(),
+      ...devIdentityHeaders(),
       ...(init?.headers ?? {}),
     },
   });
