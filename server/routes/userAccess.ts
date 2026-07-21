@@ -31,6 +31,7 @@ import {
 } from '../auth/authorization/signatureAssignmentStore.js';
 import type { AuthorityBasis } from '../auth/authorization/signatureAuthority.js';
 import { QAPI_SIGNATURE_CAPACITIES } from '../auth/authorization/signatureCatalog.js';
+import { createCampaign, getAccessReviewStore } from '../auth/authorization/accessReview.js';
 import { getAccountLifecycleService } from '../auth/accountLifecycle/serviceFactory.js';
 import { performAdminLifecycleTransition } from '../auth/accountLifecycle/adminTransition.js';
 import type { LifecycleAction } from '../auth/accountLifecycle/service.js';
@@ -249,6 +250,32 @@ userAccessRouter.get('/signature-coverage', asyncHandler(async (req, res) => {
     return { capacity, covered: holders.length > 0, holders };
   });
   res.json({ coverage, qapiAcceptance });
+}));
+
+/** GET /admin/user-access/access-review — list access-review campaigns (§B11). */
+userAccessRouter.get('/access-review', asyncHandler(async (req, res) => {
+  await requireUserAccessAdmin(req);
+  res.json({ campaigns: await getAccessReviewStore().getAll() });
+}));
+
+/** POST /admin/user-access/access-review — schedule a campaign (§B11, policy-owned). */
+userAccessRouter.post('/access-review', asyncHandler(async (req, res) => {
+  const actor = await requireUserAccessAdmin(req);
+  const b = (req.body ?? {}) as Record<string, unknown>;
+  const store = getAccessReviewStore();
+  const { list, campaign } = createCampaign(await store.getAll(), {
+    scope: String(b.scope ?? ''),
+    reviewType: String(b.reviewType ?? ''),
+    startsAt: String(b.startsAt ?? ''),
+    dueAt: String(b.dueAt ?? ''),
+    requiredReviewers: Array.isArray(b.requiredReviewers) ? (b.requiredReviewers as unknown[]).filter((x): x is string => typeof x === 'string') : [],
+    policyBasis: String(b.policyBasis ?? ''),
+    trigger: String(b.trigger ?? ''),
+    createdBy: actor.user_id,
+  }, randomUUID(), new Date().toISOString());
+  await store.putAll(list);
+  await auditSignatureAuthority(actor, req, 'access_review.schedule', campaign.campaignId, { reviewType: campaign.reviewType, policyBasis: campaign.policyBasis }, campaign.policyBasis);
+  res.json({ campaign });
 }));
 
 /** GET /admin/user-access/:userId/signature-authority — a user's assignments (Phase 5B). */

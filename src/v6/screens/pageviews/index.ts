@@ -4,6 +4,7 @@ export { AdminRolesScreen } from './AdminRolesScreen';
 export { AdminUsersScreen } from './AdminUsersScreen';
 export { AdminUserDetailScreen } from './AdminUserDetailScreen';
 export { AdminSignatureCoverageScreen } from './AdminSignatureCoverageScreen';
+export { AdminAccessReviewScreen } from './AdminAccessReviewScreen';
 export { AdminCommunityProfilesScreen } from './AdminCommunityProfilesScreen';
 export { AdmissionPacketPreviewScreen } from './AdmissionPacketPreviewScreen';
 export { EcignWorkspaceScreen } from './EcignWorkspaceScreen';

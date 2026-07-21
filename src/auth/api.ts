@@ -87,6 +87,28 @@ export interface SignatureAuthorityAssignmentRow {
   reason: string;
 }
 
+export interface AccessReviewCampaignRow {
+  campaignId: string;
+  scope: string;
+  reviewType: string;
+  startsAt: string;
+  dueAt: string;
+  requiredReviewers: string[];
+  policyBasis: string;
+  trigger: string;
+  createdAt: string;
+  createdBy: string;
+}
+export interface CreateAccessReviewCampaignInput {
+  scope: string;
+  reviewType: string;
+  startsAt?: string;
+  dueAt: string;
+  requiredReviewers?: string[];
+  policyBasis: string;
+  trigger: string;
+}
+
 export interface SignatureCoverageHolder { userId: string; status: string }
 export interface SignatureCoverageResponse {
   coverage: Array<{ capacity: string; holders: SignatureCoverageHolder[] }>;
@@ -491,6 +513,23 @@ export const AuthApi = {
     return callAt(USER_ACCESS_BASE, '/signature-coverage', {
       method: 'GET',
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /** List access-review campaigns (ADR §B11). */
+  listAccessReviewCampaigns(accessToken: string): Promise<{ campaigns: AccessReviewCampaignRow[] }> {
+    return callAt(USER_ACCESS_BASE, '/access-review', {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /** Schedule an access-review campaign (ADR §B11; policyBasis required). */
+  createAccessReviewCampaign(accessToken: string, input: CreateAccessReviewCampaignInput): Promise<{ campaign: AccessReviewCampaignRow }> {
+    return callAt(USER_ACCESS_BASE, '/access-review', {
+      method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      body: JSON.stringify(input),
     });
   },
 
