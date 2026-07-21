@@ -57,14 +57,18 @@ import { withLessonCompleted, withModuleAssessment, moduleAssessmentPassed } fro
 import { buildLessonRemediation, buildModuleRemediation, buildFinalRemediation } from "@/policy/journey/data/remediation";
 import type { LessonRemediation, ModuleRemediation, RemediationChallenge } from "@/policy/journey/data/remediation";
 import { hasMedia, mediaAltText, mediaAssetPath } from "@/policy/journey/data/mediaManifest";
+import { getGaoNodeScene } from "@/policy/journey/data/gaoNodes";
+import { getGao001NodeSceneRegistration } from "@/policy/journey/data/gaoNodes/GAO-001";
 import { hasNarrationAudio, narrationAssetPath } from "@/policy/journey/data/narrationManifest";
+import { GaoNodeStage } from "@/policy/journey/components/gao/nodes/GaoNodeStage";
+import { GaoLegacyNodeProgressProvider } from "@/policy/journey/components/gao/nodes/GaoLegacyNodeProgressContext";
+import { isGaoNodeSceneComplete } from "@/policy/journey/lib/gaoNodeProgress";
 import { getTermsForSection } from "@/policy/journey/data/advancedTraining/cms485Terminology";
 import { TRAINING_CARDS } from "@/policy/journey/data/advancedTraining/cms485SourceCards";
 import { isAdvancedModule, getAdvancedVariant } from "@/policy/journey/data/advancedTraining/advancedTrainingContract";
 import { AdvancedTrainingPlayer } from "@/policy/journey/components/advanced/AdvancedTrainingPlayer";
 import { OasisSocTrainingPanel } from "@/policy/journey/components/advanced/OasisSocTrainingPanel";
 import { isOasisSocModule, OASIS_SOC_MODULE_TITLE } from "@/policy/journey/components/advanced/oasisSocModule";
-import { getLvnStandaloneModule, isLvnStandaloneModule } from "@/policy/journey/modules/lvn";
 import { Cms485AssessmentQuizPage } from "./Cms485AssessmentQuizPage";
 import CoreValuesInteractiveViewer from "@/policy/journey/components/CoreValuesInteractiveViewer";
 import GAO001Scene01WelcomeDesk from "@/policy/journey/components/GAO001Scene01WelcomeDesk";
@@ -75,7 +79,7 @@ import GAO001Scene06ReportingEscalation from "@/policy/journey/components/GAO001
 import GAO001Scene07PatientRefusal from "@/policy/journey/components/GAO001Scene07PatientRefusal";
 import GAO001Scene08EscalationPractice from "@/policy/journey/components/GAO001Scene08EscalationPractice";
 import GAO001Scene09ReadinessMap from "@/policy/journey/components/GAO001Scene09ReadinessMap";
-import GAO002OrgStructureViewer from "@/policy/journey/components/GAO002OrgStructureViewer";
+import { getLvnStandaloneModule } from "@/policy/journey/modules/lvn";
 /* ==========================================================================
    SHARED PRIMITIVE COMPONENTS (Light Mode adapted)
    ========================================================================== */
@@ -97,6 +101,7 @@ function MediaSlot({ appLocation, sceneTitle, className = '' }: { appLocation: s
   const isFullHeight = className.includes('h-full');
   const assetPath = mediaAssetPath(appLocation);
   const isVideo = /\.(mp4|webm|mov)$/i.test(assetPath);
+  const isFinalGaoOverlay = /^GAO-(00[6-9]|01\d|02[0-7])\.lesson\.l\d+\.delivery$/i.test(appLocation);
   if (ready) {
     const wrapperBase = isFullHeight
       ? `w-full h-full min-h-full overflow-hidden ${className}`
@@ -115,7 +120,11 @@ function MediaSlot({ appLocation, sceneTitle, className = '' }: { appLocation: s
             controls
           />
         ) : (
-          <img src={assetPath} alt={alt} className="block w-full h-full object-cover" />
+          <img
+            src={assetPath}
+            alt={alt}
+            className={`block h-full w-full ${isFinalGaoOverlay ? "object-contain object-center" : "object-cover"}`}
+          />
         )}
       </div>
     );
@@ -169,14 +178,29 @@ function isCareIndeedOnboardingModule(moduleId?: string): boolean {
 }
 
 
-function isGAO002Interactive(moduleId?: string): boolean {
-  // Exact match 'GAO-002' per Integration & Shell spec
-  return moduleId === 'GAO-002';
+function isGAOTextFirstModule(moduleId?: string): boolean {
+  const match = moduleId?.match(/^GAO-(\d{3})$/i);
+  if (!match) return false;
+  const numericId = Number(match[1]);
+  return numericId >= 2 && numericId <= 27;
 }
 
-const isGAO002FullWorkspace = (moduleId?: string) => isGAO002Interactive(moduleId);
-const isGAO001DeliveryScene = (moduleId: string | undefined, cardId: string | undefined) =>
-  moduleId === 'GAO-001' && cardId === 'GAO-001_L1_DELIVERY';
+function LvnStandaloneHost({ moduleId }: { moduleId: string }) {
+  const LvnStandaloneModule = getLvnStandaloneModule(moduleId);
+  if (!LvnStandaloneModule) {
+    return (
+      <div className="p-6 text-sm text-secondary">
+        LVN module &quot;{moduleId}&quot; is registered but failed to load. Check src/policy/journey/modules/lvn.
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-[100dvh] w-full overflow-hidden bg-white" data-lvn-standalone={moduleId}>
+      <LvnStandaloneModule />
+    </div>
+  );
+}
 
 const onboardingDotBg = {
   backgroundColor: "#FAFBF8",
@@ -232,7 +256,7 @@ function OnboardingLessonHtml({ card }: { card: any }) {
   }
   return (
     <div
-      className="space-y-4 text-[13px] leading-relaxed text-[#524C4B] [&_h2]:text-[22px] [&_h2]:font-bold [&_h2]:leading-tight [&_h2]:text-[#004142] [&_h3]:mt-4 [&_h3]:text-[15px] [&_h3]:font-bold [&_h3]:text-[#004142] [&_p]:my-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1.5 [&_strong]:font-bold [&_strong]:text-[#1F1C1B] [&_table]:my-4 [&_table]:w-full [&_table]:border-collapse [&_td]:border-b [&_td]:border-[#E5E4E3] [&_td]:p-2 [&_th]:p-2"
+      className="mx-auto max-w-[880px] space-y-5 text-[16px] leading-[1.62] text-[#423D3B] [&_h2]:text-[28px] [&_h2]:font-bold [&_h2]:leading-tight [&_h2]:text-[#004142] [&_h3]:mt-6 [&_h3]:text-[18px] [&_h3]:font-bold [&_h3]:text-[#004142] [&_p]:my-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mt-2 [&_strong]:font-bold [&_strong]:text-[#1F1C1B] [&_table]:my-5 [&_table]:w-full [&_table]:border-collapse [&_td]:border-b [&_td]:border-[#E5E4E3] [&_td]:p-3 [&_th]:p-3"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
@@ -917,7 +941,12 @@ function buildStepLabels(cards: readonly { card_type?: string; internal_challeng
 function LessonPlayerPage() {
   const navigate = useNavigate();
   const { moduleId = "m1", lessonId = "l1" } = useParams();
-  const { state: learnerState, setState } = useLearner();
+  const {
+    state: learnerState,
+    setState,
+    setGaoNodeProgress,
+    resetGaoNodeProgress,
+  } = useLearner();
   const { demoSeconds, reviewerOpen } = useUiState();
   const lesson = getGeneratedLesson(moduleId, lessonId);
   const cards = useMemo(() => lesson?.cards ?? [], [lesson]);
@@ -1054,11 +1083,24 @@ function LessonPlayerPage() {
   const nextLesson = currentLessonIdx < allLessons.length - 1 ? allLessons[currentLessonIdx + 1] : null;
 
   const currentCard = cards[currentIdx];
-  const gao001DeliveryScene = isGAO001DeliveryScene(moduleId, currentCard.card_id);
   const isChallengeCard = Boolean(currentCard.internal_challenge);
   const isDebriefCard = currentCard.card_type === "debrief";
   const isLast = currentIdx === cards.length - 1;
   const narrationAudioReady = hasNarrationAudio(currentCard.app.location);
+  const gao001NodeScene = getGao001NodeSceneRegistration(currentCard.app.location);
+  const gao001NodeCompletedIds = gao001NodeScene
+    ? learnerState.nodeProgressByAppLocation[gao001NodeScene.appLocation]?.completedNodeIds ?? []
+    : [];
+  const gao001NodeSceneComplete = gao001NodeScene
+    ? gao001NodeScene.requiredNodeIds.every((nodeId) => gao001NodeCompletedIds.includes(nodeId))
+    : true;
+  const gaoNodeScene = getGaoNodeScene(currentCard.app.location);
+  const gaoNodeCompletedIds = gaoNodeScene
+    ? learnerState.nodeProgressByAppLocation[gaoNodeScene.appLocation]?.completedNodeIds ?? []
+    : [];
+  const gaoNodeSceneComplete = gaoNodeScene
+    ? isGaoNodeSceneComplete(gaoNodeScene, gaoNodeCompletedIds)
+    : true;
 
   const isCms485 = moduleId === "cms-485";
   const terms = getTermsForSection(lesson.title);
@@ -1071,7 +1113,7 @@ function LessonPlayerPage() {
     : [];
   const debriefReadDone = requiredReads.every((id) => openedOptions.includes(id));
 
-  const canContinue = isChallengeCard
+  const canContinueWithoutNodes = isChallengeCard
     ? submitted
     : isDebriefCard
     ? debriefReadDone
@@ -1080,6 +1122,8 @@ function LessonPlayerPage() {
     : isLast
     ? meetsLessonMinimum
     : true;
+  const nodeGateBlocked = !gao001NodeSceneComplete || !gaoNodeSceneComplete;
+  const canContinue = canContinueWithoutNodes && !nodeGateBlocked;
 
   const continueLabel = useMemo(() => {
     if (!isCms485) {
@@ -1096,6 +1140,7 @@ function LessonPlayerPage() {
   }, [isCms485, currentCard, isLast, isDebriefCard, isChallengeCard, remediation, nextLesson]);
 
   const handleNext = () => {
+    if (!canContinue) return;
     if (currentIdx < cards.length - 1) {
       setCurrentIdx((idx) => idx + 1);
       return;
@@ -1117,6 +1162,9 @@ function LessonPlayerPage() {
     const totalNarrationSeconds = currentCard.estimated_narration_seconds ?? Math.max(30, lesson.estMinutes * 60);
     const mediaTitle = currentCard.media_prompt_placeholder?.scene_title || currentCard.display_title || lesson.title;
     const canMovePrevious = currentIdx > 0 || Boolean(prevLesson);
+    const textFirstGaoModule = isGAOTextFirstModule(moduleId);
+    const useGao002LvnShell = moduleId.toUpperCase() === 'GAO-002';
+    const usesFinalGaoOverlay = /^GAO-(00[6-9]|01\d|02[0-7])$/i.test(moduleId);
 
     return (
       <div className="fixed inset-0 z-[9998] flex flex-col text-[#1F1C1B]" style={onboardingDotBg}>
@@ -1140,8 +1188,19 @@ function LessonPlayerPage() {
           </div>
         )}
 
-        <header className="shrink-0 border-b border-[#E5E4E3] bg-white/96 px-4 py-3 shadow-[0_8px_28px_rgba(31,28,27,0.05)] md:px-6">
-          <div className="flex items-center gap-3">
+        <header
+          className={`shrink-0 border-b border-[#E5E4E3] bg-white/96 shadow-[0_8px_28px_rgba(31,28,27,0.05)] ${
+            useGao002LvnShell ? 'flex h-16 items-center px-6 py-0' : 'px-4 py-3 md:px-6'
+          }`}
+        >
+          <div className={`${useGao002LvnShell ? 'flex w-full min-w-0 items-center gap-4' : 'flex flex-col gap-3 lg:flex-row lg:items-center'}`}>
+            {textFirstGaoModule && !useGao002LvnShell && (
+              <div className="min-w-[260px]">
+                <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#007970]">{moduleId}</div>
+                <h1 className="truncate text-lg font-bold leading-tight text-[#004142]">{moduleDef?.title || lesson.title}</h1>
+                <div className="mt-0.5 text-xs text-[#747470]">Lesson {currentLessonNumber} of {allLessons.length || 1}</div>
+              </div>
+            )}
             <div className="min-w-0 flex-1 overflow-x-auto">
               <div className="flex min-w-max items-center gap-2">
                 {allLessons.map((lessonItem: any, index: number) => {
@@ -1175,21 +1234,27 @@ function LessonPlayerPage() {
           </div>
         </header>
 
-        {/* Left grows (base 420px + 7.77%); right panel locked to 16:13 from available height. */}
+        {/* GAO-002+ keeps the same right-side visual workspace while using the markdown lesson copy. */}
         <main
-          className={`flex min-h-0 flex-1 flex-col gap-[20px] p-0 lg:flex-row lg:items-stretch ${
-            isGAO002FullWorkspace(moduleId) ? '' : ''
-          }`}
+          className={
+            useGao002LvnShell
+              ? 'flex min-h-0 flex-1 flex-col overflow-y-auto bg-[#FAFBF8] lg:flex-row lg:overflow-hidden'
+              : 'flex min-h-0 flex-1 flex-col gap-[20px] p-0 lg:flex-row lg:items-stretch'
+          }
         >
           <aside
-            className={`flex min-h-0 min-w-0 flex-col rounded-[22px] border border-[#E5E4E3] bg-white p-[20px] shadow-[0_18px_50px_rgba(31,28,27,0.08)] ${
-              isGAO002FullWorkspace(moduleId) ? 'hidden' : 'flex-1'
+            className={`flex min-h-0 min-w-0 flex-col bg-white ${
+              useGao002LvnShell
+                ? 'min-h-[280px] max-h-[48vh] flex-none overflow-y-auto border-b border-[#E5E4E3] px-5 py-6 shadow-none sm:px-8 sm:py-8 lg:h-full lg:min-h-0 lg:max-h-none lg:flex-1 lg:border-b-0 lg:border-r'
+                : `flex-1 border border-[#E5E4E3] shadow-[0_18px_50px_rgba(31,28,27,0.08)] ${
+                    textFirstGaoModule ? 'rounded-none p-7 md:p-9' : 'rounded-[22px] p-[20px]'
+                  }`
             }`}
             style={
-              isGAO002FullWorkspace(moduleId)
-                ? undefined
-                : gao001DeliveryScene
-                ? { flex: '1 1 auto', minWidth: '360px' }
+              useGao002LvnShell
+                ? { minWidth: 0, flex: '1 1 0%' }
+                : textFirstGaoModule
+                ? { minWidth: 0, flex: '1 1 0%' }
                 : { minWidth: 'calc(420px * 1.0777)', flex: '1 1 auto' }
             }
           >
@@ -1201,38 +1266,37 @@ function LessonPlayerPage() {
             </div>
 
             <div className="min-h-0 flex-1 overflow-auto pr-1">
-              {isGAO002Interactive(moduleId) ? (
-                // Shell preserved: adapt sidebar for interactive GAO-002 (high-level instead of per-card)
-                <div className="space-y-3 text-sm">
-                  <div>
-                    <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#C74601]">INTERACTIVE SCENE ACTIVE</div>
-                    <h2 className="mt-1 text-lg font-bold text-[#004142]">Organizational Structure &amp; Reporting</h2>
-                  </div>
-                  <div className="text-[#524C4B] leading-relaxed">
-                    Explore the 3 scenes using the premium workspace on the right. Use the scene stepper and Prev/Next to navigate. Unlocks and decisions drive progress. Narration and key facts are embedded in the interactive.
-                  </div>
-                  <div className="pt-2 text-xs text-[#747470] border-t border-[#E5E4E3]">
-                    L1: Governing Body, Administrator, DON, Compliance Officer (dual line) + escalation challenge.<br />
-                    L2: On-call roster, coverage alternates, field escalation.<br />
-                    Complete all scenes to reach “Reporting Lines Practice Complete”.
-                  </div>
-                </div>
-              ) : (
-                <OnboardingLessonHtml card={currentCard} />
-              )}
+              <OnboardingLessonHtml card={currentCard} />
             </div>
           </aside>
 
           <section
             className={`flex min-h-0 flex-col bg-white ${
-              gao001DeliveryScene
+              useGao002LvnShell
+                ? 'w-full flex-none overflow-hidden rounded-none border-t border-[#E5E4E3] p-0 shadow-none lg:h-full lg:w-auto lg:border-l lg:border-t-0'
+                : usesFinalGaoOverlay
+                ? 'w-full flex-none overflow-hidden rounded-[24px] border border-[#E5E4E3] bg-white p-0 shadow-[0_18px_50px_rgba(31,28,27,0.08)] lg:h-full lg:w-auto'
+                : /^GAO-001_L\d+_DELIVERY$/.test(currentCard.card_id)
                 ? 'rounded-none border-0 p-0 shadow-none overflow-hidden'
                 : 'rounded-[24px] border border-[#E5E4E3] p-[20px] shadow-[0_18px_50px_rgba(31,28,27,0.08)]'
             }`}
             style={
-              isGAO002FullWorkspace(moduleId)
-                ? { flex: '1 1 auto', minHeight: 0, width: '100%' }
-                : gao001DeliveryScene
+              useGao002LvnShell
+                ? {
+                    flex: '0 0 auto',
+                    alignSelf: 'stretch',
+                    aspectRatio: '16 / 13',
+                    width: 'auto',
+                    maxWidth: '100%',
+                    minWidth: 0,
+                  }
+                : usesFinalGaoOverlay
+                ? {
+                    aspectRatio: '16 / 13',
+                    maxWidth: '100%',
+                    minWidth: 0,
+                  }
+                : textFirstGaoModule
                 ? {
                     flex: '0 0 auto',
                     alignSelf: 'stretch',
@@ -1255,70 +1319,72 @@ function LessonPlayerPage() {
           >
             <div
               className={`flex min-h-0 h-full w-full flex-1 flex-col overflow-hidden ${
-                gao001DeliveryScene
+                useGao002LvnShell
+                  ? 'rounded-none border-0 bg-[#F8FAFC]'
+                  : usesFinalGaoOverlay
+                  ? 'rounded-[24px] border-0 bg-[#FAFBF8]'
+                  : /^GAO-001_L\d+_DELIVERY$/.test(currentCard.card_id)
                   ? 'rounded-none border-0 bg-black'
-                  : 'rounded-[18px] border-0 bg-white'
+                  : 'rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8]'
               }`}
             >
-              {currentCard.card_id === 'GAO-001_L1_DELIVERY' ? (
-                <GAO001Scene01WelcomeDesk
-                  onComplete={() => console.info('[GAO-001 Scene 1] completed')}
-                />
-              ) : currentCard.card_id === 'GAO-001_L2_DELIVERY' ? (
-                <GAO001Scene02MissionBriefing
-                  onComplete={() => console.info('[GAO-001 Scene 2] completed')}
-                />
-              ) : currentCard.card_id === 'GAO-001_L3_DELIVERY' ? (
-                <GAO001Scene03VisionPillars
-                  onComplete={() => console.info('[GAO-001 Scene 3] completed')}
-                />
-              ) : currentCard.card_id === 'GAO-001_L4_DELIVERY' ? (
-                <CoreValuesInteractiveViewer
-                  onComplete={() => {
-                    console.info('[GAO Core Values] Interactive scene completed');
-                  }}
-                />
-              ) : currentCard.card_id === 'GAO-001_L5_DELIVERY' ? (
-                <GAO001Scene05HomeHealthDifference
-                  onComplete={() => console.info('[GAO-001 Scene 5] completed')}
-                />
-              ) : currentCard.card_id === 'GAO-001_L6_DELIVERY' ? (
-                <GAO001Scene06ReportingEscalation
-                  onComplete={() => console.info('[GAO-001 Scene 6] completed')}
-                />
-              ) : currentCard.card_id === 'GAO-001_L7_DELIVERY' ? (
-                <GAO001Scene07PatientRefusal
-                  onComplete={() => console.info('[GAO-001 Scene 7] completed')}
-                />
-              ) : currentCard.card_id === 'GAO-001_L8_DELIVERY' ? (
-                <GAO001Scene08EscalationPractice
-                  onComplete={() => console.info('[GAO-001 Scene 8] completed')}
-                />
-              ) : currentCard.card_id === 'GAO-001_L9_DELIVERY' ? (
-                <GAO001Scene09ReadinessMap
-                  onComplete={() => console.info('[GAO-001 Scene 9] completed')}
-                />
-              ) : isGAO002Interactive(moduleId) ? (
-                <GAO002OrgStructureViewer
-                  onComplete={() => {
-                    // Safely mark GAO-002 lessons complete using withLessonCompleted (module-level progress).
-                    // Safe completion wording: "Reporting Lines Practice Complete"
-                    console.info('[GAO-002] Reporting Lines Practice Complete');
-                    try {
-                      if (moduleId) {
-                        setState((s) => withLessonCompleted(s, moduleId, 'GAO-002-L1'));
-                        setState((s) => withLessonCompleted(s, moduleId, 'GAO-002-L2'));
+              {gao001NodeScene ? (
+                <GaoLegacyNodeProgressProvider
+                  value={{
+                    appLocation: gao001NodeScene.appLocation,
+                    completedNodeIds: gao001NodeCompletedIds,
+                    onProgressChange: (completedNodeIds) => {
+                      if (completedNodeIds.length) {
+                        setGaoNodeProgress(gao001NodeScene.appLocation, completedNodeIds);
+                      } else {
+                        resetGaoNodeProgress(gao001NodeScene.appLocation);
                       }
-                      // Record module completion (journey flow)
-                      try {
-                        const j = useJourneyStore.getState();
-                        j.recordLearnerCompletion(j.currentEmployeeId, 'GAO-002', true);
-                      } catch {}
-                    } catch (e) {
-                      // non-fatal: log + allow parent flow
-                      console.info('[GAO-002] onComplete: lessons marked (or fallback to parent flow)');
+                    },
+                    onReset: () => resetGaoNodeProgress(gao001NodeScene.appLocation),
+                    onNodeOpen: () => {
+                      stopNarrationAudio();
+                      stopNarrationSpeech();
+                    },
+                  }}
+                >
+                  {currentCard.card_id === 'GAO-001_L1_DELIVERY' ? (
+                    <GAO001Scene01WelcomeDesk onComplete={() => console.info('[GAO-001 Scene 1] completed')} />
+                  ) : currentCard.card_id === 'GAO-001_L2_DELIVERY' ? (
+                    <GAO001Scene02MissionBriefing onComplete={() => console.info('[GAO-001 Scene 2] completed')} />
+                  ) : currentCard.card_id === 'GAO-001_L3_DELIVERY' ? (
+                    <GAO001Scene03VisionPillars onComplete={() => console.info('[GAO-001 Scene 3] completed')} />
+                  ) : currentCard.card_id === 'GAO-001_L4_DELIVERY' ? (
+                    <CoreValuesInteractiveViewer onComplete={() => console.info('[GAO Core Values] Interactive scene completed')} />
+                  ) : currentCard.card_id === 'GAO-001_L5_DELIVERY' ? (
+                    <GAO001Scene05HomeHealthDifference onComplete={() => console.info('[GAO-001 Scene 5] completed')} />
+                  ) : currentCard.card_id === 'GAO-001_L6_DELIVERY' ? (
+                    <GAO001Scene06ReportingEscalation onComplete={() => console.info('[GAO-001 Scene 6] completed')} />
+                  ) : currentCard.card_id === 'GAO-001_L7_DELIVERY' ? (
+                    <GAO001Scene07PatientRefusal onComplete={() => console.info('[GAO-001 Scene 7] completed')} />
+                  ) : currentCard.card_id === 'GAO-001_L8_DELIVERY' ? (
+                    <GAO001Scene08EscalationPractice onComplete={() => console.info('[GAO-001 Scene 8] completed')} />
+                  ) : (
+                    <GAO001Scene09ReadinessMap onComplete={() => console.info('[GAO-001 Scene 9] completed')} />
+                  )}
+                </GaoLegacyNodeProgressProvider>
+              ) : gaoNodeScene && hasMedia(currentCard.app.location) ? (
+                <GaoNodeStage
+                  scene={gaoNodeScene}
+                  imageSrc={mediaAssetPath(currentCard.app.location)}
+                  imageAlt={mediaAltText(mediaTitle)}
+                  completedNodeIds={gaoNodeCompletedIds}
+                  onProgressChange={(completedNodeIds) => {
+                    if (completedNodeIds.length) {
+                      setGaoNodeProgress(gaoNodeScene.appLocation, completedNodeIds);
+                    } else {
+                      resetGaoNodeProgress(gaoNodeScene.appLocation);
                     }
                   }}
+                  onPauseNarration={() => {
+                    stopNarrationAudio();
+                    stopNarrationSpeech();
+                  }}
+                  debug={import.meta.env.DEV && new URLSearchParams(window.location.search).has('gaoNodeDebug')}
                 />
               ) : hasMedia(currentCard.app.location) ? (
                 <MediaSlot
@@ -1353,8 +1419,12 @@ function LessonPlayerPage() {
           </section>
         </main>
 
-        <footer className="shrink-0 border-t border-[#E5E4E3] bg-white px-4 py-4 shadow-[0_-8px_28px_rgba(31,28,27,0.05)] md:px-6">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <footer
+          className={`shrink-0 border-t border-[#E5E4E3] bg-white shadow-[0_-8px_28px_rgba(31,28,27,0.05)] ${
+            useGao002LvnShell ? 'flex h-24 items-center px-6 py-0' : 'px-4 py-4 md:px-6'
+          }`}
+        >
+          <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <button
               onClick={() => {
                 if (currentIdx > 0) {
@@ -1388,12 +1458,21 @@ function LessonPlayerPage() {
               </div>
             </div>
 
-            <button
-              onClick={handleNext}
-              className="rounded-lg bg-[#C74601] px-6 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[0_10px_24px_rgba(199,70,1,0.20)] transition hover:bg-[#A63A01]"
-            >
-              {nextLesson || currentIdx < cards.length - 1 ? "Next Lesson" : "Complete Theory"} →
-            </button>
+            <div className="flex flex-col items-stretch gap-1 md:items-end">
+              {nodeGateBlocked ? (
+                <div id="gao-node-gate-message" className="text-center text-[11px] font-semibold text-[#9A3412] md:text-right">
+                  Review all required scene nodes to continue.
+                </div>
+              ) : null}
+              <button
+                onClick={handleNext}
+                disabled={!canContinue}
+                aria-describedby={nodeGateBlocked ? 'gao-node-gate-message' : undefined}
+                className="rounded-lg bg-[#C74601] px-6 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[0_10px_24px_rgba(199,70,1,0.20)] transition hover:bg-[#A63A01] disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                {nextLesson || currentIdx < cards.length - 1 ? "Next Lesson" : "Complete Theory"} →
+              </button>
+            </div>
           </div>
         </footer>
 
@@ -2287,36 +2366,19 @@ export function ModulePlayerScreen() {
 
   // HOIST useMemo here so it is ALWAYS called (P0-002 fix for hook order)
   const element = useMemo(() => {
-    const dispatchModuleId =
-      params.moduleId
-      || (pathname.includes('/module/')
-        ? pathname.split('/module/')[1]?.split('/')[0]?.split('?')[0]
-        : undefined);
-
     // Dispatch ADV modules to domain player for main module view (fixes runtime for RN-ADV)
     // OASIS-E2 SOC renders its own self-contained panel — resolved FIRST and
     // independently of the shared advanced-training contract (see oasisSocModule.ts).
-    if (isOasisSocModule(dispatchModuleId)) {
-      return <OasisSocTrainingPanel moduleId={dispatchModuleId!} />;
+    if (isOasisSocModule(params.moduleId)) {
+      return <OasisSocTrainingPanel moduleId={params.moduleId!} />;
     }
-    // LVN V5 standalone SC04 modules (full interactive players — not placeholder lesson shell)
-    if (dispatchModuleId && isLvnStandaloneModule(dispatchModuleId)) {
-      const LvnModule = getLvnStandaloneModule(dispatchModuleId);
-      if (LvnModule) {
-        return (
-          <div className="min-h-[70vh] w-full" data-lvn-standalone={dispatchModuleId}>
-            <div className="mb-3 px-2 sm:px-4 pt-2">
-              <BackLink to="/journey?tab=onboarding&path=lvn">Back to LVN path</BackLink>
-            </div>
-            <LvnModule />
-          </div>
-        );
-      }
+    if (params.moduleId && isAdvancedModule(params.moduleId)) {
+      const variant = getAdvancedVariant(params.moduleId) || 'plan_of_care';
+      const title = getModuleDef(params.moduleId)?.title || params.moduleId;
+      return <AdvancedTrainingPlayer moduleId={params.moduleId} moduleTitle={title} variant={variant} />;
     }
-    if (dispatchModuleId && isAdvancedModule(dispatchModuleId) && !isGAO002Interactive(dispatchModuleId)) {
-      const variant = getAdvancedVariant(dispatchModuleId) || 'plan_of_care';
-      const title = getModuleDef(dispatchModuleId)?.title || dispatchModuleId;
-      return <AdvancedTrainingPlayer moduleId={dispatchModuleId} moduleTitle={title} variant={variant} />;
+    if (params.moduleId && getLvnStandaloneModule(params.moduleId)) {
+      return <LvnStandaloneHost moduleId={params.moduleId} />;
     }
     if (pathname === "/journey/module/m0") {
       return <Module0OrientationPage />;
@@ -2339,7 +2401,7 @@ export function ModulePlayerScreen() {
     if (params.lessonId) {
       return <LessonPlayerPage />;
     }
-    if (dispatchModuleId) {
+    if (params.moduleId) {
       return <Module1OverviewPage />;
     }
     return (
@@ -2347,9 +2409,9 @@ export function ModulePlayerScreen() {
         Route unrecognized in learning dispatcher.
       </div>
     );
-  }, [pathname, params.moduleId, params.lessonId]);
+  }, [pathname, params]);
 
-  if (rawModuleId && !journeyMod && !isOasisSocModule(rawModuleId) && !isAdvancedModule(rawModuleId) && !isLvnStandaloneModule(rawModuleId) && !isGAO002Interactive(rawModuleId) && !['m0'].includes(rawModuleId)) {
+  if (rawModuleId && !journeyMod && !isOasisSocModule(rawModuleId) && !isAdvancedModule(rawModuleId) && !['m0'].includes(rawModuleId)) {
     // Unknown module - bypass for RN-ADV modules (registered in adapter/courseModules)
     return (
       <section className="p-8">
@@ -2397,10 +2459,10 @@ export function ModulePlayerScreen() {
 
   // The OASIS-E2 SOC simulator IS the page: cover the full viewport, above
   // the topbar and floating shell controls, so only the workspace is visible.
-  if (isOasisSocModule(params.moduleId)) {
+  if (isOasisSocModule(params.moduleId) || getLvnStandaloneModule(params.moduleId ?? '')) {
     return (
       <section
-        aria-label="OASIS-E2 SOC simulator"
+        aria-label={getLvnStandaloneModule(params.moduleId ?? '') ? 'LVN Module simulator' : 'OASIS-E2 SOC simulator'}
         className="fixed inset-0 z-[9999] overflow-hidden bg-white"
         data-hash-id="module-player"
         data-route="/journey/module/:moduleId"

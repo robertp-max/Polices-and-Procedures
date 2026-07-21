@@ -431,9 +431,9 @@ export function JourneyAcademyScreen() {
 
   const roleOnboardingCards = useMemo<RolePathSummary[]>(() => {
     const gaoSource =
-      assignedModules.filter((module) => module.group === 'GAO').length > 0
-        ? assignedModules.filter((module) => module.group === 'GAO')
-        : ALL_MODULES.filter((module) => module.group === 'GAO');
+      assignedModules.filter((module) => module.group === 'GAO' && module.id !== 'GAO-EXAM').length > 0
+        ? assignedModules.filter((module) => module.group === 'GAO' && module.id !== 'GAO-EXAM')
+        : ALL_MODULES.filter((module) => module.group === 'GAO' && module.id !== 'GAO-EXAM');
     const gaoCompleted = gaoSource.filter((module) => completedModuleIds.has(module.id)).length;
     return [
       {
@@ -509,9 +509,9 @@ export function JourneyAcademyScreen() {
   const gaoCards = useMemo<AcademyCard[]>(
     () => {
       const gaoSource =
-        assignedModules.filter((module) => module.group === 'GAO').length > 0
-          ? assignedModules.filter((module) => module.group === 'GAO')
-          : ALL_MODULES.filter((module) => module.group === 'GAO');
+        assignedModules.filter((module) => module.group === 'GAO' && module.id !== 'GAO-EXAM').length > 0
+          ? assignedModules.filter((module) => module.group === 'GAO' && module.id !== 'GAO-EXAM')
+          : ALL_MODULES.filter((module) => module.group === 'GAO' && module.id !== 'GAO-EXAM');
       return gaoSource.map((module, index) => ({
         id: module.id,
         eyebrow: module.id === 'GAO-EXAM' ? 'Final Gate' : `GAO ${String(index + 1).padStart(2, '0')}`,

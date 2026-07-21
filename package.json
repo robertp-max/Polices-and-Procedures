@@ -17,6 +17,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "gao:tts:freeze": "node scripts/generateGaoTtsSourceManifest.mjs --write",
+    "gao:tts:verify": "node scripts/generateGaoTtsSourceManifest.mjs --check",
     "test:threads": "vitest run src/policy/help-center/threads",
     "test:audit-firestore-emulator": "node scripts/auditFirestoreEmulator.mjs",
     "test:e2e": "playwright test",

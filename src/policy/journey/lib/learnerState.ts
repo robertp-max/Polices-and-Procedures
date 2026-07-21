@@ -2,6 +2,7 @@
 // Required Online CE and Optional Clinical Support are kept structurally separate.
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import type { GaoNodeProgressRecord } from "../data/gaoNodes/gaoNodeTypes";
 import { loadJSON, saveJSON } from "./storage";
 
 const STORAGE_KEY = "ci-cna-learner-v1";
@@ -36,6 +37,9 @@ export type LearnerState = {
 
   // Real active-time accrual per lesson (seconds), keyed `${moduleId}:${lessonId}`
   lessonActiveSeconds: Record<string, number>;
+
+  // Versioned interactive-node progress, keyed by exact delivery-card appLocation.
+  nodeProgressByAppLocation: Record<string, GaoNodeProgressRecord>;
 
   // Module-level quiz pass, keyed by moduleId
   moduleQuizPassed: Record<string, boolean>;
@@ -81,6 +85,7 @@ export const initialLearnerState: LearnerState = {
   orientationFinalAck: false,
   lessonProgress: {},
   lessonActiveSeconds: {},
+  nodeProgressByAppLocation: {},
   moduleQuizPassed: {},
   remediationEvents: [],
   remainingTheorySimulated: false,
@@ -123,6 +128,8 @@ type LearnerContextValue = {
   setLessonProgress: (moduleId: string, lessonId: string, patch: Partial<LessonProgress>) => void;
   setOptionalClinical: (key: keyof OptionalClinicalState, value: boolean) => void;
   addActiveSeconds: (moduleId: string, lessonId: string, seconds: number) => void;
+  setGaoNodeProgress: (appLocation: string, completedNodeIds: string[]) => void;
+  resetGaoNodeProgress: (appLocation: string) => void;
   recordRemediation: (label: string) => void;
   recordExamAttempt: (scorePct: number, passed: boolean) => void;
   resetDemo: () => void;
@@ -169,6 +176,28 @@ export function LearnerProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const setGaoNodeProgress = useCallback((appLocation: string, completedNodeIds: string[]) => {
+    setState((current) => ({
+      ...current,
+      nodeProgressByAppLocation: {
+        ...current.nodeProgressByAppLocation,
+        [appLocation]: {
+          completedNodeIds: Array.from(new Set(completedNodeIds)),
+          updatedAt: new Date().toISOString(),
+          version: 1,
+        },
+      },
+    }));
+  }, []);
+
+  const resetGaoNodeProgress = useCallback((appLocation: string) => {
+    setState((current) => {
+      const nextProgress = { ...current.nodeProgressByAppLocation };
+      delete nextProgress[appLocation];
+      return { ...current, nodeProgressByAppLocation: nextProgress };
+    });
+  }, []);
+
   const recordRemediation = useCallback((label: string) => {
     setState((current) => {
       // Avoid spamming identical consecutive events.
@@ -192,8 +221,31 @@ export function LearnerProvider({ children }: { children: React.ReactNode }) {
   const resetDemo = useCallback(() => setState(initialLearnerState), []);
 
   const value = useMemo<LearnerContextValue>(
-    () => ({ state, setState, update, setLessonProgress, setOptionalClinical, addActiveSeconds, recordRemediation, recordExamAttempt, resetDemo }),
-    [state, update, setLessonProgress, setOptionalClinical, addActiveSeconds, recordRemediation, recordExamAttempt, resetDemo],
+    () => ({
+      state,
+      setState,
+      update,
+      setLessonProgress,
+      setOptionalClinical,
+      addActiveSeconds,
+      setGaoNodeProgress,
+      resetGaoNodeProgress,
+      recordRemediation,
+      recordExamAttempt,
+      resetDemo,
+    }),
+    [
+      state,
+      update,
+      setLessonProgress,
+      setOptionalClinical,
+      addActiveSeconds,
+      setGaoNodeProgress,
+      resetGaoNodeProgress,
+      recordRemediation,
+      recordExamAttempt,
+      resetDemo,
+    ],
   );
 
   return React.createElement(LearnerContext.Provider, { value }, children);

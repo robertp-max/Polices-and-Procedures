@@ -1,11 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Users, AlertTriangle, ArrowRight, CheckCircle2, XCircle, PhoneCall, } from 'lucide-react';
-import GAO001SharedOverlay from './GAO001SharedOverlay';
+import GAO001SharedOverlay, { type Hotspot } from './GAO001SharedOverlay';
+import { defineGao001Hotspots } from '../data/gaoNodes/gao001HotspotContract';
 import { gao001SceneArt } from '../data/gao001SceneArt';
 
 interface GAO001Scene08EscalationPracticeProps {
   onComplete?: () => void;
 }
+
+type WindowWithWebkitAudio = Window &
+  typeof globalThis & {
+    webkitAudioContext?: typeof AudioContext;
+  };
 
 class InteractiveAudioSynth {
   private ctx: AudioContext | null = null;
@@ -13,7 +19,9 @@ class InteractiveAudioSynth {
 
   private init() {
     if (!this.ctx) {
-      this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextCtor = window.AudioContext || (window as WindowWithWebkitAudio).webkitAudioContext;
+      if (!AudioContextCtor) return;
+      this.ctx = new AudioContextCtor();
     }
   }
 
@@ -96,6 +104,344 @@ const brandStyles = `
 
 type Stage = 'prompt' | 'error' | 'success';
 
+const MANDATORY_REPORTING_SENTENCE =
+  'Follow agency mandatory reporting protocol immediately; do not investigate or confront; supervisor/Compliance assists with required external reporting, but required reporting must not be delayed.';
+
+type EscalationDecisionOption = {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+  feedback: string;
+};
+
+type EscalationDecisionConfig = {
+  eyebrow: string;
+  title: string;
+  scenario: string;
+  prompt: string;
+  options: EscalationDecisionOption[];
+  teachingPoint: string;
+  reference: string;
+};
+
+const ESCALATION_DECISIONS: Record<string, EscalationDecisionConfig> = {
+  professionalism: {
+    eyebrow: 'Escalation practice',
+    title: 'Urgency Level',
+    scenario:
+      'Grace, the patient daughter, asks Alex to check her blood pressure and then adjust the patient insulin dose because the sugars are high.',
+    prompt: 'What is the safest first decision?',
+    options: [
+      {
+        id: 'off-scope',
+        text: '"Sure, let me check your blood pressure and we will adjust the dose based on the reading."',
+        isCorrect: false,
+        feedback:
+          'Not quite. That treats an unassigned person and changes a medication order without authorization.',
+      },
+      {
+        id: 'stay-in-scope',
+        text: 'Decline the off-scope request and only treat the assigned patient within physician orders.',
+        isCorrect: true,
+        feedback:
+          'Correct. Alex stays within role and does not independently expand the plan of care.',
+      },
+    ],
+    teachingPoint:
+      'Escalation starts by identifying whether the request is routine, urgent, emergent, or outside role. Off-scope care stops at the boundary.',
+    reference: 'Scope of practice and physician orders',
+  },
+  documentation: {
+    eyebrow: 'Escalation practice',
+    title: 'Chain of Command',
+    scenario:
+      'The request could affect the patient plan, but Alex cannot independently change orders.',
+    prompt: 'What keeps the escalation path safe?',
+    options: [
+      {
+        id: 'independent',
+        text: 'Handle it independently because Alex is already in the home.',
+        isCorrect: false,
+        feedback:
+          'Not quite. Being present in the home does not expand clinical authority.',
+      },
+      {
+        id: 'chain',
+        text: 'Use the clinical chain of command and contact the supervising clinician or next designated leader.',
+        isCorrect: true,
+        feedback:
+          'Correct. The chain of command keeps the patient plan controlled by authorized clinical leadership.',
+      },
+    ],
+    teachingPoint:
+      'When a field decision exceeds role, contact the right person instead of improvising.',
+    reference: 'Agency escalation path',
+  },
+  dignity: {
+    eyebrow: 'Escalation practice',
+    title: 'Closed Loop',
+    scenario:
+      'Alex reaches a supervising clinician and receives instructions for the visit.',
+    prompt: 'Which response closes the loop?',
+    options: [
+      {
+        id: 'voicemail',
+        text: 'Leave a voicemail and assume the message will be handled later.',
+        isCorrect: false,
+        feedback:
+          'Not quite. An urgent or safety-sensitive concern needs confirmed receipt and clear instructions.',
+      },
+      {
+        id: 'closed-loop',
+        text: 'Confirm the instructions, repeat back key actions, and follow the agreed next step.',
+        isCorrect: true,
+        feedback:
+          'Correct. Closed-loop communication prevents missed or misunderstood instructions.',
+      },
+    ],
+    teachingPoint:
+      'Closed-loop escalation means the concern is received, understood, assigned, and acted on.',
+    reference: 'Closed-loop communication',
+  },
+  reporting: {
+    eyebrow: 'Escalation practice',
+    title: 'Document Action',
+    scenario:
+      'During the visit, Alex notices unexplained, defensive-style bruising on the patient arms.',
+    prompt: 'What should Alex do?',
+    options: [
+      {
+        id: 'confront',
+        text: 'Question Grace aggressively until she admits what happened.',
+        isCorrect: false,
+        feedback:
+          'Not quite. Independent investigation and confrontation can place the patient and staff at risk.',
+      },
+      {
+        id: 'objective-report',
+        text: 'Document objective observations and report immediately via protocol.',
+        isCorrect: true,
+        feedback:
+          'Correct. Record objective facts and activate the required reporting process.',
+      },
+    ],
+    teachingPoint:
+      'Documentation should record what Alex saw, heard, did, who was notified, and any instructions received.',
+    reference: 'Objective documentation',
+  },
+  checklist: {
+    eyebrow: 'Escalation practice',
+    title: 'Mandatory Report',
+    scenario:
+      'The bruising concern may involve abuse, neglect, or exploitation and cannot wait for informal follow-up.',
+    prompt: 'Which action is required?',
+    options: [
+      {
+        id: 'delay',
+        text: 'Wait until the end of the week and see whether the bruising improves.',
+        isCorrect: false,
+        feedback:
+          'Not quite. Possible abuse, neglect, or exploitation cannot be delayed for convenience.',
+      },
+      {
+        id: 'mandatory-report',
+        text: MANDATORY_REPORTING_SENTENCE,
+        isCorrect: true,
+        feedback:
+          'Correct. Required reporting cannot be delayed while someone investigates or confronts the family.',
+      },
+    ],
+    teachingPoint:
+      'The safer decision is prompt reporting through the required protocol, paired with objective documentation.',
+    reference: 'Agency mandatory reporting protocol',
+  },
+};
+
+function EscalationDecisionModal({
+  hotspot,
+  close,
+  complete,
+}: {
+  hotspot: Hotspot;
+  close: () => void;
+  complete: () => void;
+}) {
+  const decision = ESCALATION_DECISIONS[hotspot.id];
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const dialogRef = useRef<HTMLElement>(null);
+  const selectedOption = decision.options.find((option) => option.id === selectedId);
+  const safeSelectionMade = selectedOption?.isCorrect === true;
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const focusableSelector = [
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[href]',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(',');
+    const focusables = () => Array.from(dialog?.querySelectorAll<HTMLElement>(focusableSelector) ?? []);
+    window.setTimeout(() => (focusables()[0] ?? dialog)?.focus(), 20);
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const items = focusables();
+      if (!items.length) {
+        event.preventDefault();
+        dialog?.focus();
+        return;
+      }
+
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [close]);
+
+  const chooseOption = (option: EscalationDecisionOption) => {
+    setSelectedId(option.id);
+    if (option.isCorrect) {
+      synth.playSuccess();
+    } else {
+      synth.playError();
+    }
+  };
+
+  if (!decision) return null;
+
+  return (
+    <div className="absolute inset-0 z-50 flex items-center justify-center overflow-hidden bg-[#1F1C1B]/58 p-4 backdrop-blur-[2px]">
+      <section
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`gao001-escalation-${hotspot.id}-title`}
+        aria-describedby={`gao001-escalation-${hotspot.id}-description`}
+        tabIndex={-1}
+        className="relative flex max-h-[min(88cqh,640px)] w-full max-w-[500px] flex-col overflow-hidden rounded-[18px] border border-[#E9E4E0] bg-white shadow-[0_28px_80px_rgba(15,91,84,0.22)] outline-none"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-[#E9E4E0] px-6 py-5">
+          <div>
+            <p className="font-montserrat text-[11px] font-bold uppercase tracking-[0.22em] text-[#F06923]">
+              {decision.eyebrow}
+            </p>
+            <h2
+              id={`gao001-escalation-${hotspot.id}-title`}
+              className="mt-2 font-montserrat text-2xl font-bold leading-tight text-[#007970]"
+            >
+              {decision.title}
+            </h2>
+            <p
+              id={`gao001-escalation-${hotspot.id}-description`}
+              className="mt-2 font-roboto text-[15.5px] leading-relaxed text-[#524C4B]"
+            >
+              {decision.scenario}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={close}
+            className="min-h-11 min-w-11 rounded-full border border-[#E9E4E0] bg-[#FAFAF7] px-3 py-2 font-montserrat text-xs font-bold uppercase tracking-[0.16em] text-[#004142] transition hover:border-[#007970]"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+          <div className="rounded-[16px] border-l-4 border-[#007970] bg-[#F1FBF8] px-4 py-3">
+            <p className="font-roboto text-[15.5px] font-semibold leading-relaxed text-[#1E3A3A]">
+              {decision.prompt}
+            </p>
+          </div>
+
+          <div className="mt-5 grid gap-3">
+            {decision.options.map((option) => {
+              const isSelected = selectedId === option.id;
+              const selectedClass = option.isCorrect
+                ? 'border-[#007970] bg-[#EEF9F6] text-[#0F5B54]'
+                : 'border-[#E74C3C] bg-[#FEF2F2] text-[#991B1B]';
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => chooseOption(option)}
+                  className={`min-h-12 rounded-[14px] border-2 px-4 py-3 text-left font-roboto text-[15.5px] font-semibold leading-relaxed transition ${
+                    isSelected
+                      ? selectedClass
+                      : 'border-[#E5E4E3] bg-[#FAFAF7] text-[#2D3748] hover:border-[#007970]'
+                  }`}
+                >
+                  {option.text}
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedOption ? (
+            <div
+              role="status"
+              className={`mt-5 rounded-[16px] border px-4 py-3 font-roboto text-[15.5px] leading-relaxed ${
+                selectedOption.isCorrect
+                  ? 'border-[#BFE8DD] bg-[#F1FBF8] text-[#0F5B54]'
+                  : 'border-[#F4B7B0] bg-[#FFF7F4] text-[#A64028]'
+              }`}
+            >
+              {selectedOption.feedback}
+            </div>
+          ) : null}
+
+          <div className="mt-5 rounded-[16px] border border-[#E9E4E0] bg-white px-4 py-3">
+            <p className="font-roboto text-[15.5px] leading-relaxed text-[#2D3748]">
+              {decision.teachingPoint}
+            </p>
+            <p className="mt-3 font-montserrat text-[11px] font-bold uppercase tracking-[0.16em] text-[#007970]">
+              {decision.reference}
+            </p>
+          </div>
+        </div>
+
+        <div className="border-t border-[#E9E4E0] px-6 py-4">
+          <button
+            type="button"
+            disabled={!safeSelectionMade}
+            onClick={() => {
+              synth.playClick();
+              complete();
+            }}
+            className="min-h-11 w-full rounded-[12px] bg-[#F06923] px-4 py-3 font-montserrat text-xs font-bold uppercase tracking-[0.16em] text-white transition hover:bg-[#D95A1A] disabled:cursor-not-allowed disabled:bg-[#CBD5E1]"
+          >
+            Complete teaching point
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export default function GAO001Scene08EscalationPractice({ onComplete }: GAO001Scene08EscalationPracticeProps) {
   const [stage, setStage] = useState<Stage>('prompt');
 
@@ -138,83 +484,89 @@ export default function GAO001Scene08EscalationPractice({ onComplete }: GAO001Sc
         objective="Resolve the escalation scenario."
         onComplete={onComplete}
         linear={true}
-        hotspots={[
+        renderCustomModal={({ hotspot, close, complete }) => (
+          ESCALATION_DECISIONS[hotspot.id]
+            ? (
+              <EscalationDecisionModal
+                hotspot={hotspot}
+                close={close}
+                complete={complete}
+              />
+            )
+            : null
+        )}
+        hotspots={defineGao001Hotspots("GAO-001.lesson.l8.delivery", [
           {
-            id: 'professionalism', x: 20, y: 50, label: 'Professionalism',
+            id: 'professionalism', x: 20, y: 50, label: 'Urgency level',
             fieldNotes: {
-              title: 'Professionalism',
-              content: 'Always wear your badge, maintain a professional appearance, and communicate respectfully.'
+              title: 'Urgency Level',
+              content: 'Identify whether the issue is routine, urgent, emergent, or outside role before acting.'
             },
             question: {
-              prompt: 'Why is wearing your ID badge considered a key part of survey readiness?',
+              prompt: 'Grace asks Alex to check her blood pressure and adjust the patient insulin dose. What is safest?',
               choices: [
-                { id: 'c1', text: 'It proves to surveyors that the agency enforces a dress code.', isCorrect: false, feedback: 'Not quite. While true, the primary reason is rooted in patient rights and safety.' },
-                { id: 'c2', text: 'It ensures patients and families always know who is providing their care, which is a fundamental patient right.', isCorrect: true, feedback: 'Correct. Transparency and identification are critical components of patient safety.' },
-                { id: 'c3', text: 'It allows the agency to track your location during the day.', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because badges are for identification in the home, not GPS tracking.' }
+                { id: 'c1', text: 'Check Grace and adjust the dose.', isCorrect: false, feedback: 'Not quite. That crosses scope and changes an order.' },
+                { id: 'c2', text: 'Decline the off-scope request and stay within physician orders.', isCorrect: true, feedback: 'Correct. Stay within role and orders.' }
               ]
             }
           },
           {
-            id: 'documentation', x: 40, y: 50, label: 'Documentation',
+            id: 'documentation', x: 40, y: 50, label: 'Chain command',
             fieldNotes: {
-              title: 'Documentation',
-              content: 'Ensure all documentation is accurate, timely, and compliant with regulations.'
+              title: 'Chain of Command',
+              content: 'Use the clinical chain of command when a request exceeds your role or authority.'
             },
             question: {
-              prompt: 'What is the most critical element of accurate documentation for survey readiness?',
+              prompt: 'What keeps the escalation path safe when the request exceeds role?',
               choices: [
-                { id: 'c1', text: 'Using the most complex medical terminology to impress surveyors.', isCorrect: false, feedback: 'Not quite. Documentation should be clear and concise for any auditor to understand.' },
-                { id: 'c2', text: 'Ensuring the record accurately reflects the patient’s status and the care provided at the time of the visit.', isCorrect: true, feedback: 'Correct. Documentation is a legal record of truth; accuracy and timing are vital.' },
-                { id: 'c3', text: 'Only recording positive outcomes to avoid scrutiny.', isCorrect: false, feedback: 'Incorrect. You must document the reality of the patient’s condition, even when challenges occur.' }
+                { id: 'c1', text: 'Handle it independently because Alex is already in the home.', isCorrect: false, feedback: 'Not quite. Presence does not expand authority.' },
+                { id: 'c2', text: 'Contact the supervising clinician or next designated leader.', isCorrect: true, feedback: 'Correct. Use the chain of command.' }
               ]
             }
           },
           {
-            id: 'dignity', x: 60, y: 50, label: 'Patient dignity',
+            id: 'dignity', x: 60, y: 50, label: 'Closed loop',
             fieldNotes: {
-              title: 'Patient Dignity',
-              content: 'Always treat patients with respect, protect their privacy, and honor their choices.'
+              title: 'Closed Loop',
+              content: 'Confirm instructions were received, understood, assigned, and acted on.'
             },
             question: {
-              prompt: 'How do you protect patient privacy during a home visit with family present?',
+              prompt: 'Alex reaches a supervising clinician. Which response closes the loop?',
               choices: [
-                { id: 'c1', text: 'Ask the patient privately if they want their family to remain in the room during care or discussion.', isCorrect: true, feedback: 'Correct. This empowers the patient and protects their HIPAA rights.' },
-                { id: 'c2', text: 'Assume family members are allowed to hear everything and discuss the care plan openly.', isCorrect: false, feedback: 'Not quite. Never assume consent to share medical information, even with family.' },
-                { id: 'c3', text: 'Make all family members leave the house before providing care.', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk because the home is their space; you must navigate privacy respectfully without making unreasonable demands.' }
+                { id: 'c1', text: 'Leave a voicemail and assume it will be handled.', isCorrect: false, feedback: 'Not quite. Safety-sensitive concerns need confirmed receipt.' },
+                { id: 'c2', text: 'Confirm instructions, repeat back key actions, and follow the plan.', isCorrect: true, feedback: 'Correct. This is closed-loop escalation.' }
               ]
             }
           },
           {
-            id: 'reporting', x: 80, y: 30, label: 'Reporting expectations',
+            id: 'reporting', x: 80, y: 30, label: 'Document action',
             fieldNotes: {
-              title: 'Reporting Expectations',
-              content: 'Report any incidents or concerns immediately following the escalation protocol.'
+              title: 'Document Action',
+              content: 'Document objective observations, notifications, instructions, and actions taken.'
             },
             question: {
-              prompt: 'Why is following the formal escalation protocol important for survey readiness?',
+              prompt: 'Alex notices unexplained, defensive-style bruising. What should Alex do?',
               choices: [
-                { id: 'c1', text: 'It creates a paper trail so the agency can discipline staff quickly.', isCorrect: false, feedback: 'Not quite. The purpose is safety and resolution, not punishment.' },
-                { id: 'c2', text: 'It ensures that critical concerns are handled consistently, documented appropriately, and resolved safely for the patient.', isCorrect: true, feedback: 'Correct. Standardized processes minimize risk and ensure regulatory compliance.' },
-                { id: 'c3', text: 'It allows you to avoid responsibility by offloading the problem to your manager.', isCorrect: false, feedback: 'Incorrect. Escalation is about team support and expertise, not avoiding personal accountability.' }
+                { id: 'c1', text: 'Question the family aggressively until someone explains.', isCorrect: false, feedback: 'Not quite. Do not independently investigate or confront.' },
+                { id: 'c2', text: 'Document objective observations and report immediately via protocol.', isCorrect: true, feedback: 'Correct. Record facts and report.' }
               ]
             }
           },
           {
-            id: 'checklist', x: 80, y: 70, label: 'Readiness checklist',
+            id: 'checklist', x: 80, y: 70, label: 'Mandatory report',
             fieldNotes: {
-              title: 'Readiness Checklist',
-              content: 'Familiarize yourself with the agency\'s survey readiness checklist and your role in it.'
+              title: 'Mandatory Report',
+              content: MANDATORY_REPORTING_SENTENCE
             },
             question: {
-              prompt: 'What is the most important concept behind "survey readiness"?',
+              prompt: 'Which action is required when possible abuse, neglect, or exploitation is suspected?',
               choices: [
-                { id: 'c1', text: 'Cramming policy knowledge the week before a surveyor arrives.', isCorrect: false, feedback: 'Not quite. True readiness cannot be achieved at the last minute.' },
-                { id: 'c2', text: 'Hiding difficult patients from the surveyor\'s schedule.', isCorrect: false, feedback: 'That answer sounds helpful, but it creates risk and is a serious compliance violation.' },
-                { id: 'c3', text: 'Providing high-quality, compliant care every single day as your standard practice.', isCorrect: true, feedback: 'Correct. When everyday practice is compliant, you are always survey-ready.' }
+                { id: 'c1', text: 'Wait until the end of the week and see if it improves.', isCorrect: false, feedback: 'Not quite. Required reporting must not be delayed.' },
+                { id: 'c2', text: MANDATORY_REPORTING_SENTENCE, isCorrect: true, feedback: 'Correct. Reporting must be prompt.' }
               ]
             }
           }
-        ]}
+        ])}
       />
     );
   }
