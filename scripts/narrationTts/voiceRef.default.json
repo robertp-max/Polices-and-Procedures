@@ -1,0 +1,8 @@
+{
+  "$comment": "STANDARD narration voice for all story-module narration audio — the OASIS-E2 SOC training narrator. Used by the story-module-build pipeline (docs/Workflows/STORY-MODULE-TEMPLATE/05-BUILD-UAT.md Track B) whenever no voiceRef override is passed. Voice cloning runs in x_vector_only_mode (speaker embedding from audio), so the text field is informational/fallback; the audio clip is what defines the voice. Change this file to change the standard voice everywhere.",
+  "audio": "public/advanced-training/oasis-e2-soc/assets/0001SplashPage-Dq7D_tbP.wav",
+  "text": "Welcome to the OASIS-E2 Start-of-Care Clinical Coding Simulator. This platform has been updated to align with the CMS OASIS-E2 instrument effective April 1, 2026. The simulator is designed to train clinicians to review source documentation, identify defensible evidence, and determine accurate OASIS coding based on the patient record during Start-of-Care assessment.",
+  "language": "English",
+  "source": "OASIS-E2 SOC simulator splash-page narration (59.8s)",
+  "durationSeconds": 59.8
+}
