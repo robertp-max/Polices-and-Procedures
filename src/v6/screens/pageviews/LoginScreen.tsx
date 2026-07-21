@@ -123,7 +123,7 @@ export function LoginScreen() {
       />
 
       <div className="relative z-10 flex flex-1 items-center justify-center p-4">
-        <section className="login-glass-card w-full max-w-[440px] rounded-[2.5rem] border-[1.5px] border-white/80 bg-white/[0.717] p-8 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.20)] sm:p-10">
+        <section className="login-glass-card w-full max-w-[440px] rounded-[2.5rem] border-[1.5px] border-white/80 bg-white/[0.777] p-8 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.20)] sm:p-10">
           <BrandLogo inChallenge={inChallenge} />
 
           {displayError ? (
