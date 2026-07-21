@@ -68,6 +68,7 @@ import { getLvnStandaloneModule, isLvnStandaloneModule } from "@/policy/journey/
 import { getRnStandaloneModule, isRnStandaloneModule } from "@/policy/journey/modules/rn";
 import { getAdmStandaloneModule, isAdmStandaloneModule } from "@/policy/journey/modules/adm";
 import { getDonStandaloneModule, isDonStandaloneModule } from "@/policy/journey/modules/don";
+import { getAchcStandaloneModule, isAchcStandaloneModule } from "@/policy/journey/modules/achc";
 import { Cms485AssessmentQuizPage } from "./Cms485AssessmentQuizPage";
 import CoreValuesInteractiveViewer from "@/policy/journey/components/CoreValuesInteractiveViewer";
 import GAO001Scene01WelcomeDesk from "@/policy/journey/components/GAO001Scene01WelcomeDesk";
@@ -2301,6 +2302,20 @@ export function ModulePlayerScreen() {
     // independently of the shared advanced-training contract (see oasisSocModule.ts).
     if (isOasisSocModule(dispatchModuleId)) {
       return <OasisSocTrainingPanel moduleId={dispatchModuleId!} />;
+    }
+    // ACHC annual-training PASS5 modules use the same clean, self-contained player shell.
+    if (dispatchModuleId && isAchcStandaloneModule(dispatchModuleId)) {
+      const AchcModule = getAchcStandaloneModule(dispatchModuleId);
+      if (AchcModule) {
+        return (
+          <div className="min-h-[70vh] w-full" data-achc-standalone={dispatchModuleId}>
+            <div className="mb-3 px-2 sm:px-4 pt-2">
+              <BackLink to="/journey?tab=achc">Back to ACHC annual training</BackLink>
+            </div>
+            <AchcModule />
+          </div>
+        );
+      }
     }
     // LVN V5 standalone SC04 modules (full interactive players — not placeholder lesson shell)
     if (dispatchModuleId && isLvnStandaloneModule(dispatchModuleId)) {
