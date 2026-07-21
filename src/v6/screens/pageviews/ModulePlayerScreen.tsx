@@ -67,6 +67,7 @@ import { isOasisSocModule, OASIS_SOC_MODULE_TITLE } from "@/policy/journey/compo
 import { getLvnStandaloneModule, isLvnStandaloneModule } from "@/policy/journey/modules/lvn";
 import { getRnStandaloneModule, isRnStandaloneModule } from "@/policy/journey/modules/rn";
 import { getAdmStandaloneModule, isAdmStandaloneModule } from "@/policy/journey/modules/adm";
+import { getDonStandaloneModule, isDonStandaloneModule } from "@/policy/journey/modules/don";
 import { Cms485AssessmentQuizPage } from "./Cms485AssessmentQuizPage";
 import CoreValuesInteractiveViewer from "@/policy/journey/components/CoreValuesInteractiveViewer";
 import GAO001Scene01WelcomeDesk from "@/policy/journey/components/GAO001Scene01WelcomeDesk";
@@ -2343,6 +2344,20 @@ export function ModulePlayerScreen() {
         );
       }
     }
+    // Director of Nursing corrected standalone modules use the shared Journey player shell.
+    if (dispatchModuleId && isDonStandaloneModule(dispatchModuleId)) {
+      const DonModule = getDonStandaloneModule(dispatchModuleId);
+      if (DonModule) {
+        return (
+          <div className="min-h-[70vh] w-full" data-don-standalone={dispatchModuleId}>
+            <div className="mb-3 px-2 sm:px-4 pt-2">
+              <BackLink to="/journey?tab=onboarding&path=don">Back to Director of Nursing path</BackLink>
+            </div>
+            <DonModule />
+          </div>
+        );
+      }
+    }
     if (dispatchModuleId && isAdvancedModule(dispatchModuleId) && !isGAO002Interactive(dispatchModuleId)) {
       const variant = getAdvancedVariant(dispatchModuleId) || 'plan_of_care';
       const title = getModuleDef(dispatchModuleId)?.title || dispatchModuleId;
@@ -2379,7 +2394,7 @@ export function ModulePlayerScreen() {
     );
   }, [pathname, params.moduleId, params.lessonId]);
 
-  if (rawModuleId && !journeyMod && !isOasisSocModule(rawModuleId) && !isAdvancedModule(rawModuleId) && !isLvnStandaloneModule(rawModuleId) && !isRnStandaloneModule(rawModuleId) && !isAdmStandaloneModule(rawModuleId) && !isGAO002Interactive(rawModuleId) && !['m0'].includes(rawModuleId)) {
+  if (rawModuleId && !journeyMod && !isOasisSocModule(rawModuleId) && !isAdvancedModule(rawModuleId) && !isLvnStandaloneModule(rawModuleId) && !isRnStandaloneModule(rawModuleId) && !isAdmStandaloneModule(rawModuleId) && !isDonStandaloneModule(rawModuleId) && !isGAO002Interactive(rawModuleId) && !['m0'].includes(rawModuleId)) {
     // Unknown module - bypass for RN-ADV modules (registered in adapter/courseModules)
     return (
       <section className="p-8">
