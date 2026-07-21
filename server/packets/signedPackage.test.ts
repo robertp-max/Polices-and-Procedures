@@ -7,6 +7,7 @@ import express, { type ErrorRequestHandler, type Express } from 'express';
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '../errors.js';
 import { identityMiddleware } from '../identity/middleware.js';
+import { mountTestAuthBoundary, testAuthHeaders } from '../auth/testAuthHarness.js';
 import type {
   DriveArtifactPointer,
   PacketAuditEvent,
@@ -439,6 +440,7 @@ function buildApp(store: FileLocalPacketStore): Express {
   const app = express();
   app.use(express.json({ limit: '1mb' }));
   app.use('/api', identityMiddleware);
+  mountTestAuthBoundary(app); // same requireApiAuth boundary as production
   app.use('/api/packets', createPacketSignedPackageRouter({
     store,
     renderPacketHtml: () => FIXED_HTML,
@@ -457,14 +459,7 @@ function makeTempDir(prefix: string): string {
 }
 
 function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
-  return {
-    'content-type': 'application/json',
-    'x-user-id': 'route-user',
-    'x-user-roles': 'compliance_officer',
-    'x-user-access-classes': 'agency:agency-sp,packets:*',
-    'Idempotency-Key': 'signed-package-route-1',
-    ...extra,
-  };
+  return testAuthHeaders({ 'Idempotency-Key': 'signed-package-route-1', ...extra });
 }
 
 function jsonObject(value: unknown): Record<string, unknown> {

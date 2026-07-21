@@ -11,6 +11,7 @@ import {
 } from '@/policy/packets/contracts';
 import { ApiError } from '../errors.js';
 import { identityMiddleware } from '../identity/middleware.js';
+import { mountTestAuthBoundary, testAuthHeaders } from '../auth/testAuthHarness.js';
 import {
   FileLocalPacketStore,
   type CreatePacketInstanceInput,
@@ -62,13 +63,7 @@ function baseInput(overrides: Partial<CreatePacketInstanceInput> = {}): CreatePa
 }
 
 function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
-  return {
-    'content-type': 'application/json',
-    'x-user-id': 'supp-user',
-    'x-user-roles': 'compliance_officer',
-    'x-user-access-classes': 'agency:agency-supp,packets:*',
-    ...extra,
-  };
+  return testAuthHeaders(extra);
 }
 
 function jsonObject(value: unknown): Record<string, unknown> {
@@ -123,6 +118,7 @@ function buildApp(
   const app = express();
   app.use(express.json({ limit: '1mb' }));
   app.use('/api', identityMiddleware);
+  mountTestAuthBoundary(app); // same requireApiAuth boundary as production
   app.use('/api/packets', createPacketSupplementalRouter({ packetStore, supplementalStore }));
   app.use(ERROR_HANDLER);
   return app;

@@ -8,7 +8,7 @@
  * No template DOM is mutated — watermark is overlay-positioned in the existing
  * footer area; appended pages use `page-break-before: always`.
  */
-import { store, type FormInstanceRow, type SignatureRow, type AuditRow } from './store.js';
+import { store, EcignError, type FormInstanceRow, type SignatureRow, type AuditRow } from './store.js';
 import { sha256 } from './hashChain.js';
 
 const NAVY = '#1A3778', ORANGE = '#F04B22', INK = '#1F1C1B', MUTED = '#747470', BORDER = '#E5E4E3';
@@ -218,8 +218,32 @@ ${pageBreak}
 
 export async function buildSignedDocumentBundle(instanceId: string, certId: string) {
   const instance = await store.getInstance(instanceId);
-  if (!instance) throw new Error('INSTANCE_NOT_FOUND');
+  if (!instance) throw new EcignError('NOT_FOUND', 'Instance not found', 404);
+  // Fail-closed (ADR-0002 Phase 1): never emit a certificate/watermark/manifest
+  // "signed bundle" for an instance that has not passed the full signed-lock
+  // lifecycle. These guards are defense-in-depth: they hold even if a caller
+  // reaches the builder without the route-level containment check.
+  if (instance.state !== 'signed_locked') {
+    throw new EcignError('BUNDLE_NOT_LOCKED',
+      `Cannot generate a signed bundle: instance is '${instance.state}', not 'signed_locked'.`, 409);
+  }
+  if (!instance.required_signers || instance.required_signers.length === 0) {
+    throw new EcignError('SIGNER_REQUIREMENTS_MISSING',
+      'Cannot generate a signed bundle: instance defines no required signers.', 409);
+  }
+  if (!instance.document_hash || !instance.manifest_hash || !instance.locked_at_utc) {
+    throw new EcignError('BUNDLE_INTEGRITY_INCOMPLETE',
+      'Cannot generate a signed bundle: lock integrity fields (document/manifest hash, lock time) are missing.', 409);
+  }
   const signatures = await store.listSignatures(instanceId);
+  const signedFields = new Set(signatures.map((s) => s.field_id));
+  // Only mandatory slots (required !== false) must be signed; optional slots may
+  // be absent once every mandatory slot is complete.
+  const mandatory = instance.required_signers.filter((r) => r.required !== false);
+  if (!mandatory.every((r) => signedFields.has(r.field_id))) {
+    throw new EcignError('SIGNATURES_INCOMPLETE',
+      'Cannot generate a signed bundle: one or more required signatures are missing.', 409);
+  }
   const audit = await store.listAudit(instanceId);
   const signer = signatures[signatures.length - 1];
   const watermark = signer

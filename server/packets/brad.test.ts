@@ -7,6 +7,7 @@ import express, { type ErrorRequestHandler, type Express } from 'express';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ApiError } from '../errors.js';
 import { identityMiddleware } from '../identity/middleware.js';
+import { mountTestAuthBoundary, testAuthHeaders, AUTHORIZED_USER_ID } from '../auth/testAuthHarness.js';
 import { DRAFT_BANNER, generateQapiMinutesDraft } from '../ia/brad/eventPackets.js';
 import { GeneratedObjectStore } from '../ia/brad/generatedObjects.js';
 import {
@@ -67,19 +68,14 @@ function buildApp(store: FileLocalPacketStore, objectStore: GeneratedObjectStore
   const app = express();
   app.use(express.json({ limit: '1mb' }));
   app.use('/api', identityMiddleware);
+  mountTestAuthBoundary(app); // same requireApiAuth boundary as production
   app.use('/api/packets', createPacketBradRouter({ store, generatedObjectStore: objectStore }));
   app.use(ERROR_HANDLER);
   return app;
 }
 
 function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
-  return {
-    'content-type': 'application/json',
-    'x-user-id': 'brad-route-user',
-    'x-user-roles': 'compliance_officer',
-    'x-user-access-classes': 'agency:agency-brad,packets:*',
-    ...extra,
-  };
+  return testAuthHeaders(extra);
 }
 
 function jsonObject(value: unknown): Record<string, unknown> {
@@ -264,7 +260,7 @@ describe('/api/packets Brad-assisted editing routes', () => {
       'packet.edited',
     ]);
     const editEvent = rows[1];
-    expect(editEvent?.actor.user_id).toBe('brad-route-user');
+    expect(editEvent?.actor.user_id).toBe(AUTHORIZED_USER_ID);
     expect(editEvent?.actor.on_behalf_of).toBe(`brad:${proposalId}`);
     expect(String(editEvent?.payload.reason)).toContain('brad_involved=true');
   });

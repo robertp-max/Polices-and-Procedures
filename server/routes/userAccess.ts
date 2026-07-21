@@ -11,14 +11,14 @@ import { ApiError } from '../errors.js';
 import { appendEvent } from '../audit/writer.js';
 import type { Actor } from '../identity/session.js';
 import { getAppIdentityPersistence } from '../auth/appIdentityPersistence.js';
-import { resolveVerifiedActor, type RequireAuthDeps } from '../auth/requireCognitoAuth.js';
+import { type RequireAuthDeps } from '../auth/requireCognitoAuth.js';
 import { buildDemoAuthServiceFromEnv } from '../auth/service.js';
 import { expectedIssuer } from '../auth/accessTokenClaims.js';
 import { env } from '../env.js';
-import { assertActorRole } from '../auth/actorResolver.js';
+import { resolveUserStatusAuthority } from '../auth/userStatusAuthority.js';
 import {
   listAccessState, suspendUser, reactivateUser, assignRole, removeRole,
-  USER_ACCESS_ADMIN_ROLES, type AccessChange,
+  type AccessChange,
 } from '../auth/userAccessAdmin.js';
 
 export const userAccessRouter: Router = Router();
@@ -35,10 +35,18 @@ function authDeps(): RequireAuthDeps {
   };
 }
 
-/** Resolve + role-gate the caller as a user-access admin, or throw 401/403. */
+/** Resolve + gate the caller by the shared user-status authority, or throw 401/403. */
 async function requireUserAccessAdmin(req: Request): Promise<Actor> {
-  const actor = await resolveVerifiedActor(req.header('authorization'), authDeps());
-  assertActorRole(actor, USER_ACCESS_ADMIN_ROLES);
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const { actor, result } = await resolveUserStatusAuthority(
+    req.header('authorization'),
+    authDeps(),
+    (e) => service.isAdminEmail(e ?? ''),
+  );
+  // Preserve the authority source for the audit trail (approved_admin_email |
+  // canonical_admin_group). The mount PEP may already have set this; either way
+  // it now reflects the authority actually used by this handler.
+  req.userStatusAuthority = result;
   return actor;
 }
 
@@ -104,7 +112,10 @@ function targetId(req: Request): string {
 
 async function applyChange(req: Request, actor: Actor, change: AccessChange): Promise<void> {
   await getAppIdentityPersistence().putAll(change.registry);
-  await auditAccess(actor, req, change, 'permit');
+  // Record which authority granted the mutation (approved_admin_email |
+  // canonical_admin_group) so the audit trail is self-explaining.
+  const source = req.userStatusAuthority?.source;
+  await auditAccess(actor, req, change, 'permit', source ? `authority:${source}` : undefined);
 }
 
 userAccessRouter.post('/suspend', asyncHandler(async (req, res) => {

@@ -1,5 +1,10 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { ApiError } from '../errors.js';
+import { appendEvent } from '../audit/writer.js';
+import { recordInviteAudit, inviteResultMessage } from '../auth/inviteAudit.js';
+import { makeDirectSetupAuditSink, recordDirectSetupAuditBestEffort } from '../auth/directSetupAudit.js';
+import { requireDirectSetupEnabled } from '../auth/directSetupGate.js';
+import { directSetupRateLimit, VERIFY_LIMIT, SETUP_LIMIT } from '../auth/directSetupRateLimit.js';
 import { buildDemoAuthServiceFromEnv } from '../auth/service.js';
 import {
   getAllowlistStatus,
@@ -17,24 +22,49 @@ export const authRouter: Router = Router();
 
 // ─── New allowlist-gated registration (SF Org ID) ────────────────────────────
 
-authRouter.post('/verify-registration', asyncHandler(async (req, res) => {
+authRouter.post('/verify-registration', requireDirectSetupEnabled, directSetupRateLimit('verify', VERIFY_LIMIT), asyncHandler(async (req, res) => {
   const service = buildDemoAuthServiceFromEnv(process.env);
   const email   = String(req.body?.email   || '');
   const sfOrgId = String(req.body?.sfOrgId || '');
-  const result  = await service.verifyRegistration(email, sfOrgId);
-  res.json(result);
+  const emailNorm = email.trim().toLowerCase();
+  const corr = req.header('x-correlation-id') || req.header('x-request-id') || undefined;
+  try {
+    const result = await service.verifyRegistration(email, sfOrgId);
+    // Best-effort: a verification attempt is not an identity mutation.
+    await recordDirectSetupAuditBestEffort(emailNorm, 'verify_approved', corr, appendEvent);
+    res.json(result);
+  } catch (e) {
+    await recordDirectSetupAuditBestEffort(emailNorm, 'verify_denied', corr, appendEvent);
+    throw e;
+  }
 }));
 
-authRouter.post('/setup-account-direct', asyncHandler(async (req, res) => {
+authRouter.post('/setup-account-direct', requireDirectSetupEnabled, directSetupRateLimit('setup', SETUP_LIMIT), asyncHandler(async (req, res) => {
   const service = buildDemoAuthServiceFromEnv(process.env);
   const { email, sfOrgId, firstName, lastName, password } = req.body ?? {};
-  const result = await service.setupAccountDirect({
-    email:     String(email     || ''),
-    sfOrgId:   String(sfOrgId   || ''),
-    firstName: String(firstName || ''),
-    lastName:  String(lastName  || ''),
-    password:  String(password  || ''),
-  });
+  const emailNorm = String(email || '').trim().toLowerCase();
+  const corr = req.header('x-correlation-id') || req.header('x-request-id') || undefined;
+  // Interleaved required audit: intent before mutation, success before activation.
+  const auditSink = makeDirectSetupAuditSink(emailNorm, corr, appendEvent);
+  let result: { success: true };
+  try {
+    result = await service.setupAccountDirect({
+      email:     String(email     || ''),
+      sfOrgId:   String(sfOrgId   || ''),
+      firstName: String(firstName || ''),
+      lastName:  String(lastName  || ''),
+      password:  String(password  || ''),
+    }, auditSink);
+  } catch (e) {
+    // Best-effort denial audit for eligibility/validation failures only. Do NOT
+    // re-audit audit-subsystem failures (the sink already logged those as 503/500).
+    const isAuditFailure = e instanceof ApiError && (e.status === 503 || e.status === 500);
+    if (!isAuditFailure) {
+      const outcome = (e instanceof ApiError && e.status === 409) ? 'setup_replay_denied' : 'setup_denied';
+      await recordDirectSetupAuditBestEffort(emailNorm, outcome, corr, appendEvent);
+    }
+    throw e;
+  }
   res.json(result);
 }));
 
@@ -278,6 +308,50 @@ authRouter.post('/logout', asyncHandler(async (req, res) => {
   const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
   await service.logout(accessToken);
   res.status(204).end();
+}));
+
+// ─── Server-authoritative capability contract ────────────────────────────────
+// Display/navigation authority for the authenticated actor. Enforcement still
+// happens on each protected endpoint; this only tells the UI what to render.
+
+authRouter.get('/capabilities', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  if (!accessToken) {
+    throw new ApiError('auth_error', 'Not authenticated.', 401);
+  }
+  const capabilities = await service.resolveCapabilities(accessToken);
+  res.json({ authenticated: true, authorization: { capabilities } });
+}));
+
+// ─── Administrator-only user invitation (authenticated; actor from token) ─────
+// Distinct from the unauthenticated legacy /register-request. The admin actor is
+// derived from the verified token, and the action is audited. Never returns a
+// setup token or link.
+
+authRouter.post('/admin/users/invite', asyncHandler(async (req, res) => {
+  const service = buildDemoAuthServiceFromEnv(process.env);
+  const auth = req.header('authorization') ?? '';
+  const accessToken = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
+  const email = String(req.body?.email || '');
+  const result = await service.adminInviteUser(accessToken, email);
+
+  // Audit the administrator-attributed action. The actor comes from the verified
+  // token (adminInviteUser → assertAdminAccessToken), never the request body. No
+  // credential, setup token, or link is recorded. Audit is NOT optional for this
+  // identity mutation: a write failure yields a classified 500 (no success the
+  // trail cannot corroborate), and a retry safely reconciles without duplicating.
+  const correlationId = req.header('x-correlation-id') || req.header('x-request-id') || undefined;
+  await recordInviteAudit(result, correlationId, appendEvent);
+
+  res.json({
+    status: result.status,
+    email: result.targetEmail,
+    emailDelivered: result.emailDelivered,
+    provisioned: result.provisioned,
+    message: inviteResultMessage(result),
+  });
 }));
 
 authRouter.get('/me', asyncHandler(async (req, res) => {

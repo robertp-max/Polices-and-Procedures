@@ -41,6 +41,46 @@ export interface VerifyRegistrationResponse {
   };
 }
 
+export interface CapabilitiesResponse {
+  authenticated: boolean;
+  authorization: { capabilities: { manageUsers: boolean; manageUserStatus?: boolean } };
+}
+
+export interface UserAccessMutationResponse {
+  ok: true;
+  targetUserId: string;
+  after: { status: 'active' | 'pending' | 'suspended' };
+}
+
+export interface UserAccessStateRow {
+  userId: string;
+  email: string;
+  name: string;
+  status: 'active' | 'pending' | 'suspended';
+  authSubject?: string;
+  provider?: string;
+  roles: string[];
+  privileged: boolean;
+}
+
+export interface UserAccessListResponse {
+  users: UserAccessStateRow[];
+}
+
+export type AdminInviteStatus =
+  | 'invited_and_delivered'
+  | 'created_delivery_pending'
+  | 'already_pending'
+  | 'already_active';
+
+export interface AdminInviteResponse {
+  status: AdminInviteStatus;
+  email: string;
+  emailDelivered: boolean;
+  provisioned: boolean;
+  message: string;
+}
+
 interface LoginResponse {
   session: AuthSession;
   user: DemoUser;
@@ -118,6 +158,40 @@ export class AuthApiError extends Error {
 }
 
 const BASE = (import.meta.env.VITE_AUTH_API_BASE_URL as string | undefined)?.replace(/\/$/, '') || '/api/auth';
+// The COG-2 user-access admin router lives beside the auth router under /api,
+// not under /api/auth. Derive its base from the auth base so an env override
+// (VITE_AUTH_API_BASE_URL) points both at the same origin.
+const USER_ACCESS_BASE = `${BASE.replace(/\/auth$/, '')}/admin/user-access`;
+
+async function callAt<T>(base: string, path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${base}${path}`, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init?.headers ?? {}),
+    },
+  });
+
+  if (res.status === 204) {
+    return undefined as T;
+  }
+
+  const text = await res.text();
+  let payload: ApiErrorPayload | T = {};
+  try {
+    payload = text ? (JSON.parse(text) as ApiErrorPayload | T) : ({} as T);
+  } catch {
+    payload = {};
+  }
+
+  if (!res.ok) {
+    const maybe = payload as ApiErrorPayload;
+    const message = maybe.error?.message || 'Request failed. Please try again.';
+    throw new AuthApiError(message, res.status, maybe.error?.code);
+  }
+
+  return payload as T;
+}
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
@@ -224,6 +298,23 @@ export const AuthApi = {
     });
   },
 
+  /** Server-authoritative capability contract for the authenticated actor. */
+  getCapabilities(accessToken: string): Promise<CapabilitiesResponse> {
+    return call('/capabilities', {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /** Administrator-only user invitation. Requires an admin access token. */
+  adminInviteUser(accessToken: string, email: string): Promise<AdminInviteResponse> {
+    return call('/admin/users/invite', {
+      method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      body: JSON.stringify({ email }),
+    });
+  },
+
   forgotPassword(email: string): Promise<{ message: string }> {
     return call('/forgot-password', {
       method: 'POST',
@@ -302,6 +393,36 @@ export const AuthApi = {
     return call('/admin/identity-registry/sync-authenticated-users', {
       method: 'POST',
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /** Server-authoritative access-state projection (canonical registry users). */
+  listUserAccess(accessToken: string): Promise<UserAccessListResponse> {
+    return callAt(USER_ACCESS_BASE, '/', {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /**
+   * Server-authoritative suspend. Hits the COG-2 user-access router, which
+   * verifies the Cognito actor, enforces the unified user-status authority,
+   * mutates the canonical registry, and audits. No client identity is trusted.
+   */
+  suspendUser(accessToken: string, userId: string): Promise<UserAccessMutationResponse> {
+    return callAt(USER_ACCESS_BASE, '/suspend', {
+      method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      body: JSON.stringify({ userId }),
+    });
+  },
+
+  /** Server-authoritative reactivate; same authority + audit path as suspendUser. */
+  reactivateUser(accessToken: string, userId: string): Promise<UserAccessMutationResponse> {
+    return callAt(USER_ACCESS_BASE, '/reactivate', {
+      method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      body: JSON.stringify({ userId }),
     });
   },
 };

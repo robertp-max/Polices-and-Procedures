@@ -165,6 +165,7 @@ export const V6_ROUTES = [
   { path: '/forgot-password', hashId: 'forgot-password-page', template: 'login', group: 'Auth', title: 'Forgot Password', description: 'Request a password reset code (outside the V6 shell).' },
   { path: '/reset-password', hashId: 'reset-password-page', template: 'login', group: 'Auth', title: 'Reset Password', description: 'Complete a password reset with an emailed code (outside the V6 shell).' },
   { path: '/setup-account', hashId: 'setup-account-page', template: 'login', group: 'Auth', title: 'Account Setup', description: 'Invited-account setup from a secure emailed link (outside the V6 shell).' },
+  { path: '/setup-account-direct', hashId: 'setup-account-direct-page', template: 'login', group: 'Auth', title: 'Account Setup', description: 'Allowlist + activation-code account setup (no emailed token; outside the V6 shell).' },
 ] as const satisfies readonly V6RouteDefinition[];
 
 export type V6RouteHashId = (typeof V6_ROUTES)[number]['hashId'];

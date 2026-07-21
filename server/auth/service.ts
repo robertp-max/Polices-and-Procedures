@@ -26,6 +26,10 @@ import { ApiError } from '../errors.js';
 import { log } from '../logger.js';
 import type { AuthSession, DemoUser, RegistrationRecord, RegistrationStatus, TokenRecord } from './types.js';
 import { findApprovedUser, findApprovedUserByEmail, getLoadError, isAllowlistAvailable, normalizeEmail as normalizeApprovedEmail, normalizeSfOrgId } from './approvedUsers.js';
+import type { DirectSetupAuditSink } from './directSetupAudit.js';
+import { getAppIdentityPersistence, type AppIdentityRegistry } from './appIdentityPersistence.js';
+import { findCanonicalUser, activeRoleGroupIds } from './actorResolver.js';
+import { evaluateUserStatusAuthority } from './userStatusAuthorityCore.js';
 
 interface DemoAuthConfig {
   region: string;
@@ -48,6 +52,35 @@ interface RegisterResult {
     setupLink?: string;
     emailDelivery?: { ok: boolean; errCode?: string; errMessage?: string };
   };
+}
+
+/**
+ * Typed outcome of an administrator-initiated invitation. The status is explicit
+ * so callers/UI never conflate "created" with "delivered":
+ *   - invited_and_delivered  — new user created AND the setup link was delivered
+ *   - created_delivery_pending — new user created but delivery did not occur
+ *   - already_pending        — target already had a pending invitation (re-sent)
+ *   - already_active         — target already has an active account (no-op)
+ */
+export type AdminInviteStatus =
+  | 'invited_and_delivered'
+  | 'created_delivery_pending'
+  | 'already_pending'
+  | 'already_active';
+
+/**
+ * Result of an administrator-initiated invitation. Deliberately carries NO
+ * credential, setup token, or setup link — only the resolved actor (for audit
+ * attribution at the route layer), the normalized target, the typed outcome,
+ * whether setup-link delivery succeeded, and whether a Cognito user was
+ * provisioned/ensured by this call.
+ */
+export interface AdminInviteResult {
+  actorEmail: string;
+  targetEmail: string;
+  status: AdminInviteStatus;
+  emailDelivered: boolean;
+  provisioned: boolean;
 }
 
 type LoginResult =
@@ -127,8 +160,18 @@ export class DemoAuthService {
   }
 
   private validatePassword(password: string): void {
-    if (!password || password.length < 8) {
-      throw new ApiError('validation_error', 'Password must be at least 8 characters.', 400);
+    // Server-authoritative password policy (single source of truth; the setup UI
+    // displays the same rules). The password value is never echoed in the error.
+    const pw = String(password ?? '');
+    const problems: string[] = [];
+    if (pw.length < 8) problems.push('at least 8 characters');
+    if (!/[a-z]/.test(pw)) problems.push('a lowercase letter');
+    if (!/[A-Z]/.test(pw)) problems.push('an uppercase letter');
+    if (!/[0-9]/.test(pw)) problems.push('a number');
+    if (!/[^A-Za-z0-9]/.test(pw)) problems.push('a symbol');
+    if (pw.length > 256) problems.push('no more than 256 characters'); // oversized-payload guard
+    if (problems.length > 0) {
+      throw new ApiError('validation_error', `Password must include ${problems.join(', ')}.`, 400);
     }
   }
 
@@ -585,7 +628,28 @@ export class DemoAuthService {
   }
 
   async getCurrentUser(accessToken: string): Promise<DemoUser> {
-    const me = await this.cognito.send(new GetUserCommand({ AccessToken: accessToken }));
+    let me;
+    try {
+      me = await this.cognito.send(new GetUserCommand({ AccessToken: accessToken }));
+    } catch (err) {
+      // A rejected token is a 401, not a 500. Cognito reports missing / malformed
+      // / expired / revoked / wrong-issuer / invalid-signature access tokens via
+      // these client faults. Anything else (provider outage, throttling, network)
+      // is a genuine upstream failure and must surface as a 5xx — rethrown as-is.
+      // The 401 leaks no stack, token, or header — only a generic message.
+      const name = (err as { name?: string })?.name ?? '';
+      const TOKEN_FAULTS = new Set([
+        'NotAuthorizedException',
+        'UserNotFoundException',
+        'TokenExpiredException',
+        'InvalidParameterException',
+        'ExpiredTokenException',
+      ]);
+      if (TOKEN_FAULTS.has(name)) {
+        throw new ApiError('auth_error', 'Not authenticated.', 401);
+      }
+      throw err;
+    }
     const attrs = Object.fromEntries((me.UserAttributes ?? []).map(a => [a.Name ?? '', a.Value ?? '']));
     const firstName = attrs.given_name;
     const lastName = attrs.family_name;
@@ -616,6 +680,19 @@ export class DemoAuthService {
     };
   }
 
+  /**
+   * Server-authoritative administrator predicate — the SINGLE source of truth
+   * for "is this email an administrator": membership in the configured admin
+   * allowlist (ADMIN_MANUAL_PASSWORD_EMAILS). Both `assertAdminAccessToken`
+   * (route guards) and `resolveCapabilities` (the /capabilities contract) derive
+   * admin authority from here, so the UI capability and the enforced server
+   * boundary cannot drift. Never consults client-supplied role/headers/storage.
+   */
+  isAdminEmail(emailRaw: string | null | undefined): boolean {
+    const email = this.normalizeEmail(emailRaw ?? '');
+    return !!email && this.cfg.adminManualPasswordEmails.includes(email);
+  }
+
   async assertAdminAccessToken(actorAccessToken: string): Promise<string> {
     const accessToken = String(actorAccessToken || '').trim();
     if (!accessToken) {
@@ -624,12 +701,63 @@ export class DemoAuthService {
 
     const actor = await this.getCurrentUser(accessToken);
     const actorEmail = this.normalizeEmail(actor.email);
-    if (!this.cfg.adminManualPasswordEmails.includes(actorEmail)) {
+    if (!this.isAdminEmail(actorEmail)) {
       log.warn('auth.admin_access.forbidden', { actorEmail });
       throw new ApiError('forbidden', 'You do not have permission to manage user access.', 403);
     }
 
     return actorEmail;
+  }
+
+  /**
+   * Server-derived capability contract for the authenticated actor. Requires a
+   * valid access token — `getCurrentUser` throws 401 for a missing, malformed,
+   * expired, or revoked token. `manageUsers` is derived from the SAME server
+   * authority as the admin route guards (`isAdminEmail`), never from a
+   * client-supplied role, header, or browser-stored value. Exposes no admin
+   * allowlist contents and no Cognito subject.
+   */
+  /**
+   * Load the canonical AppIdentityRegistry (a seam so tests can inject one).
+   * Fails soft to an empty registry so the capability contract degrades to the
+   * email-allowlist verdict rather than erroring if persistence is unavailable.
+   */
+  protected async loadIdentityRegistry(): Promise<AppIdentityRegistry> {
+    try {
+      return await getAppIdentityPersistence().getAll();
+    } catch {
+      return { users: [], assignments: [] };
+    }
+  }
+
+  async resolveCapabilities(actorAccessToken: string): Promise<{ manageUsers: boolean; manageUserStatus: boolean }> {
+    const accessToken = String(actorAccessToken || '').trim();
+    if (!accessToken) {
+      throw new ApiError('auth_error', 'Not authenticated.', 401);
+    }
+    // Same authority algorithm as the enforcement boundary, so the UI capability
+    // and the /api/admin/user-access boundary cannot disagree. getCurrentUser
+    // enforces authenticity + the COG-1 registration/session-active gate; the
+    // shared evaluator then applies the status-deny-first rule and both authority
+    // sources. A suspended/disabled canonical record yields false here too.
+    const verified = await this.getCurrentUser(accessToken);
+    const registry = await this.loadIdentityRegistry();
+    const canonicalUser = findCanonicalUser(registry, {
+      sub: verified.authSubject || verified.id || '',
+      email: verified.email,
+    });
+    const canonicalRoles = canonicalUser
+      ? activeRoleGroupIds(registry, canonicalUser.id, new Date().toISOString())
+      : [];
+    const result = evaluateUserStatusAuthority({
+      verifiedEmail: verified.email,
+      isApprovedAdminEmail: this.isAdminEmail(verified.email),
+      canonicalUser: canonicalUser
+        ? { id: canonicalUser.id, email: canonicalUser.email, status: canonicalUser.status }
+        : null,
+      canonicalRoles,
+    });
+    return { manageUsers: result.allowed, manageUserStatus: result.allowed };
   }
 
   async forgotPassword(emailRaw: string): Promise<{ message: string }> {
@@ -800,6 +928,84 @@ export class DemoAuthService {
     return { message: 'Access granted successfully.' };
   }
 
+  /**
+   * Administrator-only user invitation. Distinct from the unauthenticated,
+   * self-service `registerRequest` path: the caller MUST present a valid admin
+   * access token, the administrator actor is derived from that token (never from
+   * the request body), and the target email is only the invitation target. The
+   * Cognito user is created idempotently and a pending_setup registration is
+   * written, then the approved setup-link is sent via the existing SES mechanism
+   * (best-effort). This method NEVER returns a setup token, setup link, or any
+   * credential. Email normalization is trim+lowercase only, so a plus-tagged
+   * address (e.g. `robertp+phase7uat@…`) stays distinct from the base address
+   * (`robertp@…`) — no identity collapse. An already-active account is not
+   * re-provisioned and no duplicate canonical user is created.
+   */
+  async adminInviteUser(actorAccessToken: string, targetEmailRaw: string): Promise<AdminInviteResult> {
+    const actorEmail = await this.assertAdminAccessToken(actorAccessToken);
+    const targetEmail = this.normalizeEmail(targetEmailRaw);
+    if (!targetEmail || !targetEmail.includes('@')) {
+      throw new ApiError('validation_error', 'Please enter a valid user email address.', 400);
+    }
+    this.assertNotProtectedAuthEmail(actorEmail, targetEmail, 'admin_invite');
+
+    const existing = await this.getRegistration(targetEmail);
+    if (existing?.status === 'active') {
+      // Idempotent: an already-active account is neither re-invited nor
+      // duplicated. Report the existing state so the caller can surface a
+      // conflict-style message.
+      log.info('auth.admin_invite.already_active', { actorEmail, targetEmail });
+      return { actorEmail, targetEmail, status: 'already_active', emailDelivered: false, provisioned: false };
+    }
+    const wasPending = existing?.status === 'pending_setup';
+
+    const now = this.nowIso();
+    const { token, tokenHash, expiresAt } = this.generateSetupToken();
+    if (existing?.setupTokenHash) {
+      await this.deleteToken(existing.setupTokenHash);
+    }
+
+    // ensureCognitoUser is idempotent (AdminGetUser → create only if absent), so a
+    // retry after a partial failure re-ensures rather than duplicating the user.
+    await this.ensureCognitoUser(targetEmail);
+
+    const record: RegistrationRecord = {
+      ...(existing?.pk ? existing : this.registrationKey(targetEmail)),
+      email: targetEmail,
+      emailDomain: this.emailDomain(targetEmail),
+      cognitoUsername: targetEmail,
+      status: 'pending_setup',
+      setupTokenHash: tokenHash,
+      setupTokenExpiresAt: expiresAt,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      approvedAt: existing?.approvedAt ?? now,
+      approvedBy: actorEmail,
+    };
+    await this.writeRegistration(record);
+    await this.writeTokenRecord(tokenHash, targetEmail, now, expiresAt);
+
+    let emailDelivered = false;
+    try {
+      await this.sendSetupEmail(targetEmail, token);
+      emailDelivered = true;
+    } catch (sesErr) {
+      // Delivery may be unavailable (e.g. SES not yet approved for this account).
+      // The invitation still stands as pending_setup; never surface the token/link.
+      log.warn('auth.admin_invite.email_send_failed', {
+        actorEmail,
+        targetEmail,
+        errCode: String((sesErr as { name?: string; code?: string })?.name || (sesErr as { code?: string })?.code || 'unknown'),
+      });
+    }
+
+    const status: AdminInviteStatus = wasPending
+      ? 'already_pending'
+      : (emailDelivered ? 'invited_and_delivered' : 'created_delivery_pending');
+    log.info('auth.admin_invite.result', { actorEmail, targetEmail, status, emailDelivered });
+    return { actorEmail, targetEmail, status, emailDelivered, provisioned: true };
+  }
+
   async verifyRegistration(emailRaw: string, sfOrgIdRaw: string): Promise<{
     verified: true;
     approvedUser: { fullName: string; role: string; department: string };
@@ -848,13 +1054,26 @@ export class DemoAuthService {
     };
   }
 
+  /**
+   * Complete allowlist + activation-code account setup with audit reconciliation.
+   *
+   * `audit` is a REQUIRED, phase-aware sink: `setup_started` is written before any
+   * irreversible mutation (a failure aborts before Cognito), and `setup_complete`
+   * is written AFTER the Cognito mutation but BEFORE the registration is marked
+   * active. The registration is persisted as `pending_setup` before the success
+   * audit, so if that audit fails the account stays non-active — the session gate
+   * (`assertRegistrationActiveForSession`) denies login, and a retry re-ensures
+   * (never duplicates) the user and reconciles the audit + activation. No
+   * distributed transaction is claimed across Cognito and JSONL; the invariant is
+   * "no activated account is normally usable while its activation audit is absent".
+   */
   async setupAccountDirect(input: {
     email: string;
     sfOrgId: string;
     firstName: string;
     lastName: string;
     password: string;
-  }): Promise<{ success: true }> {
+  }, audit: DirectSetupAuditSink): Promise<{ success: true }> {
     // Fail closed if allowlist not loaded.
     if (!isAllowlistAvailable()) {
       log.error('auth.setup_account_direct.allowlist_unavailable', { error: getLoadError() });
@@ -872,7 +1091,7 @@ export class DemoAuthService {
       throw new ApiError('auth_error', 'Registration verification failed. Please contact your administrator.', 403);
     }
 
-    // Prevent duplicate account creation.
+    // Prevent duplicate account creation (fully completed activation is replay-safe).
     const existing = await this.getRegistration(email);
     if (existing?.status === 'active') {
       log.warn('auth.setup_account_direct.duplicate', { email });
@@ -887,15 +1106,18 @@ export class DemoAuthService {
     // validatePassword never logs the password value.
     this.validatePassword(input.password);
 
-    await this.ensureCognitoUser(email);
+    // (1) Durable intent audit BEFORE any irreversible mutation. A failure here
+    // throws (503) and no Cognito mutation occurs.
+    await audit('setup_started');
 
+    // (2) Irreversible identity mutation (ensureCognitoUser is idempotent).
+    await this.ensureCognitoUser(email);
     await this.cognito.send(new AdminSetUserPasswordCommand({
       UserPoolId: this.cfg.userPoolId,
       Username: email,
       Password: input.password,
       Permanent: true,
     }));
-
     await this.cognito.send(new AdminUpdateUserAttributesCommand({
       UserPoolId: this.cfg.userPoolId,
       Username: email,
@@ -906,7 +1128,6 @@ export class DemoAuthService {
         { Name: 'email_verified', Value: 'true' },
       ],
     }));
-
     await this.cognito.send(new AdminEnableUserCommand({
       UserPoolId: this.cfg.userPoolId,
       Username: email,
@@ -914,22 +1135,29 @@ export class DemoAuthService {
 
     const now = this.nowIso();
     const emailDomain = this.emailDomain(email);
-
-    const record: RegistrationRecord = {
+    const base: RegistrationRecord = {
       ...(existing?.pk ? existing : this.registrationKey(email)),
       email,
       emailDomain,
       cognitoUsername: email,
-      status: 'active' as RegistrationStatus,
-      setupCompletedAt: now,
+      status: 'pending_setup' as RegistrationStatus,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
       approvedBy: 'sf-org-id-verification',
     };
-    delete (record as Partial<RegistrationRecord>).setupTokenHash;
-    delete (record as Partial<RegistrationRecord>).setupTokenExpiresAt;
+    delete (base as Partial<RegistrationRecord>).setupTokenHash;
+    delete (base as Partial<RegistrationRecord>).setupTokenExpiresAt;
 
-    await this.writeRegistration(record);
+    // (3) Persist a NON-active record first: a crash or audit failure now leaves
+    // the account not-normally-usable (session gate denies non-active).
+    await this.writeRegistration({ ...base, status: 'pending_setup' });
+
+    // (4) Required success audit AFTER mutation, BEFORE activation. A failure here
+    // throws (500); the account stays pending_setup and a retry reconciles.
+    await audit('setup_complete');
+
+    // (5) Only now mark the account active / normally usable.
+    await this.writeRegistration({ ...base, status: 'active' as RegistrationStatus, setupCompletedAt: now });
 
     // Log outcome only: email + role. Never log SF Org ID or password.
     log.info('auth.setup_account_direct.complete', { email, role: approved.role });

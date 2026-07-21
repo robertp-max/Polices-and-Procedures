@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import {
   BadgeCheck,
   ClipboardCheck,
@@ -15,6 +15,7 @@ import type { User } from '@/policy/security/identity/types';
 import { USER_GROUPS, USER_GROUP_BY_ID } from '@/policy/security/identity/userGroups';
 import { useUserAssignmentsStore } from '@/policy/security/identity/userAssignmentsStore';
 import { AccountProvisioningCard } from '@/auth/AccountProvisioningCard';
+import { ServerUserAccessPanel } from '@/auth/ServerUserAccessPanel';
 import {
   buildOnboardingTrackForRole,
   type UserSetupFieldsPayload,
@@ -32,7 +33,7 @@ import {
 } from '../../components';
 import { Button, FormField, Input, Select, ToneBadge } from '../../primitives';
 import { type Tone } from '../../tokens';
-import { canManageAdminUsers } from '../../utils/adminRoleHelper';
+import { useManageUsersCapability } from '@/auth/useAdminCapabilities';
 import { cx } from '../../utils/classNames';
 import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabInactiveClass } from './workspaceTabChrome';
 
@@ -250,6 +251,7 @@ type UserPanelTabId = (typeof userPanelTabs)[number]['id'];
 
 export function AdminUsersScreen() {
   const { user: authUser } = useAuth();
+  const { state: capabilityState, manageUsers, refetch: refetchCapability } = useManageUsersCapability();
   const users = useUserAssignmentsStore(s => s.users);
   const assignments = useUserAssignmentsStore(s => s.assignments);
   const setupAssignments = useUserAssignmentsStore(s => s.setupAssignments);
@@ -566,7 +568,7 @@ export function AdminUsersScreen() {
       return;
     }
     setFormError(null);
-    setFormSuccess('User soft-deactivated (status suspended, setup.active = false).');
+    setFormSuccess('Demo directory only — marked deactivated in localStorage. This does NOT suspend a real login; use “User status (server-authoritative)” on the Security tab to suspend access.');
     const user = useUserAssignmentsStore.getState().getUserById(selectedUserId);
     const setup = useUserAssignmentsStore.getState().getSetupAssignment(selectedUserId);
     const groupId = activeGroupId(useUserAssignmentsStore.getState().assignments, selectedUserId);
@@ -612,27 +614,57 @@ export function AdminUsersScreen() {
 
   const fieldClass = 'grid gap-md tablet-l:grid-cols-2';
 
-  // Soft demo gate — AuthProvider always returns Administrator until Phase 2F.
-  // Placed after all hooks to satisfy rules-of-hooks.
-  if (!canManageAdminUsers(authUser)) {
-    return (
-      <section
-        className="grid gap-xl"
-        data-group="Admin"
-        data-hash-id="admin-users"
-        data-route="/admin/users"
-        data-template="matrix"
-      >
-        <div className="rounded-2xl border border-hairline bg-white p-8 text-center">
-          <h1 className="text-xl font-medium text-ink mb-2">Access denied</h1>
-          <p className="text-sm text-muted">
-            Only administrators can manage the demo user directory.
-          </p>
-          <p className="text-xs text-muted mt-4">
-            Demo gate via role string — not a production security boundary (Phase 2F).
-          </p>
-        </div>
-      </section>
+  // Server-authoritative capability gate (COG). `manageUsers` is derived from
+  // the SAME server authority as the protected admin endpoints (never a
+  // client-side role string), so an authenticated Cognito administrator is
+  // correctly allowed while ordinary users are denied. Enforcement still happens
+  // server-side on every mutation; this only decides what to render. Placed
+  // after all hooks to satisfy rules-of-hooks.
+  const gateShell = (children: ReactNode) => (
+    <section
+      className="grid gap-xl"
+      data-group="Admin"
+      data-hash-id="admin-users"
+      data-route="/admin/users"
+      data-template="matrix"
+    >
+      <div className="rounded-2xl border border-hairline bg-white p-8 text-center">{children}</div>
+    </section>
+  );
+
+  if (capabilityState === 'idle' || capabilityState === 'loading') {
+    return gateShell(
+      <>
+        <h1 className="text-xl font-medium text-ink mb-2">Checking access…</h1>
+        <p className="text-sm text-muted">Verifying your administrator permissions.</p>
+      </>,
+    );
+  }
+
+  if (capabilityState === 'error') {
+    return gateShell(
+      <>
+        <h1 className="text-xl font-medium text-ink mb-2">Couldn’t verify access</h1>
+        <p className="text-sm text-muted mb-4">
+          We couldn’t confirm your administrator permissions. This is not a grant of access — please retry.
+        </p>
+        <button
+          type="button"
+          className="inline-flex min-h-tap items-center rounded-2xl border border-tone-teal-border bg-tone-teal-bg px-lg text-xs font-medium uppercase tracking-tag text-ink hover:bg-surface-hover"
+          onClick={refetchCapability}
+        >
+          Retry
+        </button>
+      </>,
+    );
+  }
+
+  if (!manageUsers) {
+    return gateShell(
+      <>
+        <h1 className="text-xl font-medium text-ink mb-2">Access denied</h1>
+        <p className="text-sm text-muted">You need administrator permissions to manage users.</p>
+      </>,
     );
   }
 
@@ -1042,8 +1074,9 @@ export function AdminUsersScreen() {
                   variant="secondary"
                   disabled={isProtected || selectedUser.status === 'suspended'}
                   onClick={handleDeactivate}
+                  title="Demo directory only — does not suspend a real login."
                 >
-                  Deactivate
+                  Deactivate (demo)
                 </Button>
                 <Button
                   className="border-brand-orange bg-brand-orange text-on-brand hover:bg-brand-orange/95 font-light"
@@ -1102,6 +1135,10 @@ export function AdminUsersScreen() {
               {securityCards.map((card) => (
                 <SurfaceCard card={card} key={card.title} />
               ))}
+
+              {/* Phase COG-2: server-authoritative suspend/reactivate — the only
+                  control that changes a real login's access. */}
+              <ServerUserAccessPanel />
 
               {/* Phase COG-1: real Cognito account provisioning via the existing auth backend. */}
               <AccountProvisioningCard />

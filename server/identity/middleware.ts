@@ -21,6 +21,8 @@ declare global {
     interface Request {
       session: SessionContext;
       actor: Actor;
+      /** Set by requireUserStatusAuthority — the authority verdict + source. */
+      userStatusAuthority?: import('../auth/userStatusAuthorityCore.js').UserStatusAuthorityResult;
     }
   }
 }
