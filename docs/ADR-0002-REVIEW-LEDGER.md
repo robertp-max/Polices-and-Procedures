@@ -95,6 +95,13 @@ Last updated: 2026-07-20, HEAD `1a4c5aa3`.
   entry now lands on the `/admin` Control Center (AdminOverviewScreen) with a
   5-area nav (Overview · People · Access · Oversight · Community) + "Invite a user"
   quick action; the create-user UI is discoverable under People.
+- 🟠 **Community profile link target is a generic shell**: canonical accounts now
+  link to `/community/users/:userId`, but `PersonalProfileScreen` renders the
+  CURRENT user (NAME: "User"), not the `:userId` target — pre-existing "future
+  multi-user support" gap (also affects AdminCommunityProfilesScreen's
+  `/personal/profile/:userId` links). Per-user community data exists (badges /
+  commendations / visibility via communityProfileAdapter) but isn't wired into
+  the profile shell by param. Follow-up: make the profile shell load by userId.
 - 🟡 OPEN followups from the redesign: "Invite a user" links to
   `/admin/users?mode=provisioning` — verify AdminUsersScreen actually reads that
   query param (else it just lands on the list). New shell/overview screens have no
