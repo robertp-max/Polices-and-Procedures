@@ -44,5 +44,7 @@ export { Cms485AssessmentQuizPage } from './Cms485AssessmentQuizPage';
 export { PersonalProfileScreen } from './PersonalProfileScreen';
 export { CommunityScreen } from './CommunityScreen';
 export { ComplianceHomeScreen } from './ComplianceHomeScreen';
+export { VendorManagementScreen } from './VendorManagementScreen';
+export { ContractorManagementScreen } from './ContractorManagementScreen';
 
 

@@ -14,7 +14,7 @@ export const primaryNavItems: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', to: '/dashboard', hashIds: ['dashboard'] },
   // 'Clinician Profiles', 'Patient Profiles' and 'Calendar' hidden from the sidebar per request.
   // Routes still resolve by direct URL; they are just removed from the nav.
-  { id: 'ces', label: 'Compliance', to: '/compliance', hashIds: ['compliance-home', 'ces-calendar', 'ces-board', 'master-controls', 'audit-mode', 'ces-reports'], matchPaths: ['/compliance', '/ces/calendar', '/ces/board', '/ces/events', '/ces/reports', '/audit'] },
+  { id: 'ces', label: 'Compliance', to: '/compliance', hashIds: ['compliance-home', 'ces-calendar', 'ces-board', 'master-controls', 'vendor-management', 'contractor-management', 'audit-mode', 'ces-reports'], matchPaths: ['/compliance', '/compliance/vendors', '/compliance/contractors', '/ces/calendar', '/ces/board', '/ces/events', '/ces/reports', '/audit'] },
   // Standalone DefenCIble entry — shield icon, rendered vertically centered on the left rail.
   {
     id: 'defensible',

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronDown, ClipboardCheck, FileSignature, FolderOpen, History, ShieldCheck, X } from 'lucide-react';
 import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
+import { RegistryContractsNav } from './ComplianceManagementShell';
 import { hasRequiredDocumentationBody, loadMasterControlInventorySeed } from '@/policy/data/masterControlInventory';
 import {
   getMasterControlDocumentation,
@@ -110,6 +111,14 @@ export function MasterControlsScreen() {
 
   return (
     <section className="grid gap-xl" data-hash-id="master-controls" data-route="/compliance/master-controls">
+      <RegistryContractsNav />
+      <header className="relative overflow-hidden rounded-[28px] bg-white px-lg py-xl shadow-[0_18px_48px_rgba(0,47,48,0.08)] tablet-l:px-2xl tablet-l:py-2xl">
+        <div className="max-w-[820px]">
+          <p className="font-montserrat text-[11px] font-medium uppercase tracking-[0.18em] text-brand-orange">COMPLIANCE · CONTROL REGISTER</p>
+          <h1 className="mt-sm font-roboto text-[clamp(2.15rem,4vw,3.65rem)] font-light leading-[1.04] tracking-[-0.035em] text-brand-teal-deep">Regulatory control register</h1>
+          <p className="mt-md max-w-[760px] text-sm font-light leading-relaxed text-secondary tablet-l:text-base">Every mandated control mapped to its risk, required evidence, owner, and survey-readiness status — the register the Vendor and Contractor programs roll up into.</p>
+        </div>
+      </header>
       <MetricGrid metrics={buildMetrics(items)} />
 
       <section className="grid gap-xl desktop:grid-cols-6" aria-label="Master controls inventory and readiness">

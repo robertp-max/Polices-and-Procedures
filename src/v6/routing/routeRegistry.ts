@@ -14,6 +14,8 @@ export type V6RouteTemplate =
   | 'board'
   | 'calendar'
   | 'chat'
+  | 'vendor-management'
+  | 'contractor-management'
   | 'dashboard'
   | 'detail'
   | 'docs'
@@ -64,6 +66,26 @@ export const V6_ROUTES = [
   { path: '/workflows/:workflowId/swimlane', hashId: 'workflow-swimlane', template: 'board', group: 'CES', title: 'Workflow Swimlane', description: 'Workflow swimlane for intake, evidence, review, signature, and lock steps (reference or event execution context).' },
   { path: '/events/:eventId/swimlane', hashId: 'workflow-swimlane', template: 'board', group: 'CES', title: 'Workflow Swimlane', description: 'Event workflow swimlane for the selected event occurrence and workflow.' },
   { path: '/compliance/master-controls', hashId: 'master-controls', template: 'matrix', group: 'CES', title: 'Master Controls', description: 'Regulatory control matrix mapped to risk, evidence, and readiness.' },
+  { path: '/compliance/vendors', hashId: 'vendor-management', template: 'vendor-management', group: 'CES', title: 'Vendor Management', description: 'Entity-level classification, requirements, agreements, monitoring, renewal, incident, and offboarding controls.' },
+  { path: '/compliance/vendors/new', hashId: 'vendor-management-new', template: 'vendor-management', group: 'CES', title: 'New Vendor Review', description: 'Start a risk-based vendor classification and due-diligence review.' },
+  { path: '/compliance/vendors/all', hashId: 'vendor-management-directory', template: 'vendor-management', group: 'CES', title: 'Vendor Directory', description: 'Search and review non-sensitive vendor compliance posture.' },
+  { path: '/compliance/vendors/reviews', hashId: 'vendor-management-reviews', template: 'vendor-management', group: 'CES', title: 'Vendor Reviews & Renewals', description: 'Vendor review and renewal queue.' },
+  { path: '/compliance/vendors/agreements', hashId: 'vendor-management-agreements', template: 'vendor-management', group: 'CES', title: 'Vendor Agreements & BAAs', description: 'Agreement and BAA status without duplicating canonical eCign artifacts.' },
+  { path: '/compliance/vendors/screening', hashId: 'vendor-management-screening', template: 'vendor-management', group: 'CES', title: 'Vendor Screening', description: 'Applicability-driven vendor screening posture.' },
+  { path: '/compliance/vendors/incidents', hashId: 'vendor-management-incidents', template: 'vendor-management', group: 'CES', title: 'Vendor Incidents & CAPs', description: 'Vendor incident and corrective-action oversight.' },
+  { path: '/compliance/vendors/terminations', hashId: 'vendor-management-terminations', template: 'vendor-management', group: 'CES', title: 'Vendor Terminations', description: 'Vendor termination, access revocation, data return, and retention controls.' },
+  { path: '/compliance/vendors/reports', hashId: 'vendor-management-reports', template: 'vendor-management', group: 'CES', title: 'Vendor Reports', description: 'Non-sensitive vendor compliance reports.' },
+  { path: '/compliance/vendors/:vendorId', hashId: 'vendor-management-detail', template: 'vendor-management', group: 'CES', title: 'Vendor Record', description: 'Versioned vendor compliance record and generated requirements.' },
+  { path: '/compliance/contractors', hashId: 'contractor-management', template: 'contractor-management', group: 'CES', title: 'Contractor Management', description: 'Person-level classification, credentialing, clearance, assignment, renewal, and offboarding for nonemployee workers.' },
+  { path: '/compliance/contractors/new', hashId: 'contractor-management-new', template: 'contractor-management', group: 'CES', title: 'New Contractor Review', description: 'Start an evidence-backed person-level classification and clearance review.' },
+  { path: '/compliance/contractors/directory', hashId: 'contractor-management-directory', template: 'contractor-management', group: 'CES', title: 'Contractor Directory', description: 'Search non-sensitive person-level contractor compliance posture.' },
+  { path: '/compliance/contractors/clearance', hashId: 'contractor-management-clearance', template: 'contractor-management', group: 'CES', title: 'Contractor Clearance Queue', description: 'Applicable clearance gates and assignment hard stops.' },
+  { path: '/compliance/contractors/expirations', hashId: 'contractor-management-expirations', template: 'contractor-management', group: 'CES', title: 'Contractor Expirations', description: 'Credential, clearance, agreement, and renewal windows.' },
+  { path: '/compliance/contractors/assignments', hashId: 'contractor-management-assignments', template: 'contractor-management', group: 'CES', title: 'Contractor Assignments', description: 'Server-gated assignment and supervision posture.' },
+  { path: '/compliance/contractors/reviews', hashId: 'contractor-management-reviews', template: 'contractor-management', group: 'CES', title: 'Contractor Reviews', description: 'Individual performance, compliance, restriction, and incident reviews.' },
+  { path: '/compliance/contractors/offboarding', hashId: 'contractor-management-offboarding', template: 'contractor-management', group: 'CES', title: 'Contractor Offboarding', description: 'Individual access revocation, assignment closure, evidence, and retention.' },
+  { path: '/compliance/contractors/audit', hashId: 'contractor-management-audit', template: 'contractor-management', group: 'CES', title: 'Contractor Audit', description: 'Person-level compliance audit trail.' },
+  { path: '/compliance/contractors/:contractorId', hashId: 'contractor-management-detail', template: 'contractor-management', group: 'CES', title: 'Contractor Record', description: 'Versioned individual clearance and assignment record.' },
   { path: '/audit', hashId: 'audit-mode', template: 'evidence', group: 'CES', title: 'Audit Mode', description: 'Read-only audit review surface for missing evidence and packet checks.' },
   { path: '/evidence', hashId: 'defensible-2', template: 'evidence', group: 'CES', title: 'DefenCIble', description: 'DefenCIble evidence packet studio for source selection, packet generation, preview, export, and Drive sync.' },
   { path: '/evidence/intake', hashId: 'evidence-intake', template: 'evidence', group: 'CES', title: 'Brad Evidence Intake', description: 'Brad Evidence Intake inside Evidence Center: upload source exports, resolve created-date filing, classify and dedupe, file to Drive, run full-population review, and prepare draft forms, agendas, tasks, and packets for human approval.' },
