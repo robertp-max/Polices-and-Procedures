@@ -26,6 +26,10 @@ docs/keys/
 *service-account*.json
 *credentials*.json
 *.private.json
+# GCP key files by shape/name (belt-and-suspenders — catch raw key filenames anywhere)
+orbital-stage-*.json
+*.gcp-key.json
+*-privatekey.json
 server/credentials/*.json
 !server/credentials/.gitkeep
 !server/credentials/README.md
