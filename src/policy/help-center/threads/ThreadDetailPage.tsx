@@ -7,6 +7,7 @@ import { useThreadStore } from './threadStore';
 import { useThreadActor } from './useThreadActor';
 import { awardBadge } from '@/v6/utils/communityBadges';
 import { BradThreadReply } from './BradThreadReply';
+import { composeThreadAnswer } from './bradThreadResponder';
 import { ThreadMergeBanner } from './ThreadMergeBanner';
 import { ThreadSourceBadge } from './ThreadSourceBadge';
 import { ThreadAdminControls } from './ThreadAdminControls';
@@ -69,8 +70,28 @@ export function ThreadDetailPage({ threadId, onBack, onOpenThread, onOpenRoute }
       if (result.reason === 'phi') setPhi(result.phi);
       return;
     }
+    const question = reply;
     setReply('');
     setPhi(null);
+    // Brad auto-responds to the posted question. composeThreadAnswer is pure,
+    // deterministic, and source-grounded — it fabricates nothing and routes to
+    // human review when there is no verified source. (This wiring was missing:
+    // the responder existed but was never invoked from the UI, so Brad never
+    // replied on threads.)
+    const answer = composeThreadAnswer({
+      question,
+      candidateSources: summary?.relatedSources ?? [],
+      responseId: `brad-${threadId}-${crypto.randomUUID()}`,
+      modelVersion: 'thread-responder-1',
+    });
+    addMessage({
+      threadId,
+      authorType: 'brad',
+      authorUserId: 'brad',
+      authorDisplayName: 'Brad',
+      body: answer.body,
+      bradResponseMeta: answer.meta,
+    });
   }
 
   const hasUpvoted = thread.upvotedByUserIds.includes(actor.userId);

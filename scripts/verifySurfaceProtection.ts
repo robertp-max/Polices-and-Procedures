@@ -27,6 +27,7 @@ const nolanResponder = read('server/ia/nolan/nolanTutorResponder.ts');
 const srcExtract = read('server/sourceExtraction.ts');
 const calendar = read('server/routes/calendar.ts');
 const envTs = read('server/env.ts');
+const threadPage = read('src/policy/help-center/threads/ThreadDetailPage.tsx');
 
 /* ── Brad + Nolan: mounted on BOTH entrypoints, behind the auth boundary ──── */
 check('Brad route mounted (server/index.ts)', /app\.use\('\/api\/brad'/.test(indexTs));
@@ -40,6 +41,10 @@ check('cloudrun.ts fails closed if required mounts fail', /required_mounts_faile
 check('Nolan tutor/ask endpoint present', /\/tutor\/ask/.test(nolanRoute));
 check('Nolan tutor/health endpoint present', /\/tutor\/health/.test(nolanRoute));
 check('Nolan deterministic catalog grounding present', /ALL_MODULES|modulesForRole/.test(nolanResponder));
+
+/* ── Help Center threads: Brad responder actually WIRED into the UI ───────── */
+check('Brad thread responder invoked from ThreadDetailPage', /composeThreadAnswer\(/.test(threadPage));
+check('Brad thread reply posted as authorType brad', /authorType:\s*'brad'/.test(threadPage));
 
 /* ── Packets: default/admission reader = Opus primary → ChatGPT fallback ──── */
 check('packet reader default: Opus(Claude) primary, CLI-gated', /const claudeOk = await claudeCliAvailable\(\)/.test(srcExtract));
