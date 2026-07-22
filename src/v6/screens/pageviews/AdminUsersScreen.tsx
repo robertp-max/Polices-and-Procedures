@@ -50,6 +50,21 @@ const DEMO_ACTOR_USER_ID = 'demo-user-careindeed';
 
 const PROTECTED_USER_IDS = new Set(['demo-user-careindeed']);
 
+/**
+ * Real Care Indeed people (canonical accounts). Everyone else in the seeded
+ * identity directory is prototype/demo data and is grouped separately in the
+ * People area so canonical accounts are never confused with demo personas.
+ */
+const CANONICAL_ACCOUNT_IDS = new Set([
+  'demo-user-careindeed', // TJ Padilla (robertp@careindeed.com)
+  'usr-marites',          // Marites Arzaga
+  'usr-deeb-admin',       // Deeb Admin
+  'usr-dagny',            // Dagny Yenko
+  'usr-janine',           // Janine Catanghal
+  'usr-monserat',         // Monserat Zapanta
+  'usr-reden',            // Reden Valerio
+]);
+
 const PRIVILEGED_GROUP_IDS = new Set([
   'grp-super-admin',
   'grp-admin',
@@ -327,6 +342,9 @@ export function AdminUsersScreen() {
         };
       });
   }, [users, assignments, setupAssignments, userById]);
+
+  const canonicalRows = useMemo(() => rows.filter(r => CANONICAL_ACCOUNT_IDS.has(r.userId)), [rows]);
+  const demoRows = useMemo(() => rows.filter(r => !CANONICAL_ACCOUNT_IDS.has(r.userId)), [rows]);
 
   const userColumns: readonly DataTableColumn<AdminUserRow>[] = [
     { key: 'name', label: 'Name' },
@@ -779,7 +797,7 @@ export function AdminUsersScreen() {
         <section className="grid content-start gap-lg" aria-label="Admin users role and access assignment matrix">
           <div className="flex flex-wrap items-center justify-between gap-md">
             <p className="text-sm text-secondary">
-              {rows.length} users from identity store · click a row to edit setup
+              {canonicalRows.length} canonical · {demoRows.length} prototype/demo · click a row to edit setup
             </p>
             <Button
               size="sm"
@@ -945,12 +963,40 @@ export function AdminUsersScreen() {
             </section>
           )}
 
-          <DataTable
-            columns={userColumns}
-            label="Admin users role and access assignment matrix"
-            rows={rows}
-            onRowClick={handleRowClick}
-          />
+          {/* Canonical (real) Care Indeed accounts */}
+          <div className="grid gap-sm">
+            <div className="flex flex-wrap items-center gap-sm">
+              <h3 className="text-sm font-medium text-brand-teal-deep">Canonical accounts</h3>
+              <span className="rounded-full border border-tone-teal-border bg-tone-teal-bg px-sm py-[2px] text-[10px] font-medium uppercase tracking-wider text-tone-teal-text">
+                {canonicalRows.length} real
+              </span>
+            </div>
+            <DataTable
+              columns={userColumns}
+              label="Canonical Care Indeed accounts"
+              rows={canonicalRows}
+              onRowClick={handleRowClick}
+            />
+          </div>
+
+          {/* Prototype / demo directory — seeded personas, clearly separated */}
+          <div className="grid gap-sm">
+            <div className="flex flex-wrap items-center gap-sm">
+              <h3 className="text-sm font-medium text-ink">Prototype / demo users</h3>
+              <span className="rounded-full border border-tone-orange-border bg-tone-orange-bg px-sm py-[2px] text-[10px] font-medium uppercase tracking-wider text-tone-orange-text">
+                {demoRows.length} demo
+              </span>
+            </div>
+            <p className="text-xs text-muted">
+              Seeded demo personas — not real Care Indeed staff. Kept separate from canonical accounts (localStorage prototype directory).
+            </p>
+            <DataTable
+              columns={userColumns}
+              label="Prototype / demo users"
+              rows={demoRows}
+              onRowClick={handleRowClick}
+            />
+          </div>
 
           {selectedUser && editForm && (
             <section className="mt-md rounded-lg border border-tone-orange-border bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest transition duration-normal">
