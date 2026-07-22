@@ -11,7 +11,6 @@ import type {
   MasterControlSourceRecord,
 } from '@/policy/types/masterControlInventory';
 import {
-  EXTRA_MASTER_CONTROL_SOURCE_RECORDS,
   buildDefaultAuditTrail,
   buildDefaultDocumentRefs,
   buildDefaultEvidenceRequirements,
@@ -191,7 +190,9 @@ export async function loadMasterControlInventorySeed(): Promise<MasterControlIte
         continue;
       }
 
-      return [...payload.controls, ...EXTRA_MASTER_CONTROL_SOURCE_RECORDS].map(mapMasterControlRecord);
+      // Single canonical source: the 116 controls (incl. former EXTRA CTRL-105…116)
+      // now live in the JSON registry (see npm run controls:generate). No split append.
+      return payload.controls.map(mapMasterControlRecord);
     } catch (error) {
       console.error('[MasterControlInventory] Dataset fetch threw an error', {
         path,

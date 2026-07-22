@@ -4,6 +4,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 import { MasterControlsScreen } from '@/v6/screens/pageviews/MasterControlsScreen';
 import { MASTER_CONTROL_DOCUMENTATION_RECORDS, MASTER_CONTROL_MISSING_DOCUMENTATION_ROWS } from './masterControlDocumentation.generated';
 import { deriveReadinessStatus, loadMasterControlInventorySeed } from './masterControlInventory';
@@ -186,7 +187,7 @@ describe('master control dossiers', () => {
   });
 
   it('opens the Control Dossier modal when a row is clicked', async () => {
-    render(<MasterControlsScreen />);
+    render(<MemoryRouter initialEntries={['/compliance/master-controls']}><MasterControlsScreen /></MemoryRouter>);
     const rowControl = await screen.findByText('CTRL-001');
     fireEvent.click(rowControl);
     await waitFor(() => expect(screen.getByRole('dialog', { name: /CTRL-001 control dossier/i })).toBeTruthy());
@@ -201,7 +202,7 @@ describe('master control dossiers', () => {
   });
 
   it('expands HIPAA NPP and Advance Directive required-document cards inline', async () => {
-    render(<MasterControlsScreen />);
+    render(<MemoryRouter initialEntries={['/compliance/master-controls']}><MasterControlsScreen /></MemoryRouter>);
     fireEvent.click(await screen.findByText('CTRL-001'));
     await waitFor(() => expect(screen.getByRole('dialog', { name: /CTRL-001 control dossier/i })).toBeTruthy());
     fireEvent.click(screen.getByText('Required Documents'));
@@ -216,7 +217,7 @@ describe('master control dossiers', () => {
   });
 
   it('expands every Batch 1 CTRL-001 required-document card inline with body copy', async () => {
-    render(<MasterControlsScreen />);
+    render(<MemoryRouter initialEntries={['/compliance/master-controls']}><MasterControlsScreen /></MemoryRouter>);
     fireEvent.click(await screen.findByText('CTRL-001'));
     await waitFor(() => expect(screen.getByRole('dialog', { name: /CTRL-001 control dossier/i })).toBeTruthy());
     fireEvent.click(screen.getByText('Required Documents'));
@@ -233,7 +234,7 @@ describe('master control dossiers', () => {
   });
 
   it('renders verification and sign-off log support fields without fake completion', async () => {
-    render(<MasterControlsScreen />);
+    render(<MemoryRouter initialEntries={['/compliance/master-controls']}><MasterControlsScreen /></MemoryRouter>);
     fireEvent.click(await screen.findByText('CTRL-001'));
     await waitFor(() => expect(screen.getByRole('dialog', { name: /CTRL-001 control dossier/i })).toBeTruthy());
     fireEvent.click(screen.getByText('Sign-Off'));
