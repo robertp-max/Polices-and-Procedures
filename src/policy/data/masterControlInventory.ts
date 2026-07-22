@@ -10,6 +10,7 @@ import type {
   MasterControlSourcePayload,
   MasterControlSourceRecord,
 } from '@/policy/types/masterControlInventory';
+import { deriveControlReadiness } from './controlReadinessEngine';
 import {
   buildDefaultAuditTrail,
   buildDefaultDocumentRefs,
@@ -89,20 +90,31 @@ export function deriveReadinessStatus({
   sourceStatus: MasterControlSourceStatus;
 }): MasterControlReadinessStatus {
   const requiredDocumentRefs = documentRefs.filter((ref) => ref.required);
-  if (requiredDocumentRefs.length === 0 || evidenceRequirements.length === 0 || signoffRequirements.length === 0) {
-    return 'NOT_CONFIGURED';
-  }
-  if (
-    requiredDocumentRefs.some((ref) => {
-      const record = documentationRecords.find((doc) => doc?.documentId === ref.documentId);
-      return !hasRequiredDocumentationBody(record);
-    })
-  ) {
-    return 'DOCUMENTATION_MISSING';
-  }
-  if (sourceStatus === 'DEFICIENT') return 'BLOCKED';
-  if (sourceStatus === 'COMPLIANT') return 'NEEDS_ATTENTION';
-  return 'BLOCKED';
+  const requiredDocsPresentAndCurrent = requiredDocumentRefs.every((ref) => {
+    const record = documentationRecords.find((doc) => doc?.documentId === ref.documentId);
+    return hasRequiredDocumentationBody(record);
+  });
+  // Single source of readiness truth (see controlReadinessEngine.ts). Operational
+  // execution state (evidence artifacts, verification/sign-off executions) is not
+  // captured in the definition-only model yet — it arrives with the P5/P6 server
+  // records — so a control with no real evidence is honestly blocked, never
+  // derived "ready" from a self-declared source status.
+  return deriveControlReadiness({
+    definitionApproved: true,
+    applicable: true,
+    hasRequiredDocs: requiredDocumentRefs.length > 0,
+    hasEvidenceRequirements: evidenceRequirements.length > 0,
+    hasSignoffRequirements: signoffRequirements.length > 0,
+    requiredDocsPresentAndCurrent,
+    requiredEvidencePresentAndAccepted: false,
+    anyRequiredEvidenceExpired: false,
+    requiredVerificationComplete: false,
+    verificationOverdue: false,
+    requiredSignoffsComplete: false,
+    openCriticalDeficiency: sourceStatus === 'DEFICIENT',
+    overdueRequiredAction: false,
+    implementationComplete: false,
+  }).legacy;
 }
 
 export function mapMasterControlRecord(source: MasterControlSourceRecord): MasterControlItem {
