@@ -88,14 +88,14 @@ describe('resolveCapabilities — manageUserStatus projection', () => {
     const svc = buildService();
     stubCognito(svc, { email: ADMIN_EMAIL });
     const caps = await svc.resolveCapabilities('admin-token');
-    expect(caps).toEqual({ manageUsers: true, manageUserStatus: true });
+    expect(caps).toMatchObject({ manageUsers: true, manageUserStatus: true });
   });
 
   it('denies both to a non-admin email', async () => {
     const svc = buildService();
     stubCognito(svc, { email: 'nurse@careindeed.com' });
     const caps = await svc.resolveCapabilities('nurse-token');
-    expect(caps).toEqual({ manageUsers: false, manageUserStatus: false });
+    expect(caps).toMatchObject({ manageUsers: false, manageUserStatus: false });
   });
 
   it('rejects a blank access token with 401 before any provider call', async () => {
@@ -115,7 +115,7 @@ describe('resolveCapabilities — manageUserStatus projection', () => {
       },
     });
     const caps = await svc.resolveCapabilities('admin-token');
-    expect(caps).toEqual({ manageUsers: false, manageUserStatus: false });
+    expect(caps).toMatchObject({ manageUsers: false, manageUserStatus: false });
   });
 
   it('grants an approved-admin email whose canonical record is PENDING', async () => {
@@ -128,6 +128,6 @@ describe('resolveCapabilities — manageUserStatus projection', () => {
       },
     });
     const caps = await svc.resolveCapabilities('admin-token');
-    expect(caps).toEqual({ manageUsers: true, manageUserStatus: true });
+    expect(caps).toMatchObject({ manageUsers: true, manageUserStatus: true });
   });
 });

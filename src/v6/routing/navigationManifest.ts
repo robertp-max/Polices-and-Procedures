@@ -30,7 +30,7 @@ export const primaryNavItems: NavItem[] = [
   { id: 'community', label: 'Community', to: '/community', hashIds: ['community', 'community-members'] },
   // System Documentation and Demo are hidden from the nav bar per request.
   // (Their routes still resolve by direct URL; they are just hidden from the sidebar.)
-  { id: 'admin', label: 'Admin', to: '/admin/user-groups', hashIds: ['admin-groups', 'admin-roles', 'admin-permissions', 'admin-users', 'admin-community-profiles'] },
+  { id: 'admin', label: 'Admin', to: '/admin', hashIds: ['admin-overview', 'admin-groups', 'admin-roles', 'admin-permissions', 'admin-users', 'admin-user-detail', 'admin-signature-coverage', 'admin-access-review', 'admin-reconciliation', 'admin-community-profiles'] },
 ];
 
 export const chromeOnlyPrimaryNavItemIds = new Set(['brad', 'community', 'admin']);
@@ -70,10 +70,14 @@ export const workspaceSubnavItems: Record<string, NavItem[]> = {
     { id: 'prod-road', label: 'Production Roadmap', to: '/system-documentation/production-roadmap', hashIds: ['system-docs'] },
   ],
   admin: [
+    { id: 'admin-overview', label: 'Overview', to: '/admin', hashIds: ['admin-overview'] },
     { id: 'admin-groups', label: 'User Groups', to: '/admin/user-groups', hashIds: ['admin-groups'] },
     { id: 'admin-roles', label: 'Roles', to: '/admin/roles', hashIds: ['admin-roles'] },
     { id: 'admin-permissions', label: 'Permissions', to: '/admin/permissions', hashIds: ['admin-permissions'] },
-    { id: 'admin-users', label: 'Users', to: '/admin/users', hashIds: ['admin-users'] },
+    { id: 'admin-users', label: 'Users', to: '/admin/users', hashIds: ['admin-users', 'admin-user-detail'] },
+    { id: 'admin-signature-coverage', label: 'Signature Coverage', to: '/admin/signature-coverage', hashIds: ['admin-signature-coverage'] },
+    { id: 'admin-access-review', label: 'Access Review', to: '/admin/access-review', hashIds: ['admin-access-review'] },
+    { id: 'admin-reconciliation', label: 'Reconciliation', to: '/admin/reconciliation', hashIds: ['admin-reconciliation'] },
     { id: 'admin-community-profiles', label: 'Community Profiles', to: '/admin/community-profiles', hashIds: ['admin-community-profiles'] },
   ],
 };

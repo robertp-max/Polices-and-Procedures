@@ -73,6 +73,34 @@ function countActivePrivilegedAdmins(registry: AppIdentityRegistry, nowIso: stri
   }).length;
 }
 
+/**
+ * Guard: may this actor suspend this target? Blocks self-suspension and
+ * suspending the last active super-admin. Pure (throws or returns). Shared by
+ * the pure canonical mutation AND the durable lifecycle transition (Phase 2E),
+ * so both enforce identical policy.
+ */
+export function assertCanSuspend(
+  registry: AppIdentityRegistry,
+  actorUserId: string | undefined,
+  targetUserId: string,
+  nowIso: string,
+): void {
+  requireUser(registry, targetUserId);
+  if (actorUserId === targetUserId) {
+    throw new ApiError('validation_error', 'You cannot suspend your own account.', 400);
+  }
+  const targetRoles = activeRoleGroupIds(registry, targetUserId, nowIso);
+  if (targetRoles.includes(SUPER_ADMIN_GROUP_ID) && countActivePrivilegedAdmins(registry, nowIso) <= 1) {
+    throw new ApiError('validation_error', 'Cannot suspend the last active super-admin.', 400);
+  }
+}
+
+/** Guard: may this target be reactivated? (Existence check; reactivation
+ *  restores access, never privilege.) */
+export function assertCanReactivate(registry: AppIdentityRegistry, targetUserId: string): void {
+  requireUser(registry, targetUserId);
+}
+
 /** Suspend a user. Blocks self-suspension and suspending the last super-admin. */
 export function suspendUser(
   registry: AppIdentityRegistry,
@@ -81,14 +109,8 @@ export function suspendUser(
   nowIso: string,
 ): AccessChange {
   const next = clone(registry);
+  assertCanSuspend(next, actor.user_id, targetUserId, nowIso);
   const target = requireUser(next, targetUserId);
-  if (actor.user_id === targetUserId) {
-    throw new ApiError('validation_error', 'You cannot suspend your own account.', 400);
-  }
-  const targetRoles = activeRoleGroupIds(next, targetUserId, nowIso);
-  if (targetRoles.includes(SUPER_ADMIN_GROUP_ID) && countActivePrivilegedAdmins(next, nowIso) <= 1) {
-    throw new ApiError('validation_error', 'Cannot suspend the last active super-admin.', 400);
-  }
   const before = { status: target.status };
   target.status = 'suspended';
   return {
@@ -107,6 +129,7 @@ export function reactivateUser(
   targetUserId: string,
 ): AccessChange {
   const next = clone(registry);
+  assertCanReactivate(next, targetUserId);
   const target = requireUser(next, targetUserId);
   const before = { status: target.status };
   target.status = 'active';

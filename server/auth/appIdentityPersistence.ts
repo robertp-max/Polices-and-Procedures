@@ -31,6 +31,10 @@ export interface AppIdentityRegistry {
   users: AppIdentityUser[];
   assignments: AppRoleAssignment[];
   syncedCount?: number;
+  /** Optimistic-concurrency token (ADR-0002 Phase 3D). Absent/undefined is
+   *  treated as 0. Bumped on every registry mutation; the admin UI round-trips
+   *  it so a concurrent change is rejected with 409 instead of silently lost. */
+  version?: number;
 }
 
 interface AppIdentityPersistence {

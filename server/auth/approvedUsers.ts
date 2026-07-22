@@ -323,6 +323,6 @@ export function auditAllowlistCoverage(existingUsers: AllowlistAuditUser[]): All
     missingOrgId,
     allowlistUnavailable: false,
   };
-  log.info('auth.allowlist_audit.summary', result);
+  log.info('auth.allowlist_audit.summary', { ...result });
   return result;
 }
