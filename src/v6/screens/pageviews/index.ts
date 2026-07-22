@@ -45,5 +45,7 @@ export { PersonalProfileScreen } from './PersonalProfileScreen';
 export { CommunityScreen } from './CommunityScreen';
 export { ComplianceHomeScreen } from './ComplianceHomeScreen';
 export { EhrPrototypeScreen, FindHomeCareScreen, ReceptionScreen } from './ReceptionScreen';
+export { VendorManagementScreen } from './VendorManagementScreen';
+export { ContractorManagementScreen } from './ContractorManagementScreen';
 
 

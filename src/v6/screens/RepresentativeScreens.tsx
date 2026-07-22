@@ -33,7 +33,7 @@ import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
 import { BoardLane, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
-import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, AdminCommunityProfilesScreen, AdmissionPacketPreviewScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyAreaNav, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, UserGuideScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, ForgotPasswordScreen, ResetPasswordScreen, SetupAccountScreen, MobileIncidentScreen, NotFoundScreen, PersonalProfileScreen, CommunityScreen, ComplianceHomeScreen, ReceptionScreen, FindHomeCareScreen, EhrPrototypeScreen } from './pageviews';
+import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, AdminCommunityProfilesScreen, AdmissionPacketPreviewScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyAreaNav, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, UserGuideScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, ForgotPasswordScreen, ResetPasswordScreen, SetupAccountScreen, MobileIncidentScreen, NotFoundScreen, PersonalProfileScreen, CommunityScreen, ComplianceHomeScreen, ReceptionScreen, FindHomeCareScreen, EhrPrototypeScreen, VendorManagementScreen, ContractorManagementScreen } from './pageviews';
 import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabClass, workspaceTabInactiveClass, workspaceTabNavClass } from './pageviews/workspaceTabChrome';
 import { StaticCardWatermark } from './pageviews/StaticCardWatermark';
 
@@ -1714,6 +1714,30 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       break;
     case 'compliance-home':
       child = <ComplianceHomeScreen />;
+      break;
+    case 'vendor-management':
+    case 'vendor-management-new':
+    case 'vendor-management-directory':
+    case 'vendor-management-reviews':
+    case 'vendor-management-agreements':
+    case 'vendor-management-screening':
+    case 'vendor-management-incidents':
+    case 'vendor-management-terminations':
+    case 'vendor-management-reports':
+    case 'vendor-management-detail':
+      child = <VendorManagementScreen />;
+      break;
+    case 'contractor-management':
+    case 'contractor-management-new':
+    case 'contractor-management-directory':
+    case 'contractor-management-clearance':
+    case 'contractor-management-expirations':
+    case 'contractor-management-assignments':
+    case 'contractor-management-reviews':
+    case 'contractor-management-offboarding':
+    case 'contractor-management-audit':
+    case 'contractor-management-detail':
+      child = <ContractorManagementScreen />;
       break;
     case 'personal-profile':
       child = <PersonalProfileScreen />;
