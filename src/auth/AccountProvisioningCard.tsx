@@ -59,6 +59,9 @@ export function AccountProvisioningCard() {
     setBusy(kind);
     try {
       report('ok', await action());
+      // Password hygiene: never leave a plaintext temp password lingering in the
+      // field/state after it has been submitted for a grant or reset.
+      if (kind === 'grant' || kind === 'reset') setTempPassword('');
     } catch (e) {
       report('err', safeError(e, 'The account service is temporarily unavailable. Please try again.'));
     } finally {

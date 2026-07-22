@@ -744,6 +744,28 @@ export function AdminUsersScreen() {
             </div>
             <ToneTag tone="teal">Server projection</ToneTag>
           </div>
+
+          {/* Real Care Indeed accounts (canonical). Passwords are never shown or
+              stored here — account access is managed under Invite & provision. */}
+          <div className="grid gap-sm rounded-2xl bg-white p-lg shadow-[0_10px_30px_rgba(0,47,48,0.05)]">
+            <div className="flex flex-wrap items-center gap-sm">
+              <h3 className="text-sm font-medium text-brand-teal-deep">Canonical accounts</h3>
+              <span className="rounded-full border border-tone-teal-border bg-tone-teal-bg px-sm py-[2px] text-[10px] font-medium uppercase tracking-wider text-tone-teal-text">
+                {canonicalRows.length} real
+              </span>
+            </div>
+            <p className="text-xs text-muted">
+              Real Care Indeed people. No passwords are displayed or stored on this record; sign-in credentials
+              are provisioned only under Invite &amp; provision and are never returned to the UI.
+            </p>
+            <DataTable
+              columns={userColumns}
+              label="Canonical Care Indeed accounts"
+              rows={canonicalRows}
+              onRowClick={handleRowClick}
+            />
+          </div>
+
           <ServerUserAccessPanel />
         </div>
       )}
@@ -797,7 +819,7 @@ export function AdminUsersScreen() {
         <section className="grid content-start gap-lg" aria-label="Admin users role and access assignment matrix">
           <div className="flex flex-wrap items-center justify-between gap-md">
             <p className="text-sm text-secondary">
-              {canonicalRows.length} canonical · {demoRows.length} prototype/demo · click a row to edit setup
+              {demoRows.length} prototype/demo users · {canonicalRows.length} canonical accounts moved to Account directory · click a row to edit setup
             </p>
             <Button
               size="sm"
@@ -963,23 +985,8 @@ export function AdminUsersScreen() {
             </section>
           )}
 
-          {/* Canonical (real) Care Indeed accounts */}
-          <div className="grid gap-sm">
-            <div className="flex flex-wrap items-center gap-sm">
-              <h3 className="text-sm font-medium text-brand-teal-deep">Canonical accounts</h3>
-              <span className="rounded-full border border-tone-teal-border bg-tone-teal-bg px-sm py-[2px] text-[10px] font-medium uppercase tracking-wider text-tone-teal-text">
-                {canonicalRows.length} real
-              </span>
-            </div>
-            <DataTable
-              columns={userColumns}
-              label="Canonical Care Indeed accounts"
-              rows={canonicalRows}
-              onRowClick={handleRowClick}
-            />
-          </div>
-
-          {/* Prototype / demo directory — seeded personas, clearly separated */}
+          {/* Prototype / demo directory — seeded personas only. Real Care Indeed
+              accounts live under the Account directory tab. */}
           <div className="grid gap-sm">
             <div className="flex flex-wrap items-center gap-sm">
               <h3 className="text-sm font-medium text-ink">Prototype / demo users</h3>
@@ -988,7 +995,7 @@ export function AdminUsersScreen() {
               </span>
             </div>
             <p className="text-xs text-muted">
-              Seeded demo personas — not real Care Indeed staff. Kept separate from canonical accounts (localStorage prototype directory).
+              Seeded demo personas — not real Care Indeed staff. Canonical accounts are moved to the Account directory tab.
             </p>
             <DataTable
               columns={userColumns}
