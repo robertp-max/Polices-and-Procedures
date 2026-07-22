@@ -59,6 +59,9 @@ export function AccountProvisioningCard() {
     setBusy(kind);
     try {
       report('ok', await action());
+      // Password hygiene: never leave a plaintext temp password lingering in the
+      // field/state after it has been submitted for a grant or reset.
+      if (kind === 'grant' || kind === 'reset') setTempPassword('');
     } catch (e) {
       report('err', safeError(e, 'The account service is temporarily unavailable. Please try again.'));
     } finally {
@@ -86,16 +89,16 @@ export function AccountProvisioningCard() {
   return (
     <section
       aria-labelledby="account-provisioning-title"
-      className="rounded-lg border border-tone-teal-border bg-surface-glass p-xl shadow-rest backdrop-blur-md shadow-glass-inset"
+      className="rounded-[28px] bg-white p-xl shadow-[0_16px_42px_rgba(0,47,48,0.07)]"
       data-testid="account-provisioning-card"
     >
       <div className="mb-md flex items-center gap-sm">
         <ShieldCheck aria-hidden="true" className="h-icon-sm w-icon-sm text-brand-teal" />
-        <h2 className="text-h2 font-medium text-ink" id="account-provisioning-title">Account access (Cognito)</h2>
+        <h2 className="text-h2 font-medium text-brand-teal-deep" id="account-provisioning-title">Invite or restore account access</h2>
       </div>
       <p className="mb-lg text-sm font-light text-secondary">
-        Provision real login accounts through the deployed authentication backend. The CIHHC user record stays
-        canonical; the login account is bound to it by email and Cognito subject.
+        Provision real login accounts through the authentication backend. Account access stays separate from
+        group membership, effective permissions, page visibility, and signature authority.
       </p>
 
       {!canOperate ? (

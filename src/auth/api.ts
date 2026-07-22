@@ -41,9 +41,98 @@ export interface VerifyRegistrationResponse {
   };
 }
 
+/** Server-computed effective-access projection (ADR-0002 Phase 3C). The UI
+ *  renders this; it never reconstructs the permission decision locally. */
+export interface EffectiveAccessProjection {
+  principalUserId: string;
+  accountActive: boolean;
+  accountStatus: string;
+  groupIds: string[];
+  privileged: boolean;
+  permissions: string[];
+  policyVersion: string;
+  evaluatedAt: string;
+}
+
+/** One page's server-derived visibility (ADR-0002 Phase 4, non-authorizing). */
+export interface PageVisibilityRow {
+  pageId: string;
+  componentGroup: string;
+  label: string;
+  access: 'none' | 'read' | 'write';
+  visible: boolean;
+  reason: string;
+}
+export interface PageAccessProjectionResponse {
+  principalUserId: string;
+  accountActive: boolean;
+  privileged: boolean;
+  pages: PageVisibilityRow[];
+  policyVersion: string;
+  evaluatedAt: string;
+}
+
+/** A signature-authority assignment as surfaced to the admin UI (ADR-0002 §B7). */
+export interface SignatureAuthorityAssignmentRow {
+  assignmentId: string;
+  userId: string;
+  signatureRoleId: string;
+  authorityBasis: string;
+  scope: { organizationId: string; branchId?: string };
+  effectiveFrom: string;
+  effectiveUntil?: string;
+  status: 'active' | 'expired' | 'revoked';
+  version: number;
+  grantedBy: string;
+  reason: string;
+}
+
+export interface AccessReviewCampaignRow {
+  campaignId: string;
+  scope: string;
+  reviewType: string;
+  startsAt: string;
+  dueAt: string;
+  requiredReviewers: string[];
+  policyBasis: string;
+  trigger: string;
+  createdAt: string;
+  createdBy: string;
+}
+export interface CreateAccessReviewCampaignInput {
+  scope: string;
+  reviewType: string;
+  startsAt?: string;
+  dueAt: string;
+  requiredReviewers?: string[];
+  policyBasis: string;
+  trigger: string;
+}
+
+export interface ReconciliationFindingsResponse {
+  duplicateEmails: Array<{ normalizedEmail: string; userIds: string[] }>;
+  orphanAssignments: Array<{ assignmentId: string; userId: string; groupId: string }>;
+  usersWithoutActiveGroup: Array<{ userId: string; email: string }>;
+  excessivePrivilege: Array<{ userId: string; email: string; privilegedGroups: string[] }>;
+  summary: { duplicateEmailGroups: number; orphanAssignments: number; usersWithoutActiveGroup: number; excessivePrivilege: number; totalFindings: number };
+  evaluatedAt: string;
+}
+
+export interface SignatureCoverageHolder { userId: string; status: string }
+export interface SignatureCoverageResponse {
+  coverage: Array<{ capacity: string; holders: SignatureCoverageHolder[] }>;
+  qapiAcceptance: Array<{ capacity: string; covered: boolean; holders: SignatureCoverageHolder[] }>;
+}
+
 export interface CapabilitiesResponse {
   authenticated: boolean;
-  authorization: { capabilities: { manageUsers: boolean; manageUserStatus?: boolean } };
+  authorization: {
+    capabilities: {
+      manageUsers: boolean;
+      manageUserStatus?: boolean;
+      effectiveAccess?: EffectiveAccessProjection;
+    };
+  };
 }
 
 export interface UserAccessMutationResponse {
@@ -401,6 +490,63 @@ export const AuthApi = {
     return callAt(USER_ACCESS_BASE, '/', {
       method: 'GET',
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /** Server-computed effective access for a target user (ADR-0002 Phase 3/4). */
+  getUserEffectiveAccess(accessToken: string, userId: string): Promise<{ effectiveAccess: EffectiveAccessProjection }> {
+    return callAt(USER_ACCESS_BASE, `/${encodeURIComponent(userId)}/effective-access`, {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /** Server-authoritative page-visibility projection for a target user (Phase 4). */
+  getUserPageAccess(accessToken: string, userId: string): Promise<{ pageAccess: PageAccessProjectionResponse }> {
+    return callAt(USER_ACCESS_BASE, `/${encodeURIComponent(userId)}/page-access`, {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /** A target user's signature-authority assignments (ADR-0002 Phase 5B). */
+  getUserSignatureAuthority(accessToken: string, userId: string): Promise<{ assignments: SignatureAuthorityAssignmentRow[] }> {
+    return callAt(USER_ACCESS_BASE, `/${encodeURIComponent(userId)}/signature-authority`, {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /** Enterprise signature-coverage view (ADR §9 / Phase 6). */
+  getSignatureCoverage(accessToken: string): Promise<SignatureCoverageResponse> {
+    return callAt(USER_ACCESS_BASE, '/signature-coverage', {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /** List access-review campaigns (ADR §B11). */
+  listAccessReviewCampaigns(accessToken: string): Promise<{ campaigns: AccessReviewCampaignRow[] }> {
+    return callAt(USER_ACCESS_BASE, '/access-review', {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /** Reconciliation findings — orphans/duplicates/excessive privilege (ADR §9). */
+  getReconciliationFindings(accessToken: string): Promise<{ findings: ReconciliationFindingsResponse }> {
+    return callAt(USER_ACCESS_BASE, '/reconciliation', {
+      method: 'GET',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
+
+  /** Schedule an access-review campaign (ADR §B11; policyBasis required). */
+  createAccessReviewCampaign(accessToken: string, input: CreateAccessReviewCampaignInput): Promise<{ campaign: AccessReviewCampaignRow }> {
+    return callAt(USER_ACCESS_BASE, '/access-review', {
+      method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      body: JSON.stringify(input),
     });
   },
 

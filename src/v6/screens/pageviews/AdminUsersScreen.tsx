@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   BadgeCheck,
   ClipboardCheck,
@@ -48,6 +49,21 @@ import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabInactive
 const DEMO_ACTOR_USER_ID = 'demo-user-careindeed';
 
 const PROTECTED_USER_IDS = new Set(['demo-user-careindeed']);
+
+/**
+ * Real Care Indeed people (canonical accounts). Everyone else in the seeded
+ * identity directory is prototype/demo data and is grouped separately in the
+ * People area so canonical accounts are never confused with demo personas.
+ */
+const CANONICAL_ACCOUNT_IDS = new Set([
+  'demo-user-careindeed', // TJ Padilla (robertp@careindeed.com)
+  'usr-marites',          // Marites Arzaga
+  'usr-deeb-admin',       // Deeb Admin
+  'usr-dagny',            // Dagny Yenko
+  'usr-janine',           // Janine Catanghal
+  'usr-monserat',         // Monserat Zapanta
+  'usr-reden',            // Reden Valerio
+]);
 
 const PRIVILEGED_GROUP_IDS = new Set([
   'grp-super-admin',
@@ -249,8 +265,17 @@ const userPanelTabs = [
 
 type UserPanelTabId = (typeof userPanelTabs)[number]['id'];
 
+const peopleWorkspaceTabs = [
+  { id: 'directory', label: 'Account directory', description: 'Real login status and canonical users' },
+  { id: 'provisioning', label: 'Invite & provision', description: 'Create or restore account access' },
+  { id: 'prototype', label: 'Prototype setup', description: 'Local onboarding and role mock data' },
+] as const;
+
+type PeopleWorkspaceTabId = (typeof peopleWorkspaceTabs)[number]['id'];
+
 export function AdminUsersScreen() {
   const { user: authUser } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { state: capabilityState, manageUsers, refetch: refetchCapability } = useManageUsersCapability();
   const users = useUserAssignmentsStore(s => s.users);
   const assignments = useUserAssignmentsStore(s => s.assignments);
@@ -269,7 +294,19 @@ export function AdminUsersScreen() {
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
 
-  const recentAudit = useMemo(() => getRecentAudit(40), [auditLog, getRecentAudit]);
+  const requestedWorkspace = searchParams.get('mode');
+  const activeWorkspace: PeopleWorkspaceTabId = peopleWorkspaceTabs.some((tab) => tab.id === requestedWorkspace)
+    ? requestedWorkspace as PeopleWorkspaceTabId
+    : 'directory';
+
+  const setActiveWorkspace = (nextWorkspace: PeopleWorkspaceTabId) => {
+    const next = new URLSearchParams(searchParams);
+    if (nextWorkspace === 'directory') next.delete('mode');
+    else next.set('mode', nextWorkspace);
+    setSearchParams(next, { replace: true });
+  };
+
+  const recentAudit = getRecentAudit(40);
 
   const userById = useMemo(() => new Map(users.map(u => [u.id, u])), [users]);
 
@@ -305,6 +342,9 @@ export function AdminUsersScreen() {
         };
       });
   }, [users, assignments, setupAssignments, userById]);
+
+  const canonicalRows = useMemo(() => rows.filter(r => CANONICAL_ACCOUNT_IDS.has(r.userId)), [rows]);
+  const demoRows = useMemo(() => rows.filter(r => !CANONICAL_ACCOUNT_IDS.has(r.userId)), [rows]);
 
   const userColumns: readonly DataTableColumn<AdminUserRow>[] = [
     { key: 'name', label: 'Name' },
@@ -502,6 +542,8 @@ export function AdminUsersScreen() {
   const selectedSetup = selectedUserId ? setupAssignments[selectedUserId] : undefined;
   const isProtected = selectedUserId ? PROTECTED_USER_IDS.has(selectedUserId) : false;
 
+  const navigate = useNavigate();
+
   const openEdit = (userId: string) => {
     const user = userById.get(userId);
     if (!user) return;
@@ -514,15 +556,10 @@ export function AdminUsersScreen() {
     setShowCreate(false);
   };
 
+  // ADR-0002 Phase 6: a directory row opens the server-authoritative control-plane
+  // detail surface (/admin/users/:userId). Inline create still uses openEdit().
   const handleRowClick = (row: AdminUserRow) => {
-    if (row.userId === selectedUserId) {
-      setSelectedUserId(null);
-      setEditForm(null);
-      setFormError(null);
-      setFormSuccess(null);
-      return;
-    }
-    openEdit(row.userId);
+    navigate(`/admin/users/${row.userId}`);
   };
 
   const handleSaveEdit = () => {
@@ -635,7 +672,7 @@ export function AdminUsersScreen() {
   if (capabilityState === 'idle' || capabilityState === 'loading') {
     return gateShell(
       <>
-        <h1 className="text-xl font-medium text-ink mb-2">Checking access…</h1>
+        <h2 className="text-xl font-medium text-ink mb-2">Checking access…</h2>
         <p className="text-sm text-muted">Verifying your administrator permissions.</p>
       </>,
     );
@@ -644,7 +681,7 @@ export function AdminUsersScreen() {
   if (capabilityState === 'error') {
     return gateShell(
       <>
-        <h1 className="text-xl font-medium text-ink mb-2">Couldn’t verify access</h1>
+        <h2 className="text-xl font-medium text-ink mb-2">Couldn’t verify access</h2>
         <p className="text-sm text-muted mb-4">
           We couldn’t confirm your administrator permissions. This is not a grant of access — please retry.
         </p>
@@ -662,7 +699,7 @@ export function AdminUsersScreen() {
   if (!manageUsers) {
     return gateShell(
       <>
-        <h1 className="text-xl font-medium text-ink mb-2">Access denied</h1>
+        <h2 className="text-xl font-medium text-ink mb-2">Access denied</h2>
         <p className="text-sm text-muted">You need administrator permissions to manage users.</p>
       </>,
     );
@@ -676,7 +713,96 @@ export function AdminUsersScreen() {
       data-route="/admin/users"
       data-template="matrix"
     >
-      <div className="sr-only"><h1>Users</h1></div>
+      <nav aria-label="People and account workspaces" className="flex max-w-full gap-sm overflow-x-auto rounded-[24px] bg-white p-sm shadow-[0_12px_34px_rgba(0,47,48,0.06)] tablet-l:grid tablet-l:grid-cols-3">
+        {peopleWorkspaceTabs.map((workspace) => (
+          <button
+            aria-pressed={activeWorkspace === workspace.id}
+            className={cx(
+              'min-w-[230px] rounded-[18px] px-lg py-md text-left transition-colors focus-visible:outline-none focus-visible:shadow-focus tablet-l:min-w-0',
+              activeWorkspace === workspace.id
+                ? 'bg-tone-teal-bg text-brand-teal-deep'
+                : 'text-secondary hover:bg-surface-hover hover:text-brand-teal-deep',
+            )}
+            key={workspace.id}
+            onClick={() => setActiveWorkspace(workspace.id)}
+            type="button"
+          >
+            <span className="block text-sm font-medium">{workspace.label}</span>
+            <span className="mt-xs block text-[11px] font-light text-muted">{workspace.description}</span>
+          </button>
+        ))}
+      </nav>
+
+      {activeWorkspace === 'directory' && (
+        <div className="grid gap-lg" aria-label="Account directory">
+          <div className="flex flex-wrap items-start justify-between gap-md rounded-2xl bg-white px-lg py-md shadow-[0_10px_30px_rgba(0,47,48,0.05)]">
+            <div>
+              <p className="text-sm font-medium text-brand-teal-deep">Canonical account directory</p>
+              <p className="mt-xs max-w-[760px] text-xs font-light leading-relaxed text-muted">
+                This is the authoritative account-status view. Open a user record for effective access, page visibility, and signature authority; suspend or reactivate only through the audited lifecycle controls.
+              </p>
+            </div>
+            <ToneTag tone="teal">Server projection</ToneTag>
+          </div>
+
+          {/* Real Care Indeed accounts (canonical). Passwords are never shown or
+              stored here — account access is managed under Invite & provision. */}
+          <div className="grid gap-sm rounded-2xl bg-white p-lg shadow-[0_10px_30px_rgba(0,47,48,0.05)]">
+            <div className="flex flex-wrap items-center gap-sm">
+              <h3 className="text-sm font-medium text-brand-teal-deep">Canonical accounts</h3>
+              <span className="rounded-full border border-tone-teal-border bg-tone-teal-bg px-sm py-[2px] text-[10px] font-medium uppercase tracking-wider text-tone-teal-text">
+                {canonicalRows.length} real
+              </span>
+            </div>
+            <p className="text-xs text-muted">
+              Real Care Indeed people. No passwords are displayed or stored on this record; sign-in credentials
+              are provisioned only under Invite &amp; provision and are never returned to the UI.
+            </p>
+            <div className="grid gap-sm tablet-l:grid-cols-2">
+              {canonicalRows.map((r) => (
+                <div key={r.userId} className="flex items-center justify-between gap-md rounded-lg border border-hairline bg-surface-glass p-md">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-brand-teal-deep">{r.name}</p>
+                    <p className="truncate text-xs text-muted">{r.email} · {r.role}</p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-xs">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/community/users/${r.userId}`)}
+                      className="rounded-full border border-tone-teal-border bg-white px-md py-xs text-[11px] font-medium text-brand-teal transition-colors hover:bg-tone-teal-bg focus-visible:outline-none focus-visible:shadow-focus"
+                      title={`Open ${r.name}'s community profile`}
+                    >
+                      Community profile
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRowClick(r)}
+                      className="rounded-full border border-hairline bg-white px-md py-xs text-[11px] font-medium text-muted transition-colors hover:text-brand-teal-deep focus-visible:outline-none focus-visible:shadow-focus"
+                      title={`Open ${r.name}'s control-plane record`}
+                    >
+                      Record
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <ServerUserAccessPanel />
+        </div>
+      )}
+
+      {activeWorkspace === 'provisioning' && (
+        <div className="grid gap-lg" aria-label="Invite and provision account access">
+          <div className="rounded-2xl border border-tone-orange-border bg-tone-orange-bg/45 px-lg py-md text-xs font-light leading-relaxed text-tone-orange-text" role="note">
+            Provisioning creates or restores login access. It does not independently assign permissions, page access, or signature authority.
+          </div>
+          <AccountProvisioningCard />
+        </div>
+      )}
+
+      {activeWorkspace === 'prototype' && (
+        <>
 
       <div
         className="rounded-lg border border-tone-amber-border bg-tone-amber-bg/40 px-lg py-md text-sm text-ink"
@@ -715,7 +841,7 @@ export function AdminUsersScreen() {
         <section className="grid content-start gap-lg" aria-label="Admin users role and access assignment matrix">
           <div className="flex flex-wrap items-center justify-between gap-md">
             <p className="text-sm text-secondary">
-              {rows.length} users from identity store · click a row to edit setup
+              {demoRows.length} prototype/demo users · {canonicalRows.length} canonical accounts moved to Account directory · click a row to edit setup
             </p>
             <Button
               size="sm"
@@ -881,12 +1007,25 @@ export function AdminUsersScreen() {
             </section>
           )}
 
-          <DataTable
-            columns={userColumns}
-            label="Admin users role and access assignment matrix"
-            rows={rows}
-            onRowClick={handleRowClick}
-          />
+          {/* Prototype / demo directory — seeded personas only. Real Care Indeed
+              accounts live under the Account directory tab. */}
+          <div className="grid gap-sm">
+            <div className="flex flex-wrap items-center gap-sm">
+              <h3 className="text-sm font-medium text-ink">Prototype / demo users</h3>
+              <span className="rounded-full border border-tone-orange-border bg-tone-orange-bg px-sm py-[2px] text-[10px] font-medium uppercase tracking-wider text-tone-orange-text">
+                {demoRows.length} demo
+              </span>
+            </div>
+            <p className="text-xs text-muted">
+              Seeded demo personas — not real Care Indeed staff. Canonical accounts are moved to the Account directory tab.
+            </p>
+            <DataTable
+              columns={userColumns}
+              label="Prototype / demo users"
+              rows={demoRows}
+              onRowClick={handleRowClick}
+            />
+          </div>
 
           {selectedUser && editForm && (
             <section className="mt-md rounded-lg border border-tone-orange-border bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest transition duration-normal">
@@ -1136,20 +1275,13 @@ export function AdminUsersScreen() {
                 <SurfaceCard card={card} key={card.title} />
               ))}
 
-              {/* Phase COG-2: server-authoritative suspend/reactivate — the only
-                  control that changes a real login's access. */}
-              <ServerUserAccessPanel />
-
-              {/* Phase COG-1: real Cognito account provisioning via the existing auth backend. */}
-              <AccountProvisioningCard />
-
               <section
                 className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest"
                 aria-labelledby="mfa-readiness-title"
               >
                 <div className="mb-lg flex items-start justify-between gap-md">
                   <div className="grid gap-sm">
-                    <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
+                    <span className="grid h-11 w-11 place-items-center rounded-xl bg-tone-green-bg text-tone-green-text">
                       <Smartphone aria-hidden="true" className="h-icon-md w-icon-md" />
                     </span>
                     <div>
@@ -1204,7 +1336,7 @@ export function AdminUsersScreen() {
               role="tabpanel"
             >
               <div className="mb-lg flex items-start gap-md">
-                <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-tone-teal-bg text-tone-teal-text">
                   <UserCog aria-hidden="true" className="h-icon-md w-icon-md" />
                 </span>
                 <div>
@@ -1321,6 +1453,8 @@ export function AdminUsersScreen() {
           )}
         </aside>
       </section>
+        </>
+      )}
     </section>
   );
 }

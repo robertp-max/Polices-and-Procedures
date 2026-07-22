@@ -225,7 +225,6 @@ export function AdminPermissionsScreen() {
       data-route="/admin/permissions"
       data-template="matrix"
     >
-      <div className="sr-only"><h1>Permissions</h1></div>
       <MetricGrid metrics={permissionMetrics} />
       <section className="grid gap-xl rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset/90 p-xl shadow-rest backdrop-blur-xl">
         <nav aria-label="Permission management tabs" className="flex gap-xs overflow-x-auto rounded-full border border-card bg-white p-xs shadow-sm">
@@ -291,7 +290,7 @@ export function AdminPermissionsScreen() {
         {activeTab === 'evidence' && (
           <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="permission-audit-trail-title" role="tabpanel">
             <div className="mb-lg flex items-start gap-md">
-              <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-tone-green-bg text-tone-green-text">
                 <FileCheck2 aria-hidden="true" className="h-icon-md w-icon-md" />
               </span>
               <div className="grid gap-xs">
@@ -320,7 +319,7 @@ export function AdminPermissionsScreen() {
         {activeTab === 'control-path' && (
           <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest" aria-labelledby="permission-control-path-title" role="tabpanel">
             <div className="mb-lg flex items-start gap-md">
-              <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-tone-teal-bg text-tone-teal-text">
                 <KeyRound aria-hidden="true" className="h-icon-md w-icon-md" />
               </span>
               <div className="grid gap-xs">
