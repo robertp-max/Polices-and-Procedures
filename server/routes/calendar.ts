@@ -696,7 +696,7 @@ calendarRouter.post('/intake/extract-source', asyncHandler(async (req, res) => {
   if (requireBrad && !(await bradReaderAvailable(selectedLogic))) {
     throw new ApiError(
       'validation_error',
-      'Brad’s source reader is unavailable. Configure BRAD_PROVIDER=codex with Codex CLI login, or keep the Claude CLI backup configured, before forcing Brad-only generation.',
+      'Brad’s source reader is unavailable — no local model CLI responded. Log in to the Claude CLI (Opus 4.8 primary) or the Codex CLI (ChatGPT fallback) so the reader has a provider.',
       503,
     );
   }

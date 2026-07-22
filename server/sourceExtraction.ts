@@ -83,9 +83,11 @@ export async function bradReaderAvailable(logic?: BradReaderLogic): Promise<bool
   if (logic === 'claude') return (await claudeCliAvailable()) || (await codexCliAvailable());
   if (logic === 'gpt') return (await codexCliAvailable()) || (await claudeCliAvailable());
   if (logic === 'qapi-master-claude' || logic === 'qapi-raw-claude') return claudeCliAvailable();
-  if (await codexAvailable()) return true;
-  if (process.env.BRAD_CLAUDE_MODEL && await claudeCliAvailable()) return true;
-  return false;
+  // Default packet path (e.g. the patient admission packet): Claude Opus 4.8
+  // primary, ChatGPT (Codex) fallback. Gated on the ACTUAL CLIs — not on
+  // BRAD_PROVIDER — so the reader never falsely reports "offline" when a
+  // logged-in CLI is available.
+  return (await claudeCliAvailable()) || (await codexCliAvailable());
 }
 
 /** One Claude CLI call; prompt on STDIN (no shell-injection surface). */
@@ -164,12 +166,20 @@ async function runBradRead(system: string, user: string, timeoutMs: number, logi
     if (await claudeCliAvailable()) return runClaude(system, user, timeoutMs);
     throw new Error('Brad reader unavailable');
   }
-  if (await codexAvailable()) {
-    return runCodex(system, user, timeoutMs);
+  // Default packet path (patient admission + generic): Claude Opus 4.8 primary,
+  // then fall back to ChatGPT (Codex/GPT) if Opus is unavailable OR errors at
+  // runtime (e.g. Claude CLI present but not logged in). CLI-gated, not BRAD_PROVIDER.
+  const claudeOk = await claudeCliAvailable();
+  const codexOk = await codexCliAvailable();
+  if (claudeOk) {
+    try {
+      return await runClaude(system, user, timeoutMs);
+    } catch (e) {
+      if (!codexOk) throw e;
+      log.warn('sourceExtraction.claude.failed_fallback_chatgpt', { error: e instanceof Error ? e.message : String(e) });
+    }
   }
-  if (await claudeCliAvailable()) {
-    return runClaude(system, user, timeoutMs);
-  }
+  if (codexOk) return runCodex(system, user, timeoutMs);
   throw new Error('Brad reader unavailable');
 }
 
