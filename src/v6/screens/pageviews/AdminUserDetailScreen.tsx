@@ -208,6 +208,15 @@ export function AdminUserDetailScreen() {
             <span className="rounded-full border border-tone-teal-border bg-tone-teal-bg px-sm py-[2px] text-[10px] font-medium uppercase tracking-wider text-tone-teal-text">
               Server-authoritative
             </span>
+            {/* Connect this account to its community profile (same canonical userId). */}
+            <button
+              type="button"
+              onClick={() => navigate(`/community/users/${user.userId}`)}
+              className="inline-flex items-center gap-xs rounded-full border border-tone-teal-border bg-white px-md py-xs text-[11px] font-medium text-brand-teal transition-colors hover:bg-tone-teal-bg focus-visible:outline-none focus-visible:shadow-focus"
+              title="Open this user's community profile"
+            >
+              <UserRound aria-hidden className="h-3.5 w-3.5" /> Community profile
+            </button>
           </div>
         </div>
       </header>

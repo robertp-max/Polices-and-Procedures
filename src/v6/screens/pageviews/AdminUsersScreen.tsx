@@ -758,12 +758,34 @@ export function AdminUsersScreen() {
               Real Care Indeed people. No passwords are displayed or stored on this record; sign-in credentials
               are provisioned only under Invite &amp; provision and are never returned to the UI.
             </p>
-            <DataTable
-              columns={userColumns}
-              label="Canonical Care Indeed accounts"
-              rows={canonicalRows}
-              onRowClick={handleRowClick}
-            />
+            <div className="grid gap-sm tablet-l:grid-cols-2">
+              {canonicalRows.map((r) => (
+                <div key={r.userId} className="flex items-center justify-between gap-md rounded-lg border border-hairline bg-surface-glass p-md">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-brand-teal-deep">{r.name}</p>
+                    <p className="truncate text-xs text-muted">{r.email} · {r.role}</p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-xs">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/community/users/${r.userId}`)}
+                      className="rounded-full border border-tone-teal-border bg-white px-md py-xs text-[11px] font-medium text-brand-teal transition-colors hover:bg-tone-teal-bg focus-visible:outline-none focus-visible:shadow-focus"
+                      title={`Open ${r.name}'s community profile`}
+                    >
+                      Community profile
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRowClick(r)}
+                      className="rounded-full border border-hairline bg-white px-md py-xs text-[11px] font-medium text-muted transition-colors hover:text-brand-teal-deep focus-visible:outline-none focus-visible:shadow-focus"
+                      title={`Open ${r.name}'s control-plane record`}
+                    >
+                      Record
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           <ServerUserAccessPanel />
