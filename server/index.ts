@@ -26,6 +26,7 @@ import { requireUserStatusAuthority } from './auth/userStatusAuthority.js';
 import { pmRouter } from './routes/pm.js';
 import { createBradRouter } from './routes/brad.js';
 import { createNolanRouter } from './routes/nolan.js';
+import { createControlRegistryRouter } from './routes/controlRegistry.js';
 import { packetTemplatesRouter, packetsRouter } from './packets/routes/index.js';
 
 /* ═══════════════════════════════════════════════════════════════
@@ -121,6 +122,7 @@ app.use('/api/compliance', complianceRouter);
 app.use('/api/pm', pmRouter);
 app.use('/api/packet-templates', packetTemplatesRouter);
 app.use('/api/packets', packetsRouter);
+app.use('/api/master-controls', createControlRegistryRouter());
 
 // Compliance Intelligence (iAdministrator) — local RAG engine.
 const iaService = new IaService({

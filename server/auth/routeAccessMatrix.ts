@@ -58,6 +58,7 @@ export const ROUTE_ACCESS_MATRIX: RouteAccessEntry[] = [
   { mount: 'ia', access: 'AUTHENTICATED', publicPaths: ['/api/ia/health'], note: 'Compliance Intelligence. /health is public; queries require a verified user.' },
   { mount: 'brad', access: 'AUTHENTICATED', note: 'Brad assistant. Verified user required; privileged /superadmin/* actions self-verify super-admin server-side (verifySuperAdmin) using the verified actor.' },
   { mount: 'nolan', access: 'AUTHENTICATED', publicPaths: ['/api/nolan/tutor/health'], note: 'Nolan tutor (Nurse Onboarding & Learning Assistant) — learner-facing training chatbot. /tutor/health is public; tutor queries require a verified user. Deterministic, no PHI, no internet on this surface.' },
+  { mount: 'master-controls', access: 'AUTHENTICATED', note: 'Control Register operational API — scope instances, evidence, verifications, sign-offs, deficiencies, CAPs, waivers. Verified user required; evidence review / sign-off / waiver additionally require a compliance/admin role (segregation of duties) enforced inside the router.' },
 ];
 
 /** All exact public sub-paths the boundary must let through anonymously. */
