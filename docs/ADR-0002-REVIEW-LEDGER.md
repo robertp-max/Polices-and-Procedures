@@ -86,6 +86,23 @@ Last updated: 2026-07-20, HEAD `1a4c5aa3`.
   (`ERR_IPC_CHANNEL_CLOSED` via the node_modules junction). Had to run targeted
   subsets. CI reliability concern for this worktree setup.
 
+## G. UX / discoverability (found during review)
+- 🔴 **New aggregate screens not in the nav menu (omission)**: `signature-coverage`,
+  `access-review`, `reconciliation` have routes + render wiring but were NOT added
+  to `navigationManifest.ts` `admin:` group → reachable only by direct URL, no
+  clickable tab. Fix = 3 manifest entries. (admin-user-detail is intentionally
+  not nav-listed — reached via Users row-click.)
+- 🟠 **Admin lands on Groups, not Users**: the `V6Shell` admin gear button →
+  `/admin/user-groups`, so the create-user UI (`/admin/users` → "Add user" +
+  Create-user form + Cognito `AccountProvisioningCard`) is one tab over and not
+  obvious. Owner reported "I don't see any UI to create users" — it exists, just
+  not on the default admin landing. Consider landing on Users or promoting "Add
+  user". (navigationManifest.ts `admin:` group has all 5 tabs incl. Users.)
+- 🟠 **Two user-creation paths coexist on /admin/users**: "Add user" writes to the
+  **demo localStorage** identity store (`addUser`), while `AccountProvisioningCard`
+  does **real Cognito** provisioning. Which is authoritative is unclear to a user;
+  reconcile (the control plane should make server provisioning the primary path).
+
 ## F. Workflow / environment notes
 - 🧰 Commit messages containing the word "clean" trip the anti-wipe guardrail
   (matches `git…clean`). Avoid it in `-m`/heredocs.

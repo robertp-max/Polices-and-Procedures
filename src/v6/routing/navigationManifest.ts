@@ -73,7 +73,10 @@ export const workspaceSubnavItems: Record<string, NavItem[]> = {
     { id: 'admin-groups', label: 'User Groups', to: '/admin/user-groups', hashIds: ['admin-groups'] },
     { id: 'admin-roles', label: 'Roles', to: '/admin/roles', hashIds: ['admin-roles'] },
     { id: 'admin-permissions', label: 'Permissions', to: '/admin/permissions', hashIds: ['admin-permissions'] },
-    { id: 'admin-users', label: 'Users', to: '/admin/users', hashIds: ['admin-users'] },
+    { id: 'admin-users', label: 'Users', to: '/admin/users', hashIds: ['admin-users', 'admin-user-detail'] },
+    { id: 'admin-signature-coverage', label: 'Signature Coverage', to: '/admin/signature-coverage', hashIds: ['admin-signature-coverage'] },
+    { id: 'admin-access-review', label: 'Access Review', to: '/admin/access-review', hashIds: ['admin-access-review'] },
+    { id: 'admin-reconciliation', label: 'Reconciliation', to: '/admin/reconciliation', hashIds: ['admin-reconciliation'] },
     { id: 'admin-community-profiles', label: 'Community Profiles', to: '/admin/community-profiles', hashIds: ['admin-community-profiles'] },
   ],
 };
