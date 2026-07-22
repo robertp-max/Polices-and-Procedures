@@ -1,0 +1,81 @@
+# CONTROL_REFERENCE_RECONCILIATION
+
+Controls: **104** · Registries — policies 279, forms 410, workflows 206
+
+## Classification totals
+- EXACT: 236
+- EXTERNAL_RECORD: 104
+- MISSING: 71
+
+## Unresolved (MISSING) references — 71
+- CTRL-001 → policy `CL-PA-001`
+- CTRL-001 → policy `CL-PA-004`
+- CTRL-002 → policy `OP-LA-001`
+- CTRL-003 → policy `CL-PA-003`
+- CTRL-004 → policy `CL-PA-001`
+- CTRL-006 → policy `FN-BL-004`
+- CTRL-006 → policy `FN-BL-005`
+- CTRL-007 → policy `OP-AH-001`
+- CTRL-011 → policy `CL-CC-001`
+- CTRL-012 → policy `HR-TR-001`
+- CTRL-013 → policy `HR-TR-002`
+- CTRL-015 → policy `CL-IC-001`
+- CTRL-022 → policy `HR-HS-001`
+- CTRL-024 → policy `RM-OS-102`
+- CTRL-025 → policy `CL-IC-001`
+- CTRL-027 → policy `CL-PA-002`
+- CTRL-028 → policy `CL-IC-001`
+- CTRL-031 → policy `EN-AK-001`
+- CTRL-034 → policy `CO-FW-001`
+- CTRL-035 → policy `CO-FW-002`
+- CTRL-035 → policy `HR-TR-003`
+- CTRL-039 → policy `IT-SP-001`
+- CTRL-040 → policy `IT-SP-001`
+- CTRL-044 → policy `HR-TR-003`
+- CTRL-054 → policy `GV-GB-006`
+- CTRL-055 → policy `GV-GB-007`
+- CTRL-059 → policy `HR-TR-001`
+- CTRL-060 → policy `HR-TR-002`
+- CTRL-061 → policy `FN-PR-001`
+- CTRL-063 → policy `HR-CO-001`
+- CTRL-064 → policy `HR-HS-001`
+- CTRL-065 → policy `CL-IC-001`
+- CTRL-066 → policy `IT-SP-001`
+- CTRL-066 → policy `IT-AM-001`
+- CTRL-067 → policy `IT-SP-001`
+- CTRL-068 → policy `IT-AC-001`
+- CTRL-068 → policy `IT-AC-002`
+- CTRL-068 → policy `IT-AC-003`
+- CTRL-069 → policy `IT-AC-002`
+- CTRL-070 → policy `IT-AC-004`
+- CTRL-071 → policy `IT-SP-002`
+- CTRL-072 → policy `IT-AM-001`
+- CTRL-072 → policy `IT-NE-003`
+- CTRL-073 → policy `IT-BC-001`
+- CTRL-074 → policy `IT-BC-002`
+- CTRL-075 → policy `IT-IR-001`
+- CTRL-076 → policy `IT-AM-001`
+- CTRL-077 → policy `IT-NE-001`
+- CTRL-078 → policy `IT-NE-003`
+- CTRL-079 → policy `IT-AM-003`
+- CTRL-080 → policy `IT-DM-001`
+- CTRL-081 → policy `IT-SP-004`
+- CTRL-082 → policy `IT-NE-004`
+- CTRL-083 → policy `IT-NE-002`
+- CTRL-084 → policy `IT-SP-003`
+- CTRL-085 → policy `FN-BL-001`
+- CTRL-086 → policy `FN-BL-001`
+- CTRL-087 → policy `FN-BL-008`
+- CTRL-088 → policy `FN-AR-002`
+- CTRL-088 → policy `CO-FW-002`
+- CTRL-089 → policy `FN-AR-001`
+- CTRL-090 → policy `FN-BL-002`
+- CTRL-091 → policy `FN-BL-003`
+- CTRL-092 → policy `FN-AP-001`
+- CTRL-093 → policy `FN-AU-001`
+- CTRL-094 → policy `FN-PR-001`
+- CTRL-096 → policy `EN-PM-001`
+- CTRL-097 → policy `EN-AK-001`
+- CTRL-098 → policy `EN-RM-001`
+- CTRL-099 → policy `EN-MT-001`
+- CTRL-100 → policy `EN-MT-002`

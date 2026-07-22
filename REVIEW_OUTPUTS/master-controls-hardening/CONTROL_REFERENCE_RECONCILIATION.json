@@ -1,0 +1,2695 @@
+{
+  "generatedFrom": "public/MASTER_CONTROL_INVENTORY_DATA_MODEL.json",
+  "controlCount": 104,
+  "registries": {
+    "policies": 279,
+    "forms": 410,
+    "workflows": 206
+  },
+  "summary": {
+    "MISSING": 71,
+    "EXACT": 236,
+    "EXTERNAL_RECORD": 104
+  },
+  "results": [
+    {
+      "control": "CTRL-001",
+      "name": "Patient Rights Notice & Admission Consent Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CL-PA-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "policy",
+          "id": "CL-PA-004",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "policy",
+          "id": "CO-HP-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CL-FM-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CL-FM-002",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CL-FM-003",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.50; § 164.520",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-002",
+      "name": "Interpreter / Language Access Services",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "OP-LA-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.50(a)(3); Title VI; § 1557",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-003",
+      "name": "Patient Complaint / Grievance Intake Mechanism",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CL-PA-003",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "policy",
+          "id": "QA-AE-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CL-FM-049",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.50(e)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-004",
+      "name": "State Home Health Hotline Notice",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CL-PA-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.50(a)(1)(iv)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-005",
+      "name": "Data Subject Rights (HIPAA/CMIA/CCPA) Mechanism",
+      "references": [
+        {
+          "kind": "workflow",
+          "id": "IT-WF-20",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "CO-HP-005",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "CO-CA-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-047",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.524, § 164.526; CMIA § 56; CCPA § 1798.100",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-006",
+      "name": "Financial Counseling & Charity Care Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "FN-BL-004",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "policy",
+          "id": "FN-BL-005",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "form",
+          "id": "FN-FM-004",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "FN-FM-027",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "FN-FM-028",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "CA H&S § 127400 analog; agency policy",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-007",
+      "name": "24/7 After-Hours Clinical On-Call",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "OP-AH-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "policy",
+          "id": "CL-SD-004",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "OP-FM-010",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.105; § 484.60",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-008",
+      "name": "OASIS Assessment, QA & Transmission Capability",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CL-OA-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "QA-SM-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CL-FM-045",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.55, § 484.245",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-009",
+      "name": "Physician Order Management System (Verbal & Written)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CL-CP-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "CL-OA-002",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.60(b)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-010",
+      "name": "Plan of Care (CMS-485) Establishment & 60-Day Review Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CL-CP-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.60(a)-(c)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-011",
+      "name": "Coordination of Care & Communication Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CL-CC-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "form",
+          "id": "CL-FM-053",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.60(d), § 484.75",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-012",
+      "name": "Home Health Aide Supervision Program (14/60-Day)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CL-SD-005",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "HR-TR-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "form",
+          "id": "CL-FM-014",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-017",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.80(h)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-013",
+      "name": "Clinician Competency Validation Program (All Disciplines)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "HR-TR-002",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "policy",
+          "id": "CL-OA-003",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-020",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-017",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-021",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-022",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.75, § 484.80, § 484.115",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-014",
+      "name": "Medication Management & MAR Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CL-SD-008",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.60(a)(2)(v)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-015",
+      "name": "Infection Prevention & Control Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CL-IC-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "QA-WF-06",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CL-FM-021",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "QA-FM-006",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.70",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-016",
+      "name": "High-Risk Patient Monitoring Capability",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CL-SD-009",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "workflow",
+          "id": "QA-WF-06",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CL-FM-047",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.65; § 484.60",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-017",
+      "name": "Missed-Visit Documentation Mechanism",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CL-SD-011",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "workflow",
+          "id": "QA-WF-07",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CL-FM-011",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.60(c)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-018",
+      "name": "Clinical Records System (Active + Retention)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CL-OA-006",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "workflow",
+          "id": "EN-WF-08",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.110; CA H&S § 123145",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-019",
+      "name": "Emergency Preparedness Program (EPP)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "RM-EP-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "RM-FM-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.102",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-020",
+      "name": "Hazard Vulnerability Analysis (HVA) Register",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "RM-EP-002",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.102(a)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-021",
+      "name": "Enterprise Risk Register",
+      "references": [
+        {
+          "kind": "workflow",
+          "id": "RM-WF-01",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "workflow",
+          "id": "EN-WF-12",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "RM-FM-012",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "OIG CPG; CoP oversight",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-022",
+      "name": "Workplace Violence Prevention Program (SB 553 / IIPP)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "RM-OS-101",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "HR-HS-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "regulation",
+          "citation": "Cal/OSHA § 3342 SB 553; IIPP § 3203",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-023",
+      "name": "Injury & Illness Prevention Program (IIPP)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "RM-OS-101",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "8 CCR § 3203",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-024",
+      "name": "OSHA 300/300A Recordkeeping",
+      "references": [
+        {
+          "kind": "workflow",
+          "id": "HR-WF-13",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "RM-OS-102",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "regulation",
+          "citation": "29 CFR § 1904; Cal/OSHA § 14300",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-025",
+      "name": "Bloodborne Pathogens / Exposure Control Plan",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "RM-OS-002",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "CL-IC-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "regulation",
+          "citation": "29 CFR § 1910.1030",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-026",
+      "name": "Incident / Near-Miss Reporting Mechanism",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "RM-OS-003",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "QA-AE-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "RM-FM-009",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "QA-FM-004",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.65(b)(1)(ii); OIG CPG",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-027",
+      "name": "Mandatory Abuse/Neglect Reporting Capability",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CL-PA-002",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "policy",
+          "id": "RM-OS-004",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CL-FM-030",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.50(e)(2); CA WIC § 15630",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-028",
+      "name": "Pandemic / Outbreak Response Capability",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "RM-EP-003",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "CL-IC-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "form",
+          "id": "RM-FM-006",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.102; § 484.70",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-029",
+      "name": "Corporate Compliance Program (OIG 7 Elements)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CO-CP-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CO-FM-024",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "OIG CPG for Home Health; § 6032 DRA",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-030",
+      "name": "Designated Compliance Officer",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CO-CP-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "GV-EA-002",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "OIG CPG Element #2",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-031",
+      "name": "Code of Conduct & Acknowledgment Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CO-CP-002",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "EN-AK-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "form",
+          "id": "EN-FM-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "OIG CPG Element #1",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-032",
+      "name": "Compliance Hotline / Non-Retaliation Channel",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CO-CP-007",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CO-FM-020",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "OIG CPG Element #4; FCA § 3730(h)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-033",
+      "name": "OIG/SAM/State Medicaid Exclusion Screening Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CO-CP-003",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "HR-TA-003",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "workflow",
+          "id": "HR-WF-15",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-005",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 USC § 1320a-7; OIG CPG",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-034",
+      "name": "Anti-Kickback / Stark Relationship Monitoring",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CO-FW-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "FN-WF-11",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 USC § 1320a-7b; 42 USC § 1395nn",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-035",
+      "name": "FWA Training & Monitoring Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CO-FW-002",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "policy",
+          "id": "HR-TR-003",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "form",
+          "id": "CO-FM-008",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CO-FM-009",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "DRA § 6032; OIG CPG",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-036",
+      "name": "Annual Auditing & Monitoring Work Plan",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CO-CP-006",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "workflow",
+          "id": "FN-WF-15",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CO-FM-018",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "OIG CPG Element #5",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-037",
+      "name": "Regulatory Change Management / Horizon Scanning",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "EN-CM-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "workflow",
+          "id": "EN-WF-05",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "EN-FM-014",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "OIG CPG; HIPAA § 164.316",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-038",
+      "name": "HIPAA Privacy Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CO-HP-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "CO-HP-002",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "CO-HP-003",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "CO-HP-004",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "CO-HP-005",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.500–534",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-039",
+      "name": "HIPAA Security Program (Admin/Physical/Technical Safeguards)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-SP-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "policy",
+          "id": "CO-HP-004",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR §§ 164.308–316",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-040",
+      "name": "Designated HIPAA Privacy Officer & Security Officer",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CO-HP-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "IT-SP-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.530(a); § 164.308(a)(2)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-041",
+      "name": "Breach Notification Mechanism",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CO-HP-007",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-09",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CO-FM-029",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.400–414; CMIA § 56.101; Civil Code § 1798.82",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-042",
+      "name": "Business Associate Agreement (BAA) Inventory & Lifecycle",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CO-HP-006",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-15",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CO-FM-016",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.308(b), § 164.314",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-043",
+      "name": "Medicare Condition of Participation Self-Verification",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "CO-CP-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "workflow",
+          "id": "QA-WF-10",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "QA-FM-010",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR Part 484",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-044",
+      "name": "Mandatory Training Program (HIPAA/FWA/OSHA/WVP/Harassment/EP/Cultural)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "HR-TR-003",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "policy",
+          "id": "CO-CP-002",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "RM-OS-101",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CO-FM-008",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CO-FM-009",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-025",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.530(b); 8 CCR § 3203; OIG CPG; AB 1825/SB 1343",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-045",
+      "name": "Governing Body in Place",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "GV-GB-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "GV-FM-005",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.105(a)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-046",
+      "name": "Qualified Administrator Designation (Continuous)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "GV-EA-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "HR-JD-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "HR-JD-002",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.105(b), § 484.115",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-047",
+      "name": "Qualified Clinical Manager Designation (Continuous)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "GV-EA-003",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "HR-JD-003",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "HR-JD-004",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.105(c), § 484.115",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-048",
+      "name": "Organizational Chart & Reporting Lines",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "GV-EA-005",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.105",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-049",
+      "name": "Agency Licensure & Certification Register",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "GV-EA-004",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "CO-RA-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "GV-FM-019",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "State HHA licensure; Medicare § 424; state Medicaid",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-050",
+      "name": "Acceptance-to-Service / Scope-of-Service Statement",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "GV-GB-004",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.105(a)(2)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-051",
+      "name": "Institutional Plan & Annual Budget",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "GV-GB-003",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "FN-FP-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "GV-FM-005",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.105(h)(4)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-052",
+      "name": "Conflict of Interest Disclosure Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "GV-GB-005",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "CO-CP-004",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "OIG CPG; state nonprofit law",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-053",
+      "name": "Delegation of Authority Matrix",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "GV-EA-002",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.105(b)-(c)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-054",
+      "name": "Public Service Information (Scope, Hours, Contacts)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "GV-GB-006",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.105(a)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-055",
+      "name": "Stakeholder Grievance Register (Governance Level)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "GV-GB-007",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "regulation",
+          "citation": "OIG CPG; 42 CFR § 484.50(e)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-056",
+      "name": "Personnel File System (Credentialed + Current)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "HR-TA-004",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "workflow",
+          "id": "HR-WF-03",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-015",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.115; IRCA; EEOC",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-057",
+      "name": "Primary Source License Verification Register",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "HR-TA-005",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "workflow",
+          "id": "HR-WF-04",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-006",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-015",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.115; state practice acts",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-058",
+      "name": "Job Descriptions Library (HR-JD Series)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "HR-TA-006",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-031",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.105, § 484.115",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-059",
+      "name": "HHA 12-Hour Annual In-Service Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "HR-TR-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-018",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.80(d)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-060",
+      "name": "Skilled Professional Supervision Program (RN→LPN, PT→PTA, OT→COTA)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "HR-TR-002",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "policy",
+          "id": "CL-SD-006",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-021",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-022",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.75; state practice acts",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-061",
+      "name": "Wage & Hour Compliance Program (Timekeeping, Meal/Rest, OT)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "HR-TA-004",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "FN-PR-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-024",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "FLSA; CA Labor Code §§ 226, 510, 512; Wage Orders",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-062",
+      "name": "EEO / Non-Discrimination & Harassment Prevention Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "HR-TA-002",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "HR-ER-004",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "Title VII; FEHA; EEOC; AB 1825/SB 1343",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-063",
+      "name": "Worker Classification (Employee vs 1099) Controls",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "HR-CO-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "HR-WF-16",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-059",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "CA Labor Code § 2775 (AB 5); IRS",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-064",
+      "name": "Workers' Compensation Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "HR-HS-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "regulation",
+          "citation": "CA Labor Code § 3550; 29 CFR § 1904",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-065",
+      "name": "Health Clearance / TB / Immunization Records",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "HR-TA-003",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "CL-IC-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-008",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "CDPH/CDC guidance; CCR Title 17",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-066",
+      "name": "Asset & ePHI Inventory (Always Current)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-SP-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "policy",
+          "id": "IT-AM-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.308(a)(1); NIST 800-66",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-067",
+      "name": "Annual Security Risk Analysis & Risk Management Plan",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-SP-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-01",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-002",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-003",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.308(a)(1)(ii)(A)-(B)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-068",
+      "name": "Role-Based Access Control & Least Privilege",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-AC-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "policy",
+          "id": "IT-AC-002",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "policy",
+          "id": "IT-AC-003",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-005",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-014",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.308(a)(3)-(4)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-069",
+      "name": "Access Termination SLA (Same-Day / Separation-Date)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-AC-002",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-03",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-010",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-011",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.308(a)(3)(ii)(C)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-070",
+      "name": "MFA / Strong Authentication Enforcement",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-AC-004",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-009",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.312(d); NIST 800-63B",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-071",
+      "name": "Audit Logging & Information System Activity Review",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-SP-002",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-06",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-020",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-022",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.312(b); § 164.308(a)(1)(ii)(D)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-072",
+      "name": "Encryption at Rest & In Transit",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-AM-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "policy",
+          "id": "IT-NE-003",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-024",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.312(a)(2)(iv), § 164.312(e)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-073",
+      "name": "Backup & Restoration Capability",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-BC-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-07",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-023",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-025",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.308(a)(7)(ii)(A)-(B)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-074",
+      "name": "Disaster Recovery / Business Continuity Plan",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-BC-002",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-08",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-026",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-027",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-028",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.308(a)(7); 42 CFR § 484.102",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-075",
+      "name": "Incident Response Capability (24/7 Detection & Containment)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-IR-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-09",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-029",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-030",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-031",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.308(a)(6); NIST 800-61",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-076",
+      "name": "Endpoint / MDM Management (Encryption, AV/EDR, Patching)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-AM-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-10",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-024",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.310(d), § 164.312(a)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-077",
+      "name": "Patch & Vulnerability Management Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-NE-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-13",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-035",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.308(a)(1)(ii)(B)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-078",
+      "name": "Email Security Controls (Anti-Phishing, TLS, DLP)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-NE-003",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-16",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-042",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.312(e)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-079",
+      "name": "Removable Media / USB Restriction",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-AM-003",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-12",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-034",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.310(d)(2)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-080",
+      "name": "Secure Media Disposal / Sanitization Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-DM-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-17",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-036",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-044",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.310(d)(2)(i)-(ii); NIST SP 800-88",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-081",
+      "name": "Facility Physical Security Controls",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-SP-004",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-19",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-045",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-046",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.310(a)-(c)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-082",
+      "name": "Remote Access / VPN Security",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-NE-004",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-18",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.312(e)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-083",
+      "name": "Change Advisory Board (CAB) Control",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-NE-002",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-14",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-037",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-038",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "HIPAA admin safeguards",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-084",
+      "name": "Vendor / Cloud Security Posture Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "IT-SP-003",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "IT-WF-15",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-040",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "IT-FM-041",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR §§ 164.308(b), 164.314(a)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-085",
+      "name": "PPS Claims Submission System (NOA ≤5 Days / Final Claim)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "FN-BL-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "FN-WF-04",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "FN-FM-009",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "FN-FM-010",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "FN-FM-011",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "FN-FM-012",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.205; § 409.43",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-086",
+      "name": "Pre-Billing Audit Control (F2F / POC / OASIS Lock)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "FN-BL-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "FN-WF-15",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "FN-FM-010",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 409.43; 31 USC § 3729",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-087",
+      "name": "Revenue Integrity / RCM Self-Audit Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "FN-BL-008",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "FN-WF-15",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "CO-FM-018",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "OIG CPG Element #5; § 6032 DRA",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-088",
+      "name": "60-Day Overpayment Identification & Return Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "FN-AR-002",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "policy",
+          "id": "CO-FW-002",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "form",
+          "id": "FN-FM-020",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "FN-FM-022",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 USC § 1320a-7k(d); 42 CFR § 401.305",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-089",
+      "name": "Credit Balance (CMS-838) Reporting System",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "FN-AR-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "FN-WF-07",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "FN-FM-018",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 401.605–607",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-090",
+      "name": "Denial Management & Appeals Pipeline",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "FN-BL-002",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "FN-WF-05",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "FN-FM-013",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "FN-FM-014",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "FN-FM-015",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 405.940",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-091",
+      "name": "ADR Response Capability",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "FN-BL-003",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "FN-WF-06",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "FN-FM-016",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "FN-FM-017",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "CMS/MAC ADR rules",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-092",
+      "name": "Accounts Payable Vendor-Exclusion Check at Payment",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "FN-AP-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "HR-WF-15",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "OP-FM-005",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "HR-FM-005",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 USC § 1320a-7; OIG CPG",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-093",
+      "name": "Cost Report Financial Records Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "FN-AU-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 413.20, § 413.24",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-094",
+      "name": "Payroll & Tax Filing Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "FN-PR-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "FN-WF-12",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "FLSA; CA Labor Code; IRS",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-095",
+      "name": "Master Policy Index / Taxonomy Register",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "EN-TG-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "workflow",
+          "id": "EN-WF-04",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "EN-FM-002",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "HIPAA § 164.316; OIG CPG #1",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-096",
+      "name": "Policy Lifecycle Control (Draft→Approve→Publish→Retire)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "EN-PM-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "EN-WF-01",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "EN-FM-004",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "EN-FM-005",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "EN-FM-006",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "EN-FM-009",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "HIPAA § 164.316(a)-(b)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-097",
+      "name": "Universal Policy Acknowledgment Program",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "EN-AK-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "EN-WF-03",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "EN-FM-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "EN-FM-012",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "45 CFR § 164.530(b)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-098",
+      "name": "Records Retention & Destruction Schedule",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "EN-RM-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "EN-WF-08",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.110; 45 CFR § 164.316(b); CA H&S § 123145",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-099",
+      "name": "Enterprise Mandated-Events Calendar",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "EN-MT-001",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "EN-WF-09",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR Part 484; OIG CPG",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-100",
+      "name": "Enterprise KPI / Compliance Dashboard",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "EN-MT-002",
+          "classification": "MISSING"
+        },
+        {
+          "kind": "workflow",
+          "id": "EN-WF-10",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.65; OIG CPG",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-101",
+      "name": "QAPI Program (Ongoing, Agency-Wide, Data-Driven)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "QA-PG-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "policy",
+          "id": "QA-PG-002",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.65",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-102",
+      "name": "At-Least-One Active PIP (Continuous)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "QA-PI-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "workflow",
+          "id": "QA-WF-04",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "QA-FM-002",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.65(d)",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-103",
+      "name": "Quality Indicator Dashboard (Monthly Production)",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "QA-SM-001",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "workflow",
+          "id": "QA-WF-02",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "form",
+          "id": "QA-FM-003",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.65(b); § 484.245",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    },
+    {
+      "control": "CTRL-104",
+      "name": "HHCAHPS Submission or PER Maintenance",
+      "references": [
+        {
+          "kind": "policy",
+          "id": "QA-SM-002",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "workflow",
+          "id": "QA-WF-08",
+          "classification": "EXACT"
+        },
+        {
+          "kind": "regulation",
+          "citation": "42 CFR § 484.245",
+          "classification": "EXTERNAL_RECORD"
+        }
+      ]
+    }
+  ]
+}
