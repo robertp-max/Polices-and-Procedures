@@ -87,17 +87,18 @@ Last updated: 2026-07-20, HEAD `1a4c5aa3`.
   subsets. CI reliability concern for this worktree setup.
 
 ## G. UX / discoverability (found during review)
-- 🔴 **New aggregate screens not in the nav menu (omission)**: `signature-coverage`,
-  `access-review`, `reconciliation` have routes + render wiring but were NOT added
-  to `navigationManifest.ts` `admin:` group → reachable only by direct URL, no
-  clickable tab. Fix = 3 manifest entries. (admin-user-detail is intentionally
-  not nav-listed — reached via Users row-click.)
-- 🟠 **Admin lands on Groups, not Users**: the `V6Shell` admin gear button →
-  `/admin/user-groups`, so the create-user UI (`/admin/users` → "Add user" +
-  Create-user form + Cognito `AccountProvisioningCard`) is one tab over and not
-  obvious. Owner reported "I don't see any UI to create users" — it exists, just
-  not on the default admin landing. Consider landing on Users or promoting "Add
-  user". (navigationManifest.ts `admin:` group has all 5 tabs incl. Users.)
+- ✅ RESOLVED (redesign c40f3c6 + nav commit 03894763) **New aggregate screens not
+  in the nav menu**: signature-coverage / access-review / reconciliation are now in
+  the `admin:` nav group and surfaced under the Oversight area of the new
+  AdminWorkspaceShell.
+- ✅ RESOLVED (redesign c40f3c6) **Admin lands on Groups, not Users**: the admin
+  entry now lands on the `/admin` Control Center (AdminOverviewScreen) with a
+  5-area nav (Overview · People · Access · Oversight · Community) + "Invite a user"
+  quick action; the create-user UI is discoverable under People.
+- 🟡 OPEN followups from the redesign: "Invite a user" links to
+  `/admin/users?mode=provisioning` — verify AdminUsersScreen actually reads that
+  query param (else it just lands on the list). New shell/overview screens have no
+  route-level tests (consistent with the existing route-test gap in §D).
 - 🟠 **Two user-creation paths coexist on /admin/users**: "Add user" writes to the
   **demo localStorage** identity store (`addUser`), while `AccountProvisioningCard`
   does **real Cognito** provisioning. Which is authoritative is unclear to a user;
