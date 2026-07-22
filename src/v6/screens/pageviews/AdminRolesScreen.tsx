@@ -202,7 +202,6 @@ export function AdminRolesScreen() {
       data-route="/admin/roles"
       data-template="matrix"
     >
-      <div className="sr-only"><h1>Roles</h1></div>
       <MetricGrid metrics={roleMetrics} />
 
       <section className="grid gap-xl desktop:grid-cols-1">
@@ -260,7 +259,7 @@ export function AdminRolesScreen() {
             <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest" role="tabpanel">
             <div className="mb-lg flex items-start justify-between gap-md">
               <div className="grid gap-sm">
-                <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-tone-teal-bg text-tone-teal-text">
                   <UserCog aria-hidden="true" className="h-icon-md w-icon-md" />
                 </span>
                 <div>
@@ -290,7 +289,7 @@ export function AdminRolesScreen() {
           {activePanel === 'trail' && (
             <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest" role="tabpanel">
             <div className="mb-lg flex items-start gap-md">
-              <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-tone-green-bg text-tone-green-text">
                 <FileCheck2 aria-hidden="true" className="h-icon-md w-icon-md" />
               </span>
               <div>

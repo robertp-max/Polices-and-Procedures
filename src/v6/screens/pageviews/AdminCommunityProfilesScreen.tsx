@@ -37,7 +37,7 @@ export function AdminCommunityProfilesScreen() {
     return (
       <section className="grid gap-xl" data-group="Admin" data-hash-id="admin-community-profiles">
         <div className="rounded-2xl border border-hairline bg-white p-8 text-center">
-          <h1 className="text-xl font-medium text-ink mb-2">Access denied</h1>
+          <h2 className="text-xl font-medium text-ink mb-2">Access denied</h2>
           <p className="text-sm text-muted">
             Only administrators can manage Community Profiles visibility and directory.
           </p>
@@ -115,11 +115,6 @@ export function AdminCommunityProfilesScreen() {
       data-route="/admin/community-profiles"
       data-template="matrix"
     >
-      {/* No PageHeader — subnav already identifies the section (per cleanup task) */}
-      <div className="sr-only">
-        <h1>Community Profiles</h1>
-      </div>
-
       <div className="text-sm text-muted mb-2">
         Manage visibility for internal clinician / staff community profiles. Thread activity remains public.
       </div>

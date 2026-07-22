@@ -154,6 +154,7 @@ export const V6_ROUTES = [
   { path: '/reports/community-engagement-by-role', hashId: 'report-community-engagement-by-role', template: 'reports', group: 'System', title: 'Community Engagement', description: 'Engagement by role report.' },
   { path: '/reports/help-center-usage', hashId: 'report-help-center-usage', template: 'reports', group: 'System', title: 'Help Center Usage', description: 'KB article usage report.' },
   { path: '/reports/community-to-ces', hashId: 'report-community-to-ces', template: 'reports', group: 'System', title: 'Community to CES', description: 'Thread to CES conversion report.' },
+  { path: '/admin', hashId: 'admin-overview', template: 'dashboard', group: 'Admin', title: 'Admin Control Center', description: 'Control-plane overview for people, access, signing authority, reviews, and reconciliation.' },
   { path: '/admin/user-groups', hashId: 'admin-groups', template: 'matrix', group: 'Admin', title: 'User Groups', description: 'User group membership and scope management matrix.' },
   { path: '/admin/roles', hashId: 'admin-roles', template: 'matrix', group: 'Admin', title: 'Roles', description: 'RBAC role catalog with permission inheritance and readiness.' },
   { path: '/admin/permissions', hashId: 'admin-permissions', template: 'matrix', group: 'Admin', title: 'Permissions', description: 'Permission matrix for capabilities, roles, risk, readiness, and governance evidence.' },

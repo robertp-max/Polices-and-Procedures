@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   BadgeCheck,
   ClipboardCheck,
@@ -250,8 +250,17 @@ const userPanelTabs = [
 
 type UserPanelTabId = (typeof userPanelTabs)[number]['id'];
 
+const peopleWorkspaceTabs = [
+  { id: 'directory', label: 'Account directory', description: 'Real login status and canonical users' },
+  { id: 'provisioning', label: 'Invite & provision', description: 'Create or restore account access' },
+  { id: 'prototype', label: 'Prototype setup', description: 'Local onboarding and role mock data' },
+] as const;
+
+type PeopleWorkspaceTabId = (typeof peopleWorkspaceTabs)[number]['id'];
+
 export function AdminUsersScreen() {
   const { user: authUser } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { state: capabilityState, manageUsers, refetch: refetchCapability } = useManageUsersCapability();
   const users = useUserAssignmentsStore(s => s.users);
   const assignments = useUserAssignmentsStore(s => s.assignments);
@@ -270,7 +279,19 @@ export function AdminUsersScreen() {
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
 
-  const recentAudit = useMemo(() => getRecentAudit(40), [auditLog, getRecentAudit]);
+  const requestedWorkspace = searchParams.get('mode');
+  const activeWorkspace: PeopleWorkspaceTabId = peopleWorkspaceTabs.some((tab) => tab.id === requestedWorkspace)
+    ? requestedWorkspace as PeopleWorkspaceTabId
+    : 'directory';
+
+  const setActiveWorkspace = (nextWorkspace: PeopleWorkspaceTabId) => {
+    const next = new URLSearchParams(searchParams);
+    if (nextWorkspace === 'directory') next.delete('mode');
+    else next.set('mode', nextWorkspace);
+    setSearchParams(next, { replace: true });
+  };
+
+  const recentAudit = getRecentAudit(40);
 
   const userById = useMemo(() => new Map(users.map(u => [u.id, u])), [users]);
 
@@ -633,7 +654,7 @@ export function AdminUsersScreen() {
   if (capabilityState === 'idle' || capabilityState === 'loading') {
     return gateShell(
       <>
-        <h1 className="text-xl font-medium text-ink mb-2">Checking access…</h1>
+        <h2 className="text-xl font-medium text-ink mb-2">Checking access…</h2>
         <p className="text-sm text-muted">Verifying your administrator permissions.</p>
       </>,
     );
@@ -642,7 +663,7 @@ export function AdminUsersScreen() {
   if (capabilityState === 'error') {
     return gateShell(
       <>
-        <h1 className="text-xl font-medium text-ink mb-2">Couldn’t verify access</h1>
+        <h2 className="text-xl font-medium text-ink mb-2">Couldn’t verify access</h2>
         <p className="text-sm text-muted mb-4">
           We couldn’t confirm your administrator permissions. This is not a grant of access — please retry.
         </p>
@@ -660,7 +681,7 @@ export function AdminUsersScreen() {
   if (!manageUsers) {
     return gateShell(
       <>
-        <h1 className="text-xl font-medium text-ink mb-2">Access denied</h1>
+        <h2 className="text-xl font-medium text-ink mb-2">Access denied</h2>
         <p className="text-sm text-muted">You need administrator permissions to manage users.</p>
       </>,
     );
@@ -674,7 +695,52 @@ export function AdminUsersScreen() {
       data-route="/admin/users"
       data-template="matrix"
     >
-      <div className="sr-only"><h1>Users</h1></div>
+      <nav aria-label="People and account workspaces" className="flex max-w-full gap-sm overflow-x-auto rounded-[24px] bg-white p-sm shadow-[0_12px_34px_rgba(0,47,48,0.06)] tablet-l:grid tablet-l:grid-cols-3">
+        {peopleWorkspaceTabs.map((workspace) => (
+          <button
+            aria-pressed={activeWorkspace === workspace.id}
+            className={cx(
+              'min-w-[230px] rounded-[18px] px-lg py-md text-left transition-colors focus-visible:outline-none focus-visible:shadow-focus tablet-l:min-w-0',
+              activeWorkspace === workspace.id
+                ? 'bg-tone-teal-bg text-brand-teal-deep'
+                : 'text-secondary hover:bg-surface-hover hover:text-brand-teal-deep',
+            )}
+            key={workspace.id}
+            onClick={() => setActiveWorkspace(workspace.id)}
+            type="button"
+          >
+            <span className="block text-sm font-medium">{workspace.label}</span>
+            <span className="mt-xs block text-[11px] font-light text-muted">{workspace.description}</span>
+          </button>
+        ))}
+      </nav>
+
+      {activeWorkspace === 'directory' && (
+        <div className="grid gap-lg" aria-label="Account directory">
+          <div className="flex flex-wrap items-start justify-between gap-md rounded-2xl bg-white px-lg py-md shadow-[0_10px_30px_rgba(0,47,48,0.05)]">
+            <div>
+              <p className="text-sm font-medium text-brand-teal-deep">Canonical account directory</p>
+              <p className="mt-xs max-w-[760px] text-xs font-light leading-relaxed text-muted">
+                This is the authoritative account-status view. Open a user record for effective access, page visibility, and signature authority; suspend or reactivate only through the audited lifecycle controls.
+              </p>
+            </div>
+            <ToneTag tone="teal">Server projection</ToneTag>
+          </div>
+          <ServerUserAccessPanel />
+        </div>
+      )}
+
+      {activeWorkspace === 'provisioning' && (
+        <div className="grid gap-lg" aria-label="Invite and provision account access">
+          <div className="rounded-2xl border border-tone-orange-border bg-tone-orange-bg/45 px-lg py-md text-xs font-light leading-relaxed text-tone-orange-text" role="note">
+            Provisioning creates or restores login access. It does not independently assign permissions, page access, or signature authority.
+          </div>
+          <AccountProvisioningCard />
+        </div>
+      )}
+
+      {activeWorkspace === 'prototype' && (
+        <>
 
       <div
         className="rounded-lg border border-tone-amber-border bg-tone-amber-bg/40 px-lg py-md text-sm text-ink"
@@ -1134,20 +1200,13 @@ export function AdminUsersScreen() {
                 <SurfaceCard card={card} key={card.title} />
               ))}
 
-              {/* Phase COG-2: server-authoritative suspend/reactivate — the only
-                  control that changes a real login's access. */}
-              <ServerUserAccessPanel />
-
-              {/* Phase COG-1: real Cognito account provisioning via the existing auth backend. */}
-              <AccountProvisioningCard />
-
               <section
                 className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl overflow-hidden shadow-rest"
                 aria-labelledby="mfa-readiness-title"
               >
                 <div className="mb-lg flex items-start justify-between gap-md">
                   <div className="grid gap-sm">
-                    <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-green-bg text-tone-green-text">
+                    <span className="grid h-11 w-11 place-items-center rounded-xl bg-tone-green-bg text-tone-green-text">
                       <Smartphone aria-hidden="true" className="h-icon-md w-icon-md" />
                     </span>
                     <div>
@@ -1202,7 +1261,7 @@ export function AdminUsersScreen() {
               role="tabpanel"
             >
               <div className="mb-lg flex items-start gap-md">
-                <span className="grid h-tap w-tap place-items-center rounded-md bg-tone-teal-bg text-tone-teal-text">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-tone-teal-bg text-tone-teal-text">
                   <UserCog aria-hidden="true" className="h-icon-md w-icon-md" />
                 </span>
                 <div>
@@ -1319,6 +1378,8 @@ export function AdminUsersScreen() {
           )}
         </aside>
       </section>
+        </>
+      )}
     </section>
   );
 }

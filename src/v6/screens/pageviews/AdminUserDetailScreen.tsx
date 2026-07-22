@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/auth/AuthProvider';
 import { AuthApi, type EffectiveAccessProjection, type PageAccessProjectionResponse, type SignatureAuthorityAssignmentRow } from '@/auth/api';
-import { SurfaceCard, ToneTag } from '../../components';
+import { ToneTag } from '../../components';
 import { Button, ToneBadge } from '../../primitives';
 import { cx } from '../../utils/classNames';
 import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabInactiveClass } from './workspaceTabChrome';
@@ -55,14 +55,14 @@ const STATUS_TONE: Record<AccountStatus, 'active' | 'pending' | 'locked'> = {
 
 /** A domain whose server-authoritative projection ships in a later ADR phase.
  *  Shown honestly rather than backed by non-authoritative browser state. */
-function PendingProjection({ phase, title, detail }: { phase: string; title: string; detail: string }) {
+function PendingProjection({ phase, title, detail, state = 'pending' }: { phase: string; title: string; detail: string; state?: 'pending' | 'unavailable' }) {
   return (
     <div className="rounded-lg border border-dashed border-hairline bg-surface-glass/60 p-lg">
       <div className="flex items-center gap-sm">
         <ShieldAlert aria-hidden className="h-icon-sm w-icon-sm text-muted" />
         <p className="text-sm font-medium text-ink">{title}</p>
         <span className="rounded-full border border-hairline bg-surface px-sm py-[2px] text-[10px] font-medium uppercase tracking-wider text-muted">
-          {phase} · server projection pending
+          {phase} · server projection {state}
         </span>
       </div>
       <p className="mt-sm text-xs text-secondary">{detail}</p>
@@ -164,7 +164,7 @@ export function AdminUserDetailScreen() {
   if (loadError && !user) {
     return shell(
       <div className="rounded-2xl border border-tone-orange-border bg-tone-orange-bg/40 p-8 text-center">
-        <h1 className="text-lg font-medium text-ink">Couldn't load this user</h1>
+        <h2 className="text-lg font-medium text-ink">Couldn't load this user</h2>
         <p className="mt-2 text-sm text-secondary">{loadError}</p>
         <Button className="mt-4" size="sm" variant="secondary" onClick={() => void load()}>Retry</Button>
       </div>,
@@ -178,7 +178,7 @@ export function AdminUserDetailScreen() {
   if (!user) {
     return shell(
       <div className="rounded-2xl border border-hairline bg-white p-8 text-center">
-        <h1 className="text-lg font-medium text-ink">User not found</h1>
+        <h2 className="text-lg font-medium text-ink">User not found</h2>
         <p className="mt-2 text-sm text-secondary">No canonical user <code className="text-xs">{userId}</code> in the server registry.</p>
       </div>,
     );
@@ -197,7 +197,7 @@ export function AdminUserDetailScreen() {
               {initials}
             </div>
             <div>
-              <h1 className="text-xl font-medium text-brand-teal-deep">{user.name}</h1>
+              <h2 className="text-xl font-medium text-brand-teal-deep">{user.name}</h2>
               <p className="text-sm text-secondary">{user.email}</p>
               <p className="mt-xs text-[11px] text-muted">canonical id <code className="text-[11px]">{user.userId}</code></p>
             </div>
@@ -218,8 +218,7 @@ export function AdminUserDetailScreen() {
           <button
             key={t.id}
             type="button"
-            role="tab"
-            aria-selected={tab === t.id}
+            aria-pressed={tab === t.id}
             onClick={() => setTab(t.id)}
             className={cx(workspaceCompactTabClass, tab === t.id ? workspaceTabActiveClass : workspaceTabInactiveClass, 'inline-flex items-center gap-xs')}
           >
@@ -230,13 +229,54 @@ export function AdminUserDetailScreen() {
 
       {/* Panels */}
       {tab === 'overview' && (
-        <div className="grid gap-lg tablet-l:grid-cols-2">
-          <SurfaceCard card={{ title: 'Account status', body: `This user is ${user.status}. Status is the server-authoritative global-deny authority (ADR §B2).`, icon: user.status === 'active' ? ShieldCheck : ShieldAlert, status: STATUS_TONE[user.status], tone: user.status === 'suspended' ? 'orange' : 'teal' }} />
-          <SurfaceCard card={{ title: 'Security groups', body: roles.length ? roles.join(', ') : 'No active group assignments.', icon: KeyRound, status: user.privileged ? 'locked' : 'ready', tone: 'slate' }} />
-          <div className="tablet-l:col-span-2 grid gap-sm">
-            <PendingProjection phase="Phase 3" title="Effective permissions & admin capabilities" detail="Server effective-access evaluator with explanation and deny precedence (account-status → policy/SoD → permission → page visibility)." />
-            <PendingProjection phase="Phase 5" title="Signature authority & coverage" detail="Two-axis catalog (workflow participation vs business capacity) + authority assignments; derived from forms/workflows/policies/eCIgn." />
+        <div className="grid gap-lg">
+          <div className="grid gap-md tablet-l:grid-cols-2 desktop:grid-cols-4" aria-label="User control-plane summary">
+            {[
+              {
+                label: 'Account status',
+                value: user.status[0].toUpperCase() + user.status.slice(1),
+                detail: 'Global lifecycle authority',
+                icon: user.status === 'active' ? ShieldCheck : ShieldAlert,
+                tone: user.status === 'suspended' ? 'bg-tone-orange-bg text-tone-orange-text' : 'bg-tone-green-bg text-tone-green-text',
+              },
+              {
+                label: 'Effective permissions',
+                value: effAccess ? String(effAccess.permissions.length) : '—',
+                detail: effAccess ? effAccess.policyVersion : 'Projection unavailable',
+                icon: KeyRound,
+                tone: 'bg-tone-teal-bg text-tone-teal-text',
+              },
+              {
+                label: 'Visible pages',
+                value: pageAccess ? `${pageAccess.pages.filter((page) => page.visible).length}/${pageAccess.pages.length}` : '—',
+                detail: 'Non-authorizing visibility',
+                icon: LayoutGrid,
+                tone: 'bg-surface text-secondary',
+              },
+              {
+                label: 'Signing capacities',
+                value: sigAuthority ? String(sigAuthority.filter((assignment) => assignment.status === 'active').length) : '—',
+                detail: 'Active scoped assignments',
+                icon: FileSignature,
+                tone: 'bg-tone-orange-bg text-tone-orange-text',
+              },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <article className="rounded-[22px] bg-white p-lg shadow-[0_12px_32px_rgba(0,47,48,0.06)]" key={item.label}>
+                  <span className={cx('grid h-9 w-9 place-items-center rounded-xl', item.tone)}><Icon aria-hidden className="h-4 w-4" /></span>
+                  <p className="mt-lg text-2xl font-light text-brand-orange">{item.value}</p>
+                  <p className="mt-sm text-sm font-medium text-brand-teal-deep">{item.label}</p>
+                  <p className="mt-xs text-[11px] font-light text-muted">{item.detail}</p>
+                </article>
+              );
+            })}
           </div>
+          {(!effAccess || !pageAccess || !sigAuthority) && (
+            <div className="rounded-2xl border border-hairline bg-surface px-lg py-md text-xs font-light text-secondary" role="status">
+              One or more server projections could not be loaded. Available values remain authoritative; unavailable values stay marked with an em dash.
+            </div>
+          )}
         </div>
       )}
 
@@ -326,7 +366,7 @@ export function AdminUserDetailScreen() {
               </div>
             </div>
           ) : (
-            <PendingProjection phase="Phase 3" title="Effective permissions" detail="Server evaluator projection is unavailable (not loaded)." />
+            <PendingProjection phase="Phase 3" state="unavailable" title="Effective permissions" detail="Server evaluator projection is unavailable (not loaded)." />
           )}
           {pageAccess ? (
             <div className="rounded-2xl border border-hairline bg-white p-lg shadow-sm">
@@ -357,7 +397,7 @@ export function AdminUserDetailScreen() {
               </div>
             </div>
           ) : (
-            <PendingProjection phase="Phase 4" title="Page access (visibility projection)" detail="Server-generated, non-authorizing page projection with deny reasons. Hiding a page is never security; every API authorizes independently." />
+            <PendingProjection phase="Phase 4" state="unavailable" title="Page access (visibility projection)" detail="Server-generated, non-authorizing page projection with deny reasons. Hiding a page is never security; every API authorizes independently." />
           )}
           <PendingProjection phase="Phase 3" title="Administrator capabilities" detail="Granular admin capabilities evaluated server-side, distinct from business permissions and page visibility." />
         </div>
@@ -408,11 +448,11 @@ export function AdminUserDetailScreen() {
               )}
               <p className="mt-md text-xs text-muted">
                 Capacities are derived from forms/workflows/policies/eCIgn (never job titles); unknown labels fail closed.
-                Delegation + prerequisites (license/competency) + separation-of-duties enforcement land in Phase 5D.
+                Enforcement for delegation, prerequisites, and separation of duties remains fail-closed; remaining direct-path wiring is tracked separately.
               </p>
             </div>
           ) : (
-            <PendingProjection phase="Phase 5" title="Signature capacities, scope & delegation" detail="Server signature-authority assignments unavailable (not loaded)." />
+            <PendingProjection phase="Phase 5" state="unavailable" title="Signature capacities, scope & delegation" detail="Server signature-authority assignments unavailable (not loaded)." />
           )}
         </div>
       )}

@@ -33,7 +33,7 @@ import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
 import { BoardLane, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
-import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, AdminUserDetailScreen, AdminSignatureCoverageScreen, AdminAccessReviewScreen, AdminReconciliationScreen, AdminCommunityProfilesScreen, AdmissionPacketPreviewScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyAreaNav, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, UserGuideScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, ForgotPasswordScreen, ResetPasswordScreen, SetupAccountScreen, SetupAccountDirectScreen, MobileIncidentScreen, NotFoundScreen, PersonalProfileScreen, CommunityScreen, ComplianceHomeScreen } from './pageviews';
+import { AdminGroupsScreen, AdminOverviewScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, AdminUserDetailScreen, AdminSignatureCoverageScreen, AdminAccessReviewScreen, AdminReconciliationScreen, AdminCommunityProfilesScreen, AdminWorkspaceShell, AdmissionPacketPreviewScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyAreaNav, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, UserGuideScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, ForgotPasswordScreen, ResetPasswordScreen, SetupAccountScreen, SetupAccountDirectScreen, MobileIncidentScreen, NotFoundScreen, PersonalProfileScreen, CommunityScreen, ComplianceHomeScreen } from './pageviews';
 import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabClass, workspaceTabInactiveClass, workspaceTabNavClass } from './pageviews/workspaceTabChrome';
 import { StaticCardWatermark } from './pageviews/StaticCardWatermark';
 
@@ -1667,6 +1667,9 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
 
   let child: ReactNode = null;
   switch (route.hashId) {
+    case 'admin-overview':
+      child = <AdminOverviewScreen />;
+      break;
     case 'admin-groups':
       child = <AdminGroupsScreen />;
       break;
@@ -1961,7 +1964,9 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
     child = <OverlaySystemScreen />;
   }
 
-  const wrapped = child;
+  const wrapped = route.group === 'Admin' && route.hashId !== 'surveyor-viewer'
+    ? <AdminWorkspaceShell>{child}</AdminWorkspaceShell>
+    : child;
 
   if (route.group === 'Auth') {
     return child;
@@ -1988,6 +1993,7 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
 
 export function isRepresentativeRoute(route: RouteLike): boolean {
   return [
+    'admin-overview',
     'admin-groups',
     'admin-roles',
     'admin-permissions',
@@ -1996,6 +2002,7 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
     'admin-signature-coverage',
     'admin-access-review',
     'admin-reconciliation',
+    'admin-community-profiles',
     'achc-crosswalk',
     'achc-survey',
     'hh-evidence-map',

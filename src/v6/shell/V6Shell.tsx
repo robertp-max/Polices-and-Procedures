@@ -302,7 +302,7 @@ export function V6Shell() {
       {showRouteChrome && (
         <button
           type="button"
-          onClick={() => navigate('/admin/user-groups')}
+          onClick={() => navigate('/admin')}
           aria-label="Open admin settings"
           className={cx(
             'group fixed bottom-5 left-5 z-popover grid h-11 w-11 place-items-center rounded-full bg-transparent text-slate-400 shadow-none transition duration-300 ease-standard hover:-translate-y-0.5 hover:text-brand-teal-deep',
