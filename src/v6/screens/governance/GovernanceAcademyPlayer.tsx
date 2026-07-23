@@ -17,17 +17,11 @@ import {
   type PublicAcademyModule,
 } from './governanceApi';
 
-const CORRECTED_SCENES = new Map([
-  ['GB-001:control-model', 'control-model-cards-fixed-v27.png'],
-  ['GB-001:field-guide', 'field-guide-cards-fixed-v27.png'],
-  ['GB-002:control-model', 'control-model-cards-fixed-v27.png'],
-  ['GB-002:worked-example', 'worked-example-cards-fixed-v27.png'],
-  ['GB-003:worked-example', 'worked-example-cards-fixed-v27.png'],
-]);
-
+// The "-cards-fixed-v27.png" repair images were byte-identical duplicates of the canonical
+// scene files and were removed during ZIP integration (65 canonical scenes preserved), so
+// every scene resolves to its canonical "<sceneId>.png" which is present on disk.
 function sceneImage(moduleId: string, sceneId: string): string {
-  const file = CORRECTED_SCENES.get(`${moduleId}:${sceneId}`) ?? `${sceneId}.png`;
-  return `/gb-visuals/scenes/${moduleId.toLowerCase()}/${file}`;
+  return `/gb-visuals/scenes/${moduleId.toLowerCase()}/${sceneId}.png`;
 }
 
 function readableTask(taskId: string): string {

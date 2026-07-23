@@ -1,0 +1,62 @@
+/* AcademyCarousel.tsx — scoped styles for the Governing Body Academy's horizontal
+ * cover-thumbnail carousel. Every selector is prefixed with `.v33-scope` so it can
+ * never be shadowed by — or bleed into — V1's unscoped `.gb-academy-*` rules in
+ * ../governance-office.css. Both stylesheets are loaded together on every governance
+ * route (see pageviews/GovernanceScreen.tsx), so scoping is what keeps V1 and V3
+ * additive rather than colliding.
+ *
+ * Colors and typography reuse the v33 premium-office tokens already defined at the
+ * `.v33-scope` root in ../v33-globals.css (--forest, --forest-2, --bronze, --ink,
+ * --muted, --line, --line-dark, --surface, --font-editorial, --shadow-sm/md). Those
+ * tokens are guaranteed to be in scope because this component only ever renders inside
+ * <div className="v33-scope">.
+ */
+
+.v33-scope .gb-academy-carousel { position: relative; }
+
+.v33-scope .gb-academy-carousel-head { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 16px; }
+.v33-scope .gb-academy-carousel-lead { display: flex; align-items: center; gap: 11px; min-width: 0; color: var(--forest); }
+.v33-scope .gb-academy-carousel-lead > svg { flex: 0 0 auto; color: var(--bronze); }
+.v33-scope .gb-academy-carousel-lead strong { display: block; font-family: var(--font-editorial); font-size: 16px; font-weight: 400; }
+.v33-scope .gb-academy-carousel-lead small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; letter-spacing: .01em; }
+.v33-scope .gb-academy-carousel-nav { display: flex; flex: 0 0 auto; gap: 8px; }
+
+.v33-scope .gb-carousel-arrow { align-items: center; background: var(--forest); border: 0; border-radius: 50%; box-shadow: var(--shadow-sm); color: #fff; cursor: pointer; display: flex; flex: 0 0 auto; height: 38px; justify-content: center; transition: background .16s ease; width: 38px; }
+.v33-scope .gb-carousel-arrow:hover { background: var(--forest-2); }
+.v33-scope .gb-carousel-arrow svg { height: 17px; width: 17px; }
+
+.v33-scope .gb-academy-grid { display: flex; gap: 16px; margin: 0; overflow-x: auto; padding: 3px 3px 16px; scroll-padding-left: 3px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.v33-scope .gb-academy-grid::-webkit-scrollbar { display: none; }
+
+.v33-scope .gb-academy-card { flex: 0 0 clamp(252px, 27%, 318px); min-width: 0; scroll-snap-align: start; }
+.v33-scope .gb-academy-card-hit { background: var(--surface); border: 1px solid var(--line); border-radius: 4px 4px 20px 4px; box-shadow: var(--shadow-sm); color: inherit; display: flex; flex-direction: column; height: 100%; overflow: hidden; padding: 0; text-align: left; transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease; width: 100%; }
+.v33-scope .gb-academy-card-hit:hover { border-color: var(--line-dark); box-shadow: var(--shadow-md); transform: translateY(-3px); }
+.v33-scope .gb-academy-card.capstone .gb-academy-card-hit { border-color: var(--bronze); }
+
+.v33-scope .gb-academy-card-image { aspect-ratio: 16 / 10; background: var(--forest); overflow: hidden; position: relative; }
+.v33-scope .gb-academy-card-image img { display: block; height: 100%; object-fit: cover; width: 100%; }
+.v33-scope .gb-academy-card-image::after { background: linear-gradient(180deg, transparent 55%, rgba(10, 20, 17, .46)); content: ''; inset: 0; position: absolute; }
+.v33-scope .gb-academy-card-image > span { bottom: 12px; color: #fff; font-family: var(--font-editorial); font-size: 21px; left: 15px; position: absolute; z-index: 1; }
+
+.v33-scope .gb-academy-card-body { display: flex; flex: 1; flex-direction: column; padding: 17px 18px 18px; }
+.v33-scope .gb-academy-meta { color: var(--bronze); display: flex; font-size: 8px; font-weight: 500; gap: 10px; justify-content: space-between; letter-spacing: .1em; text-transform: uppercase; }
+.v33-scope .gb-academy-meta span:last-child { overflow: hidden; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+.v33-scope .gb-academy-card-body h3 { color: var(--ink); font-family: var(--font-editorial); font-size: 18px; font-weight: 400; line-height: 1.2; margin: 10px 0 12px; }
+
+.v33-scope .gb-academy-facts { border-top: 1px solid var(--line); display: grid; gap: 6px; padding-top: 12px; }
+.v33-scope .gb-academy-facts span { align-items: center; color: var(--muted); display: flex; font-size: 9px; gap: 7px; line-height: 1.3; }
+.v33-scope .gb-academy-facts svg { color: var(--forest-2); flex: 0 0 auto; height: 12px; width: 12px; }
+
+.v33-scope .gb-academy-card-cta { align-items: center; border-top: 1px solid var(--line); color: var(--forest); display: flex; font-size: 9px; font-weight: 500; justify-content: space-between; letter-spacing: .1em; margin-top: 15px; padding-top: 12px; text-transform: uppercase; }
+.v33-scope .gb-academy-card-cta svg { color: var(--bronze); height: 14px; width: 14px; }
+.v33-scope .gb-academy-card-hit:hover .gb-academy-card-cta,
+.v33-scope .gb-academy-card-hit:focus-visible .gb-academy-card-cta { color: var(--forest-2); }
+
+@media (max-width: 760px) {
+  .v33-scope .gb-academy-carousel-head { align-items: flex-start; }
+  .v33-scope .gb-academy-card { flex-basis: 82%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v33-scope .gb-academy-card-hit { transition: none; }
+}

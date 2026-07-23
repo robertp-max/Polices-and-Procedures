@@ -14,7 +14,6 @@ import {
   Landmark,
   LockKeyhole,
   Menu,
-  Scale,
   Search,
   ShieldAlert,
   ShieldCheck,
@@ -239,8 +238,8 @@ function StaticControlView({ type }: { type: 'oversight' | 'risk' | 'policies' |
     policies: ['Policy governance', 'The Governing Body Office reuses the controlled policy corpus, lifecycle, attestations, and approvals. Reading, training, approval, implementation, and effectiveness remain different events.', 'Open the canonical policy library to work with the controlled document—not a duplicated Board copy.'],
     records: ['Official records', 'View, download, print, and share actions are authority-checked and written to per-delivery access records after successful delivery.', 'The record index remains unavailable until the audit outbox and production persistence adapters are configured.'],
   }[type];
-  const navigate = useNavigate();
-  return <><PageIntro eyebrow="Controlled projection" title={content[0]} body={content[1]} /><EmptyState title="No authoritative projection is connected." body={content[2]} icon={type === 'risk' ? ShieldAlert : type === 'policies' ? BookOpen : Archive} />{type === 'policies' && <button className="gb-primary-link" type="button" onClick={() => navigate('/library')}>Open controlled policy library <ChevronRight aria-hidden="true" /></button>}</>;
+  // The portal is sealed: no control here navigates back to the main application.
+  return <><PageIntro eyebrow="Controlled projection" title={content[0]} body={content[1]} /><EmptyState title="No authoritative projection is connected." body={content[2]} icon={type === 'risk' ? ShieldAlert : type === 'policies' ? BookOpen : Archive} /></>;
 }
 
 function Calendar({ office }: { office: GovernanceProjectionView }) {
@@ -273,7 +272,7 @@ function CommandPalette({ onClose }: { onClose: () => void }) {
         <header><Command aria-hidden="true" /><h2 id="gb-command-title">Search authorized records</h2><button type="button" onClick={onClose} aria-label="Close search"><X aria-hidden="true" /></button></header>
         <label><Search aria-hidden="true" /><span className="sr-only">Search records</span><input autoFocus value={query} onChange={(event) => { const value = event.target.value; setQuery(value); if (value.trim().length < 2) { setResults([]); setMessage('Searches are keyed with HMAC-SHA-256 and are not stored in plaintext.'); } }} placeholder="Decision, meeting, action, source…" /></label>
         <p>{message}</p>
-        <div className="gb-palette-results">{results.map((result) => <button key={`${result.type}:${result.id}`} type="button" onClick={() => { navigate(result.route); onClose(); }}><span>{result.type}</span><strong>{result.title}</strong><small>{humanStatus(result.status)}</small></button>)}</div>
+        <div className="gb-palette-results">{results.map((result) => <button key={`${result.type}:${result.id}`} type="button" onClick={() => { const target = result.route.startsWith('/governance') ? result.route : '/governance'; navigate(target); onClose(); }}><span>{result.type}</span><strong>{result.title}</strong><small>{humanStatus(result.status)}</small></button>)}</div>
       </section>
     </div>
   );
@@ -333,20 +332,21 @@ export function GovernanceOffice() {
 
   return (
     <main className="gb-office">
-      <header className="gb-topbar">
-        <button type="button" className="gb-menu-button" onClick={() => setMenuOpen((value) => !value)} aria-label="Open Governing Body navigation" aria-expanded={menuOpen}><Menu aria-hidden="true" /></button>
-        <img src="/logo-careindeed-orange.png" alt="Care Indeed" />
-        <div><span>Governing Body</span><strong>Private Office</strong></div>
-        <button type="button" className="gb-search-button" onClick={() => setPaletteOpen(true)}><Search aria-hidden="true" /><span>Search records</span><kbd>⌘ K</kbd></button>
-        <div className={`gb-live-badge gb-live-badge--${office.sourcePosture}`}><span />{humanStatus(office.sourcePosture)}</div>
-      </header>
-      <div className="gb-office-layout">
-        <aside className={`gb-office-nav ${menuOpen ? 'is-open' : ''}`} aria-label="Governing Body Office">
-          <div className="gb-office-seal"><Scale aria-hidden="true" /><div><small>Care Indeed</small><strong>Office of the<br />Governing Body</strong></div></div>
-          <nav>{NAV_ITEMS.map((item) => { const Icon = item.icon; return <button key={item.path} type="button" className={activePath === item.path ? 'is-active' : ''} onClick={() => { navigate(item.path); setMenuOpen(false); }}><span>{item.eyebrow}</span><Icon aria-hidden="true" />{item.label}</button>; })}</nav>
-          <footer><LockKeyhole aria-hidden="true" /><p>Authority-filtered<br /><strong>{office.organizationId}</strong></p></footer>
-        </aside>
-        {menuOpen && <button type="button" className="gb-nav-scrim" onClick={() => setMenuOpen(false)} aria-label="Close navigation" />}
+      <aside className={`gb-office-nav ${menuOpen ? 'is-open' : ''}`} aria-label="Governing Body Office">
+        <div className="gb-office-brand">
+          <img src="/logo-careindeed-orange.png" alt="Care Indeed" />
+          <div><span>Governing Body</span><strong>Private Office</strong></div>
+        </div>
+        <nav>{NAV_ITEMS.map((item) => { const Icon = item.icon; return <button key={item.path} type="button" className={activePath === item.path ? 'is-active' : ''} onClick={() => { navigate(item.path); setMenuOpen(false); }}><span>{item.eyebrow}</span><Icon aria-hidden="true" />{item.label}</button>; })}</nav>
+        <footer><LockKeyhole aria-hidden="true" /><p>Authority-filtered<br /><strong>{office.organizationId}</strong></p></footer>
+      </aside>
+      {menuOpen && <button type="button" className="gb-nav-scrim" onClick={() => setMenuOpen(false)} aria-label="Close navigation" />}
+      <div className="gb-office-main">
+        <header className="gb-topbar">
+          <button type="button" className="gb-menu-button" onClick={() => setMenuOpen((value) => !value)} aria-label="Open Governing Body navigation" aria-expanded={menuOpen}><Menu aria-hidden="true" /></button>
+          <button type="button" className="gb-search-button" onClick={() => setPaletteOpen(true)}><Search aria-hidden="true" /><span>Search records</span><kbd>⌘ K</kbd></button>
+          <div className={`gb-live-badge gb-live-badge--${office.sourcePosture}`}><span />{humanStatus(office.sourcePosture)}</div>
+        </header>
         <section className="gb-office-content">{content}</section>
       </div>
       {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} />}

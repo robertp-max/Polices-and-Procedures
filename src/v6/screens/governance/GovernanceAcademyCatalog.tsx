@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { ArrowUpRight, Clock3, Layers3, LockKeyhole, ShieldCheck } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowUpRight, ChevronLeft, ChevronRight, Clock3, Layers3, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   GovernanceApi,
@@ -35,13 +35,24 @@ export function GovernanceAcademyCatalog({ assignments }: GovernanceAcademyCatal
   const navigate = useNavigate();
   const [catalog, setCatalog] = useState<AcademyCatalogItem[]>([]);
   const [error, setError] = useState<GovernanceApiError | null>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  // Instant scroll (the app's smooth-scroll is inert on some scrollers) by ~85% of the viewport.
+  const scrollTrack = (direction: 1 | -1) => {
+    const el = trackRef.current;
+    if (!el) return;
+    el.scrollBy({ left: direction * Math.round(el.clientWidth * 0.85) });
+  };
 
   useEffect(() => {
     const controller = new AbortController();
     GovernanceApi.academyCatalog(controller.signal)
       .then(setCatalog)
-      .catch((reason: GovernanceApiError) => {
-        if (reason?.code !== 'AbortError') setError(reason);
+      .catch((reason: unknown) => {
+        // Ignore fetch aborts (StrictMode double-mount / unmount) — a raw DOMException
+        // named 'AbortError', not a GovernanceApiError with a code. Matches GovernanceOffice.
+        if (reason instanceof DOMException && reason.name === 'AbortError') return;
+        setError(reason as GovernanceApiError);
       });
     return () => controller.abort();
   }, []);
@@ -59,7 +70,10 @@ export function GovernanceAcademyCatalog({ assignments }: GovernanceAcademyCatal
   }
 
   return (
-    <section className="gb-academy-grid" aria-label="Governance Institute modules">
+    <div className="gb-academy-carousel">
+      <button type="button" className="gb-carousel-arrow gb-carousel-prev" onClick={() => scrollTrack(-1)} aria-label="Previous modules"><ChevronLeft aria-hidden="true" /></button>
+      <button type="button" className="gb-carousel-arrow gb-carousel-next" onClick={() => scrollTrack(1)} aria-label="More modules"><ChevronRight aria-hidden="true" /></button>
+      <section className="gb-academy-grid" ref={trackRef} aria-label="Governance Institute modules">
       {catalog.map((module) => {
         const assignment = assignments.find((candidate) => candidate.moduleId === module.id);
         const href = assignment
@@ -91,6 +105,7 @@ export function GovernanceAcademyCatalog({ assignments }: GovernanceAcademyCatal
           </article>
         );
       })}
-    </section>
+      </section>
+    </div>
   );
 }
