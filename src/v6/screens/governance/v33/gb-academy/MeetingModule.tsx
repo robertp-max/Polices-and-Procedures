@@ -504,7 +504,7 @@ function App({ onExit }: { onExit?: () => void }) {
           <strong>{MODULE.title}</strong>
         </div>
         <div className="command-actions">
-          <div className="save-state"><CheckCircle2 size={15} /> Private practice record · certification locked</div>
+          <div className="save-state"><CheckCircle2 size={15} /> Required Governing Body compliance · official evidence on pass</div>
           <button className="quiet-button" onClick={openNotes}><NotebookPen size={16} /> Notebook</button>
           <button className="icon-button mobile-notebook" onClick={openNotes} aria-label="Open board notebook"><NotebookPen size={17} /></button>
           <button className="icon-button" onClick={reset} aria-label="Reset attempt"><RotateCcw size={17} /></button>

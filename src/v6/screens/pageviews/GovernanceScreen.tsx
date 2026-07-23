@@ -6,6 +6,7 @@ import MyJourneyApp from '../governance/v33/MyJourneyApp';
 import '../governance/governance-office.css';
 import '../governance/v33/v33-globals.css';
 import '../governance/v33/gb-academy/styles.css';
+import '../governance/v33/compliance/compliance.css';
 
 type PortalVersion = 'v1' | 'v2' | 'v3';
 

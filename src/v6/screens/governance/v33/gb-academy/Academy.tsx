@@ -21,15 +21,22 @@ import MeetingModule from './MeetingModule';
 import ExecutiveModuleView from './ExecutiveModule';
 import { CASE_MODULES, MODULES } from './academyData';
 import type { AcademyModuleSummary } from './academyTypes';
+import { getOfficialEvidence } from '../compliance/complianceStore';
+import { MODULE_MASTERY_STANDARD } from '../compliance/complianceCatalog';
 
+// Completion is NEVER inferred from a submitted attempt. A module is complete
+// only when a connected evidence service holds a passing, attested,
+// zero-critical-error official record. In a disconnected dev build this is
+// always false — which is the honest state.
 function readCompletion(module: AcademyModuleSummary) {
-  if (typeof window === 'undefined') return false;
-  try {
-    const key = `care-indeed:${module.id.toLowerCase()}:academy:v3`;
-    return Boolean(JSON.parse(localStorage.getItem(key) || '{}').submitted);
-  } catch {
-    return false;
-  }
+  return getOfficialEvidence().some(
+    (r) =>
+      r.assignmentId === `gb:module:${module.id}` &&
+      r.completedAt !== null &&
+      r.attestedAt !== null &&
+      r.criticalErrors.length === 0 &&
+      (r.score ?? 0) >= MODULE_MASTERY_STANDARD,
+  );
 }
 
 export default function Academy({ onExitJourney, initialModuleId = null }: { onExitJourney: () => void; initialModuleId?: string | null }) {
@@ -68,7 +75,7 @@ function AcademyHome({ onOpen, onExitJourney }: { onOpen: (id: string) => void; 
       <header className="command-bar academy-command">
         <div className="brand-lockup"><button className="icon-button academy-back" onClick={onExitJourney} aria-label="Return to Governing Body Office"><ArrowLeft size={18} /></button><div className="brand-mark" aria-hidden="true"><span /><span /><span /></div><div><div className="brand-name">CARE INDEED</div><div className="brand-product">Governance Institute</div></div></div>
         <div className="module-lockup"><span>GB</span><strong>Executive Governance Curriculum</strong></div>
-        <div className="command-actions"><div className="save-state"><CheckCircle2 size={15} /> Private practice record · certification locked</div><div className="academy-version">CURRICULUM v1.0</div></div>
+        <div className="command-actions"><div className="save-state"><CheckCircle2 size={15} /> Required for your Governing Body compliance</div><div className="academy-version">CURRICULUM v1.0</div></div>
       </header>
 
       <main className="academy-canvas">
@@ -82,10 +89,10 @@ function AcademyHome({ onOpen, onExitJourney }: { onOpen: (id: string) => void; 
           <article><Target size={20} /><div><strong>92%</strong><span>Mastery standard</span></div></article>
           <article><ShieldCheck size={20} /><div><strong>0</strong><span>Critical errors allowed</span></div></article>
           <article><Layers3 size={20} /><div><strong>7</strong><span>Reasoning stages</span></div></article>
-          <article><Award size={20} /><div><strong>{completed}</strong><span>Local practice results</span></div></article>
+          <article><Award size={20} /><div><strong>{completed}</strong><span>Modules officially complete</span></div></article>
         </section>
 
-        <section className="academy-source-gate"><FileLock2 size={23} /><div><span>CONTROLLED RELEASE POSTURE</span><h2>Train the reasoning now. Gate the certificate until every policy source is reconciled.</h2><p>Verified federal anchors and the supplied ACHC Home Health crosswalk support the labs. ACHC scoring awaits licensed-edition reconciliation, and agency-policy attestations remain controlled wherever status, version, effective date, citation, or crosswalk evidence is unresolved.</p></div><div className="gate-status"><LockKeyhole size={17} /><span>Certification lock active</span></div></section>
+        <section className="academy-source-gate"><FileLock2 size={23} /><div><span>OFFICIAL COMPLETION POSTURE</span><h2>This training is a required Governing Body compliance item.</h2><p>A module is complete only when every required stage is finished, the mastery threshold is met with zero critical errors, the changed-facts transfer is passed, attestation is completed, and the official evidence record is saved. If the compliance evidence service is not connected in this build, completion is unavailable — the reasoning is fully exercised, but no official record is created and your compliance progress does not advance.</p></div><div className="gate-status"><LockKeyhole size={17} /><span>Official evidence required</span></div></section>
 
         <section className="curriculum-head"><div><span>CURRICULUM</span><h2>The Governing Body decision system</h2></div><p>Difficulty comes from realistic ambiguity and cross-source reconciliation—not trivia, trick grammar, or unsupported rules.</p></section>
 
