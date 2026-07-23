@@ -1,6 +1,8 @@
 export interface NavItem {
   id: string;
   label: string;
+  /** Optional accessible label; falls back to `label` when omitted. */
+  ariaLabel?: string;
   to: string;
   hashIds: string[];
   children?: NavItem[];
@@ -15,6 +17,9 @@ export const primaryNavItems: NavItem[] = [
   // 'Clinician Profiles', 'Patient Profiles' and 'Calendar' hidden from the sidebar per request.
   // Routes still resolve by direct URL; they are just removed from the nav.
   { id: 'ces', label: 'Compliance', to: '/compliance', hashIds: ['compliance-home', 'ces-calendar', 'ces-board', 'master-controls', 'vendor-management', 'contractor-management', 'audit-mode', 'ces-reports'], matchPaths: ['/compliance', '/compliance/vendors', '/compliance/contractors', '/ces/calendar', '/ces/board', '/ces/events', '/ces/reports', '/audit'] },
+  // Governing Body Portal — first-class, standalone (NOT under Compliance). Icon is a
+  // borderless #273D38 courthouse mark. Access is gated by governance.portal.access.
+  { id: 'governance', label: 'Governing Body Portal', ariaLabel: 'Open Governing Body Portal', to: '/governance', hashIds: ['governance'], matchPaths: ['/governance'] },
   // Standalone DefenCIble entry — shield icon, rendered vertically centered on the left rail.
   {
     id: 'defensible',

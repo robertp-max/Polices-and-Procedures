@@ -25,6 +25,8 @@ export const PERMISSION_CATALOG: Permission[] = [
   { id: 'user.suspend', resource: 'user', action: 'suspend', phi: false, description: 'Suspend user access.' },
 
   { id: 'system.replay', resource: 'system', action: 'replay', phi: false, description: 'Replay deterministic event streams.' },
+
+  { id: 'governance.portal.access', resource: 'governance', action: 'portal.access', phi: false, description: 'Enter the Governing Body Portal. Portal entry only — not voting or Board authority, which is resolved separately against active appointment, term, charter, delegation, and conflict state.' },
 ];
 
 export const PERMISSION_BY_ID = Object.fromEntries(

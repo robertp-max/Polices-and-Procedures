@@ -6,11 +6,12 @@
  * mounted protected router can be silently omitted.
  */
 export type AccessClass =
-  | 'PUBLIC'            // reachable without a token (narrow, explicit)
-  | 'AUTHENTICATED'     // any verified, active canonical user
-  | 'ROLE_RESTRICTED'   // verified user holding one of `roles`
-  | 'ADMIN'             // verified user holding a privileged admin role
-  | 'SELF_GUARDED';     // router verifies the token/role itself (login + admin-user-access)
+  | 'PUBLIC'                // reachable without a token (narrow, explicit)
+  | 'AUTHENTICATED'         // any verified, active canonical user
+  | 'ROLE_RESTRICTED'       // verified user holding one of `roles`
+  | 'PERMISSION_RESTRICTED' // verified user whose groups grant one of `permissions`
+  | 'ADMIN'                 // verified user holding a privileged admin role
+  | 'SELF_GUARDED';         // router verifies the token/role itself (login + admin-user-access)
 
 export interface RouteAccessEntry {
   /** Mount prefix under /api (without the leading /api). */
@@ -18,6 +19,8 @@ export interface RouteAccessEntry {
   access: AccessClass;
   /** Allowed role-group ids for ROLE_RESTRICTED / ADMIN entries. */
   roles?: string[];
+  /** Required permission ids for PERMISSION_RESTRICTED entries (permission-first gate). */
+  permissions?: string[];
   /** Exact public sub-paths (full /api path) exempted from the auth boundary. */
   publicPaths?: string[];
   note: string;
@@ -59,6 +62,18 @@ export const ROUTE_ACCESS_MATRIX: RouteAccessEntry[] = [
   { mount: 'brad', access: 'AUTHENTICATED', note: 'Brad assistant. Verified user required; privileged /superadmin/* actions self-verify super-admin server-side (verifySuperAdmin) using the verified actor.' },
   { mount: 'nolan', access: 'AUTHENTICATED', publicPaths: ['/api/nolan/tutor/health'], note: 'Nolan tutor (Nurse Onboarding & Learning Assistant) — learner-facing training chatbot. /tutor/health is public; tutor queries require a verified user. Deterministic, no PHI, no internet on this surface.' },
   { mount: 'master-controls', access: 'AUTHENTICATED', note: 'Control Register operational API — scope instances, evidence, verifications, sign-offs, deficiencies, CAPs, waivers. Verified user required; evidence review / sign-off / waiver additionally require a compliance/admin role (segregation of duties) enforced inside the router.' },
+  {
+    mount: 'governance',
+    access: 'PERMISSION_RESTRICTED',
+    permissions: ['governance.portal.access'],
+    roles: [
+      'grp-super-admin', 'grp-leadership-governing-body', 'grp-governance-board-chair',
+      'grp-governance-board-secretary', 'grp-governance-committee-member',
+      'grp-governance-legal-counsel', 'grp-governance-cfo', 'grp-governance-risk-manager',
+      'grp-governance-privacy-security-officer',
+    ],
+    note: 'Governing Body Office. Permission-first: entry requires governance.portal.access (roles listed only as a compatibility fallback). Entry is only a route gate; every mutation and classified delivery is authorized inside the router against active appointment, role term, committee charter, delegation, conflict restriction, and the approved authority profile. Suspended users fail closed at the boundary.',
+  },
 ];
 
 /** All exact public sub-paths the boundary must let through anonymously. */

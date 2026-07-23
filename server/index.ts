@@ -26,6 +26,8 @@ import { requireUserStatusAuthority } from './auth/userStatusAuthority.js';
 import { pmRouter } from './routes/pm.js';
 import { createBradRouter } from './routes/brad.js';
 import { createNolanRouter } from './routes/nolan.js';
+import { governanceRouter } from './governance/routes.js';
+import { requireGovernancePortalAccess } from './auth/requireGovernancePortalAccess.js';
 import { createControlRegistryRouter } from './routes/controlRegistry.js';
 import { packetTemplatesRouter, packetsRouter } from './packets/routes/index.js';
 
@@ -152,6 +154,11 @@ app.use('/api/brad', createBradRouter());
 // Local dev must match the Cloud Run entry (server/cloudrun.ts) so the tutor
 // endpoint is available in development too. No PHI, no internet on this surface.
 app.use('/api/nolan', createNolanRouter());
+
+// Governing Body Office — permission-first gate (governance.portal.access), with the
+// canonical governance role list as a compatibility fallback. Portal ENTRY only; every
+// mutation is authorized inside the router against appointment/term/charter/delegation/conflict.
+app.use('/api/governance', requireGovernancePortalAccess(), governanceRouter);
 
 // 404 for unknown routes under /api.
 app.use('/api', (req, _res, next) => {

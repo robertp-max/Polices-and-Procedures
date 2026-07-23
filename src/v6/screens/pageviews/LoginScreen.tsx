@@ -2,8 +2,9 @@ import { type FormEvent, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, Eye, EyeOff, LoaderCircle, Lock, Mail, ShieldAlert } from 'lucide-react';
 import { cx } from '../../utils/classNames';
-import { safeReturnTo } from '../../utils/safeRedirect';
+import { resolvePostLoginDestination } from '../../utils/safeRedirect';
 import { useAuth } from '@/auth/AuthProvider';
+import { AuthApi } from '@/auth/api';
 
 function BrandLogo({ inChallenge }: { inChallenge: boolean }) {
   return (
@@ -32,7 +33,7 @@ function BrandLogo({ inChallenge }: { inChallenge: boolean }) {
 export function LoginScreen() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { login, completeNewPassword, challenge, error, clearError } = useAuth();
+  const { login, completeNewPassword, challenge, error, clearError, getAccessToken } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -46,9 +47,22 @@ export function LoginScreen() {
   const displayError = localError ?? error;
   const inChallenge = challenge?.type === 'NEW_PASSWORD_REQUIRED';
 
-  function redirectAfterAuth() {
+  async function redirectAfterAuth() {
     setToastVisible(true);
-    const dest = safeReturnTo(searchParams.get('returnTo') ?? searchParams.get('from'));
+    const requested = searchParams.get('returnTo') ?? searchParams.get('from');
+    // Server-authoritative effective access decides Governance-only landing. Any failure
+    // falls through to the normal default — never a client role string or localStorage.
+    let userAccess: { permissions?: string[]; groupIds?: string[] } | null = null;
+    try {
+      const token = getAccessToken();
+      if (token) {
+        const caps = await AuthApi.getCapabilities(token);
+        userAccess = caps.authorization?.capabilities?.effectiveAccess ?? null;
+      }
+    } catch {
+      // Ignore — resolvePostLoginDestination handles a null userAccess safely.
+    }
+    const dest = resolvePostLoginDestination(userAccess, requested);
     window.setTimeout(() => navigate(dest, { replace: true }), 400);
   }
 
@@ -63,7 +77,7 @@ export function LoginScreen() {
     setLoading(true);
     try {
       const outcome = await login(email.trim(), password);
-      if (outcome === 'ok') redirectAfterAuth();
+      if (outcome === 'ok') void redirectAfterAuth();
     } catch {
       // useAuth().error already carries the safe message.
     } finally {
@@ -86,7 +100,7 @@ export function LoginScreen() {
     setLoading(true);
     try {
       await completeNewPassword(newPassword);
-      redirectAfterAuth();
+      void redirectAfterAuth();
     } catch {
       // useAuth().error carries the safe policy/service message.
     } finally {

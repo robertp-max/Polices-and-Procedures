@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from 'react';
 import { Outlet, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import {
   Bookmark,
@@ -15,7 +15,6 @@ import {
   Shield,
   User,
   X,
-  type LucideIcon,
 } from 'lucide-react';
 import { PersonalOpsPanel } from './PersonalOpsPanel';
 import { usePersonalOpsStore } from '../../policy/stores/personalOpsStore';
@@ -31,14 +30,18 @@ import { GuidedTourRunner } from '../guided/GuidedTourRunner';
 import { useGuidedTourStore } from '../guided/guidedTourStore';
 import { ThreadComposer, ThreadDetailPage, ThreadsPage } from '../../policy/help-center/threads';
 import { MobileNavDrawer } from './MobileNavDrawer';
+import { GoverningBodyPortalIcon } from './GoverningBodyPortalIcon';
 
-const NAV_ICONS: Record<string, LucideIcon> = {
+type NavIconComponent = ComponentType<{ className?: string; strokeWidth?: number; 'aria-hidden'?: boolean }>;
+
+const NAV_ICONS: Record<string, NavIconComponent> = {
   dashboard: LayoutGrid,
   ces: ClipboardCheck,
   defensible: Shield,
   taxonomy: FileText,
   onboarding: GraduationCap,
   'help-center': HelpCircle,
+  governance: GoverningBodyPortalIcon,
 };
 
 export function V6Shell() {
@@ -101,7 +104,7 @@ export function V6Shell() {
     () => {
       return [...primaryNavBarItems]
         .sort((a, b) => {
-          const order = ['dashboard', 'ces', 'taxonomy', 'onboarding', 'help-center', 'defensible'];
+          const order = ['dashboard', 'ces', 'governance', 'taxonomy', 'onboarding', 'help-center', 'defensible'];
           return order.indexOf(a.id) - order.indexOf(b.id);
         })
         .map((item) => {
@@ -110,6 +113,7 @@ export function V6Shell() {
             id: item.id,
             icon: <Icon className="h-[22px] w-[22px]" strokeWidth={1.5} aria-hidden />,
             label: item.label,
+            ariaLabel: item.ariaLabel ?? item.label,
             onClick: () => navigate(item.to),
             isActive: activeNavItem === item.id,
             tourTarget: item.id === 'ces' ? 'nav.compliance' : undefined,
@@ -328,6 +332,7 @@ type RadialDockItem = {
   id: string;
   icon: ReactNode;
   label: string;
+  ariaLabel?: string;
   onClick: () => void;
   isActive?: boolean;
   colorStyle?: CSSProperties;
@@ -341,7 +346,7 @@ function DockButton({ item }: { item: RadialDockItem }) {
       type="button"
       data-tour-target={item.tourTarget}
       onClick={item.onClick}
-      aria-label={item.label}
+      aria-label={item.ariaLabel ?? item.label}
       aria-current={item.isActive ? 'page' : undefined}
       className={cx(
         'group relative flex h-10 w-10 items-center justify-center bg-transparent shadow-none transition duration-300 ease-standard hover:text-brand-teal-deep',

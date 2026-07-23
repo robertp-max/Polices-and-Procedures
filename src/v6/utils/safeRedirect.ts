@@ -38,3 +38,54 @@ export function safeReturnTo(raw: string | null | undefined, fallback: string = 
 
   return candidate;
 }
+
+/** Canonical Governing Body group ids (portal-scoped). */
+export const GOVERNANCE_GROUP_IDS: readonly string[] = [
+  'grp-leadership-governing-body',
+  'grp-governance-board-chair',
+  'grp-governance-board-secretary',
+  'grp-governance-committee-member',
+  'grp-governance-legal-counsel',
+  'grp-governance-cfo',
+  'grp-governance-risk-manager',
+  'grp-governance-privacy-security-officer',
+];
+
+/** Minimal server-authoritative access shape needed to resolve the landing page. */
+export interface PostLoginUserAccess {
+  permissions?: string[];
+  groupIds?: string[];
+}
+
+/**
+ * Governance-only = the user can enter the portal (`governance.portal.access`) AND belongs
+ * only to Governing Body groups — i.e. no other primary application workspace grant. A
+ * technical Super Admin (who also holds an admin group) is therefore NOT governance-only.
+ * Definition is by server-authoritative group membership, never a display role or localStorage.
+ */
+export function isGovernanceOnly(userAccess: PostLoginUserAccess | null | undefined): boolean {
+  const permissions = userAccess?.permissions ?? [];
+  const groupIds = userAccess?.groupIds ?? [];
+  if (!permissions.includes('governance.portal.access')) return false;
+  if (groupIds.length === 0) return false;
+  const govSet = new Set(GOVERNANCE_GROUP_IDS);
+  // Governance-only when every group the user holds is a governance group.
+  return groupIds.every((g) => govSet.has(g));
+}
+
+/**
+ * Resolve the post-login landing destination. Precedence (per spec §7):
+ *   1. a valid, safe, internal `returnTo` (deep link the user asked for);
+ *   2. Governance-only users → `/governance`;
+ *   3. the normal application default (`/compliance`).
+ * Unsafe/external/unauthorized returnTo values are ignored (fall through to 2/3).
+ */
+export function resolvePostLoginDestination(
+  userAccess: PostLoginUserAccess | null | undefined,
+  requestedReturnTo: string | null | undefined,
+): string {
+  const explicit = safeReturnTo(requestedReturnTo, '');
+  if (explicit) return explicit;
+  if (isGovernanceOnly(userAccess)) return '/governance';
+  return BRAD_DEFAULT_ROUTE;
+}

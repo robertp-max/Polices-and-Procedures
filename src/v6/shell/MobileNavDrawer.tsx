@@ -6,6 +6,7 @@ interface MobileNavItem {
   id: string;
   icon: ReactNode;
   label: string;
+  ariaLabel?: string;
   onClick: () => void;
   isActive?: boolean;
 }
@@ -79,6 +80,8 @@ export function MobileNavDrawer({ items, bradItem }: MobileNavDrawerProps) {
                 item.onClick();
                 setIsOpen(false);
               }}
+              aria-label={item.ariaLabel ?? item.label}
+              aria-current={item.isActive ? 'page' : undefined}
               className={cx(
                 'flex items-center gap-4 p-3 rounded-lg text-left transition-colors',
                 item.isActive ? 'bg-brand-teal-deep text-on-brand' : 'hover:bg-surface-hover text-ink'
