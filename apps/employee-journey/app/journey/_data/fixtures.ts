@@ -286,10 +286,11 @@ const phaseTemplates: JourneyPhaseTemplate[] = [
     id: "pre-hire",
     label: "Pre-hire",
     date: "June 15–July 2, 2026",
-    employeeActions: "Review synthetic clearance checklist.",
+    employeeActions: "Review synthetic clearance checklist (Appendix F).",
     training: "No employee training action.",
     policies: "HR-TA-001 through HR-TA-004",
-    documents: "Identity, screening, license, and health-clearance review.",
+    documents:
+      "Identity/I-9, background + OIG/SAM exclusion screening (status only), license/cert primary-source verification, references, and health/TB/immunization clearance review.",
     competencies: "Not started.",
     performance: "Not started.",
     basis: "HR-TA-001 through HR-TA-004; HR-EH-101",

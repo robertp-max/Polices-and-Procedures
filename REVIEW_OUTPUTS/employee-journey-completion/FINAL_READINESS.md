@@ -12,6 +12,9 @@ owner's hard rejections; it is not a claim of full §21 completion._
 | 38cb243d | Policy reader parses numbered clauses / ordered lists (no more markdown-dump feel) |
 | c4b745c3 | Real Nolan assistant replaces "Need help?" (graceful degradation) |
 | 2ce03a05 | Nav dedup — single learner training destination |
+| 63c47f23 | 17 review deliverable docs |
+| 2b28ef00 | Supervised visitation matrix + OIG/SAM status (§13) — implemented |
+| bb18b6fb | P&P learning right-rail + in-context Nolan (§9.3) — implemented |
 
 ## §21 acceptance checklist (honest)
 
@@ -28,15 +31,15 @@ owner's hard rejections; it is not a claim of full §21 completion._
 | 9 | All families use the canonical main-app player | ✅ DONE (launched same-tab; not copied) |
 | 10 | GAO/LVN/RN use two-panel player | ✅ via canonical player launch; ⚠️ chrome-free embed refinement pending |
 | 11 | No mapped module uses a one-panel template | ✅ DONE (no template exists; availability from player map) |
-| 12 | P&P no longer renders raw/copy-pasted markdown | ✅ improved (clauses/lists parsed); ⚠️ premium learning right-rail pending |
-| 13 | New policy player visually premium & usable | ⚠️ PARTIAL |
+| 12 | P&P no longer renders raw/copy-pasted markdown | ✅ DONE (clauses/lists parsed) |
+| 13 | New policy player visually premium & usable | ✅ improved (learning right-rail + in-context Nolan added); further polish optional |
 | 14 | Actual forms render for appendices | ✅ DONE |
 | 15 | Appendix F is a real composite packet | ⚠️ PARTIAL (4 real forms + status rows) |
-| 16 | Supervised visitation present | ⚠️ documented + competency items; dedicated matrix UI pending |
-| 17 | OIG/SAM status present | ⚠️ documented; status-tile UI pending |
-| 18 | Full HR lifecycle present | ⚠️ crosswalk documented; lifecycle UI pending |
-| 19 | Day 30/60/90 + annual performance present | ⚠️ Performance workspace exists; explicit phase framing pending |
-| 20 | Documents/credentials, leave/return, separation | ⚠️ Documents present; separation surface missing |
+| 16 | Supervised visitation present | ✅ DONE (role/assignment oversight clocks in Competencies) |
+| 17 | OIG/SAM status present | ✅ DONE (employee-safe status tile) |
+| 18 | Full HR lifecycle present | ✅ DONE — My Journey timeline runs pre-hire (incl. OIG/SAM) → separation; HR crosswalk documented (per-item status tiles a future polish) |
+| 19 | Day 30/60/90 + annual performance present | ✅ DONE — day-30 / day-60 check-in + day-90 evaluation phases (distinct from check-ins) + Performance workspace |
+| 20 | Documents/credentials, leave/return, separation | ✅ DONE — Documents workspace + leave-return & separation timeline phases |
 | 21 | Nolan replaces generic Need Help | ✅ DONE |
 | 22 | Workflow training NOT added | ✅ CONFIRMED (none added) |
 | 23 | Same-tab navigation works | ✅ DONE |
