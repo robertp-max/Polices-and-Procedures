@@ -26,7 +26,7 @@ owner's hard rejections; it is not a claim of full §21 completion._
 | 4 | Annual/recurring deduplicated | ✅ DONE |
 | 5 | All 12 ACHC modules mapped | ✅ DONE |
 | 6 | ACHC restricted to clinical audience (M04/M07/M09 leak fixed, DON added, ADM secondary-only) | ✅ DONE |
-| 7 | Advanced in onboarding + recurring for PT/RN/DON/ADM | ✅ DONE (annual + advanced route; standalone nav link still recommended) |
+| 7 | Advanced in onboarding + recurring for PT/RN/DON/ADM | ✅ DONE (annual + advanced route + Training-workspace nav links) |
 | 8 | Every canonical module mapped | ✅ DONE (MODULE_PLAYER_MAP) |
 | 9 | All families use the canonical main-app player | ✅ DONE (launched same-tab; not copied) |
 | 10 | GAO/LVN/RN use two-panel player | ✅ via canonical player launch; ⚠️ chrome-free embed refinement pending |
@@ -34,7 +34,7 @@ owner's hard rejections; it is not a claim of full §21 completion._
 | 12 | P&P no longer renders raw/copy-pasted markdown | ✅ DONE (clauses/lists parsed) |
 | 13 | New policy player visually premium & usable | ✅ improved (learning right-rail + in-context Nolan added); further polish optional |
 | 14 | Actual forms render for appendices | ✅ DONE |
-| 15 | Appendix F is a real composite packet | ⚠️ PARTIAL (4 real forms + status rows) |
+| 15 | Appendix F is a real composite packet | ✅ DONE (grouped packet, employee-safe statuses, 4 real-form links) |
 | 16 | Supervised visitation present | ✅ DONE (role/assignment oversight clocks in Competencies) |
 | 17 | OIG/SAM status present | ✅ DONE (employee-safe status tile) |
 | 18 | Full HR lifecycle present | ✅ DONE — My Journey timeline runs pre-hire (incl. OIG/SAM) → separation; HR crosswalk documented (per-item status tiles a future polish) |
@@ -47,6 +47,13 @@ owner's hard rejections; it is not a claim of full §21 completion._
 | 25 | Responsive/accessibility QA passes | ⚠️ PARTIAL (built-in; full sweep pending) |
 | 26 | No backend/deployment work occurred | ✅ CONFIRMED |
 | 27 | Branch pushed & synchronized | ✅ DONE |
+
+## Later commits (parallel budget-model pass)
+
+| Commit | What |
+|---|---|
+| f8afa6ea | Runnable invariant suite (§18) — 11/11 pass |
+| (this) | Appendix F composite packet (§11.2) + Advanced/Annual Training nav links (§7) + responsive-QA notes |
 
 ## Honest bottom line
 

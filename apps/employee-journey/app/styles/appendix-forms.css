@@ -503,6 +503,24 @@
 
 /* ---------- Packet navigator (Appendix F) ---------- */
 
+.packet-group {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.packet-group:last-child {
+  margin-bottom: 0;
+}
+
+.packet-group-title {
+  margin: 0;
+  color: var(--teal-deep);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
 .packet-navigator-list {
   display: grid;
   gap: 12px;
@@ -607,6 +625,38 @@
 
 .appendix-status-no_form_required svg {
   color: var(--teal-deep);
+}
+
+/* ---------- Employee-safe packet-item statuses (Appendix F composite) ---------- */
+
+.status-cleared {
+  border-color: rgba(0, 121, 112, 0.24);
+  background: #e5f4ee;
+  color: var(--teal-deep);
+}
+
+.status-under-review {
+  border-color: #c5c9d8;
+  background: #f1f2f7;
+  color: #424b6b;
+}
+
+.status-action-required {
+  border-color: #e6b6ac;
+  background: #fff0e5;
+  color: var(--danger);
+}
+
+.status-waiting-on-hr {
+  border-color: rgba(240, 105, 35, 0.28);
+  background: var(--orange-soft);
+  color: var(--orange-deep);
+}
+
+.status-not-applicable {
+  border-color: var(--border);
+  background: #f3f1ee;
+  color: var(--muted-strong);
 }
 
 @media (max-width: 720px) {

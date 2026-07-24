@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, LockKeyhole } from "lucide-react";
+import { ArrowRight, CalendarClock, GraduationCap, LockKeyhole } from "lucide-react";
 import {
   getTrainingAssignments,
   type TrainingAssignment,
@@ -57,6 +57,28 @@ export function TrainingWorkspace() {
         title="Assigned training"
         description="Every card explains why the assignment appears, what validates it, and whether approved content is actually available."
       />
+
+      <div className="training-links-row" aria-label="Related training workspaces">
+        <Link className="annual-link-card" href={withPersona("/journey/training/advanced")}>
+          <GraduationCap aria-hidden="true" />
+          <div>
+            <strong>Advanced training →</strong>
+            <span>
+              CMS-485, QAPI, OASIS-E2, Documentation Defensibility — advanced clinical/leadership
+              modules.
+            </span>
+          </div>
+          <ArrowRight aria-hidden="true" />
+        </Link>
+        <Link className="annual-link-card" href={withPersona("/journey/training/annual")}>
+          <CalendarClock aria-hidden="true" />
+          <div>
+            <strong>Annual & recurring training →</strong>
+            <span>Plan-year requirements, in-service hours, and recurring re-attestations.</span>
+          </div>
+          <ArrowRight aria-hidden="true" />
+        </Link>
+      </div>
 
       <WorkspaceTabs
         label="Training filters"

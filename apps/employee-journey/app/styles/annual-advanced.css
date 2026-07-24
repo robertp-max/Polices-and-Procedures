@@ -362,6 +362,17 @@
   font-size: 0.75rem;
 }
 
+.training-links-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin: 0 0 20px;
+}
+
+.training-links-row .annual-link-card {
+  align-items: flex-start;
+}
+
 .annual-link-card {
   display: flex;
   align-items: center;

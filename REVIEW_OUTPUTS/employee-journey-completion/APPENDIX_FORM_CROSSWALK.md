@@ -32,10 +32,14 @@ The generator **fails the build** if any referenced form id is absent from `FORM
 image/signature layouts, version metadata, policy refs, signer roles) — not prose summaries.
 Employee mode shows structural preview only; no confidential HR report content.
 
-## Appendix F (partial)
+## Appendix F composite (DONE)
 
-`AppendixPacketNavigator` renders the Appendix F composite with 4 real baked constituent forms
-(background auth, OIG/SAM, license verification, onboarding checklist) plus HR-managed status
-rows. **Remaining:** the full §11.2 packet (references, I-9, health/TB/immunization, driving
-clearance, offer letter, JD acknowledgment, HR sign-off) currently appears as hard-coded
-status rows rather than each linking to a real artifact/status source.
+`AppendixPacketNavigator` now renders Appendix F as a grouped composite pre-hire packet (3
+groups: Background & compliance screening · Eligibility & health clearance · Offer & onboarding
+sign-off) covering all §11.2 artifacts: background authorization, OIG/SAM, license/cert PSV,
+references, driving/MVR (role-conditional → "Not applicable"), I-9, health/TB, offer letter,
+JD acknowledgment, onboarding checklist, HR sign-off. Each row shows an **employee-safe status
+only** (Cleared / Under review / Action required / Waiting on HR / Not applicable) — no private
+screening reports, exclusion hits, or health data. The 4 items backed by a real baked form
+(HR-FM-018/005/006/007) render a same-tab "Open form" link; all others are status-only (no
+fabricated form). Verified live at `/journey/appendices/F`.
