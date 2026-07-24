@@ -8,6 +8,7 @@ import {
 } from "../_data/fixtures";
 import { usePreview } from "./PreviewContext";
 import { MainAppLink } from "./MainAppLink";
+import { SupervisedVisitationPanel } from "./SupervisedVisitationPanel";
 import { PageHeader, RequirementCard } from "./shared";
 import { WorkspaceTabs, workspaceTabId, type TabOption } from "./ui";
 
@@ -52,6 +53,8 @@ export function CompetencyWorkspace() {
           universal recurring intervals.
         </p>
       </div>
+
+      <SupervisedVisitationPanel roleCode={persona.roleCode} />
 
       <WorkspaceTabs
         label="Competency status filters"

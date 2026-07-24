@@ -417,3 +417,105 @@ a.policy-update-row {
 a.policy-update-row:hover {
   border-color: var(--border-strong);
 }
+
+/* ── Supervised visitation & clinical oversight (Master Correction §13) ── */
+
+.oversight-panel {
+  margin: 4px 0 26px;
+}
+
+.oigsam-tile {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: var(--surface-teal);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.oigsam-tile > svg {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  color: var(--teal);
+}
+
+.oigsam-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.oigsam-tile p {
+  margin: 4px 0 0;
+  color: var(--muted-strong);
+  font-size: 0.8125rem;
+}
+
+.oversight-intro {
+  margin: 0 0 14px;
+  color: var(--ink);
+  font-size: 0.875rem;
+}
+
+.oversight-clock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.oversight-clock-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+}
+
+.oversight-clock-cadence {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  background: var(--surface-warm);
+  padding: 4px 10px;
+  color: var(--orange-deep);
+  font-family: var(--font-montserrat), Arial, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.oversight-clock-cadence > svg {
+  width: 14px;
+  height: 14px;
+}
+
+.oversight-clock-card h3 {
+  margin: 10px 0 4px;
+  font-size: 0.9375rem;
+  color: var(--teal-deep);
+}
+
+.oversight-clock-card p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.oversight-clock-basis {
+  margin-top: 6px !important;
+  color: var(--muted) !important;
+  font-size: 0.75rem !important;
+}
+
+.oversight-note {
+  margin: 12px 0 0;
+  color: var(--muted-strong);
+  font-size: 0.8125rem;
+  font-style: italic;
+}
