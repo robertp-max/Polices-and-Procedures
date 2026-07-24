@@ -141,18 +141,20 @@ export default function LearningChapter({ moduleId, domain, title, caseContext, 
           data-scene-id={activeId}
           data-scene-src={visual.src}
         >
-          <Image
-            key={`${moduleId}:${activeId}:${visual.src}`}
-            src={visual.src}
-            alt={visual.alt}
-            fill
-            priority={activeId === 'orientation'}
-            unoptimized
-            sizes="(max-width: 700px) 100vw, 65vw"
-          />
-          <div className="visual-scene-shade" />
+          <div className="visual-scene-content">
+            <Image
+              key={`${moduleId}:${activeId}:${visual.src}`}
+              src={visual.src}
+              alt={visual.alt}
+              fill
+              priority={activeId === 'orientation'}
+              unoptimized
+              sizes="(max-width: 700px) 100vw, 65vw"
+            />
+            <div className="visual-scene-shade" />
+            {hotspots.map((hotspot, index) => <button key={hotspot.id} className={`visual-hotspot ${observedIds.includes(hotspot.id) ? 'observed' : ''} ${activeHotspot === hotspot.id ? 'selected' : ''}`} style={{ left: `${hotspot.x}%`, top: `${hotspot.y}%` }} onClick={() => revealHotspot(hotspot)} aria-label={`Inspect ${hotspot.title}`}><span>{observedIds.includes(hotspot.id) ? <Check size={14} /> : index + 1}</span><small>{hotspot.title}</small></button>)}
+          </div>
           <div className="visual-scene-label"><span>{PANELS[activeIndex].sublabel.toUpperCase()}</span><strong>{PANELS[activeIndex].label}</strong></div>
-          {hotspots.map((hotspot, index) => <button key={hotspot.id} className={`visual-hotspot ${observedIds.includes(hotspot.id) ? 'observed' : ''} ${activeHotspot === hotspot.id ? 'selected' : ''}`} style={{ left: `${hotspot.x}%`, top: `${hotspot.y}%` }} onClick={() => revealHotspot(hotspot)} aria-label={`Inspect ${hotspot.title}`}><span>{observedIds.includes(hotspot.id) ? <Check size={14} /> : index + 1}</span><small>{hotspot.title}</small></button>)}
           {selectedHotspot && <aside className="visual-hotspot-card" role="status"><button onClick={() => setActiveHotspot(null)} aria-label="Close hotspot detail"><X size={15} /></button><span>EXECUTIVE OBSERVATION</span><h3>{selectedHotspot.title}</h3><p>{selectedHotspot.detail}</p></aside>}
           <div className="visual-scene-instruction"><Eye size={15} /><span>Inspect every hotspot. These observations teach the decision model; they are not scored.</span></div>
         </section>

@@ -6,6 +6,8 @@ import { DEFAULT_LEARNER_ID } from '../compliance/complianceCatalog';
 import { getComplianceEvidenceService } from '../compliance/complianceEvidenceAdapter';
 import { deterministicShuffle, integrityHash } from './assessmentUtils';
 import { getCourseQuestions } from './courseAssessmentBank';
+import RemediationChoiceModal from '../remediation/RemediationChoiceModal';
+import GuidedTrueFalsePlayer from '../remediation/GuidedTrueFalsePlayer';
 
 const PASS_STANDARD = 80;
 const ACTIVE_TIME_FLOOR_SECONDS = 30; // scaled to item count below
@@ -40,7 +42,29 @@ export default function CourseAssessmentPlayer({ courseId, onExit }: { courseId:
   const [phase, setPhase] = useState<Phase>('attempt');
   const [attested, setAttested] = useState(false);
   const [result, setResult] = useState<{ score: number; criticalErrors: string[]; passed: boolean; recorded: boolean; notice: string } | null>(null);
+  const [showChoice, setShowChoice] = useState(false);
+  const [guided, setGuided] = useState(false);
   const getActive = useActiveTime();
+
+  const missedCompetencies = questions.filter(({ q }) => answers[q.id] !== q.correctIndex).map(({ q }) => q.competency);
+
+  useEffect(() => {
+    if (phase === 'scored' && result && !result.passed) setShowChoice(true);
+  }, [phase, result]);
+
+  if (guided) {
+    return (
+      <GuidedTrueFalsePlayer
+        assignmentId={`gb:course-assessment:${courseId}`}
+        sourceId={courseId}
+        sourceType="course_quiz"
+        missedConceptIds={missedCompetencies}
+        primaryAttemptScore={result?.score ?? 0}
+        attemptNumber={attemptNumber + 1}
+        onExit={onExit}
+      />
+    );
+  }
 
   if (!questions.length) {
     return (
@@ -178,9 +202,18 @@ export default function CourseAssessmentPlayer({ courseId, onExit }: { courseId:
             </div>
             <div className="assessment-actions">
               <button className="assessment-primary" onClick={onExit}>Return to My Compliance</button>
+              {!result.passed && <button className="assessment-secondary" onClick={() => setShowChoice(true)}>Remediation options</button>}
             </div>
           </div>
         )}
+        <RemediationChoiceModal
+          open={showChoice}
+          missedConcepts={missedCompetencies}
+          onTryAgain={() => { setShowChoice(false); setGuided(false); setAnswers({}); setAttested(false); setResult(null); setPhase('attempt'); }}
+          onGuided={() => { setShowChoice(false); setGuided(true); }}
+          onReview={onExit}
+          onClose={() => setShowChoice(false)}
+        />
       </div>
     </div>
   );

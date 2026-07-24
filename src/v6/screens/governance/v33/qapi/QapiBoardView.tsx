@@ -821,8 +821,8 @@ export default function QapiBoardView({
         <div className="qapi-practice-banner" role="status">
           <Beaker size={16} aria-hidden="true" />
           <div>
-            <strong>PRACTICE &mdash; {TABLETOP_MODE_LABEL} &middot; not a live record</strong>
-            <span>Q3&ndash;Q4 here are a rehearsal surface built on real figures. Choices are session-only and never change an official Board record.</span>
+            <strong>REHEARSAL SURFACE &mdash; {TABLETOP_MODE_LABEL} &middot; not a live record</strong>
+            <span>Q3&ndash;Q4 here are a rehearsal surface built on synthetic figures. Choices are session-only and never change an official Board record. The assessment-grade tabletop lives in My Compliance.</span>
           </div>
         </div>
       )}
@@ -844,7 +844,7 @@ export default function QapiBoardView({
           <h2>Governing Body escalation items</h2>
           <p>
             {tabletopActive
-              ? 'Reference only in this exercise — practice the Board’s response in Tabletop Rehearsal Actions below.'
+              ? 'Reference only in this exercise — rehearse the Board’s response in Tabletop Rehearsal Actions below.'
               : 'Every item the QAPI Committee escalated to the Board this quarter, paired with the Board’s own decision.'}
           </p>
           {!tabletopActive && packageReceiptNote && <p className="qapi-package-note">{packageReceiptNote}</p>}

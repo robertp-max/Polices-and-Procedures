@@ -278,7 +278,7 @@ export default function ExecutiveModuleView({ module, onExit }: { module: Execut
             return <button key={chapter.id} className={cx('rail-link', active && 'active', !accessible && 'locked')} onClick={() => go(chapter.id)} aria-current={active ? 'step' : undefined} aria-label={`${chapter.eyebrow}: ${chapter.title}${accessible ? '' : ' · locked'}`}><span className="rail-icon">{complete ? <Check size={15} /> : !accessible ? <LockKeyhole size={14} /> : <Icon size={16} />}</span><span><small>{chapter.eyebrow}</small>{chapter.title}</span>{active && <ChevronRight size={15} />}</button>;
           })}</nav>
           <ActiveTimeCard clock={clock} chapter={progress.chapter} />
-          <div className="rail-source-lock"><LockKeyhole size={17} /><div><strong>{module.postureLabel}</strong><span>{module.posture === 'verified' ? 'Validated source set' : 'Training lab · certification controlled'}</span></div></div>
+          <div className="rail-source-lock"><LockKeyhole size={17} /><div><strong>{module.postureLabel}</strong><span>{module.posture === 'verified' ? 'Validated source set' : 'Required Governing Body compliance · official evidence on pass'}</span></div></div>
         </aside>
         {railOpen && <button className="scrim" onClick={closeRail} aria-label="Close navigation" />}
 

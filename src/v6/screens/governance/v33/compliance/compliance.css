@@ -26,9 +26,9 @@
 
 /* ---- Home summary cards -------------------------------------------------- */
 .compliance-summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 0 0 30px; }
-.compliance-summary-card { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; box-shadow: var(--shadow-sm); cursor: pointer; display: flex; flex-direction: column; gap: 6px; transition: transform .15s ease, box-shadow .15s ease; }
+.compliance-summary-card { text-align: left; background: rgba(255,255,255,.84); border: 1px solid var(--line); border-radius: 8px; padding: 20px 22px; box-shadow: var(--shadow-sm); cursor: pointer; display: flex; flex-direction: column; gap: 6px; transition: transform .15s ease, box-shadow .15s ease; }
 button.compliance-summary-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-.compliance-summary-card > span { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.compliance-summary-card > span { font-size: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: .16em; color: var(--bronze); }
 .compliance-summary-card strong { font-family: var(--font-editorial); font-size: 34px; line-height: 1; color: var(--forest); }
 .compliance-summary-card strong small { font-size: 18px; color: var(--muted-light); }
 .compliance-summary-card .compliance-word { font-size: 24px; }
@@ -41,18 +41,18 @@ button.compliance-summary-card:hover { transform: translateY(-2px); box-shadow: 
 /* ---- Required Now / requirement rows ------------------------------------ */
 .compliance-required-now { margin: 0 0 34px; }
 .compliance-required-now > header, .compliance-course-list > header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 14px; }
-.compliance-required-now header span { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.compliance-required-now header span { font-size: 8px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--bronze); }
 .compliance-required-now header h2 { font-family: var(--font-editorial); font-size: 24px; margin: 2px 0 0; color: var(--forest); }
 .compliance-required-now header button { background: none; border: none; color: var(--bronze); font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
 
 .compliance-req-list { display: flex; flex-direction: column; gap: 10px; }
-.compliance-req-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 15px 18px; box-shadow: var(--shadow-sm); }
+.compliance-req-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 18px; background: rgba(255,255,255,.84); border: 1px solid var(--line); border-radius: 8px; padding: 16px 20px; box-shadow: var(--shadow-sm); }
 .compliance-req-row.overdue { border-left: 4px solid var(--gb-crit); }
 .compliance-req-row.remediation_required { border-left: 4px solid var(--gb-crit); }
 .compliance-req-row.blocked { opacity: .82; border-left: 4px solid var(--gb-hold); }
 .compliance-req-row.completed { border-left: 4px solid var(--gb-ok); }
 .compliance-req-lead { display: flex; gap: 12px; align-items: flex-start; }
-.compliance-req-lead small { font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.compliance-req-lead small { font-size: 8px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--bronze); }
 .compliance-req-lead strong { display: block; font-size: 15.5px; color: var(--ink); margin: 2px 0; }
 .compliance-req-why { font-size: 12.5px; color: var(--muted); margin: 0; }
 .compliance-req-blocker { font-size: 12.5px; color: var(--gb-hold); margin: 4px 0 0; font-style: italic; }
@@ -81,7 +81,7 @@ button.compliance-summary-card:hover { transform: translateY(-2px); box-shadow: 
 .compliance-course-list { display: flex; flex-direction: column; gap: 10px; }
 .compliance-course { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-sm); overflow: hidden; }
 .compliance-course-head { width: 100%; text-align: left; background: none; border: none; padding: 16px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-.compliance-course-head small { font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.compliance-course-head small { font-size: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: .14em; color: var(--bronze); }
 .compliance-course-head strong { display: block; font-size: 16px; color: var(--forest); margin: 2px 0; font-family: var(--font-editorial); }
 .compliance-course-head p { margin: 0; font-size: 12.5px; color: var(--muted); }
 .compliance-course-progress { display: flex; align-items: center; gap: 10px; color: var(--forest); font-weight: 650; }

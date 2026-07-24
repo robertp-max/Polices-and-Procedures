@@ -2,7 +2,11 @@
 
 Worktree: `GOVERNING_BODY_PORTAL` · branch `feature/governing-body-portal`.
 Edited **V3 only** (`src/v6/screens/governance/v33/`). No content borrowed from V1/V2 or
-the older `Governance*.tsx` files. **Not committed / not pushed / no ZIP**, per instruction.
+the older `Governance*.tsx` files.
+
+**Baseline status:** the hardening work in this document was committed as **`6b858d7f`**
+and pushed to `origin/feature/governing-body-portal`. Subsequent 2026-QAPI implementation
+work continues from that commit and is described in `02-qapi-2026-implementation.md`.
 
 Verification at delivery: `tsc -p tsconfig.app.json` = **0 errors**; `vitest`
 acceptance suite = **16/16 pass**; `vite build` = **success**; live in-browser UAT on the

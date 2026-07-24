@@ -23,18 +23,16 @@ import {
   Landmark,
   LockKeyhole,
   Menu,
-  MessageSquareText,
   PanelLeftClose,
   Scale,
   Search,
-  ShieldCheck,
   TrendingDown,
   TrendingUp,
   UsersRound,
   X,
 } from 'lucide-react';
 import { MODULES } from './gb-academy/academyData';
-import QapiBoardView from './qapi/QapiBoardView';
+import Qapi2026BoardWorkspace from './qapi/Qapi2026BoardWorkspace';
 import { getPolicyJourney } from './generated/policyJourney.generated';
 import type { PolicyJourneyRequirement } from './generated/policyJourney.types';
 import { useCompliance } from './compliance/useCompliance';
@@ -44,7 +42,8 @@ import type { CourseProgress } from './compliance/complianceSelectors';
 const GoverningBodyAcademy = lazy(() => import('./gb-academy/Academy'));
 const GoverningBodyPolicyPlayer = lazy(() => import('./policies/GoverningBodyPolicyPlayer'));
 const CourseAssessmentPlayer = lazy(() => import('./assessments/CourseAssessmentPlayer'));
-const TabletopPlayer = lazy(() => import('./tabletop/TabletopPlayer'));
+const Qapi2026TabletopEntry = lazy(() => import('./tabletop/Qapi2026TabletopEntry'));
+const AnnualGovernanceForms = lazy(() => import('./forms/AnnualGovernanceForms'));
 const TrueFalseForensicPlayer = lazy(() => import('./assessments/TrueFalseForensicPlayer'));
 
 type ViewKey = 'home' | 'compliance' | 'meetings' | 'decisions' | 'oversight' | 'records';
@@ -141,21 +140,6 @@ const BOOK_SECTIONS = [
   { code: '08', title: 'Motions, actions & record close', pages: '92–100', status: 'Draft', detail: 'Decision language, assigned owners, due dates, effectiveness checks, attestations, and minutes controls.' },
 ];
 
-const QAPI_WORKFLOWS = [
-  ['QA-WF-01', 'Program charter & annual review', 'Annual', 'Board approval'],
-  ['QA-WF-02', 'Quality indicator dashboard', 'Monthly', 'Current'],
-  ['QA-WF-03', 'Quarterly committee review', 'Quarterly', 'Board brief'],
-  ['QA-WF-04', 'Performance improvement lifecycle', 'Annual+', 'Decision due'],
-  ['QA-WF-05', 'Adverse event, RCA & correction', 'Event-driven', 'Monitored'],
-  ['QA-WF-06', 'Infection-control surveillance', 'Continuous', 'Current'],
-  ['QA-WF-07', 'LUPA & utilization monitoring', 'Weekly', 'Current'],
-  ['QA-WF-08', 'HHCAHPS monitoring & response', 'Monthly', 'Current'],
-  ['QA-WF-09', 'Star rating & public reporting', 'Quarterly', 'Current'],
-  ['QA-WF-10', 'QAPI self-assessment', 'Annual', 'Scheduled'],
-  ['QA-WF-11', 'Policy effectiveness monitoring', '30/60/90', 'Monitored'],
-  ['QA-WF-12', 'Patient-safety communication', 'Event-driven', 'Monitored'],
-];
-
 const RISKS = [
   { rank: '01', title: 'High-risk subgroup deterioration', domain: 'Clinical quality', posture: 'Board direction required', trend: 'up', owner: 'QAPI Lead', control: 'Continue PIP; preserve weekend escalation resources', tone: 'critical' },
   { rank: '02', title: 'Vendor authority and exit-term gaps', domain: 'Third-party governance', posture: 'Approval hold', trend: 'flat', owner: 'Compliance / Legal', control: 'Complete control matrix, BAA exit rights, audit access', tone: 'elevated' },
@@ -238,17 +222,6 @@ function PageHeading({ eyebrow, title, description, action }: { eyebrow: string;
 
 function Metric({ value, label, note, tone = 'neutral' }: { value: string; label: string; note: string; tone?: string }) {
   return <article className={`governance-metric ${tone}`}><span>{label}</span><strong>{value}</strong><small>{note}</small></article>;
-}
-
-function Sparkline({ points, down = false }: { points: number[]; down?: boolean }) {
-  const max = Math.max(...points);
-  const min = Math.min(...points);
-  const coords = points.map((value, index) => {
-    const x = (index / (points.length - 1)) * 100;
-    const y = 34 - ((value - min) / Math.max(1, max - min)) * 28;
-    return `${x},${y}`;
-  }).join(' ');
-  return <svg className={`sparkline ${down ? 'down' : ''}`} viewBox="0 0 100 38" role="img" aria-label="Quarterly trend"><line x1="0" y1="35" x2="100" y2="35" /><polyline points={coords} /></svg>;
 }
 
 // ---------------------------------------------------------------------------
@@ -656,7 +629,7 @@ function DecisionsView({ onDecision }: { onDecision: (decision: Decision) => voi
 // OVERSIGHT (QAPI / Risk)
 // ---------------------------------------------------------------------------
 
-function OversightView({ tab, onTab, onDecision, enhanced }: { tab: OversightTab; onTab: (t: OversightTab) => void; onDecision: (decision: Decision) => void; enhanced: boolean }) {
+function OversightView({ tab, onTab, onDecision }: { tab: OversightTab; onTab: (t: OversightTab) => void; onDecision: (decision: Decision) => void }) {
   const TABS: Array<{ id: OversightTab; label: string }> = [
     { id: 'qapi', label: 'QAPI oversight' },
     { id: 'risk', label: 'Risk & assurance' },
@@ -668,18 +641,7 @@ function OversightView({ tab, onTab, onDecision, enhanced }: { tab: OversightTab
       {TABS.map((t) => <button key={t.id} className={tab === t.id ? 'active' : ''} onClick={() => onTab(t.id)} aria-current={tab === t.id ? 'true' : undefined}>{t.label}</button>)}
     </nav>
 
-    {tab === 'qapi' && (enhanced ? <QapiBoardView /> : <>
-      <section className="qapi-score-grid">
-        <article className="qapi-primary-signal"><div className="signal-top"><span>ILLUSTRATIVE PERFORMANCE SIGNAL</span><small>Q2 2026 · SYNTHETIC CASE</small></div><div className="signal-main"><div><strong>15.1%</strong><span>all-agency hospitalization</span><small><TrendingDown size={13} /> improved from 18.4%</small></div><Sparkline points={[18.4, 17.8, 16.6, 15.1]} down /></div><footer><AlertTriangle size={16} /><p>Aggregate improvement is favorable, but it is not sufficient for project closure.</p></footer></article>
-        <article className="qapi-subgroup"><span>HIGH-RISK STRATUM</span><strong>27.8%</strong><p>Heart-failure subgroup worsened from 22.0% and exceeds the approved 20% threshold.</p><Sparkline points={[22, 22.8, 25.1, 27.8]} /><small><TrendingUp size={13} /> 18% of eligible population</small></article>
-        <article className="qapi-criteria"><span>CLOSURE CRITERION</span><strong>0 / 2</strong><p>Consecutive quarters below 20% in every named high-risk stratum.</p><div><i /><i /><span>Sustainability test unmet</span></div></article>
-        <article className="qapi-linkage"><span>LINKED COMPLAINTS</span><strong>3</strong><p>Three heart-failure complaints reference delayed symptom escalation; two were substantiated.</p><small><MessageSquareText size={13} /> Must be reconciled into the analysis</small></article>
-      </section>
-      <section className="qapi-main-grid">
-        <div className="qapi-workflow-card"><header><div><span>CONTROL SYSTEM</span><h2>Twelve governed QAPI workflows</h2></div><small>48 QA-FM-001 touchpoints</small></header><div>{QAPI_WORKFLOWS.map(([id, title, cadence, state]) => <article key={id}><span>{id}</span><strong>{title}</strong><small>{cadence}</small><i className={state === 'Decision due' ? 'attention' : ''}>{state}</i></article>)}</div></div>
-        <aside className="qapi-assurance-side"><article className="qapi-direction"><span>PROPOSED BOARD DIRECTION</span><h3>Continue with targeted executive conditions.</h3><ul><li>Reject premature closure.</li><li>Require subgroup root-cause analysis.</li><li>Preserve relevant analyst and coaching resources.</li><li>Reconcile complaints and after-hours workflow.</li><li>Return against the approved threshold and sustainability rule.</li></ul><button onClick={() => onDecision(DECISIONS[0])}>Read the complete rationale <ArrowRight size={14} /></button></article><article className="qapi-board-duty"><ShieldCheck size={19} /><div><strong>Board duty</strong><p>Ensure QAPI has organization-wide scope, adequate resources, useful information, and evidence of improvement—not merely completed paperwork.</p></div></article></aside>
-      </section>
-    </>)}
+    {tab === 'qapi' && <Qapi2026BoardWorkspace />}
 
     {tab === 'risk' && <>
       <section className="risk-overview"><article><span>RISK POSTURE</span><strong>Focused attention</strong><p>One quality signal requires Board direction; no workflow-to-evidence integrity break is open.</p></article><Metric value="1" label="Critical" note="Immediate governance direction" tone="attention" /><Metric value="2" label="Elevated" note="Active correction or approval hold" /><Metric value="2" label="Controlled" note="Monitored within tolerance" tone="positive" /></section>
@@ -693,7 +655,7 @@ function OversightView({ tab, onTab, onDecision, enhanced }: { tab: OversightTab
 // RECORDS
 // ---------------------------------------------------------------------------
 
-function RecordsView() {
+function RecordsView({ onOpenForms }: { onOpenForms: () => void }) {
   const evidence = [
     ['GV-FM-005', 'Governing Body Meeting Minutes', '199 workflow touchpoints', 'Primary board decision artifact'],
     ['QA-FM-001', 'QAPI Committee Meeting Minutes', '48 workflow touchpoints', 'Quality deliberation and recommendation'],
@@ -704,7 +666,7 @@ function RecordsView() {
   ];
   return <div className="governance-page">
     <Breadcrumb trail={['Governing Body', 'Records']} />
-    <PageHeading eyebrow="GOVERNANCE EVIDENCE RECORD" title="Proof, with provenance." description="The governing record is organized by decision—not by file folder—so a reviewer can move from authority to source, deliberation, action, and verified follow-through." />
+    <PageHeading eyebrow="GOVERNANCE EVIDENCE RECORD" title="Proof, with provenance." description="The governing record is organized by decision—not by file folder—so a reviewer can move from authority to source, deliberation, action, and verified follow-through." action={<button className="executive-button" onClick={onOpenForms}>Annual governance forms <ArrowRight size={16} /></button>} />
     <section className="record-integrity-hero"><div><Fingerprint size={30} /><div><span>TRACEABILITY POSTURE</span><strong>End-to-end workflow integrity</strong><p>Three consecutive full-system passes found zero broken workflow-to-form references and zero missing required form files.</p></div></div><div className="integrity-number"><strong>0</strong><span>unresolved<br />reference defects</span></div></section>
     <section className="record-stat-row"><Metric value="166" label="Workflows" note="All retain complete 13-section structure" /><Metric value="349" label="Forms" note="Controlled library with mapped purpose" /><Metric value="10" label="Domains" note="Governance through enterprise controls" /><Metric value="3×" label="Clean passes" note="Stop condition reached" tone="positive" /></section>
     <section className="evidence-register"><header><div><span>CORE GOVERNANCE ARTIFACTS</span><h2>The record spine</h2></div><small>Source-backed inventory</small></header>{evidence.map(([id, title, reach, purpose]) => <article key={id}><span><FileText size={16} /></span><div><small>{id}</small><strong>{title}</strong></div><div><small>REACH</small><strong>{reach}</strong></div><div><small>GOVERNANCE PURPOSE</small><strong>{purpose}</strong></div><button aria-label={`Inspect ${id}`}><ChevronRight size={16} /></button></article>)}</section>
@@ -771,7 +733,7 @@ function AppShell({ view, onView, onSearch, children }: { view: ViewKey; onView:
   </div>;
 }
 
-export default function MyJourneyApp({ enhanced = false }: { enhanced?: boolean } = {}) {
+export default function MyJourneyApp() {
   const [view, setView] = useState<ViewKey>('home');
   const [meetingsTab, setMeetingsTab] = useState<MeetingsTab>('overview');
   const [oversightTab, setOversightTab] = useState<OversightTab>('qapi');
@@ -782,6 +744,7 @@ export default function MyJourneyApp({ enhanced = false }: { enhanced?: boolean 
   const [academyOpen, setAcademyOpen] = useState(false);
   const [courseAssessmentId, setCourseAssessmentId] = useState<string | null>(null);
   const [tabletopOpen, setTabletopOpen] = useState(false);
+  const [formsOpen, setFormsOpen] = useState(false);
   const [forensicModuleId, setForensicModuleId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -820,15 +783,16 @@ export default function MyJourneyApp({ enhanced = false }: { enhanced?: boolean 
   if (academyOpen) return <Suspense fallback={<div className="academy-loading"><BrandCrest /><strong>Opening the Governance Institute</strong><span>Preparing the executive decision laboratory…</span></div>}><GoverningBodyAcademy initialModuleId={academyModuleId} onExitJourney={() => { setAcademyOpen(false); setAcademyModuleId(null); go('compliance', 'training'); }} /></Suspense>;
   if (policyOpen) return <Suspense fallback={<div className="academy-loading"><BrandCrest /><strong>Opening the controlled policy</strong><span>Preparing the executive reading room…</span></div>}><GoverningBodyPolicyPlayer key={policyOpen.requirementId} requirement={policyOpen} onExit={() => { setPolicyOpen(null); go('compliance', 'policies'); }} /></Suspense>;
   if (courseAssessmentId) return <Suspense fallback={<div className="academy-loading"><BrandCrest /><strong>Opening the course assessment</strong><span>Preparing the controlled assessment…</span></div>}><CourseAssessmentPlayer key={courseAssessmentId} courseId={courseAssessmentId} onExit={() => { setCourseAssessmentId(null); go('compliance', 'policies'); }} /></Suspense>;
-  if (tabletopOpen) return <Suspense fallback={<div className="academy-loading"><BrandCrest /><strong>Opening the final tabletop</strong><span>Assembling the integrated governance case…</span></div>}><TabletopPlayer onExit={() => { setTabletopOpen(false); go('compliance', 'required'); }} onForensicCapstone={() => { setTabletopOpen(false); setForensicModuleId('GB-001'); }} /></Suspense>;
+  if (tabletopOpen) return <Suspense fallback={<div className="academy-loading"><BrandCrest /><strong>Opening the final tabletop</strong><span>Assembling the integrated governance case…</span></div>}><Qapi2026TabletopEntry onExit={() => { setTabletopOpen(false); go('compliance', 'required'); }} /></Suspense>;
+  if (formsOpen) return <Suspense fallback={<div className="academy-loading"><BrandCrest /><strong>Opening annual governance forms</strong><span>Preparing the controlled forms workspace…</span></div>}><AnnualGovernanceForms onExit={() => { setFormsOpen(false); go('records'); }} /></Suspense>;
   if (forensicModuleId) return <Suspense fallback={<div className="academy-loading"><BrandCrest /><strong>Opening forensic remediation</strong><span>Preparing the controlled True/False form…</span></div>}><TrueFalseForensicPlayer moduleId={forensicModuleId} onExit={() => { setForensicModuleId(null); go('compliance', 'required'); }} /></Suspense>;
 
   const content = (() => {
     if (view === 'compliance') return <MyComplianceView tab={complianceTab} onTab={setComplianceTab} handlers={handlers} />;
     if (view === 'meetings') return <MeetingsView tab={meetingsTab} onTab={setMeetingsTab} onDecision={setDecision} />;
     if (view === 'decisions') return <DecisionsView onDecision={setDecision} />;
-    if (view === 'oversight') return <OversightView tab={oversightTab} onTab={setOversightTab} onDecision={setDecision} enhanced={enhanced} />;
-    if (view === 'records') return <RecordsView />;
+    if (view === 'oversight') return <OversightView tab={oversightTab} onTab={setOversightTab} onDecision={setDecision} />;
+    if (view === 'records') return <RecordsView onOpenForms={() => setFormsOpen(true)} />;
     return <HomeView onGo={go} handlers={handlers} />;
   })();
 

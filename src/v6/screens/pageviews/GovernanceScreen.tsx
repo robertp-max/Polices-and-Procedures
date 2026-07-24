@@ -7,6 +7,9 @@ import '../governance/governance-office.css';
 import '../governance/v33/v33-globals.css';
 import '../governance/v33/gb-academy/styles.css';
 import '../governance/v33/compliance/compliance.css';
+import '../governance/v33/qapi/qapi2026.css';
+import '../governance/v33/qapi/components/qapiDepth.css';
+import '../governance/v33/forms/forms.css';
 
 type PortalVersion = 'v1' | 'v2' | 'v3';
 
@@ -59,7 +62,7 @@ export function GovernanceScreen() {
     return (
       <>
         <div className="v33-scope">
-          <MyJourneyApp enhanced />
+          <MyJourneyApp />
         </div>
         <PortalVersionToggle version={version} onSelect={select} />
       </>
