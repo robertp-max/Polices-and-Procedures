@@ -1,0 +1,104 @@
+[
+  {
+    "Sources & Method": "Primary internal corpus plus current federal and California authority used to resolve assignment-sensitive conflicts.",
+    "__EMPTY": null,
+    "__EMPTY_1": null,
+    "__EMPTY_2": null
+  },
+  {
+    "Sources & Method": "Source type",
+    "__EMPTY": "Topic",
+    "__EMPTY_1": "Source / URL",
+    "__EMPTY_2": "How it was used"
+  },
+  {
+    "Sources & Method": "Internal",
+    "__EMPTY": "Full policy corpus",
+    "__EMPTY_1": "07-ALL_POLICIES.md",
+    "__EMPTY_2": "Reviewed for raw policy bodies and GV-GB-001."
+  },
+  {
+    "Sources & Method": "Internal",
+    "__EMPTY": "Generated policy library",
+    "__EMPTY_1": "12-allPoliciesContent.generated.ts",
+    "__EMPTY_2": "Parsed 272 unique policy records; primary source for current LMS bodies."
+  },
+  {
+    "Sources & Method": "Internal",
+    "__EMPTY": "Crosswalk",
+    "__EMPTY_1": "13-policy_hh_section_map.csv",
+    "__EMPTY_2": "Used to identify role-policy references and source gaps; automated HIGH labels were not treated as validation."
+  },
+  {
+    "Sources & Method": "Internal",
+    "__EMPTY": "Alignment generation",
+    "__EMPTY_1": "11-corridorAlignment.generated.ts",
+    "__EMPTY_2": "Compared for older/coarse mappings and missing-source drift."
+  },
+  {
+    "Sources & Method": "Internal",
+    "__EMPTY": "Assignment governance",
+    "__EMPTY_1": "HR-TA-005; HR-TD-001; HR-TR-101; GV-PM-003; EN-LC-003",
+    "__EMPTY_2": "Set orientation, assessment, acknowledgment, and role-matrix rules."
+  },
+  {
+    "Sources & Method": "Federal",
+    "__EMPTY": "Comprehensive assessment authority",
+    "__EMPTY_1": "https://www.ecfr.gov/current/title-42/part-484/section-484.55",
+    "__EMPTY_2": "RN plus specified PT/SLP/OT therapy-only authority."
+  },
+  {
+    "Sources & Method": "Federal",
+    "__EMPTY": "HHA competency / 12-hour in-service",
+    "__EMPTY_1": "https://www.ecfr.gov/current/title-42/part-484/section-484.80",
+    "__EMPTY_2": "Competency observation and at least 12 in-service hours each 12 months."
+  },
+  {
+    "Sources & Method": "Federal",
+    "__EMPTY": "Emergency preparedness",
+    "__EMPTY_1": "https://www.ecfr.gov/current/title-42/part-484/section-484.102",
+    "__EMPTY_2": "Initial training; at least every two years; exercises at least annually."
+  },
+  {
+    "Sources & Method": "Federal",
+    "__EMPTY": "HIPAA workforce training",
+    "__EMPTY_1": "https://www.ecfr.gov/current/title-45/part-164/section-164.530",
+    "__EMPTY_2": "New workforce and material-change training; documentation required."
+  },
+  {
+    "Sources & Method": "California",
+    "__EMPTY": "Harassment prevention",
+    "__EMPTY_1": "https://calcivilrights.ca.gov/Employment/",
+    "__EMPTY_2": "1 hour nonsupervisory / 2 hours supervisory, within six months and every two years; interactive."
+  },
+  {
+    "Sources & Method": "California",
+    "__EMPTY": "Workplace violence",
+    "__EMPTY_1": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=LAB&sectionNum=6401.9.",
+    "__EMPTY_2": "Initial and annual employee training; interactive questions and answers."
+  },
+  {
+    "Sources & Method": "California",
+    "__EMPTY": "Bloodborne pathogens",
+    "__EMPTY_1": "https://www.dir.ca.gov/title8/5193.html",
+    "__EMPTY_2": "Initial and annual training for employees with occupational exposure."
+  },
+  {
+    "Sources & Method": "California",
+    "__EMPTY": "Aerosol transmissible diseases",
+    "__EMPTY_1": "https://www.dir.ca.gov/title8/5199.html",
+    "__EMPTY_2": "Initial and annual training for covered occupational exposure."
+  },
+  {
+    "Sources & Method": "Method rule",
+    "__EMPTY": null,
+    "__EMPTY_1": null,
+    "__EMPTY_2": null
+  },
+  {
+    "Sources & Method": "Policy applicability was based on the actual policy scope/training language, the authoritative orientation and annual-training policies, role duties, and current governing authority—not the generated crosswalk's automated confidence label. Every listed assignment requires full-policy reading plus a bundled scored quiz. Additional competency evidence remains mandatory where the policy or regulation requires it. This map is intentionally limited to General plus LVN, RN, HHA, PT, PTA, OT, COTA, SLP, MSW, Administrator, DON/Clinical Manager, and Governing Body pathways.",
+    "__EMPTY": null,
+    "__EMPTY_1": null,
+    "__EMPTY_2": null
+  }
+]

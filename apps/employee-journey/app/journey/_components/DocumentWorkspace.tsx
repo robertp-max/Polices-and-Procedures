@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { FileUp, Info } from "lucide-react";
 import {
   getDocuments,
@@ -27,7 +28,7 @@ const filters: TabOption<DocumentFilter>[] = [
 ];
 
 export function DocumentWorkspace() {
-  const { persona, announce } = usePreview();
+  const { persona, announce, withPersona } = usePreview();
   const [active, setActive] = useState<DocumentFilter>("All");
   const [selected, setSelected] = useState<DocumentFixture | null>(null);
   const documents = useMemo(() => getDocuments(persona), [persona]);
@@ -110,6 +111,13 @@ export function DocumentWorkspace() {
             footer={
               document.verificationStatus === "Not assigned" ? (
                 <p className="no-action-copy">No employee action required.</p>
+              ) : document.href ? (
+                <Link
+                  className="button button-secondary"
+                  href={withPersona(document.href)}
+                >
+                  {document.primaryAction}
+                </Link>
               ) : (
                 <button
                   className="button button-secondary"

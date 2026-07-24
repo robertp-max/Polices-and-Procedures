@@ -1,0 +1,112 @@
+[
+  {
+    "Release Blockers": "Owner actions required before publishing affected courses. Critical issues are substantive, not cosmetic.",
+    "__EMPTY": null,
+    "__EMPTY_1": null,
+    "__EMPTY_2": null,
+    "__EMPTY_3": null,
+    "__EMPTY_4": null,
+    "__EMPTY_5": null,
+    "__EMPTY_6": null
+  },
+  {
+    "Release Blockers": "Severity",
+    "__EMPTY": "Issue",
+    "__EMPTY_1": "Evidence",
+    "__EMPTY_2": "Affected courses",
+    "__EMPTY_3": "Required action",
+    "__EMPTY_4": "Owner",
+    "__EMPTY_5": "Release acceptance",
+    "__EMPTY_6": "Authority / source"
+  },
+  {
+    "Release Blockers": "Critical",
+    "__EMPTY": "Missing role policy bodies / job-description gaps",
+    "__EMPTY_1": "Generated library omits HR-JD-005, -006, -008, -009, -010; PTA and COTA have no dedicated job-description policy.",
+    "__EMPTY_2": "LVN-01; RN-01; PT-01; PTA-01; OT-01; COTA-01; SLP-01",
+    "__EMPTY_3": "Restore/author the full approved policies, add PTA/COTA job descriptions, and validate IDs/titles against HR-JD-000.",
+    "__EMPTY_4": "HR Director + DON",
+    "__EMPTY_5": "Do not publish affected role-scope module until complete body is approved and generated.",
+    "__EMPTY_6": "Internal source comparison"
+  },
+  {
+    "Release Blockers": "Critical",
+    "__EMPTY": "Role-ID conflict",
+    "__EMPTY_1": "Workflow material assigns inconsistent IDs/titles (including MSW/SLP), while generated HR-JD-011 is Medical Social Worker.",
+    "__EMPTY_2": "All job-description courses",
+    "__EMPTY_3": "Approve one authoritative HR-JD index and regenerate taxonomy, crosswalk, content, and workflows from it.",
+    "__EMPTY_4": "HR Director + Compliance",
+    "__EMPTY_5": "Zero conflicting role IDs across all generated artifacts.",
+    "__EMPTY_6": "Internal source comparison"
+  },
+  {
+    "Release Blockers": "Critical",
+    "__EMPTY": "Incorrect OASIS/comprehensive-assessment authority",
+    "__EMPTY_1": "CL-CA-001/002 and CL-OA-003 say RN-only; current 42 CFR 484.55 permits PT/SLP/OT in qualifying therapy-only cases.",
+    "__EMPTY_2": "RN-03; RN-04; PT-03; OT-03; SLP-01; DON-03",
+    "__EMPTY_3": "Revise all affected policies and authorization logic to match current federal text and agency service configuration.",
+    "__EMPTY_4": "DON + Compliance",
+    "__EMPTY_5": "Counsel/clinical owner approves one consistent assessor-eligibility rule.",
+    "__EMPTY_6": "https://www.ecfr.gov/current/title-42/part-484/section-484.55"
+  },
+  {
+    "Release Blockers": "Critical",
+    "__EMPTY": "Two OASIS policy generations",
+    "__EMPTY_1": "CL-OA-001–019 and CL-OA-101 overlap, with inconsistent scope and authority language.",
+    "__EMPTY_2": "RN-04; PT-03; OT-03; SLP-01; DON-03",
+    "__EMPTY_3": "Designate a canonical OASIS curriculum/source, retire/supersede duplicates, and regenerate mappings.",
+    "__EMPTY_4": "DON + Policy Administrator",
+    "__EMPTY_5": "One active OASIS source hierarchy; no duplicate quiz assignments.",
+    "__EMPTY_6": "Internal source comparison"
+  },
+  {
+    "Release Blockers": "Critical",
+    "__EMPTY": "California harassment rule misstated",
+    "__EMPTY_1": "HR-ER-004 / HR-TD-001 describe 2 hours annually for all as SB 1343. California minimum is 1 hour nonsupervisory, 2 hours supervisory, within six months and every two years; training must be interactive.",
+    "__EMPTY_2": "G-07; ADM-06; DON-08",
+    "__EMPTY_3": "Correct the legal statement. If annual training is retained, label it as a stricter agency standard—not the statutory minimum.",
+    "__EMPTY_4": "HR Director + Counsel",
+    "__EMPTY_5": "Updated policy and LMS durations/cadence by supervisor status.",
+    "__EMPTY_6": "https://calcivilrights.ca.gov/Employment/"
+  },
+  {
+    "Release Blockers": "High",
+    "__EMPTY": "GV-GB-001 missing from generated content",
+    "__EMPTY_1": "The raw governing-body authority policy exists in ALL_POLICIES.md but is absent from allPoliciesContent.generated.ts.",
+    "__EMPTY_2": "ADM-01; GB-01",
+    "__EMPTY_3": "Restore GV-GB-001 to the generated policy library and assignment source.",
+    "__EMPTY_4": "Policy Administrator",
+    "__EMPTY_5": "Policy resolves in the app and matches the approved raw source.",
+    "__EMPTY_6": "Internal source comparison"
+  },
+  {
+    "Release Blockers": "High",
+    "__EMPTY": "IIPP duplicate / broken cross-references",
+    "__EMPTY_1": "RM-OS-001 and RM-OS-101 both claim IIPP authority; HR-WM-004 points to RM-OS-101.",
+    "__EMPTY_2": "G-05",
+    "__EMPTY_3": "Select one controlled IIPP master, update cross-references, and retire the duplicate.",
+    "__EMPTY_4": "Safety Officer + HR",
+    "__EMPTY_5": "One active IIPP ID and no dangling references.",
+    "__EMPTY_6": "https://www.dir.ca.gov/dosh/dosh_publications/TrainingReq.htm"
+  },
+  {
+    "Release Blockers": "Moderate",
+    "__EMPTY": "Training timing conflict",
+    "__EMPTY_1": "HR-TA-005 uses day 5/day 30; HR-TR-101 uses day 14 and different annual windows.",
+    "__EMPTY_2": "All employee pathways",
+    "__EMPTY_3": "Approve a single rule: General by day 5, all initial requirements by day 14, role competency by day 30 and always before independent duty/first exposure.",
+    "__EMPTY_4": "HR Director + Compliance",
+    "__EMPTY_5": "One timetable in policy, LMS due dates, reminders, and reports.",
+    "__EMPTY_6": "Internal source comparison"
+  },
+  {
+    "Release Blockers": "Moderate",
+    "__EMPTY": "Taxonomy/version drift",
+    "__EMPTY_1": "Taxonomy reports 253 policies while the generated library contains 272 active records.",
+    "__EMPTY_2": "All pathways / review ledger",
+    "__EMPTY_3": "Regenerate taxonomy counts, version metadata, and mappings from the approved policy inventory.",
+    "__EMPTY_4": "Policy Administrator",
+    "__EMPTY_5": "All inventory counts and versions reconcile to 272 or an approved replacement count.",
+    "__EMPTY_6": "Internal source comparison"
+  }
+]

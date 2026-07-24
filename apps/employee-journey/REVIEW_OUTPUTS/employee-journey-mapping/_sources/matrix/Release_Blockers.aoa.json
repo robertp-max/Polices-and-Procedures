@@ -1,0 +1,122 @@
+[
+  [
+    "Release Blockers",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    "Owner actions required before publishing affected courses. Critical issues are substantive, not cosmetic.",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    "Severity",
+    "Issue",
+    "Evidence",
+    "Affected courses",
+    "Required action",
+    "Owner",
+    "Release acceptance",
+    "Authority / source"
+  ],
+  [
+    "Critical",
+    "Missing role policy bodies / job-description gaps",
+    "Generated library omits HR-JD-005, -006, -008, -009, -010; PTA and COTA have no dedicated job-description policy.",
+    "LVN-01; RN-01; PT-01; PTA-01; OT-01; COTA-01; SLP-01",
+    "Restore/author the full approved policies, add PTA/COTA job descriptions, and validate IDs/titles against HR-JD-000.",
+    "HR Director + DON",
+    "Do not publish affected role-scope module until complete body is approved and generated.",
+    "Internal source comparison"
+  ],
+  [
+    "Critical",
+    "Role-ID conflict",
+    "Workflow material assigns inconsistent IDs/titles (including MSW/SLP), while generated HR-JD-011 is Medical Social Worker.",
+    "All job-description courses",
+    "Approve one authoritative HR-JD index and regenerate taxonomy, crosswalk, content, and workflows from it.",
+    "HR Director + Compliance",
+    "Zero conflicting role IDs across all generated artifacts.",
+    "Internal source comparison"
+  ],
+  [
+    "Critical",
+    "Incorrect OASIS/comprehensive-assessment authority",
+    "CL-CA-001/002 and CL-OA-003 say RN-only; current 42 CFR 484.55 permits PT/SLP/OT in qualifying therapy-only cases.",
+    "RN-03; RN-04; PT-03; OT-03; SLP-01; DON-03",
+    "Revise all affected policies and authorization logic to match current federal text and agency service configuration.",
+    "DON + Compliance",
+    "Counsel/clinical owner approves one consistent assessor-eligibility rule.",
+    "https://www.ecfr.gov/current/title-42/part-484/section-484.55"
+  ],
+  [
+    "Critical",
+    "Two OASIS policy generations",
+    "CL-OA-001–019 and CL-OA-101 overlap, with inconsistent scope and authority language.",
+    "RN-04; PT-03; OT-03; SLP-01; DON-03",
+    "Designate a canonical OASIS curriculum/source, retire/supersede duplicates, and regenerate mappings.",
+    "DON + Policy Administrator",
+    "One active OASIS source hierarchy; no duplicate quiz assignments.",
+    "Internal source comparison"
+  ],
+  [
+    "Critical",
+    "California harassment rule misstated",
+    "HR-ER-004 / HR-TD-001 describe 2 hours annually for all as SB 1343. California minimum is 1 hour nonsupervisory, 2 hours supervisory, within six months and every two years; training must be interactive.",
+    "G-07; ADM-06; DON-08",
+    "Correct the legal statement. If annual training is retained, label it as a stricter agency standard—not the statutory minimum.",
+    "HR Director + Counsel",
+    "Updated policy and LMS durations/cadence by supervisor status.",
+    "https://calcivilrights.ca.gov/Employment/"
+  ],
+  [
+    "High",
+    "GV-GB-001 missing from generated content",
+    "The raw governing-body authority policy exists in ALL_POLICIES.md but is absent from allPoliciesContent.generated.ts.",
+    "ADM-01; GB-01",
+    "Restore GV-GB-001 to the generated policy library and assignment source.",
+    "Policy Administrator",
+    "Policy resolves in the app and matches the approved raw source.",
+    "Internal source comparison"
+  ],
+  [
+    "High",
+    "IIPP duplicate / broken cross-references",
+    "RM-OS-001 and RM-OS-101 both claim IIPP authority; HR-WM-004 points to RM-OS-101.",
+    "G-05",
+    "Select one controlled IIPP master, update cross-references, and retire the duplicate.",
+    "Safety Officer + HR",
+    "One active IIPP ID and no dangling references.",
+    "https://www.dir.ca.gov/dosh/dosh_publications/TrainingReq.htm"
+  ],
+  [
+    "Moderate",
+    "Training timing conflict",
+    "HR-TA-005 uses day 5/day 30; HR-TR-101 uses day 14 and different annual windows.",
+    "All employee pathways",
+    "Approve a single rule: General by day 5, all initial requirements by day 14, role competency by day 30 and always before independent duty/first exposure.",
+    "HR Director + Compliance",
+    "One timetable in policy, LMS due dates, reminders, and reports.",
+    "Internal source comparison"
+  ],
+  [
+    "Moderate",
+    "Taxonomy/version drift",
+    "Taxonomy reports 253 policies while the generated library contains 272 active records.",
+    "All pathways / review ledger",
+    "Regenerate taxonomy counts, version metadata, and mappings from the approved policy inventory.",
+    "Policy Administrator",
+    "All inventory counts and versions reconcile to 272 or an approved replacement count.",
+    "Internal source comparison"
+  ]
+]

@@ -1,3 +1,97 @@
+/* ═══════════════════════════════════════════════════════════════
+ * Fixtures + generated-data view models for the Employee Journey app.
+ *
+ * PERSONAS, JourneyPhase, and FocusItem below remain hand-authored
+ * synthetic preview scaffolding (no canonical source models a
+ * per-employee onboarding timeline or a "what should I look at today"
+ * list). Everything else in this file that carries a real assignment
+ * IDENTITY (training module ids, policy ids/assignment ids, course
+ * ids, quiz bundles, evidence appendices) is sourced from
+ * app/journey/_generated/*.generated.ts, which is baked at build time
+ * from the xlsx matrix + main-app canonical sources. Dates, statuses,
+ * and progress state remain synthetic (no completion-tracking backend
+ * exists in this preview) and are called out as such in the UI copy.
+ * ═══════════════════════════════════════════════════════════════ */
+
+import {
+  MODULE_ASSIGNMENT_MAP,
+} from "../_generated/moduleAssignmentMap.generated";
+import {
+  MODULE_CATALOG,
+  getGeneratedModule,
+  type GeneratedModule,
+} from "../_generated/moduleCatalog.generated";
+import { getModulePlayerEntry } from "../_generated/modulePlayerMap.generated";
+import {
+  getPolicyAssignmentsForPathway,
+  type GeneratedPolicyAssignment,
+} from "../_generated/policyAssignmentMap.generated";
+import { getGeneratedPolicy } from "../_generated/policyCatalog.generated";
+import { getQuizBundle } from "../_generated/policyQuizMap.generated";
+import { getAppendixForm } from "../_generated/appendixForms.generated";
+import {
+  asJourneyRole,
+  pathwayForRoleCode,
+  getAgencyAnnualPlan,
+  getEmergencyDrills,
+  getAchcBundle,
+} from "./annualAdvancedCatalog";
+
+/** Maps a persona's optional secondaryRole DISPLAY NAME (e.g. "Registered
+ * Nurse") to the JourneyRole code used by the generated registries. Only
+ * the roles actually used as a secondaryRole in PERSONAS below need an
+ * entry; extend if a future persona adds another dual-role fixture. */
+const ROLE_DISPLAY_TO_CODE: Record<string, string> = {
+  "Registered Nurse": "RN",
+  "Licensed Vocational Nurse": "LVN",
+  "Home Health Aide": "HHA",
+  "Physical Therapist": "PT",
+  "Physical Therapist Assistant": "PTA",
+  "Occupational Therapist": "OT",
+  "Certified Occupational Therapy Assistant": "COTA",
+  "Speech-Language Pathologist": "SLP",
+  "Medical Social Worker": "MSW",
+  "Director of Nursing": "DON",
+  Administrator: "ADM",
+};
+
+/** Primary + secondary role codes for a persona, deduplicated. This is
+ * the "strictest gate" union: a dual-role persona (e.g. avery-don, DON
+ * primary / RN secondary) is assigned the UNION of both roles'
+ * requirements, never just the primary role's narrower set. */
+function roleCodesForPersona(persona: Persona): string[] {
+  const codes = [persona.roleCode];
+  if (persona.secondaryRole) {
+    const mapped = ROLE_DISPLAY_TO_CODE[persona.secondaryRole];
+    if (mapped && !codes.includes(mapped)) codes.push(mapped);
+  }
+  return codes;
+}
+
+/** Deterministic (not random) index into a status cycle, seeded by a
+ * stable string so the same persona+id always renders the same
+ * synthetic preview state within and across sessions. This is
+ * explicitly a design-review placeholder for "what does each status
+ * look like" — it is not a completion-tracking system. */
+function stableIndex(seed: string, modulo: number): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  return hash % modulo;
+}
+
+function addDaysIso(iso: string, days: number): string {
+  const date = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return "Not supplied";
+  date.setDate(date.getDate() + days);
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 export type PersonaId =
   | "taylor-rn"
   | "jordan-lvn"
@@ -518,125 +612,278 @@ export type TrainingAssignment = {
   category: "Required now" | "Onboarding" | "Role-specific" | "Annual" | "Policy quiz" | "Competency" | "Drill / live" | "Completed";
   action: string;
   href?: string;
+  /** "local" = a route inside this journey app; "external" = a main-app
+   * route that must be resolved through mainAppUrl/MainAppLink for a
+   * same-tab cross-origin launch. Absent hrefs have no action link. */
+  hrefKind?: "local" | "external";
   available: boolean;
 };
 
+function moduleAudienceLabel(mod: GeneratedModule): string {
+  return mod.roles === "ALL" ? "All assigned employees" : mod.roles.join(", ");
+}
+
+function moduleDuration(mod: GeneratedModule): string {
+  if (mod.durationMinutes == null) return "Not specified";
+  if (mod.durationMinutes < 60) return `${mod.durationMinutes} minutes`;
+  const hrs = mod.durationMinutes / 60;
+  return Number.isInteger(hrs) ? `${hrs} hour${hrs === 1 ? "" : "s"}` : `${hrs.toFixed(1)} hours`;
+}
+
+function moduleValidation(mod: GeneratedModule): string {
+  if (mod.method === "None") return "Read & acknowledge - no graded assessment on file";
+  const pct = mod.passThreshold != null ? ` - ${Math.round(mod.passThreshold * 100)}% pass threshold` : "";
+  return `${mod.method}${pct}`;
+}
+
+const TRAINING_STATUS_CYCLE: TrainingAssignment["status"][] = [
+  "Completed",
+  "In progress",
+  "Required now",
+  "Due soon",
+];
+
+function syntheticModuleStatus(
+  mod: GeneratedModule,
+  persona: Persona,
+  playerAvailable: boolean,
+): TrainingAssignment["status"] {
+  if (!playerAvailable) return "Unavailable";
+  return TRAINING_STATUS_CYCLE[stableIndex(`${persona.id}:${mod.id}`, TRAINING_STATUS_CYCLE.length)];
+}
+
+function moduleCategory(
+  mod: GeneratedModule,
+  status: TrainingAssignment["status"],
+): TrainingAssignment["category"] {
+  if (status === "Completed") return "Completed";
+  if (mod.family === "GAO") return "Onboarding";
+  if (mod.supervisorSignature || mod.supervisedVisitsRequired != null) return "Competency";
+  return "Role-specific";
+}
+
+function buildModuleTrainingCard(
+  mod: GeneratedModule,
+  persona: Persona,
+  roleCodes: string[],
+): TrainingAssignment {
+  const player = getModulePlayerEntry(mod.id);
+  const playerAvailable = player?.playerAvailable ?? false;
+  const status = syntheticModuleStatus(mod, persona, playerAvailable);
+  const category = moduleCategory(mod, status);
+  const isLocalGao001 = mod.id === "GAO-001";
+
+  const assignedViaSecondaryOnly =
+    !isLocalGao001 &&
+    mod.roles !== "ALL" &&
+    !(mod.roles as readonly string[]).includes(persona.roleCode) &&
+    roleCodes.length > 1;
+
+  const whyAssigned =
+    mod.family === "GAO"
+      ? "General agency orientation for this synthetic employee journey."
+      : mod.supervisorSignature || mod.supervisedVisitsRequired != null
+        ? `Supervised-practice / competency requirement from the ${mod.family} catalog family.`
+        : assignedViaSecondaryOnly
+          ? `Role-specific requirement assigned via the ${persona.secondaryRole ?? "secondary"} role.`
+          : `Role-specific development for the ${persona.role} fixture.`;
+
+  const dueDays = mod.family === "GAO" ? 14 : mod.supervisorSignature || mod.supervisedVisitsRequired != null ? 35 : 30;
+
+  return {
+    id: mod.id,
+    title: mod.title,
+    whyAssigned,
+    audience: moduleAudienceLabel(mod),
+    dueDate: addDaysIso(persona.startDate, dueDays),
+    duration: moduleDuration(mod),
+    status,
+    progress:
+      status === "Completed"
+        ? "Practice complete"
+        : status === "In progress"
+          ? "Preview position preserved (synthetic session state)"
+          : status === "Unavailable"
+            ? "Content not yet available"
+            : "Not started",
+    prerequisite: mod.prerequisites.length ? mod.prerequisites.join(", ") : "None",
+    validation: moduleValidation(mod),
+    category,
+    action: !playerAvailable
+      ? "No employee action required"
+      : status === "Completed"
+        ? "Review preview"
+        : status === "In progress"
+          ? "Continue preview"
+          : "Open preview",
+    href: isLocalGao001 ? "/journey/training/gao-001" : (player?.launchRef ?? undefined),
+    hrefKind: isLocalGao001 ? "local" : "external",
+    available: playerAvailable,
+  };
+}
+
+/** Module families this workspace renders directly. ANN/ACHC-ART/COMP/ADV
+ * are deliberately excluded here even when MODULE_ASSIGNMENT_MAP lists them
+ * under a role's "primaryModuleIds" (the raw modules.ts roles field mixes
+ * them in per-role rather than marking them shared) - they are covered with
+ * correct, audience-fixed logic by AnnualWorkspace/AdvancedWorkspace (see
+ * annualAdvancedCatalog.ts) and are represented in this list only as
+ * summary nav cards, to avoid duplicating (and potentially diverging from)
+ * that audience logic. */
+const TRAINING_WORKSPACE_FAMILIES = new Set(["GAO", "ADM", "DON", "RN", "LVN", "PT", "PTA", "OT", "COTA", "SLP", "MSW", "HHA"]);
+
+/** Real module ids assigned to this persona: GAO general-orientation
+ * modules plus every role-specific module family the persona holds
+ * (primary + secondary role, per MODULE_ASSIGNMENT_MAP - primary and
+ * secondary lists are unioned before family-filtering since a module's
+ * primary/secondary classification for a given role does not indicate
+ * its family). */
+function moduleIdsForPersona(persona: Persona): { ids: string[]; roleCodes: string[] } {
+  const roleCodes = roleCodesForPersona(persona);
+  const candidateIds = new Set<string>();
+  let matchedAnyRole = false;
+  for (const code of roleCodes) {
+    const role = asJourneyRole(code);
+    if (!role) continue;
+    matchedAnyRole = true;
+    const assignment = MODULE_ASSIGNMENT_MAP.find((entry) => entry.role === role);
+    if (!assignment) continue;
+    assignment.primaryModuleIds.forEach((id) => candidateIds.add(id));
+    assignment.secondaryModuleIds.forEach((id) => candidateIds.add(id));
+  }
+  if (!matchedAnyRole) {
+    // Office/driver/returning/separating personas (roleCode "GAO" in
+    // PERSONAS) have no entry in MODULE_ASSIGNMENT_MAP (it only covers
+    // the 11 clinical/leadership JourneyRole codes) — they inherit
+    // only the General/GAO orientation family, matching the "General"
+    // policy pathway they resolve to via pathwayForRoleCode.
+    MODULE_CATALOG.filter((mod) => mod.family === "GAO").forEach((mod) => candidateIds.add(mod.id));
+  }
+  const ids = Array.from(candidateIds).filter((id) => {
+    const mod = getGeneratedModule(id);
+    return mod ? TRAINING_WORKSPACE_FAMILIES.has(mod.family) : false;
+  });
+  return { ids, roleCodes };
+}
+
+/** Course-level policy knowledge-check cards, one per unique
+ * (pathway, courseId) with quizRequired=true in POLICY_ASSIGNMENT_MAP,
+ * scoped to every pathway the persona's roles resolve to. This is the
+ * real generated quiz bundle (POLICY_QUIZ_MAP) driving each card. */
+function policyQuizCourseCards(persona: Persona): TrainingAssignment[] {
+  const pathways = Array.from(new Set(roleCodesForPersona(persona).map((code) => pathwayForRoleCode(code))));
+  const seenCourses = new Set<string>();
+  const cards: TrainingAssignment[] = [];
+
+  pathways.forEach((pathway) => {
+    getPolicyAssignmentsForPathway(pathway)
+      .filter((row) => row.quizRequired)
+      .forEach((row) => {
+        const courseKey = `${pathway}__${row.courseId}`;
+        if (seenCourses.has(courseKey)) return;
+        seenCourses.add(courseKey);
+
+        const bundle = getQuizBundle(row.courseId);
+        const bankStatus = bundle?.bankStatus ?? "MISSING";
+        const available = bankStatus !== "MISSING";
+        const policyCount = bundle?.policyIds.length ?? 1;
+        const status: TrainingAssignment["status"] = row.blocked
+          ? "Waiting"
+          : !available
+            ? "Unavailable"
+            : bankStatus === "DRAFT_REVIEW_REQUIRED"
+              ? "In progress"
+              : "Required now";
+
+        cards.push({
+          id: courseKey,
+          title: row.courseTitle,
+          whyAssigned: `Policy knowledge check for the ${pathway} pathway (${policyCount} polic${policyCount === 1 ? "y" : "ies"} covered).`,
+          audience: `${pathway} pathway`,
+          dueDate: row.initialDue || "Not supplied",
+          duration: bundle ? `${bundle.questionCount} questions - ${bundle.passScore}% pass` : "Not published",
+          status,
+          progress: !available
+            ? "Question bank not yet published"
+            : bankStatus === "DRAFT_REVIEW_REQUIRED"
+              ? "Draft question bank - unofficial practice run"
+              : "Not started",
+          prerequisite: `Read ${row.policyId}${policyCount > 1 ? " and related policies" : ""}`,
+          validation: bundle?.note ?? "No quiz bundle mapping exists yet for this course.",
+          category: "Policy quiz",
+          action: available ? "Open knowledge check" : "No employee action required",
+          href: `/journey/policies/${row.assignmentId}/quiz`,
+          hrefKind: "local",
+          available,
+        });
+      });
+  });
+
+  return cards;
+}
+
+/** Single navigation/summary card for the Annual workspace - real
+ * counts via annualAdvancedCatalog's audience-fixed logic, not a
+ * duplicated per-item list (see moduleIdsForPersona comment above). */
+function annualSummaryCard(persona: Persona): TrainingAssignment {
+  const plan = getAgencyAnnualPlan(persona.roleCode);
+  const achc = getAchcBundle(persona.roleCode);
+  const achcCount = achc.assignedToRole ? achc.totalCount : 0;
+  const totalCount = plan.onlineTraining.length + plan.policyLearning.length + achcCount;
+  return {
+    id: "ANNUAL-PLAN",
+    title: "Agency annual plan",
+    whyAssigned: `${totalCount} annual item${totalCount === 1 ? "" : "s"} assigned to the ${persona.role} pathway (online training, policy learning${achcCount ? ", and the ACHC field-worker bundle" : ""}).`,
+    audience: persona.role,
+    dueDate: "See the Annual workspace for each item's due date",
+    duration: "Varies by item",
+    status: totalCount > 0 ? "Required now" : "Waiting",
+    progress: "Tracked in the Annual workspace",
+    prerequisite: "General orientation sequence",
+    validation: "Each item's method and pass threshold appears in the Annual workspace",
+    category: "Annual",
+    action: "Open annual plan",
+    href: "/journey/training/annual",
+    hrefKind: "local",
+    available: totalCount > 0,
+  };
+}
+
+function drillSummaryCard(persona: Persona): TrainingAssignment {
+  const drills = getEmergencyDrills(persona.roleCode);
+  return {
+    id: "DRILL-LIVE-PLAN",
+    title: "Emergency preparedness drills",
+    whyAssigned: `${drills.length} drill/live activit${drills.length === 1 ? "y" : "ies"} assigned to the ${persona.role} pathway.`,
+    audience: persona.role,
+    dueDate: "See the Annual workspace Drills tab",
+    duration: "Live participation",
+    status: drills.length > 0 ? "Due soon" : "Waiting",
+    progress: "Tracked in the Annual workspace",
+    prerequisite: "Emergency preparedness orientation",
+    validation: "Live participation verified outside this preview; evidenced by an After-Action Review form",
+    category: "Drill / live",
+    action: "Open annual plan",
+    href: "/journey/training/annual",
+    hrefKind: "local",
+    available: drills.length > 0,
+  };
+}
+
 export function getTrainingAssignments(persona: Persona): TrainingAssignment[] {
-  return [
-    {
-      id: "GAO-001",
-      title: "A New Journey - Agency Mission, Vision & Values",
-      whyAssigned: "General agency orientation for this synthetic employee journey.",
-      audience: "All assigned employees",
-      dueDate: "July 24, 2026",
-      duration: "30 minutes",
-      status: "In progress",
-      progress: "Scene 1 of approved preview content",
-      prerequisite: "None",
-      validation: "Practice interactions and knowledge checks",
-      category: "Onboarding",
-      action: "Continue preview",
-      href: "/journey/training/gao-001",
-      available: true,
-    },
-    {
-      id: `${persona.roleCode}-006`,
-      title:
-        persona.roleCode === "RN"
-          ? "Medication Management & Reconciliation"
-          : `${persona.role} role practice`,
-      whyAssigned: `Role-specific development for the ${persona.role} fixture.`,
-      audience: persona.role,
-      dueDate: "August 4, 2026",
-      duration: "35 minutes",
-      status: "Required now",
-      progress: "Not started",
-      prerequisite: "General orientation sequence",
-      validation: "Practice case; official validation is not connected",
-      category: "Role-specific",
-      action: "Open preview",
-      available: true,
-    },
-    {
-      id: "POL-CL-PR-001",
-      title: "Patient Rights policy quiz",
-      whyAssigned: "Version-specific policy action in this synthetic fixture.",
-      audience: "Assigned patient-facing roles",
-      dueDate: "July 28, 2026",
-      duration: "12 minutes",
-      status: "Due soon",
-      progress: "Reading not started",
-      prerequisite: "Read CL-PR-001",
-      validation: "Practice quiz; no official score is recorded",
-      category: "Policy quiz",
-      action: "Review assignment",
-      available: true,
-    },
-    {
-      id: "HR-TD-003-PRACTICE",
-      title: "Clinical competency preparation",
-      whyAssigned: "Prepares the synthetic role for evaluator-led validation.",
-      audience: persona.role,
-      dueDate: "August 5, 2026",
-      duration: "20 minutes",
-      status: "Waiting",
-      progress: "Waiting for evaluator schedule",
-      prerequisite: "Applicable role training",
-      validation: "Evaluator observation outside this UI preview",
-      category: "Competency",
-      action: "View preparation",
-      available: true,
-    },
-    {
-      id: "HR-TD-005-DRILL",
-      title: "Emergency preparedness live drill",
-      whyAssigned: "Agency drill assignment for this synthetic schedule.",
-      audience: "Assigned employees",
-      dueDate: "September 17, 2026",
-      duration: "Live · 45 minutes",
-      status: "Due soon",
-      progress: "Scheduled",
-      prerequisite: "Emergency preparedness orientation",
-      validation: "Live participation verified outside this preview",
-      category: "Drill / live",
-      action: "View schedule",
-      available: true,
-    },
-    {
-      id: "GAO-012",
-      title: "Abuse, Neglect & Exploitation Reporting",
-      whyAssigned: "Catalog assignment awaiting approved learner content.",
-      audience: "Assigned employees",
-      dueDate: "No employee due date",
-      duration: "Not published",
-      status: "Unavailable",
-      progress: "Content not yet available",
-      prerequisite: "No employee action required",
-      validation: "Unavailable",
-      category: "Required now",
-      action: "No employee action required",
-      available: false,
-    },
-    {
-      id: "GAO-004",
-      title: "Corporate Compliance Program",
-      whyAssigned: "Completed synthetic orientation example.",
-      audience: "All employees",
-      dueDate: "July 10, 2026",
-      duration: "28 minutes",
-      status: "Completed",
-      progress: "Practice complete",
-      prerequisite: "GAO-001",
-      validation: "Practice quiz completed; no official score was recorded",
-      category: "Completed",
-      action: "Review preview",
-      available: true,
-    },
-  ];
+  const { ids, roleCodes } = moduleIdsForPersona(persona);
+  const moduleCards = ids
+    .map((id) => getGeneratedModule(id))
+    .filter((mod): mod is GeneratedModule => Boolean(mod))
+    .map((mod) => buildModuleTrainingCard(mod, persona, roleCodes))
+    .sort((a, b) => a.id.localeCompare(b.id));
+
+  return [...moduleCards, ...policyQuizCourseCards(persona), annualSummaryCard(persona), drillSummaryCard(persona)];
 }
 
 export type PolicyAssignment = {
   id: string;
+  assignmentId: string;
   title: string;
   version: string;
   effectiveDate: string;
@@ -647,75 +894,75 @@ export type PolicyAssignment = {
   dueDate: string;
   actionType: "Read" | "Read + acknowledge" | "Read + quiz" | "Awareness only" | "No employee action";
   status: "Read now" | "In progress" | "Due soon" | "Complete" | "Waiting for publication" | "No action required";
+  tier: string;
+  courseId: string;
+  courseTitle: string;
+  quizRequired: boolean;
+  pathway: string;
+  inherited: boolean;
 };
 
-export const POLICY_ASSIGNMENTS: PolicyAssignment[] = [
-  {
-    id: "CL-PR-001",
-    title: "Patient Rights & Responsibilities",
-    version: "6.0",
-    effectiveDate: "July 10, 2025",
-    whatChanged: "A synthetic assignment was created; no prior-version diff was supplied.",
-    changedSections: "Changed-section details were not provided in the supplied metadata.",
-    whyAssigned: "Patient-facing responsibility in this synthetic role.",
-    readingTime: "14 minutes",
-    dueDate: "July 28, 2026",
-    actionType: "Read + quiz",
-    status: "Due soon",
-  },
-  {
-    id: "CO-HP-001",
-    title: "HIPAA Privacy Program",
-    version: "1.0",
-    effectiveDate: "July 10, 2025",
-    whatChanged: "Change summary is not available in this preview.",
-    changedSections: "No changed-section metadata was supplied.",
-    whyAssigned: "Initial and recurring privacy responsibilities.",
-    readingTime: "18 minutes",
-    dueDate: "July 31, 2026",
-    actionType: "Read + acknowledge",
-    status: "Read now",
-  },
-  {
-    id: "CO-CP-004",
-    title: "Code of Conduct & Ethics",
-    version: "1.0",
-    effectiveDate: "July 10, 2025",
-    whatChanged: "Change summary is not available in this preview.",
-    changedSections: "No changed-section metadata was supplied.",
-    whyAssigned: "Day 1 code acknowledgment.",
-    readingTime: "12 minutes",
-    dueDate: "July 24, 2026",
-    actionType: "Read + acknowledge",
-    status: "In progress",
-  },
-  {
-    id: "OP-SL-003",
-    title: "Vehicle & Transportation Safety",
-    version: "6.0",
-    effectiveDate: "July 10, 2025",
-    whatChanged: "No current revision action is assigned.",
-    changedSections: "No changed-section metadata was supplied.",
-    whyAssigned: "Applies only when driving is part of the synthetic role.",
-    readingTime: "10 minutes",
-    dueDate: "No action due",
-    actionType: "Awareness only",
-    status: "No action required",
-  },
-  {
-    id: "EN-LC-001",
-    title: "Policy Lifecycle Control & Version Management",
-    version: "1.0",
-    effectiveDate: "April 1, 2026",
-    whatChanged: "Waiting for a learner-facing publication summary.",
-    changedSections: "Changed-section details were not provided.",
-    whyAssigned: "Administrator policy-update fixture only.",
-    readingTime: "Not available",
-    dueDate: "Not scheduled",
-    actionType: "No employee action",
-    status: "Waiting for publication",
-  },
-];
+const POLICY_STATUS_CYCLE: PolicyAssignment["status"][] = ["Read now", "In progress", "Due soon", "Complete"];
+
+function policyActionType(row: GeneratedPolicyAssignment): PolicyAssignment["actionType"] {
+  if (row.awarenessReferenceOnly) return "Awareness only";
+  if (!row.required) return "No employee action";
+  if (row.quizRequired) return "Read + quiz";
+  if (row.attestationRequired) return "Read + acknowledge";
+  return "Read";
+}
+
+function policyStatus(row: GeneratedPolicyAssignment, persona: Persona): PolicyAssignment["status"] {
+  if (row.blocked) return "Waiting for publication";
+  if (row.awarenessReferenceOnly || !row.required) return "No action required";
+  return POLICY_STATUS_CYCLE[stableIndex(`${persona.id}:${row.assignmentId}`, POLICY_STATUS_CYCLE.length)];
+}
+
+/** Full assigned policy set for this persona - sourced from
+ * POLICY_ASSIGNMENT_MAP (generated from Policy_Assignments.aoa.json +
+ * Role_Policy_Matrix.aoa.json), scoped to every pathway the persona's
+ * roles resolve to (primary + secondary, deduplicated by assignmentId).
+ * Kept as a function (not a plain const) because the assignment set
+ * genuinely differs per persona/pathway - it can no longer be a single
+ * shared 5-row array. Dates/statuses beyond the real `initialDue` field
+ * remain synthetic (no acknowledgment-tracking backend exists here). */
+export function POLICY_ASSIGNMENTS(persona: Persona): PolicyAssignment[] {
+  const pathways = Array.from(new Set(roleCodesForPersona(persona).map((code) => pathwayForRoleCode(code))));
+  const seen = new Set<string>();
+  const rows: PolicyAssignment[] = [];
+
+  pathways.forEach((pathway) => {
+    getPolicyAssignmentsForPathway(pathway).forEach((row) => {
+      if (seen.has(row.assignmentId)) return;
+      seen.add(row.assignmentId);
+      const policy = getGeneratedPolicy(row.policyId);
+      rows.push({
+        id: row.policyId,
+        assignmentId: row.assignmentId,
+        title: row.policyTitle,
+        version: policy?.versionDate ?? "Not supplied",
+        effectiveDate: policy?.versionDate ?? "Not supplied",
+        whatChanged: "Change summary not supplied in the current source data.",
+        changedSections: "Changed-section metadata was not supplied.",
+        whyAssigned: row.scopeRationale || "Not supplied",
+        readingTime: policy?.sectionCount ? `${policy.sectionCount} section(s) to read` : "Not available",
+        dueDate: row.initialDue || "Not supplied",
+        actionType: policyActionType(row),
+        status: policyStatus(row, persona),
+        tier: row.tier || "UNSPECIFIED",
+        courseId: row.courseId,
+        courseTitle: row.courseTitle,
+        quizRequired: row.quizRequired,
+        pathway,
+        inherited: row.inherited,
+      });
+    });
+  });
+
+  return rows.sort(
+    (a, b) => a.courseTitle.localeCompare(b.courseTitle) || a.title.localeCompare(b.title),
+  );
+}
 
 export type DocumentFixture = {
   id: string;
@@ -731,6 +978,10 @@ export type DocumentFixture = {
   acceptedFormats: string;
   primaryAction: string;
   applicableTo: string;
+  /** Present only when a real baked controlled form (APPENDIX_FORMS)
+   * covers this exact document type; "local" = a route in this app. */
+  href?: string;
+  hrefKind?: "local";
 };
 
 const DOCUMENTS: DocumentFixture[] = [
@@ -901,11 +1152,24 @@ const DOCUMENTS: DocumentFixture[] = [
   },
 ];
 
+/** Real form id genuinely on file for license/credential primary-source
+ * verification (HR-FM-006 "License & Cert Primary Source Verification"
+ * in APPENDIX_FORMS). No canonical source models personal HR documents
+ * (driver's license, insurance, etc) as a distinct identity table - the
+ * DOCUMENTS array below remains hand-authored synthetic preview data -
+ * but where a document IS the same real-world artifact a baked
+ * controlled form covers, the action links to that real form instead
+ * of a synthetic-only preview drawer. */
+const LICENSE_VERIFICATION_FORM_ID = "HR-FM-006";
+
 export function getDocuments(persona: Persona): DocumentFixture[] {
+  const licenseForm = getAppendixForm(LICENSE_VERIFICATION_FORM_ID);
   return DOCUMENTS.map((document) => {
     const driving = persona.id === "skyler-driver";
     const hha = persona.id === "morgan-hha";
-    const licensed = ["RN", "LVN", "HHA", "PTA", "DON"].includes(persona.roleCode);
+    const licensed = roleCodesForPersona(persona).some((code) =>
+      ["RN", "LVN", "HHA", "PTA", "DON"].includes(code),
+    );
 
     if (document.id === "drivers-license" || document.id === "auto-insurance") {
       return driving
@@ -917,21 +1181,31 @@ export function getDocuments(persona: Persona): DocumentFixture[] {
             primaryAction: "No employee action required",
           };
     }
-    if (document.id === "hha-certificate" && !hha) {
-      return {
-        ...document,
-        maskedIdentifier: "Not assigned",
-        verificationStatus: "Not assigned" as const,
-        primaryAction: "No employee action required",
-      };
+    if (document.id === "hha-certificate") {
+      if (!hha) {
+        return {
+          ...document,
+          maskedIdentifier: "Not assigned",
+          verificationStatus: "Not assigned" as const,
+          primaryAction: "No employee action required",
+        };
+      }
+      return licenseForm
+        ? { ...document, href: `/journey/forms/${licenseForm.id}`, hrefKind: "local" as const }
+        : document;
     }
-    if (document.id === "professional-license" && !licensed) {
-      return {
-        ...document,
-        maskedIdentifier: "Not assigned",
-        verificationStatus: "Not assigned" as const,
-        primaryAction: "No employee action required",
-      };
+    if (document.id === "professional-license") {
+      if (!licensed) {
+        return {
+          ...document,
+          maskedIdentifier: "Not assigned",
+          verificationStatus: "Not assigned" as const,
+          primaryAction: "No employee action required",
+        };
+      }
+      return licenseForm
+        ? { ...document, href: `/journey/forms/${licenseForm.id}`, hrefKind: "local" as const }
+        : document;
     }
     if (persona.id === "parker-returning" && document.id === "health-clearance") {
       return {
@@ -959,6 +1233,12 @@ export type CompetencyFixture = {
   nextAction: string;
   clearanceImpact: string;
   basis: string;
+  /** Present only on entries built directly from a real generated
+   * module (id, policyRefs, supervisedVisitsRequired) rather than the
+   * hand-authored synthetic rows below. "external" = main-app route,
+   * resolved via mainAppUrl/MainAppLink. */
+  href?: string;
+  hrefKind?: "external";
 };
 
 const COMPETENCIES: CompetencyFixture[] = [
@@ -1081,9 +1361,54 @@ const COMPETENCIES: CompetencyFixture[] = [
   },
 ];
 
+const SUP_MODULE_ROLES = ["RN", "LVN", "PT", "PTA", "OT", "COTA", "SLP", "MSW", "HHA"] as const;
+
+/** Real "<ROLE>-SUP" supervised-visit module for this role code, if the
+ * canonical catalog has one (genuine module id/title/policyRefs/
+ * evidenceAppendix/supervisedVisitsRequired - nothing invented). Not a
+ * reinterpretation of the synthetic hha-14/lvn-review/etc rows below;
+ * those stay as hand-authored preview scaffolding since there is no
+ * verified 1:1 correspondence between their ids and a generated
+ * module id. This is an additional, clearly real, sourced entry. */
+function supModuleCompetency(roleCode: string): CompetencyFixture | null {
+  if (!(SUP_MODULE_ROLES as readonly string[]).includes(roleCode)) return null;
+  const mod = getGeneratedModule(`${roleCode}-SUP`);
+  if (!mod) return null;
+  const player = getModulePlayerEntry(mod.id);
+  return {
+    id: mod.id,
+    roles: [roleCode],
+    requirement: mod.title,
+    cadence:
+      mod.supervisedVisitsRequired != null
+        ? `${mod.supervisedVisitsRequired} supervised visit${mod.supervisedVisitsRequired === 1 ? "" : "s"} required, per the ${mod.family} catalog entry.`
+        : "See the module for cadence.",
+    dueDate: "See the module for timing",
+    evaluator: "Demo Clinical Evaluator",
+    preparation: "Open the module for the full supervised-visit checklist.",
+    status: player?.playerAvailable ? "Scheduled" : "Waiting on evaluator",
+    nextAction: "Open module",
+    clearanceImpact: "Sourced directly from the canonical module catalog, not a synthetic estimate.",
+    basis: mod.policyRefs.length ? mod.policyRefs.join("; ") : "Not supplied",
+    href: player?.launchRef ?? undefined,
+    hrefKind: player?.launchRef ? "external" : undefined,
+  };
+}
+
 export function getCompetencies(persona: Persona): CompetencyFixture[] {
   const matches = COMPETENCIES.filter((item) => item.roles.includes(persona.roleCode));
-  return matches.length ? matches : COMPETENCIES.filter((item) => item.id === "emergency-drill");
+  const base = matches.length ? matches : COMPETENCIES.filter((item) => item.id === "emergency-drill");
+
+  const seen = new Set(base.map((item) => item.id));
+  const merged = [...base];
+  for (const code of roleCodesForPersona(persona)) {
+    const real = supModuleCompetency(code);
+    if (real && !seen.has(real.id)) {
+      seen.add(real.id);
+      merged.push(real);
+    }
+  }
+  return merged;
 }
 
 export type PerformanceFixture = {

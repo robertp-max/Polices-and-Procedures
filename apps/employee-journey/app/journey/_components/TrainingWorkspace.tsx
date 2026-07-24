@@ -8,6 +8,7 @@ import {
   type TrainingAssignment,
 } from "../_data/fixtures";
 import { usePreview } from "./PreviewContext";
+import { MainAppLink } from "./MainAppLink";
 import { PageHeader, RequirementCard } from "./shared";
 import { WorkspaceTabs, workspaceTabId, type TabOption } from "./ui";
 
@@ -90,7 +91,12 @@ export function TrainingWorkspace() {
             ]}
             footer={
               assignment.available ? (
-                assignment.href ? (
+                assignment.href && assignment.hrefKind === "external" ? (
+                  <MainAppLink className="button button-primary" path={assignment.href}>
+                    {assignment.action}
+                    <ArrowRight aria-hidden="true" />
+                  </MainAppLink>
+                ) : assignment.href ? (
                   <Link
                     className="button button-primary"
                     href={withPersona(assignment.href)}

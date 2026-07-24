@@ -1,0 +1,175 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "GENERATED_AT_BUILD",
+  "sourceBranch": "feature/governing-body-portal",
+  "generator": "apps/employee-journey/scripts/generateJourneyMappings.ts",
+  "matrixInputs": [
+    {
+      "path": "apps/employee-journey/REVIEW_OUTPUTS/employee-journey-mapping/_sources/matrix/Course_Catalog.aoa.json",
+      "sha256": "c09e7504abcec9a5371486003df8fcbfe4f4cfab200e3b9a268acdb212a88db8"
+    },
+    {
+      "path": "apps/employee-journey/REVIEW_OUTPUTS/employee-journey-mapping/_sources/matrix/Policy_Assignments.aoa.json",
+      "sha256": "78b029b5d4e4781ec1da3270a19319f42dbb695611aa64d72332be10da28ca52"
+    },
+    {
+      "path": "apps/employee-journey/REVIEW_OUTPUTS/employee-journey-mapping/_sources/matrix/Role_Policy_Matrix.aoa.json",
+      "sha256": "09c683058ada02d16d309b3122bf35eb5e03d308adba62681a72ae1daebfb4fe"
+    },
+    {
+      "path": "apps/employee-journey/REVIEW_OUTPUTS/employee-journey-mapping/_sources/matrix/Pathway_Summary.aoa.json",
+      "sha256": "85fc2ff7988df1ac7f8f94219abcb1ef4144396da252d9db959166b30a8194f6"
+    },
+    {
+      "path": "apps/employee-journey/REVIEW_OUTPUTS/employee-journey-mapping/_sources/matrix/Release_Blockers.aoa.json",
+      "sha256": "430bcf3ed3d2358e9fa6c11f233017cff8402c6325273ae0f348274717c51c85"
+    },
+    {
+      "path": "apps/employee-journey/REVIEW_OUTPUTS/employee-journey-mapping/_sources/matrix/All_Policy_Review.aoa.json",
+      "sha256": "e64a829288b414756c7d78cbf29f6433afe68ddc2b36fae30715769d2a5fa573"
+    },
+    {
+      "path": "apps/employee-journey/REVIEW_OUTPUTS/employee-journey-mapping/_sources/matrix/Sources_Method.aoa.json",
+      "sha256": "6b2972708bcf539669288aa314fc1149918e85d2d8329aad3640091c47e2a2b9"
+    }
+  ],
+  "canonicalSourceInputs": [
+    {
+      "path": "src/policy/journey/data/modules.ts",
+      "sha256": "da12f646bbccadd4bbbc0c193b7f88847e4be5bb2a352d5487f03271d14fc98d"
+    },
+    {
+      "path": "src/policy/journey/types/journey.ts",
+      "sha256": "25b29a03303d2356a440c0f9df426ffc2d87eef86fad5580f343993bd5dc4e47"
+    },
+    {
+      "path": "src/policy/journey/policyReading/policyResolver.ts",
+      "sha256": "833fa90b4b9445f6cbd39c33977f9b62a667c65521228846100d2fa06c8fb298"
+    },
+    {
+      "path": "src/policy/data/allPoliciesContent.generated.ts",
+      "sha256": "bc79c41d9c5e4ca64af42d427f1be8f40599f0171177287df220abd5e2d21422"
+    },
+    {
+      "path": "src/policy/data/policyCorpus.ts",
+      "sha256": "2362ce88e4ccdbfd24b593eacb3696ed613e2f0164d8f5c35dcd65d0ed9b36d2"
+    },
+    {
+      "path": "src/policy/data/formsLibraryDataset.ts",
+      "sha256": "3ae0c199e5e8960721029b0cf2399f3b3572807fc26ff73b5a3d7032aa89e632"
+    },
+    {
+      "path": "src/policy/data/formsLibraryContent.ts",
+      "sha256": "0ccba1ff50d4e391048e980d2b7de8cd4a08b9a1495db8fb3ab8dd531ec4ffad"
+    }
+  ],
+  "counts": {
+    "modules": 202,
+    "coursesInCatalog": 68,
+    "policyAssignmentRowsRaw": 864,
+    "policyAssignmentRecordsGenerated": 1381,
+    "uniquePoliciesInRolePolicyMatrix": 217,
+    "uniquePoliciesReferenced": 217,
+    "policiesVerified": 208,
+    "policiesNeedsReview": 7,
+    "policiesInvalid": 2,
+    "pathwaysInSummary": 13,
+    "releaseBlockers": 9,
+    "allPolicyReviewRows": 272,
+    "sourcesMethodRows": 15,
+    "quizBundles": 68,
+    "appendixKeysClassified": 15,
+    "appendixFormsBaked": 9,
+    "annualDrillCompModules": 33,
+    "achcClinicalAudienceSize": 10,
+    "advancedModules": 4,
+    "modulePlayerTypeCounts": {
+      "CANONICAL_GENERIC_PLAYER": 113,
+      "STANDALONE_PLAYER": 73,
+      "UNAVAILABLE": 16
+    },
+    "moduleFamilyCounts": {
+      "GAO": 28,
+      "ADM": 15,
+      "DON": 16,
+      "RN": 16,
+      "LVN": 13,
+      "PT": 11,
+      "PTA": 11,
+      "OT": 11,
+      "COTA": 11,
+      "SLP": 9,
+      "MSW": 9,
+      "HHA": 15,
+      "ANN": 18,
+      "COMP": 3,
+      "ACHC-ART": 12,
+      "ADV": 4
+    }
+  },
+  "unresolved": {
+    "policiesNeedsReviewOrInvalid": [
+      {
+        "policyId": "EN-CM-002",
+        "status": "needs_review"
+      },
+      {
+        "policyId": "EN-LC-003",
+        "status": "needs_review"
+      },
+      {
+        "policyId": "MISSING-COTA-JD",
+        "status": "invalid"
+      },
+      {
+        "policyId": "MISSING-PTA-JD",
+        "status": "invalid"
+      },
+      {
+        "policyId": "QA-VBP-101",
+        "status": "needs_review"
+      },
+      {
+        "policyId": "RM-PS-001",
+        "status": "needs_review"
+      },
+      {
+        "policyId": "RM-PS-002",
+        "status": "needs_review"
+      },
+      {
+        "policyId": "RM-PS-003",
+        "status": "needs_review"
+      },
+      {
+        "policyId": "RM-PS-005",
+        "status": "needs_review"
+      }
+    ],
+    "appendixKeysNeedingReview": [
+      "HRTA005_B",
+      "HRTA005_E",
+      "HRER001_C",
+      "HRTD001_B"
+    ],
+    "modulesWithoutPlayer": [
+      "ANN-001",
+      "ANN-002",
+      "ANN-003",
+      "ANN-004",
+      "ANN-005",
+      "ANN-006",
+      "ANN-007",
+      "ANN-009",
+      "ANN-010",
+      "ANN-011",
+      "ANN-012",
+      "ANN-013",
+      "ANN-014",
+      "ANN-015",
+      "ANN-017",
+      "ANN-018"
+    ],
+    "heldPolicyAssignments": 145
+  }
+}

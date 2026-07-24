@@ -1,0 +1,193 @@
+/* Annual / ACHC / Advanced Training workspaces.
+   Reuses .workspace, .requirement-grid, .requirement-card, .summary-grid,
+   .summary-card, .status-badge, .workspace-tabs, .truth-note, .button from
+   components.css + workspaces.css. Only additive rules live here. */
+
+.quarter-section + .quarter-section {
+  margin-top: 22px;
+}
+
+.quarter-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+
+.quarter-heading strong {
+  color: var(--teal-deep);
+  font-family: var(--font-montserrat), Arial, sans-serif;
+  font-size: 0.9375rem;
+  letter-spacing: 0.02em;
+}
+
+.quarter-heading span {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.annual-subheading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 28px 0 14px;
+}
+
+.annual-subheading:first-child {
+  margin-top: 0;
+}
+
+.annual-subheading h2 {
+  margin: 0;
+  font-size: 1.0625rem;
+}
+
+.annual-subheading p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.policy-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.policy-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-teal);
+  padding: 4px 10px;
+  color: var(--teal-deep);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.not-assigned-card {
+  display: grid;
+  gap: 6px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-card);
+  background: #f6f4f0;
+  padding: 24px;
+  text-align: center;
+}
+
+.not-assigned-card strong {
+  font-family: var(--font-montserrat), Arial, sans-serif;
+  color: var(--muted-strong);
+}
+
+.not-assigned-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.scope-warning-banner,
+.cert-gate-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.scope-warning-banner {
+  border: 1px solid rgba(240, 105, 35, 0.32);
+  background: var(--orange-soft);
+}
+
+.scope-warning-banner-stacked {
+  margin-bottom: 10px;
+}
+
+.scope-warning-banner > svg {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  color: var(--orange-deep);
+}
+
+.scope-warning-banner strong {
+  color: var(--orange-deep);
+}
+
+.scope-warning-banner p,
+.cert-gate-banner p {
+  margin: 2px 0 0;
+  color: var(--muted-strong);
+  font-size: 0.8125rem;
+}
+
+.cert-gate-banner {
+  border: 1px solid rgba(0, 121, 112, 0.24);
+  background: var(--surface-teal);
+}
+
+.cert-gate-banner > svg {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  color: var(--teal);
+}
+
+.cert-gate-banner strong {
+  color: var(--teal-deep);
+}
+
+.policy-update-list {
+  display: grid;
+  gap: 8px;
+}
+
+.policy-update-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 100px;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  padding: 12px 16px;
+}
+
+.policy-update-row > div:first-child strong {
+  display: block;
+  font-size: 0.875rem;
+}
+
+.policy-update-row > div:first-child span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.policy-update-row .canonical-id {
+  margin: 0 0 2px;
+}
+
+.policy-update-recurrence {
+  color: var(--muted-strong);
+  font-size: 0.75rem;
+  text-align: right;
+}
+
+@media (max-width: 700px) {
+  .policy-update-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .policy-update-recurrence {
+    text-align: left;
+  }
+}

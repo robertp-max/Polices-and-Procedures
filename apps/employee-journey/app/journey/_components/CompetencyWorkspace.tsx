@@ -7,6 +7,7 @@ import {
   type CompetencyFixture,
 } from "../_data/fixtures";
 import { usePreview } from "./PreviewContext";
+import { MainAppLink } from "./MainAppLink";
 import { PageHeader, RequirementCard } from "./shared";
 import { WorkspaceTabs, workspaceTabId, type TabOption } from "./ui";
 
@@ -82,15 +83,21 @@ export function CompetencyWorkspace() {
               { label: "Policy / workflow basis", value: item.basis },
             ]}
             footer={
-              <button
-                className="button button-secondary"
-                type="button"
-                onClick={() =>
-                  announce("Preview opened. No official record was changed.")
-                }
-              >
-                {item.nextAction}
-              </button>
+              item.href && item.hrefKind === "external" ? (
+                <MainAppLink className="button button-secondary" path={item.href}>
+                  {item.nextAction}
+                </MainAppLink>
+              ) : (
+                <button
+                  className="button button-secondary"
+                  type="button"
+                  onClick={() =>
+                    announce("Preview opened. No official record was changed.")
+                  }
+                >
+                  {item.nextAction}
+                </button>
+              )
             }
           />
         ))}

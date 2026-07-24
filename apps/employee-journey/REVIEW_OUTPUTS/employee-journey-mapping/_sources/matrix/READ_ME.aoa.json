@@ -1,0 +1,137 @@
+[
+  [
+    "Policies & Procedures LMS Assignment Blueprint",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    "Decision-ready map for one General pathway plus the 12 requested roles • review date 2026-07-20",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    "POLICY BODIES REVIEWED",
+    null,
+    "PATHWAYS",
+    null,
+    "UNIQUE QUIZ BUNDLES",
+    null,
+    "COURSES WITH A HOLD"
+  ],
+  [
+    272,
+    null,
+    13,
+    null,
+    68,
+    null,
+    17
+  ],
+  [
+    "ASSIGNMENT DECISION",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    "Assign the eight General courses to every employee pathway (LVN through DON), then add the role-specific courses. Governing Body members use their 13-course standalone track and do not automatically inherit employee-only HR/Cal-OSHA content.",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    "READ + QUIZ MODEL",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    "Every policy listed in Policy Assignments is read and tested through its course-level quiz. One quiz may cover multiple related policies. Default pass score is 80%; OASIS is 85%. A quiz never substitutes for required observation, return demonstration, coding exercise, drill, interactive Q&A, or supervised practice.",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    "WHAT WAS EXCLUDED",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    "A policy was not made a separate scored assignment when it was an owner-only procedure, a billing/IT/HR function outside the selected pathways, a duplicate/consolidated source, or acknowledgment/reference material without a defensible need for a quiz. Exclusion from the LMS quiz map does not remove operational access or other acknowledgment duties.",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    "RELEASE GATE",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    "Do not publish any red/hold component until the policy owner resolves the source defect. The critical blockers are missing job-description bodies, the OASIS authority/canonical-source conflict, the incorrect California harassment statement, and GV-GB-001 missing from the generated library. Use Release Blockers as the owner checklist.",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    "TIMING RULE TO IMPLEMENT",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    "Recommended reconciliation: General orientation by day 5; all initial read/quiz assignments by day 14; role competency by day 30 and always before independent duty, first exposure, or specialty assignment. Annual/biennial rules and triggered refreshers remain course-specific.",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  [
+    "Legend: green = ready • blue = conditional/triggered • yellow = partial hold • red = hold. This is an LMS assignment recommendation and source-integrity review; final legal/clinical policy approval remains with the named owners.",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ]
+]

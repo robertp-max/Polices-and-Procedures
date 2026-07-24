@@ -1,0 +1,110 @@
+[
+  [
+    "Sources & Method",
+    null,
+    null,
+    null
+  ],
+  [
+    "Primary internal corpus plus current federal and California authority used to resolve assignment-sensitive conflicts.",
+    null,
+    null,
+    null
+  ],
+  [
+    "Source type",
+    "Topic",
+    "Source / URL",
+    "How it was used"
+  ],
+  [
+    "Internal",
+    "Full policy corpus",
+    "07-ALL_POLICIES.md",
+    "Reviewed for raw policy bodies and GV-GB-001."
+  ],
+  [
+    "Internal",
+    "Generated policy library",
+    "12-allPoliciesContent.generated.ts",
+    "Parsed 272 unique policy records; primary source for current LMS bodies."
+  ],
+  [
+    "Internal",
+    "Crosswalk",
+    "13-policy_hh_section_map.csv",
+    "Used to identify role-policy references and source gaps; automated HIGH labels were not treated as validation."
+  ],
+  [
+    "Internal",
+    "Alignment generation",
+    "11-corridorAlignment.generated.ts",
+    "Compared for older/coarse mappings and missing-source drift."
+  ],
+  [
+    "Internal",
+    "Assignment governance",
+    "HR-TA-005; HR-TD-001; HR-TR-101; GV-PM-003; EN-LC-003",
+    "Set orientation, assessment, acknowledgment, and role-matrix rules."
+  ],
+  [
+    "Federal",
+    "Comprehensive assessment authority",
+    "https://www.ecfr.gov/current/title-42/part-484/section-484.55",
+    "RN plus specified PT/SLP/OT therapy-only authority."
+  ],
+  [
+    "Federal",
+    "HHA competency / 12-hour in-service",
+    "https://www.ecfr.gov/current/title-42/part-484/section-484.80",
+    "Competency observation and at least 12 in-service hours each 12 months."
+  ],
+  [
+    "Federal",
+    "Emergency preparedness",
+    "https://www.ecfr.gov/current/title-42/part-484/section-484.102",
+    "Initial training; at least every two years; exercises at least annually."
+  ],
+  [
+    "Federal",
+    "HIPAA workforce training",
+    "https://www.ecfr.gov/current/title-45/part-164/section-164.530",
+    "New workforce and material-change training; documentation required."
+  ],
+  [
+    "California",
+    "Harassment prevention",
+    "https://calcivilrights.ca.gov/Employment/",
+    "1 hour nonsupervisory / 2 hours supervisory, within six months and every two years; interactive."
+  ],
+  [
+    "California",
+    "Workplace violence",
+    "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=LAB&sectionNum=6401.9.",
+    "Initial and annual employee training; interactive questions and answers."
+  ],
+  [
+    "California",
+    "Bloodborne pathogens",
+    "https://www.dir.ca.gov/title8/5193.html",
+    "Initial and annual training for employees with occupational exposure."
+  ],
+  [
+    "California",
+    "Aerosol transmissible diseases",
+    "https://www.dir.ca.gov/title8/5199.html",
+    "Initial and annual training for covered occupational exposure."
+  ],
+  [
+    "Method rule",
+    null,
+    null,
+    null
+  ],
+  [
+    "Policy applicability was based on the actual policy scope/training language, the authoritative orientation and annual-training policies, role duties, and current governing authority—not the generated crosswalk's automated confidence label. Every listed assignment requires full-policy reading plus a bundled scored quiz. Additional competency evidence remains mandatory where the policy or regulation requires it. This map is intentionally limited to General plus LVN, RN, HHA, PT, PTA, OT, COTA, SLP, MSW, Administrator, DON/Clinical Manager, and Governing Body pathways.",
+    null,
+    null,
+    null
+  ]
+]

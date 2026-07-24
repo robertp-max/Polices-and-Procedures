@@ -4,5 +4,8 @@
 @import "./styles/shell.css";
 @import "./styles/components.css";
 @import "./styles/workspaces.css";
+@import "./styles/appendix-forms.css";
+@import "./styles/quiz-player.css";
+@import "./styles/annual-advanced.css";
 @import "./styles/responsive.css";
 @import "./styles/calm-surfaces.css";
