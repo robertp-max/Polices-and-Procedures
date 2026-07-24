@@ -4,11 +4,12 @@ import { useState } from "react";
 import {
   BookOpen,
   CircleHelp,
+  GraduationCap,
   Headphones,
   MessageCircleQuestion,
-  Sparkles,
 } from "lucide-react";
 import { usePreview } from "./PreviewContext";
+import { openNolan } from "./NolanAssistant";
 import { PageHeader } from "./shared";
 import { Modal } from "./ui";
 
@@ -25,24 +26,20 @@ export function SupportWorkspace() {
       />
 
       <section className="nolan-panel" aria-labelledby="nolan-title">
-        <div className="nolan-mark"><Sparkles aria-hidden="true" /></div>
+        <div className="nolan-mark"><GraduationCap aria-hidden="true" /></div>
         <div>
           <p className="eyebrow">NOLAN</p>
-          <h2 id="nolan-title">Understand the next step</h2>
+          <h2 id="nolan-title">Ask Nolan — your onboarding &amp; learning assistant</h2>
           <p>
-            Nolan can explain assignments, due dates, policy actions, document
-            requirements, and where to find help in this synthetic journey.
+            Nolan explains what&apos;s assigned, what&apos;s due, how the quizzes and attempts
+            work, and how to prepare for a supervised visit. Nolan can&apos;t answer quiz
+            questions, submit work, or handle patient information. Nolan opens in the panel at the
+            bottom-right and is available on every page.
           </p>
-          <div className="suggested-prompts" aria-label="Suggested questions">
-            <button type="button" onClick={() => announce("Preview opened. No official record was changed.")}>
-              What should I do first?
-            </button>
-            <button type="button" onClick={() => announce("Preview opened. No official record was changed.")}>
-              Why is this policy assigned?
-            </button>
-            <button type="button" onClick={() => announce("Preview opened. No official record was changed.")}>
-              What is waiting on my evaluator?
-            </button>
+          <div className="suggested-prompts" aria-label="Ask Nolan">
+            <button type="button" onClick={() => openNolan()}>What should I do first?</button>
+            <button type="button" onClick={() => openNolan()}>Why is this policy assigned?</button>
+            <button type="button" onClick={() => openNolan()}>How do supervised visits work?</button>
           </div>
         </div>
       </section>

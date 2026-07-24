@@ -9,7 +9,6 @@ import {
   BookOpenCheck,
   FileCheck2,
   GraduationCap,
-  Headphones,
   History,
   Home,
   Map,
@@ -18,6 +17,7 @@ import {
 } from "lucide-react";
 import { EmployeePreviewToolbar } from "./EmployeePreviewToolbar";
 import { MoreSheet } from "./MoreSheet";
+import { NolanAssistant, openNolan } from "./NolanAssistant";
 import { usePreview } from "./PreviewContext";
 
 const desktopNav = [
@@ -73,13 +73,13 @@ export function EmployeePortalShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
-        <Link className="sidebar-support" href={withPersona("/journey/support")}>
-          <Headphones aria-hidden="true" />
+        <button type="button" className="sidebar-support" onClick={() => openNolan()}>
+          <GraduationCap aria-hidden="true" />
           <div>
-            <strong>Need help?</strong>
-            <span>Open support options</span>
+            <strong>Ask Nolan</strong>
+            <span>Your onboarding &amp; learning assistant</span>
           </div>
-        </Link>
+        </button>
         <div className="sidebar-persona">
           <span aria-hidden="true">{persona.name.slice(0, 1)}</span>
           <div>
@@ -129,6 +129,7 @@ export function EmployeePortalShell({ children }: { children: ReactNode }) {
       </nav>
 
       <MoreSheet open={moreOpen} onClose={() => setMoreOpen(false)} />
+      <NolanAssistant />
     </div>
   );
 }

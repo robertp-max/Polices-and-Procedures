@@ -96,10 +96,15 @@
 
 .sidebar-support {
   display: flex;
+  width: 100%;
   min-height: 68px;
   align-items: center;
   gap: 12px;
   margin-top: auto;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
   border: 1px solid var(--border);
   border-radius: 18px;
   background: linear-gradient(145deg, #fff0e5, #fff);
