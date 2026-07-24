@@ -10,6 +10,7 @@ import '../governance/v33/compliance/compliance.css';
 import '../governance/v33/qapi/qapi2026.css';
 import '../governance/v33/qapi/components/qapiDepth.css';
 import '../governance/v33/forms/forms.css';
+import '../governance/v33/tabletop2026/tabletop2026.css';
 
 type PortalVersion = 'v1' | 'v2' | 'v3';
 

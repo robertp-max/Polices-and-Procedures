@@ -152,11 +152,12 @@ export interface GbComplianceCatalog {
 
 /** Full GB assignment catalog: modules + policies + course assessments + tabletop. */
 export function deriveGbCatalog(opts: DeriveOptions = {}): GbComplianceCatalog {
+  // The Boardroom Simulation (tabletop) is an OVERSIGHT exercise, not required
+  // training — it is intentionally NOT part of the compliance catalog.
   const modules = deriveModuleAssignments(opts);
   const { assignments: policies, courseGroups } = derivePolicyAssignments(opts);
-  const tabletop = deriveTabletopAssignment(opts);
   return {
-    assignments: [...modules, ...policies, tabletop],
+    assignments: [...modules, ...policies],
     courseGroups,
   };
 }

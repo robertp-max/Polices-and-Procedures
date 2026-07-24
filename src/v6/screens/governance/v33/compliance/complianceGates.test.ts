@@ -68,7 +68,7 @@ describe('assignment catalog (Parts 3–4)', () => {
     expect(byType('training_module')).toBe(13);
     expect(byType('policy_reading')).toBe(42);
     expect(byType('course_assessment')).toBe(13);
-    expect(byType('tabletop')).toBe(1);
+    expect(byType('tabletop')).toBe(0);
     expect(catalog.courseGroups).toHaveLength(13);
   });
 });

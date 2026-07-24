@@ -32,7 +32,6 @@ import {
   X,
 } from 'lucide-react';
 import { MODULES } from './gb-academy/academyData';
-import Qapi2026BoardWorkspace from './qapi/Qapi2026BoardWorkspace';
 import { getPolicyJourney } from './generated/policyJourney.generated';
 import type { PolicyJourneyRequirement } from './generated/policyJourney.types';
 import { useCompliance } from './compliance/useCompliance';
@@ -42,7 +41,8 @@ import type { CourseProgress } from './compliance/complianceSelectors';
 const GoverningBodyAcademy = lazy(() => import('./gb-academy/Academy'));
 const GoverningBodyPolicyPlayer = lazy(() => import('./policies/GoverningBodyPolicyPlayer'));
 const CourseAssessmentPlayer = lazy(() => import('./assessments/CourseAssessmentPlayer'));
-const Qapi2026TabletopEntry = lazy(() => import('./tabletop/Qapi2026TabletopEntry'));
+const TabletopHub = lazy(() => import('./tabletop2026/TabletopHub'));
+const TabletopSession = lazy(() => import('./tabletop2026/TabletopSession'));
 const AnnualGovernanceForms = lazy(() => import('./forms/AnnualGovernanceForms'));
 const TrueFalseForensicPlayer = lazy(() => import('./assessments/TrueFalseForensicPlayer'));
 
@@ -330,11 +330,6 @@ function HomeView({ onGo, handlers }: { onGo: (view: ViewKey, sub?: string) => v
   const compliance = useCompliance();
   const { summary, next, requiredNow, evidenceConnected, disconnectedNotice } = compliance;
 
-  const tabletopLabel = summary.tabletop === 'passed' ? 'Passed'
-    : summary.tabletop === 'available' ? 'Available'
-    : summary.tabletop === 'remediation_required' ? 'Remediation required'
-    : 'Locked';
-
   return (
     <div className="governance-page home-page">
       <Breadcrumb trail={['Governing Body', 'Home']} />
@@ -359,11 +354,6 @@ function HomeView({ onGo, handlers }: { onGo: (view: ViewKey, sub?: string) => v
           <span>Policies &amp; Procedures</span>
           <strong>{summary.policies.completed}<small> / {summary.policies.assigned}</small></strong>
           <small>Completed / assigned</small>
-        </button>
-        <button className="compliance-summary-card" onClick={() => onGo('compliance', 'required')}>
-          <span>Final tabletop exercise</span>
-          <strong className="compliance-word">{tabletopLabel}</strong>
-          <small>Integrated capstone</small>
         </button>
         <div className={`compliance-summary-card overall ${summary.overall}`}>
           <span>Overall compliance</span>
@@ -629,7 +619,7 @@ function DecisionsView({ onDecision }: { onDecision: (decision: Decision) => voi
 // OVERSIGHT (QAPI / Risk)
 // ---------------------------------------------------------------------------
 
-function OversightView({ tab, onTab, onDecision }: { tab: OversightTab; onTab: (t: OversightTab) => void; onDecision: (decision: Decision) => void }) {
+function OversightView({ tab, onTab, onDecision, onOpenTabletop }: { tab: OversightTab; onTab: (t: OversightTab) => void; onDecision: (decision: Decision) => void; onOpenTabletop: () => void }) {
   const TABS: Array<{ id: OversightTab; label: string }> = [
     { id: 'qapi', label: 'QAPI oversight' },
     { id: 'risk', label: 'Risk & assurance' },
@@ -641,7 +631,18 @@ function OversightView({ tab, onTab, onDecision }: { tab: OversightTab; onTab: (
       {TABS.map((t) => <button key={t.id} className={tab === t.id ? 'active' : ''} onClick={() => onTab(t.id)} aria-current={tab === t.id ? 'true' : undefined}>{t.label}</button>)}
     </nav>
 
-    {tab === 'qapi' && <Qapi2026BoardWorkspace />}
+    {tab === 'qapi' && (
+      <section className="oversight-sim-launch">
+        <button className="home-sim-launch" onClick={onOpenTabletop}>
+          <div className="home-sim-copy">
+            <span>GOVERNING BODY BOARDROOM SIMULATION</span>
+            <strong>2026 QAPI Boardroom Tabletop</strong>
+            <small>Interactive board sessions on the 2026 QAPI record — Q1–Q4 and the year-end annual review, solo or facilitated group. An oversight exercise, not part of required training.</small>
+          </div>
+          <span className="home-sim-cta">Launch simulation <ArrowRight size={16} /></span>
+        </button>
+      </section>
+    )}
 
     {tab === 'risk' && <>
       <section className="risk-overview"><article><span>RISK POSTURE</span><strong>Focused attention</strong><p>One quality signal requires Board direction; no workflow-to-evidence integrity break is open.</p></article><Metric value="1" label="Critical" note="Immediate governance direction" tone="attention" /><Metric value="2" label="Elevated" note="Active correction or approval hold" /><Metric value="2" label="Controlled" note="Monitored within tolerance" tone="positive" /></section>
@@ -744,6 +745,7 @@ export default function MyJourneyApp() {
   const [academyOpen, setAcademyOpen] = useState(false);
   const [courseAssessmentId, setCourseAssessmentId] = useState<string | null>(null);
   const [tabletopOpen, setTabletopOpen] = useState(false);
+  const [tabletopLaunch, setTabletopLaunch] = useState<{ caseId: string; mode: 'solo' | 'group' } | null>(null);
   const [formsOpen, setFormsOpen] = useState(false);
   const [forensicModuleId, setForensicModuleId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -783,7 +785,11 @@ export default function MyJourneyApp() {
   if (academyOpen) return <Suspense fallback={<div className="academy-loading"><BrandCrest /><strong>Opening the Governance Institute</strong><span>Preparing the executive decision laboratory…</span></div>}><GoverningBodyAcademy initialModuleId={academyModuleId} onExitJourney={() => { setAcademyOpen(false); setAcademyModuleId(null); go('compliance', 'training'); }} /></Suspense>;
   if (policyOpen) return <Suspense fallback={<div className="academy-loading"><BrandCrest /><strong>Opening the controlled policy</strong><span>Preparing the executive reading room…</span></div>}><GoverningBodyPolicyPlayer key={policyOpen.requirementId} requirement={policyOpen} onExit={() => { setPolicyOpen(null); go('compliance', 'policies'); }} /></Suspense>;
   if (courseAssessmentId) return <Suspense fallback={<div className="academy-loading"><BrandCrest /><strong>Opening the course assessment</strong><span>Preparing the controlled assessment…</span></div>}><CourseAssessmentPlayer key={courseAssessmentId} courseId={courseAssessmentId} onExit={() => { setCourseAssessmentId(null); go('compliance', 'policies'); }} /></Suspense>;
-  if (tabletopOpen) return <Suspense fallback={<div className="academy-loading"><BrandCrest /><strong>Opening the final tabletop</strong><span>Assembling the integrated governance case…</span></div>}><Qapi2026TabletopEntry onExit={() => { setTabletopOpen(false); go('compliance', 'required'); }} /></Suspense>;
+  if (tabletopOpen) {
+    const fallback = <div className="academy-loading"><BrandCrest /><strong>Opening the Boardroom Simulation</strong><span>Assembling the 2026 Governing Body case record…</span></div>;
+    if (tabletopLaunch) return <Suspense fallback={fallback}><TabletopSession caseId={tabletopLaunch.caseId} mode={tabletopLaunch.mode} onExit={() => setTabletopLaunch(null)} /></Suspense>;
+    return <Suspense fallback={fallback}><TabletopHub onExit={() => { setTabletopOpen(false); go('compliance', 'required'); }} onLaunch={(caseId, mode) => setTabletopLaunch({ caseId, mode })} /></Suspense>;
+  }
   if (formsOpen) return <Suspense fallback={<div className="academy-loading"><BrandCrest /><strong>Opening annual governance forms</strong><span>Preparing the controlled forms workspace…</span></div>}><AnnualGovernanceForms onExit={() => { setFormsOpen(false); go('records'); }} /></Suspense>;
   if (forensicModuleId) return <Suspense fallback={<div className="academy-loading"><BrandCrest /><strong>Opening forensic remediation</strong><span>Preparing the controlled True/False form…</span></div>}><TrueFalseForensicPlayer moduleId={forensicModuleId} onExit={() => { setForensicModuleId(null); go('compliance', 'required'); }} /></Suspense>;
 
@@ -791,7 +797,7 @@ export default function MyJourneyApp() {
     if (view === 'compliance') return <MyComplianceView tab={complianceTab} onTab={setComplianceTab} handlers={handlers} />;
     if (view === 'meetings') return <MeetingsView tab={meetingsTab} onTab={setMeetingsTab} onDecision={setDecision} />;
     if (view === 'decisions') return <DecisionsView onDecision={setDecision} />;
-    if (view === 'oversight') return <OversightView tab={oversightTab} onTab={setOversightTab} onDecision={setDecision} />;
+    if (view === 'oversight') return <OversightView tab={oversightTab} onTab={setOversightTab} onDecision={setDecision} onOpenTabletop={handlers.onOpenTabletop} />;
     if (view === 'records') return <RecordsView onOpenForms={() => setFormsOpen(true)} />;
     return <HomeView onGo={go} handlers={handlers} />;
   })();
