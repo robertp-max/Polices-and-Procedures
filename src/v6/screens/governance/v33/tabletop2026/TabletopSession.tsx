@@ -49,6 +49,9 @@ import PacketReadinessGate, {
   type PacketReadinessValue,
   type ReadinessCheck,
 } from './PacketReadinessGate';
+import { createPacketReadinessState, normalizePacketReadinessState } from './packetReadiness';
+import { useActiveTime } from './useActiveTime';
+import { useTabletopBodyLock } from './useTabletopBodyLock';
 import EvidenceInspector from './EvidenceInspector';
 import { emptyMotionDraft, type MotionDraft } from './MotionBuilder';
 import type { MinutesRequirementItem } from './MinutesComposer';
@@ -97,7 +100,7 @@ interface ResumePayload {
 }
 
 function emptyReadinessValue(): PacketReadinessValue {
-  return { disposition: null, rationale: '' };
+  return createPacketReadinessState([]);
 }
 
 function loadResume(assignmentId: string, casePackId: string): ResumePayload | null {
@@ -113,7 +116,10 @@ function loadResume(assignmentId: string, casePackId: string): ResumePayload | n
     actionRegisterItems: resume.actionRegisterItems ?? [],
     recordChips: resume.recordChips ?? [],
     readinessSubmitted: resume.readinessSubmitted ?? false,
-    readinessValue: resume.readinessValue ?? emptyReadinessValue(),
+    readinessValue: normalizePacketReadinessState(
+      resume.readinessValue,
+      Object.keys(resume.readinessValue?.conflictDeterminations ?? {}),
+    ),
   };
 }
 
@@ -130,6 +136,9 @@ export interface TabletopSessionProps {
 }
 
 export default function TabletopSession({ caseId, mode, onExit }: TabletopSessionProps) {
+  useTabletopBodyLock(true);
+  const elapsedSeconds = useActiveTime();
+
   const basePack = useMemo(() => resolveCasePack(caseId), [caseId]);
   const assignmentId = useMemo(() => (basePack ? assignmentIdFor(basePack.id) : ''), [basePack]);
   const resumed = useMemo(() => (basePack ? loadResume(assignmentId, basePack.id) : null), [basePack, assignmentId]);
@@ -155,8 +164,6 @@ export default function TabletopSession({ caseId, mode, onExit }: TabletopSessio
   const [score, setScore] = useState<AttemptScore | null>(null);
   const [evidenceResult, setEvidenceResult] = useState<EvidenceSaveResult | null>(null);
 
-  const [startTime] = useState(() => Date.now());
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
   const casePack = useMemo(
@@ -205,13 +212,18 @@ export default function TabletopSession({ caseId, mode, onExit }: TabletopSessio
     ];
   }, [casePack, cutoffViolationIds]);
 
-  const currentNode = casePack ? casePack.decisionNodes[nodeCursor] : undefined;
+  const requiredConflictIds = useMemo(
+    () => Array.from(new Set(readinessChecks.flatMap((check) => check.evidenceIds))),
+    [readinessChecks],
+  );
 
-  // Meeting clock.
   useEffect(() => {
-    const id = window.setInterval(() => setElapsedSeconds(Math.floor((Date.now() - startTime) / 1000)), 1000);
-    return () => window.clearInterval(id);
-  }, [startTime]);
+    setReadinessValue((current) =>
+      normalizePacketReadinessState(current, requiredConflictIds),
+    );
+  }, [requiredConflictIds]);
+
+  const currentNode = casePack ? casePack.decisionNodes[nodeCursor] : undefined;
 
   // Autosave draft (resume-only — never official completion).
   useEffect(() => {
@@ -293,6 +305,10 @@ export default function TabletopSession({ caseId, mode, onExit }: TabletopSessio
       },
     ]);
     setPhase('nodes');
+  }
+
+  function handleReadinessSave() {
+    setReadinessValue((current) => ({ ...current }));
   }
 
   function handleToggleOption(optionId: string) {
@@ -589,7 +605,7 @@ export default function TabletopSession({ caseId, mode, onExit }: TabletopSessio
             <Landmark size={16} />
           </span>
           <div>
-            <span>Governing Body Boardroom · {casePack.quarter}</span>
+            <span>{casePack.quarter} 2026 · Governing Body Boardroom</span>
             <strong>{casePack.title}</strong>
           </div>
         </div>
@@ -598,13 +614,14 @@ export default function TabletopSession({ caseId, mode, onExit }: TabletopSessio
             <Clock size={12} aria-hidden="true" /> {formatClock(elapsedSeconds)}
           </span>
           <span>
-            <b>{phaseLabel}</b>
+            <b>{phase === 'readiness' ? 'Round 0 of 7' : phaseLabel}</b>
           </span>
+          {phase === 'readiness' && <span>Packet Readiness</span>}
           <span>
             <Users size={12} aria-hidden="true" />{' '}
             {quorumAction
               ? `${quorumAction.present ?? 0}/${quorumAction.seatedDirectors ?? 0} ${quorumAction.quorumMet ? 'quorum met' : 'quorum not met'}`
-              : 'quorum pending'}
+              : 'Quorum: not yet evaluated'}
           </span>
           <span>
             <Save size={12} aria-hidden="true" /> {lastSavedAt ? `Saved ${lastSavedAt.toLocaleTimeString()}` : 'Not yet saved'}
@@ -616,18 +633,21 @@ export default function TabletopSession({ caseId, mode, onExit }: TabletopSessio
             onClick={onExit}
           >
             <LogOut size={12} style={{ marginRight: 6 }} aria-hidden="true" />
-            Exit
+            Back to Tabletop Hub
           </button>
         </div>
       </header>
 
       {phase === 'readiness' ? (
-        <div className="bs-boardtable" style={{ maxWidth: 900, margin: '0 auto', width: '100%' }}>
+        <div className="bs-readiness-stage">
           <PacketReadinessGate
             checks={readinessChecks}
+            exhibits={casePack.exhibits}
+            caseQuarter={casePack.quarter}
             value={readinessValue}
             onChange={setReadinessValue}
             onSubmit={handleReadinessSubmit}
+            onSaveDraft={handleReadinessSave}
             submitted={readinessSubmitted}
             onInspectEvidence={setActiveExhibitId}
           />
