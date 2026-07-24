@@ -44,7 +44,7 @@ owner's hard rejections; it is not a claim of full §21 completion._
 | 22 | Workflow training NOT added | ✅ CONFIRMED (none added) |
 | 23 | Same-tab navigation works | ✅ DONE |
 | 24 | No production URL uses localhost | ✅ DONE (env-aware, fails closed) |
-| 25 | Responsive/accessibility QA passes | ⚠️ PARTIAL (built-in; full sweep pending) |
+| 25 | Responsive/accessibility QA passes | ⚠️ MOSTLY (semantics + media queries in place; desktop no-overflow verified; 10-persona live sweep clean; true-device mobile emulation is a preview-pane limitation) |
 | 26 | No backend/deployment work occurred | ✅ CONFIRMED |
 | 27 | Branch pushed & synchronized | ✅ DONE |
 

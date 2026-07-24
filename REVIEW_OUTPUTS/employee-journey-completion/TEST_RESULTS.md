@@ -30,9 +30,19 @@ needed) asserts the §5/§6/§7 data-layer guarantees and **passes 11/11**:
   ACHC module carries its Also-satisfies provenance; ADM not assigned the ACHC bundle; HHA
   gets the 12h in-service clock.
 
+## Live persona sweep (Browser pane, all 10 synthetic personas)
+
+Navigated key routes for every persona; console clean (0 errors) throughout:
+- taylor-rn, jordan-lvn, morgan-hha, casey-pta, avery-don, riley-administrator, jamie-office,
+  skyler-driver, parker-returning, cameron-separating.
+- Spot-verified role-specific behavior: HHA → 5 supervised-visit clocks; PTA → therapy-assistant
+  oversight; office → OIG/SAM "Not applicable" + no clocks; ADM → Advanced scope warning;
+  separating → separation phase Current; returning → leave/return phase; RN → 12 ACHC launchable.
+
 ## Not yet run (remaining)
 
-- Full browser persona matrix (18 personas) and player-parity assertions in a headless runner.
+- Headless multi-viewport player-parity assertions and the 18-persona expansion (skilled-vs-
+  aide-only HHA, ADM+RN secondary, expiring-credential, failed-competency) in an automated runner.
 - Regulatory-cadence assertions (HHA 14/60-day, observation, in-service).
 - Full responsive (320–1600px, 200%) and screen-reader/keyboard sweeps (see RESPONSIVE_QA.md /
   ACCESSIBILITY_QA.md).
