@@ -265,7 +265,7 @@ export default function GAO001SharedOverlay({
           <div className="absolute inset-0 z-10">
             <div className="absolute left-1/2 top-6 z-20 -translate-x-1/2">
               <div className="flex flex-col items-center rounded-full border border-white/50 bg-white/95 px-8 py-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.1)] backdrop-blur-md">
-                <span className="font-montserrat mb-1 text-[10px] font-bold uppercase tracking-widest text-[#F06923]">
+                <span className="font-montserrat mb-1 text-[10px] font-bold uppercase tracking-widest text-[#C2410C]">
                   Current Objective
                 </span>
                 <span className="font-roboto text-sm font-bold text-[#007970]">{objective}</span>

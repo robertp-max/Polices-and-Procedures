@@ -60,12 +60,12 @@ export default function ACHCArchivalCertificate() {
       <div className="w-full max-w-5xl bg-white border border-[#D9D6D5] rounded-xl px-6 py-4 mb-8 flex flex-col md:flex-row items-center justify-between shadow-sm gap-4">
         <div>
           <h1 className="text-[#004142] font-bold text-lg">ACHC Training Module Certificate</h1>
-          <p className="text-[#7A7470] text-xs font-medium uppercase tracking-wider">The Archival Layout &bull; Geometric Gold Pattern</p>
+          <p className="text-[#3D3936] text-xs font-medium uppercase tracking-wider">The Archival Layout &bull; Geometric Gold Pattern</p>
         </div>
         
         <div className="flex items-center gap-4">
           <div className="flex flex-col">
-            <label className="text-[9px] uppercase tracking-widest font-bold text-[#7A7470]">Recipient Name</label>
+            <label className="text-[9px] uppercase tracking-widest font-bold text-[#3D3936]">Recipient Name</label>
             <input 
               type="text" 
               value={recipientName} 
@@ -128,7 +128,7 @@ export default function ACHCArchivalCertificate() {
               
               {/* Context / Curriculum Integration */}
               <div className="flex flex-col items-center w-full max-w-4xl">
-                <p className="text-[#7A7470] font-sans text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold mb-1">
+                <p className="text-[#3D3936] font-sans text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold mb-1">
                   For successfully completing the yearly
                 </p>
                 <h4 className="text-[#004142] font-serif text-2xl md:text-3xl font-bold uppercase tracking-widest mb-4">
@@ -155,7 +155,7 @@ export default function ACHCArchivalCertificate() {
             <div className="w-full flex justify-between items-end mt-4 md:mt-8 px-4 md:px-8">
               
               {/* Left Side Details */}
-              <div className="text-left font-sans text-[9px] md:text-[10px] text-[#7A7470] uppercase tracking-widest leading-loose mb-1">
+              <div className="text-left font-sans text-[9px] md:text-[10px] text-[#3D3936] uppercase tracking-widest leading-loose mb-1">
                 <p className="border-b border-[#D9D6D5] pb-1 mb-2 w-48 md:w-56 flex justify-between">
                   <span className="font-bold text-[#004142]">Date Issued:</span> 
                   <span>{completionDate}</span>

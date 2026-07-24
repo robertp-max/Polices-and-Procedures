@@ -1,0 +1,58 @@
+[
+  {
+    "id": "gao001.s01.scene-start",
+    "file": "gao001.s01.scene-start.wav",
+    "seconds": 19.12,
+    "sr": 24000,
+    "gen_seconds": 52.43,
+    "words": 63
+  },
+  {
+    "id": "gao001.s01.overlay.email",
+    "file": "gao001.s01.overlay.email.wav",
+    "seconds": 46.0,
+    "sr": 24000,
+    "gen_seconds": 116.47,
+    "words": 123
+  },
+  {
+    "id": "gao001.s01.overlay.checklist",
+    "file": "gao001.s01.overlay.checklist.wav",
+    "seconds": 33.76,
+    "sr": 24000,
+    "gen_seconds": 82.03,
+    "words": 88
+  },
+  {
+    "id": "gao001.s01.overlay.packet",
+    "file": "gao001.s01.overlay.packet.wav",
+    "seconds": 13.2,
+    "sr": 24000,
+    "gen_seconds": 33.0,
+    "words": 42
+  },
+  {
+    "id": "gao001.s01.overlay.badge",
+    "file": "gao001.s01.overlay.badge.wav",
+    "seconds": 16.32,
+    "sr": 24000,
+    "gen_seconds": 38.67,
+    "words": 55
+  },
+  {
+    "id": "gao001.s01.overlay.notebook",
+    "file": "gao001.s01.overlay.notebook.wav",
+    "seconds": 15.92,
+    "sr": 24000,
+    "gen_seconds": 29.11,
+    "words": 41
+  },
+  {
+    "id": "gao001.s01.scene-complete",
+    "file": "gao001.s01.scene-complete.wav",
+    "seconds": 33.52,
+    "sr": 24000,
+    "gen_seconds": 61.45,
+    "words": 103
+  }
+]

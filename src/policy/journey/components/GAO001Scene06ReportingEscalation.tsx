@@ -257,7 +257,7 @@ function ReportingEscalationActivity({
         <div className="inline-flex items-center justify-center w-12 h-12 bg-[#FEF3C7] rounded-full mb-3 shadow-sm">
           <ShieldAlert className="w-6 h-6 text-[#D97706]" />
         </div>
-        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#F06923]">
+        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#C2410C]">
           {activeLabel}
         </p>
         <h2 id="gao001-reporting-escalation-title" className="text-2xl font-bold text-[#1E3A3A] mb-2">Reporting & Escalation</h2>

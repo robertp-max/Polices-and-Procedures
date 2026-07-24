@@ -185,11 +185,11 @@ export function FrameworkScreen() {
         <section className="ci-page-hero mb-8 rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:px-12 md:py-10">
           <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
             <div className="max-w-3xl">
-              <p className="mb-3 font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#F06923]">Policy Architecture</p>
+              <p className="mb-3 font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#C2410C]">Policy Architecture</p>
               <h1 className="font-montserrat text-3xl font-bold leading-tight tracking-tight text-[#007970] md:text-5xl">
                 Policies & Procedures
               </h1>
-              <p className="mt-4 max-w-2xl font-roboto text-base leading-relaxed text-[#747470]">
+              <p className="mt-4 max-w-2xl font-roboto text-base leading-relaxed text-[#3D3D3A]">
                 A decluttered view of the agency taxonomy, policy corpus, ACHC anchors, and lifecycle signals using live framework data.
               </p>
             </div>
@@ -207,7 +207,7 @@ export function FrameworkScreen() {
             <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Framework Domains</h2>
-                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#747470]">
+                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#3D3D3A]">
                   Domain ownership, policy scope, ACHC anchor density, and survey-readiness signals.
                 </p>
               </div>
@@ -225,7 +225,7 @@ export function FrameworkScreen() {
                       'rounded-[10px] px-4 py-2 font-montserrat text-[10px] font-bold uppercase tracking-wider transition-all',
                       viewMode === id
                         ? 'bg-[#007970] text-white shadow-sm'
-                        : 'border border-[#E5E4E3] bg-white text-[#747470] hover:bg-[#F7FEFF] hover:text-[#007970]',
+                        : 'border border-[#E5E4E3] bg-white text-[#3D3D3A] hover:bg-[#F7FEFF] hover:text-[#007970]',
                     )}
                   >
                     {label}
@@ -273,7 +273,7 @@ export function FrameworkScreen() {
           <section className="rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:p-10">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#F06923]">Authority Context</p>
+                <p className="font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#C2410C]">Authority Context</p>
                 <h2 className="mt-2 font-montserrat text-2xl font-semibold tracking-tight text-[#007970]">ACHC / CMS / Title 22</h2>
               </div>
               <ToneBadge size="sm" status="ready" />
@@ -283,12 +283,12 @@ export function FrameworkScreen() {
                 <div className="rounded-[18px] border border-[#E5E4E3] bg-[#FAFBF8] p-5" key={label}>
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470]">{label}</p>
+                      <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#3D3D3A]">{label}</p>
                       <p className="mt-2 font-montserrat text-3xl font-bold text-[#007970]">{value}</p>
                     </div>
                     <ToneTag tone={tone}>{tone === 'orange' ? 'Review' : 'Mapped'}</ToneTag>
                   </div>
-                  <p className="mt-3 text-xs leading-relaxed text-[#747470]">{helper}</p>
+                  <p className="mt-3 text-xs leading-relaxed text-[#3D3D3A]">{helper}</p>
                 </div>
               ))}
             </div>
@@ -302,9 +302,9 @@ export function FrameworkScreen() {
 function FrameworkMetricCard({ metric }: { metric: MetricTileData }) {
   return (
     <div className="group flex min-h-[154px] flex-col justify-center rounded-[24px] border border-[#E5E4E3] bg-white p-7 shadow-sm transition-colors hover:border-[#007970]">
-      <span className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470]">{metric.label}</span>
-      <span className="mt-3 font-montserrat text-4xl font-bold text-[#F06923] transition-transform duration-300 group-hover:scale-[1.03]">{metric.value}</span>
-      <span className="mt-3 text-sm leading-relaxed text-[#747470]">{metric.helper}</span>
+      <span className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#3D3D3A]">{metric.label}</span>
+      <span className="mt-3 font-montserrat text-4xl font-bold text-[#C2410C] transition-transform duration-300 group-hover:scale-[1.03]">{metric.value}</span>
+      <span className="mt-3 text-sm leading-relaxed text-[#3D3D3A]">{metric.helper}</span>
     </div>
   );
 }
@@ -321,7 +321,7 @@ function FrameworkLayerSection({
   items: readonly string[];
 }) {
   const accentClass = {
-    orange: 'border-[#F06923] text-[#F06923] bg-[#FFF0E5]',
+    orange: 'border-[#F06923] text-[#C2410C] bg-[#FFF0E5]',
     red: 'border-red-400 text-red-500 bg-red-50',
     teal: 'border-[#007970] text-[#007970] bg-[#E5FEFF]',
   }[accent];
@@ -356,7 +356,7 @@ function PolicySignalCard({ card }: { card: SurfaceCardData }) {
           <ToneBadge size="sm" status={card.status} />
         </div>
         <h3 className="font-montserrat text-base font-bold text-[#007970]">{card.title}</h3>
-        <p className="mt-2 text-sm leading-relaxed text-[#747470]">{card.body}</p>
+        <p className="mt-2 text-sm leading-relaxed text-[#3D3D3A]">{card.body}</p>
       </div>
       <div className="mt-6">
         <ProgressMeter label="Signal strength" tone={card.tone} value={progress} />
@@ -385,7 +385,7 @@ function DomainTile({ domain }: { domain: DomainTileData }) {
             <h3 className="font-montserrat text-base font-bold text-[#007970]">{domain.title}</h3>
             <ToneBadge size="sm" status={domain.status} />
           </div>
-          <p className="text-sm leading-relaxed text-[#747470]">{domain.description}</p>
+          <p className="text-sm leading-relaxed text-[#3D3D3A]">{domain.description}</p>
         </div>
       </div>
 
@@ -412,7 +412,7 @@ function DomainStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="overflow-hidden rounded-[14px] border border-[#E5E4E3] bg-[#FAFBF8] p-3 text-center">
       <p className="font-montserrat text-xl font-bold text-[#007970]">{value}</p>
-      <p className="mt-1 font-montserrat text-[8px] font-bold uppercase tracking-wider text-[#747470]">{label}</p>
+      <p className="mt-1 font-montserrat text-[8px] font-bold uppercase tracking-wider text-[#3D3D3A]">{label}</p>
     </div>
   );
 }

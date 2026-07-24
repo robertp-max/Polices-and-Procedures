@@ -401,14 +401,14 @@ export default function App() {
           </div>
           <div>
             <h1 className="text-sm font-medium text-[#004142] uppercase tracking-wider">CareIndeed V6</h1>
-            <p className="text-[10px] text-[#7A7470] uppercase tracking-widest font-light">Compliance Harness</p>
+            <p className="text-[10px] text-[#3D3936] uppercase tracking-widest font-light">Compliance Harness</p>
           </div>
         </div>
 
         {/* Vertex AI Connection Status badge */}
         <div className="mb-5 rounded-2xl custom-shadow-soft bg-white p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] uppercase tracking-wider text-[#7A7470]">Network Posture</span>
+            <span className="text-[10px] uppercase tracking-wider text-[#3D3936]">Network Posture</span>
             <span className="flex h-2 w-2 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00797D] opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00797D]"></span>
@@ -418,7 +418,7 @@ export default function App() {
             <Lock className="h-3.5 w-3.5 text-[#00797D]" />
             Strict No-Web Restriction
           </div>
-          <p className="text-[10px] text-[#7A7470] mt-1">Vertex AI Secure Model gateway only. All external connectors disabled.</p>
+          <p className="text-[10px] text-[#3D3936] mt-1">Vertex AI Secure Model gateway only. All external connectors disabled.</p>
         </div>
 
         {/* Quick configuration toggle shortcuts directly in the navigation rail */}
@@ -461,7 +461,7 @@ export default function App() {
 
         {/* Main tabs selector */}
         <nav className="space-y-1.5 flex-1">
-          <div className="text-[10px] uppercase tracking-widest text-[#7A7470] px-2 font-medium mb-2">Harness Modules</div>
+          <div className="text-[10px] uppercase tracking-widest text-[#3D3936] px-2 font-medium mb-2">Harness Modules</div>
           
           <button
             onClick={() => setActiveTab('files')}
@@ -514,7 +514,7 @@ export default function App() {
           </button>
         </nav>
 
-        <div className="mt-auto pt-6 text-[10px] text-[#7A7470] border-t border-[#00797D]/10">
+        <div className="mt-auto pt-6 text-[10px] text-[#3D3936] border-t border-[#00797D]/10">
           User: <span className="font-medium">teejay1784@gmail.com</span>
           <br />
           Compliance Version: <span className="font-medium">V6-Enterprise</span>
@@ -597,7 +597,7 @@ export default function App() {
               <span className="text-[10px] bg-[#00797D]/10 text-[#00797D] px-2.5 py-0.5 rounded-full font-medium uppercase tracking-wider">
                 Workspace directory
               </span>
-              <span className="text-xs text-[#7A7470]">
+              <span className="text-xs text-[#3D3936]">
                 ID: {selectedWorkspaceId || 'None'}
               </span>
             </div>
@@ -628,7 +628,7 @@ export default function App() {
           <div className="flex flex-wrap items-center gap-3">
             {/* Review Mode Selector dropdown */}
             <div className="flex flex-col">
-              <span className="text-[9px] text-[#7A7470] uppercase font-medium">Compliance Review Mode</span>
+              <span className="text-[9px] text-[#3D3936] uppercase font-medium">Compliance Review Mode</span>
               <select
                 value={reviewMode}
                 onChange={(e) => setReviewMode(e.target.value)}
@@ -718,7 +718,7 @@ export default function App() {
                       <span className="text-xs font-medium text-[#004142]">
                         {isUploading ? 'Ingesting Evidence...' : 'Drag & Drop files or Browse'}
                       </span>
-                      <span className="text-[10px] text-[#7A7470]">
+                      <span className="text-[10px] text-[#3D3936]">
                         Supports PDF, DOCX, TXT, MD, CSV, JSON, XLSX, TS/TSX
                       </span>
                     </div>
@@ -726,7 +726,7 @@ export default function App() {
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-[#00797D]/10">
-                  <div className="text-[10px] uppercase tracking-wider text-[#7A7470] font-medium mb-2">Ingestion Restrictions</div>
+                  <div className="text-[10px] uppercase tracking-wider text-[#3D3936] font-medium mb-2">Ingestion Restrictions</div>
                   <ul className="space-y-1.5">
                     <li className="text-[10px] text-[#524D4B] flex items-center gap-1">
                       <CheckCircle className="h-3 w-3 text-[#00797D]" /> Source files are never modified
@@ -753,7 +753,7 @@ export default function App() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-[#00797D]/10 text-[10px] uppercase text-[#7A7470]">
+                      <tr className="border-b border-[#00797D]/10 text-[10px] uppercase text-[#3D3936]">
                         <th className="py-2.5">Document Filename</th>
                         <th className="py-2.5">SHA256 Fingerprint</th>
                         <th className="py-2.5">Size</th>
@@ -766,7 +766,7 @@ export default function App() {
                           <td className="py-3 font-medium text-[#004142] max-w-[200px] truncate" title={file.filename}>
                             {file.filename}
                           </td>
-                          <td className="py-3 font-mono text-[10px] text-[#7A7470]">
+                          <td className="py-3 font-mono text-[10px] text-[#3D3936]">
                             {file.sha256.substring(0, 16)}...
                           </td>
                           <td className="py-3 text-[#524D4B]">{(file.size / 1024).toFixed(1)} KB</td>
@@ -780,7 +780,7 @@ export default function App() {
                       ))}
                       {!activeWorkspace?.manifest.files.length && (
                         <tr>
-                          <td colSpan={4} className="py-8 text-center text-xs text-[#7A7470]">
+                          <td colSpan={4} className="py-8 text-center text-xs text-[#3D3936]">
                             No evidence files uploaded to this workspace. Upload sample policies or audit files to begin the review.
                           </td>
                         </tr>
@@ -840,7 +840,7 @@ export default function App() {
                       >
                         <div className="space-y-2">
                           <div className="flex justify-between items-start">
-                            <span className="text-[9px] uppercase font-bold text-[#7A7470] bg-[#FAF8F8] border px-1.5 py-0.5 rounded">
+                            <span className="text-[9px] uppercase font-bold text-[#3D3936] bg-[#FAF8F8] border px-1.5 py-0.5 rounded">
                               {t.category}
                             </span>
                             {isPatientPacket && (
@@ -855,7 +855,7 @@ export default function App() {
                         </div>
 
                         <div className="mt-4 pt-3 border-t border-[#00797D]/5 flex items-center justify-between">
-                          <span className="text-[9px] text-[#7A7470] font-mono">
+                          <span className="text-[9px] text-[#3D3936] font-mono">
                             {t.files.length} {t.files.length === 1 ? 'file' : 'files'} included
                           </span>
                           
@@ -876,7 +876,7 @@ export default function App() {
               </div>
 
               {/* Seed load backup option */}
-              <div className="pt-2 flex justify-between items-center text-[11px] text-[#7A7470] border-t border-dashed">
+              <div className="pt-2 flex justify-between items-center text-[11px] text-[#3D3936] border-t border-dashed">
                 <span>Want to clear and load the default compliance sandbox baseline?</span>
                 <button
                   onClick={() => {
@@ -926,7 +926,7 @@ export default function App() {
                     {/* Why it matters / quote */}
                     <div className="lg:col-span-7 space-y-2">
                       <div className="p-2 rounded bg-[#FAF8F8] font-mono text-[10px] text-[#524D4B] leading-relaxed">
-                        <span className="font-semibold block text-[9px] uppercase tracking-wider text-[#7A7470]">Verbatim File Evidence Extract:</span>
+                        <span className="font-semibold block text-[9px] uppercase tracking-wider text-[#3D3936]">Verbatim File Evidence Extract:</span>
                         "{find.evidenceQuote}"
                       </div>
                       <p className="text-[#524D4B]"><span className="font-medium text-[#004142]">Why it matters:</span> {find.whyItMatters}</p>
@@ -967,7 +967,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="mt-3 text-[10px] text-[#7A7470] border-t pt-2 flex items-center justify-between">
+                  <div className="mt-3 text-[10px] text-[#3D3936] border-t pt-2 flex items-center justify-between">
                     <span>Source document: <strong className="text-[#004142]">{find.affectedFile}</strong></span>
                     <span>Action owner: Clinical Quality Auditor</span>
                   </div>
@@ -975,7 +975,7 @@ export default function App() {
               ))}
 
               {!activeWorkspace?.findings?.length && (
-                <div className="py-12 text-center text-xs text-[#7A7470] space-y-2">
+                <div className="py-12 text-center text-xs text-[#3D3936] space-y-2">
                   <Cpu className="h-8 w-8 mx-auto text-[#00797D]/30" />
                   <p>No findings processed in this workspace yet.</p>
                   <button 
@@ -1002,7 +1002,7 @@ export default function App() {
 
                 <div className="space-y-4">
                   <div className="p-3 bg-[#F7FEFF] rounded-xl custom-shadow-soft">
-                    <div className="text-[10px] text-[#7A7470] uppercase">Defensibility Score</div>
+                    <div className="text-[10px] text-[#3D3936] uppercase">Defensibility Score</div>
                     <div className="text-3xl font-medium text-[#00797D]">{isSurveyReady ? '95%' : '65%'}</div>
                     <div className="w-full bg-black/5 h-1.5 rounded-full mt-2 overflow-hidden">
                       <div className="bg-[#00797D] h-full" style={{ width: isSurveyReady ? '95%' : '65%' }}></div>
@@ -1057,7 +1057,7 @@ export default function App() {
               <div className="flex justify-between items-center mb-4 border-b pb-4">
                 <div>
                   <h3 className="text-sm font-medium text-[#004142]">Formal Compliance Defensibility Report</h3>
-                  <p className="text-xs text-[#7A7470]">10-stage deterministic review output chain.</p>
+                  <p className="text-xs text-[#3D3936]">10-stage deterministic review output chain.</p>
                 </div>
                 <div className="flex gap-2">
                   <button 
@@ -1086,7 +1086,7 @@ export default function App() {
                   dangerouslySetInnerHTML={{ __html: activeWorkspace.reportHtml }} 
                 />
               ) : (
-                <div className="py-24 text-center text-xs text-[#7A7470] space-y-2">
+                <div className="py-24 text-center text-xs text-[#3D3936] space-y-2">
                   <FileText className="h-10 w-10 mx-auto text-[#00797D]/20" />
                   <p>No report has been compiled yet. Run the compliance review to generate.</p>
                 </div>
@@ -1159,7 +1159,7 @@ export default function App() {
               <div className="overflow-x-auto max-h-[250px]">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-[#00797D]/10 text-[9px] uppercase text-[#7A7470]">
+                    <tr className="border-b border-[#00797D]/10 text-[9px] uppercase text-[#3D3936]">
                       <th className="py-2">Timestamp</th>
                       <th className="py-2">Destination Target</th>
                       <th className="py-2">Decision Status</th>
@@ -1169,7 +1169,7 @@ export default function App() {
                   <tbody className="divide-y divide-[#00797D]/5 text-xs font-mono">
                     {activeWorkspace?.networkLogs.map((log, i) => (
                       <tr key={i} className="hover:bg-[#F7FEFF]">
-                        <td className="py-2 text-[10px] text-[#7A7470]">{log.timestamp}</td>
+                        <td className="py-2 text-[10px] text-[#3D3936]">{log.timestamp}</td>
                         <td className="py-2 text-[#004142] text-[11px] font-semibold">{log.destination}</td>
                         <td className="py-2">
                           {log.allowed ? (
@@ -1183,7 +1183,7 @@ export default function App() {
                     ))}
                     {!activeWorkspace?.networkLogs?.length && (
                       <tr>
-                        <td colSpan={4} className="py-4 text-center text-xs text-[#7A7470]">No network connections attempted.</td>
+                        <td colSpan={4} className="py-4 text-center text-xs text-[#3D3936]">No network connections attempted.</td>
                       </tr>
                     )}
                   </tbody>
@@ -1208,7 +1208,7 @@ export default function App() {
               <div className="space-y-2 max-h-[300px] overflow-y-auto font-mono text-[10px] bg-[#FAF8F8] p-4 rounded-xl custom-shadow-soft">
                 {activeWorkspace?.hashChainLogs.map((log, i) => (
                   <div key={i} className="p-2 bg-white rounded text-xs custom-shadow-soft">
-                    <div className="flex items-center justify-between text-[10px] text-[#7A7470] mb-1">
+                    <div className="flex items-center justify-between text-[10px] text-[#3D3936] mb-1">
                       <span>Log Index: {i}</span>
                       <span>{log.timestamp}</span>
                     </div>
@@ -1223,7 +1223,7 @@ export default function App() {
                   </div>
                 ))}
                 {!activeWorkspace?.hashChainLogs?.length && (
-                  <p className="text-center py-6 text-[#7A7470]">No integrity records yet.</p>
+                  <p className="text-center py-6 text-[#3D3936]">No integrity records yet.</p>
                 )}
               </div>
             </div>
@@ -1335,7 +1335,7 @@ export default function App() {
           <form onSubmit={handleCreateWorkspace} className="bg-white rounded-2xl p-6 max-w-md w-full space-y-4 custom-shadow-lift">
             <div>
               <h3 className="text-base font-medium text-[#004142]">Provision New Review Workspace</h3>
-              <p className="text-xs text-[#7A7470]">Create a separate local-first review capsule for defensive audit packaging.</p>
+              <p className="text-xs text-[#3D3936]">Create a separate local-first review capsule for defensive audit packaging.</p>
             </div>
 
             <div>

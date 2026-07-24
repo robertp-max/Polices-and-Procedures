@@ -1,0 +1,37 @@
+[
+  {
+    "id": "gao001.s01.scene-start",
+    "text": "It's Monday morning, and Alex Reyes is sitting at a desk that isn't quite familiar yet. A laptop screen glows in front of Alex — new hire, new building, new agency. A message is waiting. Before Alex sees a single patient this week, there's a starting point: understanding exactly what kind of agency this is, and what that means for the work ahead.",
+    "language": "English"
+  },
+  {
+    "id": "gao001.s01.overlay.email",
+    "text": "Care Indeed Home Health Care is Medicare-certified and ACHC-accredited, which means the agency operates under federal Conditions of Participation and is reviewed against national home health standards. Every employee — clinical and non-clinical — carries a share of responsibility for patient safety and regulatory compliance, starting today. Two things matter beyond this week: during a survey, a CMS or ACHC reviewer may ask any employee — not just clinicians — to explain what the agency's mission means in their own words, to show it actually shapes real decisions rather than something recited from memory. And completing this training is documented in Alex's personnel file as a record of competency orientation — evidence of training completed. Formal policy acknowledgment remains a separate assigned activity.",
+    "language": "English"
+  },
+  {
+    "id": "gao001.s01.overlay.checklist",
+    "text": "This checklist maps the nine things Alex needs to understand before stepping into a patient's home: mission, vision, and values; the agency's Medicare-certified and ACHC-accredited status; awareness of the Conditions of Participation; role responsibilities; documentation and escalation expectations; and a survey-readiness mindset, plus a look at the training path ahead. Each item becomes its own scene this week — and everything Alex does with this list stays in Alex's personnel file as a record of orientation completed. Formal policy acknowledgment is a separate assigned activity that happens later.",
+    "language": "English"
+  },
+  {
+    "id": "gao001.s01.overlay.packet",
+    "text": "These orientation materials guide your first week. They cover critical reporting protocols and escalation pathways so you know when to call your supervisor, how concerns move up the chain, and how to keep patients safe when something unexpected happens in the home.",
+    "language": "English"
+  },
+  {
+    "id": "gao001.s01.overlay.badge",
+    "text": "This badge is the first piece of trust Care Indeed extends to Alex — it's what patients and families will see at the door before they know anything else about Alex's skills. Alex will wear this into every home visit this week. Visible identification builds trust and is a basic safety expectation in the field.",
+    "language": "English"
+  },
+  {
+    "id": "gao001.s01.overlay.notebook",
+    "text": "Use your field notebook to document facts, not assumptions, during patient visits. Write what you saw, what the patient said, and when it happened — so the record stays clear, objective, and defensible if a surveyor or supervisor reviews it later.",
+    "language": "English"
+  },
+  {
+    "id": "gao001.s01.scene-complete",
+    "text": "Alex closes the folder. Three things are different now than they were ten minutes ago: Alex has read what this agency is and what it expects, has a badge with a face on it, and has a map of the nine things this first week needs to cover. What just happened here gets documented as completed orientation in Alex's personnel file — a record of training; the formal policy acknowledgment assignment comes separately, later. Orientation Practice Complete. Later today, Dana is going to sit down with Alex and go through the mission statement itself, line by line, with real examples from the field.",
+    "language": "English"
+  }
+]

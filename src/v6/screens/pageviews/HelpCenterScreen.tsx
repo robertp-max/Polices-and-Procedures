@@ -264,10 +264,10 @@ function HelpHomePage({
             style={{ animationDelay: `${i * 75}ms` }}
           >
             <stat.icon className="mb-4 h-6 w-6 text-[#007970]" aria-hidden />
-            <span className="mb-3 font-montserrat text-3xl font-bold text-[#F06923] transition-transform duration-300 group-hover:scale-110 md:text-4xl">
+            <span className="mb-3 font-montserrat text-3xl font-bold text-[#C2410C] transition-transform duration-300 group-hover:scale-110 md:text-4xl">
               {stat.value}
             </span>
-            <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#747470]">{stat.label}</span>
+            <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#3D3D3A]">{stat.label}</span>
           </div>
         ))}
       </div>
@@ -278,7 +278,7 @@ function HelpHomePage({
           <section id="manuals" className="scroll-mt-8 rounded-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:p-10">
             <div className="mb-8 max-w-3xl">
               <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Browse by Workspace</h2>
-              <p className="mt-3 text-base leading-relaxed text-[#747470]">
+              <p className="mt-3 text-base leading-relaxed text-[#3D3D3A]">
                 Every workspace has its own manual set — overviews, task guides, and troubleshooting, each tagged by audience and task type.
               </p>
             </div>
@@ -298,7 +298,7 @@ function HelpHomePage({
           <section className="rounded-[24px] border border-[#C4F4F5] bg-[#E5FEFF] p-8 shadow-sm md:p-10">
             <div className="flex flex-wrap items-center justify-between gap-6">
               <div className="max-w-xl">
-                <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#F06923]">Training Path</h2>
+                <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#C2410C]">Training Path</h2>
                 <p className="mt-3 font-montserrat text-2xl font-bold text-[#007970]">Office Staff End User Training Syllabus</p>
                 <p className="mt-3 text-base leading-relaxed text-[#005C55]">
                   {OFFICE_STAFF_SYLLABUS.length} modules, {OFFICE_STAFF_SYLLABUS.reduce((n, m) => n + m.lessons.length, 0)} hands-on lessons.
@@ -320,7 +320,7 @@ function HelpHomePage({
             <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
               <div>
                 <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Start With These</h2>
-                <p className="mt-3 text-base leading-relaxed text-[#747470]">Popular quick starts across the app.</p>
+                <p className="mt-3 text-base leading-relaxed text-[#3D3D3A]">Popular quick starts across the app.</p>
               </div>
             </div>
             <div className="grid gap-6 md:grid-cols-2">
@@ -387,7 +387,7 @@ function HelpManualsPage() {
             <BookOpen className="h-8 w-8" aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#F06923]">Help Center Manuals</p>
+            <p className="font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#C2410C]">Help Center Manuals</p>
             <h1 className="mt-2 font-montserrat text-3xl font-bold tracking-tight text-[#007970] md:text-5xl">Manuals</h1>
             <p className="mt-3 max-w-3xl text-base leading-relaxed text-[#52404B]">
               Browse every workspace manual from one dedicated page: quick starts, page guides, workflow manuals, troubleshooting references, and route/component coverage.
@@ -404,8 +404,8 @@ function HelpManualsPage() {
             style={{ animationDelay: `${i * 75}ms` }}
           >
             <stat.icon className="mb-3 h-6 w-6 text-[#007970]" aria-hidden />
-            <span className="mb-2 font-montserrat text-3xl font-bold text-[#F06923] md:text-4xl">{stat.value}</span>
-            <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#747470]">{stat.label}</span>
+            <span className="mb-2 font-montserrat text-3xl font-bold text-[#C2410C] md:text-4xl">{stat.value}</span>
+            <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#3D3D3A]">{stat.label}</span>
           </div>
         ))}
       </div>
@@ -468,9 +468,9 @@ function CategoryDetail({ category, onLaunchTour }: { category: HelpCenterCatego
             <Icon className="h-8 w-8" aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#F06923]">Workspace manuals</p>
+            <p className="font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#C2410C]">Workspace manuals</p>
             <h1 className="mt-2 font-montserrat text-3xl font-bold tracking-tight text-[#007970] md:text-4xl">{category.title}</h1>
-            <p className="mt-3 max-w-2xl text-base leading-relaxed text-[#747470]">{category.shortDescription}</p>
+            <p className="mt-3 max-w-2xl text-base leading-relaxed text-[#3D3D3A]">{category.shortDescription}</p>
           </div>
           {category.quickActions.length > 0 ? (
             <div className="flex flex-wrap gap-3">
@@ -513,11 +513,11 @@ function CategoryDetail({ category, onLaunchTour }: { category: HelpCenterCatego
             </div>
           ) : (
             <div className="rounded-[24px] border border-[#E5E4E3] bg-white p-10 text-center shadow-sm">
-              <p className="text-sm text-[#747470]">No articles match the current filters.</p>
+              <p className="text-sm text-[#3D3D3A]">No articles match the current filters.</p>
               <button
                 type="button"
                 onClick={() => setBadgeFilter([])}
-                className="mt-3 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#F06923] hover:underline"
+                className="mt-3 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#C2410C] hover:underline"
               >
                 Clear filters
               </button>
@@ -528,10 +528,10 @@ function CategoryDetail({ category, onLaunchTour }: { category: HelpCenterCatego
             <div className="mt-8 rounded-[24px] border border-[#E5E4E3] bg-white p-6 shadow-sm md:p-8">
               <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <p className="font-montserrat text-[12px] font-bold uppercase tracking-widest text-[#F06923]">
+                  <p className="font-montserrat text-[12px] font-bold uppercase tracking-widest text-[#C2410C]">
                     {category.categoryId === 'community' ? 'No-PHI team discussions' : 'Live threads'}
                   </p>
-                  <p className="mt-2 text-sm leading-relaxed text-[#747470]">
+                  <p className="mt-2 text-sm leading-relaxed text-[#3D3D3A]">
                     Ask operational questions and turn repeated topics into Help Center articles.
                   </p>
                 </div>
@@ -554,7 +554,7 @@ function CategoryDetail({ category, onLaunchTour }: { category: HelpCenterCatego
               type="button"
               onClick={() => setBadgeFiltersOpen((v) => !v)}
               aria-expanded={badgeFiltersOpen}
-              className="flex w-full items-center justify-between gap-3 font-montserrat text-[12px] font-bold uppercase tracking-widest text-[#007970] transition-colors hover:text-[#F06923] focus-visible:outline-none focus-visible:shadow-focus xl:pointer-events-none"
+              className="flex w-full items-center justify-between gap-3 font-montserrat text-[12px] font-bold uppercase tracking-widest text-[#007970] transition-colors hover:text-[#C2410C] focus-visible:outline-none focus-visible:shadow-focus xl:pointer-events-none"
             >
               <span>Filter by badge{badgeFilter.length ? ` (${badgeFilter.length})` : ''}</span>
               <ChevronDown className={cx('h-4 w-4 transition-transform xl:hidden', badgeFiltersOpen && 'rotate-180')} aria-hidden />
@@ -593,7 +593,7 @@ function RetiredOrMissingArticle({ slugOrId }: { slugOrId: string }) {
       <h1 className="mt-6 font-montserrat text-2xl font-bold text-[#007970]">
         {retirement ? 'This article was retired' : 'Article not found'}
       </h1>
-      <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[#747470]">
+      <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[#3D3D3A]">
         {retirement
           ? retirement.reasonRetired + (replacement ? ' A newer manual covers this topic.' : ' No direct replacement exists yet — browse the categories or ask Brad.')
           : `No help article matches “${slugOrId}”. It may have moved — try search or browse by workspace.`}
@@ -617,7 +617,7 @@ function RetiredOrMissingArticle({ slugOrId }: { slugOrId: string }) {
         </button>
       </div>
       {retirement ? (
-        <p className="mt-6 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#A0A0A0]">
+        <p className="mt-6 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#474742]">
           Retired register: {RETIRED_ARTICLES.length} legacy articles tracked with replacements
         </p>
       ) : null}

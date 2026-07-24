@@ -98,7 +98,7 @@ const COMPETENCY_CHIP: Record<CompetencyKind, string> = {
   exercise: 'bg-[#E5FEFF] text-[#007970] border-[#b2f5f7]',
   observation: 'bg-[#E5FEFF] text-[#007970] border-[#b2f5f7]',
   drill: 'bg-[#FFF0E5] text-[#D1571A] border-[#fbd3b7]',
-  none: 'bg-[#FAFAF7] text-[#A0A0A0] border-[#E5E4E3]',
+  none: 'bg-[#FAFAF7] text-[#474742] border-[#E5E4E3]',
 };
 
 const SEVERITY_CHIP: Record<'critical' | 'escalating' | 'monitor', { label: string; className: string }> = {
@@ -252,7 +252,7 @@ export function RoleJourneyVisualizer() {
       <section className="rj-cascade relative mb-3 shrink-0 overflow-hidden rounded-b-[20px] rounded-tr-[20px] border border-[#E5E4E3] bg-white px-6 py-4 shadow-sm">
         <div className="relative z-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
           <div className="min-w-0">
-            <span className="mb-1 block font-montserrat text-[9px] font-bold uppercase tracking-widest text-[#F06923]">
+            <span className="mb-1 block font-montserrat text-[9px] font-bold uppercase tracking-widest text-[#C2410C]">
               42 CFR Part 484 • CMS CoP Aligned • Survey-Ready
             </span>
             <h1 className="truncate font-montserrat text-lg font-bold leading-tight tracking-tight text-[#007970] md:text-2xl">
@@ -325,7 +325,7 @@ function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (view: ViewM
             onClick={() => onChange(option.id)}
             className={cx(
               'flex items-center gap-2 rounded-[12px] px-5 py-2.5 font-montserrat text-[11px] font-bold uppercase tracking-wider transition-all duration-300',
-              isActive ? 'bg-[#007970] text-white shadow-[0_4px_14px_rgba(0,121,112,0.3)]' : 'text-[#747470] hover:text-[#007970]',
+              isActive ? 'bg-[#007970] text-white shadow-[0_4px_14px_rgba(0,121,112,0.3)]' : 'text-[#3D3D3A] hover:text-[#007970]',
             )}
           >
             <Icon size={14} aria-hidden />
@@ -375,11 +375,11 @@ function RoleDropdown({ activeRole, onSelect }: { activeRole: RoleDef; onSelect:
             <ActiveIcon size={18} className="text-[#007970]" aria-hidden />
           </span>
           <span className="min-w-0 text-left">
-            <span className="block font-montserrat text-[9px] font-bold uppercase tracking-widest text-[#F06923]">Select role • {activeRole.id}</span>
+            <span className="block font-montserrat text-[9px] font-bold uppercase tracking-widest text-[#C2410C]">Select role • {activeRole.id}</span>
             <span className="block truncate font-montserrat text-[15px] font-bold text-[#007970]">{activeRole.title}</span>
           </span>
         </span>
-        <ChevronDown size={18} className={cx('shrink-0 text-[#747470] transition-transform duration-300', open && 'rotate-180 text-[#007970]')} aria-hidden />
+        <ChevronDown size={18} className={cx('shrink-0 text-[#3D3D3A] transition-transform duration-300', open && 'rotate-180 text-[#007970]')} aria-hidden />
       </button>
 
       {open ? (
@@ -407,11 +407,11 @@ function RoleDropdown({ activeRole, onSelect }: { activeRole: RoleDef; onSelect:
                 )}
               >
                 <span className={cx('flex h-9 w-9 shrink-0 items-center justify-center rounded-xl', isActive ? 'bg-[#007970]' : 'bg-[#FAFAF7]')}>
-                  <Icon size={16} className={isActive ? 'text-white' : 'text-[#747470]'} aria-hidden />
+                  <Icon size={16} className={isActive ? 'text-white' : 'text-[#3D3D3A]'} aria-hidden />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className={cx('block truncate font-montserrat text-[13px] font-bold', isActive ? 'text-[#007970]' : 'text-[#52404B]')}>{role.title}</span>
-                  <span className="block font-montserrat text-[9px] font-bold uppercase tracking-widest text-[#A0A0A0]">
+                  <span className="block font-montserrat text-[9px] font-bold uppercase tracking-widest text-[#474742]">
                     {role.id} • {role.tag} • {role.moduleCountLabel}
                   </span>
                 </span>
@@ -429,7 +429,7 @@ function HeroPill({ value, label }: { value: string; label: string }) {
   return (
     <div className="flex items-baseline gap-1.5 rounded-full border border-[#E5E4E3] bg-[#FAFAF7] px-3.5 py-1.5">
       <span className="font-montserrat text-[13px] font-bold text-[#007970]">{value}</span>
-      <span className="whitespace-nowrap font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#A0A0A0]">{label}</span>
+      <span className="whitespace-nowrap font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#474742]">{label}</span>
     </div>
   );
 }
@@ -443,17 +443,17 @@ function PersonaCard({ role, overallPercent }: { role: RoleDef; overallPercent: 
         </div>
         <div className="min-w-0">
           <div className="truncate font-montserrat text-[13px] font-bold text-[#52404B]">
-            {MOCK_LEARNER.name} <span className="font-semibold text-[#A0A0A0]">•</span> <span className="text-[#007970]">{role.title}</span>
+            {MOCK_LEARNER.name} <span className="font-semibold text-[#474742]">•</span> <span className="text-[#007970]">{role.title}</span>
           </div>
-          <div className="mt-0.5 truncate font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#A0A0A0]">
+          <div className="mt-0.5 truncate font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#474742]">
             Day {MOCK_LEARNER.day} of onboarding • {role.jdPolicy} • Sample progress state
           </div>
         </div>
       </div>
       <div className="min-w-0 flex-1 sm:max-w-xs">
         <div className="mb-1 flex items-center justify-between font-montserrat text-[9px] font-bold uppercase tracking-wider">
-          <span className="text-[#747470]">Journey completion</span>
-          <span className="text-[#F06923]">{overallPercent}%</span>
+          <span className="text-[#3D3D3A]">Journey completion</span>
+          <span className="text-[#C2410C]">{overallPercent}%</span>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-[#F1F0EE]">
           <div className="rj-shimmer h-full rounded-full transition-[width] duration-700 ease-out" style={{ width: `${overallPercent}%` }} />
@@ -465,7 +465,7 @@ function PersonaCard({ role, overallPercent }: { role: RoleDef; overallPercent: 
 
 function PolicyChip({ text }: { text: string }) {
   return (
-    <span className="inline-flex items-center rounded-md border border-[#E5E4E3] bg-[#FAFAF7] px-2 py-0.5 font-montserrat text-[10px] font-semibold tracking-wide text-[#747470]">
+    <span className="inline-flex items-center rounded-md border border-[#E5E4E3] bg-[#FAFAF7] px-2 py-0.5 font-montserrat text-[10px] font-semibold tracking-wide text-[#3D3D3A]">
       {text}
     </span>
   );
@@ -588,14 +588,14 @@ function PhaseCard({
                 {phase.status === 'complete' ? (
                   <CheckCircle2 size={18} className="text-white" />
                 ) : phase.status === 'active' ? (
-                  <Icon size={16} className="text-[#F06923]" />
+                  <Icon size={16} className="text-[#C2410C]" />
                 ) : (
                   <Lock size={15} className="text-[#C9C9C6]" />
                 )}
               </span>
-              <span className="font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#F06923]">{phase.eyebrow}</span>
+              <span className="font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#C2410C]">{phase.eyebrow}</span>
             </div>
-            <span className="rounded-md border border-[#E5E4E3] bg-[#FAFAF7] px-2.5 py-1 font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#A0A0A0]">
+            <span className="rounded-md border border-[#E5E4E3] bg-[#FAFAF7] px-2.5 py-1 font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#474742]">
               {phase.timeframe}
             </span>
           </div>
@@ -604,10 +604,10 @@ function PhaseCard({
           {/* Phase progress */}
           <div className="mb-4">
             <div className="mb-1 flex items-center justify-between font-montserrat text-[10px] font-bold uppercase tracking-wider">
-              <span className={phase.status === 'complete' ? 'text-[#008540]' : phase.status === 'active' ? 'text-[#F06923]' : 'text-[#A0A0A0]'}>
+              <span className={phase.status === 'complete' ? 'text-[#008540]' : phase.status === 'active' ? 'text-[#C2410C]' : 'text-[#474742]'}>
                 {phase.status === 'complete' ? 'Completed' : phase.status === 'active' ? 'In progress' : 'Locked'}
               </span>
-              <span className="text-[#A0A0A0]">{phase.progressLabel}</span>
+              <span className="text-[#474742]">{phase.progressLabel}</span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-[#F1F0EE]">
               <div
@@ -649,14 +649,14 @@ function PhaseCardBody({
   if (phaseKey === 'phase0') {
     return (
       <>
-        <p className="mb-4 font-roboto text-sm leading-relaxed text-[#747470]">
+        <p className="mb-4 font-roboto text-sm leading-relaxed text-[#3D3D3A]">
           HARD STOP: no individual performs ANY work — including orientation — until Appendix F is complete. (HR-TA-001 § 4.3)
         </p>
         <ul className="mb-4 space-y-2">
           {PRE_HIRE_STEPS.slice(0, 4).map((step) => (
             <ListItem key={step.step} text={`${step.action} (${step.policy})`} done />
           ))}
-          <li className="pl-4 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#A0A0A0]">
+          <li className="pl-4 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#474742]">
             + {PRE_HIRE_STEPS.length - 4} more clearance items
           </li>
         </ul>
@@ -670,7 +670,7 @@ function PhaseCardBody({
   if (phaseKey === 'phase1') {
     return (
       <>
-        <p className="mb-4 font-roboto text-sm leading-relaxed text-[#747470]">
+        <p className="mb-4 font-roboto text-sm leading-relaxed text-[#3D3D3A]">
           Foundation training required for every role — 28 modules (GAO-001…GAO-EXAM) covering mission, compliance, HIPAA, and safety.
         </p>
         <div className="mb-4 grid grid-cols-2 gap-2">
@@ -694,7 +694,7 @@ function PhaseCardBody({
           <span className="rounded-md border border-[#b2f5f7] bg-[#E5FEFF] px-2.5 py-1 font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#007970]">
             {role.id}
           </span>
-          <span className="font-montserrat text-xs font-bold uppercase tracking-wider text-[#A0A0A0]">{role.moduleCountLabel}</span>
+          <span className="font-montserrat text-xs font-bold uppercase tracking-wider text-[#474742]">{role.moduleCountLabel}</span>
         </div>
         <p className="mb-4 font-roboto text-sm font-medium leading-relaxed text-[#52404B]">
           {role.cfr} — {role.description}
@@ -702,14 +702,14 @@ function PhaseCardBody({
         <div className="mb-4 space-y-2.5">
           {highlights.map((module) => (
             <div key={module.id} className="flex items-center gap-3 rounded-xl border border-[#E5E4E3] bg-[#FAFAF7] p-3">
-              <ArrowRight size={14} className="shrink-0 text-[#F06923]" aria-hidden />
+              <ArrowRight size={14} className="shrink-0 text-[#C2410C]" aria-hidden />
               <span className="font-montserrat text-[13px] font-semibold text-[#52404B]">
-                {module.title} <span className="font-bold text-[#A0A0A0]">({module.id})</span>
+                {module.title} <span className="font-bold text-[#474742]">({module.id})</span>
               </span>
             </div>
           ))}
         </div>
-        <div className="flex items-center gap-2 rounded-xl border border-[#E5E4E3] bg-[#FAFAF7] px-4 py-3 font-montserrat text-xs font-bold tracking-wide text-[#747470]">
+        <div className="flex items-center gap-2 rounded-xl border border-[#E5E4E3] bg-[#FAFAF7] px-4 py-3 font-montserrat text-xs font-bold tracking-wide text-[#3D3D3A]">
           <FileText size={16} className="shrink-0 text-[#007970]" aria-hidden />
           <span className="truncate">{status === 'locked' ? 'Unlocks when GAO-EXAM is passed (80% gate)' : role.clearance}</span>
         </div>
@@ -719,7 +719,7 @@ function PhaseCardBody({
 
   return (
     <>
-      <p className="mb-4 font-roboto text-sm leading-relaxed text-[#747470]">
+      <p className="mb-4 font-roboto text-sm leading-relaxed text-[#3D3D3A]">
         Continuous audit-defensible tracking mapped to HR-TD-001: quarterly annual training, monthly exclusion screening, and
         ongoing competency re-evaluation.
       </p>
@@ -759,7 +759,7 @@ function ListItem({ text, done }: { text: string; done?: boolean }) {
 function MiniBadge({ text }: { text: string }) {
   return (
     <div className="flex items-center justify-center rounded-lg border border-[#E5E4E3] bg-[#FAFAF7] px-3 py-2 text-center">
-      <span className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470]">{text}</span>
+      <span className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#3D3D3A]">{text}</span>
     </div>
   );
 }
@@ -808,11 +808,11 @@ function DeepDivePanel({
               <Icon size={20} className="text-[#007970]" aria-hidden />
             </div>
             <div>
-              <span className="font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#F06923]">
+              <span className="font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#C2410C]">
                 {phase.eyebrow} • {phase.timeframe}
               </span>
               <h2 className="mt-1 font-montserrat text-lg font-bold leading-snug text-[#007970]">{phase.title}</h2>
-              <span className="mt-1 block font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#A0A0A0]">
+              <span className="mt-1 block font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#474742]">
                 {phase.progressLabel}
                 {phaseKey === 'phase2' ? ` • ${role.id} / ${role.jdPolicy}` : ''}
               </span>
@@ -822,7 +822,7 @@ function DeepDivePanel({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#E5E4E3] bg-white text-[#747470] transition-all hover:border-[#F06923] hover:text-[#F06923]"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#E5E4E3] bg-white text-[#3D3D3A] transition-all hover:border-[#F06923] hover:text-[#C2410C]"
           >
             <X size={16} aria-hidden />
           </button>
@@ -842,7 +842,7 @@ function DeepDivePanel({
 }
 
 function PanelSectionTitle({ children }: { children: ReactNode }) {
-  return <h3 className="mb-3 mt-6 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#F06923] first:mt-0">{children}</h3>;
+  return <h3 className="mb-3 mt-6 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#C2410C] first:mt-0">{children}</h3>;
 }
 
 function Phase0Detail() {
@@ -863,12 +863,12 @@ function Phase0Detail() {
               <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-[#008540]" aria-hidden />
               <div className="min-w-0">
                 <div className="font-montserrat text-[13px] font-semibold leading-snug text-[#52404B]">
-                  <span className="mr-1.5 text-[#A0A0A0]">{step.step}</span>
+                  <span className="mr-1.5 text-[#474742]">{step.step}</span>
                   {step.action}
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
                   <PolicyChip text={step.policy} />
-                  <span className="font-roboto text-[11px] text-[#A0A0A0]">→ {step.evidence}</span>
+                  <span className="font-roboto text-[11px] text-[#474742]">→ {step.evidence}</span>
                 </div>
               </div>
             </div>
@@ -973,7 +973,7 @@ function Phase2Detail({ role }: { role: RoleDef }) {
               <div key={module.id} className="rounded-2xl border border-[#E5E4E3] bg-white p-4 transition-all duration-200 hover:border-[#007970]/40 hover:shadow-sm">
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span className="font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#007970]">{module.id}</span>
-                  {module.method ? <span className="font-montserrat text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">{module.method}</span> : null}
+                  {module.method ? <span className="font-montserrat text-[10px] font-semibold uppercase tracking-wider text-[#474742]">{module.method}</span> : null}
                 </div>
                 <div className="mt-1 font-montserrat text-[13px] font-semibold leading-snug text-[#52404B]">{module.title}</div>
                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -1010,7 +1010,7 @@ function Phase2Detail({ role }: { role: RoleDef }) {
 function PanelFact({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-[#E5E4E3] bg-white p-3.5">
-      <div className="font-montserrat text-[9px] font-bold uppercase tracking-widest text-[#A0A0A0]">{label}</div>
+      <div className="font-montserrat text-[9px] font-bold uppercase tracking-widest text-[#474742]">{label}</div>
       <div className="mt-1 font-montserrat text-[12px] font-semibold leading-snug text-[#52404B]">{value}</div>
     </div>
   );
@@ -1026,7 +1026,7 @@ function Phase3Detail() {
           <div key={quarter} className="rounded-2xl border border-[#E5E4E3] bg-white p-4">
             <div className="mb-2.5 flex items-center gap-2">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#007970] font-montserrat text-[11px] font-bold text-white">{quarter}</span>
-              <span className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#A0A0A0]">
+              <span className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#474742]">
                 {ANNUAL_TRAINING.filter((row) => row.quarter === quarter).length} tracks
               </span>
             </div>
@@ -1034,7 +1034,7 @@ function Phase3Detail() {
               {ANNUAL_TRAINING.filter((row) => row.quarter === quarter).map((row) => (
                 <div key={row.lms} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-xl bg-[#FAFAF7] px-3 py-2">
                   <span className="font-montserrat text-[12px] font-semibold text-[#52404B]">
-                    {row.training} <span className="text-[10px] font-bold text-[#A0A0A0]">({row.lms} • {row.staff})</span>
+                    {row.training} <span className="text-[10px] font-bold text-[#474742]">({row.lms} • {row.staff})</span>
                   </span>
                   {row.assessment !== '—' ? <CompetencyBadge label={row.assessment} kind={row.assessment.includes('Quiz') ? 'quiz' : 'exercise'} /> : null}
                 </div>
@@ -1061,8 +1061,8 @@ function Phase3Detail() {
               <span className="font-montserrat text-[13px] font-semibold text-[#52404B]">{row.activity}</span>
               <PolicyChip text={row.policy} />
             </div>
-            <div className="mt-1 font-roboto text-[12px] text-[#747470]">
-              {row.frequency} <span className="text-[#A0A0A0]">→ {row.evidence}</span>
+            <div className="mt-1 font-roboto text-[12px] text-[#3D3D3A]">
+              {row.frequency} <span className="text-[#474742]">→ {row.evidence}</span>
             </div>
           </div>
         ))}
@@ -1098,7 +1098,7 @@ function ManagerView({ role, evidenceRef }: { role: RoleDef; evidenceRef: React.
             <thead>
               <tr>
                 {['Role', 'Requirement', 'Evaluator', 'Evidence form'].map((header) => (
-                  <th key={header} className="border-b border-[#E5E4E3] pb-3 pr-4 font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#A0A0A0]">
+                  <th key={header} className="border-b border-[#E5E4E3] pb-3 pr-4 font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#474742]">
                     {header}
                   </th>
                 ))}
@@ -1116,7 +1116,7 @@ function ManagerView({ role, evidenceRef }: { role: RoleDef; evidenceRef: React.
                       ) : null}
                     </td>
                     <td className="border-b border-[#F1F0EE] py-3 pr-4 font-roboto text-[12px] leading-relaxed text-[#52404B]">{row.requirement}</td>
-                    <td className="border-b border-[#F1F0EE] py-3 pr-4 font-roboto text-[12px] text-[#747470]">{row.evaluator}</td>
+                    <td className="border-b border-[#F1F0EE] py-3 pr-4 font-roboto text-[12px] text-[#3D3D3A]">{row.evaluator}</td>
                     <td className="border-b border-[#F1F0EE] py-3">
                       <PolicyChip text={row.form} />
                     </td>
@@ -1141,11 +1141,11 @@ function ManagerView({ role, evidenceRef }: { role: RoleDef; evidenceRef: React.
             {[0, 14, 28, 42, 56].map((day) => (
               <div key={day} className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2" style={{ left: `${(day / 75) * 100}%` }}>
                 <div className={cx('h-4 w-4 rounded-full border-[3px] border-white shadow-sm', day === 0 ? 'bg-[#007970]' : 'bg-[#F06923]')} />
-                <div className="absolute left-1/2 top-5 -translate-x-1/2 whitespace-nowrap font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#747470]">
+                <div className="absolute left-1/2 top-5 -translate-x-1/2 whitespace-nowrap font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#3D3D3A]">
                   {day === 0 ? 'Day 1' : `Day ${day}`}
                 </div>
                 {day !== 0 ? (
-                  <div className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap font-montserrat text-[8px] font-bold uppercase tracking-wider text-[#F06923]">
+                  <div className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap font-montserrat text-[8px] font-bold uppercase tracking-wider text-[#C2410C]">
                     RN visit
                   </div>
                 ) : null}
@@ -1157,8 +1157,8 @@ function ManagerView({ role, evidenceRef }: { role: RoleDef; evidenceRef: React.
               <div className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap font-montserrat text-[8px] font-bold uppercase tracking-wider text-[#008540]">Cycle gate</div>
             </div>
             <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2">
-              <Repeat size={16} className="text-[#A0A0A0]" aria-hidden />
-              <div className="absolute right-0 top-5 whitespace-nowrap font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#A0A0A0]">Every 60 days</div>
+              <Repeat size={16} className="text-[#474742]" aria-hidden />
+              <div className="absolute right-0 top-5 whitespace-nowrap font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#474742]">Every 60 days</div>
             </div>
           </div>
           <div className="mt-12 flex flex-wrap gap-3">
@@ -1186,8 +1186,8 @@ function ManagerView({ role, evidenceRef }: { role: RoleDef; evidenceRef: React.
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="font-montserrat text-[13px] font-semibold leading-snug text-[#52404B]">{row.trigger}</div>
-                  <div className="mt-0.5 font-roboto text-[12px] leading-relaxed text-[#747470]">
-                    <strong className="text-[#F06923]">{row.timeline}:</strong> {row.action}
+                  <div className="mt-0.5 font-roboto text-[12px] leading-relaxed text-[#3D3D3A]">
+                    <strong className="text-[#C2410C]">{row.timeline}:</strong> {row.action}
                   </div>
                 </div>
                 <PolicyChip text={row.policy} />
@@ -1214,8 +1214,8 @@ function ManagerView({ role, evidenceRef }: { role: RoleDef; evidenceRef: React.
                   </span>
                   <span className="font-montserrat text-[13px] font-bold leading-snug text-[#007970]">{row.surveyorAction}</span>
                 </div>
-                <p className="mb-3 font-roboto text-[12px] leading-relaxed text-[#747470]">
-                  <strong className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#A0A0A0]">They look for: </strong>
+                <p className="mb-3 font-roboto text-[12px] leading-relaxed text-[#3D3D3A]">
+                  <strong className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#474742]">They look for: </strong>
                   {row.lookFor}
                 </p>
                 <div className="flex items-start gap-2 rounded-xl border border-[#b4e6d3] bg-[#E5F4EE] px-3 py-2.5">
@@ -1238,10 +1238,10 @@ function ManagerView({ role, evidenceRef }: { role: RoleDef; evidenceRef: React.
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {COMPLETION_GATES.map((gate, index) => (
             <div key={gate.gate} className="relative rounded-2xl border border-[#E5E4E3] bg-[#FAFAF7] p-5">
-              <span className="font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#F06923]">Gate {index + 1}</span>
+              <span className="font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#C2410C]">Gate {index + 1}</span>
               <h4 className="mt-1.5 font-montserrat text-[14px] font-bold leading-snug text-[#007970]">{gate.gate}</h4>
-              <p className="mt-2 font-roboto text-[12px] leading-relaxed text-[#747470]">
-                <ArrowRight size={12} className="mr-1 inline text-[#F06923]" aria-hidden />
+              <p className="mt-2 font-roboto text-[12px] leading-relaxed text-[#3D3D3A]">
+                <ArrowRight size={12} className="mr-1 inline text-[#C2410C]" aria-hidden />
                 {gate.unlocks}
               </p>
               <div className="mt-3">
@@ -1272,12 +1272,12 @@ function ManagerKpi({
     <div className="rounded-[20px] border border-[#E5E4E3] bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
       <div className="mb-3 flex items-center justify-between">
         <span className={cx('flex h-9 w-9 items-center justify-center rounded-xl', tone === 'orange' ? 'bg-[#FFF0E5]' : 'bg-[#E5FEFF]')}>
-          <Icon size={16} className={tone === 'orange' ? 'text-[#F06923]' : 'text-[#007970]'} aria-hidden />
+          <Icon size={16} className={tone === 'orange' ? 'text-[#C2410C]' : 'text-[#007970]'} aria-hidden />
         </span>
         <span className="font-montserrat text-2xl font-bold text-[#007970]">{value}</span>
       </div>
       <div className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#52404B]">{label}</div>
-      <div className="mt-1 font-roboto text-[11px] text-[#A0A0A0]">{sub}</div>
+      <div className="mt-1 font-roboto text-[11px] text-[#474742]">{sub}</div>
     </div>
   );
 }
@@ -1303,7 +1303,7 @@ function ManagerSection({
         </div>
         <div>
           <h2 className="font-montserrat text-lg font-bold tracking-tight text-[#007970]">{title}</h2>
-          <p className="mt-1 max-w-3xl font-roboto text-[13px] font-light leading-relaxed text-[#747470]">{subtitle}</p>
+          <p className="mt-1 max-w-3xl font-roboto text-[13px] font-light leading-relaxed text-[#3D3D3A]">{subtitle}</p>
         </div>
       </div>
       {children}

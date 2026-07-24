@@ -135,9 +135,9 @@ export function PolicyWorkspaceShell<T extends string = string>({
         <section className="ci-page-hero mb-8 rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:px-12 md:py-10">
           <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
             <div className="max-w-3xl">
-              <p className="mb-3 font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#F06923]">{eyebrow}</p>
+              <p className="mb-3 font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#C2410C]">{eyebrow}</p>
               <h1 className="font-montserrat text-3xl font-bold leading-tight tracking-tight text-[#007970] md:text-5xl">{title}</h1>
-              <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#747470]">{description}</p>
+              <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#3D3D3A]">{description}</p>
             </div>
             {(renderedTabs && tabPlacement === 'hero') || actions?.length ? (
               <div
@@ -165,9 +165,9 @@ export function PolicyMetricsGrid({ metrics }: { metrics: readonly MetricTileDat
     <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
       {metrics.map((metric) => (
         <div key={metric.label} className="rounded-[24px] border border-[#E5E4E3] bg-white p-7 shadow-sm">
-          <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470]">{metric.label}</p>
-          <p className="mt-3 font-montserrat text-4xl font-bold text-[#F06923]">{metric.value}</p>
-          <p className="mt-3 text-sm leading-relaxed text-[#747470]">{metric.helper}</p>
+          <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#3D3D3A]">{metric.label}</p>
+          <p className="mt-3 font-montserrat text-4xl font-bold text-[#C2410C]">{metric.value}</p>
+          <p className="mt-3 text-sm leading-relaxed text-[#3D3D3A]">{metric.helper}</p>
         </div>
       ))}
     </div>
@@ -191,7 +191,7 @@ export function PolicyPanel({
         <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             {title ? <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">{title}</h2> : null}
-            {description ? <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#747470]">{description}</p> : null}
+            {description ? <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#3D3D3A]">{description}</p> : null}
           </div>
           {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
         </div>
@@ -243,7 +243,7 @@ export function PolicySignalCard({ card, label = 'Signal strength' }: { card: Su
           <ToneBadge size="sm" status={card.status} />
         </div>
         <h3 className="font-montserrat text-base font-bold text-[#007970]">{card.title}</h3>
-        <p className="mt-2 text-sm leading-relaxed text-[#747470]">{card.body}</p>
+        <p className="mt-2 text-sm leading-relaxed text-[#3D3D3A]">{card.body}</p>
       </div>
       <div className="mt-5">
         <ProgressMeter label={label} tone={card.tone} value={card.progress ?? 0} />

@@ -549,7 +549,7 @@ export default function GAO002Scene03ReportingMap({
               <MapPin className="w-4 h-4 text-[#C74601]" />
               <h2 className="text-lg font-semibold text-[#007970]">Reporting Lines — Readiness &amp; Synthesis</h2>
             </div>
-            <p className="text-xs text-[#747470] mt-0.5">GAO-002 Scene 3 • Assemble the completed map + practice the four final test types</p>
+            <p className="text-xs text-[#3D3D3A] mt-0.5">GAO-002 Scene 3 • Assemble the completed map + practice the four final test types</p>
           </div>
         </div>
 
@@ -574,7 +574,7 @@ export default function GAO002Scene03ReportingMap({
 
       {/* 4-Tier Narration Bar */}
       <div className="px-5 py-2 bg-[#FAFBF8] border-b border-[#E5E4E3] flex items-center gap-2 text-[10px] font-semibold tracking-[0.5px] text-[#524C4B] shrink-0">
-        <span className="uppercase mr-1 text-[#747470]">4-TIER NARRATION</span>
+        <span className="uppercase mr-1 text-[#3D3D3A]">4-TIER NARRATION</span>
         {[0,1,2,3].map(t => (
           <button
             key={t}
@@ -751,7 +751,7 @@ export default function GAO002Scene03ReportingMap({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Roles */}
             <div>
-              <div className="text-xs uppercase tracking-widest text-[#747470] mb-1.5">ROLES</div>
+              <div className="text-xs uppercase tracking-widest text-[#3D3D3A] mb-1.5">ROLES</div>
               <div className="space-y-1.5">
                 {ROLES.map(r => {
                   const isSel = matchSelectedRole === r.id;
@@ -774,7 +774,7 @@ export default function GAO002Scene03ReportingMap({
 
             {/* Responsibilities (click to match) */}
             <div>
-              <div className="text-xs uppercase tracking-widest text-[#747470] mb-1.5">RESPONSIBILITIES — click to pair</div>
+              <div className="text-xs uppercase tracking-widest text-[#3D3D3A] mb-1.5">RESPONSIBILITIES — click to pair</div>
               <div className="space-y-1.5">
                 {ROLES.map(r => {
                   const matchedBy = Object.entries(matches).find(([, resp]) => resp === r.responsibility)?.[0];

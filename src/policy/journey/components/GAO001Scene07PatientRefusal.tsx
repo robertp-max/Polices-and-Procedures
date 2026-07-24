@@ -319,7 +319,7 @@ function PatientRefusalDecisionModal({
       >
         <div className="flex items-start justify-between gap-4 border-b border-[#E9E4E0] px-6 py-5">
           <div>
-            <p className="font-montserrat text-[11px] font-bold uppercase tracking-[0.22em] text-[#F06923]">
+            <p className="font-montserrat text-[11px] font-bold uppercase tracking-[0.22em] text-[#C2410C]">
               {decision.eyebrow}
             </p>
             <h2

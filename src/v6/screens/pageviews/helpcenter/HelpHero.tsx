@@ -21,7 +21,7 @@ export function HelpHero({ onSearchFocus }: { onSearchFocus: () => void }) {
       <StaticCardWatermark />
       <div className="relative z-10 grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:items-center">
         <div>
-          <h2 className="mb-6 font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#F06923]">
+          <h2 className="mb-6 font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#C2410C]">
             Help Center Command Center
           </h2>
           <h1 className="mb-6 font-montserrat text-4xl font-bold leading-none tracking-tight text-[#007970] md:text-5xl lg:text-6xl">
@@ -48,9 +48,9 @@ export function HelpHero({ onSearchFocus }: { onSearchFocus: () => void }) {
             <button
               type="button"
               onClick={onSearchFocus}
-              className="inline-flex items-center justify-center gap-2 rounded-[12px] border-[1.5px] border-[#F06923] bg-[#FFF7EC] px-8 py-4 text-[12px] font-bold uppercase tracking-widest text-[#7A3B16] transition-all hover:-translate-y-0.5 hover:bg-[#FFF2EB] hover:text-[#F06923] focus-visible:outline-none focus-visible:shadow-focus"
+              className="inline-flex items-center justify-center gap-2 rounded-[12px] border-[1.5px] border-[#F06923] bg-[#FFF7EC] px-8 py-4 text-[12px] font-bold uppercase tracking-widest text-[#7A3B16] transition-all hover:-translate-y-0.5 hover:bg-[#FFF2EB] hover:text-[#C2410C] focus-visible:outline-none focus-visible:shadow-focus"
             >
-              <Search className="h-4 w-4 text-[#F06923]" aria-hidden /> Search all articles
+              <Search className="h-4 w-4 text-[#C2410C]" aria-hidden /> Search all articles
             </button>
           </div>
         </div>

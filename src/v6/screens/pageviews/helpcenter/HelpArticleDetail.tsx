@@ -27,7 +27,7 @@ export function HelpArticleDetail({
     <article className="space-y-8">
       {/* Header band */}
       <header className="ci-page-hero relative overflow-hidden rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:p-12">
-        <p className="mb-4 font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#F06923]">
+        <p className="mb-4 font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#C2410C]">
           {article.template.replace(/-/g, ' ')}
         </p>
         <h1 className="mb-3 font-montserrat text-3xl font-bold leading-tight tracking-tight text-[#007970] md:text-4xl">
@@ -37,7 +37,7 @@ export function HelpArticleDetail({
           <p className="mb-5 max-w-3xl font-roboto text-base font-light leading-relaxed text-[#52404B] md:text-lg">{article.subtitle}</p>
         ) : null}
         <div className="mb-5"><HelpBadgeRow badges={article.badges} /></div>
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#A0A0A0]">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#474742]">
           <span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" aria-hidden /> {article.estimatedTime}</span>
           <span>Difficulty: {article.difficulty}</span>
           <span>Updated {article.lastUpdated}</span>
@@ -82,7 +82,7 @@ export function HelpArticleDetail({
       {article.quickStart.length > 0 ? (
         <section className="rounded-[24px] border border-[#C4F4F5] bg-[#F7FEFF] p-6 shadow-sm md:p-8">
           <h2 className="mb-4 flex items-center gap-2 font-montserrat text-[12px] font-bold uppercase tracking-widest text-[#007970]">
-            <Zap className="h-4 w-4 text-[#F06923]" aria-hidden /> Quick start
+            <Zap className="h-4 w-4 text-[#C2410C]" aria-hidden /> Quick start
           </h2>
           <ol className="grid gap-2 md:grid-cols-2">
             {article.quickStart.map((step, i) => (
@@ -144,7 +144,7 @@ export function HelpArticleDetail({
                 className="rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-4 py-3 text-left text-sm font-medium text-[#52404B] transition-colors hover:border-[#007970] hover:text-[#007970] focus-visible:outline-none focus-visible:shadow-focus"
               >
                 {rel.title}
-                <span className="mt-0.5 block font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#A0A0A0]">
+                <span className="mt-0.5 block font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#474742]">
                   {getCategory(rel.category)?.title} · {rel.estimatedTime}
                 </span>
               </button>

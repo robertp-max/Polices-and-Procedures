@@ -91,7 +91,7 @@ const FolderIcon = ({ className }) => (
 );
 
 const DocIcon = () => (
-  <svg className="w-5 h-5 text-[#747470]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+  <svg className="w-5 h-5 text-[#3D3D3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
 );
 
 const BRAD_LOADER_CSS = `
@@ -446,21 +446,21 @@ function EcignWorkspacePanel({ createdPackets = [] }) {
             <EcignMark />
             <div>
               <h2 className="font-montserrat text-2xl font-medium text-[#1F1C1B]">eCIgn</h2>
-              <p className="font-roboto text-sm font-light text-[#747470]">Track packets assigned to you, copied to you, or created by you.</p>
-              <p className="mt-1 font-roboto text-[11px] text-[#747470]">Signed in as {signer.name} · {signer.role}</p>
+              <p className="font-roboto text-sm font-light text-[#3D3D3A]">Track packets assigned to you, copied to you, or created by you.</p>
+              <p className="mt-1 font-roboto text-[11px] text-[#3D3D3A]">Signed in as {signer.name} · {signer.role}</p>
             </div>
           </div>
           <button type="button" onClick={() => setShowComingSoon(true)} className="rounded-[16px] border border-[#EAE4E3] bg-[#FAFBF8] px-4 py-3 text-left shadow-sm">
             <span className="font-montserrat text-xs font-semibold text-[#1F1C1B]">Create custom eCIgn packet</span>
             <span className="ml-2 rounded bg-[#FFF0E5] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#C74601]">Coming soon</span>
-            <span className="block font-roboto text-[11px] text-[#747470]">Send a custom packet outside a CES event.</span>
+            <span className="block font-roboto text-[11px] text-[#3D3D3A]">Send a custom packet outside a CES event.</span>
           </button>
         </div>
         {error && <div className="mb-5 rounded-[14px] bg-[#FFF8E6] px-4 py-3 text-xs text-[#8A5C00]">Live eCIgn data is unavailable: {error}. Showing only packets created in this session.</div>}
         <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
           {metrics.map(([label, value]) => (
             <div key={label} className="rounded-[18px] bg-[#FAFBF8] p-4 shadow-sm">
-              <div className="font-montserrat text-[10px] font-semibold uppercase tracking-widest text-[#747470]">{label}</div>
+              <div className="font-montserrat text-[10px] font-semibold uppercase tracking-widest text-[#3D3D3A]">{label}</div>
               <div className="mt-2 font-montserrat text-2xl font-medium text-[#004142]">{value}</div>
             </div>
           ))}
@@ -485,8 +485,8 @@ function EcignWorkspacePanel({ createdPackets = [] }) {
       </div>
 
       <div className="space-y-4">
-        {loading && <div className="rounded-[24px] bg-white/95 p-8 text-sm text-[#747470] shadow-md">Loading eCIgn packets...</div>}
-        {!loading && filtered.length === 0 && <div className="rounded-[24px] bg-white/95 p-8 text-sm text-[#747470] shadow-md">No eCIgn packets match this view.</div>}
+        {loading && <div className="rounded-[24px] bg-white/95 p-8 text-sm text-[#3D3D3A] shadow-md">Loading eCIgn packets...</div>}
+        {!loading && filtered.length === 0 && <div className="rounded-[24px] bg-white/95 p-8 text-sm text-[#3D3D3A] shadow-md">No eCIgn packets match this view.</div>}
         {!loading && filtered.map((item) => (
           <article key={item.id} className="rounded-[24px] bg-white p-6 shadow-md">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
@@ -497,14 +497,14 @@ function EcignWorkspacePanel({ createdPackets = [] }) {
                   <span className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${relationshipBadgeClass(item.relationship)}`}>{item.relationship}</span>
                 </div>
                 <h3 className="font-montserrat text-lg font-medium text-[#1F1C1B]">{item.title}</h3>
-                <p className="mt-1 font-roboto text-sm text-[#747470]">Context: {item.context}</p>
+                <p className="mt-1 font-roboto text-sm text-[#3D3D3A]">Context: {item.context}</p>
                 <div className="mt-4 grid gap-3 text-xs text-[#524D4B] md:grid-cols-3">
-                  <div><span className="font-semibold text-[#747470]">Source</span><br />{item.source}</div>
-                  <div><span className="font-semibold text-[#747470]">Signers</span><br />{item.signedCount} of {item.totalSigners} signed</div>
-                  <div><span className="font-semibold text-[#747470]">Waiting on</span><br />{item.waiting}</div>
-                  <div><span className="font-semibold text-[#747470]">Due</span><br />{fmtShortDate(item.dueDate)}</div>
-                  <div><span className="font-semibold text-[#747470]">Expires</span><br />{fmtShortDate(item.expirationDate)}</div>
-                  <div><span className="font-semibold text-[#747470]">Last activity</span><br />{fmtActivity(item.lastActivity)}</div>
+                  <div><span className="font-semibold text-[#3D3D3A]">Source</span><br />{item.source}</div>
+                  <div><span className="font-semibold text-[#3D3D3A]">Signers</span><br />{item.signedCount} of {item.totalSigners} signed</div>
+                  <div><span className="font-semibold text-[#3D3D3A]">Waiting on</span><br />{item.waiting}</div>
+                  <div><span className="font-semibold text-[#3D3D3A]">Due</span><br />{fmtShortDate(item.dueDate)}</div>
+                  <div><span className="font-semibold text-[#3D3D3A]">Expires</span><br />{fmtShortDate(item.expirationDate)}</div>
+                  <div><span className="font-semibold text-[#3D3D3A]">Last activity</span><br />{fmtActivity(item.lastActivity)}</div>
                 </div>
               </div>
               <div className="flex min-w-[180px] flex-col gap-2">
@@ -554,8 +554,8 @@ const PacketPage = ({ page, pageNumber, compact = false, onClick }) => (
         {pageNumber === 1 ? <CareIndeedMark /> : <CareIndeedMark small />}
         <div className="text-right">
           <p className="font-montserrat text-[11px] font-bold uppercase tracking-[0.24em] text-[#00858a]">{page.code}</p>
-          <p className="font-montserrat mt-2 text-xs uppercase tracking-[0.16em] text-[#747470]">{page.kicker}</p>
-          <p className="font-montserrat mt-4 text-[11px] uppercase tracking-[0.18em] text-[#747470]">Packet ID</p>
+          <p className="font-montserrat mt-2 text-xs uppercase tracking-[0.16em] text-[#3D3D3A]">{page.kicker}</p>
+          <p className="font-montserrat mt-4 text-[11px] uppercase tracking-[0.18em] text-[#3D3D3A]">Packet ID</p>
           <p className="font-montserrat mt-1 text-xs font-bold tracking-[0.16em] text-[#005451]">QAPI_MEETING-20260507-08-1</p>
         </div>
       </div>
@@ -564,7 +564,7 @@ const PacketPage = ({ page, pageNumber, compact = false, onClick }) => (
         <p className="font-montserrat text-[11px] font-bold uppercase tracking-[0.32em] text-[#d34800]">{page.label}</p>
         <h3 className={`${compact ? 'text-5xl' : 'text-3xl md:text-4xl'} mt-5 font-montserrat font-bold uppercase leading-tight text-[#004142]`}>{page.title}</h3>
         <div className="mt-9 h-1 w-28 rounded-full bg-gradient-to-r from-[#d34800] to-[#00a8a8]" />
-        <p className={`${compact ? 'text-2xl' : 'text-lg'} mt-8 font-roboto font-light text-[#747470]`}>{page.subtitle}</p>
+        <p className={`${compact ? 'text-2xl' : 'text-lg'} mt-8 font-roboto font-light text-[#3D3D3A]`}>{page.subtitle}</p>
       </div>
 
       <div className="mt-auto grid grid-cols-2 gap-5">
@@ -596,7 +596,7 @@ const CircularDataSourceButton = ({ title, desc, icon, strokeColor, onClick }) =
         {icon}
       </div>
       <div className="font-montserrat font-bold text-[9px] md:text-[11px] text-[#1F1C1B] tracking-wider uppercase md:mb-1">{title}</div>
-      <div className="font-roboto text-[7px] md:text-[8px] text-[#747470] font-light leading-tight hidden md:block">{desc}</div>
+      <div className="font-roboto text-[7px] md:text-[8px] text-[#3D3D3A] font-light leading-tight hidden md:block">{desc}</div>
     </div>
   </div>
 );
@@ -936,7 +936,7 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
               <GoogleDriveIcon className="w-10 h-10" />
               <div>
                 <h2 className="text-xl font-montserrat text-[#1F1C1B] font-medium mb-1">Google Drive Evidence</h2>
-                <p className="text-xs font-roboto text-[#747470] font-light">Folders are color-coded by event domain; documents file flat inside each event.</p>
+                <p className="text-xs font-roboto text-[#3D3D3A] font-light">Folders are color-coded by event domain; documents file flat inside each event.</p>
               </div>
             </div>
 
@@ -1004,7 +1004,7 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
                     </div>
                   )}
                   {driveBrowserLoading ? (
-                    <div className="py-12 text-center font-roboto text-sm text-[#747470]">Loading Google Drive folder...</div>
+                    <div className="py-12 text-center font-roboto text-sm text-[#3D3D3A]">Loading Google Drive folder...</div>
                   ) : driveBrowserErr ? (
                     <div className="mb-6 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{driveBrowserErr}</div>
                   ) : null}
@@ -1021,10 +1021,10 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
                       >
                         <FolderIcon className={`w-28 h-20 md:w-32 md:h-24 ${folder.color} group-hover:scale-105 transition-transform drop-shadow-md`} />
                         <span className="font-montserrat font-medium text-[#1F1C1B] text-xs md:text-sm mt-4 text-center leading-tight">{folder.name}</span>
-                        <span className="font-roboto text-[9px] md:text-[10px] font-medium text-[#747470] uppercase tracking-wider mt-2 bg-[#FAFBF8] px-2 py-1 rounded">{folder.subtext}</span>
+                        <span className="font-roboto text-[9px] md:text-[10px] font-medium text-[#3D3D3A] uppercase tracking-wider mt-2 bg-[#FAFBF8] px-2 py-1 rounded">{folder.subtext}</span>
                         <div className="mt-3 flex flex-col items-center gap-1 w-full border-t border-[#EAE4E3] pt-2">
                            <span className={`text-[9px] font-roboto ${folder.audit.includes('Clean') || folder.audit.includes('Live') ? 'text-[#008540]' : 'text-[#C74601]'}`}>{folder.audit}</span>
-                           <span className="text-[9px] font-roboto text-[#747470]">{folder.sync}</span>
+                           <span className="text-[9px] font-roboto text-[#3D3D3A]">{folder.sync}</span>
                         </div>
                       </div>
                     ))}
@@ -1047,7 +1047,7 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
                           <span className={`px-2 py-0.5 rounded text-[10px] font-montserrat font-medium uppercase tracking-wider ${p.status.includes('Sent') ? 'bg-[#E5FEFF] text-[#007970]' : 'bg-[#FFF0E5] text-[#C74601]'}`}>
                             {p.status}
                           </span>
-                          <span className="font-roboto text-[10px] font-light text-[#747470] whitespace-nowrap">{p.date}</span>
+                          <span className="font-roboto text-[10px] font-light text-[#3D3D3A] whitespace-nowrap">{p.date}</span>
                         </div>
                       </div>
                     </div>
@@ -1106,7 +1106,7 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
                       </div>
 
                       <h3 className="font-montserrat font-bold text-[#1F1C1B] text-[12px] uppercase tracking-wider mb-2 leading-tight">{t.name}</h3>
-                      <p className="font-roboto font-light text-[10px] text-[#747470] leading-relaxed line-clamp-4 pr-2">{t.desc}</p>
+                      <p className="font-roboto font-light text-[10px] text-[#3D3D3A] leading-relaxed line-clamp-4 pr-2">{t.desc}</p>
                     </div>
                   ))}
                 </div>
@@ -1116,7 +1116,7 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
             {/* STAGE 2: PAYER ROUTE OR EVENT */}
             {step === 2 && selectedTemplate && (
               <div className="bg-white rounded-[32px] p-6 md:p-10 shadow-[0_12px_45px_rgba(0,0,0,0.04)] border-none animate-fade-in">
-                <button onClick={() => resetStudio()} className="font-montserrat text-[11px] font-bold text-[#747470] uppercase tracking-widest hover:text-[#1F1C1B] transition-colors mb-6 flex items-center gap-1">
+                <button onClick={() => resetStudio()} className="font-montserrat text-[11px] font-bold text-[#3D3D3A] uppercase tracking-widest hover:text-[#1F1C1B] transition-colors mb-6 flex items-center gap-1">
                   ← Back to Templates
                 </button>
                 
@@ -1135,7 +1135,7 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
                             <div className="flex justify-between items-start mb-3">
                               <h3 className="font-montserrat font-bold text-[#1F1C1B] text-sm md:text-base leading-snug pr-2">{route.name}</h3>
                               {route.badge && (
-                                <span className="font-roboto text-[9px] font-bold text-[#747470] tracking-wider bg-[#FAFBF8] px-1.5 py-0.5 rounded uppercase shrink-0">
+                                <span className="font-roboto text-[9px] font-bold text-[#3D3D3A] tracking-wider bg-[#FAFBF8] px-1.5 py-0.5 rounded uppercase shrink-0">
                                   {route.badge}
                                 </span>
                               )}
@@ -1160,7 +1160,7 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
                         >
                           <div>
                             <h3 className="font-montserrat font-bold text-[#1F1C1B] text-sm md:text-base leading-snug mb-2">{e.title}</h3>
-                            <p className="font-roboto font-light text-xs text-[#747470] uppercase tracking-wider">{e.date} &nbsp;|&nbsp; {e.id}</p>
+                            <p className="font-roboto font-light text-xs text-[#3D3D3A] uppercase tracking-wider">{e.date} &nbsp;|&nbsp; {e.id}</p>
                           </div>
                         </div>
                       ))}
@@ -1173,7 +1173,7 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
             {/* STAGE 3: DATA SOURCE */}
             {step === 3 && (
               <div className="bg-white/95 backdrop-blur-sm rounded-[32px] p-6 md:p-8 shadow-md border-none animate-fade-in">
-                <button onClick={() => setStep(2)} className="font-montserrat text-[11px] font-medium uppercase tracking-wider text-[#747470] mb-6 hover:text-[#1F1C1B] transition-colors">← Back</button>
+                <button onClick={() => setStep(2)} className="font-montserrat text-[11px] font-medium uppercase tracking-wider text-[#3D3D3A] mb-6 hover:text-[#1F1C1B] transition-colors">← Back</button>
                 <div className="text-center mb-10">
                    <h2 className="font-montserrat text-sm tracking-widest text-[#1F1C1B] uppercase font-bold mb-2">2 • Select Data Source *</h2>
                    <p className="font-roboto text-xs text-[#524D4B] font-light">Choose where the source evidence will be pulled from.</p>
@@ -1185,7 +1185,7 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
                      desc="Local files & Scans" 
                      strokeColor="#9CA3AF" 
                      onClick={() => handleDataSourceClick('Upload / Camera')} 
-                     icon={<svg className="w-8 h-8 md:w-10 md:h-10 text-[#747470]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>}
+                     icon={<svg className="w-8 h-8 md:w-10 md:h-10 text-[#3D3D3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>}
                   />
                   <CircularDataSourceButton 
                      title="Google Drive" 
@@ -1251,7 +1251,7 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
             {step === 5 && (
               <div className="animate-fade-in overflow-hidden rounded-[20px] bg-white shadow-[0_12px_45px_rgba(0,0,0,0.04)]">
                 <div className="flex items-center justify-between gap-4 border-b border-[#EAE4E3] bg-white/90 px-6 py-4 md:px-8">
-                  <button className="flex items-center gap-2 rounded-[10px] border border-[#cfe6e8] px-4 py-2 font-roboto text-sm text-[#747470]">
+                  <button className="flex items-center gap-2 rounded-[10px] border border-[#cfe6e8] px-4 py-2 font-roboto text-sm text-[#3D3D3A]">
                     <span className="h-5 w-5 rounded border border-[#747470]" />
                     ⚙ Testing · skip iterations
                   </button>
@@ -1259,7 +1259,7 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
                     <span className="h-2 w-14 rounded-full bg-[#007970]" />
                     <span className="h-2 w-14 rounded-full bg-[#007970]" />
                     <span className="h-2 w-20 rounded-full bg-[#007970]" />
-                    <span className="ml-3 font-montserrat text-sm font-medium tracking-wider text-[#747470]">Step 3 · Preview & Export</span>
+                    <span className="ml-3 font-montserrat text-sm font-medium tracking-wider text-[#3D3D3A]">Step 3 · Preview & Export</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button onClick={() => setStep(4)} className="font-montserrat rounded-[10px] border border-[#cfe6e8] bg-white px-6 py-3 text-sm font-medium text-[#007970] shadow-sm transition-all hover:bg-[#FAFBF8]">← Back</button>
@@ -1333,14 +1333,14 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
               <div className="bg-white/95 backdrop-blur-sm rounded-[32px] p-6 md:p-8 shadow-md border-none animate-fade-in flex flex-col md:flex-row gap-8 items-start">
                  
                  <div className="w-full md:w-1/3 bg-[#FAFBF8] rounded-[24px] p-6 shadow-sm border border-[#EAE4E3]">
-                    <div className="font-montserrat text-[10px] font-bold text-[#747470] uppercase tracking-widest mb-4">DefenCIble Metadata</div>
+                    <div className="font-montserrat text-[10px] font-bold text-[#3D3D3A] uppercase tracking-widest mb-4">DefenCIble Metadata</div>
                     <div className="space-y-4">
                        <div>
-                         <div className="font-roboto text-[10px] text-[#747470] uppercase mb-1">PACKET ID</div>
+                         <div className="font-roboto text-[10px] text-[#3D3D3A] uppercase mb-1">PACKET ID</div>
                          <div className="font-roboto font-medium text-sm text-[#1F1C1B] bg-white px-3 py-1.5 rounded border border-[#EAE4E3]">PKT_2026_{Math.floor(Math.random() * 1000)}</div>
                        </div>
                        <div>
-                         <div className="font-roboto text-[10px] text-[#747470] uppercase mb-1">AUDIT HASH</div>
+                         <div className="font-roboto text-[10px] text-[#3D3D3A] uppercase mb-1">AUDIT HASH</div>
                          <div className="font-roboto font-mono text-xs text-[#524D4B] break-all truncate bg-white px-3 py-1.5 rounded border border-[#EAE4E3]">8f4e2d1c9b7a...</div>
                        </div>
                        <div className="font-roboto font-light text-xs text-[#524D4B] leading-relaxed pt-2 border-t border-[#EAE4E3]">
@@ -1391,7 +1391,7 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
         {activeTab === 'EDIT PACKET' && (
           <div className="space-y-6 animate-fade-in min-h-[720px]">
             <div className="bg-surface-glass backdrop-blur-xl rounded-[32px] p-8 shadow-rest border border-hairline">
-              <div className="font-montserrat text-[10px] font-medium text-[#747470] uppercase tracking-widest mb-2">PACKET ID</div>
+              <div className="font-montserrat text-[10px] font-medium text-[#3D3D3A] uppercase tracking-widest mb-2">PACKET ID</div>
               <div className="flex flex-col md:flex-row gap-4 md:items-center mb-3">
                 <input 
                   type="text" 
@@ -1407,7 +1407,7 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
                   <DocIcon /> Load packet
                 </button>
               </div>
-              <p className="font-roboto font-light text-xs text-[#747470]">Find the Packet ID on the cover page and every page footer of a generated packet. Loading it starts a remediation thread with Brad.</p>
+              <p className="font-roboto font-light text-xs text-[#3D3D3A]">Find the Packet ID on the cover page and every page footer of a generated packet. Loading it starts a remediation thread with Brad.</p>
             </div>
 
             <div className="bg-surface-glass backdrop-blur-xl rounded-[32px] p-8 shadow-rest border border-hairline min-h-[500px] flex flex-col">
@@ -1418,7 +1418,7 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
 
               <div className="flex-1 bg-white rounded-[24px] border-none shadow-md p-6 flex flex-col justify-end mb-6 overflow-y-auto">
                 {!isPacketLoaded ? (
-                  <div className="flex flex-col items-center justify-center h-full text-[#747470]">
+                  <div className="flex flex-col items-center justify-center h-full text-[#3D3D3A]">
                     <svg className="w-8 h-8 opacity-50 mb-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
                     <p className="font-roboto text-sm font-light">Load a packet ID to begin.</p>
                   </div>
@@ -1493,11 +1493,11 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
               <div className="flex justify-between items-center mb-6">
                  <h2 className="font-montserrat text-xl md:text-2xl font-medium text-[#1F1C1B] flex items-center gap-3">
                    {sourceModalType === 'Google Drive' && <GoogleDriveIcon className="w-6 h-6" />}
-                   {sourceModalType === 'Upload / Camera' && <svg className="w-6 h-6 text-[#747470]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>}
+                   {sourceModalType === 'Upload / Camera' && <svg className="w-6 h-6 text-[#3D3D3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>}
                    {sourceModalType === 'Both (Merge)' && <svg className="w-6 h-6 text-[#007970]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>}
                    {sourceModalType === 'Google Drive' ? 'Select from Google Drive' : sourceModalType === 'Upload / Camera' ? 'Upload or Capture' : 'Merge Data Sources'}
                  </h2>
-                 <button onClick={() => setShowSourceModal(false)} className="text-[#747470] hover:text-[#1F1C1B]">
+                 <button onClick={() => setShowSourceModal(false)} className="text-[#3D3D3A] hover:text-[#1F1C1B]">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                  </button>
               </div>
@@ -1562,10 +1562,10 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
                        className="flex-1 border-2 border-dashed border-[#EAE4E3] rounded-[24px] flex flex-col items-center justify-center p-8 hover:bg-[#FAFBF8] hover:border-[#747470] cursor-pointer transition-colors group text-center"
                      >
                         <div className="w-16 h-16 bg-[#FAFBF8] rounded-full flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                          <svg className="w-8 h-8 text-[#747470]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                          <svg className="w-8 h-8 text-[#3D3D3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                         </div>
                         <span className="font-montserrat text-sm font-medium text-[#1F1C1B]">Drag & Drop files here</span>
-                        <span className="font-roboto text-xs text-[#747470] mt-1">or click to browse local files</span>
+                        <span className="font-roboto text-xs text-[#3D3D3A] mt-1">or click to browse local files</span>
                      </button>
                      <button
                        type="button"
@@ -1576,12 +1576,12 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
                           <svg className="w-8 h-8 text-[#007970]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         </div>
                         <span className="font-montserrat text-sm font-medium text-[#1F1C1B]">Open Camera Scanner</span>
-                        <span className="font-roboto text-xs text-[#747470] mt-1">Capture using your device</span>
+                        <span className="font-roboto text-xs text-[#3D3D3A] mt-1">Capture using your device</span>
                      </button>
                   </div>
                   {uploadedFiles.length > 0 && (
                     <div className="mb-8 rounded-[20px] bg-[#FAFBF8] p-4 shadow-inner">
-                      <div className="mb-3 font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#747470]">Selected Files</div>
+                      <div className="mb-3 font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#3D3D3A]">Selected Files</div>
                       <div className="space-y-2">
                         {uploadedFiles.map((file, index) => (
                           <div key={`${file.name}-${index}`} className="flex items-center justify-between gap-3 rounded-[14px] bg-white px-4 py-3 shadow-sm">
@@ -1589,10 +1589,10 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
                               <DocIcon />
                               <div className="min-w-0">
                                 <p className="truncate font-roboto text-sm text-[#1F1C1B]">{file.name}</p>
-                                <p className="font-roboto text-[10px] uppercase tracking-wider text-[#747470]">{file.source}</p>
+                                <p className="font-roboto text-[10px] uppercase tracking-wider text-[#3D3D3A]">{file.source}</p>
                               </div>
                             </div>
-                            <button type="button" onClick={() => setUploadedFiles((prev) => prev.filter((_, i) => i !== index))} className="text-xl leading-none text-[#747470] hover:text-[#D70101]">×</button>
+                            <button type="button" onClick={() => setUploadedFiles((prev) => prev.filter((_, i) => i !== index))} className="text-xl leading-none text-[#3D3D3A] hover:text-[#D70101]">×</button>
                           </div>
                         ))}
                       </div>
@@ -1611,20 +1611,20 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
                         <GoogleDriveIcon className="w-8 h-8" />
                         <div>
                           <p className="font-montserrat text-sm font-medium text-[#1F1C1B]">Select Google Drive Folder</p>
-                          <p className="font-roboto text-xs text-[#747470]">Click to browse your Drive</p>
+                          <p className="font-roboto text-xs text-[#3D3D3A]">Click to browse your Drive</p>
                         </div>
                       </div>
                       <span className="font-montserrat text-[#007970] text-xs font-medium uppercase tracking-wider">Browse</span>
                     </div>
                     <div className="flex items-center justify-between p-4 bg-white rounded-[16px] shadow-md border-none cursor-pointer hover:shadow-lg transition-all duration-300">
                       <div className="flex items-center gap-4">
-                        <svg className="w-8 h-8 text-[#747470]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                        <svg className="w-8 h-8 text-[#3D3D3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
                         <div>
                           <p className="font-montserrat text-sm font-medium text-[#1F1C1B]">Attach Local Files</p>
-                          <p className="font-roboto text-xs text-[#747470]">Drop files or click to upload</p>
+                          <p className="font-roboto text-xs text-[#3D3D3A]">Drop files or click to upload</p>
                         </div>
                       </div>
-                      <span className="font-montserrat text-[#747470] text-xs font-medium uppercase tracking-wider">Add</span>
+                      <span className="font-montserrat text-[#3D3D3A] text-xs font-medium uppercase tracking-wider">Add</span>
                     </div>
                   </div>
                 </>
@@ -1655,13 +1655,13 @@ export function Defensible2Studio({ initialTab }: { initialTab?: string } = {}) 
                 <span className="font-montserrat text-4xl font-bold text-[#007970]">B</span>
               </div>
               <h2 className="font-montserrat text-lg font-bold tracking-tight text-[#1F1C1B]">Brad is generating the packet</h2>
-              <p className="mb-8 mt-2 font-roboto text-[13px] font-medium text-[#747470]">Brad is reviewing rules, mapping evidence, and building packet sections...</p>
+              <p className="mb-8 mt-2 font-roboto text-[13px] font-medium text-[#3D3D3A]">Brad is reviewing rules, mapping evidence, and building packet sections...</p>
               <div className="relative mb-4 h-1 w-full overflow-hidden rounded-full bg-[#EAE4E3]">
                 <div className="absolute bottom-0 left-0 top-0 w-1/3 animate-[slide-progress_1.8s_ease-in-out_infinite] rounded-full bg-[#007970]" />
               </div>
               <div className="flex items-center justify-center gap-2 text-xs">
                 <span className="font-montserrat font-semibold text-[#007970]">Step 2 of 5</span>
-                <span className="font-roboto text-[#747470]">Content Mapping</span>
+                <span className="font-roboto text-[#3D3D3A]">Content Mapping</span>
               </div>
             </div>
           </div>

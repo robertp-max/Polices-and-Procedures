@@ -238,7 +238,7 @@ function VisionPillarModal({ hotspot, close, complete }: VisionPillarModalProps)
             <h2 id={titleId} className="text-lg font-bold leading-tight text-[#0F5B54]">
               Vision Pillars: {activePillar.title}
             </h2>
-            <p className="mt-1 text-[12px] font-bold uppercase tracking-[0.16em] text-[#F06923]">
+            <p className="mt-1 text-[12px] font-bold uppercase tracking-[0.16em] text-[#C2410C]">
               Reveal the pillar, then apply it to the field decision
             </p>
           </div>
@@ -289,7 +289,7 @@ function VisionPillarModal({ hotspot, close, complete }: VisionPillarModalProps)
                     {pillar.behavior}
                   </span>
                   {!isRevealed ? (
-                    <span className="mt-3 block text-[11px] font-bold uppercase tracking-[0.14em] text-[#F06923]">
+                    <span className="mt-3 block text-[11px] font-bold uppercase tracking-[0.14em] text-[#C2410C]">
                       Tap to reveal
                     </span>
                   ) : null}

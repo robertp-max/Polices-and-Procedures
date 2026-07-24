@@ -245,7 +245,7 @@ export function FormsLibraryScreen() {
           description={`${filteredRows.length} of ${formRows.length} records. Use search and domain filters to keep the view light.`}
           actions={
             <>
-              <label className="flex min-h-11 min-w-[260px] items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 text-sm text-[#747470]">
+              <label className="flex min-h-11 min-w-[260px] items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 text-sm text-[#3D3D3A]">
                 <Search className="h-4 w-4 shrink-0" aria-hidden />
                 <input
                   aria-label="Search forms"
@@ -257,7 +257,7 @@ export function FormsLibraryScreen() {
               </label>
               <select
                 aria-label="Filter forms by domain"
-                className="min-h-11 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470] outline-none focus:border-[#007970]"
+                className="min-h-11 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#3D3D3A] outline-none focus:border-[#007970]"
                 onChange={(event) => setDomain(event.target.value)}
                 value={domain}
               >
@@ -277,22 +277,22 @@ export function FormsLibraryScreen() {
               >
                 <span>
                   <span className="mb-4 flex items-start justify-between gap-4">
-                    <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{row.formId}</span>
+                    <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#C2410C]">{row.formId}</span>
                     <ToneTag tone="teal">{row.status}</ToneTag>
                   </span>
-                  <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] transition-colors group-hover:text-[#F06923]">
+                  <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] transition-colors group-hover:text-[#C2410C]">
                     {row.title}
                   </span>
-                  <span className="mt-3 block text-sm leading-relaxed text-[#747470]">{row.domain} - {row.type}</span>
+                  <span className="mt-3 block text-sm leading-relaxed text-[#3D3D3A]">{row.domain} - {row.type}</span>
                 </span>
                 <span className="mt-6 flex items-center justify-between gap-4 border-t border-[#E5E4E3] pt-4">
-                  <span className="min-w-0 text-xs font-medium leading-relaxed text-[#747470]">{row.linkedPolicies}</span>
+                  <span className="min-w-0 text-xs font-medium leading-relaxed text-[#3D3D3A]">{row.linkedPolicies}</span>
                   <ToneBadge size="sm" status={row.evidence} />
                 </span>
               </button>
             ))}
           </div>
-          {hiddenCount > 0 ? <p className="mt-8 text-center text-sm text-[#747470]">Showing first 36 matches. Search or filter to narrow the list.</p> : null}
+          {hiddenCount > 0 ? <p className="mt-8 text-center text-sm text-[#3D3D3A]">Showing first 36 matches. Search or filter to narrow the list.</p> : null}
         </PolicyPanel>
       ) : null}
 
@@ -321,8 +321,8 @@ export function FormsLibraryScreen() {
                 return (
                   <article key={stat.label} className="rounded-[20px] border border-[#E5E4E3] bg-[#FAFBF8] p-5">
                     <Icon aria-hidden="true" className="h-5 w-5 text-[#007970]" />
-                    <p className="mt-4 font-montserrat text-2xl font-bold text-[#F06923]">{stat.value}</p>
-                    <p className="mt-2 text-xs font-bold uppercase tracking-wider text-[#747470]">{stat.label}</p>
+                    <p className="mt-4 font-montserrat text-2xl font-bold text-[#C2410C]">{stat.value}</p>
+                    <p className="mt-2 text-xs font-bold uppercase tracking-wider text-[#3D3D3A]">{stat.label}</p>
                   </article>
                 );
               })}
@@ -334,7 +334,7 @@ export function FormsLibraryScreen() {
                     <h3 className="font-montserrat text-sm font-bold text-[#007970]">{panel.label}</h3>
                     <ToneBadge size="sm" status={panel.status} />
                   </div>
-                  <p className="text-sm leading-relaxed text-[#747470]">{panel.detail}</p>
+                  <p className="text-sm leading-relaxed text-[#3D3D3A]">{panel.detail}</p>
                 </article>
               ))}
             </div>

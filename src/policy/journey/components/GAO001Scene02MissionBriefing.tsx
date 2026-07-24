@@ -230,7 +230,7 @@ function MissionBriefingModal({ hotspot, close, complete }: MissionBriefingModal
               <h2 id={titleId} className="text-lg font-bold leading-tight text-[#0F5B54]">
                 Mission Briefing: {hotspot.label}
               </h2>
-              <p className="mt-1 text-[12px] font-bold uppercase tracking-[0.16em] text-[#F06923]">
+              <p className="mt-1 text-[12px] font-bold uppercase tracking-[0.16em] text-[#C2410C]">
                 Connect the mission to a field decision
               </p>
             </div>

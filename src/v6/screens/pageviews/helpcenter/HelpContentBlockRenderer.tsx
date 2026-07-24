@@ -14,7 +14,7 @@ function DecisionNode({ node, depth = 0 }: { node: HelpDecisionBranch; depth?: n
   return (
     <div className={depth > 0 ? 'ml-6 border-l-2 border-[#E5E4E3] pl-4' : ''}>
       <div className="flex items-start gap-2">
-        <GitBranch className="mt-0.5 h-4 w-4 shrink-0 text-[#F06923]" aria-hidden />
+        <GitBranch className="mt-0.5 h-4 w-4 shrink-0 text-[#C2410C]" aria-hidden />
         <p className="text-sm font-medium text-[#52404B]">{node.question}</p>
       </div>
       <div className="mt-2 grid gap-2 md:grid-cols-2">
@@ -53,7 +53,7 @@ export function HelpContentBlockRenderer({ blocks }: { blocks: HelpContentBlock[
             return (
               <div key={i}>
                 {block.kicker ? (
-                  <p className="mb-3 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#F06923]">{block.kicker}</p>
+                  <p className="mb-3 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#C2410C]">{block.kicker}</p>
                 ) : null}
                 <HelpScreenshotFrame image={block.image} />
               </div>
@@ -88,9 +88,9 @@ export function HelpContentBlockRenderer({ blocks }: { blocks: HelpContentBlock[
                         {step.actionLabel && step.actionTo ? (
                           <Link
                             to={step.actionTo}
-                            className="mt-3 inline-flex items-center gap-1.5 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#007970] hover:text-[#F06923]"
+                            className="mt-3 inline-flex items-center gap-1.5 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#007970] hover:text-[#C2410C]"
                           >
-                            {step.actionLabel} <ArrowRight className="h-3.5 w-3.5 text-[#F06923]" aria-hidden />
+                            {step.actionLabel} <ArrowRight className="h-3.5 w-3.5 text-[#C2410C]" aria-hidden />
                           </Link>
                         ) : null}
                       </div>
@@ -147,12 +147,12 @@ export function HelpContentBlockRenderer({ blocks }: { blocks: HelpContentBlock[
                     <details key={n} className="group rounded-[16px] border border-[#E5E4E3] bg-white">
                       <summary className="flex cursor-pointer items-center justify-between gap-3 p-4 text-sm font-medium text-[#52404B] [&::-webkit-details-marker]:hidden">
                         <span className="flex items-center gap-2">
-                          <AlertTriangle className="h-4 w-4 shrink-0 text-[#F06923]" aria-hidden /> {c.symptom}
+                          <AlertTriangle className="h-4 w-4 shrink-0 text-[#C2410C]" aria-hidden /> {c.symptom}
                         </span>
-                        <ChevronDown className="h-4 w-4 shrink-0 text-[#A0A0A0] transition-transform group-open:rotate-180" aria-hidden />
+                        <ChevronDown className="h-4 w-4 shrink-0 text-[#474742] transition-transform group-open:rotate-180" aria-hidden />
                       </summary>
                       <div className="border-t border-[#E5E4E3] px-4 py-3 text-sm leading-relaxed">
-                        <p className="text-[#52404B]"><span className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#A0A0A0]">Likely cause</span><br />{c.cause}</p>
+                        <p className="text-[#52404B]"><span className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#474742]">Likely cause</span><br />{c.cause}</p>
                         <p className="mt-2 text-[#52404B]"><span className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#008540]">Fix</span><br />{c.fix}</p>
                       </div>
                     </details>
@@ -183,7 +183,7 @@ export function HelpContentBlockRenderer({ blocks }: { blocks: HelpContentBlock[
                         className="flex items-center justify-between gap-2 rounded-[12px] border border-[#E5E4E3] bg-white px-4 py-3 text-sm font-medium text-[#52404B] transition-colors hover:border-[#007970] hover:text-[#007970] focus-visible:outline-none focus-visible:shadow-focus"
                       >
                         <span className="min-w-0 truncate">{link.label}</span>
-                        <ArrowRight className="h-4 w-4 shrink-0 text-[#F06923]" aria-hidden />
+                        <ArrowRight className="h-4 w-4 shrink-0 text-[#C2410C]" aria-hidden />
                       </Link>
                     </li>
                   ))}
@@ -201,7 +201,7 @@ export function HelpContentBlockRenderer({ blocks }: { blocks: HelpContentBlock[
                       to={action.to}
                       className="inline-flex items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-5 py-3 font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#52404B] transition-colors hover:border-[#C4F4F5] hover:bg-[#E5FEFF] hover:text-[#007970] focus-visible:outline-none focus-visible:shadow-focus"
                     >
-                      {action.label} <ArrowRight className="h-3.5 w-3.5 text-[#F06923]" aria-hidden />
+                      {action.label} <ArrowRight className="h-3.5 w-3.5 text-[#C2410C]" aria-hidden />
                     </Link>
                   ))}
                 </div>
@@ -216,7 +216,7 @@ export function HelpContentBlockRenderer({ blocks }: { blocks: HelpContentBlock[
                     <details key={n} className="group rounded-[16px] border border-[#E5E4E3] bg-white">
                       <summary className="flex cursor-pointer items-center justify-between gap-3 p-4 text-sm font-medium text-[#52404B] [&::-webkit-details-marker]:hidden">
                         {f.question}
-                        <ChevronDown className="h-4 w-4 shrink-0 text-[#A0A0A0] transition-transform group-open:rotate-180" aria-hidden />
+                        <ChevronDown className="h-4 w-4 shrink-0 text-[#474742] transition-transform group-open:rotate-180" aria-hidden />
                       </summary>
                       <p className="border-t border-[#E5E4E3] px-4 py-3 text-sm leading-relaxed text-[#52404B]">{f.answer}</p>
                     </details>

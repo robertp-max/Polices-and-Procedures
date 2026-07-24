@@ -1059,9 +1059,9 @@ export function Defensible2StudioLanding() {
                 className="relative min-h-[180px] overflow-hidden rounded-[24px] bg-white p-6 pr-16 text-left shadow-md transition-all hover:-translate-y-1 hover:shadow-lg"
                 onClick={() => chooseTemplate(title)}
               >
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-[#FAFBF8] text-lg text-[#747470] shadow-sm">{index + 1}</div>
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-[#FAFBF8] text-lg text-[#3D3D3A] shadow-sm">{index + 1}</div>
                 <h3 className="font-montserrat text-sm font-bold uppercase tracking-wide text-[#1F1C1B]">{title}</h3>
-                <p className="mt-3 font-roboto text-sm leading-6 text-[#747470]">{desc}</p>
+                <p className="mt-3 font-roboto text-sm leading-6 text-[#3D3D3A]">{desc}</p>
                 <span className="absolute bottom-0 right-0 top-0 w-10 rounded-r-[24px]" style={{ background: color }} />
               </button>
             ))}
@@ -1073,7 +1073,7 @@ export function Defensible2StudioLanding() {
       {selectedTemplateTitle && !attachmentsConfirmed && <div className="mx-auto w-full max-w-[1180px] font-roboto">
         <div className="rounded-[32px] bg-white/95 p-8 shadow-[0_12px_45px_rgba(0,0,0,0.04)] md:p-10">
           <div className="mb-6 flex items-center justify-center gap-3">
-            <span className="font-roboto text-sm text-[#747470]">Template: <strong className="text-[#1F1C1B]">{selectedTemplateTitle}</strong></span>
+            <span className="font-roboto text-sm text-[#3D3D3A]">Template: <strong className="text-[#1F1C1B]">{selectedTemplateTitle}</strong></span>
             <button type="button" onClick={() => { setSelectedTemplateTitle(''); setFlowStep('template'); }} className="rounded-full bg-[#EBE6E6] px-3 py-1 font-montserrat text-[11px] uppercase tracking-wider text-[#1F1C1B] hover:bg-[#E0DADA]">Change template</button>
           </div>
           <h2 className="text-center font-montserrat text-lg font-bold uppercase tracking-widest text-[#1F1C1B]">2 · Select Data Source *</h2>
@@ -1097,7 +1097,7 @@ export function Defensible2StudioLanding() {
                   <span className="text-3xl" style={{ color }}>{icon}</span>
                 )}
                 <strong className="mt-4 font-montserrat text-sm uppercase tracking-wider text-[#1F1C1B]">{title}</strong>
-                <span className="mt-2 font-roboto text-xs text-[#747470]">{desc}</span>
+                <span className="mt-2 font-roboto text-xs text-[#3D3D3A]">{desc}</span>
               </button>
             ))}
           </div>
@@ -1125,7 +1125,7 @@ export function Defensible2StudioLanding() {
           </div>
 
           {flowStep === 'event' && <div className="rounded-[32px] bg-white/95 p-8 shadow-[0_12px_45px_rgba(0,0,0,0.04)] md:p-10">
-            <button type="button" onClick={() => { resetSourceAttachments(); setAttachmentsConfirmed(false); setSelectedTemplateTitle(''); setFlowStep('template'); }} className="mb-8 font-montserrat text-xs font-bold uppercase tracking-widest text-[#747470]">← Back to templates</button>
+            <button type="button" onClick={() => { resetSourceAttachments(); setAttachmentsConfirmed(false); setSelectedTemplateTitle(''); setFlowStep('template'); }} className="mb-8 font-montserrat text-xs font-bold uppercase tracking-widest text-[#3D3D3A]">← Back to templates</button>
             <h2 className="font-montserrat text-lg font-bold uppercase tracking-widest text-[#1F1C1B]">1 · Specific Event *</h2>
             <p className="mt-6 font-roboto text-sm text-[#524D4B]">
               Showing January-June 2026 events that match the selected {selectedTemplateTitle || 'packet'} template. Generated packets for these pre-readiness events are routed to Drive folder {PRE_READINESS_EVENT_FOLDER_ID}.
@@ -1139,10 +1139,10 @@ export function Defensible2StudioLanding() {
                   className="min-h-[150px] rounded-[24px] bg-white p-8 text-left shadow-md transition-all hover:-translate-y-1 hover:shadow-lg"
                 >
                   <strong className="block font-montserrat text-xl font-bold text-[#1F1C1B]">{e.label}</strong>
-                  <span className="mt-4 block font-roboto text-sm text-[#747470]">{e.date || 'Date TBD'} | {e.id}</span>
+                  <span className="mt-4 block font-roboto text-sm text-[#3D3D3A]">{e.date || 'Date TBD'} | {e.id}</span>
                 </button>
               )) : (
-                <div className="rounded-[24px] bg-white p-8 font-roboto text-sm text-[#747470] shadow-md md:col-span-3">
+                <div className="rounded-[24px] bg-white p-8 font-roboto text-sm text-[#3D3D3A] shadow-md md:col-span-3">
                   No January-June 2026 events match this template.
                 </div>
               )}
@@ -1156,10 +1156,10 @@ export function Defensible2StudioLanding() {
             const fieldByKey = new Map((ex?.fields ?? []).map((f) => [f.key, f]));
             const conflictByKey = new Map((ex?.conflicts ?? []).map((c) => [c.key, c.values]));
             const meta = extraction?.metadata;
-            const confColor = (c: number) => c >= 0.8 ? 'bg-[#E6F6EC] text-[#008540]' : c >= 0.5 ? 'bg-[#FFF4E5] text-[#B45309]' : 'bg-[#F1EEED] text-[#747470]';
+            const confColor = (c: number) => c >= 0.8 ? 'bg-[#E6F6EC] text-[#008540]' : c >= 0.5 ? 'bg-[#FFF4E5] text-[#B45309]' : 'bg-[#F1EEED] text-[#3D3D3A]';
             return (
               <div className="rounded-[32px] bg-white/95 p-8 shadow-[0_12px_45px_rgba(0,0,0,0.04)] md:p-10">
-                <button type="button" onClick={() => { resetSourceAttachments(); setAttachmentsConfirmed(false); setSelectedTemplateTitle(''); setExtraction(null); setVerifiedFields({}); setFlowStep('template'); }} className="mb-6 font-montserrat text-xs font-bold uppercase tracking-widest text-[#747470]">← Back to templates</button>
+                <button type="button" onClick={() => { resetSourceAttachments(); setAttachmentsConfirmed(false); setSelectedTemplateTitle(''); setExtraction(null); setVerifiedFields({}); setFlowStep('template'); }} className="mb-6 font-montserrat text-xs font-bold uppercase tracking-widest text-[#3D3D3A]">← Back to templates</button>
                 <h2 className="font-montserrat text-2xl font-bold text-[#1F1C1B]">Verify extracted patient details</h2>
                 <p className="mt-2 font-roboto text-sm text-[#524D4B]">{ex?.validationSummary || 'Review and confirm the details below before generating. Nothing is invented — empty fields were not found in the source.'}</p>
                 {extractionError && (
@@ -1208,7 +1208,7 @@ export function Defensible2StudioLanding() {
                           </div>
                         )}
                         {f?.sourceSnippet ? (
-                          <p className="mt-2 font-roboto text-[11px] italic text-[#747470]">“{f.sourceSnippet.slice(0, 140)}”</p>
+                          <p className="mt-2 font-roboto text-[11px] italic text-[#3D3D3A]">“{f.sourceSnippet.slice(0, 140)}”</p>
                         ) : !readOnly ? (
                           <p className="mt-2 font-roboto text-[11px] text-[#A8A29E]">No source evidence — verify manually.</p>
                         ) : null}
@@ -1231,7 +1231,7 @@ export function Defensible2StudioLanding() {
                         <label className="font-montserrat text-xs font-bold uppercase tracking-wide text-[#1F1C1B]">Billing route</label>
                         {bradRouteSuggestion
                           ? <span className="rounded bg-[#E6F6EC] px-1.5 py-0.5 text-[9px] font-medium text-[#008540]">Brad identified</span>
-                          : <span className="rounded bg-[#F1EEED] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[#747470]">Not identified</span>}
+                          : <span className="rounded bg-[#F1EEED] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[#3D3D3A]">Not identified</span>}
                       </div>
                       <div className="mt-2 font-roboto text-sm font-medium text-[#1F1C1B]">{bradRouteSuggestion?.routeLabel || 'Pending Verification'}</div>
                       <p className="mt-2 font-roboto text-[11px] text-[#A8A29E]">{verifiedFields.payer ? `From payer: “${verifiedFields.payer}”. You'll confirm or override this on the next step.` : 'No payer found in the source — you’ll pick the route on the next step.'}</p>
@@ -1252,7 +1252,7 @@ export function Defensible2StudioLanding() {
           })()}
 
           {flowStep === 'billing' && <div className="rounded-[32px] bg-white/95 p-8 shadow-[0_12px_45px_rgba(0,0,0,0.04)] md:p-10">
-            <button type="button" onClick={() => { resetSourceAttachments(); setAttachmentsConfirmed(false); setSelectedTemplateTitle(''); setFlowStep('template'); }} className="mb-8 font-montserrat text-xs font-bold uppercase tracking-widest text-[#747470]">← Back to templates</button>
+            <button type="button" onClick={() => { resetSourceAttachments(); setAttachmentsConfirmed(false); setSelectedTemplateTitle(''); setFlowStep('template'); }} className="mb-8 font-montserrat text-xs font-bold uppercase tracking-widest text-[#3D3D3A]">← Back to templates</button>
             <h2 className="text-center font-montserrat text-lg font-bold uppercase tracking-widest text-[#1F1C1B]">2 · Confirm Billing Route *</h2>
             {/* Prominent, bold guidance — locked vs override copy. */}
             <div className="mx-auto mt-5 max-w-2xl rounded-[18px] border border-[#CDE9E6] bg-[#F2FBFA] px-6 py-4 text-center">
@@ -1264,7 +1264,7 @@ export function Defensible2StudioLanding() {
               ) : (
                 <p className="font-roboto text-[15px] font-semibold leading-7 text-[#1F1C1B]">
                   {bradRouteSuggestion ? 'Override mode is active. Select the one billing route that should appear in the packet.' : 'Brad could not confidently identify a payer. Select the one billing route that should appear in the packet.'}
-                  {bradRouteSuggestion ? <span className="mt-1 block font-roboto text-[12px] font-normal text-[#747470]">Brad’s original suggestion: {bradRouteSuggestion.routeLabel}</span> : null}
+                  {bradRouteSuggestion ? <span className="mt-1 block font-roboto text-[12px] font-normal text-[#3D3D3A]">Brad’s original suggestion: {bradRouteSuggestion.routeLabel}</span> : null}
                 </p>
               )}
             </div>
@@ -1286,7 +1286,7 @@ export function Defensible2StudioLanding() {
                     )}
                     <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#E5FEFF] font-montserrat text-sm font-bold text-[#007970]">{route.icon}</span>
                     <strong className="block font-montserrat text-sm font-bold uppercase tracking-wide text-[#1F1C1B]">{route.title}</strong>
-                    <span className="mt-3 block font-roboto text-sm leading-6 text-[#747470]">{route.desc}</span>
+                    <span className="mt-3 block font-roboto text-sm leading-6 text-[#3D3D3A]">{route.desc}</span>
                   </button>
                 );
               })}
@@ -1295,7 +1295,7 @@ export function Defensible2StudioLanding() {
               {billingLocked && bradRouteSuggestion ? (
                 <button type="button" onClick={() => setBillingLocked(false)} className="rounded-full border border-[#C74601] bg-white px-6 py-3 font-montserrat text-xs font-medium uppercase tracking-wider text-[#C74601] hover:bg-[#FFF3EC]">Override selection</button>
               ) : bradRouteSuggestion ? (
-                <button type="button" onClick={() => { setSelectedBillingRoute(bradRouteSuggestion.routeId); setBillingLocked(true); }} className="rounded-full border border-[#EAE4E3] bg-white px-6 py-3 font-montserrat text-xs font-medium uppercase tracking-wider text-[#747470] hover:bg-[#F5F2F1]">Use Brad’s selection</button>
+                <button type="button" onClick={() => { setSelectedBillingRoute(bradRouteSuggestion.routeId); setBillingLocked(true); }} className="rounded-full border border-[#EAE4E3] bg-white px-6 py-3 font-montserrat text-xs font-medium uppercase tracking-wider text-[#3D3D3A] hover:bg-[#F5F2F1]">Use Brad’s selection</button>
               ) : <span />}
               <button type="button" onClick={confirmBillingRoute} disabled={!selectedBillingRoute} className="rounded-full bg-[#007970] px-8 py-3 font-montserrat text-xs font-medium uppercase tracking-wider text-white hover:bg-[#005f58] disabled:cursor-not-allowed disabled:bg-[#EBE6E6] disabled:text-[#A8A29E]">{billingLocked ? 'Confirm & Continue →' : 'Use selected route →'}</button>
             </div>
@@ -1309,13 +1309,13 @@ export function Defensible2StudioLanding() {
             const cellCls = 'w-full rounded-[8px] border border-[#d9e4e4] bg-white px-2 py-1.5 font-roboto text-sm text-[#1F1C1B] outline-none focus:border-[#007970]';
             return (
               <div className="rounded-[32px] bg-white/95 p-8 shadow-[0_12px_45px_rgba(0,0,0,0.04)] md:p-10">
-                <button type="button" onClick={() => setFlowStep('billing')} className="mb-8 font-montserrat text-xs font-bold uppercase tracking-widest text-[#747470]">← Back to billing route</button>
+                <button type="button" onClick={() => setFlowStep('billing')} className="mb-8 font-montserrat text-xs font-bold uppercase tracking-widest text-[#3D3D3A]">← Back to billing route</button>
                 <h2 className="text-center font-montserrat text-lg font-bold uppercase tracking-widest text-[#1F1C1B]">2b · Private-Pay Rates</h2>
                 <p className="mx-auto mt-4 max-w-2xl text-center font-roboto text-sm leading-6 text-[#524D4B]">Private Pay was selected. Enter the rates for the §8 Private-Pay Service Agreement. Blank rows stay blank in the packet — enter at least one service rate to continue.</p>
                 <div className="mt-8 overflow-x-auto">
                   <table className="w-full min-w-[640px] border-collapse font-roboto text-sm">
                     <thead>
-                      <tr className="text-left font-montserrat text-[11px] uppercase tracking-wider text-[#747470]">
+                      <tr className="text-left font-montserrat text-[11px] uppercase tracking-wider text-[#3D3D3A]">
                         <th className="py-2 pr-3">Service</th><th className="py-2 px-2">Description</th><th className="py-2 px-2">Rate ($)</th><th className="py-2 px-2">Min hrs/visit</th><th className="py-2 px-2">Est. {`hrs`}/wk</th>
                       </tr>
                     </thead>
@@ -1349,7 +1349,7 @@ export function Defensible2StudioLanding() {
           })()}
 
           {flowStep === 'ready' && <div className="rounded-[32px] bg-white/95 p-8 text-center shadow-[0_12px_45px_rgba(0,0,0,0.04)] md:p-10">
-            <button type="button" onClick={() => setFlowStep(isPatientAdmissionTemplate(selectedTemplateTitle) ? (selectedBillingRoute === 'PRIVATE_PAY' ? 'rates' : 'billing') : 'event')} className="mb-8 font-montserrat text-xs font-bold uppercase tracking-widest text-[#747470]">← Back to {isPatientAdmissionTemplate(selectedTemplateTitle) ? (selectedBillingRoute === 'PRIVATE_PAY' ? 'rates' : 'billing route') : 'event'}</button>
+            <button type="button" onClick={() => setFlowStep(isPatientAdmissionTemplate(selectedTemplateTitle) ? (selectedBillingRoute === 'PRIVATE_PAY' ? 'rates' : 'billing') : 'event')} className="mb-8 font-montserrat text-xs font-bold uppercase tracking-widest text-[#3D3D3A]">← Back to {isPatientAdmissionTemplate(selectedTemplateTitle) ? (selectedBillingRoute === 'PRIVATE_PAY' ? 'rates' : 'billing route') : 'event'}</button>
             <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#E5FEFF] text-2xl text-[#007970]">✓</div>
             <h2 className="font-montserrat text-2xl font-bold text-[#1F1C1B]">Ready to Compile Packet</h2>
             <p className="mx-auto mt-3 max-w-xl font-roboto text-sm leading-6 text-[#524D4B]">
@@ -1359,7 +1359,7 @@ export function Defensible2StudioLanding() {
               {' '}The next action triggers Alpha generation without returning to the old studio.
             </p>
             {isPatientAdmissionTemplate(selectedTemplateTitle) && billingConfirmation && (
-              <p className="mx-auto mt-3 max-w-xl font-roboto text-xs text-[#747470]">
+              <p className="mx-auto mt-3 max-w-xl font-roboto text-xs text-[#3D3D3A]">
                 Confirmed billing route: <strong className="text-[#1F1C1B]">{billingConfirmation.confirmedRouteLabel}</strong>
                 {billingConfirmation.overridden
                   ? ` (overrode Brad’s suggestion of ${billingConfirmation.originalSuggestedRouteLabel || '—'}). Only this route appears in the packet.`
@@ -1399,7 +1399,7 @@ export function Defensible2StudioLanding() {
                   })}
                 </div>
                 {generatingAllQuarters && (
-                  <p className="mt-3 font-roboto text-[11px] italic text-[#747470]">Preview below shows {qapiSegments[0]?.quarterLabel ?? 'the first quarter'} as a sample; all {qapiSegments.length} quarters will be in the compiled packet.</p>
+                  <p className="mt-3 font-roboto text-[11px] italic text-[#3D3D3A]">Preview below shows {qapiSegments[0]?.quarterLabel ?? 'the first quarter'} as a sample; all {qapiSegments.length} quarters will be in the compiled packet.</p>
                 )}
               </div>
             )}
@@ -1428,7 +1428,7 @@ export function Defensible2StudioLanding() {
                               <span className="text-[#524D4B]">{key}</span>
                               <span className="flex items-center gap-1.5">
                                 <strong className="text-[#1F1C1B]">{Array.isArray(m.value) ? m.value.join(', ') : m.value == null ? '—' : String(m.value)}</strong>
-                                <span className={`rounded px-1.5 py-0.5 text-[9px] font-medium uppercase ${m.confidence === 'high' ? 'bg-[#E6F6EC] text-[#008540]' : m.confidence === 'low' ? 'bg-[#FFF4E5] text-[#B45309]' : 'bg-[#F1EEED] text-[#747470]'}`}>{m.confidence}</span>
+                                <span className={`rounded px-1.5 py-0.5 text-[9px] font-medium uppercase ${m.confidence === 'high' ? 'bg-[#E6F6EC] text-[#008540]' : m.confidence === 'low' ? 'bg-[#FFF4E5] text-[#B45309]' : 'bg-[#F1EEED] text-[#3D3D3A]'}`}>{m.confidence}</span>
                               </span>
                             </div>
                           ))}
@@ -1461,14 +1461,14 @@ export function Defensible2StudioLanding() {
 
           {flowStep === 'preview' && <div className="overflow-hidden rounded-[28px] bg-white shadow-[0_12px_45px_rgba(0,0,0,0.05)]">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#EAE4E3] bg-white/95 px-6 py-4 md:px-8">
-              <button type="button" className="flex items-center gap-2 rounded-[10px] border border-[#cfe6e8] px-4 py-2 font-roboto text-sm text-[#747470]">
+              <button type="button" className="flex items-center gap-2 rounded-[10px] border border-[#cfe6e8] px-4 py-2 font-roboto text-sm text-[#3D3D3A]">
                 <span className="h-5 w-5 rounded border border-[#747470]" /> Testing · skip iterations
               </button>
               <div className="flex items-center gap-3">
                 <span className="h-2 w-14 rounded-full bg-[#007970]" />
                 <span className="h-2 w-14 rounded-full bg-[#007970]" />
                 <span className="h-2 w-20 rounded-full bg-[#007970]" />
-                <span className="ml-2 font-montserrat text-sm font-medium tracking-wider text-[#747470]">Step 3 · Preview & Export</span>
+                <span className="ml-2 font-montserrat text-sm font-medium tracking-wider text-[#3D3D3A]">Step 3 · Preview & Export</span>
               </div>
               <div className="flex items-center gap-2">
                 {isPatientAdmissionTemplate(selectedTemplateTitle) && <button type="button" onClick={() => setFlowStep('review')} className="rounded-[10px] border border-[#cfe6e8] bg-white px-5 py-3 font-montserrat text-sm font-medium text-[#007970] shadow-sm hover:bg-[#FAFBF8]">← Edit fields</button>}
@@ -1502,7 +1502,7 @@ export function Defensible2StudioLanding() {
                     ) : page.previewUrl ? (
                       <iframe title={page.title || `Page ${page.pageNumber}`} src={page.previewUrl} className="h-full w-full border-0" />
                     ) : (
-                      <div className="flex h-full items-center justify-center p-8 text-center font-roboto text-sm text-[#747470]">Alpha returned page {page.pageNumber} without displayable preview HTML or URL.</div>
+                      <div className="flex h-full items-center justify-center p-8 text-center font-roboto text-sm text-[#3D3D3A]">Alpha returned page {page.pageNumber} without displayable preview HTML or URL.</div>
                     )}
                     <span className="absolute bottom-2 right-2 rounded-full bg-black/55 px-2 py-1 font-roboto text-[10px] font-medium text-white">Page {page.pageNumber} · ⤢ Zoom</span>
                   </button>
@@ -1529,7 +1529,7 @@ export function Defensible2StudioLanding() {
           </div>}
 
           {flowStep === 'signers' && <div className="rounded-[32px] bg-white/95 p-8 shadow-[0_12px_45px_rgba(0,0,0,0.04)] md:p-10">
-            <button type="button" onClick={() => setFlowStep('preview')} className="mb-8 font-montserrat text-xs font-bold uppercase tracking-widest text-[#747470]">← Back to preview</button>
+            <button type="button" onClick={() => setFlowStep('preview')} className="mb-8 font-montserrat text-xs font-bold uppercase tracking-widest text-[#3D3D3A]">← Back to preview</button>
             <h2 className="font-montserrat text-lg font-bold uppercase tracking-widest text-[#1F1C1B]">4 · Signature Workflow Routing</h2>
             {alphaSigners.length ? (
               <div className="mt-8 grid gap-4 md:grid-cols-2">
@@ -1544,7 +1544,7 @@ export function Defensible2StudioLanding() {
                         {signersAssigned ? 'Assigned' : signer.status || 'Pending'}
                       </span>
                     </div>
-                    {signer.source && <p className="font-roboto text-xs text-[#747470]">Source: {signer.source}</p>}
+                    {signer.source && <p className="font-roboto text-xs text-[#3D3D3A]">Source: {signer.source}</p>}
                   </div>
                 ))}
               </div>
@@ -1559,7 +1559,7 @@ export function Defensible2StudioLanding() {
               <p className="font-roboto text-sm leading-6 text-[#524D4B]">
                 DefenCIble will schedule signer tasks for the roster above. Names marked pending can be assigned by role in the signature tracker.
               </p>
-              <button type="button" onClick={() => void scheduleAlphaSigning()} disabled={!alphaSigners.length} className="mt-6 rounded-full bg-[#C74601] px-10 py-4 font-montserrat text-xs font-medium uppercase tracking-wider text-white shadow-md transition-all hover:bg-[#421700] disabled:cursor-not-allowed disabled:bg-[#EBE6E6] disabled:text-[#747470] disabled:shadow-none">
+              <button type="button" onClick={() => void scheduleAlphaSigning()} disabled={!alphaSigners.length} className="mt-6 rounded-full bg-[#C74601] px-10 py-4 font-montserrat text-xs font-medium uppercase tracking-wider text-white shadow-md transition-all hover:bg-[#421700] disabled:cursor-not-allowed disabled:bg-[#EBE6E6] disabled:text-[#3D3D3A] disabled:shadow-none">
                 Assign and Schedule Signer Tasks
               </button>
             </div>
@@ -1568,10 +1568,10 @@ export function Defensible2StudioLanding() {
           {flowStep === 'complete' && <div className="rounded-[32px] bg-white/95 p-8 shadow-[0_12px_45px_rgba(0,0,0,0.04)] md:p-10">
             <div className="grid gap-8 md:grid-cols-[320px_1fr]">
               <div className="rounded-[24px] bg-[#FAFBF8] p-6 shadow-sm">
-                <div className="mb-4 font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#747470]">DefenCIble Metadata</div>
-                <p className="font-roboto text-xs uppercase text-[#747470]">Packet ID</p>
+                <div className="mb-4 font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#3D3D3A]">DefenCIble Metadata</div>
+                <p className="font-roboto text-xs uppercase text-[#3D3D3A]">Packet ID</p>
                 <p className="mt-1 rounded border border-[#EAE4E3] bg-white px-3 py-2 font-roboto text-sm font-medium text-[#1F1C1B]">{alphaPreview?.packetId || eventId || 'pending'}</p>
-                <p className="mt-5 font-roboto text-xs uppercase text-[#747470]">Audit Hash</p>
+                <p className="mt-5 font-roboto text-xs uppercase text-[#3D3D3A]">Audit Hash</p>
                 <p className="mt-1 truncate rounded border border-[#EAE4E3] bg-white px-3 py-2 font-mono text-xs text-[#524D4B]">Alpha managed</p>
               </div>
               <div>
@@ -1606,7 +1606,7 @@ export function Defensible2StudioLanding() {
               <h2 className="flex items-center gap-3 font-montserrat text-xl font-medium text-[#1F1C1B]">
                 <Camera className="h-7 w-7 text-[#007970]" /> Camera Scanner
               </h2>
-              <button type="button" onClick={closeCamera} aria-label="Close camera" className="flex h-10 w-10 items-center justify-center rounded-full text-2xl text-[#747470] transition-colors hover:bg-[#FAFBF8] hover:text-[#1F1C1B]">×</button>
+              <button type="button" onClick={closeCamera} aria-label="Close camera" className="flex h-10 w-10 items-center justify-center rounded-full text-2xl text-[#3D3D3A] transition-colors hover:bg-[#FAFBF8] hover:text-[#1F1C1B]">×</button>
             </div>
 
             <div className="relative mb-6 flex aspect-video items-center justify-center overflow-hidden rounded-[24px] border-none bg-white shadow-md">
@@ -1654,7 +1654,7 @@ export function Defensible2StudioLanding() {
                       : 'Upload local files or use your device camera to scan documents directly into the platform.'}
                 </p>
               </div>
-              <button type="button" onClick={() => setSourceModal('')} className="text-4xl leading-none text-[#747470] hover:text-[#1F1C1B]" aria-label="Close">×</button>
+              <button type="button" onClick={() => setSourceModal('')} className="text-4xl leading-none text-[#3D3D3A] hover:text-[#1F1C1B]" aria-label="Close">×</button>
             </div>
 
             {sourceModal === 'upload' && (
@@ -1667,14 +1667,14 @@ export function Defensible2StudioLanding() {
                   onDrop={(e) => { e.preventDefault(); setIsDragging(false); void handleFiles(Array.from(e.dataTransfer.files)); }}
                   className={`min-h-[240px] rounded-[24px] border-2 border-dashed border-[#EAE4E3] bg-white p-10 text-center transition-all hover:-translate-y-1 hover:bg-[#E5FEFF] hover:shadow-lg ${isDragging ? 'bg-[#E5FEFF]' : ''}`}
                 >
-                  <span className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#FAFBF8] text-3xl text-[#747470] shadow-sm">☁</span>
+                  <span className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#FAFBF8] text-3xl text-[#3D3D3A] shadow-sm">☁</span>
                   <strong className="block font-montserrat text-lg font-medium text-[#1F1C1B]">Drag & Drop files here</strong>
-                  <span className="mt-2 block font-roboto text-sm text-[#747470]">or click to browse local files</span>
+                  <span className="mt-2 block font-roboto text-sm text-[#3D3D3A]">or click to browse local files</span>
                 </button>
                 <button type="button" onClick={() => void openCamera()} className="min-h-[240px] rounded-[24px] bg-white p-10 text-center shadow-md transition-all hover:-translate-y-1 hover:bg-[#E5FEFF] hover:shadow-lg">
                   <span className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#FAFBF8] text-[#007970] shadow-sm"><Camera className="h-9 w-9" /></span>
                   <strong className="block font-montserrat text-lg font-medium text-[#1F1C1B]">Open Camera Scanner</strong>
-                  <span className="mt-2 block font-roboto text-sm text-[#747470]">Capture using your device</span>
+                  <span className="mt-2 block font-roboto text-sm text-[#3D3D3A]">Capture using your device</span>
                 </button>
               </div>
             )}
@@ -1734,7 +1734,7 @@ export function Defensible2StudioLanding() {
                           >
                             <span className="mx-auto mb-6 block h-16 w-24 rounded-[10px] border-[6px]" style={{ borderColor: color }} />
                             <span className="block whitespace-pre-line font-montserrat text-base font-medium leading-5 text-[#1F1C1B]">{name.replace(' ', '\n')}</span>
-                            {sub ? <span className="mt-2 block font-roboto text-xs text-[#747470]">{sub}</span> : null}
+                            {sub ? <span className="mt-2 block font-roboto text-xs text-[#3D3D3A]">{sub}</span> : null}
                           </button>
                           {url && (
                             <button type="button" onClick={() => openFolder(url)} className="mt-3 rounded-full border border-[#B6E8E2] px-3 py-1 font-roboto text-xs font-medium text-[#007970] hover:bg-[#E5FEFF]">
@@ -1747,7 +1747,7 @@ export function Defensible2StudioLanding() {
                   ) : (
                     <div className="max-h-[42vh] overflow-y-auto rounded-[22px] border border-[#EAE4E3] bg-white p-3 shadow-inner">
                       {driveBrowserLoading ? (
-                        <div className="py-12 text-center font-roboto text-sm text-[#747470]">Loading Drive folder...</div>
+                        <div className="py-12 text-center font-roboto text-sm text-[#3D3D3A]">Loading Drive folder...</div>
                       ) : driveBrowserErr ? (
                         <div className="py-12 text-center font-roboto text-sm text-[#D70101]">{driveBrowserErr}</div>
                       ) : driveBrowser && (driveBrowser.folders.length > 0 || driveBrowser.files.length > 0) ? (
@@ -1773,12 +1773,12 @@ export function Defensible2StudioLanding() {
                                 onClick={() => setSelectedDriveFile(file)}
                                 className={`flex w-full items-center gap-3 rounded-[14px] px-4 py-3 text-left transition-colors ${selected ? 'bg-[#E5FEFF] ring-2 ring-[#007970]' : 'hover:bg-[#FAFBF8]'}`}
                               >
-                                <FileText className="h-5 w-5 text-[#747470]" />
+                                <FileText className="h-5 w-5 text-[#3D3D3A]" />
                                 <span className="min-w-0 flex-1">
                                   <span className="block truncate font-roboto text-sm text-[#1F1C1B]">{file.name}</span>
-                                  <span className="block truncate font-roboto text-[10px] uppercase tracking-wider text-[#747470]">{file.mimeType}</span>
+                                  <span className="block truncate font-roboto text-[10px] uppercase tracking-wider text-[#3D3D3A]">{file.mimeType}</span>
                                 </span>
-                                <span className={`font-montserrat text-[10px] font-semibold uppercase tracking-wider ${selected ? 'text-[#007970]' : 'text-[#747470]'}`}>
+                                <span className={`font-montserrat text-[10px] font-semibold uppercase tracking-wider ${selected ? 'text-[#007970]' : 'text-[#3D3D3A]'}`}>
                                   {selected ? 'Selected' : 'Select'}
                                 </span>
                               </button>
@@ -1786,7 +1786,7 @@ export function Defensible2StudioLanding() {
                           })}
                         </div>
                       ) : (
-                        <div className="py-12 text-center font-roboto text-sm text-[#747470]">This Drive folder is empty.</div>
+                        <div className="py-12 text-center font-roboto text-sm text-[#3D3D3A]">This Drive folder is empty.</div>
                       )}
                     </div>
                   )}
@@ -1814,17 +1814,17 @@ export function Defensible2StudioLanding() {
                   <img src={GOOGLE_DRIVE_LOGO} alt="" className="h-11 w-11 object-contain" />
                   <span className="flex-1">
                     <strong className="block font-montserrat text-xl font-medium text-[#1F1C1B]">Select Google Drive Document</strong>
-                    <span className="mt-1 block font-roboto text-sm text-[#747470]">{selectedDriveFile?.name || selectedDriveFolder || 'Click to browse your Drive'}</span>
+                    <span className="mt-1 block font-roboto text-sm text-[#3D3D3A]">{selectedDriveFile?.name || selectedDriveFolder || 'Click to browse your Drive'}</span>
                   </span>
                   <span className="font-montserrat text-sm font-bold uppercase tracking-wider text-[#007970]">Browse</span>
                 </button>
                 <button type="button" onClick={() => fileInputRef.current?.click()} className="flex w-full items-center gap-6 rounded-[22px] bg-white p-6 text-left shadow-md transition-all hover:-translate-y-1 hover:shadow-lg">
-                  <span className="text-4xl text-[#747470]">⌘</span>
+                  <span className="text-4xl text-[#3D3D3A]">⌘</span>
                   <span className="flex-1">
                     <strong className="block font-montserrat text-xl font-medium text-[#1F1C1B]">Attach Local Files</strong>
-                    <span className="mt-1 block font-roboto text-sm text-[#747470]">Drop files or click to upload</span>
+                    <span className="mt-1 block font-roboto text-sm text-[#3D3D3A]">Drop files or click to upload</span>
                   </span>
-                  <span className="font-montserrat text-sm font-bold uppercase tracking-wider text-[#747470]">Add</span>
+                  <span className="font-montserrat text-sm font-bold uppercase tracking-wider text-[#3D3D3A]">Add</span>
                 </button>
               </div>
             )}
@@ -1879,10 +1879,10 @@ export function Defensible2StudioLanding() {
                     ) : page.previewUrl ? (
                       <iframe title={`Page ${page.pageNumber}`} src={page.previewUrl} className="border-0 bg-white" style={{ width: '8.5in', height: '11in' }} />
                     ) : (
-                      <div className="p-10 text-center font-roboto text-sm text-[#747470]">Page {page.pageNumber} has no preview.</div>
+                      <div className="p-10 text-center font-roboto text-sm text-[#3D3D3A]">Page {page.pageNumber} has no preview.</div>
                     )}
                   </div>
-                  <span className="mt-2 block text-center font-roboto text-xs text-[#747470]">Page {i + 1} of {alphaPreview.pages.length}</span>
+                  <span className="mt-2 block text-center font-roboto text-xs text-[#3D3D3A]">Page {i + 1} of {alphaPreview.pages.length}</span>
                 </div>
               ))}
             </div>

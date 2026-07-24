@@ -243,7 +243,7 @@ function HomeHealthDifferenceActivity({
       </button>
 
       <div className="text-center mb-6 z-10">
-        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#F06923]">
+        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#C2410C]">
           {activeLabel}
         </p>
         <h2 id="gao001-home-health-difference-title" className="text-2xl font-bold text-[#1E3A3A] mb-2">The Home Health Difference</h2>

@@ -276,7 +276,7 @@ export function AppendixFScreen() {
                   
                   {/* Context / Curriculum Integration */}
                   <div className="flex flex-col items-center w-full max-w-4xl">
-                    <p className="text-[#7A7470] font-sans text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold mb-1">
+                    <p className="text-[#3D3936] font-sans text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold mb-1">
                       For successfully completing the yearly
                     </p>
                     <h4 className="text-[#004142] font-serif text-2xl md:text-3xl font-bold uppercase tracking-widest mb-4">
@@ -303,7 +303,7 @@ export function AppendixFScreen() {
                 <div className="w-full flex justify-between items-end mt-4 md:mt-8 px-4 md:px-8">
                   
                   {/* Left Side Details */}
-                  <div className="text-left font-sans text-[9px] md:text-[10px] text-[#7A7470] uppercase tracking-widest leading-loose mb-1">
+                  <div className="text-left font-sans text-[9px] md:text-[10px] text-[#3D3936] uppercase tracking-widest leading-loose mb-1">
                     <p className="border-b border-[#D9D6D5] pb-1 mb-2 w-48 md:w-56 flex justify-between">
                       <span className="font-bold text-[#004142]">Date Issued:</span> 
                       <span>{completionDate}</span>

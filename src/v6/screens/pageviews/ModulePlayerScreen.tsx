@@ -763,11 +763,11 @@ function Module1OverviewPage() {
                 <div className="mt-4 grid grid-cols-2 gap-2 text-center">
                   <div className="rounded-lg bg-white p-3">
                     <div className="text-xl font-bold text-[#004142]">{completedLessons}</div>
-                    <div className="text-[10px] uppercase tracking-wider text-[#747470]">Done</div>
+                    <div className="text-[10px] uppercase tracking-wider text-[#3D3D3A]">Done</div>
                   </div>
                   <div className="rounded-lg bg-white p-3">
                     <div className="text-xl font-bold text-[#004142]">{module.lessons.length}</div>
-                    <div className="text-[10px] uppercase tracking-wider text-[#747470]">Lessons</div>
+                    <div className="text-[10px] uppercase tracking-wider text-[#3D3D3A]">Lessons</div>
                   </div>
                 </div>
               </div>
@@ -794,7 +794,7 @@ function Module1OverviewPage() {
                           {complete ? "Done" : "Play"}
                         </span>
                       </div>
-                      <div className="mt-4 text-[11px] text-[#747470]">{item.estMinutes} min - narrated theory</div>
+                      <div className="mt-4 text-[11px] text-[#3D3D3A]">{item.estMinutes} min - narrated theory</div>
                     </button>
                   );
                 })}
@@ -802,7 +802,7 @@ function Module1OverviewPage() {
             </div>
 
             <div className="mt-7 flex flex-col items-stretch gap-3 border-t border-[#E5E4E3] pt-5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="text-xs font-medium text-[#747470]">Module assessment available after theory review.</div>
+              <div className="text-xs font-medium text-[#3D3D3A]">Module assessment available after theory review.</div>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <button
                   onClick={() => navigate(`/journey/module/${module.id}/assessment`)}
@@ -1202,7 +1202,7 @@ function LessonPlayerPage() {
               <div className="min-w-[260px]">
                 <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#007970]">{moduleId}</div>
                 <h1 className="truncate text-lg font-bold leading-tight text-[#004142]">{moduleDef?.title || lesson.title}</h1>
-                <div className="mt-0.5 text-xs text-[#747470]">Lesson {currentLessonNumber} of {allLessons.length || 1}</div>
+                <div className="mt-0.5 text-xs text-[#3D3D3A]">Lesson {currentLessonNumber} of {allLessons.length || 1}</div>
               </div>
             )}
             <div className="min-w-0 flex-1 overflow-x-auto">
@@ -1413,7 +1413,7 @@ function LessonPlayerPage() {
 
                   {/* Subtle footer label inside stage */}
                   <div className="bg-[#E5FEFF] w-full py-2.5 text-center border-t border-[#C4F4F5]">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#747470]">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#3D3D3A]">
                       Training Visual • No PHI
                     </div>
                   </div>
@@ -1457,7 +1457,7 @@ function LessonPlayerPage() {
               <div className="rounded-full border border-[#E5E4E3] bg-[#FAFBF8] px-4 py-2 text-xs font-bold text-[#524C4B]">
                 {formatMmSs(lessonSeconds)} / {formatMmSs(totalNarrationSeconds)}
               </div>
-              <div className="hidden text-[11px] font-bold uppercase tracking-[0.14em] text-[#747470] sm:block">
+              <div className="hidden text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D3D3A] sm:block">
                 Lesson {currentLessonNumber} of {allLessons.length}
               </div>
             </div>

@@ -2597,7 +2597,7 @@ function EmptyMetricViz() {
         <circle cx="33" cy="33" r="13" stroke="currentColor" strokeWidth="1" opacity="0.55" />
         <path d="M21 41 Q33 26 45 35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 5" />
       </svg>
-      <span className="mt-4 text-[9px] font-bold uppercase tracking-[0.22em] text-[#A0A0A0]">
+      <span className="mt-4 text-[9px] font-bold uppercase tracking-[0.22em] text-[#474742]">
         Gathering Metrics
       </span>
     </div>
@@ -2671,7 +2671,7 @@ function ModernDashboardCard({ card, index, mode = 'grid', onNavigate }: { card:
       <div className={cx('flex justify-between items-start gap-4', mode === 'carousel' ? 'mb-2' : 'mb-6')}>
         <div className="flex min-w-0 items-center gap-2">
           {createElement(getDashboardCardIcon(card.title), {
-            className: 'h-4 w-4 shrink-0 text-[#A0A0A0] transition-colors duration-300 group-hover:text-[#007970]',
+            className: 'h-4 w-4 shrink-0 text-[#474742] transition-colors duration-300 group-hover:text-[#007970]',
             'aria-hidden': true,
           })}
           <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#007970] md:text-[11px]">
@@ -2686,7 +2686,7 @@ function ModernDashboardCard({ card, index, mode = 'grid', onNavigate }: { card:
         {chartNode}
       </div>
       <div className="mt-auto pt-5 shadow-[inset_0_1px_0_rgba(229,228,227,0.6)] transition-colors">
-        <p className="text-[13px] font-normal leading-relaxed text-[#747470]">{card.footer}</p>
+        <p className="text-[13px] font-normal leading-relaxed text-[#3D3D3A]">{card.footer}</p>
       </div>
     </div>
   );
@@ -2940,7 +2940,7 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
       category: 'Evidence',
       icon: FileCheck2,
       status: `${missingEvidenceCount} not ready`,
-      statusClass: 'bg-[#FFF2EB] text-[#F06923]',
+      statusClass: 'bg-[#FFF2EB] text-[#C2410C]',
       title: 'Evidence Completeness',
       to: '/dashboard?view=evidence',
     },
@@ -3012,7 +3012,7 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
             <section className="ci-page-hero relative overflow-hidden rounded-b-[24px] rounded-tr-[24px] bg-white p-10 shadow-sm md:p-14">
               <DashboardLogoWatermark />
               <div className="relative z-10 max-w-4xl">
-                <p className="mb-6 font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#F06923]">Care Indeed Command Center</p>
+                <p className="mb-6 font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#C2410C]">Care Indeed Command Center</p>
                 <h1 className="mb-6 font-montserrat text-4xl font-bold leading-none tracking-tight text-[#007970] md:text-5xl lg:text-6xl">
                   Your Compliance Day, <br />
                   At a Glance
@@ -3047,8 +3047,8 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
                 return (
                   <div key={stat.label} className="ci-stagger-card group flex min-h-[164px] flex-col items-center justify-center rounded-[24px] bg-white p-6 text-center shadow-sm transition-colors hover:border-[#007970]" style={{ animationDelay: `${dashboardHomeStats.indexOf(stat) * 75}ms` }}>
                     <Icon className="mb-4 h-6 w-6 text-[#007970]" aria-hidden />
-                    <span className="mb-3 font-montserrat text-3xl font-bold text-[#F06923] transition-transform duration-300 group-hover:scale-110 md:text-4xl">{stat.value}</span>
-                    <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#747470]">{stat.label}</span>
+                    <span className="mb-3 font-montserrat text-3xl font-bold text-[#C2410C] transition-transform duration-300 group-hover:scale-110 md:text-4xl">{stat.value}</span>
+                    <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#3D3D3A]">{stat.label}</span>
                   </div>
                 );
               })}
@@ -3057,7 +3057,7 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
             <section className="rounded-[24px] bg-white p-8 shadow-sm md:p-10">
               <div className="mb-8 max-w-3xl">
                 <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Today&apos;s Focus</h2>
-                <p className="mt-3 text-base leading-relaxed text-[#747470]">
+                <p className="mt-3 text-base leading-relaxed text-[#3D3D3A]">
                   Start with the work most likely to affect survey readiness, then jump into the detailed dashboard view behind each signal.
                 </p>
               </div>
@@ -3081,13 +3081,13 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
                             {card.status}
                           </span>
                         </span>
-                        <span className="font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#F06923]">{card.category}</span>
-                        <span className="mt-3 block font-montserrat text-xl font-bold text-[#007970] transition-colors group-hover:text-[#F06923]">{card.title}</span>
-                        <span className="mt-4 block text-sm leading-relaxed text-[#747470]">{card.body}</span>
+                        <span className="font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#C2410C]">{card.category}</span>
+                        <span className="mt-3 block font-montserrat text-xl font-bold text-[#007970] transition-colors group-hover:text-[#C2410C]">{card.title}</span>
+                        <span className="mt-4 block text-sm leading-relaxed text-[#3D3D3A]">{card.body}</span>
                       </span>
                       <span className="mt-7 inline-flex items-center gap-2 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#007970]">
                         Open view
-                        <ArrowRight className="h-4 w-4 text-[#F06923] transition-transform group-hover:translate-x-1" aria-hidden />
+                        <ArrowRight className="h-4 w-4 text-[#C2410C] transition-transform group-hover:translate-x-1" aria-hidden />
                       </span>
                     </button>
                   );
@@ -3135,13 +3135,13 @@ function DashboardScreen({ routeView }: { routeView?: string | null }) {
           <>
             <section className="ci-page-hero ci-dashboard-panel relative z-10 overflow-hidden rounded-b-[32px] rounded-tr-[32px] bg-white p-10 md:p-14">
               <div className="relative z-10 max-w-3xl">
-                <span className="mb-4 block font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#F06923]">
+                <span className="mb-4 block font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#C2410C]">
                   Performance Insights
                 </span>
                 <h1 className="mb-4 font-montserrat text-3xl font-bold leading-[1.15] tracking-tight text-[#007970] md:text-5xl">
                   {activeHeader.title}
                 </h1>
-                <p className="text-lg font-light leading-relaxed text-[#747470]">
+                <p className="text-lg font-light leading-relaxed text-[#3D3D3A]">
                   {activeHeader.subtitle}
                 </p>
               </div>
@@ -3287,7 +3287,7 @@ function PolicyHomeScreen() {
             <StaticCardWatermark />
             <div className="relative z-10 flex flex-col items-start justify-between gap-12 xl:flex-row xl:items-end">
               <div className="max-w-3xl">
-                <h2 className="mb-6 font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#F06923]">Policy Command Center</h2>
+                <h2 className="mb-6 font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#C2410C]">Policy Command Center</h2>
                 <h1 className="mb-6 font-montserrat text-4xl font-bold leading-none tracking-tight text-[#007970] md:text-5xl lg:text-6xl">
                   Care Indeed <br />
                   Policy Library
@@ -3323,8 +3323,8 @@ function PolicyHomeScreen() {
               return (
                 <div key={stat.label} className="group flex min-h-[164px] flex-col items-center justify-center rounded-[24px] border border-[#E5E4E3] bg-white p-6 text-center shadow-sm transition-colors hover:border-[#007970]">
                   <Icon className="mb-4 h-6 w-6 text-[#007970]" aria-hidden />
-                  <span className="mb-3 font-montserrat text-3xl font-bold text-[#F06923] transition-transform duration-300 group-hover:scale-110 md:text-4xl">{stat.value}</span>
-                  <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#747470]">{stat.label}</span>
+                  <span className="mb-3 font-montserrat text-3xl font-bold text-[#C2410C] transition-transform duration-300 group-hover:scale-110 md:text-4xl">{stat.value}</span>
+                  <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#3D3D3A]">{stat.label}</span>
                 </div>
               );
             })}
@@ -3333,7 +3333,7 @@ function PolicyHomeScreen() {
           <section className="rounded-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:p-10">
             <div className="mb-8 max-w-3xl">
               <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Policy Workspace</h2>
-              <p className="mt-3 text-base leading-relaxed text-[#747470]">
+              <p className="mt-3 text-base leading-relaxed text-[#3D3D3A]">
                 Move between the library, linked forms, workflow evidence, taxonomy, ACHC mapping, and review controls without leaving the policy command surface.
               </p>
             </div>
@@ -3343,8 +3343,8 @@ function PolicyHomeScreen() {
                 const Icon = card.icon;
                 const tone = card.tone === 'orange'
                   ? {
-                      badge: 'bg-[#FFF2EB] text-[#F06923]',
-                      icon: 'bg-[#FFF2EB] text-[#F06923]',
+                      badge: 'bg-[#FFF2EB] text-[#C2410C]',
+                      icon: 'bg-[#FFF2EB] text-[#C2410C]',
                     }
                   : card.tone === 'blue'
                     ? {
@@ -3371,13 +3371,13 @@ function PolicyHomeScreen() {
                           {card.status}
                         </span>
                       </span>
-                      <span className="font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#F06923]">{card.category}</span>
-                      <span className="mt-3 block font-montserrat text-xl font-bold text-[#007970] transition-colors group-hover:text-[#F06923]">{card.title}</span>
-                      <span className="mt-4 block text-sm leading-relaxed text-[#747470]">{card.body}</span>
+                      <span className="font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#C2410C]">{card.category}</span>
+                      <span className="mt-3 block font-montserrat text-xl font-bold text-[#007970] transition-colors group-hover:text-[#C2410C]">{card.title}</span>
+                      <span className="mt-4 block text-sm leading-relaxed text-[#3D3D3A]">{card.body}</span>
                     </span>
                     <span className="mt-7 inline-flex items-center gap-2 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#007970]">
                       Open workspace
-                      <ArrowRight className="h-4 w-4 text-[#F06923] transition-transform group-hover:translate-x-1" aria-hidden />
+                      <ArrowRight className="h-4 w-4 text-[#C2410C] transition-transform group-hover:translate-x-1" aria-hidden />
                     </span>
                   </button>
                 );
@@ -3415,12 +3415,12 @@ function PolicyHomeScreen() {
                   { label: 'ACHC', helper: 'HH Evidence, Standards Matrix, Crosswalk' },
                 ].map((item, index) => (
                   <div key={item.label} className="flex gap-4">
-                    <span className={cx('grid h-9 w-9 shrink-0 place-items-center rounded-[12px] font-montserrat text-sm font-bold', index === 0 ? 'bg-[#007970] text-white' : index === 1 ? 'bg-[#FFF2EB] text-[#F06923]' : 'bg-[#E5FEFF] text-[#007970]')}>
+                    <span className={cx('grid h-9 w-9 shrink-0 place-items-center rounded-[12px] font-montserrat text-sm font-bold', index === 0 ? 'bg-[#007970] text-white' : index === 1 ? 'bg-[#FFF2EB] text-[#C2410C]' : 'bg-[#E5FEFF] text-[#007970]')}>
                       {index + 1}
                     </span>
                     <span>
                       <span className="block font-montserrat text-base font-bold text-[#007970]">{item.label}</span>
-                      <span className="mt-1 block text-sm leading-relaxed text-[#747470]">{item.helper}</span>
+                      <span className="mt-1 block text-sm leading-relaxed text-[#3D3D3A]">{item.helper}</span>
                     </span>
                   </div>
                 ))}
@@ -3493,9 +3493,9 @@ function PolicyMatrixScreen() {
         <section className="ci-page-hero mb-8 rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-8 shadow-sm md:px-12 md:py-10">
           <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
             <div className="max-w-3xl">
-              <p className="mb-3 font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#F06923]">Policy Registry</p>
+              <p className="mb-3 font-montserrat text-[12px] font-bold uppercase tracking-wider text-[#C2410C]">Policy Registry</p>
               <h1 className="font-montserrat text-3xl font-bold leading-tight tracking-tight text-[#007970] md:text-5xl">Policy Library</h1>
-              <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#747470]">
+              <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#3D3D3A]">
                 Search and open the canonical policy corpus without the old dense table wall.
               </p>
             </div>
@@ -3505,9 +3505,9 @@ function PolicyMatrixScreen() {
         <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
           {policyMetrics.map((metric) => (
             <div key={metric.label} className="rounded-[24px] border border-[#E5E4E3] bg-white p-7 shadow-sm">
-              <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470]">{metric.label}</p>
-              <p className="mt-3 font-montserrat text-4xl font-bold text-[#F06923]">{metric.value}</p>
-              <p className="mt-3 text-sm text-[#747470]">{metric.helper}</p>
+              <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#3D3D3A]">{metric.label}</p>
+              <p className="mt-3 font-montserrat text-4xl font-bold text-[#C2410C]">{metric.value}</p>
+              <p className="mt-3 text-sm text-[#3D3D3A]">{metric.helper}</p>
             </div>
           ))}
         </div>
@@ -3516,10 +3516,10 @@ function PolicyMatrixScreen() {
           <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#007970]">Policies</h2>
-              <p className="mt-2 text-sm text-[#747470]">{filteredRows.length} of {policyRowsBase.length} records</p>
+              <p className="mt-2 text-sm text-[#3D3D3A]">{filteredRows.length} of {policyRowsBase.length} records</p>
             </div>
             <div className="flex flex-col gap-3 lg:flex-row">
-              <label className="flex min-h-11 min-w-[260px] items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 text-sm text-[#747470]">
+              <label className="flex min-h-11 min-w-[260px] items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 text-sm text-[#3D3D3A]">
                 <Search className="h-4 w-4 shrink-0" aria-hidden />
                 <input
                   type="text"
@@ -3534,7 +3534,7 @@ function PolicyMatrixScreen() {
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
                 aria-label="Filter by domain"
-                className="min-h-11 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470] outline-none focus:border-[#007970]"
+                className="min-h-11 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#3D3D3A] outline-none focus:border-[#007970]"
               >
                 <option value="ALL">All domains</option>
                 {domainOptions.map((option) => <option key={option} value={option}>{option}</option>)}
@@ -3543,7 +3543,7 @@ function PolicyMatrixScreen() {
                 value={tier}
                 onChange={(e) => setTier(e.target.value)}
                 aria-label="Filter by tier"
-                className="min-h-11 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470] outline-none focus:border-[#007970]"
+                className="min-h-11 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#3D3D3A] outline-none focus:border-[#007970]"
               >
                 <option value="ALL">All tiers</option>
                 {tierOptions.map((option) => <option key={option} value={option}>{option}</option>)}
@@ -3562,31 +3562,31 @@ function PolicyMatrixScreen() {
                 >
                   <span>
                     <span className="mb-4 flex items-start justify-between gap-4">
-                      <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{row.id}</span>
+                      <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#C2410C]">{row.id}</span>
                       <ToneTag tone="teal">{row.tier}</ToneTag>
                     </span>
-                    <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] transition-colors group-hover:text-[#F06923]">
+                    <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] transition-colors group-hover:text-[#C2410C]">
                       {row.title}
                     </span>
-                    <span className="mt-3 block text-sm leading-relaxed text-[#747470]">{row.domain} - {row.subdomain}</span>
+                    <span className="mt-3 block text-sm leading-relaxed text-[#3D3D3A]">{row.domain} - {row.subdomain}</span>
                   </span>
                   <span className="mt-6 flex items-center justify-between gap-4 border-t border-[#E5E4E3] pt-4">
-                    <span className="min-w-0 text-xs font-medium leading-relaxed text-[#747470]">{row.steward}</span>
-                    <ArrowRight className="h-4 w-4 shrink-0 text-[#F06923]" aria-hidden />
+                    <span className="min-w-0 text-xs font-medium leading-relaxed text-[#3D3D3A]">{row.steward}</span>
+                    <ArrowRight className="h-4 w-4 shrink-0 text-[#C2410C]" aria-hidden />
                   </span>
                 </button>
               ))}
             </div>
           ) : (
             <div className="flex min-h-[220px] flex-col items-center justify-center rounded-[24px] border border-dashed border-[#E5E4E3] bg-[#FAFBF8] p-8 text-center">
-              <Search className="mb-3 h-6 w-6 text-[#747470]" aria-hidden />
+              <Search className="mb-3 h-6 w-6 text-[#3D3D3A]" aria-hidden />
               <p className="font-montserrat text-sm font-bold text-[#007970]">No matching policies</p>
-              <p className="mt-2 max-w-sm text-sm text-[#747470]">Try a different policy ID, title, domain, or owner.</p>
+              <p className="mt-2 max-w-sm text-sm text-[#3D3D3A]">Try a different policy ID, title, domain, or owner.</p>
             </div>
           )}
 
           {hiddenCount > 0 ? (
-            <p className="mt-8 text-center text-sm text-[#747470]">
+            <p className="mt-8 text-center text-sm text-[#3D3D3A]">
               Showing first 60 matches. Use search or filters to narrow the list.
             </p>
           ) : null}
@@ -3606,7 +3606,7 @@ function PolicyMatrixScreen() {
                     <ToneBadge size="sm" status={card.status} />
                   </div>
                   <h3 className="font-montserrat text-base font-bold text-[#007970]">{card.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-[#747470]">{card.body}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-[#3D3D3A]">{card.body}</p>
                 </div>
                 <div className="mt-5">
                   <ProgressMeter label="Coverage" tone={card.tone} value={progress} />
@@ -5206,13 +5206,13 @@ function AchcScreen({ mode }: { mode: 'crosswalk' | 'survey' }) {
               >
                 <span>
                   <span className="mb-4 flex items-start justify-between gap-4">
-                    <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{row.id}</span>
+                    <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#C2410C]">{row.id}</span>
                     <ToneTag tone="teal">{row.status}</ToneTag>
                   </span>
-                  <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] group-hover:text-[#F06923]">{row.title}</span>
-                  <span className="mt-3 block text-sm leading-relaxed text-[#747470]">{row.owner}</span>
+                  <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] group-hover:text-[#C2410C]">{row.title}</span>
+                  <span className="mt-3 block text-sm leading-relaxed text-[#3D3D3A]">{row.owner}</span>
                 </span>
-                <span className="mt-6 border-t border-[#E5E4E3] pt-4 text-xs leading-relaxed text-[#747470]">
+                <span className="mt-6 border-t border-[#E5E4E3] pt-4 text-xs leading-relaxed text-[#3D3D3A]">
                   {isCrosswalk ? `${row.cmsTitle22 || 'No CMS / Title 22 anchor'} - ${row.evidence || 'Evidence pending'}` : 'Open supporting policy detail'}
                 </span>
               </button>
@@ -5307,7 +5307,7 @@ function HhEvidenceMapScreen() {
         title="Evidence Filters"
         description={`Source: src/policy/data/policy_hh_section_map.csv. ${filteredRows.length} mappings match the active filters.`}
         actions={
-          <label className="flex min-h-11 min-w-[260px] items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 text-sm text-[#747470]">
+          <label className="flex min-h-11 min-w-[260px] items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 text-sm text-[#3D3D3A]">
             <Search className="h-4 w-4 shrink-0" aria-hidden />
             <input
               aria-label="Search HH evidence mappings"
@@ -5346,21 +5346,21 @@ function HhEvidenceMapScreen() {
                 >
                   <span>
                     <span className="mb-4 flex items-start justify-between gap-4">
-                      <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{row.id}</span>
+                      <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#C2410C]">{row.id}</span>
                       <ToneTag tone={row.confidence === 'HIGH' ? 'green' : row.confidence === 'MEDIUM' ? 'amber' : 'orange'}>{row.confidence}</ToneTag>
                     </span>
-                    <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] group-hover:text-[#F06923]">{row.title}</span>
-                    <span className="mt-3 block text-sm leading-relaxed text-[#747470]">{row.owner} - {row.sectionAnchor}</span>
+                    <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] group-hover:text-[#C2410C]">{row.title}</span>
+                    <span className="mt-3 block text-sm leading-relaxed text-[#3D3D3A]">{row.owner} - {row.sectionAnchor}</span>
                   </span>
                   <span className="mt-6 flex items-center justify-between gap-4 border-t border-[#E5E4E3] pt-4">
-                    <span className="min-w-0 text-xs leading-relaxed text-[#747470]">{row.evidence}</span>
+                    <span className="min-w-0 text-xs leading-relaxed text-[#3D3D3A]">{row.evidence}</span>
                     <ToneBadge size="sm" status={row.status} />
                   </span>
                 </button>
               ))}
             </div>
           ) : (
-            <div className="rounded-[24px] border border-dashed border-[#E5E4E3] bg-[#FAFBF8] p-8 text-sm text-[#747470]">
+            <div className="rounded-[24px] border border-dashed border-[#E5E4E3] bg-[#FAFBF8] p-8 text-sm text-[#3D3D3A]">
               No HH evidence mappings match the current filters.
             </div>
           )}
@@ -5372,7 +5372,7 @@ function HhEvidenceMapScreen() {
           {filteredRows.length ? (
             <DataTable columns={columns} label="HH tag evidence map" rows={filteredRows} onRowClick={openRow} />
           ) : (
-            <div className="rounded-[24px] border border-dashed border-[#E5E4E3] bg-[#FAFBF8] p-8 text-sm text-[#747470]">
+            <div className="rounded-[24px] border border-dashed border-[#E5E4E3] bg-[#FAFBF8] p-8 text-sm text-[#3D3D3A]">
               No HH evidence mappings match the current filters.
             </div>
           )}

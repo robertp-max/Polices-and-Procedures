@@ -8,6 +8,10 @@ export interface NavItem {
   children?: NavItem[];
   icon?: React.ComponentType<{ className?: string }>;
   matchPaths?: string[];
+  /** When true, the item opens `href` (or `to`) in a NEW browser window/tab instead of navigating in-app. */
+  newWindow?: boolean;
+  /** Absolute or app-relative URL opened when `newWindow` is set (falls back to `to`). */
+  href?: string;
 }
 
 export const primaryNavItems: NavItem[] = [
@@ -19,7 +23,10 @@ export const primaryNavItems: NavItem[] = [
   { id: 'ces', label: 'Compliance', to: '/compliance', hashIds: ['compliance-home', 'ces-calendar', 'ces-board', 'master-controls', 'vendor-management', 'contractor-management', 'audit-mode', 'ces-reports'], matchPaths: ['/compliance', '/compliance/vendors', '/compliance/contractors', '/ces/calendar', '/ces/board', '/ces/events', '/ces/reports', '/audit'] },
   // Governing Body Portal — first-class, standalone (NOT under Compliance). Icon is a
   // borderless #273D38 courthouse mark. Access is gated by governance.portal.access.
-  { id: 'governance', label: 'Governing Body Portal', ariaLabel: 'Open Governing Body Portal', to: '/governance', hashIds: ['governance'], matchPaths: ['/governance'] },
+  { id: 'governance', label: 'Governance', ariaLabel: 'Open Governance', to: '/governance', hashIds: ['governance'], matchPaths: ['/governance'] },
+  // Care Indeed Training Academy / Employee Journey — a SEPARATE app (Cloudflare/vinext)
+  // running on its own dev server; opens in the SAME tab (full navigation to its URL).
+  { id: 'training-academy', label: 'Training Academy', ariaLabel: 'Open the Care Indeed Training Academy', to: 'http://localhost:5190/', href: 'http://localhost:5190/', hashIds: [] },
   // Standalone DefenCIble entry — shield icon, rendered vertically centered on the left rail.
   {
     id: 'defensible',

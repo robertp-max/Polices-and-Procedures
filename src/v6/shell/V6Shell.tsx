@@ -5,6 +5,7 @@ import {
   ClipboardCheck,
   FileText,
   GraduationCap,
+  School,
   Heart,
   HelpCircle,
   Info,
@@ -42,6 +43,7 @@ const NAV_ICONS: Record<string, NavIconComponent> = {
   onboarding: GraduationCap,
   'help-center': HelpCircle,
   governance: GoverningBodyPortalIcon,
+  'training-academy': School,
 };
 
 export function V6Shell() {
@@ -104,7 +106,7 @@ export function V6Shell() {
     () => {
       return [...primaryNavBarItems]
         .sort((a, b) => {
-          const order = ['dashboard', 'ces', 'governance', 'taxonomy', 'onboarding', 'help-center', 'defensible'];
+          const order = ['dashboard', 'ces', 'governance', 'taxonomy', 'onboarding', 'training-academy', 'help-center', 'defensible'];
           return order.indexOf(a.id) - order.indexOf(b.id);
         })
         .map((item) => {
@@ -114,7 +116,7 @@ export function V6Shell() {
             icon: <Icon className="h-[22px] w-[22px]" strokeWidth={1.5} aria-hidden />,
             label: item.label,
             ariaLabel: item.ariaLabel ?? item.label,
-            onClick: () => navigate(item.to),
+            onClick: () => (item.href && /^https?:\/\//.test(item.href) ? window.location.assign(item.href) : navigate(item.to)),
             isActive: activeNavItem === item.id,
             tourTarget: item.id === 'ces' ? 'nav.compliance' : undefined,
           };

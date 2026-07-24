@@ -203,7 +203,7 @@ function ReadinessMapActivity({
         </button>
 
         <div className="border-b border-[#E5E4E3] bg-white px-5 py-4 pr-20 lg:px-8">
-          <p className="font-montserrat text-[11px] font-bold uppercase tracking-[0.22em] text-[#F06923]">
+          <p className="font-montserrat text-[11px] font-bold uppercase tracking-[0.22em] text-[#C2410C]">
             {hotspot.label}
           </p>
           <h2

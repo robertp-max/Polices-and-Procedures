@@ -170,7 +170,7 @@ export default function WorkflowsScreen() {
         title="Filters"
         description={`${filteredRows.length} workflow records match the active search, domain, and risk filters.`}
         actions={
-          <label className="flex min-h-11 min-w-[260px] items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 text-sm text-[#747470]">
+          <label className="flex min-h-11 min-w-[260px] items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 text-sm text-[#3D3D3A]">
             <Search className="h-4 w-4 shrink-0" aria-hidden />
             <input
               aria-label="Search workflows"
@@ -194,7 +194,7 @@ export default function WorkflowsScreen() {
                   onClick={() => toggleDomain(domain)}
                   className={cx(
                     'rounded-[10px] border px-3 py-2 font-montserrat text-[9px] font-bold uppercase tracking-wider transition',
-                    on ? 'border-[#007970] bg-[#007970] text-white' : 'border-[#E5E4E3] bg-white text-[#747470] hover:bg-[#F7FEFF] hover:text-[#007970]',
+                    on ? 'border-[#007970] bg-[#007970] text-white' : 'border-[#E5E4E3] bg-white text-[#3D3D3A] hover:bg-[#F7FEFF] hover:text-[#007970]',
                   )}
                 >
                   {domain}
@@ -229,21 +229,21 @@ export default function WorkflowsScreen() {
                 >
                   <span>
                     <span className="mb-4 flex items-start justify-between gap-4">
-                      <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{row.workflowId}</span>
+                      <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#C2410C]">{row.workflowId}</span>
                       <ToneTag tone={row.risk === 'High' ? 'orange' : 'teal'}>{row.risk}</ToneTag>
                     </span>
-                    <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] group-hover:text-[#F06923]">{row.title}</span>
-                    <span className="mt-3 block text-sm leading-relaxed text-[#747470]">{row.domain} - {row.frequency}</span>
+                    <span className="block font-montserrat text-lg font-semibold leading-snug text-[#007970] group-hover:text-[#C2410C]">{row.title}</span>
+                    <span className="mt-3 block text-sm leading-relaxed text-[#3D3D3A]">{row.domain} - {row.frequency}</span>
                   </span>
-                  <span className="mt-6 border-t border-[#E5E4E3] pt-4 text-xs font-medium leading-relaxed text-[#747470]">
+                  <span className="mt-6 border-t border-[#E5E4E3] pt-4 text-xs font-medium leading-relaxed text-[#3D3D3A]">
                     {stepC} steps - {formC} forms - {row.domainOwner}
                   </span>
                 </button>
               );
             })}
           </div>
-          {filteredRows.length === 0 ? <p className="mt-6 text-sm text-[#747470]">No workflows match current filters.</p> : null}
-          {hiddenCount > 0 ? <p className="mt-8 text-center text-sm text-[#747470]">Showing first 36 matches. Search or filter to narrow the list.</p> : null}
+          {filteredRows.length === 0 ? <p className="mt-6 text-sm text-[#3D3D3A]">No workflows match current filters.</p> : null}
+          {hiddenCount > 0 ? <p className="mt-8 text-center text-sm text-[#3D3D3A]">Showing first 36 matches. Search or filter to narrow the list.</p> : null}
         </PolicyPanel>
       ) : null}
 

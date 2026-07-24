@@ -178,7 +178,7 @@ export function PolicyApprovalsScreen() {
                       'inline-flex min-h-11 items-center gap-2 rounded-[12px] border px-4 font-montserrat text-[10px] font-bold uppercase tracking-wider transition',
                       active
                         ? 'border-[#007970] bg-[#007970] text-white'
-                        : 'border-[#E5E4E3] bg-white text-[#747470] hover:bg-[#F7FEFF] hover:text-[#007970]',
+                        : 'border-[#E5E4E3] bg-white text-[#3D3D3A] hover:bg-[#F7FEFF] hover:text-[#007970]',
                     )}
                   >
                     {chip.label}
@@ -189,7 +189,7 @@ export function PolicyApprovalsScreen() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <label className="flex min-h-11 w-full min-w-[260px] items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 text-sm text-[#747470] tablet-l:max-w-xs">
+              <label className="flex min-h-11 w-full min-w-[260px] items-center gap-2 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 text-sm text-[#3D3D3A] tablet-l:max-w-xs">
                 <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
                 <input
                   value={query}
@@ -203,7 +203,7 @@ export function PolicyApprovalsScreen() {
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
                 aria-label="Filter by domain"
-                className="min-h-11 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470] outline-none focus:border-[#007970]"
+                className="min-h-11 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#3D3D3A] outline-none focus:border-[#007970]"
               >
                 <option value="ALL">All domains</option>
                 {domainOptions.map((code) => <option key={code} value={code}>{DOMAIN_LABEL[code] ?? code}</option>)}
@@ -212,7 +212,7 @@ export function PolicyApprovalsScreen() {
                 value={tier}
                 onChange={(e) => setTier(e.target.value)}
                 aria-label="Filter by tier"
-                className="min-h-11 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470] outline-none focus:border-[#007970]"
+                className="min-h-11 rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-3 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#3D3D3A] outline-none focus:border-[#007970]"
               >
                 <option value="ALL">All tiers</option>
                 {tierOptions.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -222,9 +222,9 @@ export function PolicyApprovalsScreen() {
 
           {visible.length === 0 ? (
             <div className="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-[24px] border border-dashed border-[#E5E4E3] bg-[#FAFBF8] p-8 text-center">
-              <ListChecks className="h-6 w-6 text-[#747470]" aria-hidden="true" />
+              <ListChecks className="h-6 w-6 text-[#3D3D3A]" aria-hidden="true" />
               <p className="font-montserrat text-sm font-bold text-[#007970]">No policies match these filters.</p>
-              <p className="text-sm text-[#747470]">Adjust the status, domain, or tier filters to see open approvals.</p>
+              <p className="text-sm text-[#3D3D3A]">Adjust the status, domain, or tier filters to see open approvals.</p>
             </div>
           ) : (
             <div className="grid gap-5 tablet-l:grid-cols-2 desktop:grid-cols-3">
@@ -238,12 +238,12 @@ export function PolicyApprovalsScreen() {
                     <div className="flex flex-wrap items-center gap-2">
                       <ToneTag tone={STATE_TONE[state] ?? 'slate'}>{STATE_LABEL[state]}</ToneTag>
                       <ToneTag tone="slate">{policy.tier || 'Unclassified'}</ToneTag>
-                      <span className="ml-auto font-mono text-[10px] font-bold uppercase tracking-wider text-[#F06923]">{policy.id}</span>
+                      <span className="ml-auto font-mono text-[10px] font-bold uppercase tracking-wider text-[#C2410C]">{policy.id}</span>
                     </div>
 
                     <div className="grid gap-2">
                       <h2 className="font-montserrat text-base font-bold leading-snug text-[#007970]">{policy.title}</h2>
-                      <p className="inline-flex items-center gap-2 text-xs text-[#747470]">
+                      <p className="inline-flex items-center gap-2 text-xs text-[#3D3D3A]">
                         <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
                         {DOMAIN_LABEL[policy.domainCode] ?? policy.domainCode} - {policy.subdomainCode}
                       </p>
@@ -251,22 +251,22 @@ export function PolicyApprovalsScreen() {
 
                     <dl className="grid gap-2 text-xs">
                       <div className="flex items-start justify-between gap-4">
-                        <dt className="flex items-center gap-1.5 font-medium text-[#747470]"><ShieldCheck className="h-3.5 w-3.5" /> Authority</dt>
+                        <dt className="flex items-center gap-1.5 font-medium text-[#3D3D3A]"><ShieldCheck className="h-3.5 w-3.5" /> Authority</dt>
                         <dd className="text-right font-bold text-[#007970]">{approvalAuthority(policy.tier)}</dd>
                       </div>
                       <div className="flex items-start justify-between gap-4">
-                        <dt className="flex items-center gap-1.5 font-medium text-[#747470]"><UserRound className="h-3.5 w-3.5" /> Owner</dt>
+                        <dt className="flex items-center gap-1.5 font-medium text-[#3D3D3A]"><UserRound className="h-3.5 w-3.5" /> Owner</dt>
                         <dd className="break-words text-right font-semibold text-[#52404B]">{policy.ownerSteward || 'Compliance Officer'}</dd>
                       </div>
                       <div className="flex items-start justify-between gap-4">
-                        <dt className="flex items-center gap-1.5 font-medium text-[#747470]"><CalendarClock className="h-3.5 w-3.5" /> Last activity</dt>
+                        <dt className="flex items-center gap-1.5 font-medium text-[#3D3D3A]"><CalendarClock className="h-3.5 w-3.5" /> Last activity</dt>
                         <dd className="text-right font-semibold text-[#52404B]">{formatDate(envelope?.lastTransition?.timestamp ?? envelope?.createdAt)}</dd>
                       </div>
                     </dl>
 
                     <div className="grid gap-2">
                       <ProgressMeter label="Approval readiness" tone={r.tone} value={r.percent} />
-                      <p className="flex items-center gap-2 text-xs text-[#747470]">
+                      <p className="flex items-center gap-2 text-xs text-[#3D3D3A]">
                         <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
                         {r.blocking} step{r.blocking === 1 ? '' : 's'} to approval - Next: <span className="font-semibold text-[#52404B]">{r.nextAction}</span>
                       </p>
@@ -297,7 +297,7 @@ export function PolicyApprovalsScreen() {
           )}
 
           {truncated > 0 ? (
-            <p className="mt-8 flex items-center justify-center gap-2 text-sm text-[#747470]">
+            <p className="mt-8 flex items-center justify-center gap-2 text-sm text-[#3D3D3A]">
               <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
               Showing {visible.length} of {filtered.length}. Refine filters to narrow the queue.
             </p>
@@ -316,14 +316,14 @@ export function PolicyApprovalsScreen() {
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <article className="rounded-[20px] border border-[#E5E4E3] bg-[#FAFBF8] p-5">
               <h3 className="font-montserrat text-sm font-bold text-[#007970]">Authority Routing</h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#747470]">Required-tier policies route to Governing Body approval. Other policies route to administrator or compliance officer review.</p>
+              <p className="mt-2 text-sm leading-relaxed text-[#3D3D3A]">Required-tier policies route to Governing Body approval. Other policies route to administrator or compliance officer review.</p>
             </article>
             <article className="rounded-[20px] border border-[#E5E4E3] bg-[#FAFBF8] p-5">
               <h3 className="font-montserrat text-sm font-bold text-[#007970]">Publication Gate</h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#747470]">Human approval remains required before publication. Disabled actions keep this prototype honest until signed lifecycle routing is connected.</p>
+              <p className="mt-2 text-sm leading-relaxed text-[#3D3D3A]">Human approval remains required before publication. Disabled actions keep this prototype honest until signed lifecycle routing is connected.</p>
             </article>
           </div>
-          <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-[#747470]">
+          <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-[#3D3D3A]">
             <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-[#007970]" /> Required-tier policies route to Governing Body approval.</span>
             <span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#007970]" /> Human approval remains required before publication.</span>
           </div>

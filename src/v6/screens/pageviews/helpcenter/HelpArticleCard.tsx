@@ -31,23 +31,23 @@ export function HelpArticleCard({ article, showImage = false }: { article: HelpC
       ) : null}
       <div className="flex flex-1 flex-col p-6">
         <span className="mb-3 block"><HelpBadgeRow badges={article.badges} size="sm" max={4} /></span>
-        <span className="font-montserrat text-base font-bold text-[#007970] transition-colors group-hover:text-[#F06923]">
+        <span className="font-montserrat text-base font-bold text-[#007970] transition-colors group-hover:text-[#C2410C]">
           {article.title}
         </span>
-        <span className="mt-2 block text-sm leading-relaxed text-[#747470]">{article.purpose}</span>
+        <span className="mt-2 block text-sm leading-relaxed text-[#3D3D3A]">{article.purpose}</span>
         {article.quickStart.length > 0 ? (
-          <span className="mt-3 block truncate text-xs text-[#A0A0A0]">Quick start: {article.quickStart[0]}</span>
+          <span className="mt-3 block truncate text-xs text-[#474742]">Quick start: {article.quickStart[0]}</span>
         ) : null}
         {coverage ? (
-          <span className="mt-3 flex items-center gap-1.5 truncate font-mono text-xs text-[#747470]">
+          <span className="mt-3 flex items-center gap-1.5 truncate font-mono text-xs text-[#3D3D3A]">
             <Route className="h-3.5 w-3.5 shrink-0 text-[#007970]" aria-hidden /> {coverage}
           </span>
         ) : null}
         <span className="mt-auto flex items-center justify-between pt-4">
-          <span className="flex items-center gap-1.5 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#A0A0A0]">
+          <span className="flex items-center gap-1.5 font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#474742]">
             <Clock className="h-3.5 w-3.5" aria-hidden /> {article.estimatedTime} · {audienceLabels}
           </span>
-          <ArrowRight className="h-4 w-4 shrink-0 text-[#F06923] transition-transform group-hover:translate-x-1" aria-hidden />
+          <ArrowRight className="h-4 w-4 shrink-0 text-[#C2410C] transition-transform group-hover:translate-x-1" aria-hidden />
         </span>
         <span className="sr-only">{getCategory(article.category)?.title}</span>
       </div>

@@ -6,7 +6,7 @@ import { cx } from '../../../utils/classNames';
 // (rounded-full, montserrat, bold uppercase micro-type).
 const TONE_CLASSES: Record<HelpBadgeTone, string> = {
   teal: 'bg-[#E5FEFF] text-[#007970]',
-  orange: 'bg-[#FFF2EB] text-[#F06923]',
+  orange: 'bg-[#FFF2EB] text-[#C2410C]',
   sky: 'bg-[#EEF5FF] text-[#4E8FE8]',
   emerald: 'bg-[#E5F4EE] text-[#008540]',
   amber: 'bg-[#FEF3DC] text-[#9A6700]',
@@ -40,7 +40,7 @@ export function HelpBadgeRow({ badges, size = 'md', max }: { badges: HelpBadgeId
         <HelpBadge key={b} badgeId={b} size={size} />
       ))}
       {max && badges.length > max ? (
-        <span className="font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#A0A0A0]">+{badges.length - max}</span>
+        <span className="font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#474742]">+{badges.length - max}</span>
       ) : null}
     </span>
   );
@@ -59,7 +59,7 @@ export function HelpBadgeFilterBar({
     <div aria-label="Filter articles by badge" role="group" className="space-y-4">
       {HELP_BADGE_GROUPS.map((group) => (
         <div key={group}>
-          <div className="mb-2 font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#A0A0A0]">
+          <div className="mb-2 font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#474742]">
             {HELP_BADGE_GROUP_LABELS[group]}
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -90,7 +90,7 @@ export function HelpBadgeFilterBar({
         <button
           type="button"
           onClick={onClear}
-          className="rounded-[8px] font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#F06923] hover:underline focus-visible:outline-none focus-visible:shadow-focus"
+          className="rounded-[8px] font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#C2410C] hover:underline focus-visible:outline-none focus-visible:shadow-focus"
         >
           Clear filters ({selected.length})
         </button>

@@ -42,8 +42,8 @@ export function HelpCommandRail({
         <HelpSearch ref={searchRef} />
       </RailSection>
 
-      <RailSection id="direct-support" title="Direct Support" icon={<Bot className="h-4 w-4 text-[#F06923]" aria-hidden />}>
-        <p className="text-sm leading-relaxed text-[#747470]">
+      <RailSection id="direct-support" title="Direct Support" icon={<Bot className="h-4 w-4 text-[#C2410C]" aria-hidden />}>
+        <p className="text-sm leading-relaxed text-[#3D3D3A]">
           Can't find the right guide? Ask Brad in plain language, or start a help thread for the team.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -64,7 +64,7 @@ export function HelpCommandRail({
         </div>
       </RailSection>
 
-      <RailSection title="Guided Tours" icon={<Compass className="h-4 w-4 text-[#F06923]" aria-hidden />}>
+      <RailSection title="Guided Tours" icon={<Compass className="h-4 w-4 text-[#C2410C]" aria-hidden />}>
         <div className="grid gap-2">
           {HELP_TOURS.map((tour) => (
             <button
@@ -74,7 +74,7 @@ export function HelpCommandRail({
               className="rounded-[12px] border border-[#E5E4E3] bg-[#FAFBF8] px-4 py-3 text-left transition-colors hover:border-[#C4F4F5] hover:bg-[#E5FEFF] focus-visible:outline-none focus-visible:shadow-focus"
             >
               <span className="block text-sm font-medium text-[#52404B]">{tour.title}</span>
-              <span className="mt-0.5 block font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#A0A0A0]">
+              <span className="mt-0.5 block font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#474742]">
                 {tour.estimatedTime} · launches in-app
               </span>
             </button>
@@ -82,8 +82,8 @@ export function HelpCommandRail({
         </div>
       </RailSection>
 
-      <RailSection title="Office Staff Training" icon={<GraduationCap className="h-4 w-4 text-[#F06923]" aria-hidden />}>
-        <p className="text-sm leading-relaxed text-[#747470]">
+      <RailSection title="Office Staff Training" icon={<GraduationCap className="h-4 w-4 text-[#C2410C]" aria-hidden />}>
+        <p className="text-sm leading-relaxed text-[#3D3D3A]">
           The end-user syllabus walks every non-admin workspace with practice actions and knowledge checks.
         </p>
         <button
@@ -95,7 +95,7 @@ export function HelpCommandRail({
         </button>
       </RailSection>
 
-      <RailSection title="Threads & Community" icon={<MessagesSquare className="h-4 w-4 text-[#F06923]" aria-hidden />}>
+      <RailSection title="Threads & Community" icon={<MessagesSquare className="h-4 w-4 text-[#C2410C]" aria-hidden />}>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -124,7 +124,7 @@ export function HelpCommandRail({
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium text-[#52404B] group-hover:text-[#007970]">{article.title}</span>
-                  <span className="block font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#A0A0A0]">
+                  <span className="block font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#474742]">
                     {article.lastUpdated} · {article.estimatedTime}
                   </span>
                 </span>
@@ -135,7 +135,7 @@ export function HelpCommandRail({
       </RailSection>
 
       <RailSection title="Baseline Notes" icon={<span aria-hidden />}>
-        <ul className="grid list-disc gap-2 pl-4 text-sm leading-relaxed text-[#747470]">
+        <ul className="grid list-disc gap-2 pl-4 text-sm leading-relaxed text-[#3D3D3A]">
           {BASELINE_NOTES.map((note) => (
             <li key={note}>{note}</li>
           ))}

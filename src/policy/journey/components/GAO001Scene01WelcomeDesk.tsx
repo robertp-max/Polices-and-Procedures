@@ -490,7 +490,7 @@ function BadgeBuilderModal({
         </button>
 
         <div className="flex min-h-0 flex-col justify-center overflow-y-auto px-8 py-8">
-          <p className="font-montserrat text-[11px] font-bold uppercase tracking-[0.22em] text-[#F06923]">Field Observation Check</p>
+          <p className="font-montserrat text-[11px] font-bold uppercase tracking-[0.22em] text-[#C2410C]">Field Observation Check</p>
           <h2 id="gao001-badge-builder-title" className="mt-3 font-montserrat text-3xl font-bold leading-tight text-[#007970]">Create Your Clinician ID Badge</h2>
           <p id="gao001-badge-builder-description" className="mt-4 font-roboto text-sm leading-relaxed text-[#52404B]">
             Your badge is the first piece of trust patients see at the door. Add your photo directly inside the badge, upload one, or use the Care Indeed logo.
@@ -679,7 +679,7 @@ function OrientationChecklistModal({
         <div className="relative flex max-h-full w-full max-w-[620px] flex-col overflow-hidden rounded-[24px] border border-[#E9E4E0] bg-white shadow-[0_28px_80px_rgba(15,91,84,0.2)]">
           <div className="flex items-start justify-between gap-4 border-b border-[#E9E4E0] px-6 py-5">
             <div>
-              <p className="font-montserrat text-[11px] font-bold uppercase tracking-[0.22em] text-[#F06923]">Day 1 Orientation</p>
+              <p className="font-montserrat text-[11px] font-bold uppercase tracking-[0.22em] text-[#C2410C]">Day 1 Orientation</p>
               <h2 id="gao001-orientation-checklist-title" className="mt-2 font-montserrat text-2xl font-bold leading-tight text-[#007970]">
                 Orientation Checklist
               </h2>

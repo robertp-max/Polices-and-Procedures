@@ -27,16 +27,16 @@ export function HelpScreenshotFrame({ image, compact = false }: { image: HelpIma
           <span className="max-w-md text-center font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#007970]">
             Screenshot coming soon
           </span>
-          <span className="max-w-md text-center text-xs leading-relaxed text-[#747470]">{image.alt}</span>
+          <span className="max-w-md text-center text-xs leading-relaxed text-[#3D3D3A]">{image.alt}</span>
           {asset ? (
-            <span className="font-mono text-[10px] text-[#A0A0A0]">{asset.captureRoute}</span>
+            <span className="font-mono text-[10px] text-[#474742]">{asset.captureRoute}</span>
           ) : null}
         </div>
       ) : (
         <img src={asset.src} alt={image.alt} loading="lazy" className="w-full" onError={() => setFailed(true)} />
       )}
       {image.caption ? (
-        <figcaption className="border-t border-[#E5E4E3] bg-white px-4 py-2 text-xs text-[#747470]">{image.caption}</figcaption>
+        <figcaption className="border-t border-[#E5E4E3] bg-white px-4 py-2 text-xs text-[#3D3D3A]">{image.caption}</figcaption>
       ) : null}
     </figure>
   );

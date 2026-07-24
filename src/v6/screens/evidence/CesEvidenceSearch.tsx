@@ -249,7 +249,7 @@ export function CesEvidenceSearch({ onOpenFolder }: { onOpenFolder?: (folderId: 
       {/* Search bar */}
       <div className="relative">
         <div className="flex items-center gap-2 rounded-full border border-[#EAE4E3] bg-[#FAFBF8] px-4 py-2.5 shadow-sm focus-within:border-[#007970]">
-          <Search className="h-5 w-5 text-[#747470]" />
+          <Search className="h-5 w-5 text-[#3D3D3A]" />
           <input
             type="text"
             value={term}
@@ -261,9 +261,9 @@ export function CesEvidenceSearch({ onOpenFolder }: { onOpenFolder?: (folderId: 
             aria-label="Search CES Evidence Drive"
           />
           {(term || applied) && (
-            <button type="button" onClick={clearSearch} className="rounded-full p-1 text-[#747470] hover:bg-[#EAE4E3]" aria-label="Clear search"><X className="h-4 w-4" /></button>
+            <button type="button" onClick={clearSearch} className="rounded-full p-1 text-[#3D3D3A] hover:bg-[#EAE4E3]" aria-label="Clear search"><X className="h-4 w-4" /></button>
           )}
-          <button type="button" onClick={() => { setAdv((a) => ({ ...a, hasWords: a.hasWords || term })); setAdvancedOpen(true); setDropdownOpen(false); }} className="rounded-full p-1.5 text-[#747470] hover:bg-[#EAE4E3]" aria-label="Advanced search" title="Advanced search">
+          <button type="button" onClick={() => { setAdv((a) => ({ ...a, hasWords: a.hasWords || term })); setAdvancedOpen(true); setDropdownOpen(false); }} className="rounded-full p-1.5 text-[#3D3D3A] hover:bg-[#EAE4E3]" aria-label="Advanced search" title="Advanced search">
             <SlidersHorizontal className="h-5 w-5" />
           </button>
           <button type="button" onClick={() => runBasicSearch()} className="rounded-full bg-[#007970] px-5 py-1.5 font-montserrat text-xs font-medium uppercase tracking-wider text-white hover:bg-[#005f58]">Search</button>
@@ -275,7 +275,7 @@ export function CesEvidenceSearch({ onOpenFolder }: { onOpenFolder?: (folderId: 
             <div className="px-4 py-2 text-[10px] font-medium uppercase tracking-wider text-[#A8A29E]">Recent searches</div>
             {recent.length === 0 ? (
               <div className="px-4 pb-3">
-                <p className="font-roboto text-sm text-[#747470]">No recent searches yet</p>
+                <p className="font-roboto text-sm text-[#3D3D3A]">No recent searches yet</p>
                 <p className="mt-1 font-roboto text-xs text-[#A8A29E]">Search by file name, event ID, packet, folder, form, policy, or Drive URL.</p>
               </div>
             ) : (
@@ -323,7 +323,7 @@ export function CesEvidenceSearch({ onOpenFolder }: { onOpenFolder?: (folderId: 
             <button type="button" onClick={clearSearch} className="font-roboto text-xs text-[#007970] hover:underline">Clear</button>
           </div>
           {results.length === 0 ? (
-            <div className="px-5 py-10 text-center font-roboto text-sm text-[#747470]">{loading ? 'Loading manifest…' : 'No matching evidence in the CES Evidence Drive manifest.'}</div>
+            <div className="px-5 py-10 text-center font-roboto text-sm text-[#3D3D3A]">{loading ? 'Loading manifest…' : 'No matching evidence in the CES Evidence Drive manifest.'}</div>
           ) : (
             <ul className="max-h-[460px] divide-y divide-[#F1EEED] overflow-y-auto">
               {results.slice(0, 300).map((r, i) => (
@@ -332,9 +332,9 @@ export function CesEvidenceSearch({ onOpenFolder }: { onOpenFolder?: (folderId: 
                     {r.kind === 'folder' ? <FolderIcon className="mt-0.5 h-5 w-5 shrink-0 text-[#F59E0B]" /> : <FileText className="mt-0.5 h-5 w-5 shrink-0 text-[#3B82F6]" />}
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-roboto text-sm font-medium text-[#1F1C1B]">{r.displayName || r.rawFileName || r.folderName || '(untitled)'}</span>
-                      <span className="block truncate font-roboto text-xs text-[#747470]">{r.fullFolderPath || r.parentFolderPath}</span>
+                      <span className="block truncate font-roboto text-xs text-[#3D3D3A]">{r.fullFolderPath || r.parentFolderPath}</span>
                       <span className="mt-1 flex flex-wrap gap-1.5">
-                        {r.fileType && <span className="rounded bg-[#F1EEED] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[#747470]">{r.fileType}</span>}
+                        {r.fileType && <span className="rounded bg-[#F1EEED] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[#3D3D3A]">{r.fileType}</span>}
                         {r.evidenceStatus && <span className="rounded bg-[#E5FEFF] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[#007970]">{r.evidenceStatus}</span>}
                         {r.eventId && <span className="rounded bg-[#FFF0E5] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[#C74601]">{r.eventId}</span>}
                         {r.formId && <span className="rounded bg-[#F3E8FF] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[#7C3AED]">{r.formId}</span>}
@@ -354,7 +354,7 @@ export function CesEvidenceSearch({ onOpenFolder }: { onOpenFolder?: (folderId: 
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[28px] bg-white p-7 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="mb-5 flex items-center justify-between">
               <h3 className="font-montserrat text-lg font-medium text-[#1F1C1B]">Advanced Search</h3>
-              <button type="button" onClick={() => setAdvancedOpen(false)} className="rounded-full p-1.5 text-[#747470] hover:bg-[#EAE4E3]" aria-label="Close"><X className="h-5 w-5" /></button>
+              <button type="button" onClick={() => setAdvancedOpen(false)} className="rounded-full p-1.5 text-[#3D3D3A] hover:bg-[#EAE4E3]" aria-label="Close"><X className="h-5 w-5" /></button>
             </div>
 
             <div className="space-y-4">
@@ -400,7 +400,7 @@ export function CesEvidenceSearch({ onOpenFolder }: { onOpenFolder?: (folderId: 
               </Field>
 
               <fieldset className="rounded-2xl border border-[#EAE4E3] p-4">
-                <legend className="px-1 font-roboto text-xs font-medium text-[#747470]">Evidence metadata</legend>
+                <legend className="px-1 font-roboto text-xs font-medium text-[#3D3D3A]">Evidence metadata</legend>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <input value={adv.eventId} onChange={(e) => setAdv({ ...adv, eventId: e.target.value })} placeholder="Event ID" className={inputCls} />
                   <input value={adv.workflowId} onChange={(e) => setAdv({ ...adv, workflowId: e.target.value })} placeholder="Workflow ID" className={inputCls} />
@@ -419,7 +419,7 @@ export function CesEvidenceSearch({ onOpenFolder }: { onOpenFolder?: (folderId: 
 
             <div className="mt-6 flex items-center justify-end gap-3">
               <button type="button" onClick={() => setAdv(EMPTY_ADV)} className="rounded-full border border-[#EAE4E3] px-5 py-2 font-montserrat text-xs font-medium uppercase tracking-wider text-[#524D4B] hover:bg-[#FAFBF8]">Reset</button>
-              <button type="button" onClick={() => setAdvancedOpen(false)} className="rounded-full px-5 py-2 font-montserrat text-xs font-medium uppercase tracking-wider text-[#747470] hover:bg-[#FAFBF8]">Cancel</button>
+              <button type="button" onClick={() => setAdvancedOpen(false)} className="rounded-full px-5 py-2 font-montserrat text-xs font-medium uppercase tracking-wider text-[#3D3D3A] hover:bg-[#FAFBF8]">Cancel</button>
               <button type="button" onClick={runAdvancedSearch} className="rounded-full bg-[#007970] px-7 py-2 font-montserrat text-xs font-medium uppercase tracking-wider text-white hover:bg-[#005f58]">Search</button>
             </div>
           </div>
@@ -435,7 +435,7 @@ const inputCls = 'w-full rounded-xl border border-[#EAE4E3] bg-white px-3 py-2 f
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block font-roboto text-xs font-medium text-[#747470]">{label}</span>
+      <span className="mb-1 block font-roboto text-xs font-medium text-[#3D3D3A]">{label}</span>
       {children}
     </label>
   );

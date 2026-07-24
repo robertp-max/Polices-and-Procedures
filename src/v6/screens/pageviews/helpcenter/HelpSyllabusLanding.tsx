@@ -17,7 +17,7 @@ export function HelpSyllabusLessonCard({ lesson }: { lesson: SyllabusLesson }) {
     <div className="rounded-[16px] border border-[#E5E4E3] bg-white p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#A0A0A0]">{lesson.lessonId}</p>
+          <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#474742]">{lesson.lessonId}</p>
           <h4 className="mt-1 font-montserrat text-base font-bold text-[#004142]">{lesson.title}</h4>
         </div>
         <HelpBadgeRow badges={lesson.badges} size="sm" max={4} />
@@ -30,7 +30,7 @@ export function HelpSyllabusLessonCard({ lesson }: { lesson: SyllabusLesson }) {
           </p>
           <p className="text-sm leading-relaxed text-[#52404B]">{lesson.userGoal}</p>
           {lesson.route ? (
-            <p className="mt-2 flex items-center gap-1.5 font-mono text-xs text-[#A0A0A0]">
+            <p className="mt-2 flex items-center gap-1.5 font-mono text-xs text-[#474742]">
               <Route className="h-3.5 w-3.5" aria-hidden /> {lesson.route}
             </p>
           ) : null}
@@ -58,12 +58,12 @@ export function HelpSyllabusLessonCard({ lesson }: { lesson: SyllabusLesson }) {
           type="button"
           onClick={() => setRevealed((v) => !v)}
           aria-expanded={revealed}
-          className="mt-2 inline-flex items-center gap-1.5 rounded-[8px] font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#007970] hover:text-[#F06923] focus-visible:outline-none focus-visible:shadow-focus"
+          className="mt-2 inline-flex items-center gap-1.5 rounded-[8px] font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#007970] hover:text-[#C2410C] focus-visible:outline-none focus-visible:shadow-focus"
         >
           {revealed ? 'Hide answer' : 'Reveal answer'}
           <ChevronDown className={`h-3.5 w-3.5 transition-transform ${revealed ? 'rotate-180' : ''}`} aria-hidden />
         </button>
-        {revealed ? <p className="mt-2 text-sm leading-relaxed text-[#747470]">{lesson.knowledgeCheck.answer}</p> : null}
+        {revealed ? <p className="mt-2 text-sm leading-relaxed text-[#3D3D3A]">{lesson.knowledgeCheck.answer}</p> : null}
       </div>
 
       {articles.length > 0 ? (
@@ -99,14 +99,14 @@ function SyllabusModuleCard({ module, index }: { module: SyllabusModule; index: 
           </span>
           <span className="min-w-0">
             <span className="block font-montserrat text-lg font-bold text-[#007970]">{module.title}</span>
-            <span className="mt-1 block text-sm leading-relaxed text-[#747470]">{module.description}</span>
+            <span className="mt-1 block text-sm leading-relaxed text-[#3D3D3A]">{module.description}</span>
           </span>
         </span>
         <span className="flex shrink-0 items-center gap-3">
-          <span className="hidden font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#A0A0A0] md:block">
+          <span className="hidden font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#474742] md:block">
             {module.lessons.length} {module.lessons.length === 1 ? 'lesson' : 'lessons'}
           </span>
-          <ChevronDown className={`h-5 w-5 text-[#A0A0A0] transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
+          <ChevronDown className={`h-5 w-5 text-[#474742] transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
         </span>
       </button>
       {open ? (
@@ -133,7 +133,7 @@ export function HelpSyllabusLanding() {
       <section className="ci-page-hero relative overflow-hidden rounded-b-[24px] rounded-tr-[24px] border border-[#E5E4E3] bg-white p-10 shadow-sm md:p-14">
         <StaticCardWatermark />
         <div className="relative z-10">
-          <h2 className="mb-6 font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#F06923]">
+          <h2 className="mb-6 font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#C2410C]">
             Office Staff End User Training
           </h2>
           <h1 className="mb-6 max-w-3xl font-montserrat text-4xl font-bold leading-tight tracking-tight text-[#007970] md:text-5xl">
@@ -147,7 +147,7 @@ export function HelpSyllabusLanding() {
             <span className="inline-flex items-center gap-2 rounded-[12px] bg-[#E5FEFF] px-5 py-3 font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#007970]">
               <GraduationCap className="h-4 w-4" aria-hidden /> {OFFICE_STAFF_SYLLABUS.length} modules
             </span>
-            <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#A0A0A0]">
+            <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#474742]">
               Progress-ready path — work top to bottom; completion status can attach to each lesson
             </span>
           </div>

@@ -145,7 +145,7 @@ export function PolicyLifecycleScreen() {
             <div className="grid gap-4 md:grid-cols-5">
               {stages.map((stage) => (
                 <article key={stage.label} className="rounded-[20px] border border-[#E5E4E3] bg-[#FAFBF8] p-5 text-center">
-                  <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#747470]">{stage.label}</p>
+                  <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#3D3D3A]">{stage.label}</p>
                   <p className="mt-3 font-montserrat text-3xl font-bold text-[#007970]">{stage.count}</p>
                   <div className="mt-3 flex justify-center">
                     <ToneBadge size="sm" status={stage.status} />
@@ -161,12 +161,12 @@ export function PolicyLifecycleScreen() {
                 <article key={group.code} className="rounded-[20px] border border-[#E5E4E3] bg-white p-5 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#F06923]">{group.code}</p>
+                      <p className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#C2410C]">{group.code}</p>
                       <h3 className="mt-2 font-montserrat text-sm font-bold text-[#007970]">{group.label}</h3>
                     </div>
                     <ToneTag tone="teal">{group.count}</ToneTag>
                   </div>
-                  <p className="mt-4 text-xs leading-relaxed text-[#747470]">Policies mapped to lifecycle ownership and annual review cadence.</p>
+                  <p className="mt-4 text-xs leading-relaxed text-[#3D3D3A]">Policies mapped to lifecycle ownership and annual review cadence.</p>
                 </article>
               ))}
             </div>
@@ -184,12 +184,12 @@ export function PolicyLifecycleScreen() {
               <article key={rec.id} className="rounded-[20px] border border-[#E5E4E3] bg-white p-5 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{rec.id}</p>
+                    <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#C2410C]">{rec.id}</p>
                     <h3 className="mt-2 font-montserrat text-lg font-semibold text-[#007970]">{rec.title}</h3>
                   </div>
                   <ToneTag tone="teal">{rec.state}</ToneTag>
                 </div>
-                <div className="mt-5 grid gap-3 text-sm text-[#747470] md:grid-cols-2">
+                <div className="mt-5 grid gap-3 text-sm text-[#3D3D3A] md:grid-cols-2">
                   <span className="flex items-center gap-2"><User className="h-4 w-4 text-[#007970]" aria-hidden />{rec.owner}</span>
                   <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-[#007970]" aria-hidden />Due: {rec.due}</span>
                 </div>
@@ -206,7 +206,7 @@ export function PolicyLifecycleScreen() {
           ))}
           <article className="rounded-[24px] border border-[#E5E4E3] bg-white p-7 shadow-sm">
             <h3 className="font-montserrat text-base font-bold text-[#007970]">Review Summary</h3>
-            <p className="mt-2 text-sm leading-relaxed text-[#747470]">A short summary keeps the action tab light while still exposing state counts.</p>
+            <p className="mt-2 text-sm leading-relaxed text-[#3D3D3A]">A short summary keeps the action tab light while still exposing state counts.</p>
             <div className="mt-5 grid grid-cols-2 gap-3">
               <PolicyTinyStat label="Draft" tone="amber" value={String(stateCounts.DRAFT)} />
               <PolicyTinyStat label="Review" tone="orange" value={String(stateCounts.REVIEW)} />

@@ -1,0 +1,56 @@
+:root {
+  --border: rgba(229, 228, 227, 0);
+  --border-strong: rgba(0, 121, 112, 0);
+}
+
+.portal-shell *,
+.portal-shell *::before,
+.portal-shell *::after {
+  border-color: transparent !important;
+}
+
+.portal-shell a,
+.portal-shell button,
+.portal-shell select,
+.portal-shell input,
+.portal-shell textarea,
+.portal-shell [role="button"],
+.portal-shell [role="tab"],
+.portal-shell .button,
+.portal-shell .text-link,
+.portal-shell .desktop-sidebar nav a,
+.portal-shell .sidebar-support,
+.portal-shell .requirement-card,
+.portal-shell .home-section,
+.portal-shell .journey-key,
+.portal-shell .nolan-panel,
+.portal-shell .support-grid article,
+.portal-shell .performance-explainer,
+.portal-shell .continue-card,
+.portal-shell .focus-item,
+.portal-shell .icon-button {
+  transition: none !important;
+}
+
+.portal-shell a:hover,
+.portal-shell button:hover,
+.portal-shell select:hover,
+.portal-shell input:hover,
+.portal-shell textarea:hover,
+.portal-shell [role="button"]:hover,
+.portal-shell [role="tab"]:hover,
+.portal-shell .button:hover,
+.portal-shell .text-link:hover,
+.portal-shell .desktop-sidebar nav a:hover,
+.portal-shell .sidebar-support:hover,
+.portal-shell .requirement-card:hover,
+.portal-shell .home-section:hover,
+.portal-shell .journey-key:hover,
+.portal-shell .nolan-panel:hover,
+.portal-shell .support-grid article:hover,
+.portal-shell .performance-explainer:hover,
+.portal-shell .continue-card:hover,
+.portal-shell .focus-item:hover,
+.portal-shell .icon-button:hover {
+  transform: none !important;
+}

@@ -213,7 +213,7 @@ function PageHeader({ title, subtitle }: { title: string; subtitle: string }) {
         <h1 className="mb-2 font-montserrat text-2xl font-semibold leading-tight tracking-tight text-[#007970] md:text-3xl">
           {title}
         </h1>
-        <p className="font-roboto text-sm text-[#747470] md:text-base">{subtitle}</p>
+        <p className="font-roboto text-sm text-[#3D3D3A] md:text-base">{subtitle}</p>
       </div>
     </div>
   );
@@ -225,7 +225,7 @@ function StatusBadge({ status }: { status: string }) {
     <span
       className={cx(
         'rounded-md px-3 py-1 font-montserrat text-[11px] font-bold uppercase tracking-wider',
-        done ? 'bg-[#E5F4EE] text-[#008540]' : 'bg-[#FFF0E5] text-[#F06923]',
+        done ? 'bg-[#E5F4EE] text-[#008540]' : 'bg-[#FFF0E5] text-[#C2410C]',
       )}
     >
       {status}
@@ -250,14 +250,14 @@ function ModuleCard({
     >
       <span>
         <span className="mb-5 flex items-center justify-between gap-4">
-          <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{card.eyebrow}</span>
+          <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#C2410C]">{card.eyebrow}</span>
           <StatusBadge status={status ?? card.status} />
         </span>
-        <span className="mb-4 block font-montserrat text-xl font-semibold leading-snug text-[#007970] transition-colors group-hover:text-[#F06923]">
+        <span className="mb-4 block font-montserrat text-xl font-semibold leading-snug text-[#007970] transition-colors group-hover:text-[#C2410C]">
           {card.title}
         </span>
       </span>
-      <span className="font-roboto text-[15px] leading-relaxed text-[#747470]">{card.body}</span>
+      <span className="font-roboto text-[15px] leading-relaxed text-[#3D3D3A]">{card.body}</span>
     </button>
   );
 }
@@ -277,19 +277,19 @@ function RolePathCard({
     >
       <span>
         <span className="mb-5 flex items-center justify-between gap-4">
-          <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#F06923]">{card.eyebrow}</span>
+          <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#C2410C]">{card.eyebrow}</span>
           <StatusBadge status={card.status} />
         </span>
-        <span className="mb-4 block font-montserrat text-xl font-semibold leading-snug text-[#007970] transition-colors group-hover:text-[#F06923]">
+        <span className="mb-4 block font-montserrat text-xl font-semibold leading-snug text-[#007970] transition-colors group-hover:text-[#C2410C]">
           {card.title}
         </span>
-        <span className="mb-5 block font-roboto text-[15px] leading-relaxed text-[#747470]">{card.body}</span>
+        <span className="mb-5 block font-roboto text-[15px] leading-relaxed text-[#3D3D3A]">{card.body}</span>
       </span>
       <span className="flex items-end justify-between gap-4 border-t border-[#E5E4E3] pt-5">
         <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#007970]">
           {card.moduleCount} modules
         </span>
-        <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#F06923]">
+        <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#C2410C]">
           {actionForProgress(card.completedCount, card.moduleCount)}
         </span>
       </span>
@@ -318,15 +318,15 @@ function RoleModuleCard({
     >
       <span>
         <span className="mb-5 flex items-center justify-between gap-4">
-          <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#F06923]">
+          <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#C2410C]">
             {String(index + 1).padStart(2, '0')} - {item.module.id}
           </span>
           <StatusBadge status={status} />
         </span>
-        <span className="mb-3 block font-montserrat text-xl font-semibold leading-snug text-[#007970] transition-colors group-hover:text-[#F06923]">
+        <span className="mb-3 block font-montserrat text-xl font-semibold leading-snug text-[#007970] transition-colors group-hover:text-[#C2410C]">
           {item.module.title}
         </span>
-        <span className="mb-4 block font-roboto text-[15px] leading-relaxed text-[#747470]">{refsLine(item.module, item.row)}.</span>
+        <span className="mb-4 block font-roboto text-[15px] leading-relaxed text-[#3D3D3A]">{refsLine(item.module, item.row)}.</span>
         {lockedReason ? (
           <span className="block rounded-[12px] bg-[#FFF8ED] px-4 py-3 font-roboto text-xs leading-relaxed text-[#9A5B20]">
             {lockedReason}
@@ -335,7 +335,7 @@ function RoleModuleCard({
       </span>
       <span className="mt-6 flex items-center justify-between gap-4 border-t border-[#E5E4E3] pt-5">
         <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#007970]">{item.row.phase}</span>
-        <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#F06923]">Open Module</span>
+        <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#C2410C]">Open Module</span>
       </span>
     </button>
   );
@@ -633,7 +633,7 @@ export function JourneyAcademyScreen() {
               <StaticCardWatermark />
               <div className="relative z-10 flex flex-col items-start justify-between gap-12 xl:flex-row">
                 <div className="max-w-3xl">
-                  <h2 className="mb-6 font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#F06923]">Academy Overview</h2>
+                  <h2 className="mb-6 font-montserrat text-[13px] font-bold uppercase tracking-wider text-[#C2410C]">Academy Overview</h2>
                   <h1 className="mb-6 font-montserrat text-4xl font-bold leading-none tracking-tight text-[#007970] md:text-5xl lg:text-6xl">
                     Care Indeed <br />
                     Training Academy
@@ -674,8 +674,8 @@ export function JourneyAcademyScreen() {
                 return (
                   <div key={stat.label} className="group flex min-h-[164px] flex-col items-center justify-center rounded-[24px] border border-[#E5E4E3] bg-white p-8 text-center shadow-sm transition-colors hover:border-[#007970]">
                     <Icon className="mb-4 h-6 w-6 text-[#007970]" aria-hidden />
-                    <span className="mb-3 font-montserrat text-3xl font-bold text-[#F06923] transition-transform duration-300 group-hover:scale-110 md:text-4xl">{stat.value}</span>
-                    <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#747470]">{stat.label}</span>
+                    <span className="mb-3 font-montserrat text-3xl font-bold text-[#C2410C] transition-transform duration-300 group-hover:scale-110 md:text-4xl">{stat.value}</span>
+                    <span className="font-montserrat text-[11px] font-bold uppercase tracking-wider text-[#3D3D3A]">{stat.label}</span>
                   </div>
                 );
               })}
@@ -891,11 +891,11 @@ export function JourneyAcademyScreen() {
               <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <h2 className="font-montserrat text-2xl font-semibold tracking-tight text-[#007970]">Badge Rewards</h2>
-                  <p className="mt-2 font-roboto text-sm font-light text-[#747470]">
+                  <p className="mt-2 font-roboto text-sm font-light text-[#3D3D3A]">
                     Completed modules: <strong className="font-semibold">{completedModuleCount}</strong>. Evidence records: <strong className="font-semibold">{learnerEvidence.length}</strong>.
                   </p>
                 </div>
-                <span className="font-montserrat text-xs font-bold uppercase tracking-wider text-[#747470]">{Math.min(completedModuleCount, 6)}/6 Unlocked</span>
+                <span className="font-montserrat text-xs font-bold uppercase tracking-wider text-[#3D3D3A]">{Math.min(completedModuleCount, 6)}/6 Unlocked</span>
               </div>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {[
@@ -912,13 +912,13 @@ export function JourneyAcademyScreen() {
                     <div key={badge.title} className={cx('flex min-h-48 flex-col justify-between rounded-[20px] border p-6 transition-all duration-300', unlocked ? 'border-[#007970] bg-white shadow-sm hover:-translate-y-0.5 hover:shadow-md' : 'border-gray-200 bg-[#FAFBF8]/60 opacity-55')}>
                       <div>
                         <div className="mb-3 flex items-center justify-between">
-                          <span className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#F06923]">{unlocked ? 'Unlocked' : 'Locked'}</span>
+                          <span className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#C2410C]">{unlocked ? 'Unlocked' : 'Locked'}</span>
                           <Icon className="h-4 w-4 text-[#007970]" aria-hidden />
                         </div>
                         <h3 className="mb-1 font-montserrat text-base font-bold leading-snug text-[#007970]">{badge.title}</h3>
                         <span className="block font-montserrat text-xs font-medium text-[#007970]/80">{badge.req}</span>
                       </div>
-                      <p className="font-roboto text-xs leading-relaxed text-[#747470]">Cosmetic recognition for Journey completion milestones.</p>
+                      <p className="font-roboto text-xs leading-relaxed text-[#3D3D3A]">Cosmetic recognition for Journey completion milestones.</p>
                     </div>
                   );
                 })}

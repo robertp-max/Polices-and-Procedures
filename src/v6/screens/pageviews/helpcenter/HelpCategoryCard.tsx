@@ -58,14 +58,14 @@ export function HelpCategoryCard({
           </span>
           <HelpBadge badgeId={category.primaryBadge} />
         </span>
-        <span className="block font-montserrat text-lg font-bold text-[#007970] transition-colors group-hover:text-[#F06923]">
+        <span className="block font-montserrat text-lg font-bold text-[#007970] transition-colors group-hover:text-[#C2410C]">
           {category.title}
         </span>
-        <span className="mt-2 block text-sm leading-relaxed text-[#747470]">{category.shortDescription}</span>
+        <span className="mt-2 block text-sm leading-relaxed text-[#3D3D3A]">{category.shortDescription}</span>
       </span>
       <span className="mt-6 inline-flex items-center gap-2 font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#007970]">
         Browse {articleCount} {articleCount === 1 ? 'article' : 'articles'}
-        <ArrowRight className="h-4 w-4 text-[#F06923] transition-transform group-hover:translate-x-1" aria-hidden />
+        <ArrowRight className="h-4 w-4 text-[#C2410C] transition-transform group-hover:translate-x-1" aria-hidden />
       </span>
     </button>
   );

@@ -1157,7 +1157,7 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
       <div className="px-5 py-3.5 border-b border-[#E5E4E3] bg-white flex justify-between items-center z-10 shrink-0">
         <div>
           <h2 className="text-lg font-semibold text-[#007970]">Virtual Field Visit</h2>
-          <p className="text-xs text-[#747470] mt-0.5">Explore the scene. Identify the correct Core Values in action.</p>
+          <p className="text-xs text-[#3D3D3A] mt-0.5">Explore the scene. Identify the correct Core Values in action.</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2 text-xs font-bold text-[#007970] bg-[#E5FEFF] px-3 py-1 rounded-lg border border-[#C4F4F5]">
