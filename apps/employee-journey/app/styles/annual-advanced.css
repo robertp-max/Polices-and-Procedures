@@ -28,10 +28,18 @@
 
 .annual-subheading {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
+  justify-content: flex-start;
   gap: 12px;
-  margin: 28px 0 14px;
+  margin: 0 0 14px;
+}
+
+.annual-subheading > svg {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  color: var(--teal);
 }
 
 .annual-subheading:first-child {
@@ -190,4 +198,222 @@
   .policy-update-recurrence {
     text-align: left;
   }
+}
+
+/* ── Annual & Recurring Requirements rebuild (Master Correction §5/§17) ── */
+
+.annual-section {
+  margin-top: 34px;
+  scroll-margin-top: 84px;
+}
+
+.annual-summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 4px 0 16px;
+}
+
+.annual-summary-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 96px;
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  background: var(--surface-teal);
+  padding: 10px 14px;
+}
+
+.annual-summary-value {
+  font-family: var(--font-montserrat), Arial, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--teal-deep);
+  line-height: 1;
+}
+
+.annual-summary-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted-strong);
+}
+
+.annual-section-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.annual-section-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  padding: 7px 14px;
+  color: var(--teal-deep);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.annual-section-link:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-teal);
+}
+
+.annual-section-link > svg {
+  width: 15px;
+  height: 15px;
+  color: var(--teal);
+}
+
+.pending-action {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 12px;
+  background: #f6f4f0;
+  padding: 10px 12px;
+}
+
+.pending-action > svg {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  color: var(--muted-strong);
+}
+
+.pending-action strong {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--muted-strong);
+}
+
+.pending-action span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.requirement-card.is-pending {
+  opacity: 0.92;
+}
+
+.policy-chip-soft {
+  border-color: rgba(240, 105, 35, 0.32);
+  background: var(--orange-soft);
+  color: var(--orange-deep);
+}
+
+.inservice-clock {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-card);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+}
+
+.inservice-clock-face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 3px solid var(--teal);
+  background: var(--surface-teal);
+}
+
+.inservice-clock-face strong {
+  font-family: var(--font-montserrat), Arial, sans-serif;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--teal-deep);
+}
+
+.inservice-clock-face span {
+  font-size: 0.6875rem;
+  color: var(--muted-strong);
+}
+
+.inservice-clock-note {
+  margin: 0;
+  color: var(--ink-strong);
+  font-size: 0.875rem;
+}
+
+.inservice-clock-basis {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.annual-link-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.annual-link-card:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-teal);
+}
+
+.annual-link-card > svg:first-child {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  color: var(--teal);
+}
+
+.annual-link-card > svg:last-child {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-left: auto;
+  color: var(--muted-strong);
+}
+
+.annual-link-card strong {
+  display: block;
+  font-size: 0.9375rem;
+  color: var(--teal-deep);
+}
+
+.annual-link-card span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+a.policy-update-row {
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease;
+}
+
+a.policy-update-row:hover {
+  border-color: var(--border-strong);
 }
