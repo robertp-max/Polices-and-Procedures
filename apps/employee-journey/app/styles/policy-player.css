@@ -269,6 +269,43 @@
   min-width: 0;
 }
 
+/* Learning right-rail cards (Master Correction §9.3) */
+.policy-side-why h2,
+.policy-side-nolan h2 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.policy-side-why h2 > svg,
+.policy-side-nolan h2 > svg {
+  width: 16px;
+  height: 16px;
+  color: var(--teal);
+}
+
+.policy-side-why {
+  border-left: 3px solid var(--orange);
+}
+
+.policy-side-mustdo {
+  margin-top: 8px !important;
+  font-size: 0.8125rem;
+}
+
+.policy-side-nolan {
+  background: var(--surface-teal);
+}
+
+.policy-side-nolan .button {
+  margin-top: 10px;
+}
+
+.policy-side-nolan .button > svg {
+  width: 15px;
+  height: 15px;
+}
+
 .policy-inline-link {
   color: var(--teal-deep);
   font-weight: 700;

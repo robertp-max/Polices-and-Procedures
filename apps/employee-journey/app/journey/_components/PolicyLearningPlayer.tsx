@@ -10,7 +10,9 @@ import {
   ClipboardCheck,
   ExternalLink,
   FileWarning,
+  GraduationCap,
   Info,
+  Lightbulb,
   Lock,
   Menu,
 } from "lucide-react";
@@ -20,6 +22,7 @@ import { MainAppLink } from "./MainAppLink";
 import { PageHeader, RequirementCard, StatusBadge } from "./shared";
 import { Drawer, WorkspaceTabs, workspaceTabId } from "./ui";
 import { PolicyMarkdown, cleanHeading } from "./PolicyMarkdown";
+import { openNolan } from "./NolanAssistant";
 
 type TabId = "read" | "changes" | "forms" | "quiz" | "review";
 
@@ -654,6 +657,33 @@ function SidePanel({
 }) {
   return (
     <div className="policy-side-stack">
+      <section className="policy-side-card policy-side-why">
+        <h2>
+          <Lightbulb aria-hidden="true" />
+          Why this matters
+        </h2>
+        <p>{data.scopeRationale || "This policy sets the standard you are expected to follow in your role."}</p>
+        <p className="policy-side-mustdo">
+          <strong>What you must do:</strong> read every section, {data.quizRequired ? "pass the knowledge check, " : ""}
+          {data.attestationRequired ? "and attest that you understand it." : "and acknowledge it where required."}
+        </p>
+      </section>
+
+      <section className="policy-side-card policy-side-nolan">
+        <h2>
+          <GraduationCap aria-hidden="true" />
+          Ask Nolan about this policy
+        </h2>
+        <p>
+          Nolan can explain a concept from the approved source, what this means for your role,
+          or what&rsquo;s due — it won&rsquo;t answer the knowledge check for you.
+        </p>
+        <button type="button" className="button button-secondary" onClick={() => openNolan()}>
+          <GraduationCap aria-hidden="true" />
+          Ask Nolan
+        </button>
+      </section>
+
       <section className="policy-side-card">
         <h2>Why this is assigned</h2>
         <p>{data.scopeRationale || "Not supplied"}</p>
