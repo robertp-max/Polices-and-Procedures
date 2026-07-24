@@ -16,7 +16,8 @@
     "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate",
     "journey:map:generate": "tsx --tsconfig ../../tsconfig.json scripts/generateJourneyMappings.ts",
     "journey:map:verify": "tsx --tsconfig ../../tsconfig.json scripts/verifyJourneyMappings.ts",
-    "journey:map:audit": "tsx --tsconfig ../../tsconfig.json scripts/auditJourneyMappings.ts"
+    "journey:map:audit": "tsx --tsconfig ../../tsconfig.json scripts/auditJourneyMappings.ts",
+    "journey:verify:corrections": "tsx --tsconfig ../../tsconfig.json scripts/verifyJourneyCorrections.ts"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",
