@@ -14,6 +14,7 @@ type Block =
   | { type: "hr" }
   | { type: "table"; header: string[]; rows: string[][] }
   | { type: "list"; ordered: boolean; items: string[] }
+  | { type: "clause"; number: string; text: string }
   | { type: "paragraph"; text: string };
 
 const ESCAPE_RE = /\\([.\-*_`[\]()#+!>])/g;
@@ -83,13 +84,35 @@ function parseMarkdownBlocks(text: string): Block[] {
       continue;
     }
 
-    if (/^-\s+/.test(trimmed)) {
+    // Bulleted list: "- " or "* " (group consecutive items).
+    if (/^[-*]\s+/.test(trimmed)) {
       const items: string[] = [];
-      while (i < lines.length && /^-\s+/.test(lines[i].trim())) {
-        items.push(lines[i].trim().replace(/^-\s+/, ""));
+      while (i < lines.length && /^[-*]\s+/.test(lines[i].trim())) {
+        items.push(lines[i].trim().replace(/^[-*]\s+/, ""));
         i += 1;
       }
       blocks.push({ type: "list", ordered: false, items });
+      continue;
+    }
+
+    // Numbered sub-clause: "4.1 …", "10.2 …" (a policy statement, not a list item).
+    // Rendered with the clause number set apart so long policies read as structured
+    // clauses instead of a wall of text.
+    const clauseMatch = /^(\d+\.\d+(?:\.\d+)*)\s+(.*)$/.exec(trimmed);
+    if (clauseMatch) {
+      blocks.push({ type: "clause", number: clauseMatch[1], text: clauseMatch[2].trim() });
+      i += 1;
+      continue;
+    }
+
+    // Ordered list: "1. " / "1) " single-level (group consecutive items).
+    if (/^\d+[.)]\s+/.test(trimmed)) {
+      const items: string[] = [];
+      while (i < lines.length && /^\d+[.)]\s+/.test(lines[i].trim())) {
+        items.push(lines[i].trim().replace(/^\d+[.)]\s+/, ""));
+        i += 1;
+      }
+      blocks.push({ type: "list", ordered: true, items });
       continue;
     }
 
@@ -185,13 +208,23 @@ export function PolicyMarkdown({ text }: { text: string }) {
           case "list": {
             const ListTag = block.ordered ? "ol" : "ul";
             return (
-              <ListTag className="policy-list" key={key}>
+              <ListTag
+                className={block.ordered ? "policy-list policy-list-ordered" : "policy-list"}
+                key={key}
+              >
                 {block.items.map((item, ii) => (
                   <li key={ii}>{renderInline(item, `${key}-${ii}`)}</li>
                 ))}
               </ListTag>
             );
           }
+          case "clause":
+            return (
+              <p key={key} className="policy-clause">
+                <span className="policy-clause-number">{block.number}</span>
+                <span className="policy-clause-text">{renderInline(block.text, key)}</span>
+              </p>
+            );
           case "paragraph":
           default:
             if (!block.text) return null;

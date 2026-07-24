@@ -241,6 +241,34 @@
   margin-bottom: 6px;
 }
 
+.policy-list-ordered {
+  list-style: decimal;
+}
+
+/* Numbered policy clauses (e.g. "4.1", "10.2") rendered as a hanging-indent
+   clause so long policies read as structured statements, not a wall of text. */
+.policy-clause {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  margin: 0 0 10px;
+  color: var(--ink);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.policy-clause-number {
+  font-family: var(--font-montserrat), Arial, sans-serif;
+  font-weight: 700;
+  color: var(--teal-deep);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.policy-clause-text {
+  min-width: 0;
+}
+
 .policy-inline-link {
   color: var(--teal-deep);
   font-weight: 700;
