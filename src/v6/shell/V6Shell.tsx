@@ -107,7 +107,7 @@ export function V6Shell() {
     () => {
       return [...primaryNavBarItems]
         .sort((a, b) => {
-          const order = ['dashboard', 'ces', 'governance', 'taxonomy', 'onboarding', 'training-academy', 'help-center', 'defensible'];
+          const order = ['dashboard', 'ces', 'governance', 'taxonomy', 'training-academy', 'help-center', 'defensible'];
           return order.indexOf(a.id) - order.indexOf(b.id);
         })
         .map((item) => {

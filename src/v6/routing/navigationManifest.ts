@@ -47,7 +47,11 @@ export const primaryNavItems: NavItem[] = [
   { id: 'admin', label: 'Admin', to: '/admin', hashIds: ['admin-overview', 'admin-groups', 'admin-roles', 'admin-permissions', 'admin-users', 'admin-user-detail', 'admin-signature-coverage', 'admin-access-review', 'admin-reconciliation', 'admin-community-profiles'] },
 ];
 
-export const chromeOnlyPrimaryNavItemIds = new Set(['brad', 'community', 'admin']);
+// 'onboarding' (legacy in-app "Training") is hidden from the primary nav bar to
+// remove the duplicate learner-facing training entry (Master Correction §16). The
+// single learner destination is 'training-academy' (the Employee Journey app). The
+// /journey?tab=home route still resolves by direct URL for module-player launches.
+export const chromeOnlyPrimaryNavItemIds = new Set(['brad', 'community', 'admin', 'onboarding']);
 export const primaryNavBarItems = primaryNavItems.filter((item) => !chromeOnlyPrimaryNavItemIds.has(item.id));
 
 // Workspace subnavs shown inside the workspace content area (top of page), not in main sidebar
