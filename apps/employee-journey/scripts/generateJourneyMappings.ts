@@ -562,7 +562,8 @@ export interface GeneratedPolicy {
   sections: GeneratedPolicySection[];
 }
 
-export const POLICY_CATALOG: GeneratedPolicy[] = ${JSON.stringify(policyCatalog, null, 2)};
+// Emitted via JSON.parse to avoid a TS2590 "union too complex" on the large literal array.
+export const POLICY_CATALOG: GeneratedPolicy[] = JSON.parse(${JSON.stringify(JSON.stringify(policyCatalog))}) as GeneratedPolicy[];
 
 export function getGeneratedPolicy(policyId: string): GeneratedPolicy | undefined {
   return POLICY_CATALOG.find((p) => p.policyId === policyId);
@@ -707,7 +708,8 @@ writeGeneratedTs(
   sourceNotes: string;
 }
 
-export const POLICY_ASSIGNMENT_MAP: GeneratedPolicyAssignment[] = ${JSON.stringify(policyAssignmentMap, null, 2)};
+// Emitted via JSON.parse to avoid a TS2590 "union too complex" on the large literal array.
+export const POLICY_ASSIGNMENT_MAP: GeneratedPolicyAssignment[] = JSON.parse(${JSON.stringify(JSON.stringify(policyAssignmentMap))}) as GeneratedPolicyAssignment[];
 
 export function getPolicyAssignmentsForPathway(pathway: string): GeneratedPolicyAssignment[] {
   return POLICY_ASSIGNMENT_MAP.filter((a) => a.pathway === pathway);

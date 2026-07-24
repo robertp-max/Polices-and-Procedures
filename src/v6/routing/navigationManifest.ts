@@ -24,9 +24,11 @@ export const primaryNavItems: NavItem[] = [
   // Governing Body Portal — first-class, standalone (NOT under Compliance). Icon is a
   // borderless #273D38 courthouse mark. Access is gated by governance.portal.access.
   { id: 'governance', label: 'Governance', ariaLabel: 'Open Governance', to: '/governance', hashIds: ['governance'], matchPaths: ['/governance'] },
-  // Care Indeed Training Academy / Employee Journey — a SEPARATE app (Cloudflare/vinext)
-  // running on its own dev server; opens in the SAME tab (full navigation to its URL).
-  { id: 'training-academy', label: 'Training Academy', ariaLabel: 'Open the Care Indeed Training Academy', to: 'http://localhost:5190/', href: 'http://localhost:5190/', hashIds: [] },
+  // Care Indeed Training Academy / Employee Journey — a SEPARATE app (Cloudflare/vinext).
+  // Opens in the SAME tab; the external URL is resolved at click time from
+  // VITE_TRAINING_ACADEMY_URL (dev fallback = localhost). If unconfigured in prod it falls
+  // back to the in-app /journey route (never a hard-coded localhost). See trainingAcademyUrl().
+  { id: 'training-academy', label: 'Training Academy', ariaLabel: 'Open the Care Indeed Training Academy', to: '/journey', hashIds: [] },
   // Standalone DefenCIble entry — shield icon, rendered vertically centered on the left rail.
   {
     id: 'defensible',

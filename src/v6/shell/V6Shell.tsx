@@ -31,6 +31,7 @@ import { GuidedTourRunner } from '../guided/GuidedTourRunner';
 import { useGuidedTourStore } from '../guided/guidedTourStore';
 import { ThreadComposer, ThreadDetailPage, ThreadsPage } from '../../policy/help-center/threads';
 import { MobileNavDrawer } from './MobileNavDrawer';
+import { trainingAcademyUrl } from '../lib/trainingAcademyUrl';
 import { GoverningBodyPortalIcon } from './GoverningBodyPortalIcon';
 
 type NavIconComponent = ComponentType<{ className?: string; strokeWidth?: number; 'aria-hidden'?: boolean }>;
@@ -116,7 +117,14 @@ export function V6Shell() {
             icon: <Icon className="h-[22px] w-[22px]" strokeWidth={1.5} aria-hidden />,
             label: item.label,
             ariaLabel: item.ariaLabel ?? item.label,
-            onClick: () => (item.href && /^https?:\/\//.test(item.href) ? window.location.assign(item.href) : navigate(item.to)),
+            onClick: () => {
+              if (item.id === 'training-academy') {
+                const academy = trainingAcademyUrl();
+                if (academy) { window.location.assign(academy); return; }
+              }
+              if (item.href && /^https?:\/\//.test(item.href)) { window.location.assign(item.href); return; }
+              navigate(item.to);
+            },
             isActive: activeNavItem === item.id,
             tourTarget: item.id === 'ces' ? 'nav.compliance' : undefined,
           };
