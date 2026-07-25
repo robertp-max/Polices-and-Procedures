@@ -10,19 +10,28 @@
  * This resolver turns a main-app-relative path into an absolute,
  * same-tab, cross-origin URL using NEXT_PUBLIC_MAIN_APP_URL.
  *
- * - Development: falls back to http://localhost:5190 when the env var
- *   is not set, matching the main app's known local dev port.
- * - Production: NEVER falls back to localhost. If the env var is
- *   missing in production, resolution fails closed (returns null) so
- *   callers can render an honest "not configured" state instead of
- *   silently sending a real employee to a dead localhost link.
+ * Local topology (verified): the MAIN Care Indeed app (Vite/React SPA,
+ * module players, /library policy source, /forms, /governance, and the
+ * /api/nolan tutor endpoint) is served on http://localhost:5188. THIS
+ * Employee Journey app is served on http://localhost:5190. The two MUST
+ * resolve to different origins — pointing the fallback at 5190 would send
+ * module/form/policy/Governance/Nolan requests back into the journey app
+ * itself (which has no such routes/API), so the dev fallback is 5188.
+ *
+ * - Development: falls back to http://localhost:5188 (the main app's dev
+ *   port) when NEXT_PUBLIC_MAIN_APP_URL is not set.
+ * - Production: NEVER falls back to localhost. If the env var is missing
+ *   in production, resolution fails closed (returns null) so callers can
+ *   render an honest "not configured" state instead of silently sending a
+ *   real employee to a dead localhost link.
  *
  * Never use target="_blank" / window.open / rel="noopener" for these
  * links — same-tab navigation only, per the journey app's hard
  * guardrails.
  * ═══════════════════════════════════════════════════════════════ */
 
-const DEV_FALLBACK = "http://localhost:5190";
+// Main app dev port (NOT the journey app's 5190). See topology note above.
+const DEV_FALLBACK = "http://localhost:5188";
 
 function trimTrailingSlash(value: string): string {
   return value.endsWith("/") ? value.slice(0, -1) : value;

@@ -10,7 +10,14 @@
 import { ACHC_CLINICAL_AUDIENCE, ANNUAL_ASSIGNMENT_MAP } from '../app/journey/_generated/annualAssignmentMap.generated';
 import { ADVANCED_ASSIGNMENT_MAP, ADVANCED_PORTAL_MINIMUM_AUDIENCE } from '../app/journey/_generated/advancedAssignmentMap.generated';
 import { getModulePlayerEntry } from '../app/journey/_generated/modulePlayerMap.generated';
-import { getAnnualRequirements, ANNUAL_DEDUP_OBJECTIVES } from '../app/journey/_data/annualRequirements';
+import {
+  getAnnualRequirements,
+  ANNUAL_DEDUP_OBJECTIVES,
+  ANNUAL_EQUIVALENCY_RECORDS,
+  ANNUAL_PARTIAL_RESIDUALS,
+} from '../app/journey/_data/annualRequirements';
+import { getMainAppOrigin, resolveMainAppHref } from '../app/journey/_lib/mainAppUrl';
+import { getOigSamStatus, getRoleOversight } from '../app/journey/_data/supervisedVisitation';
 
 let failures = 0;
 function check(name: string, cond: boolean, detail = '') {
@@ -48,6 +55,47 @@ check('each dedup target ACHC module carries its Also-satisfies provenance',
   ANNUAL_DEDUP_OBJECTIVES.every((d) => (rnReq.achcAlsoSatisfies[d.achcModuleId] ?? []).length === d.supersededAnnIds.length));
 check('ADM is not assigned the ACHC bundle (secondary-only)', getAnnualRequirements('ADM').achc.assignedToRole === false);
 check('HHA gets the 12h in-service clock', getAnnualRequirements('HHA').hhaInService?.requiredHours === 12);
+
+console.log('Main-app origin (§2)');
+const devOrigin = getMainAppOrigin();
+check('dev main-app origin is the main app (5188), not the journey app (5190)',
+  devOrigin === 'http://localhost:5188', `got ${devOrigin}`);
+check('journey origin (5190) !== resolved main-app origin', devOrigin !== 'http://localhost:5190');
+const modHref = resolveMainAppHref('/journey/module/GAO-001');
+check('module links resolve to the main app', modHref.ok && modHref.href.startsWith('http://localhost:5188/'));
+const formHref = resolveMainAppHref('/forms/HR-FM-005');
+check('form links resolve to the main app', formHref.ok && formHref.href.startsWith('http://localhost:5188/'));
+const prevEnv = process.env.NODE_ENV;
+const prevUrl = process.env.NEXT_PUBLIC_MAIN_APP_URL;
+process.env.NODE_ENV = 'production';
+delete process.env.NEXT_PUBLIC_MAIN_APP_URL;
+check('production never falls back to localhost (fails closed)', getMainAppOrigin() === null);
+process.env.NODE_ENV = prevEnv;
+if (prevUrl !== undefined) process.env.NEXT_PUBLIC_MAIN_APP_URL = prevUrl;
+
+console.log('OIG/SAM applicability (§4)');
+check('covered clinical role → APPLICABLE / Current (not hard-coded N/A)',
+  getOigSamStatus('RN').applicability === 'APPLICABLE' && getOigSamStatus('RN').state === 'current');
+check('nonclinical/unresolved role → REVIEW_REQUIRED, never auto Not-applicable',
+  getOigSamStatus('GAO').applicability === 'REVIEW_REQUIRED' && getOigSamStatus('GAO').state !== 'not-applicable-approved');
+
+console.log('HHA supervised visitation is scenario-tagged (§5)');
+const hhaClocks = getRoleOversight('HHA')?.clocks ?? [];
+check('HHA clocks are scenario-differentiated (skilled + aide-only present)',
+  hhaClocks.some((c) => c.scenario === 'skilled') && hhaClocks.some((c) => c.scenario === 'aide-only'));
+check('in-service clock applies to all HHA scenarios',
+  hhaClocks.some((c) => /in-service/i.test(c.label) && (c.scenario ?? 'all') === 'all'));
+
+console.log('Annual equivalency gating (§6)');
+check('ANN-006 (return demo) is PARTIALLY_EQUIVALENT, not a full collapse',
+  ANNUAL_EQUIVALENCY_RECORDS.find((r) => r.sourceAnnIds.includes('ANN-006'))?.decision === 'PARTIALLY_EQUIVALENT');
+check('PARTIALLY/REVIEW ids are NOT superseded (only EQUIVALENT collapse)',
+  !new Set(ANNUAL_DEDUP_OBJECTIVES.flatMap((d) => d.supersededAnnIds)).has('ANN-006'));
+const hhaReq = getAnnualRequirements('HHA');
+check('ANN-006 residual return-demo obligation is retained as a role-specific card',
+  hhaReq.roleSpecific.some((i) => i.moduleId === 'ANN-006' && !!i.residualNote));
+check('every partial residual carries a residual obligation string',
+  ANNUAL_PARTIAL_RESIDUALS.every((r) => r.residual.length > 0));
 
 console.log('');
 if (failures > 0) {
