@@ -1,0 +1,55 @@
+{
+  "verifiedAt": "2026-07-24",
+  "htmlSha256": "4cc1dd1dd141cdc97d1f4e335e550eb3622337d35f7f44edafff6606c229defd",
+  "files": [
+    {
+      "file": "2022_TO_2026_REPLACEMENT_MAP.md",
+      "ok": true,
+      "expected": "ba0f7a6385bec2eca0ce51658ddddb0686ca47176ea69632d0c6cd46426f4ad4",
+      "actual": "ba0f7a6385bec2eca0ce51658ddddb0686ca47176ea69632d0c6cd46426f4ad4"
+    },
+    {
+      "file": "Care_Indeed_Employee_Field_Workforce_Handbook_2026_Counsel_Review_Draft.html",
+      "ok": true,
+      "expected": "4cc1dd1dd141cdc97d1f4e335e550eb3622337d35f7f44edafff6606c229defd",
+      "actual": "4cc1dd1dd141cdc97d1f4e335e550eb3622337d35f7f44edafff6606c229defd"
+    },
+    {
+      "file": "Care_Indeed_Handbook_Policy_Form_Crosswalk.csv",
+      "ok": true,
+      "expected": "d807d975d979e1d2ca4fba30bc3c8ec336cb703f4b2a32c904653b0dd50a6bee",
+      "actual": "d807d975d979e1d2ca4fba30bc3c8ec336cb703f4b2a32c904653b0dd50a6bee"
+    },
+    {
+      "file": "HANDBOOK_RELEASE_CHECKLIST.md",
+      "ok": true,
+      "expected": "cff50705d46929370fc34c89e70cc7182717bce42337cef96458d9de333b7d07",
+      "actual": "cff50705d46929370fc34c89e70cc7182717bce42337cef96458d9de333b7d07"
+    },
+    {
+      "file": "HANDBOOK_UI_QA.md",
+      "ok": true,
+      "expected": "06d97fc6b071e13f9ef7d61a90d7a6541c7edfe51cefcf61d0cb460b9f664a3e",
+      "actual": "06d97fc6b071e13f9ef7d61a90d7a6541c7edfe51cefcf61d0cb460b9f664a3e"
+    },
+    {
+      "file": "PREVIEW_desktop.png",
+      "ok": true,
+      "expected": "c0145945478cee46abbd784955e010736416a2be76246ed8a12f36786cc25048",
+      "actual": "c0145945478cee46abbd784955e010736416a2be76246ed8a12f36786cc25048"
+    },
+    {
+      "file": "PREVIEW_mobile.png",
+      "ok": true,
+      "expected": "424b9e83d52dcafd4ba897d35c5602babba064ae167f5e3a93166d643ace6829",
+      "actual": "424b9e83d52dcafd4ba897d35c5602babba064ae167f5e3a93166d643ace6829"
+    },
+    {
+      "file": "README.md",
+      "ok": true,
+      "expected": "83a2a1b4e82cd2e2cd0d5175b8b6e7122b9a37331bee3046e65b1833774a4028",
+      "actual": "83a2a1b4e82cd2e2cd0d5175b8b6e7122b9a37331bee3046e65b1833774a4028"
+    }
+  ],
+  "sectionsParsed": 48
+}

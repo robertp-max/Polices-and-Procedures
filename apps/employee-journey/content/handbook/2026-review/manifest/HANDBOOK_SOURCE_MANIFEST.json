@@ -1,0 +1,60 @@
+{
+  "artifact": "Care Indeed Employee & Field Workforce Handbook 2026 Counsel-Review Draft",
+  "generated_at": "2026-07-24",
+  "status": "COUNSEL_REVIEW_DRAFT_NOT_EFFECTIVE",
+  "document_id": "CI-HR-HB-2026",
+  "version": "Draft 1.0",
+  "source_legacy_handbook": {
+    "name": "Care Indeed Home Health Field Employee Handbook 2022.pdf",
+    "sha256": "fc84d206ab66c71cd7f6487676fbbea0f0aa25eb7fa694ac7d453ccd7e879a8c"
+  },
+  "source_policy_corpus": {
+    "name": "allPoliciesContent.generated.ts",
+    "sha256": "d23b5bcb266aa46584658c2586cdb048166b0a25d6900733e5800b5b539d9dfe"
+  },
+  "source_policy_metadata": {
+    "name": "policy_metadata2.json",
+    "sha256": "72f1dcadb6898d718612cb1bc084a6aeeb27a7f7b8cf9bfeffaa5b8cfca32e3a"
+  },
+  "section_count": 48,
+  "policy_reference_count": 104,
+  "form_reference_count": 52,
+  "external_source_count": 25,
+  "policy_corpus_count": 272,
+  "policy_corpus_past_next_review_count": 205,
+  "cited_policy_past_next_review_count": 73,
+  "files": {
+    "2022_TO_2026_REPLACEMENT_MAP.md": {
+      "sha256": "ba0f7a6385bec2eca0ce51658ddddb0686ca47176ea69632d0c6cd46426f4ad4",
+      "bytes": 4932
+    },
+    "Care_Indeed_Employee_Field_Workforce_Handbook_2026_Counsel_Review_Draft.html": {
+      "sha256": "4cc1dd1dd141cdc97d1f4e335e550eb3622337d35f7f44edafff6606c229defd",
+      "bytes": 275472
+    },
+    "Care_Indeed_Handbook_Policy_Form_Crosswalk.csv": {
+      "sha256": "d807d975d979e1d2ca4fba30bc3c8ec336cb703f4b2a32c904653b0dd50a6bee",
+      "bytes": 8225
+    },
+    "HANDBOOK_RELEASE_CHECKLIST.md": {
+      "sha256": "cff50705d46929370fc34c89e70cc7182717bce42337cef96458d9de333b7d07",
+      "bytes": 4089
+    },
+    "HANDBOOK_UI_QA.md": {
+      "sha256": "06d97fc6b071e13f9ef7d61a90d7a6541c7edfe51cefcf61d0cb460b9f664a3e",
+      "bytes": 2401
+    },
+    "PREVIEW_desktop.png": {
+      "sha256": "c0145945478cee46abbd784955e010736416a2be76246ed8a12f36786cc25048",
+      "bytes": 509307
+    },
+    "PREVIEW_mobile.png": {
+      "sha256": "424b9e83d52dcafd4ba897d35c5602babba064ae167f5e3a93166d643ace6829",
+      "bytes": 162439
+    },
+    "README.md": {
+      "sha256": "83a2a1b4e82cd2e2cd0d5175b8b6e7122b9a37331bee3046e65b1833774a4028",
+      "bytes": 2258
+    }
+  }
+}

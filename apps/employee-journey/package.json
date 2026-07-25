@@ -17,7 +17,9 @@
     "journey:map:generate": "tsx --tsconfig ../../tsconfig.json scripts/generateJourneyMappings.ts",
     "journey:map:verify": "tsx --tsconfig ../../tsconfig.json scripts/verifyJourneyMappings.ts",
     "journey:map:audit": "tsx --tsconfig ../../tsconfig.json scripts/auditJourneyMappings.ts",
-    "journey:verify:corrections": "tsx --tsconfig ../../tsconfig.json scripts/verifyJourneyCorrections.ts"
+    "journey:verify:corrections": "tsx --tsconfig ../../tsconfig.json scripts/verifyJourneyCorrections.ts",
+    "handbook:projection:generate": "tsx scripts/generateHandbookProjection.ts",
+    "handbook:verify:logo": "tsx scripts/verifyBrandLogo.ts"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",
