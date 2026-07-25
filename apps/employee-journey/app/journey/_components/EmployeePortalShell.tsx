@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
+  BookMarked,
   BookOpenCheck,
   FileCheck2,
   GraduationCap,
@@ -18,6 +19,7 @@ import {
 import { EmployeePreviewToolbar } from "./EmployeePreviewToolbar";
 import { MoreSheet } from "./MoreSheet";
 import { NolanAssistant, openNolan } from "./NolanAssistant";
+import { CareIndeedBrand } from "./CareIndeedBrand";
 import { usePreview } from "./PreviewContext";
 
 const desktopNav = [
@@ -25,6 +27,7 @@ const desktopNav = [
   { href: "/journey/my-journey", label: "My Journey", icon: Map },
   { href: "/journey/training", label: "Training", icon: GraduationCap },
   { href: "/journey/policies", label: "Policies", icon: BookOpenCheck },
+  { href: "/journey/handbook", label: "Handbook", icon: BookMarked },
   { href: "/journey/documents", label: "Documents", icon: FileCheck2 },
   { href: "/journey/competencies", label: "Competencies", icon: ShieldCheck },
   { href: "/journey/performance", label: "Performance", icon: BarChart3 },
@@ -55,7 +58,7 @@ export function EmployeePortalShell({ children }: { children: ReactNode }) {
 
       <aside className="desktop-sidebar">
         <Link className="brand" href={withPersona("/journey")} aria-label="Care Indeed Employee Journey home">
-          <img src="/assets/logo-careindeed-orange.png" alt="Care Indeed" />
+          <CareIndeedBrand decorative compact />
           <span>EMPLOYEE JOURNEY</span>
         </Link>
         <nav aria-label="Employee journey">
@@ -92,7 +95,7 @@ export function EmployeePortalShell({ children }: { children: ReactNode }) {
       <div className="portal-column">
         <header className="mobile-header">
           <Link href={withPersona("/journey")} aria-label="Care Indeed Employee Journey home">
-            <img src="/assets/logo-careindeed-orange.png" alt="Care Indeed" />
+            <CareIndeedBrand decorative compact />
           </Link>
           <span>Synthetic preview</span>
         </header>
