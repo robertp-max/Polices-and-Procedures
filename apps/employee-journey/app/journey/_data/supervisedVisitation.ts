@@ -142,29 +142,58 @@ export function getRoleOversight(roleCode: string): RoleOversight | null {
 }
 
 // ── OIG/SAM monthly exclusion status (HR/Compliance-owned; employee-safe) ──────
-export type OigSamState = "cleared" | "under-review" | "action-required" | "waiting-hr" | "not-applicable";
+//
+// Applicability is NOT inferred from clinical-vs-nonclinical role (§4). Federal OIG
+// guidance imposes no single universal statutory interval; monthly screening is the
+// recommended practice for anyone whose items/services may be payable by a federal
+// health-care program. The current Care Indeed forms corpus (HR-FM-005) screens the
+// workforce monthly, so employees default to APPLICABLE. Applicability is classified
+// by actual job / program-billing exposure / contractor status / agency policy, and
+// any "Not applicable" requires an APPROVED determination — otherwise REVIEW_REQUIRED.
+export type OigSamState =
+  | "current"
+  | "under-review"
+  | "waiting-hr"
+  | "action-required"
+  | "not-applicable-approved"
+  | "review-required";
+
+export type OigSamApplicability = "APPLICABLE" | "NOT_APPLICABLE_APPROVED" | "REVIEW_REQUIRED";
 
 export interface OigSamStatus {
+  applicability: OigSamApplicability;
   state: OigSamState;
   label: string;
   note: string;
+  basis: string;
 }
 
-/** Employee-safe OIG/SAM status. Clinical/leadership roles are screened monthly;
- * non-clinical office/driver personas are Not applicable. The raw screening result
- * is never exposed — only this status. */
+/** Roles the agency workforce-screening policy covers by default (clinical field
+ * workers + clinical leadership). Membership here means APPLICABLE, not a due date. */
+const OIG_SAM_COVERED_ROLES = new Set(["RN", "LVN", "HHA", "PT", "PTA", "OT", "COTA", "SLP", "MSW", "DON", "ADM"]);
+
+/** Employee-safe OIG/SAM status. Never exposes the raw screening result. A role that
+ * is not a recognized covered role is NOT auto-marked N/A — its applicability is
+ * unresolved (REVIEW_REQUIRED), because a defensible N/A needs an approved basis. */
 export function getOigSamStatus(roleCode: string): OigSamStatus {
   const role = asJourneyRole(roleCode);
-  if (!role) {
+  if (role && OIG_SAM_COVERED_ROLES.has(role)) {
     return {
-      state: "not-applicable",
-      label: "Not applicable",
-      note: "OIG/SAM exclusion screening applies to clinical and covered staff; not applicable to this role.",
+      applicability: "APPLICABLE",
+      state: "current",
+      label: "Current",
+      note: "Screened at least monthly under the agency workforce-screening policy. You see status only — HR/Compliance owns the raw screening result and the master log.",
+      basis: "HR-FM-005 (OIG/SAM Monthly Exclusion Verification Log) · OIG recommended monthly cadence for federal-program-payable staff.",
     };
   }
+  // Nonclinical / unrecognized synthetic roles: applicability depends on actual job
+  // duties, federal-program billing exposure, and contractor/vendor status — which
+  // are not resolved in this synthetic persona. Do NOT infer N/A from non-clinical.
   return {
-    state: "cleared",
-    label: "Cleared",
-    note: "Monthly OIG/SAM exclusion screening is HR/Compliance-owned (HR-FM-005). You see status only — never the raw screening result.",
+    applicability: "REVIEW_REQUIRED",
+    state: "review-required",
+    label: "Review required",
+    note: "Screening applicability for this role is determined by HR/Compliance from job duties, federal health-care-program billing/service exposure, and contractor/vendor status — not by clinical vs nonclinical. No approved 'not applicable' determination is on file.",
+    basis: "Agency screening-applicability matrix (HR/Compliance-owned); REVIEW_REQUIRED until an approved determination exists.",
   };
 }
