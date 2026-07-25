@@ -14,6 +14,41 @@
       "runtimeArgs": ["run", "dev:api"],
       "port": 8787,
       "autoPort": false
+    },
+    {
+      "name": "v2-web-feature",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/admin-access-signature-authority", "run", "dev:web", "--", "--port", "5199", "--strictPort"],
+      "port": 5199,
+      "autoPort": false
+    },
+    {
+      "name": "mcr-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/master-control-register-hardening", "run", "dev:web", "--", "--port", "5182", "--strictPort"],
+      "port": 5182,
+      "autoPort": false
+    },
+    {
+      "name": "myjourney-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/DISCARDABLE-myjourney-preview", "run", "dev:web", "--", "--port", "5183", "--strictPort"],
+      "port": 5183,
+      "autoPort": false
+    },
+    {
+      "name": "git-tree",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:/AI/Git/training/HomeHealth/git-tree-visualizer", "run", "dev"],
+      "port": 5190,
+      "autoPort": false
+    },
+    {
+      "name": "gbp-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/GOVERNING_BODY_PORTAL", "run", "dev:web", "--", "--port", "5191", "--strictPort"],
+      "port": 5191,
+      "autoPort": false
     }
   ]
 }

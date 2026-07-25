@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { GraduationCap, Send, X, Loader2 } from 'lucide-react';
 import { getIdentity } from '../brad/bradApi';
+import { apiRoot, bearerAuthHeader } from '@/auth/apiClient';
 import { useJourneyStore } from '@/policy/journey/stores/journeyStore';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -19,6 +20,15 @@ interface TutorMsg {
 
 let seq = 0;
 const nextId = () => `n${++seq}`;
+
+/** Truthful, status-specific message. 401 ≠ 404 ≠ 503 — never a generic blur. */
+function nolanErrorFor(status: number): string {
+  if (status === 401) return 'Your session has expired. Please sign in again to ask Nolan.';
+  if (status === 403) return "Your account doesn't have access to Nolan.";
+  if (status === 404) return 'Nolan is unavailable right now (404). The training assistant is not reachable on this deployment.';
+  if (status === 503) return 'Nolan is temporarily disabled in this environment.';
+  return `Nolan is unavailable right now (${status}).`;
+}
 
 const SUGGESTIONS = [
   'What do I need to complete, and when?',
@@ -68,21 +78,28 @@ export function NolanTutorPanel() {
     setMessages((m) => [...m, { id: nextId(), role: 'user', text: q }]);
     setThinking(true);
     try {
-      const id = getIdentity();
-      const res = await fetch('/api/nolan/tutor/ask', {
+      const devId = getIdentity();
+      const devHeaders: Record<string, string> = import.meta.env.DEV
+        ? { 'x-user-id': devId.userId, 'x-user-display-name': devId.displayName }
+        : {};
+      const res = await fetch(`${apiRoot()}/nolan/tutor/ask`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': id.userId,
-          'x-user-display-name': id.displayName,
+          ...bearerAuthHeader(),
+          ...devHeaders,
         },
         body: JSON.stringify({ question: q, context: learnerContext }),
       });
-      if (!res.ok) throw new Error(`Nolan is unavailable right now (${res.status}).`);
+      if (!res.ok) throw new Error(nolanErrorFor(res.status));
       const data = (await res.json()) as { text: string; moduleIds?: string[] };
       setMessages((m) => [...m, { id: nextId(), role: 'nolan', text: data.text, moduleIds: data.moduleIds }]);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Nolan is unavailable right now.');
+      // A network/DNS failure (server unreachable) throws a TypeError, not a Response.
+      const msg = e instanceof Error && e.message.startsWith('Nolan')
+        ? e.message
+        : "Nolan can't be reached right now. Check your connection and try again.";
+      setError(msg);
     } finally {
       setThinking(false);
     }

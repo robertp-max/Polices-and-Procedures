@@ -13,6 +13,14 @@ import DON010 from './DON-010';
 import DON011 from './DON-011';
 import DON012 from './DON-012';
 import DON013 from './DON-013';
+import DON014 from './DON-014';
+import DON015 from './DON-015';
+import DON016 from './DON-016';
+import DON017 from './DON-017';
+import DON018 from './DON-018';
+import DON019 from './DON-019';
+import DON020 from './DON-020';
+import DON021 from './DON-021';
 
 export const DON_STANDALONE_MODULE_IDS = [
   'DON-001',
@@ -28,6 +36,14 @@ export const DON_STANDALONE_MODULE_IDS = [
   'DON-011',
   'DON-012',
   'DON-013',
+  'DON-014',
+  'DON-015',
+  'DON-016',
+  'DON-017',
+  'DON-018',
+  'DON-019',
+  'DON-020',
+  'DON-021',
 ] as const;
 
 export type DonStandaloneModuleId = (typeof DON_STANDALONE_MODULE_IDS)[number];
@@ -46,11 +62,19 @@ const REGISTRY: Record<DonStandaloneModuleId, ComponentType> = {
   'DON-011': DON011,
   'DON-012': DON012,
   'DON-013': DON013,
+  'DON-014': DON014,
+  'DON-015': DON015,
+  'DON-016': DON016,
+  'DON-017': DON017,
+  'DON-018': DON018,
+  'DON-019': DON019,
+  'DON-020': DON020,
+  'DON-021': DON021,
 };
 
 function normalizeDonId(moduleId: string): DonStandaloneModuleId | null {
   const id = moduleId.trim().toUpperCase();
-  const match = id.match(/^DON-?(0(?:0[1-9]|1[0-3]))$/);
+  const match = id.match(/^DON-?(0(?:0[1-9]|1\d|2[0-1]))$/);
   if (!match) return null;
   return `DON-${match[1]}` as DonStandaloneModuleId;
 }

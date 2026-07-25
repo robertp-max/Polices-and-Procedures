@@ -190,9 +190,14 @@ const DON_MODULES: RoleModuleRow[] = [
   { id: 'DON-011', phase: 'Week 3', title: 'HHA Supervisory Visit Program', policy: 'CL-SD-012, CL-SD-013', method: 'Case study', competency: 'Scenario', competencyKind: 'scenario' },
   { id: 'DON-012', phase: 'Week 3', title: 'Competency Program Leadership', policy: 'QA-AE-001, QA-AE-002', method: 'Classroom + case study', competency: 'RCA exercise', competencyKind: 'exercise' },
   { id: 'DON-013', phase: 'Week 4', title: 'Staff Development & In-Service Training', policy: 'OP-RI-001', method: 'Process observation', competency: '—', competencyKind: 'none' },
-  { id: 'DON-014', phase: 'Week 4', title: 'Discharge planning & transfer coordination', policy: 'CL-CP-006, CL-CP-007', method: 'Case study', competency: '—', competencyKind: 'none' },
-  { id: 'DON-015', phase: 'Week 4', title: 'EHR system — clinical management functions', policy: '—', method: 'Hands-on', competency: 'Proficiency demo', competencyKind: 'return-demo' },
-  { id: 'DON-016', phase: 'Week 4', title: 'Preceptor program management', policy: 'HR-TA-005 § 6.1.2', method: 'Classroom', competency: '—', competencyKind: 'none' },
+  { id: 'DON-014', phase: 'Week 4', title: 'Adverse Event Management, Incident Reporting & Root Cause Analysis', policy: '—', method: 'Case study', competency: 'RCA exercise', competencyKind: 'exercise' },
+  { id: 'DON-015', phase: 'Week 4', title: 'Interdisciplinary Coordination', policy: '—', method: 'Case study', competency: 'Coordination scenario', competencyKind: 'scenario' },
+  { id: 'DON-016', phase: 'Week 4', title: 'Survey Readiness & Regulatory Inspection Management', policy: '—', method: 'Mock survey', competency: 'Inspection response exercise', competencyKind: 'exercise' },
+  { id: 'DON-017', phase: 'Week 4', title: 'Clinical Quality Metrics & HHQRP', policy: '—', method: 'Data review', competency: 'Metrics analysis exercise', competencyKind: 'exercise' },
+  { id: 'DON-018', phase: 'Week 4', title: 'Medication Management Oversight', policy: '—', method: 'Case study', competency: 'Medication oversight scenario', competencyKind: 'scenario' },
+  { id: 'DON-019', phase: 'Week 4', title: 'Patient Rights & Advance Directives Oversight', policy: '—', method: 'Scenario', competency: 'Rights escalation exercise', competencyKind: 'exercise' },
+  { id: 'DON-020', phase: 'Week 4', title: 'Discharge Planning & Care Transitions', policy: '—', method: 'Case study', competency: 'Transition planning exercise', competencyKind: 'exercise' },
+  { id: 'DON-021', phase: 'Week 4', title: 'DON Performance Accountability & Succession Planning', policy: '—', method: 'Leadership review', competency: 'Accountability plan', competencyKind: 'exercise' },
 ];
 
 const RN_MODULES: RoleModuleRow[] = [

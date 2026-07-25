@@ -94,9 +94,14 @@ const DON: JourneyModule[] = [
   { id: 'DON-011', group: 'ROLE', phase: 'ROLE', week: 3, title: 'HHA Supervisory Visit Program', roles: ['DON'], policyRefs: ['CL-SD-012','CL-SD-013'], cmsRefs: [], method: 'Scenario' },
   { id: 'DON-012', group: 'ROLE', phase: 'ROLE', week: 3, title: 'Competency Program Leadership', roles: ['DON'], policyRefs: ['QA-AE-001','QA-AE-002'], cmsRefs: [], method: 'CaseStudy' },
   { id: 'DON-013', group: 'ROLE', phase: 'ROLE', week: 4, title: 'Staff Development & In-Service Training', roles: ['DON'], policyRefs: ['OP-IM-001'], cmsRefs: [], method: 'Observation' },
-  { id: 'DON-014', group: 'ROLE', phase: 'ROLE', week: 4, title: 'Discharge planning & transfer coordination', roles: ['DON'], policyRefs: ['CL-CP-006','CL-CP-007'], cmsRefs: [], method: 'CaseStudy' },
-  { id: 'DON-015', group: 'ROLE', phase: 'ROLE', week: 4, title: 'EHR system — clinical management functions', roles: ['DON'], policyRefs: ['CL-CD-001', 'IT-UP-001'], cmsRefs: [], method: 'ReturnDemo' },
-  { id: 'DON-016', group: 'ROLE', phase: 'ROLE', week: 4, title: 'Preceptor program management', roles: ['DON'], policyRefs: ['HR-TA-005 §6.1.2'], cmsRefs: [], method: 'None' },
+  { id: 'DON-014', group: 'ROLE', phase: 'ROLE', week: 4, title: 'Adverse Event Management, Incident Reporting & Root Cause Analysis', roles: ['DON'], policyRefs: [], cmsRefs: [], method: 'CaseStudy' },
+  { id: 'DON-015', group: 'ROLE', phase: 'ROLE', week: 4, title: 'Interdisciplinary Coordination', roles: ['DON'], policyRefs: [], cmsRefs: [], method: 'CaseStudy' },
+  { id: 'DON-016', group: 'ROLE', phase: 'ROLE', week: 4, title: 'Survey Readiness & Regulatory Inspection Management', roles: ['DON'], policyRefs: [], cmsRefs: [], method: 'MockSurvey' },
+  { id: 'DON-017', group: 'ROLE', phase: 'ROLE', week: 4, title: 'Clinical Quality Metrics & HHQRP', roles: ['DON'], policyRefs: [], cmsRefs: [], method: 'RecordReview' },
+  { id: 'DON-018', group: 'ROLE', phase: 'ROLE', week: 4, title: 'Medication Management Oversight', roles: ['DON'], policyRefs: [], cmsRefs: [], method: 'CaseStudy' },
+  { id: 'DON-019', group: 'ROLE', phase: 'ROLE', week: 4, title: 'Patient Rights & Advance Directives Oversight', roles: ['DON'], policyRefs: [], cmsRefs: [], method: 'Scenario' },
+  { id: 'DON-020', group: 'ROLE', phase: 'ROLE', week: 4, title: 'Discharge Planning & Care Transitions', roles: ['DON'], policyRefs: [], cmsRefs: [], method: 'CaseStudy' },
+  { id: 'DON-021', group: 'ROLE', phase: 'ROLE', week: 4, title: 'DON Performance Accountability & Succession Planning', roles: ['DON'], policyRefs: [], cmsRefs: [], method: 'Observation' },
 ];
 
 const RN: JourneyModule[] = [

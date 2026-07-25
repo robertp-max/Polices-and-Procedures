@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { GraduationCap, Send, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { getIdentity } from '../brad/bradApi';
+import { apiRoot, bearerAuthHeader } from '@/auth/apiClient';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Nolan lesson checkpoint — the "any clarifying questions?" moment.
@@ -62,23 +63,36 @@ export function NolanLessonCheckpoint({ moduleId, lessonTitle, cards }: {
     setThinking(true);
     try {
       const id = getIdentity();
-      const res = await fetch('/api/nolan/tutor/ask', {
+      const devHeaders: Record<string, string> = import.meta.env.DEV
+        ? { 'x-user-id': id.userId, 'x-user-display-name': id.displayName }
+        : {};
+      const res = await fetch(`${apiRoot()}/nolan/tutor/ask`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': id.userId,
-          'x-user-display-name': id.displayName,
+          ...bearerAuthHeader(),
+          ...devHeaders,
         },
         body: JSON.stringify({
           question: q,
           context: { moduleId, lessonTitle, lessonText, learnerName: id.displayName },
         }),
       });
-      if (!res.ok) throw new Error(`Nolan is unavailable right now (${res.status}).`);
+      if (!res.ok) {
+        const msg = res.status === 401
+          ? 'Your session has expired. Please sign in again.'
+          : res.status === 404
+            ? 'Nolan is unavailable right now (404).'
+            : res.status === 503
+              ? 'Nolan is temporarily disabled in this environment.'
+              : `Nolan is unavailable right now (${res.status}).`;
+        throw new Error(msg);
+      }
       const data = (await res.json()) as { text: string };
       setMessages((m) => [...m, { id: nextId(), role: 'nolan', text: data.text }]);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Nolan is unavailable right now.');
+      const known = e instanceof Error && (e.message.startsWith('Nolan') || e.message.startsWith('Your'));
+      setError(known ? (e as Error).message : "Nolan can't be reached right now.");
     } finally {
       setThinking(false);
     }

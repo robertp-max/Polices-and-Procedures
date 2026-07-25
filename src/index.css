@@ -1772,9 +1772,15 @@ th {
   filter: none !important;
 }
 
-#root .login-glass-card {
-  backdrop-filter: blur(33px) !important;
+/* Login glass card — opacity + blur set explicitly (NOT via the Tailwind
+   arbitrary utility bg-white/[0.777], which the production content-scan drops,
+   and NOT relying on the minifier keeping a lone backdrop-filter). High
+   specificity via the login-page data attribute so nothing overrides it and the
+   standard property is not stripped as a "dead" declaration. */
+#root [data-hash-id="login-page"] .login-glass-card {
+  background-color: rgba(255, 255, 255, 0.777) !important;
   -webkit-backdrop-filter: blur(33px) !important;
+  backdrop-filter: blur(33px) !important;
 }
 
 html,

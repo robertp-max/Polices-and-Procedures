@@ -7,6 +7,7 @@ import { authRouter } from './routes/auth.js';
 import { identityMiddleware } from './identity/middleware.js';
 import { createBradRouter } from './routes/brad.js';
 import { createNolanRouter } from './routes/nolan.js';
+import { requireApiAuth } from './auth/apiAuthBoundary.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Care Indeed HH V2 — combined Cloud Run entry (same-origin).
@@ -52,21 +53,49 @@ app.use('/api', express.json({ limit: '2mb' }));
 // reads req.session / req.actor (Brad's guarded endpoints fail closed without it).
 app.use('/api', identityMiddleware);
 
-// Canonical auth API — AWS Cognito + DynamoDB.
+// Canonical auth API — AWS Cognito + DynamoDB. Public/self-guarded; mounted
+// BEFORE the auth boundary (login family + self-verified /me, /logout, /refresh).
 app.use('/api/auth', authRouter);
 
-// Brad assistant + Super Admin guarded-action layer. Wrapped so an optional-
-// integration failure can never take down auth/SPA serving.
+// Required-route availability, recorded at mount time (below) so readiness can
+// report the truth and traffic promotion can gate on it.
+const readiness = { brad: false, nolan: false };
+
+// Readiness (PUBLIC — registered before the boundary): reports required-route
+// availability plus build metadata for canary verification. 503 when any
+// required assistant failed to mount. No secrets, prompts, or paths exposed.
+app.get('/api/_readiness', (_req: Request, res: Response) => {
+  const ok = readiness.brad && readiness.nolan;
+  res.status(ok ? 200 : 503).json({
+    ok,
+    revision: process.env.K_REVISION ?? null,
+    commit: process.env.BUILD_COMMIT ?? null,
+    routes: { auth: true, brad: readiness.brad, nolan: readiness.nolan },
+  });
+});
+
+// THE single API authentication boundary — identical to server/index.ts.
+// Mounted after the public/self-guarded auth surface and BEFORE every business
+// router, so Brad and Nolan only ever see a verified, active canonical actor
+// (or an explicit public allowlist path such as /api/nolan/tutor/health). This
+// closes the divergence that let authenticated assistant requests arrive
+// anonymous and be rejected 401.
+app.use('/api', requireApiAuth());
+
+// Brad + Nolan are REQUIRED product surfaces — NOT optional integrations. A
+// mount failure must fail closed: record it, log a sanitized structured error,
+// and abort startup below (readiness would 503) so Cloud Run never routes
+// traffic to a revision whose assistants silently 404.
 try {
   app.use('/api/brad', createBradRouter());
+  readiness.brad = true;
 } catch (err) {
   console.error(JSON.stringify({ event: 'cloudrun.brad_mount_failed', message: (err as Error)?.message }));
 }
 
-// Nolan tutor — Nurse Onboarding & Learning Assistant (Training module,
-// deterministic; no model call, no internet). Same isolation wrapper.
 try {
   app.use('/api/nolan', createNolanRouter());
+  readiness.nolan = true;
 } catch (err) {
   console.error(JSON.stringify({ event: 'cloudrun.nolan_mount_failed', message: (err as Error)?.message }));
 }
@@ -107,9 +136,25 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
 };
 app.use(errorHandler);
 
+// Fail closed: if a REQUIRED assistant route did not mount, do not begin serving.
+// Cloud Run marks the revision failed and keeps the previous good revision live,
+// rather than promoting a deployment whose assistants would 404.
+if (!readiness.brad || !readiness.nolan) {
+  console.error(JSON.stringify({
+    event: 'cloudrun.required_mounts_failed',
+    brad: readiness.brad,
+    nolan: readiness.nolan,
+  }));
+  process.exit(1);
+}
+
 const server = app.listen(PORT, HOST, () => {
   // No secrets in logs.
-  console.log(JSON.stringify({ event: 'cloudrun.started', port: PORT, host: HOST, dist: DIST, hasDist: existsSync(DIST) }));
+  console.log(JSON.stringify({
+    event: 'cloudrun.started', port: PORT, host: HOST, dist: DIST, hasDist: existsSync(DIST),
+    revision: process.env.K_REVISION ?? null, commit: process.env.BUILD_COMMIT ?? null,
+    routes: { auth: true, brad: readiness.brad, nolan: readiness.nolan },
+  }));
 });
 
 for (const sig of ['SIGINT', 'SIGTERM'] as const) {
