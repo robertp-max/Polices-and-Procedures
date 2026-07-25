@@ -40,7 +40,80 @@ import { getModulePlayerEntry } from "../_generated/modulePlayerMap.generated";
 import { getGeneratedPolicy } from "../_generated/policyCatalog.generated";
 import type { PolicyRefChip } from "./annualAdvancedCatalog";
 
-// ── Dedup table: one canonical (player-backed) objective ← superseded ANN ids ──
+// ── Annual equivalency records (§6) ──────────────────────────────────────────
+// Title similarity is NOT enough to prove equivalence. Each collapse is an APPROVED
+// equivalency record with an explicit decision. Only EQUIVALENT collapses to one
+// employee card; PARTIALLY_EQUIVALENT keeps the residual skill/live/checkoff
+// obligation; REVIEW_REQUIRED must not silently deduplicate. (This synthetic dataset
+// stands in for the reviewer-signed record; reviewer/approvalDate are marked SYNTHETIC.)
+export type EquivalencyDecision =
+  | "EQUIVALENT"
+  | "PARTIALLY_EQUIVALENT"
+  | "NOT_EQUIVALENT"
+  | "REVIEW_REQUIRED";
+
+export interface EquivalencyRecord {
+  sourceAnnIds: string[];
+  sourceLabel: string;
+  achcModuleId: string;
+  achcTitle: string;
+  /** Short employee-friendly meaning of what the ACHC card also covers. */
+  friendly: string;
+  objectiveComparison: string;
+  audienceMatch: boolean;
+  deliveryMethod: string;
+  assessment: string;
+  liveOrSkillsComponent: string;
+  policyBasis: string;
+  reviewer: string;
+  approvalDate: string;
+  version: string;
+  decision: EquivalencyDecision;
+  /** Present only for PARTIALLY_EQUIVALENT: the obligation that is NOT absorbed. */
+  residualObligation?: string;
+}
+
+export const ANNUAL_EQUIVALENCY_RECORDS: EquivalencyRecord[] = [
+  {
+    sourceAnnIds: ["ANN-003"], sourceLabel: "HIPAA Privacy & Security", achcModuleId: "ACHC-ART-M04", achcTitle: "HIPAA Privacy & Security",
+    friendly: "your annual HIPAA privacy & security training", objectiveComparison: "Same privacy/security objective and policy basis (CO-HP-001/002).",
+    audienceMatch: true, deliveryMethod: "Quiz = Quiz", assessment: "Scored quiz both", liveOrSkillsComponent: "None either",
+    policyBasis: "CO-HP-001, CO-HP-002", reviewer: "SYNTHETIC (pending Compliance sign-off)", approvalDate: "SYNTHETIC", version: "v1", decision: "EQUIVALENT",
+  },
+  {
+    sourceAnnIds: ["ANN-006"], sourceLabel: "Infection Prevention", achcModuleId: "ACHC-ART-M05", achcTitle: "Infection Control",
+    friendly: "the knowledge portion of infection prevention", objectiveComparison: "Knowledge objective overlaps, but ANN-006 requires a RETURN DEMONSTRATION; ACHC-ART-M05 is quiz-only.",
+    audienceMatch: true, deliveryMethod: "ReturnDemo vs Quiz — DIFFERENT", assessment: "ANN-006 skills checkoff vs M05 scored quiz", liveOrSkillsComponent: "ANN-006 has a hands-on return demonstration; M05 does not",
+    policyBasis: "CL-SD-016", reviewer: "SYNTHETIC (pending Clinical/Compliance sign-off)", approvalDate: "SYNTHETIC", version: "v1", decision: "PARTIALLY_EQUIVALENT",
+    residualObligation: "Return demonstration / skills checkoff of infection-control technique (retained — the quiz does not satisfy the hands-on competency).",
+  },
+  {
+    sourceAnnIds: ["ANN-007"], sourceLabel: "Bloodborne Pathogen", achcModuleId: "ACHC-ART-M11", achcTitle: "TB & Blood Borne Pathogens",
+    friendly: "your annual TB / bloodborne-pathogen training", objectiveComparison: "Same BBP/TB knowledge objective; both quiz-based; at-least-annual cadence preserved.",
+    audienceMatch: true, deliveryMethod: "Quiz = Quiz", assessment: "Scored quiz both", liveOrSkillsComponent: "None either",
+    policyBasis: "RM-OS-001", reviewer: "SYNTHETIC (pending Compliance sign-off)", approvalDate: "SYNTHETIC", version: "v1", decision: "EQUIVALENT",
+  },
+  {
+    sourceAnnIds: ["ANN-004"], sourceLabel: "Patient Rights", achcModuleId: "ACHC-ART-M08", achcTitle: "Patient Rights & Responsibilities",
+    friendly: "your patient-rights requirement", objectiveComparison: "M08 (scored) subsumes the ANN-004 read-and-acknowledge objective. Abuse/neglect reporting (ANN-005) stays separate.",
+    audienceMatch: true, deliveryMethod: "Quiz subsumes Read&Ack", assessment: "M08 scored quiz ≥ read-and-acknowledge", liveOrSkillsComponent: "None either",
+    policyBasis: "CL-PR-001", reviewer: "SYNTHETIC (pending Compliance sign-off)", approvalDate: "SYNTHETIC", version: "v1", decision: "EQUIVALENT",
+  },
+  {
+    sourceAnnIds: ["ANN-009"], sourceLabel: "Workplace Safety", achcModuleId: "ACHC-ART-M07", achcTitle: "Workplace & Patient Safety (OSHA)",
+    friendly: "your workplace-safety (OSHA) requirement", objectiveComparison: "M07 (scored OSHA) subsumes the ANN-009 read-and-acknowledge workplace-safety objective.",
+    audienceMatch: true, deliveryMethod: "Quiz subsumes Read&Ack", assessment: "M07 scored quiz ≥ read-and-acknowledge", liveOrSkillsComponent: "None either",
+    policyBasis: "RM-SS-001, RM-SS-002", reviewer: "SYNTHETIC (pending Safety/Compliance sign-off)", approvalDate: "SYNTHETIC", version: "v1", decision: "EQUIVALENT",
+  },
+  {
+    sourceAnnIds: ["ANN-001", "ANN-002"], sourceLabel: "Compliance / Code of Conduct + Fraud/Waste/Abuse", achcModuleId: "ACHC-ART-M09", achcTitle: "Corporate Compliance",
+    friendly: "your corporate-compliance & FWA training", objectiveComparison: "M09 covers both Code of Conduct and Fraud/Waste/Abuse objectives; both quiz-based.",
+    audienceMatch: true, deliveryMethod: "Quiz = Quiz", assessment: "Scored quiz all", liveOrSkillsComponent: "None either",
+    policyBasis: "CO-CP-001, CO-CP-004", reviewer: "SYNTHETIC (pending Compliance sign-off)", approvalDate: "SYNTHETIC", version: "v1", decision: "EQUIVALENT",
+  },
+];
+
+/** Back-compat shape (EQUIVALENT-only) for the invariant suite + report. */
 export interface DedupObjective {
   objective: string;
   achcModuleId: string;
@@ -48,61 +121,36 @@ export interface DedupObjective {
   supersededAnnIds: string[];
   basis: string;
 }
+export const ANNUAL_DEDUP_OBJECTIVES: DedupObjective[] = ANNUAL_EQUIVALENCY_RECORDS
+  .filter((r) => r.decision === "EQUIVALENT")
+  .map((r) => ({
+    objective: r.sourceLabel,
+    achcModuleId: r.achcModuleId,
+    achcTitle: r.achcTitle,
+    supersededAnnIds: r.sourceAnnIds,
+    basis: r.objectiveComparison,
+  }));
 
-export const ANNUAL_DEDUP_OBJECTIVES: DedupObjective[] = [
-  {
-    objective: "HIPAA Privacy & Security",
-    achcModuleId: "ACHC-ART-M04",
-    achcTitle: "HIPAA Privacy & Security",
-    supersededAnnIds: ["ANN-003"],
-    basis:
-      "ACHC-ART-M04 teaches the same HIPAA privacy/security objective as ANN-003. One assignment, one completion; both policy bases (CO-HP-001, CO-HP-002) are retained on the ACHC card.",
-  },
-  {
-    objective: "Infection Prevention & Control",
-    achcModuleId: "ACHC-ART-M05",
-    achcTitle: "Infection Control",
-    supersededAnnIds: ["ANN-006"],
-    basis:
-      "ACHC-ART-M05 (Infection Control) covers the ANN-006 Infection Prevention objective. Kept as one clinical module with a return-demonstration checkoff carried on the competency track, not two cards.",
-  },
-  {
-    objective: "Bloodborne Pathogens / TB",
-    achcModuleId: "ACHC-ART-M11",
-    achcTitle: "TB & Blood Borne Pathogens",
-    supersededAnnIds: ["ANN-007"],
-    basis:
-      "ACHC-ART-M11 (TB & Blood Borne Pathogens) covers ANN-007. Bloodborne-pathogen training remains an at-least-annual obligation for occupationally-exposed staff — the annual cadence is preserved on the single ACHC card.",
-  },
-  {
-    objective: "Patient Rights & Responsibilities",
-    achcModuleId: "ACHC-ART-M08",
-    achcTitle: "Patient Rights & Responsibilities",
-    supersededAnnIds: ["ANN-004"],
-    basis:
-      "ACHC-ART-M08 (Patient Rights) covers the ANN-004 Patient Rights read-and-acknowledge objective. Abuse/neglect mandated-reporting (ANN-005) is kept SEPARATE — it is a distinct legal duty.",
-  },
-  {
-    objective: "Workplace & Patient Safety (OSHA)",
-    achcModuleId: "ACHC-ART-M07",
-    achcTitle: "Workplace & Patient Safety (OSHA)",
-    supersededAnnIds: ["ANN-009"],
-    basis:
-      "ACHC-ART-M07 (Workplace & Patient Safety / OSHA) covers the ANN-009 Workplace Safety objective.",
-  },
-  {
-    objective: "Corporate Compliance / Code of Conduct / Fraud-Waste-Abuse",
-    achcModuleId: "ACHC-ART-M09",
-    achcTitle: "Corporate Compliance",
-    supersededAnnIds: ["ANN-001", "ANN-002"],
-    basis:
-      "ACHC-ART-M09 (Corporate Compliance) covers both ANN-001 (Compliance / Code of Conduct) and ANN-002 (Fraud/Waste/Abuse) — a single compliance objective, one assignment.",
-  },
-];
-
+// Only fully-EQUIVALENT ANN ids are removed as their own card. PARTIALLY_EQUIVALENT
+// and REVIEW_REQUIRED source ids are NOT superseded (their residual obligation stays).
 const SUPERSEDED_ANN_IDS = new Set(
-  ANNUAL_DEDUP_OBJECTIVES.flatMap((d) => d.supersededAnnIds),
+  ANNUAL_EQUIVALENCY_RECORDS.filter((r) => r.decision === "EQUIVALENT").flatMap((r) => r.sourceAnnIds),
 );
+
+/** achcModuleId → employee-friendly "also satisfies" phrases (EQUIVALENT + PARTIALLY). */
+const ACHC_FRIENDLY_SATISFIES: Record<string, string[]> = {};
+for (const r of ANNUAL_EQUIVALENCY_RECORDS) {
+  if (r.decision === "EQUIVALENT" || r.decision === "PARTIALLY_EQUIVALENT") {
+    (ACHC_FRIENDLY_SATISFIES[r.achcModuleId] ??= []).push(
+      r.decision === "PARTIALLY_EQUIVALENT" ? `${r.friendly} (skills checkoff stays separate)` : r.friendly,
+    );
+  }
+}
+
+/** ANN ids whose obligation is only PARTIALLY absorbed — they keep a residual card. */
+export const ANNUAL_PARTIAL_RESIDUALS = ANNUAL_EQUIVALENCY_RECORDS
+  .filter((r) => r.decision === "PARTIALLY_EQUIVALENT")
+  .flatMap((r) => r.sourceAnnIds.map((id) => ({ annId: id, residual: r.residualObligation ?? "", achcModuleId: r.achcModuleId })));
 
 /** ANN ids that are DISTINCT obligations and therefore kept as their own
  * requirement even after dedup (documented in ANNUAL_REQUIREMENT_DEDUPLICATION_REPORT.md). */
@@ -140,23 +188,32 @@ export interface AnnualRequirementItem {
   cmsRefs: string[];
   launchRef: string | null;
   state: RequirementState;
-  /** ANN objectives this single card also satisfies (dedup provenance). */
+  /** ANN objectives this single card also satisfies (dedup provenance, ids). */
   alsoSatisfies: string[];
+  /** Employee-friendly "also satisfies" phrases (preferred for display). */
+  alsoSatisfiesLabels: string[];
+  /** Set when this card is the retained residual of a PARTIALLY_EQUIVALENT collapse. */
+  residualNote?: string;
 }
 
-/** Role-specific distinct ANN requirements (after dedup), assigned to this role. */
+const RESIDUAL_BY_ANN = new Map(ANNUAL_PARTIAL_RESIDUALS.map((r) => [r.annId, r]));
+
+/** Role-specific distinct ANN requirements (after dedup), assigned to this role.
+ * Includes PARTIALLY_EQUIVALENT residuals (e.g. ANN-006 return demonstration), which
+ * are NOT collapsed into their ACHC module. */
 function roleSpecificItems(roleCode: string): AnnualRequirementItem[] {
   const role = asJourneyRole(roleCode);
   if (!role) return [];
   const out: AnnualRequirementItem[] = [];
   for (const entry of ANNUAL_ASSIGNMENT_MAP) {
     if (entry.family !== "ANN") continue;
-    if (SUPERSEDED_ANN_IDS.has(entry.moduleId)) continue; // deduped into ACHC
+    if (SUPERSEDED_ANN_IDS.has(entry.moduleId)) continue; // fully-EQUIVALENT → collapsed into ACHC
     if (!entry.audience.includes(role)) continue;
     const mod = getGeneratedModule(entry.moduleId);
     if (!mod) continue;
     if (mod.group === "DRILL") continue; // drills rendered in their own section
     const player = getModulePlayerEntry(entry.moduleId);
+    const residual = RESIDUAL_BY_ANN.get(mod.id);
     out.push({
       moduleId: mod.id,
       title: mod.title,
@@ -169,6 +226,8 @@ function roleSpecificItems(roleCode: string): AnnualRequirementItem[] {
       launchRef: player?.launchRef ?? null,
       state: player?.playerAvailable ? "player-ready" : "in-development",
       alsoSatisfies: [],
+      alsoSatisfiesLabels: [],
+      residualNote: residual?.residual,
     });
   }
   return out.sort((a, b) => (a.quarter ?? "Z").localeCompare(b.quarter ?? "Z") || a.moduleId.localeCompare(b.moduleId));
@@ -192,7 +251,8 @@ export interface AnnualRequirementsView {
   isHHA: boolean;
   isClinical: boolean;
   achc: AchcBundle;
-  achcAlsoSatisfies: Record<string, string[]>; // achc moduleId → ANN ids it absorbs
+  achcAlsoSatisfies: Record<string, string[]>; // achc moduleId → ANN ids fully absorbed (EQUIVALENT)
+  achcAlsoSatisfiesLabels: Record<string, string[]>; // achc moduleId → employee-friendly phrases
   advanced: AdvancedModuleView[];
   roleSpecific: AnnualRequirementItem[];
   competencyCount: number; // stays in the Competencies workspace; count only
@@ -220,6 +280,7 @@ export function getAnnualRequirements(roleCode: string): AnnualRequirementsView 
   for (const d of ANNUAL_DEDUP_OBJECTIVES) {
     achcAlsoSatisfies[d.achcModuleId] = d.supersededAnnIds;
   }
+  const achcAlsoSatisfiesLabels: Record<string, string[]> = { ...ACHC_FRIENDLY_SATISFIES };
 
   const hhaInService: HhaInServiceClock | null = isHHA
     ? {
@@ -244,6 +305,7 @@ export function getAnnualRequirements(roleCode: string): AnnualRequirementsView 
     isClinical,
     achc,
     achcAlsoSatisfies,
+    achcAlsoSatisfiesLabels,
     advanced,
     roleSpecific,
     competencyCount: competency.length,

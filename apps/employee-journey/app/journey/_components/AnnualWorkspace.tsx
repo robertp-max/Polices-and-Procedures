@@ -48,7 +48,9 @@ const SECTIONS: SectionDef[] = [
 ];
 
 function methodLabel(method: string): string {
-  return method === "None" ? "Read & acknowledge" : method;
+  // §7.2: do not invent "Read & acknowledge" for method=None. Use the exact source
+  // method, or a truthful "no scored assessment" statement.
+  return method === "None" ? "No scored assessment specified" : method;
 }
 
 function RequirementCardView({ item }: { item: AnnualRequirementItem }) {
@@ -75,19 +77,23 @@ function RequirementCardView({ item }: { item: AnnualRequirementItem }) {
       ),
     },
   ];
-  if (item.alsoSatisfies.length) {
+  const satisfies = item.alsoSatisfiesLabels.length ? item.alsoSatisfiesLabels : item.alsoSatisfies;
+  if (satisfies.length) {
     fields.push({
       label: "Also satisfies",
       value: (
         <span className="policy-chip-row">
-          {item.alsoSatisfies.map((id) => (
-            <span className="policy-chip policy-chip-soft" key={id}>
-              {id}
+          {satisfies.map((label) => (
+            <span className="policy-chip policy-chip-soft" key={label}>
+              {label}
             </span>
           ))}
         </span>
       ),
     });
+  }
+  if (item.residualNote) {
+    fields.push({ label: "Still required separately", value: item.residualNote });
   }
 
   return (
@@ -123,9 +129,11 @@ function RequirementCardView({ item }: { item: AnnualRequirementItem }) {
 function AchcModuleCard({
   item,
   alsoSatisfies,
+  alsoSatisfiesLabels,
 }: {
   item: AnnualModuleView;
   alsoSatisfies: string[];
+  alsoSatisfiesLabels: string[];
 }) {
   const asItem: AnnualRequirementItem = {
     moduleId: item.moduleId,
@@ -139,6 +147,7 @@ function AchcModuleCard({
     launchRef: item.launchRef,
     state: item.playerAvailable ? "player-ready" : "in-development",
     alsoSatisfies,
+    alsoSatisfiesLabels,
   };
   return <RequirementCardView item={asItem} />;
 }
@@ -244,6 +253,7 @@ export function AnnualWorkspace() {
               <AchcModuleCard
                 item={m}
                 alsoSatisfies={v.achcAlsoSatisfies[m.moduleId] ?? []}
+                alsoSatisfiesLabels={v.achcAlsoSatisfiesLabels[m.moduleId] ?? []}
                 key={m.moduleId}
               />
             ))}
