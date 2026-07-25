@@ -1,0 +1,14 @@
+{
+  "documentTitle": "Care Indeed Home Health Field Employee Handbook",
+  "legacyVersion": "2022",
+  "status": "RETIRED",
+  "retirementReason": "The 2022 handbook lacks basic document control (no version, approval, or revision history) and contains provisions that are obsolete, contradictory, or unsafe under current law and current Care Indeed operations, including: sub-minimum paid sick leave accrual and a 48-hour cap; a rigid 24-hour sick-call rule with discipline threat and a blanket doctor-note requirement after three days; an overnight-shift overtime example that manipulates the workday/workweek; facility-oriented meal/rest period guidance left to field-employee 'judgment'; no expense reimbursement policy; outdated PFL benefit percentages and a mandatory PTO-before-PFL requirement; incorrect 'Paid Disability Leave (PDL)' terminology; incomplete CFRA/PDL/bereavement/reproductive-loss/violence-related leave coverage; medical marijuana treated as unprotected; no modern workplace-violence-prevention program; missing 2026 Workplace Know Your Rights notice; the federal 12-hour in-service rule misapplied to all employees rather than HHAs only; missing HHA 14-day/60-day supervision and direct-observation requirements; a bloodborne-pathogen policy limited mainly to vaccine language; vague abuse-reporting instructions; an incident definition limited mainly to injury-producing accidents; confidentiality and monitoring language insufficient for mobile home health and modern privacy norms; benefit/holiday commitments that may not match current plans; final-pay/property language risking unlawful withholding; and a leftover internal editing note ('vacation or sick leave (remove)') left in the employee-facing text. Full defect-to-correction mapping is at apps/employee-journey/content/handbook/2026-review/source/2022_TO_2026_REPLACEMENT_MAP.md.",
+  "retirementApproval": "Owner directive 2026-07-25 — retirement-first implementation plan; final governance sign-off pending",
+  "retirementDate": "2026-07-25",
+  "supersededBy": "CI-HR-HB-2026 (pending approval)",
+  "retentionClass": "historical employment record / legal-hold eligible",
+  "legalHoldStatus": "preserved — do not destroy",
+  "historicalSourceHash": "sha256:fc84d206ab66c71cd7f6487676fbbea0f0aa25eb7fa694ac7d453ccd7e879a8c",
+  "distributionStatus": "DO_NOT_DISTRIBUTE",
+  "acknowledgmentStatus": "NO_NEW_ACKNOWLEDGMENT_PERMITTED — prior acknowledgments preserved as evidence"
+}
