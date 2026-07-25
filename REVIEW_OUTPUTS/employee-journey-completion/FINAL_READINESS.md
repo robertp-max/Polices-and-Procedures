@@ -4,6 +4,25 @@ _Master Correction Prompt §21. Honest status. Branch `feature/governing-body-po
 committed and pushed. **No deploy.** This is an incremental correction pass focused on the
 owner's hard rejections; it is not a claim of full §21 completion._
 
+## Overall status: **CONDITIONAL PASS**
+
+The owner's hard rejections are corrected, and (post-push hardening) the P0 defects are fixed:
+main-app origin (5188 not 5190), OIG/SAM applicability (not hard-coded N/A), HHA scenario-
+specific clocks, and approved-equivalency dedup gating — all covered by the runnable invariant
+suite (`journey:verify:corrections`, 24/24) and a guardrail source scan (`journey:verify:guardrails`,
+PASS). This is **not** a full acceptance PASS: the checklist rows below marked ✅ reflect the
+feature being *implemented*, not that the full automated acceptance matrix has run. The following
+remain **NOT RUN / open** and gate a full PASS:
+
+- 18-persona **automated** browser matrix (Playwright) across 320/375/768/1024/1440/1600 + 200% zoom
+- keyboard-only + screen-reader semantics sweep
+- regulatory-cadence and module-player-parity **assertions** (beyond the data invariants)
+- cross-app **return-route** testing and **authenticated** Nolan testing
+- Nolan authenticated client (still sends dev `x-user-*` headers — tracked)
+
+A manual 10-persona DOM sweep is **not** full responsive/accessibility acceptance and is not
+claimed as such.
+
 ## Pushed this pass (verified)
 
 | Commit | What |
@@ -44,25 +63,36 @@ owner's hard rejections; it is not a claim of full §21 completion._
 | 22 | Workflow training NOT added | ✅ CONFIRMED (none added) |
 | 23 | Same-tab navigation works | ✅ DONE |
 | 24 | No production URL uses localhost | ✅ DONE (env-aware, fails closed) |
-| 25 | Responsive/accessibility QA passes | ⚠️ MOSTLY (semantics + media queries in place; desktop no-overflow verified; 10-persona live sweep clean; true-device mobile emulation is a preview-pane limitation) |
+| 25 | Responsive/accessibility QA passes | 🚫 NOT RUN as full acceptance — semantics + media queries in place, desktop no-overflow verified; the 18-persona automated matrix + zoom + keyboard + screen-reader sweeps have NOT run |
 | 26 | No backend/deployment work occurred | ✅ CONFIRMED |
 | 27 | Branch pushed & synchronized | ✅ DONE |
+
+> Rows marked ✅ mean the feature is **implemented and spot-verified**, not that the full
+> automated acceptance matrix (§18) has run. Overall status is **CONDITIONAL PASS** (see top).
 
 ## Later commits (parallel budget-model pass)
 
 | Commit | What |
 |---|---|
-| f8afa6ea | Runnable invariant suite (§18) — 11/11 pass |
-| (this) | Appendix F composite packet (§11.2) + Advanced/Annual Training nav links (§7) + responsive-QA notes |
+| f8afa6ea | Runnable invariant suite — first pass |
+| 545d2083.. | Appendix F composite packet (§11.2) + Advanced/Annual Training nav links (§7) |
+| (post-push hardening) | P0 fixes: main-app origin 5188, OIG/SAM applicability, HHA scenario clocks, approved-equivalency dedup; invariant suite → 24/24; guardrail scan PASS |
 
 ## Honest bottom line
 
-The owner's most-cited rejections are corrected and pushed: the Annual page is rebuilt and
-deduplicated, ACHC/Advanced audiences are correct and player-backed (no false "Unavailable"),
-the P&P reader no longer flattens numbered policy text, Nolan replaces the generic support
-treatment, and the duplicate training nav is collapsed. **Remaining** (larger builds, not yet
-done): the full pre-hire→separation lifecycle surface (§12), the supervised-visitation matrix
-+ OIG/SAM status tiles UI (§13), the premium P&P learning right-rail with in-context Nolan +
-practice scenario (§9.3), the full Appendix F composite (§11.2), chrome-free embedded module
-players with journey-return (§8.4), and the automated persona/parity test suite + full
-responsive/a11y sweep (§18). Each is scoped in its report above.
+The owner's most-cited rejections are corrected and pushed, and the post-push P0 defects are
+fixed and covered by runnable checks (`journey:verify:corrections` 24/24; `journey:verify:guardrails`
+PASS): the Annual page is rebuilt/deduplicated through **approved-equivalency records** (ANN-006
+return demonstration is retained, not erased), ACHC/Advanced audiences are correct and player-
+backed, the P&P reader no longer flattens numbered policy text, **OIG/SAM applicability is no
+longer hard-coded by clinical vs nonclinical role** (REVIEW_REQUIRED where unresolved), **HHA
+oversight is assignment/scenario-specific** (rules-that-may-apply vs active-assignment clocks),
+the **main-app origin points at 5188** (not the journey app), Nolan replaces the generic support
+treatment, and the duplicate training nav is collapsed.
+
+**Still open — gates a full PASS, not yet done:** the **authenticated** Nolan client (still sends
+dev `x-user-*` headers), the **18-persona automated Playwright matrix** across all viewports +
+200% zoom + keyboard + screen-reader, regulatory-cadence and module-player-parity **assertions**,
+cross-app **return-route** and authenticated-Nolan browser tests, the full pre-hire→separation
+lifecycle surface (§12), the complete Appendix F crosswalk + persona-driven MVR (§9), and the
+deeper policy-player completion-semantics/jargon work (§8). Tracked in this session's task list.

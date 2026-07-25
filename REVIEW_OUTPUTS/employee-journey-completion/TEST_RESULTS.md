@@ -46,3 +46,32 @@ Navigated key routes for every persona; console clean (0 errors) throughout:
 - Regulatory-cadence assertions (HHA 14/60-day, observation, in-service).
 - Full responsive (320–1600px, 200%) and screen-reader/keyboard sweeps (see RESPONSIVE_QA.md /
   ACCESSIBILITY_QA.md).
+
+## Post-push hardening (P0 corrections) — CONDITIONAL PASS
+
+Overall: **CONDITIONAL PASS** — P0 data/logic defects fixed and covered by runnable checks;
+full acceptance still gated by the automated browser matrix (see NOT RUN below).
+
+Runnable checks (from apps/employee-journey):
+- `npm run journey:verify:corrections` — **24/24 invariants PASS**, now including:
+  main-app origin = 5188 (not 5190/journey); module/form links resolve to the main app;
+  production fails closed (no localhost); OIG/SAM: clinical → APPLICABLE/Current,
+  nonclinical/unresolved → REVIEW_REQUIRED (never auto N/A); HHA clocks scenario-tagged
+  (skilled + aide-only); in-service applies to all scenarios; ANN-006 = PARTIALLY_EQUIVALENT
+  (not collapsed) with a retained return-demo residual.
+- `npm run journey:verify:guardrails` — **PASS** (no `target="_blank"`, no `window.open`, no
+  unguarded localhost). One tracked WARNING: `x-user-*` dev headers in NolanAssistant (the
+  authenticated-client follow-up).
+- `tsc --noEmit` — 0 errors across the changed files.
+
+Live spot-checks (Browser pane, localhost:5190):
+- Competencies (morgan-hha): "Rules that may apply" (5) separated from "Your active assignment
+  clocks" (3 for the skilled scenario, not all 5); scenario tabs skilled/aide-only/mixed;
+  OIG/SAM = "Current" (not hard-coded N/A).
+- Annual (morgan-hha): "Also satisfies" now shows employee-friendly phrases (not raw ANN IDs);
+  ANN-006 shows a "Still required separately" return-demonstration residual; method reads
+  "No scored assessment specified" (not an invented "Read & acknowledge").
+
+**NOT RUN (gates a full PASS):** 18-persona automated Playwright matrix across
+320/375/768/1024/1440/1600 + 200% zoom; keyboard-only; screen-reader semantics; cross-app
+return-route; authenticated Nolan success/failure. These are `NOT RUN`, not `PASS`.
