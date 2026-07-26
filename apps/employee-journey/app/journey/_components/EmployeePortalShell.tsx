@@ -15,6 +15,7 @@ import {
   Map,
   Menu,
   ShieldCheck,
+  Workflow,
 } from "lucide-react";
 import { EmployeePreviewToolbar } from "./EmployeePreviewToolbar";
 import { MoreSheet } from "./MoreSheet";
@@ -28,6 +29,7 @@ const desktopNav = [
   { href: "/journey/training", label: "Training", icon: GraduationCap },
   { href: "/journey/policies", label: "Policies", icon: BookOpenCheck },
   { href: "/journey/handbook", label: "Handbook", icon: BookMarked },
+  { href: "/journey/workflows", label: "Workflows", icon: Workflow },
   { href: "/journey/documents", label: "Documents", icon: FileCheck2 },
   { href: "/journey/competencies", label: "Competencies", icon: ShieldCheck },
   { href: "/journey/performance", label: "Performance", icon: BarChart3 },

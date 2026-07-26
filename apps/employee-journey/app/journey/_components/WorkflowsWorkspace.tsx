@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Search, Workflow } from "lucide-react";
 import {
@@ -26,10 +26,14 @@ const DOMAINS = [
   "Risk Management",
 ];
 
+const PAGE_SIZE = 25;
+
 export function WorkflowsWorkspace() {
   const { persona, withPersona } = usePreview();
   const [query, setQuery] = useState("");
   const [domain, setDomain] = useState("All");
+  const [assignedOnly, setAssignedOnly] = useState(false);
+  const [page, setPage] = useState(1);
 
   const assignedIds = useMemo(
     () => new Set(assignedWorkflowsForPersona(persona).map((w) => w.id)),
@@ -41,9 +45,19 @@ export function WorkflowsWorkspace() {
     return WORKFLOW_LIBRARY.filter(
       (w) =>
         (domain === "All" || w.domain === domain) &&
+        (!assignedOnly || assignedIds.has(w.id)) &&
         (!q || w.title.toLowerCase().includes(q) || w.id.toLowerCase().includes(q)),
     );
-  }, [query, domain]);
+  }, [query, domain, assignedOnly, assignedIds]);
+
+  // Reset to page 1 whenever the filter set changes (adjust-state-on-change pattern).
+  const filterKey = `${query}|${domain}|${assignedOnly}|${persona.id}`;
+  const lastKey = useRef(filterKey);
+  if (lastKey.current !== filterKey) { lastKey.current = filterKey; if (page !== 1) setPage(1); }
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paged = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   return (
     <div className="workspace">
@@ -81,12 +95,18 @@ export function WorkflowsWorkspace() {
             </button>
           ))}
         </div>
+        <label className="wf-assigned-toggle">
+          <input type="checkbox" checked={assignedOnly} onChange={(e) => setAssignedOnly(e.target.checked)} />
+          My assigned only ({assignedIds.size})
+        </label>
       </div>
 
-      <p className="no-action-copy wf-count">{filtered.length} of {WORKFLOW_LIBRARY_COUNT} workflows</p>
+      <p className="no-action-copy wf-count">
+        {filtered.length} of {WORKFLOW_LIBRARY_COUNT} workflows{filtered.length > PAGE_SIZE ? ` · page ${safePage}/${totalPages}` : ""}
+      </p>
 
       <ul className="wf-list">
-        {filtered.map((w) => {
+        {paged.map((w) => {
           const isAssigned = assignedIds.has(w.id);
           return (
             <li key={w.id}>
@@ -103,6 +123,18 @@ export function WorkflowsWorkspace() {
           );
         })}
       </ul>
+
+      {totalPages > 1 ? (
+        <div className="wf-pager" role="navigation" aria-label="Workflow pages">
+          <button type="button" className="button button-secondary" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}>
+            Previous
+          </button>
+          <span>Page {safePage} of {totalPages}</span>
+          <button type="button" className="button button-secondary" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}>
+            Next
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

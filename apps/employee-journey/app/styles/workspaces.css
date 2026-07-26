@@ -985,3 +985,15 @@
 .wf-detail-section p { margin: 0 0 6px; font-size: 0.875rem; line-height: 1.55; color: var(--ink); }
 .wf-detail-section ul { margin: 0; padding-left: 20px; font-size: 0.875rem; }
 .wf-detail-section code { font-family: ui-monospace, monospace; font-size: 0.75rem; }
+
+.wf-steps-wrap { max-width: 100%; overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+.wf-steps { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+.wf-steps th, .wf-steps td { border-bottom: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+.wf-steps thead { background: var(--surface-teal); }
+.wf-steps th { color: var(--teal-deep); font-weight: 700; }
+.wf-detail-section ul { margin: 0; padding-left: 20px; }
+.wf-detail-section li { margin-bottom: 4px; font-size: 0.875rem; }
+
+.wf-assigned-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 0.8125rem; color: var(--muted-strong); }
+.wf-pager { display: flex; align-items: center; gap: 14px; justify-content: center; margin-top: 16px; }
+.wf-pager span { font-size: 0.8125rem; color: var(--muted-strong); }

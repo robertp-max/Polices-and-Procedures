@@ -68,6 +68,59 @@ export function WorkflowDetail({ workflowId }: { workflowId: string }) {
               {detail.approvalRoles.length ? <p><strong>Approval:</strong> {detail.approvalRoles.join(", ")}</p> : null}
             </section>
           ) : null}
+          {detail.cadence ? (
+            <section className="wf-detail-section">
+              <h2>Cadence / SLA</h2>
+              <p>{detail.cadence}{detail.sla ? ` · ${detail.sla}` : ""}</p>
+            </section>
+          ) : null}
+          {detail.steps.length ? (
+            <section className="wf-detail-section">
+              <h2>Step-by-step execution</h2>
+              <div className="wf-steps-wrap">
+                <table className="wf-steps">
+                  <thead><tr><th>#</th><th>Action</th><th>Role</th><th>Form</th><th>Deadline</th></tr></thead>
+                  <tbody>
+                    {detail.steps.map((s) => (
+                      <tr key={s.order}>
+                        <td>{s.order}</td>
+                        <td>{s.action}</td>
+                        <td>{s.role}</td>
+                        <td>{s.formIds.join(", ") || "—"}</td>
+                        <td>{s.deadline || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          ) : null}
+          {detail.requiredForms.length ? (
+            <section className="wf-detail-section">
+              <h2>Required forms</h2>
+              <span className="policy-chip-row">
+                {detail.requiredForms.map((f) => <span className="policy-chip" key={f}>{f}</span>)}
+              </span>
+            </section>
+          ) : null}
+          {detail.approvals.length ? (
+            <section className="wf-detail-section">
+              <h2>Approvals / signatures</h2>
+              <ul>{detail.approvals.map((a) => <li key={a}>{a}</li>)}</ul>
+            </section>
+          ) : null}
+          {detail.outputs ? (
+            <section className="wf-detail-section"><h2>Outputs</h2><p>{detail.outputs}</p></section>
+          ) : null}
+          {detail.escalation ? (
+            <section className="wf-detail-section"><h2>Escalation</h2><p>{detail.escalation}</p></section>
+          ) : null}
+          {detail.upstream.length ? (
+            <section className="wf-detail-section">
+              <h2>Upstream dependencies</h2>
+              <ul>{detail.upstream.map((u) => <li key={u.id}><strong>{u.id}</strong> — {u.reason}</li>)}</ul>
+            </section>
+          ) : null}
           {detail.policyRefs.length || detail.regulatoryAnchors.length ? (
             <section className="wf-detail-section">
               <h2>Policy & regulatory basis</h2>
@@ -80,10 +133,9 @@ export function WorkflowDetail({ workflowId }: { workflowId: string }) {
           <div className="truth-note" role="note">
             <Info aria-hidden="true" />
             <p>
-              Employee-safe reference view, sourced from the canonical workflow registry
-              (<code>{detail.sourcePath || "workflows.generated.ts"}</code>). The full step-by-step
-              execution table, forms, and signatures live in the controlled workflow record; this
-              view changes no operational state.
+              Employee-safe reference view, sourced verbatim from the canonical workflow registry
+              (<code>{detail.sourcePath || "workflows.generated.ts"}</code>). This view changes no
+              operational state; the authoritative record lives in the controlled workflow system.
             </p>
           </div>
         </div>

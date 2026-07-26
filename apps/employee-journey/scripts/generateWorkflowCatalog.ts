@@ -34,6 +34,7 @@ const DOMAIN_LABELS: Record<string, string> = {
   HR: "Human Resources", IT: "IT / Security", OP: "Operations", QA: "QAPI", RM: "Risk Management",
 };
 
+interface CatalogStep { order: number; action: string; role: string; formIds: string[]; deadline: string }
 interface WorkflowCatalogItem {
   id: string;
   title: string;
@@ -41,11 +42,26 @@ interface WorkflowCatalogItem {
   domain: string;
   processOverview: string;
   triggers: string[];
+  cadence: string;
   primaryRoles: string[];
+  supportingRoles: string[];
   approvalRoles: string[];
+  steps: CatalogStep[];
+  requiredForms: string[];
+  approvals: string[];
+  outputs: string;
+  sla: string;
+  escalation: string;
   policyRefs: string[];
   regulatoryAnchors: string[];
+  upstream: { id: string; reason: string }[];
   sourcePath: string;
+}
+
+function cadenceText(w: (typeof WORKFLOW_LIST)[number]): string {
+  const c = w.cadence;
+  if (!c) return "";
+  return [c.kind, c.interval, c.anchor].filter(Boolean).join(" · ");
 }
 
 const catalog: WorkflowCatalogItem[] = WORKFLOW_LIST.map((w) => ({
@@ -55,10 +71,19 @@ const catalog: WorkflowCatalogItem[] = WORKFLOW_LIST.map((w) => ({
   domain: DOMAIN_LABELS[w.domain] ?? w.domain,
   processOverview: w.processOverview ?? "",
   triggers: (w.triggers ?? []).map((t) => t.description).filter(Boolean),
+  cadence: cadenceText(w),
   primaryRoles: w.roles?.primary ?? [],
+  supportingRoles: w.roles?.supporting ?? [],
   approvalRoles: w.roles?.approval ?? [],
+  steps: (w.steps ?? []).map((s) => ({ order: s.order, action: s.action, role: s.role, formIds: s.formIds ?? [], deadline: s.deadline })),
+  requiredForms: w.requiredForms ?? [],
+  approvals: (w.approvals ?? []).map((a) => a.description).filter(Boolean),
+  outputs: w.outputs ?? "",
+  sla: w.sla ?? "",
+  escalation: w.escalationLogic ?? "",
   policyRefs: w.policyRefs ?? [],
   regulatoryAnchors: w.regulatoryAnchors ?? [],
+  upstream: (w.dependencies ?? []).map((d) => ({ id: d.upstreamId, reason: d.reason })),
   sourcePath: w.sourcePath ?? "",
 })).sort((a, b) => a.id.localeCompare(b.id));
 
@@ -93,6 +118,7 @@ fs.writeFileSync(
   path.join(OUT_DIR, "workflowCatalog.generated.ts"),
   HEADER +
     `
+export interface CatalogStep { order: number; action: string; role: string; formIds: string[]; deadline: string }
 export interface WorkflowCatalogItem {
   id: string;
   title: string;
@@ -100,10 +126,19 @@ export interface WorkflowCatalogItem {
   domain: string;
   processOverview: string;
   triggers: string[];
+  cadence: string;
   primaryRoles: string[];
+  supportingRoles: string[];
   approvalRoles: string[];
+  steps: CatalogStep[];
+  requiredForms: string[];
+  approvals: string[];
+  outputs: string;
+  sla: string;
+  escalation: string;
   policyRefs: string[];
   regulatoryAnchors: string[];
+  upstream: { id: string; reason: string }[];
   sourcePath: string;
 }
 
