@@ -701,3 +701,227 @@
 .gao-route .text-\[11px\] {
   font-size: 0.75rem !important;
 }
+
+.workflow-training-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  margin: 22px 0;
+  padding: 22px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(255, 249, 240, 0.94), rgba(231, 249, 246, 0.88));
+  box-shadow: var(--shadow-soft);
+}
+
+.workflow-training-mark,
+.workflow-training-stat {
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.workflow-training-mark {
+  width: 58px;
+  height: 58px;
+  color: var(--teal);
+}
+
+.workflow-training-hero h2 {
+  margin: 4px 0 6px;
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+}
+
+.workflow-training-hero p:not(.eyebrow) {
+  margin: 0;
+  color: var(--muted-strong);
+  max-width: 78ch;
+}
+
+.workflow-lane-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.workflow-lane-strip span,
+.workflow-card-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 750;
+  padding: 7px 10px;
+}
+
+.workflow-lane-strip svg {
+  width: 14px;
+  height: 14px;
+  color: var(--orange);
+}
+
+.workflow-training-stat {
+  min-width: 130px;
+  min-height: 112px;
+  padding: 14px;
+  color: var(--teal);
+}
+
+.workflow-training-stat strong {
+  color: var(--ink);
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.workflow-training-stat span {
+  color: var(--muted-strong);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.workflow-module-footer {
+  display: grid;
+  gap: 12px;
+}
+
+.workflow-card-summary {
+  justify-content: space-between;
+  border-radius: 14px;
+}
+
+.workflow-card-summary span {
+  color: var(--teal);
+}
+
+.workflow-card-summary strong {
+  font-weight: 700;
+}
+
+.workflow-start-button {
+  width: 100%;
+}
+
+.workflow-player {
+  min-height: 100vh;
+  padding: 20px;
+  background: var(--page-bg);
+}
+
+.workflow-player-topbar,
+.workflow-player-hero,
+.workflow-stage-panel {
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: var(--shadow-soft);
+}
+
+.workflow-player-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+}
+
+.workflow-player-topbar img {
+  width: 112px;
+}
+
+.workflow-player-topbar p {
+  margin: 0;
+  color: var(--muted-strong);
+  font-size: 0.82rem;
+}
+
+.workflow-player-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  margin: 18px 0;
+  padding: 24px;
+}
+
+.workflow-player-hero h1 {
+  margin: 4px 0 8px;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+}
+
+.workflow-player-progress {
+  display: grid;
+  gap: 6px;
+  align-content: center;
+  min-width: 180px;
+}
+
+.workflow-player-grid {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 18px;
+}
+
+.workflow-stage-rail {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.workflow-stage-rail button {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  padding: 12px;
+  border: 0;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--ink);
+}
+
+.workflow-stage-rail button.is-active {
+  outline: 3px solid rgba(240, 118, 46, 0.3);
+}
+
+.workflow-stage-panel {
+  padding: 24px;
+}
+
+.workflow-stage-panel h2 {
+  margin: 6px 0;
+  font-size: 1.45rem;
+}
+
+.workflow-stage-workbench {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.workflow-stage-workbench section {
+  border-radius: 16px;
+  background: rgba(248, 251, 250, 0.9);
+  padding: 16px;
+}
+
+.workflow-stage-workbench h3 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+}
+
+.workflow-stage-workbench ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.workflow-stage-panel footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}

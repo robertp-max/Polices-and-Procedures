@@ -389,6 +389,46 @@
   }
 }
 
+@media (max-width: 900px) {
+  .workflow-training-hero,
+  .workflow-player-hero,
+  .workflow-player-grid,
+  .workflow-stage-workbench {
+    grid-template-columns: 1fr;
+  }
+
+  .workflow-training-mark,
+  .workflow-training-stat {
+    justify-self: start;
+  }
+
+  .workflow-player-topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 520px) {
+  .workflow-player {
+    padding: 12px;
+  }
+
+  .workflow-player-hero,
+  .workflow-stage-panel,
+  .workflow-training-hero {
+    padding: 16px;
+  }
+
+  .workflow-stage-rail {
+    grid-template-columns: 1fr;
+  }
+
+  .workflow-stage-panel footer,
+  .workflow-stage-panel footer .button {
+    width: 100%;
+  }
+}
+
 @media (min-width: 1600px) {
   .portal-main {
     padding-right: 52px;

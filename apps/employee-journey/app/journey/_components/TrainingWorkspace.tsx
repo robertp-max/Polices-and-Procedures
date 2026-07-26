@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, CalendarClock, GraduationCap, LockKeyhole } from "lucide-react";
+import { ArrowRight, CalendarClock, CheckCircle2, ClipboardCheck, GraduationCap, LockKeyhole, Route } from "lucide-react";
 import {
   getTrainingAssignments,
   type TrainingAssignment,
@@ -21,6 +21,7 @@ const filters: TabOption<TrainingFilter>[] = [
   { id: "Annual", label: "Annual" },
   { id: "Policy quiz", label: "Policy quiz" },
   { id: "Competency", label: "Competency" },
+  { id: "Workflows", label: "Workflows" },
   { id: "Drill / live", label: "Drill / live" },
   { id: "Completed", label: "Completed" },
 ];
@@ -33,15 +34,23 @@ export function TrainingWorkspace() {
     (assignment) =>
       assignment.category === active ||
       (active === "Required now" &&
+        assignment.category !== "Workflows" &&
         ["Required now", "In progress", "Due soon", "Unavailable"].includes(
           assignment.status,
         )),
+  );
+  const workflowAssignments = assignments.filter(
+    (assignment) => assignment.category === "Workflows",
+  );
+  const workflowDomains = Array.from(
+    new Set(workflowAssignments.map((assignment) => assignment.workflowDomain ?? "Workflow")),
   );
   const tabs = filters.map((filter) => ({
     ...filter,
     count:
       filter.id === "Required now"
         ? assignments.filter((assignment) =>
+            assignment.category !== "Workflows" &&
             ["Required now", "In progress", "Due soon", "Unavailable"].includes(
               assignment.status,
             ),
@@ -88,9 +97,39 @@ export function TrainingWorkspace() {
         panelId="training-panel"
       />
 
+      {active === "Workflows" ? (
+        <section className="workflow-training-hero" aria-labelledby="workflow-training-title">
+          <div className="workflow-training-mark" aria-hidden="true">
+            <Route />
+          </div>
+          <div>
+            <p className="eyebrow">MANDATED WORKFLOW LIBRARY</p>
+            <h2 id="workflow-training-title">All required workflow assignments</h2>
+            <p>
+              This tab lists the full approved workflow set from the source library. CL-WF-26
+              remains the launchable Plan of Care audit simulation; the rest are required
+              workflow-control library items for review and assignment visibility.
+            </p>
+            <div className="workflow-lane-strip" aria-label="Workflow domains">
+              {workflowDomains.map((domain) => (
+                <span key={domain}>
+                  <CheckCircle2 aria-hidden="true" />
+                  {domain}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="workflow-training-stat">
+            <ClipboardCheck aria-hidden="true" />
+            <strong>{workflowAssignments.length}</strong>
+            <span>mandated workflows</span>
+          </div>
+        </section>
+      ) : null}
+
       <section
         id="training-panel"
-        className="requirement-grid"
+        className={`requirement-grid${active === "Workflows" ? " workflow-training-grid" : ""}`}
         role="tabpanel"
         aria-labelledby={workspaceTabId("training-panel", active)}
         aria-label={`${active} training assignments`}
@@ -113,32 +152,42 @@ export function TrainingWorkspace() {
             ]}
             footer={
               assignment.available ? (
-                assignment.href && assignment.hrefKind === "external" ? (
-                  <MainAppLink className="button button-primary" path={assignment.href}>
-                    {assignment.action}
-                    <ArrowRight aria-hidden="true" />
-                  </MainAppLink>
-                ) : assignment.href ? (
-                  <Link
-                    className="button button-primary"
-                    href={withPersona(assignment.href)}
-                  >
-                    {assignment.action}
-                    <ArrowRight aria-hidden="true" />
-                  </Link>
-                ) : (
-                  <button
-                    className="button button-secondary"
-                    type="button"
-                    onClick={() =>
-                      announce(
-                        "Preview opened. No official record was changed.",
-                      )
-                    }
-                  >
-                    {assignment.action}
-                  </button>
-                )
+                <div className={assignment.category === "Workflows" ? "workflow-module-footer" : undefined}>
+                  {assignment.category === "Workflows" ? (
+                    <div className="workflow-card-summary" aria-label={`${assignment.id} workflow summary`}>
+                      <span>{assignment.workflowDomain}</span>
+                      <strong>{assignment.relationshipNote}</strong>
+                    </div>
+                  ) : null}
+                  {assignment.href && assignment.hrefKind === "external" ? (
+                    <MainAppLink className="button button-primary" path={assignment.href}>
+                      {assignment.action}
+                      <ArrowRight aria-hidden="true" />
+                    </MainAppLink>
+                  ) : assignment.href ? (
+                    <Link
+                      className={assignment.category === "Workflows" ? "button button-primary workflow-start-button" : "button button-primary"}
+                      href={withPersona(assignment.href)}
+                    >
+                      {assignment.action}
+                      <ArrowRight aria-hidden="true" />
+                    </Link>
+                  ) : (
+                    <button
+                      className={assignment.category === "Workflows" ? "button button-primary" : "button button-secondary"}
+                      type="button"
+                      onClick={() =>
+                        announce(
+                          assignment.category === "Workflows"
+                            ? `${assignment.id} workflow requirement opened in preview mode. No official record was changed.`
+                            : "Preview opened. No official record was changed.",
+                        )
+                      }
+                    >
+                      {assignment.action}
+                    </button>
+                  )}
+                </div>
               ) : (
                 <div className="unavailable-action">
                   <LockKeyhole aria-hidden="true" />

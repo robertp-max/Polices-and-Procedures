@@ -610,7 +610,7 @@ export type TrainingAssignment = {
   progress: string;
   prerequisite: string;
   validation: string;
-  category: "Required now" | "Onboarding" | "Role-specific" | "Annual" | "Policy quiz" | "Competency" | "Drill / live" | "Completed";
+  category: "Required now" | "Onboarding" | "Role-specific" | "Annual" | "Policy quiz" | "Competency" | "Workflows" | "Drill / live" | "Completed";
   action: string;
   href?: string;
   /** "local" = a route inside this journey app; "external" = a main-app
@@ -618,6 +618,8 @@ export type TrainingAssignment = {
    * same-tab cross-origin launch. Absent hrefs have no action link. */
   hrefKind?: "local" | "external";
   available: boolean;
+  workflowDomain?: string;
+  relationshipNote?: string;
 };
 
 function moduleAudienceLabel(mod: GeneratedModule): string {
@@ -871,6 +873,221 @@ function drillSummaryCard(persona: Persona): TrainingAssignment {
   };
 }
 
+const MANDATED_WORKFLOW_SOURCE = `
+CL-WF-01|Intake & Referral Qualification
+CL-WF-02|Homebound Status Determination
+CL-WF-03|Face-to-Face Encounter Capture & Verification
+CL-WF-04|Start of Care (SOC) Comprehensive Assessment
+CL-WF-05|OASIS Completion, QA, Transmission & Correction
+CL-WF-06|Plan of Care (POC / CMS-485) Establishment & Physician Signature
+CL-WF-07|Physician Orders & Verbal Order Authentication
+CL-WF-08|Coordination of Care & Multidisciplinary Communication
+CL-WF-09|Skilled Visit Documentation (RN / PT / OT / SLP / MSW)
+CL-WF-10|Home Health Aide Services & Supervision (Skilled-Patient Annual; Aide-Only Semiannual)
+CL-WF-11|Annual Aide In-Service Training (>=12 hours)
+CL-WF-12|Medication Management & Reconciliation
+CL-WF-13|Wound Care & Specialty Clinical Protocols
+CL-WF-14|Infection Control at Point of Care
+CL-WF-15|Telehealth Service Delivery
+CL-WF-16|Patient Rights, Admission Consent & Advance Directives
+CL-WF-17|Patient / Family Education
+CL-WF-18|Recertification / Resumption of Care (ROC)
+CL-WF-19|Transfer / Discharge Planning & Execution
+CL-WF-20|Missed Visit Management
+CL-WF-21|Clinical Record Completion & Amendment
+CL-WF-22|Abuse / Neglect / Exploitation Reporting
+CL-WF-23|Patient Complaint / Grievance Handling
+CL-WF-24|Pediatric / Palliative / High-Risk Specialty Pathways
+CL-WF-25|Clinician Competency Validation (Incl. OASIS)
+CO-WF-01|Annual Compliance Program Attestation
+CO-WF-02|Code of Conduct Acknowledgment (Onboarding & Annual)
+CO-WF-03|Compliance Hotline Intake & Investigation
+CO-WF-04|Internal Compliance Audit Cycle
+CO-WF-05|External Survey / Inspection Response & Plan of Correction
+CO-WF-06|Regulatory Change Management
+CO-WF-07|Anti-Kickback & Stark (AKS/Stark) Relationship Review
+CO-WF-08|Fraud, Waste & Abuse (FWA) Training & Monitoring
+CO-WF-09|HIPAA Workforce Training
+CO-WF-10|HIPAA Breach Assessment, Investigation & Notification
+CO-WF-11|Business Associate Agreement (BAA) Lifecycle
+CO-WF-12|Patient Authorization & Accounting of Disclosures (HIPAA + CMIA)
+CO-WF-13|Records Retention & Destruction
+CO-WF-14|Documentation Alignment Audit
+CO-WF-15|OIG/SAM Exclusion Screening (Monthly)
+CO-WF-16|OIG Self-Disclosure Protocol
+CO-WF-17|HIPAA Security Risk Analysis (Annual)
+CO-WF-18|AI Tool Use Request & Governance
+CO-WF-19|Medicare CoP Compliance Verification
+CO-WF-20|Compliance Committee Meetings (Monthly)
+CO-WF-21|California CMIA Disclosure & Sensitive Category Handling
+CO-WF-22|Compliance Metrics & Quarterly Report to Governing Body
+EN-WF-01|Policy Lifecycle: Draft -> Review -> Approve -> Publish -> Retire
+EN-WF-02|Annual Policy Review (Full Framework)
+EN-WF-03|Universal Policy Acknowledgment (All Staff)
+EN-WF-04|Master Policy Index / Taxonomy Register Maintenance
+EN-WF-05|Regulatory Change Management (Horizon Scanning)
+EN-WF-06|Policy Version Control & Archive
+EN-WF-07|Enterprise Document Control & Forms Library Governance
+EN-WF-08|Records Retention & Destruction Schedule
+EN-WF-09|Enterprise Mandatory Events Calendar
+EN-WF-10|Enterprise KPI / Metrics Reporting
+EN-WF-11|Enterprise Internal Audit & Management Review
+EN-WF-12|Cross-Domain Risk Register Consolidation
+EN-WF-13|Annual Compliance Attestation & Management Certification
+FN-WF-01|Annual Operating Budget & Institutional Plan
+FN-WF-02|Monthly Financial Close & Variance Reporting
+FN-WF-03|Cost Report Preparation & Filing
+FN-WF-04|HH PPS Claim Submission (RAP / Notice of Admission / Final Claim)
+FN-WF-05|Claim Denial & Appeal Management
+FN-WF-06|Additional Documentation Request (ADR) Response
+FN-WF-07|Credit Balance Reporting (CMS-838)
+FN-WF-08|60-Day Overpayment Identification & Return
+FN-WF-09|Accounts Receivable & Bad Debt
+FN-WF-10|Patient Billing, Financial Counseling & Charity Care
+FN-WF-11|Accounts Payable & Vendor Payment
+FN-WF-12|Payroll Processing
+FN-WF-13|External Financial Audit
+FN-WF-14|Chargemaster / Rate Review
+FN-WF-15|RCM Self-Audit & Revenue Integrity
+GV-WF-01|Governing Body Quarterly Meeting & Minutes
+GV-WF-02|Annual Governing Body Self-Assessment
+GV-WF-03|Administrator Appointment / Replacement / Delegation
+GV-WF-04|Clinical Manager Appointment / Replacement
+GV-WF-05|Annual Institutional Plan & Budget Approval
+GV-WF-06|Annual Acceptance-to-Service Policy Review
+GV-WF-07|Annual Public Service Information Review
+GV-WF-08|Conflict of Interest Disclosure (Onboarding & Annual)
+GV-WF-09|Agency Licensure & Certification Renewal Management
+GV-WF-10|Change of Ownership / Agency Closure
+GV-WF-11|Interagency / Third-Party Contract Review
+GV-WF-12|Stakeholder / External Communication & Media Requests
+GV-WF-13|Governing Body Training & Orientation
+GV-WF-14|Executive Session Management
+HR-WF-01|Job Requisition & Recruitment
+HR-WF-02|Pre-Hire Screening (Background / OIG-SAM / License Verification)
+HR-WF-03|Offer, Onboarding & New-Hire Orientation
+HR-WF-04|Primary Source Verification & License Tracking
+HR-WF-05|Home Health Aide Training & Competency (42 CFR section 484.80)
+HR-WF-06|Skilled Professional Competency & Supervision
+HR-WF-07|Annual Mandatory / Compliance Training
+HR-WF-08|Performance Evaluation (Annual & Probationary)
+HR-WF-09|Corrective Action / Progressive Discipline
+HR-WF-10|Leave of Absence (FMLA / CFRA / ADA / PDL)
+HR-WF-11|Accommodation Request (ADA / FEHA)
+HR-WF-12|Discrimination / Harassment Complaint Investigation
+HR-WF-13|Workplace Injury / Workers' Comp (OSHA Reporting)
+HR-WF-14|Separation (Voluntary / Involuntary) & Exit
+HR-WF-15|Monthly OIG/SAM Re-Screening
+HR-WF-16|Independent Contractor / 1099 Classification
+HR-WF-17|Wage & Hour Compliance (Timekeeping / Meal-Rest)
+IT-WF-01|Annual Security Risk Analysis (SRA) & Risk Management Plan
+IT-WF-02|User Access Provisioning (New Hire / Role Change)
+IT-WF-03|User Access Termination (Separation)
+IT-WF-04|Quarterly Access Review / Least-Privilege
+IT-WF-05|Password / MFA Management
+IT-WF-06|System Activity Audit Logging & Monitoring (164.312(b))
+IT-WF-07|Backup, Data Restoration & Tabletop Test
+IT-WF-08|Disaster Recovery & Business Continuity Exercise
+IT-WF-09|IT Security Incident Response (Detection -> Contain -> Eradicate -> Recover)
+IT-WF-10|Device & Endpoint Management (Encryption, MDM, Loss)
+IT-WF-11|Mobile Device / BYOD Management
+IT-WF-12|Removable Media / USB Restrictions
+IT-WF-13|Patch & Vulnerability Management
+IT-WF-14|Change Management
+IT-WF-15|Vendor / Cloud SaaS Security Review & BAA
+IT-WF-16|Email Security (Phishing, Encryption, DLP)
+IT-WF-17|Data Backup Media Disposal / Sanitization
+IT-WF-18|Remote Access / VPN
+IT-WF-19|Facility Physical Access Controls (164.310)
+IT-WF-20|Data Subject Rights (CMIA / CCPA Access, Delete, Correct)
+OP-WF-01|Branch Registration & Quarterly Operations Review
+OP-WF-02|Facility/Branch Inspection (Quarterly)
+OP-WF-03|Vendor Lifecycle Management (Request -> Onboard -> Monitor -> Offboard)
+OP-WF-04|Approved Vendor List Maintenance
+OP-WF-05|Emergency Procurement
+OP-WF-06|Incoming / Outgoing Mail & Fax Management
+OP-WF-07|Patient Intake Administration
+OP-WF-08|Non-Admit / Referral Rejection Management
+OP-WF-09|Vehicle Management (Fleet / Personal Vehicle Use)
+OP-WF-10|Patient Property Handling
+OP-WF-11|Language Access / Interpreter Services
+OP-WF-12|Scheduling & Conflict Resolution
+OP-WF-13|After-Hours On-Call Operations
+QA-WF-01|QAPI Program Charter & Annual Review
+QA-WF-02|Monthly Quality Indicator Dashboard Production
+QA-WF-03|Quarterly QAPI Committee Review
+QA-WF-04|Annual Performance Improvement Project (PIP) Lifecycle
+QA-WF-05|Adverse Event Reporting, RCA & Corrective Action
+QA-WF-06|Infection Control Surveillance (QAPI-Integrated)
+QA-WF-07|LUPA Prevention & Visit Utilization Monitoring
+QA-WF-08|HHCAHPS Monitoring & Response
+QA-WF-09|Star Rating & Public Report Monitoring
+QA-WF-10|QAPI Self-Assessment (Annual)
+QA-WF-11|Policy Effectiveness Monitoring
+QA-WF-12|Patient Safety Event Communication
+RM-WF-01|Enterprise Risk Register & Quarterly Risk Review
+RM-WF-02|Annual Hazard Vulnerability Analysis (HVA)
+RM-WF-03|Biennial Emergency Preparedness Program Review/Update
+RM-WF-04|Biennial Emergency Preparedness Staff Training
+RM-WF-05|Annual Emergency Exercise (Full-Scale or Tabletop)
+RM-WF-06|Pandemic / Infectious-Disease Surge Readiness
+RM-WF-07|Patient Priority Classification & Emergency Activation
+RM-WF-08|Cal/OSHA IIPP Management (Injury & Illness Prevention Program)
+RM-WF-09|Workplace Violence Prevention (SB 553)
+RM-WF-10|Workplace Injury & OSHA Recordkeeping
+RM-WF-11|Hazardous Materials & Spill Management
+RM-WF-12|Equipment Recall & Safety Notification
+RM-WF-13|High-Risk Medication Double-Check
+RM-WF-14|Litigation & Claims Management
+RM-WF-15|Annual Enterprise Risk Reassessment
+`.trim();
+
+const WORKFLOW_DOMAINS: Record<string, string> = {
+  CL: "Clinical",
+  CO: "Compliance",
+  EN: "Enterprise",
+  FN: "Finance",
+  GV: "Governance",
+  HR: "Human Resources",
+  IT: "IT / Security",
+  OP: "Operations",
+  QA: "QAPI",
+  RM: "Risk Management",
+};
+
+function getMandatedWorkflowAssignments(): TrainingAssignment[] {
+  return MANDATED_WORKFLOW_SOURCE.split("\n").map((line) => {
+    const [id, title] = line.split("|");
+    const prefix = id.slice(0, 2);
+    const domain = WORKFLOW_DOMAINS[prefix] ?? "Workflow";
+
+    return {
+      id,
+      title,
+      whyAssigned: "Mandated workflow library item from the approved all-workflows source set.",
+      audience: "Assigned employees and leaders with workflow responsibility",
+      dueDate: "Required workflow library",
+      duration: "Reference / practice",
+      status: "Required now",
+      progress: id === "CL-WF-26" ? "0 of 6 stages complete" : "Not started",
+      prerequisite: "Role assignment and applicable workflow ownership",
+      validation:
+        id === "CL-WF-26"
+          ? "Complete the six-stage training simulation; no operational workflow state is changed"
+          : "Review workflow controls, required evidence, owner, cadence, and escalation path",
+      category: "Workflows",
+      action: id === "CL-WF-26" ? "Start simulation" : "View workflow requirement",
+      href: id === "CL-WF-26" ? "/journey/training/cl-wf-26" : undefined,
+      available: true,
+      workflowDomain: domain,
+      relationshipNote:
+        id === "CL-WF-26"
+          ? "Monthly feeder audit -> Quarterly QA-WF-03 review"
+          : `${domain} mandated workflow`,
+    };
+  });
+}
+
 export function getTrainingAssignments(persona: Persona): TrainingAssignment[] {
   const { ids, roleCodes } = moduleIdsForPersona(persona);
   const moduleCards = ids
@@ -879,7 +1096,7 @@ export function getTrainingAssignments(persona: Persona): TrainingAssignment[] {
     .map((mod) => buildModuleTrainingCard(mod, persona, roleCodes))
     .sort((a, b) => a.id.localeCompare(b.id));
 
-  return [...moduleCards, ...policyQuizCourseCards(persona), annualSummaryCard(persona), drillSummaryCard(persona)];
+  return [...moduleCards, ...policyQuizCourseCards(persona), ...getMandatedWorkflowAssignments(), annualSummaryCard(persona), drillSummaryCard(persona)];
 }
 
 export type PolicyAssignment = {

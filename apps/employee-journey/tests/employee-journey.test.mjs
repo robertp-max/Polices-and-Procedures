@@ -26,6 +26,7 @@ test("all employee workspaces are route-backed", () => {
     "app/journey/(portal)/history/page.tsx",
     "app/journey/(portal)/support/page.tsx",
     "app/journey/(player)/training/gao-001/page.tsx",
+    "app/journey/(player)/training/cl-wf-26/page.tsx",
   ];
 
   for (const routePage of routePages) {
@@ -99,6 +100,52 @@ test("the employee shell and preview data preserve the required contracts", () =
   assert.match(ui, /restoreRef\.current\?\.focus\(\)/);
 });
 
+test("workflow library lists mandated workflows and preserves the CL-WF-26 player", () => {
+  const training = readFileSync(
+    join(projectRoot, "app/journey/_components/TrainingWorkspace.tsx"),
+    "utf8",
+  );
+  const fixtures = readFileSync(
+    join(projectRoot, "app/journey/_data/fixtures.ts"),
+    "utf8",
+  );
+  const player = readFileSync(
+    join(projectRoot, "app/journey/(player)/training/cl-wf-26/ClWf26Player.tsx"),
+    "utf8",
+  );
+
+  assert.match(training, /id: "Workflows", label: "Workflows"/);
+  assert.match(training, /MANDATED WORKFLOW LIBRARY/);
+  assert.match(training, /All required workflow assignments/);
+  assert.match(training, /workflow-start-button/);
+  assert.match(fixtures, /CL-WF-01\|Intake & Referral Qualification/);
+  assert.match(fixtures, /RM-WF-15\|Annual Enterprise Risk Reassessment/);
+  assert.match(fixtures, /id === "CL-WF-26" \? "\/journey\/training\/cl-wf-26"/);
+  assert.match(fixtures, /id === "CL-WF-26" \? "Start simulation"/);
+  assert.match(fixtures, /Monthly feeder audit -> Quarterly QA-WF-03 review/);
+  assert.match(fixtures, /M[A-Z_]+_WORKFLOW_SOURCE\.split\("\\n"\)\.map/);
+  assert.equal(
+    (fixtures.match(/^[A-Z]{2}-WF-\d{2}\|/gm) ?? []).length,
+    166,
+  );
+  assert.doesNotMatch(fixtures, /CL-WF-26-T0[1-6]/);
+  assert.doesNotMatch(fixtures, /six swimlane cards practiced|six-card workflow practice/);
+  assert.doesNotMatch(training, /workflowCards|swimlane practice cards|six-card workflow practice/);
+  assert.match(player, /Training-only preview/);
+  assert.match(player, /TRAIN-CL-WF-26-2026-05/);
+
+  for (const stage of [
+    "Sample",
+    "Score",
+    "Verify",
+    "Analyze",
+    "Correct",
+    "Sign & Feed",
+  ]) {
+    assert.match(player, new RegExp(stage));
+  }
+});
+
 test("truthful preview language and local GAO assets are enforced", () => {
   const source = collectTextFiles(join(projectRoot, "app"))
     .map((path) => readFileSync(path, "utf8"))
@@ -155,6 +202,7 @@ test("the production worker renders every employee route", async () => {
     ["/journey/history", "Certificates &amp; History"],
     ["/journey/support", "Help &amp; support"],
     ["/journey/training/gao-001", "Start Alex"],
+    ["/journey/training/cl-wf-26", "Plan of Care Audit Simulation"],
   ]);
 
   for (const [path, expected] of routes) {
