@@ -186,8 +186,14 @@
   gap: 18px;
 }
 
+/* Transparent panel container — NO card chrome here, so inner content is the only
+   card layer (no cards-on-cards). Read body gets its own single card below;
+   Quiz/Forms/Review panels bring their own single card. */
 .policy-tab-panel {
   min-width: 0;
+}
+
+.policy-read-body {
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   background: #fff;
