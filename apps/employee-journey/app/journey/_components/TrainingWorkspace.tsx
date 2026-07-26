@@ -155,6 +155,18 @@ export function TrainingWorkspace() {
             footer={
               assignment.available ? (
                 <div className={assignment.category === "Workflows" ? "workflow-module-footer" : undefined}>
+                  {assignment.category !== "Workflows" ? (
+                    <div
+                      className={`training-progress${assignment.status === "Completed" ? " is-complete" : ""}`}
+                      aria-label={`Progress: ${assignment.status}`}
+                    >
+                      <div
+                        style={{
+                          width: `${assignment.status === "Completed" ? 100 : assignment.status === "In progress" ? 45 : 0}%`,
+                        }}
+                      />
+                    </div>
+                  ) : null}
                   {assignment.category === "Workflows" ? (
                     <div className="workflow-card-summary" aria-label={`${assignment.id} workflow summary`}>
                       <span>{assignment.workflowDomain}</span>

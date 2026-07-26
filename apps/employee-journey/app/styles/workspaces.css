@@ -1196,3 +1196,19 @@
   .document-vault { grid-template-columns: 1fr; }
   .integrity-status { position: static; }
 }
+
+/* ── Learning card progress bar (Gemini Assigned Learning) ── */
+.training-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  overflow: hidden;
+  margin: 0 0 14px;
+}
+.training-progress > div {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--teal), var(--orange));
+  transition: width 0.4s ease;
+}
+.training-progress.is-complete > div { background: #16a34a; }
