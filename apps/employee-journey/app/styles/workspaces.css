@@ -337,23 +337,12 @@
   gap: 18px;
 }
 
-.timeline-list::before {
-  position: absolute;
-  z-index: 0;
-  top: 24px;
-  bottom: 24px;
-  left: 24px;
-  width: 2px;
-  background: var(--border-strong);
-  content: "";
-}
-
+/* Timeline connector + numbered markers removed — each phase card already labels
+   itself "PHASE 0N", so the left rail was redundant. */
 .milestone-card {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: 50px minmax(0, 1fr);
-  gap: 16px;
+  display: block;
 }
 
 .milestone-marker {

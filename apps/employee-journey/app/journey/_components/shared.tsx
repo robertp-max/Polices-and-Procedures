@@ -107,9 +107,6 @@ export function MilestoneCard({
       className={`milestone-card ${phase.status === "Current" ? "is-current" : ""}`}
       aria-labelledby={`milestone-${phase.id}`}
     >
-      <div className="milestone-marker" aria-hidden="true">
-        <span>{index + 1}</span>
-      </div>
       <div className="milestone-content">
         <header>
           <div>

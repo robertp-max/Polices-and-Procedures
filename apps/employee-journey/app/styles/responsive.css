@@ -288,20 +288,6 @@
     text-align: left;
   }
 
-  .timeline-list::before {
-    left: 17px;
-  }
-
-  .milestone-card {
-    grid-template-columns: 36px minmax(0, 1fr);
-    gap: 9px;
-  }
-
-  .milestone-marker span {
-    width: 36px;
-    height: 36px;
-    font-size: 0.75rem;
-  }
 
   .history-panel article {
     grid-template-columns: 42px minmax(0, 1fr);
