@@ -1055,37 +1055,107 @@ const WORKFLOW_DOMAINS: Record<string, string> = {
   RM: "Risk Management",
 };
 
-function getMandatedWorkflowAssignments(): TrainingAssignment[] {
-  return MANDATED_WORKFLOW_SOURCE.split("\n").map((line) => {
-    const [id, title] = line.split("|");
-    const prefix = id.slice(0, 2);
-    const domain = WORKFLOW_DOMAINS[prefix] ?? "Workflow";
+// ── Canonical workflow library (166 approved operational workflows) ───────────
+export interface WorkflowLibraryItem {
+  id: string;
+  title: string;
+  domain: string;
+}
 
-    return {
-      id,
-      title,
-      whyAssigned: "Mandated workflow library item from the approved all-workflows source set.",
-      audience: "Assigned employees and leaders with workflow responsibility",
-      dueDate: "Required workflow library",
-      duration: "Reference / practice",
-      status: "Required now",
-      progress: id === "CL-WF-26" ? "0 of 6 stages complete" : "Not started",
-      prerequisite: "Role assignment and applicable workflow ownership",
-      validation:
-        id === "CL-WF-26"
-          ? "Complete the six-stage training simulation; no operational workflow state is changed"
-          : "Review workflow controls, required evidence, owner, cadence, and escalation path",
-      category: "Workflows",
-      action: id === "CL-WF-26" ? "Start simulation" : "View workflow requirement",
-      href: id === "CL-WF-26" ? "/journey/training/cl-wf-26" : undefined,
-      available: true,
-      workflowDomain: domain,
-      relationshipNote:
-        id === "CL-WF-26"
-          ? "Monthly feeder audit -> Quarterly QA-WF-03 review"
-          : `${domain} mandated workflow`,
-    };
-  });
+export const WORKFLOW_LIBRARY: WorkflowLibraryItem[] = MANDATED_WORKFLOW_SOURCE.split("\n")
+  .map((line) => {
+    const [id, title] = line.split("|");
+    return { id: id.trim(), title: (title ?? "").trim(), domain: WORKFLOW_DOMAINS[id.slice(0, 2)] ?? "Workflow" };
+  })
+  .filter((w) => w.id.length > 0);
+
+/** Canonical operational-workflow count. CL-WF-26 is NOT in this register — it is a
+ * training simulation (TRAIN-CL-WF-26), so the canonical count stays 166. */
+export const WORKFLOW_LIBRARY_COUNT = WORKFLOW_LIBRARY.length;
+
+export function getWorkflowById(id: string): WorkflowLibraryItem | undefined {
+  return WORKFLOW_LIBRARY.find((w) => w.id === id);
+}
+
+/** Featured training simulation — a training-namespace item that TEACHES the monthly
+ * clinical feeder-audit workflow; it is not a canonical operational workflow id. */
+export const FEATURED_WORKFLOW_SIMULATION = {
+  id: "TRAIN-CL-WF-26",
+  title: "Clinical Feeder Audit — Six-Stage Simulation",
+  teaches: "Monthly clinical feeder audit that feeds the quarterly QA-WF-03 QAPI review.",
+  href: "/journey/training/cl-wf-26",
+} as const;
+
+/** First-pass approved role→domain assignment matrix (domain-level, not title-inferred).
+ * A role's own domains are its REQUIRED workflows; other domains are reference-only /
+ * browse. Roles not listed (general office/driver) have an UNRESOLVED required set
+ * (REVIEW_REQUIRED) — they are NOT auto-assigned the enterprise library. */
+const ROLE_WORKFLOW_DOMAINS: Record<string, string[]> = {
+  RN: ["Clinical"],
+  LVN: ["Clinical"],
+  HHA: ["Clinical"],
+  PT: ["Clinical"],
+  PTA: ["Clinical"],
+  OT: ["Clinical"],
+  COTA: ["Clinical"],
+  SLP: ["Clinical"],
+  MSW: ["Clinical"],
+  DON: ["Clinical", "QAPI", "Compliance", "Governance"],
+  ADM: ["Governance", "Operations", "Compliance", "Finance"],
+};
+
+export function assignedWorkflowsForPersona(persona: Persona): WorkflowLibraryItem[] {
+  const role = asJourneyRole(persona.roleCode);
+  const domains = role ? ROLE_WORKFLOW_DOMAINS[role] ?? [] : [];
+  if (domains.length === 0) return [];
+  return WORKFLOW_LIBRARY.filter((w) => domains.includes(w.domain));
+}
+
+/** Role-aware workflow training cards: the featured simulation (all employees) + only
+ * the persona's role-applicable canonical workflows (never all 166). Every card has a
+ * real primary action target — no toast-only fake actions. */
+function getMandatedWorkflowAssignments(persona: Persona): TrainingAssignment[] {
+  const featured: TrainingAssignment = {
+    id: FEATURED_WORKFLOW_SIMULATION.id,
+    title: FEATURED_WORKFLOW_SIMULATION.title,
+    whyAssigned:
+      "Featured training simulation. It teaches a clinical workflow but is NOT part of the 166-workflow canonical operational register.",
+    audience: "All employees — training simulation",
+    dueDate: "Featured simulation",
+    duration: "6-stage simulation",
+    status: "Required now",
+    progress: "0 of 6 stages complete",
+    prerequisite: "None",
+    validation:
+      "Complete the six-stage gated training simulation; no operational workflow state is changed.",
+    category: "Workflows",
+    action: "Launch simulation",
+    href: FEATURED_WORKFLOW_SIMULATION.href,
+    available: true,
+    workflowDomain: "Clinical (training)",
+    relationshipNote: "Teaches the monthly clinical feeder audit → quarterly QA-WF-03 review handoff.",
+  };
+
+  const assigned: TrainingAssignment[] = assignedWorkflowsForPersona(persona).map((w) => ({
+    id: w.id,
+    title: w.title,
+    whyAssigned: `Role-applicable ${w.domain} workflow for the ${persona.role} pathway (domain-level assignment matrix — first pass).`,
+    audience: `${w.domain} workflow owners`,
+    dueDate: "Per workflow cadence",
+    duration: "Reference / practice",
+    status: "Required now",
+    progress: "Not started",
+    prerequisite: "Role assignment and applicable workflow ownership",
+    validation: "Open the workflow detail: controls, required evidence, owner, cadence, escalation.",
+    category: "Workflows",
+    action: "Open workflow detail",
+    href: `/journey/workflows/${w.id}`,
+    available: true,
+    workflowDomain: w.domain,
+    relationshipNote: `${w.domain} mandated workflow`,
+  }));
+
+  return [featured, ...assigned];
 }
 
 export function getTrainingAssignments(persona: Persona): TrainingAssignment[] {
@@ -1096,7 +1166,7 @@ export function getTrainingAssignments(persona: Persona): TrainingAssignment[] {
     .map((mod) => buildModuleTrainingCard(mod, persona, roleCodes))
     .sort((a, b) => a.id.localeCompare(b.id));
 
-  return [...moduleCards, ...policyQuizCourseCards(persona), ...getMandatedWorkflowAssignments(), annualSummaryCard(persona), drillSummaryCard(persona)];
+  return [...moduleCards, ...policyQuizCourseCards(persona), ...getMandatedWorkflowAssignments(persona), annualSummaryCard(persona), drillSummaryCard(persona)];
 }
 
 export type PolicyAssignment = {

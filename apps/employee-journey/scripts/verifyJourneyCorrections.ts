@@ -18,6 +18,14 @@ import {
 } from '../app/journey/_data/annualRequirements';
 import { getMainAppOrigin, resolveMainAppHref } from '../app/journey/_lib/mainAppUrl';
 import { getOigSamStatus, getRoleOversight } from '../app/journey/_data/supervisedVisitation';
+import {
+  WORKFLOW_LIBRARY,
+  WORKFLOW_LIBRARY_COUNT,
+  FEATURED_WORKFLOW_SIMULATION,
+  assignedWorkflowsForPersona,
+  getTrainingAssignments,
+  getPersona,
+} from '../app/journey/_data/fixtures';
 
 let failures = 0;
 function check(name: string, cond: boolean, detail = '') {
@@ -96,6 +104,28 @@ check('ANN-006 residual return-demo obligation is retained as a role-specific ca
   hhaReq.roleSpecific.some((i) => i.moduleId === 'ANN-006' && !!i.residualNote));
 check('every partial residual carries a residual obligation string',
   ANNUAL_PARTIAL_RESIDUALS.every((r) => r.residual.length > 0));
+
+console.log('Mandated workflow library (§2/§3/§5)');
+check('canonical workflow count = 166', WORKFLOW_LIBRARY_COUNT === 166, `got ${WORKFLOW_LIBRARY_COUNT}`);
+check('CL-WF-26 is NOT a canonical workflow (training-namespaced instead)',
+  !WORKFLOW_LIBRARY.some((w) => w.id === 'CL-WF-26'));
+check('featured simulation is training-namespaced (TRAIN-CL-WF-26)',
+  FEATURED_WORKFLOW_SIMULATION.id === 'TRAIN-CL-WF-26');
+const officeWf = getTrainingAssignments(getPersona('jamie-office')).filter((a) => a.category === 'Workflows');
+check('general office employee is NOT assigned the enterprise library (only the featured sim)',
+  officeWf.length === 1 && officeWf[0].id === 'TRAIN-CL-WF-26', `got ${officeWf.length} workflow cards`);
+const rnWf = getTrainingAssignments(getPersona('taylor-rn')).filter((a) => a.category === 'Workflows');
+check('RN workflow set is role-scoped (featured + Clinical only), not all 166',
+  rnWf.length > 1 && rnWf.length < WORKFLOW_LIBRARY_COUNT &&
+  rnWf.filter((a) => a.id !== 'TRAIN-CL-WF-26').every((a) => a.workflowDomain === 'Clinical'));
+check('every workflow card has a real primary action href (no toast-only)',
+  rnWf.every((a) => typeof a.href === 'string' && a.href.length > 0) &&
+  officeWf.every((a) => typeof a.href === 'string' && a.href.length > 0));
+check('assigned workflow cards link to a real detail/simulation route',
+  rnWf.every((a) => a.href!.startsWith('/journey/workflows/') || a.href === FEATURED_WORKFLOW_SIMULATION.href));
+check('ADM gets governance/ops/compliance/finance domains (not clinical)',
+  assignedWorkflowsForPersona(getPersona('riley-administrator')).every((w) =>
+    ['Governance', 'Operations', 'Compliance', 'Finance'].includes(w.domain)));
 
 console.log('');
 if (failures > 0) {
