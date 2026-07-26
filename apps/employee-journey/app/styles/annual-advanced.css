@@ -240,31 +240,53 @@
   color: var(--muted-strong);
 }
 
+/* Compact segmented filter — one section shown at a time (no endless scroll).
+   Single non-wrapping row that scrolls horizontally if it overflows; sticky. */
 .annual-section-nav {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
   margin: 0 0 14px;
+  padding-bottom: 4px;
+  overflow-x: auto;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--canvas);
 }
 
 .annual-section-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  flex: 0 0 auto;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: #fff;
   box-shadow: var(--shadow-sm);
   padding: 7px 14px;
   color: var(--teal-deep);
+  font: inherit;
   font-size: 0.8125rem;
   font-weight: 700;
   text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 .annual-section-link:hover {
   border-color: var(--border-strong);
   background: var(--surface-teal);
+}
+
+.annual-section-link.is-active {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+
+.annual-section-link.is-active > svg {
+  color: #fff;
 }
 
 .annual-section-link > svg {

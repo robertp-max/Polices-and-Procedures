@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -179,6 +179,11 @@ export function AnnualWorkspace() {
 
   const visibleSections = SECTIONS.filter((s) => s.show(v));
   const hasAny = v.summary.length > 0;
+  const firstSectionId = visibleSections[0]?.id ?? "achc";
+  const [active, setActive] = useState<string>(firstSectionId);
+  // Fall back to the first visible section if the persona changed and `active`
+  // no longer exists for this role.
+  const activeId = visibleSections.some((s) => s.id === active) ? active : firstSectionId;
 
   return (
     <div className="workspace annual-workspace">
@@ -208,14 +213,21 @@ export function AnnualWorkspace() {
             ))}
           </div>
 
-          <nav className="annual-section-nav" aria-label="Jump to requirement section">
+          <div className="annual-section-nav" role="tablist" aria-label="Requirement section">
             {visibleSections.map((s) => (
-              <a key={s.id} href={`#annual-${s.id}`} className="annual-section-link">
+              <button
+                key={s.id}
+                type="button"
+                role="tab"
+                aria-selected={activeId === s.id}
+                className={`annual-section-link${activeId === s.id ? " is-active" : ""}`}
+                onClick={() => setActive(s.id)}
+              >
                 <s.icon aria-hidden="true" />
                 {s.label}
-              </a>
+              </button>
             ))}
-          </nav>
+          </div>
 
           <div className="truth-note" role="note">
             <Info aria-hidden="true" />
@@ -231,7 +243,7 @@ export function AnnualWorkspace() {
       )}
 
       {/* ACHC Clinical Bundle */}
-      {v.achc.assignedToRole ? (
+      {activeId === "achc" && v.achc.assignedToRole ? (
         <section id="annual-achc" className="annual-section">
           <SectionHeader
             icon={Stethoscope}
@@ -262,7 +274,7 @@ export function AnnualWorkspace() {
       ) : null}
 
       {/* Advanced Training */}
-      {v.advanced.length ? (
+      {activeId === "advanced" && v.advanced.length ? (
         <section id="annual-advanced" className="annual-section">
           <SectionHeader
             icon={GraduationCap}
@@ -311,7 +323,7 @@ export function AnnualWorkspace() {
       ) : null}
 
       {/* Role-Specific */}
-      {v.roleSpecific.length ? (
+      {activeId === "role-specific" && v.roleSpecific.length ? (
         <section id="annual-role-specific" className="annual-section">
           <SectionHeader
             icon={Layers}
@@ -327,7 +339,7 @@ export function AnnualWorkspace() {
       ) : null}
 
       {/* HHA In-Service Hours */}
-      {v.hhaInService ? (
+      {activeId === "hha-hours" && v.hhaInService ? (
         <section id="annual-hha-hours" className="annual-section">
           <SectionHeader
             icon={CalendarClock}
@@ -348,7 +360,7 @@ export function AnnualWorkspace() {
       ) : null}
 
       {/* Drills / Live */}
-      {v.drills.length ? (
+      {activeId === "drills" && v.drills.length ? (
         <section id="annual-drills" className="annual-section">
           <SectionHeader
             icon={Siren}
@@ -383,7 +395,7 @@ export function AnnualWorkspace() {
       ) : null}
 
       {/* Policy Updates */}
-      {v.policyUpdates.length ? (
+      {activeId === "policy-updates" && v.policyUpdates.length ? (
         <section id="annual-policy-updates" className="annual-section">
           <SectionHeader
             icon={FileText}
@@ -414,6 +426,7 @@ export function AnnualWorkspace() {
       ) : null}
 
       {/* Credentials & Renewals → Documents */}
+      {activeId === "credentials" ? (
       <section id="annual-credentials" className="annual-section">
         <SectionHeader
           icon={BadgeCheck}
@@ -429,8 +442,10 @@ export function AnnualWorkspace() {
           <ArrowRight aria-hidden="true" />
         </Link>
       </section>
+      ) : null}
 
       {/* Performance Review → Performance */}
+      {activeId === "performance" ? (
       <section id="annual-performance" className="annual-section">
         <SectionHeader
           icon={ClipboardCheck}
@@ -446,9 +461,10 @@ export function AnnualWorkspace() {
           <ArrowRight aria-hidden="true" />
         </Link>
       </section>
+      ) : null}
 
       {/* Competency lives in its own workspace (§5.3) — link, not a tab. */}
-      {v.competencyCount > 0 ? (
+      {activeId === "role-specific" && v.competencyCount > 0 ? (
         <div className="truth-note" role="note">
           <ClipboardCheck aria-hidden="true" />
           <p>
