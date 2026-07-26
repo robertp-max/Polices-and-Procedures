@@ -22,11 +22,14 @@ import {
   WORKFLOW_LIBRARY,
   WORKFLOW_LIBRARY_COUNT,
   FEATURED_WORKFLOW_SIMULATION,
-  assignedWorkflowsForPersona,
   getTrainingAssignments,
   getPersona,
 } from '../app/journey/_data/fixtures';
 import { CL_WF_26_DEFINITION, validateStage, completionPreview } from '../app/journey/_data/workflowTraining';
+import {
+  PERSONA_WORKFLOW_REFERENCES,
+  getPersonaWorkflowReferences,
+} from '../app/journey/_generated/personaWorkflowMap.generated';
 
 let failures = 0;
 function check(name: string, cond: boolean, detail = '') {
@@ -115,29 +118,36 @@ check('ANN-006 residual return-demo obligation is retained as a role-specific ca
 check('every partial residual carries a residual obligation string',
   ANNUAL_PARTIAL_RESIDUALS.every((r) => r.residual.length > 0));
 
-console.log('Mandated workflow library (§2/§3/§4/§5)');
+console.log('Workflow catalog + role-filtered references (§4/§10/§11/§14)');
 check('workflow catalog generated from canonical registry (206 workflows)', WORKFLOW_LIBRARY_COUNT === 206, `got ${WORKFLOW_LIBRARY_COUNT}`);
 check('CL-WF-26 IS a canonical workflow in the registry-backed catalog',
   WORKFLOW_LIBRARY.some((w) => w.id === 'CL-WF-26'));
-check('featured simulation is training-namespaced and teaches canonical CL-WF-26',
+check('featured simulation is a training-namespaced prototype teaching canonical CL-WF-26',
   FEATURED_WORKFLOW_SIMULATION.id === 'TRAIN-CL-WF-26' && FEATURED_WORKFLOW_SIMULATION.teaches_workflow_id === 'CL-WF-26');
 check('all 10 workflow domains present in the catalog',
   new Set(WORKFLOW_LIBRARY.map((w) => w.domain)).size === 10);
-const officeWf = getTrainingAssignments(getPersona('jamie-office')).filter((a) => a.category === 'Workflows');
-check('general office employee is NOT assigned the enterprise library (only the featured sim)',
-  officeWf.length === 1 && officeWf[0].id === 'TRAIN-CL-WF-26', `got ${officeWf.length} workflow cards`);
-const rnWf = getTrainingAssignments(getPersona('taylor-rn')).filter((a) => a.category === 'Workflows');
-check('RN workflow set is role-scoped (featured + Clinical only), not all 166',
-  rnWf.length > 1 && rnWf.length < WORKFLOW_LIBRARY_COUNT &&
-  rnWf.filter((a) => a.id !== 'TRAIN-CL-WF-26').every((a) => a.workflowDomain === 'Clinical'));
-check('every workflow card has a real primary action href (no toast-only)',
-  rnWf.every((a) => typeof a.href === 'string' && a.href.length > 0) &&
-  officeWf.every((a) => typeof a.href === 'string' && a.href.length > 0));
-check('assigned workflow cards link to a real detail/simulation route',
-  rnWf.every((a) => a.href!.startsWith('/journey/workflows/') || a.href === FEATURED_WORKFLOW_SIMULATION.href));
-check('ADM gets governance/ops/compliance/finance domains (not clinical)',
-  assignedWorkflowsForPersona(getPersona('riley-administrator')).every((w) =>
-    ['Governance', 'Operations', 'Compliance', 'Finance'].includes(w.domain)));
+// §10: workflows are NOT required training — no workflow cards in the Training assignment list.
+check('no workflow cards appear in Training assignments (references, not required training)',
+  getTrainingAssignments(getPersona('taylor-rn')).every((a) => a.category !== 'Workflows') &&
+  getTrainingAssignments(getPersona('jamie-office')).every((a) => a.category !== 'Workflows'));
+// §3/§11: no persona receives the whole enterprise library as references.
+const rnRefs = getPersonaWorkflowReferences('RN');
+check('RN references are a bounded, typed subset (not all 206)',
+  rnRefs.length > 0 && rnRefs.length < WORKFLOW_LIBRARY_COUNT &&
+  rnRefs.every((r) => ['core', 'conditional', 'awareness', 'leadership'].includes(r.referenceType)));
+const officeRefs = getPersonaWorkflowReferences('GAO');
+check('general/office references are bounded (universal set), not the whole library',
+  officeRefs.length > 0 && officeRefs.length < 40);
+const catalogIds = new Set(WORKFLOW_LIBRARY.map((w) => w.id));
+check('every persona reference id resolves to a real catalog workflow',
+  Object.values(PERSONA_WORKFLOW_REFERENCES).every((list) => list.every((r) => catalogIds.has(r.workflowId))));
+// §14: no GB persona; governance-only workflows never referenced.
+check('no GB persona exists in the reference map', !('GB' in PERSONA_WORKFLOW_REFERENCES));
+const GOV_ONLY = new Set(['GV-WF-01', 'GV-WF-02', 'GV-WF-13', 'GV-WF-14']);
+check('governance-only GV-WF-01/02/13/14 are never referenced for any persona',
+  Object.values(PERSONA_WORKFLOW_REFERENCES).every((list) => list.every((r) => !GOV_ONLY.has(r.workflowId))));
+check('ADM references include leadership-type references',
+  getPersonaWorkflowReferences('ADM').some((r) => r.referenceType === 'leadership'));
 
 console.log('CL-WF-26 gated simulation (§7)');
 {

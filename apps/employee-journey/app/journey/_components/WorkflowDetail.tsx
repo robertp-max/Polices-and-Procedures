@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { ArrowLeft, Info, Workflow } from "lucide-react";
-import { getWorkflowById, assignedWorkflowsForPersona } from "../_data/fixtures";
+import { getWorkflowById } from "../_data/fixtures";
 import { getWorkflowCatalogItem } from "../_generated/workflowCatalog.generated";
+import { getPersonaWorkflowReferences } from "../_generated/personaWorkflowMap.generated";
 import { usePreview } from "./PreviewContext";
 import { PageHeader } from "./shared";
 
@@ -23,18 +24,23 @@ export function WorkflowDetail({ workflowId }: { workflowId: string }) {
     );
   }
 
-  const isAssigned = assignedWorkflowsForPersona(persona).some((w) => w.id === wf.id);
+  const personaRef = getPersonaWorkflowReferences(persona.roleCode).find((r) => r.workflowId === wf.id);
+  const REF_LABEL: Record<string, string> = {
+    core: "Core reference", conditional: "Conditional reference", awareness: "Awareness", leadership: "Leadership reference",
+  };
+  const refLabel = personaRef ? REF_LABEL[personaRef.referenceType] : "Not in your role set";
+  const isAssigned = !!personaRef;
 
   return (
     <div className="workspace">
-      <PageHeader eyebrow={`WORKFLOW · ${wf.domain.toUpperCase()}`} title={`${wf.id} — ${wf.title}`} description={`Domain: ${wf.domain}. ${isAssigned ? "This workflow is in your role's required set." : "Reference only for your role — browse, not assigned."}`} />
+      <PageHeader eyebrow={`WORKFLOW · ${wf.domain.toUpperCase()}`} title={`${wf.id} — ${wf.title}`} description={`Domain: ${wf.domain}. ${isAssigned ? `${refLabel} for your role — a reference to the process, not scored training.` : "Not in your role's reference set — browsable for awareness only."}${personaRef?.scopeNote ? " " + personaRef.scopeNote : ""}`} />
 
       <div className="wf-detail-crumb">
         <Link className="text-link" href={withPersona("/journey/workflows")}>
           <ArrowLeft aria-hidden="true" /> Workflow library
         </Link>
-        <span className={`status-badge ${isAssigned ? "status-complete" : "status-waiting"}`}>
-          {isAssigned ? "Assigned to your role" : "Reference only"}
+        <span className={`status-badge ${isAssigned ? "status-in-progress" : "status-waiting"}`}>
+          {refLabel}
         </span>
       </div>
 

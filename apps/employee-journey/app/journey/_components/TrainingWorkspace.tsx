@@ -22,7 +22,6 @@ const filters: TabOption<TrainingFilter>[] = [
   { id: "Annual", label: "Annual" },
   { id: "Policy quiz", label: "Policy quiz" },
   { id: "Competency", label: "Competency" },
-  { id: "Workflows", label: "Workflows" },
   { id: "Drill / live", label: "Drill / live" },
   { id: "Completed", label: "Completed" },
 ];

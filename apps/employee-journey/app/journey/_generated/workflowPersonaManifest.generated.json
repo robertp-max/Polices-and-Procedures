@@ -1,0 +1,21 @@
+{
+  "note": "AUTO-GENERATED",
+  "generatedAt": "GENERATED_AT_BUILD",
+  "personaCount": 12,
+  "totalReferences": 494,
+  "perPersonaCounts": {
+    "RN": 36,
+    "LVN": 28,
+    "HHA": 19,
+    "PT": 26,
+    "PTA": 24,
+    "OT": 26,
+    "COTA": 24,
+    "SLP": 26,
+    "MSW": 25,
+    "DON": 64,
+    "ADM": 128,
+    "GENERAL": 28
+  },
+  "unresolved": []
+}
