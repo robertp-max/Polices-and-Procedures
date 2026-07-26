@@ -1,85 +1,52 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowRight,
-  BarChart3,
-  CheckCircle2,
-  ClipboardCheck,
-  FileSearch,
-  ListChecks,
-  ShieldCheck,
-  Signature,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Circle, Lock } from "lucide-react";
 import { usePreview } from "../../../_components/PreviewContext";
+import { CareIndeedBrand } from "../../../_components/CareIndeedBrand";
+import {
+  CL_WF_26_DEFINITION as DEF,
+  completionPreview,
+  validateStage,
+  type WorkflowFieldValue,
+  type WorkflowStageStatus,
+} from "../../../_data/workflowTraining";
 
-const stages = [
-  {
-    id: "sample",
-    label: "Sample",
-    title: "Select the monthly Plan of Care audit sample",
-    icon: ListChecks,
-    task: "Review the no-PHI episode fixture and choose a defensible active-episode sample.",
-    learnerWork: ["Confirm audit month", "Apply active-episode rule", "Document sample rationale"],
-    validation: "Sample rationale is complete before scoring opens.",
-  },
-  {
-    id: "score",
-    label: "Score",
-    title: "Score required Plan of Care audit points",
-    icon: ClipboardCheck,
-    task: "Mark the simulated charts against required Plan of Care review points.",
-    learnerWork: ["Plan of Care present", "Frequency aligns to order", "Visit notes support ordered care"],
-    validation: "Every sampled chart receives a scored result and note.",
-  },
-  {
-    id: "verify",
-    label: "Verify",
-    title: "Verify evidence before findings are trusted",
-    icon: FileSearch,
-    task: "Separate confirmed findings from items that need follow-up evidence.",
-    learnerWork: ["Check source evidence", "Flag missing support", "Avoid unsupported conclusions"],
-    validation: "Only verified findings advance to analysis.",
-  },
-  {
-    id: "analyze",
-    label: "Analyze",
-    title: "Identify trend, severity, and downstream QAPI impact",
-    icon: BarChart3,
-    task: "Read the simulated dashboard and decide whether the audit requires QAPI escalation.",
-    learnerWork: ["Compare prior month", "Identify recurring gap", "Name QAPI feed condition"],
-    validation: "Analysis names whether QA-WF-03 needs downstream feed.",
-  },
-  {
-    id: "correct",
-    label: "Correct",
-    title: "Draft corrective action without changing production records",
-    icon: ShieldCheck,
-    task: "Select an owner, due date, and evidence requirement for the training-only corrective action.",
-    learnerWork: ["Owner selected", "Due date selected", "Effectiveness check selected"],
-    validation: "Corrective action draft is complete in training state only.",
-  },
-  {
-    id: "sign-feed",
-    label: "Sign & Feed",
-    title: "Check signature readiness and QAPI feed",
-    icon: Signature,
-    task: "Confirm the packet can be reviewed, signed, and fed into the downstream quarterly QAPI workflow.",
-    learnerWork: ["Packet ready", "Signer sequence ready", "QA-WF-03 feed marked as downstream only"],
-    validation: "Learner understands this preview records no official completion.",
-  },
-];
+type ValueMap = Record<string, WorkflowFieldValue | undefined>;
 
 export function ClWf26Player() {
   const { withPersona, announce } = usePreview();
   const [active, setActive] = useState(0);
-  const stage = stages[active];
-  const Icon = stage.icon;
-  const completeCount = active + 1;
-  const percent = useMemo(() => Math.round((completeCount / stages.length) * 100), [completeCount]);
+  const [reviewMode, setReviewMode] = useState(false);
+  const [values, setValues] = useState<Record<string, ValueMap>>({});
+
+  const stage = DEF.stages[active];
+  const stageValues = values[stage.id] ?? {};
+
+  // Per-stage validation + overall completion (progress is real VALID count, not index).
+  const statuses = useMemo(() => {
+    const out: Record<string, WorkflowStageStatus> = {};
+    for (const s of DEF.stages) out[s.id] = validateStage(s, values[s.id] ?? {}).status;
+    return out;
+  }, [values]);
+  const completion = useMemo(() => completionPreview(DEF, statuses), [statuses]);
+  const currentValidation = validateStage(stage, stageValues);
+  const currentValid = currentValidation.status === "VALID";
+
+  // Furthest stage reachable when NOT in review mode: first incomplete stage.
+  const firstIncomplete = DEF.stages.findIndex((s) => statuses[s.id] !== "VALID");
+  const maxReachable = firstIncomplete === -1 ? DEF.stages.length - 1 : firstIncomplete;
+
+  function setField(fieldId: string, value: WorkflowFieldValue) {
+    setValues((prev) => ({ ...prev, [stage.id]: { ...(prev[stage.id] ?? {}), [fieldId]: value } }));
+  }
+  function toggleMulti(fieldId: string, option: string) {
+    const cur = (stageValues[fieldId] as string[] | undefined) ?? [];
+    setField(fieldId, cur.includes(option) ? cur.filter((v) => v !== option) : [...cur, option]);
+  }
+
+  const canAdvance = reviewMode || currentValid;
 
   return (
     <main className="workflow-player">
@@ -89,40 +56,45 @@ export function ClWf26Player() {
           Back to Training
         </Link>
         <div>
-          <img src="/assets/logo-careindeed-orange.png" alt="Care Indeed" />
-          <span>CL-WF-26 · Training simulation</span>
+          <CareIndeedBrand decorative compact />
+          <span>{DEF.id} · Training simulation</span>
         </div>
-        <p>Training-only preview · no official record is changed</p>
+        <Link href={withPersona("/journey/my-journey")} className="workflow-topbar-alt">
+          Back to My Journey
+        </Link>
       </header>
 
       <section className="workflow-player-hero" aria-labelledby="cl-wf-26-title">
         <div>
-          <p className="eyebrow">MONTHLY WORKFLOW TRAINING</p>
-          <h1 id="cl-wf-26-title">Plan of Care Audit Simulation</h1>
-          <p>
-            Practice the complete CL-WF-26 workflow as one simulation: select the sample,
-            score charts, verify evidence, analyze findings, draft corrective action, and
-            prepare the downstream QAPI feed.
-          </p>
+          <p className="eyebrow">MONTHLY WORKFLOW TRAINING · {DEF.id}</p>
+          <h1 id="cl-wf-26-title">{DEF.title}</h1>
+          <p>{DEF.teaches} Training-only preview — no official record is changed.</p>
+          <label className="workflow-review-toggle">
+            <input type="checkbox" checked={reviewMode} onChange={(e) => setReviewMode(e.target.checked)} />
+            Review mode (browse stages without completing gates)
+          </label>
         </div>
-        <div className="workflow-player-progress" aria-label={`${percent}% complete`}>
-          <strong>{percent}%</strong>
-          <span>{completeCount} of {stages.length} stages opened</span>
+        <div className="workflow-player-progress" aria-label={`${completion.percent}% complete`}>
+          <strong>{completion.percent}%</strong>
+          <span>{completion.validStages} of {completion.totalStages} stages complete</span>
         </div>
       </section>
 
       <section className="workflow-player-grid">
-        <nav className="workflow-stage-rail" aria-label="CL-WF-26 stages">
-          {stages.map((item, index) => {
-            const StageIcon = item.icon;
+        <nav className="workflow-stage-rail" aria-label={`${DEF.id} stages`}>
+          {DEF.stages.map((item, index) => {
+            const st = statuses[item.id];
+            const locked = !reviewMode && index > maxReachable;
             return (
               <button
                 type="button"
                 key={item.id}
-                className={index === active ? "is-active" : ""}
-                onClick={() => setActive(index)}
+                className={`${index === active ? "is-active" : ""} ${st === "VALID" ? "is-valid" : ""}`}
+                onClick={() => !locked && setActive(index)}
+                disabled={locked}
+                aria-current={index === active ? "step" : undefined}
               >
-                <StageIcon aria-hidden="true" />
+                {st === "VALID" ? <CheckCircle2 aria-hidden="true" /> : locked ? <Lock aria-hidden="true" /> : <Circle aria-hidden="true" />}
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 <strong>{item.label}</strong>
               </button>
@@ -132,54 +104,117 @@ export function ClWf26Player() {
 
         <article className="workflow-stage-panel">
           <div className="workflow-stage-kicker">
-            <Icon aria-hidden="true" />
-            Stage {String(active + 1).padStart(2, "0")}
+            Stage {String(active + 1).padStart(2, "0")} ·{" "}
+            <span className={`workflow-stage-status status-${statuses[stage.id].toLowerCase()}`}>
+              {statuses[stage.id].replace(/_/g, " ")}
+            </span>
           </div>
           <h2>{stage.title}</h2>
           <p>{stage.task}</p>
 
-          <div className="workflow-stage-workbench">
-            <section>
-              <h3>Learner work</h3>
-              <ul>
-                {stage.learnerWork.map((item) => (
-                  <li key={item}>
-                    <CheckCircle2 aria-hidden="true" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </section>
-            <section>
-              <h3>Validation gate</h3>
-              <p>{stage.validation}</p>
-              <small>Fixture: TRAIN-CL-WF-26-2026-05 · no PHI · no production mutation</small>
-            </section>
+          <form className="workflow-stage-form" onSubmit={(e) => e.preventDefault()}>
+            {stage.fields.map((f) => {
+              const v = stageValues[f.id];
+              return (
+                <div className="workflow-field" key={f.id}>
+                  <label className="workflow-field-label" htmlFor={`${stage.id}-${f.id}`}>
+                    {f.label}
+                    {f.required ? <span aria-hidden="true"> *</span> : null}
+                  </label>
+                  {f.help ? <p className="workflow-field-help">{f.help}</p> : null}
+
+                  {f.kind === "text" ? (
+                    <textarea
+                      id={`${stage.id}-${f.id}`}
+                      value={(v as string) ?? ""}
+                      onChange={(e) => setField(f.id, e.target.value)}
+                      rows={2}
+                    />
+                  ) : f.kind === "date" ? (
+                    <input
+                      id={`${stage.id}-${f.id}`}
+                      type="date"
+                      value={(v as string) ?? ""}
+                      onChange={(e) => setField(f.id, e.target.value)}
+                    />
+                  ) : f.kind === "select" ? (
+                    <select id={`${stage.id}-${f.id}`} value={(v as string) ?? ""} onChange={(e) => setField(f.id, e.target.value)}>
+                      <option value="">Choose…</option>
+                      {f.options!.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  ) : f.kind === "checkbox" ? (
+                    <label className="workflow-checkbox">
+                      <input
+                        id={`${stage.id}-${f.id}`}
+                        type="checkbox"
+                        checked={v === true}
+                        onChange={(e) => setField(f.id, e.target.checked)}
+                      />
+                      <span>Confirm</span>
+                    </label>
+                  ) : f.kind === "radiogroup" ? (
+                    <div className="workflow-radiogroup" role="radiogroup" aria-label={f.label}>
+                      {f.options!.map((o) => (
+                        <label key={o.value} className={(v as string) === o.value ? "is-selected" : ""}>
+                          <input type="radio" name={`${stage.id}-${f.id}`} checked={(v as string) === o.value} onChange={() => setField(f.id, o.value)} />
+                          {o.label}
+                        </label>
+                      ))}
+                    </div>
+                  ) : (
+                    /* multiselect */
+                    <div className="workflow-multiselect">
+                      {f.options!.map((o) => {
+                        const arr = (v as string[] | undefined) ?? [];
+                        return (
+                          <label key={o.value} className={arr.includes(o.value) ? "is-selected" : ""}>
+                            <input type="checkbox" checked={arr.includes(o.value)} onChange={() => toggleMulti(f.id, o.value)} />
+                            {o.label}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </form>
+
+          <div className={`workflow-gate ${currentValid ? "is-open" : "is-blocked"}`}>
+            {currentValid ? <CheckCircle2 aria-hidden="true" /> : <Lock aria-hidden="true" />}
+            <span>
+              {currentValid ? "Gate met — you can continue." : `Gate: ${stage.gate}`}
+            </span>
           </div>
+          <small className="workflow-fixture">Fixture: {DEF.fixture}</small>
 
           <footer>
-            <button
-              className="button button-secondary"
-              type="button"
-              disabled={active === 0}
-              onClick={() => setActive((value) => Math.max(0, value - 1))}
-            >
+            <button className="button button-secondary" type="button" disabled={active === 0} onClick={() => setActive((x) => Math.max(0, x - 1))}>
               Previous stage
             </button>
-            <button
-              className="button button-primary"
-              type="button"
-              onClick={() => {
-                if (active < stages.length - 1) {
-                  setActive((value) => value + 1);
-                  return;
-                }
-                announce("CL-WF-26 practice complete in preview mode. No official completion was recorded.");
-              }}
-            >
-              {active < stages.length - 1 ? "Continue training" : "Finish preview"}
-              <ArrowRight aria-hidden="true" />
-            </button>
+            {active < DEF.stages.length - 1 ? (
+              <button
+                className="button button-primary"
+                type="button"
+                disabled={!canAdvance}
+                onClick={() => setActive((x) => x + 1)}
+                title={canAdvance ? undefined : "Complete this stage's required inputs to continue"}
+              >
+                Continue training
+                <ArrowRight aria-hidden="true" />
+              </button>
+            ) : (
+              <button
+                className="button button-primary"
+                type="button"
+                disabled={!completion.allValid}
+                onClick={() => announce("CL-WF-26 simulation complete in preview mode. No official completion was recorded.")}
+                title={completion.allValid ? undefined : "All six stages must be completed first"}
+              >
+                Finish simulation
+                <ArrowRight aria-hidden="true" />
+              </button>
+            )}
           </footer>
         </article>
       </section>

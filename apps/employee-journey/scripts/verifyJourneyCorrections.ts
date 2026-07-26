@@ -26,6 +26,7 @@ import {
   getTrainingAssignments,
   getPersona,
 } from '../app/journey/_data/fixtures';
+import { CL_WF_26_DEFINITION, validateStage, completionPreview } from '../app/journey/_data/workflowTraining';
 
 let failures = 0;
 function check(name: string, cond: boolean, detail = '') {
@@ -126,6 +127,40 @@ check('assigned workflow cards link to a real detail/simulation route',
 check('ADM gets governance/ops/compliance/finance domains (not clinical)',
   assignedWorkflowsForPersona(getPersona('riley-administrator')).every((w) =>
     ['Governance', 'Operations', 'Compliance', 'Finance'].includes(w.domain)));
+
+console.log('CL-WF-26 gated simulation (§7)');
+{
+  const empty: Record<string, 'NOT_STARTED'> = {};
+  for (const s of CL_WF_26_DEFINITION.stages) empty[s.id] = 'NOT_STARTED';
+  const openedNothing = completionPreview(CL_WF_26_DEFINITION, empty as never);
+  check('opening stages without input yields 0% (cannot jump to 100%)', openedNothing.percent === 0 && openedNothing.allValid === false);
+
+  const last = CL_WF_26_DEFINITION.stages[CL_WF_26_DEFINITION.stages.length - 1];
+  check('final stage is NOT valid with no input (gate blocks advancement)',
+    validateStage(last, {}).status !== 'VALID');
+
+  // Fully satisfy every stage → then and only then allValid is true.
+  const filled: Record<string, Record<string, unknown>> = {};
+  for (const s of CL_WF_26_DEFINITION.stages) {
+    filled[s.id] = {};
+    for (const f of s.fields) {
+      filled[s.id][f.id] = f.kind === 'multiselect' ? [f.options![0].value]
+        : f.kind === 'checkbox' ? true
+        : f.kind === 'select' || f.kind === 'radiogroup' ? f.options![0].value
+        : 'x';
+    }
+  }
+  const allStatuses: Record<string, 'VALID'> = {} as never;
+  let allValidComputed = true;
+  for (const s of CL_WF_26_DEFINITION.stages) {
+    const st = validateStage(s, filled[s.id] as never).status;
+    (allStatuses as Record<string, string>)[s.id] = st;
+    if (st !== 'VALID') allValidComputed = false;
+  }
+  check('every stage becomes VALID only when its required inputs are satisfied', allValidComputed);
+  check('completion is 100% only when all six stages are VALID',
+    completionPreview(CL_WF_26_DEFINITION, allStatuses as never).allValid === true);
+}
 
 console.log('');
 if (failures > 0) {

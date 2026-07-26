@@ -960,3 +960,33 @@
   .wf-row { grid-template-columns: 1fr auto; gap: 4px 10px; }
   .wf-row-domain, .wf-row-tag { grid-column: 1 / -1; justify-self: start; }
 }
+
+/* ── CL-WF-26 gated simulation controls (§7) ── */
+.workflow-topbar-alt { font-size: 0.8125rem; color: var(--teal-deep); text-decoration: none; }
+.workflow-review-toggle { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 0.8125rem; color: var(--muted-strong); }
+.workflow-stage-status { font-weight: 800; text-transform: capitalize; }
+.workflow-stage-status.status-valid { color: var(--teal); }
+.workflow-stage-status.status-in_progress { color: var(--orange-deep); }
+.workflow-stage-status.status-not_started { color: var(--muted); }
+.workflow-stage-rail button.is-valid { border-color: var(--teal); }
+.workflow-stage-rail button:disabled { opacity: 0.5; cursor: not-allowed; }
+.workflow-stage-form { display: grid; gap: 16px; margin: 8px 0 14px; }
+.workflow-field { display: grid; gap: 6px; }
+.workflow-field-label { font-weight: 700; font-size: 0.875rem; color: var(--ink-strong); }
+.workflow-field-label span { color: var(--danger); }
+.workflow-field-help { margin: 0; font-size: 0.75rem; color: var(--muted); }
+.workflow-field textarea, .workflow-field select, .workflow-field input[type="date"] {
+  border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; font: inherit; font-size: 0.875rem; background: #fff; max-width: 480px;
+}
+.workflow-field textarea:focus, .workflow-field select:focus, .workflow-field input:focus { outline: 2px solid var(--focus); outline-offset: 1px; }
+.workflow-radiogroup, .workflow-multiselect { display: flex; flex-wrap: wrap; gap: 8px; }
+.workflow-radiogroup label, .workflow-multiselect label {
+  display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 10px; padding: 7px 12px; font-size: 0.8125rem; cursor: pointer; background: #fff;
+}
+.workflow-radiogroup label.is-selected, .workflow-multiselect label.is-selected { border-color: var(--teal); background: var(--surface-teal); color: var(--teal-deep); font-weight: 700; }
+.workflow-checkbox { display: inline-flex; align-items: center; gap: 8px; font-size: 0.875rem; }
+.workflow-gate { display: flex; align-items: center; gap: 8px; border-radius: 10px; padding: 10px 12px; font-size: 0.8125rem; font-weight: 700; margin-bottom: 8px; }
+.workflow-gate > svg { width: 16px; height: 16px; }
+.workflow-gate.is-open { background: #e8f7f0; color: var(--muted-strong); border: 1px solid rgba(0,121,112,0.3); }
+.workflow-gate.is-blocked { background: var(--orange-soft); color: var(--orange-deep); border: 1px solid rgba(209,87,26,0.32); }
+.workflow-fixture { display: block; color: var(--muted); font-size: 0.6875rem; margin-bottom: 12px; }
