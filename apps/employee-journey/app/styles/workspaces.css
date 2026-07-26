@@ -1212,3 +1212,76 @@
   transition: width 0.4s ease;
 }
 .training-progress.is-complete > div { background: #16a34a; }
+
+/* Performance — Gemini check-in timeline rail */
+.performance-timeline {
+  list-style: none;
+  margin: 0 0 1.5rem;
+  padding: 0.25rem 0;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+}
+.performance-timeline .perf-node {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 92px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+.performance-timeline .perf-node::before {
+  content: "";
+  position: absolute;
+  top: 15px;
+  left: -50%;
+  width: 100%;
+  border-top: 2px dotted var(--border, #d8dee6);
+  z-index: 0;
+}
+.performance-timeline .perf-node:first-child::before { display: none; }
+.performance-timeline .perf-node.is-done::before,
+.performance-timeline .perf-node.is-active::before {
+  border-top-color: var(--teal, #0d9488);
+  border-top-style: solid;
+}
+.perf-node-dot {
+  position: relative;
+  z-index: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 2px solid var(--border, #d8dee6);
+  background: var(--surface, #fff);
+  color: var(--ink-soft, #64748b);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.perf-node-dot:hover { transform: translateY(-1px); }
+.perf-node.is-done .perf-node-dot {
+  background: var(--teal, #0d9488);
+  border-color: var(--teal, #0d9488);
+  color: #fff;
+}
+.perf-node.is-active .perf-node-dot {
+  background: var(--orange, #ea580c);
+  border-color: var(--orange, #ea580c);
+  color: #fff;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--orange, #ea580c) 22%, transparent);
+}
+.perf-node-label {
+  font-size: 0.72rem;
+  line-height: 1.25;
+  color: var(--ink-soft, #64748b);
+  max-width: 88px;
+}
+.perf-node.is-active .perf-node-label {
+  color: var(--ink, #334155);
+  font-weight: 600;
+}

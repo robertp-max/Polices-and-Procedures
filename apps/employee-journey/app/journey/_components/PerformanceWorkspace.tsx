@@ -40,6 +40,7 @@ export function PerformanceWorkspace() {
         : "30-day check-in";
   const [active, setActive] = useState<PerformanceView>(initial);
   const item = fixtures.find((fixture) => fixture.type === active) ?? fixtures[0];
+  const activeIndex = views.findIndex((view) => view.id === active);
 
   return (
     <div className="workspace">
@@ -60,6 +61,25 @@ export function PerformanceWorkspace() {
           </p>
         </div>
       </div>
+
+      <ol className="performance-timeline" aria-label="Check-in and evaluation sequence">
+        {views.map((view, i) => {
+          const state = i < activeIndex ? "is-done" : i === activeIndex ? "is-active" : "is-future";
+          return (
+            <li key={view.id} className={`perf-node ${state}`}>
+              <button
+                type="button"
+                className="perf-node-dot"
+                onClick={() => setActive(view.id)}
+                aria-current={i === activeIndex ? "step" : undefined}
+              >
+                {i < activeIndex ? "✓" : i + 1}
+              </button>
+              <span className="perf-node-label">{view.label}</span>
+            </li>
+          );
+        })}
+      </ol>
 
       <WorkspaceTabs
         label="Performance views"
