@@ -7,6 +7,7 @@ import {
   getTrainingAssignments,
   type TrainingAssignment,
 } from "../_data/fixtures";
+import { isAdvancedTrainingRole } from "../_data/advancedTraining";
 import { usePreview } from "./PreviewContext";
 import { MainAppLink } from "./MainAppLink";
 import { PageHeader, RequirementCard } from "./shared";
@@ -68,17 +69,19 @@ export function TrainingWorkspace() {
       />
 
       <div className="training-links-row" aria-label="Related training workspaces">
-        <Link className="annual-link-card" href={withPersona("/journey/training/advanced")}>
-          <GraduationCap aria-hidden="true" />
-          <div>
-            <strong>Advanced training →</strong>
-            <span>
-              CMS-485, QAPI, OASIS-E2, Documentation Defensibility — advanced clinical/leadership
-              modules.
-            </span>
-          </div>
-          <ArrowRight aria-hidden="true" />
-        </Link>
+        {isAdvancedTrainingRole(persona.roleCode) ? (
+          <Link className="annual-link-card" href={withPersona("/journey/training/advanced")}>
+            <GraduationCap aria-hidden="true" />
+            <div>
+              <strong>Advanced training →</strong>
+              <span>
+                CMS-485, QAPI, OASIS-E2, Documentation Defensibility — four advanced modules for
+                your role.
+              </span>
+            </div>
+            <ArrowRight aria-hidden="true" />
+          </Link>
+        ) : null}
         <Link className="annual-link-card" href={withPersona("/journey/training/annual")}>
           <CalendarClock aria-hidden="true" />
           <div>

@@ -1,120 +1,98 @@
 "use client";
 
 import { useMemo } from "react";
-import { AlertTriangle, ArrowRight, LockKeyhole } from "lucide-react";
-import {
-  getAdvancedCollection,
-  formatDuration,
-} from "../_data/annualAdvancedCatalog";
+import Link from "next/link";
+import { ArrowLeft, ArrowRight, GraduationCap } from "lucide-react";
+import { getAdvancedTraining } from "../_data/advancedTraining";
+import { formatDuration } from "../_data/annualAdvancedCatalog";
 import { usePreview } from "./PreviewContext";
 import { MainAppLink } from "./MainAppLink";
-import { PageHeader, RequirementCard } from "./shared";
+import { PageHeader } from "./shared";
 
 export function AdvancedWorkspace() {
-  const { persona } = usePreview();
-  const modules = useMemo(() => getAdvancedCollection(persona.roleCode), [persona.roleCode]);
-  const assignedModules = modules.filter((m) => m.assignedToRole);
+  const { persona, withPersona } = usePreview();
+  const view = useMemo(() => getAdvancedTraining(persona.roleCode), [persona.roleCode]);
+
+  // Not one of the four Advanced-Training roles → no "Advanced" surface for this persona
+  // (no disabled / not-assigned tab). Route landing shows a brief redirect note only.
+  if (!view.visible) {
+    return (
+      <div className="workspace">
+        <PageHeader
+          eyebrow="ADVANCED TRAINING"
+          title="Advanced Training is not part of your role's plan"
+          description="Advanced Training is scoped to PT, RN, DON, and Administrator. Any advanced clinical content that applies to your role appears under Role-Specific or Annual & Recurring requirements."
+        />
+        <Link className="text-link" href={withPersona("/journey/training")}>
+          <ArrowLeft aria-hidden="true" /> Back to Training
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <div className="workspace">
+    <div className="workspace adv-workspace">
       <PageHeader
         eyebrow="ADVANCED TRAINING"
-        title="Advanced training collection"
-        description="Clinical-leadership-grade modules beyond the standard onboarding and annual plan: CMS-485 plans of care, QAPI, OASIS-E2, and documentation defensibility."
+        title="Four advanced modules for your role"
+        description={view.scopeNote}
       />
 
-      {!assignedModules.length ? (
-        <div className="not-assigned-card">
-          <strong>Not assigned to this role</strong>
-          <p>
-            No advanced-training module is currently scoped to this persona&apos;s role. The
-            collection floor is PT, RN, DON, and ADM, with OASIS-E2 and documentation modules
-            reaching additional canonical roles per module.
-          </p>
-        </div>
-      ) : (
-        <section className="requirement-grid">
-          {assignedModules.map((item) => {
-            const showAdmScopeWarning = item.scopeWarning && persona.roleCode === "ADM";
-            const fields = [
-              {
-                label: "Canonical audience",
-                value: item.canonical.join(", "),
-              },
-              {
-                label: "Owner-added audience",
-                value: item.ownerAdded.length ? item.ownerAdded.join(", ") : "None",
-              },
-              { label: "Method", value: item.method },
-              { label: "Duration", value: formatDuration(item.durationMinutes) },
-              {
-                label: "Pass threshold",
-                value:
-                  item.passThreshold != null
-                    ? `${Math.round(item.passThreshold * 100)}%`
-                    : "Not scored",
-              },
-              {
-                label: "Policy basis",
-                value: item.policyRefs.length ? (
-                  <span className="policy-chip-row">
-                    {item.policyRefs.map((ref) => (
-                      <span className="policy-chip" key={ref.id} title={ref.title ?? undefined}>
-                        {ref.id}
-                      </span>
-                    ))}
-                  </span>
-                ) : (
-                  "None on file"
-                ),
-              },
-            ];
+      <div className="adv-meta-row">
+        <span><strong>{view.role}</strong> · onboarding / role development</span>
+        <span>{view.modules.length} modules{view.totalMinutes != null ? ` · ~${Math.round(view.totalMinutes / 60 * 10) / 10}h` : ""}</span>
+      </div>
 
-            return (
-              <div key={item.moduleId}>
-                {showAdmScopeWarning ? (
-                  <div className="scope-warning-banner scope-warning-banner-stacked">
-                    <AlertTriangle aria-hidden="true" />
-                    <div>
-                      <strong>Leadership / oversight assignment</strong>
-                      <p>
-                        Completing this module is for administrative oversight only — it does not
-                        expand ADM&apos;s clinical scope of practice.
-                      </p>
-                    </div>
-                  </div>
-                ) : null}
-                <RequirementCard
-                  id={item.moduleId}
-                  title={item.title}
-                  status={item.playerAvailable ? "Required now" : "Unavailable"}
-                  className={!item.playerAvailable ? "is-unavailable" : ""}
-                  fields={fields}
-                  footer={
-                    item.playerAvailable && item.launchRef ? (
-                      <MainAppLink className="button button-primary" path={item.launchRef}>
-                        Launch module
-                        <ArrowRight aria-hidden="true" />
-                      </MainAppLink>
-                    ) : (
-                      <div className="unavailable-action">
-                        <LockKeyhole aria-hidden="true" />
-                        <div>
-                          <strong>Content not yet available</strong>
-                          <span>No employee action required</span>
-                        </div>
-                        <button type="button" disabled>
-                          Unavailable
-                        </button>
-                      </div>
-                    )
-                  }
-                />
-              </div>
-            );
-          })}
-        </section>
-      )}
+      <div className="requirement-grid">
+        {view.modules.map((m) => (
+          <article className="adv-card" key={m.id}>
+            <header>
+              <h2>{m.title}</h2>
+              <span className={`status-badge ${m.playerAvailable ? "status-complete" : "status-waiting"}`}>
+                {m.playerAvailable ? "Available" : "Player review required"}
+              </span>
+            </header>
+            <p className="adv-purpose">{m.purpose}</p>
+            <div className="adv-firstline">
+              <span>{formatDuration(m.durationMinutes)}</span>
+              {m.playerAvailable && m.launchRef ? (
+                <MainAppLink className="button button-primary" path={m.launchRef}>
+                  Launch module
+                  <ArrowRight aria-hidden="true" />
+                </MainAppLink>
+              ) : (
+                <span className="adv-review">Player mapping review required</span>
+              )}
+            </div>
+            <details className="adv-details">
+              <summary>Details</summary>
+              <dl>
+                <div><dt>Module ID</dt><dd>{m.id}</dd></div>
+                <div><dt>Prerequisites</dt><dd>{m.prerequisites.length ? m.prerequisites.join(", ") : "None"}</dd></div>
+                <div><dt>Pass threshold</dt><dd>{m.passThreshold != null ? `${Math.round(m.passThreshold * 100)}%` : "Not scored"}</dd></div>
+                <div>
+                  <dt>Policy basis</dt>
+                  <dd>
+                    {m.policyRefs.length ? (
+                      <span className="policy-chip-row">
+                        {m.policyRefs.map((r) => <span className="policy-chip" key={r.id} title={r.title ?? undefined}>{r.id}</span>)}
+                      </span>
+                    ) : "None on file"}
+                  </dd>
+                </div>
+                <div><dt>Scope note</dt><dd>{m.scopeNote}</dd></div>
+              </dl>
+            </details>
+          </article>
+        ))}
+      </div>
+
+      <p className="no-action-copy adv-context-note">
+        <GraduationCap aria-hidden="true" /> The same four modules also appear as a recurring
+        assignment on your{" "}
+        <Link className="text-link" href={withPersona("/journey/training/annual")}>Annual &amp; Recurring</Link>{" "}
+        plan — same canonical module, different assignment context.
+      </p>
     </div>
   );
 }

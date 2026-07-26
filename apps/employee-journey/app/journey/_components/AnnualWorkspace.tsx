@@ -284,19 +284,19 @@ export function AnnualWorkspace() {
           <div className="requirement-grid">
             {v.advanced.map((a) => (
               <RequirementCard
-                key={a.moduleId}
-                id={a.moduleId}
+                key={a.id}
+                id={a.id}
                 title={a.title}
                 status={a.playerAvailable ? "Required now" : "In development"}
                 className={!a.playerAvailable ? "is-pending" : ""}
                 fields={[
+                  { label: "Purpose", value: a.purpose },
                   { label: "Duration", value: formatDuration(a.durationMinutes) },
                   {
                     label: "Pass threshold",
                     value: a.passThreshold != null ? `${Math.round(a.passThreshold * 100)}%` : "Not scored",
                   },
-                  { label: "Effective audience", value: a.effective.join(", ") },
-                  ...(a.scopeWarning && roleCode === "ADM"
+                  ...(roleCode === "ADM"
                     ? [{ label: "ADM scope", value: "Leadership / oversight learning — does not expand clinical scope or authorize OASIS assessment." }]
                     : []),
                 ]}

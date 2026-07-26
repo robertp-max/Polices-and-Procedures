@@ -22,16 +22,15 @@
 
 import {
   getAchcBundle,
-  getAdvancedCollection,
   getEmergencyDrills,
   getPolicyUpdates,
   getAnnualCompetency,
   asJourneyRole,
   type AchcBundle,
   type AnnualModuleView,
-  type AdvancedModuleView,
   type PolicyUpdateView,
 } from "./annualAdvancedCatalog";
+import { getAdvancedTraining, type AdvancedTrainingCard } from "./advancedTraining";
 import {
   ANNUAL_ASSIGNMENT_MAP,
 } from "../_generated/annualAssignmentMap.generated";
@@ -253,7 +252,7 @@ export interface AnnualRequirementsView {
   achc: AchcBundle;
   achcAlsoSatisfies: Record<string, string[]>; // achc moduleId → ANN ids fully absorbed (EQUIVALENT)
   achcAlsoSatisfiesLabels: Record<string, string[]>; // achc moduleId → employee-friendly phrases
-  advanced: AdvancedModuleView[];
+  advanced: AdvancedTrainingCard[]; // strict 4-module Advanced projection (PT/RN/DON/ADM only)
   roleSpecific: AnnualRequirementItem[];
   competencyCount: number; // stays in the Competencies workspace; count only
   drills: AnnualModuleView[];
@@ -269,8 +268,8 @@ export function getAnnualRequirements(roleCode: string): AnnualRequirementsView 
   const isClinical = role !== null && role !== "ADM"; // ADM is leadership; ACHC only via secondary
 
   const achc = getAchcBundle(roleCode);
-  const advancedAll = getAdvancedCollection(roleCode);
-  const advanced = advancedAll.filter((a) => a.assignedToRole);
+  // Advanced = the strict 4-module projection (only PT/RN/DON/ADM; empty otherwise).
+  const advanced = getAdvancedTraining(roleCode).modules;
   const roleSpecific = roleSpecificItems(roleCode);
   const competency = getAnnualCompetency(roleCode);
   const drills = getEmergencyDrills(roleCode);

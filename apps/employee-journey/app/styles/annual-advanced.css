@@ -614,3 +614,20 @@ a.policy-update-row:hover {
   color: var(--teal-deep);
   border-color: var(--border-strong);
 }
+
+/* ── Advanced Training strict projection (§7 UI) ── */
+.adv-meta-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; margin: 0 0 14px; font-size: 0.8125rem; color: var(--muted-strong); }
+.adv-card { border: 1px solid var(--border); border-radius: var(--radius-card); background: #fff; box-shadow: var(--shadow-sm); padding: 16px; display: grid; gap: 8px; }
+.adv-card header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.adv-card h2 { margin: 0; font-size: 1rem; color: var(--teal-deep); }
+.adv-purpose { margin: 0; font-size: 0.8125rem; color: var(--ink); }
+.adv-firstline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 2px; }
+.adv-firstline > span:first-child { font-size: 0.8125rem; color: var(--muted-strong); font-weight: 700; }
+.adv-review { font-size: 0.75rem; color: var(--orange-deep); font-weight: 700; }
+.adv-details { border-top: 1px solid var(--border); padding-top: 8px; }
+.adv-details summary { cursor: pointer; font-size: 0.8125rem; font-weight: 700; color: var(--teal-deep); }
+.adv-details dl { margin: 8px 0 0; display: grid; gap: 6px; }
+.adv-details dt { font-size: 0.6875rem; text-transform: uppercase; color: var(--muted); }
+.adv-details dd { margin: 1px 0 0; font-size: 0.8125rem; color: var(--ink); }
+.adv-context-note { display: flex; align-items: center; gap: 6px; margin-top: 16px; }
+.adv-context-note > svg { width: 16px; height: 16px; color: var(--teal); }

@@ -8,7 +8,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { ACHC_CLINICAL_AUDIENCE, ANNUAL_ASSIGNMENT_MAP } from '../app/journey/_generated/annualAssignmentMap.generated';
-import { ADVANCED_ASSIGNMENT_MAP, ADVANCED_PORTAL_MINIMUM_AUDIENCE } from '../app/journey/_generated/advancedAssignmentMap.generated';
+import { getAdvancedTraining, ADVANCED_TRAINING_MODULE_IDS } from '../app/journey/_data/advancedTraining';
 import { getModulePlayerEntry } from '../app/journey/_generated/modulePlayerMap.generated';
 import {
   getAnnualRequirements,
@@ -48,12 +48,21 @@ check("no ACHC module leaks roles:'ALL' (M04/M07/M09 fixed)",
 check('every ACHC module has a canonical player (no false Unavailable)',
   achcEntries.every((e) => getModulePlayerEntry(e.moduleId)?.playerAvailable === true));
 
-console.log('Advanced audience floor (§7)');
-check('PT/RN/DON/ADM floor present', ADVANCED_PORTAL_MINIMUM_AUDIENCE.join(',') === 'PT,RN,DON,ADM');
-check('every advanced module effective audience ⊇ floor',
-  ADVANCED_ASSIGNMENT_MAP.every((m) => ADVANCED_PORTAL_MINIMUM_AUDIENCE.every((r) => m.effective.includes(r))));
-check('canonical roles never dropped from effective',
-  ADVANCED_ASSIGNMENT_MAP.every((m) => m.canonical.every((r) => m.effective.includes(r))));
+console.log('Advanced Training strict projection (§3/§4)');
+const ADV_ROLES = ['PT', 'RN', 'DON', 'ADM'];
+const ADV_HIDDEN = ['LVN', 'HHA', 'PTA', 'OT', 'COTA', 'SLP', 'MSW', 'GAO'];
+const ADV_EXPECTED = ['cms-485', 'qapi', 'oasis-e2-soc', 'documentation-matters'];
+check('ADVANCED_TRAINING_MODULE_IDS is exactly the 4 modules in order',
+  ADVANCED_TRAINING_MODULE_IDS.join(',') === ADV_EXPECTED.join(','));
+check('Advanced visible with exactly 4 ordered modules for PT/RN/DON/ADM',
+  ADV_ROLES.every((r) => {
+    const v = getAdvancedTraining(r);
+    return v.visible && v.modules.length === 4 && v.modules.map((m) => m.id).join(',') === ADV_EXPECTED.join(',');
+  }));
+check('Advanced hidden (0 modules) for all non-Advanced roles',
+  ADV_HIDDEN.every((r) => { const v = getAdvancedTraining(r); return !v.visible && v.modules.length === 0; }));
+check('every Advanced card launches a canonical player route',
+  getAdvancedTraining('RN').modules.every((m) => m.playerAvailable && !!m.launchRef));
 
 console.log('Dedup (§5)');
 const rnReq = getAnnualRequirements('RN');
