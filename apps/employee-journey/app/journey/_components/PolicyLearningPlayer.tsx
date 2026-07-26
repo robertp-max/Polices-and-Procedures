@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -127,55 +127,28 @@ function UnlockedPolicyPlayer({ data }: { data: PolicyPlayerViewModel }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [readSections, setReadSections] = useState<Set<string>>(new Set());
   const [attested, setAttested] = useState(false);
-  const sectionRefs = useRef<Map<string, HTMLElement>>(new Map());
-  const observerRef = useRef<IntersectionObserver | null>(null);
+  // Show ONE section at a time (no endless all-sections scroll). Explicit
+  // acknowledge marks a section read — passive scroll/visibility does not.
+  const [activeSectionState, setActiveSectionState] = useState<string | null>(null);
 
   const sections = data.policy?.sections ?? [];
   const totalSections = sections.length;
+  const activeSectionId = activeSectionState ?? sections[0]?.sectionId ?? "";
+  const activeIndex = Math.max(0, sections.findIndex((s) => s.sectionId === activeSectionId));
+  const activeSection = sections[activeIndex];
+  const nextSection = sections[activeIndex + 1];
   const progressPct =
     totalSections > 0 ? Math.round((readSections.size / totalSections) * 100) : 0;
 
-  useEffect(() => {
-    if (activeTab !== "read" || typeof IntersectionObserver === "undefined") {
-      return;
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        setReadSections((prev) => {
-          let changed = false;
-          const next = new Set(prev);
-          for (const entry of entries) {
-            const id = entry.target.getAttribute("data-section-id");
-            if (id && entry.isIntersecting && !next.has(id)) {
-              next.add(id);
-              changed = true;
-            }
-          }
-          return changed ? next : prev;
-        });
-      },
-      { threshold: 0.3 },
-    );
-    observerRef.current = observer;
-    sectionRefs.current.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [activeTab]);
-
-  function registerSectionRef(id: string, el: HTMLElement | null) {
-    if (!el) {
-      sectionRefs.current.delete(id);
-      return;
-    }
-    sectionRefs.current.set(id, el);
-    observerRef.current?.observe(el);
-  }
-
-  function scrollToSection(sectionId: string) {
+  function selectSection(sectionId: string) {
+    setActiveSectionState(sectionId);
     setActiveTab("read");
     setSheetOpen(false);
-    window.requestAnimationFrame(() => {
-      sectionRefs.current.get(sectionId)?.scrollIntoView({ block: "start" });
-    });
+  }
+  function acknowledgeAndAdvance() {
+    if (!activeSection) return;
+    setReadSections((prev) => new Set(prev).add(activeSection.sectionId));
+    if (nextSection) setActiveSectionState(nextSection.sectionId);
   }
 
   const currentIndex = TAB_ORDER.findIndex((t) => t.id === activeTab);
@@ -276,22 +249,27 @@ function UnlockedPolicyPlayer({ data }: { data: PolicyPlayerViewModel }) {
 
           <nav aria-label="Policy sections">
             <ol className="policy-toc-list">
-              {sections.map((section) => (
-                <li key={section.sectionId}>
-                  <button
-                    type="button"
-                    className={readSections.has(section.sectionId) ? "is-read" : ""}
-                    onClick={() => scrollToSection(section.sectionId)}
-                  >
-                    {readSections.has(section.sectionId) ? (
-                      <CheckCircle2 aria-hidden="true" />
-                    ) : (
-                      <span className="policy-toc-dot" aria-hidden="true" />
-                    )}
-                    <span>{cleanHeading(section.title)}</span>
-                  </button>
-                </li>
-              ))}
+              {sections.map((section) => {
+                const isRead = readSections.has(section.sectionId);
+                const isActive = section.sectionId === activeSectionId;
+                return (
+                  <li key={section.sectionId}>
+                    <button
+                      type="button"
+                      className={`${isRead ? "is-read" : ""}${isActive ? " is-active" : ""}`}
+                      aria-current={isActive ? "true" : undefined}
+                      onClick={() => selectSection(section.sectionId)}
+                    >
+                      {isRead ? (
+                        <CheckCircle2 aria-hidden="true" />
+                      ) : (
+                        <span className="policy-toc-dot" aria-hidden="true" />
+                      )}
+                      <span>{cleanHeading(section.title)}</span>
+                    </button>
+                  </li>
+                );
+              })}
             </ol>
           </nav>
         </aside>
@@ -314,19 +292,61 @@ function UnlockedPolicyPlayer({ data }: { data: PolicyPlayerViewModel }) {
             aria-labelledby={workspaceTabId(PANEL_ID, activeTab)}
             aria-label={activeLabel}
           >
-            {activeTab === "read" ? (
+            {activeTab === "read" && activeSection ? (
               <div className="policy-read-body">
-                {sections.map((section) => (
-                  <article
-                    key={section.sectionId}
-                    className="policy-section"
-                    data-section-id={section.sectionId}
-                    ref={(el) => registerSectionRef(section.sectionId, el)}
-                  >
-                    <h3>{cleanHeading(section.title)}</h3>
-                    <PolicyMarkdown text={section.text} />
-                  </article>
-                ))}
+                <article className="policy-section" key={activeSection.sectionId}>
+                  <p className="policy-section-eyebrow">
+                    Section {String(activeIndex + 1).padStart(2, "0")} of {totalSections}
+                  </p>
+                  <h3>{cleanHeading(activeSection.title)}</h3>
+                  <p className="policy-section-instruction">
+                    Read this section, then acknowledge that you understand it before the next
+                    section unlocks.
+                  </p>
+                  <PolicyMarkdown text={activeSection.text} />
+
+                  <div className="policy-section-ack">
+                    <label className="policy-ack-check">
+                      <input
+                        type="checkbox"
+                        checked={readSections.has(activeSection.sectionId)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setReadSections((prev) => new Set(prev).add(activeSection.sectionId));
+                          } else {
+                            setReadSections((prev) => {
+                              const next = new Set(prev);
+                              next.delete(activeSection.sectionId);
+                              return next;
+                            });
+                          }
+                        }}
+                      />
+                      <span>I have read and understood this section.</span>
+                    </label>
+                    {nextSection ? (
+                      <button
+                        type="button"
+                        className="button button-primary"
+                        disabled={!readSections.has(activeSection.sectionId)}
+                        onClick={acknowledgeAndAdvance}
+                      >
+                        Unlock next
+                        <ArrowRight aria-hidden="true" />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="button button-primary"
+                        disabled={!readSections.has(activeSection.sectionId)}
+                        onClick={() => nextTab && setActiveTab(nextTab.id)}
+                      >
+                        {data.quizRequired ? "Continue to knowledge check" : "Continue"}
+                        <ArrowRight aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
+                </article>
               </div>
             ) : null}
 

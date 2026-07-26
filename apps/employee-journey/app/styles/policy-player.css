@@ -69,12 +69,11 @@
 
 .policy-player-toc,
 .policy-player-side {
-  position: sticky;
-  top: 12px;
+  /* No per-column sticky/independent scroll — the whole player is one scroll
+     surface (fixed overlay). Columns flow with the page. */
   display: grid;
   gap: 16px;
-  max-height: calc(100dvh - 120px);
-  overflow-y: auto;
+  align-self: start;
 }
 
 .policy-toc-status,
@@ -667,4 +666,56 @@
   .policy-tab-panel {
     padding: 18px;
   }
+}
+
+/* ── Full-screen policy player: cover the portal chrome (hide main nav) ── */
+.policy-player {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  overflow-y: auto;
+  background: var(--canvas);
+  padding: 20px clamp(16px, 4vw, 48px) 64px;
+}
+
+/* Single-section reader elements */
+.policy-section-eyebrow {
+  margin: 0 0 4px;
+  font-family: var(--font-montserrat), Arial, sans-serif;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--orange-deep);
+  font-weight: 800;
+}
+.policy-section-instruction {
+  margin: 0 0 16px;
+  color: var(--muted-strong);
+  font-size: 0.9375rem;
+}
+.policy-section-ack {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.policy-ack-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--ink-strong);
+}
+.policy-ack-check input { width: 18px; height: 18px; accent-color: var(--teal); }
+
+.policy-toc-list button.is-active {
+  background: var(--surface-teal);
+  border-color: var(--border-strong);
+  color: var(--teal-deep);
+  font-weight: 700;
 }
