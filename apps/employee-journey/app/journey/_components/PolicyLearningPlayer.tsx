@@ -130,6 +130,7 @@ function UnlockedPolicyPlayer({ data }: { data: PolicyPlayerViewModel }) {
   // Show ONE section at a time (no endless all-sections scroll). Explicit
   // acknowledge marks a section read — passive scroll/visibility does not.
   const [activeSectionState, setActiveSectionState] = useState<string | null>(null);
+  const [layoutMode, setLayoutMode] = useState<"original" | "optimized">("original");
 
   const sections = data.policy?.sections ?? [];
   const totalSections = sections.length;
@@ -156,12 +157,32 @@ function UnlockedPolicyPlayer({ data }: { data: PolicyPlayerViewModel }) {
   const activeLabel = TAB_ORDER.find((t) => t.id === activeTab)?.label ?? "";
 
   return (
-    <div className="policy-player">
+    <div className={`policy-player${layoutMode === "optimized" ? " is-optimized" : ""}`}>
       <div className="policy-player-crumb">
         <Link className="text-link" href={withPersona("/journey/policies")}>
           <ArrowLeft aria-hidden="true" />
           Back to policy actions
         </Link>
+        <div className="policy-layout-toggle" role="tablist" aria-label="Reader layout">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={layoutMode === "original"}
+            className={layoutMode === "original" ? "is-active" : ""}
+            onClick={() => setLayoutMode("original")}
+          >
+            Original layout
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={layoutMode === "optimized"}
+            className={layoutMode === "optimized" ? "is-active" : ""}
+            onClick={() => setLayoutMode("optimized")}
+          >
+            Optimized vision
+          </button>
+        </div>
       </div>
 
       <header className="policy-player-header">
