@@ -1,0 +1,86 @@
+/* ═══════════════════════════════════════════════════════════════
+   theme-evolution.css — "Evolution" theme (independent layer).
+
+   Captures the Gemini unified-portal design language app-wide by overriding
+   the shared design tokens (and a few core surfaces) that every workspace
+   already consumes. Imported LAST in globals.css so it wins the cascade.
+
+   To disable the theme: remove the @import from globals.css. Nothing else
+   depends on this file.
+
+   Language: warm alabaster canvas, slate ink, brighter burnt-orange + forest
+   teal, larger rounded cards, clean flat elevation (replacing the older
+   neumorphic inset shadows), subtle card lift on hover.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Surfaces */
+  --canvas: #fdfdfc;              /* warm alabaster */
+  --surface: #ffffff;
+  --surface-soft: #f8fafc;        /* slate-50 */
+  --surface-teal: #f0fdfa;        /* teal-50 */
+  --surface-warm: #fff7ed;        /* orange-50 */
+
+  /* Ink */
+  --ink: #334155;                 /* slate-700 */
+  --ink-strong: #0f172a;          /* slate-900 */
+  --muted: #94a3b8;               /* slate-400 */
+  --muted-strong: #475569;        /* slate-600 */
+
+  /* Lines */
+  --border: #e5e7eb;
+  --border-strong: rgba(234, 88, 12, 0.28);
+
+  /* Brand */
+  --teal: #0d9488;
+  --teal-deep: #0f766e;
+  --teal-soft: #f0fdfa;
+  --orange: #ea580c;
+  --orange-deep: #c2410c;
+  --orange-soft: #fff7ed;
+  --gold: #d5c294;
+
+  /* Shape */
+  --radius-card: 28px;
+  --radius-control: 16px;
+
+  /* Clean, modern flat elevation (was heavy neumorphic inset). */
+  --shadow-sm: 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+  --shadow: 0 18px 38px -14px rgba(15, 23, 42, 0.10);
+  --shadow-lift: 0 26px 50px -14px rgba(15, 23, 42, 0.16);
+}
+
+/* Bolder, tighter workspace headings (Gemini "black" display weight). */
+.workspace .page-header h1,
+.page-header h1,
+.workspace h1 {
+  letter-spacing: -0.02em;
+}
+
+/* Elevation-aware cards: a subtle lift on hover, app-wide. */
+.requirement-card,
+.summary-card,
+.hb-quicklink,
+.annual-link-card,
+.wf-row,
+.hb-lifecycle-card {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.requirement-card:hover,
+.hb-quicklink:hover,
+.annual-link-card:hover,
+.hb-lifecycle-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lift);
+}
+
+/* Primary action: brighter burnt-orange with a soft brand glow. */
+.button-primary {
+  box-shadow: 0 10px 20px -6px rgba(234, 88, 12, 0.35);
+}
+
+/* Sidebar: keep the green rail but lean into the clean alabaster surface. */
+.desktop-sidebar {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(12px);
+}
