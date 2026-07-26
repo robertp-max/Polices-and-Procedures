@@ -1139,3 +1139,60 @@
 @media (max-width: 900px) {
   .home-dashboard { grid-template-columns: 1fr; }
 }
+
+/* ── Credential Vault: grid + dark Integrity Status panel (Gemini) ── */
+.document-vault {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 20px;
+  align-items: start;
+}
+.document-vault .document-grid { margin: 0; }
+.integrity-status {
+  position: sticky;
+  top: 12px;
+  border-radius: var(--radius-card);
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+.integrity-status h3 {
+  margin: 0 0 18px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--orange);
+}
+.integrity-metric span,
+.integrity-expiries span {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+.integrity-metric strong {
+  font-family: var(--font-montserrat), Arial, sans-serif;
+  font-size: 2.25rem;
+  font-weight: 800;
+  font-style: italic;
+}
+.integrity-metric strong em {
+  font-size: 0.8125rem;
+  font-style: normal;
+  font-weight: 500;
+  color: #64748b;
+}
+.integrity-divider { height: 1px; background: #1e293b; margin: 18px 0; }
+.integrity-expiries ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.integrity-expiries li { display: flex; align-items: center; gap: 10px; font-size: 0.8125rem; font-weight: 700; }
+.integrity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); flex: 0 0 auto; }
+.integrity-none { margin: 0; font-size: 0.8125rem; color: #94a3b8; }
+@media (max-width: 900px) {
+  .document-vault { grid-template-columns: 1fr; }
+  .integrity-status { position: static; }
+}

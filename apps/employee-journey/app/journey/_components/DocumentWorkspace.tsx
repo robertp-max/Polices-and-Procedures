@@ -45,6 +45,10 @@ export function DocumentWorkspace() {
             (document) => document.verificationStatus === filter.id,
           ).length,
   }));
+  const verifiedCount = documents.filter((d) => d.verificationStatus === "Current").length;
+  const criticalExpiries = documents.filter(
+    (d) => d.verificationStatus === "Expiring" || d.verificationStatus === "Action needed",
+  );
 
   return (
     <div className="workspace">
@@ -80,6 +84,7 @@ export function DocumentWorkspace() {
         panelId="documents-panel"
       />
 
+      <div className="document-vault">
       <section
         id="documents-panel"
         className="requirement-grid document-grid"
@@ -138,6 +143,31 @@ export function DocumentWorkspace() {
           />
         ))}
       </section>
+
+        <aside className="integrity-status" aria-label="Credential integrity status">
+          <h3>Integrity status</h3>
+          <div className="integrity-metric">
+            <span>Verified documents</span>
+            <strong>{verifiedCount}<em> / {documents.length}</em></strong>
+          </div>
+          <div className="integrity-divider" />
+          <div className="integrity-expiries">
+            <span>Critical expiries</span>
+            {criticalExpiries.length === 0 ? (
+              <p className="integrity-none">None — all current.</p>
+            ) : (
+              <ul>
+                {criticalExpiries.map((d) => (
+                  <li key={d.id}>
+                    <span className="integrity-dot" aria-hidden="true" />
+                    {d.name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </aside>
+      </div>
 
       <PreviewDrawer
         open={Boolean(selected)}
