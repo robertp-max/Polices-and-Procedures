@@ -783,3 +783,11 @@
 .policy-player.is-optimized .policy-read-body h3 {
   font-size: 1.375rem;
 }
+
+/* Optimized Vision: flat reading lane — no card chrome around the text (Gemini look). */
+.policy-player.is-optimized .policy-read-body {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+}
