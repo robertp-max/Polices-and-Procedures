@@ -146,6 +146,7 @@ describe('groupMode — a passing group score does not itself certify any indivi
     return {
       id: 'group-scoring-fixture', quarter: 'Q1', title: 't', subtitle: 's', estMinutes: 1, sourceCutoff: '2026-01-01',
       exhibits: [], decisionNodes: dimensionNodes,
+      packetConflictGroups: [],
       injects: [],
       surveyor: [{ id: 'SQ-1', prompt: 'p', options: [{ id: 'A', text: 'a' }], correctId: 'A', requiresEvidenceIds: [] }],
       transfers: [],

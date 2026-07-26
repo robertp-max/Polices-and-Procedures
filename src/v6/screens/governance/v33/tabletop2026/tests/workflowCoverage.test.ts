@@ -100,6 +100,7 @@ describe('workflowCoverage — unsupported activation is never counted as activa
     return {
       id: 'synthetic', quarter: 'Q1', title: 't', subtitle: 's', estMinutes: 1, sourceCutoff: '2026-01-01',
       exhibits: [], decisionNodes: nodes, injects: [], surveyor: [], transfers: [],
+      packetConflictGroups: [],
       requiredWorkflows, passScore: 950, passStandardNote: '',
     };
   }

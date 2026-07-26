@@ -49,6 +49,7 @@ import {
   GB_SUP_PHI_001,
   toExhibit,
 } from './qapi2026Supplemental';
+import { ANNUAL_PACKET_CONFLICT_GROUPS } from './packetConflictGroups';
 
 // ---------------------------------------------------------------------------
 // Reusable exhibit-face labels for non-recovered postures
@@ -1796,6 +1797,7 @@ export const ANNUAL_2026_CASE: CasePack = {
   sourceCutoff:
     '2026-12-31 (FY2026 close). Q1 and Q2 evidence is source-recovered and normalized. Q3 and Q4 remain normalization-pending in QAPI_2026 as of this case’s authoring (see EX-Q3-GROWTH-NOTE, EX-Q4-CLAIMS-NOTE, EX-ANNUAL-SUMMARY) and must never be treated as evidentiarily equivalent to recovered Q1/Q2 records — see DN-02 and DN-31.',
   exhibits: EXHIBITS,
+  packetConflictGroups: ANNUAL_PACKET_CONFLICT_GROUPS,
   decisionNodes: DECISION_NODES,
   injects: INJECTS,
   surveyor: SURVEYOR,

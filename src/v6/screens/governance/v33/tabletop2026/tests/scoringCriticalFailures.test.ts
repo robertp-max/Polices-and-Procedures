@@ -58,6 +58,7 @@ function makePack(quarter: CasePack['quarter']): CasePack {
   return {
     id: 'synthetic-scoring', quarter, title: 't', subtitle: 's', estMinutes: 1, sourceCutoff: '2026-01-01',
     exhibits: [], decisionNodes: DIMENSION_NODES,
+    packetConflictGroups: [],
     injects: [],
     surveyor: [{ id: 'SQ-1', prompt: 'p', options: [{ id: 'A', text: 'a' }], correctId: 'A', requiresEvidenceIds: [] }],
     transfers: [],

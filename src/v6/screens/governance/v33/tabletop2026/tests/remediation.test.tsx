@@ -105,4 +105,32 @@ describe('remediation — completing guided remediation never substitutes for a 
     expect(attempt1).not.toHaveProperty('passed');
     expect(attempt1).not.toHaveProperty('score');
   });
+
+  it('shifts source cutoffs with the exhibit timeline', () => {
+    const attempt = variant(Q1_CASE_PACK, 'learner-1', 'assign-1', 1);
+    const sourceExhibit = Q1_CASE_PACK.exhibits.find((exhibit) => exhibit.id === 'EX-Q1-016');
+    const variedExhibit = attempt.exhibits.find((exhibit) => exhibit.id === 'EX-Q1-016');
+    const daysBetween = (later: string, earlier: string) =>
+      (Date.parse(`${later}T00:00:00Z`) - Date.parse(`${earlier}T00:00:00Z`)) /
+      86_400_000;
+
+    expect(sourceExhibit).toBeDefined();
+    expect(variedExhibit).toBeDefined();
+    const exhibitOffset = daysBetween(
+      variedExhibit!.asOfDate,
+      sourceExhibit!.asOfDate,
+    );
+
+    expect(daysBetween(attempt.sourceCutoff, Q1_CASE_PACK.sourceCutoff)).toBe(
+      exhibitOffset,
+    );
+    attempt.packetConflictGroups.forEach((group, index) => {
+      expect(
+        daysBetween(
+          group.sourceCutoff,
+          Q1_CASE_PACK.packetConflictGroups[index].sourceCutoff,
+        ),
+      ).toBe(exhibitOffset);
+    });
+  });
 });

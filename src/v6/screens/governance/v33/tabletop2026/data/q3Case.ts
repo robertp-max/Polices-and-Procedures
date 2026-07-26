@@ -53,6 +53,7 @@ import {
   GB_SUP_SCOPE_001,
   toExhibit,
 } from './qapi2026Supplemental';
+import { Q3_PACKET_CONFLICT_GROUPS } from './packetConflictGroups';
 
 const MEETING_DATE = '2026-10-08';
 
@@ -1739,6 +1740,7 @@ export const Q3_2026_CASE: CasePack = {
   estMinutes: 105,
   sourceCutoff: MEETING_DATE,
   exhibits: EXHIBITS,
+  packetConflictGroups: Q3_PACKET_CONFLICT_GROUPS,
   decisionNodes: DECISION_NODES,
   injects: INJECTS,
   surveyor: SURVEYOR,

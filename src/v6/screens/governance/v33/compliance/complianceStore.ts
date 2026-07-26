@@ -42,12 +42,13 @@ export function readDraft(assignmentId: string): ComplianceDraft | null {
   return safeParse<ComplianceDraft>(window.localStorage.getItem(DRAFT_PREFIX + assignmentId));
 }
 
-export function writeDraft(draft: ComplianceDraft): void {
-  if (typeof window === 'undefined') return;
+export function writeDraft(draft: ComplianceDraft): boolean {
+  if (typeof window === 'undefined') return false;
   try {
     window.localStorage.setItem(DRAFT_PREFIX + draft.assignmentId, JSON.stringify(draft));
+    return true;
   } catch {
-    /* storage full / disabled — resume is best-effort only */
+    return false;
   }
 }
 

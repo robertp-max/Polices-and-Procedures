@@ -76,6 +76,25 @@ export interface Exhibit {
   details: string[];
 }
 
+export interface PacketConflictGroup {
+  id: string;
+  title: string;
+  plainLanguageQuestion: string;
+  exhibitIds: string[];
+  conflictingFields: Array<{
+    label: string;
+    values: Array<{
+      exhibitId: string;
+      value: string;
+    }>;
+  }>;
+  whyItMatters: string;
+  affectedMatterIds: string[];
+  workflowIds: GvWorkflowId[];
+  formIds: string[];
+  sourceCutoff: string;
+}
+
 // ---------------------------------------------------------------------------
 // Decision nodes (the facilitated rounds)
 // ---------------------------------------------------------------------------
@@ -216,6 +235,7 @@ export interface CasePack {
   /** ISO date/text: evidence dated after this cutoff must not be usable (see engine/sourceCutoff.ts). */
   sourceCutoff: string;
   exhibits: Exhibit[];
+  packetConflictGroups: PacketConflictGroup[];
   decisionNodes: DecisionNode[];
   injects: Inject[];
   surveyor: SurveyorQuestion[];

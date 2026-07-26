@@ -5,7 +5,7 @@
 // correctness (grading is defined by DecisionNode.options/modelAction, which
 // this module never rewrites): it reorders exhibits, deterministically
 // drops a seeded subset of decoy exhibits (varying the decoy mix), shifts
-// the exhibit timeline by a uniform day offset, and reorders the
+// the exhibit timeline and its cutoff anchors by a uniform day offset, and reorders the
 // independent injects / surveyor / transfer arrays. It intentionally does
 // NOT invent new denominators, motion clauses, or option text — those are
 // content decisions that belong to case authors. Authors who need literal
@@ -29,8 +29,11 @@ function shiftIsoDate(iso: string, dayOffset: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-function variantExhibits(exhibits: readonly Exhibit[], seedKey: string): Exhibit[] {
-  const dayOffset = Math.floor(seededRandom(hashString(`${seedKey}:timeline`))() * 6); // 0-5 day uniform shift
+function variantExhibits(
+  exhibits: readonly Exhibit[],
+  seedKey: string,
+  dayOffset: number,
+): Exhibit[] {
   const nonDecoy = exhibits.filter((e) => e.relevance !== 'decoy');
   const decoys = exhibits.filter((e) => e.relevance === 'decoy');
 
@@ -67,9 +70,17 @@ function variantTransfers(items: readonly TransferQuestion[], seedKey: string): 
  */
 export function variant(casePack: CasePack, learnerId: string, assignmentId: string, attemptNumber: number): CasePack {
   const seedKey = attemptSeedKey(casePack.id, learnerId, assignmentId, attemptNumber);
+  const dayOffset = Math.floor(
+    seededRandom(hashString(`${seedKey}:timeline`))() * 6,
+  );
   return {
     ...casePack,
-    exhibits: variantExhibits(casePack.exhibits, seedKey),
+    sourceCutoff: shiftIsoDate(casePack.sourceCutoff, dayOffset),
+    packetConflictGroups: casePack.packetConflictGroups.map((group) => ({
+      ...group,
+      sourceCutoff: shiftIsoDate(group.sourceCutoff, dayOffset),
+    })),
+    exhibits: variantExhibits(casePack.exhibits, seedKey, dayOffset),
     injects: variantInjects(casePack.injects, seedKey),
     surveyor: variantSurveyor(casePack.surveyor, seedKey),
     transfers: variantTransfers(casePack.transfers, seedKey),

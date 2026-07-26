@@ -28,6 +28,7 @@ import {
   Info,
   Landmark,
   LayoutGrid,
+  RotateCcw,
   Settings,
   TrendingUp,
   User,
@@ -43,7 +44,13 @@ import { Q4_CASE_PACK } from './data/q4Case';
 import { ANNUAL_2026_CASE } from './data/annualCase';
 
 import { DEFAULT_LEARNER_ID } from '../compliance/complianceCatalog';
-import { readDraft, getOfficialEvidence, subscribe, type ComplianceDraft } from '../compliance/complianceStore';
+import {
+  clearDraft,
+  readDraft,
+  getOfficialEvidence,
+  subscribe,
+  type ComplianceDraft,
+} from '../compliance/complianceStore';
 import {
   getDisconnectedNotice,
   isEvidenceServiceConnected,
@@ -146,6 +153,7 @@ function cutoffShortLabel(sourceCutoff: string): string {
 
 export default function TabletopHub({ onExit, onLaunch }: TabletopHubProps): React.ReactElement {
   const [, forceTick] = useState(0);
+  const [restartPackId, setRestartPackId] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = subscribe(() => forceTick((n) => n + 1));
@@ -335,9 +343,14 @@ export default function TabletopHub({ onExit, onLaunch }: TabletopHubProps): Rea
                       <button
                         type="button"
                         onClick={() => onLaunch(pack.id, 'solo')}
-                        aria-label={`Start ${pack.title} as a solo attempt`}
+                        aria-label={
+                          attempt?.draft
+                            ? `Resume ${pack.title} solo draft`
+                            : `Start ${pack.title} as a solo attempt`
+                        }
                       >
-                        <User size={13} aria-hidden="true" /> Solo
+                        <User size={13} aria-hidden="true" />{' '}
+                        {attempt?.draft ? 'Resume' : 'Solo'}
                       </button>
                       <button
                         type="button"
@@ -348,7 +361,45 @@ export default function TabletopHub({ onExit, onLaunch }: TabletopHubProps): Rea
                         <Users size={13} aria-hidden="true" /> Facilitated Group
                       </button>
                     </div>
-                    <small>Ready to Start</small>
+                    {attempt?.draft && restartPackId !== pack.id && (
+                      <button
+                        type="button"
+                        className="bs-hub-start-over"
+                        onClick={() => setRestartPackId(pack.id)}
+                      >
+                        <RotateCcw size={12} aria-hidden="true" />
+                        Start over
+                      </button>
+                    )}
+                    {attempt?.draft && restartPackId === pack.id && (
+                      <div
+                        className="bs-hub-restart-confirm"
+                        role="group"
+                        aria-label={`Start ${pack.title} over`}
+                      >
+                        <span>Discard this saved draft?</span>
+                        <button
+                          type="button"
+                          className="outline"
+                          autoFocus
+                          onClick={() => setRestartPackId(null)}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="danger"
+                          onClick={() => {
+                            clearDraft(attempt.assignmentId);
+                            setRestartPackId(null);
+                            onLaunch(pack.id, 'solo');
+                          }}
+                        >
+                          Start over
+                        </button>
+                      </div>
+                    )}
+                    <small>{attempt?.draft ? 'Draft saved' : 'Ready to start'}</small>
                   </footer>
                 </article>
               );
@@ -541,6 +592,21 @@ const HUB_STYLE = `
   color: var(--bs-forest); background: transparent; border-color: var(--bs-forest);
 }
 .bs-pack-card > footer.bs-hub-pack-footer button.outline:hover { background: var(--bs-canvas); }
+.bs-pack-card > footer.bs-hub-pack-footer .bs-hub-start-over {
+  align-self: flex-start; gap: 5px; padding: 3px 0; color: var(--bs-muted);
+  border: 0; background: transparent; font-size: 9.5px; font-weight: 600;
+}
+.bs-pack-card > footer.bs-hub-pack-footer .bs-hub-start-over:hover { color: var(--bs-forest); }
+.bs-hub-restart-confirm {
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+  padding-top: 8px; border-top: 1px solid var(--bs-line);
+}
+.bs-hub-restart-confirm span { margin-right: auto; color: var(--bs-ink); font-size: 9.5px; font-weight: 600; }
+.bs-hub-restart-confirm button { min-height: 32px; padding: 5px 9px; font-size: 9px; }
+.bs-pack-card > footer.bs-hub-pack-footer .bs-hub-restart-confirm button.danger {
+  color: #fff; border-color: #8f332b; background: #8f332b;
+}
+.bs-pack-card > footer.bs-hub-pack-footer .bs-hub-restart-confirm button.danger:hover { background: #70271f; }
 .bs-hub-pack-footer small { align-self: flex-end; }
 
 .bs-hub-right-rail { position: sticky; top: 14px; display: flex; flex-direction: column; gap: 14px; }

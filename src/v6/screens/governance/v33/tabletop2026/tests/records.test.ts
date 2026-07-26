@@ -3,7 +3,7 @@
 // return + forms; a disconnected evidence service => no official completion;
 // a local draft/resume is never treated as official.
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ANNUAL_2026_CASE } from '../data/annualCase';
 import type { DecisionNode } from '../engine/caseTypes';
 import {
@@ -140,5 +140,25 @@ describe('records — a local draft/resume state is never treated as official co
     clearDraft(assignmentId);
     expect(hasLocalDraft(assignmentId)).toBe(false);
     expect(getOfficialEvidence().some((r) => r.assignmentId === assignmentId)).toBe(false);
+  });
+
+  it('reports a failed local draft write so the UI can offer Retry', () => {
+    const setItem = vi
+      .spyOn(Storage.prototype, 'setItem')
+      .mockImplementationOnce(() => {
+        throw new Error('storage unavailable');
+      });
+
+    expect(
+      writeDraft({
+        assignmentId,
+        resume: {},
+        attemptNumber: 1,
+        progressPercent: 0,
+        submittedLocally: false,
+        updatedAt: '2026-01-01T00:00:00Z',
+      }),
+    ).toBe(false);
+    setItem.mockRestore();
   });
 });

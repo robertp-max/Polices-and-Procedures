@@ -29,6 +29,7 @@ import {
   SUPPLEMENTAL_SOURCE_LABEL,
   toExhibit,
 } from './qapi2026Supplemental';
+import { Q2_PACKET_CONFLICT_GROUPS } from './packetConflictGroups';
 import { QAPI_2026 } from './qapi2026Normalized';
 
 const MATTER_ID = 'q2-2026-packet-trust';
@@ -1254,6 +1255,7 @@ export const Q2_2026_CASE: CasePack = {
   estMinutes: 105,
   sourceCutoff: '2026-07-10',
   exhibits: EXHIBITS,
+  packetConflictGroups: Q2_PACKET_CONFLICT_GROUPS,
   decisionNodes: DECISION_NODES,
   injects: INJECTS,
   surveyor: SURVEYOR,

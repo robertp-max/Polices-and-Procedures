@@ -65,6 +65,7 @@ import {
   SUPPLEMENTAL_SOURCE_LABEL,
   toExhibit,
 } from './qapi2026Supplemental';
+import { Q4_PACKET_CONFLICT_GROUPS } from './packetConflictGroups';
 
 // ---------------------------------------------------------------------------
 // Exhibits — the Q4 2026 Board Book
@@ -1244,6 +1245,7 @@ export const Q4_CASE_PACK: CasePack = {
   estMinutes: 105,
   sourceCutoff: '2026-12-31',
   exhibits: EXHIBITS,
+  packetConflictGroups: Q4_PACKET_CONFLICT_GROUPS,
   decisionNodes: DECISION_NODES,
   injects: INJECTS,
   surveyor: SURVEYOR,
