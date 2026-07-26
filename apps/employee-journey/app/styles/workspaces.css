@@ -1012,3 +1012,130 @@
 .wf-duty-grid label.is-selected { background: var(--teal); border-color: var(--teal); color: #fff; }
 .wf-refnote { display: flex; align-items: center; gap: 6px; margin-top: 14px; }
 .wf-refnote > svg { width: 15px; height: 15px; color: var(--teal); }
+
+/* ── Home dashboard: Journey Roadmap stepper + Onboarding Velocity donut ── */
+.home-dashboard {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+  gap: 20px;
+  margin-bottom: 8px;
+}
+.home-roadmap,
+.home-velocity {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  padding: 22px 24px;
+}
+.home-roadmap header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.home-roadmap header h2 { margin: 0; font-size: 1.0625rem; }
+.home-roadmap header span {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.roadmap-steps {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 0;
+  padding: 0 0 4px;
+  list-style: none;
+  overflow-x: auto;
+}
+.roadmap-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1 0 auto;
+  min-width: 84px;
+  position: relative;
+  text-align: center;
+}
+.roadmap-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 21px;
+  left: calc(50% + 22px);
+  right: calc(-50% + 22px);
+  height: 2px;
+  background: var(--border);
+}
+.roadmap-step.is-done::after { background: var(--teal); }
+.roadmap-dot {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.9375rem;
+  background: var(--surface-soft);
+  color: var(--muted);
+  border: 2px solid var(--border);
+}
+.roadmap-step.is-done .roadmap-dot { background: var(--teal); color: #fff; border-color: var(--teal); }
+.roadmap-step.is-active .roadmap-dot { background: #fff; color: var(--orange-deep); border: 3px solid var(--orange); }
+.roadmap-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--muted-strong);
+  line-height: 1.2;
+  max-width: 92px;
+}
+.roadmap-step.is-active .roadmap-label { color: var(--orange-deep); }
+
+.home-velocity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.home-velocity h2 { margin: 0 0 14px; font-size: 1.0625rem; align-self: flex-start; }
+.velocity-ring {
+  --pct: 0;
+  display: grid;
+  place-items: center;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: conic-gradient(var(--orange) calc(var(--pct) * 1%), var(--surface-soft) 0);
+}
+.velocity-ring::before {
+  content: "";
+  grid-area: 1 / 1;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: #fff;
+}
+.velocity-ring strong {
+  grid-area: 1 / 1;
+  z-index: 1;
+  font-family: var(--font-montserrat), Arial, sans-serif;
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: var(--ink-strong);
+}
+.velocity-caption {
+  margin-top: 12px;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+@media (max-width: 900px) {
+  .home-dashboard { grid-template-columns: 1fr; }
+}

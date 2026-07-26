@@ -43,6 +43,9 @@ export function EmployeeHome() {
   const documentAttentionCount = documents.filter(
     (item) => item.verificationStatus === "Action needed" || item.verificationStatus === "Expiring",
   ).length;
+  const phaseCount = journey.length;
+  const velocityPct =
+    phaseCount > 1 ? Math.round((persona.stageIndex / (phaseCount - 1)) * 100) : 0;
 
   return (
     <div className="workspace home-workspace">
@@ -57,6 +60,38 @@ export function EmployeeHome() {
           <strong>{persona.stage}</strong>
           <small>{currentPhase.date}</small>
         </div>
+      </section>
+
+      <section className="home-dashboard" aria-label="Journey roadmap and velocity">
+        <article className="home-roadmap">
+          <header>
+            <h2>Journey Roadmap</h2>
+            <span>Phase {persona.stageIndex + 1} of {phaseCount}</span>
+          </header>
+          <ol className="roadmap-steps">
+            {journey.map((phase, i) => {
+              const state = i < persona.stageIndex ? "is-done" : i === persona.stageIndex ? "is-active" : "is-future";
+              return (
+                <li key={phase.id} className={`roadmap-step ${state}`}>
+                  <span className="roadmap-dot">{i < persona.stageIndex ? "✓" : i + 1}</span>
+                  <span className="roadmap-label">{phase.label}</span>
+                </li>
+              );
+            })}
+          </ol>
+        </article>
+        <article className="home-velocity">
+          <h2>Onboarding Velocity</h2>
+          <div
+            className="velocity-ring"
+            style={{ ["--pct" as string]: String(velocityPct) }}
+            role="img"
+            aria-label={`Onboarding progress ${velocityPct} percent`}
+          >
+            <strong>{velocityPct}%</strong>
+          </div>
+          <span className="velocity-caption">Onboarding progress</span>
+        </article>
       </section>
 
       <section className="continue-card" aria-labelledby="continue-title">
