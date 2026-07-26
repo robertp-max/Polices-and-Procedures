@@ -45,3 +45,12 @@ Reported **PASS**.
 - No backend changes were made or tested (none were in scope).
 - No new workflow-training player was built or tested (none was in scope — the CL-WF-26 simulation is an existing prototype, unchanged by this task).
 - No deploy was performed or verified as part of this task.
+
+## Browser sweep executed (UPDATE)
+
+Ran an in-app Browser-pane responsive sweep across key routes at 320px and 1440px for RN /
+HHA / office personas. Result: no page-level horizontal overflow after fixing one real bug —
+`policy-player.css` was orphaned (never imported), so the policy reader's premium layout +
+≤980px responsive rules never loaded (320px overflow). Fixed (commit 60357ac7) and re-verified.
+The full automated 6-viewport + 200%-zoom + keyboard + screen-reader matrix across all personas
+remains a committed-Playwright follow-up (blocked by a pre-existing npm ci lockfile mismatch).
