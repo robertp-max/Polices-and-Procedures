@@ -106,12 +106,14 @@ check('ANN-006 residual return-demo obligation is retained as a role-specific ca
 check('every partial residual carries a residual obligation string',
   ANNUAL_PARTIAL_RESIDUALS.every((r) => r.residual.length > 0));
 
-console.log('Mandated workflow library (§2/§3/§5)');
-check('canonical workflow count = 166', WORKFLOW_LIBRARY_COUNT === 166, `got ${WORKFLOW_LIBRARY_COUNT}`);
-check('CL-WF-26 is NOT a canonical workflow (training-namespaced instead)',
-  !WORKFLOW_LIBRARY.some((w) => w.id === 'CL-WF-26'));
-check('featured simulation is training-namespaced (TRAIN-CL-WF-26)',
-  FEATURED_WORKFLOW_SIMULATION.id === 'TRAIN-CL-WF-26');
+console.log('Mandated workflow library (§2/§3/§4/§5)');
+check('workflow catalog generated from canonical registry (206 workflows)', WORKFLOW_LIBRARY_COUNT === 206, `got ${WORKFLOW_LIBRARY_COUNT}`);
+check('CL-WF-26 IS a canonical workflow in the registry-backed catalog',
+  WORKFLOW_LIBRARY.some((w) => w.id === 'CL-WF-26'));
+check('featured simulation is training-namespaced and teaches canonical CL-WF-26',
+  FEATURED_WORKFLOW_SIMULATION.id === 'TRAIN-CL-WF-26' && FEATURED_WORKFLOW_SIMULATION.teaches_workflow_id === 'CL-WF-26');
+check('all 10 workflow domains present in the catalog',
+  new Set(WORKFLOW_LIBRARY.map((w) => w.domain)).size === 10);
 const officeWf = getTrainingAssignments(getPersona('jamie-office')).filter((a) => a.category === 'Workflows');
 check('general office employee is NOT assigned the enterprise library (only the featured sim)',
   officeWf.length === 1 && officeWf[0].id === 'TRAIN-CL-WF-26', `got ${officeWf.length} workflow cards`);

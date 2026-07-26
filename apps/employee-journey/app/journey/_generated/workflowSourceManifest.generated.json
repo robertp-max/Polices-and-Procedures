@@ -1,0 +1,20 @@
+{
+  "note": "AUTO-GENERATED — DO NOT EDIT",
+  "sourcePath": "src/policy/data/workflows.generated.ts",
+  "sourceSha256": "e379a053ce474f3f3de072513731999d529bc64e85e6ab797d8652f6d73e1a1a",
+  "generatedAt": "GENERATED_AT_BUILD",
+  "workflowCount": 206,
+  "domainCounts": {
+    "Clinical": 37,
+    "Compliance": 30,
+    "Enterprise": 13,
+    "Finance": 15,
+    "Governance": 14,
+    "Human Resources": 21,
+    "IT / Security": 25,
+    "Operations": 13,
+    "QAPI": 18,
+    "Risk Management": 20
+  },
+  "unresolvedCount": 0
+}

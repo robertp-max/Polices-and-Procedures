@@ -20,7 +20,8 @@
     "journey:verify:corrections": "tsx --tsconfig ../../tsconfig.json scripts/verifyJourneyCorrections.ts",
     "handbook:projection:generate": "tsx scripts/generateHandbookProjection.ts",
     "handbook:verify:logo": "tsx scripts/verifyBrandLogo.ts",
-    "journey:verify:guardrails": "tsx --tsconfig ../../tsconfig.json scripts/verifyJourneyGuardrails.ts"
+    "journey:verify:guardrails": "tsx --tsconfig ../../tsconfig.json scripts/verifyJourneyGuardrails.ts",
+    "journey:workflows:generate": "tsx --tsconfig ../../tsconfig.json scripts/generateWorkflowCatalog.ts"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",
