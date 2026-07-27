@@ -24,6 +24,7 @@
     "test:e2e": "playwright test",
     "test:server-unit": "vitest run --config vitest.server.config.ts",
     "test:e2e:auth": "playwright test --config playwright.auth.config.ts",
+    "test:e2e:journey": "playwright test --config playwright.journey.config.ts",
     "check:packet-coverage": "tsx --tsconfig tsconfig.app.json scripts/reportPacketCoverage.ts",
     "test:packets": "vitest run server/packets src/policy/packets src/v6/screens/packets",
     "preview": "vite preview",

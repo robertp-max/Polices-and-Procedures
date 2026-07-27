@@ -1027,6 +1027,12 @@
   background: #fff;
   box-shadow: var(--shadow-sm);
   padding: 22px 24px;
+  /* Allow the grid item to shrink below its content so the roadmap stepper's
+     own overflow-x:auto can engage instead of blowing out the page width. */
+  min-width: 0;
+}
+@media (max-width: 768px) {
+  .home-dashboard { grid-template-columns: 1fr; }
 }
 .home-roadmap header {
   display: flex;
