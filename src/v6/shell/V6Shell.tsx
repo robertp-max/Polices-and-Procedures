@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { PersonalOpsPanel } from './PersonalOpsPanel';
+import { NolanTutorPanel } from '../screens/journey/NolanTutorPanel';
 import { usePersonalOpsStore } from '../../policy/stores/personalOpsStore';
 import { useUiStore } from '../../policy/stores/uiStore';
 import {
@@ -289,6 +290,8 @@ export function V6Shell() {
           </main>
         </div>
       </div>
+      {/* Nolan tutor bubble — only inside the module/lesson player, where the nav is hidden. */}
+      {isPlayerRoute && <NolanTutorPanel />}
       {showRouteChrome && renderPersonalPanel && (
         <div
           className={cx(

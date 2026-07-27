@@ -128,6 +128,7 @@ export const V6_ROUTES = [
   { path: '/artifacts/:artifactId', hashId: 'artifact-viewer', template: 'reference-viewer', group: 'Taxonomy', title: 'Artifact Viewer', description: 'Artifact viewer with preview toolbar and compliance metadata.' },
   { path: '/viewer/:referenceId', hashId: 'generic-reference', template: 'reference-viewer', group: 'Taxonomy', title: 'Reference Viewer', description: 'Reference viewer for citations, source details, and compliance mandates.' },
   { path: '/journey', hashId: 'journey-overview', template: 'journey', group: 'Onboarding', title: 'Journey', description: 'Onboarding journey overview for learner progress and clearance state.' },
+  { path: '/training', hashId: 'training', template: 'journey', group: 'Onboarding', title: 'Training', description: 'Care Indeed Training Academy — onboarding, annual ACHC, role competency, and advanced modules.' },
   { path: '/journey/new-hire', hashId: 'journey-new-hire', template: 'journey', group: 'Onboarding', title: 'New Hire Portal', description: 'New hire onboarding checklist, portal resources, and support.' },
   { path: '/journey/module/m0', hashId: 'journey-orientation', template: 'module-player', group: 'Onboarding', title: 'Orientation', description: 'Module 0 Orientation and Compliance boundaries.' },
   { path: '/journey/module/:moduleId', hashId: 'module-player', template: 'module-player', group: 'Onboarding', title: 'Module Player', description: 'Module player for training content, assessment state, and retry handling.' },

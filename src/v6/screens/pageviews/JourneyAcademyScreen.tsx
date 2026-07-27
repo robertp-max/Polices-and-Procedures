@@ -35,7 +35,6 @@ import {
   workspaceTabNavClass,
 } from './workspaceTabChrome';
 import { StaticCardWatermark } from './StaticCardWatermark';
-import { NolanTutorPanel } from '../journey/NolanTutorPanel';
 import { getAssignedModuleIdsForEmployee } from '../../utils/journeyProfileAdapter';
 
 type AcademyTabId = 'home' | 'onboarding' | 'roleJourney' | 'appendixF' | 'achc' | 'advanced' | 'certificates';
@@ -952,8 +951,7 @@ export function JourneyAcademyScreen() {
           </div>
         ) : null}
       </main>
-      {/* Nolan — training tutor, available on every Academy tab. */}
-      <NolanTutorPanel />
+      {/* Nolan moved to the shell — it renders only in the module/lesson player, where the nav is hidden. */}
     </div>
   );
 }

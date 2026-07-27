@@ -1894,6 +1894,7 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       child = <WorkflowSwimlaneScreen />;
       break;
     case 'journey-overview':
+    case 'training':
       child = <JourneyOverviewScreen />;
       break;
     case 'journey-new-hire':

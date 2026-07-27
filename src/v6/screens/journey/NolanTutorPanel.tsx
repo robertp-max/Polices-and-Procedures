@@ -110,10 +110,10 @@ export function NolanTutorPanel() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 rounded-full bg-[#007970] px-5 py-3 font-montserrat text-[11px] font-bold uppercase tracking-widest text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl"
+        className="fixed bottom-3 right-3 z-40 inline-flex items-center gap-1 rounded-full bg-[#007970] px-2.5 py-1.5 font-montserrat text-[8px] font-bold uppercase tracking-wider text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl"
         aria-label="Ask Nolan, the training assistant"
       >
-        <GraduationCap className="h-4 w-4" aria-hidden />
+        <GraduationCap className="h-3 w-3" aria-hidden />
         Ask Nolan
       </button>
     );

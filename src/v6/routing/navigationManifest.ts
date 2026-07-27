@@ -28,7 +28,7 @@ export const primaryNavItems: NavItem[] = [
   // Opens in the SAME tab; the external URL is resolved at click time from
   // VITE_TRAINING_ACADEMY_URL (dev fallback = localhost). If unconfigured in prod it falls
   // back to the in-app /journey route (never a hard-coded localhost). See trainingAcademyUrl().
-  { id: 'training-academy', label: 'Training Academy', ariaLabel: 'Open the Care Indeed Training Academy', to: '/journey', hashIds: [] },
+  { id: 'training-academy', label: 'Training', ariaLabel: 'Open Training', to: '/training', hashIds: ['training'], matchPaths: ['/training'] },
   // Standalone DefenCIble entry — shield icon, rendered vertically centered on the left rail.
   {
     id: 'defensible',
