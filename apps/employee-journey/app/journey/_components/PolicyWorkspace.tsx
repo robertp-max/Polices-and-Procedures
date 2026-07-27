@@ -46,6 +46,16 @@ export function PolicyWorkspace() {
       ? assignments
       : assignments.filter((policy) => policy.status === active);
   const grouped = useMemo(() => groupByCourse(visible), [visible]);
+  const overview = useMemo(() => {
+    const count = (status: PolicyFilter) =>
+      assignments.filter((policy) => policy.status === status).length;
+    return [
+      { key: "read", label: "Read now", value: count("Read now"), tone: "urgent" },
+      { key: "due", label: "Due soon", value: count("Due soon"), tone: "warn" },
+      { key: "done", label: "Complete", value: count("Complete"), tone: "done" },
+      { key: "total", label: "Total assigned", value: assignments.length, tone: "neutral" },
+    ];
+  }, [assignments]);
   const tabs = filters.map((filter) => ({
     ...filter,
     count:
@@ -61,6 +71,15 @@ export function PolicyWorkspace() {
         title="Policy actions"
         description={`The full assigned policy set for the ${persona.role} pathway (${assignments.length} assignment${assignments.length === 1 ? "" : "s"}), grouped by course, with each policy's release and awareness state.`}
       />
+
+      <div className="policy-overview" aria-label="Policy action summary">
+        {overview.map((stat) => (
+          <div key={stat.key} className={`policy-overview-stat tone-${stat.tone}`}>
+            <strong>{stat.value}</strong>
+            <span>{stat.label}</span>
+          </div>
+        ))}
+      </div>
 
       <div className="truth-note" role="note">
         <Info aria-hidden="true" />

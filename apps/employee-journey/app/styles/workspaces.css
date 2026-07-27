@@ -1285,3 +1285,47 @@
   color: var(--ink, #334155);
   font-weight: 600;
 }
+
+/* Policies — Gemini action-summary stat strip */
+.policy-overview {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.85rem;
+  margin: 0 0 1.25rem;
+}
+.policy-overview-stat {
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: var(--radius-card, 20px);
+  background: var(--surface, #fff);
+  padding: 1rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  position: relative;
+  overflow: hidden;
+}
+.policy-overview-stat::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--border, #e2e8f0);
+}
+.policy-overview-stat strong {
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--ink, #0f172a);
+}
+.policy-overview-stat span {
+  font-size: 0.78rem;
+  color: var(--ink-soft, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.policy-overview-stat.tone-urgent::before { background: var(--orange, #ea580c); }
+.policy-overview-stat.tone-warn::before { background: #d97706; }
+.policy-overview-stat.tone-done::before { background: #16a34a; }
+.policy-overview-stat.tone-neutral::before { background: var(--teal, #0d9488); }
+@media (max-width: 720px) {
+  .policy-overview { grid-template-columns: repeat(2, 1fr); }
+}
