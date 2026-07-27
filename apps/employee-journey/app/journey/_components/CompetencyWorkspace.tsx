@@ -32,6 +32,24 @@ export function CompetencyWorkspace() {
     )?.id ?? "Upcoming";
   const [active, setActive] = useState<CompetencyFilter>(initial);
   const visible = competencies.filter((item) => item.status === active);
+  const statusMeter = (
+    status: CompetencyFixture["status"],
+  ): { pct: number; tone: string } => {
+    switch (status) {
+      case "Completed":
+        return { pct: 100, tone: "done" };
+      case "Waiting on evaluator":
+        return { pct: 75, tone: "wait" };
+      case "Scheduled":
+        return { pct: 45, tone: "wait" };
+      case "Needs follow-up":
+        return { pct: 60, tone: "warn" };
+      case "Remediation":
+        return { pct: 60, tone: "warn" };
+      default:
+        return { pct: 12, tone: "start" };
+    }
+  };
   const tabs = filters.map((filter) => ({
     ...filter,
     count: competencies.filter((item) => item.status === filter.id).length,
@@ -86,21 +104,35 @@ export function CompetencyWorkspace() {
               { label: "Policy / workflow basis", value: item.basis },
             ]}
             footer={
-              item.href && item.hrefKind === "external" ? (
-                <MainAppLink className="button button-secondary" path={item.href}>
-                  {item.nextAction}
-                </MainAppLink>
-              ) : (
-                <button
-                  className="button button-secondary"
-                  type="button"
-                  onClick={() =>
-                    announce("Preview opened. No official record was changed.")
-                  }
-                >
-                  {item.nextAction}
-                </button>
-              )
+              <div className="competency-footer">
+                {(() => {
+                  const meter = statusMeter(item.status);
+                  return (
+                    <div
+                      className={`competency-meter tone-${meter.tone}`}
+                      role="img"
+                      aria-label={`Status: ${item.status}`}
+                    >
+                      <div style={{ width: `${meter.pct}%` }} />
+                    </div>
+                  );
+                })()}
+                {item.href && item.hrefKind === "external" ? (
+                  <MainAppLink className="button button-secondary" path={item.href}>
+                    {item.nextAction}
+                  </MainAppLink>
+                ) : (
+                  <button
+                    className="button button-secondary"
+                    type="button"
+                    onClick={() =>
+                      announce("Preview opened. No official record was changed.")
+                    }
+                  >
+                    {item.nextAction}
+                  </button>
+                )}
+              </div>
             }
           />
         ))}

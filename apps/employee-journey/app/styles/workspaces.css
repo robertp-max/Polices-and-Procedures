@@ -1329,3 +1329,26 @@
 @media (max-width: 720px) {
   .policy-overview { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* Competencies — Gemini status meter */
+.competency-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.competency-meter {
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink-soft, #64748b) 18%, transparent);
+  overflow: hidden;
+}
+.competency-meter > div {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.4s ease;
+  background: var(--teal, #0d9488);
+}
+.competency-meter.tone-done > div { background: #16a34a; }
+.competency-meter.tone-wait > div { background: var(--teal, #0d9488); }
+.competency-meter.tone-warn > div { background: #d97706; }
+.competency-meter.tone-start > div { background: var(--orange, #ea580c); }
