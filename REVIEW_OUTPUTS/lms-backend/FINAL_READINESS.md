@@ -37,17 +37,29 @@ npx vitest run src/learning/domain/
   Idempotency-Key, suspended/terminated handling, and the stable error model.
 - **Integration + HTTP tests** — 13 tests over the runnable stack; **107 learning tests total**.
 
-## Still requires live GCP + deploy authorization (only remaining gap)
+## GCP adapters — now written (UNVERIFIED, credential-gated)
 
-- Firestore/GCS/Cloud KMS/Cloud Tasks adapter **implementations** of the ports (the
-  in-memory ones prove the contract; the GCP ones swap in with no domain change).
-- Wiring the router into the existing authenticated server (real JWT + optimistic
-  concurrency + outbox relay), the SCORM runtime adapter, the certificate PDF renderer
-  worker, notification/CES/calendar projections.
+- `src/learning/adapters/gcp/` — `FirestoreRecordStore`/`FirestoreEventStore`, `GcsArtifactStore`,
+  `KmsSigner`, `CloudTasksJobQueue`, and `makeGcpEnv` wiring implementing the exact ports.
+- `src/learning/http/express.ts` — Cloud Run/Express mount for the router (auth from the host
+  middleware only).
+- These carry `// @ts-nocheck` and are **not compiled/run here** — they need `@google-cloud/*`
+  installed + credentials. See `src/learning/adapters/gcp/README.md`. Swapping the verified
+  in-memory env for the GCP env is one line: `new TrainingService(makeGcpEnv(gcpConfigFromEnv()))`.
+
+## Only remaining (owner-gated — cannot be done without your cloud)
+
+- `npm i @google-cloud/*`, remove the `@ts-nocheck` headers, and typecheck the GCP adapters
+  against real SDK types.
+- Provision Firestore/GCS/KMS/Tasks + IAM; run integration/security/concurrency/browser suites
+  against a staging project.
+- SCORM runtime adapter + certificate PDF renderer worker (the manifest/eligibility contract is
+  done; the pixel rendering needs a headless renderer).
 - Shadow-mode migration run + parity report against real `ci-journey-v1` data.
+- **Deploy** — intentionally not automated; an explicit owner action.
 
-None of the above requires changing the domain types, invariants, service, or router
-committed here — only credentialed cloud wiring and a deploy authorization.
+None of the above changes the domain types, invariants, service, router, or the port
+contracts committed here.
 
 ## Stop condition (honest)
 
