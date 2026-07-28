@@ -103,7 +103,15 @@ export type PersonaId =
   | "jamie-office"
   | "skyler-driver"
   | "parker-returning"
-  | "cameron-separating";
+  | "cameron-separating"
+  | "riann-pt"
+  | "owen-ot"
+  | "cora-cota"
+  | "sloane-slp"
+  | "micah-msw"
+  | "quinn-adm-rn"
+  | "dana-hha-aide"
+  | "sage-remediation";
 
 export type Persona = {
   id: PersonaId;
@@ -251,6 +259,111 @@ export const PERSONAS: Persona[] = [
     descriptor: "Last synthetic workday July 31",
     nextDocumentDate: "Not applicable",
     scenarioTags: ["Separating employee"],
+  },
+  {
+    id: "riann-pt",
+    fixtureId: "DEMO-PT-001",
+    name: "Riann Demo PT",
+    role: "Physical Therapist",
+    stage: "First 30 days",
+    stageIndex: 4,
+    startDate: "2026-07-06",
+    roleCode: "PT",
+    descriptor: "Therapy assessor · advanced-eligible",
+    nextDocumentDate: "2027-04-30",
+    scenarioTags: ["PT new hire", "Advanced-eligible clinician"],
+  },
+  {
+    id: "owen-ot",
+    fixtureId: "DEMO-OT-001",
+    name: "Owen Demo OT",
+    role: "Occupational Therapist",
+    stage: "First 30 days",
+    stageIndex: 4,
+    startDate: "2026-07-06",
+    roleCode: "OT",
+    descriptor: "Occupational therapy assessor",
+    nextDocumentDate: "2027-04-30",
+    scenarioTags: ["OT new hire"],
+  },
+  {
+    id: "cora-cota",
+    fixtureId: "DEMO-COTA-001",
+    name: "Cora Demo COTA",
+    role: "Certified Occupational Therapy Assistant",
+    stage: "Day 90 evaluation",
+    stageIndex: 8,
+    startDate: "2026-04-25",
+    roleCode: "COTA",
+    descriptor: "Awaiting OT supervision review",
+    nextDocumentDate: "2027-01-31",
+    scenarioTags: ["COTA awaiting supervision", "Day 90 employee"],
+  },
+  {
+    id: "sloane-slp",
+    fixtureId: "DEMO-SLP-001",
+    name: "Sloane Demo SLP",
+    role: "Speech-Language Pathologist",
+    stage: "Ongoing / recurring",
+    stageIndex: 9,
+    startDate: "2025-11-03",
+    roleCode: "SLP",
+    descriptor: "Active therapy clinician",
+    nextDocumentDate: "2026-11-30",
+    scenarioTags: ["SLP active clinician"],
+  },
+  {
+    id: "micah-msw",
+    fixtureId: "DEMO-MSW-001",
+    name: "Micah Demo MSW",
+    role: "Medical Social Worker",
+    stage: "First 30 days",
+    stageIndex: 4,
+    startDate: "2026-06-15",
+    roleCode: "MSW",
+    descriptor: "Psychosocial assessment · supervised practice",
+    nextDocumentDate: "2027-03-31",
+    scenarioTags: ["MSW new hire"],
+  },
+  {
+    id: "quinn-adm-rn",
+    fixtureId: "DEMO-ADMRN-001",
+    name: "Quinn Demo Administrator (RN)",
+    role: "Administrator",
+    secondaryRole: "Registered Nurse",
+    stage: "Policy update",
+    stageIndex: 11,
+    startDate: "2024-02-12",
+    roleCode: "ADM",
+    descriptor: "Administrator with RN secondary role · dual-role fixture",
+    nextDocumentDate: "2027-02-12",
+    scenarioTags: ["Administrator policy update", "Multiple-role employee", "ADM + RN secondary"],
+  },
+  {
+    id: "dana-hha-aide",
+    fixtureId: "DEMO-HHAAIDE-001",
+    name: "Dana Demo HHA (Aide-only)",
+    role: "Home Health Aide",
+    stage: "Ongoing / recurring",
+    stageIndex: 9,
+    startDate: "2025-09-01",
+    roleCode: "HHA",
+    descriptor: "Aide-only assignment · no skilled-services duty",
+    nextDocumentDate: "2026-08-31",
+    scenarioTags: ["HHA aide-only assignment", "HHA with annual hours due"],
+  },
+  {
+    id: "sage-remediation",
+    fixtureId: "DEMO-REMED-001",
+    name: "Sage Demo (Remediation)",
+    role: "Registered Nurse",
+    stage: "First 30 days",
+    stageIndex: 4,
+    startDate: "2026-06-01",
+    roleCode: "RN",
+    descriptor: "Failed competency · in remediation / training hold",
+    nextDocumentDate: "2027-03-31",
+    scenarioTags: ["Employee in remediation", "Failed competency"],
   },
 ];
 

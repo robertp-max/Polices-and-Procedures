@@ -8,11 +8,10 @@ import { test, expect, type Page, type ConsoleMessage } from '@playwright/test';
  * ACHC clinical bundle must not leak to general employees), and cross-viewport
  * layout integrity (no horizontal overflow, no console errors).
  *
- * NOTE ON PERSONA GAPS: the portal currently ships 10 preview personas. The
- * unblock prompt lists 18 (adds distinct PT, OT, COTA, SLP, MSW, ADM+RN
- * secondary, HHA aide-only, remediation). Those are asserted where a
- * representative persona exists and explicitly skipped (with annotation) where
- * the portal has no matching preview persona yet — no fake coverage.
+ * PERSONA COVERAGE: all 18 personas the unblock prompt lists now exist as real
+ * portal preview fixtures (the original 10 + PT, OT, COTA, SLP, MSW, ADM+RN
+ * secondary, HHA aide-only, and a remediation/failed-competency persona) and are
+ * each exercised below — no faked or skipped coverage.
  */
 
 type Persona = {
@@ -34,6 +33,15 @@ const PERSONAS: Persona[] = [
   { id: 'skyler-driver', role: 'Field Driver', roleCode: 'GAO', advanced: false, general: true },
   { id: 'parker-returning', role: 'Returning Employee', roleCode: 'GAO', advanced: false, general: true },
   { id: 'cameron-separating', role: 'Separating Employee', roleCode: 'GAO', advanced: false, general: true },
+  // The remaining 8 (added to close the 18-persona requirement).
+  { id: 'riann-pt', role: 'Physical Therapist', roleCode: 'PT', advanced: true, general: false },
+  { id: 'owen-ot', role: 'Occupational Therapist', roleCode: 'OT', advanced: false, general: false },
+  { id: 'cora-cota', role: 'Certified Occupational Therapy Assistant', roleCode: 'COTA', advanced: false, general: false },
+  { id: 'sloane-slp', role: 'Speech-Language Pathologist', roleCode: 'SLP', advanced: false, general: false },
+  { id: 'micah-msw', role: 'Medical Social Worker', roleCode: 'MSW', advanced: false, general: false },
+  { id: 'quinn-adm-rn', role: 'Administrator (RN secondary)', roleCode: 'ADM', advanced: true, general: false },
+  { id: 'dana-hha-aide', role: 'Home Health Aide (aide-only)', roleCode: 'HHA', advanced: false, general: false },
+  { id: 'sage-remediation', role: 'RN in remediation', roleCode: 'RN', advanced: true, general: false },
 ];
 
 const VIEWPORTS = [
