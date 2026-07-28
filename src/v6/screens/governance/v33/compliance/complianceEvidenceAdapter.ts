@@ -19,7 +19,16 @@ export interface ComplianceEvidenceService {
   readonly connected: boolean;
   /** Human-readable reason shown when not connected. */
   readonly disconnectedNotice: string;
-  /** Persist an official, immutable evidence record. */
+  /**
+   * Persist an official, immutable evidence record.
+   *
+   * SERVER-SIDE IDENTITY OBLIGATION: a connected implementation MUST verify,
+   * from its own authenticated session/token (never from the payload), that
+   * `input.learnerId` is the authenticated subject (or a facilitated-group
+   * participant namespaced under it as `${subject}:${participantId}`) and
+   * reject otherwise. The client-side check in complianceStore.commitEvidence
+   * is plumbing discipline, not access control.
+   */
   save(input: EvidenceSaveInput): Promise<EvidenceSaveResult>;
   /** All official records for a learner. Empty when disconnected. */
   list(learnerId: string): Promise<ComplianceEvidenceRecord[]>;

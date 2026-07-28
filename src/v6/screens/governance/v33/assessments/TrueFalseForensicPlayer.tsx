@@ -74,6 +74,7 @@ export default function TrueFalseForensicPlayer({ moduleId, attemptNumber = 1, o
     const passed = scorePercent >= bank.passPercent && criticalMisses.length === 0 && getActive() >= floor;
 
     const payload = {
+      schemaVersion: 2,
       assignmentId: `gb:module:${moduleId}`,
       learnerId,
       role: 'GB' as const,
@@ -85,6 +86,9 @@ export default function TrueFalseForensicPlayer({ moduleId, attemptNumber = 1, o
       attestedAt: attested ? new Date().toISOString() : null,
       answersSnapshot: { formId: form.formId, answers },
       score: scorePercent,
+      scoreMaximum: 100,
+      passThreshold: bank.passPercent,
+      scoreScale: 'percentage_100' as const,
       outcome: passed ? ('passed' as const) : ('failed' as const),
       criticalErrors: criticalMisses,
       attemptNumber,
@@ -95,7 +99,7 @@ export default function TrueFalseForensicPlayer({ moduleId, attemptNumber = 1, o
     let recorded = false;
     let notice = getComplianceEvidenceService().disconnectedNotice;
     if (passed) {
-      const saved = await commitEvidence(payload.assignmentId, { ...payload, integrityHash: integrityHash(payload) } as never);
+      const saved = await commitEvidence(payload.assignmentId, { ...payload, integrityHash: integrityHash(payload) } as never, { authenticatedSubjectId: learnerId });
       recorded = saved.ok;
       if (!saved.ok) notice = saved.message;
     }

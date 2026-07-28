@@ -7,9 +7,9 @@
 
 import { commitEvidence } from '../../compliance/complianceStore';
 import type { EvidenceSaveResult } from '../../compliance/complianceEvidenceAdapter';
-import type { ComplianceRole, RemediationPath } from '../../compliance/complianceTypes';
+import { COMPLIANCE_EVIDENCE_SCHEMA_VERSION, type ComplianceRole, type RemediationPath } from '../../compliance/complianceTypes';
 import { integrityHash } from '../../assessments/assessmentUtils';
-import type { AttemptScore, AttemptSelections, CasePack } from './caseTypes';
+import { TOTAL_POSSIBLE_SCORE, type AttemptScore, type AttemptSelections, type CasePack } from './caseTypes';
 
 export interface EvidenceSnapshotInput {
   learnerId: string;
@@ -45,6 +45,7 @@ export async function commitTabletopEvidence(input: EvidenceSnapshotInput): Prom
   };
 
   const payloadCore = {
+    schemaVersion: COMPLIANCE_EVIDENCE_SCHEMA_VERSION,
     assignmentId: input.assignmentId,
     learnerId: input.learnerId,
     role: input.role,
@@ -55,11 +56,15 @@ export async function commitTabletopEvidence(input: EvidenceSnapshotInput): Prom
     readCompletedAt: null,
     attestedAt: input.attestedAt,
     answersSnapshot,
-    // Raw engine score (points of 1000) + the ENGINE-DECIDED outcome. The
-    // outcome — not the raw number — is what completion selectors require, so a
-    // failed attempt is preserved as evidence/remediation history without ever
+    // Raw engine score in the ENGINE'S OWN unit (points of 1000) + the
+    // engine-decided outcome and the exact threshold it applied. The outcome —
+    // not the raw number — is what completion selectors require, so a failed
+    // attempt is preserved as evidence/remediation history without ever
     // counting as complete.
     score: input.score.total,
+    scoreMaximum: TOTAL_POSSIBLE_SCORE,
+    passThreshold: input.casePack.passScore,
+    scoreScale: 'points_1000' as const,
     outcome: input.score.passed ? ('passed' as const) : ('failed' as const),
     criticalErrors: input.score.criticalErrors,
     attemptNumber: input.attemptNumber,
@@ -74,5 +79,9 @@ export async function commitTabletopEvidence(input: EvidenceSnapshotInput): Prom
   // service is expected to stamp its own. We still compute and attach it
   // here as a client-side fingerprint of what was submitted, bypassing the
   // excess-property check via `as never` per the shared adapter contract.
-  return commitEvidence(input.assignmentId, { ...payloadCore, integrityHash: hash } as never);
+  // The learner id here comes from the session's authenticated identity —
+  // commitEvidence re-checks it against the same subject.
+  return commitEvidence(input.assignmentId, { ...payloadCore, integrityHash: hash } as never, {
+    authenticatedSubjectId: input.learnerId,
+  });
 }

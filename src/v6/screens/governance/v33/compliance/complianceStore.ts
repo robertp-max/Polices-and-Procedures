@@ -92,6 +92,18 @@ export async function refreshOfficialEvidence(learnerId: string): Promise<void> 
   emit();
 }
 
+export interface CommitEvidenceContext {
+  /**
+   * The AUTHENTICATED session subject performing this save (from useAuth, not
+   * from the payload). The write is rejected unless the submitted learnerId is
+   * this subject (or, for facilitated group sessions, is namespaced under it as
+   * `${subject}:${participantId}`). A connected evidence service MUST re-verify
+   * this server-side from the session token — a caller-supplied identity is
+   * never trusted merely because the client passed it through correctly.
+   */
+  authenticatedSubjectId: string;
+}
+
 /**
  * Attempt an official completion save. Only a successful save (from a connected
  * service) yields an authoritative record; the local draft is cleared on success.
@@ -100,15 +112,29 @@ export async function refreshOfficialEvidence(learnerId: string): Promise<void> 
 export async function commitEvidence(
   assignmentId: string,
   input: EvidenceSaveInput,
+  ctx: CommitEvidenceContext,
 ): Promise<EvidenceSaveResult> {
-  // Identity guard: the local-demo preview identity can never mint an official
-  // record, regardless of which evidence service is connected.
-  if (isLocalDemoLearnerId(input.learnerId)) {
+  // Identity guards (client side; the connected service re-verifies from the
+  // session token server-side):
+  // 1. The local-demo preview identity can never mint an official record.
+  if (isLocalDemoLearnerId(input.learnerId) || isLocalDemoLearnerId(ctx.authenticatedSubjectId)) {
     return {
       ok: false,
       reason: 'rejected',
       message:
         'Official evidence requires an authenticated user. The local-demo preview identity cannot record official completion.',
+    };
+  }
+  // 2. The submitted learner must BE the authenticated subject (or a group
+  //    participant namespaced under it).
+  const boundToSubject =
+    input.learnerId === ctx.authenticatedSubjectId ||
+    input.learnerId.startsWith(`${ctx.authenticatedSubjectId}:`);
+  if (!boundToSubject) {
+    return {
+      ok: false,
+      reason: 'rejected',
+      message: 'Official evidence must be submitted under the authenticated user’s own identity.',
     };
   }
   const result = await getComplianceEvidenceService().save(input);

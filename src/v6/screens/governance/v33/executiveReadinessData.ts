@@ -41,6 +41,8 @@ export interface ReadinessDecision {
   }>;
   revisionContext?: {
     heading: string;
+    /** Two-paragraph always-visible executive summary (blocker 7). */
+    executiveSummary: [string, string];
     summary: string[];
     sections: Array<{
       title: string;
@@ -89,38 +91,6 @@ export interface WorkflowInstance {
   auditRequirements: string;
 }
 
-export interface QapiPreviewQuarter {
-  id: 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'Annual';
-  label: string;
-  source: string;
-  changed: string;
-  improved: string;
-  worsened: string;
-  unresolved: string;
-  boardDecision: string;
-  kpis: Array<{
-    name: string;
-    value: string;
-    threshold: string;
-    numerator: string;
-    denominator: string;
-    trend: string;
-    priorQuarter: string;
-    subgroup: string;
-    sourceDate: string;
-    posture: string;
-  }>;
-  lifecycle: Array<{
-    type: 'PIP' | 'CAP' | 'RCA';
-    title: string;
-    owner: string;
-    due: string;
-    evidence: string;
-    boardReturn: string;
-  }>;
-  dataIssues: string[];
-}
-
 export interface EvidencePackage {
   evidenceId: string;
   title: string;
@@ -144,18 +114,6 @@ export interface AnnualAttestation {
 
 export const BRAD_NOLAN_CURRENT_STATE =
   'Current state: Brad remains local. Vertex transfer is proposed and requires Governing Body approval before implementation.';
-
-export const DECISION_TO_AGENDA_ACTIONS = [
-  'Add to agenda',
-  'Schedule ad hoc meeting',
-  'Open workflow',
-  'Open required forms',
-  'Open evidence in CES',
-  'Open linked Google Drive package',
-  'Assign owner',
-  'Set due date',
-  'Set return-to-Board date',
-] as const;
 
 const vertexDecisionElements = [
   'approved target architecture',
@@ -313,6 +271,10 @@ export const READINESS_DECISIONS: ReadinessDecision[] = [
     ],
     revisionContext: {
       heading: 'Why the 2022 Field Employee Handbook must be retired',
+      executiveSummary: [
+        'The current Field Employee Handbook is a 2022 document that no longer reflects the agency\'s present policy architecture, role assignments, controlled workflows, evidence requirements, training model, or 2026 compliance program. Continued use creates material risk that employees rely on outdated instructions, inconsistent disciplinary standards, and incomplete California-specific requirements.',
+        'Amendment is not sufficient because the defects are structural — a line-by-line repair would require extensive rewriting, legal review, and replacement of multiple employment, safety, privacy, training, and field-practice sections. The handbook should be formally retired and marked "SUPERSEDED — NOT FOR USE" only once the replacement handbook is approved, active, distributed, and supported by new acknowledgments.',
+      ],
       summary: [
         'The current Field Employee Handbook is a 2022 document and no longer reflects the agency\'s present policy architecture, current role assignments, controlled workflow system, evidence requirements, training model, or 2026 compliance program.',
         'Continuing to use it creates material risk that employees will rely on outdated instructions, inconsistent disciplinary standards, incomplete California-specific requirements, and language that no longer matches the agency\'s approved policies and operational controls.',
@@ -587,100 +549,6 @@ export const WORKFLOW_LIBRARY_SUMMARY = {
   highRisk: WORKFLOW_GRAPH.kpis.highRisk,
   source: 'src/policy/data/workflows.generated.ts',
 };
-
-export const QAPI_PREVIEW_QUARTERS: QapiPreviewQuarter[] = [
-  {
-    id: 'Q1',
-    label: 'Q1 2026',
-    source: 'tabletop2026/data/q1Case.ts',
-    changed: 'Baseline controls established, but recovered records create source-cutoff pressure.',
-    improved: 'Quarterly meeting control and Board-book assembly are visible earlier in the process.',
-    worsened: 'Evidence conflicts remain unresolved until the participant records reliance decisions.',
-    unresolved: 'Recovered records and supplemental source posture require Board reasoning.',
-    boardDecision: 'Decide whether the packet can be relied on for affected matters.',
-    kpis: [
-      { name: 'Timely QAPI packet assembly', value: '3 / 5', threshold: '5 / 5', numerator: '3', denominator: '5', trend: 'Below target', priorQuarter: 'New baseline', subgroup: 'Board packet controls', sourceDate: 'Q1 2026', posture: 'Synthetic UAT' },
-      { name: 'Critical evidence conflicts resolved', value: '0 / 3', threshold: '3 / 3', numerator: '0', denominator: '3', trend: 'Open', priorQuarter: 'New baseline', subgroup: 'Source reliance', sourceDate: 'Q1 2026', posture: 'Synthetic UAT' },
-    ],
-    lifecycle: [
-      { type: 'RCA', title: 'Recovered-record chronology conflict', owner: 'Board Secretary', due: 'During tabletop', evidence: 'Conflict-group determination', boardReturn: 'Exercise result' },
-    ],
-    dataIssues: ['after-cutoff records', 'supplemental source posture', 'unsigned/provisional packet elements'],
-  },
-  {
-    id: 'Q2',
-    label: 'Q2 2026',
-    source: 'tabletop2026/data/q2Case.ts',
-    changed: 'Synthetic quality and complaint signals require explicit Board action posture.',
-    improved: 'PIP/CAP/RCA distinctions are exposed to the participant.',
-    worsened: 'A fragile subgroup signal remains below threshold.',
-    unresolved: 'Data-quality and cutoff conflicts must be resolved before reliance.',
-    boardDecision: 'Hold or condition reliance on affected QAPI matters.',
-    kpis: [
-      { name: 'QAPI action closure', value: '4 / 7', threshold: '7 / 7', numerator: '4', denominator: '7', trend: 'At risk', priorQuarter: 'Down by 2', subgroup: 'Open action register', sourceDate: 'Q2 2026', posture: 'Synthetic UAT' },
-      { name: 'Critical error avoidance', value: '0 critical', threshold: '0 critical', numerator: '0', denominator: '1', trend: 'Controlled if decisions are sound', priorQuarter: 'Flat', subgroup: 'Tabletop scoring', sourceDate: 'Q2 2026', posture: 'Synthetic UAT' },
-    ],
-    lifecycle: [
-      { type: 'PIP', title: 'Fragile subgroup quality trend', owner: 'QAPI Lead', due: 'Q2 Board review', evidence: 'Synthetic KPI dashboard', boardReturn: 'Next quarter or failed sustainability test' },
-      { type: 'CAP', title: 'Packet evidence completion gap', owner: 'Board Secretary', due: 'Before lock', evidence: 'Packet readiness gate', boardReturn: 'Exercise result' },
-    ],
-    dataIssues: ['denominator conflict', 'source timing issue', 'provisional record status'],
-  },
-  {
-    id: 'Q3',
-    label: 'Q3 2026',
-    source: 'tabletop2026/data/q3Case.ts',
-    changed: 'Live-inject pressure adds meeting-process and confidentiality decisions.',
-    improved: 'Participant can practice agenda, motion, vote, and owner deadlines.',
-    worsened: 'Executive-session handling risk increases.',
-    unresolved: 'Recusal, confidentiality, and public/minutes boundaries require precision.',
-    boardDecision: 'Record the narrowest complete action without over-disclosing restricted content.',
-    kpis: [
-      { name: 'Executive-session boundary', value: 'Pending', threshold: 'No public disclosure error', numerator: '0', denominator: '1', trend: 'Untested', priorQuarter: 'New inject', subgroup: 'Restricted matters', sourceDate: 'Q3 2026', posture: 'Synthetic UAT' },
-      { name: 'Owner/deadline capture', value: '2 / 4', threshold: '4 / 4', numerator: '2', denominator: '4', trend: 'At risk', priorQuarter: 'Flat', subgroup: 'Board action record', sourceDate: 'Q3 2026', posture: 'Synthetic UAT' },
-    ],
-    lifecycle: [
-      { type: 'RCA', title: 'Executive-session record boundary', owner: 'Chair / Counsel', due: 'During session', evidence: 'Separate public/confidential minutes', boardReturn: 'Exercise result' },
-    ],
-    dataIssues: ['restricted evidence access', 'possible identity collision', 'confidential record separation'],
-  },
-  {
-    id: 'Q4',
-    label: 'Q4 2026',
-    source: 'tabletop2026/data/q4Case.ts',
-    changed: 'Year-end close pressure tests closure eligibility and sustained-effectiveness evidence.',
-    improved: 'The exercise requires effectiveness language after successful actions.',
-    worsened: 'Closure decisions can overreach if sustainability criteria are unmet.',
-    unresolved: 'PIP closure eligibility and return-to-Board dates need evidence.',
-    boardDecision: 'Approve, condition, or hold closure based on stated sustainability criteria.',
-    kpis: [
-      { name: 'Sustainability criteria met', value: '1 / 3', threshold: '3 / 3', numerator: '1', denominator: '3', trend: 'Below target', priorQuarter: 'Up by 1', subgroup: 'Open PIPs', sourceDate: 'Q4 2026', posture: 'Synthetic UAT' },
-      { name: 'Return-to-Board dates captured', value: '3 / 5', threshold: '5 / 5', numerator: '3', denominator: '5', trend: 'At risk', priorQuarter: 'Flat', subgroup: 'Action register', sourceDate: 'Q4 2026', posture: 'Synthetic UAT' },
-    ],
-    lifecycle: [
-      { type: 'PIP', title: 'Sustainability test not fully met', owner: 'QAPI Lead', due: 'Q4 review', evidence: 'Synthetic sustainability dashboard', boardReturn: 'Annual review' },
-    ],
-    dataIssues: ['closure eligibility ambiguity', 'missing effectiveness evidence', 'return-date gaps'],
-  },
-  {
-    id: 'Annual',
-    label: 'Annual 2026',
-    source: 'tabletop2026/data/annualCase.ts',
-    changed: 'Annual capstone requires all fourteen Governing Body workflow families to be exercised soundly.',
-    improved: 'Full workflow coverage is visible across the exercise result.',
-    worsened: 'Any missed workflow family prevents annual completion.',
-    unresolved: 'Human moderated validation remains required before release confidence can be claimed.',
-    boardDecision: 'Accept completion only with official evidence and zero critical failures.',
-    kpis: [
-      { name: 'Workflow coverage', value: '14 required', threshold: '14 / 14', numerator: '14', denominator: '14', trend: 'Exercise-controlled', priorQuarter: 'Annual only', subgroup: 'GV workflow families', sourceDate: 'FY2026', posture: 'Synthetic UAT' },
-      { name: 'Human validation gate', value: '0 / 3', threshold: '3 / 3', numerator: '0', denominator: '3', trend: 'Not started', priorQuarter: 'No human gate', subgroup: 'First-time users', sourceDate: 'FY2026', posture: 'Disconnected' },
-    ],
-    lifecycle: [
-      { type: 'CAP', title: 'Human moderated release gate', owner: 'Product / Compliance', due: 'Before release', evidence: 'Moderated study packet', boardReturn: 'Release readiness decision' },
-    ],
-    dataIssues: ['no observed human validation', 'screen-reader session not complete', 'production evidence disconnected'],
-  },
-];
 
 export const EVIDENCE_PACKAGES: EvidencePackage[] = [
   {

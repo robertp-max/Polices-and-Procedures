@@ -1,12 +1,17 @@
 // DEPRECATED LEGACY PLAYER — superseded by tabletop2026/ (the only tabletop
-// wired into V3). This player scores in PERCENT, while the registered 2026
-// tabletop assignments use the 1000-point engine standard (950/970). Do NOT
-// re-wire it against the 2026 assignment ids without normalizing the scale.
+// wired into V3; this player is not reachable from any V3 route). It scores in
+// PERCENT, while the registered 2026 tabletop assignments use the 1000-point
+// engine standard (950/970). To keep the two scoring systems decisively
+// separated, it writes against its OWN legacy assignment id — never against a
+// registered `gb:tabletop2026:*` id — so a percent-scale record can never be
+// evaluated against a points_1000 standard.
 import { useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle2, FileSearch, FileWarning, Lock, ShieldAlert } from 'lucide-react';
 import { commitEvidence } from '../compliance/complianceStore';
-import { TABLETOP_ASSIGNMENT_ID } from '../compliance/complianceCatalog';
 import { useLearnerId } from '../compliance/complianceIdentity';
+
+/** Legacy-only assignment identity: intentionally NOT in TABLETOP_ASSIGNMENT_IDS. */
+const LEGACY_TABLETOP_ASSIGNMENT_ID = 'gb:tabletop:legacy-final-percent';
 import { getComplianceEvidenceService } from '../compliance/complianceEvidenceAdapter';
 import { integrityHash } from '../assessments/assessmentUtils';
 import { FINAL_TABLETOP } from './tabletopCase';
@@ -42,7 +47,8 @@ export default function TabletopPlayer({ onExit, onForensicCapstone }: { onExit:
   const submit = async () => {
     const score = scoreTabletop(selections, c);
     const payload = {
-      assignmentId: TABLETOP_ASSIGNMENT_ID,
+      schemaVersion: 2,
+      assignmentId: LEGACY_TABLETOP_ASSIGNMENT_ID,
       learnerId,
       role: 'GB' as const,
       sourceId: c.id,
@@ -53,6 +59,9 @@ export default function TabletopPlayer({ onExit, onForensicCapstone }: { onExit:
       attestedAt: attested ? new Date().toISOString() : null,
       answersSnapshot: selections,
       score: score.scorePercent,
+      scoreMaximum: 100,
+      passThreshold: FINAL_TABLETOP.passScore,
+      scoreScale: 'percentage_100' as const,
       outcome: score.passed ? ('passed' as const) : ('failed' as const),
       criticalErrors: score.criticalReasons,
       attemptNumber: 1,
@@ -63,7 +72,7 @@ export default function TabletopPlayer({ onExit, onForensicCapstone }: { onExit:
     let recorded = false;
     let notice = getComplianceEvidenceService().disconnectedNotice;
     if (score.passed) {
-      const saved = await commitEvidence(TABLETOP_ASSIGNMENT_ID, { ...payload, integrityHash: integrityHash(payload) } as never);
+      const saved = await commitEvidence(LEGACY_TABLETOP_ASSIGNMENT_ID, { ...payload, integrityHash: integrityHash(payload) } as never, { authenticatedSubjectId: learnerId });
       recorded = saved.ok;
       if (!saved.ok) notice = saved.message;
     }

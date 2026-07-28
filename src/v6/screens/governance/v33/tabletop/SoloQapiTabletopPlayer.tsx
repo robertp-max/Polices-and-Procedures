@@ -113,6 +113,7 @@ export default function SoloQapiTabletopPlayer({ onExit }: { onExit: () => void 
     const score = scoreQ26Tabletop(selections);
     const activeTimeSeconds = Math.max(0, Math.round((Date.now() - Date.parse(state.startedAt)) / 1000));
     const payload = {
+      schemaVersion: 2,
       assignmentId: QAPI2026_TABLETOP_ASSIGNMENT_ID,
       learnerId,
       role: 'GB' as const,
@@ -124,6 +125,9 @@ export default function SoloQapiTabletopPlayer({ onExit }: { onExit: () => void 
       attestedAt: state.attested ? new Date().toISOString() : null,
       answersSnapshot: selections,
       score: score.scorePercent,
+      scoreMaximum: 100,
+      passThreshold: QAPI2026_TABLETOP.passScore,
+      scoreScale: 'percentage_100' as const,
       outcome: score.passed ? ('passed' as const) : ('failed' as const),
       criticalErrors: score.criticalReasons,
       attemptNumber: state.attemptNumber,
@@ -134,7 +138,7 @@ export default function SoloQapiTabletopPlayer({ onExit }: { onExit: () => void 
     let recorded = false;
     let notice = getComplianceEvidenceService().disconnectedNotice;
     if (score.passed) {
-      const saved = await commitEvidence(QAPI2026_TABLETOP_ASSIGNMENT_ID, { ...payload, integrityHash: integrityHash(payload) } as never);
+      const saved = await commitEvidence(QAPI2026_TABLETOP_ASSIGNMENT_ID, { ...payload, integrityHash: integrityHash(payload) } as never, { authenticatedSubjectId: learnerId });
       recorded = saved.ok;
       if (!saved.ok) notice = saved.message;
       clearSoloState(state.sessionId);

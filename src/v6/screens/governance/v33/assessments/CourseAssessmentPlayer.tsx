@@ -100,6 +100,7 @@ export default function CourseAssessmentPlayer({ courseId, onExit }: { courseId:
     const passed = score >= PASS_STANDARD && critical.length === 0 && getActive() >= floor;
 
     const payload = {
+      schemaVersion: 2,
       assignmentId: `gb:course-assessment:${courseId}`,
       learnerId,
       role: 'GB' as const,
@@ -111,6 +112,9 @@ export default function CourseAssessmentPlayer({ courseId, onExit }: { courseId:
       attestedAt: attested ? new Date().toISOString() : null,
       answersSnapshot: answers,
       score,
+      scoreMaximum: 100,
+      passThreshold: PASS_STANDARD,
+      scoreScale: 'percentage_100' as const,
       outcome: passed ? ('passed' as const) : ('failed' as const),
       criticalErrors: critical,
       attemptNumber,
@@ -122,7 +126,7 @@ export default function CourseAssessmentPlayer({ courseId, onExit }: { courseId:
     let recorded = false;
     let notice = getComplianceEvidenceService().disconnectedNotice;
     if (passed) {
-      const saved = await commitEvidence(payload.assignmentId, { ...payload, integrityHash: integrityHash(payload) } as never);
+      const saved = await commitEvidence(payload.assignmentId, { ...payload, integrityHash: integrityHash(payload) } as never, { authenticatedSubjectId: learnerId });
       recorded = saved.ok;
       if (!saved.ok) notice = saved.message;
     }

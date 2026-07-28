@@ -40,6 +40,7 @@ function tabletopRecord(
   const engineOutcome =
     (partial.criticalErrors ?? []).length === 0 && partial.score >= passStandard ? 'passed' : 'failed';
   return {
+    schemaVersion: 2,
     evidenceId: `ev-${partial.assignmentId}-${partial.score}`,
     learnerId: AUTH_LEARNER,
     role: 'GB',
@@ -50,6 +51,9 @@ function tabletopRecord(
     readCompletedAt: null,
     attestedAt: '2026-01-01T00:00:00.000Z',
     answersSnapshot: {},
+    scoreMaximum: 1000,
+    passThreshold: passStandard,
+    scoreScale: 'points_1000',
     outcome: engineOutcome,
     criticalErrors: [],
     attemptNumber: 1,
@@ -167,6 +171,53 @@ describe('blocker 1 — a failed outcome never completes, regardless of numeric 
   });
 });
 
+describe('schema v2 — outcome semantics per assignment kind', () => {
+  it("the unscored outcome 'completed' can never satisfy a SCORED assignment", async () => {
+    await withRecords([
+      tabletopRecord({ assignmentId: quarterly.assignmentId, score: 1000, outcome: 'completed' }),
+    ]);
+    expect(isOfficiallyComplete(quarterly)).toBe(false);
+  });
+  it("a policy reading (unscored) completes with outcome 'completed' and no score", async () => {
+    const policy = catalog.assignments.find((a) => a.type === 'policy_reading' && a.status !== 'blocked')!;
+    await withRecords([
+      tabletopRecord({
+        assignmentId: policy.assignmentId,
+        score: null as never,
+        scoreMaximum: null,
+        passThreshold: null,
+        scoreScale: null,
+        sourceType: 'policy',
+        outcome: 'completed',
+        readCompletedAt: '2026-01-01T00:00:00.000Z',
+      }),
+    ]);
+    expect(isOfficiallyComplete(policy)).toBe(true);
+  });
+  it("a policy reading with outcome 'failed' does not complete", async () => {
+    const policy = catalog.assignments.find((a) => a.type === 'policy_reading' && a.status !== 'blocked')!;
+    await withRecords([
+      tabletopRecord({
+        assignmentId: policy.assignmentId,
+        score: null as never,
+        scoreMaximum: null,
+        passThreshold: null,
+        scoreScale: null,
+        sourceType: 'policy',
+        outcome: 'failed',
+      }),
+    ]);
+    expect(isOfficiallyComplete(policy)).toBe(false);
+  });
+  it("a record whose own passThreshold isn't met fails even if the catalog standard is met", async () => {
+    // Defense in depth: the record says the engine applied a HIGHER bar.
+    await withRecords([
+      tabletopRecord({ assignmentId: quarterly.assignmentId, score: 955, passThreshold: 970, outcome: 'passed' }),
+    ]);
+    expect(isOfficiallyComplete(quarterly)).toBe(false);
+  });
+});
+
 describe('blocker 2 — evidence is identity-bound', () => {
   it("another learner's passing record never completes this learner's assignment", async () => {
     await withRecords([
@@ -180,50 +231,59 @@ describe('blocker 2 — evidence is identity-bound', () => {
     ]);
     expect(isOfficiallyComplete(quarterly)).toBe(true);
   });
-  it('the local-demo identity can never mint an official record, even on a connected service', async () => {
-    await withRecords([]);
-    const result = await commitEvidence(quarterly.assignmentId, {
+  function saveInput(learnerId: string, score = 1000) {
+    return {
+      schemaVersion: 2,
       assignmentId: quarterly.assignmentId,
-      learnerId: LOCAL_DEMO_LEARNER_ID,
-      role: 'GB',
+      learnerId,
+      role: 'GB' as const,
       sourceId: 'tabletop2026-q1',
-      sourceType: 'tabletop',
+      sourceType: 'tabletop' as const,
       sourceVersion: null,
       effectiveDate: null,
       readCompletedAt: null,
       attestedAt: '2026-01-01T00:00:00.000Z',
       answersSnapshot: {},
-      score: 1000,
-      outcome: 'passed',
+      score,
+      scoreMaximum: 1000,
+      passThreshold: 950,
+      scoreScale: 'points_1000' as const,
+      outcome: 'passed' as const,
       criticalErrors: [],
       attemptNumber: 1,
-      remediationPath: 'none',
+      remediationPath: 'none' as const,
       activeTimeSeconds: 3600,
       completedAt: '2026-01-01T00:00:00.000Z',
+    };
+  }
+
+  it('the local-demo identity can never mint an official record, even on a connected service', async () => {
+    await withRecords([]);
+    const result = await commitEvidence(quarterly.assignmentId, saveInput(LOCAL_DEMO_LEARNER_ID), {
+      authenticatedSubjectId: LOCAL_DEMO_LEARNER_ID,
     });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toBe('rejected');
   });
+  it('a save whose learnerId is not the authenticated subject is rejected (service-boundary identity)', async () => {
+    await withRecords([]);
+    const result = await commitEvidence(quarterly.assignmentId, saveInput('someone-else'), {
+      authenticatedSubjectId: AUTH_LEARNER,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toBe('rejected');
+  });
+  it('a facilitated participant id namespaced under the authenticated subject is accepted', async () => {
+    await withRecords([]);
+    const result = await commitEvidence(quarterly.assignmentId, saveInput(`${AUTH_LEARNER}:participant-2`), {
+      authenticatedSubjectId: AUTH_LEARNER,
+    });
+    expect(result.ok).toBe(true);
+  });
   it('an authenticated identity CAN save on a connected service', async () => {
     await withRecords([]);
-    const result = await commitEvidence(quarterly.assignmentId, {
-      assignmentId: quarterly.assignmentId,
-      learnerId: AUTH_LEARNER,
-      role: 'GB',
-      sourceId: 'tabletop2026-q1',
-      sourceType: 'tabletop',
-      sourceVersion: null,
-      effectiveDate: null,
-      readCompletedAt: null,
-      attestedAt: '2026-01-01T00:00:00.000Z',
-      answersSnapshot: {},
-      score: 960,
-      outcome: 'passed',
-      criticalErrors: [],
-      attemptNumber: 1,
-      remediationPath: 'none',
-      activeTimeSeconds: 3600,
-      completedAt: '2026-01-01T00:00:00.000Z',
+    const result = await commitEvidence(quarterly.assignmentId, saveInput(AUTH_LEARNER, 960), {
+      authenticatedSubjectId: AUTH_LEARNER,
     });
     expect(result.ok).toBe(true);
   });

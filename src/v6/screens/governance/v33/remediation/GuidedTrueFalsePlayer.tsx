@@ -180,6 +180,7 @@ export default function GuidedTrueFalsePlayer({
 
     const nowIso = new Date().toISOString();
     const payload = {
+      schemaVersion: 2,
       assignmentId,
       learnerId,
       role: 'GB' as const,
@@ -196,6 +197,9 @@ export default function GuidedTrueFalsePlayer({
         transferPassed: true,
       },
       score: 100,
+      scoreMaximum: 100,
+      passThreshold: 100,
+      scoreScale: 'percentage_100' as const,
       // The guided path commits only after every remediation item is corrected
       // and the transfer prompt passes — the outcome is therefore 'passed'.
       outcome: 'passed' as const,
@@ -208,7 +212,7 @@ export default function GuidedTrueFalsePlayer({
 
     let recorded = false;
     let notice = getComplianceEvidenceService().disconnectedNotice;
-    const saved = await commitEvidence(assignmentId, { ...payload, integrityHash: integrityHash(payload) } as never);
+    const saved = await commitEvidence(assignmentId, { ...payload, integrityHash: integrityHash(payload) } as never, { authenticatedSubjectId: authLearnerId });
     recorded = saved.ok;
     if (!saved.ok) notice = saved.message;
 

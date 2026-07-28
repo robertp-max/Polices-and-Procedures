@@ -1995,3 +1995,67 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Executive readiness review fixes (blockers 3/4/5/7)
+   ========================================================================== */
+
+/* Blocker 3 — actions: real handlers or visibly disabled with reason */
+.executive-action { display: inline-flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.executive-action button[disabled] { opacity: 0.55; cursor: not-allowed; }
+.action-disabled-reason { font-size: 11px; line-height: 1.35; color: var(--gov-text-muted, #8a8f98); max-width: 240px; }
+.action-confirmation { font-size: 11px; font-weight: 600; color: var(--gov-positive, #2e7d32); display: inline-flex; align-items: center; gap: 4px; }
+.drawer-action-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+.drawer-agenda-confirmation { display: inline-flex; flex-direction: column; gap: 2px; font-size: 13px; font-weight: 600; color: var(--gov-positive, #2e7d32); }
+.drawer-agenda-confirmation small { font-weight: 400; font-size: 11px; color: var(--gov-text-muted, #8a8f98); }
+
+/* Blocker 4 — deterministic brief caption */
+.brief-provenance-caption { font-size: 12px; font-style: italic; color: var(--gov-text-muted, #8a8f98); margin: 4px 0 8px; }
+
+/* Blocker 5 — provenance badges and legend */
+.prov-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; border: 1px solid currentColor; line-height: 1.4; }
+.prov-badge.recovered { color: #1b7a43; background: rgba(27, 122, 67, 0.08); }
+.prov-badge.calculated { color: #1f5fbf; background: rgba(31, 95, 191, 0.08); }
+.prov-badge.synthetic { color: #9a6700; background: rgba(154, 103, 0, 0.1); }
+.prov-badge.unresolved { color: #b3261e; background: rgba(179, 38, 30, 0.08); }
+.prov-badge.not-recovered { color: #5f6368; background: rgba(95, 99, 104, 0.1); }
+.oversight-provenance-legend { border: 1px solid var(--gov-border, #d8dbe0); border-radius: 10px; padding: 12px 16px; margin: 12px 0; }
+.oversight-provenance-legend > span { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; }
+.oversight-provenance-legend > div { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 8px; }
+.oversight-provenance-legend article { display: flex; flex-direction: column; gap: 4px; }
+.oversight-provenance-legend article p { font-size: 11px; margin: 0; color: var(--gov-text-muted, #6b7076); }
+.oversight-source-note { font-size: 12px; color: var(--gov-text-muted, #6b7076); margin: 4px 0 10px; }
+.oversight-pending-note { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #9a6700; margin: 10px 0; }
+.oversight-signal-grid article .prov-badge, .qapi-kpi-grid article .prov-badge { margin-top: 6px; align-self: flex-start; }
+.workflow-provenance-note { font-size: 12px; color: var(--gov-text-muted, #6b7076); margin: 8px 0; }
+
+/* Blocker 3 — draft agenda queue + scheduler */
+.draft-agenda-queue header small { font-style: italic; }
+.scheduler-form { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
+.scheduler-form label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 600; }
+.scheduler-form input[type="text"], .scheduler-form input[type="date"], .scheduler-form input[type="time"] { padding: 8px 10px; border: 1px solid var(--gov-border, #d8dbe0); border-radius: 8px; font: inherit; }
+.scheduler-datetime { display: flex; gap: 14px; flex-wrap: wrap; }
+.scheduler-attendees { border: 1px solid var(--gov-border, #d8dbe0); border-radius: 10px; padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 10px 18px; }
+.scheduler-attendees legend { font-size: 12px; font-weight: 700; padding: 0 4px; }
+.scheduler-attendees label { flex-direction: row; align-items: center; gap: 6px; font-weight: 500; }
+.scheduler-proposed-agenda { border: 1px dashed var(--gov-border, #d8dbe0); border-radius: 10px; padding: 10px 14px; }
+.scheduler-proposed-agenda > span { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; }
+.scheduler-proposed-agenda small { display: block; font-style: italic; color: var(--gov-text-muted, #6b7076); margin: 2px 0 6px; }
+.scheduler-proposed-agenda ol { margin: 0; padding-left: 18px; font-size: 13px; }
+.scheduler-submit-row { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+.scheduler-failed { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #b3261e; }
+.scheduler-created { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #1b7a43; }
+
+/* Blocker 3 — evidence action context + chain */
+.evidence-actions-context { font-size: 12px; color: var(--gov-text-muted, #6b7076); margin: 0 0 8px; }
+.record-chain small { display: block; margin-top: 8px; font-size: 11px; color: var(--gov-text-muted, #6b7076); }
+.ces-evidence-register article.active { outline: 2px solid var(--gov-accent, #c65d21); outline-offset: -2px; }
+
+/* Blocker 7 — handbook context disclosure + counsel status */
+.revision-context-details { margin: 12px 0; }
+.revision-context-details > summary { cursor: pointer; font-size: 13px; font-weight: 700; padding: 8px 0; }
+.revision-context-actions { margin: 10px 0; }
+.counsel-review-status { border: 1px solid var(--gov-border, #d8dbe0); border-radius: 10px; padding: 10px 14px; margin-top: 10px; }
+.counsel-review-status > span { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; }
+.counsel-review-status p { font-size: 13px; margin: 4px 0 0; }
+.counsel-review-status.highlighted { outline: 2px solid var(--gov-accent, #c65d21); outline-offset: 2px; }

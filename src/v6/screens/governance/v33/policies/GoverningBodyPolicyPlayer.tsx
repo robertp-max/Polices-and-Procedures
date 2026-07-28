@@ -184,6 +184,7 @@ export default function GoverningBodyPolicyPlayer({ requirement, onExit }: { req
     setSaveState('saving');
     const readingSatisfied = readingComplete && readAttested;
     const payload = {
+      schemaVersion: 2,
       assignmentId,
       learnerId,
       role: 'GB' as const,
@@ -194,16 +195,20 @@ export default function GoverningBodyPolicyPlayer({ requirement, onExit }: { req
       readCompletedAt: new Date().toISOString(),
       attestedAt: readAttested ? new Date().toISOString() : null,
       answersSnapshot: null,
+      // Policy reading is UNSCORED: no score/threshold/scale, and the outcome
+      // is 'completed' (not 'passed') when the reading+attestation gate holds.
       score: null,
-      // Policy reading has no score; the outcome is the reading+attestation gate.
-      outcome: readingSatisfied ? ('passed' as const) : ('failed' as const),
+      scoreMaximum: null,
+      passThreshold: null,
+      scoreScale: null,
+      outcome: readingSatisfied ? ('completed' as const) : ('failed' as const),
       criticalErrors: [] as string[],
       attemptNumber: 1,
       remediationPath: 'none' as const,
       activeTimeSeconds: getActiveSeconds(),
       completedAt: readingSatisfied ? new Date().toISOString() : null,
     };
-    const saved = await commitEvidence(assignmentId, { ...payload, integrityHash: integrityHash(payload) } as never);
+    const saved = await commitEvidence(assignmentId, { ...payload, integrityHash: integrityHash(payload) } as never, { authenticatedSubjectId: learnerId });
     if (saved.ok) {
       setSaveState('saved');
       setSaveMessage(null);

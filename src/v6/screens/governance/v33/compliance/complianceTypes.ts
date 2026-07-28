@@ -74,14 +74,26 @@ export type ComplianceSourceType = 'module' | 'policy' | 'course_quiz' | 'tablet
 export type RemediationPath = 'none' | 'primary_retry' | 'true_false_forensic' | 'guided_true_false';
 
 /**
- * Explicit attempt outcome, decided BY THE SCORING ENGINE at submit time in the
- * engine's own scoring unit. A failed attempt is preserved as evidence and
- * remediation history, but it must NEVER satisfy completion — completion
- * requires `outcome === 'passed'` (see complianceSelectors.isOfficiallyComplete).
+ * Explicit attempt outcome, decided BY THE PRODUCING ENGINE at submit time in
+ * the engine's own scoring unit:
+ *   - 'completed' — an UNSCORED requirement was satisfied (e.g. a policy
+ *     reading with attestation). Never valid for a scored assignment.
+ *   - 'passed' / 'failed' — a SCORED attempt's engine-decided result.
+ * A failed attempt is preserved as evidence and remediation history, but it
+ * must NEVER satisfy completion. Legacy records missing `outcome` fail closed:
+ * completion is never inferred from an old raw score.
  */
-export type EvidenceOutcome = 'passed' | 'failed';
+export type EvidenceOutcome = 'completed' | 'passed' | 'failed';
+
+/** The scoring unit a record's numbers are expressed in. */
+export type EvidenceScoreScale = 'percentage_100' | 'points_1000';
+
+/** Current evidence schema. v2 added outcome + explicit scoring-scale fields. */
+export const COMPLIANCE_EVIDENCE_SCHEMA_VERSION = 2;
 
 export interface ComplianceEvidenceRecord {
+  /** Contract version this record was written under (current: 2). */
+  schemaVersion: number;
   evidenceId: string;
   assignmentId: string;
   learnerId: string;
@@ -94,10 +106,16 @@ export interface ComplianceEvidenceRecord {
   attestedAt: string | null;
   answersSnapshot: unknown;
   score: number | null;
+  /** Maximum attainable score in the SAME unit as `score` (null when unscored). */
+  scoreMaximum: number | null;
+  /** The pass threshold the engine applied, in the SAME unit (null when unscored). */
+  passThreshold: number | null;
+  /** The unit `score`/`scoreMaximum`/`passThreshold` are expressed in. */
+  scoreScale: EvidenceScoreScale | null;
   /**
-   * The engine-decided pass/fail result. Required. `score` alone is not a
-   * completion decision — scales differ per source type (percent for modules
-   * and course quizzes, points-of-1000 for tabletops).
+   * The engine-decided result. Required. `score` alone is never a completion
+   * decision — scales differ per source type (percent for modules and course
+   * quizzes, points-of-1000 for 2026 tabletops).
    */
   outcome: EvidenceOutcome;
   criticalErrors: string[];

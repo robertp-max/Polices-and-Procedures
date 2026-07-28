@@ -24,6 +24,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 
 function record(partial: Partial<ComplianceEvidenceRecord> & { assignmentId: string }): ComplianceEvidenceRecord {
   return {
+    schemaVersion: 2,
     evidenceId: `ev-${partial.assignmentId}`,
     learnerId: DEFAULT_LEARNER_ID,
     role: 'GB',
@@ -35,6 +36,9 @@ function record(partial: Partial<ComplianceEvidenceRecord> & { assignmentId: str
     attestedAt: '2026-01-01T00:00:00.000Z',
     answersSnapshot: {},
     score: 100,
+    scoreMaximum: 100,
+    passThreshold: MODULE_MASTERY_STANDARD,
+    scoreScale: 'percentage_100',
     outcome: 'passed',
     criticalErrors: [],
     attemptNumber: 1,

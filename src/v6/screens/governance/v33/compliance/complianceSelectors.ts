@@ -43,21 +43,32 @@ function officialRecordFor(assignment: ComplianceAssignment): ComplianceEvidence
 /**
  * Authoritative completion test. Requires a connected-service record that:
  *   1. belongs to THIS learner (identity-bound);
- *   2. carries the engine-decided `outcome === 'passed'` — a failed attempt is
- *      preserved as evidence/remediation history but NEVER satisfies completion;
+ *   2. carries an engine-decided outcome — a SCORED assignment requires
+ *      `outcome === 'passed'`; an UNSCORED assignment (e.g. policy reading)
+ *      requires `'completed'` (or `'passed'`). A failed attempt is preserved
+ *      as evidence/remediation history but NEVER satisfies completion, and a
+ *      legacy record missing `outcome` fails closed — completion is never
+ *      inferred from an old raw score;
  *   3. is attested with zero critical errors (critical error overrides any score);
  *   4. meets the pass standard in the SAME scoring unit the engine stored
- *      (defense in depth behind the outcome check).
+ *      (defense in depth behind the outcome check; when the record carries its
+ *      own passThreshold, that must also be met).
  * NEVER derived from a submitted draft.
  */
 export function isOfficiallyComplete(assignment: ComplianceAssignment): boolean {
   const record = officialRecordFor(assignment);
   if (!record || record.completedAt === null) return false;
-  if (record.outcome !== 'passed') return false;
+  if (!record.outcome) return false; // legacy/foreign record — fail closed
   if (record.criticalErrors.length > 0) return false;
   if (record.attestedAt === null) return false;
   if (assignment.passStandard !== null) {
+    // Scored assignment: only an engine-passed attempt qualifies. 'completed'
+    // (the unscored outcome) can never satisfy a scored requirement.
+    if (record.outcome !== 'passed') return false;
     if (record.score === null || record.score < assignment.passStandard) return false;
+    if (record.passThreshold !== null && record.passThreshold !== undefined && record.score < record.passThreshold) return false;
+  } else if (record.outcome !== 'completed' && record.outcome !== 'passed') {
+    return false;
   }
   return true;
 }

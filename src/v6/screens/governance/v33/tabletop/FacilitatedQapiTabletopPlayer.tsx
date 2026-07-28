@@ -170,7 +170,12 @@ export default function FacilitatedQapiTabletopPlayer({ onExit }: { onExit: () =
       attested: Boolean(participant.attestedAt),
     });
     const payload = {
+      schemaVersion: 2,
       assignmentId: QAPI2026_TABLETOP_ASSIGNMENT_ID,
+      // Individual identity-bound participant record, namespaced under the
+      // authenticated facilitator (the group-session record lives in the
+      // session store; each participant still gets their own attestation +
+      // competency result — one is never inferred from the other).
       learnerId: `${facilitatorLearnerId}:${participant.participantId}`,
       role: 'GB' as const,
       sourceId: QAPI2026_TABLETOP_ID,
@@ -181,6 +186,9 @@ export default function FacilitatedQapiTabletopPlayer({ onExit }: { onExit: () =
       attestedAt: participant.attestedAt,
       answersSnapshot: { decisions, surveyor: session.groupSurveyor, transferAnswers: participant.transferAnswers, initialPosition: participant.initialPositions },
       score: score.scorePercent,
+      scoreMaximum: 100,
+      passThreshold: QAPI2026_TABLETOP.passScore,
+      scoreScale: 'percentage_100' as const,
       outcome: score.passed ? ('passed' as const) : ('failed' as const),
       criticalErrors: score.criticalReasons,
       attemptNumber: 1,
@@ -191,7 +199,7 @@ export default function FacilitatedQapiTabletopPlayer({ onExit }: { onExit: () =
     let recorded = false;
     let notice = getComplianceEvidenceService().disconnectedNotice;
     if (score.passed) {
-      const saved = await commitEvidence(QAPI2026_TABLETOP_ASSIGNMENT_ID, { ...payload, integrityHash: integrityHash(payload) } as never);
+      const saved = await commitEvidence(QAPI2026_TABLETOP_ASSIGNMENT_ID, { ...payload, integrityHash: integrityHash(payload) } as never, { authenticatedSubjectId: facilitatorLearnerId });
       recorded = saved.ok;
       if (!saved.ok) notice = saved.message;
     }

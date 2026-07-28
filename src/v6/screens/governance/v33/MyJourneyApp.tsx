@@ -39,17 +39,28 @@ import type { CourseProgress } from './compliance/complianceSelectors';
 import {
   ANNUAL_ATTESTATIONS,
   BRAD_NOLAN_CURRENT_STATE,
-  DECISION_TO_AGENDA_ACTIONS,
   EVIDENCE_PACKAGES,
   POLICY_APPROVAL_DOCKET,
-  QAPI_PREVIEW_QUARTERS,
   READINESS_DECISIONS,
   SOURCE_DERIVED_QAPI_DECISIONS,
   WORKFLOW_INSTANCES,
   WORKFLOW_LIBRARY_SUMMARY,
+  type EvidencePackage,
   type ReadinessDecision,
   type WorkflowInstance,
 } from './executiveReadinessData';
+import {
+  OVERSIGHT_PROVENANCE_LEGEND,
+  OVERSIGHT_QUARTERS,
+  type OversightProvenance,
+  type OversightValue,
+} from './oversightProjection';
+import {
+  AGENDA_QUEUE_DISCLAIMER,
+  addAgendaItem,
+  removeAgendaItem,
+  useAgendaQueue,
+} from './agendaQueue';
 import type { GbReferenceDocId } from './references/referenceDocs';
 
 const GoverningBodyAcademy = lazy(() => import('./gb-academy/Academy'));
@@ -113,6 +124,48 @@ function PageHeading({ eyebrow, title, description, action }: { eyebrow: string;
 
 function Metric({ value, label, note, tone = 'neutral' }: { value: string; label: string; note: string; tone?: string }) {
   return <article className={`governance-metric ${tone}`}><span>{label}</span><strong>{value}</strong><small>{note}</small></article>;
+}
+
+// ---------------------------------------------------------------------------
+// Executive action + provenance primitives (blockers 3 and 5)
+// ---------------------------------------------------------------------------
+
+/**
+ * Blocker 3 rule: every enabled control must perform a real action or navigate
+ * to a real destination; otherwise it renders visibly disabled with a precise
+ * reason (visible caption, not tooltip-only).
+ */
+function ExecutiveAction({ label, onAct, disabledReason, confirmation }: { label: string; onAct?: () => void; disabledReason?: string; confirmation?: string }) {
+  if (disabledReason) {
+    return (
+      <span className="executive-action disabled-with-reason">
+        <button type="button" disabled title={disabledReason}>{label}</button>
+        <small className="action-disabled-reason">{disabledReason}</small>
+      </span>
+    );
+  }
+  return (
+    <span className="executive-action">
+      <button type="button" onClick={onAct}>{label}</button>
+      {confirmation && <small className="action-confirmation" role="status"><Check size={12} aria-hidden="true" /> {confirmation}</small>}
+    </span>
+  );
+}
+
+const PROVENANCE_TONE: Record<OversightProvenance, string> = {
+  'Source recovered': 'recovered',
+  'Calculated from recovered source': 'calculated',
+  'Supplemental synthetic UAT': 'synthetic',
+  'Management-reported and unresolved': 'unresolved',
+  'Not recovered': 'not-recovered',
+};
+
+function ProvBadge({ provenance }: { provenance: OversightProvenance }) {
+  return <span className={`prov-badge ${PROVENANCE_TONE[provenance]}`}>{provenance}</span>;
+}
+
+function OversightValueBlock({ label, value }: { label: string; value: OversightValue }) {
+  return <article><span>{label}</span><strong>{value.text}</strong><ProvBadge provenance={value.provenance} /></article>;
 }
 
 // ---------------------------------------------------------------------------
@@ -247,7 +300,7 @@ function HomeView({ onGo, handlers }: { onGo: (view: ViewKey, sub?: string) => v
   const compliance = useCompliance();
   const { summary, next, requiredNow, evidenceConnected, disconnectedNotice } = compliance;
   const firstName = firstNameFromProfile(user);
-  const sourceRecordCount = DECISIONS.length + WORKFLOW_INSTANCES.length + QAPI_PREVIEW_QUARTERS.length + EVIDENCE_PACKAGES.length;
+  const sourceRecordCount = DECISIONS.length + WORKFLOW_INSTANCES.length + OVERSIGHT_QUARTERS.length + EVIDENCE_PACKAGES.length;
   const readinessBlockers = [
     'Brad/Nolan Vertex transfer is a proposed future governance decision only.',
     'Production evidence service is disconnected from this local exercise path.',
@@ -276,11 +329,12 @@ function HomeView({ onGo, handlers }: { onGo: (view: ViewKey, sub?: string) => v
       <section className="brad-brief-card" aria-labelledby="brad-brief-title">
         <header>
           <div>
-            <span>BRAD'S GOVERNING BODY BRIEF</span>
-            <h2 id="brad-brief-title">Generated {formatBriefTimestamp()} from {sourceRecordCount} source records</h2>
+            <span>Verified Governing Body Readiness Brief</span>
+            <h2 id="brad-brief-title">Assembled {formatBriefTimestamp()} from {sourceRecordCount} portal records</h2>
           </div>
-          <i>LOCAL RUNTIME · FAIL-CLOSED</i>
+          <i>DETERMINISTIC · FAIL-CLOSED</i>
         </header>
+        <p className="brief-provenance-caption">Deterministically assembled from current portal records. Brad narrative generation is not connected.</p>
         <p className="brad-state">{BRAD_NOLAN_CURRENT_STATE}</p>
         <p>
           Deterministic readiness facts show eight Board decisions due before readiness can be relied on. Decision #1 is the future Brad/Nolan Vertex transfer; it is not implemented and must return with BAA, trust-zone, model, logging, rollback, and validation evidence. Personal compliance remains incomplete until assigned modules, policies, quizzes, tabletop packs, attestations, and official evidence records are complete. QAPI tabletop data is synthetic UAT only. The handbook remains an urgent legal/compliance review item, and the Agency Readiness Date cannot be treated as achieved until every gate sustains compliance for 30 consecutive days.
@@ -507,6 +561,7 @@ function CourseAccordion({ course, viewById, handlers }: { course: CourseProgres
 // ---------------------------------------------------------------------------
 
 function MeetingsView({ tab, onTab, onDecision }: { tab: MeetingsTab; onTab: (t: MeetingsTab) => void; onDecision: (decision: Decision) => void }) {
+  const queuedItems = useAgendaQueue();
   const TABS: Array<{ id: MeetingsTab; label: string }> = [
     { id: 'lifecycle', label: 'Lifecycle' },
     { id: 'agenda', label: 'Agenda queue' },
@@ -550,29 +605,157 @@ function MeetingsView({ tab, onTab, onDecision }: { tab: MeetingsTab; onTab: (t:
       </section>
     </>}
 
-    {tab === 'agenda' && <section className="agenda-card executive-agenda">
-      <header><div><span>AUTHORITATIVE READINESS DOCKET</span><h2>Agenda queue</h2></div><small>Decision-to-agenda metadata required</small></header>
-      <ol>{DECISIONS.map((decision, index) => <li key={decision.id} className={decision.tone}>
-        <time>{String(index + 1).padStart(2, '0')}</time>
-        <span>{decision.id}</span>
-        <div><strong>{decision.title}</strong><small>{decision.owner} · {decision.readinessImpact}</small></div>
-        <button onClick={() => onDecision(decision)}>Open dossier <ChevronRight size={15} /></button>
-      </li>)}</ol>
-    </section>}
+    {tab === 'agenda' && <>
+      <section className="agenda-card executive-agenda draft-agenda-queue">
+        <header><div><span>DRAFT AGENDA QUEUE</span><h2>Items you queued from decisions and workflows</h2></div><small>{AGENDA_QUEUE_DISCLAIMER}</small></header>
+        {queuedItems.length ? (
+          <ol>{queuedItems.map((item, index) => <li key={item.id} className="ready">
+            <time>{String(index + 1).padStart(2, '0')}</time>
+            <span>{item.decisionId}</span>
+            <div><strong>{item.title}</strong><small>Added {new Date(item.addedAt).toLocaleString()} · from {item.source}</small></div>
+            <button onClick={() => removeAgendaItem(item.id)} aria-label={`Remove ${item.decisionId} from draft agenda`}>Remove <X size={14} /></button>
+          </li>)}</ol>
+        ) : <p className="compliance-empty">No draft agenda items queued yet. Use "Add to agenda" on a decision dossier or workflow.</p>}
+      </section>
+      <section className="agenda-card executive-agenda">
+        <header><div><span>AUTHORITATIVE READINESS DOCKET</span><h2>Agenda queue</h2></div><small>Decision-to-agenda metadata required</small></header>
+        <ol>{DECISIONS.map((decision, index) => <li key={decision.id} className={decision.tone}>
+          <time>{String(index + 1).padStart(2, '0')}</time>
+          <span>{decision.id}</span>
+          <div><strong>{decision.title}</strong><small>{decision.owner} · {decision.readinessImpact}</small></div>
+          <button onClick={() => onDecision(decision)}>Open dossier <ChevronRight size={15} /></button>
+        </li>)}</ol>
+      </section>
+    </>}
 
-    {tab === 'schedule' && <section className="scheduler-panel">
-      <header>
-        <div><span>AD HOC EVENT SCHEDULER</span><h2>Schedule through Calendar/CES, not the browser.</h2></div>
-        <i>Draft · awaiting server sync</i>
-      </header>
-      <div className="scheduler-grid">
-        <article><small>Requested event</small><strong>Governing Body readiness decision meeting</strong><p>Decision IDs: {DECISIONS.map((decision) => decision.id).join(', ')}</p></article>
-        <article><small>Sync status</small><strong>Not synced</strong><p>Expected statuses: Draft, Scheduled, Sync pending, Synced to Google Calendar, Sync failed — Retry, Cancelled, Closed with evidence.</p></article>
-        <article><small>After sync</small><strong>Google event ID required</strong><p>Show Open in Google Calendar, audit record, and Brad/calendar notification path where appropriate.</p></article>
-      </div>
-      <div className="decision-action-row">{DECISION_TO_AGENDA_ACTIONS.map((action) => <button key={action} type="button">{action}</button>)}</div>
-    </section>}
+    {tab === 'schedule' && <AdHocScheduler queuedItems={queuedItems} />}
   </div>;
+}
+
+// ---------------------------------------------------------------------------
+// AD HOC SCHEDULER — real server request, fail-closed (blocker 3.3)
+// ---------------------------------------------------------------------------
+
+const SCHEDULER_ATTENDEE_OPTIONS = [
+  'Governing Body Chair',
+  'Administrator',
+  'Board Secretary',
+  'Compliance Officer',
+  'QAPI Lead',
+  'HR Director',
+];
+
+type SchedulerState =
+  | { phase: 'idle' }
+  | { phase: 'submitting' }
+  | { phase: 'failed'; message: string }
+  | { phase: 'created'; eventId: string };
+
+function AdHocScheduler({ queuedItems }: { queuedItems: ReturnType<typeof useAgendaQueue> }) {
+  const [title, setTitle] = useState('Governing Body readiness decision meeting');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  const [attendees, setAttendees] = useState<string[]>(['Governing Body Chair', 'Board Secretary']);
+  const [state, setState] = useState<SchedulerState>({ phase: 'idle' });
+
+  const toggleAttendee = (name: string) => {
+    setAttendees((current) => current.includes(name) ? current.filter((a) => a !== name) : [...current, name]);
+  };
+
+  const canSubmit = title.trim().length > 0 && date && time && attendees.length > 0 && state.phase !== 'submitting';
+
+  const submit = async () => {
+    if (!canSubmit) return;
+    setState({ phase: 'submitting' });
+    try {
+      const response = await fetch('/api/calendar/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': (typeof crypto !== 'undefined' && 'randomUUID' in crypto) ? crypto.randomUUID() : `gb-v3-${Date.now()}`,
+        },
+        body: JSON.stringify({
+          title: title.trim(),
+          startsAt: `${date}T${time}`,
+          attendees,
+          agenda: queuedItems.map((item) => ({ decisionId: item.decisionId, title: item.title, addedAt: item.addedAt, source: item.source })),
+        }),
+      });
+      if (!response.ok) {
+        setState({ phase: 'failed', message: 'Calendar service is not connected in this build — no event was created.' });
+        return;
+      }
+      const payload = await response.json().catch(() => null) as { id?: string; eventId?: string } | null;
+      const eventId = payload?.eventId ?? payload?.id;
+      if (!eventId) {
+        // A 2xx without a server event id is NOT a created event; fail closed.
+        setState({ phase: 'failed', message: 'Calendar service returned no event id — no event was created.' });
+        return;
+      }
+      setState({ phase: 'created', eventId });
+    } catch {
+      setState({ phase: 'failed', message: 'Calendar service is not connected in this build — no event was created.' });
+    }
+  };
+
+  return <section className="scheduler-panel">
+    <header>
+      <div><span>AD HOC EVENT SCHEDULER</span><h2>Schedule through Calendar/CES, not the browser.</h2></div>
+      <i>{state.phase === 'created' ? `Synced · Google event ${state.eventId}` : state.phase === 'failed' ? 'Sync failed — no event created' : 'Draft · nothing scheduled yet'}</i>
+    </header>
+    <form className="scheduler-form" onSubmit={(event) => { event.preventDefault(); void submit(); }}>
+      <label>
+        <span>Meeting title</span>
+        <input type="text" value={title} onChange={(event) => setTitle(event.target.value)} required />
+      </label>
+      <div className="scheduler-datetime">
+        <label>
+          <span>Date</span>
+          <input type="date" value={date} onChange={(event) => setDate(event.target.value)} required />
+        </label>
+        <label>
+          <span>Start time</span>
+          <input type="time" value={time} onChange={(event) => setTime(event.target.value)} required />
+        </label>
+      </div>
+      <fieldset className="scheduler-attendees">
+        <legend>Attendees (roles)</legend>
+        {SCHEDULER_ATTENDEE_OPTIONS.map((name) => (
+          <label key={name}>
+            <input type="checkbox" checked={attendees.includes(name)} onChange={() => toggleAttendee(name)} />
+            <span>{name}</span>
+          </label>
+        ))}
+      </fieldset>
+      <section className="scheduler-proposed-agenda">
+        <span>PROPOSED AGENDA · FROM DRAFT AGENDA QUEUE</span>
+        <small>{AGENDA_QUEUE_DISCLAIMER}</small>
+        {queuedItems.length
+          ? <ol>{queuedItems.map((item) => <li key={item.id}><b>{item.decisionId}</b> {item.title}</li>)}</ol>
+          : <p className="compliance-empty">The draft agenda queue is empty; the request will carry an empty agenda.</p>}
+      </section>
+      <div className="scheduler-submit-row">
+        <button type="submit" className="executive-button" disabled={!canSubmit}>
+          {state.phase === 'submitting' ? 'Submitting to /api/calendar/events…' : 'Create server-side calendar event'}
+        </button>
+        <ExecutiveAction
+          label="Open in Google Calendar"
+          disabledReason={state.phase === 'created' ? undefined : 'No Google event id exists — the calendar service is not connected in this build.'}
+          onAct={state.phase === 'created' ? () => window.location.assign(`https://calendar.google.com/calendar/event?eid=${encodeURIComponent(state.eventId)}`) : undefined}
+        />
+      </div>
+      {state.phase === 'failed' && (
+        <p className="scheduler-failed" role="alert">
+          <AlertTriangle size={15} aria-hidden="true" /> {state.message} Nothing was persisted as an event.
+        </p>
+      )}
+      {state.phase === 'created' && (
+        <p className="scheduler-created" role="status">
+          <CheckCircle2 size={15} aria-hidden="true" /> Server created event {state.eventId}.
+        </p>
+      )}
+    </form>
+  </section>;
 }
 
 // ---------------------------------------------------------------------------
@@ -609,8 +792,21 @@ function DecisionsView({ onDecision }: { onDecision: (decision: Decision) => voi
 // WORKFLOWS
 // ---------------------------------------------------------------------------
 
-function WorkflowsView({ tab, onTab, onDecision }: { tab: WorkflowTab; onTab: (t: WorkflowTab) => void; onDecision: (decision: Decision) => void }) {
+/** Fields on a workflow instance that are UAT-seeded, not compiled corpus data (blocker 5.3). */
+const SEEDED_WORKFLOW_PROVENANCE: OversightProvenance = 'Supplemental synthetic UAT';
+
+function WorkflowsView({ tab, onTab, onDecision, onGo }: { tab: WorkflowTab; onTab: (t: WorkflowTab) => void; onDecision: (decision: Decision) => void; onGo: (view: ViewKey, sub?: string) => void }) {
   const [selected, setSelected] = useState<WorkflowInstance>(WORKFLOW_INSTANCES[0]);
+  const [agendaConfirmation, setAgendaConfirmation] = useState<string | null>(null);
+  // Resolve the decision actually linked to the SELECTED workflow — never a
+  // hard-coded DECISIONS[0] (blocker 3.4).
+  const linkedDecision = ALL_DECISIONS.find((decision) => decision.workflowIds.includes(selected.workflowId)) ?? null;
+  const selectInstance = (item: WorkflowInstance) => { setSelected(item); setAgendaConfirmation(null); };
+  const addSelectedToAgenda = () => {
+    if (!linkedDecision) return;
+    const result = addAgendaItem({ decisionId: linkedDecision.id, title: linkedDecision.title, source: `workflows:${selected.instanceId}` });
+    setAgendaConfirmation(result.ok ? 'Added to draft agenda' : 'Already in draft agenda');
+  };
   const TABS: Array<{ id: WorkflowTab; label: string }> = [
     { id: 'due', label: 'Due Now' },
     { id: 'blockers', label: 'Readiness Blockers' },
@@ -635,7 +831,7 @@ function WorkflowsView({ tab, onTab, onDecision }: { tab: WorkflowTab; onTab: (t
       <div className="workflow-instance-list">
         {visible.length ? visible.map((item) => (
           <article key={item.instanceId} className={selected.instanceId === item.instanceId ? 'active' : ''}>
-            <button onClick={() => setSelected(item)}>
+            <button onClick={() => selectInstance(item)}>
               <StatusMark tone={item.readinessImpact === 'Blocks readiness' ? 'attention' : item.readinessImpact === 'At risk' ? 'hold' : 'ready'} />
               <div><small>{item.workflowId} · {item.sourcePosture}</small><strong>{item.title}</strong><p>{item.whyTriggered}</p></div>
               <ChevronRight size={16} />
@@ -653,19 +849,35 @@ function WorkflowsView({ tab, onTab, onDecision }: { tab: WorkflowTab; onTab: (t
         <h2 id="workflow-detail-title">{selected.title}</h2>
         <p>{selected.processOverview}</p>
         <div className="workflow-detail-grid">
-          <article><small>Readiness impact</small><strong>{selected.readinessImpact}</strong></article>
-          <article><small>Next action</small><strong>{selected.nextAction}</strong></article>
-          <article><small>Agenda status</small><strong>{selected.agendaStatus}</strong></article>
-          <article><small>Authority</small><strong>{selected.authority || 'Source authority pending'}</strong></article>
+          <article><small>Readiness impact</small><strong>{selected.readinessImpact}</strong><ProvBadge provenance={SEEDED_WORKFLOW_PROVENANCE} /></article>
+          <article><small>Next action</small><strong>{selected.nextAction}</strong><ProvBadge provenance={SEEDED_WORKFLOW_PROVENANCE} /></article>
+          <article><small>Agenda status</small><strong>{selected.agendaStatus}</strong><ProvBadge provenance={SEEDED_WORKFLOW_PROVENANCE} /></article>
+          <article><small>Authority</small><strong>{selected.authority || 'Source authority pending'}</strong><ProvBadge provenance="Source recovered" /></article>
+          <article><small>Due</small><strong>{selected.due}</strong><ProvBadge provenance={SEEDED_WORKFLOW_PROVENANCE} /></article>
+          <article><small>Evidence status</small><strong>{selected.evidenceCompleteness}</strong><ProvBadge provenance={SEEDED_WORKFLOW_PROVENANCE} /></article>
+          <article><small>Trigger</small><strong>{selected.whyTriggered}</strong><ProvBadge provenance={SEEDED_WORKFLOW_PROVENANCE} /></article>
         </div>
+        <p className="workflow-provenance-note">Policy/form/authority enrichment is projected from the compiled workflow corpus. Operational state, due date, evidence status, and trigger are seeded for this preview and labeled "{SEEDED_WORKFLOW_PROVENANCE}".</p>
         <section><h3>Required forms</h3><div className="form-chip-row">{selected.requiredForms.length ? selected.requiredForms.map((form) => <span key={form}>{form}</span>) : <span>No forms projected</span>}</div></section>
         <section><h3>Failure and audit requirements</h3><p>{selected.failureConditions}</p><p>{selected.auditRequirements}</p></section>
         <div className="decision-action-row">
-          <button type="button">Open workflow</button>
-          <button type="button" onClick={() => onDecision(DECISIONS[0])}>Add to agenda</button>
-          <button type="button">Schedule event</button>
-          <button type="button">Open required forms</button>
-          <button type="button">Open evidence in CES</button>
+          <ExecutiveAction
+            label="Open linked board decision"
+            onAct={linkedDecision ? () => onDecision(linkedDecision) : undefined}
+            disabledReason={linkedDecision ? undefined : 'No board decision references this workflow'}
+          />
+          <ExecutiveAction
+            label="Add to agenda"
+            onAct={linkedDecision ? addSelectedToAgenda : undefined}
+            disabledReason={linkedDecision ? undefined : 'No board decision references this workflow'}
+            confirmation={agendaConfirmation ?? undefined}
+          />
+          <ExecutiveAction label="Schedule event" onAct={() => onGo('meetings', 'schedule')} />
+          <ExecutiveAction
+            label="Open required forms"
+            disabledReason="Form registry deep-links require the connected CES service — not available in this preview build"
+          />
+          <ExecutiveAction label="Open evidence view" onAct={() => onGo('evidence')} />
         </div>
       </section>
     </section>
@@ -677,7 +889,7 @@ function WorkflowsView({ tab, onTab, onDecision }: { tab: WorkflowTab; onTab: (t
 // ---------------------------------------------------------------------------
 
 function OversightView({ tab, onTab, onDecision, onOpenTabletop }: { tab: OversightTab; onTab: (t: OversightTab) => void; onDecision: (decision: Decision) => void; onOpenTabletop: () => void }) {
-  const [quarter, setQuarter] = useState(QAPI_PREVIEW_QUARTERS[1]);
+  const [quarter, setQuarter] = useState(OVERSIGHT_QUARTERS[1]);
   const TABS: Array<{ id: OversightTab; label: string }> = [
     { id: 'qapi', label: '2026 QAPI Preview' },
     { id: 'domains', label: 'Other Domains' },
@@ -694,24 +906,40 @@ function OversightView({ tab, onTab, onDecision, onOpenTabletop }: { tab: Oversi
     {tab === 'qapi' && (
       <>
         <nav className="quarter-selector" aria-label="Synthetic QAPI quarter">
-          {QAPI_PREVIEW_QUARTERS.map((item) => <button key={item.id} className={quarter.id === item.id ? 'active' : ''} onClick={() => setQuarter(item)}>{item.label}</button>)}
+          {OVERSIGHT_QUARTERS.map((item) => <button key={item.id} className={quarter.id === item.id ? 'active' : ''} onClick={() => setQuarter(item)}>{item.label}</button>)}
         </nav>
-        <section className="oversight-signal-grid">
-          <article><span>What changed</span><strong>{quarter.changed}</strong></article>
-          <article><span>Improved</span><strong>{quarter.improved}</strong></article>
-          <article><span>Worsened</span><strong>{quarter.worsened}</strong></article>
-          <article><span>Requires Board action</span><strong>{quarter.boardDecision}</strong></article>
+        <section className="oversight-provenance-legend" aria-label="Provenance legend">
+          <span>PROVENANCE LEGEND — every Oversight value carries one of these labels</span>
+          <div>
+            {OVERSIGHT_PROVENANCE_LEGEND.map((entry) => (
+              <article key={entry.label}><ProvBadge provenance={entry.label} /><p>{entry.description}</p></article>
+            ))}
+          </div>
         </section>
+        <p className="oversight-source-note">Derived from {quarter.source} · normalization: {quarter.normalization}</p>
+        <section className="oversight-signal-grid">
+          <OversightValueBlock label="What changed" value={quarter.changed} />
+          <OversightValueBlock label="Improved" value={quarter.improved} />
+          <OversightValueBlock label="Worsened" value={quarter.worsened} />
+          <OversightValueBlock label="Requires Board action" value={quarter.boardDecision} />
+        </section>
+        {quarter.normalization === 'pending' && (
+          <p className="oversight-pending-note" role="status">
+            <AlertTriangle size={15} aria-hidden="true" /> {quarter.id} 2026 normalization is pending — no KPI or lifecycle value is recovered for this quarter, and none is invented.
+          </p>
+        )}
         <section className="qapi-kpi-grid">
           {quarter.kpis.map((kpi) => <article key={kpi.name}>
-            <header><span>{kpi.posture}</span><strong>{kpi.name}</strong></header>
-            <dl><div><dt>Current</dt><dd>{kpi.value}</dd></div><div><dt>Threshold</dt><dd>{kpi.threshold}</dd></div><div><dt>Numerator / denominator</dt><dd>{kpi.numerator} / {kpi.denominator}</dd></div><div><dt>Prior quarter</dt><dd>{kpi.priorQuarter}</dd></div><div><dt>Subgroup</dt><dd>{kpi.subgroup}</dd></div><div><dt>Source date</dt><dd>{kpi.sourceDate}</dd></div></dl>
+            <header><ProvBadge provenance={kpi.provenance} /><strong>{kpi.name}</strong></header>
+            <dl><div><dt>Current</dt><dd>{kpi.value}</dd></div><div><dt>Threshold</dt><dd>{kpi.threshold}</dd></div><div><dt>Numerator / denominator</dt><dd>{kpi.numerator} / {kpi.denominator}</dd></div><div><dt>Prior quarter</dt><dd>{kpi.priorQuarter} <ProvBadge provenance={kpi.priorQuarterProvenance} /></dd></div><div><dt>Subgroup</dt><dd>{kpi.subgroup}</dd></div><div><dt>Source date</dt><dd>{kpi.sourceDate}</dd></div></dl>
             <p>{kpi.trend}</p>
           </article>)}
         </section>
         <section className="qapi-lifecycle">
           <header><span>QAPI LIFECYCLE</span><h2>PIPs, CAPs, RCAs, evidence, and Board return</h2></header>
-          {quarter.lifecycle.map((item) => <article key={`${item.type}-${item.title}`}><b>{item.type}</b><div><strong>{item.title}</strong><p>{item.owner} · due {item.due} · evidence: {item.evidence}</p></div><span>{item.boardReturn}</span></article>)}
+          {quarter.lifecycle.length
+            ? quarter.lifecycle.map((item) => <article key={`${item.type}-${item.title}`}><b>{item.type}</b><div><strong>{item.title}</strong><p>{item.owner} · due {item.due} · evidence: {item.evidence}</p><ProvBadge provenance={item.provenance} /></div><span>{item.boardReturn}</span></article>)
+            : <p className="compliance-empty">No lifecycle record recovered for this quarter.</p>}
         </section>
         <section className="oversight-sim-launch">
           <button className="home-sim-launch" onClick={onOpenTabletop}>
@@ -734,8 +962,8 @@ function OversightView({ tab, onTab, onDecision, onOpenTabletop }: { tab: Oversi
     {tab === 'data' && <>
       <section className="data-integrity-list">
         <header><span>UNRESOLVED DATA INTEGRITY</span><h2>Issues that prevent silent reliance</h2></header>
-        {quarter.dataIssues.map((issue) => <article key={issue}><AlertTriangle size={16} /><strong>{issue}</strong><span>{quarter.label}</span></article>)}
-        {QAPI_PREVIEW_QUARTERS.flatMap((item) => item.dataIssues.map((issue) => `${item.label}: ${issue}`)).slice(0, 8).map((issue) => <article key={issue}><AlertTriangle size={16} /><strong>{issue}</strong><span>Synthetic preview</span></article>)}
+        {quarter.dataIssues.map((issue) => <article key={issue.text}><AlertTriangle size={16} /><strong>{issue.text}</strong><ProvBadge provenance={issue.provenance} /><span>{quarter.label}</span></article>)}
+        {OVERSIGHT_QUARTERS.filter((item) => item.id !== quarter.id).flatMap((item) => item.dataIssues.map((issue) => ({ key: `${item.label}: ${issue.text}`, issue, label: item.label }))).slice(0, 8).map(({ key, issue, label }) => <article key={key}><AlertTriangle size={16} /><strong>{label}: {issue.text}</strong><ProvBadge provenance={issue.provenance} /><span>Synthetic preview</span></article>)}
       </section>
     </>}
   </div>;
@@ -746,18 +974,38 @@ function OversightView({ tab, onTab, onDecision, onOpenTabletop }: { tab: Oversi
 // ---------------------------------------------------------------------------
 
 function EvidenceView({ onOpenForms }: { onOpenForms: () => void }) {
+  const [selected, setSelected] = useState<EvidencePackage>(EVIDENCE_PACKAGES[0]);
+  const [chainOpen, setChainOpen] = useState(false);
+  const chainRef = useRef<HTMLElement>(null);
+  const driveUrl = selected.drivePackage.startsWith('http') ? selected.drivePackage : null;
+  const viewChain = () => {
+    setChainOpen(true);
+    // Instant scroll — smooth scrollIntoView silently no-ops on the V6 scroller.
+    window.requestAnimationFrame(() => chainRef.current?.scrollIntoView({ block: 'center' }));
+  };
   return <div className="governance-page executive-readiness-os">
     <Breadcrumb trail={['Governing Body Office', 'Evidence / CES']} />
     <PageHeading eyebrow="CES-SCOPED EVIDENCE" title="Evidence is a projection, not a duplicate store." description="This destination shows Governing Body packages and deep links by canonical identifiers. It does not mutate CES records or become a second evidence repository." action={<button className="executive-button" onClick={onOpenForms}>Annual governance forms <ArrowRight size={16} /></button>} />
     <section className="record-integrity-hero"><div><Fingerprint size={30} /><div><span>CONTROL DISTINCTION</span><strong>CES and signed packages remain authoritative.</strong><p>The portal indexes event, decision, policy, training, tabletop, and packet evidence using canonical IDs and protected access posture.</p></div></div><div className="integrity-number"><strong>{EVIDENCE_PACKAGES.length}</strong><span>open<br />packages</span></div></section>
-    <section className="evidence-register ces-evidence-register"><header><div><span>GOVERNING BODY EVIDENCE PACKAGES</span><h2>Scoped CES projection</h2></div><small>policy_id · workflow_id · event_id · decision_id · form_id · evidence_id</small></header>{EVIDENCE_PACKAGES.map((item) => <article key={item.evidenceId}><span><FileText size={16} /></span><div><small>{item.evidenceId} · {item.packageType}</small><strong>{item.title}</strong><p>{item.canonicalId}</p></div><div><small>STATUS</small><strong>{item.status}</strong></div><div><small>ACCESS</small><strong>{item.access}</strong></div><button aria-label={`Open ${item.title} in CES`}><ChevronRight size={16} /></button></article>)}</section>
+    <section className="evidence-register ces-evidence-register"><header><div><span>GOVERNING BODY EVIDENCE PACKAGES</span><h2>Scoped CES projection</h2></div><small>policy_id · workflow_id · event_id · decision_id · form_id · evidence_id</small></header>{EVIDENCE_PACKAGES.map((item) => <article key={item.evidenceId} className={selected.evidenceId === item.evidenceId ? 'active' : ''}><span><FileText size={16} /></span><div><small>{item.evidenceId} · {item.packageType}</small><strong>{item.title}</strong><p>{item.canonicalId}</p></div><div><small>STATUS</small><strong>{item.status}</strong></div><div><small>ACCESS</small><strong>{item.access}</strong></div><button aria-label={`View evidence chain for ${item.title}`} onClick={() => { setSelected(item); viewChain(); }}><ChevronRight size={16} /></button></article>)}</section>
     <section className="evidence-actions">
-      <button type="button">Open in CES</button>
-      <button type="button">Open in Google Drive</button>
-      <button type="button">View evidence chain</button>
-      <button type="button">Download approved package</button>
+      <p className="evidence-actions-context">Actions apply to <strong>{selected.evidenceId}</strong> — {selected.title}</p>
+      <div className="decision-action-row">
+        <ExecutiveAction label="Open in CES" onAct={() => window.location.assign('/evidence')} />
+        <ExecutiveAction
+          label="Open in Google Drive"
+          onAct={driveUrl ? () => window.location.assign(driveUrl) : undefined}
+          disabledReason={driveUrl ? undefined : 'No role-controlled Drive link is attached to this package'}
+        />
+        <ExecutiveAction label="View evidence chain" onAct={viewChain} />
+        <ExecutiveAction label="Download approved package" disabledReason="Signed export requires the connected evidence service" />
+      </div>
     </section>
-    <section className="record-chain"><span>EVIDENCE CHAIN</span><ol>{EVIDENCE_PACKAGES[0].chain.map((item, index) => <li key={item}><b>{String(index + 1).padStart(2, '0')}</b><strong>{item}</strong>{index < EVIDENCE_PACKAGES[0].chain.length - 1 && <i />}</li>)}</ol></section>
+    <section className={`record-chain ${chainOpen ? 'open' : ''}`} ref={chainRef}>
+      <span>EVIDENCE CHAIN · {selected.evidenceId}</span>
+      <ol>{selected.chain.map((item, index) => <li key={item}><b>{String(index + 1).padStart(2, '0')}</b><strong>{item}</strong>{index < selected.chain.length - 1 && <i />}</li>)}</ol>
+      <small>Canonical id: {selected.canonicalId} · CES path: {selected.cesPath} · status: {selected.status}</small>
+    </section>
   </div>;
 }
 
@@ -798,35 +1046,93 @@ function DecisionReferenceMaterials({ decision }: { decision: Decision }) {
 }
 
 function DecisionRevisionContext({ decision }: { decision: Decision }) {
+  // Hooks must run unconditionally; the early return happens after them.
+  const [draftDocId, setDraftDocId] = useState<GbReferenceDocId | null>(null);
+  const counselStatusRef = useRef<HTMLElement>(null);
+  const [counselStatusHighlighted, setCounselStatusHighlighted] = useState(false);
   if (!decision.revisionContext) return null;
+
+  const context = decision.revisionContext;
+  const draftReference = decision.referenceMaterials?.find((reference) => reference.docId === 'handbook-2026-counsel-review-draft');
+  const viewCounselStatus = () => {
+    setCounselStatusHighlighted(true);
+    // Instant scroll — smooth scrollIntoView silently no-ops on the V6 scroller.
+    window.requestAnimationFrame(() => counselStatusRef.current?.scrollIntoView({ block: 'center' }));
+  };
 
   return (
     <section className="drawer-revision-context">
       <span>HANDBOOK REVISION CONTEXT</span>
-      <h3>{decision.revisionContext.heading}</h3>
+      <h3>{context.heading}</h3>
       <div className="revision-context-summary">
-        {decision.revisionContext.summary.map((paragraph) => (
+        {context.executiveSummary.map((paragraph) => (
           <p key={paragraph}>{paragraph}</p>
         ))}
       </div>
-      <div className="revision-context-sections">
-        {decision.revisionContext.sections.map((section) => (
-          <article key={section.title}>
-            <strong>{section.title}</strong>
-            <ul>
-              {section.items.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </article>
-        ))}
+      <div className="decision-action-row revision-context-actions">
+        <ExecutiveAction
+          label="Open 2022 source handbook"
+          disabledReason="2022 source handbook is not attached in this build"
+        />
+        <ExecutiveAction
+          label="Open recommended 2026 draft"
+          onAct={() => setDraftDocId('handbook-2026-counsel-review-draft')}
+        />
+        <ExecutiveAction label="View counsel-review status" onAct={viewCounselStatus} />
       </div>
+      <details className="revision-context-details">
+        <summary>View detailed legal and compliance findings</summary>
+        <div className="revision-context-summary">
+          {context.summary.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+        </div>
+        <div className="revision-context-sections">
+          {context.sections.map((section) => (
+            <article key={section.title}>
+              <strong>{section.title}</strong>
+              <ul>
+                {section.items.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </details>
+      <section
+        ref={counselStatusRef}
+        id="gb-counsel-review-status"
+        className={`counsel-review-status ${counselStatusHighlighted ? 'highlighted' : ''}`}
+        aria-label="Counsel-review status"
+      >
+        <span>COUNSEL-REVIEW STATUS</span>
+        <p>
+          {draftReference
+            ? `${draftReference.posture} — ${draftReference.detail}`
+            : 'No counsel-review reference document is attached to this decision.'}
+        </p>
+      </section>
+      {draftDocId ? (
+        <Suspense fallback={null}>
+          <GbReferenceViewer docId={draftDocId} onClose={() => setDraftDocId(null)} />
+        </Suspense>
+      ) : null}
     </section>
   );
 }
 
-function DecisionDrawer({ decision, onClose }: { decision: Decision; onClose: () => void }) {
+function DecisionDrawer({ decision, onClose, onGo }: { decision: Decision; onClose: () => void; onGo: (view: ViewKey, sub?: string) => void }) {
   const closeRef = useRef<HTMLButtonElement>(null);
+  const [agendaState, setAgendaState] = useState<'idle' | 'added' | 'duplicate'>('idle');
+  const queuedItems = useAgendaQueue();
+  const alreadyQueued = queuedItems.some((item) => item.decisionId === decision.id);
+  const linkedWorkflowInstance = WORKFLOW_INSTANCES.find((instance) => decision.workflowIds.includes(instance.workflowId)) ?? null;
+  const addToAgenda = () => {
+    const result = addAgendaItem({ decisionId: decision.id, title: decision.title, source: 'decision-drawer' });
+    setAgendaState(result.ok ? 'added' : 'duplicate');
+  };
+  const goFromDrawer = (view: ViewKey, sub?: string) => { onClose(); onGo(view, sub); };
   useEffect(() => {
     const priorOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -909,13 +1215,42 @@ function DecisionDrawer({ decision, onClose }: { decision: Decision; onClose: ()
               {decision.formIds.map((item) => <code key={item}>{item}</code>)}
             </div>
           </section>
-          <section className="decision-action-row">
-            {DECISION_TO_AGENDA_ACTIONS.map((action) => <button key={action} type="button">{action}</button>)}
+          <section className="decision-action-row drawer-action-row">
+            <ExecutiveAction
+              label="Add to agenda"
+              onAct={addToAgenda}
+              confirmation={agendaState === 'added' ? 'Added to draft agenda' : agendaState === 'duplicate' || alreadyQueued ? 'Already in draft agenda' : undefined}
+            />
+            <ExecutiveAction label="Schedule ad hoc meeting" onAct={() => goFromDrawer('meetings', 'schedule')} />
+            <ExecutiveAction
+              label="Open workflow"
+              onAct={linkedWorkflowInstance ? () => goFromDrawer('workflows', linkedWorkflowInstance.tab) : undefined}
+              disabledReason={linkedWorkflowInstance ? undefined : 'No active workflow instance references this decision'}
+            />
+            <ExecutiveAction
+              label="Open required forms"
+              disabledReason="Form registry deep-links require the connected CES service — not available in this preview build"
+            />
+            <ExecutiveAction label="Open evidence view" onAct={() => goFromDrawer('evidence')} />
+            <ExecutiveAction
+              label="Open linked Google Drive package"
+              disabledReason="No role-controlled Drive link is attached to this decision"
+            />
+            <ExecutiveAction label="Assign owner" disabledReason="Requires the connected CES service — not available in this preview build" />
+            <ExecutiveAction label="Set due date" disabledReason="Requires the connected CES service — not available in this preview build" />
+            <ExecutiveAction label="Set return-to-Board date" disabledReason="Requires the connected CES service — not available in this preview build" />
           </section>
         </div>
         <footer>
           <button className="quiet-drawer-button" onClick={onClose}>Return to docket</button>
-          <button className="executive-button" onClick={onClose}>Add to agenda <Check size={15} /></button>
+          {agendaState === 'added' || alreadyQueued ? (
+            <span className="drawer-agenda-confirmation" role="status">
+              <CheckCircle2 size={15} aria-hidden="true" /> {agendaState === 'added' ? 'Added to draft agenda' : 'Already in draft agenda'}
+              <small>{AGENDA_QUEUE_DISCLAIMER}</small>
+            </span>
+          ) : (
+            <button className="executive-button" onClick={addToAgenda}>Add to agenda <Check size={15} /></button>
+          )}
         </footer>
       </aside>
     </div>
@@ -986,7 +1321,7 @@ function AppShell({ view, onView, onSearch, children }: { view: ViewKey; onView:
     </aside>
     {menuOpen && <button className="mobile-rail-scrim" onClick={() => setMenuOpen(false)} aria-label="Close navigation" />}
     <div className="governance-workspace">
-      <header className="governance-topbar"><div className="topbar-context"><button className="mobile-menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open navigation">{menuOpen ? <PanelLeftClose size={19} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />}</button><div><span>CARE INDEED / GOVERNING BODY OFFICE</span><strong>{active.label}</strong></div></div><div className="topbar-actions"><button className="command-trigger" onClick={onSearch} aria-label="Search the record"><Search size={15} aria-hidden="true" /><span>Search the record</span><kbd>Ctrl K</kbd></button><span className="executive-prototype"><CircleDot size={10} /> PREVIEW · DATA POSTURE SHOWN</span><button className="notification-button" aria-label="Notifications"><Bell size={17} /><i /></button><div className="topbar-profile"><span>{initials}</span><div><strong>{displayName}</strong><small>{roleLabel}</small></div></div></div></header>
+      <header className="governance-topbar"><div className="topbar-context"><button className="mobile-menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open navigation">{menuOpen ? <PanelLeftClose size={19} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />}</button><div><span>CARE INDEED / GOVERNING BODY OFFICE</span><strong>{active.label}</strong></div></div><div className="topbar-actions"><button className="command-trigger" onClick={onSearch} aria-label="Search the record"><Search size={15} aria-hidden="true" /><span>Search the record</span><kbd>Ctrl K</kbd></button><span className="executive-prototype"><CircleDot size={10} /> PREVIEW · DATA POSTURE SHOWN</span><button className="notification-button" disabled title="Notifications require the connected CES service — not available in this preview build" aria-label="Notifications — requires the connected CES service, not available in this preview build"><Bell size={17} /><i /></button><div className="topbar-profile"><span>{initials}</span><div><strong>{displayName}</strong><small>{roleLabel}</small></div></div></div></header>
       <main>{children}</main>
       <footer className="governance-footer"><span>CARE INDEED HOME HEALTH CARE</span><div><span>Governing Body Executive Readiness Office</span><i /> <span>CES projection</span><i /><span>2026 readiness preview</span></div></footer>
     </div>
@@ -1088,7 +1423,7 @@ export default function MyJourneyApp() {
     if (view === 'compliance') return <MyComplianceView tab={complianceTab} onTab={setComplianceTab} handlers={handlers} />;
     if (view === 'meetings') return <MeetingsView tab={meetingsTab} onTab={setMeetingsTab} onDecision={setDecision} />;
     if (view === 'decisions') return <DecisionsView onDecision={setDecision} />;
-    if (view === 'workflows') return <WorkflowsView tab={workflowTab} onTab={setWorkflowTab} onDecision={setDecision} />;
+    if (view === 'workflows') return <WorkflowsView tab={workflowTab} onTab={setWorkflowTab} onDecision={setDecision} onGo={go} />;
     if (view === 'oversight') return <OversightView tab={oversightTab} onTab={setOversightTab} onDecision={setDecision} onOpenTabletop={handlers.onOpenTabletop} />;
     if (view === 'evidence') return <EvidenceView onOpenForms={() => setFormsOpen(true)} />;
     return <HomeView onGo={go} handlers={handlers} />;
@@ -1096,7 +1431,7 @@ export default function MyJourneyApp() {
 
   return <>
     <AppShell view={view} onView={(v) => go(v)} onSearch={() => setSearchOpen(true)}>{content}</AppShell>
-    {decision && <DecisionDrawer decision={decision} onClose={() => setDecision(null)} />}
+    {decision && <DecisionDrawer decision={decision} onClose={() => setDecision(null)} onGo={go} />}
     {searchOpen && <CommandPalette onClose={() => setSearchOpen(false)} onView={go} onDecision={setDecision} onPolicy={setPolicyOpen} onModule={openModule} />}
   </>;
 }
