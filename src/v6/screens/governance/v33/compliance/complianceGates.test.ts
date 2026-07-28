@@ -35,6 +35,7 @@ function record(partial: Partial<ComplianceEvidenceRecord> & { assignmentId: str
     attestedAt: '2026-01-01T00:00:00.000Z',
     answersSnapshot: {},
     score: 100,
+    outcome: 'passed',
     criticalErrors: [],
     attemptNumber: 1,
     remediationPath: 'none',

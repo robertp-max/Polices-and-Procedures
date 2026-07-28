@@ -55,7 +55,12 @@ export async function commitTabletopEvidence(input: EvidenceSnapshotInput): Prom
     readCompletedAt: null,
     attestedAt: input.attestedAt,
     answersSnapshot,
+    // Raw engine score (points of 1000) + the ENGINE-DECIDED outcome. The
+    // outcome — not the raw number — is what completion selectors require, so a
+    // failed attempt is preserved as evidence/remediation history without ever
+    // counting as complete.
     score: input.score.total,
+    outcome: input.score.passed ? ('passed' as const) : ('failed' as const),
     criticalErrors: input.score.criticalErrors,
     attemptNumber: input.attemptNumber,
     remediationPath: input.remediationPath,

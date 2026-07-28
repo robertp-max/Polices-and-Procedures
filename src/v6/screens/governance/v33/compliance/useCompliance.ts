@@ -3,7 +3,8 @@
 // changes. Kept deliberately small; all logic lives in the pure selectors.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { deriveGbCatalog, DEFAULT_LEARNER_ID } from './complianceCatalog';
+import { deriveGbCatalog } from './complianceCatalog';
+import { useLearnerId } from './complianceIdentity';
 import { refreshOfficialEvidence, subscribe } from './complianceStore';
 import {
   courseProgress,
@@ -30,7 +31,11 @@ export interface UseComplianceResult {
   refresh: () => void;
 }
 
-export function useCompliance(learnerId: string = DEFAULT_LEARNER_ID): UseComplianceResult {
+export function useCompliance(learnerIdOverride?: string): UseComplianceResult {
+  // Default identity is the AUTHENTICATED user (local-demo preview id only as a
+  // logged-out fallback, and that id can never write official evidence).
+  const authLearnerId = useLearnerId();
+  const learnerId = learnerIdOverride ?? authLearnerId;
   const [tick, setTick] = useState(0);
   const refresh = useCallback(() => setTick((t) => t + 1), []);
 

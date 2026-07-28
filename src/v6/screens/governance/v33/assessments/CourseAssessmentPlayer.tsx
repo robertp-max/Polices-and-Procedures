@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, CheckCircle2, ClipboardCheck, FileWarning, Lock, ShieldAlert } from 'lucide-react';
 import { getPolicyJourney } from '../generated/policyJourney.generated';
 import { commitEvidence } from '../compliance/complianceStore';
-import { DEFAULT_LEARNER_ID } from '../compliance/complianceCatalog';
+import { useLearnerId } from '../compliance/complianceIdentity';
 import { getComplianceEvidenceService } from '../compliance/complianceEvidenceAdapter';
 import { deterministicShuffle, integrityHash } from './assessmentUtils';
 import { getCourseQuestions } from './courseAssessmentBank';
@@ -29,14 +29,17 @@ type Phase = 'attempt' | 'scored';
 export default function CourseAssessmentPlayer({ courseId, onExit }: { courseId: string; onExit: () => void }) {
   const journey = useMemo(() => getPolicyJourney('GB'), []);
   const course = journey.courses.find((c) => c.courseId === courseId);
+  const learnerId = useLearnerId();
   const attemptNumber = 1;
   const questions = useMemo(() => {
     const raw = getCourseQuestions(courseId);
-    return deterministicShuffle(raw, `${DEFAULT_LEARNER_ID}:${courseId}:${attemptNumber}`).map((q) => ({
+    // Variant seeds are per-learner: a different authenticated user gets a
+    // different question/option order for the same course and attempt.
+    return deterministicShuffle(raw, `${learnerId}:${courseId}:${attemptNumber}`).map((q) => ({
       q,
-      order: deterministicShuffle(q.options.map((_, i) => i), `${DEFAULT_LEARNER_ID}:${q.id}:${attemptNumber}`),
+      order: deterministicShuffle(q.options.map((_, i) => i), `${learnerId}:${q.id}:${attemptNumber}`),
     }));
-  }, [courseId]);
+  }, [courseId, learnerId]);
 
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [phase, setPhase] = useState<Phase>('attempt');
@@ -98,7 +101,7 @@ export default function CourseAssessmentPlayer({ courseId, onExit }: { courseId:
 
     const payload = {
       assignmentId: `gb:course-assessment:${courseId}`,
-      learnerId: DEFAULT_LEARNER_ID,
+      learnerId,
       role: 'GB' as const,
       sourceId: courseId,
       sourceType: 'course_quiz' as const,
@@ -108,6 +111,7 @@ export default function CourseAssessmentPlayer({ courseId, onExit }: { courseId:
       attestedAt: attested ? new Date().toISOString() : null,
       answersSnapshot: answers,
       score,
+      outcome: passed ? ('passed' as const) : ('failed' as const),
       criticalErrors: critical,
       attemptNumber,
       remediationPath: 'none' as const,

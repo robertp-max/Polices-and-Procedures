@@ -71,7 +71,15 @@ export interface ComplianceAssignment {
 
 export type ComplianceSourceType = 'module' | 'policy' | 'course_quiz' | 'tabletop';
 
-export type RemediationPath = 'none' | 'primary_retry' | 'true_false_forensic';
+export type RemediationPath = 'none' | 'primary_retry' | 'true_false_forensic' | 'guided_true_false';
+
+/**
+ * Explicit attempt outcome, decided BY THE SCORING ENGINE at submit time in the
+ * engine's own scoring unit. A failed attempt is preserved as evidence and
+ * remediation history, but it must NEVER satisfy completion — completion
+ * requires `outcome === 'passed'` (see complianceSelectors.isOfficiallyComplete).
+ */
+export type EvidenceOutcome = 'passed' | 'failed';
 
 export interface ComplianceEvidenceRecord {
   evidenceId: string;
@@ -86,6 +94,12 @@ export interface ComplianceEvidenceRecord {
   attestedAt: string | null;
   answersSnapshot: unknown;
   score: number | null;
+  /**
+   * The engine-decided pass/fail result. Required. `score` alone is not a
+   * completion decision — scales differ per source type (percent for modules
+   * and course quizzes, points-of-1000 for tabletops).
+   */
+  outcome: EvidenceOutcome;
   criticalErrors: string[];
   attemptNumber: number;
   remediationPath: RemediationPath;

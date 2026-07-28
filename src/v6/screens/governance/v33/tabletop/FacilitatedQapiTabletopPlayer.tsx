@@ -13,7 +13,7 @@ import {
   ArrowLeft, ArrowRight, CheckCircle2, FileSearch, FileWarning, Lock, Plus, ShieldAlert, Trash2, Users,
 } from 'lucide-react';
 import { commitEvidence } from '../compliance/complianceStore';
-import { DEFAULT_LEARNER_ID } from '../compliance/complianceCatalog';
+import { useLearnerId } from '../compliance/complianceIdentity';
 import { getComplianceEvidenceService } from '../compliance/complianceEvidenceAdapter';
 import { integrityHash } from '../assessments/assessmentUtils';
 import {
@@ -58,6 +58,9 @@ function emptyMotion(decisionId: string): TabletopMotion {
 }
 
 export default function FacilitatedQapiTabletopPlayer({ onExit }: { onExit: () => void }) {
+  // Facilitator's authenticated identity anchors the group session; each
+  // participant record is namespaced under it.
+  const facilitatorLearnerId = useLearnerId();
   const [session, setSession] = useState<FacilitatedTabletopState | null>(null);
   const [activeParticipantId, setActiveParticipantId] = useState<string | null>(null);
   const [individualResults, setIndividualResults] = useState<Record<string, { score: Q26Score; recorded: boolean; notice: string }>>({});
@@ -168,7 +171,7 @@ export default function FacilitatedQapiTabletopPlayer({ onExit }: { onExit: () =
     });
     const payload = {
       assignmentId: QAPI2026_TABLETOP_ASSIGNMENT_ID,
-      learnerId: `${DEFAULT_LEARNER_ID}:${participant.participantId}`,
+      learnerId: `${facilitatorLearnerId}:${participant.participantId}`,
       role: 'GB' as const,
       sourceId: QAPI2026_TABLETOP_ID,
       sourceType: 'tabletop' as const,
@@ -178,6 +181,7 @@ export default function FacilitatedQapiTabletopPlayer({ onExit }: { onExit: () =
       attestedAt: participant.attestedAt,
       answersSnapshot: { decisions, surveyor: session.groupSurveyor, transferAnswers: participant.transferAnswers, initialPosition: participant.initialPositions },
       score: score.scorePercent,
+      outcome: score.passed ? ('passed' as const) : ('failed' as const),
       criticalErrors: score.criticalReasons,
       attemptNumber: 1,
       remediationPath: 'none' as const,

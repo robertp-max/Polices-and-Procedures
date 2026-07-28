@@ -86,7 +86,7 @@ describe('records — a disconnected compliance evidence service can never produ
       assignmentId: 'gb:tabletop:test-assignment', learnerId: 'learner-1', role: 'GB',
       sourceId: Q1_CASE_PACK.id, sourceType: 'tabletop', sourceVersion: Q1_CASE_PACK.sourceCutoff,
       effectiveDate: Q1_CASE_PACK.sourceCutoff, readCompletedAt: null, attestedAt: null,
-      answersSnapshot: {}, score: 1000, criticalErrors: [], attemptNumber: 1,
+      answersSnapshot: {}, score: 1000, outcome: 'passed', criticalErrors: [], attemptNumber: 1,
       remediationPath: 'none', activeTimeSeconds: 120, completedAt: '2026-01-01T00:00:00Z',
     } as never);
 

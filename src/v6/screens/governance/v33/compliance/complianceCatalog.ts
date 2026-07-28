@@ -4,12 +4,19 @@
 
 import { MODULES } from '../gb-academy/academyData';
 import { getPolicyJourney } from '../generated/policyJourney.generated';
+import { ANNUAL_PASS_SCORE, QUARTERLY_PASS_SCORE } from '../tabletop2026/engine/caseTypes';
 import type {
   ComplianceAssignment,
   ComplianceCourseGroup,
 } from './complianceTypes';
+import { LOCAL_DEMO_LEARNER_ID } from './complianceIdentity';
 
-export const DEFAULT_LEARNER_ID = 'gb-chair-local';
+/**
+ * @deprecated Preview-only fallback identity. Official evidence writes with this
+ * id are rejected by the store (see complianceIdentity.ts). Kept exported for
+ * deterministic tests and the explicit local-demo preview only.
+ */
+export const DEFAULT_LEARNER_ID = LOCAL_DEMO_LEARNER_ID;
 export const MODULE_MASTERY_STANDARD = 92;
 export const TABLETOP_ASSIGNMENT_IDS = [
   'gb:tabletop2026:tabletop2026-q1',
@@ -19,7 +26,12 @@ export const TABLETOP_ASSIGNMENT_IDS = [
   'gb:tabletop2026:tabletop2026-annual',
 ] as const;
 export const TABLETOP_ASSIGNMENT_ID = TABLETOP_ASSIGNMENT_IDS[0];
-export const TABLETOP_PASS_STANDARD = 95;
+// Pass standards are expressed in the SAME unit the tabletop engine scores and
+// the evidence snapshot stores: points out of 1000 (engine/caseTypes.ts).
+// Never mix this with percentage standards — a 900/1000 failed quarterly
+// attempt must compare as 900 < 950, not 900 >= 95.
+export const TABLETOP_QUARTERLY_PASS_STANDARD = QUARTERLY_PASS_SCORE; // 950 / 1000
+export const TABLETOP_ANNUAL_PASS_STANDARD = ANNUAL_PASS_SCORE; // 970 / 1000
 
 export interface DeriveOptions {
   learnerId?: string;
@@ -136,11 +148,11 @@ export function derivePolicyAssignments(opts: DeriveOptions = {}): {
 }
 
 const TABLETOP_PACKS: Array<{ assignmentId: string; sourceId: string; title: string; passStandard: number }> = [
-  { assignmentId: TABLETOP_ASSIGNMENT_IDS[0], sourceId: 'tabletop2026-q1', title: 'Q1 2026 Governing Body tabletop — synthetic QAPI readiness exercise', passStandard: TABLETOP_PASS_STANDARD },
-  { assignmentId: TABLETOP_ASSIGNMENT_IDS[1], sourceId: 'tabletop2026-q2', title: 'Q2 2026 Governing Body tabletop — synthetic QAPI readiness exercise', passStandard: TABLETOP_PASS_STANDARD },
-  { assignmentId: TABLETOP_ASSIGNMENT_IDS[2], sourceId: 'tabletop2026-q3', title: 'Q3 2026 Governing Body tabletop — synthetic QAPI readiness exercise', passStandard: TABLETOP_PASS_STANDARD },
-  { assignmentId: TABLETOP_ASSIGNMENT_IDS[3], sourceId: 'tabletop2026-q4', title: 'Q4 2026 Governing Body tabletop — synthetic QAPI readiness exercise', passStandard: TABLETOP_PASS_STANDARD },
-  { assignmentId: TABLETOP_ASSIGNMENT_IDS[4], sourceId: 'tabletop2026-annual', title: 'Annual 2026 Governing Body tabletop — synthetic QAPI readiness capstone', passStandard: TABLETOP_PASS_STANDARD },
+  { assignmentId: TABLETOP_ASSIGNMENT_IDS[0], sourceId: 'tabletop2026-q1', title: 'Q1 2026 Governing Body tabletop — synthetic QAPI readiness exercise', passStandard: TABLETOP_QUARTERLY_PASS_STANDARD },
+  { assignmentId: TABLETOP_ASSIGNMENT_IDS[1], sourceId: 'tabletop2026-q2', title: 'Q2 2026 Governing Body tabletop — synthetic QAPI readiness exercise', passStandard: TABLETOP_QUARTERLY_PASS_STANDARD },
+  { assignmentId: TABLETOP_ASSIGNMENT_IDS[2], sourceId: 'tabletop2026-q3', title: 'Q3 2026 Governing Body tabletop — synthetic QAPI readiness exercise', passStandard: TABLETOP_QUARTERLY_PASS_STANDARD },
+  { assignmentId: TABLETOP_ASSIGNMENT_IDS[3], sourceId: 'tabletop2026-q4', title: 'Q4 2026 Governing Body tabletop — synthetic QAPI readiness exercise', passStandard: TABLETOP_QUARTERLY_PASS_STANDARD },
+  { assignmentId: TABLETOP_ASSIGNMENT_IDS[4], sourceId: 'tabletop2026-annual', title: 'Annual 2026 Governing Body tabletop — synthetic QAPI readiness capstone', passStandard: TABLETOP_ANNUAL_PASS_STANDARD },
 ];
 
 /** Required 2026 synthetic QAPI tabletop packs. */

@@ -11,6 +11,7 @@ import {
   type EvidenceSaveInput,
   type EvidenceSaveResult,
 } from './complianceEvidenceAdapter';
+import { isLocalDemoLearnerId } from './complianceIdentity';
 import type { ComplianceEvidenceRecord } from './complianceTypes';
 
 const DRAFT_PREFIX = 'care-indeed:gb:compliance:draft:';
@@ -100,6 +101,16 @@ export async function commitEvidence(
   assignmentId: string,
   input: EvidenceSaveInput,
 ): Promise<EvidenceSaveResult> {
+  // Identity guard: the local-demo preview identity can never mint an official
+  // record, regardless of which evidence service is connected.
+  if (isLocalDemoLearnerId(input.learnerId)) {
+    return {
+      ok: false,
+      reason: 'rejected',
+      message:
+        'Official evidence requires an authenticated user. The local-demo preview identity cannot record official completion.',
+    };
+  }
   const result = await getComplianceEvidenceService().save(input);
   if (result.ok) {
     officialSnapshot = [...officialSnapshot.filter((r) => r.evidenceId !== result.record.evidenceId), result.record];

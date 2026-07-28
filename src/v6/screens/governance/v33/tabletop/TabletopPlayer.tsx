@@ -1,7 +1,12 @@
+// DEPRECATED LEGACY PLAYER — superseded by tabletop2026/ (the only tabletop
+// wired into V3). This player scores in PERCENT, while the registered 2026
+// tabletop assignments use the 1000-point engine standard (950/970). Do NOT
+// re-wire it against the 2026 assignment ids without normalizing the scale.
 import { useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle2, FileSearch, FileWarning, Lock, ShieldAlert } from 'lucide-react';
 import { commitEvidence } from '../compliance/complianceStore';
-import { DEFAULT_LEARNER_ID, TABLETOP_ASSIGNMENT_ID } from '../compliance/complianceCatalog';
+import { TABLETOP_ASSIGNMENT_ID } from '../compliance/complianceCatalog';
+import { useLearnerId } from '../compliance/complianceIdentity';
 import { getComplianceEvidenceService } from '../compliance/complianceEvidenceAdapter';
 import { integrityHash } from '../assessments/assessmentUtils';
 import { FINAL_TABLETOP } from './tabletopCase';
@@ -12,6 +17,7 @@ const STEP_ORDER: Step[] = ['brief', 'r1', 'r2', 'r3', 'review'];
 
 export default function TabletopPlayer({ onExit, onForensicCapstone }: { onExit: () => void; onForensicCapstone?: () => void }) {
   const c = FINAL_TABLETOP;
+  const learnerId = useLearnerId();
   const [step, setStep] = useState<Step>('brief');
   const [inspected, setInspected] = useState<string[]>([]);
   const [decisions, setDecisions] = useState<Record<string, string>>({});
@@ -37,7 +43,7 @@ export default function TabletopPlayer({ onExit, onForensicCapstone }: { onExit:
     const score = scoreTabletop(selections, c);
     const payload = {
       assignmentId: TABLETOP_ASSIGNMENT_ID,
-      learnerId: DEFAULT_LEARNER_ID,
+      learnerId,
       role: 'GB' as const,
       sourceId: c.id,
       sourceType: 'tabletop' as const,
@@ -47,6 +53,7 @@ export default function TabletopPlayer({ onExit, onForensicCapstone }: { onExit:
       attestedAt: attested ? new Date().toISOString() : null,
       answersSnapshot: selections,
       score: score.scorePercent,
+      outcome: score.passed ? ('passed' as const) : ('failed' as const),
       criticalErrors: score.criticalReasons,
       attemptNumber: 1,
       remediationPath: 'none' as const,

@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle2, FileSearch, FileWarning, Lock, ShieldAlert } from 'lucide-react';
 import { commitEvidence } from '../compliance/complianceStore';
-import { DEFAULT_LEARNER_ID } from '../compliance/complianceCatalog';
+import { useLearnerId } from '../compliance/complianceIdentity';
 import { getComplianceEvidenceService } from '../compliance/complianceEvidenceAdapter';
 import { integrityHash } from '../assessments/assessmentUtils';
 import {
@@ -35,7 +35,8 @@ import './tabletop2026.css';
 const c = QAPI2026_TABLETOP;
 
 export default function SoloQapiTabletopPlayer({ onExit }: { onExit: () => void }) {
-  const learnerId = DEFAULT_LEARNER_ID;
+  // Authenticated identity (local-demo fallback is write-rejected downstream).
+  const learnerId = useLearnerId();
 
   const [state, setState] = useState<SoloTabletopState>(() => {
     const sessionId = newSoloSessionId(learnerId, 1);
@@ -123,6 +124,7 @@ export default function SoloQapiTabletopPlayer({ onExit }: { onExit: () => void 
       attestedAt: state.attested ? new Date().toISOString() : null,
       answersSnapshot: selections,
       score: score.scorePercent,
+      outcome: score.passed ? ('passed' as const) : ('failed' as const),
       criticalErrors: score.criticalReasons,
       attemptNumber: state.attemptNumber,
       remediationPath: 'none' as const,

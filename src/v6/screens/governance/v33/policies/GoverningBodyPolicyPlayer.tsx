@@ -23,7 +23,7 @@ import PolicyContentsRail from './PolicyContentsRail';
 import PolicyBoardLens from './PolicyBoardLens';
 import PolicyRelatedForms from './PolicyRelatedForms';
 import { readDraft, writeDraft, commitEvidence, getOfficialEvidence } from '../compliance/complianceStore';
-import { DEFAULT_LEARNER_ID } from '../compliance/complianceCatalog';
+import { useLearnerId } from '../compliance/complianceIdentity';
 import { integrityHash } from '../assessments/assessmentUtils';
 import { hasAuthoredBank } from '../assessments/courseAssessmentBank';
 import './policyPlayer.css';
@@ -97,6 +97,7 @@ function useActiveTime(): () => number {
 }
 
 export default function GoverningBodyPolicyPlayer({ requirement, onExit }: { requirement: PolicyJourneyRequirement; onExit: () => void }) {
+  const learnerId = useLearnerId();
   const policy = governingBodyPolicyContentMap.get(requirement.policyId);
   const allSections = useMemo(() => [...(policy?.sections ?? [])].sort((a, b) => a.order - b.order), [policy]);
   const appendixSection = useMemo(() => allSections.find((s) => /appendi/i.test(s.title)) ?? null, [allSections]);
@@ -181,9 +182,10 @@ export default function GoverningBodyPolicyPlayer({ requirement, onExit }: { req
 
   const saveReadingAttestation = async () => {
     setSaveState('saving');
+    const readingSatisfied = readingComplete && readAttested;
     const payload = {
       assignmentId,
-      learnerId: DEFAULT_LEARNER_ID,
+      learnerId,
       role: 'GB' as const,
       sourceId: requirement.policyId,
       sourceType: 'policy' as const,
@@ -193,11 +195,13 @@ export default function GoverningBodyPolicyPlayer({ requirement, onExit }: { req
       attestedAt: readAttested ? new Date().toISOString() : null,
       answersSnapshot: null,
       score: null,
+      // Policy reading has no score; the outcome is the reading+attestation gate.
+      outcome: readingSatisfied ? ('passed' as const) : ('failed' as const),
       criticalErrors: [] as string[],
       attemptNumber: 1,
       remediationPath: 'none' as const,
       activeTimeSeconds: getActiveSeconds(),
-      completedAt: readingComplete && readAttested ? new Date().toISOString() : null,
+      completedAt: readingSatisfied ? new Date().toISOString() : null,
     };
     const saved = await commitEvidence(assignmentId, { ...payload, integrityHash: integrityHash(payload) } as never);
     if (saved.ok) {

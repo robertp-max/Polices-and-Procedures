@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, CheckCircle2, FileWarning, Lock, ShieldAlert } from 'lucide-react';
 import { commitEvidence } from '../compliance/complianceStore';
-import { DEFAULT_LEARNER_ID } from '../compliance/complianceCatalog';
+import { useLearnerId } from '../compliance/complianceIdentity';
 import { getComplianceEvidenceService } from '../compliance/complianceEvidenceAdapter';
 import { deterministicShuffle, integrityHash, pickForm } from './assessmentUtils';
 import { getForensicBank } from './forensicBank';
@@ -21,6 +21,7 @@ interface Answer { binary: boolean | null; source: string | null; }
 
 export default function TrueFalseForensicPlayer({ moduleId, attemptNumber = 1, onExit }: { moduleId: string; attemptNumber?: number; onExit: () => void }) {
   const bank = getForensicBank(moduleId);
+  const learnerId = useLearnerId();
   const getActive = useActiveTime();
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [attested, setAttested] = useState(false);
@@ -28,13 +29,14 @@ export default function TrueFalseForensicPlayer({ moduleId, attemptNumber = 1, o
 
   const form = useMemo(() => {
     if (!bank) return null;
-    const idx = pickForm(bank.forms.length, `${DEFAULT_LEARNER_ID}:${moduleId}:${attemptNumber}`);
+    // Per-learner variant selection: forms and item order differ by user.
+    const idx = pickForm(bank.forms.length, `${learnerId}:${moduleId}:${attemptNumber}`);
     const chosen = bank.forms[idx];
     return {
       formId: chosen.formId,
-      items: deterministicShuffle(chosen.items, `${DEFAULT_LEARNER_ID}:${moduleId}:${attemptNumber}:${chosen.formId}`),
+      items: deterministicShuffle(chosen.items, `${learnerId}:${moduleId}:${attemptNumber}:${chosen.formId}`),
     };
-  }, [bank, moduleId, attemptNumber]);
+  }, [bank, moduleId, attemptNumber, learnerId]);
 
   if (!bank || !form) {
     return (
@@ -73,7 +75,7 @@ export default function TrueFalseForensicPlayer({ moduleId, attemptNumber = 1, o
 
     const payload = {
       assignmentId: `gb:module:${moduleId}`,
-      learnerId: DEFAULT_LEARNER_ID,
+      learnerId,
       role: 'GB' as const,
       sourceId: moduleId,
       sourceType: 'module' as const,
@@ -83,6 +85,7 @@ export default function TrueFalseForensicPlayer({ moduleId, attemptNumber = 1, o
       attestedAt: attested ? new Date().toISOString() : null,
       answersSnapshot: { formId: form.formId, answers },
       score: scorePercent,
+      outcome: passed ? ('passed' as const) : ('failed' as const),
       criticalErrors: criticalMisses,
       attemptNumber,
       remediationPath: 'true_false_forensic' as const,

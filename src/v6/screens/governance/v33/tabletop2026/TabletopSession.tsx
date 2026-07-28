@@ -38,7 +38,7 @@ import { ANNUAL_2026_CASE } from './data/annualCase';
 
 import { readDraft, writeDraft, clearDraft } from '../compliance/complianceStore';
 import type { EvidenceSaveResult } from '../compliance/complianceEvidenceAdapter';
-import { DEFAULT_LEARNER_ID } from '../compliance/complianceCatalog';
+import { useLearnerId } from '../compliance/complianceIdentity';
 
 import BoardBookPanel from './BoardBookPanel';
 import BoardTableWorkspace from './BoardTableWorkspace';
@@ -159,6 +159,9 @@ export interface TabletopSessionProps {
 export default function TabletopSession({ caseId, mode, onExit }: TabletopSessionProps) {
   useTabletopBodyLock(true);
   const elapsedSeconds = useActiveTime();
+  // Authenticated learner identity — used for variants AND official evidence.
+  // The local-demo fallback id is write-rejected by the compliance store.
+  const learnerId = useLearnerId();
 
   const basePack = useMemo(() => resolveCasePack(caseId), [caseId]);
   const assignmentId = useMemo(() => (basePack ? assignmentIdFor(basePack.id) : ''), [basePack]);
@@ -198,8 +201,8 @@ export default function TabletopSession({ caseId, mode, onExit }: TabletopSessio
   const [saveRetryVersion, setSaveRetryVersion] = useState(0);
 
   const casePack = useMemo(
-    () => (basePack && assignmentId ? variant(basePack, DEFAULT_LEARNER_ID, assignmentId, attemptNumber) : null),
-    [basePack, assignmentId, attemptNumber],
+    () => (basePack && assignmentId ? variant(basePack, learnerId, assignmentId, attemptNumber) : null),
+    [basePack, assignmentId, attemptNumber, learnerId],
   );
 
   const cutoffViolationIds = useMemo(() => {
@@ -341,7 +344,7 @@ export default function TabletopSession({ caseId, mode, onExit }: TabletopSessio
       const diag = buildDiagnostics(casePack, selections);
       const sc = scoreAttempt(casePack, selections, diag);
       const result = await commitTabletopEvidence({
-        learnerId: DEFAULT_LEARNER_ID,
+        learnerId,
         assignmentId,
         role: 'GB',
         casePack,

@@ -11,7 +11,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, CheckCircle2, ExternalLink, FileWarning, RotateCcw, ShieldCheck, XCircle } from 'lucide-react';
 import { commitEvidence } from '../compliance/complianceStore';
-import { DEFAULT_LEARNER_ID } from '../compliance/complianceCatalog';
+import { useLearnerId } from '../compliance/complianceIdentity';
 import { getComplianceEvidenceService } from '../compliance/complianceEvidenceAdapter';
 import { integrityHash } from '../assessments/assessmentUtils';
 import { buildTargetedRemediation } from './buildTargetedRemediation';
@@ -72,11 +72,15 @@ export default function GuidedTrueFalsePlayer({
   sourceId,
   missedConceptIds,
   onExit,
-  learnerId = DEFAULT_LEARNER_ID,
+  learnerId: learnerIdProp,
   attemptNumber = 1,
   sourceType = 'module',
   primaryAttemptScore = 0,
 }: GuidedTrueFalsePlayerProps) {
+  // Default identity is the authenticated user; an explicit prop (e.g. from a
+  // facilitated session) may override it.
+  const authLearnerId = useLearnerId();
+  const learnerId = learnerIdProp ?? authLearnerId;
   const getActive = useActiveTime();
 
   const { items, transferPrompt }: { items: GuidedTrueFalseItem[]; transferPrompt: TransferPrompt } = useMemo(
@@ -192,6 +196,9 @@ export default function GuidedTrueFalsePlayer({
         transferPassed: true,
       },
       score: 100,
+      // The guided path commits only after every remediation item is corrected
+      // and the transfer prompt passes — the outcome is therefore 'passed'.
+      outcome: 'passed' as const,
       criticalErrors: [] as string[],
       attemptNumber,
       remediationPath: 'guided_true_false' as const,

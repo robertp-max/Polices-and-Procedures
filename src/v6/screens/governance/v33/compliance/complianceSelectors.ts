@@ -26,21 +26,34 @@ const PRIORITY_ORDER: UserFacingStatus[] = [
   'completed',
 ];
 
-function officialRecordFor(assignmentId: string): ComplianceEvidenceRecord | undefined {
-  // The latest completed record for this assignment, if any.
+function officialRecordFor(assignment: ComplianceAssignment): ComplianceEvidenceRecord | undefined {
+  // The latest completed record for this assignment AND this learner, if any.
+  // Identity binding is mandatory: one learner's record must never satisfy
+  // another learner's assignment, even if the assignment ids collide.
   return getOfficialEvidence()
-    .filter((r) => r.assignmentId === assignmentId && r.completedAt !== null)
+    .filter(
+      (r) =>
+        r.assignmentId === assignment.assignmentId &&
+        r.learnerId === assignment.learnerId &&
+        r.completedAt !== null,
+    )
     .sort((a, b) => (a.completedAt! < b.completedAt! ? 1 : -1))[0];
 }
 
 /**
- * Authoritative completion test. Requires a connected-service record that is
- * read/attested, meets the pass standard, and has zero critical errors.
+ * Authoritative completion test. Requires a connected-service record that:
+ *   1. belongs to THIS learner (identity-bound);
+ *   2. carries the engine-decided `outcome === 'passed'` — a failed attempt is
+ *      preserved as evidence/remediation history but NEVER satisfies completion;
+ *   3. is attested with zero critical errors (critical error overrides any score);
+ *   4. meets the pass standard in the SAME scoring unit the engine stored
+ *      (defense in depth behind the outcome check).
  * NEVER derived from a submitted draft.
  */
 export function isOfficiallyComplete(assignment: ComplianceAssignment): boolean {
-  const record = officialRecordFor(assignment.assignmentId);
+  const record = officialRecordFor(assignment);
   if (!record || record.completedAt === null) return false;
+  if (record.outcome !== 'passed') return false;
   if (record.criticalErrors.length > 0) return false;
   if (record.attestedAt === null) return false;
   if (assignment.passStandard !== null) {
