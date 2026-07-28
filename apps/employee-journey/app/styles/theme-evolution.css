@@ -23,7 +23,7 @@
 
   /* Ink */
   --ink: #334155;                 /* slate-700 */
-  --ink-strong: #0f172a;          /* slate-900 */
+  --ink-strong: #0a3622;          /* very dark green — headings/strong; black is reserved for plain body text */
   --muted: #94a3b8;               /* slate-400 */
   --muted-strong: #475569;        /* slate-600 */
 
@@ -55,6 +55,13 @@
 .page-header h1,
 .workspace h1 {
   letter-spacing: -0.02em;
+}
+
+/* All heading levels render in the dark-green heading ink (base.css only covers h1–h3). */
+h4,
+h5,
+h6 {
+  color: var(--ink-strong);
 }
 
 /* Elevation-aware cards: a subtle lift on hover, app-wide. */
