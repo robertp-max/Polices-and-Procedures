@@ -14,6 +14,7 @@ import {
   CircleDot,
   ClipboardCheck,
   Command,
+  ExternalLink,
   FileCheck2,
   FileText,
   Fingerprint,
@@ -21,22 +22,34 @@ import {
   GraduationCap,
   Home,
   Landmark,
-  LockKeyhole,
   Menu,
   PanelLeftClose,
   Scale,
   Search,
-  TrendingDown,
-  TrendingUp,
   UsersRound,
   X,
 } from 'lucide-react';
+import { useAuth } from '@/auth/AuthProvider';
 import { MODULES } from './gb-academy/academyData';
 import { getPolicyJourney } from './generated/policyJourney.generated';
 import type { PolicyJourneyRequirement } from './generated/policyJourney.types';
 import { useCompliance } from './compliance/useCompliance';
 import type { ComplianceAssignmentView, UserFacingStatus } from './compliance/complianceTypes';
 import type { CourseProgress } from './compliance/complianceSelectors';
+import {
+  ANNUAL_ATTESTATIONS,
+  BRAD_NOLAN_CURRENT_STATE,
+  DECISION_TO_AGENDA_ACTIONS,
+  EVIDENCE_PACKAGES,
+  POLICY_APPROVAL_DOCKET,
+  QAPI_PREVIEW_QUARTERS,
+  READINESS_DECISIONS,
+  SOURCE_DERIVED_QAPI_DECISIONS,
+  WORKFLOW_INSTANCES,
+  WORKFLOW_LIBRARY_SUMMARY,
+  type ReadinessDecision,
+  type WorkflowInstance,
+} from './executiveReadinessData';
 
 const GoverningBodyAcademy = lazy(() => import('./gb-academy/Academy'));
 const GoverningBodyPolicyPlayer = lazy(() => import('./policies/GoverningBodyPolicyPlayer'));
@@ -46,152 +59,28 @@ const TabletopSession = lazy(() => import('./tabletop2026/TabletopSession'));
 const AnnualGovernanceForms = lazy(() => import('./forms/AnnualGovernanceForms'));
 const TrueFalseForensicPlayer = lazy(() => import('./assessments/TrueFalseForensicPlayer'));
 
-type ViewKey = 'home' | 'compliance' | 'meetings' | 'decisions' | 'oversight' | 'records';
-type MeetingsTab = 'overview' | 'book' | 'calendar';
-type OversightTab = 'qapi' | 'risk';
-type ComplianceTab = 'required' | 'training' | 'policies' | 'completed';
+type ViewKey = 'home' | 'compliance' | 'meetings' | 'decisions' | 'workflows' | 'oversight' | 'evidence';
+type MeetingsTab = 'lifecycle' | 'agenda' | 'schedule';
+type OversightTab = 'qapi' | 'domains' | 'data';
+type ComplianceTab = 'required' | 'training' | 'policies' | 'tabletop' | 'annual' | 'completed';
+type WorkflowTab = WorkflowInstance['tab'];
+type Decision = ReadinessDecision;
 
-type Decision = {
-  id: string;
-  title: string;
-  domain: string;
-  due: string;
-  status: 'Judgment required' | 'Ready for consent' | 'Evidence hold' | 'Executive session';
-  summary: string;
-  recommendation: string;
-  evidence: string[];
-  authority: string;
-  owner: string;
-  tone: 'attention' | 'ready' | 'hold' | 'private';
-};
-
-const NAV_ITEMS: Array<{ id: ViewKey; label: string; icon: typeof Landmark; hint: string }> = [
-  { id: 'home', label: 'Home', icon: Home, hint: 'What must I do now' },
-  { id: 'compliance', label: 'My Compliance', icon: GraduationCap, hint: 'Assigned training, policies & assessments' },
-  { id: 'meetings', label: 'Meetings', icon: CalendarDays, hint: 'Prepare for the next convening' },
-  { id: 'decisions', label: 'Decisions', icon: Gavel, hint: 'Judge matters with conditions' },
-  { id: 'oversight', label: 'Oversight', icon: Activity, hint: 'QAPI, risk & policy governance' },
-  { id: 'records', label: 'Records', icon: Fingerprint, hint: 'Proof with provenance' },
+const NAV_ITEMS: Array<{ id: ViewKey; label: string; icon: typeof Landmark; hint: string; group: string }> = [
+  { id: 'home', label: 'Home', icon: Home, hint: 'Current agency status and next actions', group: 'EXECUTIVE WORK' },
+  { id: 'meetings', label: 'Meetings', icon: CalendarDays, hint: 'Lifecycle, agenda, scheduling, and close', group: 'EXECUTIVE WORK' },
+  { id: 'decisions', label: 'Decisions', icon: Gavel, hint: 'Required readiness decision docket', group: 'EXECUTIVE WORK' },
+  { id: 'compliance', label: 'My Compliance', icon: GraduationCap, hint: 'Training, policies, quizzes, tabletop, attestations', group: 'READINESS & OVERSIGHT' },
+  { id: 'workflows', label: 'Workflows', icon: ClipboardCheck, hint: 'Due work, blockers, event triggers, and library', group: 'READINESS & OVERSIGHT' },
+  { id: 'oversight', label: 'Oversight', icon: Activity, hint: '2026 synthetic QAPI preview and readiness signals', group: 'READINESS & OVERSIGHT' },
+  { id: 'evidence', label: 'Evidence / CES', icon: Fingerprint, hint: 'Scoped CES packages and evidence chains', group: 'EVIDENCE' },
 ];
 
-const DECISIONS: Decision[] = [
-  {
-    id: 'GB-D26-041',
-    title: 'Continue the hospitalization improvement project',
-    domain: 'Quality & patient safety',
-    due: 'Q2 governing-body review',
-    status: 'Judgment required',
-    summary: 'Aggregate hospitalization improved, while the monitored heart-failure subgroup moved in the wrong direction and the approved sustainability test remains unmet.',
-    recommendation: 'Do not authorize closure. Preserve resources, require subgroup root-cause work, reconcile linked complaints, and return against the approved criteria.',
-    evidence: ['Q2 executive KPI dashboard', 'Stratified outcome appendix', 'Approved PIP charter', 'Complaint linkage extract', 'Draft QAPI minutes'],
-    authority: '42 CFR 484.65 · QA-WF-04 · GV-FM-005',
-    owner: 'QAPI Lead / Administrator',
-    tone: 'attention',
-  },
-  {
-    id: 'GB-D26-042',
-    title: 'Adopt the annual institutional plan and operating budget',
-    domain: 'Finance & enterprise stewardship',
-    due: 'Annual meeting docket',
-    status: 'Ready for consent',
-    summary: 'The plan, budget, and variance conditions are reconciled to the finance-committee recommendation and are ready for formal deliberation.',
-    recommendation: 'Place on the consent docket subject to confirmation that clinical-control and compliance-independence allocations remain protected.',
-    evidence: ['FN-FM-001 operating budget', 'FN-FM-002 institutional plan', 'FN-FM-014 finance minutes', 'GV-FM-005 approval record'],
-    authority: 'GV-WF-05 · 42 CFR 484.105',
-    owner: 'CFO / Administrator',
-    tone: 'ready',
-  },
-  {
-    id: 'GB-D26-043',
-    title: 'Hold the vendor-governance amendment pending source repair',
-    domain: 'Contracts, privacy & delegated work',
-    due: 'Before execution',
-    status: 'Evidence hold',
-    summary: 'The proposed agreement addresses service levels but does not yet preserve complete BAA exit terms, audit access, clinical control, or a clean conflict record.',
-    recommendation: 'Keep the agreement off the approval docket until the authority matrix, conflict trail, transition rights, and evidence-return duties are complete.',
-    evidence: ['Proposed services agreement', 'BAA exhibit', 'Ownership relationship map', 'Conflict disclosure', 'Procurement audit history'],
-    authority: 'GV-WF-11 · GV-WF-08 · HIPAA 164.308(b)',
-    owner: 'Compliance / Legal',
-    tone: 'hold',
-  },
-  {
-    id: 'GB-D26-044',
-    title: 'Review the patient-safety escalation in executive session',
-    domain: 'Risk & quality',
-    due: 'Immediate board notice',
-    status: 'Executive session',
-    summary: 'A delayed after-hours escalation touches the same fragile subgroup and vendor workflow already under Board review.',
-    recommendation: 'Protect the patient record, preserve the audit trail, separate privileged discussion, and document only the authorized public-session action.',
-    evidence: ['Incident record', 'RCA initiation', 'Patient communication log', 'Prior complaint trend', 'Executive-session notice'],
-    authority: 'QA-WF-05 · QA-WF-12 · GV-WF-14',
-    owner: 'Administrator / Risk / Legal',
-    tone: 'private',
-  },
-];
-
-const BOOK_SECTIONS = [
-  { code: '01', title: 'Chair memorandum', pages: '01–04', status: 'Ready', detail: 'Purpose, requested actions, conflict reminder, and document-control statement.' },
-  { code: '02', title: 'Agenda, attendance & quorum', pages: '05–09', status: 'Ready', detail: 'Notice, agenda sequence, member roster, attendance mode, and quorum calculation.' },
-  { code: '03', title: 'Administrator & clinical leadership report', pages: '10–22', status: 'Ready', detail: 'Operating posture, licensure, staffing, census, clinical-control exceptions, and material events.' },
-  { code: '04', title: 'Q2 QAPI oversight', pages: '23–48', status: 'Review', detail: 'Quarterly dashboard, stratified analysis, PIP status, complaints, adverse events, and committee recommendations.' },
-  { code: '05', title: 'Compliance, privacy & risk', pages: '49–64', status: 'Review', detail: 'Audit results, investigations, exclusions, privacy events, enterprise risks, and corrective-action status.' },
-  { code: '06', title: 'Finance & resource sufficiency', pages: '65–76', status: 'Ready', detail: 'Budget, liquidity, denials, resource dependencies, material variances, and management certification.' },
-  { code: '07', title: 'Policy & contract approvals', pages: '77–91', status: 'Hold', detail: 'Required-tier policy changes, third-party arrangements, conflict trail, and proposed resolutions.' },
-  { code: '08', title: 'Motions, actions & record close', pages: '92–100', status: 'Draft', detail: 'Decision language, assigned owners, due dates, effectiveness checks, attestations, and minutes controls.' },
-];
-
-const RISKS = [
-  { rank: '01', title: 'High-risk subgroup deterioration', domain: 'Clinical quality', posture: 'Board direction required', trend: 'up', owner: 'QAPI Lead', control: 'Continue PIP; preserve weekend escalation resources', tone: 'critical' },
-  { rank: '02', title: 'Vendor authority and exit-term gaps', domain: 'Third-party governance', posture: 'Approval hold', trend: 'flat', owner: 'Compliance / Legal', control: 'Complete control matrix, BAA exit rights, audit access', tone: 'elevated' },
-  { rank: '03', title: 'Committee-to-board record variance', domain: 'Decision evidence', posture: 'Correction open', trend: 'down', owner: 'Board Secretary', control: 'Reconcile recommendation, dissent, vote, and attachments', tone: 'elevated' },
-  { rank: '04', title: 'Annual policy reapproval concentration', domain: 'Policy lifecycle', posture: 'Managed', trend: 'flat', owner: 'Compliance Officer', control: 'Stage required-tier approvals across two consent dockets', tone: 'managed' },
-  { rank: '05', title: 'Licensure and certification calendar', domain: 'Enterprise continuity', posture: 'Controlled', trend: 'down', owner: 'Administrator', control: 'Quarterly GV-FM-019 reconciliation', tone: 'controlled' },
-];
+const DECISIONS: Decision[] = READINESS_DECISIONS;
+const ALL_DECISIONS: Decision[] = [...READINESS_DECISIONS, ...SOURCE_DERIVED_QAPI_DECISIONS];
 
 const GB_POLICY_REQUIREMENTS = getPolicyJourney('GB').requirements;
 const REQUIREMENT_BY_ID = new Map(GB_POLICY_REQUIREMENTS.map((r) => [r.requirementId, r]));
-
-type GovernanceCalendarItem = {
-  date: string;
-  quarter: 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'NEXT';
-  title: string;
-  owner: string;
-  authority: string;
-  evidence: string;
-  state: 'complete' | 'attention' | 'scheduled' | 'rule';
-};
-
-const CES_GOVERNANCE_CALENDAR: GovernanceCalendarItem[] = [
-  { date: 'JAN 08', quarter: 'Q1', title: 'Annual governance packet review', owner: 'Chair · Administrator', authority: 'GV-WF-05 · GV-WF-06 · GV-WF-07', evidence: 'Plan, budget, service scope, public description, approval minutes', state: 'complete' },
-  { date: 'JAN 15', quarter: 'Q1', title: 'Biennial emergency-program review and update', owner: 'Administrator · Risk', authority: 'GV-WF-12 · RM-EP-001', evidence: 'HVA, plan, communications, version approval', state: 'complete' },
-  { date: 'JAN 22', quarter: 'Q1', title: 'Biennial emergency-preparedness training', owner: 'Compliance · Administrator', authority: 'GV-WF-13 · RM-EP-002', evidence: 'Attendance, completion, Board training log', state: 'complete' },
-  { date: 'FEB 05', quarter: 'Q1', title: 'Quarterly QAPI review and annual PIP kickoff', owner: 'QAPI Lead · Governing Body', authority: 'QA-WF-03 · QA-WF-04 · GV-WF-01', evidence: 'Dashboard, PIP charter, RCA, direction, minutes', state: 'complete' },
-  { date: 'MAR 18', quarter: 'Q1', title: 'Annual emergency exercise', owner: 'Administrator · Risk', authority: 'RM-EP-002 · GV-WF-01', evidence: 'Attendance, debrief, AAR/IP, corrective actions', state: 'complete' },
-  { date: 'MAR 31', quarter: 'Q1', title: 'HHCAHPS participation or exemption decision', owner: 'QAPI · Compliance', authority: 'QA-WF-08 · GV-WF-01', evidence: 'Eligible count, filing or vendor record, Board report', state: 'complete' },
-  { date: 'JUN 30', quarter: 'Q2', title: 'Q2 governance and QAPI period close', owner: 'Chair · Board Secretary', authority: 'GV-WF-01 · QA-WF-03', evidence: 'Q2 packet, directives, owners, deadlines, minutes', state: 'attention' },
-  { date: 'JUL 10', quarter: 'Q3', title: 'Annual controlled-policy review concentration', owner: 'Policy owners · Compliance', authority: 'GV-PM-001 · GV-PM-002 · EN-LC-001', evidence: 'Redlines, approval routing, version log, re-acknowledgment plan', state: 'attention' },
-  { date: 'SEP 30', quarter: 'Q3', title: 'Q3 Governing Body review — date must be fixed', owner: 'Chair · Administrator', authority: 'GV-WF-01', evidence: 'Agenda ≥7 days, packet ≥3 days, signed minutes ≤14 days', state: 'scheduled' },
-  { date: 'DEC 01', quarter: 'Q4', title: 'FY2027 institutional plan and budget approval deadline', owner: 'CFO · Administrator · Governing Body', authority: 'GV-WF-05', evidence: 'Final plan, budget, motion, vote, conditions, minutes', state: 'scheduled' },
-  { date: 'DEC 31', quarter: 'Q4', title: 'Q4 Governing Body review and annual close', owner: 'Chair · Board Secretary', authority: 'GV-WF-01 · GV-WF-02', evidence: 'Quarterly reports, open actions, annual assessment launch', state: 'scheduled' },
-  { date: 'JAN 30', quarter: 'NEXT', title: 'Annual Governing Body self-assessment complete', owner: 'Chair · Compliance', authority: 'GV-WF-02', evidence: 'Aggregate assessment, approved improvement plan, training plan', state: 'rule' },
-];
-
-const GOVERNANCE_ACTION_REGISTER = [
-  ['GV-WF-01', 'Quarterly meeting & minutes', 'Meet at least quarterly; ≤120 days between meetings', 'Agenda ≥7 days · packet ≥3 days · minutes ≤14 days', 'GV-FM-004 · GV-FM-005 · GV-FM-011 · GV-FM-023'],
-  ['GV-WF-02', 'Annual Board self-assessment', 'Annual or after a material governance finding', 'Complete within 30 days of fiscal-year end; quarterly follow-up', 'GV-FM-008 · GV-FM-022 · GV-FM-024'],
-  ['GV-WF-03', 'Administrator appointment or delegation', 'Vacancy, incapacity, succession, or absence >1 business day', 'Interim 24–72h · permanent vote ≤30d · 855A ≤30d', 'GV-FM-005 · 007 · 013 · 014 · 017 · 019'],
-  ['GV-WF-04', 'Clinical Manager appointment', 'Vacancy or planned transition', 'Qualified coverage at all times · Board confirmation ≤30d', 'GV-FM-005 · 015 · 017 · 019'],
-  ['GV-WF-05', 'Institutional plan & budget', 'Annual plus >10% variance amendment', 'Board approval ≥30 days before FY; variance review quarterly', 'GV-FM-005 · GV-FM-009 · FN-FM-011'],
-  ['GV-WF-06', 'Acceptance-to-service policy', 'Annual or material service/case-mix/staffing change', 'Board approval annually; staff training ≤30d after approval', 'GV-FM-005 · GV-FM-016 · OP-FM-015'],
-  ['GV-WF-07', 'Public service information', 'Annual or any approved scope change', 'Board approval annually; update within 30d of scope change', 'GV-FM-005 · GV-FM-016 · GV-FM-020'],
-  ['GV-WF-08', 'Conflict-of-interest disclosure', 'Appointment, annual refresh, or new interest', 'Disclosure ≤30d · mitigation ≤30d · immediate recusal', 'GV-FM-006 · GV-FM-005 · GV-FM-023'],
-  ['GV-WF-09', 'Licensure & certification', 'Quarterly verification and each renewal/change event', '90/60/30-day renewal gates · adverse notice to Board ≤24h', 'GV-FM-002 · GV-FM-019 · GV-FM-023'],
-  ['GV-WF-10', 'Change of ownership or closure', 'Sale, merger, closure, or involuntary termination', 'Board resolution · notices ≥30–45d · final meeting at closure', 'GV-FM-001 · GV-FM-005 · GV-FM-022'],
-  ['GV-WF-11', 'Third-party contract review', 'New, renewal, material amendment, or performance failure', 'Board approval before signing when >$50k, referral, or management', 'GV-FM-005 · GV-FM-018 · CO-FM-010 · 011 · 016 · 017'],
-  ['GV-WF-12', 'High-risk external communication', 'Media, regulator, grievance, or public statement', 'Log ≤4h; Chair approval before high-risk release', 'GV-FM-020 · GV-FM-025'],
-  ['GV-WF-13', 'Board training & orientation', 'Appointment and annual refresher', 'Packet ≤7d · schedule ≤30d · completion ≤60d', 'GV-FM-024 · EN-FM-001'],
-  ['GV-WF-14', 'Executive session', 'PHI, personnel, litigation, M&A, or privileged strategy', 'Motion + confidentiality at start · separate minutes ≤14d', 'GV-FM-005 · GV-FM-012 · GV-FM-022'],
-] as const;
 
 function BrandCrest() {
   return <div className="governance-crest" aria-hidden="true"><img src="/logo-careindeed-orange.png" alt="" /></div>;
@@ -323,76 +212,137 @@ function PreviewOnlyBanner({ notice }: { notice: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// HOME — task-first
+// HOME — executive readiness brief
 // ---------------------------------------------------------------------------
 
+function firstNameFromProfile(user: ReturnType<typeof useAuth>['user']): string | null {
+  const direct = user?.firstName?.trim();
+  if (direct) return direct;
+  const fromName = user?.name?.trim().split(/\s+/)[0];
+  if (fromName) return fromName;
+  return null;
+}
+
+function greetingForNow(firstName: string | null): string {
+  const hour = new Date().getHours();
+  const daypart = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+  return firstName ? `Good ${daypart}, ${firstName}.` : `Good ${daypart}.`;
+}
+
+function formatBriefTimestamp(): string {
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  }).format(new Date());
+}
+
 function HomeView({ onGo, handlers }: { onGo: (view: ViewKey, sub?: string) => void; handlers: ComplianceHandlers }) {
+  const { user } = useAuth();
   const compliance = useCompliance();
   const { summary, next, requiredNow, evidenceConnected, disconnectedNotice } = compliance;
+  const firstName = firstNameFromProfile(user);
+  const sourceRecordCount = DECISIONS.length + WORKFLOW_INSTANCES.length + QAPI_PREVIEW_QUARTERS.length + EVIDENCE_PACKAGES.length;
+  const readinessBlockers = [
+    'Brad/Nolan Vertex transfer is a proposed future governance decision only.',
+    'Production evidence service is disconnected from this local exercise path.',
+    'Handbook legal/compliance review is urgent and not closed.',
+    'The 30-day sustained-compliance streak has not been proven.',
+  ];
 
   return (
-    <div className="governance-page home-page">
-      <Breadcrumb trail={['Governing Body', 'Home']} />
-      <PageHeading
-        eyebrow="GOVERNING BODY COMPLIANCE"
-        title="Your Governing Body Compliance"
-        description="Complete the training, controlled policy readings, assessments, and final exercise assigned to your Governing Body role. Your compliance is not complete until every required item is passed, attested, and recorded."
-        action={next
-          ? <button className="executive-button" onClick={() => openAssignment(next, handlers)}>Continue next requirement <ArrowRight size={16} /></button>
-          : <button className="executive-button" onClick={() => onGo('compliance', 'completed')}>Review completed record <ArrowRight size={16} /></button>}
-      />
+    <div className="governance-page home-page executive-readiness-os">
+      <Breadcrumb trail={['Governing Body Office', 'Home']} />
+      <section className="readiness-hero" aria-labelledby="readiness-home-title">
+        <div>
+          <span>CARE INDEED GOVERNING BODY EXECUTIVE READINESS OFFICE</span>
+          <h1 id="readiness-home-title">{greetingForNow(firstName)}</h1>
+          <p>This is the current status of our agency.</p>
+        </div>
+        <div className="readiness-posture-panel" aria-label="Current readiness posture">
+          <strong>Readiness not achieved</strong>
+          <small>30-day streak: not started · critical blockers open</small>
+          <button className="executive-button" onClick={() => onGo('decisions')}>Open required decisions <ArrowRight size={16} /></button>
+        </div>
+      </section>
 
       {!evidenceConnected && <PreviewOnlyBanner notice={disconnectedNotice} />}
 
-      <section className="compliance-summary-row" aria-label="Compliance summary">
-        <button className="compliance-summary-card" onClick={() => onGo('compliance', 'training')}>
-          <span>Required training</span>
-          <strong>{summary.training.completed}<small> / {summary.training.assigned}</small></strong>
-          <small>Completed / assigned</small>
-        </button>
-        <button className="compliance-summary-card" onClick={() => onGo('compliance', 'policies')}>
-          <span>Policies &amp; Procedures</span>
-          <strong>{summary.policies.completed}<small> / {summary.policies.assigned}</small></strong>
-          <small>Completed / assigned</small>
-        </button>
-        <div className={`compliance-summary-card overall ${summary.overall}`}>
-          <span>Overall compliance</span>
-          <strong className="compliance-word">{summary.overall === 'complete' ? 'Complete' : 'Incomplete'}</strong>
-          <small>All items passed, attested &amp; recorded</small>
-        </div>
+      <section className="brad-brief-card" aria-labelledby="brad-brief-title">
+        <header>
+          <div>
+            <span>BRAD'S GOVERNING BODY BRIEF</span>
+            <h2 id="brad-brief-title">Generated {formatBriefTimestamp()} from {sourceRecordCount} source records</h2>
+          </div>
+          <i>LOCAL RUNTIME · FAIL-CLOSED</i>
+        </header>
+        <p className="brad-state">{BRAD_NOLAN_CURRENT_STATE}</p>
+        <p>
+          Deterministic readiness facts show eight Board decisions due before readiness can be relied on. Decision #1 is the future Brad/Nolan Vertex transfer; it is not implemented and must return with BAA, trust-zone, model, logging, rollback, and validation evidence. Personal compliance remains incomplete until assigned modules, policies, quizzes, tabletop packs, attestations, and official evidence records are complete. QAPI tabletop data is synthetic UAT only. The handbook remains an urgent legal/compliance review item, and the Agency Readiness Date cannot be treated as achieved until every gate sustains compliance for 30 consecutive days.
+        </p>
       </section>
 
-      <section className="compliance-required-now">
-        <header>
-          <div><span>REQUIRED NOW</span><h2>What must I do next?</h2></div>
-          <button onClick={() => onGo('compliance', 'required')}>Open My Compliance <ArrowRight size={14} /></button>
-        </header>
-        <div className="compliance-req-list">
-          {requiredNow.length
-            ? requiredNow.map((view) => <RequirementRow key={view.assignment.assignmentId} view={view} handlers={handlers} />)
-            : <p className="compliance-empty">Every assigned requirement is complete.</p>}
+      <section className="readiness-command-grid" aria-label="Executive readiness command cards">
+        <button onClick={() => onGo('decisions')}>
+          <span>Decide</span>
+          <strong>{DECISIONS.length}</strong>
+          <small>Authoritative readiness decisions, with AI architecture first</small>
+        </button>
+        <button onClick={() => onGo('compliance', 'required')}>
+          <span>Complete</span>
+          <strong>{requiredNow.length}</strong>
+          <small>Personal requirements needing action now</small>
+        </button>
+        <button onClick={() => onGo('workflows', 'blockers')}>
+          <span>Unblock</span>
+          <strong>{WORKFLOW_INSTANCES.filter((item) => item.readinessImpact === 'Blocks readiness').length}</strong>
+          <small>Workflow instances blocking readiness</small>
+        </button>
+        <button onClick={() => onGo('evidence')}>
+          <span>Prove</span>
+          <strong>{EVIDENCE_PACKAGES.length}</strong>
+          <small>CES-scoped evidence packages needing links</small>
+        </button>
+      </section>
+
+      <section className="readiness-split">
+        <div className="compliance-required-now">
+          <header>
+            <div><span>PERSONAL REQUIRED WORK</span><h2>What you personally must complete</h2></div>
+            <button onClick={() => onGo('compliance', 'required')}>Open My Compliance <ArrowRight size={14} /></button>
+          </header>
+          <div className="compliance-req-list">
+            {next && <RequirementRow view={next} handlers={handlers} />}
+            {requiredNow.filter((view) => view.assignment.assignmentId !== next?.assignment.assignmentId).slice(0, 3).map((view) => (
+              <RequirementRow key={view.assignment.assignmentId} view={view} handlers={handlers} />
+            ))}
+          </div>
         </div>
+        <section className="readiness-blocker-list" aria-labelledby="readiness-blockers-title">
+          <header><span>READINESS BLOCKERS</span><h2 id="readiness-blockers-title">What blocks the Agency Readiness Date</h2></header>
+          {readinessBlockers.map((blocker) => <p key={blocker}><AlertTriangle size={15} />{blocker}</p>)}
+          <div className="readiness-streak">
+            <strong>30-day compliance streak</strong>
+            <span>0 / 30 days sustained</span>
+            <small>Any critical failure resets the streak and creates an auditable event.</small>
+          </div>
+        </section>
       </section>
 
       <section className="home-board-context">
-        <header><div><span>BOARD CONTEXT</span><h2>Where the Board’s judgment matters</h2></div><button onClick={() => onGo('decisions')}>View the docket <ArrowRight size={14} /></button></header>
-        <div className="home-context-grid">
-          <div className="decision-list">{DECISIONS.slice(0, 3).map((decision) => <button key={decision.id} onClick={() => onGo('decisions')}>
-            <StatusMark tone={decision.tone} /><div><span>{decision.id} · {decision.domain}</span><strong>{decision.title}</strong><small>{decision.status} · {decision.due}</small></div><ChevronRight size={16} />
-          </button>)}</div>
-          <aside className="assurance-column">
-            <article className="assurance-card dark">
-              <div className="assurance-card-head"><span>ASSURANCE SIGNAL</span><BadgeCheck size={18} /></div>
-              <strong>Evidence architecture is intact.</strong>
-              <p>Every governance touchpoint resolves to a defined workflow, controlled form, approval record, and retention path.</p>
-            </article>
-            <button className="home-next-convening" onClick={() => onGo('meetings')}>
-              <span>NEXT CONVENING · QUARTERLY</span>
-              <strong>Q2 Governing Body Review</strong>
-              <small>Enter the meeting workspace <ChevronRight size={14} /></small>
-            </button>
-          </aside>
-        </div>
+        <header><div><span>REQUIRED BOARD ACTION</span><h2>Here is what the Governing Body must decide</h2></div><button onClick={() => onGo('decisions')}>View full docket <ArrowRight size={14} /></button></header>
+        <div className="decision-list executive-decision-list">{DECISIONS.slice(0, 4).map((decision) => <button key={decision.id} onClick={() => onGo('decisions')}>
+          <StatusMark tone={decision.tone} /><div><span>{decision.id} · {decision.domain}</span><strong>{decision.title}</strong><small>{decision.status} · {decision.due}</small></div><ChevronRight size={16} />
+        </button>)}</div>
+      </section>
+
+      <section className="readiness-command-grid compact" aria-label="Compliance totals">
+        <button onClick={() => onGo('compliance', 'training')}><span>Training</span><strong>{summary.training.completed}<small> / {summary.training.assigned}</small></strong><small>Official completions only</small></button>
+        <button onClick={() => onGo('compliance', 'policies')}><span>Policies and quizzes</span><strong>{summary.policies.completed}<small> / {summary.policies.assigned}</small></strong><small>Read, quiz, attest, evidence</small></button>
+        <button onClick={() => onGo('compliance', 'tabletop')}><span>Tabletop</span><strong>{summary.tabletop === 'passed' ? 'Passed' : 'Open'}</strong><small>Five 2026 synthetic packs required</small></button>
       </section>
     </div>
   );
@@ -407,14 +357,16 @@ function MyComplianceView({ tab, onTab, handlers }: { tab: ComplianceTab; onTab:
   const { views, viewById, courses, requiredNow, evidenceConnected, disconnectedNotice } = compliance;
 
   const trainingViews = views.filter((v) => v.assignment.type === 'training_module');
-  const tabletopView = views.find((v) => v.assignment.type === 'tabletop');
+  const tabletopViews = views.filter((v) => v.assignment.type === 'tabletop');
   const completedViews = views.filter((v) => v.officiallyComplete);
 
   const TABS: Array<{ id: ComplianceTab; label: string; count?: number }> = [
     { id: 'required', label: 'Required Now', count: requiredNow.length },
     { id: 'training', label: 'Training Modules', count: trainingViews.length },
     { id: 'policies', label: 'Policies & Procedures', count: courses.length },
-    { id: 'completed', label: 'Completed', count: completedViews.length },
+    { id: 'tabletop', label: 'Tabletop Exercises', count: tabletopViews.length },
+    { id: 'annual', label: 'Annual Attestations', count: ANNUAL_ATTESTATIONS.length },
+    { id: 'completed', label: 'Completed Evidence', count: completedViews.length },
   ];
 
   return (
@@ -423,7 +375,7 @@ function MyComplianceView({ tab, onTab, handlers }: { tab: ComplianceTab; onTab:
       <PageHeading
         eyebrow="MY COMPLIANCE"
         title="Everything you are required to complete"
-        description="Your assigned training modules, controlled policy readings, course assessments, and the final tabletop — in one workspace. This requirement is not complete until the assessment is passed and the evidence record is saved."
+        description="These training modules, controlled Policies & Procedures, quizzes, tabletop exercises, and annual attestations are required for Governing Body compliance. Completion requires a passing score, attestation, controlled source version, and official evidence save."
       />
       {!evidenceConnected && <PreviewOnlyBanner notice={disconnectedNotice} />}
 
@@ -440,7 +392,6 @@ function MyComplianceView({ tab, onTab, handlers }: { tab: ComplianceTab; onTab:
           {requiredNow.length
             ? requiredNow.map((v) => <RequirementRow key={v.assignment.assignmentId} view={v} handlers={handlers} />)
             : <p className="compliance-empty">Nothing outstanding. Every assigned requirement is complete.</p>}
-          {tabletopView && <RequirementRow view={tabletopView} handlers={handlers} />}
         </section>
       )}
 
@@ -451,9 +402,41 @@ function MyComplianceView({ tab, onTab, handlers }: { tab: ComplianceTab; onTab:
       )}
 
       {tab === 'policies' && (
-        <section className="compliance-course-list">
-          {courses.map((course) => (
-            <CourseAccordion key={course.courseId} course={course} viewById={viewById} handlers={handlers} />
+        <>
+          <section className="compliance-course-list">
+            {courses.map((course) => (
+              <CourseAccordion key={course.courseId} course={course} viewById={viewById} handlers={handlers} />
+            ))}
+          </section>
+          <section className="policy-docket-preview">
+            <header><span>BOARD P&P DOCKET</span><h2>Controlled policies requiring Board review</h2></header>
+            {POLICY_APPROVAL_DOCKET.slice(0, 6).map((item) => (
+              <article key={item.policyId}>
+                <div><small>{item.policyId} · {item.owner}</small><strong>{item.title}</strong><p>{item.regulatoryDriver} · {item.trainingImpact}</p></div>
+                <span>{item.approvalStatus}</span>
+              </article>
+            ))}
+          </section>
+        </>
+      )}
+
+      {tab === 'tabletop' && (
+        <section className="compliance-req-list">
+          <div className="synthetic-banner"><strong>SYNTHETIC MOCK DATA · 2026 UAT PREVIEW</strong><span>NOT PRODUCTION · NO REAL PHI</span></div>
+          <p className="compliance-empty strong">Required Governing Body readiness exercise using the 2026 synthetic QAPI record. Official completion is recorded through My Compliance.</p>
+          {tabletopViews.map((v) => <RequirementRow key={v.assignment.assignmentId} view={v} handlers={handlers} />)}
+        </section>
+      )}
+
+      {tab === 'annual' && (
+        <section className="annual-attestation-list">
+          {ANNUAL_ATTESTATIONS.map((item) => (
+            <article key={item.id}>
+              <StatusMark tone="hold" />
+              <div><small>{item.id} · {item.status}</small><strong>{item.title}</strong><p>{item.evidence}</p></div>
+              <span>{item.due}</span>
+              <small>{item.readinessImpact}</small>
+            </article>
           ))}
         </section>
       )}
@@ -518,84 +501,75 @@ function CourseAccordion({ course, viewById, handlers }: { course: CourseProgres
 }
 
 // ---------------------------------------------------------------------------
-// MEETINGS (Overview / Board book / Calendar)
+// MEETINGS
 // ---------------------------------------------------------------------------
 
 function MeetingsView({ tab, onTab, onDecision }: { tab: MeetingsTab; onTab: (t: MeetingsTab) => void; onDecision: (decision: Decision) => void }) {
-  const agenda = [
-    ['09:00', 'Call to order · attendance · quorum · conflicts', 'Board Chair', 'Governance'],
-    ['09:15', 'Prior minutes and open-action verification', 'Board Secretary', 'Consent'],
-    ['09:35', 'Administrator and clinical leadership report', 'Administrator / DON', 'Oversight'],
-    ['10:20', 'Q2 QAPI judgment brief', 'QAPI Lead', 'Decision'],
-    ['11:10', 'Compliance, enterprise risk and policy docket', 'Compliance Officer', 'Decision'],
-    ['11:45', 'Finance, resources and vendor conditions', 'CFO', 'Decision'],
-    ['12:20', 'Executive session', 'Chair / Counsel', 'Restricted'],
-    ['12:50', 'Motions, action register and record close', 'Board Secretary', 'Governance'],
-  ];
-  const [bookOpen, setBookOpen] = useState('04');
-  const [quarter, setQuarter] = useState<'ALL' | GovernanceCalendarItem['quarter']>('ALL');
-  const visibleEvents = CES_GOVERNANCE_CALENDAR.filter((item) => quarter === 'ALL' || item.quarter === quarter);
   const TABS: Array<{ id: MeetingsTab; label: string }> = [
-    { id: 'overview', label: 'Meeting workspace' },
-    { id: 'book', label: 'Board book' },
-    { id: 'calendar', label: 'Governance calendar' },
+    { id: 'lifecycle', label: 'Lifecycle' },
+    { id: 'agenda', label: 'Agenda queue' },
+    { id: 'schedule', label: 'Ad hoc scheduler' },
   ];
-  return <div className="governance-page">
-    <Breadcrumb trail={['Governing Body', 'Meetings', TABS.find((t) => t.id === tab)?.label ?? '']} />
-    <PageHeading eyebrow="MEETINGS · GV-WF-01" title="Prepare for the next convening." description="The meeting workspace, the controlled board book, and the full governance calendar — organized around valid authority, useful deliberation, exact decisions, and a defensible record." action={<div className="meeting-state"><CircleDot size={14} /><span>Q2 workspace assembled</span></div>} />
+  const lifecycle = [
+    ['Notice', 'Distribution record, authority, confidentiality, and packet deadline'],
+    ['Agenda', 'Decision ID, presenter, time, required forms, evidence status, conflict posture'],
+    ['Board book', 'Controlled package readiness, hash, missing evidence, access posture'],
+    ['Attendance', 'Members, role, mode, quorum, COI, recusal'],
+    ['Session', 'Motions, seconds, votes, restrictions, owner, deadline'],
+    ['Close', 'Minutes, signatures, action register, CES/Drive links, effectiveness'],
+  ];
+  const requiredClose = ['attendance', 'quorum', 'COI/recusal', 'motions/votes', 'public minutes', 'executive minutes if applicable', 'action register', 'owners/due dates', 'signatures', 'evidence package', 'calendar/Drive/CES links'];
+
+  return <div className="governance-page executive-readiness-os">
+    <Breadcrumb trail={['Governing Body Office', 'Meetings', TABS.find((t) => t.id === tab)?.label ?? '']} />
+    <PageHeading eyebrow="MEETINGS · SERVER-SIDE CALENDAR/CES" title="Run the meeting workflow, not a decorative calendar." description="Meeting work moves from decision requirement to governed agenda item, server-side calendar event, motion and vote, action, evidence, effectiveness, and closure." action={<div className="meeting-state"><CircleDot size={14} /><span>Preview · no browser-direct Google write</span></div>} />
     <nav className="compliance-tabs" aria-label="Meetings sections">
       {TABS.map((t) => <button key={t.id} className={tab === t.id ? 'active' : ''} onClick={() => onTab(t.id)} aria-current={tab === t.id ? 'true' : undefined}>{t.label}</button>)}
     </nav>
 
-    {tab === 'overview' && <>
+    {tab === 'lifecycle' && <>
       <section className="meeting-summary-grid">
-        <article className="quorum-card"><span>QUORUM POSTURE</span><div><strong>5 / 6</strong><small>voting members anticipated</small></div><p>Quorum remains intact if the conflicted member recuses from the vendor matter.</p><footer><UsersRound size={16} /><span>Attendance mode must be captured per member</span></footer></article>
-        <article><span>OPEN ACTIONS</span><strong>7</strong><p>Three close with evidence; four return for Board verification.</p><small>Oldest open item · 42 days</small></article>
-        <article><span>CONSENT DOCKET</span><strong>3</strong><p>Prior minutes, roster confirmation, and annual plan condition.</p><small>Any member may pull an item</small></article>
-        <article><span>RESTRICTED MATTERS</span><strong>1</strong><p>Patient-safety escalation reserved for executive session.</p><small>Separate record controls apply</small></article>
+        <article><span>NEXT MEETING</span><strong>Readiness review</strong><p>Board action is needed for AI architecture, readiness date, 30-day gate, P&Ps, handbook, compliance completion, tabletop, and admission packet controls.</p><small>Agenda package required before scheduling</small></article>
+        <article><span>CALENDAR POSTURE</span><strong>Server-only</strong><p>Ad hoc meetings must create or upsert through the Calendar/CES adapter. The browser never writes directly to Google Calendar.</p><small>/api/calendar/events integration path</small></article>
+        <article><span>PACKET EVIDENCE</span><strong>4 of 8 complete</strong><p>Missing: AI architecture dossier, handbook counsel status, official tabletop evidence, admission packet validation.</p><small>Status uses text, not color alone</small></article>
+        <article><span>CLOSE GATE</span><strong>Blocked</strong><p>A meeting cannot close from front-end state alone. Required records and signatures must be present.</p><small>CES evidence package required</small></article>
       </section>
-      <section className="meeting-workspace-grid">
-        <div className="agenda-card"><header><div><span>AGENDA</span><h2>Quarterly governing-body review</h2></div><small>3 h 50 min · executive working session</small></header><ol>{agenda.map(([time, title, owner, type], index) => <li key={time} className={type.toLowerCase()}><time>{time}</time><span>{String(index + 1).padStart(2, '0')}</span><div><strong>{title}</strong><small>{owner} · {type}</small></div>{type === 'Decision' && <Gavel size={15} />}{type === 'Restricted' && <LockKeyhole size={15} />}</li>)}</ol></div>
-        <aside className="meeting-side">
-          <article className="chair-brief"><span>CHAIR’S BRIEF</span><h3>Three questions before every vote.</h3><ol><li><b>01</b><p>What authority are we exercising?</p></li><li><b>02</b><p>What evidence could change the answer?</p></li><li><b>03</b><p>How will we know our direction worked?</p></li></ol></article>
-          <article className="live-docket"><div><span>DECISION MATTERS</span><small>4</small></div>{DECISIONS.map((decision) => <button key={decision.id} onClick={() => onDecision(decision)}><StatusMark tone={decision.tone} /><span>{decision.id}</span><strong>{decision.title}</strong><ChevronRight size={14} /></button>)}</article>
-        </aside>
+      <section className="meeting-lifecycle">
+        {lifecycle.map(([title, detail], index) => (
+          <article key={title}>
+            <b>{String(index + 1).padStart(2, '0')}</b>
+            <div><strong>{title}</strong><p>{detail}</p></div>
+          </article>
+        ))}
+      </section>
+      <section className="meeting-close-gate">
+        <header><span>MEETING CLOSE REQUIREMENTS</span><h2>Do not mark closed until every record exists.</h2></header>
+        <div>{requiredClose.map((item) => <span key={item}><CheckCircle2 size={15} />{item}</span>)}</div>
       </section>
     </>}
 
-    {tab === 'book' && <section className="board-book-layout">
-      <article className="board-book-cover">
-        <div className="cover-rule"><span>CARE INDEED</span><i>CONTROLLED</i></div>
-        <div className="cover-title"><small>GOVERNING BODY</small><strong>Quarterly<br />Board Book</strong><p>Quality · Risk · Compliance · Finance · Policy</p></div>
-        <div className="cover-quarter"><span>Q2</span><div><strong>2026</strong><small>APR 01 — JUN 30</small></div></div>
-        <footer><span>GV-WF-01</span><span>CONFIDENTIAL GOVERNANCE RECORD</span></footer>
-      </article>
-      <div className="board-book-index">
-        <header><div><span>CONTENTS</span><h2>Eight sections. One defensible chain.</h2></div><div className="book-status"><CheckCircle2 size={16} /><span>6 of 8 review-ready</span></div></header>
-        <div>{BOOK_SECTIONS.map((section) => <article key={section.code} className={bookOpen === section.code ? 'open' : ''}>
-          <button onClick={() => setBookOpen(bookOpen === section.code ? '' : section.code)}><span>{section.code}</span><div><strong>{section.title}</strong><small>{section.pages} · {section.status}</small></div><ChevronDown size={16} /></button>
-          {bookOpen === section.code && <div className="book-section-detail"><p>{section.detail}</p><div><span><FileCheck2 size={13} /> Source-indexed</span><span><LockKeyhole size={13} /> Controlled record</span></div></div>}
-        </article>)}</div>
-      </div>
+    {tab === 'agenda' && <section className="agenda-card executive-agenda">
+      <header><div><span>AUTHORITATIVE READINESS DOCKET</span><h2>Agenda queue</h2></div><small>Decision-to-agenda metadata required</small></header>
+      <ol>{DECISIONS.map((decision, index) => <li key={decision.id} className={decision.tone}>
+        <time>{String(index + 1).padStart(2, '0')}</time>
+        <span>{decision.id}</span>
+        <div><strong>{decision.title}</strong><small>{decision.owner} · {decision.readinessImpact}</small></div>
+        <button onClick={() => onDecision(decision)}>Open dossier <ChevronRight size={15} /></button>
+      </li>)}</ol>
     </section>}
 
-    {tab === 'calendar' && <>
-      <section className="calendar-control-row">
-        <div><span>YEAR AT A GLANCE</span><strong>2026 governance cycle</strong><small>Exact CES dates + rule-based deadlines</small></div>
-        <nav aria-label="Filter governance calendar">{(['ALL', 'Q1', 'Q2', 'Q3', 'Q4', 'NEXT'] as const).map((item) => <button key={item} className={quarter === item ? 'active' : ''} onClick={() => setQuarter(item)}>{item === 'ALL' ? 'All dates' : item === 'NEXT' ? 'Next cycle' : item}</button>)}</nav>
-        <div className="calendar-assurance"><BadgeCheck size={17} /><span><b>14 / 14</b> GV workflows represented</span></div>
-      </section>
-      <section className="calendar-date-grid">{visibleEvents.map((item) => <article key={`${item.quarter}-${item.date}-${item.title}`} className={item.state}>
-        <div className="calendar-date"><small>{item.quarter}</small><strong>{item.date.split(' ')[1]}</strong><span>{item.date.split(' ')[0]}</span></div>
-        <div className="calendar-event-copy"><span>{item.authority}</span><h2>{item.title}</h2><p>{item.owner}</p><div><FileCheck2 size={14} /><span>{item.evidence}</span></div></div>
-        <i>{item.state === 'complete' ? 'Closed with evidence' : item.state === 'attention' ? 'Board attention' : item.state === 'scheduled' ? 'Schedule / prepare' : 'Rule-based deadline'}</i>
-      </article>)}</section>
-      <section className="governance-action-register">
-        <header><div><span>COMPLETE GOVERNANCE ACTION REGISTER</span><h2>Every Governing Body workflow on one control surface</h2></div><small>Recurring + event-driven · source-backed</small></header>
-        <div className="action-register-head"><span>WORKFLOW</span><span>BOARD ACTION</span><span>TRIGGER</span><span>CONTROL CLOCK</span><span>REQUIRED EVIDENCE</span></div>
-        {GOVERNANCE_ACTION_REGISTER.map(([id, title, trigger, clock, evidence]) => <article key={id}><span>{id}</span><strong>{title}</strong><p>{trigger}</p><p>{clock}</p><small>{evidence}</small></article>)}
-      </section>
-    </>}
+    {tab === 'schedule' && <section className="scheduler-panel">
+      <header>
+        <div><span>AD HOC EVENT SCHEDULER</span><h2>Schedule through Calendar/CES, not the browser.</h2></div>
+        <i>Draft · awaiting server sync</i>
+      </header>
+      <div className="scheduler-grid">
+        <article><small>Requested event</small><strong>Governing Body readiness decision meeting</strong><p>Decision IDs: {DECISIONS.map((decision) => decision.id).join(', ')}</p></article>
+        <article><small>Sync status</small><strong>Not synced</strong><p>Expected statuses: Draft, Scheduled, Sync pending, Synced to Google Calendar, Sync failed — Retry, Cancelled, Closed with evidence.</p></article>
+        <article><small>After sync</small><strong>Google event ID required</strong><p>Show Open in Google Calendar, audit record, and Brad/calendar notification path where appropriate.</p></article>
+      </div>
+      <div className="decision-action-row">{DECISION_TO_AGENDA_ACTIONS.map((action) => <button key={action} type="button">{action}</button>)}</div>
+    </section>}
   </div>;
 }
 
@@ -604,80 +578,241 @@ function MeetingsView({ tab, onTab, onDecision }: { tab: MeetingsTab; onTab: (t:
 // ---------------------------------------------------------------------------
 
 function DecisionsView({ onDecision }: { onDecision: (decision: Decision) => void }) {
-  const [filter, setFilter] = useState<'all' | Decision['status']>('all');
-  const filtered = DECISIONS.filter((decision) => filter === 'all' || decision.status === filter);
-  return <div className="governance-page">
-    <Breadcrumb trail={['Governing Body', 'Decisions']} />
-    <PageHeading eyebrow="DECISIONS" title="Judgment, with conditions attached." description="Each matter joins the recommendation, contrary evidence, authority, conflict posture, motion language, owner, deadline, and effectiveness test." />
-    <nav className="decision-filters" aria-label="Decision filters">{(['all', 'Judgment required', 'Ready for consent', 'Evidence hold', 'Executive session'] as const).map((item) => <button key={item} className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>{item === 'all' ? 'All matters' : item}<span>{item === 'all' ? DECISIONS.length : DECISIONS.filter((decision) => decision.status === item).length}</span></button>)}</nav>
-    <section className="decision-table"><header><span>MATTER</span><span>POSTURE</span><span>ACCOUNTABLE OWNER</span><span>AUTHORITY</span><span /></header>{filtered.map((decision) => <button key={decision.id} onClick={() => onDecision(decision)}><div className="decision-identity"><StatusMark tone={decision.tone} /><div><small>{decision.id} · {decision.domain}</small><strong>{decision.title}</strong><p>{decision.summary}</p></div></div><span className={`decision-posture ${decision.tone}`}>{decision.status}</span><span>{decision.owner}</span><span>{decision.authority}</span><ChevronRight size={17} /></button>)}</section>
-    <section className="decision-principle"><Scale size={22} /><div><span>GOVERNANCE STANDARD</span><strong>The narrowest complete decision wins.</strong><p>Do not approve more than the evidence supports. Do not withhold more than the risk requires. State the condition, owner, deadline, return trigger, and proof of effectiveness.</p></div></section>
+  const [filter, setFilter] = useState<'all' | 'blockers' | 'urgent' | 'synthetic'>('all');
+  const filtered = filter === 'synthetic'
+    ? SOURCE_DERIVED_QAPI_DECISIONS
+    : DECISIONS.filter((decision) => {
+      if (filter === 'blockers') return decision.readinessImpact.toLowerCase().includes('block');
+      if (filter === 'urgent') return decision.status.toLowerCase().includes('urgent') || decision.tone === 'attention';
+      return true;
+    });
+  return <div className="governance-page executive-readiness-os">
+    <Breadcrumb trail={['Governing Body Office', 'Decisions']} />
+    <PageHeading eyebrow="DECISION DOCKET" title="The authoritative readiness decisions." description="Placeholder decisions have been removed. The readiness docket starts with the future Brad/Nolan Vertex transfer and keeps synthetic QAPI decisions subordinate to source-derived preview work." />
+    <nav className="decision-filters" aria-label="Decision filters">{([
+      ['all', 'Authoritative docket', DECISIONS.length],
+      ['blockers', 'Blocks readiness', DECISIONS.filter((decision) => decision.readinessImpact.toLowerCase().includes('block')).length],
+      ['urgent', 'Urgent / attention', DECISIONS.filter((decision) => decision.status.toLowerCase().includes('urgent') || decision.tone === 'attention').length],
+      ['synthetic', 'Source-derived QAPI', SOURCE_DERIVED_QAPI_DECISIONS.length],
+    ] as const).map(([id, label, count]) => <button key={id} className={filter === id ? 'active' : ''} onClick={() => setFilter(id)}>{label}<span>{count}</span></button>)}</nav>
+    <section className="decision-table executive-decision-table"><header><span>MATTER</span><span>POSTURE</span><span>OWNER / DUE</span><span>RETURN / EFFECTIVENESS</span><span /></header>{filtered.map((decision) => <button key={decision.id} onClick={() => onDecision(decision)}><div className="decision-identity"><StatusMark tone={decision.tone} /><div><small>{decision.id} · {decision.domain}</small><strong>{decision.title}</strong><p>{decision.summary}</p>{decision.currentState && <em>{decision.currentState}</em>}{decision.referenceMaterials?.length ? <em>Board references attached: {decision.referenceMaterials.length}</em> : null}</div></div><span className={`decision-posture ${decision.tone}`}>{decision.status}</span><span>{decision.owner}<br />{decision.due}</span><span>{decision.returnToBoardDate}<br />{decision.effectivenessMeasure}</span><ChevronRight size={17} /></button>)}</section>
+    <section className="decision-action-chain">
+      <Scale size={22} />
+      <div><span>DECISION-TO-AGENDA-TO-EVIDENCE CHAIN</span><strong>Requirement {'->'} Workflow {'->'} Decision {'->'} Agenda {'->'} Meeting {'->'} Motion {'->'} Action {'->'} Evidence {'->'} Effectiveness {'->'} Closure</strong><p>Every readiness decision exposes agenda actions, workflow links, required forms, CES evidence, owner, due date, return date, and effectiveness measure.</p></div>
+    </section>
   </div>;
 }
 
 // ---------------------------------------------------------------------------
-// OVERSIGHT (QAPI / Risk)
+// WORKFLOWS
+// ---------------------------------------------------------------------------
+
+function WorkflowsView({ tab, onTab, onDecision }: { tab: WorkflowTab; onTab: (t: WorkflowTab) => void; onDecision: (decision: Decision) => void }) {
+  const [selected, setSelected] = useState<WorkflowInstance>(WORKFLOW_INSTANCES[0]);
+  const TABS: Array<{ id: WorkflowTab; label: string }> = [
+    { id: 'due', label: 'Due Now' },
+    { id: 'blockers', label: 'Readiness Blockers' },
+    { id: 'scheduled', label: 'Scheduled' },
+    { id: 'event', label: 'Event-Triggered' },
+    { id: 'completed', label: 'Completed' },
+    { id: 'library', label: 'Workflow Library' },
+  ];
+  const visible = tab === 'library' ? WORKFLOW_INSTANCES : WORKFLOW_INSTANCES.filter((item) => item.tab === tab);
+  return <div className="governance-page executive-readiness-os">
+    <Breadcrumb trail={['Governing Body Office', 'Workflows', TABS.find((t) => t.id === tab)?.label ?? '']} />
+    <PageHeading eyebrow="WORKFLOWS · SOURCE-BACKED" title="Operational work with owners, clocks, forms, and evidence." description={`This page projects active readiness workflow instances from the compiled workflow corpus. Library source: ${WORKFLOW_LIBRARY_SUMMARY.source}.`} action={<div className="meeting-state"><BadgeCheck size={14} /><span>{WORKFLOW_LIBRARY_SUMMARY.total} compiled workflows</span></div>} />
+    <nav className="compliance-tabs" aria-label="Workflow sections">
+      {TABS.map((t) => <button key={t.id} className={tab === t.id ? 'active' : ''} onClick={() => onTab(t.id)} aria-current={tab === t.id ? 'true' : undefined}>{t.label}</button>)}
+    </nav>
+    <section className="workflow-kpis">
+      <Metric value={String(WORKFLOW_LIBRARY_SUMMARY.total)} label="Compiled workflows" note="Generated source corpus" />
+      <Metric value={String(WORKFLOW_LIBRARY_SUMMARY.requiresGoverningBody)} label="Require Governing Body" note="Compiler-derived approval flag" tone="attention" />
+      <Metric value={String(WORKFLOW_LIBRARY_SUMMARY.highRisk)} label="High-risk workflows" note="Compiler-derived risk band" />
+    </section>
+    <section className="workflow-command-layout">
+      <div className="workflow-instance-list">
+        {visible.length ? visible.map((item) => (
+          <article key={item.instanceId} className={selected.instanceId === item.instanceId ? 'active' : ''}>
+            <button onClick={() => setSelected(item)}>
+              <StatusMark tone={item.readinessImpact === 'Blocks readiness' ? 'attention' : item.readinessImpact === 'At risk' ? 'hold' : 'ready'} />
+              <div><small>{item.workflowId} · {item.sourcePosture}</small><strong>{item.title}</strong><p>{item.whyTriggered}</p></div>
+              <ChevronRight size={16} />
+            </button>
+            <dl>
+              <div><dt>Owner</dt><dd>{item.owner}</dd></div>
+              <div><dt>Due</dt><dd>{item.due}</dd></div>
+              <div><dt>Evidence</dt><dd>{item.evidenceCompleteness}</dd></div>
+            </dl>
+          </article>
+        )) : <p className="compliance-empty">No workflow instances are currently in this view.</p>}
+      </div>
+      <section className="workflow-detail" aria-labelledby="workflow-detail-title">
+        <span>{selected.workflowId} · {selected.currentStage}</span>
+        <h2 id="workflow-detail-title">{selected.title}</h2>
+        <p>{selected.processOverview}</p>
+        <div className="workflow-detail-grid">
+          <article><small>Readiness impact</small><strong>{selected.readinessImpact}</strong></article>
+          <article><small>Next action</small><strong>{selected.nextAction}</strong></article>
+          <article><small>Agenda status</small><strong>{selected.agendaStatus}</strong></article>
+          <article><small>Authority</small><strong>{selected.authority || 'Source authority pending'}</strong></article>
+        </div>
+        <section><h3>Required forms</h3><div className="form-chip-row">{selected.requiredForms.length ? selected.requiredForms.map((form) => <span key={form}>{form}</span>) : <span>No forms projected</span>}</div></section>
+        <section><h3>Failure and audit requirements</h3><p>{selected.failureConditions}</p><p>{selected.auditRequirements}</p></section>
+        <div className="decision-action-row">
+          <button type="button">Open workflow</button>
+          <button type="button" onClick={() => onDecision(DECISIONS[0])}>Add to agenda</button>
+          <button type="button">Schedule event</button>
+          <button type="button">Open required forms</button>
+          <button type="button">Open evidence in CES</button>
+        </div>
+      </section>
+    </section>
+  </div>;
+}
+
+// ---------------------------------------------------------------------------
+// OVERSIGHT
 // ---------------------------------------------------------------------------
 
 function OversightView({ tab, onTab, onDecision, onOpenTabletop }: { tab: OversightTab; onTab: (t: OversightTab) => void; onDecision: (decision: Decision) => void; onOpenTabletop: () => void }) {
+  const [quarter, setQuarter] = useState(QAPI_PREVIEW_QUARTERS[1]);
   const TABS: Array<{ id: OversightTab; label: string }> = [
-    { id: 'qapi', label: 'QAPI oversight' },
-    { id: 'risk', label: 'Risk & assurance' },
+    { id: 'qapi', label: '2026 QAPI Preview' },
+    { id: 'domains', label: 'Other Domains' },
+    { id: 'data', label: 'Data Integrity' },
   ];
-  return <div className="governance-page">
-    <Breadcrumb trail={['Governing Body', 'Oversight', TABS.find((t) => t.id === tab)?.label ?? '']} />
-    <PageHeading eyebrow="OVERSIGHT · 42 CFR 484.65" title="Govern the signal, not the color." description="Board oversight of quality (QAPI), enterprise risk, and policy governance. This is the live oversight record — distinct from your assigned compliance work in My Compliance." action={<button className="executive-button" onClick={() => onDecision(DECISIONS[0])}>Open judgment brief <ArrowRight size={16} /></button>} />
+  return <div className="governance-page executive-readiness-os">
+    <Breadcrumb trail={['Governing Body Office', 'Oversight', TABS.find((t) => t.id === tab)?.label ?? '']} />
+    <PageHeading eyebrow="OVERSIGHT · 2026 UAT PREVIEW" title="Board-ready oversight without pretending mock data is live." description="QAPI preview data is synthetic and useful for readiness rehearsal. Production readiness cannot rely on synthetic or localStorage evidence." action={<button className="executive-button" onClick={() => onDecision(DECISIONS[6])}>Open tabletop decision <ArrowRight size={16} /></button>} />
+    <div className="synthetic-banner"><strong>SYNTHETIC MOCK DATA · 2026 UAT PREVIEW</strong><span>NOT PRODUCTION · NO REAL PHI</span></div>
     <nav className="compliance-tabs" aria-label="Oversight sections">
       {TABS.map((t) => <button key={t.id} className={tab === t.id ? 'active' : ''} onClick={() => onTab(t.id)} aria-current={tab === t.id ? 'true' : undefined}>{t.label}</button>)}
     </nav>
 
     {tab === 'qapi' && (
-      <section className="oversight-sim-launch">
-        <button className="home-sim-launch" onClick={onOpenTabletop}>
-          <div className="home-sim-copy">
-            <span>GOVERNING BODY BOARDROOM SIMULATION</span>
-            <strong>2026 QAPI Boardroom Tabletop</strong>
-            <small>Interactive board sessions on the 2026 QAPI record — Q1–Q4 and the year-end annual review, solo or facilitated group. An oversight exercise, not part of required training.</small>
-          </div>
-          <span className="home-sim-cta">Launch simulation <ArrowRight size={16} /></span>
-        </button>
-      </section>
+      <>
+        <nav className="quarter-selector" aria-label="Synthetic QAPI quarter">
+          {QAPI_PREVIEW_QUARTERS.map((item) => <button key={item.id} className={quarter.id === item.id ? 'active' : ''} onClick={() => setQuarter(item)}>{item.label}</button>)}
+        </nav>
+        <section className="oversight-signal-grid">
+          <article><span>What changed</span><strong>{quarter.changed}</strong></article>
+          <article><span>Improved</span><strong>{quarter.improved}</strong></article>
+          <article><span>Worsened</span><strong>{quarter.worsened}</strong></article>
+          <article><span>Requires Board action</span><strong>{quarter.boardDecision}</strong></article>
+        </section>
+        <section className="qapi-kpi-grid">
+          {quarter.kpis.map((kpi) => <article key={kpi.name}>
+            <header><span>{kpi.posture}</span><strong>{kpi.name}</strong></header>
+            <dl><div><dt>Current</dt><dd>{kpi.value}</dd></div><div><dt>Threshold</dt><dd>{kpi.threshold}</dd></div><div><dt>Numerator / denominator</dt><dd>{kpi.numerator} / {kpi.denominator}</dd></div><div><dt>Prior quarter</dt><dd>{kpi.priorQuarter}</dd></div><div><dt>Subgroup</dt><dd>{kpi.subgroup}</dd></div><div><dt>Source date</dt><dd>{kpi.sourceDate}</dd></div></dl>
+            <p>{kpi.trend}</p>
+          </article>)}
+        </section>
+        <section className="qapi-lifecycle">
+          <header><span>QAPI LIFECYCLE</span><h2>PIPs, CAPs, RCAs, evidence, and Board return</h2></header>
+          {quarter.lifecycle.map((item) => <article key={`${item.type}-${item.title}`}><b>{item.type}</b><div><strong>{item.title}</strong><p>{item.owner} · due {item.due} · evidence: {item.evidence}</p></div><span>{item.boardReturn}</span></article>)}
+        </section>
+        <section className="oversight-sim-launch">
+          <button className="home-sim-launch" onClick={onOpenTabletop}>
+            <div className="home-sim-copy">
+              <span>GOVERNING BODY BOARDROOM SIMULATION</span>
+              <strong>Practice this quarter in the Boardroom Simulation</strong>
+              <small>Required Governing Body readiness exercise using the 2026 synthetic QAPI record. Official completion is recorded through My Compliance.</small>
+            </div>
+            <span className="home-sim-cta">Launch simulation <ArrowRight size={16} /></span>
+          </button>
+        </section>
+      </>
     )}
 
-    {tab === 'risk' && <>
-      <section className="risk-overview"><article><span>RISK POSTURE</span><strong>Focused attention</strong><p>One quality signal requires Board direction; no workflow-to-evidence integrity break is open.</p></article><Metric value="1" label="Critical" note="Immediate governance direction" tone="attention" /><Metric value="2" label="Elevated" note="Active correction or approval hold" /><Metric value="2" label="Controlled" note="Monitored within tolerance" tone="positive" /></section>
-      <section className="risk-register"><header><span>PRIORITY</span><span>EXPOSURE</span><span>TREND</span><span>CONTROL & OWNER</span><span>POSTURE</span></header>{RISKS.map((risk) => <article key={risk.rank}><span>{risk.rank}</span><div><small>{risk.domain}</small><strong>{risk.title}</strong></div><span className={`risk-trend ${risk.trend}`}>{risk.trend === 'up' ? <TrendingUp size={15} /> : risk.trend === 'down' ? <TrendingDown size={15} /> : <ArrowRight size={15} />}{risk.trend === 'up' ? 'Rising' : risk.trend === 'down' ? 'Improving' : 'Stable'}</span><div><strong>{risk.control}</strong><small>{risk.owner}</small></div><i className={risk.tone}>{risk.posture}</i></article>)}</section>
-      <section className="risk-bottom-grid"><article className="risk-map"><span>DEPENDENCY MAP</span><h2>One decision touches four systems.</h2><div><button onClick={() => onDecision(DECISIONS[0])}><Activity size={17} /><strong>QAPI signal</strong><small>Subgroup + complaints</small></button><i /><button><UsersRound size={17} /><strong>Clinical control</strong><small>After-hours escalation</small></button><i /><button><Scale size={17} /><strong>Resources</strong><small>Analyst + coaching hours</small></button><i /><button><FileCheck2 size={17} /><strong>Official record</strong><small>Criteria + minutes</small></button></div></article><article className="assurance-opinion"><span>ASSURANCE OPINION</span><h3>Reasonable assurance—conditional.</h3><p>The governance architecture is complete and traceable. Assurance remains conditional until the quality judgment, vendor control gaps, and committee-to-board record variance close with evidence.</p><footer><BadgeCheck size={17} /><span>Evidence architecture reviewed across 166 workflows</span></footer></article></section>
+    {tab === 'domains' && <>
+      <section className="risk-overview"><article><span>OTHER OVERSIGHT DOMAINS</span><strong>Board attention map</strong><p>Each domain links back to a decision, workflow, required form, CES evidence package, or readiness gate.</p></article><Metric value="8" label="Domains" note="Adverse events, infection, grievances, workforce, licensure, billing, privacy/security, finance" tone="attention" /><Metric value="4" label="Board decisions" note="AI, P&P, handbook, admission packet" /><Metric value="0" label="Production claims" note="No synthetic item is counted as live evidence" tone="positive" /></section>
+      <section className="risk-bottom-grid"><article className="risk-map"><span>DEPENDENCY MAP</span><h2>Every blocker has a governed path.</h2><div><button onClick={() => onDecision(DECISIONS[0])}><Activity size={17} /><strong>AI architecture</strong><small>Future Vertex decision</small></button><i /><button onClick={() => onDecision(DECISIONS[4])}><UsersRound size={17} /><strong>Handbook</strong><small>Urgent review</small></button><i /><button onClick={() => onDecision(DECISIONS[7])}><Scale size={17} /><strong>Admission packet</strong><small>Template + registry</small></button><i /><button onClick={() => onDecision(DECISIONS[3])}><FileCheck2 size={17} /><strong>P&Ps</strong><small>Controlled approvals</small></button></div></article><article className="assurance-opinion"><span>ASSURANCE OPINION</span><h3>Conditional readiness only.</h3><p>The interface can show the chain, but production readiness remains blocked until live sources, official evidence, Board approvals, and sustained compliance are complete.</p><footer><BadgeCheck size={17} /><span>Evidence architecture remains a CES projection, not a duplicate store</span></footer></article></section>
+    </>}
+
+    {tab === 'data' && <>
+      <section className="data-integrity-list">
+        <header><span>UNRESOLVED DATA INTEGRITY</span><h2>Issues that prevent silent reliance</h2></header>
+        {quarter.dataIssues.map((issue) => <article key={issue}><AlertTriangle size={16} /><strong>{issue}</strong><span>{quarter.label}</span></article>)}
+        {QAPI_PREVIEW_QUARTERS.flatMap((item) => item.dataIssues.map((issue) => `${item.label}: ${issue}`)).slice(0, 8).map((issue) => <article key={issue}><AlertTriangle size={16} /><strong>{issue}</strong><span>Synthetic preview</span></article>)}
+      </section>
     </>}
   </div>;
 }
 
 // ---------------------------------------------------------------------------
-// RECORDS
+// EVIDENCE
 // ---------------------------------------------------------------------------
 
-function RecordsView({ onOpenForms }: { onOpenForms: () => void }) {
-  const evidence = [
-    ['GV-FM-005', 'Governing Body Meeting Minutes', '199 workflow touchpoints', 'Primary board decision artifact'],
-    ['QA-FM-001', 'QAPI Committee Meeting Minutes', '48 workflow touchpoints', 'Quality deliberation and recommendation'],
-    ['CO-FM-024', 'Compliance Committee Minutes', '93 workflow touchpoints', 'Compliance oversight and escalation'],
-    ['GV-FM-023', 'Report to Governing Body', 'Quarterly / annual', 'Cross-domain executive reporting'],
-    ['EN-FM-034', 'Enterprise KPI Dashboard', 'Quarterly management review', 'Cross-domain performance evidence'],
-    ['EN-FM-037', 'Enterprise Management Certification', 'Annual', 'Administrator and CFO certification'],
-  ];
-  return <div className="governance-page">
-    <Breadcrumb trail={['Governing Body', 'Records']} />
-    <PageHeading eyebrow="GOVERNANCE EVIDENCE RECORD" title="Proof, with provenance." description="The governing record is organized by decision—not by file folder—so a reviewer can move from authority to source, deliberation, action, and verified follow-through." action={<button className="executive-button" onClick={onOpenForms}>Annual governance forms <ArrowRight size={16} /></button>} />
-    <section className="record-integrity-hero"><div><Fingerprint size={30} /><div><span>TRACEABILITY POSTURE</span><strong>End-to-end workflow integrity</strong><p>Three consecutive full-system passes found zero broken workflow-to-form references and zero missing required form files.</p></div></div><div className="integrity-number"><strong>0</strong><span>unresolved<br />reference defects</span></div></section>
-    <section className="record-stat-row"><Metric value="166" label="Workflows" note="All retain complete 13-section structure" /><Metric value="349" label="Forms" note="Controlled library with mapped purpose" /><Metric value="10" label="Domains" note="Governance through enterprise controls" /><Metric value="3×" label="Clean passes" note="Stop condition reached" tone="positive" /></section>
-    <section className="evidence-register"><header><div><span>CORE GOVERNANCE ARTIFACTS</span><h2>The record spine</h2></div><small>Source-backed inventory</small></header>{evidence.map(([id, title, reach, purpose]) => <article key={id}><span><FileText size={16} /></span><div><small>{id}</small><strong>{title}</strong></div><div><small>REACH</small><strong>{reach}</strong></div><div><small>GOVERNANCE PURPOSE</small><strong>{purpose}</strong></div><button aria-label={`Inspect ${id}`}><ChevronRight size={16} /></button></article>)}</section>
-    <section className="record-chain"><span>EVIDENCE CHAIN</span><ol>{['Authority', 'Source', 'Deliberation', 'Decision', 'Owner', 'Deadline', 'Effectiveness', 'Archive'].map((item, index) => <li key={item}><b>{String(index + 1).padStart(2, '0')}</b><strong>{item}</strong>{index < 7 && <i />}</li>)}</ol></section>
+function EvidenceView({ onOpenForms }: { onOpenForms: () => void }) {
+  return <div className="governance-page executive-readiness-os">
+    <Breadcrumb trail={['Governing Body Office', 'Evidence / CES']} />
+    <PageHeading eyebrow="CES-SCOPED EVIDENCE" title="Evidence is a projection, not a duplicate store." description="This destination shows Governing Body packages and deep links by canonical identifiers. It does not mutate CES records or become a second evidence repository." action={<button className="executive-button" onClick={onOpenForms}>Annual governance forms <ArrowRight size={16} /></button>} />
+    <section className="record-integrity-hero"><div><Fingerprint size={30} /><div><span>CONTROL DISTINCTION</span><strong>CES and signed packages remain authoritative.</strong><p>The portal indexes event, decision, policy, training, tabletop, and packet evidence using canonical IDs and protected access posture.</p></div></div><div className="integrity-number"><strong>{EVIDENCE_PACKAGES.length}</strong><span>open<br />packages</span></div></section>
+    <section className="evidence-register ces-evidence-register"><header><div><span>GOVERNING BODY EVIDENCE PACKAGES</span><h2>Scoped CES projection</h2></div><small>policy_id · workflow_id · event_id · decision_id · form_id · evidence_id</small></header>{EVIDENCE_PACKAGES.map((item) => <article key={item.evidenceId}><span><FileText size={16} /></span><div><small>{item.evidenceId} · {item.packageType}</small><strong>{item.title}</strong><p>{item.canonicalId}</p></div><div><small>STATUS</small><strong>{item.status}</strong></div><div><small>ACCESS</small><strong>{item.access}</strong></div><button aria-label={`Open ${item.title} in CES`}><ChevronRight size={16} /></button></article>)}</section>
+    <section className="evidence-actions">
+      <button type="button">Open in CES</button>
+      <button type="button">Open in Google Drive</button>
+      <button type="button">View evidence chain</button>
+      <button type="button">Download approved package</button>
+    </section>
+    <section className="record-chain"><span>EVIDENCE CHAIN</span><ol>{EVIDENCE_PACKAGES[0].chain.map((item, index) => <li key={item}><b>{String(index + 1).padStart(2, '0')}</b><strong>{item}</strong>{index < EVIDENCE_PACKAGES[0].chain.length - 1 && <i />}</li>)}</ol></section>
   </div>;
 }
 
 // ---------------------------------------------------------------------------
 // Drawer + command palette
 // ---------------------------------------------------------------------------
+
+function DecisionReferenceMaterials({ decision }: { decision: Decision }) {
+  if (!decision.referenceMaterials?.length) return null;
+
+  return (
+    <section className="drawer-reference-materials">
+      <span>BOARD REFERENCE MATERIALS</span>
+      <div>
+        {decision.referenceMaterials.map((reference) => (
+          <a key={reference.href} href={reference.href} target="_blank" rel="noreferrer">
+            <FileText size={16} aria-hidden="true" />
+            <div>
+              <small>{reference.posture}</small>
+              <strong>{reference.label}</strong>
+              <p>{reference.detail}</p>
+            </div>
+            <ExternalLink size={15} aria-hidden="true" />
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function DecisionRevisionContext({ decision }: { decision: Decision }) {
+  if (!decision.revisionContext) return null;
+
+  return (
+    <section className="drawer-revision-context">
+      <span>HANDBOOK REVISION CONTEXT</span>
+      <h3>{decision.revisionContext.heading}</h3>
+      <div className="revision-context-summary">
+        {decision.revisionContext.summary.map((paragraph) => (
+          <p key={paragraph}>{paragraph}</p>
+        ))}
+      </div>
+      <div className="revision-context-sections">
+        {decision.revisionContext.sections.map((section) => (
+          <article key={section.title}>
+            <strong>{section.title}</strong>
+            <ul>
+              {section.items.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function DecisionDrawer({ decision, onClose }: { decision: Decision; onClose: () => void }) {
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -689,7 +824,91 @@ function DecisionDrawer({ decision, onClose }: { decision: Decision; onClose: ()
     window.addEventListener('keydown', listener);
     return () => { document.body.style.overflow = priorOverflow; window.removeEventListener('keydown', listener); };
   }, [onClose]);
-  return <div className="drawer-backdrop" role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}><aside className="decision-drawer" role="dialog" aria-modal="true" aria-labelledby="decision-drawer-title"><header><div><span>{decision.id}</span><small>{decision.domain}</small></div><button ref={closeRef} onClick={onClose} aria-label="Close decision dossier"><X size={18} /></button></header><div className="drawer-scroll"><div className="drawer-posture"><StatusMark tone={decision.tone} /><span>{decision.status}</span><small>{decision.due}</small></div><h2 id="decision-drawer-title">{decision.title}</h2><p className="drawer-summary">{decision.summary}</p><section className="drawer-recommendation"><span>PROPOSED DIRECTION</span><p>{decision.recommendation}</p></section><dl><div><dt>Accountable owner</dt><dd>{decision.owner}</dd></div><div><dt>Authority & workflow</dt><dd>{decision.authority}</dd></div></dl><section className="drawer-evidence"><span>EVIDENCE TO INTERROGATE</span>{decision.evidence.map((item, index) => <div key={item}><b>{String(index + 1).padStart(2, '0')}</b><p>{item}</p><FileCheck2 size={14} /></div>)}</section><section className="drawer-motion"><span>RECORD STANDARD</span><p>Capture the precise motion, material contrary evidence, conflict handling, vote, conditions, accountable owner, deadline, return trigger, and effectiveness measure.</p></section></div><footer><button className="quiet-drawer-button" onClick={onClose}>Return to docket</button><button className="executive-button" onClick={onClose}>Place in meeting brief <Check size={15} /></button></footer></aside></div>;
+
+  return (
+    <div
+      className="drawer-backdrop"
+      role="presentation"
+      onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}
+    >
+      <aside className="decision-drawer executive-decision-drawer" role="dialog" aria-modal="true" aria-labelledby="decision-drawer-title">
+        <header>
+          <div>
+            <span>{decision.id}</span>
+            <small>{decision.domain}</small>
+          </div>
+          <button ref={closeRef} onClick={onClose} aria-label="Close decision dossier">
+            <X size={18} />
+          </button>
+        </header>
+        <div className="drawer-scroll">
+          <div className="drawer-posture">
+            <StatusMark tone={decision.tone} />
+            <span>{decision.status}</span>
+            <small>{decision.due}</small>
+          </div>
+          <h2 id="decision-drawer-title">{decision.title}</h2>
+          {decision.currentState && <p className="drawer-current-state">{decision.currentState}</p>}
+          <p className="drawer-summary">{decision.summary}</p>
+          <section className="drawer-recommendation">
+            <span>PURPOSE</span>
+            <p>{decision.purpose}</p>
+          </section>
+          <section className="drawer-motion">
+            <span>SUGGESTED MOTION</span>
+            <p>{decision.suggestedMotion}</p>
+          </section>
+          <DecisionReferenceMaterials decision={decision} />
+          <DecisionRevisionContext decision={decision} />
+          <dl>
+            <div><dt>Accountable owner</dt><dd>{decision.owner}</dd></div>
+            <div><dt>Authority</dt><dd>{decision.authority}</dd></div>
+            <div><dt>Readiness impact</dt><dd>{decision.readinessImpact}</dd></div>
+            <div><dt>Return to Board</dt><dd>{decision.returnToBoardDate}</dd></div>
+            <div><dt>Effectiveness measure</dt><dd>{decision.effectivenessMeasure}</dd></div>
+            <div><dt>Agenda status</dt><dd>{decision.agendaStatus}</dd></div>
+          </dl>
+          <section className="drawer-evidence">
+            <span>REQUIRED DECISION ELEMENTS</span>
+            {decision.requiredElements.map((item, index) => (
+              <div key={item}>
+                <b>{String(index + 1).padStart(2, '0')}</b>
+                <p>{item}</p>
+                <CheckCircle2 size={14} />
+              </div>
+            ))}
+          </section>
+          <section className="drawer-evidence">
+            <span>EVIDENCE TO INTERROGATE</span>
+            {decision.evidence.map((item, index) => (
+              <div key={item}>
+                <b>{String(index + 1).padStart(2, '0')}</b>
+                <p>{item}</p>
+                <FileCheck2 size={14} />
+              </div>
+            ))}
+          </section>
+          <section className="drawer-link-grid">
+            <div>
+              <span>Workflows</span>
+              {decision.workflowIds.map((item) => <code key={item}>{item}</code>)}
+            </div>
+            <div>
+              <span>Required forms</span>
+              {decision.formIds.map((item) => <code key={item}>{item}</code>)}
+            </div>
+          </section>
+          <section className="decision-action-row">
+            {DECISION_TO_AGENDA_ACTIONS.map((action) => <button key={action} type="button">{action}</button>)}
+          </section>
+        </div>
+        <footer>
+          <button className="quiet-drawer-button" onClick={onClose}>Return to docket</button>
+          <button className="executive-button" onClick={onClose}>Add to agenda <Check size={15} /></button>
+        </footer>
+      </aside>
+    </div>
+  );
 }
 
 function CommandPalette({ onClose, onView, onDecision, onPolicy, onModule }: { onClose: () => void; onView: (view: ViewKey, sub?: string) => void; onDecision: (decision: Decision) => void; onPolicy: (policy: PolicyJourneyRequirement) => void; onModule: (id: string) => void }) {
@@ -697,7 +916,7 @@ function CommandPalette({ onClose, onView, onDecision, onPolicy, onModule }: { o
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     const destinations = NAV_ITEMS.filter((item) => !q || `${item.label} ${item.hint}`.toLowerCase().includes(q)).map((item) => ({ type: 'Workspace', id: item.id, title: item.label, subtitle: item.hint, action: () => onView(item.id) }));
-    const decisions = DECISIONS.filter((item) => q && `${item.id} ${item.title} ${item.domain}`.toLowerCase().includes(q)).map((item) => ({ type: 'Decision', id: item.id, title: item.title, subtitle: item.status, action: () => onDecision(item) }));
+    const decisions = ALL_DECISIONS.filter((item) => q && `${item.id} ${item.title} ${item.domain}`.toLowerCase().includes(q)).map((item) => ({ type: 'Decision', id: item.id, title: item.title, subtitle: item.status, action: () => onDecision(item) }));
     const modules = MODULES.filter((item) => q && `${item.id} ${item.title} ${item.domain}`.toLowerCase().includes(q)).map((item) => ({ type: 'Training', id: item.id, title: item.title, subtitle: item.domain, action: () => onModule(item.id) }));
     const policies = GB_POLICY_REQUIREMENTS.filter((item) => q && `${item.policyId} ${item.policyTitle} ${item.courseTitle}`.toLowerCase().includes(q)).map((item) => ({ type: 'Policy', id: item.requirementId, title: item.policyTitle.replace(' (absent from generated library)', ''), subtitle: `${item.policyId} · ${item.courseId}`, action: () => onPolicy(item) }));
     return [...destinations, ...decisions, ...policies, ...modules].slice(0, 10);
@@ -717,28 +936,58 @@ function CommandPalette({ onClose, onView, onDecision, onPolicy, onModule }: { o
 // ---------------------------------------------------------------------------
 
 function AppShell({ view, onView, onSearch, children }: { view: ViewKey; onView: (view: ViewKey) => void; onSearch: () => void; children: React.ReactNode }) {
+  const { user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [railCollapsed, setRailCollapsed] = useState(() => {
+    try { return localStorage.getItem('gb-v3-rail-collapsed') === 'true'; } catch { return false; }
+  });
   const active = NAV_ITEMS.find((item) => item.id === view) ?? NAV_ITEMS[0];
-  return <div className="governance-app" data-view={view}>
-    <aside className={`governance-rail ${menuOpen ? 'open' : ''}`}>
-      <button className="rail-brand" onClick={() => onView('home')} aria-label="Care Indeed Governing Body home"><BrandCrest /><span>GOVERNANCE</span></button>
-      <nav aria-label="Governing Body sections">{NAV_ITEMS.map((item) => { const Icon = item.icon; return <button key={item.id} className={view === item.id ? 'active' : ''} onClick={() => { onView(item.id); setMenuOpen(false); }} aria-current={view === item.id ? 'page' : undefined}><Icon size={19} aria-hidden="true" /><span className="rail-label">{item.label}</span></button>; })}</nav>
-      <div className="rail-footer"><button onClick={onSearch}><Command size={18} aria-hidden="true" /><span className="rail-label">Search</span></button><div className="chair-avatar" aria-label="Governing Body Chair">RP</div></div>
+  const groups = Array.from(new Set(NAV_ITEMS.map((item) => item.group)));
+  const displayName = user?.name || user?.email || 'Governing Body member';
+  const roleLabel = user?.role ? user.role.replaceAll('_', ' ') : 'Governing Body Chair';
+  const initials = displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || 'GB';
+  const toggleRail = () => {
+    setRailCollapsed((current) => {
+      const next = !current;
+      try { localStorage.setItem('gb-v3-rail-collapsed', String(next)); } catch { /* ignore */ }
+      return next;
+    });
+  };
+  return <div className={`governance-app ${railCollapsed ? 'rail-collapsed' : ''}`} data-view={view}>
+    <aside className={`governance-rail ${menuOpen ? 'open' : ''} ${railCollapsed ? 'is-collapsed' : ''}`}>
+      <button className="rail-brand" onClick={() => onView('home')} aria-label="Care Indeed Governing Body home">
+        <BrandCrest />
+        <span><b>Care Indeed</b><small>Governing Body Office</small></span>
+      </button>
+      <div className="rail-profile">
+        <div className="chair-avatar" aria-label={displayName}>{initials}</div>
+        <div><strong>{displayName}</strong><small>{roleLabel}</small><em>Readiness posture: blocked</em></div>
+      </div>
+      <nav aria-label="Governing Body sections">
+        {groups.map((group) => (
+          <section key={group} aria-label={group}>
+            <span className="rail-group-label">{group}</span>
+            {NAV_ITEMS.filter((item) => item.group === group).map((item) => { const Icon = item.icon; return <button key={item.id} data-label={item.label} className={view === item.id ? 'active' : ''} onClick={() => { onView(item.id); setMenuOpen(false); }} aria-current={view === item.id ? 'page' : undefined}><Icon size={20} aria-hidden="true" /><span className="rail-label">{item.label}</span><small>{item.hint}</small></button>; })}
+          </section>
+        ))}
+      </nav>
+      <div className="rail-footer"><button onClick={onSearch} data-label="Search"><Command size={18} aria-hidden="true" /><span className="rail-label">Search</span></button><button className="rail-collapse-button" onClick={toggleRail} aria-pressed={railCollapsed} aria-label={railCollapsed ? 'Expand navigation' : 'Collapse navigation'}>{railCollapsed ? <Menu size={18} /> : <PanelLeftClose size={18} />}<span>{railCollapsed ? 'Expand' : 'Collapse'}</span></button></div>
     </aside>
     {menuOpen && <button className="mobile-rail-scrim" onClick={() => setMenuOpen(false)} aria-label="Close navigation" />}
     <div className="governance-workspace">
-      <header className="governance-topbar"><div className="topbar-context"><button className="mobile-menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open navigation">{menuOpen ? <PanelLeftClose size={19} /> : <Menu size={19} />}</button><div><span>CARE INDEED / GOVERNING BODY</span><strong>{active.label}</strong></div></div><div className="topbar-actions"><button className="command-trigger" onClick={onSearch}><Search size={15} /><span>Search the record</span><kbd>⌘ K</kbd></button><span className="executive-prototype"><CircleDot size={10} /> Executive prototype</span><button className="notification-button" aria-label="Notifications"><Bell size={17} /><i /></button><div className="topbar-profile"><span>RP</span><div><strong>Robert Padilla</strong><small>Governing Body Chair</small></div></div></div></header>
+      <header className="governance-topbar"><div className="topbar-context"><button className="mobile-menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open navigation">{menuOpen ? <PanelLeftClose size={19} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />}</button><div><span>CARE INDEED / GOVERNING BODY OFFICE</span><strong>{active.label}</strong></div></div><div className="topbar-actions"><button className="command-trigger" onClick={onSearch} aria-label="Search the record"><Search size={15} aria-hidden="true" /><span>Search the record</span><kbd>Ctrl K</kbd></button><span className="executive-prototype"><CircleDot size={10} /> PREVIEW · DATA POSTURE SHOWN</span><button className="notification-button" aria-label="Notifications"><Bell size={17} /><i /></button><div className="topbar-profile"><span>{initials}</span><div><strong>{displayName}</strong><small>{roleLabel}</small></div></div></div></header>
       <main>{children}</main>
-      <footer className="governance-footer"><span>CARE INDEED HOME HEALTH CARE</span><div><span>Governing Body Office</span><i /> <span>Controlled executive prototype</span><i /><span>Q2 2026</span></div></footer>
+      <footer className="governance-footer"><span>CARE INDEED HOME HEALTH CARE</span><div><span>Governing Body Executive Readiness Office</span><i /> <span>CES projection</span><i /><span>2026 readiness preview</span></div></footer>
     </div>
   </div>;
 }
 
 export default function MyJourneyApp() {
   const [view, setView] = useState<ViewKey>('home');
-  const [meetingsTab, setMeetingsTab] = useState<MeetingsTab>('overview');
+  const [meetingsTab, setMeetingsTab] = useState<MeetingsTab>('lifecycle');
   const [oversightTab, setOversightTab] = useState<OversightTab>('qapi');
   const [complianceTab, setComplianceTab] = useState<ComplianceTab>('required');
+  const [workflowTab, setWorkflowTab] = useState<WorkflowTab>('due');
   const [decision, setDecision] = useState<Decision | null>(null);
   const [policyOpen, setPolicyOpen] = useState<PolicyJourneyRequirement | null>(null);
   const [academyModuleId, setAcademyModuleId] = useState<string | null>(null);
@@ -755,14 +1004,45 @@ export default function MyJourneyApp() {
     if (next === 'meetings' && sub) setMeetingsTab(sub as MeetingsTab);
     if (next === 'oversight' && sub) setOversightTab(sub as OversightTab);
     if (next === 'compliance' && sub) setComplianceTab(sub as ComplianceTab);
+    if (next === 'workflows' && sub) setWorkflowTab(sub as WorkflowTab);
     window.history.replaceState(null, '', `#${next}${sub ? `/${sub}` : ''}`);
     window.scrollTo({ top: 0 });
   };
 
   useEffect(() => {
     const applyHash = () => {
-      const [rawView] = window.location.hash.replace('#', '').split('/');
-      if (NAV_ITEMS.some((item) => item.id === rawView)) setView(rawView as ViewKey);
+      const path = window.location.pathname;
+      const moduleMatch = path.match(/^\/governance\/academy\/modules\/([^/]+)\/?$/);
+      if (moduleMatch) {
+        setAcademyModuleId(decodeURIComponent(moduleMatch[1]));
+        setAcademyOpen(true);
+        return;
+      }
+      const [rawView, rawSub] = window.location.hash.replace('#', '').split('/');
+      const legacyPathView =
+        path === '/governance/academy' ? 'compliance'
+          : path.startsWith('/governance/learning/policies') || path === '/governance/policies' ? 'compliance'
+            : path === '/governance/records' ? 'evidence'
+              : path === '/governance/qapi' || path === '/governance/oversight' || path === '/governance/risk' ? 'oversight'
+                : path === '/governance/meetings' ? 'meetings'
+                  : path === '/governance/board-books' || path === '/governance/calendar' ? 'meetings'
+                  : path === '/governance/decisions' ? 'decisions'
+                    : path === '/governance/workflows' ? 'workflows'
+                      : path === '/governance/evidence' ? 'evidence'
+                        : null;
+      const normalizedView = rawView === 'records' ? 'evidence' : rawView === 'my-work' ? 'compliance' : rawView;
+      const nextView = (NAV_ITEMS.some((item) => item.id === normalizedView) ? normalizedView : legacyPathView) as ViewKey | null;
+      if (!nextView) return;
+      setView(nextView);
+      if (nextView === 'compliance') setComplianceTab(rawSub === 'policies' || path.includes('/policies') ? 'policies' : rawSub === 'training' || path.includes('/academy') ? 'training' : 'required');
+      if (nextView === 'meetings') {
+        if (path === '/governance/calendar') setMeetingsTab('schedule');
+        else if (path === '/governance/board-books') setMeetingsTab('agenda');
+        else if (rawSub === 'agenda' || rawSub === 'schedule' || rawSub === 'lifecycle') setMeetingsTab(rawSub);
+      }
+      if (nextView === 'oversight') setOversightTab(path === '/governance/risk' ? 'domains' : rawSub === 'domains' || rawSub === 'data' ? rawSub : 'qapi');
+      if (nextView === 'workflows' && rawSub) setWorkflowTab(rawSub as WorkflowTab);
+      if (rawView === 'records') window.history.replaceState(null, '', '#evidence');
     };
     const frame = window.requestAnimationFrame(applyHash);
     const onKeyboard = (event: KeyboardEvent) => {
@@ -790,15 +1070,16 @@ export default function MyJourneyApp() {
     if (tabletopLaunch) return <Suspense fallback={fallback}><TabletopSession caseId={tabletopLaunch.caseId} mode={tabletopLaunch.mode} onExit={() => setTabletopLaunch(null)} /></Suspense>;
     return <Suspense fallback={fallback}><TabletopHub onExit={() => { setTabletopOpen(false); go('compliance', 'required'); }} onLaunch={(caseId, mode) => setTabletopLaunch({ caseId, mode })} /></Suspense>;
   }
-  if (formsOpen) return <Suspense fallback={<div className="academy-loading"><BrandCrest /><strong>Opening annual governance forms</strong><span>Preparing the controlled forms workspace…</span></div>}><AnnualGovernanceForms onExit={() => { setFormsOpen(false); go('records'); }} /></Suspense>;
+  if (formsOpen) return <Suspense fallback={<div className="academy-loading"><BrandCrest /><strong>Opening annual governance forms</strong><span>Preparing the controlled forms workspace…</span></div>}><AnnualGovernanceForms onExit={() => { setFormsOpen(false); go('evidence'); }} /></Suspense>;
   if (forensicModuleId) return <Suspense fallback={<div className="academy-loading"><BrandCrest /><strong>Opening forensic remediation</strong><span>Preparing the controlled True/False form…</span></div>}><TrueFalseForensicPlayer moduleId={forensicModuleId} onExit={() => { setForensicModuleId(null); go('compliance', 'required'); }} /></Suspense>;
 
   const content = (() => {
     if (view === 'compliance') return <MyComplianceView tab={complianceTab} onTab={setComplianceTab} handlers={handlers} />;
     if (view === 'meetings') return <MeetingsView tab={meetingsTab} onTab={setMeetingsTab} onDecision={setDecision} />;
     if (view === 'decisions') return <DecisionsView onDecision={setDecision} />;
+    if (view === 'workflows') return <WorkflowsView tab={workflowTab} onTab={setWorkflowTab} onDecision={setDecision} />;
     if (view === 'oversight') return <OversightView tab={oversightTab} onTab={setOversightTab} onDecision={setDecision} onOpenTabletop={handlers.onOpenTabletop} />;
-    if (view === 'records') return <RecordsView onOpenForms={() => setFormsOpen(true)} />;
+    if (view === 'evidence') return <EvidenceView onOpenForms={() => setFormsOpen(true)} />;
     return <HomeView onGo={go} handlers={handlers} />;
   })();
 

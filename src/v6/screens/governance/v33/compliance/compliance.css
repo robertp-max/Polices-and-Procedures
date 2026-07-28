@@ -3,7 +3,7 @@
 
 .v33-scope {
   --gb-crit: #9c3d42;
-  --gb-attn: #b06a2c;
+  --gb-attn: #874211;
   --gb-hold: #7a6f57;
   --gb-ok: #3d695d;
 }
@@ -44,7 +44,7 @@ button.compliance-summary-card:hover { transform: translateY(-2px); box-shadow: 
 .home-sim-copy span { display: block; font-size: 8px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: #d5c294; }
 .home-sim-copy strong { display: block; font-family: var(--font-editorial); font-size: 26px; font-weight: 400; color: #fff; margin: 6px 0 5px; letter-spacing: -.01em; }
 .home-sim-copy small { display: block; font-size: 12.5px; color: #bcccc4; max-width: 60ch; line-height: 1.5; }
-.home-sim-cta { flex: none; display: inline-flex; align-items: center; gap: 8px; background: var(--bronze); color: #fff; border-radius: 10px; padding: 12px 20px; font-size: 14px; font-weight: 600; }
+.home-sim-cta { flex: none; display: inline-flex; align-items: center; gap: 8px; background: #9f3d1b; color: #fff; border-radius: 10px; padding: 12px 20px; font-size: 14px; font-weight: 600; }
 .home-sim-launch:hover .home-sim-cta { background: var(--oxblood); }
 @media (max-width: 720px) { .home-sim-launch { flex-direction: column; align-items: flex-start; } }
 
@@ -84,7 +84,7 @@ button.compliance-summary-card:hover { transform: translateY(-2px); box-shadow: 
 .compliance-tabs button { background: none; border: none; border-bottom: 2px solid transparent; padding: 10px 16px; font-size: 14px; font-weight: 550; color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
 .compliance-tabs button:hover { color: var(--forest); }
 .compliance-tabs button.active { color: var(--forest); border-bottom-color: var(--bronze); }
-.compliance-tabs button span { background: var(--surface-soft); border-radius: 999px; font-size: 11.5px; padding: 1px 8px; color: var(--muted); }
+.compliance-tabs button span { background: var(--surface-soft); border-radius: 999px; font-size: 11.5px; padding: 1px 8px; color: #4f5b55; }
 .compliance-tabs button.active span { background: var(--forest-soft); color: var(--forest-2); }
 
 /* ---- Course accordion --------------------------------------------------- */

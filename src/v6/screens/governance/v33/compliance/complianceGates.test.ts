@@ -68,7 +68,7 @@ describe('assignment catalog (Parts 3–4)', () => {
     expect(byType('training_module')).toBe(13);
     expect(byType('policy_reading')).toBe(42);
     expect(byType('course_assessment')).toBe(13);
-    expect(byType('tabletop')).toBe(0);
+    expect(byType('tabletop')).toBe(5);
     expect(catalog.courseGroups).toHaveLength(13);
   });
 });
@@ -202,12 +202,12 @@ describe('tabletop transfer gate + full pass path', () => {
 
 // ---- Source-scan structural gates ----------------------------------------
 
-describe('gate #2 — no more than six primary navigation destinations', () => {
-  it('MyJourneyApp defines exactly six NAV_ITEMS', () => {
+describe('gate #2 — seven primary executive-readiness destinations', () => {
+  it('MyJourneyApp defines exactly seven NAV_ITEMS', () => {
     const src = readFileSync(path.join(here, '..', 'MyJourneyApp.tsx'), 'utf8');
     const block = src.slice(src.indexOf('const NAV_ITEMS'), src.indexOf('const DECISIONS'));
-    const ids = block.match(/id:\s*'(home|compliance|meetings|decisions|oversight|records)'/g) ?? [];
-    expect(ids.length).toBe(6);
+    const ids = block.match(/id:\s*'(home|compliance|meetings|decisions|workflows|oversight|evidence)'/g) ?? [];
+    expect(ids.length).toBe(7);
   });
 });
 

@@ -86,10 +86,6 @@
 .gb-office-nav nav button.is-active > span,
 .gb-office-nav nav button.is-active > svg { color: var(--gb-orange); }
 .gb-office-nav footer { align-items: center; border-top: 1px solid rgba(255,255,255,.1); color: #849a91; display: flex; font-size: 9px; gap: 10px; line-height: 1.5; margin-top: auto; padding: 20px 11px 0; }
-/* V1/V2 portal version toggle — sits at the right of the sidebar footer. */
-.gb-version-toggle { align-items: center; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); border-radius: 999px; cursor: pointer; display: flex; gap: 2px; margin-left: auto; padding: 3px; }
-.gb-version-toggle span { border-radius: 999px; color: #8ba398; font-size: 9px; font-weight: 750; letter-spacing: .06em; padding: 3px 8px; transition: background 140ms ease, color 140ms ease; }
-.gb-version-toggle span.is-on { background: var(--gb-orange); color: #1a120b; }
 .gb-office-nav footer svg { height: 16px; width: 16px; }
 .gb-office-nav footer strong { color: #b5c5bf; font-weight: 600; word-break: break-word; }
 
@@ -326,10 +322,3 @@
 @media (prefers-reduced-motion: reduce) {
   .gb-office *, .gb-player * { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
-
-/* Floating V1/V2 portal version toggle (always visible, both versions). */
-.gb-portal-version-fab { align-items: center; background: rgba(6,26,22,.92); border: 1px solid rgba(255,255,255,.16); border-radius: 999px; cursor: pointer; display: flex; gap: 2px; left: 18px; bottom: 18px; padding: 4px; position: fixed; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
-.gb-portal-version-fab span,
-.gb-portal-version-fab button { background: none; border: 0; border-radius: 999px; color: #9fb3aa; cursor: pointer; font: inherit; font-size: 10px; font-weight: 800; letter-spacing: .06em; padding: 4px 10px; transition: background 140ms ease, color 140ms ease; }
-.gb-portal-version-fab span.is-on,
-.gb-portal-version-fab button.is-on { background: #c65d2e; color: #fff; }

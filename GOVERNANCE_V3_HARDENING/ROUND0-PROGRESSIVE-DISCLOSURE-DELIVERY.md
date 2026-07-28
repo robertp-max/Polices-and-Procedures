@@ -5,7 +5,12 @@ Scope: V3 Governing Body Tabletop, Round 0 only
 Branch: `codex/governing-body-round0-progressive-disclosure`
 Worktree: `C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\codex-round0-progressive-disclosure`
 
-No commit, push, merge, deployment, remote-branch update, or work outside this worktree was performed. All delivery changes remain uncommitted.
+The Round 0 work was later committed and pushed after explicit user authorization:
+
+- Commit: `57ede94b84bfadac3f110bce7faabe3e48de969f`
+- Branch: `codex/governing-body-round0-progressive-disclosure`
+
+No merge or deployment is represented by this report.
 
 ## Delivery Status
 

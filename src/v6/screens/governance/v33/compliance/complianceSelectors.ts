@@ -123,12 +123,12 @@ export function summarize(views: ComplianceAssignmentView[]): ComplianceSummary 
   };
   const training = count((v) => v.assignment.type === 'training_module');
   const policies = count((v) => v.assignment.type === 'policy_reading' || v.assignment.type === 'course_assessment');
-  const tabletopView = views.find((v) => v.assignment.type === 'tabletop');
+  const tabletopViews = views.filter((v) => v.assignment.type === 'tabletop');
 
   let tabletop: TabletopSummary = 'locked';
-  if (tabletopView) {
-    if (tabletopView.officiallyComplete) tabletop = 'passed';
-    else if (tabletopView.userFacingStatus === 'remediation_required') tabletop = 'remediation_required';
+  if (tabletopViews.length > 0) {
+    if (tabletopViews.every((v) => v.officiallyComplete)) tabletop = 'passed';
+    else if (tabletopViews.some((v) => v.userFacingStatus === 'remediation_required')) tabletop = 'remediation_required';
     // Available only once every non-tabletop required item is officially complete.
     else if (views.filter((v) => v.assignment.type !== 'tabletop').every((v) => v.officiallyComplete)) tabletop = 'available';
     else tabletop = 'locked';

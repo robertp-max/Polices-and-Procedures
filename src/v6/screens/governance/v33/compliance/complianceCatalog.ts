@@ -11,7 +11,14 @@ import type {
 
 export const DEFAULT_LEARNER_ID = 'gb-chair-local';
 export const MODULE_MASTERY_STANDARD = 92;
-export const TABLETOP_ASSIGNMENT_ID = 'gb:tabletop:GB-FINAL-TABLETOP';
+export const TABLETOP_ASSIGNMENT_IDS = [
+  'gb:tabletop2026:tabletop2026-q1',
+  'gb:tabletop2026:tabletop2026-q2',
+  'gb:tabletop2026:tabletop2026-q3',
+  'gb:tabletop2026:tabletop2026-q4',
+  'gb:tabletop2026:tabletop2026-annual',
+] as const;
+export const TABLETOP_ASSIGNMENT_ID = TABLETOP_ASSIGNMENT_IDS[0];
 export const TABLETOP_PASS_STANDARD = 95;
 
 export interface DeriveOptions {
@@ -128,21 +135,36 @@ export function derivePolicyAssignments(opts: DeriveOptions = {}): {
   return { assignments, courseGroups: [...groupsByCourse.values()] };
 }
 
-/** The single required final tabletop capstone. */
-export function deriveTabletopAssignment(opts: DeriveOptions = {}): ComplianceAssignment {
+const TABLETOP_PACKS: Array<{ assignmentId: string; sourceId: string; title: string; passStandard: number }> = [
+  { assignmentId: TABLETOP_ASSIGNMENT_IDS[0], sourceId: 'tabletop2026-q1', title: 'Q1 2026 Governing Body tabletop — synthetic QAPI readiness exercise', passStandard: TABLETOP_PASS_STANDARD },
+  { assignmentId: TABLETOP_ASSIGNMENT_IDS[1], sourceId: 'tabletop2026-q2', title: 'Q2 2026 Governing Body tabletop — synthetic QAPI readiness exercise', passStandard: TABLETOP_PASS_STANDARD },
+  { assignmentId: TABLETOP_ASSIGNMENT_IDS[2], sourceId: 'tabletop2026-q3', title: 'Q3 2026 Governing Body tabletop — synthetic QAPI readiness exercise', passStandard: TABLETOP_PASS_STANDARD },
+  { assignmentId: TABLETOP_ASSIGNMENT_IDS[3], sourceId: 'tabletop2026-q4', title: 'Q4 2026 Governing Body tabletop — synthetic QAPI readiness exercise', passStandard: TABLETOP_PASS_STANDARD },
+  { assignmentId: TABLETOP_ASSIGNMENT_IDS[4], sourceId: 'tabletop2026-annual', title: 'Annual 2026 Governing Body tabletop — synthetic QAPI readiness capstone', passStandard: TABLETOP_PASS_STANDARD },
+];
+
+/** Required 2026 synthetic QAPI tabletop packs. */
+export function deriveTabletopAssignments(opts: DeriveOptions = {}): ComplianceAssignment[] {
   const learnerId = opts.learnerId ?? DEFAULT_LEARNER_ID;
-  return {
+  const assignedAt = nowIso(opts);
+  return TABLETOP_PACKS.map((pack) => ({
     ...baseAssignment(learnerId, nowIso(opts)),
-    assignmentId: TABLETOP_ASSIGNMENT_ID,
+    assignedAt,
+    assignmentId: pack.assignmentId,
     type: 'tabletop',
-    sourceId: 'GB-FINAL-TABLETOP',
-    title: 'Final Governing Body Tabletop — Integrated Governance Under Pressure',
+    sourceId: pack.sourceId,
+    title: pack.title,
     dueAt: null,
-    recurrence: null,
+    recurrence: 'Required before Agency Readiness Date',
     status: 'not_started',
-    passStandard: TABLETOP_PASS_STANDARD,
+    passStandard: pack.passStandard,
     blockerReason: null,
-  };
+  }));
+}
+
+/** Backward-compatible helper for older callers that expected one tabletop. */
+export function deriveTabletopAssignment(opts: DeriveOptions = {}): ComplianceAssignment {
+  return deriveTabletopAssignments(opts)[0];
 }
 
 export interface GbComplianceCatalog {
@@ -152,12 +174,11 @@ export interface GbComplianceCatalog {
 
 /** Full GB assignment catalog: modules + policies + course assessments + tabletop. */
 export function deriveGbCatalog(opts: DeriveOptions = {}): GbComplianceCatalog {
-  // The Boardroom Simulation (tabletop) is an OVERSIGHT exercise, not required
-  // training — it is intentionally NOT part of the compliance catalog.
   const modules = deriveModuleAssignments(opts);
   const { assignments: policies, courseGroups } = derivePolicyAssignments(opts);
+  const tabletop = deriveTabletopAssignments(opts);
   return {
-    assignments: [...modules, ...policies],
+    assignments: [...modules, ...policies, ...tabletop],
     courseGroups,
   };
 }
