@@ -70,11 +70,26 @@ export interface LearningRecordStore {
   putGrade(g: GradeResult): Promise<void>;
 
   listEvidence(subjectId: string): Promise<CompletionEvidence[]>;
+  putEvidence(e: CompletionEvidence): Promise<void>;
   listSignoffs(assignmentId: string): Promise<SignoffRecord[]>;
+  putSignoff(s: SignoffRecord): Promise<void>;
 
   putGateDecision(d: GateDecision): Promise<void>;
   putCertificate(c: CertificateRecord): Promise<void>;
+  listCertificates(subjectId: string): Promise<CertificateRecord[]>;
+  getCertificateByPublicId(publicId: string): Promise<CertificateRecord | null>;
 
   /** Published, versioned requirement definitions applicable to resolution. */
   listPublishedRequirements(): Promise<RequirementDefinition[]>;
+}
+
+/** The full set of adapters the application service depends on (provider-neutral). */
+export interface LearningEnv {
+  clock: Clock;
+  content: ContentRegistry;
+  events: LearningEventStore;
+  signer: Signer;
+  artifacts: ArtifactStore;
+  jobs: JobQueue;
+  records: LearningRecordStore;
 }

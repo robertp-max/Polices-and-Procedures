@@ -141,7 +141,7 @@ describe('gate + certificate end to end', () => {
   it('public verification exposes only safe fields', async () => {
     const passGate = await svc.evaluateAndSignGate(gateDef, 's1', passState());
     const { certificate } = await svc.issueCertificate(await issueArgs(passGate));
-    const v = svc.publicVerify(certificate!.publicId, 'RN Onboarding', 'Care Indeed', 'Taylor D.')!;
+    const v = (await svc.publicVerify(certificate!.publicId, 'RN Onboarding', 'Care Indeed', 'Taylor D.'))!;
     expect(v.status).toBe('ACTIVE');
     expect(JSON.stringify(v)).not.toMatch(/employeeId|snap|s1|score/i);
   });

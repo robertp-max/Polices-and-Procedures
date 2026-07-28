@@ -62,7 +62,7 @@ export function createRouter(svc: TrainingService) {
     // ---- Public verification (no auth, data-minimized) ----
     let p = match(req.path, '/api/public/certificates/:publicId');
     if (p && req.method === 'GET') {
-      const view = svc.publicVerify(p.publicId, String(req.body?.title ?? 'Certificate'), 'Care Indeed', String(req.body?.name ?? 'Learner'));
+      const view = await svc.publicVerify(p.publicId, String(req.body?.title ?? 'Certificate'), 'Care Indeed', String(req.body?.name ?? 'Learner'));
       return view ? { status: 200, body: view } : err(404, 'CERTIFICATE_NOT_FOUND', 'No certificate with that public id.');
     }
 
@@ -104,7 +104,7 @@ export function createRouter(svc: TrainingService) {
     if (p && req.method === 'GET') {
       const guard = requireCapability(req.auth, 'training.self.read');
       if (guard) return guard;
-      const certs = svc.listCertificatesFor(req.auth.subjectId);
+      const certs = await svc.listCertificatesFor(req.auth.subjectId);
       return { status: 200, body: { certificates: certs } };
     }
 

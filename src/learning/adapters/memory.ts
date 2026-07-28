@@ -168,14 +168,28 @@ export class MemoryRecordStore implements LearningRecordStore {
   async listEvidence(subjectId: string) {
     return this.evidence.get(subjectId) ?? [];
   }
+  async putEvidence(e: CompletionEvidence) {
+    const list = (this.evidence.get(e.subjectId) ?? []).filter((x) => x.id !== e.id);
+    this.evidence.set(e.subjectId, [...list, e]);
+  }
   async listSignoffs(assignmentId: string) {
     return this.signoffs.get(assignmentId) ?? [];
+  }
+  async putSignoff(s: SignoffRecord) {
+    const list = (this.signoffs.get(s.assignmentId) ?? []).filter((x) => x.id !== s.id);
+    this.signoffs.set(s.assignmentId, [...list, s]);
   }
   async putGateDecision(d: GateDecision) {
     this.gates.push(d);
   }
   async putCertificate(c: CertificateRecord) {
     this.certificates.push(c);
+  }
+  async listCertificates(subjectId: string) {
+    return this.certificates.filter((c) => c.subjectId === subjectId);
+  }
+  async getCertificateByPublicId(publicId: string) {
+    return this.certificates.find((c) => c.publicId === publicId) ?? null;
   }
   async listPublishedRequirements() {
     return this.requirements.filter((r) => r.status === 'PUBLISHED');

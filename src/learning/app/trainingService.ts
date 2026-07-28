@@ -5,7 +5,7 @@
  * aggregate, appends an append-only event, and (for async work) enqueues an outbox
  * job. Server-authoritative — no client score/completion is trusted.
  */
-import type { MemoryEnv } from '../adapters/memory';
+import type { LearningEnv } from '../domain/ports';
 import {
   buildAssignment,
   resolveApplicableRequirements,
@@ -47,7 +47,7 @@ let counter = 0;
 const id = (p: string) => `${p}-${(++counter).toString(36)}`;
 
 export class TrainingService {
-  constructor(private env: MemoryEnv) {}
+  constructor(private env: LearningEnv) {}
 
   private async emit(
     subjectId: string,
@@ -200,8 +200,7 @@ export class TrainingService {
   /** Validate uploaded evidence (artifact-backed) and record a signoff (distinct-human). */
   async validateEvidence(evidence: CompletionEvidence, validatedBy: string, hasArtifact: boolean): Promise<CompletionEvidence> {
     const validated = validateEvidence({ evidence, validatedBy, hasArtifact, now: this.env.clock.now() });
-    const list = (await this.env.records.listEvidence(validated.subjectId)).filter((e) => e.id !== validated.id);
-    this.env.records.evidence.set(validated.subjectId, [...list, validated]);
+    await this.env.records.putEvidence(validated);
     await this.emit(validated.subjectId, validated.assignmentId ?? '', 'evidence.validated', { evidence: validated.id }, `ev:${validated.id}`);
     return validated;
   }
@@ -210,7 +209,7 @@ export class TrainingService {
     const existing = await this.env.records.listSignoffs(assignmentId);
     const res = addSignoff({ existing, candidate });
     if (!res.accepted) return { accepted: false, reason: res.reason };
-    this.env.records.signoffs.set(assignmentId, res.signoffs!);
+    await this.env.records.putSignoff(candidate);
     await this.emit(candidate.subjectId, assignmentId, 'signoff.completed', { slot: candidate.signerSlot }, `so:${candidate.id}`);
     return { accepted: true };
   }
@@ -268,7 +267,8 @@ export class TrainingService {
       cycleOrPlanId: input.cycleOrPlanId ?? '',
       eligibilitySnapshotSha256: input.eligibilitySnapshotSha256,
     });
-    const byKey = new Map(this.env.records.certificates.map((c) => [issuanceKey({
+    const subjectCerts = await this.env.records.listCertificates(input.subjectId);
+    const byKey = new Map(subjectCerts.map((c) => [issuanceKey({
       subjectId: c.subjectId,
       certificateDefinitionId: c.certificateDefinitionRef.id,
       certificateDefinitionVersion: Number(c.certificateDefinitionRef.version),
@@ -334,11 +334,11 @@ export class TrainingService {
     return this.env.records.getAssignment(subjectId, assignmentId);
   }
   listCertificatesFor(subjectId: string) {
-    return this.env.records.certificates.filter((c) => c.subjectId === subjectId);
+    return this.env.records.listCertificates(subjectId);
   }
 
-  publicVerify(publicId: string, title: string, issuer: string, learnerDisplayName: string) {
-    const record = this.env.records.certificates.find((c) => c.publicId === publicId);
+  async publicVerify(publicId: string, title: string, issuer: string, learnerDisplayName: string) {
+    const record = await this.env.records.getCertificateByPublicId(publicId);
     if (!record) return null;
     return publicVerificationView({ record, title, issuer, learnerDisplayName });
   }
