@@ -6,7 +6,9 @@ import {
   BadgeCheck,
   BookOpenText,
   ClipboardList,
+  ExternalLink,
   FileClock,
+  FileText,
   Layers,
   ListChecks,
   Lock,
@@ -20,6 +22,9 @@ import { usePreview } from "./PreviewContext";
 import { PageHeader } from "./shared";
 import { CareIndeedBrand } from "./CareIndeedBrand";
 import { HandbookDraftBanner } from "./HandbookDraftBanner";
+
+const PATIENT_ADMISSION_TEMPLATE_HREF =
+  "/templates/care-indeed-patient-admission-packet-letter-form.html";
 
 export function HandbookHome() {
   const { withPersona } = usePreview();
@@ -50,6 +55,38 @@ export function HandbookHome() {
           <div><dt>Sections</dt><dd>{HANDBOOK_META.sectionCount}</dd></div>
         </dl>
       </section>
+
+      <div className="annual-subheading hb-resource-heading">
+        <FileText aria-hidden="true" />
+        <div>
+          <h2>Task resources</h2>
+          <p>Handbook and patient admission packet materials for this RN pathway.</p>
+        </div>
+      </div>
+      <div className="hb-task-resources" aria-label="Task resources">
+        <Link className="hb-task-resource" href={withPersona("/journey/handbook/contents")}>
+          <BookOpenText aria-hidden="true" />
+          <div>
+            <strong>Employee &amp; Field Workforce Handbook</strong>
+            <span>{HANDBOOK_META.sectionCount} sections · {HANDBOOK_META.statusLabel}</span>
+          </div>
+          <ArrowRight aria-hidden="true" />
+        </Link>
+        <a
+          className="hb-task-resource"
+          href={PATIENT_ADMISSION_TEMPLATE_HREF}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Open patient admission packet letter form template"
+        >
+          <FileText aria-hidden="true" />
+          <div>
+            <strong>Patient Admission Packet · Letter Form</strong>
+            <span>Local HTML template · Care Indeed Home Health</span>
+          </div>
+          <ExternalLink aria-hidden="true" />
+        </a>
+      </div>
 
       {/* Quick actions */}
       <div className="hb-quicklinks">
