@@ -101,6 +101,8 @@ config/approved-users.csv
 test-results/
 playwright-report/
 .playwright/
+# JSON reporter output from the journey suite (npm run test:e2e:journey)
+e2e-journey/.results/
 
 # Runtime audit ledger (JSONL backend writes here at runtime/tests) — never commit
 server/audit/data/
