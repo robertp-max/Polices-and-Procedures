@@ -302,6 +302,52 @@ export interface GateDecision {
   expiresAt?: Iso;
 }
 
+export interface ActivitySession {
+  id: Uuid;
+  subjectId: Uuid;
+  assignmentId: Uuid;
+  contentRef: ContentRevisionRef;
+  startedAt: Iso;
+  endedAt?: Iso;
+  state: 'OPEN' | 'CLOSED' | 'ABANDONED' | 'INVALIDATED';
+  acceptedActiveSeconds: number;
+  lastAcceptedSequence: number;
+}
+
+export interface LearningActivityEvent {
+  id: Uuid;
+  tenantId: string;
+  subjectId: Uuid;
+  actorSubjectId: Uuid;
+  assignmentId: Uuid;
+  sessionId?: Uuid;
+  eventType: string;
+  eventVersion: number;
+  sequence?: number;
+  occurredAt: Iso;
+  receivedAt: Iso;
+  idempotencyKey: string;
+  correlationId: string;
+  causationId?: string;
+  contentRef?: ContentRevisionRef;
+  payload: Record<string, unknown>;
+  payloadSha256: string;
+}
+
+export interface CreditLedgerEntry {
+  id: Uuid;
+  subjectId: Uuid;
+  assignmentId?: Uuid;
+  evidenceId: Uuid;
+  creditType: 'TRAINING_HOUR' | 'HHA_INSERVICE_HOUR' | 'CEU';
+  value: number;
+  occurredAt: Iso;
+  acceptedAt: Iso;
+  acceptedBy: string;
+  cycleIds: Uuid[];
+  status: 'ACCEPTED' | 'REJECTED' | 'REVERSED';
+}
+
 export type CertificateKind =
   | 'MODULE_COMPLETION'
   | 'POLICY_READING'
