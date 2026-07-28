@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package.json ./
 RUN npm install --no-audit --no-fund --omit=dev
 
-# Source (run directly via tsx — no build step; adapters carry // @ts-nocheck).
+# Source (run directly via tsx — no build step; `npm run typecheck` gates in CI/dev).
 COPY src ./src
 COPY services ./services
 
