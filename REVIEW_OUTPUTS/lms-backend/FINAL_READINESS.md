@@ -25,18 +25,29 @@ npx vitest run src/learning/domain/
 → 9 files, 94 tests, all passed
 ```
 
-## Not yet built (require live GCP + deploy authorization — out of scope here)
+## Now also built (runnable here, no cloud)
 
-- Firestore/GCS/Cloud KMS/Cloud Tasks adapter **implementations** of the ports.
-- The `/api/training/*` HTTP surface (learner/supervisor/admin/public) wired into the
-  existing authenticated server, with Cognito/existing-auth JWT, object-level authz,
-  Idempotency-Key, optimistic concurrency, and the outbox relay.
-- SCORM runtime adapter, certificate PDF renderer worker, notification/CES/calendar
-  projections.
+- **In-memory port adapters** (`src/learning/adapters/memory.ts`) for every port.
+- **Application service** (`src/learning/app/trainingService.ts`) — server-authoritative
+  orchestration end-to-end (provision → session/heartbeat → attempt/score/grade/ladder →
+  evidence/signoff → gate evaluate+sign → idempotent certificate + outbox → public verify),
+  with an append-only event on every mutation.
+- **`/api/training/*` HTTP router** (`src/learning/http/router.ts` + `authz.ts`) —
+  framework-agnostic, with capability checks, self-only object-level authz, required
+  Idempotency-Key, suspended/terminated handling, and the stable error model.
+- **Integration + HTTP tests** — 13 tests over the runnable stack; **107 learning tests total**.
+
+## Still requires live GCP + deploy authorization (only remaining gap)
+
+- Firestore/GCS/Cloud KMS/Cloud Tasks adapter **implementations** of the ports (the
+  in-memory ones prove the contract; the GCP ones swap in with no domain change).
+- Wiring the router into the existing authenticated server (real JWT + optimistic
+  concurrency + outbox relay), the SCORM runtime adapter, the certificate PDF renderer
+  worker, notification/CES/calendar projections.
 - Shadow-mode migration run + parity report against real `ci-journey-v1` data.
 
-Each of the above consumes the domain via the existing ports and invariants; none
-requires changing the domain types or rules committed here.
+None of the above requires changing the domain types, invariants, service, or router
+committed here — only credentialed cloud wiring and a deploy authorization.
 
 ## Stop condition (honest)
 
