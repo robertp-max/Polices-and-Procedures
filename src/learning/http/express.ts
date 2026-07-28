@@ -34,8 +34,14 @@ export function mountTrainingApi(
       idempotencyKey: req.header('Idempotency-Key') ?? undefined,
       body: (req.body ?? {}) as Record<string, unknown>,
     };
-    const result = await handle(apiReq);
-    res.status(result.status).json(result.body);
+    try {
+      const result = await handle(apiReq);
+      res.status(result.status).json(result.body);
+    } catch (e) {
+      // Never let an adapter/domain throw crash the request — return the stable error model.
+      console.error('lms handler error', { path: req.path, message: (e as Error)?.message });
+      res.status(500).json({ error: { code: 'INTERNAL', message: 'Unexpected server error.', correlationId: 'n/a' } });
+    }
   });
 
   return api;
