@@ -115,15 +115,6 @@ a.hb-ref-chip:hover { background: #fff; }
 .hb-control-meta dt { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }
 .hb-control-meta dd { margin: 2px 0 0; font-weight: 700; color: var(--teal-deep); font-size: 0.875rem; }
 
-.hb-resource-heading { margin-top: 2px; }
-.hb-task-resources { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 18px; }
-.hb-task-resource { display: flex; align-items: center; gap: 12px; min-height: 76px; border: 1px solid var(--border-strong); border-radius: 14px; background: #fff; box-shadow: var(--shadow-sm); padding: 14px 16px; text-decoration: none; color: inherit; }
-.hb-task-resource:hover { background: var(--surface-teal); }
-.hb-task-resource > svg:first-child { flex: 0 0 auto; width: 22px; height: 22px; color: var(--teal); }
-.hb-task-resource > svg:last-child { flex: 0 0 auto; margin-left: auto; width: 16px; height: 16px; color: var(--muted-strong); }
-.hb-task-resource strong { display: block; color: var(--teal-deep); font-size: 0.9375rem; }
-.hb-task-resource span { display: block; margin-top: 2px; color: var(--muted); font-size: 0.75rem; line-height: 1.35; }
-
 .hb-quicklinks { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 18px; }
 .hb-quicklink { display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); border-radius: 14px; background: #fff; box-shadow: var(--shadow-sm); padding: 14px; text-decoration: none; color: inherit; }
 .hb-quicklink:hover { border-color: var(--border-strong); background: var(--surface-teal); }
