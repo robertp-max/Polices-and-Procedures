@@ -62,6 +62,17 @@ import {
   useAgendaQueue,
 } from './agendaQueue';
 import type { GbReferenceDocId } from './references/referenceDocs';
+import {
+  createAdHocMeeting,
+  listDriveFolder,
+  postureLabel,
+  probeCalendarHealth,
+  probeDriveHealth,
+  type CalendarHealth,
+  type DriveFileRef,
+  type DriveFolderRef,
+  type DriveHealth,
+} from './integrations/calendarDriveClient';
 
 const GoverningBodyAcademy = lazy(() => import('./gb-academy/Academy'));
 const GoverningBodyPolicyPlayer = lazy(() => import('./policies/GoverningBodyPolicyPlayer'));
@@ -587,7 +598,7 @@ function MeetingsView({ tab, onTab, onDecision }: { tab: MeetingsTab; onTab: (t:
     {tab === 'lifecycle' && <>
       <section className="meeting-summary-grid">
         <article><span>NEXT MEETING</span><strong>Readiness review</strong><p>Board action is needed for AI architecture, readiness date, 30-day gate, P&Ps, handbook, compliance completion, tabletop, and admission packet controls.</p><small>Agenda package required before scheduling</small></article>
-        <article><span>CALENDAR POSTURE</span><strong>Server-only</strong><p>Ad hoc meetings must create or upsert through the Calendar/CES adapter. The browser never writes directly to Google Calendar.</p><small>/api/calendar/events integration path</small></article>
+        <CalendarPostureCard />
         <article><span>PACKET EVIDENCE</span><strong>4 of 8 complete</strong><p>Missing: AI architecture dossier, handbook counsel status, official tabletop evidence, admission packet validation.</p><small>Status uses text, not color alone</small></article>
         <article><span>CLOSE GATE</span><strong>Blocked</strong><p>A meeting cannot close from front-end state alone. Required records and signatures must be present.</p><small>CES evidence package required</small></article>
       </section>
@@ -645,11 +656,42 @@ const SCHEDULER_ATTENDEE_OPTIONS = [
   'HR Director',
 ];
 
+/**
+ * Live Calendar/CES posture. "Server-only" is the ARCHITECTURE (the browser never
+ * writes to Google directly); reachability is a separate, probed FACT — so the card
+ * states both instead of implying the integration is absent.
+ */
+function CalendarPostureCard() {
+  const [health, setHealth] = useState<CalendarHealth | null>(null);
+  useEffect(() => {
+    const ac = new AbortController();
+    void probeCalendarHealth(ac.signal).then(setHealth).catch(() => undefined);
+    return () => ac.abort();
+  }, []);
+  const status = health ? postureLabel(health) : 'Checking…';
+  return (
+    <article>
+      <span>CALENDAR POSTURE</span>
+      <strong>Server-only · {status}</strong>
+      <p>
+        Ad hoc meetings create or upsert through the Calendar/CES adapter; the browser never writes
+        directly to Google Calendar.{' '}
+        {health && !health.reachable
+          ? 'The adapter is wired but Google is not reachable right now, so scheduling will fail closed with the server’s reason.'
+          : health?.reachable
+            ? 'Google Calendar is reachable, so scheduling creates a real event and returns its Google id.'
+            : ''}
+      </p>
+      <small>/api/calendar/events · probed via /api/calendar/healthz</small>
+    </article>
+  );
+}
+
 type SchedulerState =
   | { phase: 'idle' }
   | { phase: 'submitting' }
   | { phase: 'failed'; message: string }
-  | { phase: 'created'; eventId: string };
+  | { phase: 'created'; eventId: string; googleEventId: string; action: string; htmlLink?: string };
 
 function AdHocScheduler({ queuedItems }: { queuedItems: ReturnType<typeof useAgendaQueue> }) {
   const [title, setTitle] = useState('Governing Body readiness decision meeting');
@@ -657,6 +699,14 @@ function AdHocScheduler({ queuedItems }: { queuedItems: ReturnType<typeof useAge
   const [time, setTime] = useState('');
   const [attendees, setAttendees] = useState<string[]>(['Governing Body Chair', 'Board Secretary']);
   const [state, setState] = useState<SchedulerState>({ phase: 'idle' });
+  // Real reachability of the Calendar/CES integration, probed — never assumed.
+  const [health, setHealth] = useState<CalendarHealth | null>(null);
+
+  useEffect(() => {
+    const ac = new AbortController();
+    void probeCalendarHealth(ac.signal).then(setHealth).catch(() => undefined);
+    return () => ac.abort();
+  }, []);
 
   const toggleAttendee = (name: string) => {
     setAttendees((current) => current.includes(name) ? current.filter((a) => a !== name) : [...current, name]);
@@ -667,41 +717,38 @@ function AdHocScheduler({ queuedItems }: { queuedItems: ReturnType<typeof useAge
   const submit = async () => {
     if (!canSubmit) return;
     setState({ phase: 'submitting' });
-    try {
-      const response = await fetch('/api/calendar/events', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Idempotency-Key': (typeof crypto !== 'undefined' && 'randomUUID' in crypto) ? crypto.randomUUID() : `gb-v3-${Date.now()}`,
-        },
-        body: JSON.stringify({
-          title: title.trim(),
-          startsAt: `${date}T${time}`,
-          attendees,
-          agenda: queuedItems.map((item) => ({ decisionId: item.decisionId, title: item.title, addedAt: item.addedAt, source: item.source })),
-        }),
-      });
-      if (!response.ok) {
-        setState({ phase: 'failed', message: 'Calendar service is not connected in this build — no event was created.' });
-        return;
-      }
-      const payload = await response.json().catch(() => null) as { id?: string; eventId?: string } | null;
-      const eventId = payload?.eventId ?? payload?.id;
-      if (!eventId) {
-        // A 2xx without a server event id is NOT a created event; fail closed.
-        setState({ phase: 'failed', message: 'Calendar service returned no event id — no event was created.' });
-        return;
-      }
-      setState({ phase: 'created', eventId });
-    } catch {
-      setState({ phase: 'failed', message: 'Calendar service is not connected in this build — no event was created.' });
+    // Posts the server's real PlannerEventPayload through the deterministic sync
+    // engine; the client treats ok:false / action:'failed' / missing google id as
+    // a failure and surfaces the SERVER's reason.
+    const result = await createAdHocMeeting({
+      title,
+      date,
+      time,
+      attendees,
+      agenda: queuedItems.map((item) => ({ decisionId: item.decisionId, title: item.title })),
+      env: 'SANDBOX',
+    });
+    if (!result.ok) {
+      setState({ phase: 'failed', message: result.reason });
+      return;
     }
+    setState({
+      phase: 'created',
+      eventId: result.eventId,
+      googleEventId: result.googleEventId,
+      action: result.action,
+      htmlLink: result.htmlLink,
+    });
   };
 
   return <section className="scheduler-panel">
     <header>
       <div><span>AD HOC EVENT SCHEDULER</span><h2>Schedule through Calendar/CES, not the browser.</h2></div>
-      <i>{state.phase === 'created' ? `Synced · Google event ${state.eventId}` : state.phase === 'failed' ? 'Sync failed — no event created' : 'Draft · nothing scheduled yet'}</i>
+      <i>{state.phase === 'created'
+        ? `${state.action === 'updated' ? 'Updated' : 'Created'} · Google event ${state.googleEventId}`
+        : state.phase === 'failed' ? 'Sync failed — no event created'
+        : health ? `Calendar/CES: ${postureLabel(health)}`
+        : 'Checking Calendar/CES…'}</i>
     </header>
     <form className="scheduler-form" onSubmit={(event) => { event.preventDefault(); void submit(); }}>
       <label>
@@ -740,18 +787,26 @@ function AdHocScheduler({ queuedItems }: { queuedItems: ReturnType<typeof useAge
         </button>
         <ExecutiveAction
           label="Open in Google Calendar"
-          disabledReason={state.phase === 'created' ? undefined : 'No Google event id exists — the calendar service is not connected in this build.'}
-          onAct={state.phase === 'created' ? () => window.location.assign(`https://calendar.google.com/calendar/event?eid=${encodeURIComponent(state.eventId)}`) : undefined}
+          // Enabled only with the server-resolved htmlLink — the portal never
+          // constructs a Google URL from an id it cannot verify.
+          disabledReason={
+            state.phase !== 'created'
+              ? 'No Google event exists yet — create the event first.'
+              : !state.htmlLink
+                ? 'Calendar/CES did not return a Google link for this event.'
+                : undefined
+          }
+          onAct={state.phase === 'created' && state.htmlLink ? () => window.open(state.htmlLink, '_blank', 'noopener') : undefined}
         />
       </div>
       {state.phase === 'failed' && (
         <p className="scheduler-failed" role="alert">
-          <AlertTriangle size={15} aria-hidden="true" /> {state.message} Nothing was persisted as an event.
+          <AlertTriangle size={15} aria-hidden="true" /> {state.message}
         </p>
       )}
       {state.phase === 'created' && (
         <p className="scheduler-created" role="status">
-          <CheckCircle2 size={15} aria-hidden="true" /> Server created event {state.eventId}.
+          <CheckCircle2 size={15} aria-hidden="true" /> Calendar/CES {state.action} the event · app id {state.eventId} · Google id {state.googleEventId}.
         </p>
       )}
     </form>
@@ -973,6 +1028,139 @@ function OversightView({ tab, onTab, onDecision, onOpenTabletop }: { tab: Oversi
 // EVIDENCE
 // ---------------------------------------------------------------------------
 
+/**
+ * Google Drive reference documents (Shared Drive, service-account scoped).
+ * Lists the real evidence root via /api/calendar/intake/drive-folder so the Board
+ * can review — or open in Drive to save against — source material. Every link is
+ * the SERVER's webViewLink/folderUrl; the portal never fabricates a Drive URL, and
+ * an unreachable or disabled Drive is stated plainly instead of shown as empty.
+ */
+function DriveReferenceDocuments() {
+  const [health, setHealth] = useState<DriveHealth | null>(null);
+  const [folderId, setFolderId] = useState<string | undefined>(undefined);
+  const [trail, setTrail] = useState<DriveFolderRef[]>([]);
+  const [listing, setListing] = useState<
+    { folders: DriveFolderRef[]; files: DriveFileRef[]; folderUrl: string | null } | null
+  >(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const ac = new AbortController();
+    void probeDriveHealth(ac.signal).then(setHealth).catch(() => undefined);
+    return () => ac.abort();
+  }, []);
+
+  useEffect(() => {
+    if (!health?.enabled || !health.reachable) return;
+    const ac = new AbortController();
+    setLoading(true);
+    void listDriveFolder(folderId, ac.signal)
+      .then((result) => {
+        if (result.ok) {
+          setListing({ folders: result.folders, files: result.files, folderUrl: result.folderUrl });
+          setError(null);
+        } else {
+          setError(result.reason);
+          setListing(null);
+        }
+      })
+      .finally(() => setLoading(false));
+    return () => ac.abort();
+  }, [folderId, health?.enabled, health?.reachable]);
+
+  const openFolder = (folder: DriveFolderRef) => {
+    setTrail((t) => [...t, folder]);
+    setFolderId(folder.id);
+  };
+  const upTo = (index: number) => {
+    const next = trail.slice(0, index);
+    setTrail(next);
+    setFolderId(next.length ? next[next.length - 1].id : undefined);
+  };
+
+  const unavailable = health && (!health.enabled || !health.reachable);
+
+  return (
+    <section className="drive-reference-panel">
+      <header>
+        <div>
+          <span>GOOGLE DRIVE REFERENCE DOCUMENTS</span>
+          <h2>Review or save Board reference material from the Shared Drive.</h2>
+        </div>
+        <small>{health ? `Drive: ${postureLabel(health)}` : 'Checking Drive…'}</small>
+      </header>
+
+      {unavailable && (
+        <p className="drive-unavailable" role="status">
+          <AlertTriangle size={15} aria-hidden="true" />
+          {!health?.enabled
+            ? 'Drive evidence storage is disabled by configuration, so no reference documents can be listed.'
+            : `The Shared Drive is configured${health?.sharedDriveId ? ` (${health.sharedDriveId})` : ''} but not reachable right now${health?.error ? ` (${health.error})` : ''}. Nothing is listed rather than showing an empty folder as if it were empty.`}
+        </p>
+      )}
+
+      {health?.enabled && health.reachable && (
+        <>
+          <nav className="drive-breadcrumb" aria-label="Drive folder path">
+            <button type="button" onClick={() => upTo(0)} disabled={!trail.length}>Evidence root</button>
+            {trail.map((folder, index) => (
+              <span key={folder.id}>
+                <ChevronRight size={13} aria-hidden="true" />
+                <button type="button" onClick={() => upTo(index + 1)} disabled={index === trail.length - 1}>
+                  {folder.name}
+                </button>
+              </span>
+            ))}
+            {listing?.folderUrl && (
+              <a className="drive-open-folder" href={listing.folderUrl} target="_blank" rel="noreferrer">
+                Open this folder in Drive
+              </a>
+            )}
+          </nav>
+
+          {loading && <p className="compliance-empty">Loading Drive contents…</p>}
+          {error && <p className="drive-unavailable" role="alert"><AlertTriangle size={15} aria-hidden="true" /> {error}</p>}
+
+          {listing && !loading && (
+            <ul className="drive-listing">
+              {listing.folders.map((folder) => (
+                <li key={folder.id}>
+                  <button type="button" onClick={() => openFolder(folder)}>
+                    <FileText size={15} aria-hidden="true" />
+                    <strong>{folder.name}</strong>
+                    <em>Folder</em>
+                  </button>
+                </li>
+              ))}
+              {listing.files.map((file) => (
+                <li key={file.id}>
+                  {file.webViewLink ? (
+                    <a href={file.webViewLink} target="_blank" rel="noreferrer">
+                      <FileText size={15} aria-hidden="true" />
+                      <strong>{file.name}</strong>
+                      <em>Open in Drive</em>
+                    </a>
+                  ) : (
+                    <button type="button" disabled title="Drive did not return a shareable link for this file">
+                      <FileText size={15} aria-hidden="true" />
+                      <strong>{file.name}</strong>
+                      <em>No Drive link</em>
+                    </button>
+                  )}
+                </li>
+              ))}
+              {!listing.folders.length && !listing.files.length && (
+                <li className="compliance-empty">This Drive folder is empty.</li>
+              )}
+            </ul>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
+
 function EvidenceView({ onOpenForms }: { onOpenForms: () => void }) {
   const [selected, setSelected] = useState<EvidencePackage>(EVIDENCE_PACKAGES[0]);
   const [chainOpen, setChainOpen] = useState(false);
@@ -1001,6 +1189,7 @@ function EvidenceView({ onOpenForms }: { onOpenForms: () => void }) {
         <ExecutiveAction label="Download approved package" disabledReason="Signed export requires the connected evidence service" />
       </div>
     </section>
+    <DriveReferenceDocuments />
     <section className={`record-chain ${chainOpen ? 'open' : ''}`} ref={chainRef}>
       <span>EVIDENCE CHAIN · {selected.evidenceId}</span>
       <ol>{selected.chain.map((item, index) => <li key={item}><b>{String(index + 1).padStart(2, '0')}</b><strong>{item}</strong>{index < selected.chain.length - 1 && <i />}</li>)}</ol>

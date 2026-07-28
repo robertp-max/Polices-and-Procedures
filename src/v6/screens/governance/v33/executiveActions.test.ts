@@ -20,6 +20,7 @@ import {
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const appSource = readFileSync(path.join(here, 'MyJourneyApp.tsx'), 'utf8');
+const clientSource = readFileSync(path.join(here, 'integrations', 'calendarDriveClient.ts'), 'utf8');
 
 const VALID_PROVENANCE: OversightProvenance[] = [
   'Source recovered',
@@ -48,11 +49,45 @@ describe('blocker 3 — no dead executive actions', () => {
     expect(appSource).toContain('No board decision references this workflow');
   });
 
-  it('scheduler posts to the real calendar endpoint with an Idempotency-Key and fails closed', () => {
-    expect(appSource).toContain("fetch('/api/calendar/events'");
-    expect(appSource).toContain('Idempotency-Key');
-    expect(appSource).toContain('no event was created');
-    expect(appSource).toContain('No Google event id exists');
+  it('scheduler posts through the real Calendar/CES client, not an invented body shape', () => {
+    // The HTTP call now lives in the integration client; the screen must use it
+    // rather than hand-rolling a fetch with a made-up payload.
+    expect(appSource).toContain('createAdHocMeeting(');
+    expect(appSource).not.toContain('startsAt:'); // the old invented field
+    expect(clientSource).toContain("fetch('/api/calendar/events'");
+    expect(clientSource).toContain('Idempotency-Key');
+    // Real server contract (server/mappers.ts PlannerEventPayload).
+    expect(clientSource).toContain('event_id:');
+    expect(clientSource).toContain('date:');
+    expect(clientSource).toContain('time:');
+  });
+
+  it('a 2xx that is not actually a created Google event fails closed', () => {
+    // server/sync/eventSync.ts SyncResult can report ok:false / action:'failed'
+    // with a 200, and google_event_id may be absent.
+    expect(clientSource).toContain("wire.ok === false || wire.action === 'failed' || !googleEventId");
+    expect(clientSource).toContain('No event was created.');
+  });
+
+  it('reachability is probed, never asserted as a fixed build-time claim', () => {
+    expect(clientSource).toContain("fetch('/api/calendar/healthz'");
+    expect(clientSource).toContain("fetch('/api/calendar/evidence/health'");
+    expect(appSource).toContain('probeCalendarHealth(');
+    expect(appSource).toContain('probeDriveHealth(');
+    // The old blanket falsehood must be gone.
+    expect(appSource).not.toContain('not connected in this build');
+  });
+
+  it('Google links come from the server, never constructed in the browser', () => {
+    expect(appSource).not.toContain('https://calendar.google.com/calendar/event?eid=');
+    expect(clientSource).toContain('resolveEventHtmlLink');
+    expect(appSource).toContain('state.htmlLink');
+  });
+
+  it('Drive reference documents use the real listing endpoint and server links', () => {
+    expect(clientSource).toContain("fetch(`/api/calendar/intake/drive-folder");
+    expect(appSource).toContain('listDriveFolder(');
+    expect(appSource).toContain('file.webViewLink');
   });
 
   it('evidence actions fail closed for Drive and signed export', () => {
