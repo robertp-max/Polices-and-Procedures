@@ -8,9 +8,15 @@
  */
 // @ts-nocheck — depends on @google-cloud/kms
 import { KeyManagementServiceClient } from '@google-cloud/kms';
-import { createVerify, createPublicKey } from 'node:crypto';
+import { createHash, createVerify, createPublicKey } from 'node:crypto';
 import type { Signer } from '../../domain/ports';
 
+/**
+ * Signs/verifies the domain fingerprint string (e.g. a state-vector or manifest hash)
+ * as an opaque message: both sides compute SHA-256 over the SAME string, so verify()
+ * needs only the fingerprint (no preimage). Verified live against Cloud KMS
+ * EC_SIGN_P256_SHA256 (scratchpad/gcp-smoke → kms: PASS).
+ */
 export class KmsSigner implements Signer {
   private publicKeyPem?: string;
   constructor(
@@ -19,7 +25,7 @@ export class KmsSigner implements Signer {
   ) {}
 
   async sign(payloadSha256: string): Promise<string> {
-    const digest = Buffer.from(payloadSha256.replace(/^sha256:/, ''), 'hex');
+    const digest = createHash('sha256').update(payloadSha256).digest();
     const [result] = await this.client.asymmetricSign({
       name: this.keyVersionName,
       digest: { sha256: digest },
@@ -33,7 +39,7 @@ export class KmsSigner implements Signer {
       this.publicKeyPem = pub.pem as string;
     }
     const verifier = createVerify('SHA256');
-    verifier.update(Buffer.from(payloadSha256.replace(/^sha256:/, ''), 'hex'));
+    verifier.update(payloadSha256);
     verifier.end();
     return verifier.verify(createPublicKey(this.publicKeyPem), Buffer.from(signature, 'base64'));
   }
