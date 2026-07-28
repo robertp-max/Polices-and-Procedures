@@ -2,56 +2,66 @@
  * Care Indeed LMS — Cloud Run entrypoint.
  *
  * Wires the live GCP LearningEnv into the framework-agnostic training router.
- * Auth: production expects the host's Cognito/JWT middleware to populate req.user.
- * For dev smoke only, when LMS_DEV_AUTH=1, an AuthContext is read from X-Debug-*
- * headers so the deployed API can be exercised end-to-end. This is OFF by default.
+ *
+ * Auth: the host's verified-JWT middleware must populate req.user; without it every
+ * protected route fails closed (401). There is NO debug/header auth path — the former
+ * LMS_DEV_AUTH X-Debug-* shim was removed after a security review (it let any caller
+ * self-grant capabilities). Dev access goes through Cloud Run IAM identity tokens.
+ *
+ * /jobs/:queue only accepts Cloud Tasks deliveries carrying a Google OIDC token whose
+ * signature, audience, and service-account identity all verify.
  */
 import express from 'express';
+import { OAuth2Client } from 'google-auth-library';
 import { makeGcpEnv, gcpConfigFromEnv } from '../../src/learning/adapters/gcp/index';
 import { TrainingService } from '../../src/learning/app/trainingService';
-import { mountTrainingApi } from '../../src/learning/http/express';
+import { mountTrainingApi, authContextFromClaims } from '../../src/learning/http/express';
 import type { AuthContext } from '../../src/learning/http/router';
-import type { Capability } from '../../src/learning/http/authz';
 
 const app = express();
 const svc = new TrainingService(makeGcpEnv(gcpConfigFromEnv()));
-const devAuth = process.env.LMS_DEV_AUTH === '1';
 
 function authFromRequest(req: express.Request): AuthContext | null {
-  // Production: return authContextFromClaims((req as any).user) once the host auth
-  // middleware is mounted ahead of this. Dev-only header shim below.
+  // Only a host-middleware-verified principal is trusted. Never headers, never the body.
   const hostUser = (req as unknown as { user?: { sub: string; capabilities?: string[]; status?: string } }).user;
-  if (hostUser?.sub) {
-    return {
-      subjectId: hostUser.sub,
-      capabilities: new Set((hostUser.capabilities ?? []) as Capability[]),
-      suspended: hostUser.status === 'SUSPENDED',
-      terminated: hostUser.status === 'TERMINATED',
-    };
-  }
-  if (devAuth) {
-    const sub = req.header('X-Debug-Subject');
-    if (!sub) return null;
-    const caps = (req.header('X-Debug-Caps') ?? '').split(',').map((c) => c.trim()).filter(Boolean);
-    return { subjectId: sub, capabilities: new Set(caps as Capability[]) };
-  }
+  if (hostUser?.sub) return authContextFromClaims(hostUser);
   return null; // fail closed → protected routes 401
 }
 
 // Health at several paths — the exact `/healthz` is swallowed by the Google Frontend
 // edge (reserved), so `/` and `/health` are the reliable liveness endpoints.
 app.get(['/', '/health', '/healthz', '/livez'], (_req, res) => {
-  res.status(200).json({ ok: true, service: 'lms-backend', devAuth, ts: new Date().toISOString() });
+  res.status(200).json({ ok: true, service: 'lms-backend', ts: new Date().toISOString() });
 });
 
-// Cloud Tasks delivery target (OIDC-authenticated in prod). Ack stub until the
-// certificate/evidence workers are implemented (Wave 6/7 live layer).
-app.post('/jobs/:queue', express.json({ limit: '256kb' }), (req, res) => {
-  console.log(JSON.stringify({ job: req.params.queue, idem: req.header('Idempotency-Key'), body: req.body }));
+// Cloud Tasks delivery target. Requires a valid Google OIDC token minted for our
+// handler audience by our own service account; anything else is rejected before the
+// body is touched. Still an ack stub until the certificate/evidence workers land.
+const ALLOWED_QUEUES = new Set(['certificate-render', 'evidence-validate', 'notifications', 'projections']);
+const oidcVerifier = new OAuth2Client();
+const jobsAudience = process.env.LMS_JOBS_HANDLER_URL ?? '';
+const jobsServiceAccount = process.env.LMS_JOBS_OIDC_SA ?? '';
+
+app.post('/jobs/:queue', express.json({ limit: '256kb' }), async (req, res) => {
+  const deny = (status: number, code: string) => res.status(status).json({ error: { code } });
+  if (!jobsAudience || !jobsServiceAccount) return deny(503, 'JOBS_NOT_CONFIGURED');
+  if (!ALLOWED_QUEUES.has(req.params.queue)) return deny(404, 'UNKNOWN_QUEUE');
+  const header = req.header('Authorization') ?? '';
+  const token = header.startsWith('Bearer ') ? header.slice('Bearer '.length) : '';
+  if (!token) return deny(401, 'UNAUTHENTICATED');
+  try {
+    const ticket = await oidcVerifier.verifyIdToken({ idToken: token, audience: jobsAudience });
+    const claims = ticket.getPayload();
+    if (!claims?.email_verified || claims.email !== jobsServiceAccount) return deny(403, 'FORBIDDEN_CALLER');
+  } catch {
+    return deny(401, 'INVALID_OIDC_TOKEN');
+  }
+  // Log metadata only — never the payload body (may contain sensitive references).
+  console.log(JSON.stringify({ job: req.params.queue, idem: req.header('Idempotency-Key') ?? null }));
   res.status(200).json({ accepted: true, queue: req.params.queue });
 });
 
 app.use(mountTrainingApi(svc, authFromRequest));
 
 const port = Number(process.env.PORT ?? 8080);
-app.listen(port, () => console.log(`lms-backend listening on :${port} (devAuth=${devAuth})`));
+app.listen(port, () => console.log(`lms-backend listening on :${port}`));

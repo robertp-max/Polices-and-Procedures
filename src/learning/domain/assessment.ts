@@ -8,6 +8,7 @@
  */
 import { isPass, nextAttemptNumber, selectGradedAttempt, type GradableAttempt } from './invariants';
 import type { AttemptSelectionPolicy, GradeOutcomeKind } from './types';
+import { sha256Hex } from './hash';
 
 /* ------------------------------------------------------------------ *
  * Policies (versioned, pinned into assignments).
@@ -135,11 +136,9 @@ function shuffle<T>(items: T[], seed: number): T[] {
   return a;
 }
 
-/** Stable fingerprint of an ordered id set (adapter applies real SHA-256). */
+/** Stable SHA-256 fingerprint of an ordered id set. */
 export function fingerprintQuestionSet(ids: string[]): string {
-  let h = 5381;
-  for (const id of ids.join('|')) h = ((h << 5) + h + id.charCodeAt(0)) >>> 0;
-  return `qs_${h.toString(16)}`;
+  return `qs_${sha256Hex(ids.join('|'))}`;
 }
 
 export interface QuestionSetSelection {

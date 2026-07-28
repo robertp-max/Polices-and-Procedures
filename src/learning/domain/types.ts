@@ -376,6 +376,8 @@ export interface CertificateRecord {
   issuedBy: 'SYSTEM' | string;
   artifactEvidenceId: Uuid;
   manifestArtifactEvidenceId: Uuid;
+  /** KMS signature over the manifest fingerprint (verifiable against the signing key). */
+  manifestSignature?: string;
   templateId: string;
   templateVersion: string;
   status: 'ACTIVE' | 'SUPERSEDED' | 'REVOKED';

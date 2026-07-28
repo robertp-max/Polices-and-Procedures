@@ -6,7 +6,6 @@
  * application service (TrainingService) and HTTP router are unchanged — this is the
  * one place production infrastructure is bound.
  */
-// @ts-nocheck — depends on @google-cloud/* packages
 import { Firestore } from '@google-cloud/firestore';
 import { Storage } from '@google-cloud/storage';
 import { KeyManagementServiceClient } from '@google-cloud/kms';

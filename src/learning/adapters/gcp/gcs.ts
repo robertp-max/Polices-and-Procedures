@@ -6,7 +6,6 @@
  * validated evidence / certificate PDFs / signed manifests. Use bucket versioning +
  * Object Lock (retention) for immutability where the approved retention design permits.
  */
-// @ts-nocheck — depends on @google-cloud/storage
 import { Storage } from '@google-cloud/storage';
 import { createHash } from 'node:crypto';
 import type { ArtifactStore } from '../../domain/ports';

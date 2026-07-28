@@ -7,7 +7,6 @@
  * derivation are the host's responsibility — this shim only reads what the auth
  * middleware already placed on the request. It never derives identity from the body.
  */
-// @ts-nocheck — depends on express + host auth middleware
 import express from 'express';
 import type { TrainingService } from '../app/trainingService';
 import { createRouter, type ApiRequest, type AuthContext } from './router';

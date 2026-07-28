@@ -5,7 +5,9 @@
  * aggregate, appends an append-only event, and (for async work) enqueues an outbox
  * job. Server-authoritative — no client score/completion is trusted.
  */
+import { randomUUID } from 'node:crypto';
 import type { LearningEnv } from '../domain/ports';
+import { sha256OfJson } from '../domain/hash';
 import {
   buildAssignment,
   resolveApplicableRequirements,
@@ -43,8 +45,8 @@ import type {
   SignoffRecord,
 } from '../domain/types';
 
-let counter = 0;
-const id = (p: string) => `${p}-${(++counter).toString(36)}`;
+// Collision-safe across instances/restarts (a process-local counter is neither).
+const id = (p: string) => `${p}-${randomUUID()}`;
 
 export class TrainingService {
   constructor(private env: LearningEnv) {}
@@ -70,7 +72,7 @@ export class TrainingService {
       idempotencyKey,
       correlationId: idempotencyKey,
       payload,
-      payloadSha256: `p_${JSON.stringify(payload).length}`,
+      payloadSha256: sha256OfJson(payload),
     };
     await this.env.events.append(event);
   }
@@ -162,7 +164,7 @@ export class TrainingService {
       criticalFailureCodes: raw.criticalFailureCodes,
       scoredAt: this.env.clock.now().toISOString(),
       scoringEngineVersion: '1',
-      resultSha256: `r_${raw.rawEarned}/${raw.rawPossible}`,
+      resultSha256: sha256OfJson({ attemptId: input.attempt.id, rawEarned: raw.rawEarned, rawPossible: raw.rawPossible, percentage: raw.percentage, criticalFailureCodes: raw.criticalFailureCodes }),
     };
     await this.env.records.putScore(score);
 
@@ -184,7 +186,7 @@ export class TrainingService {
       displayedScore: decided.displayedScore,
       reasonCodes: raw.criticalFailureCodes,
       decidedAt: this.env.clock.now().toISOString(),
-      decisionSha256: `d_${decided.outcome}`,
+      decisionSha256: sha256OfJson({ assignmentId: input.assignmentId, selectedAttemptId: decided.selectedAttemptId, outcome: decided.outcome, displayedScore: decided.displayedScore }),
     };
     await this.env.records.putGrade(grade);
     await this.emit(input.subjectId, input.assignmentId, passed ? 'assessment.passed' : 'assessment.failed', { attempt: input.attempt.attemptNumber, pct: raw.percentage }, `submit:${input.attempt.id}`);
@@ -259,6 +261,10 @@ export class TrainingService {
   }): Promise<{ certificate?: CertificateRecord; refused?: string; reused?: boolean }> {
     const eligible = assertCertificateEligible(input.gate, this.env.clock.now());
     if (!eligible.ok) return { refused: eligible.reason };
+    // Cryptographic check, not just nonempty: the gate's signature must verify against
+    // the signer's key over the recorded state-vector fingerprint before it can be consumed.
+    const gateSignatureValid = await this.env.signer.verify(input.gate.stateVectorSha256, input.gate.assertionSignature);
+    if (!gateSignatureValid) return { refused: 'GATE_SIGNATURE_INVALID' };
 
     const key = issuanceKey({
       subjectId: input.subjectId,
@@ -296,7 +302,9 @@ export class TrainingService {
       policyVersions: [],
       issuedAt: this.env.clock.now().toISOString(),
     });
-    const manifestBytes = new TextEncoder().encode(JSON.stringify(manifest));
+    const fingerprint = manifestFingerprint(manifest);
+    const manifestSignature = await this.env.signer.sign(fingerprint);
+    const manifestBytes = new TextEncoder().encode(JSON.stringify({ manifest, fingerprint, signature: manifestSignature }));
     const staged = await this.env.artifacts.putStaging(`manifest/${publicId}.json`, manifestBytes, 'application/json');
     const promoted = await this.env.artifacts.promote(staged.locator);
 
@@ -316,7 +324,8 @@ export class TrainingService {
       issuedAt: this.env.clock.now().toISOString(),
       issuedBy: 'SYSTEM',
       artifactEvidenceId: promoted.locator,
-      manifestArtifactEvidenceId: `${promoted.locator}#${manifestFingerprint(manifest)}`,
+      manifestArtifactEvidenceId: `${promoted.locator}#${fingerprint}`,
+      manifestSignature,
       templateId: input.templateId,
       templateVersion: input.templateVersion,
       status: 'ACTIVE',

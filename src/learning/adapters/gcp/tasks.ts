@@ -6,7 +6,6 @@
  * projections). Idempotency is enforced via a deterministic task name so a retried
  * enqueue with the same key is a no-op (ALREADY_EXISTS is swallowed).
  */
-// @ts-nocheck — depends on @google-cloud/tasks
 import { CloudTasksClient } from '@google-cloud/tasks';
 import type { JobQueue } from '../../domain/ports';
 
@@ -32,7 +31,9 @@ export class CloudTasksJobQueue implements JobQueue {
             url: `${this.handlerBaseUrl}/jobs/${queue}`,
             headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
             body: Buffer.from(JSON.stringify(payload)).toString('base64'),
-            oidcToken: { serviceAccountEmail: this.oidcServiceAccount },
+            // Pin the audience to the handler base URL so the receiver can verify it
+            // independent of the per-queue path.
+            oidcToken: { serviceAccountEmail: this.oidcServiceAccount, audience: this.handlerBaseUrl },
           },
         },
       });

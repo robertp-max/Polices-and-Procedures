@@ -15,6 +15,7 @@ import type {
   LearningRecordStore,
   Signer,
 } from '../domain/ports';
+import { sha256Hex } from '../domain/hash';
 import type {
   AssessmentAttempt,
   CertificateRecord,
@@ -94,9 +95,7 @@ export class MemoryArtifactStore implements ArtifactStore {
   private artifacts = new Map<string, { bytes: Uint8Array; versionId: string; sha256: string }>();
   private seq = 0;
   private hash(bytes: Uint8Array): string {
-    let h = 5381;
-    for (let i = 0; i < bytes.length; i++) h = ((h << 5) + h + bytes[i]) >>> 0;
-    return `sha_${h.toString(16)}`;
+    return sha256Hex(bytes);
   }
   async putStaging(key: string, bytes: Uint8Array, contentType: string) {
     const sha256 = this.hash(bytes);

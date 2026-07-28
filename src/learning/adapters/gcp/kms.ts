@@ -6,7 +6,6 @@
  * KMS key (EC_SIGN_P256_SHA256 or RSA_SIGN_PSS). The domain passes an already-hashed
  * payload (stateVectorSha256 / manifest fingerprint); this signs that digest.
  */
-// @ts-nocheck — depends on @google-cloud/kms
 import { KeyManagementServiceClient } from '@google-cloud/kms';
 import { createHash, createVerify, createPublicKey } from 'node:crypto';
 import type { Signer } from '../../domain/ports';

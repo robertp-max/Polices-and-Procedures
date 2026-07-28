@@ -7,6 +7,7 @@
  * mutate the underlying failure (§10.4).
  */
 import type { AssignmentStatus, GateOutcome, GateType, VersionRef } from './types';
+import { canonicalJson, sha256Hex } from './hash';
 
 export type GateRule =
   | { kind: 'ASSIGNMENT_STATUS'; assignmentSelector: string; allowed: AssignmentStatus[] }
@@ -82,9 +83,9 @@ function evaluateRule(rule: GateRule, s: GateStateVector): { pass: boolean; reas
   }
 }
 
-/** Stable fingerprint of the evaluated state vector (adapter applies real SHA-256). */
+/** Stable SHA-256 fingerprint of the evaluated state vector. */
 export function stateVectorFingerprint(s: GateStateVector): string {
-  const canonical = JSON.stringify({
+  const canonical = canonicalJson({
     a: s.assignmentStatuses,
     g: s.gradeOutcomes,
     e: [...s.validEvidenceSpecIds].sort(),
@@ -94,9 +95,7 @@ export function stateVectorFingerprint(s: GateStateVector): string {
     c: [...s.currentCredentials].sort(),
     h: [...s.activeHolds].sort(),
   });
-  let hash = 5381;
-  for (let i = 0; i < canonical.length; i++) hash = ((hash << 5) + hash + canonical.charCodeAt(i)) >>> 0;
-  return `sv_${hash.toString(16)}`;
+  return `sv_${sha256Hex(canonical)}`;
 }
 
 export interface GateEvaluation {

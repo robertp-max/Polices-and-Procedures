@@ -6,6 +6,7 @@
  * truth; public verification is data-minimized; certificates are never deleted.
  */
 import { canIssueCertificate } from './invariants';
+import { sha256OfJson } from './hash';
 import type { CertificateRecord, GateDecision, PolicyVersionRef } from './types';
 
 /* ------------------------------------------------------------------ *
@@ -107,10 +108,7 @@ export function buildCertificateManifest(i: BuildManifestInput): CertificateMani
 
 /** Deterministic: the same manifest fingerprint must reproduce the same artifact. */
 export function manifestFingerprint(m: CertificateManifest): string {
-  const canonical = JSON.stringify(m);
-  let hash = 5381;
-  for (let i = 0; i < canonical.length; i++) hash = ((hash << 5) + hash + canonical.charCodeAt(i)) >>> 0;
-  return `cm_${hash.toString(16)}`;
+  return `cm_${sha256OfJson(m)}`;
 }
 
 /** True when the two manifests would render an identical certificate. */
