@@ -2,6 +2,7 @@ import { WORKFLOWS } from '@/policy/data/workflows.generated';
 import { WORKFLOW_GRAPH } from '@/policy/data/workflowGraph.generated';
 import { WORKFLOW_TEMPLATES } from '@/policy/data/workflowTemplates.generated';
 import { allPoliciesContent } from './policies/allPoliciesContent.generated';
+import type { GbReferenceDocId } from './references/referenceDocs';
 
 export type DecisionTone = 'attention' | 'ready' | 'hold' | 'private' | 'positive';
 
@@ -29,7 +30,12 @@ export interface ReadinessDecision {
   currentState?: string;
   referenceMaterials?: Array<{
     label: string;
-    href: string;
+    /**
+     * Reference DESCRIPTOR resolved by the in-portal GbReferenceViewer
+     * (blocker 6): controlled documents are never linked at a public static
+     * URL — they render only inside the authenticated Governing Body portal.
+     */
+    docId: GbReferenceDocId;
     detail: string;
     posture: string;
   }>;
@@ -300,7 +306,7 @@ export const READINESS_DECISIONS: ReadinessDecision[] = [
     referenceMaterials: [
       {
         label: 'Employee & Field Workforce Handbook 2026',
-        href: '/governance-references/care-indeed-employee-field-workforce-handbook-2026-counsel-review-draft.html',
+        docId: 'handbook-2026-counsel-review-draft',
         detail: 'Counsel-review draft reference for Board review and adoption decision; not effective until formally approved.',
         posture: 'BOARD APPROVAL REFERENCE · COUNSEL-REVIEW DRAFT',
       },
@@ -431,7 +437,7 @@ export const READINESS_DECISIONS: ReadinessDecision[] = [
     referenceMaterials: [
       {
         label: 'Patient Admission Packet · Letter Form',
-        href: '/governance-references/care-indeed-patient-admission-packet-letter-form.html',
+        docId: 'patient-admission-packet-letter-form',
         detail: 'Template reference for the Governing Body approval task covering packet contents, conditional sections, disclosures, signatures, and production-readiness controls.',
         posture: 'BOARD APPROVAL REFERENCE · TEMPLATE SOURCE',
       },

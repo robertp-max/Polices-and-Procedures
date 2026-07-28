@@ -1746,21 +1746,27 @@
   margin-top: 10px;
 }
 
-.drawer-reference-materials a {
+.drawer-reference-materials a,
+.drawer-reference-materials > div > button {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 12px;
   align-items: center;
   min-height: 86px;
   padding: 14px;
+  width: 100%;
   color: var(--ink);
   text-decoration: none;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
   background: #fffaf3;
   border: 1px solid rgba(180, 111, 48, .35);
   border-radius: 8px;
 }
 
-.drawer-reference-materials a:hover {
+.drawer-reference-materials a:hover,
+.drawer-reference-materials > div > button:hover {
   border-color: rgba(180, 111, 48, .7);
   background: #fff6e8;
 }

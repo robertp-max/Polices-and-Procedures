@@ -50,9 +50,11 @@ import {
   type ReadinessDecision,
   type WorkflowInstance,
 } from './executiveReadinessData';
+import type { GbReferenceDocId } from './references/referenceDocs';
 
 const GoverningBodyAcademy = lazy(() => import('./gb-academy/Academy'));
 const GoverningBodyPolicyPlayer = lazy(() => import('./policies/GoverningBodyPolicyPlayer'));
+const GbReferenceViewer = lazy(() => import('./references/GbReferenceViewer'));
 const CourseAssessmentPlayer = lazy(() => import('./assessments/CourseAssessmentPlayer'));
 const TabletopHub = lazy(() => import('./tabletop2026/TabletopHub'));
 const TabletopSession = lazy(() => import('./tabletop2026/TabletopSession'));
@@ -764,6 +766,10 @@ function EvidenceView({ onOpenForms }: { onOpenForms: () => void }) {
 // ---------------------------------------------------------------------------
 
 function DecisionReferenceMaterials({ decision }: { decision: Decision }) {
+  // Controlled documents open in the in-portal viewer (blocker 6): no public
+  // static URL, no new tab — the document renders only behind this
+  // authenticated Governing Body route.
+  const [openDocId, setOpenDocId] = useState<GbReferenceDocId | null>(null);
   if (!decision.referenceMaterials?.length) return null;
 
   return (
@@ -771,7 +777,7 @@ function DecisionReferenceMaterials({ decision }: { decision: Decision }) {
       <span>BOARD REFERENCE MATERIALS</span>
       <div>
         {decision.referenceMaterials.map((reference) => (
-          <a key={reference.href} href={reference.href} target="_blank" rel="noreferrer">
+          <button key={reference.docId} type="button" onClick={() => setOpenDocId(reference.docId)}>
             <FileText size={16} aria-hidden="true" />
             <div>
               <small>{reference.posture}</small>
@@ -779,9 +785,14 @@ function DecisionReferenceMaterials({ decision }: { decision: Decision }) {
               <p>{reference.detail}</p>
             </div>
             <ExternalLink size={15} aria-hidden="true" />
-          </a>
+          </button>
         ))}
       </div>
+      {openDocId ? (
+        <Suspense fallback={null}>
+          <GbReferenceViewer docId={openDocId} onClose={() => setOpenDocId(null)} />
+        </Suspense>
+      ) : null}
     </section>
   );
 }
