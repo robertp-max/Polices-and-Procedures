@@ -65,9 +65,10 @@ Expected behavior:
 - Find A Home Care separate from EHR Prototype
 - EHR launcher → `http://127.0.0.1:5194/`
 - Every Reception destination opens in a new browser tab, including command-palette launches
-- Find A Home Care launcher → `https://fahc-provider-portal-git-main-tjs-projects-d809cfa8.vercel.app/provider/login`
+- Find A Home Care launcher → `https://fahc-provider-portal-rti5nksmma-uc.a.run.app/provider/login`
 - Journey launcher → `http://127.0.0.1:5193/journey/training?persona=taylor-rn` (the separate Journey app with the Journey/Connect toggle)
-- Governing Body launcher → `/governance`
+- Connect launcher → `http://127.0.0.1:5192/` (separate Connect app; no source merge)
+- Governing Body launcher → `https://fahc-provider-portal-rti5nksmma-uc.a.run.app/provider/login`
 
 ### qapi docs (from `qapi-uiux-discovery` / `qapi`)
 

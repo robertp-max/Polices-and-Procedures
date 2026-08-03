@@ -13,6 +13,7 @@ import {
   Home,
   Landmark,
   Lock,
+  MessageCircle,
   Search,
   ShieldCheck,
   Stethoscope,
@@ -25,6 +26,7 @@ import { cx } from '../../utils/classNames';
 type ReceptionWorkspaceId =
   | 'compliance'
   | 'journey'
+  | 'connect'
   | 'governing-body'
   | 'find-home-care'
   | 'ehr-prototype';
@@ -33,8 +35,9 @@ type WorkspaceAccent = 'teal' | 'orange' | 'executive' | 'navy' | 'clinical';
 type WorkspaceStatus = 'available' | 'restricted' | 'prototype';
 
 const EHR_PROTOTYPE_URL = 'http://127.0.0.1:5194';
-const FIND_HOME_CARE_URL = 'https://fahc-provider-portal-git-main-tjs-projects-d809cfa8.vercel.app/provider/login';
+const FIND_HOME_CARE_PROVIDER_PORTAL_URL = 'https://fahc-provider-portal-rti5nksmma-uc.a.run.app/provider/login';
 const JOURNEY_URL = 'http://127.0.0.1:5193/journey/training?persona=taylor-rn';
+const CONNECT_URL = 'http://127.0.0.1:5192/';
 
 interface ReceptionWorkspace {
   id: ReceptionWorkspaceId;
@@ -79,10 +82,22 @@ const WORKSPACES: readonly ReceptionWorkspace[] = [
     cta: 'Open Journey',
   },
   {
+    id: 'connect',
+    name: 'Connect',
+    description: 'Employee network, messages, team answers, saved references, and coworker updates.',
+    route: CONNECT_URL,
+    status: 'available',
+    requiredRoles: ['Administrator', 'Employee', 'Clinician', 'Supervisor', 'RN', 'LVN', 'PT', 'OT', 'HHA'],
+    capabilities: ['Team posts', 'Messages', 'Connect Mail', 'People'],
+    accent: 'teal',
+    icon: MessageCircle,
+    cta: 'Open Connect',
+  },
+  {
     id: 'governing-body',
     name: 'Governing Body',
     description: 'Executive oversight, decision docket, readiness work, QAPI review, tabletop exercises, and signatures.',
-    route: '/governance',
+    route: FIND_HOME_CARE_PROVIDER_PORTAL_URL,
     status: 'restricted',
     requiredRoles: ['Administrator', 'Governing Body', 'Executive', 'Owner'],
     capabilities: ['Docket', 'Decisions', 'QAPI review', 'Signatures'],
@@ -94,7 +109,7 @@ const WORKSPACES: readonly ReceptionWorkspace[] = [
     id: 'find-home-care',
     name: 'Find A Home Care',
     description: 'A separate consumer-facing service finder concept for care needs, location, and intake routing.',
-    route: FIND_HOME_CARE_URL,
+    route: FIND_HOME_CARE_PROVIDER_PORTAL_URL,
     status: 'prototype',
     requiredRoles: ['Administrator', 'Product', 'Intake', 'Sales'],
     capabilities: ['Care matching', 'Service area', 'Intake lead', 'Family view'],
@@ -528,12 +543,12 @@ export function ReceptionScreen() {
     const roleOrdered = [...WORKSPACES].sort((a, b) => {
       const aScore =
         normalizedRole.includes('governing') || normalizedRole.includes('executive') ? (a.id === 'governing-body' ? -2 : 0) :
-        normalizedRole.includes('clinician') || normalizedRole.includes('rn') || normalizedRole.includes('lvn') ? (a.id === 'journey' ? -2 : 0) :
+        normalizedRole.includes('clinician') || normalizedRole.includes('rn') || normalizedRole.includes('lvn') ? (a.id === 'journey' ? -2 : a.id === 'connect' ? -1 : 0) :
         normalizedRole.includes('product') ? (a.id === 'find-home-care' || a.id === 'ehr-prototype' ? -1 : 0) :
         a.id === 'compliance' ? -1 : 0;
       const bScore =
         normalizedRole.includes('governing') || normalizedRole.includes('executive') ? (b.id === 'governing-body' ? -2 : 0) :
-        normalizedRole.includes('clinician') || normalizedRole.includes('rn') || normalizedRole.includes('lvn') ? (b.id === 'journey' ? -2 : 0) :
+        normalizedRole.includes('clinician') || normalizedRole.includes('rn') || normalizedRole.includes('lvn') ? (b.id === 'journey' ? -2 : b.id === 'connect' ? -1 : 0) :
         normalizedRole.includes('product') ? (b.id === 'find-home-care' || b.id === 'ehr-prototype' ? -1 : 0) :
         b.id === 'compliance' ? -1 : 0;
       return aScore - bScore;
