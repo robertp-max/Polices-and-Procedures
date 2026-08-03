@@ -1,5 +1,5 @@
 import { Activity, AlertTriangle, ArrowRight, BarChart3, BookOpen, CalendarClock, CheckCircle2, ChevronDown, ClipboardCheck, ClipboardList, ClipboardPlus, Clock, Crosshair, FileCheck2, FileText, Filter, FolderOpen, History, Layers, MoreHorizontal, PanelRightOpen, PenTool, Plus, Search, ShieldAlert, ShieldCheck, Stethoscope, TrendingDown, TrendingUp, Upload, Users, type LucideIcon } from 'lucide-react';
-import { createElement, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { createElement, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { buildBoardLanes, buildCalendarEvents, buildEventLanes, buildReportMetrics, buildSprintSummary, buildReportCards, buildReportTrendBars, buildEvidenceRows, buildAuditRows, FALLBACK_EVENT_LANES, getControlFromParams, getTasksForEvent } from '@/policy/ces/cesViewProjections';
@@ -2340,7 +2340,7 @@ function AnimatedDonut({ percentage, colorType = 'secondary', cardType = 'normal
     }, { threshold: 0.15 });
     observer.observe(target);
     return () => observer.disconnect();
-  }, []); // mount once for IO
+  }, [generated, strokeColor]);
 
   return (
     <div ref={wrapperRef} className={`relative ${containerSize} flex items-center justify-center font-montserrat`}>
@@ -2423,7 +2423,7 @@ function AnimatedSparkline({ data, colorType = 'secondary', cardType = 'normal',
     }, { threshold: 0.15 });
     observer.observe(target);
     return () => observer.disconnect();
-  }, []); // IO setup on mount
+  }, [generated, strokeColor]);
 
   return (
     <div ref={wrapperRef} className="w-full">
@@ -3658,18 +3658,18 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
   const requestedView = searchParams.get('view');
   const [cesMonth, setCesMonthState] = useState(() => requestedEvent ? getEventMonth(requestedEvent) : 6);
   const [cesYear, setCesYearState] = useState(2026);
-  const setCesCalendarParam = (key: 'month' | 'year' | 'view', value: string | number) => {
+  const setCesCalendarParam = useCallback((key: 'month' | 'year' | 'view', value: string | number) => {
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
       next.set(key, String(value));
       if (key === 'month' || key === 'year' || key === 'view') next.delete('event');
       return next;
     });
-  };
-  const setCesMonth = (month: number) => {
+  }, [setSearchParams]);
+  const setCesMonth = useCallback((month: number) => {
     setCesMonthState(month);
     if (isCesCalendar) setCesCalendarParam('month', month);
-  };
+  }, [isCesCalendar, setCesCalendarParam]);
   const setCesYear = (year: number) => {
     setCesYearState(year);
     if (isCesCalendar) setCesCalendarParam('year', year);
@@ -3859,13 +3859,13 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
     });
   };
 
-  const clearEventPreviewCloseTimer = () => {
+  const clearEventPreviewCloseTimer = useCallback(() => {
     if (eventPreviewCloseTimer.current === null) return;
     window.clearTimeout(eventPreviewCloseTimer.current);
     eventPreviewCloseTimer.current = null;
-  };
+  }, []);
 
-  const closeEventPreview = (delay = 0) => {
+  const closeEventPreview = useCallback((delay = 0) => {
     clearEventPreviewCloseTimer();
 
     if (delay > 0) {
@@ -3879,7 +3879,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
 
     setActiveEventKey(null);
     setActiveEventAnchor(null);
-  };
+  }, [clearEventPreviewCloseTimer]);
 
   const openEventPreview = (element: HTMLElement, event: CalendarEventData, isSidebar: boolean) => {
     clearEventPreviewCloseTimer();
@@ -3897,9 +3897,9 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
 
     window.addEventListener('keydown', dismissPreview);
     return () => window.removeEventListener('keydown', dismissPreview);
-  }, [isCesCalendar]);
+  }, [closeEventPreview, isCesCalendar]);
 
-  useEffect(() => () => clearEventPreviewCloseTimer(), []);
+  useEffect(() => () => clearEventPreviewCloseTimer(), [clearEventPreviewCloseTimer]);
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('redesign-calendar-swimlane', { detail: { open: Boolean(selectedEvent) } }));
@@ -3916,12 +3916,12 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
       setActiveEventAnchor(null);
       setResolverEvent(
         mode === 'staffing-calendar'
-          ? events.find((event) => event.tone === 'orange' || event.tone === 'amber') ?? null
+          ? config.events.find((event) => event.tone === 'orange' || event.tone === 'amber') ?? null
           : null
       );
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [activeCesMonth, isCesCalendar, mode, requestedEventId]);
+  }, [activeCesMonth, config.events, isCesCalendar, mode, requestedEventId]);
 
   useEffect(() => {
     if (!isCesCalendar) return;
@@ -3949,7 +3949,7 @@ function CalendarScreen({ mode }: { mode: 'ces-calendar' | 'master-calendar' | '
       setActiveEventAnchor(null);
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [config.events, isCesCalendar, requestedEventId]);
+  }, [config.events, isCesCalendar, requestedEventId, setCesMonth]);
 
   const openCalendarEvent = (event: CalendarEventData) => {
     setActiveEventKey(null);
@@ -5387,9 +5387,30 @@ function FormWorkspaceScreen() {
   const isPrintRoute = typeof window !== 'undefined' && (window.location.pathname.endsWith('/print') || searchParams.get('print') === '1');
   const canon = formId ? resolveCanonicalFormId(formId) ?? formId : undefined;
   const record = canon ? FORM_VIEWER_DATASET.get(canon) ?? null : null;
+  const formContent = record ? buildFormContent(record) : null;
+  const formTitle = formContent?.title;
+  const [formValues, setFormValues] = useState<Record<string, string | boolean>>({});
+
+  // Print routes: force the NOON (default) theme so morning/afternoon/night
+  // palettes never bleed into a printed form; auto-name the PDF "{form} {date}"
+  // and auto-print. Everything is restored on cleanup.
+  useEffect(() => {
+    if (!isPrintRoute || !formTitle || typeof window === 'undefined') return undefined;
+    const el = document.documentElement;
+    const prevTod = el.getAttribute('data-tod');
+    el.setAttribute('data-tod', 'noon');
+    const previousTitle = document.title;
+    document.title = `${formTitle} ${new Date().toLocaleDateString('en-CA')}`.replace(/\s+/g, ' ').trim();
+    const t = window.setTimeout(() => { try { window.focus(); window.print(); } catch { /* noop */ } }, 650);
+    return () => {
+      window.clearTimeout(t);
+      document.title = previousTitle;
+      if (prevTod) el.setAttribute('data-tod', prevTod); else el.removeAttribute('data-tod');
+    };
+  }, [formTitle, isPrintRoute]);
 
   // No-match / unavailable state: keep the screen's surface, do not crash.
-  if (!record) {
+  if (!record || !formContent) {
     return (
       <ScreenStack metrics={operationsMetrics}>
         <section className="rounded-lg border border-card bg-surface-glass backdrop-blur-md shadow-glass-inset p-xl shadow-rest">
@@ -5407,8 +5428,6 @@ function FormWorkspaceScreen() {
     );
   }
 
-  const formContent = buildFormContent(record);
-  const [formValues, setFormValues] = useState<Record<string, string | boolean>>({});
   const updateValue = (key: string, val: string | boolean) => setFormValues(p => ({ ...p, [key]: val }));
 
   const buildFormNav = (suffix: string) => {
@@ -5422,24 +5441,6 @@ function FormWorkspaceScreen() {
   const printNow = () => {
     try { window.print(); } catch { /* noop */ }
   };
-
-  // Print routes: force the NOON (default) theme so morning/afternoon/night
-  // palettes never bleed into a printed form; auto-name the PDF "{form} {date}"
-  // and auto-print. Everything is restored on cleanup.
-  useEffect(() => {
-    if (!isPrintRoute || typeof window === 'undefined') return undefined;
-    const el = document.documentElement;
-    const prevTod = el.getAttribute('data-tod');
-    el.setAttribute('data-tod', 'noon');
-    const previousTitle = document.title;
-    document.title = `${formContent.title} ${new Date().toLocaleDateString('en-CA')}`.replace(/\s+/g, ' ').trim();
-    const t = window.setTimeout(() => { try { window.focus(); window.print(); } catch { /* noop */ } }, 650);
-    return () => {
-      window.clearTimeout(t);
-      document.title = previousTitle;
-      if (prevTod) el.setAttribute('data-tod', prevTod); else el.removeAttribute('data-tod');
-    };
-  }, [isPrintRoute, formContent.title]);
 
   return (
     <ScreenStack metrics={isPrintRoute ? [] : operationsMetrics}>

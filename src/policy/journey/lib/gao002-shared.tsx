@@ -11,7 +11,7 @@
  * All volumes low, tones warm/musical. .resume() safe. Mute propagates.
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 
 // =============================================================================
 // 6. COLOR TOKENS — matching GAO-001 Scene 4 / CoreValues benchmark exactly
@@ -68,7 +68,10 @@ export class PremiumSoftAudio {
   private getCtx(): AudioContext | null {
     if (typeof window === 'undefined') return null;
     if (!this.ctx) {
-      const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
+      const audioWindow = window as typeof window & {
+        webkitAudioContext?: typeof AudioContext;
+      };
+      const AC = audioWindow.AudioContext || audioWindow.webkitAudioContext;
       if (AC) this.ctx = new AC();
     }
     if (this.ctx && this.ctx.state === 'suspended') {
@@ -500,7 +503,7 @@ export const PhasedContentCard: React.FC<{
       {title && <div className="font-bold text-sm mb-3" style={{ color: GAO002_COLORS.teal }}>{title}</div>}
 
       <div className="flex gap-1 mb-4 border-b pb-2" style={{ borderColor: GAO002_COLORS.lightTeal }}>
-        {tiers.map((t, i) => (
+        {tiers.map((t) => (
           <button
             key={t}
             onClick={() => onTierChange(t)}

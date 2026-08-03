@@ -91,7 +91,7 @@ export const AdvancedTrainingPlayer: React.FC<AdvancedTrainingPlayerProps> = ({
         score,
         `Advanced Training ${variant} completed`
       );
-    } catch (e) {
+    } catch {
       // non-fatal in demo
     }
   };

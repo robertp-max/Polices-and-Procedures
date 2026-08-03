@@ -49,7 +49,7 @@ function main() {
     let bodyHash: string | null = null;
     let readinessPath: string | null = null;
     let exportBlockedWithoutSig = false;
-    let notes: string[] = [];
+    const notes: string[] = [];
 
     if (!retrievable) {
       failed++;

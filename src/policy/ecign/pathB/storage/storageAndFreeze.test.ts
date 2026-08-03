@@ -8,7 +8,7 @@
  * Run: npx tsx --test src/policy/ecign/pathB/storage/storageAndFreeze.test.ts
  */
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import type {
   ArtifactId,

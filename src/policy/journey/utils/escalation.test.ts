@@ -87,7 +87,6 @@ describe('hire / firstDay-anchored annual cycle', () => {
       startDate: '2025-08-10',
     };
     const now = new Date(2026, 2, 1, 12); // before first anniversary (2026-08-10)
-    const deadline = resolveModuleDeadline(hireAnchoredComp(), emp, now);
     expect(formatModuleDeadline(hireAnchoredComp(), emp, now)).toBe('2026-08-10');
     expect(daysPastModuleDeadline(hireAnchoredComp(), emp, now)).toBeLessThan(0);
   });

@@ -1,4 +1,4 @@
-/// <reference path="./assets.d.ts" />
+import './assets.d.ts';
 /**
  * DON-006 — QAPI Program Leadership
  * Canonical DON Pass 5 module from repository-root ONBOARDINGARCH v2.4 §3.3 and controlled policies.

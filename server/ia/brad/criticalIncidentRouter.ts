@@ -112,6 +112,8 @@ const SECOND_CHANCE: SecondChanceRule[] = [
       // Inherent weapons (always urgent). Ambiguous objects (bat/scissors/hammer)
       // are handled by the assault/threw/swung verbs above, not by name.
       /\b(gun|firearm|pistol|rifle|handgun|shotgun|knife|machete|blade|weapon|brandish\w*|pointed (a|the) (gun|knife|weapon))\b/i,
+      /\b(active shooter|shots? fired|gunfire|gunshot(?: wound)?|shooting)\b/i,
+      /\b(?:i|we|he|she|they|someone|somebody|(?:my|the|a) (?:patient|client|resident)) (?:just )?(?:got|was|were|has been|have been) shot\b/i,
       /\b(in danger|my life|kill me|wants? to (hurt|kill)|going to (hurt|kill)|hurt me|trying to hurt|afraid (for|of) my (life|safety))\b/i,
     ],
   },

@@ -1272,16 +1272,12 @@ function ScenePanel({
   continueLabel: string;
 }) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeTrigger, setActiveTrigger] = useState<HTMLButtonElement | null>(null);
   const [showComplete, setShowComplete] = useState(false);
   const triggerMap = useRef<Record<string, HTMLButtonElement | null>>({});
   const completeRef = useRef<HTMLButtonElement>(null);
   const reviewCompleteRef = useRef<HTMLButtonElement>(null);
   const lastObservedIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    setActiveId(null);
-    setShowComplete(false);
-  }, [lesson.id]);
 
   useEffect(() => {
     if (showComplete) completeRef.current?.focus();
@@ -1346,7 +1342,10 @@ function ScenePanel({
                 className="m11-hotspot"
                 style={{ left: `${hotspot.x}%`, top: `${hotspot.y}%` }}
                 aria-label={done ? `${hotspot.label}, observed. Open review.` : `Investigate ${hotspot.label}`}
-                onClick={() => setActiveId(hotspot.id)}
+                onClick={(event) => {
+                  setActiveTrigger(event.currentTarget);
+                  setActiveId(hotspot.id);
+                }}
               >
                 <span className="orb" style={{ background: done ? CI.teal : safety.color }}>
                   {hotspot.id === guidedId && !done && <span className="m11-ping" aria-hidden="true" />}
@@ -1365,8 +1364,11 @@ function ScenePanel({
             <HotspotDialog
               hotspot={activeHotspot}
               completed={completed.includes(activeHotspot.id)}
-              trigger={triggerMap.current[activeHotspot.id]}
-              onClose={() => setActiveId(null)}
+              trigger={activeTrigger}
+              onClose={() => {
+                setActiveId(null);
+                setActiveTrigger(null);
+              }}
               onComplete={() => observe(activeHotspot)}
             />
           )}
@@ -1934,6 +1936,7 @@ export default function ACHCARTM11({ onSaveExit, onComplete }: ACHCARTM11Props) 
           <div className="m11-work">
           <LessonPanel lesson={page} index={progress.pageIndex} />
           <ScenePanel
+            key={page.id}
             lesson={page}
             completed={currentCompleted}
             onObserve={observeHotspot}

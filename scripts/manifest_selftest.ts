@@ -7,7 +7,11 @@ import {
 
 const CSV = process.argv[2] || 'C:/Users/razer/Downloads/Manifesto - Drive File Links.csv';
 let pass = 0, fail = 0;
-const ok = (name: string, cond: boolean, extra = '') => { (cond ? pass++ : fail++); console.log(`${cond ? 'PASS' : 'FAIL'} · ${name}${extra ? ' · ' + extra : ''}`); };
+const ok = (name: string, cond: boolean, extra = '') => {
+  if (cond) pass++;
+  else fail++;
+  console.log(`${cond ? 'PASS' : 'FAIL'} · ${name}${extra ? ' · ' + extra : ''}`);
+};
 
 const text = readFileSync(CSV, 'utf8');
 const base = parseManifest(text);

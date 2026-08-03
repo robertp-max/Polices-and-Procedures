@@ -723,6 +723,33 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
   }, []);
 
   const showLegacyArt = false;
+  const activeHotspot = SCENE_HOTSPOTS.find(h => h.id === activeHotspotId);
+  const isFullyComplete = completedHotspots.length === SCENE_HOTSPOTS.length;
+
+  // Auto Blinking Logic for characters
+  useEffect(() => {
+    if (!showLegacyArt) return;
+    let blinkTimeout: number;
+    const triggerBlink = () => {
+      const delay = Math.random() * 4000 + 1500;
+      blinkTimeout = window.setTimeout(() => {
+        setEyesClosed(true);
+        setTimeout(() => {
+          setEyesClosed(false);
+          triggerBlink();
+        }, 120);
+      }, delay);
+    };
+    triggerBlink();
+    return () => clearTimeout(blinkTimeout);
+  }, [showLegacyArt]);
+
+  useEffect(() => {
+    if (showLegacyArt && isFullyComplete && onComplete) {
+      onComplete();
+    }
+  }, [isFullyComplete, onComplete, showLegacyArt]);
+
   if (!showLegacyArt) {
     return (
       <GAO001SharedOverlay
@@ -763,32 +790,6 @@ export default function CoreValuesInteractiveViewer({ onComplete }: CoreValuesIn
       />
     );
   }
-
-  // Auto Blinking Logic for characters
-  useEffect(() => {
-    let blinkTimeout: number;
-    const triggerBlink = () => {
-      const delay = Math.random() * 4000 + 1500;
-      blinkTimeout = window.setTimeout(() => {
-        setEyesClosed(true);
-        setTimeout(() => {
-          setEyesClosed(false);
-          triggerBlink();
-        }, 120);
-      }, delay);
-    };
-    triggerBlink();
-    return () => clearTimeout(blinkTimeout);
-  }, []);
-
-  const activeHotspot = SCENE_HOTSPOTS.find(h => h.id === activeHotspotId);
-  const isFullyComplete = completedHotspots.length === SCENE_HOTSPOTS.length;
-
-  useEffect(() => {
-    if (isFullyComplete && onComplete) {
-      onComplete();
-    }
-  }, [isFullyComplete, onComplete]);
 
   const handleHotspotClick = (id: string) => {
     if (completedHotspots.includes(id)) return;

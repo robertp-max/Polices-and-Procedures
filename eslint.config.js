@@ -142,6 +142,10 @@ const PHASE3_V22_ATTESTED_FILES = [
 export default defineConfig([
   globalIgnores([
     'dist/**',
+    // Agent workflow snippets are embedded runner bodies, not standalone JavaScript
+    // programs; several intentionally use a top-level return supplied by the runner.
+    '.claude/workflows/**',
+    'docs/Workflows/**/automation/*.js',
     // Non-runtime / archival / QA artifact directories (do not ship)
     'Bin-(thrash)/**',
     'Builder/**',
@@ -187,6 +191,11 @@ export default defineConfig([
       'react-refresh/only-export-components': 'off',
       // Allow targeted TypeScript suppression in legacy seed/demo files without failing lint.
       '@typescript-eslint/ban-ts-comment': 'warn',
+      // Legacy runtime surfaces still carry explicit-any debt. Keep every occurrence
+      // visible while reserving release-blocking errors for correctness regressions.
+      '@typescript-eslint/no-explicit-any': 'warn',
+      // Empty catches are used for best-effort local persistence and optional browser APIs.
+      'no-empty': ['error', { allowEmptyCatch: true }],
       // Repo convention: underscore-prefixed locals/args are intentionally unused.
       '@typescript-eslint/no-unused-vars': ['error', {
         args: 'all',

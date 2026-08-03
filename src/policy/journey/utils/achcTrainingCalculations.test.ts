@@ -1,7 +1,7 @@
 /// <reference types="node" />
 
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import { ACHC_ART } from '@/policy/journey/data/modules';
 import type { JourneyEmployee, JourneyEvidence, JourneyModule, ModuleAttempt } from '@/policy/journey/types/journey';
 import {
@@ -65,13 +65,15 @@ describe('ACHC annual field worker training calculations', () => {
   it('grades submitted quiz answers against correct answers and 80% standard', () => {
     const test = getAchcTest(m01.id);
     assert.ok(test);
-    const answers = Object.fromEntries(test.questions.map((question, index) => [question.question_id, index < 8 ? question.correct_answer : -1]));
+    const totalQuestions = test.questions.length;
+    const passingCorrectAnswers = Math.ceil(totalQuestions * CARE_INDEED_PASSING_STANDARD_PERCENT / 100);
+    const answers = Object.fromEntries(test.questions.map((question, index) => [question.question_id, index < passingCorrectAnswers ? question.correct_answer : -1]));
     const grade = gradeAchcQuiz(test, answers, 1, '2026-02-01T00:00:00.000Z');
 
-    assert.equal(grade.total_gradable_questions, 10);
-    assert.equal(grade.correct_answers, 8);
-    assert.equal(grade.incorrect_answers, 2);
-    assert.equal(grade.score_percent, 80);
+    assert.equal(grade.total_gradable_questions, totalQuestions);
+    assert.equal(grade.correct_answers, passingCorrectAnswers);
+    assert.equal(grade.incorrect_answers, totalQuestions - passingCorrectAnswers);
+    assert.ok(grade.score_percent >= CARE_INDEED_PASSING_STANDARD_PERCENT);
     assert.equal(grade.passed, true);
   });
 

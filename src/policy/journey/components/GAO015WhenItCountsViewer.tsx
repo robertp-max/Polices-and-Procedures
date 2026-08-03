@@ -29,6 +29,17 @@ interface GAO015WhenItCountsViewerProps {
 const STORAGE_KEY = 'gao015-interactive-progress';
 // Reuse GAO001_COLORS palette tokens where needed (imported per spec)
 
+function loadSceneState(sceneKey: string): any {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return parsed.sceneStates?.[sceneKey] ?? {};
+    }
+  } catch {}
+  return {};
+}
+
 // Scene metadata (1:1 with training lessons L1-L4 and storyboards)
 const SCENE_META = [
   {
@@ -212,17 +223,6 @@ export default function GAO015WhenItCountsViewer({ onComplete }: GAO015WhenItCou
   const [s4KitSelected, setS4KitSelected] = useState<Set<string>>(() => new Set(loadSceneState('s4').kit ?? []));
   const [s4KitComplete, setS4KitComplete] = useState<boolean>(() => loadSceneState('s4').kitComplete ?? false);
   const [feedback, setFeedback] = useState<string>('');
-
-  function loadSceneState(sceneKey: string): any {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const p = JSON.parse(saved);
-        return p.sceneStates?.[sceneKey] ?? {};
-      }
-    } catch {}
-    return {};
-  }
 
   // Persist everything
   const persist = useCallback(() => {

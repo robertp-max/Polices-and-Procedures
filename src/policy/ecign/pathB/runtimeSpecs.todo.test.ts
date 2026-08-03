@@ -7,7 +7,7 @@
  * left is LIVE INTEGRATION, which is intentionally NOT a unit `it.todo` here —
  * it needs real credentials/sandbox + explicit authorization (see notes below).
  */
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 // DONE (green tests):
 //  Phase 2A — ./storage/storageAndFreeze.test.ts: write-once; byte-freeze; server-side recompute.

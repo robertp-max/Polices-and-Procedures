@@ -4,22 +4,17 @@ import {
   ShieldAlert,
   FileText,
   CheckCircle,
-  XCircle,
   AlertTriangle,
   UploadCloud,
   Lock,
   Settings,
-  Activity,
   Database,
   Download,
   RefreshCw,
   Plus,
   Play,
-  FileSpreadsheet,
   Cpu,
   History,
-  Globe,
-  Trash
 } from 'lucide-react';
 
 interface FileMetadata {
@@ -67,9 +62,17 @@ interface NetworkLog {
 interface HashChainLog {
   timestamp: string;
   logType: string;
-  data: any;
+  data: unknown;
   previous_hash: string;
   record_hash: string;
+}
+
+interface ComplianceTemplate {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  files: unknown[];
 }
 
 interface ComplianceConfig {
@@ -131,7 +134,7 @@ export default function App() {
   const [newWorkspaceName, setNewWorkspaceName] = useState<string>('');
 
   // Templates library state
-  const [templates, setTemplates] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<ComplianceTemplate[]>([]);
   const [templateFilter, setTemplateFilter] = useState<string>('all');
 
   // Manual outbound check simulation parameters
@@ -177,7 +180,7 @@ export default function App() {
       } else {
         setErrorMessage(data.error || 'Failed to inject template document.');
       }
-    } catch (e) {
+    } catch {
       setErrorMessage('Network error injecting template document.');
     }
   };
@@ -196,7 +199,7 @@ export default function App() {
       const res = await fetch('/api/config');
       const data = await res.json();
       setConfig(data);
-    } catch (e) {
+    } catch {
       setErrorMessage('Failed to fetch server security posture configuration.');
     }
   };
@@ -217,7 +220,7 @@ export default function App() {
       } else {
         setErrorMessage(data.error || 'Configuration update was rejected by strict policy gate.');
       }
-    } catch (e) {
+    } catch {
       setErrorMessage('Failed to persist configuration.');
     }
   };
@@ -230,7 +233,7 @@ export default function App() {
       if (selectLatest && data.length > 0) {
         setSelectedWorkspaceId(data[0].workspaceId);
       }
-    } catch (e) {
+    } catch {
       setErrorMessage('Failed to load active workspaces.');
     }
   };
@@ -244,7 +247,7 @@ export default function App() {
       } else {
         setErrorMessage('Failed to load workspace files and logs.');
       }
-    } catch (e) {
+    } catch {
       setErrorMessage('Network error fetching workspace context.');
     }
   };
@@ -269,7 +272,7 @@ export default function App() {
       } else {
         setErrorMessage(data.error || 'Failed to create workspace.');
       }
-    } catch (e) {
+    } catch {
       setErrorMessage('Error communicating with compliance directory.');
     }
   };
@@ -297,7 +300,7 @@ export default function App() {
       } else {
         setErrorMessage(data.error || 'Evidence upload was rejected.');
       }
-    } catch (err) {
+    } catch {
       setErrorMessage('Upload failure. Check file integrity.');
     } finally {
       setIsUploading(false);
@@ -316,7 +319,7 @@ export default function App() {
         setSuccessMessage(`Security block executed. Attempt logged for ${dest}.`);
         fetchWorkspaceDetails(selectedWorkspaceId);
       }
-    } catch (e) {
+    } catch {
       setErrorMessage('Failed to log simulated outbound activity.');
     }
   };
@@ -361,7 +364,7 @@ export default function App() {
       } else {
         setErrorMessage(data.error || 'Vertex AI Compliance Harness evaluation aborted.');
       }
-    } catch (e) {
+    } catch {
       setErrorMessage('Error running model analysis.');
     } finally {
       setIsReviewing(false);

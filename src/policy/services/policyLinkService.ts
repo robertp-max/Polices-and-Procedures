@@ -15,7 +15,7 @@
          – Forms Library  → no default; user must select
    ═══════════════════════════════════════════════════════════════ */
 
-import { POLICY_CORPUS, getCorpusPolicy } from '@/policy/data/policyCorpus';
+import { POLICY_CORPUS } from '@/policy/data/policyCorpus';
 import { emit } from '@/policy/security/auditLog';
 import { DEMO_SESSION } from '@/policy/components/FormSignatureContext';
 

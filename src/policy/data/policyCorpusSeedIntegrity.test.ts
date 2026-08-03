@@ -11,7 +11,7 @@
  * No screen/store wiring. Run via `npm run test:seed`.
  */
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import { POLICY_CORPUS, getCorpusPolicy } from '@/policy/data/policyCorpus';
 import { loadLifecycleSeed } from '@/policy/lifecycle/lifecycleSeed';
 

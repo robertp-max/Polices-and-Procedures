@@ -157,7 +157,7 @@ export interface SourcePipelineResult {
 function ensureDirs() {
   for (const d of [SOURCES_DIR, EXTRACTIONS_DIR]) fs.mkdirSync(d, { recursive: true });
 }
-const sanitize = (n: string) => (n || 'source').replace(/[^\w.\-]+/g, '_').slice(0, 120);
+const sanitize = (n: string) => (n || 'source').replace(/[^\w.-]+/g, '_').slice(0, 120);
 
 /**
  * Ingest one uploaded source: extract its content, read it 3x via Brad to map

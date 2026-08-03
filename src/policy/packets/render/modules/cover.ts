@@ -6,7 +6,9 @@ import { escapeHtml, renderKeyValueRow, renderModulePage, renderPanel, renderRaw
 export const renderCoverModule: ModuleRenderer = (context) => {
   const payload = context.module.payload as QapiPacketRenderPayload;
   const roll = payload.roll;
-  const reviewState = payload.lock.pass ? 'Final' : 'Draft - Requires Review';
+  const reviewState = roll.window.packetType === 'interim'
+    ? 'Interim'
+    : payload.lock.pass ? 'Final' : 'Draft - Requires Review';
   const title = `${reviewState} ${roll.window.quarterLabel} QAPI Committee Packet`;
   const bodyHtml = `
     ${payload.derivedNotice ? renderRawNotice(`<b>BRAD-DERIVED DRAFT — REQUIRES HUMAN REVIEW.</b> ${escapeHtml(payload.derivedNotice)}`, 'warning') : ''}

@@ -30,10 +30,16 @@ interface SimulatorMessage {
  */
 export const OasisSocTrainingPanel: React.FC<Props> = ({ moduleId, onComplete }) => {
   const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
   const store = useJourneyStore();
   const storeRef = useRef(store);
-  storeRef.current = store;
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  useEffect(() => {
+    storeRef.current = store;
+  }, [store]);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {

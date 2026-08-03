@@ -31,7 +31,6 @@ interface CommunityProfileRow {
 
 export function AdminCommunityProfilesScreen() {
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   if (!canManageCommunityProfiles(user)) {
     return (
@@ -49,10 +48,18 @@ export function AdminCommunityProfilesScreen() {
     );
   }
 
+  return <AdminCommunityProfilesContent />;
+}
+
+function AdminCommunityProfilesContent() {
+  const navigate = useNavigate();
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Pull from adapter (real seed + persisted visibility)
-  const baseProfiles = useMemo(() => listCommunityUsers(), [refreshKey]);
+  const baseProfiles = useMemo(() => {
+    void refreshKey;
+    return listCommunityUsers();
+  }, [refreshKey]);
   const allThreads = useThreadStore((s) => s.threads);
 
   const rows: CommunityProfileRow[] = useMemo(() => baseProfiles.map((p) => {
@@ -89,7 +96,7 @@ export function AdminCommunityProfilesScreen() {
       });
     });
     return pendings.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-  }, [baseProfiles, refreshKey]);
+  }, [baseProfiles]);
 
   const columns: readonly DataTableColumn<CommunityProfileRow>[] = [
     { key: 'name', label: 'Name' },

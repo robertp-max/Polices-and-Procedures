@@ -115,6 +115,7 @@ export default function GAO001Scene05HomeHealthDifference({ onComplete }: GAO001
   const [currentIndex, setCurrentIndex] = useState(0);
   const [placedItems, setPlacedItems] = useState<Record<string, Category>>({});
   const [errorCategory, setErrorCategory] = useState<Category | null>(null);
+  const [showCompletion, setShowCompletion] = useState(false);
 
   useEffect(() => {
     const styleSheet = document.createElement("style");
@@ -213,16 +214,6 @@ export default function GAO001Scene05HomeHealthDifference({ onComplete }: GAO001
       />
     );
   }
-  const [showCompletion, setShowCompletion] = useState(false);
-
-  useEffect(() => {
-    const styleSheet = document.createElement("style");
-    styleSheet.type = "text/css";
-    styleSheet.innerText = brandStyles;
-    document.head.appendChild(styleSheet);
-    return () => { document.head.removeChild(styleSheet); };
-  }, []);
-
   const handlePlace = (category: Category) => {
     if (currentIndex >= items.length) return;
 

@@ -22,7 +22,7 @@ export const fileUrlFor = (id: string) => (id ? `https://drive.google.com/file/d
 export function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
   let field = '', row: string[] = [], inQuotes = false;
-  const s = String(text ?? '').replace(/^﻿/, '');
+  const s = String(text ?? '').replace(/^\uFEFF/u, '');
   for (let i = 0; i < s.length; i++) {
     const ch = s[i];
     if (inQuotes) {

@@ -8,7 +8,7 @@
  * retrievability. Synthetic non-PHI bytes. Run via tsx --test.
  */
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import type { ArtifactId, ArtifactVersionId, DriveFileId, FormInstanceId, HierarchySnapshotId, IsoTimestamp, SignerId } from '../ids';
 import type { ProductionSignerTier } from '../signerAuthority';

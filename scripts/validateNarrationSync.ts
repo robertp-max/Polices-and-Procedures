@@ -8,7 +8,7 @@ let totalErrors = 0;
 const seenNarrationIds = new Set<string>();
 
 // Walk target lessons
-cms485PlanOfCareModule.lessons.forEach((lesson, lIdx) => {
+cms485PlanOfCareModule.lessons.forEach((lesson) => {
   // Find matching source cards for this lesson
   const srcCards = TRAINING_CARDS.filter(c => c.section === lesson.title);
   if (srcCards.length === 0) {
@@ -17,7 +17,7 @@ cms485PlanOfCareModule.lessons.forEach((lesson, lIdx) => {
     return;
   }
   
-  srcCards.forEach((srcCard, sIdx) => {
+  srcCards.forEach((srcCard) => {
     // 1. Check overview card
     const overviewCard = lesson.cards.find(c => c.display_title === srcCard.title && c.card_type === 'overview');
     if (!overviewCard) {
@@ -30,12 +30,10 @@ cms485PlanOfCareModule.lessons.forEach((lesson, lIdx) => {
         totalErrors++;
       } else {
         // Match transcript text with source body/narration
-        const srcBody = srcCard.body ? srcCard.body.join(' ') : '';
         const tgtNarration = overviewCard.narration_script;
         
         // Clean texts for loose matching (ignore spacing, curly/straight quotes, policy name adjustments)
         const cleanTgt = tgtNarration.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const cleanSrc = srcBody.toLowerCase().replace(/[^a-z0-9]/g, '');
         
         // Target text might have minor adjustments (e.g. policy IDs inserted), so check similarity
         if (cleanTgt.length < 50) {
@@ -102,7 +100,7 @@ let orderErrors = 0;
 let lastLessonIdx = -1;
 let lastCardIdx = -1;
 
-TRAINING_CARDS.forEach((srcCard, idx) => {
+TRAINING_CARDS.forEach((srcCard) => {
   // Find which target lesson and card indexes correspond to this srcCard
   let foundLessonIdx = -1;
   let foundCardIdx = -1;

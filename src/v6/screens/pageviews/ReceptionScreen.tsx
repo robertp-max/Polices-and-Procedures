@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Activity,
@@ -403,19 +403,13 @@ function WorkspaceLauncherCard({
 
 function CommandPalette({
   onClose,
-  open,
   workspaces,
 }: {
   onClose: () => void;
-  open: boolean;
   workspaces: readonly (ReceptionWorkspace & { enabled: boolean; lastRoute: string })[];
 }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
-
-  useEffect(() => {
-    if (open) setQuery('');
-  }, [open]);
 
   const results = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -429,8 +423,6 @@ function CommandPalette({
       ].some((value) => value.toLowerCase().includes(normalized));
     });
   }, [query, workspaces]);
-
-  if (!open) return null;
 
   function openWorkspace(workspace: ReceptionWorkspace & { enabled: boolean; lastRoute: string }) {
     if (!workspace.enabled) return;
@@ -514,21 +506,21 @@ export function ReceptionScreen() {
   const role = user?.role ?? user?.appRole ?? 'Authenticated user';
   const userLabel = user?.displayName ?? user?.name ?? 'Care Indeed user';
   const greeting = greetingForHour(new Date().getHours());
+  const openCommandPalette = useCallback(() => {
+    setRecentRoutes(readRecentRoutes());
+    setCommandOpen(true);
+  }, []);
 
   useEffect(() => {
     const handler = (event: globalThis.KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
-        setCommandOpen(true);
+        openCommandPalette();
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, []);
-
-  useEffect(() => {
-    setRecentRoutes(readRecentRoutes());
-  }, [commandOpen]);
+  }, [openCommandPalette]);
 
   const enrichedWorkspaces = useMemo(() => {
     const normalizedRole = normalizeRole(role);
@@ -557,7 +549,7 @@ export function ReceptionScreen() {
 
   return (
     <ReceptionShell>
-      <ReceptionHeader onCommandOpen={() => setCommandOpen(true)} userLabel={userLabel} />
+      <ReceptionHeader onCommandOpen={openCommandPalette} userLabel={userLabel} />
       <div className="grid min-h-0 gap-5 overflow-auto p-5 laptop:grid-cols-[340px_minmax(0,1fr)] laptop:p-6">
         <WelcomeRail greeting={greeting} resumeRoute={resumeRoute} role={role} />
         <section className="grid content-start gap-5">
@@ -593,7 +585,9 @@ export function ReceptionScreen() {
           <Link className="font-medium text-[#073F3C] hover:text-[#007970]" to="/iadministrator">Brad</Link>
         </span>
       </footer>
-      <CommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} workspaces={enrichedWorkspaces} />
+      {commandOpen ? (
+        <CommandPalette onClose={() => setCommandOpen(false)} workspaces={enrichedWorkspaces} />
+      ) : null}
     </ReceptionShell>
   );
 }

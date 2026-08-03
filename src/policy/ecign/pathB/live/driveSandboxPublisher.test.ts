@@ -5,7 +5,7 @@
  * + async parity + live selector with an in-memory fake DriveClient. Run via tsx --test.
  */
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import type { ArtifactVersionId, IsoTimestamp } from '../ids';
 import { parityRequiresRecovery, validateReplicaParityRecord } from '../validators';

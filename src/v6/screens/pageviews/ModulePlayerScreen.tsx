@@ -938,24 +938,7 @@ function LessonPlayerPage() {
   const [activeTab, setActiveTab] = useState<'content' | 'narration'>('content');
   const speechSupported = typeof window !== "undefined" && "speechSynthesis" in window;
 
-  useEffect(() => {
-    setAcknowledgedTerms(new Set());
-    setSelectedAnswer(null);
-    setSubmitted(false);
-    setOpenedOptions([]);
-    setCurrentIdx(0);
-    setNarrationPlaying(false);
-    setNarrationSpeaking(false);
-    if (speechSupported) window.speechSynthesis.cancel();
-    const el = narrationAudioRef.current;
-    if (el) {
-      el.pause();
-      el.currentTime = 0;
-    }
-  }, [moduleId, lessonId, speechSupported]);
-
-  // Stop both real audio and browser TTS when the card changes
-  useEffect(() => {
+  const changeCard = (updateIndex: (currentIndex: number) => number) => {
     if (speechSupported) window.speechSynthesis.cancel();
     setNarrationSpeaking(false);
     setNarrationPlaying(false);
@@ -964,7 +947,8 @@ function LessonPlayerPage() {
       el.pause();
       el.currentTime = 0;
     }
-  }, [currentIdx, speechSupported]);
+    setCurrentIdx(updateIndex);
+  };
 
   useEffect(() => {
     return () => {
@@ -1085,7 +1069,7 @@ function LessonPlayerPage() {
     ? meetsLessonMinimum
     : true;
 
-  const continueLabel = useMemo(() => {
+  const continueLabel = (() => {
     if (!isCms485) {
       if (isLast) {
         return nextLesson ? "Next Lesson" : "Complete Theory Lesson";
@@ -1097,11 +1081,11 @@ function LessonPlayerPage() {
     if (isChallengeCard) return "Continue";
     if (isDebriefCard) return "Complete Theory Lesson";
     return "Continue";
-  }, [isCms485, currentCard, isLast, isDebriefCard, isChallengeCard, remediation, nextLesson]);
+  })();
 
   const handleNext = () => {
     if (currentIdx < cards.length - 1) {
-      setCurrentIdx((idx) => idx + 1);
+      changeCard((idx) => idx + 1);
       return;
     }
     setState((s) => withLessonCompleted(s, moduleId, lessonId));
@@ -1318,7 +1302,7 @@ function LessonPlayerPage() {
                         const j = useJourneyStore.getState();
                         j.recordLearnerCompletion(j.currentEmployeeId, 'GAO-002', true);
                       } catch {}
-                    } catch (e) {
+                    } catch {
                       // non-fatal: log + allow parent flow
                       console.info('[GAO-002] onComplete: lessons marked (or fallback to parent flow)');
                     }
@@ -1362,7 +1346,7 @@ function LessonPlayerPage() {
             <button
               onClick={() => {
                 if (currentIdx > 0) {
-                  setCurrentIdx((idx) => Math.max(0, idx - 1));
+                  changeCard((idx) => Math.max(0, idx - 1));
                 } else if (prevLesson) {
                   navigate(`/journey/module/${moduleId}/lesson/${prevLesson.id}`);
                 }
@@ -1818,7 +1802,7 @@ function LessonPlayerPage() {
           <button
             onClick={() => {
               if (currentIdx > 0) {
-                setCurrentIdx((idx) => Math.max(0, idx - 1));
+                changeCard((idx) => Math.max(0, idx - 1));
               } else if (prevLesson) {
                 navigate(`/journey/module/${moduleId}/lesson/${prevLesson.id}`);
               }
@@ -2312,7 +2296,7 @@ export function ModulePlayerScreen() {
             <div className="mb-3 px-2 sm:px-4 pt-2">
               <BackLink to="/journey?tab=achc">Back to ACHC annual training</BackLink>
             </div>
-            <AchcModule />
+            {React.createElement(AchcModule)}
           </div>
         );
       }
@@ -2326,7 +2310,7 @@ export function ModulePlayerScreen() {
             <div className="mb-3 px-2 sm:px-4 pt-2">
               <BackLink to="/journey?tab=onboarding&path=lvn">Back to LVN path</BackLink>
             </div>
-            <LvnModule />
+            {React.createElement(LvnModule)}
           </div>
         );
       }
@@ -2340,7 +2324,7 @@ export function ModulePlayerScreen() {
             <div className="mb-3 px-2 sm:px-4 pt-2">
               <BackLink to="/journey?tab=onboarding&path=rn">Back to RN path</BackLink>
             </div>
-            <RnModule />
+            {React.createElement(RnModule)}
           </div>
         );
       }
@@ -2354,7 +2338,7 @@ export function ModulePlayerScreen() {
             <div className="mb-3 px-2 sm:px-4 pt-2">
               <BackLink to="/journey?tab=onboarding&path=adm">Back to Administrator path</BackLink>
             </div>
-            <AdmModule />
+            {React.createElement(AdmModule)}
           </div>
         );
       }
@@ -2368,7 +2352,7 @@ export function ModulePlayerScreen() {
             <div className="mb-3 px-2 sm:px-4 pt-2">
               <BackLink to="/journey?tab=onboarding&path=don">Back to Director of Nursing path</BackLink>
             </div>
-            <DonModule />
+            {React.createElement(DonModule)}
           </div>
         );
       }
@@ -2397,7 +2381,7 @@ export function ModulePlayerScreen() {
       return <ModuleAssessmentQuizPage />;
     }
     if (params.lessonId) {
-      return <LessonPlayerPage />;
+      return <LessonPlayerPage key={`${params.moduleId ?? ''}:${params.lessonId}`} />;
     }
     if (dispatchModuleId) {
       return <Module1OverviewPage />;

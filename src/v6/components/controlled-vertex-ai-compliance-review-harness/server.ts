@@ -46,7 +46,49 @@ interface ComplianceConfig {
   };
 }
 
-let complianceConfig: ComplianceConfig = {
+interface FileMetadata {
+  filename: string;
+  path: string;
+  size: number;
+  sha256: string;
+  createdTime: string;
+  modifiedTime: string;
+  mimeType: string;
+  reviewStatus: string;
+}
+
+interface WorkspaceManifest {
+  workspaceId: string;
+  name: string;
+  createdAt: string;
+  phiModeEnabled: boolean;
+  baaConfirmed: boolean;
+  files: FileMetadata[];
+}
+
+interface Finding {
+  findingId: string;
+  severity: 'P0' | 'P1' | 'P2' | 'P3';
+  category: string;
+  affectedFile: string;
+  evidenceQuote: string;
+  whyItMatters: string;
+  complianceImpact: string;
+  recommendedFix: string;
+  verificationTest: string;
+  status: 'open' | 'needs human review' | 'fixed';
+}
+
+interface NetworkAttempt {
+  timestamp: string;
+  workspaceId: string;
+  destination: string;
+  allowed: boolean;
+  user: string;
+  reason: string;
+}
+
+const complianceConfig: ComplianceConfig = {
   baaConfirmed: false,
   phiModeEnabled: false,
   redactionModeEnabled: true,
@@ -79,13 +121,13 @@ function getFileSHA256(filePath: string): string {
 interface HashChainRecord {
   timestamp: string;
   logType: string;
-  data: any;
+  data: unknown;
   previous_hash: string;
   record_hash: string;
 }
 
 // Append record to workspace hash chain log and network attempts log
-function appendToLogFile(workspaceId: string, filename: string, record: any) {
+function appendToLogFile(workspaceId: string, filename: string, record: unknown) {
   const wsLogsDir = path.join(WORKSPACES_DIR, workspaceId, 'logs');
   if (!fs.existsSync(wsLogsDir)) {
     fs.mkdirSync(wsLogsDir, { recursive: true });
@@ -107,7 +149,7 @@ function logNetworkAttempt(workspaceId: string, destination: string, allowed: bo
   return attempt;
 }
 
-function logHashChainEntry(workspaceId: string, logType: string, data: any) {
+function logHashChainEntry(workspaceId: string, logType: string, data: unknown) {
   const wsLogsDir = path.join(WORKSPACES_DIR, workspaceId, 'logs');
   if (!fs.existsSync(wsLogsDir)) {
     fs.mkdirSync(wsLogsDir, { recursive: true });
@@ -121,7 +163,7 @@ function logHashChainEntry(workspaceId: string, logType: string, data: any) {
       try {
         const lastRecord = JSON.parse(lines[lines.length - 1]) as HashChainRecord;
         previousHash = lastRecord.record_hash || '0';
-      } catch (e) {
+      } catch {
         // ignore JSON parsing errors
       }
     }
@@ -188,7 +230,7 @@ function initializeSeedWorkspaces() {
       createdAt: new Date().toISOString(),
       phiModeEnabled: false,
       baaConfirmed: false,
-      files: [] as any[]
+      files: [] as FileMetadata[]
     };
 
     // Create 5 realistic home health policy & evidence files
@@ -639,12 +681,12 @@ Separate forms may still be required for authorizations that legally require a d
 // API Endpoints
 
 // GET Server configuration status
-app.get('/api/config', (req, res) => {
+app.get('/api/config', (_req, res) => {
   res.json(complianceConfig);
 });
 
 // GET Templates library
-app.get('/api/templates', (req, res) => {
+app.get('/api/templates', (_req, res) => {
   res.json(TEMPLATES_LIBRARY);
 });
 
@@ -665,7 +707,7 @@ app.post('/api/workspaces/:id/inject-template', (req, res) => {
 
   try {
     const manifestPath = path.join(wsPath, 'file_manifest.json');
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8')) as WorkspaceManifest;
 
     for (const f of template.files) {
       const destPath = path.join(wsPath, 'source_files', f.filename);
@@ -675,7 +717,7 @@ app.post('/api/workspaces/:id/inject-template', (req, res) => {
       const stats = fs.statSync(destPath);
 
       // Update manifest
-      const existingFileIndex = manifest.files.findIndex((mf: any) => mf.filename === f.filename);
+      const existingFileIndex = manifest.files.findIndex((mf) => mf.filename === f.filename);
       const fileMetadata = {
         filename: f.filename,
         path: `workspaces/${id}/source_files/${f.filename}`,
@@ -727,7 +769,7 @@ app.post('/api/config', (req, res) => {
 });
 
 // GET Workspaces list
-app.get('/api/workspaces', (req, res) => {
+app.get('/api/workspaces', (_req, res) => {
   try {
     const dirs = fs.readdirSync(WORKSPACES_DIR).filter(name => {
       const p = path.join(WORKSPACES_DIR, name);
@@ -796,36 +838,36 @@ app.get('/api/workspaces/:id', (req, res) => {
 
   try {
     const manifestPath = path.join(wsPath, 'file_manifest.json');
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8')) as WorkspaceManifest;
 
     // Read Findings
     const findingsPath = path.join(wsPath, 'logs', 'findings.jsonl');
-    let findings: any[] = [];
+    let findings: Finding[] = [];
     if (fs.existsSync(findingsPath)) {
       findings = fs.readFileSync(findingsPath, 'utf-8')
         .split('\n')
         .filter(Boolean)
-        .map(line => JSON.parse(line));
+        .map(line => JSON.parse(line) as Finding);
     }
 
     // Read Network attempts
     const networkPath = path.join(wsPath, 'logs', 'network_attempts.jsonl');
-    let networkLogs: any[] = [];
+    let networkLogs: NetworkAttempt[] = [];
     if (fs.existsSync(networkPath)) {
       networkLogs = fs.readFileSync(networkPath, 'utf-8')
         .split('\n')
         .filter(Boolean)
-        .map(line => JSON.parse(line));
+        .map(line => JSON.parse(line) as NetworkAttempt);
     }
 
     // Read Hash chains
     const hashChainPath = path.join(wsPath, 'logs', 'hash_chain_audit.jsonl');
-    let hashChainLogs: any[] = [];
+    let hashChainLogs: HashChainRecord[] = [];
     if (fs.existsSync(hashChainPath)) {
       hashChainLogs = fs.readFileSync(hashChainPath, 'utf-8')
         .split('\n')
         .filter(Boolean)
-        .map(line => JSON.parse(line));
+        .map(line => JSON.parse(line) as HashChainRecord);
     }
 
     // Read Reports
@@ -862,7 +904,7 @@ app.post('/api/workspaces/:id/upload', upload.array('files'), async (req, res) =
 
   try {
     const manifestPath = path.join(wsPath, 'file_manifest.json');
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8')) as WorkspaceManifest;
 
     const acceptedExtensions = ['.pdf', '.docx', '.txt', '.md', '.csv', '.json', '.xlsx', '.ts', '.tsx', '.js', '.jsx'];
 
@@ -887,7 +929,7 @@ app.post('/api/workspaces/:id/upload', upload.array('files'), async (req, res) =
       const stats = fs.statSync(destPath);
 
       // Update manifest
-      const existingFileIndex = manifest.files.findIndex((f: any) => f.filename === originalName);
+      const existingFileIndex = manifest.files.findIndex((f) => f.filename === originalName);
       const fileMetadata = {
         filename: originalName,
         path: `workspaces/${id}/source_files/${originalName}`,
@@ -940,7 +982,7 @@ app.post('/api/workspaces/:id/review', async (req, res) => {
 
   try {
     const manifestPath = path.join(wsPath, 'file_manifest.json');
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8')) as WorkspaceManifest;
 
     if (!manifest.files || manifest.files.length === 0) {
       return res.status(400).json({ error: 'No files to review in this workspace. Please upload some files first.' });
@@ -1033,7 +1075,7 @@ Provide your analysis in two parts:
       reviewMode
     });
 
-    let findingsJson: any[] = [];
+    let findingsJson: Finding[] = [];
     let reportMarkdown = '';
 
     // Call real Gemini API if key is present
@@ -1066,8 +1108,8 @@ Provide your analysis in two parts:
         const jsonMatch = replyText.match(/\[\s*\{[\s\S]*\}\s*\]/);
         if (jsonMatch) {
           try {
-            findingsJson = JSON.parse(jsonMatch[0]);
-          } catch (e) {
+            findingsJson = JSON.parse(jsonMatch[0]) as Finding[];
+          } catch {
             findingsJson = [];
           }
         }
@@ -1083,7 +1125,7 @@ Provide your analysis in two parts:
     // This is highly detailed and generates exact compliant-related audits based on uploaded files
     if (findingsJson.length === 0 || !reportMarkdown) {
       // Analyze text of files to generate real findings
-      const findingsList: any[] = [];
+      const findingsList: Finding[] = [];
       let totalScore = 100;
 
       // Rule 1: Check POL-HHA-004 OASIS 5-day admission window
@@ -1233,7 +1275,7 @@ All source evidence files have been registered, copied into review workspace fol
 
 ### Stage B: Source Map
 The following evidence topology was resolved mapping physical files to compliance standards:
-${manifest.files.map((f: any, i: number) => `- **[SRC-${i+1}]**: \`${f.filename}\` (SHA256: \`${f.sha256.substring(0, 16)}...\`) -> Mapped to CMS/ACHC standards.`).join('\n')}
+${manifest.files.map((f, i) => `- **[SRC-${i+1}]**: \`${f.filename}\` (SHA256: \`${f.sha256.substring(0, 16)}...\`) -> Mapped to CMS/ACHC standards.`).join('\n')}
 
 ### Stage C: Scope Confirmation
 Review bounds are restricted to the local files listed in the manifest. All search gateways, Google Connectors, and public web-citation APIs are turned **OFF** to preserve PHI safety bounds.
@@ -1319,7 +1361,7 @@ This electronic record serves as defensive proof of active, controlled audit tra
             } else if (para.startsWith('### ')) {
               return `<h3 class="text-sm font-medium text-brand-teal-600 mt-4 mb-1">${para.replace('### ', '')}</h3>`;
             } else if (para.startsWith('- ') || para.startsWith('* ')) {
-              const listItems = para.split('\n').map(li => `<li class="text-xs text-brand-neutral-500 ml-4 list-disc py-0.5">${li.replace(/^[\-\*]\s+/, '')}</li>`).join('');
+              const listItems = para.split('\n').map(li => `<li class="text-xs text-brand-neutral-500 ml-4 list-disc py-0.5">${li.replace(/^[-*]\s+/, '')}</li>`).join('');
               return `<ul class="my-2">${listItems}</ul>`;
             } else if (para.startsWith('> ')) {
               return `<blockquote class="border-l-4 border-brand-orange-500 pl-4 py-2 italic text-xs bg-brand-orange-50/50 my-2">${para.replace('> ', '')}</blockquote>`;
@@ -1339,7 +1381,7 @@ This electronic record serves as defensive proof of active, controlled audit tra
     fs.writeFileSync(findingsPath, findingsJson.map(f => JSON.stringify(f)).join('\n'));
 
     // Update manifest with reviewed statuses
-    manifest.files.forEach((f: any) => {
+    manifest.files.forEach((f) => {
       f.reviewStatus = 'Reviewed - Findings Logged';
     });
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
@@ -1464,7 +1506,7 @@ if (!isProd) {
   });
 } else {
   app.use(express.static('dist'));
-  app.get('*', (req, res) => {
+  app.get('*', (_req, res) => {
     res.sendFile(path.resolve('dist/index.html'));
   });
 }

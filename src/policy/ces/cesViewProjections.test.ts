@@ -9,7 +9,7 @@
  * Matches shapes from RepresentativeScreens / pageview screens.
  */
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 
 import {
   buildBoardLanes,
@@ -19,6 +19,8 @@ import {
   buildEvidenceRows,
   buildAuditRows,
   buildReportMetrics,
+  buildReportCards,
+  buildReportTrendBars,
   buildSprintSummary,
   getControlFromParams,
   getBucketFromParams,
@@ -29,6 +31,7 @@ import {
   FALLBACK_EVIDENCE_ROWS,
   FALLBACK_AUDIT_ROWS,
   FALLBACK_REPORT_METRICS,
+  FALLBACK_REPORT_CARDS,
 } from './cesViewProjections';
 import { V3_ExecutionUnitsSeed } from './data/V3_CES_SeedData';
 

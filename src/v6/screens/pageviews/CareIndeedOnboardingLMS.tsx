@@ -408,6 +408,8 @@ export const formatTime = (seconds: number): string => {
 const pct = (score: number, total: number): number =>
   total === 0 ? 0 : Math.round((score / total) * 100);
 
+const currentTimeMs = (): number => Date.now();
+
 const speakNarration = (text: string): void => {
   if (typeof window === "undefined" || !window.speechSynthesis) return;
   window.speechSynthesis.cancel();
@@ -4297,16 +4299,18 @@ const ModulePlayer: React.FC<{
   const [examSubmitted, setExamSubmitted] = useState(false);
   const [examScore, setExamScore] = useState(0);
   const [isNarrating, setIsNarrating] = useState(false);
-  const startTime = useRef(Date.now());
+  const startTime = useRef<number | null>(null);
 
   useEffect(() => {
+    startTime.current = currentTimeMs();
     return () => stopNarration();
-  }, []);
+  }, [moduleId]);
 
-  useEffect(() => {
+  const changePage = (updatePage: (currentPage: number) => number) => {
     setIsNarrating(false);
     stopNarration();
-  }, [currentPage]);
+    setCurrentPage(updatePage);
+  };
 
   if (!mod) {
     return (
@@ -4354,7 +4358,8 @@ const ModulePlayer: React.FC<{
     setExamSubmitted(true);
 
     if (score >= mod.passScore) {
-      const elapsed = Math.round((Date.now() - startTime.current) / 1000);
+      const completedAt = currentTimeMs();
+      const elapsed = Math.round((completedAt - (startTime.current ?? completedAt)) / 1000);
       const attemptNum = (progress.examAttempts[moduleId]?.length || 0) + 1;
       onComplete({
         moduleId,
@@ -4367,12 +4372,12 @@ const ModulePlayer: React.FC<{
       try {
         const j = useJourneyStore.getState();
         j.recordLearnerCompletion(j.currentEmployeeId, moduleId, true, score);
-      } catch (e) {}
+      } catch {}
     } else {
       try {
         const j = useJourneyStore.getState();
         j.recordLearnerCompletion(j.currentEmployeeId, moduleId, false, score);
-      } catch (e) {}
+      } catch {}
     }
   };
 
@@ -4531,14 +4536,14 @@ const ModulePlayer: React.FC<{
         <button
           style={{ ...styles.btn, ...styles.btnOutline, flex: 1, opacity: currentPage === 0 ? 0.4 : 1 }}
           disabled={currentPage === 0}
-          onClick={() => setCurrentPage((p) => p - 1)}
+          onClick={() => changePage((p) => p - 1)}
         >
           ← Previous
         </button>
         {currentPage < totalPages - 1 ? (
           <button
             style={{ ...styles.btn, ...styles.btnPrimary, flex: 1 }}
-            onClick={() => setCurrentPage((p) => p + 1)}
+            onClick={() => changePage((p) => p + 1)}
           >
             Next →
           </button>

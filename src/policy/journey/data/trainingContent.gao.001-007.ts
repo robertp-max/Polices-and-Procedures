@@ -2,9 +2,6 @@
 
 import type { ModuleTraining } from './trainingContent.types';
 
-const NAV_BULLETS = ["Single-card view","Audio narration on every card","Challenges required to advance","80% to pass final test"];
-const NAV_NARRATION = "One card at a time. Audio narration on every card. Challenges must be completed before you continue. The final test requires eighty percent to pass.";
-const NAV_BODY = "You will move through one card at a time. Use Next and Previous to navigate. Your progress, time on each card, and challenge responses are tracked for compliance. Skipping cards is not allowed.";
 
 export const GAO_TRAININGS_001_007: ModuleTraining[] = [
   {
