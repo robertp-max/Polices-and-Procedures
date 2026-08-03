@@ -17,7 +17,21 @@
 | `79f25bd4` | feat(reception): add post-login reception launcher and EHR handoff |
 | `2aca52cf` | docs(ehr): add development inventory and UI/UX discovery plan |
 | `e0c678ed` | chore(apps): vendor static EHR prototype mirror for local 5191 handoff |
-| *(inventory commit follows)* | docs: record local app surfaces merge inventory 2026-08-03 |
+| `5af4f6fd` | docs: record local app surfaces merge inventory 2026-08-03 |
+
+### Build / QA snapshot (merge worktree)
+
+| Check | Result |
+| --- | --- |
+| `npm run build` (`tsc -b && vite build`) | **PASS** |
+| Sibling `src/**/*.js` shadows | None |
+| Secrets in `apps/ehr-prototype-static` | None found |
+| Fable `EHR_Prototype` in diff | **Not included** |
+| Connect / Journey sources in diff | **Not included** |
+| Drive health `http://127.0.0.1:5188/api/calendar/evidence/health` | HTTP 200, `ok: true`, `drive.reachable: true` (env on main) |
+| EHR static `http://127.0.0.1:5191/` | HTTP 200, title Care Indeed Home Health EHR Prototype |
+| Reception preview `http://127.0.0.1:5179/reception` | HTTP 200 |
+| Branch tip | `5af4f6fd` (see also any later inventory polish commits) |
 
 ## What was merged (copy sources)
 
