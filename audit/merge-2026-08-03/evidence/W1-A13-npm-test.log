@@ -1,0 +1,1895 @@
+
+> ci-policy-app@0.0.0 test
+> vitest run
+
+
+ RUN  v3.2.6 C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/merge-local-app-surfaces-2026-08-03
+
+ Γ£ô src/policy/brad/intake/adapters/qapiIntakeAdapter.test.ts (6 tests) 7ms
+ Γ£ô src/v6/screens/packets/approval/approval.test.ts (3 tests) 4ms
+stderr | src/policy/evidence/driveFirst/serverDriveLockAndCalendar.test.ts > assertDriveEvidenceLock ΓÇö approved values and fail-closed drift > impersonation mode with the approved target passes WITHOUT any key file
+[env] Google service-account JSON not found at: C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\evidence\driveFirst\__fixtures__\does-not-exist.json
+      Calendar routes will return auth errors until this file is
+      provided. Compliance Intelligence (IA) does not require it.
+
+ Γ£ô src/policy/packets/registries/policies.test.ts (14 tests) 7ms
+stderr | src/policy/evidence/driveFirst/serverDriveLockAndCalendar.test.ts > assertDriveEvidenceLock ΓÇö approved values and fail-closed drift > impersonation mode without a target fails closed
+[env] Google service-account JSON not found at: C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\evidence\driveFirst\__fixtures__\does-not-exist.json
+      Calendar routes will return auth errors until this file is
+      provided. Compliance Intelligence (IA) does not require it.
+
+ Γ£ô src/policy/packets/contracts/stateMachines.test.ts (26 tests) 9ms
+stderr | src/policy/evidence/driveFirst/serverDriveLockAndCalendar.test.ts > assertDriveEvidenceLock ΓÇö approved values and fail-closed drift > impersonation mode fails closed when the packet folder id is overridden away from the lock
+[env] Google service-account JSON not found at: C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\evidence\driveFirst\__fixtures__\does-not-exist.json
+      Calendar routes will return auth errors until this file is
+      provided. Compliance Intelligence (IA) does not require it.
+
+Γû╢ eCIgn Path B Phase 1 ΓÇö canonical artifact identity
+  Γ£ö 1. accepts only the actual Care Indeed form PDF as canonical signable artifact (4.7425ms)
+  Γ£ö 2. rejects markdown/html/text/generic-template artifact kinds (0.2474ms)
+Γ£ö eCIgn Path B Phase 1 ΓÇö canonical artifact identity (5.8848ms)
+Γû╢ eCIgn Path B Phase 1 ΓÇö presented vs signed distinction
+  Γ£ö 3. presented and signed require different version IDs (0.241ms)
+  Γ£ö 4. signed version must reference the exact presentedArtifactVersionId (0.0908ms)
+  Γ£ö 5. subsequent signed version must reference the prior signed chain tip (0.1748ms)
+  Γ£ö 6. first signed version still preserves its presentation-snapshot link (0.0624ms)
+  Γ£ö 27. presented version cannot contain signed-only fields (0.1569ms)
+  Γ£ö 28. signed version cannot omit signer/sequence/immutableAt (0.148ms)
+  Γ£ö 29. previous-version chain cannot point to itself (0.094ms)
+Γ£ö eCIgn Path B Phase 1 ΓÇö presented vs signed distinction (1.2416ms)
+Γû╢ eCIgn Path B Phase 1 ΓÇö hashes, byte length, sequence
+  Γ£ö 7. sha256 format is strict and byteLength must be positive (0.1878ms)
+  Γ£ö 8. signatureSequence is 1-based, strictly increasing, gap-free, unique (0.1115ms)
+  Γ£ö 9. sequence zero and duplicate sequence values are rejected (0.0876ms)
+  Γ£ö 10. formInstanceId cannot change after the first signature (0.0565ms)
+  Γ£ö 11. stale chain-tip input is rejected by pure contract validation (0.0406ms)
+Γ£ö eCIgn Path B Phase 1 ΓÇö hashes, byte length, sequence (0.5823ms)
+Γû╢ eCIgn Path B Phase 1 ΓÇö tiers, permissions, self-approval
+  Γ£ö 12. required signer tier cannot be skipped (0.0874ms)
+  Γ£ö 13. lower permission tier cannot satisfy a higher required tier (0.0995ms)
+  Γ£ö 14. self-approval is rejected when the hierarchy snapshot forbids it (0.0653ms)
+Γ£ö eCIgn Path B Phase 1 ΓÇö tiers, permissions, self-approval (0.3015ms)
+Γû╢ eCIgn Path B Phase 1 ΓÇö lock eligibility & replica parity
+  Γ£ö 15. locked is rejected without canonical persistence metadata (0.1471ms)
+  Γ£ö 16. locked is rejected without Drive parity (0.0634ms)
+  Γ£ö 17. locked is rejected without Evidence Center parity (0.0659ms)
+  Γ£ö 18. locked is rejected without metadata/audit completion (0.0452ms)
+  Γ£ö 19. Drive/Evidence links alone do not satisfy parity (0.0644ms)
+  Γ£ö 20. replica sha mismatch produces mismatch / recovery-required eligibility (0.075ms)
+  Γ£ö 21. canonical locator cannot be a public Drive URL (0.1239ms)
+Γ£ö eCIgn Path B Phase 1 ΓÇö lock eligibility & replica parity (0.6812ms)
+Γû╢ eCIgn Path B Phase 1 ΓÇö audit, retention, idempotency, lock terminality
+  Γ£ö 22. audit envelope rejects arbitrary/free-text/PHI-shaped properties (0.3946ms)
+  Γ£ö 23. audit envelope excludes signature image / form bytes (0.5639ms)
+  Γ£ö 24. retention policy is required and cannot be a hardcoded-duration substitute (0.2409ms)
+  Γ£ö 25. idempotency keys are required per write operation (0.0712ms)
+  Γ£ö 26. failure/retry contract preserves the same artifactVersionId (0.0668ms)
+  Γ£ö 30. locked is terminal except an append-only approved disposition record (0.0601ms)
+Γ£ö eCIgn Path B Phase 1 ΓÇö audit, retention, idempotency, lock terminality (1.4847ms)
+stderr | src/policy/evidence/driveFirst/serverDriveLockAndCalendar.test.ts > assertDriveEvidenceLock ΓÇö approved values and fail-closed drift > impersonation mode passes when the configured packet folder equals the locked id
+[env] Google service-account JSON not found at: C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\evidence\driveFirst\__fixtures__\does-not-exist.json
+      Calendar routes will return auth errors until this file is
+      provided. Compliance Intelligence (IA) does not require it.
+
+stderr | src/policy/evidence/driveFirst/serverDriveLockAndCalendar.test.ts > assertDriveEvidenceLock ΓÇö approved values and fail-closed drift > impersonation of a non-approved identity fails closed
+[env] Google service-account JSON not found at: C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\evidence\driveFirst\__fixtures__\does-not-exist.json
+      Calendar routes will return auth errors until this file is
+      provided. Compliance Intelligence (IA) does not require it.
+
+ Γ£ô src/policy/help-center/threads/threadStore.test.ts (15 tests) 24ms
+ Γ£ô src/policy/packets/analysis/kpi/kpi.test.ts (14 tests) 15ms
+ Γ£ô src/policy/security/identity/userAssignmentsStore.test.ts (14 tests) 55ms
+ Γ¥» src/policy/journey/nolanTutorResponder.acceptance.test.ts (22 tests | 2 failed) 96ms
+   ├ù composeNolanTutorAnswer ΓÇö routing > URGENT SAFETY FIRST: danger typed into the tutor gets safety guidance, never catalog search 50ms
+     ΓåÆ expected 'fallback' to be 'urgent-passthrough' // Object.is equality
+   Γ£ô composeNolanTutorAnswer ΓÇö routing > identity: "who are you" / "what does nolan stand for" answer as Nolan 9ms
+   Γ£ô composeNolanTutorAnswer ΓÇö routing > module by id: GAO-012 answer reflects the LIVE catalog (title, threshold, policy refs) 1ms
+   Γ£ô composeNolanTutorAnswer ΓÇö routing > unknown module id is honest, with format hints 1ms
+   Γ£ô composeNolanTutorAnswer ΓÇö routing > role map: "what modules does an RN need" summarizes the RN journey 1ms
+   Γ£ô composeNolanTutorAnswer ΓÇö routing > role map without a role asks which role instead of falling through 1ms
+   Γ£ô composeNolanTutorAnswer ΓÇö routing > logistics: quiz failure rules state 80% / 3-business-day retake / 3 attempts 1ms
+   Γ£ô composeNolanTutorAnswer ΓÇö routing > compliance territory refers warmly to Brad 1ms
+   Γ£ô composeNolanTutorAnswer ΓÇö routing > gibberish gets the honest catalog fallback 0ms
+   Γ£ô composeNolanTutorAnswer ΓÇö lesson context & personalization > answers a clarifying question by quoting THIS lesson 1ms
+   Γ£ô composeNolanTutorAnswer ΓÇö lesson context & personalization > is honest when the lesson does not cover the question ΓÇö and never blocks 0ms
+   ├ù composeNolanTutorAnswer ΓÇö lesson context & personalization > precise intents still outrank lesson retrieval (module id, urgent safety) 1ms
+     ΓåÆ expected 'lesson-clarify' to be 'urgent-passthrough' // Object.is equality
+   Γ£ô composeNolanTutorAnswer ΓÇö lesson context & personalization > greets the learner by first name; identity text stays canonical 0ms
+   Γ£ô composeNolanTutorAnswer ΓÇö lesson context & personalization > "what's next" uses role + completed modules when provided 0ms
+   Γ£ô composeNolanTutorAnswer ΓÇö lesson context & personalization > "what's next" without context asks for the role instead of guessing 0ms
+   Γ£ô composeNolanTutorAnswer ΓÇö personal plan (deadlines from first day) > new hire on day 2: orientation due by day 5, role track, policies to read 18ms
+   Γ£ô composeNolanTutorAnswer ΓÇö personal plan (deadlines from first day) > day 12 with GAO unfinished: overdue orientation flagged, week-2 track due with dates 2ms
+   Γ£ô composeNolanTutorAnswer ΓÇö personal plan (deadlines from first day) > annual requirements section cites HR-TD-001 and Dec 31 1ms
+   Γ£ô composeNolanTutorAnswer ΓÇö personal plan (deadlines from first day) > expiring license and uncleared Appendix F surface as document flags 1ms
+   Γ£ô composeNolanTutorAnswer ΓÇö personal plan (deadlines from first day) > without role/first-day context it asks instead of guessing 0ms
+   Γ£ô composeNolanTutorAnswer ΓÇö personal plan (deadlines from first day) > "what's next" one-liner still wins over the full plan 0ms
+   Γ£ô composeNolanTutorAnswer ΓÇö wording guardrails > never claims to be another model/provider or human; never uses attestation wording 5ms
+ Γ£ô src/policy/evidence/driveFirst/driveFirst.test.ts (26 tests) 27ms
+Γû╢ Phase 2B ΓÇö replica parity (independent sha recompute)
+  Γ£ö Drive parity is verified when replica bytes hash equal to canonical (39.2138ms)
+  Γ£ö Evidence Center parity is verified the same way (0.4774ms)
+  Γ£ö a corrupted replica yields mismatch + recovery-required (not verified) (0.2705ms)
+  Γ£ö a link/id ALONE never satisfies parity (0.163ms)
+Γ£ö Phase 2B ΓÇö replica parity (independent sha recompute) (53.2241ms)
+Γû╢ Phase 2B ΓÇö failure & idempotent recovery
+  Γ£ö publish failure ΓåÆ failed parity; recover + retry ΓåÆ verified; idempotent ref (0.3984ms)
+  Γ£ö permission denial surfaces permission_denied without claiming parity (0.8207ms)
+Γ£ö Phase 2B ΓÇö failure & idempotent recovery (1.382ms)
+Γû╢ Phase 2B ΓÇö lock-eligibility assembly
+  Γ£ö all verified + complete ΓåÆ lockable (0.8913ms)
+  Γ£ö blocks lock when Drive parity is not verified (0.4181ms)
+Γ£ö Phase 2B ΓÇö lock-eligibility assembly (1.5992ms)
+Γû╢ Phase 2B ΓÇö eager replication + multi-signer byte lineage
+  Γ£ö eager replication of a freshly-frozen version verifies on both replicas (0.7307ms)
+  Γ£ö A->B->C lineage preserves every prior signed version retrievably (0.3759ms)
+Γ£ö Phase 2B ΓÇö eager replication + multi-signer byte lineage (1.2187ms)
+Γû╢ Phase 2-live B ΓÇö Drive sandbox publisher (fake client)
+  Γ£ö uploads only to the approved sandbox folder with a TRAINING-labeled name (29.5537ms)
+  Γ£ö verifies sha256 parity on read-back (0.9174ms)
+  Γ£ö corrupted upload ΓåÆ mismatch + recovery required (1.0649ms)
+  Γ£ö upload failure / permission denial ΓåÆ failed parity (never claims success) (0.3487ms)
+  Γ£ö publish is idempotent per version (no duplicate upload) (0.1834ms)
+  Γ£ö constructor rejects an empty sandbox folder id (0.2923ms)
+  Γ£ö buildSandboxUploadResult captures the audit-friendly fields (0.3733ms)
+Γ£ö Phase 2-live B ΓÇö Drive sandbox publisher (fake client) (34.1358ms)
+Γû╢ Phase 2-live B ΓÇö live selector (Gate B)
+  Γ£ö not-ready config throws LiveSandboxNotReadyError (0.6377ms)
+  Γ£ö fake-mode config (default) is not live ΓåÆ throws (0.1977ms)
+  Γ£ö ready config + injected client returns a Drive sandbox publisher (no upload yet) (0.263ms)
+Γ£ö Phase 2-live B ΓÇö live selector (Gate B) (1.3029ms)
+ Γ£ô src/policy/journey/utils/escalation.test.ts (17 tests) 21ms
+stdout | src/policy/ces/cesViewProjections.test.ts
+[CES] Dev helper ready: window.triggerCESCalendarSwimlaneProcess() to manually attach swimlanes to generated events
+
+stdout | src/v6/screens/packets/eventSelector/eventSelector.test.ts
+[CES] Dev helper ready: window.triggerCESCalendarSwimlaneProcess() to manually attach swimlanes to generated events
+
+ Γ£ô src/policy/admission/admissionSignerModel.test.ts (15 tests) 5ms
+Γû╢ ACHC annual field worker training calculations
+  Γ£û grades submitted quiz answers against correct answers and 80% standard (3.6484ms)
+  Γ£ö reports assigned M01-M12 with no activity as 0% and not_started (7.7161ms)
+  Γ£ö keeps lessons-viewed-only activity in progress and not complete (0.9477ms)
+  Γ£ö does not complete a module when score is below threshold (0.381ms)
+  Γ£ö preserves failed attempts and allows a later passing attempt to satisfy the module (0.3441ms)
+  Γ£ö does not mark the bundle compliant when certificate evidence is missing (8.3055ms)
+  Γ£ö does not mark the bundle compliant when post-test artifact is missing (3.0273ms)
+  Γ£ö marks the bundle compliant only when all M01-M12 pass with certificate and post-test evidence (2.8773ms)
+  Γ£ö calculates annual due date from completed_at and flags overdue records (0.4452ms)
+  Γ£ö dashboard-style totals match raw employee/module records exactly (2.2061ms)
+Γ£û ACHC annual field worker training calculations (31.2263ms)
+ Γ£ô src/policy/packets/analysis/triggers/triggers.test.ts (15 tests) 16ms
+Γû╢ CES one-pass View Projections (board / events / tasks / calendar / evidence / audit / report)
+  Γ£ö FALLBACK_BOARD_LANES is non-empty with correct shape and design counts (56.0162ms)
+  Γ£ö buildBoardLanes returns non-empty lanes with shape matching BoardLaneData (1.5869ms)
+  Γ£ö buildBoardLanes seed-driven path yields counts derived from units (0.8272ms)
+  Γ£ö FALLBACK_EVENT_LANES non-empty, 4 columns, correct shape (0.314ms)
+  Γ£ö buildEventLanes returns shape and non-empty (0.5535ms)
+  Γ£ö FALLBACK_TASK_LANES non-empty 4 lanes + shape (0.1399ms)
+  Γ£ö buildTaskLanes non-empty + fallback covered (0.845ms)
+  Γ£ö FALLBACK_CES_CALENDAR_EVENTS non-empty with required fields (0.2082ms)
+  Γ£ö buildCalendarEvents shape + seed driven (99.5729ms)
+  Γ£ö buildCalendarEvents uses real dates from V3 seed dueDate (not synthetic fake days) (0.8294ms)
+  Γ£ö build* cards use real seed data fields (domain/awaiting/meta/missing) not only FALLBACK (0.7128ms)
+  Γ£ö buildCalendarEvents projects events from regulatory + units, correct owners/status (0.9344ms)
+  Γ£ö FALLBACK_EVIDENCE_ROWS + buildEvidenceRows shape and non-empty (0.648ms)
+  Γ£ö FALLBACK_AUDIT_ROWS + buildAuditRows (0.6335ms)
+  Γ£ö FALLBACK_REPORT_METRICS + buildReportMetrics shape/counts (0.3143ms)
+  Γ£ö build* fallback when empty seed input returns FALLBACK content (0.1048ms)
+  Γ£ö seed counts are internally consistent (non-negative) (0.421ms)
+  Γ£ö getControlFromParams extracts control or ref (Phase 2 deep link) (0.5142ms)
+  Γ£ö getBucketFromParams extracts bucket for events-board (Phase 2 deep link) (0.1665ms)
+  Γ£ö buildSprintSummary returns non-negative counts; empty seed -> design-parity fallback (0.2493ms)
+  Γ£û buildReportCards + buildReportTrendBars use real V3 seed or FALLBACK; produce correct shapes (0.2126ms)
+Γ£û CES one-pass View Projections (board / events / tasks / calendar / evidence / audit / report) (171.8374ms)
+ Γ£ô src/auth/cog1Auth.test.tsx (16 tests) 795ms
+Γû╢ Phase 2A ΓÇö canonical write-once store
+  Γ£ö putOnce stores bytes with a recomputable sha256 + non-public canonical locator (6.4949ms)
+  Γ£ö enforces write-once: a second putOnce for the same id throws overwrite_forbidden (0.5167ms)
+  Γ£ö rejects empty bytes (0.1174ms)
+  Γ£ö throws not_found for unknown ids (0.181ms)
+  Γ£ö recompute-on-read equals the recorded sha (server-side integrity) (0.1138ms)
+  Γ£ö returns byte COPIES so external mutation cannot tamper the stored artifact (0.1168ms)
+Γ£ö Phase 2A ΓÇö canonical write-once store (8.6014ms)
+Γû╢ Phase 2A ΓÇö byte-freeze (presented)
+  Γ£ö freezes presented PDF bytes into a contract-valid PresentedArtifactVersion (0.6108ms)
+  Γ£ö rejects non-PDF bytes but PRESERVES a defective-but-real PDF (0.1867ms)
+  Γ£ö is idempotent on identical re-freeze and rejects changed bytes for the same id (0.181ms)
+Γ£ö Phase 2A ΓÇö byte-freeze (presented) (1.1811ms)
+Γû╢ Phase 2A ΓÇö byte-freeze (signed) + integrity
+  Γ£ö signs only after the presentation is frozen, producing a contract-valid SignedArtifactVersion (0.3732ms)
+  Γ£ö verifyStoredIntegrity is true for the recorded sha and false for a mismatched claim (0.1472ms)
+Γ£ö Phase 2A ΓÇö byte-freeze (signed) + integrity (0.5899ms)
+ Γ£ô src/policy/packets/registries/eventPacketMap.test.ts (10 tests) 30ms
+ Γ£ô src/policy/packets/qapi/forms.test.ts (11 tests) 17ms
+Γû╢ Phase 2 ref ΓÇö signature application (new immutable version, source not re-rendered)
+  Γ£ö applies a signature producing a new signed version; presented source is untouched (5.8406ms)
+  Γ£ö chains multiple signers (S1 then S2 over S1) keeping every prior version intact (0.4422ms)
+Γ£ö Phase 2 ref ΓÇö signature application (new immutable version, source not re-rendered) (7.1631ms)
+Γû╢ Phase 2 ref ΓÇö restart/reconstruction from durable journal
+  Γ£ö rebuilds the store from its journal with bytes/hashes intact (0.2706ms)
+  Γ£ö still enforces write-once after reconstruction (0.344ms)
+Γ£ö Phase 2 ref ΓÇö restart/reconstruction from durable journal (0.7267ms)
+Γû╢ Phase 2 ref ΓÇö survey packet export
+  Γ£ö exports real signed artifacts + audit for a COMPLETE (locked) packet (0.3915ms)
+  Γ£ö refuses to export artifacts for an INCOMPLETE packet ("as good as not signed") (0.1379ms)
+Γ£ö Phase 2 ref ΓÇö survey packet export (0.6441ms)
+Γû╢ resolveCanonicalSignedPackages
+  Γ£ö returns exactly one canonical match after finalize (4.6018ms)
+  Γ£ö accepts signed_form_instance and kind=signed_package shapes (0.6009ms)
+  Γ£ö ignores superseded artifacts and the HHC session-only mirror (non-CES) (0.1355ms)
+  Γ£ö does not match a different form instance (0.0998ms)
+  Γ£ö de-duplicates the same artifact found across event aliases (0.1062ms)
+  Γ£ö canonical artifact with no Drive metadata requires pre-finalize evidenceHealth + publish (blocks until Drive config healthy) (0.1076ms)
+  Γ£ö successful Drive upload persists metadata onto the same artifact (no duplicate created) (0.0874ms)
+  Γ£ö artifact with existing driveFileId does not re-upload (idempotent) (0.0865ms)
+  Γ£ö artifact without driveFileId is returned by resolver but pre-finalize health + finalDriveSuccess gate blocks (exact "Evidence finalization blocked" error) (0.0936ms)
+Γ£ö resolveCanonicalSignedPackages (6.8839ms)
+ Γ£ô src/policy/packets/analysis/trends/trends.test.ts (4 tests) 4ms
+ Γ£ô src/policy/packets/contracts/identity.test.ts (11 tests) 4ms
+ Γ£ô src/policy/helpCenter/__tests__/helpCenterCoverage.test.ts (17 tests) 19ms
+Γû╢ Path B retention ΓÇö classification & evidence validity
+  Γ£ö only a locked chain is complete/retained; everything else expires (4.9168ms)
+  Γ£ö only a locked chain is valid evidence ("incomplete = as good as not signed") (0.1466ms)
+Γ£ö Path B retention ΓÇö classification & evidence validity (5.9554ms)
+Γû╢ Path B retention ΓÇö 90-day inactivity clock (default + configurable)
+  Γ£ö default expiry is 90 days from last activity (0.3247ms)
+  Γ£ö expiry window is configurable per policy (0.1223ms)
+  Γ£ö is expired only at/after the expiry instant (now is injected) (0.0842ms)
+  Γ£ö a new signature resets the inactivity clock (0.1185ms)
+Γ£ö Path B retention ΓÇö 90-day inactivity clock (default + configurable) (0.7986ms)
+Γû╢ Path B retention ΓÇö eligibility gate
+  Γ£ö locked ΓåÆ indefinite retention, no expiry (0.1789ms)
+  Γ£ö locked must not carry an expiry/incomplete state (0.1229ms)
+  Γ£ö non-locked cannot be marked indefinitely retained (0.0692ms)
+  Γ£ö non-locked must carry an expiry, consistent with the clock (0.1826ms)
+Γ£ö Path B retention ΓÇö eligibility gate (0.695ms)
+Γû╢ Path B retention ΓÇö archive is not valid evidence
+  Γ£ö an archived/expired incomplete chain can never be flagged valid evidence (0.1061ms)
+Γ£ö Path B retention ΓÇö archive is not valid evidence (0.1438ms)
+ Γ£ô src/policy/help-center/threads/threadMerge.test.ts (9 tests) 3ms
+stderr | src/policy/evidence/driveFirst/serverDriveLockAndCalendar.test.ts > Drive keyless impersonation and Calendar separation > Drive uses ADC + Impersonated(target) while Calendar keeps its key-file client
+{"t":"2026-08-03T20:32:35.640Z","level":"warn","msg":"google.drive.auth.config","warning":"A JSON credential file is configured but IGNORED: impersonation mode is keyless. Remove GOOGLE_APPLICATION_CREDENTIALS from production-shaped environments."}
+
+stdout | src/policy/evidence/driveFirst/serverDriveLockAndCalendar.test.ts > Drive keyless impersonation and Calendar separation > Drive uses ADC + Impersonated(target) while Calendar keeps its key-file client
+{"t":"2026-08-03T20:32:35.641Z","level":"info","msg":"google.drive.auth.ready","mode":"impersonation","targetPrincipal":"careindeed-drive-evidence@orbital-stage-443721-v1.iam.gserviceaccount.com","developmentOnly":"false","scopes":"https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.metadata.readonly https://www.googleapis.com/auth/drive.readonly","sharedDriveId":"0AMhwVb2RmU-fUk9PVA"}
+
+stdout | src/policy/evidence/driveFirst/serverDriveLockAndCalendar.test.ts > Drive keyless impersonation and Calendar separation > Drive uses ADC + Impersonated(target) while Calendar keeps its key-file client
+{"t":"2026-08-03T20:32:35.657Z","level":"info","msg":"google.calendar.auth.ready","calendarId":"test-calendar-id@group.calendar.google.com"}
+
+stdout | src/policy/evidence/driveFirst/serverDriveLockAndCalendar.test.ts > Drive keyless impersonation and Calendar separation > Calendar read path behaves as before and invokes no write method
+{"t":"2026-08-03T20:32:35.676Z","level":"info","msg":"google.calendar.auth.ready","calendarId":"test-calendar-id@group.calendar.google.com"}
+
+stdout | src/policy/evidence/driveFirst/serverDriveLockAndCalendar.test.ts > Drive keyless impersonation and Calendar separation > Calendar read path behaves as before and invokes no write method
+{"t":"2026-08-03T20:32:35.677Z","level":"info","msg":"google.calendar.list.ok","count":0,"start":"2026-01-01","end":"2026-01-31"}
+
+ Γ£ô src/policy/evidence/driveFirst/serverDriveLockAndCalendar.test.ts (17 tests) 3920ms
+   Γ£ô packet folder ΓÇö externalized, value unchanged > resolvePacketLibraryRoot still returns the canonical id while 01_CES is locked ΓÇö no Drive call  3068ms
+ Γ£ô src/policy/packets/render/render.test.ts (3 tests) 13ms
+ Γ¥» src/policy/qapi/qapi.test.ts (27 tests | 1 failed) 76ms
+   Γ£ô Phase 1 ΓÇö date window > May 7 meeting is INTERIM, capped at the meeting date (no final-Q2-with-June) 2ms
+   Γ£ô Phase 1 ΓÇö date window > a June source event on a May-7 packet triggers INVALID_DATE_WINDOW 10ms
+   Γ£ô Phase 1 ΓÇö date window > May-7 interim excludes post-May-7 events 0ms
+   Γ£ô Phase 1 ΓÇö date window > post-quarter (July) meeting reviewing Q2 is FINAL and includes full AprΓÇôJun 4ms
+   Γ£ô Phase 1 ΓÇö date window > parses messy dates and rejects invalid ones 1ms
+   Γ£ô Phase 2 ΓÇö validateQapiPacketForLock > passes a clean packet 3ms
+   Γ£ô Phase 2 ΓÇö validateQapiPacketForLock > blocks on "Please use Evidence Studio" 0ms
+   Γ£ô Phase 2 ΓÇö validateQapiPacketForLock > blocks on TBD required role 0ms
+   Γ£ô Phase 2 ΓÇö validateQapiPacketForLock > blocks on unconfirmed approver authority 0ms
+   Γ£ô Phase 2 ΓÇö validateQapiPacketForLock > blocks a rendered checkmark without a signer record (no fake signatures) 0ms
+   Γ£ô Phase 2 ΓÇö validateQapiPacketForLock > blocks when a required addendum was not generated 0ms
+   Γ£ô Phase 2 ΓÇö validateQapiPacketForLock > blocks when high-risk rollup missing 0ms
+   Γ£ô Phase 4 ΓÇö confidential personnel addendum > creates one action per trigger with the right review flags 0ms
+   Γ£ô Phase 4 ΓÇö confidential personnel addendum > uses staff ID when the clinician name is not authoritative 0ms
+   Γ£ô Phase 4 ΓÇö confidential personnel addendum > never fabricates a final disposition 0ms
+   Γ£ô Phase 4 ΓÇö confidential personnel addendum > reference exposes counts/hash but NOT personnel details 2ms
+   Γ£ô Phase 4 ΓÇö confidential personnel addendum > hash is deterministic for identical input 0ms
+   Γ£ô Phase 3 ΓÇö extraction over the generated mock dump > (dump present) 0ms
+   Γ£ô Phase 3 ΓÇö extraction over the generated mock dump > excludes post-meeting (June) events for a May-7 interim window 1ms
+   Γ£ô Phase 3 ΓÇö extraction over the generated mock dump > surfaces data-quality exceptions (does not hide messiness) 3ms
+   Γ£ô Phase 3 ΓÇö extraction over the generated mock dump > a final packet still flags any post-quarter event as INVALID_DATE_WINDOW 0ms
+   Γ£ô Phase 3 ΓÇö extraction over the generated mock dump > requires an addendum and it is non-empty (triggers exist in the dump) 1ms
+   Γ£ô Phase 5 ΓÇö rendered QAPI packet output > (dump present) 0ms
+   ├ù Phase 5 ΓÇö rendered QAPI packet output > May-7 packet is titled INTERIM and states the data-through date 30ms
+     ΓåÆ expected '<!doctype html><html><head><meta charΓÇª' to match /Interim Q2 2026 QAPI/
+   Γ£ô Phase 5 ΓÇö rendered QAPI packet output > contains NO unresolved placeholders 5ms
+   Γ£ô Phase 5 ΓÇö rendered QAPI packet output > references the sealed addendum but EXPOSES no personnel details 5ms
+   Γ£ô Phase 5 ΓÇö rendered QAPI packet output > renders real census numbers (numerator/denominator), not blanks 4ms
+ Γ£ô src/v6/screens/evidence/admissionBillingRouteBehavior.test.ts (13 tests) 5ms
+ Γ£ô src/policy/help-center/threads/bradThread.test.ts (7 tests) 7ms
+stderr | src/policy/ces/cesMasterControlAudit.test.ts
+[MasterControlInventory] Dataset fetch threw an error {
+  path: '/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  error: TypeError: Failed to parse URL from /data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+      at node:internal/deps/undici/undici:16416:13
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:19)
+      at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+      at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:34:39)
+      at Test.run (node:internal/test_runner/test:1113:7)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    [cause]: TypeError: Invalid URL: /data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL-impl.js:20:13)
+        at Object.exports.setup (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:54:12)
+        at new URL (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:115:22)
+        at new Request (node:internal/deps/undici/undici:10971:25)
+        at fetch (node:internal/deps/undici/undici:11891:25)
+        at fetch (node:internal/deps/undici/undici:16414:10)
+        at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)
+        at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:25)
+        at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:22)
+        at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:34:45)
+  }
+}
+
+stderr | src/policy/ces/cesMasterControlAudit.test.ts
+[MasterControlInventory] Dataset fetch threw an error {
+  path: '/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  error: TypeError: Failed to parse URL from /Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+      at node:internal/deps/undici/undici:16416:13
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:19)
+      at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+      at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:34:39)
+      at Test.run (node:internal/test_runner/test:1113:7)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    [cause]: TypeError: Invalid URL: /Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL-impl.js:20:13)
+        at Object.exports.setup (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:54:12)
+        at new URL (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:115:22)
+        at new Request (node:internal/deps/undici/undici:10971:25)
+        at fetch (node:internal/deps/undici/undici:11891:25)
+        at fetch (node:internal/deps/undici/undici:16414:10)
+        at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)
+        at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:25)
+        at processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+  }
+}
+
+stderr | src/policy/ces/cesMasterControlAudit.test.ts
+[MasterControlInventory] Dataset fetch threw an error {
+  path: '/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  error: TypeError: Failed to parse URL from /Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+      at node:internal/deps/undici/undici:16416:13
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:19)
+      at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+      at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:34:39)
+      at Test.run (node:internal/test_runner/test:1113:7)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    [cause]: TypeError: Invalid URL: /Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL-impl.js:20:13)
+        at Object.exports.setup (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:54:12)
+        at new URL (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:115:22)
+        at new Request (node:internal/deps/undici/undici:10971:25)
+        at fetch (node:internal/deps/undici/undici:11891:25)
+        at fetch (node:internal/deps/undici/undici:16414:10)
+        at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)
+        at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:25)
+        at processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+  }
+}
+
+stderr | src/policy/ces/cesMasterControlAudit.test.ts
+[MasterControlInventory] Dataset fetch threw an error {
+  path: '/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  error: TypeError: Failed to parse URL from /MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+      at node:internal/deps/undici/undici:16416:13
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:19)
+      at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+      at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:34:39)
+      at Test.run (node:internal/test_runner/test:1113:7)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    [cause]: TypeError: Invalid URL: /MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL-impl.js:20:13)
+        at Object.exports.setup (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:54:12)
+        at new URL (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:115:22)
+        at new Request (node:internal/deps/undici/undici:10971:25)
+        at fetch (node:internal/deps/undici/undici:11891:25)
+        at fetch (node:internal/deps/undici/undici:16414:10)
+        at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)
+        at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:25)
+        at processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+  }
+}
+[MasterControlInventory] Exhausted dataset fetch paths {
+  attemptedPaths: [
+    '/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+    '/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+    '/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+    '/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'
+  ]
+}
+
+Γû╢ CES one-pass Master Control Audit projection
+  Γ£ö provides fallback rows matching visual parity expectations (7 rows, MC- ids) with taxonomy and policy mappings (5.3398ms)
+  Γ£ö buildCesControlAuditView returns a well-shaped CesControlAuditView (7.8ms)
+  Γ£ö metrics derive reasonable high/material/low counts from rows (1.9576ms)
+  Γ£ö validateCesControlAuditView passes for valid views and rejects invalids (2.2852ms)
+  Γ£ö uses real 104-control inventory (when seed load succeeds) with full taxonomy + control-to-policy mappings in rows (2.0695ms)
+Γ£ö CES one-pass Master Control Audit projection (20.7149ms)
+stderr | src/policy/ces/cesMasterControlAudit.test.ts
+[MasterControlInventory] Dataset fetch threw an error {
+  path: '/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  error: TypeError: Failed to parse URL from /data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+      at node:internal/deps/undici/undici:16416:13
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:19)
+      at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+      at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:45:18)
+      at Test.run (node:internal/test_runner/test:1113:7)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    [cause]: TypeError: Invalid URL: /data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL-impl.js:20:13)
+        at Object.exports.setup (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:54:12)
+        at new URL (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:115:22)
+        at new Request (node:internal/deps/undici/undici:10971:25)
+        at fetch (node:internal/deps/undici/undici:11891:25)
+        at fetch (node:internal/deps/undici/undici:16414:10)
+        at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)
+        at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:25)
+        at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:22)
+        at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:45:24)
+  }
+}
+
+stderr | src/policy/ces/cesMasterControlAudit.test.ts
+[MasterControlInventory] Dataset fetch threw an error {
+  path: '/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  error: TypeError: Failed to parse URL from /Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+      at node:internal/deps/undici/undici:16416:13
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:19)
+      at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+      at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:45:18)
+      at Test.run (node:internal/test_runner/test:1113:7)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    [cause]: TypeError: Invalid URL: /Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL-impl.js:20:13)
+        at Object.exports.setup (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:54:12)
+        at new URL (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:115:22)
+        at new Request (node:internal/deps/undici/undici:10971:25)
+        at fetch (node:internal/deps/undici/undici:11891:25)
+        at fetch (node:internal/deps/undici/undici:16414:10)
+        at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)
+        at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:25)
+        at processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+  }
+}
+
+stderr | src/policy/ces/cesMasterControlAudit.test.ts
+[MasterControlInventory] Dataset fetch threw an error {
+  path: '/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  error: TypeError: Failed to parse URL from /Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+      at node:internal/deps/undici/undici:16416:13
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:19)
+      at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+      at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:45:18)
+      at Test.run (node:internal/test_runner/test:1113:7)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    [cause]: TypeError: Invalid URL: /Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL-impl.js:20:13)
+        at Object.exports.setup (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:54:12)
+        at new URL (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:115:22)
+        at new Request (node:internal/deps/undici/undici:10971:25)
+        at fetch (node:internal/deps/undici/undici:11891:25)
+        at fetch (node:internal/deps/undici/undici:16414:10)
+        at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)
+        at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:25)
+        at processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+  }
+}
+
+stderr | src/policy/ces/cesMasterControlAudit.test.ts
+[MasterControlInventory] Dataset fetch threw an error {
+  path: '/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  error: TypeError: Failed to parse URL from /MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+      at node:internal/deps/undici/undici:16416:13
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:19)
+      at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+      at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:45:18)
+      at Test.run (node:internal/test_runner/test:1113:7)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    [cause]: TypeError: Invalid URL: /MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL-impl.js:20:13)
+        at Object.exports.setup (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:54:12)
+        at new URL (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:115:22)
+        at new Request (node:internal/deps/undici/undici:10971:25)
+        at fetch (node:internal/deps/undici/undici:11891:25)
+        at fetch (node:internal/deps/undici/undici:16414:10)
+        at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)
+        at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:25)
+        at processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+  }
+}
+[MasterControlInventory] Exhausted dataset fetch paths {
+  attemptedPaths: [
+    '/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+    '/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+    '/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+    '/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'
+  ]
+}
+
+stderr | src/policy/ces/cesMasterControlAudit.test.ts
+[MasterControlInventory] Dataset fetch threw an error {
+  path: '/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  error: TypeError: Failed to parse URL from /data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+      at node:internal/deps/undici/undici:16416:13
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:19)
+      at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+      at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:51:18)
+      at Test.run (node:internal/test_runner/test:1113:7)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    [cause]: TypeError: Invalid URL: /data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL-impl.js:20:13)
+        at Object.exports.setup (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:54:12)
+        at new URL (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:115:22)
+        at new Request (node:internal/deps/undici/undici:10971:25)
+        at fetch (node:internal/deps/undici/undici:11891:25)
+        at fetch (node:internal/deps/undici/undici:16414:10)
+        at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)
+        at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:25)
+        at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:22)
+        at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:51:24)
+  }
+}
+
+stderr | src/policy/ces/cesMasterControlAudit.test.ts
+[MasterControlInventory] Dataset fetch threw an error {
+  path: '/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  error: TypeError: Failed to parse URL from /Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+      at node:internal/deps/undici/undici:16416:13
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:19)
+      at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+      at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:51:18)
+      at Test.run (node:internal/test_runner/test:1113:7)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    [cause]: TypeError: Invalid URL: /Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL-impl.js:20:13)
+        at Object.exports.setup (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:54:12)
+        at new URL (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:115:22)
+        at new Request (node:internal/deps/undici/undici:10971:25)
+        at fetch (node:internal/deps/undici/undici:11891:25)
+        at fetch (node:internal/deps/undici/undici:16414:10)
+        at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)
+        at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:25)
+        at processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+  }
+}
+
+stderr | src/policy/ces/cesMasterControlAudit.test.ts
+[MasterControlInventory] Dataset fetch threw an error {
+  path: '/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  error: TypeError: Failed to parse URL from /Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+      at node:internal/deps/undici/undici:16416:13
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:19)
+      at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+      at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:51:18)
+      at Test.run (node:internal/test_runner/test:1113:7)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    [cause]: TypeError: Invalid URL: /Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL-impl.js:20:13)
+        at Object.exports.setup (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:54:12)
+        at new URL (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:115:22)
+        at new Request (node:internal/deps/undici/undici:10971:25)
+        at fetch (node:internal/deps/undici/undici:11891:25)
+        at fetch (node:internal/deps/undici/undici:16414:10)
+        at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)
+        at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:25)
+        at processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+  }
+}
+
+stderr | src/policy/ces/cesMasterControlAudit.test.ts
+[MasterControlInventory] Dataset fetch threw an error {
+  path: '/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  error: TypeError: Failed to parse URL from /MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+      at node:internal/deps/undici/undici:16416:13
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:19)
+      at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+      at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:51:18)
+      at Test.run (node:internal/test_runner/test:1113:7)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    [cause]: TypeError: Invalid URL: /MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL-impl.js:20:13)
+        at Object.exports.setup (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:54:12)
+        at new URL (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:115:22)
+        at new Request (node:internal/deps/undici/undici:10971:25)
+        at fetch (node:internal/deps/undici/undici:11891:25)
+        at fetch (node:internal/deps/undici/undici:16414:10)
+        at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)
+        at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:25)
+        at processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+  }
+}
+[MasterControlInventory] Exhausted dataset fetch paths {
+  attemptedPaths: [
+    '/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+    '/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+    '/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+    '/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'
+  ]
+}
+
+stderr | src/policy/ces/cesMasterControlAudit.test.ts
+[MasterControlInventory] Dataset fetch threw an error {
+  path: '/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  error: TypeError: Failed to parse URL from /data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+      at node:internal/deps/undici/undici:16416:13
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:19)
+      at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+      at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:61:39)
+      at Test.run (node:internal/test_runner/test:1113:7)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    [cause]: TypeError: Invalid URL: /data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL-impl.js:20:13)
+        at Object.exports.setup (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:54:12)
+        at new URL (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:115:22)
+        at new Request (node:internal/deps/undici/undici:10971:25)
+        at fetch (node:internal/deps/undici/undici:11891:25)
+        at fetch (node:internal/deps/undici/undici:16414:10)
+        at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)
+        at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:25)
+        at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:22)
+        at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:61:45)
+  }
+}
+
+stderr | src/policy/ces/cesMasterControlAudit.test.ts
+[MasterControlInventory] Dataset fetch threw an error {
+  path: '/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  error: TypeError: Failed to parse URL from /Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+      at node:internal/deps/undici/undici:16416:13
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:19)
+      at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+      at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:61:39)
+      at Test.run (node:internal/test_runner/test:1113:7)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    [cause]: TypeError: Invalid URL: /Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL-impl.js:20:13)
+        at Object.exports.setup (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:54:12)
+        at new URL (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:115:22)
+        at new Request (node:internal/deps/undici/undici:10971:25)
+        at fetch (node:internal/deps/undici/undici:11891:25)
+        at fetch (node:internal/deps/undici/undici:16414:10)
+        at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)
+        at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:25)
+        at processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+  }
+}
+
+stderr | src/policy/ces/cesMasterControlAudit.test.ts
+[MasterControlInventory] Dataset fetch threw an error {
+  path: '/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  error: TypeError: Failed to parse URL from /Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+      at node:internal/deps/undici/undici:16416:13
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:19)
+      at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+      at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:61:39)
+      at Test.run (node:internal/test_runner/test:1113:7)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    [cause]: TypeError: Invalid URL: /Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL-impl.js:20:13)
+        at Object.exports.setup (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:54:12)
+        at new URL (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:115:22)
+        at new Request (node:internal/deps/undici/undici:10971:25)
+        at fetch (node:internal/deps/undici/undici:11891:25)
+        at fetch (node:internal/deps/undici/undici:16414:10)
+        at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)
+        at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:25)
+        at processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+  }
+}
+
+stderr | src/policy/ces/cesMasterControlAudit.test.ts
+[MasterControlInventory] Dataset fetch threw an error {
+  path: '/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+  error: TypeError: Failed to parse URL from /MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+      at node:internal/deps/undici/undici:16416:13
+      at processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:19)
+      at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+      at TestContext.<anonymous> (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.test.ts:61:39)
+      at Test.run (node:internal/test_runner/test:1113:7)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    [cause]: TypeError: Invalid URL: /MASTER_CONTROL_INVENTORY_DATA_MODEL.json
+        at new URLImpl (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL-impl.js:20:13)
+        at Object.exports.setup (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:54:12)
+        at new URL (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\node_modules\jsdom\node_modules\whatwg-url\lib\URL.js:115:22)
+        at new Request (node:internal/deps/undici/undici:10971:25)
+        at fetch (node:internal/deps/undici/undici:11891:25)
+        at fetch (node:internal/deps/undici/undici:16414:10)
+        at fetch (node:internal/bootstrap/web/exposed-window-or-worker:83:12)
+        at loadMasterControlInventorySeed (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\data\masterControlInventory.ts:178:25)
+        at processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at buildCesControlAuditView (C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03\src\policy\ces\cesMasterControlAudit.ts:68:16)
+  }
+}
+[MasterControlInventory] Exhausted dataset fetch paths {
+  attemptedPaths: [
+    '/data/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+    '/Builder/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+    '/Documentations/MASTER_CONTROL_INVENTORY_DATA_MODEL.json',
+    '/MASTER_CONTROL_INVENTORY_DATA_MODEL.json'
+  ]
+}
+
+stdout | src/v6/screens/packets/templateSelector.test.ts
+[CES] Dev helper ready: window.triggerCESCalendarSwimlaneProcess() to manually attach swimlanes to generated events
+
+ Γ£ô src/v6/screens/packets/eventSelector/eventSelector.test.ts (22 tests) 250ms
+Γû╢ Phase 2-live A ΓÇö sandbox config (default off, no secrets)
+  Γ£ö empty env ΓåÆ disabled, fake mode, no credential, no folder (4.6846ms)
+  Γ£ö enable flag flips mode to live-sandbox; credential stored as presence only (0.1614ms)
+  Γ£ö redactConfig emits booleans/mode only ΓÇö no secret material (0.1017ms)
+Γ£ö Phase 2-live A ΓÇö sandbox config (default off, no secrets) (5.854ms)
+Γû╢ Phase 2-live A ΓÇö live readiness gate (Gate B)
+  Γ£ö disabled config is not ready (0.364ms)
+  Γ£ö enabled but missing folder/credentials is not ready (0.1384ms)
+  Γ£ö fully configured live sandbox is ready (0.0761ms)
+Γ£ö Phase 2-live A ΓÇö live readiness gate (Gate B) (0.7284ms)
+Γû╢ Phase 2-live A ΓÇö gated selector (fake default, live not wired)
+  Γ£ö default (fake) returns a functional fake publisher (0.2895ms)
+  Γ£ö live mode that is NOT ready throws LiveSandboxNotReadyError with issues (0.3313ms)
+  Γ£ö live mode that IS ready still throws LiveAdapterNotImplementedError (no Google wiring in subphase A) (0.1315ms)
+Γ£ö Phase 2-live A ΓÇö gated selector (fake default, live not wired) (0.8971ms)
+ Γ£ô src/policy/packets/registries/registry.test.ts (9 tests) 9ms
+stderr | src/v6/screens/packets/workspace/workspace.test.ts > WorkspaceShell packet workspace > submits an authorized narrative edit through the tab framework without Brad
+Removing a style property during rerender (borderColor) when a conflicting property is set (border) can lead to styling bugs. To avoid this, don't mix shorthand and non-shorthand properties for the same value; instead, replace the shorthand with separate values.
+
+ Γ£ô src/policy/brad/intake/adapters/qapiIntakeAdapter.rawText.test.ts (35 tests) 1662ms
+   Γ£ô generateQapiPacketPreview ΓÇö FULL packet from an unstructured dump > renders the full survey packet + Source Derivation appendix (never a thin draft)  662ms
+   Γ£ô generateQapiPacketPreview ΓÇö dump-and-go multi-quarter (auto-generate all) > with no quarter picked, generates a clean packet for EVERY quarter (concatenated)  647ms
+   Γ£ô generateQapiPacketPreview ΓÇö dump-and-go multi-quarter (auto-generate all) > with a quarter explicitly picked, generates ONLY that quarter  329ms
+ Γ£ô src/v6/screens/packets/workspace/workspace.test.ts (6 tests) 918ms
+   Γ£ô WorkspaceShell packet workspace > renders the FR-018 three-panel workspace with renderer-backed preview and four owned tabs  324ms
+ Γ£ô src/policy/packets/editing/impact.test.ts (2 tests) 4ms
+ Γ£ô src/v6/protectedVisuals.test.ts (5 tests) 3ms
+ Γ£ô src/policy/packets/registries/crossReferenceIntegrity.test.ts (3 tests) 4ms
+ Γ£ô src/policy/help-center/threads/threadView.test.ts (6 tests) 3ms
+ Γ£ô src/auth/bypass.test.ts (19 tests) 3ms
+ Γ£ô src/policy/evidence/intake/fileParsing.test.ts (5 tests) 3ms
+ Γ£ô src/policy/packets/architecture/invariants.test.ts (10 tests) 6ms
+ Γ£ô src/policy/help-center/threads/threadTopicKey.test.ts (6 tests) 4ms
+Γû╢ eCIgn Path B ΓÇö Phase 2 runtime specs (all reference-implemented; live integration deferred)
+  Γ£ö is fully reference-implemented at the contract level (4.7026ms)
+Γ£ö eCIgn Path B ΓÇö Phase 2 runtime specs (all reference-implemented; live integration deferred) (5.4442ms)
+ Γ£ô src/policy/help-center/threads/threadPhiGuard.test.ts (5 tests) 4ms
+ Γ£ô src/policy/packets/editing/diffRoute.test.ts (2 tests) 17ms
+ Γ£ô src/policy/packets/testing/coverageMatrix.test.ts (15 tests) 5ms
+ Γ£ô src/policy/journey/components/advanced/QapiTrainingPanel.test.tsx (1 test) 1459ms
+   Γ£ô QapiTrainingPanel narration gate > unlocks the lesson challenge only after narration ends and guided content is opened  1457ms
+ Γ£ô src/policy/data/bradMandatedEventIntakes.generated.test.ts (7 tests) 17ms
+Γû╢ toCanonicalRoleKey
+  Γ£ö folds admin-family labels and keys to a single canonical key (5.452ms)
+  Γ£ö keeps distinct roles distinct via their own slug (0.1948ms)
+  Γ£ö returns empty for unresolvable input (0.1208ms)
+Γ£ö toCanonicalRoleKey (6.6814ms)
+Γû╢ rolesMatchForLock
+  Γ£ö treats super_admin key and Administrator label as the same authority (0.1198ms)
+  Γ£ö blocks a genuine change between two known, different authorities (0.0768ms)
+  Γ£ö does not block when either side is unresolvable (0.0751ms)
+Γ£ö rolesMatchForLock (0.4046ms)
+ Γ£ô src/policy/admission/patientAdmissionPacket.test.ts (28 tests) 5ms
+ Γ£ô src/policy/evidence/signerDirectory.test.ts (3 tests) 2ms
+ Γ£ô src/policy/data/masterControlInventory.test.tsx (14 tests) 3375ms
+   Γ£ô master control dossiers > opens the Control Dossier modal when a row is clicked  1163ms
+   Γ£ô master control dossiers > expands HIPAA NPP and Advance Directive required-document cards inline  701ms
+   Γ£ô master control dossiers > expands every Batch 1 CTRL-001 required-document card inline with body copy  920ms
+   Γ£ô master control dossiers > renders verification and sign-off log support fields without fake completion  495ms
+ Γ£ô src/policy/packets/architecture/architecture.test.ts (25 tests) 1081ms
+   Γ£ô architecture rules against current worktree > R1 no-new-page-renderers: passes (legacy allowlisted)  382ms
+   Γ£ô architecture rules against current worktree > runAllArchitectureRules: zero failures on current tree  460ms
+Γû╢ policy corpus seed integrity
+  Γ£ö is non-empty with unique, well-formed, domain-readable ids (6.5917ms)
+  Γ£ö every policy carries a non-empty title (0.3141ms)
+  Γ£ö lifecycle seed resolves to the canonical corpus (0.1566ms)
+  Γ£ö getCorpusPolicy resolves real records and titles/owners for sample ids (supports reference resolution) (0.2084ms)
+Γ£ö policy corpus seed integrity (8.4797ms)
+ Γ£ô src/policy/packets/testing/fixture.test.ts (17 tests) 24ms
+ Γ£ô src/policy/evidence/driveFirst/serverDriveAuthPlan.test.ts (9 tests) 5ms
+ Γ£ô src/policy/journey/journey-p0-reuat.test.ts (8 tests) 4800ms
+   Γ£ô Journey LMS P0 Re-UAT (local/demo only) > P0-004b: blank Appendix F signer name is rejected (no employee-name default)  4793ms
+ Γ£ô src/policy/packets/sources/sources.test.ts (8 tests) 9ms
+stderr | src/v6/screens/packets/templateSelector.test.ts > PacketStudioScreen TemplateSelector integration > uses the governed selector before event selection and does not generate a packet from the template alone
+The current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+The current testing environment is not configured to support act(...)
+
+ Γ£ô src/v6/screens/packets/templateSelector.test.ts (5 tests) 111ms
+stderr | src/v6/screens/packets/templateSelector.test.ts > PacketStudioScreen TemplateSelector integration > uses the governed selector before event selection and does not generate a packet from the template alone
+The current testing environment is not configured to support act(...)
+
+ Γ£ô src/policy/ecign/durableProof/durableProof.test.ts (6 tests) 12ms
+ Γ£ô src/policy/packets/validation/validation.test.ts (8 tests) 9ms
+ Γ£ô src/policy/packets/render/charts.test.ts (3 tests) 3ms
+ Γ£ô src/policy/packets/render/partA/partA.test.ts (4 tests) 350ms
+ Γ£ô src/v6/screens/evidence/billingRoute.test.ts (8 tests) 4ms
+ Γ£ô src/policy/packets/qapi/buildModel.test.ts (6 tests) 29ms
+ Γ£ô src/policy/packets/render/renderQa.test.ts (5 tests) 58ms
+ Γ£ô src/policy/packets/testing/q1EndToEnd.integration.test.ts (2 tests) 100ms
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ» Failed Suites 14 ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+
+ FAIL  src/policy/data/policyCorpusSeedIntegrity.test.ts [ src/policy/data/policyCorpusSeedIntegrity.test.ts ]
+Error: No test suite found in file C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/merge-local-app-surfaces-2026-08-03/src/policy/data/policyCorpusSeedIntegrity.test.ts
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/17]ΓÄ»
+
+ FAIL  src/policy/ecign/resolveCanonicalSignedPackage.test.ts [ src/policy/ecign/resolveCanonicalSignedPackage.test.ts ]
+Error: No test suite found in file C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/merge-local-app-surfaces-2026-08-03/src/policy/ecign/resolveCanonicalSignedPackage.test.ts
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[2/17]ΓÄ»
+
+ FAIL  src/policy/ecign/roleKey.test.ts [ src/policy/ecign/roleKey.test.ts ]
+Error: No test suite found in file C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/merge-local-app-surfaces-2026-08-03/src/policy/ecign/roleKey.test.ts
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[3/17]ΓÄ»
+
+ FAIL  src/policy/ces/cesMasterControlAudit.test.ts [ src/policy/ces/cesMasterControlAudit.test.ts ]
+Error: No test suite found in file C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/merge-local-app-surfaces-2026-08-03/src/policy/ces/cesMasterControlAudit.test.ts
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[4/17]ΓÄ»
+
+ FAIL  src/policy/ces/cesViewProjections.test.ts [ src/policy/ces/cesViewProjections.test.ts ]
+Error: No test suite found in file C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/merge-local-app-surfaces-2026-08-03/src/policy/ces/cesViewProjections.test.ts
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[5/17]ΓÄ»
+
+ FAIL  src/policy/ecign/pathB/contracts.test.ts [ src/policy/ecign/pathB/contracts.test.ts ]
+Error: No test suite found in file C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/merge-local-app-surfaces-2026-08-03/src/policy/ecign/pathB/contracts.test.ts
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[6/17]ΓÄ»
+
+ FAIL  src/policy/ecign/pathB/retentionLifecycle.test.ts [ src/policy/ecign/pathB/retentionLifecycle.test.ts ]
+Error: No test suite found in file C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/merge-local-app-surfaces-2026-08-03/src/policy/ecign/pathB/retentionLifecycle.test.ts
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[7/17]ΓÄ»
+
+ FAIL  src/policy/ecign/pathB/runtimeReference.test.ts [ src/policy/ecign/pathB/runtimeReference.test.ts ]
+Error: No test suite found in file C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/merge-local-app-surfaces-2026-08-03/src/policy/ecign/pathB/runtimeReference.test.ts
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[8/17]ΓÄ»
+
+ FAIL  src/policy/ecign/pathB/runtimeSpecs.todo.test.ts [ src/policy/ecign/pathB/runtimeSpecs.todo.test.ts ]
+Error: No test suite found in file C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/merge-local-app-surfaces-2026-08-03/src/policy/ecign/pathB/runtimeSpecs.todo.test.ts
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[9/17]ΓÄ»
+
+ FAIL  src/policy/journey/utils/achcTrainingCalculations.test.ts [ src/policy/journey/utils/achcTrainingCalculations.test.ts ]
+Error: No test suite found in file C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/merge-local-app-surfaces-2026-08-03/src/policy/journey/utils/achcTrainingCalculations.test.ts
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[10/17]ΓÄ»
+
+ FAIL  src/policy/ecign/pathB/live/adapterConfigFlag.test.ts [ src/policy/ecign/pathB/live/adapterConfigFlag.test.ts ]
+Error: No test suite found in file C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/merge-local-app-surfaces-2026-08-03/src/policy/ecign/pathB/live/adapterConfigFlag.test.ts
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[11/17]ΓÄ»
+
+ FAIL  src/policy/ecign/pathB/live/driveSandboxPublisher.test.ts [ src/policy/ecign/pathB/live/driveSandboxPublisher.test.ts ]
+Error: No test suite found in file C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/merge-local-app-surfaces-2026-08-03/src/policy/ecign/pathB/live/driveSandboxPublisher.test.ts
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[12/17]ΓÄ»
+
+ FAIL  src/policy/ecign/pathB/replicas/parityAndLock.test.ts [ src/policy/ecign/pathB/replicas/parityAndLock.test.ts ]
+Error: No test suite found in file C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/merge-local-app-surfaces-2026-08-03/src/policy/ecign/pathB/replicas/parityAndLock.test.ts
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[13/17]ΓÄ»
+
+ FAIL  src/policy/ecign/pathB/storage/storageAndFreeze.test.ts [ src/policy/ecign/pathB/storage/storageAndFreeze.test.ts ]
+Error: No test suite found in file C:/AI/Git/training/HomeHealth/Policies_and_Procedures_V2_worktrees/merge-local-app-surfaces-2026-08-03/src/policy/ecign/pathB/storage/storageAndFreeze.test.ts
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[14/17]ΓÄ»
+
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ» Failed Tests 3 ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+
+ FAIL  src/policy/journey/nolanTutorResponder.acceptance.test.ts > composeNolanTutorAnswer ΓÇö routing > URGENT SAFETY FIRST: danger typed into the tutor gets safety guidance, never catalog search
+AssertionError: expected 'fallback' to be 'urgent-passthrough' // Object.is equality
+
+Expected: "urgent-passthrough"
+Received: "fallback"
+
+ Γ¥» src/policy/journey/nolanTutorResponder.acceptance.test.ts:20:20
+     18|   it('URGENT SAFETY FIRST: danger typed into the tutor gets safety guiΓÇª
+     19|     const a = composeNolanTutorAnswer('help my client got shot');
+     20|     expect(a.path).toBe('urgent-passthrough');
+       |                    ^
+     21|     expect(a.text).toMatch(/911/);
+     22|     expect(a.text.split('\n')[0]).toMatch(/your safety/i);
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[15/17]ΓÄ»
+
+ FAIL  src/policy/journey/nolanTutorResponder.acceptance.test.ts > composeNolanTutorAnswer ΓÇö lesson context & personalization > precise intents still outrank lesson retrieval (module id, urgent safety)
+AssertionError: expected 'lesson-clarify' to be 'urgent-passthrough' // Object.is equality
+
+Expected: "urgent-passthrough"
+Received: "lesson-clarify"
+
+ Γ¥» src/policy/journey/nolanTutorResponder.acceptance.test.ts:128:25
+    126|     expect(mod.path).toBe('module');
+    127|     const urgent = composeNolanTutorAnswer('help my client got shot', ΓÇª
+    128|     expect(urgent.path).toBe('urgent-passthrough');
+       |                         ^
+    129|   });
+    130| 
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[16/17]ΓÄ»
+
+ FAIL  src/policy/qapi/qapi.test.ts > Phase 5 ΓÇö rendered QAPI packet output > May-7 packet is titled INTERIM and states the data-through date
+AssertionError: expected '<!doctype html><html><head><meta charΓÇª' to match /Interim Q2 2026 QAPI/
+
+- Expected: 
+/Interim Q2 2026 QAPI/
+
++ Received: 
+"<!doctype html><html><head><meta charset=\"utf-8\"><title>QAPI-PKT-Q2-2026 2026-04-01 ΓåÆ 2026-06-30</title>
+  <style>
+    @page{size:letter;margin:0;}
+    *{box-sizing:border-box;}
+    body{margin:0;background:#f6f8f8;font:12px/1.55 Roboto,Arial,sans-serif;color:#1f2937;}
+    .pg{position:relative;width:8.5in;min-height:11in;background:#fff;margin:0 auto 18px;display:flex;flex-direction:column;break-after:page;page-break-after:always;overflow:visible;box-shadow:0 16px 48px rgba(31,41,55,.10);}
+    .pg:empty{display:none;}
+    .accent-rail{display:none;}
+    .pg-in{position:relative;z-index:1;flex:1;padding:.34in .72in .32in;display:flex;flex-direction:column;}
+    .pg-cover .pg-in{padding:.72in .72in .32in;}
+    .pg-cover-head{display:flex;align-items:flex-start;justify-content:space-between;gap:30px;margin-bottom:1.22in;}
+    .ci-mark{display:block;width:202px;height:auto;}
+    .ci-mark-page{width:170px;}
+    .ci-logo-fallback{display:none;color:#007c7a;font-size:24px;font-weight:700;line-height:1;}
+    .ci-logo-fallback span{color:#e87722;}
+    .cover-meta{text-align:right;color:#5d6767;font-family:Roboto,Arial,sans-serif;font-size:13px;font-weight:300;letter-spacing:.14em;line-height:1.45;text-transform:uppercase;}
+    .cover-meta strong{display:block;color:#007c7a;font-size:15px;font-weight:300;letter-spacing:.18em;}
+    .pg-topline{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:34px;color:#546161;font-family:Roboto,Arial,sans-serif;font-size:13px;font-weight:300;letter-spacing:.03em;}
+    .pg-topline-left{display:flex;align-items:center;gap:14px;min-width:0;}
+    .pg-topline-left-text{min-width:0;}
+    .pg-topline-left-text strong{display:block;color:#007c7a;font-size:11px;font-weight:300;letter-spacing:.14em;text-transform:uppercase;}
+    .pg-topline-right{text-align:right;}
+    .pg-h{font-size:29px;line-height:1.15;color:#043f3f;margin:0 0 0;break-after:avoid;page-break-after:avoid;font-weight:700;max-width:6.8in;}
+    .pg-cover .pg-h{font-size:45px;line-height:1.06;letter-spacing:0;text-transform:uppercase;max-width:5.9in;}
+    .cover-eyebrow{font-size:13px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:#e87722;margin:0 0 18px;}
+    .rule{width:138px;height:4px;background:linear-gradient(90deg,#e87722 0 50%,#007c7a 50% 100%);border-radius:2px;margin:22px 0 28px;}
+    .pg-cover .rule{margin:28px 0 30px;}
+    .handling{border:0;background:#fff4ed;border-left:5px solid #e87722;padding:12px 16px;margin-bottom:14px;font-size:11px;color:#5c2d12;}
+    .lock-banner{border:0;background:#fff7ed;border-left:5px solid #b35200;padding:10px 14px;margin-bottom:12px;font-size:11px;color:#7c2d12;}
+    .lock-banner.pass{background:#f0fdf4;border-color:#bbf7d0;border-left-color:#0f7b34;color:#14532d;}
+    .synthetic-banner{border:0;background:#fff7d6;border-left:5px solid #a86a00;padding:10px 14px;margin-bottom:12px;font-size:11px;color:#714d00;}
+    .panel{background:#fff;border:1px solid #d7e1e1;border-radius:0;padding:15px 17px;margin-bottom:14px;break-inside:avoid;page-break-inside:avoid;}
+    .panel-title{font-size:11px;font-weight:700;color:#e87722;text-transform:uppercase;letter-spacing:.16em;margin-bottom:10px;break-after:avoid;page-break-after:avoid;}
+    .kv-row{display:flex;justify-content:space-between;gap:18px;border-bottom:1px solid #e9eeee;padding:6px 0;font-size:11.5px;}
+    .kv-key{color:#007c7a;font-weight:600;}
+    .kv-value{color:#111;text-align:right;}
+    .data-table{width:100%;border-collapse:collapse;font-size:10.5px;margin:4px 0 8px;break-inside:auto;page-break-inside:auto;table-layout:fixed;}
+    .data-table caption{text-align:left;color:#526064;font-size:10px;margin:0 0 6px;}
+    .data-table thead{display:table-header-group;}
+    .data-table th{background:rgba(0,124,122,0.06);color:#007c7a;text-align:left;padding:7px 9px;border-bottom:2px solid rgba(0,124,122,0.12);letter-spacing:.04em;text-transform:uppercase;}
+    .data-table td{padding:7px 9px;border-bottom:1px solid #e9eeee;vertical-align:top;overflow-wrap:anywhere;word-break:normal;}
+    .p{font-size:11.5px;color:#374151;margin:0 0 8px;}
+    .muted{color:#7a7470;font-size:10px;}
+    .list{margin:0 0 6px 16px;padding:0;font-size:11.5px;}
+    .list li{margin-bottom:4px;}
+    .notice{border:0;background:#f7fafa;border-left:5px solid #007c7a;padding:10px 14px;font-size:11px;color:#335154;margin-bottom:12px;break-inside:avoid;page-break-inside:avoid;}
+    .notice-warning{background:#fff7ed;border-color:#f3c4a8;border-left-color:#e87722;color:#9a3412;}
+    .notice-blocker{background:#fef2f2;border-color:#fecaca;border-left-color:#b91c1c;color:#7f1d1d;}
+    .seal{border-color:#e6b3b3;background:#fff8f8;}
+    .signature-block{margin:18px 0;break-inside:avoid;page-break-inside:avoid;}
+    .signature-line{height:30px;border-bottom:1px solid #9ca3af;width:70%;}
+    .signature-role{font-size:10px;font-weight:700;color:#007c7a;text-transform:uppercase;margin-top:4px;}
+    .pg-foot{margin-top:auto;border-top:0;padding-top:16px;display:flex;justify-content:space-between;gap:18px;font-family:Roboto,Arial,sans-serif;font-size:11px;font-weight:300;color:#697272;}
+    .print-running-header,.print-running-footer{display:none;}
+    .watermark{position:absolute;z-index:0;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0.12;font-size:34px;font-weight:800;letter-spacing:.08em;text-align:center;color:#1f2937;transform:rotate(-28deg);padding:50px;text-transform:uppercase;}
+    h1,h2,h3,.no-orphan{break-after:avoid;page-break-after:avoid;}
+    .form-page{break-before:page;page-break-before:always;}
+    /* Part A ΓÇö executive narrative */
+    .pa-sub{font-size:13px;font-weight:300;letter-spacing:.06em;color:#546161;margin:0 0 18px;}
+    .pa-lead{font-size:12.5px;line-height:1.62;color:#26343a;margin:0 0 14px;}
+    .pa-domain{margin:0 0 18px;break-inside:avoid;page-break-inside:avoid;}
+    .pa-domain h3{font-size:13px;font-weight:700;letter-spacing:.02em;color:#043f3f;margin:0 0 6px;}
+    .pa-domain p{font-size:11.25px;line-height:1.62;color:#374151;margin:0 0 9px;}
+    .pa-verdict{border-left:5px solid #e87722;background:linear-gradient(90deg,#fff7ed 0,#f7fafa 72%);padding:15px 17px;margin:0 0 16px;box-shadow:0 8px 24px rgba(4,63,63,.06);}
+    .pa-verdict p{font-size:12px;line-height:1.6;color:#26343a;margin:0;}
+    .pa-infographic{border:1px solid #d7e1e1;background:#fff;border-radius:6px;padding:13px 15px;margin:0 0 16px;break-inside:avoid;page-break-inside:avoid;box-shadow:0 8px 24px rgba(4,63,63,.05);}
+    .pa-info-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:0 0 10px;color:#043f3f;}
+    .pa-info-head span{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;}
+    .pa-info-head b{font-size:10px;font-weight:700;color:#697272;text-align:right;text-transform:uppercase;letter-spacing:.08em;}
+    .pa-info-grid,.pa-scope-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
+    .pa-info-card,.pa-scope-tile{border-left:4px solid #d7e1e1;background:#f7fafa;padding:9px 10px;min-height:68px;overflow-wrap:anywhere;}
+    .pa-info-card b,.pa-scope-tile b{display:block;color:#043f3f;font-size:20px;line-height:1.05;font-weight:800;overflow-wrap:anywhere;}
+    .pa-info-card span,.pa-scope-tile span{display:block;color:#26343a;font-size:10px;font-weight:700;line-height:1.25;margin-top:4px;}
+    .pa-info-card small,.pa-scope-tile small,.pa-info-note,.pa-flow-step small{display:block;color:#697272;font-size:8.5px;line-height:1.25;margin-top:3px;}
+    .pa-info-met{border-color:#007c7a;}
+    .pa-info-below{border-color:#e87722;}
+    .pa-info-unknown{border-color:#9ca3af;background:#f8fafc;}
+    .pa-info-neutral{border-color:#7aa7a5;}
+    .pa-stack{min-height:24px;display:flex;flex-wrap:wrap;overflow:visible;border:1px solid #d7e1e1;background:#f8fafc;margin-top:10px;}
+    .pa-stack-seg{display:flex;align-items:center;justify-content:center;min-width:52px;min-height:24px;padding:0 6px;color:#fff;font-size:8px;font-weight:700;white-space:normal;overflow:visible;text-align:center;line-height:1.15;}
+    .pa-stack-seg.pa-info-met{background:#007c7a;}
+    .pa-stack-seg.pa-info-below{background:#e87722;}
+    .pa-stack-seg.pa-info-unknown{background:#6b7280;}
+    .pa-stack-seg.pa-info-neutral{background:#7aa7a5;}
+    .pa-scope-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+    .pa-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
+    .pa-flow-step{position:relative;border:1px solid #d7e1e1;background:#f7fafa;padding:9px 10px;min-height:64px;}
+    .pa-flow-step:not(:last-child)::after{content:\"\";position:absolute;right:-8px;top:50%;width:8px;height:1px;background:#b8c7c7;}
+    .pa-flow-step span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#697272;font-weight:700;}
+    .pa-flow-step b{display:block;font-size:22px;line-height:1.05;color:#043f3f;margin-top:4px;}
+    .pa-stat-strip{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 16px;}
+    .pa-stat{flex:1;min-width:120px;border:1px solid #d7e1e1;border-radius:4px;padding:11px 13px;}
+    .pa-stat-v{font-size:23px;font-weight:800;line-height:1;}
+    .pa-stat-l{font-size:9px;text-transform:uppercase;letter-spacing:.09em;color:#697272;margin-top:5px;}
+    .pa-stat-s{font-size:8.5px;color:#9aa3a3;margin-top:3px;}
+    .pa-split{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
+    .pa-split>*{flex:1;min-width:250px;}
+    .pa-decisions{list-style:none;padding:0;margin:0 0 12px;}
+    .pa-decisions li{border-left:4px solid #007c7a;background:#f7fafa;padding:9px 13px;margin:0 0 8px;font-size:11px;line-height:1.5;color:#374151;}
+    .pa-decisions li b{color:#043f3f;}
+    .pa-attribution{font-size:9px;color:#9aa3a3;font-style:italic;margin-top:10px;}
+    .pa-divider .pg-in{justify-content:center;text-align:center;}
+    .pa-divider-eyebrow{font-size:13px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:#e87722;margin:0 0 10px;}
+    .pa-divider-title{font-size:40px;font-weight:800;letter-spacing:.02em;color:#043f3f;margin:0 0 12px;}
+    .pa-divider-sub{font-size:12px;color:#546161;max-width:5in;margin:0 auto;line-height:1.6;}
+    @media print{@page{size:letter;margin:.5in .72in;}body{background:#fff;}.print-running-footer{display:none;}.pg{width:auto;min-height:0;margin:0;display:block;break-after:page;page-break-after:always;overflow:visible;box-shadow:none;}.pg-in,.pg-cover .pg-in{padding:0;display:block;}.pg-topline{display:flex;margin-bottom:.28in;}.pg-foot{display:none;}.pg-cover-head{margin-bottom:.86in;}.panel,.notice,.signature-block{break-inside:avoid;page-break-inside:avoid;}.kpi-card{break-inside:avoid;page-break-inside:avoid;}.data-table{break-inside:auto;page-break-inside:auto;}.watermark{display:none;}}
+  </style></head><body><div class=\"print-running-footer\" aria-hidden=\"true\"><span>QAPI Committee Packet - Version 1.0 Draft - Requires Review</span><span>QAPI-PKT-Q2-2026 ┬╖ 2026-04-01 ΓåÆ 2026-06-30 ┬╖ Draft generated ┬╖ INTERNAL</span></div><section class=\"pg pg-cover\" data-module-id=\"qapi-cover-page\" data-page-number=\"1\">
+    <div class=\"accent-rail\" aria-hidden=\"true\"><span></span><span></span></div>
+    
+    <div class=\"pg-in\">
+      <header class=\"pg-cover-head\">
+      <div>
+    <img class=\"ci-mark\" alt=\"Care Indeed\" src=\"/ci-logo-packet-cover.png\" onerror=\"this.style.display='none';this.nextElementSibling.style.display='block';\">
+    <div class=\"ci-logo-fallback\">Care<span>Indeed</span></div>
+  </div>
+      <div class=\"cover-meta\">
+        <strong>QAPI Committee Packet</strong>
+        <div>Care Indeed Home Health Care, Inc.</div>
+        <div>Version 1.0 Draft - Requires Review</div>
+      </div>
+    </header>
+      <div class=\"cover-eyebrow\">Care Indeed Home Health Care, Inc.</div>
+      <h2 class=\"pg-h\">Draft - Requires Review Q2 2026 QAPI Committee Packet</h2><div class=\"rule\"></div>
+      <div class=\"handling\">QAPI analytical packet ΓÇö classification and handling notice applies per packet confidentiality rules.</div><div class=\"lock-banner\"><b>NOT LOCKABLE ΓÇö 1 blocking item(s)</b></div>
+    
+    <div class=\"panel\"><div class=\"panel-title\">Quarterly QAPI analytical report</div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Packet ID</span><span class=\"kv-value\">QAPI-PKT-Q2-2026</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Reporting period</span><span class=\"kv-value\">2026-04-01 ΓåÆ 2026-06-30</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Data-through date</span><span class=\"kv-value\">2026-05-07</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Packet readiness</span><span class=\"kv-value\">DRAFT - REQUIRES REVIEW</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Policy refs</span><span class=\"kv-value\">QA-PG-001, QA-PG-002, GV-GB-001</span></div>
+    </div>
+    <div class=\"panel\"><div class=\"panel-title\">Scope statement</div>
+      <p class=\"p\">This packet is the model-driven Q2 2026 QAPI analytical report. It preserves source-recovered values, validation findings, addendum references, and signature readiness without converting missing source evidence to compliant values.</p>
+    </div>
+  
+      <div class=\"pg-foot\"><span>QAPI Committee Packet - Version 1.0 Draft - Requires Review</span><span>QAPI-PKT-Q2-2026 ┬╖ 2026-04-01 ΓåÆ 2026-06-30 ┬╖ Draft generated ┬╖ INTERNAL ┬╖ Page 1 of 18</span></div>
+    </div>
+  </section><section class=\"pg pg-partA\" data-part=\"A\" data-page-number=\"1\">
+    <div class=\"accent-rail\" aria-hidden=\"true\"><span></span><span></span></div>
+    
+    <div class=\"pg-in\">
+      <header class=\"pg-topline\">
+    <div class=\"pg-topline-left\">
+      <div>
+    <img class=\"ci-mark ci-mark-page\" alt=\"Care Indeed\" src=\"/ci-logo-packet-page.png\" onerror=\"this.style.display='none';this.nextElementSibling.style.display='block';\">
+    <div class=\"ci-logo-fallback\">Care<span>Indeed</span></div>
+  </div>
+      <div class=\"pg-topline-left-text\">
+        <strong>Care Indeed Home Health Care, Inc.</strong>
+        <div>Version 1.0 Draft - Requires Review</div>
+      </div>
+    </div>
+    <div class=\"pg-topline-right\">Part A ΓÇö Executive Analysis<br>Page 1</div>
+  </header>
+      
+      <h2 class=\"pg-h\">Part A ΓÇö Executive Analysis</h2><div class=\"rule\"></div>
+      
+    <p class=\"pa-sub\">Q2 2026 (2026-04-01 through 2026-06-30) ┬╖ Executive analysis synthesized from Part B evidence</p>
+    <div class=\"pa-verdict\"><p>This packet is assembled for leadership review from 18 evidence section(s). Part B remains the authoritative source record. The narrative below identifies what is complete, what requires review, and what should be assigned before approval or lock.</p></div>
+    <div class=\"pa-domain\"><h3>Executive Summary</h3><p>The packet structure is present, but this archetype does not expose QAPI KPI records to the narrative layer. The committee should review section completion, validation status, signatures, and source evidence in Part B before any final determination.</p></div>
+    <table class=\"data-table\"><caption>Part B module status</caption><thead><tr><th>Section</th><th>Status</th><th>Review note</th><th>Module</th></tr></thead><tbody><tr><td>Cover page</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-cover-page</td></tr><tr><td>Packet control, source validation, and readiness</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-packet-control-source-validation-readiness</td></tr><tr><td>Executive analysis</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-executive-analysis</td></tr><tr><td>Rich KPI dashboard</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-rich-kpi-dashboard</td></tr><tr><td>Source, feeder-workflow, and form utilization analysis</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-source-feeder-workflow-form-utilization</td></tr><tr><td>Detailed findings and trend analysis</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-detailed-findings-and-trend-analysis</td></tr><tr><td>PIP, CAP, RCA, personnel-review, and other action determinations</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-pip-cap-rca-personnel-review-determinations</td></tr><tr><td>Triggered Workflow and Dependency Register</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-triggered-workflow-and-dependency-register</td></tr><tr><td>QAPI Committee and Governing Body decisions requested</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-committee-and-governing-body-decisions</td></tr><tr><td>Action-item, workflow, and accountability register</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-action-item-workflow-accountability-register</td></tr><tr><td>Approvals, eCIgn status, and lock-readiness certification</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-approvals-ecign-lock-readiness</td></tr><tr><td>Attachment manifest</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-attachment-manifest</td></tr><tr><td>Completed source forms</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-completed-source-forms</td></tr><tr><td>Generated PIP/CAP/RCA/corrective-action forms</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-generated-pip-cap-rca-forms</td></tr><tr><td>Triggered workflow execution packages</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-triggered-workflow-execution-packages</td></tr><tr><td>Confidential personnel-review addendum reference</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-confidential-personnel-review-addendum-reference</td></tr><tr><td>Source derivation, reconciliation, and evidence provenance</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-source-derivation-reconciliation-provenance</td></tr><tr><td>Superseded or excluded-source register</td><td>complete</td><td>Review the corresponding appendix section.</td><td>qapi-superseded-or-excluded-source-register</td></tr></tbody></table>
+  
+      <div class=\"pg-foot\"><span>QAPI Committee Packet - Version 1.0 Draft - Requires Review</span><span>QAPI-PKT-Q2-2026 ┬╖ 2026-04-01 ΓåÆ 2026-06-30 ┬╖ Draft generated ┬╖ INTERNAL ┬╖ Page 1 of 3</span></div>
+    </div>
+  </section>
+<section class=\"pg pg-partA\" data-part=\"A\" data-page-number=\"2\">
+    <div class=\"accent-rail\" aria-hidden=\"true\"><span></span><span></span></div>
+    
+    <div class=\"pg-in\">
+      <header class=\"pg-topline\">
+    <div class=\"pg-topline-left\">
+      <div>
+    <img class=\"ci-mark ci-mark-page\" alt=\"Care Indeed\" src=\"/ci-logo-packet-page.png\" onerror=\"this.style.display='none';this.nextElementSibling.style.display='block';\">
+    <div class=\"ci-logo-fallback\">Care<span>Indeed</span></div>
+  </div>
+      <div class=\"pg-topline-left-text\">
+        <strong>Care Indeed Home Health Care, Inc.</strong>
+        <div>Version 1.0 Draft - Requires Review</div>
+      </div>
+    </div>
+    <div class=\"pg-topline-right\">Evidence Story and Connected Risk<br>Page 2</div>
+  </header>
+      
+      <h2 class=\"pg-h\">Evidence Story and Connected Risk</h2><div class=\"rule\"></div>
+      
+    <div class=\"pa-domain\"><h3>What the Evidence Shows</h3><p>The evidence record is organized in the appendices that follow. Each module title, status, and payload remains in Part B; Part A does not create new facts.</p></div>
+    <div class=\"pa-domain\"><h3>Connected Findings and Risk Story</h3><p>No archetype-specific finding map was exposed to Part A. Treat this narrative as a routing note and complete the review from the appendices.</p></div>
+  
+      <div class=\"pg-foot\"><span>QAPI Committee Packet - Version 1.0 Draft - Requires Review</span><span>QAPI-PKT-Q2-2026 ┬╖ 2026-04-01 ΓåÆ 2026-06-30 ┬╖ Draft generated ┬╖ INTERNAL ┬╖ Page 2 of 3</span></div>
+    </div>
+  </section>
+<section class=\"pg pg-partA\" data-part=\"A\" data-page-number=\"3\">
+    <div class=\"accent-rail\" aria-hidden=\"true\"><span></span><span></span></div>
+    
+    <div class=\"pg-in\">
+      <header class=\"pg-topline\">
+    <div class=\"pg-topline-left\">
+      <div>
+    <img class=\"ci-mark ci-mark-page\" alt=\"Care Indeed\" src=\"/ci-logo-packet-page.png\" onerror=\"this.style.display='none';this.nextElementSibling.style.display='block';\">
+    <div class=\"ci-logo-fallback\">Care<span>Indeed</span></div>
+  </div>
+      <div class=\"pg-topline-left-text\">
+        <strong>Care Indeed Home Health Care, Inc.</strong>
+        <div>Version 1.0 Draft - Requires Review</div>
+      </div>
+    </div>
+    <div class=\"pg-topline-right\">Decisions and Evidence Limits<br>Page 3</div>
+  </header>
+      
+      <h2 class=\"pg-h\">Decisions and Evidence Limits</h2><div class=\"rule\"></div>
+      
+    <div class=\"pa-domain\"><h3>Decisions and Accountability</h3><ul class=\"pa-decisions\"><li><b>Review packet readiness.</b> Basis: 18 module(s) in Part B. Authority: packet owner / approving body.</li></ul></div>
+    <div class=\"pa-domain\"><h3>Evidence Limitations</h3><p>Part A has no independent evidence source. Use Part B as the controlling record.</p></div>
+  
+      <div class=\"pg-foot\"><span>QAPI Committee Packet - Version 1.0 Draft - Requires Review</span><span>QAPI-PKT-Q2-2026 ┬╖ 2026-04-01 ΓåÆ 2026-06-30 ┬╖ Draft generated ┬╖ INTERNAL ┬╖ Page 3 of 3</span></div>
+    </div>
+  </section><section class=\"pg pg-partB pa-divider\" data-part=\"B\" data-page-number=\"1\">
+    <div class=\"accent-rail\" aria-hidden=\"true\"><span></span><span></span></div>
+    
+    <div class=\"pg-in\">
+      <header class=\"pg-topline\">
+    <div class=\"pg-topline-left\">
+      <div>
+    <img class=\"ci-mark ci-mark-page\" alt=\"Care Indeed\" src=\"/ci-logo-packet-page.png\" onerror=\"this.style.display='none';this.nextElementSibling.style.display='block';\">
+    <div class=\"ci-logo-fallback\">Care<span>Indeed</span></div>
+  </div>
+      <div class=\"pg-topline-left-text\">
+        <strong>Care Indeed Home Health Care, Inc.</strong>
+        <div>Version 1.0 Draft - Requires Review</div>
+      </div>
+    </div>
+    <div class=\"pg-topline-right\"><br>Page 1</div>
+  </header>
+      
+      <h2 class=\"pg-h\"></h2><div class=\"rule\"></div>
+      <div class=\"pa-divider\">
+    <div class=\"pa-divider-eyebrow\">Part B</div>
+    <div class=\"pa-divider-title\">Evidence Appendices</div>
+    <p class=\"pa-divider-sub\">The authoritative evidence record follows: source validation, KPI dashboard, findings, trends, workflow triggers, determinations, decisions, approvals, attachments, source registers, and forms.</p>
+  </div>
+      <div class=\"pg-foot\"><span>QAPI Committee Packet - Version 1.0 Draft - Requires Review</span><span>QAPI-PKT-Q2-2026 ┬╖ 2026-04-01 ΓåÆ 2026-06-30 ┬╖ Draft generated ┬╖ INTERNAL ┬╖ Page 1 of 1</span></div>
+    </div>
+  </section><section class=\"pg\" data-module-id=\"qapi-packet-control-source-validation-readiness\" data-page-number=\"2\">
+    <div class=\"accent-rail\" aria-hidden=\"true\"><span></span><span></span></div>
+    
+    <div class=\"pg-in\">
+      <header class=\"pg-topline\">
+    <div class=\"pg-topline-left\">
+      <div>
+    <img class=\"ci-mark ci-mark-page\" alt=\"Care Indeed\" src=\"/ci-logo-packet-page.png\" onerror=\"this.style.display='none';this.nextElementSibling.style.display='block';\">
+    <div class=\"ci-logo-fallback\">Care<span>Indeed</span></div>
+  </div>
+      <div class=\"pg-topline-left-text\">
+        <strong>Care Indeed Home Health Care, Inc.</strong>
+        <div>Version 1.0 Draft - Requires Review</div>
+      </div>
+    </div>
+    <div class=\"pg-topline-right\">Packet control, source validation, and readiness<br>Page 2</div>
+  </header>
+      
+      <h2 class=\"pg-h\">Packet control, source validation, and readiness</h2><div class=\"rule\"></div>
+      <div class=\"handling\">QAPI analytical packet ΓÇö classification and handling notice applies per packet confidentiality rules.</div><div class=\"lock-banner\"><b>NOT LOCKABLE ΓÇö 1 blocking item(s)</b></div>
+    <div class=\"panel\"><div class=\"panel-title\">Packet Control</div>
+      
+      
+      <div class=\"kv-row\"><span class=\"kv-key\">Packet ID</span><span class=\"kv-value\">QAPI-PKT-Q2-2026</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Event ID</span><span class=\"kv-value\">ΓÇö</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Workflow ID</span><span class=\"kv-value\">ΓÇö</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Reporting period</span><span class=\"kv-value\">2026-04-01 ΓåÆ 2026-06-30</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Data-through date</span><span class=\"kv-value\">2026-05-07</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Packet readiness</span><span class=\"kv-value\">DRAFT / REQUIRES REVIEW</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Policy refs</span><span class=\"kv-value\">QA-PG-001, QA-PG-002, GV-GB-001</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Prepared by</span><span class=\"kv-value\">ΓÇö</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Reviewer</span><span class=\"kv-value\">ΓÇö</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Lock status</span><span class=\"kv-value\">UNLOCKED (draft)</span></div>
+    </div>
+    <div class=\"panel\"><div class=\"panel-title\">Validation</div>
+      <p class=\"p\"><b>NOT LOCKABLE ΓÇö 1 blocking item(s)</b></p>
+      <table class=\"data-table\"><thead><tr><th>Severity</th><th>Path</th><th>Finding</th><th>Remediation</th></tr></thead><tbody><tr><td>blocker</td><td>labs</td><td>1 critical lab value(s) not reported to physician within policy.</td><td>Physician-notification audit + reporting retraining; see personnel addendum.</td></tr></tbody></table>
+    </div>
+    <div class=\"notice notice-warning\"><b>INTERIM REVIEW.</b> Data is reported only through <b>2026-05-07</b> (the meeting date). Source events after this date are excluded and will appear in the final Q2 2026 packet.</div>
+  
+      <div class=\"pg-foot\"><span>QAPI Committee Packet - Version 1.0 Draft - Requires Review</span><span>QAPI-PKT-Q2-2026 ┬╖ 2026-04-01 ΓåÆ 2026-06-30 ┬╖ Draft generated ┬╖ INTERNAL ┬╖ Page 2 of 18</span></div>
+    </div>
+  </section><section class=\"pg\" data-module-id=\"qapi-executive-analysis\" data-page-number=\"3\">
+    <div class=\"accent-rail\" aria-hidden=\"true\"><span></span><span></span></div>
+    
+    <div class=\"pg-in\">
+      <header class=\"pg-topline\">
+    <div class=\"pg-topline-left\">
+      <div>
+    <img class=\"ci-mark ci-mark-page\" alt=\"Care Indeed\" src=\"/ci-logo-packet-page.png\" onerror=\"this.style.display='none';this.nextElementSibling.style.display='block';\">
+    <div class=\"ci-logo-fallback\">Care<span>Indeed</span></div>
+  </div>
+      <div class=\"pg-topline-left-text\">
+        <strong>Care Indeed Home Health Care, Inc.</strong>
+        <div>Version 1.0 Draft - Requires Review</div>
+      </div>
+    </div>
+    <div class=\"pg-topline-right\">Agenda &amp; Quorum Roster<br>Page 3</div>
+  </header>
+      
+      <h2 class=\"pg-h\">Agenda &amp; Quorum Roster</h2><div class=\"rule\"></div>
+      <div class=\"handling\">QAPI analytical packet ΓÇö classification and handling notice applies per packet confidentiality rules.</div><div class=\"lock-banner\"><b>NOT LOCKABLE ΓÇö 1 blocking item(s)</b></div>
+    <div class=\"panel\"><div class=\"panel-title\">Meeting</div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Date</span><span class=\"kv-value\">2026-05-07</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Chair</span><span class=\"kv-value\">ΓÇö</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Recorder</span><span class=\"kv-value\">ΓÇö</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Quorum</span><span class=\"kv-value\">6 of 6 present ΓÇö quorum met</span></div>
+    </div>
+    <div class=\"panel\"><div class=\"panel-title\">Attendees</div><table class=\"data-table\"><thead><tr><th>Role or source note</th><th>Expected</th><th>Presence</th></tr></thead><tbody><tr><td>Director of Nursing (Chair)</td><td>Expected</td><td>Present</td></tr><tr><td>Clinical Manager</td><td>Expected</td><td>Present</td></tr><tr><td>Compliance Officer</td><td>Expected</td><td>Present</td></tr><tr><td>Medical Director</td><td>Expected</td><td>Present</td></tr><tr><td>Administrator</td><td>Expected</td><td>Present</td></tr><tr><td>QA Coordinator</td><td>Expected</td><td>Present</td></tr></tbody></table></div>
+    <div class=\"panel\"><div class=\"panel-title\">Executive analysis</div>
+      <p class=\"p\">QAPI review covers census reconciliation, high-risk patient flags, incidents, infection-control counts, critical laboratory reporting, chart-audit findings, triggered workflow determinations, committee decisions, and lock readiness for Q2 2026.</p>
+    </div>
+  
+      <div class=\"pg-foot\"><span>QAPI Committee Packet - Version 1.0 Draft - Requires Review</span><span>QAPI-PKT-Q2-2026 ┬╖ 2026-04-01 ΓåÆ 2026-06-30 ┬╖ Draft generated ┬╖ INTERNAL ┬╖ Page 3 of 18</span></div>
+    </div>
+  </section><section class=\"pg\" data-module-id=\"qapi-rich-kpi-dashboard\" data-page-number=\"4\">
+    <div class=\"accent-rail\" aria-hidden=\"true\"><span></span><span></span></div>
+    
+    <div class=\"pg-in\">
+      <header class=\"pg-topline\">
+    <div class=\"pg-topline-left\">
+      <div>
+    <img class=\"ci-mark ci-mark-page\" alt=\"Care Indeed\" src=\"/ci-logo-packet-page.png\" onerror=\"this.style.display='none';this.nextElementSibling.style.display='block';\">
+    <div class=\"ci-logo-fallback\">Care<span>Indeed</span></div>
+  </div>
+      <div class=\"pg-topline-left-text\">
+        <strong>Care Indeed Home Health Care, Inc.</strong>
+        <div>Version 1.0 Draft - Requires Review</div>
+      </div>
+    </div>
+    <div class=\"pg-topline-right\">QAPI Data Dashboard (QA-FM-020)<br>Page 4</div>
+  </header>
+      
+      <h2 class=\"pg-h\">QAPI Data Dashboard (QA-FM-020)</h2><div class=\"rule\"></div>
+      <div class=\"handling\">QAPI analytical packet ΓÇö classification and handling notice applies per packet confidentiality rules.</div><div class=\"lock-banner\"><b>NOT LOCKABLE ΓÇö 1 blocking item(s)</b></div>
+    <style>
+    .kpi-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:8px;}
+    .kpi-card{border:1px solid #d7dee2;border-radius:6px;padding:10px;background:#fbfcfc;break-inside:avoid;page-break-inside:avoid;}
+    .kpi-card h3{font-size:11.5px;line-height:1.25;margin:0 0 7px;color:#111827;}
+    .kpi-card-value{font-size:19px;font-weight:800;color:#111827;margin-bottom:7px;}
+    .kpi-card-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;font-size:9.5px;color:#374151;}
+    .kpi-card-meta span{display:block;}
+    .kpi-card-source{font-size:9px;color:#4b5563;margin-top:7px;border-top:1px solid #e5e7eb;padding-top:6px;}
+    .kpi-status-line{font-weight:700;}
+    .kpi-chart-panel svg{display:block;width:100%;height:auto;margin:2px 0 8px;}
+    .kpi-chart-unknown{border-style:dashed;}
+    .kpi-chart-note{font-size:10.5px;color:#374151;margin:0 0 8px;}
+  </style>
+    <div class=\"panel\"><div class=\"panel-title\">KPI card grid</div><div class=\"kpi-card-grid\"><article class=\"kpi-card\">
+    <h3>Patients or episodes in scope</h3>
+    <div class=\"kpi-card-value\">73</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> 73</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &gt;= 1 in scope</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">&#10003;</span> MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> censusPopulation.patientsOrEpisodesInScope</div>
+  </article><article class=\"kpi-card\">
+    <h3>Active census</h3>
+    <div class=\"kpi-card-value\">42</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> 42</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &gt;= 1 active patient</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">&#10003;</span> MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> censusPopulation.activeCensus</div>
+  </article><article class=\"kpi-card\">
+    <h3>Acute-care hospitalization rate</h3>
+    <div class=\"kpi-card-value\">45.2%</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> 19</span>
+      <span><b>Denominator</b> 42</span>
+      <span><b>Target</b> Γëñ 8.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">&#9888;</span> NOT_MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> adverseEvents.hospitalizationsTotal; censusPopulation.activeCensus</div>
+  </article><article class=\"kpi-card\">
+    <h3>ED use rate per 100 active patients</h3>
+    <div class=\"kpi-card-value\">UNKNOWN</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &lt;= 5 per 100 patients</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> none</span>
+      <span><b>Validation</b> Unknown ΓÇö not recovered</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> adverseEvents.edUseTotal; censusPopulation.activeCensus</div>
+  </article><article class=\"kpi-card\">
+    <h3>Adverse event rate per 100 active patients</h3>
+    <div class=\"kpi-card-value\">45.2 per 100</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> 19</span>
+      <span><b>Denominator</b> 42</span>
+      <span><b>Target</b> &lt;= 5 per 100 patients</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">&#9888;</span> NOT_MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> adverseEvents.adverseEventsTotal; censusPopulation.activeCensus</div>
+  </article><article class=\"kpi-card\">
+    <h3>Infection event rate</h3>
+    <div class=\"kpi-card-value\">9.5%</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> 4</span>
+      <span><b>Denominator</b> 42</span>
+      <span><b>Target</b> Γëñ 2.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">&#9888;</span> NOT_MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> adverseEvents.infectionsTotal; censusPopulation.activeCensus</div>
+  </article><article class=\"kpi-card\">
+    <h3>Documentation-audit compliance</h3>
+    <div class=\"kpi-card-value\">CONFLICTED</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> 60</span>
+      <span><b>Target</b> &gt;= 95.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> low</span>
+      <span><b>Validation</b> Conflicted ΓÇö reconciliation required</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</div>
+  </article><article class=\"kpi-card\">
+    <h3>Documentation defect rate</h3>
+    <div class=\"kpi-card-value\">185.0%</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> 111</span>
+      <span><b>Denominator</b> 60</span>
+      <span><b>Target</b> Γëñ 5.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">&#9888;</span> NOT_MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</div>
+  </article><article class=\"kpi-card\">
+    <h3>Medication-reconciliation compliance</h3>
+    <div class=\"kpi-card-value\">33.3%</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> 20</span>
+      <span><b>Denominator</b> 60</span>
+      <span><b>Target</b> &gt;= 95.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">&#9888;</span> NOT_MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.chartsAudited</div>
+  </article><article class=\"kpi-card\">
+    <h3>Missed-visit compliance</h3>
+    <div class=\"kpi-card-value\">UNKNOWN</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &gt;= 95.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> none</span>
+      <span><b>Validation</b> Unknown ΓÇö not recovered</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> visitUtilization.missedVisits; visitUtilization.scheduledVisits</div>
+  </article><article class=\"kpi-card\">
+    <h3>Complaint rate per 100 active patients</h3>
+    <div class=\"kpi-card-value\">UNKNOWN</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> Γëñ 3 per 100 patients</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> none</span>
+      <span><b>Validation</b> Unknown ΓÇö not recovered</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> complaints.complaintsCount; censusPopulation.activeCensus</div>
+  </article><article class=\"kpi-card\">
+    <h3>Active PIPs</h3>
+    <div class=\"kpi-card-value\">73</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> 73</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &lt;= 0 overdue/untriaged active PIPs</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">&#9888;</span> NOT_MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> pipCorrectiveAction.activePipCount</div>
+  </article><article class=\"kpi-card\">
+    <h3>Open CAPs or RCAs</h3>
+    <div class=\"kpi-card-value\">8</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> 8</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> &lt;= 0 overdue open CAPs/RCAs</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">&#9888;</span> NOT_MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> pipCorrectiveAction.openCapRcaCount</div>
+  </article><article class=\"kpi-card\">
+    <h3>QAPI committee attendance rate</h3>
+    <div class=\"kpi-card-value\">100.0%</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> 6</span>
+      <span><b>Denominator</b> 6</span>
+      <span><b>Target</b> 90% to 100%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">&#10003;</span> MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> meetingDetails.attendeesPresent; meetingDetails.attendeesExpected</div>
+  </article><article class=\"kpi-card\">
+    <h3>QAPI action completion rate</h3>
+    <div class=\"kpi-card-value\">UNKNOWN</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> ΓëÑ 90.0%</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> none</span>
+      <span><b>Validation</b> Unknown ΓÇö not recovered</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> actionItems.actionItemsCompleted; actionItems.actionItemsDue</div>
+  </article><article class=\"kpi-card\">
+    <h3>PIP trigger count</h3>
+    <div class=\"kpi-card-value\">73</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> 73</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> Γëñ 0 triggers</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">&#9888;</span> NOT_MET</span>
+      <span><b>Confidence</b> high</span>
+      <span><b>Validation</b> Validated</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> pipCorrectiveAction.pipTriggerCount</div>
+  </article><article class=\"kpi-card\">
+    <h3>Average QAPI action closure time</h3>
+    <div class=\"kpi-card-value\">UNKNOWN</div>
+    <div class=\"kpi-card-meta\">
+      <span><b>Numerator</b> UNKNOWN</span>
+      <span><b>Denominator</b> UNKNOWN</span>
+      <span><b>Target</b> Γëñ 14 days</span>
+      <span><b>Prior</b> UNKNOWN</span>
+      <span><b>Trend</b> <span aria-hidden=\"true\">?</span> unknown</span>
+      <span class=\"kpi-status-line\"><b>Status</b> <span aria-hidden=\"true\">?</span> UNKNOWN</span>
+      <span><b>Confidence</b> none</span>
+      <span><b>Validation</b> Unknown ΓÇö not recovered</span>
+    </div>
+    <div class=\"kpi-card-source\"><b>Source</b> actionItems.averageActionClosureDays</div>
+  </article></div></div>
+    <div class=\"panel kpi-chart-panel\"><div class=\"panel-title\">Monthly performance vs target: QAPI KPI current values (count)</div><svg role=\"img\" aria-labelledby=\"kpi-chart-qapi-kpi-current-count-title kpi-chart-qapi-kpi-current-count-desc\" viewBox=\"0 0 640 262\" xmlns=\"http://www.w3.org/2000/svg\">
+    <title id=\"kpi-chart-qapi-kpi-current-count-title\">Monthly performance vs target: QAPI KPI current values (count)</title>
+    <desc id=\"kpi-chart-qapi-kpi-current-count-desc\">Current KPI values in count with target markers from the same shared KPI data table.</desc>
+    <rect width=\"640\" height=\"262\" fill=\"#ffffff\"/>
+    <text x=\"8\" y=\"18\" font-size=\"12\" font-weight=\"700\" fill=\"#111827\">Monthly performance vs target: QAPI KPI current values (count)</text>
+    <text x=\"188\" y=\"18\" font-size=\"9\" fill=\"#374151\">Current bar</text>
+    <text x=\"284\" y=\"18\" font-size=\"9\" fill=\"#374151\">Dashed target marker</text>
+    <g>
+      <text x=\"8\" y=\"52\" font-size=\"10\" fill=\"#111827\">Patients or episodes in scope</text>
+      <rect x=\"188\" y=\"42\" width=\"418\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <line x1=\"193.72602739726028\" y1=\"38\" x2=\"193.72602739726028\" y2=\"62\" stroke=\"#111827\" stroke-width=\"1.5\" stroke-dasharray=\"3 2\"/>
+      <text x=\"611\" y=\"52\" font-size=\"9\" fill=\"#111827\">73</text>
+      <text x=\"197.72602739726028\" y=\"65\" font-size=\"8.5\" fill=\"#374151\">Target &gt;= 1 in scope</text>
+      <text x=\"606\" y=\"52\" font-size=\"9\" text-anchor=\"end\" fill=\"#374151\">MET</text>
+    </g><g>
+      <text x=\"8\" y=\"90\" font-size=\"10\" fill=\"#111827\">Active census</text>
+      <rect x=\"188\" y=\"80\" width=\"240.4931506849315\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <line x1=\"193.72602739726028\" y1=\"76\" x2=\"193.72602739726028\" y2=\"100\" stroke=\"#111827\" stroke-width=\"1.5\" stroke-dasharray=\"3 2\"/>
+      <text x=\"433.4931506849315\" y=\"90\" font-size=\"9\" fill=\"#111827\">42</text>
+      <text x=\"197.72602739726028\" y=\"103\" font-size=\"8.5\" fill=\"#374151\">Target &gt;= 1 active patient</text>
+      <text x=\"606\" y=\"90\" font-size=\"9\" text-anchor=\"end\" fill=\"#374151\">MET</text>
+    </g><g>
+      <text x=\"8\" y=\"128\" font-size=\"10\" fill=\"#111827\">Active PIPs</text>
+      <rect x=\"188\" y=\"118\" width=\"418\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <line x1=\"188\" y1=\"114\" x2=\"188\" y2=\"138\" stroke=\"#111827\" stroke-width=\"1.5\" stroke-dasharray=\"3 2\"/>
+      <text x=\"611\" y=\"128\" font-size=\"9\" fill=\"#111827\">73</text>
+      <text x=\"192\" y=\"141\" font-size=\"8.5\" fill=\"#374151\">Target &lt;= 0 overdue/untriaged active PIPs</text>
+      <text x=\"606\" y=\"128\" font-size=\"9\" text-anchor=\"end\" fill=\"#374151\">NOT_MET</text>
+    </g><g>
+      <text x=\"8\" y=\"166\" font-size=\"10\" fill=\"#111827\">Open CAPs or RCAs</text>
+      <rect x=\"188\" y=\"156\" width=\"45.80821917808219\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <line x1=\"188\" y1=\"152\" x2=\"188\" y2=\"176\" stroke=\"#111827\" stroke-width=\"1.5\" stroke-dasharray=\"3 2\"/>
+      <text x=\"238.8082191780822\" y=\"166\" font-size=\"9\" fill=\"#111827\">8</text>
+      <text x=\"192\" y=\"179\" font-size=\"8.5\" fill=\"#374151\">Target &lt;= 0 overdue open CAPs/RCAs</text>
+      <text x=\"606\" y=\"166\" font-size=\"9\" text-anchor=\"end\" fill=\"#374151\">NOT_MET</text>
+    </g><g>
+      <text x=\"8\" y=\"204\" font-size=\"10\" fill=\"#111827\">PIP trigger count</text>
+      <rect x=\"188\" y=\"194\" width=\"418\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <line x1=\"188\" y1=\"190\" x2=\"188\" y2=\"214\" stroke=\"#111827\" stroke-width=\"1.5\" stroke-dasharray=\"3 2\"/>
+      <text x=\"611\" y=\"204\" font-size=\"9\" fill=\"#111827\">73</text>
+      <text x=\"192\" y=\"217\" font-size=\"8.5\" fill=\"#374151\">Target Γëñ 0 triggers</text>
+      <text x=\"606\" y=\"204\" font-size=\"9\" text-anchor=\"end\" fill=\"#374151\">NOT_MET</text>
+    </g>
+  </svg><table class=\"data-table\"><caption>QAPI KPI current values (count)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Patients or episodes in scope</td><td>73</td><td>73</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>&gt;= 1 in scope</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>censusPopulation.patientsOrEpisodesInScope</td></tr><tr><td>Active census</td><td>42</td><td>42</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>&gt;= 1 active patient</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>censusPopulation.activeCensus</td></tr><tr><td>Active PIPs</td><td>73</td><td>73</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>&lt;= 0 overdue/untriaged active PIPs</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>pipCorrectiveAction.activePipCount</td></tr><tr><td>Open CAPs or RCAs</td><td>8</td><td>8</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>&lt;= 0 overdue open CAPs/RCAs</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>pipCorrectiveAction.openCapRcaCount</td></tr><tr><td>PIP trigger count</td><td>73</td><td>73</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>Γëñ 0 triggers</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>pipCorrectiveAction.pipTriggerCount</td></tr></tbody></table></div><div class=\"panel kpi-chart-unknown\"><div class=\"panel-title\">UNKNOWN ΓÇö Chart not rendered: Current vs prior period</div><p class=\"kpi-chart-note\"><b>UNKNOWN</b> QAPI KPI current values (count) cannot be rendered as a chart: Patients or episodes in scope prior value is missing or malformed.</p><table class=\"data-table\"><caption>QAPI KPI current values (count)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Patients or episodes in scope</td><td>73</td><td>73</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>&gt;= 1 in scope</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>censusPopulation.patientsOrEpisodesInScope</td></tr><tr><td>Active census</td><td>42</td><td>42</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>&gt;= 1 active patient</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>censusPopulation.activeCensus</td></tr><tr><td>Active PIPs</td><td>73</td><td>73</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>&lt;= 0 overdue/untriaged active PIPs</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>pipCorrectiveAction.activePipCount</td></tr><tr><td>Open CAPs or RCAs</td><td>8</td><td>8</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>&lt;= 0 overdue open CAPs/RCAs</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>pipCorrectiveAction.openCapRcaCount</td></tr><tr><td>PIP trigger count</td><td>73</td><td>73</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>Γëñ 0 triggers</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>pipCorrectiveAction.pipTriggerCount</td></tr></tbody></table></div><div class=\"panel kpi-chart-unknown\"><div class=\"panel-title\">UNKNOWN ΓÇö Chart not rendered: Monthly performance vs target</div><p class=\"kpi-chart-note\"><b>UNKNOWN</b> QAPI KPI current values (percentage) cannot be rendered as a chart: Documentation-audit compliance value state is CONFLICTED.</p><table class=\"data-table\"><caption>QAPI KPI current values (percentage)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Acute-care hospitalization rate</td><td>45.2%</td><td>19</td><td>42</td><td>Γëñ 8.0%</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>adverseEvents.hospitalizationsTotal; censusPopulation.activeCensus</td></tr><tr><td>Infection event rate</td><td>9.5%</td><td>4</td><td>42</td><td>Γëñ 2.0%</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>adverseEvents.infectionsTotal; censusPopulation.activeCensus</td></tr><tr><td>Documentation-audit compliance</td><td>CONFLICTED</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>60</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Conflicted ΓÇö reconciliation required</td><td>chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Documentation defect rate</td><td>185.0%</td><td>111</td><td>60</td><td>Γëñ 5.0%</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Medication-reconciliation compliance</td><td>33.3%</td><td>20</td><td>60</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Missed-visit compliance</td><td>UNKNOWN</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown ΓÇö not recovered</td><td>visitUtilization.missedVisits; visitUtilization.scheduledVisits</td></tr><tr><td>QAPI committee attendance rate</td><td>100.0%</td><td>6</td><td>6</td><td>90% to 100%</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>meetingDetails.attendeesPresent; meetingDetails.attendeesExpected</td></tr><tr><td>QAPI action completion rate</td><td>UNKNOWN</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>ΓëÑ 90.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown ΓÇö not recovered</td><td>actionItems.actionItemsCompleted; actionItems.actionItemsDue</td></tr></tbody></table></div><div class=\"panel kpi-chart-unknown\"><div class=\"panel-title\">UNKNOWN ΓÇö Chart not rendered: Current vs prior period</div><p class=\"kpi-chart-note\"><b>UNKNOWN</b> QAPI KPI current values (percentage) cannot be rendered as a chart: Acute-care hospitalization rate prior value is missing or malformed.</p><table class=\"data-table\"><caption>QAPI KPI current values (percentage)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Acute-care hospitalization rate</td><td>45.2%</td><td>19</td><td>42</td><td>Γëñ 8.0%</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>adverseEvents.hospitalizationsTotal; censusPopulation.activeCensus</td></tr><tr><td>Infection event rate</td><td>9.5%</td><td>4</td><td>42</td><td>Γëñ 2.0%</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>adverseEvents.infectionsTotal; censusPopulation.activeCensus</td></tr><tr><td>Documentation-audit compliance</td><td>CONFLICTED</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>60</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>low</td><td>Conflicted ΓÇö reconciliation required</td><td>chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Documentation defect rate</td><td>185.0%</td><td>111</td><td>60</td><td>Γëñ 5.0%</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>chartAuditDocumentationIntegrity.oasisLateSoc; chartAuditDocumentationIntegrity.pocMissingF2F; chartAuditDocumentationIntegrity.pocUnsignedOrMissingSignature; chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.documentationDefectsTotal; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Medication-reconciliation compliance</td><td>33.3%</td><td>20</td><td>60</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>chartAuditDocumentationIntegrity.medReconciliationMismatch; chartAuditDocumentationIntegrity.chartsAudited</td></tr><tr><td>Missed-visit compliance</td><td>UNKNOWN</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>&gt;= 95.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown ΓÇö not recovered</td><td>visitUtilization.missedVisits; visitUtilization.scheduledVisits</td></tr><tr><td>QAPI committee attendance rate</td><td>100.0%</td><td>6</td><td>6</td><td>90% to 100%</td><td>UNKNOWN</td><td>unknown</td><td>MET</td><td>high</td><td>Validated</td><td>meetingDetails.attendeesPresent; meetingDetails.attendeesExpected</td></tr><tr><td>QAPI action completion rate</td><td>UNKNOWN</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>ΓëÑ 90.0%</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown ΓÇö not recovered</td><td>actionItems.actionItemsCompleted; actionItems.actionItemsDue</td></tr></tbody></table></div><div class=\"panel kpi-chart-unknown\"><div class=\"panel-title\">UNKNOWN ΓÇö Chart not rendered: Monthly performance vs target</div><p class=\"kpi-chart-note\"><b>UNKNOWN</b> QAPI KPI current values (rate) cannot be rendered as a chart: ED use rate per 100 active patients value state is UNKNOWN.</p><table class=\"data-table\"><caption>QAPI KPI current values (rate)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>ED use rate per 100 active patients</td><td>UNKNOWN</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>&lt;= 5 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown ΓÇö not recovered</td><td>adverseEvents.edUseTotal; censusPopulation.activeCensus</td></tr><tr><td>Adverse event rate per 100 active patients</td><td>45.2 per 100</td><td>19</td><td>42</td><td>&lt;= 5 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>adverseEvents.adverseEventsTotal; censusPopulation.activeCensus</td></tr><tr><td>Complaint rate per 100 active patients</td><td>UNKNOWN</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>Γëñ 3 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown ΓÇö not recovered</td><td>complaints.complaintsCount; censusPopulation.activeCensus</td></tr></tbody></table></div><div class=\"panel kpi-chart-unknown\"><div class=\"panel-title\">UNKNOWN ΓÇö Chart not rendered: Current vs prior period</div><p class=\"kpi-chart-note\"><b>UNKNOWN</b> QAPI KPI current values (rate) cannot be rendered as a chart: ED use rate per 100 active patients value state is UNKNOWN.</p><table class=\"data-table\"><caption>QAPI KPI current values (rate)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>ED use rate per 100 active patients</td><td>UNKNOWN</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>&lt;= 5 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown ΓÇö not recovered</td><td>adverseEvents.edUseTotal; censusPopulation.activeCensus</td></tr><tr><td>Adverse event rate per 100 active patients</td><td>45.2 per 100</td><td>19</td><td>42</td><td>&lt;= 5 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>NOT_MET</td><td>high</td><td>Validated</td><td>adverseEvents.adverseEventsTotal; censusPopulation.activeCensus</td></tr><tr><td>Complaint rate per 100 active patients</td><td>UNKNOWN</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>Γëñ 3 per 100 patients</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown ΓÇö not recovered</td><td>complaints.complaintsCount; censusPopulation.activeCensus</td></tr></tbody></table></div><div class=\"panel kpi-chart-unknown\"><div class=\"panel-title\">UNKNOWN ΓÇö Chart not rendered: Monthly performance vs target</div><p class=\"kpi-chart-note\"><b>UNKNOWN</b> QAPI KPI current values (days) cannot be rendered as a chart: Average QAPI action closure time value state is UNKNOWN.</p><table class=\"data-table\"><caption>QAPI KPI current values (days)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Average QAPI action closure time</td><td>UNKNOWN</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>Γëñ 14 days</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown ΓÇö not recovered</td><td>actionItems.averageActionClosureDays</td></tr></tbody></table></div><div class=\"panel kpi-chart-unknown\"><div class=\"panel-title\">UNKNOWN ΓÇö Chart not rendered: Current vs prior period</div><p class=\"kpi-chart-note\"><b>UNKNOWN</b> QAPI KPI current values (days) cannot be rendered as a chart: Average QAPI action closure time value state is UNKNOWN.</p><table class=\"data-table\"><caption>QAPI KPI current values (days)</caption><thead><tr><th>Indicator</th><th>Current value</th><th>Numerator</th><th>Denominator</th><th>Target</th><th>Prior value</th><th>Trend direction</th><th>Status</th><th>Confidence</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Average QAPI action closure time</td><td>UNKNOWN</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>Γëñ 14 days</td><td>UNKNOWN</td><td>unknown</td><td>UNKNOWN</td><td>none</td><td>Unknown ΓÇö not recovered</td><td>actionItems.averageActionClosureDays</td></tr></tbody></table></div><div class=\"panel kpi-chart-unknown\"><div class=\"panel-title\">UNKNOWN ΓÇö Chart not rendered: Up to four prior quarters / rolling monthly history</div><p class=\"kpi-chart-note\"><b>UNKNOWN</b> Up to four prior quarters / rolling monthly history (count) cannot be rendered as a chart: Patients or episodes in scope Prior period is Unknown ΓÇö not recovered or malformed.</p><table class=\"data-table\"><caption>Rolling KPI history from prior and current shared KPI data points.</caption><thead><tr><th>Indicator</th><th>Period</th><th>Value</th><th>Target</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Patients or episodes in scope</td><td>Prior period</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>1</td><td>Unknown ΓÇö not recovered</td><td>censusPopulation.patientsOrEpisodesInScope</td></tr><tr><td>Patients or episodes in scope</td><td>Q2 2026</td><td>73</td><td>1</td><td>Validated</td><td>censusPopulation.patientsOrEpisodesInScope</td></tr><tr><td>Active census</td><td>Prior period</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>1</td><td>Unknown ΓÇö not recovered</td><td>censusPopulation.activeCensus</td></tr><tr><td>Active census</td><td>Q2 2026</td><td>42</td><td>1</td><td>Validated</td><td>censusPopulation.activeCensus</td></tr><tr><td>Active PIPs</td><td>Prior period</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>0</td><td>Unknown ΓÇö not recovered</td><td>pipCorrectiveAction.activePipCount</td></tr><tr><td>Active PIPs</td><td>Q2 2026</td><td>73</td><td>0</td><td>Validated</td><td>pipCorrectiveAction.activePipCount</td></tr><tr><td>Open CAPs or RCAs</td><td>Prior period</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>0</td><td>Unknown ΓÇö not recovered</td><td>pipCorrectiveAction.openCapRcaCount</td></tr><tr><td>Open CAPs or RCAs</td><td>Q2 2026</td><td>8</td><td>0</td><td>Validated</td><td>pipCorrectiveAction.openCapRcaCount</td></tr></tbody></table></div><div class=\"panel kpi-chart-panel\"><div class=\"panel-title\">Adverse events by category</div><svg role=\"img\" aria-labelledby=\"kpi-qapi-adverse-events-by-category-title kpi-qapi-adverse-events-by-category-desc\" viewBox=\"0 0 640 336\" xmlns=\"http://www.w3.org/2000/svg\">
+    <title id=\"kpi-qapi-adverse-events-by-category-title\">Adverse events by category</title>
+    <desc id=\"kpi-qapi-adverse-events-by-category-desc\">Events by validated category or stage.</desc>
+    <rect width=\"640\" height=\"336\" fill=\"#ffffff\"/>
+    <text x=\"8\" y=\"18\" font-size=\"12\" font-weight=\"700\" fill=\"#111827\">Adverse events by category</text>
+    <g>
+      <text x=\"8\" y=\"53\" font-size=\"10\" fill=\"#111827\">Near Miss</text>
+      <rect x=\"188\" y=\"42\" width=\"313.5\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"506.5\" y=\"52\" font-size=\"9\" fill=\"#111827\">3</text>
+      <text x=\"606\" y=\"52\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">8 open RCA</text>
+      <text x=\"188\" y=\"67\" font-size=\"8.5\" fill=\"#4b5563\">Adverse event category</text>
+    </g><g>
+      <text x=\"8\" y=\"91\" font-size=\"10\" fill=\"#111827\">Fall</text>
+      <rect x=\"188\" y=\"80\" width=\"418\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"611\" y=\"90\" font-size=\"9\" fill=\"#111827\">4</text>
+      <text x=\"606\" y=\"90\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">8 open RCA</text>
+      <text x=\"188\" y=\"105\" font-size=\"8.5\" fill=\"#4b5563\">Adverse event category</text>
+    </g><g>
+      <text x=\"8\" y=\"129\" font-size=\"10\" fill=\"#111827\">Pressure Injury</text>
+      <rect x=\"188\" y=\"118\" width=\"209\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"402\" y=\"128\" font-size=\"9\" fill=\"#111827\">2</text>
+      <text x=\"606\" y=\"128\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">8 open RCA</text>
+      <text x=\"188\" y=\"143\" font-size=\"8.5\" fill=\"#4b5563\">Adverse event category</text>
+    </g><g>
+      <text x=\"8\" y=\"167\" font-size=\"10\" fill=\"#111827\">Fall With Injury</text>
+      <rect x=\"188\" y=\"156\" width=\"209\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"402\" y=\"166\" font-size=\"9\" fill=\"#111827\">2</text>
+      <text x=\"606\" y=\"166\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">8 open RCA</text>
+      <text x=\"188\" y=\"181\" font-size=\"8.5\" fill=\"#4b5563\">Adverse event category</text>
+    </g><g>
+      <text x=\"8\" y=\"205\" font-size=\"10\" fill=\"#111827\">Elopement</text>
+      <rect x=\"188\" y=\"194\" width=\"209\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"402\" y=\"204\" font-size=\"9\" fill=\"#111827\">2</text>
+      <text x=\"606\" y=\"204\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">8 open RCA</text>
+      <text x=\"188\" y=\"219\" font-size=\"8.5\" fill=\"#4b5563\">Adverse event category</text>
+    </g><g>
+      <text x=\"8\" y=\"243\" font-size=\"10\" fill=\"#111827\">Medication Error</text>
+      <rect x=\"188\" y=\"232\" width=\"418\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"611\" y=\"242\" font-size=\"9\" fill=\"#111827\">4</text>
+      <text x=\"606\" y=\"242\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">8 open RCA</text>
+      <text x=\"188\" y=\"257\" font-size=\"8.5\" fill=\"#4b5563\">Adverse event category</text>
+    </g><g>
+      <text x=\"8\" y=\"281\" font-size=\"10\" fill=\"#111827\">Unreported Fall</text>
+      <rect x=\"188\" y=\"270\" width=\"209\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"402\" y=\"280\" font-size=\"9\" fill=\"#111827\">2</text>
+      <text x=\"606\" y=\"280\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">8 open RCA</text>
+      <text x=\"188\" y=\"295\" font-size=\"8.5\" fill=\"#4b5563\">Adverse event category</text>
+    </g>
+  </svg><table class=\"data-table\"><caption>Adverse events by category from the shared QAPI rollup object.</caption><thead><tr><th>Category or stage</th><th>Events</th><th>Detail</th><th>Status</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Near Miss</td><td>3</td><td>Adverse event category</td><td>8 open RCA</td><td>Validated</td><td>QA-FM-026</td></tr><tr><td>Fall</td><td>4</td><td>Adverse event category</td><td>8 open RCA</td><td>Validated</td><td>QA-FM-026</td></tr><tr><td>Pressure Injury</td><td>2</td><td>Adverse event category</td><td>8 open RCA</td><td>Validated</td><td>QA-FM-026</td></tr><tr><td>Fall With Injury</td><td>2</td><td>Adverse event category</td><td>8 open RCA</td><td>Validated</td><td>QA-FM-026</td></tr><tr><td>Elopement</td><td>2</td><td>Adverse event category</td><td>8 open RCA</td><td>Validated</td><td>QA-FM-026</td></tr><tr><td>Medication Error</td><td>4</td><td>Adverse event category</td><td>8 open RCA</td><td>Validated</td><td>QA-FM-026</td></tr><tr><td>Unreported Fall</td><td>2</td><td>Adverse event category</td><td>8 open RCA</td><td>Validated</td><td>QA-FM-026</td></tr></tbody></table></div><div class=\"panel kpi-chart-panel\"><div class=\"panel-title\">Infection trends + classification</div><svg role=\"img\" aria-labelledby=\"kpi-qapi-infection-trends-classification-title kpi-qapi-infection-trends-classification-desc\" viewBox=\"0 0 640 184\" xmlns=\"http://www.w3.org/2000/svg\">
+    <title id=\"kpi-qapi-infection-trends-classification-title\">Infection trends + classification</title>
+    <desc id=\"kpi-qapi-infection-trends-classification-desc\">Infections by validated category or stage.</desc>
+    <rect width=\"640\" height=\"184\" fill=\"#ffffff\"/>
+    <text x=\"8\" y=\"18\" font-size=\"12\" font-weight=\"700\" fill=\"#111827\">Infection trends + classification</text>
+    <g>
+      <text x=\"8\" y=\"53\" font-size=\"10\" fill=\"#111827\">Healthcare-associated</text>
+      <rect x=\"188\" y=\"42\" width=\"0\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"193\" y=\"52\" font-size=\"9\" fill=\"#111827\">0</text>
+      <text x=\"606\" y=\"52\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">Healthcare-associated</text>
+      <text x=\"188\" y=\"67\" font-size=\"8.5\" fill=\"#4b5563\">Infection classification</text>
+    </g><g>
+      <text x=\"8\" y=\"91\" font-size=\"10\" fill=\"#111827\">Community-acquired</text>
+      <rect x=\"188\" y=\"80\" width=\"278.66666666666663\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"471.66666666666663\" y=\"90\" font-size=\"9\" fill=\"#111827\">2</text>
+      <text x=\"606\" y=\"90\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">Community-acquired</text>
+      <text x=\"188\" y=\"105\" font-size=\"8.5\" fill=\"#4b5563\">Infection classification</text>
+    </g><g>
+      <text x=\"8\" y=\"129\" font-size=\"10\" fill=\"#111827\">Unreported to state</text>
+      <rect x=\"188\" y=\"118\" width=\"418\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"611\" y=\"128\" font-size=\"9\" fill=\"#111827\">3</text>
+      <text x=\"606\" y=\"128\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">Requires reporting review</text>
+      <text x=\"188\" y=\"143\" font-size=\"8.5\" fill=\"#4b5563\">Reporting classification</text>
+    </g>
+  </svg><table class=\"data-table\"><caption>Infection trend classification from the shared QAPI rollup object.</caption><thead><tr><th>Category or stage</th><th>Infections</th><th>Detail</th><th>Status</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Healthcare-associated</td><td>0</td><td>Infection classification</td><td>Healthcare-associated</td><td>Validated</td><td>QA-FM-027</td></tr><tr><td>Community-acquired</td><td>2</td><td>Infection classification</td><td>Community-acquired</td><td>Validated</td><td>QA-FM-027</td></tr><tr><td>Unreported to state</td><td>3</td><td>Reporting classification</td><td>Requires reporting review</td><td>Validated</td><td>QA-FM-027</td></tr></tbody></table></div><div class=\"panel kpi-chart-panel\"><div class=\"panel-title\">Documentation deficiencies by type</div><svg role=\"img\" aria-labelledby=\"kpi-qapi-documentation-deficiencies-by-type-title kpi-qapi-documentation-deficiencies-by-type-desc\" viewBox=\"0 0 640 336\" xmlns=\"http://www.w3.org/2000/svg\">
+    <title id=\"kpi-qapi-documentation-deficiencies-by-type-title\">Documentation deficiencies by type</title>
+    <desc id=\"kpi-qapi-documentation-deficiencies-by-type-desc\">Deficiencies by validated category or stage.</desc>
+    <rect width=\"640\" height=\"336\" fill=\"#ffffff\"/>
+    <text x=\"8\" y=\"18\" font-size=\"12\" font-weight=\"700\" fill=\"#111827\">Documentation deficiencies by type</text>
+    <g>
+      <text x=\"8\" y=\"53\" font-size=\"10\" fill=\"#111827\">OASIS SOC not completed Γëñ5 days</text>
+      <rect x=\"188\" y=\"42\" width=\"250.79999999999998\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"443.79999999999995\" y=\"52\" font-size=\"9\" fill=\"#111827\">24</text>
+      <text x=\"606\" y=\"52\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">Open for documentation review</text>
+      <text x=\"188\" y=\"67\" font-size=\"8.5\" fill=\"#4b5563\">Chart audit deficiency</text>
+    </g><g>
+      <text x=\"8\" y=\"91\" font-size=\"10\" fill=\"#111827\">POC missing face-to-face encounter</text>
+      <rect x=\"188\" y=\"80\" width=\"125.39999999999999\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"318.4\" y=\"90\" font-size=\"9\" fill=\"#111827\">12</text>
+      <text x=\"606\" y=\"90\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">Open for documentation review</text>
+      <text x=\"188\" y=\"105\" font-size=\"8.5\" fill=\"#4b5563\">Chart audit deficiency</text>
+    </g><g>
+      <text x=\"8\" y=\"129\" font-size=\"10\" fill=\"#111827\">POC unsigned / pending physician signature</text>
+      <rect x=\"188\" y=\"118\" width=\"365.75\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"558.75\" y=\"128\" font-size=\"9\" fill=\"#111827\">35</text>
+      <text x=\"606\" y=\"128\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">Open for documentation review</text>
+      <text x=\"188\" y=\"143\" font-size=\"8.5\" fill=\"#4b5563\">Chart audit deficiency</text>
+    </g><g>
+      <text x=\"8\" y=\"167\" font-size=\"10\" fill=\"#111827\">Homebound not justified</text>
+      <rect x=\"188\" y=\"156\" width=\"135.85\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"328.85\" y=\"166\" font-size=\"9\" fill=\"#111827\">13</text>
+      <text x=\"606\" y=\"166\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">Open for documentation review</text>
+      <text x=\"188\" y=\"181\" font-size=\"8.5\" fill=\"#4b5563\">Chart audit deficiency</text>
+    </g><g>
+      <text x=\"8\" y=\"205\" font-size=\"10\" fill=\"#111827\">Med-reconciliation count mismatch (OASISΓåöPOC)</text>
+      <rect x=\"188\" y=\"194\" width=\"418\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"611\" y=\"204\" font-size=\"9\" fill=\"#111827\">40</text>
+      <text x=\"606\" y=\"204\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">Open for documentation review</text>
+      <text x=\"188\" y=\"219\" font-size=\"8.5\" fill=\"#4b5563\">Chart audit deficiency</text>
+    </g><g>
+      <text x=\"8\" y=\"243\" font-size=\"10\" fill=\"#111827\">Pressure injury present, no wound orders</text>
+      <rect x=\"188\" y=\"232\" width=\"167.20000000000002\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"360.20000000000005\" y=\"242\" font-size=\"9\" fill=\"#111827\">16</text>
+      <text x=\"606\" y=\"242\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">Open for documentation review</text>
+      <text x=\"188\" y=\"257\" font-size=\"8.5\" fill=\"#4b5563\">Chart audit deficiency</text>
+    </g><g>
+      <text x=\"8\" y=\"281\" font-size=\"10\" fill=\"#111827\">OASIS high mobility need, no therapy ordered</text>
+      <rect x=\"188\" y=\"270\" width=\"52.25\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"245.25\" y=\"280\" font-size=\"9\" fill=\"#111827\">5</text>
+      <text x=\"606\" y=\"280\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">Open for documentation review</text>
+      <text x=\"188\" y=\"295\" font-size=\"8.5\" fill=\"#4b5563\">Chart audit deficiency</text>
+    </g>
+  </svg><table class=\"data-table\"><caption>Documentation deficiency counts from the shared QAPI rollup object.</caption><thead><tr><th>Category or stage</th><th>Deficiencies</th><th>Detail</th><th>Status</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>OASIS SOC not completed Γëñ5 days</td><td>24</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr><tr><td>POC missing face-to-face encounter</td><td>12</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr><tr><td>POC unsigned / pending physician signature</td><td>35</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr><tr><td>Homebound not justified</td><td>13</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr><tr><td>Med-reconciliation count mismatch (OASISΓåöPOC)</td><td>40</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr><tr><td>Pressure injury present, no wound orders</td><td>16</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr><tr><td>OASIS high mobility need, no therapy ordered</td><td>5</td><td>Chart audit deficiency</td><td>Open for documentation review</td><td>Validated</td><td>QA-FM-025</td></tr></tbody></table></div><div class=\"panel kpi-chart-panel\"><div class=\"panel-title\">PIP/CAP status by stage</div><svg role=\"img\" aria-labelledby=\"kpi-qapi-pip-cap-status-by-stage-title kpi-qapi-pip-cap-status-by-stage-desc\" viewBox=\"0 0 640 222\" xmlns=\"http://www.w3.org/2000/svg\">
+    <title id=\"kpi-qapi-pip-cap-status-by-stage-title\">PIP/CAP status by stage</title>
+    <desc id=\"kpi-qapi-pip-cap-status-by-stage-desc\">Items by validated category or stage.</desc>
+    <rect width=\"640\" height=\"222\" fill=\"#ffffff\"/>
+    <text x=\"8\" y=\"18\" font-size=\"12\" font-weight=\"700\" fill=\"#111827\">PIP/CAP status by stage</text>
+    <g>
+      <text x=\"8\" y=\"53\" font-size=\"10\" fill=\"#111827\">PIP trigger candidates requiring QAPI review</text>
+      <rect x=\"188\" y=\"42\" width=\"418\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"611\" y=\"52\" font-size=\"9\" fill=\"#111827\">73</text>
+      <text x=\"606\" y=\"52\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">PENDING AUTHORIZED REVIEW</text>
+      <text x=\"188\" y=\"67\" font-size=\"8.5\" fill=\"#4b5563\">PIP/CAP stage</text>
+    </g><g>
+      <text x=\"8\" y=\"91\" font-size=\"10\" fill=\"#111827\">Immediate-action cases</text>
+      <rect x=\"188\" y=\"80\" width=\"372.1917808219178\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"565.1917808219177\" y=\"90\" font-size=\"9\" fill=\"#111827\">65</text>
+      <text x=\"606\" y=\"90\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">ESCALATED</text>
+      <text x=\"188\" y=\"105\" font-size=\"8.5\" fill=\"#4b5563\">PIP/CAP stage</text>
+    </g><g>
+      <text x=\"8\" y=\"129\" font-size=\"10\" fill=\"#111827\">Open CAP/RCA items</text>
+      <rect x=\"188\" y=\"118\" width=\"45.80821917808219\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"238.8082191780822\" y=\"128\" font-size=\"9\" fill=\"#111827\">8</text>
+      <text x=\"606\" y=\"128\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">ACTIVATED</text>
+      <text x=\"188\" y=\"143\" font-size=\"8.5\" fill=\"#4b5563\">PIP/CAP stage</text>
+    </g><g>
+      <text x=\"8\" y=\"167\" font-size=\"10\" fill=\"#111827\">Confidential personnel-review addendum</text>
+      <rect x=\"188\" y=\"156\" width=\"303.47945205479454\" height=\"12\" rx=\"2\" fill=\"#2563eb\"/>
+      <text x=\"496.47945205479454\" y=\"166\" font-size=\"9\" fill=\"#111827\">53</text>
+      <text x=\"606\" y=\"166\" font-size=\"8.5\" text-anchor=\"end\" fill=\"#374151\">PENDING AUTHORIZED REVIEW</text>
+      <text x=\"188\" y=\"181\" font-size=\"8.5\" fill=\"#4b5563\">Restricted addendum reference count only</text>
+    </g>
+  </svg><table class=\"data-table\"><caption>PIP, CAP, RCA, and related workflow status by stage.</caption><thead><tr><th>Category or stage</th><th>Items</th><th>Detail</th><th>Status</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>PIP trigger candidates requiring QAPI review</td><td>73</td><td>PIP/CAP stage</td><td>PENDING AUTHORIZED REVIEW</td><td>Validated</td><td>QA-FM-020</td></tr><tr><td>Immediate-action cases</td><td>65</td><td>PIP/CAP stage</td><td>ESCALATED</td><td>Validated</td><td>QA-FM-020</td></tr><tr><td>Open CAP/RCA items</td><td>8</td><td>PIP/CAP stage</td><td>ACTIVATED</td><td>Validated</td><td>QA-FM-026</td></tr><tr><td>Confidential personnel-review addendum</td><td>53</td><td>Restricted addendum reference count only</td><td>PENDING AUTHORIZED REVIEW</td><td>Validated</td><td>Restricted addendum reference</td></tr></tbody></table></div><div class=\"panel kpi-chart-unknown\"><div class=\"panel-title\">UNKNOWN ΓÇö Chart not rendered: Complaints by category + resolution</div><p class=\"kpi-chart-note\"><b>UNKNOWN</b> Complaint category and resolution counts from the shared QAPI data object. cannot be rendered as a chart: Complaint category is Unknown ΓÇö not recovered or malformed.</p><table class=\"data-table\"><caption>Complaint category and resolution counts from the shared QAPI data object.</caption><thead><tr><th>Category or stage</th><th>Complaints</th><th>Detail</th><th>Status</th><th>Validation status</th><th>Source</th></tr></thead><tbody><tr><td>Complaint category</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>UNKNOWN ΓÇö SOURCE NOT RECOVERED</td><td>Resolution status UNKNOWN</td><td>Unknown ΓÇö not recovered</td><td>complaints.complaintsCount</td></tr></tbody></table></div>
+    <div class=\"panel\"><div class=\"panel-title\">Interim date-window exclusions</div><p class=\"muted\">Excluded as post-2026-05-07: 9 incident(s), 5 infection(s).</p></div>
+  
+      <div class=\"pg-foot\"><span>QAPI Committee Packet - Version 1.0 Draft - Requires Review</span><span>QAPI-PKT-Q2-2026 ┬╖ 2026-04-01 ΓåÆ 2026-06-30 ┬╖ Draft generated ┬╖ INTERNAL ┬╖ Page 4 of 18</span></div>
+    </div>
+  </section><section class=\"pg\" data-module-id=\"qapi-source-feeder-workflow-form-utilization\" data-page-number=\"5\">
+    <div class=\"accent-rail\" aria-hidden=\"true\"><span></span><span></span></div>
+    
+    <div class=\"pg-in\">
+      <header class=\"pg-topline\">
+    <div class=\"pg-topline-left\">
+      <div>
+    <img class=\"ci-mark ci-mark-page\" alt=\"Care Indeed\" src=\"/ci-logo-packet-page.png\" onerror=\"this.style.display='none';this.nextElementSibling.style.display='block';\">
+    <div class=\"ci-logo-fallback\">Care<span>Indeed</span></div>
+  </div>
+      <div class=\"pg-topline-left-text\">
+        <strong>Care Indeed Home Health Care, Inc.</strong>
+        <div>Version 1.0 Draft - Requires Review</div>
+      </div>
+    </div>
+    <div class=\"pg-topline-right\">Source, feeder-workflow, and form utilization analysis<br>Page 5</div>
+  </header>
+      
+      <h2 class=\"pg-h\">Source, feeder-workflow, and form utilization analysis</h2><div class=\"rule\"></div>
+      <div class=\"handling\">QAPI analytical packet ΓÇö classification and handling notice applies per packet confidentiality rules.</div><div class=\"lock-banner\"><b>NOT LOCKABLE ΓÇö 1 blocking item(s)</b></div>
+    <div class=\"panel\"><div class=\"panel-title\">Source provenance</div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Source agency</span><span class=\"kv-value\">Care Indeed Home Health</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Source dataset</span><span class=\"kv-value\">ΓÇö</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Review quarter</span><span class=\"kv-value\">Q2 2026</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Data-through date</span><span class=\"kv-value\">2026-05-07</span></div>
+    </div>
+    <div class=\"panel\"><div class=\"panel-title\">Source, feeder-workflow, and form utilization analysis</div><table class=\"data-table\"><thead><tr><th>Source / form</th><th>Recovered count</th><th>Use in packet</th></tr></thead><tbody><tr><td>Source census</td><td>73</td><td>Census reconciliation and duplicate-client review</td></tr><tr><td>QA-FM-026</td><td>19</td><td>Incident / adverse-event summary</td></tr><tr><td>QA-FM-027</td><td>4</td><td>Infection-control line list</td></tr><tr><td>Lab log</td><td>7</td><td>Critical lab reporting review</td></tr><tr><td>OASIS / CMS-485</td><td>60</td><td>Chart-audit denominator context</td></tr></tbody></table></div>
+  
+      <div class=\"pg-foot\"><span>QAPI Committee Packet - Version 1.0 Draft - Requires Review</span><span>QAPI-PKT-Q2-2026 ┬╖ 2026-04-01 ΓåÆ 2026-06-30 ┬╖ Draft generated ┬╖ INTERNAL ┬╖ Page 5 of 18</span></div>
+    </div>
+  </section><section class=\"pg\" data-module-id=\"qapi-detailed-findings-and-trend-analysis\" data-page-number=\"6\">
+    <div class=\"accent-rail\" aria-hidden=\"true\"><span></span><span></span></div>
+    
+    <div class=\"pg-in\">
+      <header class=\"pg-topline\">
+    <div class=\"pg-topline-left\">
+      <div>
+    <img class=\"ci-mark ci-mark-page\" alt=\"Care Indeed\" src=\"/ci-logo-packet-page.png\" onerror=\"this.style.display='none';this.nextElementSibling.style.display='block';\">
+    <div class=\"ci-logo-fallback\">Care<span>Indeed</span></div>
+  </div>
+      <div class=\"pg-topline-left-text\">
+        <strong>Care Indeed Home Health Care, Inc.</strong>
+        <div>Version 1.0 Draft - Requires Review</div>
+      </div>
+    </div>
+    <div class=\"pg-topline-right\">Detailed findings and trend analysis<br>Page 6</div>
+  </header>
+      
+      <h2 class=\"pg-h\">Detailed findings and trend analysis</h2><div class=\"rule\"></div>
+      <div class=\"handling\">QAPI analytical packet ΓÇö classification and handling notice applies per packet confidentiality rules.</div><div class=\"lock-banner\"><b>NOT LOCKABLE ΓÇö 1 blocking item(s)</b></div>
+    <div class=\"panel\"><div class=\"panel-title\">Incident / Adverse-Event Summary (QA-FM-026)</div>
+      <table class=\"data-table\"><thead><tr><th>Category</th><th>Count</th></tr></thead><tbody><tr><td>near_miss</td><td>3</td></tr><tr><td>fall</td><td>4</td></tr><tr><td>pressure_injury</td><td>2</td></tr><tr><td>fall_with_injury</td><td>2</td></tr><tr><td>elopement</td><td>2</td></tr><tr><td>medication_error</td><td>4</td></tr><tr><td>unreported_fall</td><td>2</td></tr></tbody></table>
+      <div class=\"kv-row\"><span class=\"kv-key\">Total in window</span><span class=\"kv-value\">19</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Open RCAs</span><span class=\"kv-value\">8</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Unreported</span><span class=\"kv-value\">7</span></div>
+    </div>
+    <div class=\"panel\"><div class=\"panel-title\">Infection Control (QA-FM-027)</div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Cases in window</span><span class=\"kv-value\">4</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Healthcare-associated</span><span class=\"kv-value\">0</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Community-acquired</span><span class=\"kv-value\">2</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Unreported to state</span><span class=\"kv-value\">3</span></div>
+    </div>
+    <div class=\"panel\"><div class=\"panel-title\">Chart Audit &amp; Documentation Integrity (QA-FM-025)</div>
+      <p class=\"p\">Chart audit denominator tied to active census (42) + recerts due (18). Findings below are derived from OASIS/POC document review.</p>
+      <div class=\"kv-row\"><span class=\"kv-key\">OASIS SOC not completed Γëñ5 days</span><span class=\"kv-value\">24</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">POC missing face-to-face encounter</span><span class=\"kv-value\">12</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">POC unsigned / pending physician signature</span><span class=\"kv-value\">35</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Homebound not justified</span><span class=\"kv-value\">13</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Med-reconciliation count mismatch (OASISΓåöPOC)</span><span class=\"kv-value\">40</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">Pressure injury present, no wound orders</span><span class=\"kv-value\">16</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">OASIS high mobility need, no therapy ordered</span><span class=\"kv-value\">5</span></div>
+    </div>
+    <div class=\"panel\"><div class=\"panel-title\">Source-data exceptions</div><table class=\"data-table\"><thead><tr><th>Severity</th><th>Path</th><th>Reason</th><th>Remediation</th></tr></thead><tbody><tr><td>high</td><td>census</td><td>1 patient record(s) have a blank client_id</td><td>Assign/repair client identifiers before census can be certified.</td></tr><tr><td>high</td><td>census</td><td>Duplicate client_id(s): MOCK-PT-Q2-0012</td><td>Resolve duplicate records ΓÇö census denominator is unreliable.</td></tr><tr><td>high</td><td>patient.MOCK-PT-Q2-0010.admission_status</td><td>Discharged patient has active visits this period (status/visit contradiction).</td><td>Reconcile EMR status vs visit log before counting census.</td></tr><tr><td>high</td><td>patient.MOCK-PT-Q2-0030.admission_status</td><td>Discharged patient has active visits this period (status/visit contradiction).</td><td>Reconcile EMR status vs visit log before counting census.</td></tr><tr><td>medium</td><td>patient.MOCK-PT-Q2-0043.age</td><td>Impossible age (250).</td><td>Correct demographic data.</td></tr><tr><td>blocker</td><td>labs</td><td>1 critical lab value(s) not reported to physician within policy.</td><td>Physician-notification audit + reporting retraining; see personnel addendum.</td></tr><tr><td>high</td><td>poc.f2f</td><td>12 POC(s) missing a documented face-to-face encounter.</td><td>Obtain/scan F2F; Medicare coverage risk until resolved.</td></tr><tr><td>high</td><td>poc.signature</td><td>35 POC(s) unsigned/pending physician signature.</td><td>Pursue signed orders; verbal orders must be signed timely.</td></tr><tr><td>medium</td><td>poc.homebound</td><td>13 patient(s) lack documented homebound justification.</td><td>Document homebound status per Medicare criteria.</td></tr></tbody></table></div>
+  
+      <div class=\"pg-foot\"><span>QAPI Committee Packet - Version 1.0 Draft - Requires Review</span><span>QAPI-PKT-Q2-2026 ┬╖ 2026-04-01 ΓåÆ 2026-06-30 ┬╖ Draft generated ┬╖ INTERNAL ┬╖ Page 6 of 18</span></div>
+    </div>
+  </section><section class=\"pg\" data-module-id=\"qapi-pip-cap-rca-personnel-review-determinations\" data-page-number=\"7\">
+    <div class=\"accent-rail\" aria-hidden=\"true\"><span></span><span></span></div>
+    
+    <div class=\"pg-in\">
+      <header class=\"pg-topline\">
+    <div class=\"pg-topline-left\">
+      <div>
+    <img class=\"ci-mark ci-mark-page\" alt=\"Care Indeed\" src=\"/ci-logo-packet-page.png\" onerror=\"this.style.display='none';this.nextElementSibling.style.display='block';\">
+    <div class=\"ci-logo-fallback\">Care<span>Indeed</span></div>
+  </div>
+      <div class=\"pg-topline-left-text\">
+        <strong>Care Indeed Home Health Care, Inc.</strong>
+        <div>Version 1.0 Draft - Requires Review</div>
+      </div>
+    </div>
+    <div class=\"pg-topline-right\">High-Risk Patient Rollup<br>Page 7</div>
+  </header>
+      
+      <h2 class=\"pg-h\">High-Risk Patient Rollup</h2><div class=\"rule\"></div>
+      <div class=\"handling\">QAPI analytical packet ΓÇö classification and handling notice applies per packet confidentiality rules.</div><div class=\"lock-banner\"><b>NOT LOCKABLE ΓÇö 1 blocking item(s)</b></div>
+    <div class=\"panel\"><div class=\"panel-title\">Top recurring high-risk flags</div><table class=\"data-table\"><thead><tr><th>Flag</th><th>Count</th></tr></thead><tbody><tr><td>hospitalization 30d</td><td>23</td></tr><tr><td>fall risk high</td><td>22</td></tr><tr><td>polypharmacy 15plus</td><td>22</td></tr><tr><td>wound deterioration</td><td>21</td></tr><tr><td>infection high</td><td>19</td></tr><tr><td>pressure injury</td><td>17</td></tr></tbody></table></div>
+    <div class=\"panel\"><div class=\"panel-title\">Systemic themes</div><ul class=\"list\"><li>hospitalization 30d</li><li>fall risk high</li><li>polypharmacy 15plus</li><li>wound deterioration</li><li>infection high</li><li>pressure injury</li></ul></div>
+    <div class=\"panel\"><div class=\"panel-title\">PIP, CAP, RCA, personnel-review, and other action determinations</div>
+      <ul class=\"list\"><li>Immediate-action high-risk cases require committee disposition and owner assignment.</li><li>Critical lab reporting gap is a PIP candidate and source-exception blocker.</li><li>Confidential personnel-review addendum reference must remain restricted and outside the main packet body.</li></ul>
+      <div class=\"kv-row\"><span class=\"kv-key\">Immediate-action cases</span><span class=\"kv-value\">65</span></div>
+      <div class=\"kv-row\"><span class=\"kv-key\">QAPI-required cases</span><span class=\"kv-value\">73</span></div>
+    </div>
+  
+      <div class=\"pg-foot\"><span>QAPI Committee Packet - Version 1.0 Draft - Requires Review</span><span>QAPI-PKT-Q2-2026 ┬╖ 2026-04-01 ΓåÆ 2026-06-30 ┬╖ Draft generated ┬╖ INTERNAL ┬╖ Page 7 of 18</span></div>
+    </div>
+  </section><section class=\"pg\" data-module-id=\"qapi-triggered-workflow-and-dependency-register\" data-page-number=\"8\">
+    <div class=\"accent-rail\" aria-hidden=\"true\"><span></span><span></span></div>
+    
+    <div class=\"pg-in\">
+      <header class=\"pg-topline\">
+    <div class=\"pg-topline-left\">
+      <div>
+    <img class=\"ci-mark ci-mark-page\" alt=\"Care Indeed\" src=\"/ci-logo-packet-page.png\" onerror=\"this.style.display='none';this.nextElementSibling.style.display='block';\">
+    <div class=\"ci-logo-fallback\">Care<span>Indeed</span></div>
+  </div>
+      <div class=\"pg-topline-left-text\">
+        <strong>Care Indeed Home Health Care, Inc.</strong>
+        <div>Version 1.0 Draft - Requires Review</div>
+      </div>
+    </div>
+    <div class=\"pg-topline-right\">Triggered Workflow and Dependency Register<br>Page 8</div>
+  </header>
+      
+      <h2 class=\"pg-h\">Triggered Workflow and Dependency Register</h2><div class=\"rule\"></div>
+      <div class=\"handling\">QAPI analytical packet ΓÇö classification and handling notice applies per packet confidentiality rules.</div><div class=\"lock-banner\"><b>NOT LOCKABLE ΓÇö 1 blocking item(s)</b></div><div class=\"panel\"><div class=\"panel-title\">Triggered Workflow and Dependency Register</div><table class=\"data-table\"><thead><tr><th>Trigger</th><th>State</th><th>Dependency / workflow</th><th>Source</th></tr></thead><tbody><tr><td>High-risk patient flag rollup</td><td>Triggered</td><td>QAPI committee review</td><td>High-risk rollup</td></tr><tr><td>Immediate-action high-risk flags</td><td>Triggered</td><td>Clinical leadership escalation</td><td>high_risk_flags</td></tr><tr><td>Open RCA count</td><td>Triggered</td><td>RCA completion workflow</td><td>QA-FM-026</td></tr><tr><td>Unreported critical labs</td><td>Triggered</td><td>PIP/CAP and physician-notification audit</td><td>Lab log</td></tr><tr><td>Confidential personnel-review addendum</td><td>Triggered</td><td>Restricted personnel-review workflow</td><td>QAPI-HR-ADDENDUM-2026-Q2</td></tr></tbody></table></div>
+      <div class=\"pg-foot\"><span>QAPI Committee Packet - Version 1.0 Draft - Requires Review</span><span>QAPI-PKT-Q2-2026 ┬╖ 2026-04-01 ΓåÆ 2026-06-30 ┬╖ Draft generated ┬╖ INTERNAL ┬╖ Page 8 of 18</span></div>
+    </div>
+  </section><section class=\"pg\" data-module-id=\"qapi-committee-and-governing-body-decisions\" data-page-number=\"9\">
+    <div class=\"accent-rail\" aria-hidden=\"true\"><span></span><span></span></div>
+    
+    <div class=\"pg-in\">
+      <header class=\"pg-topline\">
+    <div class=\"pg-topline-left\">
+      <div>
+    <img class=\"ci-mark ci-mark-page\" alt=\"Care Indeed\" src=\"/ci-logo-packet-page.png\" onerror=\"this.style.display='none';this.nextElementSibling.style.display='block';\">
+    <div class=\"ci-logo-fallback\">Care<span>Indeed</span></div>
+  </div>
+      <div class=\"pg-topline-left-text\">
+        <strong>Care Indeed Home Health Care, Inc.</strong>
+        <div>Version 1.0 Draft - Requires Review</div>
+      </div>
+    </div>
+    <div class=\"pg-topline-right\">Governing Body Summary &amp; Confidential Addendum Reference<br>Page 9</div>
+  </header>
+      
+      <h2 class=\"pg-h\">Governing Body Summary &amp; Confidential Addendum Reference</h2><div class=\"rule\"></div>
+      <div class=\"handling\">QAPI analytical packet ΓÇö classification and handling notice applies per packet confidentiality rules.</div><div class=\"lock-banner\"><b>NOT LOCKABLE ΓÇö 1 blocking item(s)</b></div>
+    <div class=\"panel\"><div class=\"panel-title\">Decisions requested</div><ul class=\"list\"><li>Review the Q2 2026 QAPI report for approval readiness (draft packet).</li><li>Approve new PIP candidates flagged by the dashboard.</li><li>Assign owners and due dates for open RCA, source-exception, and documentation-integrity actions.</li><li>Acknowledge the confidential personnel-action addendum (restricted access).</li></ul></div>
+    <div class=\"panel\"><div class=\"panel-title\">Governing Body packet summary</div>
+      <div class=\...
+
+ Γ¥» src/policy/qapi/qapi.test.ts:197:18
+    195|   it('May-7 packet is titled INTERIM and states the data-through date'ΓÇª
+    196|     const html = renderQapiPacketHtml(dump, '2026-05-07', opts);
+    197|     expect(html).toMatch(/Interim Q2 2026 QAPI/);
+       |                  ^
+    198|     expect(html).toMatch(/Data-through date/);
+    199|     expect(html).toMatch(/2026-05-07/);
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[17/17]ΓÄ»
+
+
+ Test Files  16 failed | 56 passed (72)
+      Tests  3 failed | 646 passed (649)
+   Start at  13:32:28
+   Duration  12.78s (transform 44.49s, setup 0ms, collect 93.87s, tests 19.53s, environment 95.44s, prepare 13.13s)
+

@@ -1,0 +1,3 @@
+total_js_under_src=0
+shadowing_js_count=0
+No .js files under src/ that shadow .ts/.tsx siblings.
