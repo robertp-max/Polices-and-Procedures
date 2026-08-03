@@ -132,9 +132,9 @@ Also present under evidence (from prior wave agent): `W1-A13-npm-run-build.log`.
 
 | Field | Value |
 | --- | --- |
-| **Final HEAD** | `d9db39a0a08868f6e4dcc22035e41d8e17a51347` |
-| Short | `d9db39a0` |
-| Subject | `chore(audit): add wave-1 evidence artifacts` |
+| **Final HEAD** | `22f8f93200fb715a2be9420c3d5caf22ac8f4258` |
+| Short | `22f8f932` |
+| Subject | `chore(audit): finalize W1-A16 integrator report` |
 | Branch | `codex/merge-local-app-surfaces-2026-08-03` |
 | Base | `7b0b6ae68456aa4aa353a69009ea3465767e48ec` |
 
