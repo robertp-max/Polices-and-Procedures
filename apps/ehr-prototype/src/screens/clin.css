@@ -1,0 +1,154 @@
+/* Clinical documentation worklist */
+
+.clin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---------- Worklist card ---------- */
+
+.clin-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 20px;
+  transition: box-shadow 130ms ease, border-color 130ms ease;
+}
+.clin-card:hover { box-shadow: var(--shadow-2); border-color: var(--line-strong); }
+
+.clin-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.clin-card-patient {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  margin: -4px;
+  padding: 4px;
+  border-radius: var(--r-xs);
+  transition: background 130ms ease;
+}
+.clin-card-patient:hover { background: var(--gray-100); }
+.clin-card-patient:hover .clin-card-name { color: var(--link-hover); text-decoration: underline; }
+
+.clin-card-name {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--link);
+  text-align: left;
+  line-height: 1.3;
+}
+
+.clin-card-chips {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.clin-card-main {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.clin-card-text {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.clin-card-title { font-size: 14px; font-weight: 500; color: var(--ink-strong); }
+.clin-card-meta { font-size: 12.5px; color: var(--ink-soft); }
+.clin-card-progress { max-width: 260px; margin-top: 4px; }
+
+.clin-card-actions { flex-shrink: 0; }
+
+/* ---------- Note preview drawer ---------- */
+
+.clin-note {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.clin-note-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.clin-note-section:last-of-type { border-bottom: none; padding-bottom: 0; }
+
+.clin-note-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.clin-note-text { font-size: 13px; color: var(--ink); line-height: 1.6; }
+
+.clin-vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+@media (max-width: 420px) { .clin-vitals-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+.clin-vital {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 6px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xs);
+}
+.clin-vital-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.clin-vital-value {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--ink-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.clin-note-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 6px;
+  text-align: center;
+}
+.clin-note-footer .btn-primary { width: 100%; }
+
+.clin-note-signed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.clin-note-footnote { font-size: 11.5px; color: var(--ink-soft); }

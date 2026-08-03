@@ -1,0 +1,137 @@
+/* Orders control center */
+
+.ord-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 1280px) { .ord-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---------- Orders card ---------- */
+
+.ord-card { padding: 0; overflow: hidden; }
+
+.ord-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 14px;
+}
+
+.ord-result-count { font-size: 12.5px; color: var(--ink-soft); }
+
+.ord-table-wrap { overflow-x: auto; }
+
+.ord-table { min-width: 980px; }
+.ord-table th:first-child, .ord-table td:first-child { padding-left: 20px; }
+.ord-table th:last-child, .ord-table td:last-child { padding-right: 20px; }
+
+/* ---------- Order summary cell ---------- */
+
+.ord-summary-cell { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; max-width: 320px; }
+.ord-summary-title { font-size: 13.5px; font-weight: 500; color: var(--ink-strong); line-height: 1.4; }
+.ord-urgent-chip { flex-shrink: 0; }
+
+/* ---------- Patient cell ---------- */
+
+.ord-patient-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 4px 6px 4px 4px;
+  margin: -4px -6px -4px -4px;
+  border-radius: var(--r-xs);
+  transition: background 130ms ease;
+}
+.ord-patient-cell:hover { background: var(--teal-100); }
+.ord-patient-cell:hover .ord-patient-name { color: var(--link-hover); text-decoration: underline; }
+.ord-patient-name { font-size: 13.5px; font-weight: 500; color: var(--link); white-space: nowrap; }
+
+/* ---------- Category chip icon spacing (chip base already sets gap) ---------- */
+
+.ord-table td .chip svg { flex-shrink: 0; }
+
+/* ---------- Ordered by cell ---------- */
+
+.ord-by-cell { display: flex; flex-direction: column; gap: 1px; }
+.ord-by-name { font-size: 13px; color: var(--ink); white-space: nowrap; }
+.ord-by-date { font-size: 11.5px; color: var(--ink-soft); }
+
+/* ---------- Due cell ---------- */
+
+.ord-due-plain { font-size: 12.5px; color: var(--ink-soft); white-space: nowrap; }
+
+/* ---------- Drawer content ---------- */
+
+.ord-drawer-section { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.ord-drawer-section:last-of-type { margin-bottom: 0; }
+
+.ord-drawer-patient {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  padding: 10px 12px;
+  margin: -10px -12px;
+  border-radius: var(--r-sm);
+  transition: background 130ms ease;
+  width: 100%;
+}
+.ord-drawer-patient:hover { background: var(--teal-100); }
+.ord-drawer-patient:hover .ord-drawer-patient-name { color: var(--link-hover); text-decoration: underline; }
+.ord-drawer-patient-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.ord-drawer-patient-name { font-size: 14.5px; font-weight: 500; color: var(--link); }
+.ord-drawer-patient-meta { font-size: 12px; color: var(--ink-soft); }
+
+.ord-drawer-summary { font-size: 14.5px; font-weight: 500; color: var(--ink-strong); line-height: 1.5; margin: 0; }
+
+.ord-drawer-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.ord-drawer-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 4px;
+}
+.ord-drawer-meta-label { font-size: 10.5px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+.ord-drawer-meta-value { font-size: 13px; color: var(--ink-strong); margin-top: 3px; }
+
+/* ---------- Timeline ---------- */
+
+.ord-timeline { list-style: none; margin: 0; padding: 0; }
+
+.ord-timeline-item { display: flex; gap: 12px; }
+
+.ord-timeline-rail { display: flex; flex-direction: column; align-items: center; width: 10px; flex-shrink: 0; }
+.ord-timeline-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--teal-500);
+  border: 2px solid var(--teal-200);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.ord-timeline-line { flex: 1; width: 2px; background: var(--line); margin: 4px 0; min-height: 20px; }
+
+.ord-timeline-body { display: flex; flex-direction: column; gap: 1px; padding-bottom: 16px; }
+.ord-timeline-item:last-child .ord-timeline-body { padding-bottom: 0; }
+.ord-timeline-label { font-size: 13px; font-weight: 500; color: var(--ink-strong); }
+.ord-timeline-when { font-size: 11.5px; color: var(--ink-soft); }
+
+/* ---------- Physician contact ---------- */
+
+.ord-contact-card {
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+}
+.ord-contact-name { font-size: 13.5px; font-weight: 500; color: var(--ink-strong); }
+.ord-contact-detail { font-size: 12.5px; color: var(--ink-soft); margin-top: 3px; }
+
+/* ---------- Drawer actions ---------- */
+
+.ord-drawer-actions { display: flex; align-items: center; gap: 10px; margin-top: 20px; }

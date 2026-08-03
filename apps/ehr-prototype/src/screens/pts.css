@@ -1,0 +1,139 @@
+/* Patients roster */
+
+.pts-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pts-search {
+  border-radius: var(--r-pill);
+  width: 340px;
+  flex-shrink: 0;
+}
+@media (max-width: 860px) { .pts-search { width: 100%; } }
+
+.pts-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pts-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 8px 0 14px;
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 130ms ease, border-color 130ms ease, color 130ms ease;
+}
+.pts-chip:hover { border-color: var(--gray-400); background: var(--gray-100); }
+.pts-chip.is-active {
+  background: var(--teal-100);
+  border-color: var(--teal-400);
+  color: var(--teal-600);
+}
+.pts-chip.is-active:hover { background: var(--teal-200); }
+
+.pts-chip-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--gray-100);
+  border: 1px solid var(--line);
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+  color: var(--ink-soft);
+}
+.pts-chip.is-active .pts-chip-count { background: var(--teal-200); border-color: var(--teal-300); color: var(--teal-600); }
+
+/* ---------- Roster card ---------- */
+
+.pts-card { padding: 0; overflow: hidden; }
+
+.pts-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 14px;
+}
+
+.pts-result-count { font-size: 12.5px; color: var(--ink-soft); }
+
+.pts-table-wrap { overflow-x: auto; }
+
+.pts-table { min-width: 900px; }
+.pts-table th:first-child, .pts-table td:first-child { padding-left: 20px; }
+.pts-table th:last-child, .pts-table td:last-child { padding-right: 20px; }
+
+/* ---------- Patient cell ---------- */
+
+.pts-patient-cell { display: flex; align-items: center; gap: 11px; min-width: 0; }
+.pts-patient-who { min-width: 0; }
+.pts-patient-name { font-size: 13.5px; font-weight: 500; color: var(--ink-strong); white-space: nowrap; }
+.pts-patient-mrn { font-size: 11.5px; color: var(--ink-soft); margin-top: 1px; }
+
+/* ---------- Diagnosis ---------- */
+
+.pts-dx {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-width: 220px;
+}
+.pts-dx-code { font-size: 11.5px; font-weight: 600; color: var(--ink-soft); letter-spacing: 0.02em; }
+.pts-dx-label {
+  font-size: 13px;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Episode ---------- */
+
+.pts-episode { display: flex; flex-direction: column; gap: 6px; min-width: 130px; }
+.pts-episode-day { font-size: 12.5px; font-weight: 500; color: var(--ink-strong); font-variant-numeric: tabular-nums; }
+.pts-mini-bar { width: 110px; }
+.pts-episode-note { font-size: 11px; font-style: italic; color: var(--ink-soft); }
+
+/* ---------- Next visit ---------- */
+
+.pts-next-visit { display: flex; flex-direction: column; gap: 1px; }
+.pts-next-when { font-size: 13px; font-weight: 500; color: var(--ink-strong); white-space: nowrap; }
+.pts-next-type { font-size: 11.5px; color: var(--ink-soft); }
+
+/* ---------- Record integrity ---------- */
+
+.pts-integrity { display: flex; flex-direction: column; gap: 6px; min-width: 90px; }
+.pts-integrity-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--ink-strong);
+  font-variant-numeric: tabular-nums;
+}
+.pts-integrity-value span { font-weight: 400; color: var(--ink-soft); }
+.pts-integrity-value.is-warn { color: var(--status-warn); }
+.pts-integrity-value.is-warn svg { color: var(--status-warn-icon); }
+
+/* ---------- Case manager ---------- */
+
+.pts-cm-name { font-size: 13px; color: var(--ink); white-space: nowrap; }
+.pts-cm-role { font-size: 11px; color: var(--ink-soft); margin-top: 1px; }
