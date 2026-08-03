@@ -14,6 +14,8 @@
 
 ## 1. `git status` (pre-audit-commit)
 
+At integrator start (product tip `60f17bb5` / later inventory polish concurrent):
+
 ```
 On branch codex/merge-local-app-surfaces-2026-08-03
 nothing to commit, working tree clean
@@ -21,9 +23,9 @@ nothing to commit, working tree clean
 
 - **Unclean files before audit artifacts:** none (clean intentional merge state).
 - **Dirty-root files:** not present in this worktree; nothing staged from dirty root.
-- **Staging rule:** only audit evidence under `audit/merge-2026-08-03/` was added for the additive audit commit (see §6). No product-code restage.
+- **Staging rule:** only audit evidence under `audit/merge-2026-08-03/` was staged. No product-code restage.
 
-After writing evidence, status showed untracked `audit/` only — expected; staged and committed as `chore(audit): add wave-1 evidence artifacts`.
+After writing evidence, status showed untracked `audit/` only — expected; staged and committed as `chore(audit): add wave-1 evidence artifacts` (`d9db39a0`). A concurrent inventory polish commit `e03bb59e` landed between product tip and audit commit (docs-only).
 
 ---
 
@@ -126,7 +128,17 @@ Also present under evidence (from prior wave agent): `W1-A13-npm-run-build.log`.
 
 ## 6. Final HEAD and commit list
 
-### Commits on merge branch (`7b0b6ae6..HEAD`) — product + docs (integrator review tip)
+### Final HEAD
+
+| Field | Value |
+| --- | --- |
+| **Final HEAD** | `d9db39a0a08868f6e4dcc22035e41d8e17a51347` |
+| Short | `d9db39a0` |
+| Subject | `chore(audit): add wave-1 evidence artifacts` |
+| Branch | `codex/merge-local-app-surfaces-2026-08-03` |
+| Base | `7b0b6ae68456aa4aa353a69009ea3465767e48ec` |
+
+### Commits on merge branch (`7b0b6ae6..HEAD`) — full list (oldest → newest)
 
 | Full SHA | Short | Message |
 | --- | --- | --- |
@@ -135,8 +147,10 @@ Also present under evidence (from prior wave agent): `W1-A13-npm-run-build.log`.
 | `e0c678ed04dc623d2a05cd01ddb4c5d13ce2b338` | `e0c678ed` | chore(apps): vendor static EHR prototype mirror for local 5191 handoff |
 | `5af4f6fdc711fe45bdb9077385ab55e0671f2e2c` | `5af4f6fd` | docs: record local app surfaces merge inventory 2026-08-03 |
 | `60f17bb58bc7f14781dbf5557cc205be04624131` | `60f17bb5` | docs: add build/QA results to merge inventory |
+| `e03bb59ef98e5286f5934cfe6fa0b524cad9e570` | `e03bb59e` | docs: refresh merge inventory after wave-1 verification |
+| `d9db39a0a08868f6e4dcc22035e41d8e17a51347` | `d9db39a0` | chore(audit): add wave-1 evidence artifacts |
 
-Linear parentage (oldest → newest):
+Linear parentage:
 
 ```
 7b0b6ae6
@@ -145,17 +159,17 @@ Linear parentage (oldest → newest):
             └─ e0c678ed chore(apps): vendor static EHR prototype mirror for local 5191 handoff
                  └─ 5af4f6fd docs: record local app surfaces merge inventory 2026-08-03
                       └─ 60f17bb5 docs: add build/QA results to merge inventory
+                           └─ e03bb59e docs: refresh merge inventory after wave-1 verification
+                                └─ d9db39a0 chore(audit): add wave-1 evidence artifacts
 ```
 
-### Post-report audit commit
+### Audit commit contents
 
 | Field | Value |
 | --- | --- |
 | Message | `chore(audit): add wave-1 evidence artifacts` |
-| Contents | `audit/merge-2026-08-03/evidence/*`, `audit/merge-2026-08-03/wave-1/W1-A16-final-integrator.md` |
+| Paths | `audit/merge-2026-08-03/evidence/*`, `audit/merge-2026-08-03/wave-1/W1-A*.md` (18 files) |
 | Notes | Additive only; does not change product surface under `src/` or `apps/` |
-
-*(Final HEAD SHA after audit commit is recorded in the commit footer / `git rev-parse HEAD` on the branch tip after this report is committed.)*
 
 ---
 
