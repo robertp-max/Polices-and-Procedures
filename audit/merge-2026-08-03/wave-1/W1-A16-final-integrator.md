@@ -135,7 +135,7 @@ Recorded at packaging time. After the complete package + stamp commits land, **t
 | Field | Value |
 | --- | --- |
 | **Product surface tip** (reception + EHR static + inventory docs) | `e03bb59ef98e5286f5934cfe6fa0b524cad9e570` |
-| **Final branch tip (this package)** | `b5d06c282978d034a6a9c33cc3a4058cba535b98` ($short) |
+| **Final branch tip** | `ace7c0ed116e34df2df97a34551f66eca2478c72` (`ace7c0ed`) |
 | **Audit package tip** | see commit list below (`chore(audit): *`) |
 | Branch | `codex/merge-local-app-surfaces-2026-08-03` |
 | Base | `7b0b6ae68456aa4aa353a69009ea3465767e48ec` |
